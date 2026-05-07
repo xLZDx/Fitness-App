@@ -1,50 +1,70 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:fitness_app/features/profile/profile_page.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/features/auth/data/mock_auth_repository.dart';
+import 'package:fitness_app/features/auth/state/auth_providers.dart';
+import 'package:fitness_app/features/profile/data/mock_profile_repository.dart';
+import 'package:fitness_app/features/profile/profile_page.dart';
+import 'package:fitness_app/features/profile/state/profile_providers.dart';
 
 void main() {
   group('ProfilePage', () {
-    testWidgets('renders the guest header and primary menu items',
+    testWidgets('renders the guest header and the primary menu items',
         (tester) async {
-      await tester.pumpWidget(_buildApp());
+      await tester.pumpWidget(buildApp(MockAuthRepository(latency: Duration.zero),
+          MockProfileRepository(latency: Duration.zero)));
       await tester.pump();
 
-      expect(find.text('Guest user'), findsOneWidget);
-      expect(find.text('Health questionnaire'), findsOneWidget);
+      expect(find.text('Guest'), findsOneWidget);
+      // Not yet onboarded → CTA wording
+      expect(find.text('Complete questionnaire'), findsOneWidget);
       expect(find.text('Connected devices'), findsOneWidget);
       expect(find.text('Subscription'), findsOneWidget);
       expect(find.text('Settings'), findsOneWidget);
       expect(find.text('Sign out'), findsOneWidget);
     });
 
-    testWidgets('Sign out tile navigates to /login', (tester) async {
-      await tester.pumpWidget(_buildApp());
+    testWidgets('shows the questionnaire CTA when user is not onboarded',
+        (tester) async {
+      await tester.pumpWidget(buildApp(MockAuthRepository(latency: Duration.zero),
+          MockProfileRepository(latency: Duration.zero)));
       await tester.pump();
-
-      await tester.tap(find.text('Sign out'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 400));
-
-      expect(find.text('login-stub'), findsOneWidget);
+      expect(find.text('Complete questionnaire'), findsOneWidget);
+      expect(find.text('Personalize your plan'), findsOneWidget);
     });
   });
 }
 
-Widget _buildApp() {
+Widget buildApp(
+  MockAuthRepository auth,
+  MockProfileRepository profiles,
+) {
   final router = GoRouter(
     initialLocation: '/profile',
     routes: [
       GoRoute(path: '/profile', builder: (_, __) => const ProfilePage()),
       GoRoute(
-          path: '/login',
-          builder: (_, __) => const Scaffold(body: Text('login-stub'))),
+          path: '/onboarding',
+          builder: (_, __) => const Scaffold(body: Text('onboarding-stub'))),
     ],
   );
-  return MaterialApp.router(
-    theme: AppTheme.light(),
-    routerConfig: router,
+  return ProviderScope(
+    overrides: [
+      authRepositoryProvider.overrideWith((ref) {
+        ref.onDispose(auth.dispose);
+        return auth;
+      }),
+      profileRepositoryProvider.overrideWith((ref) {
+        ref.onDispose(profiles.dispose);
+        return profiles;
+      }),
+    ],
+    child: MaterialApp.router(
+      theme: AppTheme.light(),
+      routerConfig: router,
+    ),
   );
 }

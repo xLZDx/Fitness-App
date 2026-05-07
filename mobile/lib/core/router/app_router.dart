@@ -8,7 +8,10 @@ import '../../features/auth/data/auth_user.dart';
 import '../../features/auth/login_page.dart';
 import '../../features/auth/state/auth_providers.dart';
 import '../../features/home/home_page.dart';
+import '../../features/onboarding/onboarding_page.dart';
+import '../../features/profile/data/profile_repository.dart';
 import '../../features/profile/profile_page.dart';
+import '../../features/profile/state/profile_providers.dart';
 import '../../features/progress/progress_page.dart';
 import '../../features/scanner/scanner_page.dart';
 import '../../features/splash/splash_page.dart';
@@ -22,11 +25,23 @@ const _publicPaths = {'/splash', '/login'};
 
 /// Pure redirect resolution. Exposed for tests so the routing logic can be
 /// validated without spinning up the full widget tree.
-String? resolveRedirect({required bool isSignedIn, required String location}) {
+String? resolveRedirect({
+  required bool isSignedIn,
+  required bool isOnboarded,
+  required String location,
+}) {
   if (location == '/splash') return null;
   final isPublic = _publicPaths.contains(location);
   if (!isSignedIn && !isPublic) return '/login';
-  if (isSignedIn && location == '/login') return '/home';
+  if (isSignedIn && location == '/login') {
+    return isOnboarded ? '/home' : '/onboarding';
+  }
+  if (isSignedIn && !isOnboarded && location != '/onboarding') {
+    return '/onboarding';
+  }
+  if (isSignedIn && isOnboarded && location == '/onboarding') {
+    return '/home';
+  }
   return null;
 }
 
@@ -72,21 +87,73 @@ class _StreamListenable extends ChangeNotifier {
   }
 }
 
+/// Bridges multiple streams into a single [Listenable].
+class _MultiSourceListenable extends ChangeNotifier {
+  _MultiSourceListenable(List<Stream<dynamic>> streams) {
+    for (final s in streams) {
+      _subs.add(s.listen((_) => notifyListeners()));
+    }
+  }
+  final List<StreamSubscription<dynamic>> _subs = [];
+
+  @override
+  void dispose() {
+    for (final s in _subs) {
+      s.cancel();
+    }
+    super.dispose();
+  }
+}
+
+/// Lifts the active user's profile stream into a single broadcast stream that
+/// keeps emitting through sign-in/sign-out cycles. Used by the router's
+/// refresh listenable so `/onboarding` redirects fire when the profile
+/// is created or completed.
+Stream<dynamic> _profileWatchOf(
+  dynamic authRepo,
+  ProfileRepository profileRepo,
+) async* {
+  Stream<dynamic> currentProfileStream = const Stream.empty();
+  StreamSubscription<dynamic>? sub;
+  await for (final user in authRepo.authStateChanges()) {
+    await sub?.cancel();
+    if (user == null) {
+      yield null;
+      currentProfileStream = const Stream.empty();
+      continue;
+    }
+    currentProfileStream = profileRepo.watch(user.uid);
+    sub = currentProfileStream.listen((p) {});
+    yield* currentProfileStream;
+  }
+}
+
 /// The application router. Reads auth state via Riverpod and redirects
 /// users away from gated routes when they aren't signed in.
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final repo = ref.watch(authRepositoryProvider);
-  final listenable = _StreamListenable(repo.authStateChanges());
-  ref.onDispose(listenable.dispose);
+  final authRepo = ref.watch(authRepositoryProvider);
+  final profileRepo = ref.watch(profileRepositoryProvider);
+  final authListenable = _StreamListenable(authRepo.authStateChanges());
+  final profileListenable = _MultiSourceListenable([
+    authRepo.authStateChanges(),
+    _profileWatchOf(authRepo, profileRepo),
+  ]);
+  ref.onDispose(authListenable.dispose);
+  ref.onDispose(profileListenable.dispose);
 
   return GoRouter(
     navigatorKey: _rootKey,
     initialLocation: '/splash',
-    refreshListenable: listenable,
-    redirect: (context, state) => resolveRedirect(
-      isSignedIn: repo.currentUser != null,
-      location: state.matchedLocation,
-    ),
+    refreshListenable: profileListenable,
+    redirect: (context, state) {
+      final user = authRepo.currentUser;
+      final profile = user == null ? null : profileRepo.cached(user.uid);
+      return resolveRedirect(
+        isSignedIn: user != null,
+        isOnboarded: profile?.hasCompletedOnboarding ?? false,
+        location: state.matchedLocation,
+      );
+    },
     routes: [
       GoRoute(
         path: '/splash',
@@ -95,6 +162,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         pageBuilder: (_, __) => _fadeThrough(const LoginPage()),
+      ),
+      GoRoute(
+        path: '/onboarding',
+        pageBuilder: (_, __) => _fadeThrough(const OnboardingPage()),
       ),
       ShellRoute(
         navigatorKey: _shellKey,

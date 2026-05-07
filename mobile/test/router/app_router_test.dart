@@ -7,51 +7,120 @@ import 'package:fitness_app/core/router/app_router.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/auth/data/mock_auth_repository.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
+import 'package:fitness_app/features/profile/data/mock_profile_repository.dart';
+import 'package:fitness_app/features/profile/state/profile_providers.dart';
 
 void main() {
   group('resolveRedirect (pure)', () {
     test('splash always passes through', () {
-      expect(resolveRedirect(isSignedIn: false, location: '/splash'), isNull);
-      expect(resolveRedirect(isSignedIn: true, location: '/splash'), isNull);
+      expect(
+          resolveRedirect(
+              isSignedIn: false, isOnboarded: false, location: '/splash'),
+          isNull);
+      expect(
+          resolveRedirect(
+              isSignedIn: true, isOnboarded: true, location: '/splash'),
+          isNull);
     });
 
-    test('login is reachable when signed out, redirects when signed in', () {
-      expect(resolveRedirect(isSignedIn: false, location: '/login'), isNull);
+    test('login is reachable when signed out', () {
       expect(
-        resolveRedirect(isSignedIn: true, location: '/login'),
+          resolveRedirect(
+              isSignedIn: false, isOnboarded: false, location: '/login'),
+          isNull);
+    });
+
+    test('signed-in user on /login bounces to /home when onboarded', () {
+      expect(
+        resolveRedirect(
+            isSignedIn: true, isOnboarded: true, location: '/login'),
         '/home',
       );
     });
 
+    test('signed-in user on /login bounces to /onboarding when not onboarded',
+        () {
+      expect(
+        resolveRedirect(
+            isSignedIn: true, isOnboarded: false, location: '/login'),
+        '/onboarding',
+      );
+    });
+
     test('every gated tab redirects to /login when signed out', () {
-      for (final p in ['/home', '/scan', '/workouts', '/progress', '/profile']) {
+      for (final p in [
+        '/home',
+        '/scan',
+        '/workouts',
+        '/progress',
+        '/profile',
+        '/onboarding'
+      ]) {
         expect(
-          resolveRedirect(isSignedIn: false, location: p),
+          resolveRedirect(
+              isSignedIn: false, isOnboarded: false, location: p),
           '/login',
           reason: 'gated path $p must redirect when signed out',
         );
       }
     });
 
-    test('every gated tab passes through when signed in', () {
-      for (final p in ['/home', '/scan', '/workouts', '/progress', '/profile']) {
+    test('signed-in but not onboarded → forced into /onboarding', () {
+      for (final p in [
+        '/home',
+        '/scan',
+        '/workouts',
+        '/progress',
+        '/profile'
+      ]) {
         expect(
-          resolveRedirect(isSignedIn: true, location: p),
-          isNull,
-          reason: 'gated path $p must be reachable when signed in',
+          resolveRedirect(
+              isSignedIn: true, isOnboarded: false, location: p),
+          '/onboarding',
+          reason: '$p should redirect to /onboarding while not onboarded',
         );
       }
+    });
+
+    test('signed-in and onboarded passes through every tab', () {
+      for (final p in [
+        '/home',
+        '/scan',
+        '/workouts',
+        '/progress',
+        '/profile'
+      ]) {
+        expect(
+          resolveRedirect(isSignedIn: true, isOnboarded: true, location: p),
+          isNull,
+        );
+      }
+    });
+
+    test('onboarded user landing on /onboarding is bounced to /home', () {
+      expect(
+        resolveRedirect(
+            isSignedIn: true, isOnboarded: true, location: '/onboarding'),
+        '/home',
+      );
     });
   });
 
   group('appRouter integration', () {
-    Widget buildApp(MockAuthRepository repo,
-        {void Function(GoRouter)? capture}) {
+    Widget buildApp({
+      required MockAuthRepository auth,
+      required MockProfileRepository profiles,
+      void Function(GoRouter)? capture,
+    }) {
       return ProviderScope(
         overrides: [
           authRepositoryProvider.overrideWith((ref) {
-            ref.onDispose(repo.dispose);
-            return repo;
+            ref.onDispose(auth.dispose);
+            return auth;
+          }),
+          profileRepositoryProvider.overrideWith((ref) {
+            ref.onDispose(profiles.dispose);
+            return profiles;
           }),
         ],
         child: Consumer(
@@ -69,11 +138,12 @@ void main() {
 
     String pathOf(GoRouter r) => r.routerDelegate.currentConfiguration.uri.path;
 
-    testWidgets('boots to /splash, redirects unsigned users to /login',
+    testWidgets('boots to /splash, then redirects unsigned users to /login',
         (tester) async {
       late GoRouter router;
       await tester.pumpWidget(buildApp(
-        MockAuthRepository(latency: Duration.zero),
+        auth: MockAuthRepository(latency: Duration.zero),
+        profiles: MockProfileRepository(latency: Duration.zero),
         capture: (r) => router = r,
       ));
       await tester.pump();

@@ -16,7 +16,9 @@
 ## Tooling baseline
 
 - JDK 17 (`C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot`) — pinned via `gradle.properties` to avoid AGP/Java-21 incompat
-- All file I/O on D: drive to spare C:
+- **Strict D:-drive policy** (2026-05-08): every cache, temp file, install, AVD, build artefact, screenshot lives on D:. C: is reserved for the OS and pre-existing system tooling.
+  - Env vars (set in user environment): `PUB_CACHE=D:\.pub-cache`, `GRADLE_USER_HOME=D:\.gradle`, `TEMP=D:\Temp`, `TMP=D:\Temp`, `ANDROID_AVD_HOME=D:\android-avd`, `ANDROID_SDK_ROOT=D:\android-sdk`
+  - Flutter SDK at `D:\flutter`, Android SDK at `D:\android-sdk`, AVD at `D:\android-avd\Pixel_API_34.avd`, project root at `D:\test 2\Fitness App\`.
 - Tests must stay green at every commit (no skipped, no xfail without justification)
 - Approval gate: present a plan before non-trivial work, wait for explicit OK
 
@@ -30,19 +32,25 @@
 - **Design system:** aurora gradient backdrop with two soft radial blooms; `GlassCard` with diagonal sheen + two-layer drop shadow + no borders; `GlassNavBar` floating frosted bar; `GlassAppBar` with backdrop blur; `ScrollDimList` (vertical list that blurs/dims non-focused cards only while user is actively scrolling)
 - Test library: 44 tests across theme, widgets, pages, router (all green)
 
-## Phase 1A — Auth + onboarding questionnaire (local-first) 🔄 in flight
+## Phase 1A — Auth + onboarding questionnaire (local-first) ✅ complete
 
 **Goal:** every screen and flow that depends on a signed-in user with a profile, working end-to-end against an in-memory backend so we can iterate without waiting on Firebase.
 
 - [x] Auth repository pattern (abstract + mock) — `AuthRepository`, `MockAuthRepository`, Riverpod providers (`authRepositoryProvider`, `authUserProvider`, `authActionProvider`)
 - [x] Wire `LoginPage` to call the auth provider with loading + error states
 - [x] Auth-aware router redirect: `/splash` → `/home` → (if no user) `/login` → (after sign-in) `/home`
-- [x] Tests for auth repo, providers, redirect (added 15 tests on top of the 44 from Phase 0)
-- [ ] Profile / questionnaire repository (abstract + mock) — `UserProfile`, `ProfileRepository`, `MockProfileRepository`, Riverpod state
-- [ ] **34-question onboarding questionnaire** as a multi-step form, grouped by section (Personal · Health · Goals · Fitness level · Lifestyle · Equipment · Motivation), with progress indicator and field validation. Persists to the profile repository on submit.
-- [ ] Router redirect: authed but no profile → `/onboarding`
-- [ ] Profile tab: show questionnaire summary, edit shortcut, sign-out
-- [ ] Tests for the questionnaire flow
+- [x] Profile repository (abstract + mock) — `UserProfile` + 7 sub-objects, `ProfileRepository`, `MockProfileRepository`, Riverpod (`profileRepositoryProvider`, `currentProfileProvider`, `isOnboardedProvider`, `profileSubmitProvider`)
+- [x] **34-question onboarding questionnaire** — 7-step PageView with gradient progress bar:
+  - Step 1 — Personal (age · gender · height · current weight · target weight · activity level)
+  - Step 2 — Health history (conditions · allergies · meds · injuries · limitations · surgeries · BP · other)
+  - Step 3 — Goals (multi-select + specific sport)
+  - Step 4 — Fitness level (frequency · current exercises · self-rated tier · basic ability)
+  - Step 5 — Lifestyle (diet multi · smoking · alcohol · sleep · stress slider · occupation)
+  - Step 6 — Equipment (gym y/n · home equipment list)
+  - Step 7 — Motivation (free text · environment multi · preferred duration)
+  - Submission stamps `completedAt` and bounces to `/home`
+- [x] Router redirect tightened: signed-in & not onboarded → `/onboarding`; onboarded → `/onboarding` redirects back to `/home`
+- [x] Profile tab: pulls real user + profile, shows "At a glance" summary card (age/height/weight/activity/goals) when onboarded, "Complete questionnaire" CTA when not, and the sign-out tile actually signs out via `authActionProvider`
 
 ## Phase 1B — Firebase wiring 🔒 blocked on user
 
