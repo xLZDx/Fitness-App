@@ -18,15 +18,18 @@ void main() {
       await tester.pump(const Duration(milliseconds: 600));
     });
 
-    testWidgets('navigates to /login after the splash delay', (tester) async {
+    testWidgets('hands off after the splash delay', (tester) async {
       await tester.pumpWidget(_router(initial: '/splash'));
       await tester.pump();
-      expect(find.text('Welcome'), findsNothing);
+      expect(find.text('home-stub'), findsNothing);
 
       await tester.pump(const Duration(milliseconds: 1500));
       await tester.pump(const Duration(milliseconds: 600));
 
-      expect(find.text('Welcome'), findsOneWidget);
+      // Splash's post-frame callback navigates to /home; the auth-aware
+      // redirect will rewrite to /login in production. Here we just
+      // assert the hand-off happened.
+      expect(find.text('home-stub'), findsOneWidget);
     });
   });
 }
@@ -37,8 +40,8 @@ Widget _router({required String initial}) {
     routes: [
       GoRoute(path: '/splash', builder: (_, __) => const SplashPage()),
       GoRoute(
-          path: '/login',
-          builder: (_, __) => const Scaffold(body: Text('Welcome'))),
+          path: '/home',
+          builder: (_, __) => const Scaffold(body: Text('home-stub'))),
     ],
   );
   return MaterialApp.router(

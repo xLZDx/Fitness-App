@@ -9,17 +9,18 @@ void main() {
   runApp(const ProviderScope(child: FitnessApp()));
 }
 
-class FitnessApp extends StatelessWidget {
+class FitnessApp extends ConsumerWidget {
   const FitnessApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
     return MaterialApp.router(
       title: 'Fitness App',
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: ThemeMode.system,
-      routerConfig: appRouter,
+      routerConfig: router,
       debugShowCheckedModeBanner: false,
       scrollBehavior: const _GlassScrollBehavior(),
       builder: (context, child) =>

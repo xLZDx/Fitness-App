@@ -24,7 +24,9 @@ class _SplashPageState extends State<SplashPage>
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await Future<void>.delayed(const Duration(milliseconds: 1300));
       if (!mounted) return;
-      context.go('/login');
+      // Hand off to /home — the router's auth-aware redirect rewrites
+      // to /login when no one is signed in yet.
+      context.go('/home');
     });
   }
 
