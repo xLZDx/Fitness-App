@@ -1,0 +1,48 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:fitness_app/features/splash/splash_page.dart';
+import 'package:fitness_app/core/theme/app_theme.dart';
+
+void main() {
+  group('SplashPage', () {
+    testWidgets('renders branding immediately', (tester) async {
+      await tester.pumpWidget(_router(initial: '/splash'));
+      await tester.pump();
+      expect(find.text('Fitness App'), findsOneWidget);
+      expect(find.text('Scan. Train. Progress.'), findsOneWidget);
+      expect(find.byIcon(Icons.fitness_center), findsOneWidget);
+      // Drain the auto-navigation timer so it doesn't leak into the next test.
+      await tester.pump(const Duration(milliseconds: 1500));
+      await tester.pump(const Duration(milliseconds: 600));
+    });
+
+    testWidgets('navigates to /login after the splash delay', (tester) async {
+      await tester.pumpWidget(_router(initial: '/splash'));
+      await tester.pump();
+      expect(find.text('Welcome'), findsNothing);
+
+      await tester.pump(const Duration(milliseconds: 1500));
+      await tester.pump(const Duration(milliseconds: 600));
+
+      expect(find.text('Welcome'), findsOneWidget);
+    });
+  });
+}
+
+Widget _router({required String initial}) {
+  final router = GoRouter(
+    initialLocation: initial,
+    routes: [
+      GoRoute(path: '/splash', builder: (_, __) => const SplashPage()),
+      GoRoute(
+          path: '/login',
+          builder: (_, __) => const Scaffold(body: Text('Welcome'))),
+    ],
+  );
+  return MaterialApp.router(
+    theme: AppTheme.light(),
+    routerConfig: router,
+  );
+}
