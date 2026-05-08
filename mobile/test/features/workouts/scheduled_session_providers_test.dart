@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:fitness_app/core/notifications/mock_notification_service.dart';
+import 'package:fitness_app/core/notifications/notification_providers.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/workouts/data/mock_scheduled_session_repository.dart';
@@ -21,10 +23,13 @@ ScheduledSession _s(String id, DateTime when,
 ProviderContainer _container({
   required MockScheduledSessionRepository repo,
   AuthUser? user,
+  MockNotificationService? notifications,
 }) {
   return ProviderContainer(overrides: [
     scheduledSessionRepositoryProvider.overrideWithValue(repo),
     authUserProvider.overrideWith((_) => Stream.value(user)),
+    if (notifications != null)
+      notificationServiceProvider.overrideWithValue(notifications),
   ]);
 }
 
@@ -140,6 +145,54 @@ void main() {
 
       expect(container.read(scheduleSessionActionProvider).hasValue, isTrue);
       expect(repo.cached('alice'), isEmpty);
+    });
+
+    test('schedule also registers a notification reminder', () async {
+      final repo = MockScheduledSessionRepository(latency: Duration.zero);
+      addTearDown(repo.dispose);
+      final notifications = MockNotificationService()
+        ..now = () => DateTime(2026, 5, 8);
+      final container = _container(
+        repo: repo,
+        user: const AuthUser(uid: 'alice', displayName: 'Alice'),
+        notifications: notifications,
+      );
+      addTearDown(container.dispose);
+      await container.read(authUserProvider.future);
+
+      final session = _s('s_z', DateTime(2026, 6, 5, 9));
+      await container
+          .read(scheduleSessionActionProvider.notifier)
+          .schedule(session);
+
+      expect(notifications.scheduled.map((r) => r.sessionId), ['s_z']);
+      expect(notifications.scheduled.first.fireAt,
+          DateTime(2026, 6, 5, 8, 30));
+    });
+
+    test('cancel also removes the matching notification', () async {
+      final repo = MockScheduledSessionRepository(latency: Duration.zero);
+      addTearDown(repo.dispose);
+      await repo.save('alice', _s('s_1', DateTime(2026, 6, 1)));
+
+      final notifications = MockNotificationService()
+        ..now = () => DateTime(2026, 5, 8);
+      // Pre-seed a reminder so cancel has something to clear.
+      await notifications.scheduleReminder(_s('s_1', DateTime(2026, 6, 1)));
+
+      final container = _container(
+        repo: repo,
+        user: const AuthUser(uid: 'alice', displayName: 'Alice'),
+        notifications: notifications,
+      );
+      addTearDown(container.dispose);
+      await container.read(authUserProvider.future);
+
+      await container
+          .read(scheduleSessionActionProvider.notifier)
+          .cancel('s_1');
+
+      expect(notifications.scheduled, isEmpty);
     });
   });
 }

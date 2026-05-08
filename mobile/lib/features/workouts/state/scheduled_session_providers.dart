@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/notifications/notification_providers.dart';
 import '../../auth/state/auth_providers.dart';
 import '../data/mock_scheduled_session_repository.dart';
 import '../data/scheduled_session.dart';
@@ -70,6 +71,14 @@ class ScheduleSessionAction extends Notifier<AsyncValue<void>> {
       }
       final repo = ref.read(scheduledSessionRepositoryProvider);
       await repo.save(user.uid, session);
+      // Notification scheduling is best-effort — surface the schedule
+      // success even if the platform later refuses to deliver the alert.
+      try {
+        final notifications = ref.read(notificationServiceProvider);
+        await notifications.scheduleReminder(session);
+      } catch (_) {
+        // Swallow — the user-visible save succeeded.
+      }
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -85,6 +94,12 @@ class ScheduleSessionAction extends Notifier<AsyncValue<void>> {
       }
       final repo = ref.read(scheduledSessionRepositoryProvider);
       await repo.delete(user.uid, sessionId);
+      try {
+        final notifications = ref.read(notificationServiceProvider);
+        await notifications.cancelReminder(sessionId);
+      } catch (_) {
+        // Same best-effort treatment as above.
+      }
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);

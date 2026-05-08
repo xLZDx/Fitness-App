@@ -2,6 +2,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/notifications/local_notification_service.dart';
+import 'core/notifications/notification_providers.dart';
+import 'core/notifications/notification_service.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/data/firebase_auth_repository.dart';
@@ -20,6 +23,13 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Warm up notifications + request permissions once on launch. We keep a
+  // single instance and inject it into Riverpod so reminders are de-duped
+  // and cancellable across restarts.
+  final NotificationService notifications = LocalNotificationService();
+  await notifications.init();
+
   runApp(
     ProviderScope(
       overrides: [
@@ -30,6 +40,7 @@ Future<void> main() async {
             .overrideWith((_) => FirestoreWorkoutLogRepository()),
         scheduledSessionRepositoryProvider
             .overrideWith((_) => FirestoreScheduledSessionRepository()),
+        notificationServiceProvider.overrideWithValue(notifications),
       ],
       child: const FitnessApp(),
     ),
