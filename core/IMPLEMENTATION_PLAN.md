@@ -89,14 +89,12 @@ Implementation:
 - [x] **Phase 3C** — `ScheduledSession` model + `ScheduledSessionRepository` (mock + Firestore at `users/{uid}/scheduled_sessions/{id}`), `scheduledSessionsProvider` + `upcomingSessionsProvider` (pure `filterUpcoming` over the next 14 days, pending only). Workout player gets a "Schedule for later" outline button → `showDatePicker` → `showTimePicker` → save. Home tab's Today card shows the next pending session (taps into `/workout/:id`); an Upcoming list surfaces the next two beyond that, and Quick stats are real (workouts / streak / this week).
 - [x] **Phase 3D** — `NotificationService` abstraction (`MockNotificationService` for tests, `LocalNotificationService` backed by `flutter_local_notifications` + `timezone` for production). `ScheduleSessionAction` automatically registers a reminder 30 minutes before each session and clears it on cancel; reminders past their fire-window are dropped silently. Android manifest gets `POST_NOTIFICATIONS`/`SCHEDULE_EXACT_ALARM`/`USE_EXACT_ALARM`/`RECEIVE_BOOT_COMPLETED`/`WAKE_LOCK`/`VIBRATE`, the `flutter_local_notifications` boot+alarm receivers, and `coreLibraryDesugaring` (`desugar_jdk_libs:2.1.4`). On Android 13+ the runtime POST_NOTIFICATIONS prompt fires on first launch.
 
-## Phase 4 — Subscriptions, billing, free trial (queued)
+## Phase 4 — Subscriptions, billing, free trial (in progress)
 
 **Maps to master tasks 13, 17.** First monetisation surface.
 
-- Stripe integration via `flutter_stripe`
-- Tiered plans (free / standard / celebrity-trainer)
-- Free trial gating
-- Subscription state in profile
+- [x] **Phase 4A** — `Subscription` model (uid, tier ∈ free/standard/celebrityTrainer, status ∈ none/trial/active/cancelled/expired, trialEndsAt, currentPeriodEndsAt) + abstract repo + mock + Firestore at `users/{uid}/subscription/main`. `effectiveTier()` pure function handles trial + period expiry server-side so the UI never temporarily exposes premium features after a lapse. `feature_gates.dart` enumerates gated capabilities (`AppFeature.{basicLogging, fullEquipmentCatalog, personalisedRecommendations, workoutScheduling, advancedAnalytics, celebrityVideoPlans, aiCoach}`) and the `canAccess(tier, feature)` lookup. Riverpod chain: `subscriptionRepositoryProvider`, `currentSubscriptionProvider` (StreamProvider), `effectiveTierProvider`, `featureAccessProvider.family`, `subscriptionActionProvider` (`startTrial(tier)` → 14-day window, `chooseTier(tier)` → 30-day mock period, `cancel()`). New `/subscription` route surfaces the three tier cards (with feature lists, "Start 14-day trial" + "Choose"), a status header with countdown, and a cancel link. Profile tab subscription tile now reflects current tier/status and opens the page.
+- [ ] **Phase 4B** — Real Stripe integration via `flutter_stripe` + Cloud Functions for the checkout/webhook bridge (replaces the `chooseTier`/`cancel` mock implementations). Requires Stripe API keys + a Functions backend.
 
 ## Phase 5 — Compliance, accessibility, data export (queued)
 

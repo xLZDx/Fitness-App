@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import '../auth/state/auth_providers.dart';
+import '../subscription/data/subscription_models.dart';
+import '../subscription/state/subscription_providers.dart';
 import 'state/profile_providers.dart';
 
 class ProfilePage extends ConsumerWidget {
@@ -17,6 +19,8 @@ class ProfilePage extends ConsumerWidget {
     final user = ref.watch(authUserProvider).valueOrNull;
     final profile = ref.watch(currentProfileProvider).valueOrNull;
     final onboarded = profile?.hasCompletedOnboarding ?? false;
+    final sub = ref.watch(currentSubscriptionProvider).valueOrNull;
+    final tier = ref.watch(effectiveTierProvider);
 
     final displayName = user?.displayName ?? 'Guest';
     final subtitle = onboarded
@@ -94,8 +98,8 @@ class ProfilePage extends ConsumerWidget {
                   icon: Icons.workspace_premium_outlined,
                   gradient: AppPalette.tileGradients[3],
                   title: 'Subscription',
-                  subtitle: 'Free trial',
-                  onTap: () {},
+                  subtitle: _subscriptionSubtitle(sub, tier),
+                  onTap: () => context.go('/subscription'),
                 ),
                 _divider(context),
                 _profileTile(
@@ -170,6 +174,25 @@ class ProfilePage extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  String _subscriptionSubtitle(Subscription? sub, SubscriptionTier tier) {
+    if (sub == null || sub.status == SubscriptionStatus.none) {
+      return 'Free · start a 14-day trial';
+    }
+    final tierLabel = switch (tier) {
+      SubscriptionTier.free => 'Free',
+      SubscriptionTier.standard => 'Standard',
+      SubscriptionTier.celebrityTrainer => 'Celebrity trainer',
+    };
+    final statusLabel = switch (sub.status) {
+      SubscriptionStatus.trial => 'Trial',
+      SubscriptionStatus.active => 'Active',
+      SubscriptionStatus.cancelled => 'Cancelling',
+      SubscriptionStatus.expired => 'Expired',
+      SubscriptionStatus.none => 'Free',
+    };
+    return '$tierLabel · $statusLabel';
   }
 
   Widget _divider(BuildContext context) => Padding(

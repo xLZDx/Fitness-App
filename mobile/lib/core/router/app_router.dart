@@ -17,6 +17,7 @@ import '../../features/profile/state/profile_providers.dart';
 import '../../features/progress/progress_page.dart';
 import '../../features/scanner/scanner_page.dart';
 import '../../features/splash/splash_page.dart';
+import '../../features/subscription/subscription_page.dart';
 import '../../features/workouts/workouts_page.dart';
 import '../../shared/widgets/main_shell.dart';
 
@@ -188,6 +189,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         pageBuilder: (_, state) => _fadeThrough(
           WorkoutPlayerPage(exerciseId: state.pathParameters['id']!),
         ),
+      ),
+      GoRoute(
+        path: '/subscription',
+        pageBuilder: (_, __) => _fadeThrough(const SubscriptionPage()),
       ),
       ShellRoute(
         navigatorKey: _shellKey,
