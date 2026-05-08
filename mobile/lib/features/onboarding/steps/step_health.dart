@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_palette.dart';
 import '../../profile/data/profile_models.dart';
 import '../state/questionnaire_notifier.dart';
 import '../widgets/inputs.dart';
@@ -27,6 +28,8 @@ class StepHealth extends ConsumerWidget {
         const StepTitle(
           title: 'Health snapshot',
           subtitle: 'We use this to keep your plan safe — separate items with commas.',
+          icon: Icons.favorite_outline,
+          iconGradient: [AppPalette.auroraPink, AppPalette.auroraPeach],
         ),
         const FieldLabel('Pre-existing conditions'),
         GlassTextField(

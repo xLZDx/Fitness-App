@@ -64,6 +64,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   }
 
   Future<void> _next() async {
+    // Persist whatever the user has so far before advancing or finishing.
+    await ref.read(questionnaireDraftProvider.notifier).saveDraft();
     if (_index < _stepCount - 1) {
       await _ctrl.nextPage(
         duration: const Duration(milliseconds: 320),
@@ -75,6 +77,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   }
 
   Future<void> _back() async {
+    await ref.read(questionnaireDraftProvider.notifier).saveDraft();
     if (_index == 0) return;
     await _ctrl.previousPage(
       duration: const Duration(milliseconds: 280),

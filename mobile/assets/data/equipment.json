@@ -1,0 +1,44 @@
+[
+  {
+    "id": "treadmill_precor_trm211",
+    "name": "Treadmill TRM 211",
+    "manufacturer": "Precor",
+    "category": "cardio",
+    "description": "Commercial cushioned-deck treadmill. Speeds up to 16 km/h, incline 0–15%."
+  },
+  {
+    "id": "rower_concept2_d",
+    "name": "RowErg (Model D)",
+    "manufacturer": "Concept2",
+    "category": "cardio",
+    "description": "Air-resistance rowing machine. PM5 monitor for pacing and intervals."
+  },
+  {
+    "id": "rack_rogue_rml390f",
+    "name": "Power Rack RML-390F",
+    "manufacturer": "Rogue",
+    "category": "strength",
+    "description": "Flat-foot power rack with safety arms — squats, presses, rows."
+  },
+  {
+    "id": "bench_legend_3115",
+    "name": "Adjustable Bench 3115",
+    "manufacturer": "Legend Fitness",
+    "category": "strength",
+    "description": "Multi-angle bench (flat / incline / decline). Pairs with dumbbells or rack."
+  },
+  {
+    "id": "cable_lifefitness_dap",
+    "name": "Dual Adjustable Pulley",
+    "manufacturer": "Life Fitness",
+    "category": "strength",
+    "description": "Twin cable column (90 kg per side). Versatile lat / arm / core station."
+  },
+  {
+    "id": "leg_press_hammer_iso",
+    "name": "ISO-Lateral Leg Press",
+    "manufacturer": "Hammer Strength",
+    "category": "strength",
+    "description": "Plate-loaded 45° leg press with independent left / right travel."
+  }
+]

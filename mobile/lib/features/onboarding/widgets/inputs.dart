@@ -2,33 +2,73 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_palette.dart';
 
-/// Section title rendered above each step's body.
+/// Section title rendered above each step's body. Optional [icon] and
+/// [iconGradient] render a small gradient tile to the left.
 class StepTitle extends StatelessWidget {
-  const StepTitle({super.key, required this.title, this.subtitle});
+  const StepTitle({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.icon,
+    this.iconGradient,
+  });
 
   final String title;
   final String? subtitle;
+  final IconData? icon;
+  final List<Color>? iconGradient;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Column(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style:
-              theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
-        ),
-        if (subtitle != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            subtitle!,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+        if (icon != null) ...[
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              gradient: LinearGradient(
+                colors: iconGradient ??
+                    [AppPalette.auroraPink, AppPalette.auroraViolet],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: (iconGradient?.last ?? AppPalette.auroraViolet)
+                      .withValues(alpha: 0.35),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
+                ),
+              ],
             ),
+            child: Icon(icon, color: Colors.white, size: 22),
           ),
+          const SizedBox(width: 12),
         ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: theme.textTheme.headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.w800),
+              ),
+              if (subtitle != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  subtitle!,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color:
+                        theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -72,8 +112,8 @@ class SingleChoiceChips<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 10,
-      runSpacing: 10,
+      spacing: 12,
+      runSpacing: 12,
       children: [
         for (final opt in options)
           _ChoicePill(
@@ -104,8 +144,8 @@ class MultiChoiceChips<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 10,
-      runSpacing: 10,
+      spacing: 12,
+      runSpacing: 12,
       children: [
         for (final opt in options)
           _ChoicePill(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_palette.dart';
 import '../state/questionnaire_notifier.dart';
 import '../widgets/inputs.dart';
 
@@ -24,6 +25,8 @@ class StepEquipment extends ConsumerWidget {
         const StepTitle(
           title: 'What can you train with?',
           subtitle: 'We pick exercises that fit what you actually own.',
+          icon: Icons.sports_gymnastics_outlined,
+          iconGradient: [AppPalette.auroraPeach, AppPalette.auroraPink],
         ),
         const FieldLabel('Do you have access to a gym?'),
         SingleChoiceChips<bool>(

@@ -2,9 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/state/auth_providers.dart';
 import '../../profile/data/profile_models.dart';
+import '../../profile/state/profile_providers.dart';
 
 /// Holds the in-progress draft profile while the user moves through the
 /// questionnaire. Backed by the auth provider so we always have a uid.
+/// Hydrates from any cached profile on first build, so partial answers
+/// survive app restarts (or refreshes from the in-memory mock).
 final questionnaireDraftProvider =
     NotifierProvider<QuestionnaireDraft, UserProfile>(
         QuestionnaireDraft.new);
@@ -13,7 +16,17 @@ class QuestionnaireDraft extends Notifier<UserProfile> {
   @override
   UserProfile build() {
     final user = ref.watch(authUserProvider).valueOrNull;
-    return UserProfile.empty(user?.uid ?? 'anonymous');
+    final uid = user?.uid ?? 'anonymous';
+    final repo = ref.read(profileRepositoryProvider);
+    final cached = repo.cached(uid);
+    if (cached != null) return cached;
+    return UserProfile.empty(uid);
+  }
+
+  /// Persist the current draft (no `completedAt`) so the user's answers
+  /// survive losing the screen.
+  Future<void> saveDraft() async {
+    await ref.read(profileRepositoryProvider).save(state);
   }
 
   void updatePersonal(PersonalInfo Function(PersonalInfo) update) =>

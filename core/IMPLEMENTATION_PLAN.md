@@ -69,15 +69,16 @@ Implementation:
 - `firestore.rules`: locked-down per-user reads/writes against `users/{uid}/...`
 - Tests against the Firebase emulator suite (no live network in CI)
 
-## Phase 2 — Equipment scanner + curated workout videos (queued)
+## Phase 2 — Equipment scanner + curated workout videos ✅ A+B shipped
 
 **Maps to master tasks 1, 6, 8, 9.** First half of the actual product surface.
 
-- Camera + QR scanner via `mobile_scanner`
-- Equipment catalog (manufacturer, model, exercise mappings) seeded from `content/equipment.json`
-- Equipment detail screen: machine info → recommended exercises filtered by user profile
-- Video player (Cloudflare Stream / Mux) with offline-friendly controls
-- Hand-curated seed library of ~50 exercises (scraper deferred to a later phase)
+- [x] **Phase 2A** — Live QR scanner via `mobile_scanner`, equipment catalog (`assets/data/equipment.json` + `assets/data/exercises.json` shipped with the app), `AssetEquipmentRepository`, `/equipment/:id` route with `EquipmentDetailPage` listing all curated exercises for that machine.
+- [x] **Phase 2B** — `video_player`-backed `WorkoutPlayerPage` at `/workout/:id`. Plays remote MP4 when an exercise has `videoUrl`; falls back to step-by-step instructions when not. Caution card surfaces contraindications based on the exercise's hidden injury tags.
+- [x] AGP bumped 8.1 → 8.7 + Kotlin 1.8.22 → 2.0.21 + Gradle 8.3 → 8.10.2 + minSdk 21 → 23 to satisfy `mobile_scanner` and Firebase requirements.
+- [ ] **Phase 2C** — recommendation filter (hide contraindications based on the user's actual injury list, surface tier-appropriate exercises). Today the catalog ships everything for an equipment id.
+- [ ] **Phase 2D** — Train tab integration (currently still using stubbed workout cards; needs to pull live data from the equipment catalog).
+- [ ] **Phase 2E** — scraper + content pipeline to grow the catalog beyond the 12 hand-seeded exercises.
 
 ## Phase 3 — Workout calendar, logging, basic progress (queued)
 

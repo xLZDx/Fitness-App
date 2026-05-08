@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_palette.dart';
 import '../../profile/data/profile_models.dart';
 import '../state/questionnaire_notifier.dart';
 import '../widgets/inputs.dart';
@@ -19,6 +20,8 @@ class StepPersonal extends ConsumerWidget {
         const StepTitle(
           title: 'Tell us about you',
           subtitle: 'We tailor your plan around these basics.',
+          icon: Icons.person_outline,
+          iconGradient: [AppPalette.auroraPink, AppPalette.auroraViolet],
         ),
         const FieldLabel('Age'),
         GlassTextField(

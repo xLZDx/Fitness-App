@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/data/auth_user.dart';
 import '../../features/auth/login_page.dart';
 import '../../features/auth/state/auth_providers.dart';
+import '../../features/equipment/equipment_detail_page.dart';
+import '../../features/equipment/workout_player_page.dart';
 import '../../features/home/home_page.dart';
 import '../../features/onboarding/onboarding_page.dart';
 import '../../features/profile/data/profile_repository.dart';
@@ -36,7 +38,15 @@ String? resolveRedirect({
   if (isSignedIn && location == '/login') {
     return isOnboarded ? '/home' : '/onboarding';
   }
-  if (isSignedIn && !isOnboarded && location != '/onboarding') {
+  // /equipment/:id and /workout/:id are gated but accessible without
+  // onboarding so a freshly scanned QR isn't dead-ended on its way back
+  // from the camera.
+  final isEquipmentOrWorkout = location.startsWith('/equipment/') ||
+      location.startsWith('/workout/');
+  if (isSignedIn &&
+      !isOnboarded &&
+      location != '/onboarding' &&
+      !isEquipmentOrWorkout) {
     return '/onboarding';
   }
   if (isSignedIn && isOnboarded && location == '/onboarding') {
@@ -166,6 +176,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/onboarding',
         pageBuilder: (_, __) => _fadeThrough(const OnboardingPage()),
+      ),
+      GoRoute(
+        path: '/equipment/:id',
+        pageBuilder: (_, state) => _fadeThrough(
+          EquipmentDetailPage(equipmentId: state.pathParameters['id']!),
+        ),
+      ),
+      GoRoute(
+        path: '/workout/:id',
+        pageBuilder: (_, state) => _fadeThrough(
+          WorkoutPlayerPage(exerciseId: state.pathParameters['id']!),
+        ),
       ),
       ShellRoute(
         navigatorKey: _shellKey,

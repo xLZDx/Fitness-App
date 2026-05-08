@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_palette.dart';
 import '../../profile/data/profile_models.dart';
 import '../state/questionnaire_notifier.dart';
 import '../widgets/inputs.dart';
@@ -19,6 +20,8 @@ class StepMotivation extends ConsumerWidget {
         const StepTitle(
           title: 'How do you like to train?',
           subtitle: 'These tweak the tone and length of your sessions.',
+          icon: Icons.bolt_outlined,
+          iconGradient: [AppPalette.auroraViolet, AppPalette.auroraPink],
         ),
         const FieldLabel('What motivates you most?'),
         GlassTextField(

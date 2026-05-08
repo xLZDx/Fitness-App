@@ -1,0 +1,234 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../core/theme/app_palette.dart';
+import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/scroll_dim_list.dart';
+import 'data/equipment_models.dart';
+import 'state/equipment_providers.dart';
+
+class EquipmentDetailPage extends ConsumerWidget {
+  const EquipmentDetailPage({super.key, required this.equipmentId});
+
+  final String equipmentId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final eq = ref.watch(equipmentByIdProvider(equipmentId));
+    final ex = ref.watch(exercisesForEquipmentProvider(equipmentId));
+
+    return FrostedScaffold(
+      appBar: const GlassAppBar(title: 'Equipment'),
+      body: eq.when(
+        loading: () =>
+            const Center(child: CircularProgressIndicator()),
+        error: (e, _) =>
+            Center(child: Text('Could not load: $e')),
+        data: (item) {
+          if (item == null) {
+            return _NotFound(equipmentId: equipmentId);
+          }
+          return ScrollDimList(
+            padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
+            children: [
+              GlassCard(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(18),
+                        gradient: const LinearGradient(colors: [
+                          AppPalette.auroraViolet,
+                          AppPalette.auroraBlue,
+                        ]),
+                      ),
+                      child: const Icon(Icons.fitness_center,
+                          color: Colors.white, size: 30),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(item.name, style: theme.textTheme.titleLarge),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${item.manufacturer} · ${item.category}',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.65),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              GlassCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('About', style: theme.textTheme.titleMedium),
+                    const SizedBox(height: 6),
+                    Text(item.description,
+                        style: theme.textTheme.bodyMedium),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Recommended exercises',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
+                ),
+              ),
+              const SizedBox(height: 12),
+              ...ex.when(
+                loading: () => [const _ExerciseShimmer()],
+                error: (e, _) => [
+                  GlassCard(child: Text('Could not load exercises: $e')),
+                ],
+                data: (list) {
+                  if (list.isEmpty) {
+                    return [
+                      GlassCard(
+                        child: Text(
+                          'No curated exercises yet for this machine.',
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      ),
+                    ];
+                  }
+                  final widgets = <Widget>[];
+                  for (final e in list) {
+                    widgets.add(_ExerciseCard(exercise: e));
+                    widgets.add(const SizedBox(height: 12));
+                  }
+                  return widgets;
+                },
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ExerciseCard extends StatelessWidget {
+  const _ExerciseCard({required this.exercise});
+  final ExerciseItem exercise;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GlassCard(
+      onTap: () => GoRouter.of(context).go('/workout/${exercise.id}'),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              gradient: LinearGradient(
+                colors: AppPalette.tileGradients[
+                    exercise.id.hashCode.abs() % AppPalette.tileGradients.length],
+              ),
+            ),
+            child: const Icon(Icons.play_arrow_rounded,
+                color: Colors.white, size: 28),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        exercise.title,
+                        style: theme.textTheme.titleSmall
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      '${exercise.durationMinutes} min',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurface
+                            .withValues(alpha: 0.55),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  exercise.summary,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.60),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ExerciseShimmer extends StatelessWidget {
+  const _ExerciseShimmer();
+  @override
+  Widget build(BuildContext context) {
+    return const GlassCard(
+      child: SizedBox(
+        height: 80,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+    );
+  }
+}
+
+class _NotFound extends StatelessWidget {
+  const _NotFound({required this.equipmentId});
+  final String equipmentId;
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
+      child: GlassCard(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.qr_code_scanner_outlined, size: 60),
+            const SizedBox(height: 8),
+            Text("We don't have $equipmentId in our catalog yet.",
+                style: theme.textTheme.titleMedium),
+            const SizedBox(height: 6),
+            Text(
+              'Try scanning a different code, or browse manually from the Train tab.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

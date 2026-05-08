@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_palette.dart';
 import '../state/questionnaire_notifier.dart';
 import '../widgets/inputs.dart';
 
@@ -36,6 +37,8 @@ class StepGoals extends ConsumerWidget {
         const StepTitle(
           title: 'What do you want to work on?',
           subtitle: 'Pick as many as you like.',
+          icon: Icons.flag_outlined,
+          iconGradient: [AppPalette.auroraViolet, AppPalette.auroraBlue],
         ),
         const SizedBox(height: 18),
         MultiChoiceChips<_GoalKey>(

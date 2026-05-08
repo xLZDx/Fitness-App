@@ -1,0 +1,174 @@
+[
+  {
+    "id": "treadmill_zone2_run",
+    "title": "Zone 2 endurance run",
+    "equipmentId": "treadmill_precor_trm211",
+    "muscles": ["quads", "hamstrings", "calves", "glutes"],
+    "difficulty": "beginner",
+    "durationMinutes": 35,
+    "summary": "Conversational-pace run that builds aerobic base.",
+    "steps": [
+      "5-min walking warm-up at 5 km/h.",
+      "25 min steady run holding a heart rate of ~70% max.",
+      "5-min walking cool-down + light stretching."
+    ],
+    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+  },
+  {
+    "id": "treadmill_hill_intervals",
+    "title": "Hill intervals · 6×400m",
+    "equipmentId": "treadmill_precor_trm211",
+    "muscles": ["quads", "calves", "glutes"],
+    "difficulty": "intermediate",
+    "durationMinutes": 28,
+    "summary": "Short hills with full recovery — leg power + VO2.",
+    "steps": [
+      "10-min warm-up jog flat.",
+      "6 rounds: 90s at 6% incline, 8.5–9 km/h. 90s walking flat.",
+      "5-min cool-down."
+    ],
+    "contraindications": ["knee", "achilles"]
+  },
+  {
+    "id": "rower_2k_test",
+    "title": "2k row time trial",
+    "equipmentId": "rower_concept2_d",
+    "muscles": ["lats", "rhomboids", "quads", "core"],
+    "difficulty": "intermediate",
+    "durationMinutes": 18,
+    "summary": "Benchmark all-out 2 km row.",
+    "steps": [
+      "Warm-up 5 min easy.",
+      "Row 2,000 m as fast as sustainable.",
+      "Cool-down 5 min light row."
+    ]
+  },
+  {
+    "id": "rack_back_squat_5x5",
+    "title": "Back squat · 5×5",
+    "equipmentId": "rack_rogue_rml390f",
+    "muscles": ["quads", "glutes", "core"],
+    "difficulty": "intermediate",
+    "durationMinutes": 30,
+    "summary": "Classic strength lift for total-body size and force.",
+    "steps": [
+      "Bar warm-up: 2×8 empty bar, then ramp to working weight.",
+      "5 sets × 5 reps at ~80% 1RM, 2–3 min rest between sets.",
+      "Mobility: hip flexors + thoracic extension."
+    ],
+    "contraindications": ["lower_back", "knee"]
+  },
+  {
+    "id": "rack_overhead_press_3x8",
+    "title": "Overhead press · 3×8",
+    "equipmentId": "rack_rogue_rml390f",
+    "muscles": ["shoulders", "triceps", "upper_back"],
+    "difficulty": "intermediate",
+    "durationMinutes": 22,
+    "summary": "Builds vertical pushing strength.",
+    "steps": [
+      "Warm-up: 2×8 empty bar, 1×5 with 50% working weight.",
+      "3 sets × 8 reps at ~70% 1RM.",
+      "Finish: face-pulls or band pull-aparts 2×15."
+    ]
+  },
+  {
+    "id": "bench_press_3x10",
+    "title": "Bench press · 3×10",
+    "equipmentId": "bench_legend_3115",
+    "muscles": ["chest", "triceps", "shoulders"],
+    "difficulty": "beginner",
+    "durationMinutes": 25,
+    "summary": "Hypertrophy-rep range bench for chest and triceps.",
+    "steps": [
+      "Warm-up: 2×10 empty bar, 1×8 with 50% working weight.",
+      "3 sets × 10 reps with controlled tempo.",
+      "Optional: dumbbell flys 2×12."
+    ]
+  },
+  {
+    "id": "bench_db_row",
+    "title": "Single-arm DB row",
+    "equipmentId": "bench_legend_3115",
+    "muscles": ["lats", "rhomboids", "biceps"],
+    "difficulty": "beginner",
+    "durationMinutes": 18,
+    "summary": "Pulling pattern — balances bench-day pushes.",
+    "steps": [
+      "Knee + opposite hand on bench, back flat.",
+      "3 sets × 10 reps each side, full range of motion.",
+      "Light stretch for posterior shoulder."
+    ]
+  },
+  {
+    "id": "cable_lat_pulldown",
+    "title": "Lat pulldown · 4×10",
+    "equipmentId": "cable_lifefitness_dap",
+    "muscles": ["lats", "biceps"],
+    "difficulty": "beginner",
+    "durationMinutes": 18,
+    "summary": "Vertical pulling, alternative to chin-ups while you build up.",
+    "steps": [
+      "Set seat so knees fit snug under pads.",
+      "4 sets × 10 reps, pull to upper chest, 1.5 min rest.",
+      "Optional: face pulls 3×15 for rear delts."
+    ]
+  },
+  {
+    "id": "cable_face_pull",
+    "title": "Face pulls · 3×15",
+    "equipmentId": "cable_lifefitness_dap",
+    "muscles": ["rear_delts", "upper_back"],
+    "difficulty": "beginner",
+    "durationMinutes": 12,
+    "summary": "Posture + shoulder health staple.",
+    "steps": [
+      "Rope attachment at upper-chest height.",
+      "3 sets × 15 reps, pull rope toward forehead, elbows high.",
+      "Squeeze 1 second on each rep."
+    ]
+  },
+  {
+    "id": "leg_press_4x12",
+    "title": "Leg press · 4×12",
+    "equipmentId": "leg_press_hammer_iso",
+    "muscles": ["quads", "glutes", "hamstrings"],
+    "difficulty": "beginner",
+    "durationMinutes": 22,
+    "summary": "Lower-body volume in a back-friendly position.",
+    "steps": [
+      "Foot placement mid-platform, shoulder width.",
+      "4 sets × 12 reps, control on the way down.",
+      "Keep lower back glued to the pad."
+    ],
+    "contraindications": ["knee"]
+  },
+  {
+    "id": "bodyweight_squat",
+    "title": "Bodyweight squat",
+    "equipmentId": null,
+    "muscles": ["quads", "glutes"],
+    "difficulty": "beginner",
+    "durationMinutes": 8,
+    "summary": "Foundational lower-body exercise — no equipment needed.",
+    "steps": [
+      "Feet shoulder-width, toes slightly out.",
+      "3 sets × 15 reps, controlled descent.",
+      "Heels on the ground throughout."
+    ]
+  },
+  {
+    "id": "bodyweight_pushup",
+    "title": "Push-ups · 3×10",
+    "equipmentId": null,
+    "muscles": ["chest", "triceps", "core"],
+    "difficulty": "beginner",
+    "durationMinutes": 8,
+    "summary": "Classic pushing pattern for upper body.",
+    "steps": [
+      "Hands shoulder-width, body in a straight line.",
+      "3 sets × 10 reps, slow descent, push to lockout.",
+      "Knee push-ups are a great regression."
+    ]
+  }
+]

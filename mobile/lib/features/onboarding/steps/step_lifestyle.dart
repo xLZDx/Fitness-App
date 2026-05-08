@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_palette.dart';
 import '../../profile/data/profile_models.dart';
 import '../state/questionnaire_notifier.dart';
 import '../widgets/inputs.dart';
@@ -19,6 +20,8 @@ class StepLifestyle extends ConsumerWidget {
         const StepTitle(
           title: 'Lifestyle & habits',
           subtitle: 'Recovery, nutrition, and stress all feed into your plan.',
+          icon: Icons.restaurant_outlined,
+          iconGradient: [AppPalette.auroraTeal, AppPalette.auroraLime],
         ),
         const FieldLabel('Dietary preferences'),
         MultiChoiceChips<DietaryPreference>(
