@@ -5,6 +5,10 @@
 *.swp
 .DS_Store
 
+# Debug-daemon captures (logs/sessions/<timestamp>/...). Each session
+# easily runs to a few hundred MB of screencaps + logcat — never commit.
+logs/
+
 # Recordings, screenshots, generated images (keep checked-in only what we curate)
 *.mp4
 *.mov
