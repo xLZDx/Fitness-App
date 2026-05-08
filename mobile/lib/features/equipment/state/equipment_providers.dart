@@ -1,14 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../profile/state/profile_providers.dart';
 import '../data/asset_equipment_repository.dart';
 import '../data/equipment_models.dart';
 import '../data/equipment_repository.dart';
+import '../data/exercise_filter.dart';
 
 final equipmentRepositoryProvider = Provider<EquipmentRepository>((ref) {
   return AssetEquipmentRepository();
 });
 
+/// Every piece of equipment in the catalog.
+final equipmentListProvider = FutureProvider<List<EquipmentItem>>((ref) {
+  final repo = ref.watch(equipmentRepositoryProvider);
+  return repo.listEquipment();
+});
+
 /// All exercises that target a specific piece of equipment, looked up by id.
+/// Use [recommendedExercisesProvider] when surfacing them to the user — this
+/// is the raw, unfiltered list (still useful for debug or admin views).
 final exercisesForEquipmentProvider =
     FutureProvider.family<List<ExerciseItem>, String>((ref, equipmentId) {
   final repo = ref.watch(equipmentRepositoryProvider);
@@ -19,4 +29,52 @@ final equipmentByIdProvider =
     FutureProvider.family<EquipmentItem?, String>((ref, id) {
   final repo = ref.watch(equipmentRepositoryProvider);
   return repo.findEquipment(id);
+});
+
+/// Flat list of every exercise in the catalog (bodyweight + every machine).
+final allExercisesProvider = FutureProvider<List<ExerciseItem>>((ref) async {
+  final repo = ref.watch(equipmentRepositoryProvider);
+  final body = await repo.bodyweightExercises();
+  final equip = await repo.listEquipment();
+  final out = <ExerciseItem>[...body];
+  for (final eq in equip) {
+    out.addAll(await repo.exercisesFor(eq.id));
+  }
+  return List.unmodifiable(out);
+});
+
+/// Result of running the recommendation pipeline for a specific equipment.
+class RecommendedExercises {
+  const RecommendedExercises({
+    required this.items,
+    required this.hiddenForInjury,
+  });
+  final List<ExerciseItem> items;
+
+  /// How many exercises were dropped because they conflict with the user's
+  /// injury list. Lets the UI surface a "Filtered for your injuries" hint.
+  final int hiddenForInjury;
+}
+
+/// Exercises for [equipmentId] with contraindications removed and tier-fit
+/// applied based on the signed-in user's profile.
+final recommendedExercisesProvider =
+    FutureProvider.family<RecommendedExercises, String>((ref, equipmentId) async {
+  final repo = ref.watch(equipmentRepositoryProvider);
+  final raw = await repo.exercisesFor(equipmentId);
+  final profile = ref.watch(currentProfileProvider).valueOrNull;
+  final items = recommended(raw, profile);
+  final hidden = raw.length - items.length;
+  return RecommendedExercises(
+    items: items,
+    hiddenForInjury: hidden < 0 ? 0 : hidden,
+  );
+});
+
+/// "For you" feed for the Train tab: every exercise across the catalog,
+/// filtered + tier-sorted for the signed-in user.
+final forYouExercisesProvider = FutureProvider<List<ExerciseItem>>((ref) async {
+  final all = await ref.watch(allExercisesProvider.future);
+  final profile = ref.watch(currentProfileProvider).valueOrNull;
+  return recommended(all, profile);
 });

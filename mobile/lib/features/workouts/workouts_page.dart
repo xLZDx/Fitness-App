@@ -1,88 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/scroll_dim_list.dart';
+import '../equipment/data/equipment_models.dart';
+import '../equipment/state/equipment_providers.dart';
 
-class _Workout {
-  const _Workout(this.title, this.duration, this.subtitle, this.gradient);
-  final String title;
-  final String duration;
-  final String subtitle;
-  final List<Color> gradient;
+/// One filter chip on the Train tab. The id drives which provider feeds the
+/// list; the label is what the user sees.
+enum WorkoutsFilter { forYou, strength, cardio, atHome, all }
+
+extension on WorkoutsFilter {
+  String get label {
+    switch (this) {
+      case WorkoutsFilter.forYou:
+        return 'For you';
+      case WorkoutsFilter.strength:
+        return 'Strength';
+      case WorkoutsFilter.cardio:
+        return 'Cardio';
+      case WorkoutsFilter.atHome:
+        return 'At Home';
+      case WorkoutsFilter.all:
+        return 'All';
+    }
+  }
 }
 
-class WorkoutsPage extends StatefulWidget {
+/// Resolves a filter into the actual list of exercises to show. Pulls from
+/// the recommended ("for you") feed and the raw catalog and slices by
+/// equipment category.
+final _filteredExercisesProvider =
+    FutureProvider.family<List<ExerciseItem>, WorkoutsFilter>((ref, filter) async {
+  switch (filter) {
+    case WorkoutsFilter.forYou:
+      return ref.watch(forYouExercisesProvider.future);
+    case WorkoutsFilter.atHome:
+      final all = await ref.watch(allExercisesProvider.future);
+      return all.where((e) => e.equipmentId == null).toList(growable: false);
+    case WorkoutsFilter.strength:
+    case WorkoutsFilter.cardio:
+      final repo = ref.watch(equipmentRepositoryProvider);
+      final equipment = await repo.listEquipment();
+      final wanted = filter == WorkoutsFilter.strength ? 'strength' : 'cardio';
+      final out = <ExerciseItem>[];
+      for (final eq in equipment.where((e) => e.category == wanted)) {
+        out.addAll(await repo.exercisesFor(eq.id));
+      }
+      return List.unmodifiable(out);
+    case WorkoutsFilter.all:
+      return ref.watch(allExercisesProvider.future);
+  }
+});
+
+class WorkoutsPage extends ConsumerStatefulWidget {
   const WorkoutsPage({super.key});
 
   @override
-  State<WorkoutsPage> createState() => _WorkoutsPageState();
+  ConsumerState<WorkoutsPage> createState() => _WorkoutsPageState();
 }
 
-class _WorkoutsPageState extends State<WorkoutsPage> {
-  static const _filters = ['For you', 'Strength', 'Cardio', 'Mobility', 'Yoga'];
-
-  static const _byFilter = <List<_Workout>>[
-    [
-      _Workout('Push day', '40 min', 'Bench · Row · Press · Pulls',
-          [AppPalette.auroraPeach, AppPalette.auroraPink]),
-      _Workout('Hill repeats', '32 min', '6 × 400m intervals',
-          [AppPalette.auroraViolet, AppPalette.auroraBlue]),
-      _Workout('Mobility flow', '20 min', 'Hip + ankle mobility',
-          [AppPalette.auroraTeal, AppPalette.auroraLime]),
-      _Workout('Sun salutations', '18 min', 'Beginner-friendly vinyasa',
-          [AppPalette.auroraPink, AppPalette.auroraPeach]),
-      _Workout('Active recovery', '20 min', 'Easy pace + breathing',
-          [AppPalette.auroraBlue, AppPalette.auroraTeal]),
-    ],
-    [
-      _Workout('5×5 compound', '45 min', 'Squat · Bench · Deadlift',
-          [AppPalette.auroraViolet, AppPalette.auroraPink]),
-      _Workout('Upper push', '35 min', 'Bench · OHP · Triceps',
-          [AppPalette.auroraPeach, AppPalette.auroraPink]),
-      _Workout('Lower power', '40 min', 'Squats + plyo + RDL',
-          [AppPalette.auroraTeal, AppPalette.auroraLime]),
-      _Workout('Pull day', '38 min', 'Rows · Pull-ups · Curls',
-          [AppPalette.auroraViolet, AppPalette.auroraBlue]),
-    ],
-    [
-      _Workout('HIIT burn', '22 min', 'Treadmill + plyo',
-          [AppPalette.auroraViolet, AppPalette.auroraBlue]),
-      _Workout('Steady run', '40 min', 'Zone 2 endurance',
-          [AppPalette.auroraBlue, AppPalette.auroraTeal]),
-      _Workout('Bike intervals', '30 min', '5×3min hard / 2min easy',
-          [AppPalette.auroraTeal, AppPalette.auroraLime]),
-      _Workout('Row sprints', '20 min', '500m × 6',
-          [AppPalette.auroraPink, AppPalette.auroraPeach]),
-    ],
-    [
-      _Workout('Hip + ankle flow', '15 min', 'Foam roll + dynamic stretch',
-          [AppPalette.auroraTeal, AppPalette.auroraLime]),
-      _Workout('Spine mobility', '12 min', 'Cat-cow + thoracic rotations',
-          [AppPalette.auroraBlue, AppPalette.auroraTeal]),
-      _Workout('Full body release', '20 min', 'Foam roller routine',
-          [AppPalette.auroraPink, AppPalette.auroraPeach]),
-      _Workout('Shoulder reset', '10 min', 'Band work + scapular drills',
-          [AppPalette.auroraViolet, AppPalette.auroraPink]),
-    ],
-    [
-      _Workout('Sun salutations', '18 min', 'Beginner-friendly vinyasa',
-          [AppPalette.auroraPink, AppPalette.auroraPeach]),
-      _Workout('Vinyasa flow', '30 min', 'Intermediate sequence',
-          [AppPalette.auroraViolet, AppPalette.auroraBlue]),
-      _Workout('Yin yoga', '40 min', 'Long holds + breathing',
-          [AppPalette.auroraTeal, AppPalette.auroraLime]),
-      _Workout('Power yoga', '35 min', 'Strength-focused flow',
-          [AppPalette.auroraPeach, AppPalette.auroraPink]),
-    ],
-  ];
-
-  int _selected = 0;
+class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
+  WorkoutsFilter _selected = WorkoutsFilter.forYou;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final list = _byFilter[_selected];
+    final list = ref.watch(_filteredExercisesProvider(_selected));
 
     return FrostedScaffold(
       appBar: const GlassAppBar(title: 'Train'),
@@ -95,12 +81,13 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
               scrollDirection: Axis.horizontal,
               padding: EdgeInsets.zero,
               physics: const BouncingScrollPhysics(),
-              itemCount: _filters.length,
+              itemCount: WorkoutsFilter.values.length,
               separatorBuilder: (_, __) => const SizedBox(width: 10),
               itemBuilder: (context, i) {
-                final selected = i == _selected;
+                final filter = WorkoutsFilter.values[i];
+                final selected = filter == _selected;
                 return GestureDetector(
-                  onTap: () => setState(() => _selected = i),
+                  onTap: () => setState(() => _selected = filter),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 280),
                     curve: Curves.easeOutCubic,
@@ -118,7 +105,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                     ),
                     child: Center(
                       child: Text(
-                        _filters[i],
+                        filter.label,
                         style: TextStyle(
                           fontWeight:
                               selected ? FontWeight.w700 : FontWeight.w600,
@@ -134,27 +121,78 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
             ),
           ),
           const SizedBox(height: 22),
-          for (final w in list) ...[
-            _WorkoutCard(w),
-            const SizedBox(height: 16),
-          ],
+          ...list.when(
+            loading: () => const [_LoadingCard()],
+            error: (e, _) => [
+              GlassCard(child: Text('Could not load workouts: $e')),
+            ],
+            data: (items) {
+              if (items.isEmpty) {
+                return [
+                  GlassCard(
+                    child: Text(
+                      _emptyMessage(_selected),
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ),
+                ];
+              }
+              final out = <Widget>[];
+              for (final ex in items) {
+                out.add(_ExerciseCard(exercise: ex));
+                out.add(const SizedBox(height: 16));
+              }
+              return out;
+            },
+          ),
         ],
+      ),
+    );
+  }
+
+  String _emptyMessage(WorkoutsFilter f) {
+    switch (f) {
+      case WorkoutsFilter.forYou:
+        return "We're still building your personalised feed. Try another filter while we add more content.";
+      case WorkoutsFilter.atHome:
+        return 'No body-weight workouts in the catalog yet.';
+      case WorkoutsFilter.strength:
+        return 'No strength exercises in the catalog yet.';
+      case WorkoutsFilter.cardio:
+        return 'No cardio exercises in the catalog yet.';
+      case WorkoutsFilter.all:
+        return 'The exercise catalog is empty.';
+    }
+  }
+}
+
+class _LoadingCard extends StatelessWidget {
+  const _LoadingCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return const GlassCard(
+      child: SizedBox(
+        height: 80,
+        child: Center(child: CircularProgressIndicator()),
       ),
     );
   }
 }
 
-class _WorkoutCard extends StatelessWidget {
-  const _WorkoutCard(this.w);
-  final _Workout w;
+class _ExerciseCard extends StatelessWidget {
+  const _ExerciseCard({required this.exercise});
+  final ExerciseItem exercise;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final gradient = AppPalette.tileGradients[
+        exercise.id.hashCode.abs() % AppPalette.tileGradients.length];
     return GlassCard(
       padding: const EdgeInsets.all(16),
-      onTap: () {},
+      onTap: () => GoRouter.of(context).go('/workout/${exercise.id}'),
       child: Row(
         children: [
           Container(
@@ -162,7 +200,7 @@ class _WorkoutCard extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
-              gradient: LinearGradient(colors: w.gradient),
+              gradient: LinearGradient(colors: gradient),
             ),
             child: const Icon(Icons.play_arrow_rounded,
                 color: Colors.white, size: 28),
@@ -177,7 +215,7 @@ class _WorkoutCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        w.title,
+                        exercise.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.titleMedium
@@ -186,7 +224,7 @@ class _WorkoutCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      w.duration,
+                      '${exercise.durationMinutes} min',
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: scheme.onSurface.withValues(alpha: 0.55),
                         fontWeight: FontWeight.w600,
@@ -196,8 +234,13 @@ class _WorkoutCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  w.subtitle,
-                  maxLines: 1,
+                  exercise.summary.isEmpty
+                      ? exercise.muscles
+                          .take(3)
+                          .map((m) => m.replaceAll('_', ' '))
+                          .join(' · ')
+                      : exercise.summary,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: scheme.onSurface.withValues(alpha: 0.60),

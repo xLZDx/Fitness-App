@@ -17,7 +17,7 @@ class EquipmentDetailPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final eq = ref.watch(equipmentByIdProvider(equipmentId));
-    final ex = ref.watch(exercisesForEquipmentProvider(equipmentId));
+    final ex = ref.watch(recommendedExercisesProvider(equipmentId));
 
     return FrostedScaffold(
       appBar: const GlassAppBar(title: 'Equipment'),
@@ -94,19 +94,25 @@ class EquipmentDetailPage extends ConsumerWidget {
                 error: (e, _) => [
                   GlassCard(child: Text('Could not load exercises: $e')),
                 ],
-                data: (list) {
-                  if (list.isEmpty) {
+                data: (rec) {
+                  if (rec.items.isEmpty) {
                     return [
                       GlassCard(
                         child: Text(
-                          'No curated exercises yet for this machine.',
+                          rec.hiddenForInjury > 0
+                              ? 'Every exercise on this machine conflicts with your reported injuries. Try a different piece of equipment.'
+                              : 'No curated exercises yet for this machine.',
                           style: theme.textTheme.bodyMedium,
                         ),
                       ),
                     ];
                   }
                   final widgets = <Widget>[];
-                  for (final e in list) {
+                  if (rec.hiddenForInjury > 0) {
+                    widgets.add(_FilteredHint(count: rec.hiddenForInjury));
+                    widgets.add(const SizedBox(height: 12));
+                  }
+                  for (final e in rec.items) {
                     widgets.add(_ExerciseCard(exercise: e));
                     widgets.add(const SizedBox(height: 12));
                   }
@@ -181,6 +187,47 @@ class _ExerciseCard extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FilteredHint extends StatelessWidget {
+  const _FilteredHint({required this.count});
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GlassCard(
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: const LinearGradient(colors: [
+                AppPalette.auroraTeal,
+                AppPalette.auroraBlue,
+              ]),
+            ),
+            child: const Icon(Icons.health_and_safety_outlined,
+                color: Colors.white, size: 20),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              count == 1
+                  ? 'Filtered out 1 exercise that conflicts with your injuries.'
+                  : 'Filtered out $count exercises that conflict with your injuries.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
