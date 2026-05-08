@@ -140,6 +140,21 @@ pwsh .\scripts\dev\debug_daemon.ps1 `
   output. Fix: replace `Tee-Object -FilePath` with `ForEach-Object {
   Add-Content -Path $LogPath -Value $_ -Encoding utf8 }` so every
   capture writes plain UTF-8 that `grep` / `tail` understand.
+- **2026-05-09** — `firebase_functions/internal INTERNAL` on
+  `createCheckoutSession` after the IAM repair. Server log:
+  `E createcheckoutsession: Unhandled error StripeConnectionError ...
+  TypeError [ERR_INVALID_CHAR]: Invalid character in header content
+  ["Authorization"]`. Root cause: PowerShell's `'value' | firebase
+  functions:secrets:set NAME --data-file=-` always appends a CRLF to
+  the secret. Stripe's Node SDK builds the `Authorization: Bearer
+  $key\r\n` header from the raw secret, and the trailing `\r` from the
+  newline lands in the header value → Node rejects with
+  `ERR_INVALID_CHAR` before the request leaves the function. Fix: write
+  the secret to a tempfile via `[System.IO.File]::WriteAllText($path,
+  $value, [Text.UTF8Encoding]::new($false))` (no BOM, no trailing
+  newline), then `firebase functions:secrets:set NAME --data-file
+  $path`. **Lesson: never pipe secrets into `--data-file=-` on
+  Windows PowerShell — always go through a tempfile.**
 - **2026-05-09** — `firebase_functions/unauthenticated UNAUTHENTICATED`
   on `createCheckoutSession` even with the UX gate + token refresh in
   place. Wasted three commits chasing client-side auth before reading

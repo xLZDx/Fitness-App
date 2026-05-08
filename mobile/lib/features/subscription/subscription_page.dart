@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_palette.dart';
@@ -143,13 +144,9 @@ class SubscriptionPage extends ConsumerWidget {
           ],
           if (action.hasError) ...[
             const SizedBox(height: 12),
-            GlassCard(
-              child: Text(
-                'Could not update subscription: ${action.error}',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.error,
-                ),
-              ),
+            _ErrorCard(
+              error: action.error!,
+              stackTrace: action.stackTrace,
             ),
           ],
         ],
@@ -159,6 +156,103 @@ class SubscriptionPage extends ConsumerWidget {
 }
 
 enum _PageState { picker, trialing, paid }
+
+/// Surfaces an action error with a Copy button so the user can paste the
+/// full message + stack trace into a bug report. Replaces the bare
+/// `Text(action.error.toString())` we were rendering before.
+class _ErrorCard extends StatelessWidget {
+  const _ErrorCard({required this.error, this.stackTrace});
+
+  final Object error;
+  final StackTrace? stackTrace;
+
+  String _composePayload() {
+    final buffer = StringBuffer()
+      ..writeln('Could not update subscription:')
+      ..writeln(error.toString());
+    if (stackTrace != null) {
+      buffer
+        ..writeln()
+        ..writeln(stackTrace.toString());
+    }
+    return buffer.toString().trimRight();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return GlassCard(
+      tint: scheme.error,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.error_outline, color: scheme.error, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Could not update subscription',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: scheme.error,
+                  ),
+                ),
+              ),
+              IconButton(
+                tooltip: 'Copy error',
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints:
+                    const BoxConstraints(minWidth: 36, minHeight: 36),
+                icon: Icon(Icons.copy_rounded,
+                    size: 18, color: scheme.error),
+                onPressed: () async {
+                  await Clipboard.setData(
+                      ClipboardData(text: _composePayload()));
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Error copied to clipboard'),
+                      behavior: SnackBarBehavior.floating,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          SelectableText(
+            error.toString(),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.error,
+              fontFamily: 'monospace',
+            ),
+          ),
+          if (stackTrace != null) ...[
+            const SizedBox(height: 8),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 220),
+              child: SingleChildScrollView(
+                child: SelectableText(
+                  stackTrace.toString(),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: scheme.error.withValues(alpha: 0.85),
+                    fontFamily: 'monospace',
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
 
 class _UpgradeFromTrialCard extends StatelessWidget {
   const _UpgradeFromTrialCard({
