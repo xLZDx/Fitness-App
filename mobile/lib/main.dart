@@ -8,7 +8,9 @@ import 'features/auth/data/firebase_auth_repository.dart';
 import 'features/auth/state/auth_providers.dart';
 import 'features/profile/data/firestore_profile_repository.dart';
 import 'features/profile/state/profile_providers.dart';
+import 'features/workouts/data/firestore_scheduled_session_repository.dart';
 import 'features/workouts/data/firestore_workout_log_repository.dart';
+import 'features/workouts/state/scheduled_session_providers.dart';
 import 'features/workouts/state/workout_log_providers.dart';
 import 'firebase_options.dart';
 import 'shared/widgets/aurora_background.dart';
@@ -26,6 +28,8 @@ Future<void> main() async {
             .overrideWith((_) => FirestoreProfileRepository()),
         workoutLogRepositoryProvider
             .overrideWith((_) => FirestoreWorkoutLogRepository()),
+        scheduledSessionRepositoryProvider
+            .overrideWith((_) => FirestoreScheduledSessionRepository()),
       ],
       child: const FitnessApp(),
     ),

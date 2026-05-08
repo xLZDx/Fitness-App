@@ -6,7 +6,9 @@ import 'package:video_player/video_player.dart';
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/scroll_dim_list.dart';
+import '../workouts/data/scheduled_session.dart';
 import '../workouts/data/workout_log.dart';
+import '../workouts/state/scheduled_session_providers.dart';
 import '../workouts/state/workout_log_providers.dart';
 import 'data/equipment_models.dart';
 import 'state/equipment_providers.dart';
@@ -71,6 +73,8 @@ class WorkoutPlayerPage extends ConsumerWidget {
               ],
               const SizedBox(height: 20),
               _MarkCompleteButton(exercise: item),
+              const SizedBox(height: 12),
+              _ScheduleButton(exercise: item),
             ],
           );
         },
@@ -411,6 +415,118 @@ class _MarkCompleteButton extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+class _ScheduleButton extends ConsumerWidget {
+  const _ScheduleButton({required this.exercise});
+  final ExerciseItem exercise;
+
+  Future<DateTime?> _pick(BuildContext context) async {
+    final now = DateTime.now();
+    final date = await showDatePicker(
+      context: context,
+      initialDate: now.add(const Duration(days: 1)),
+      firstDate: now.subtract(const Duration(days: 1)),
+      lastDate: now.add(const Duration(days: 365)),
+    );
+    if (date == null || !context.mounted) return null;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: const TimeOfDay(hour: 7, minute: 0),
+    );
+    if (time == null) return null;
+    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final action = ref.watch(scheduleSessionActionProvider);
+    final theme = Theme.of(context);
+    final loading = action.isLoading;
+
+    Future<void> onTap() async {
+      final when = await _pick(context);
+      if (when == null || !context.mounted) return;
+      final session = ScheduledSession(
+        id: '${DateTime.now().microsecondsSinceEpoch}_${exercise.id}',
+        exerciseId: exercise.id,
+        exerciseTitle: exercise.title,
+        scheduledFor: when,
+        durationMinutes: exercise.durationMinutes,
+      );
+      await ref
+          .read(scheduleSessionActionProvider.notifier)
+          .schedule(session);
+      if (!context.mounted) return;
+      final newState = ref.read(scheduleSessionActionProvider);
+      newState.when(
+        data: (_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Scheduled "${exercise.title}" for ${_friendlyDate(when)}.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
+        error: (e, _) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Could not schedule: $e'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
+        loading: () {},
+      );
+    }
+
+    return GlassCard(
+      padding: EdgeInsets.zero,
+      onTap: loading ? null : onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          color: Colors.white.withValues(alpha: 0.32),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (loading) ...[
+              const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2.4),
+              ),
+              const SizedBox(width: 10),
+            ] else ...[
+              Icon(Icons.event_outlined,
+                  color: theme.colorScheme.onSurface),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              loading ? 'Scheduling…' : 'Schedule for later',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.onSurface,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _friendlyDate(DateTime t) {
+    final months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    final hh = t.hour.toString().padLeft(2, '0');
+    final mm = t.minute.toString().padLeft(2, '0');
+    return '${months[t.month - 1]} ${t.day} · $hh:$mm';
   }
 }
 

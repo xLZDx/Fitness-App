@@ -86,7 +86,7 @@ Implementation:
 
 - [x] **Phase 3A** — `WorkoutLogEntry` model + abstract `WorkoutLogRepository` + mock + Firestore (`users/{uid}/workout_logs/{id}`). `workoutLogsProvider` (StreamProvider) + `logWorkoutActionProvider` Notifier. `main.dart` flips to the Firestore impl. `WorkoutPlayerPage` gets a "Mark complete" CTA that writes a log and snackbars on success.
 - [x] **Phase 3B** — Pure progress derivations in `lib/features/progress/data/progress_stats.dart` (total / this-week / current+longest streaks / 8-week buckets, all DST-safe via UTC date math). `ProgressPage` now reads `workoutLogsProvider`, renders real numbers in the four stat tiles, a custom-painted 8-week bar chart, and a Recent activity list (last 5 logs).
-- [ ] **Phase 3C** — Workout calendar / scheduling: pick a date, pre-stage a session, see upcoming workouts on Home.
+- [x] **Phase 3C** — `ScheduledSession` model + `ScheduledSessionRepository` (mock + Firestore at `users/{uid}/scheduled_sessions/{id}`), `scheduledSessionsProvider` + `upcomingSessionsProvider` (pure `filterUpcoming` over the next 14 days, pending only). Workout player gets a "Schedule for later" outline button → `showDatePicker` → `showTimePicker` → save. Home tab's Today card shows the next pending session (taps into `/workout/:id`); an Upcoming list surfaces the next two beyond that, and Quick stats are real (workouts / streak / this week).
 - [ ] **Phase 3D** — Local notifications via `flutter_local_notifications` for scheduled-workout reminders.
 
 ## Phase 4 — Subscriptions, billing, free trial (queued)

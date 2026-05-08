@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/scroll_dim_list.dart';
+import '../progress/data/progress_stats.dart';
+import '../workouts/data/scheduled_session.dart';
+import '../workouts/state/scheduled_session_providers.dart';
+import '../workouts/state/workout_log_providers.dart';
 
 class _Suggestion {
   const _Suggestion(this.title, this.duration, this.subtitle, this.gradient);
@@ -13,7 +18,7 @@ class _Suggestion {
   final List<Color> gradient;
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   static const _suggestions = <_Suggestion>[
@@ -30,9 +35,10 @@ class HomePage extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final logs = ref.watch(workoutLogsProvider).valueOrNull ?? const [];
+    final stats = deriveProgress(logs);
+    final upcoming = ref.watch(upcomingSessionsProvider);
 
     return FrostedScaffold(
       appBar: const GlassAppBar(title: 'Home'),
@@ -43,38 +49,16 @@ class HomePage extends StatelessWidget {
           const SizedBox(height: 28),
           _SectionHeader('Today'),
           const SizedBox(height: 12),
-          GlassCard(
-            child: Row(
-              children: [
-                _GradientTile(
-                  icon: Icons.event_outlined,
-                  gradient: const [
-                    AppPalette.auroraTeal,
-                    AppPalette.auroraLime,
-                  ],
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('No workouts scheduled',
-                          style: theme.textTheme.titleSmall
-                              ?.copyWith(fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Pick a plan or scan a machine to start.',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurface.withValues(alpha: 0.60),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _TodayCard(upcoming: upcoming),
+          if (upcoming.length > 1) ...[
+            const SizedBox(height: 24),
+            _SectionHeader('Upcoming'),
+            const SizedBox(height: 12),
+            for (final s in upcoming.skip(1).take(3)) ...[
+              _UpcomingCard(session: s),
+              const SizedBox(height: 12),
+            ],
+          ],
           const SizedBox(height: 32),
           _SectionHeader('Quick stats'),
           const SizedBox(height: 12),
@@ -83,7 +67,7 @@ class HomePage extends StatelessWidget {
               Expanded(
                 child: _StatCard(
                   label: 'Workouts',
-                  value: '0',
+                  value: '${stats.total}',
                   gradient: AppPalette.tileGradients[0],
                 ),
               ),
@@ -91,15 +75,15 @@ class HomePage extends StatelessWidget {
               Expanded(
                 child: _StatCard(
                   label: 'Streak',
-                  value: '0d',
+                  value: '${stats.currentStreakDays}d',
                   gradient: AppPalette.tileGradients[1],
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _StatCard(
-                  label: 'Calories',
-                  value: '—',
+                  label: 'This week',
+                  value: '${stats.thisWeek}',
                   gradient: AppPalette.tileGradients[2],
                 ),
               ),
@@ -151,6 +135,170 @@ class _GradientTile extends StatelessWidget {
       child: Icon(icon, color: Colors.white),
     );
   }
+}
+
+class _TodayCard extends StatelessWidget {
+  const _TodayCard({required this.upcoming});
+  final List<ScheduledSession> upcoming;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    if (upcoming.isEmpty) {
+      return GlassCard(
+        child: Row(
+          children: [
+            _GradientTile(
+              icon: Icons.event_outlined,
+              gradient: const [
+                AppPalette.auroraTeal,
+                AppPalette.auroraLime,
+              ],
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('No workouts scheduled',
+                      style: theme.textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Pick a plan or scan a machine to start.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurface.withValues(alpha: 0.60),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final next = upcoming.first;
+    return GlassCard(
+      onTap: () => GoRouter.of(context).go('/workout/${next.exerciseId}'),
+      child: Row(
+        children: [
+          _GradientTile(
+            icon: Icons.event_available_outlined,
+            gradient: const [
+              AppPalette.auroraViolet,
+              AppPalette.auroraBlue,
+            ],
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(next.exerciseTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 2),
+                Text(
+                  '${formatScheduleLabel(next.scheduledFor)} · ${next.durationMinutes} min',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.60),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Icon(Icons.chevron_right_rounded,
+              color: scheme.onSurface.withValues(alpha: 0.55)),
+        ],
+      ),
+    );
+  }
+}
+
+class _UpcomingCard extends StatelessWidget {
+  const _UpcomingCard({required this.session});
+  final ScheduledSession session;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return GlassCard(
+      padding: const EdgeInsets.all(14),
+      onTap: () =>
+          GoRouter.of(context).go('/workout/${session.exerciseId}'),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(13),
+              gradient: LinearGradient(
+                colors: AppPalette.tileGradients[
+                    session.exerciseId.hashCode.abs() %
+                        AppPalette.tileGradients.length],
+              ),
+            ),
+            child:
+                const Icon(Icons.event_outlined, color: Colors.white, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(session.exerciseTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 2),
+                Text(
+                  '${formatScheduleLabel(session.scheduledFor)} · ${session.durationMinutes} min',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.60),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Renders a friendly schedule label: "Today 07:00", "Tomorrow 18:30",
+/// "Wed 14:00", or "May 20 · 09:00" beyond the next week.
+String formatScheduleLabel(DateTime t, {DateTime? now}) {
+  final n = now ?? DateTime.now();
+  final today = DateTime(n.year, n.month, n.day);
+  final target = DateTime(t.year, t.month, t.day);
+  final diff = target.difference(today).inDays;
+  final hh = t.hour.toString().padLeft(2, '0');
+  final mm = t.minute.toString().padLeft(2, '0');
+
+  if (diff == 0) return 'Today $hh:$mm';
+  if (diff == 1) return 'Tomorrow $hh:$mm';
+  if (diff > 1 && diff < 7) {
+    const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return '${names[t.weekday - 1]} $hh:$mm';
+  }
+  const months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+  return '${months[t.month - 1]} ${t.day} · $hh:$mm';
 }
 
 class _SuggestionCard extends StatelessWidget {
