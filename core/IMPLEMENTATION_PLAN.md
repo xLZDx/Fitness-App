@@ -80,13 +80,14 @@ Implementation:
 - [x] **Phase 2D** — Train tab is now wired to the live catalog. Filters: `For you` (recommended pipeline), `Strength` / `Cardio` (sliced by equipment category), `At Home` (body-weight only), `All`. Cards tap straight to `/workout/:id`. Stubbed `_byFilter` arrays gone.
 - [ ] **Phase 2E** — scraper + content pipeline to grow the catalog beyond the 12 hand-seeded exercises.
 
-## Phase 3 — Workout calendar, logging, basic progress (queued)
+## Phase 3 — Workout logging + progress, calendar (in progress)
 
 **Maps to master tasks 10, 26 (subset).**
 
-- Schedule + reminders via local notifications
-- Workout log model + writes
-- Progress tab: real charts (workouts/week, weight trend) backed by logs
+- [x] **Phase 3A** — `WorkoutLogEntry` model + abstract `WorkoutLogRepository` + mock + Firestore (`users/{uid}/workout_logs/{id}`). `workoutLogsProvider` (StreamProvider) + `logWorkoutActionProvider` Notifier. `main.dart` flips to the Firestore impl. `WorkoutPlayerPage` gets a "Mark complete" CTA that writes a log and snackbars on success.
+- [x] **Phase 3B** — Pure progress derivations in `lib/features/progress/data/progress_stats.dart` (total / this-week / current+longest streaks / 8-week buckets, all DST-safe via UTC date math). `ProgressPage` now reads `workoutLogsProvider`, renders real numbers in the four stat tiles, a custom-painted 8-week bar chart, and a Recent activity list (last 5 logs).
+- [ ] **Phase 3C** — Workout calendar / scheduling: pick a date, pre-stage a session, see upcoming workouts on Home.
+- [ ] **Phase 3D** — Local notifications via `flutter_local_notifications` for scheduled-workout reminders.
 
 ## Phase 4 — Subscriptions, billing, free trial (queued)
 

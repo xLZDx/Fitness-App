@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/scroll_dim_list.dart';
+import '../workouts/data/workout_log.dart';
+import '../workouts/state/workout_log_providers.dart';
 import 'data/equipment_models.dart';
 import 'state/equipment_providers.dart';
 
@@ -66,6 +69,8 @@ class WorkoutPlayerPage extends ConsumerWidget {
                 const SizedBox(height: 16),
                 _CautionCard(item: item),
               ],
+              const SizedBox(height: 20),
+              _MarkCompleteButton(exercise: item),
             ],
           );
         },
@@ -318,6 +323,92 @@ class _StepsCard extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _MarkCompleteButton extends ConsumerWidget {
+  const _MarkCompleteButton({required this.exercise});
+  final ExerciseItem exercise;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final action = ref.watch(logWorkoutActionProvider);
+    final theme = Theme.of(context);
+    final loading = action.isLoading;
+
+    Future<void> onTap() async {
+      final entry = WorkoutLogEntry(
+        id: '${DateTime.now().microsecondsSinceEpoch}_${exercise.id}',
+        exerciseId: exercise.id,
+        exerciseTitle: exercise.title,
+        completedAt: DateTime.now(),
+        durationMinutes: exercise.durationMinutes,
+      );
+      await ref.read(logWorkoutActionProvider.notifier).log(entry);
+      if (!context.mounted) return;
+      final newState = ref.read(logWorkoutActionProvider);
+      newState.when(
+        data: (_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Logged "${exercise.title}" — nice work.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          GoRouter.of(context).go('/home');
+        },
+        error: (e, _) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Could not save: $e'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
+        loading: () {},
+      );
+    }
+
+    return GlassCard(
+      padding: EdgeInsets.zero,
+      onTap: loading ? null : onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          gradient: const LinearGradient(colors: [
+            AppPalette.auroraTeal,
+            AppPalette.auroraBlue,
+          ]),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (loading) ...[
+              const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.4,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+              const SizedBox(width: 10),
+            ] else ...[
+              const Icon(Icons.check_rounded, color: Colors.white),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              loading ? 'Saving…' : 'Mark complete',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
