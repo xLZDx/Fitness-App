@@ -4,49 +4,63 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/subscription/data/feature_gates.dart';
+import 'package:fitness_app/features/subscription/data/mock_stripe_checkout_service.dart';
 import 'package:fitness_app/features/subscription/data/mock_subscription_repository.dart';
 import 'package:fitness_app/features/subscription/data/subscription_models.dart';
 import 'package:fitness_app/features/subscription/state/subscription_providers.dart';
 
-ProviderContainer _container({
-  required MockSubscriptionRepository repo,
-  AuthUser? user,
-}) =>
-    ProviderContainer(overrides: [
-      subscriptionRepositoryProvider.overrideWithValue(repo),
-      authUserProvider.overrideWith((_) => Stream.value(user)),
-    ]);
+class _Container {
+  _Container({
+    required this.container,
+    required this.repo,
+    required this.stripe,
+  });
+  final ProviderContainer container;
+  final MockSubscriptionRepository repo;
+  final MockStripeCheckoutService stripe;
+}
+
+_Container _setup({AuthUser? user}) {
+  final repo = MockSubscriptionRepository(latency: Duration.zero);
+  final stripe = MockStripeCheckoutService();
+  final container = ProviderContainer(overrides: [
+    subscriptionRepositoryProvider.overrideWithValue(repo),
+    stripeCheckoutServiceProvider.overrideWithValue(stripe),
+    authUserProvider.overrideWith((_) => Stream.value(user)),
+  ]);
+  return _Container(container: container, repo: repo, stripe: stripe);
+}
 
 void main() {
   group('currentSubscriptionProvider', () {
     test('emits null when signed out', () async {
-      final repo = MockSubscriptionRepository(latency: Duration.zero);
-      addTearDown(repo.dispose);
-      final container = _container(repo: repo, user: null);
-      addTearDown(container.dispose);
+      final s = _setup(user: null);
+      addTearDown(s.repo.dispose);
+      addTearDown(s.container.dispose);
 
-      await container.read(authUserProvider.future);
-      expect(await container.read(currentSubscriptionProvider.future), isNull);
+      await s.container.read(authUserProvider.future);
+      expect(
+        await s.container.read(currentSubscriptionProvider.future),
+        isNull,
+      );
     });
 
     test('streams the signed-in user record', () async {
-      final repo = MockSubscriptionRepository(latency: Duration.zero);
-      addTearDown(repo.dispose);
-      await repo.save(Subscription(
+      final s = _setup(
+        user: const AuthUser(uid: 'alice', displayName: 'Alice'),
+      );
+      addTearDown(s.repo.dispose);
+      addTearDown(s.container.dispose);
+      await s.repo.save(Subscription(
         uid: 'alice',
         tier: SubscriptionTier.standard,
         status: SubscriptionStatus.trial,
         trialEndsAt: DateTime.now().add(const Duration(days: 5)),
       ));
 
-      final container = _container(
-        repo: repo,
-        user: const AuthUser(uid: 'alice', displayName: 'Alice'),
-      );
-      addTearDown(container.dispose);
-      await container.read(authUserProvider.future);
-
-      final out = await container.read(currentSubscriptionProvider.future);
+      await s.container.read(authUserProvider.future);
+      final out =
+          await s.container.read(currentSubscriptionProvider.future);
       expect(out, isNotNull);
       expect(out!.tier, SubscriptionTier.standard);
       expect(out.status, SubscriptionStatus.trial);
@@ -56,48 +70,44 @@ void main() {
   group('effectiveTierProvider + featureAccessProvider', () {
     test('signed-out user resolves to free + locked premium features',
         () async {
-      final repo = MockSubscriptionRepository(latency: Duration.zero);
-      addTearDown(repo.dispose);
-      final container = _container(repo: repo, user: null);
-      addTearDown(container.dispose);
-      await container.read(authUserProvider.future);
-      // Settle the subscription stream to data(null) so the providers
-      // depending on it are stable.
-      await container.read(currentSubscriptionProvider.future);
+      final s = _setup(user: null);
+      addTearDown(s.repo.dispose);
+      addTearDown(s.container.dispose);
 
-      expect(container.read(effectiveTierProvider), SubscriptionTier.free);
+      await s.container.read(authUserProvider.future);
+      await s.container.read(currentSubscriptionProvider.future);
+
+      expect(s.container.read(effectiveTierProvider), SubscriptionTier.free);
       expect(
-        container.read(featureAccessProvider(AppFeature.workoutScheduling)),
+        s.container.read(featureAccessProvider(AppFeature.workoutScheduling)),
         isFalse,
       );
       expect(
-        container.read(featureAccessProvider(AppFeature.basicLogging)),
+        s.container.read(featureAccessProvider(AppFeature.basicLogging)),
         isTrue,
       );
     });
 
     test('active trial unlocks the chosen tier', () async {
-      final repo = MockSubscriptionRepository(latency: Duration.zero);
-      addTearDown(repo.dispose);
-      await repo.save(Subscription(
+      final s = _setup(
+        user: const AuthUser(uid: 'alice', displayName: 'Alice'),
+      );
+      addTearDown(s.repo.dispose);
+      addTearDown(s.container.dispose);
+      await s.repo.save(Subscription(
         uid: 'alice',
         tier: SubscriptionTier.celebrityTrainer,
         status: SubscriptionStatus.trial,
         trialEndsAt: DateTime.now().add(const Duration(days: 3)),
       ));
 
-      final container = _container(
-        repo: repo,
-        user: const AuthUser(uid: 'alice', displayName: 'Alice'),
-      );
-      addTearDown(container.dispose);
-      await container.read(authUserProvider.future);
-      await container.read(currentSubscriptionProvider.future);
+      await s.container.read(authUserProvider.future);
+      await s.container.read(currentSubscriptionProvider.future);
 
-      expect(container.read(effectiveTierProvider),
+      expect(s.container.read(effectiveTierProvider),
           SubscriptionTier.celebrityTrainer);
       expect(
-        container.read(featureAccessProvider(AppFeature.aiCoach)),
+        s.container.read(featureAccessProvider(AppFeature.aiCoach)),
         isTrue,
       );
     });
@@ -106,27 +116,24 @@ void main() {
   group('subscriptionActionProvider', () {
     test('startTrial writes a trial record with a trialEndsAt window',
         () async {
-      final repo = MockSubscriptionRepository(latency: Duration.zero);
-      addTearDown(repo.dispose);
-      final container = _container(
-        repo: repo,
+      final s = _setup(
         user: const AuthUser(uid: 'alice', displayName: 'Alice'),
       );
-      addTearDown(container.dispose);
-      await container.read(authUserProvider.future);
+      addTearDown(s.repo.dispose);
+      addTearDown(s.container.dispose);
+      await s.container.read(authUserProvider.future);
 
       final before = DateTime.now();
-      await container
+      await s.container
           .read(subscriptionActionProvider.notifier)
           .startTrial(SubscriptionTier.standard);
       final after = DateTime.now();
 
-      final saved = repo.cached('alice');
+      final saved = s.repo.cached('alice');
       expect(saved, isNotNull);
       expect(saved!.tier, SubscriptionTier.standard);
       expect(saved.status, SubscriptionStatus.trial);
       expect(saved.trialEndsAt, isNotNull);
-      // Trial ends ~14 days from now.
       expect(
         saved.trialEndsAt!.difference(before).inDays,
         greaterThanOrEqualTo(13),
@@ -137,100 +144,100 @@ void main() {
       );
     });
 
-    test('chooseTier on a paid tier writes active + 30-day window', () async {
-      final repo = MockSubscriptionRepository(latency: Duration.zero);
-      addTearDown(repo.dispose);
-      final container = _container(
-        repo: repo,
+    test('chooseTier on a paid tier delegates to Stripe (no local write)',
+        () async {
+      final s = _setup(
         user: const AuthUser(uid: 'alice', displayName: 'Alice'),
       );
-      addTearDown(container.dispose);
-      await container.read(authUserProvider.future);
+      addTearDown(s.repo.dispose);
+      addTearDown(s.container.dispose);
+      await s.container.read(authUserProvider.future);
 
-      await container
+      await s.container
           .read(subscriptionActionProvider.notifier)
           .chooseTier(SubscriptionTier.celebrityTrainer);
 
-      final saved = repo.cached('alice')!;
-      expect(saved.status, SubscriptionStatus.active);
-      expect(saved.tier, SubscriptionTier.celebrityTrainer);
-      expect(saved.currentPeriodEndsAt, isNotNull);
+      // Stripe handed the URL launch — webhook will mirror state later.
+      expect(s.stripe.startedCheckouts, [SubscriptionTier.celebrityTrainer]);
+      // No client-side write for paid tiers.
+      expect(s.repo.cached('alice'), isNull);
+      expect(
+        s.container.read(subscriptionActionProvider).hasValue,
+        isTrue,
+      );
     });
 
-    test('chooseTier on free clears the period and stamps none', () async {
-      final repo = MockSubscriptionRepository(latency: Duration.zero);
-      addTearDown(repo.dispose);
-      final container = _container(
-        repo: repo,
+    test('chooseTier on free clears the local record without Stripe',
+        () async {
+      final s = _setup(
         user: const AuthUser(uid: 'alice', displayName: 'Alice'),
       );
-      addTearDown(container.dispose);
-      await container.read(authUserProvider.future);
+      addTearDown(s.repo.dispose);
+      addTearDown(s.container.dispose);
+      await s.container.read(authUserProvider.future);
 
-      await container
+      await s.container
           .read(subscriptionActionProvider.notifier)
           .chooseTier(SubscriptionTier.free);
 
-      final saved = repo.cached('alice')!;
+      expect(s.stripe.startedCheckouts, isEmpty);
+      final saved = s.repo.cached('alice')!;
       expect(saved.tier, SubscriptionTier.free);
       expect(saved.status, SubscriptionStatus.none);
-      expect(saved.currentPeriodEndsAt, isNull);
     });
 
-    test('cancel marks the existing record as cancelled', () async {
-      final repo = MockSubscriptionRepository(latency: Duration.zero);
-      addTearDown(repo.dispose);
-      await repo.save(Subscription(
+    test('chooseTier surfaces stripe failures as AsyncValue errors',
+        () async {
+      final s = _setup(
+        user: const AuthUser(uid: 'alice', displayName: 'Alice'),
+      );
+      addTearDown(s.repo.dispose);
+      addTearDown(s.container.dispose);
+      s.stripe.failWith = Exception('boom');
+      await s.container.read(authUserProvider.future);
+
+      await s.container
+          .read(subscriptionActionProvider.notifier)
+          .chooseTier(SubscriptionTier.standard);
+
+      final state = s.container.read(subscriptionActionProvider);
+      expect(state.hasError, isTrue);
+    });
+
+    test('cancel opens the customer portal (no local write)', () async {
+      final s = _setup(
+        user: const AuthUser(uid: 'alice', displayName: 'Alice'),
+      );
+      addTearDown(s.repo.dispose);
+      addTearDown(s.container.dispose);
+      await s.repo.save(Subscription(
         uid: 'alice',
         tier: SubscriptionTier.standard,
         status: SubscriptionStatus.active,
         currentPeriodEndsAt: DateTime.now().add(const Duration(days: 10)),
       ));
+      await s.container.read(authUserProvider.future);
 
-      final container = _container(
-        repo: repo,
-        user: const AuthUser(uid: 'alice', displayName: 'Alice'),
-      );
-      addTearDown(container.dispose);
-      await container.read(authUserProvider.future);
+      await s.container.read(subscriptionActionProvider.notifier).cancel();
 
-      await container.read(subscriptionActionProvider.notifier).cancel();
-
-      final saved = repo.cached('alice')!;
-      expect(saved.status, SubscriptionStatus.cancelled);
-      expect(saved.tier, SubscriptionTier.standard);
-      // The 10-day window remains until period end.
-      expect(saved.currentPeriodEndsAt, isNotNull);
-    });
-
-    test('cancel is a no-op when there is no existing record', () async {
-      final repo = MockSubscriptionRepository(latency: Duration.zero);
-      addTearDown(repo.dispose);
-      final container = _container(
-        repo: repo,
-        user: const AuthUser(uid: 'alice', displayName: 'Alice'),
-      );
-      addTearDown(container.dispose);
-      await container.read(authUserProvider.future);
-
-      await container.read(subscriptionActionProvider.notifier).cancel();
-
-      expect(container.read(subscriptionActionProvider).hasValue, isTrue);
-      expect(repo.cached('alice'), isNull);
+      expect(s.stripe.portalOpens, 1);
+      // Status stays untouched until the webhook fires
+      // customer.subscription.deleted.
+      final saved = s.repo.cached('alice')!;
+      expect(saved.status, SubscriptionStatus.active);
     });
 
     test('errors when no user is signed in', () async {
-      final repo = MockSubscriptionRepository(latency: Duration.zero);
-      addTearDown(repo.dispose);
-      final container = _container(repo: repo, user: null);
-      addTearDown(container.dispose);
-      await container.read(authUserProvider.future);
+      final s = _setup(user: null);
+      addTearDown(s.repo.dispose);
+      addTearDown(s.container.dispose);
+      await s.container.read(authUserProvider.future);
 
-      await container
+      await s.container
           .read(subscriptionActionProvider.notifier)
           .startTrial(SubscriptionTier.standard);
 
-      final state = container.read(subscriptionActionProvider);
+      final state = s.container.read(subscriptionActionProvider);
       expect(state.hasError, isTrue);
       expect(state.error, isA<StateError>());
     });

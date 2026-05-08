@@ -11,6 +11,7 @@ import 'features/auth/data/firebase_auth_repository.dart';
 import 'features/auth/state/auth_providers.dart';
 import 'features/profile/data/firestore_profile_repository.dart';
 import 'features/profile/state/profile_providers.dart';
+import 'features/subscription/data/cloud_functions_stripe_service.dart';
 import 'features/subscription/data/firestore_subscription_repository.dart';
 import 'features/subscription/state/subscription_providers.dart';
 import 'features/workouts/data/firestore_scheduled_session_repository.dart';
@@ -44,6 +45,8 @@ Future<void> main() async {
             .overrideWith((_) => FirestoreScheduledSessionRepository()),
         subscriptionRepositoryProvider
             .overrideWith((_) => FirestoreSubscriptionRepository()),
+        stripeCheckoutServiceProvider
+            .overrideWith((_) => CloudFunctionsStripeService()),
         notificationServiceProvider.overrideWithValue(notifications),
       ],
       child: const FitnessApp(),

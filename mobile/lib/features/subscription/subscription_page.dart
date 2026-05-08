@@ -105,7 +105,8 @@ class SubscriptionPage extends ConsumerWidget {
                 : null,
           ),
           if (sub != null && (sub.status == SubscriptionStatus.trial ||
-              sub.status == SubscriptionStatus.active)) ...[
+              sub.status == SubscriptionStatus.active ||
+              sub.status == SubscriptionStatus.cancelled)) ...[
             const SizedBox(height: 20),
             Center(
               child: TextButton(
@@ -114,7 +115,7 @@ class SubscriptionPage extends ConsumerWidget {
                     : () => ref
                         .read(subscriptionActionProvider.notifier)
                         .cancel(),
-                child: const Text('Cancel subscription'),
+                child: const Text('Manage subscription'),
               ),
             ),
           ],

@@ -2,7 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/state/auth_providers.dart';
 import '../data/feature_gates.dart';
+import '../data/mock_stripe_checkout_service.dart';
 import '../data/mock_subscription_repository.dart';
+import '../data/stripe_checkout_service.dart';
 import '../data/subscription_models.dart';
 import '../data/subscription_repository.dart';
 
@@ -17,6 +19,14 @@ final subscriptionRepositoryProvider = Provider<SubscriptionRepository>((ref) {
     if (repo is MockSubscriptionRepository) repo.dispose();
   });
   return repo;
+});
+
+/// Stripe checkout bridge — defaults to a mock so unit tests don't need
+/// `cloud_functions` or `url_launcher`. `main.dart` overrides this with
+/// `CloudFunctionsStripeService`.
+final stripeCheckoutServiceProvider =
+    Provider<StripeCheckoutService>((ref) {
+  return MockStripeCheckoutService();
 });
 
 /// Live subscription record for the signed-in user. Emits null while the
@@ -76,9 +86,15 @@ class SubscriptionAction extends Notifier<AsyncValue<void>> {
     }
   }
 
-  /// "Pay" for a tier. In the mock-first phase this just stamps an
-  /// `active` record with a 30-day window; Phase 4B will replace this
-  /// with a Stripe checkout return path.
+  /// Hand off to Stripe Checkout. The Cloud Function returns a hosted
+  /// payment URL, [StripeCheckoutService] launches it in the browser,
+  /// and the webhook updates `users/{uid}/subscription/main` once
+  /// payment succeeds — at which point the StreamProvider chain emits
+  /// the new tier and the UI updates.
+  ///
+  /// Picking [SubscriptionTier.free] short-circuits Stripe entirely
+  /// and just clears any local record (handy for "downgrade to free"
+  /// from the management page).
   Future<void> chooseTier(SubscriptionTier tier) async {
     state = const AsyncValue.loading();
     try {
@@ -86,26 +102,23 @@ class SubscriptionAction extends Notifier<AsyncValue<void>> {
       if (user == null) {
         throw StateError('Cannot subscribe while signed out');
       }
-      final repo = ref.read(subscriptionRepositoryProvider);
-      final now = DateTime.now();
-      await repo.save(Subscription(
-        uid: user.uid,
-        tier: tier,
-        status: tier == SubscriptionTier.free
-            ? SubscriptionStatus.none
-            : SubscriptionStatus.active,
-        currentPeriodEndsAt: tier == SubscriptionTier.free
-            ? null
-            : now.add(const Duration(days: 30)),
-      ));
+      if (tier == SubscriptionTier.free) {
+        final repo = ref.read(subscriptionRepositoryProvider);
+        await repo.save(Subscription.emptyFor(user.uid));
+        state = const AsyncValue.data(null);
+        return;
+      }
+      final stripe = ref.read(stripeCheckoutServiceProvider);
+      await stripe.startCheckout(tier);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
   }
 
-  /// Mark the subscription as cancelled. The user keeps their tier until
-  /// `currentPeriodEndsAt` lapses; `effectiveTier` handles the rollback.
+  /// Open the Stripe Customer Portal so the user can cancel or change
+  /// plan. The webhook fires `customer.subscription.deleted` and the
+  /// stream auto-updates — we don't need to mirror anything locally.
   Future<void> cancel() async {
     state = const AsyncValue.loading();
     try {
@@ -113,16 +126,8 @@ class SubscriptionAction extends Notifier<AsyncValue<void>> {
       if (user == null) {
         throw StateError('Cannot cancel while signed out');
       }
-      final repo = ref.read(subscriptionRepositoryProvider);
-      final existing = repo.cached(user.uid);
-      if (existing == null) {
-        // Nothing to cancel — leave state as data(null).
-        state = const AsyncValue.data(null);
-        return;
-      }
-      await repo.save(existing.copyWith(
-        status: SubscriptionStatus.cancelled,
-      ));
+      final stripe = ref.read(stripeCheckoutServiceProvider);
+      await stripe.openCustomerPortal();
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
