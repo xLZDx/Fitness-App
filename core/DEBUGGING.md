@@ -140,3 +140,22 @@ pwsh .\scripts\dev\debug_daemon.ps1 `
   output. Fix: replace `Tee-Object -FilePath` with `ForEach-Object {
   Add-Content -Path $LogPath -Value $_ -Encoding utf8 }` so every
   capture writes plain UTF-8 that `grep` / `tail` understand.
+- **2026-05-09** — `firebase_functions/unauthenticated UNAUTHENTICATED`
+  on `createCheckoutSession` even with the UX gate + token refresh in
+  place. Wasted three commits chasing client-side auth before reading
+  the function logs. Server-side log was unambiguous:
+  `W createcheckoutsession: The request was not authorized to invoke
+  this service. The access token could not be verified.` That's a
+  **Cloud Run-level** rejection — the request never reaches the
+  function code, so client-side fixes can't help. Root cause: the
+  function's first `firebase deploy` failed with a Cloud Build
+  permission error; the `--force` retry created the function but did
+  NOT set up `allUsers / roles/run.invoker` on the underlying Cloud
+  Run service, so every public request was 401'd at the gate. Fix:
+  `firebase functions:delete createCheckoutSession --force` then
+  `firebase deploy --only functions:createCheckoutSession`. A clean
+  first deploy applies the invoker policy by default. Lesson: when
+  callable functions throw `unauthenticated`, **always read
+  `firebase functions:log --only <name>` first** — if the message is
+  "request was not authorized to invoke this service", it's IAM, not
+  the user's auth state.
