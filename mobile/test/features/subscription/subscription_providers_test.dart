@@ -114,7 +114,7 @@ void main() {
   });
 
   group('subscriptionActionProvider', () {
-    test('startTrial writes a trial record with a trialEndsAt window',
+    test('startTrial delegates to the backend service (no client write)',
         () async {
       final s = _setup(
         user: const AuthUser(uid: 'alice', displayName: 'Alice'),
@@ -123,24 +123,18 @@ void main() {
       addTearDown(s.container.dispose);
       await s.container.read(authUserProvider.future);
 
-      final before = DateTime.now();
       await s.container
           .read(subscriptionActionProvider.notifier)
           .startTrial(SubscriptionTier.standard);
-      final after = DateTime.now();
 
-      final saved = s.repo.cached('alice');
-      expect(saved, isNotNull);
-      expect(saved!.tier, SubscriptionTier.standard);
-      expect(saved.status, SubscriptionStatus.trial);
-      expect(saved.trialEndsAt, isNotNull);
+      // The Cloud Function writes the trial record server-side; the
+      // local repo stays empty until the StreamProvider picks up the
+      // server emission.
+      expect(s.stripe.startedTrials, [SubscriptionTier.standard]);
+      expect(s.repo.cached('alice'), isNull);
       expect(
-        saved.trialEndsAt!.difference(before).inDays,
-        greaterThanOrEqualTo(13),
-      );
-      expect(
-        saved.trialEndsAt!.difference(after).inDays,
-        lessThanOrEqualTo(14),
+        s.container.read(subscriptionActionProvider).hasValue,
+        isTrue,
       );
     });
 
@@ -167,7 +161,7 @@ void main() {
       );
     });
 
-    test('chooseTier on free clears the local record without Stripe',
+    test('chooseTier on free is a no-op (use the portal to downgrade)',
         () async {
       final s = _setup(
         user: const AuthUser(uid: 'alice', displayName: 'Alice'),
@@ -181,9 +175,13 @@ void main() {
           .chooseTier(SubscriptionTier.free);
 
       expect(s.stripe.startedCheckouts, isEmpty);
-      final saved = s.repo.cached('alice')!;
-      expect(saved.tier, SubscriptionTier.free);
-      expect(saved.status, SubscriptionStatus.none);
+      // Firestore rules forbid client writes; nothing should land
+      // locally either.
+      expect(s.repo.cached('alice'), isNull);
+      expect(
+        s.container.read(subscriptionActionProvider).hasValue,
+        isTrue,
+      );
     });
 
     test('chooseTier surfaces stripe failures as AsyncValue errors',

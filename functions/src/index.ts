@@ -1,7 +1,15 @@
 /**
  * Cloud Functions backend for the Fitness App's Phase 4B Stripe billing.
  *
- * Three entry points:
+ * Four entry points:
+ *   - startFreeTrial         (callable) — writes the user's 14-day trial
+ *                                         state into Firestore. The
+ *                                         tightened firestore.rules deny
+ *                                         client writes to the
+ *                                         subscription doc, so the trial
+ *                                         start has to land server-side
+ *                                         too even though it doesn't
+ *                                         touch Stripe.
  *   - createCheckoutSession  (callable) — returns a Stripe Checkout URL.
  *   - createPortalSession    (callable) — returns a Stripe Customer Portal URL.
  *   - stripeWebhook          (HTTPS)    — verifies Stripe events and mirrors
@@ -64,6 +72,64 @@ async function ensureCustomer(
   await ref.set({ stripeCustomerId: customer.id }, { merge: true });
   return customer.id;
 }
+
+/* ------------------------------------------------------------------ */
+/* startFreeTrial                                                     */
+/* ------------------------------------------------------------------ */
+
+const TRIAL_DAYS = 14;
+
+export const startFreeTrial = onCall(
+  { region: "us-central1" },
+  async (request) => {
+    const auth = request.auth;
+    if (!auth) {
+      throw new HttpsError("unauthenticated", "Sign in to start a trial.");
+    }
+    const tier = request.data?.tier as Tier | undefined;
+    if (tier !== "standard" && tier !== "celebrityTrainer") {
+      throw new HttpsError(
+        "invalid-argument",
+        `Unknown tier: ${String(tier)}`,
+      );
+    }
+
+    const ref = db.doc(`users/${auth.uid}/subscription/main`);
+    const snap = await ref.get();
+    const data = snap.data();
+
+    // Don't let users farm fresh trials by re-tapping the button after a
+    // prior trial / paid subscription has been recorded. Stripe is the
+    // source of truth for paid state; the local "trialStartedOnce" flag
+    // covers the local-only trial.
+    if (data?.trialStartedOnce === true) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Trial already used. Choose a paid plan to continue.",
+      );
+    }
+
+    const now = new Date();
+    const trialEndsAt = new Date(
+      now.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000,
+    );
+
+    await ref.set(
+      {
+        tier,
+        status: "trial",
+        trialEndsAt: trialEndsAt.toISOString(),
+        trialStartedOnce: true,
+        currentPeriodEndsAt: null,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+
+    logger.info("started free trial", { uid: auth.uid, tier });
+    return { trialEndsAt: trialEndsAt.toISOString() };
+  },
+);
 
 /* ------------------------------------------------------------------ */
 /* createCheckoutSession                                              */

@@ -63,8 +63,11 @@ class SubscriptionAction extends Notifier<AsyncValue<void>> {
   @override
   AsyncValue<void> build() => const AsyncValue.data(null);
 
-  /// Starts a trial at the requested [tier]. Idempotent — calling twice
-  /// re-extends the trial window from now.
+  /// Starts a trial at the requested [tier]. Routes through the
+  /// `startFreeTrial` Cloud Function because Firestore rules deny client
+  /// writes to the subscription doc — the server is the only writer.
+  /// The Cloud Function rejects a second trial-start (one trial per
+  /// account).
   Future<void> startTrial(SubscriptionTier tier) async {
     state = const AsyncValue.loading();
     try {
@@ -72,14 +75,8 @@ class SubscriptionAction extends Notifier<AsyncValue<void>> {
       if (user == null) {
         throw StateError('Cannot start a trial while signed out');
       }
-      final repo = ref.read(subscriptionRepositoryProvider);
-      final now = DateTime.now();
-      await repo.save(Subscription(
-        uid: user.uid,
-        tier: tier,
-        status: SubscriptionStatus.trial,
-        trialEndsAt: now.add(trialDuration),
-      ));
+      final stripe = ref.read(stripeCheckoutServiceProvider);
+      await stripe.startFreeTrial(tier);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -103,8 +100,11 @@ class SubscriptionAction extends Notifier<AsyncValue<void>> {
         throw StateError('Cannot subscribe while signed out');
       }
       if (tier == SubscriptionTier.free) {
-        final repo = ref.read(subscriptionRepositoryProvider);
-        await repo.save(Subscription.emptyFor(user.uid));
+        // Free tier is the implicit default — picking it from the page
+        // is a no-op. Users on a paid plan downgrade through the
+        // Customer Portal ("Manage subscription"), which fires
+        // customer.subscription.deleted and the webhook handles the
+        // rollback.
         state = const AsyncValue.data(null);
         return;
       }

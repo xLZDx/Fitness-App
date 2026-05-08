@@ -10,12 +10,20 @@ class MockStripeCheckoutService implements StripeCheckoutService {
 
   /// Calls observed since construction; cleared by [reset].
   final List<SubscriptionTier> startedCheckouts = [];
+  final List<SubscriptionTier> startedTrials = [];
   int portalOpens = 0;
 
   void reset() {
     startedCheckouts.clear();
+    startedTrials.clear();
     portalOpens = 0;
     failWith = null;
+  }
+
+  @override
+  Future<void> startFreeTrial(SubscriptionTier tier) async {
+    if (failWith != null) throw failWith!;
+    startedTrials.add(tier);
   }
 
   @override

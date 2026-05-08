@@ -35,6 +35,18 @@ class CloudFunctionsStripeService implements StripeCheckoutService {
   }
 
   @override
+  Future<void> startFreeTrial(SubscriptionTier tier) async {
+    final callable = _functions.httpsCallable('startFreeTrial');
+    try {
+      await callable.call<Map<String, dynamic>>({
+        'tier': _tierParam(tier),
+      });
+    } on Exception catch (e) {
+      throw StripeCheckoutException('Could not start trial: $e');
+    }
+  }
+
+  @override
   Future<void> startCheckout(SubscriptionTier tier) async {
     final callable = _functions.httpsCallable('createCheckoutSession');
     final result = await callable.call<Map<String, dynamic>>({

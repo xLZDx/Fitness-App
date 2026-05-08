@@ -9,6 +9,15 @@ void main() {
 
     setUp(() => svc = MockStripeCheckoutService());
 
+    test('startFreeTrial records the requested tier', () async {
+      await svc.startFreeTrial(SubscriptionTier.standard);
+      await svc.startFreeTrial(SubscriptionTier.celebrityTrainer);
+      expect(svc.startedTrials, [
+        SubscriptionTier.standard,
+        SubscriptionTier.celebrityTrainer,
+      ]);
+    });
+
     test('startCheckout records the requested tier', () async {
       await svc.startCheckout(SubscriptionTier.standard);
       await svc.startCheckout(SubscriptionTier.celebrityTrainer);
@@ -37,12 +46,14 @@ void main() {
     test('reset clears observed calls + failure', () async {
       svc.failWith = Exception('declined');
       svc.startedCheckouts.add(SubscriptionTier.standard);
+      svc.startedTrials.add(SubscriptionTier.standard);
       svc.portalOpens = 3;
 
       svc.reset();
 
       expect(svc.failWith, isNull);
       expect(svc.startedCheckouts, isEmpty);
+      expect(svc.startedTrials, isEmpty);
       expect(svc.portalOpens, 0);
     });
   });
