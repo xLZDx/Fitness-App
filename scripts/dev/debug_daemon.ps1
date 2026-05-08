@@ -1,4 +1,4 @@
-# Debug daemon for the Fitness App.
+﻿# Debug daemon for the Fitness App.
 #
 # Spawns five background captures into a timestamped session folder so
 # every dev session has one place to look when things break:
@@ -13,7 +13,7 @@
 #   pwsh ./scripts/dev/debug_daemon.ps1                 # session = "default"
 #   pwsh ./scripts/dev/debug_daemon.ps1 -Session login  # named session
 #
-# Stop with Ctrl+C — captures shut down cleanly and the session folder
+# Stop with Ctrl+C - captures shut down cleanly and the session folder
 # stays for review. logs/ is gitignored.
 
 [CmdletBinding()]
@@ -31,12 +31,12 @@ $ProjectRoot = Resolve-Path "$PSScriptRoot\..\.."
 $Adb = 'D:/android-sdk/platform-tools/adb.exe'
 $Firebase = 'D:/npm-global/firebase.cmd'
 
-# Sanity checks — fail fast if the environment isn't ready.
+# Sanity checks - fail fast if the environment isn't ready.
 if (-not (Test-Path $Adb)) {
     throw "adb not found at $Adb. Install Android platform-tools or update the path."
 }
 if (-not (Test-Path $Firebase)) {
-    Write-Warning "firebase CLI not found at $Firebase — Cloud Functions log poll will be disabled."
+    Write-Warning "firebase CLI not found at $Firebase - Cloud Functions log poll will be disabled."
     $Firebase = $null
 }
 
@@ -84,7 +84,9 @@ foreach ($f in 'flutter.log', 'errors.log', 'touches.log', 'functions.log') {
 }
 
 # 1) Flutter + AndroidRuntime + app-specific logcat. Clear first so the
-#    capture is scoped to the current session.
+#    capture is scoped to the current session. Tee-Object on Windows
+#    PowerShell 5.1 writes UTF-16-LE which is unreadable in tail/grep —
+#    we route through Add-Content with explicit UTF-8 instead.
 & $Adb -s $EmulatorSerial logcat -c
 $flutterJob = Start-Job -ArgumentList $Adb, $EmulatorSerial, (Join-Path $SessionDir 'flutter.log') -ScriptBlock {
     param($Adb, $Serial, $LogPath)
@@ -96,16 +98,21 @@ $flutterJob = Start-Job -ArgumentList $Adb, $EmulatorSerial, (Join-Path $Session
         FirebaseFirestore:V `
         CloudFunctions:V `
         '*:S' |
-        Tee-Object -FilePath $LogPath
+        ForEach-Object {
+            Add-Content -Path $LogPath -Value $_ -Encoding utf8
+            Write-Output $_
+        }
 }
 
-# 2) Broader error capture — anything ERROR or FATAL across all tags. Useful
+# 2) Broader error capture - anything ERROR or FATAL across all tags. Useful
 #    for surfacing native crashes or system-side denials that the flutter-
 #    only filter misses.
 $errorJob = Start-Job -ArgumentList $Adb, $EmulatorSerial, (Join-Path $SessionDir 'errors.log') -ScriptBlock {
     param($Adb, $Serial, $LogPath)
     & $Adb -s $Serial logcat -v time '*:E' |
-        Tee-Object -FilePath $LogPath
+        ForEach-Object {
+            Add-Content -Path $LogPath -Value $_ -Encoding utf8
+        }
 }
 
 # 3) Touch events. Listens to /dev/input/event2 (the Pixel emulator's
@@ -121,7 +128,7 @@ $touchDevice = & $Adb -s $Serial shell getevent -pl 2>$null |
 if (-not $touchDevice) { $touchDevice = '/dev/input/event2' }
 & $Adb -s $Serial shell "getevent -lt $touchDevice" 2>$null |
     Where-Object { $_ -match 'BTN_TOUCH|ABS_MT_POSITION' } |
-    Tee-Object -FilePath $LogPath
+    ForEach-Object { Add-Content -Path $LogPath -Value $_ -Encoding utf8 }
 '@
 $touchJob = Start-Job -ScriptBlock ([ScriptBlock]::Create($touchScript)) `
     -ArgumentList $Adb, $EmulatorSerial, (Join-Path $SessionDir 'touches.log')
@@ -166,12 +173,12 @@ if ($Firebase) {
 }
 
 Write-Host "Captures live (Ctrl+C to stop):" -ForegroundColor Green
-Write-Host "  flutter.log    — flutter + crash + auth + firestore + functions" -ForegroundColor Gray
-Write-Host "  errors.log     — every ERROR/FATAL line, all tags" -ForegroundColor Gray
-Write-Host "  touches.log    — touch-down events" -ForegroundColor Gray
-Write-Host "  screencap-*.png — every $ScreenshotInterval s" -ForegroundColor Gray
+Write-Host "  flutter.log    - flutter + crash + auth + firestore + functions" -ForegroundColor Gray
+Write-Host "  errors.log     - every ERROR/FATAL line, all tags" -ForegroundColor Gray
+Write-Host "  touches.log    - touch-down events" -ForegroundColor Gray
+Write-Host "  screencap-*.png - every $ScreenshotInterval s" -ForegroundColor Gray
 if ($Firebase) {
-    Write-Host "  functions.log  — Cloud Functions logs (poll every $FunctionsPollInterval s)" -ForegroundColor Gray
+    Write-Host "  functions.log  - Cloud Functions logs (poll every $FunctionsPollInterval s)" -ForegroundColor Gray
 }
 Write-Host ""
 
@@ -201,15 +208,20 @@ try {
     & $Adb -s $EmulatorSerial shell settings put system pointer_location 0 | Out-Null
 
     # Quick session summary.
-    $flutterSize = (Get-Item -ErrorAction SilentlyContinue (Join-Path $SessionDir 'flutter.log'))?.Length ?? 0
-    $errorSize = (Get-Item -ErrorAction SilentlyContinue (Join-Path $SessionDir 'errors.log'))?.Length ?? 0
-    $screencapCount = (Get-ChildItem -Path $SessionDir -Filter 'screencap-*.png' -ErrorAction SilentlyContinue).Count
-    $touchSize = (Get-Item -ErrorAction SilentlyContinue (Join-Path $SessionDir 'touches.log'))?.Length ?? 0
+    function _SizeKB($path) {
+        $item = Get-Item -ErrorAction SilentlyContinue -Path $path
+        if ($item) { return [math]::Round($item.Length / 1KB, 1) }
+        return 0
+    }
+    $flutterSize = _SizeKB (Join-Path $SessionDir 'flutter.log')
+    $errorSize = _SizeKB (Join-Path $SessionDir 'errors.log')
+    $touchSize = _SizeKB (Join-Path $SessionDir 'touches.log')
+    $screencapCount = @(Get-ChildItem -Path $SessionDir -Filter 'screencap-*.png' -ErrorAction SilentlyContinue).Count
     Write-Host ""
     Write-Host "Session summary:" -ForegroundColor Green
-    Write-Host "  flutter.log   $([math]::Round($flutterSize/1KB,1)) KB"
-    Write-Host "  errors.log    $([math]::Round($errorSize/1KB,1)) KB"
-    Write-Host "  touches.log   $([math]::Round($touchSize/1KB,1)) KB"
+    Write-Host "  flutter.log   $flutterSize KB"
+    Write-Host "  errors.log    $errorSize KB"
+    Write-Host "  touches.log   $touchSize KB"
     Write-Host "  screencaps    $screencapCount"
     Write-Host "  -> $SessionDir"
 }

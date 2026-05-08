@@ -123,3 +123,20 @@ pwsh .\scripts\dev\debug_daemon.ps1 `
   through the Stripe Customer Portal, never a fresh checkout; (2)
   defense — `CloudFunctionsStripeService` now calls
   `user.getIdToken(true)` before every callable.
+- **2026-05-09** — `firebase_functions/failed-precondition: No Stripe
+  customer on file` when tapping "Manage subscription" on a trial-only
+  account. Root cause: the trial path goes through `startFreeTrial`
+  which writes the Firestore subscription doc directly without any
+  Stripe call, so no customer is created. The Stripe portal can't
+  manage a customer that doesn't exist. Fix: `SubscriptionPage` now
+  branches on actual status — trial users see `_UpgradeFromTrialCard`
+  (a "Subscribe to keep $tier" CTA that runs Stripe Checkout for the
+  same tier they're trialing); the webhook overwrites the trial doc
+  with active state. Only `active` / `cancelled` users see the Manage
+  card.
+- **2026-05-09** — Captured logs unreadable: `flutter.log` looked like
+  UTF-16 with spaces between every character. Root cause: Windows
+  PowerShell 5.1 `Tee-Object` defaults to UTF-16-LE encoding for file
+  output. Fix: replace `Tee-Object -FilePath` with `ForEach-Object {
+  Add-Content -Path $LogPath -Value $_ -Encoding utf8 }` so every
+  capture writes plain UTF-8 that `grep` / `tail` understand.

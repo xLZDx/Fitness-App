@@ -9,14 +9,25 @@ import 'state/subscription_providers.dart';
 class SubscriptionPage extends ConsumerWidget {
   const SubscriptionPage({super.key});
 
-  /// True when the user already has a subscription record on file (trial,
-  /// active, cancelled-but-still-running, or expired). For these users
-  /// plan changes have to go through the Stripe Customer Portal — picking
-  /// a different tier from the in-app cards would create a *second*
-  /// subscription on the same Stripe customer.
-  bool _hasExistingSubscription(Subscription? sub) {
-    if (sub == null) return false;
-    return sub.status != SubscriptionStatus.none;
+  /// What the page should render given the current subscription state.
+  /// Three buckets:
+  ///   - [_PageState.picker]    — fresh user; show the 3-tier picker.
+  ///   - [_PageState.trialing]  — local-only trial (no Stripe customer).
+  ///                              Show countdown + "Subscribe to keep it".
+  ///   - [_PageState.paid]      — Stripe-backed subscription. Show the
+  ///                              Manage card that opens the Customer Portal.
+  _PageState _stateFor(Subscription? sub) {
+    if (sub == null) return _PageState.picker;
+    switch (sub.status) {
+      case SubscriptionStatus.none:
+      case SubscriptionStatus.expired:
+        return _PageState.picker;
+      case SubscriptionStatus.trial:
+        return _PageState.trialing;
+      case SubscriptionStatus.active:
+      case SubscriptionStatus.cancelled:
+        return _PageState.paid;
+    }
   }
 
   @override
@@ -25,7 +36,7 @@ class SubscriptionPage extends ConsumerWidget {
     final sub = ref.watch(currentSubscriptionProvider).valueOrNull;
     final tier = ref.watch(effectiveTierProvider);
     final action = ref.watch(subscriptionActionProvider);
-    final subscribed = _hasExistingSubscription(sub);
+    final state = _stateFor(sub);
 
     return FrostedScaffold(
       appBar: const GlassAppBar(title: 'Subscription'),
@@ -35,15 +46,25 @@ class SubscriptionPage extends ConsumerWidget {
           _StatusCard(sub: sub, effectiveTier: tier),
           const SizedBox(height: 24),
 
-          if (subscribed) ...[
-            // Subscribed users manage everything through the Stripe portal:
-            // upgrades, downgrades, payment-method updates, cancellation.
-            // Showing tier cards here would invite a second subscription,
-            // which is what tripped the UNAUTHENTICATED bug earlier.
+          if (state == _PageState.paid) ...[
+            // Stripe-backed subscription. Plan changes / cancellation /
+            // payment-method updates all go through the Customer Portal.
             _ManagePlanCard(
               isLoading: action.isLoading,
               onTap: () =>
                   ref.read(subscriptionActionProvider.notifier).cancel(),
+            ),
+          ] else if (state == _PageState.trialing) ...[
+            // Trial-only — there is no Stripe customer yet, so the portal
+            // would 4xx with "no customer on file". Surface the upgrade
+            // path to *the same tier* the user is trialing instead. The
+            // webhook will overwrite the trial doc with active state once
+            // checkout completes.
+            _UpgradeFromTrialCard(
+              tier: sub!.tier,
+              isLoading: action.isLoading,
+              onUpgrade: () =>
+                  ref.read(subscriptionActionProvider.notifier).chooseTier(sub.tier),
             ),
           ] else ...[
             // Brand-new users still see the three-tier picker.
@@ -131,6 +152,116 @@ class SubscriptionPage extends ConsumerWidget {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+enum _PageState { picker, trialing, paid }
+
+class _UpgradeFromTrialCard extends StatelessWidget {
+  const _UpgradeFromTrialCard({
+    required this.tier,
+    required this.isLoading,
+    required this.onUpgrade,
+  });
+
+  final SubscriptionTier tier;
+  final bool isLoading;
+  final VoidCallback onUpgrade;
+
+  String get _label {
+    switch (tier) {
+      case SubscriptionTier.standard:
+        return 'Standard · \$9.99 / month';
+      case SubscriptionTier.celebrityTrainer:
+        return 'Celebrity trainer · \$19.99 / month';
+      case SubscriptionTier.free:
+        return 'Free';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return GlassCard(
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+      onTap: isLoading ? null : onUpgrade,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  gradient: const LinearGradient(colors: [
+                    AppPalette.auroraPeach,
+                    AppPalette.auroraPink,
+                  ]),
+                ),
+                child: const Icon(Icons.workspace_premium_outlined,
+                    color: Colors.white, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Subscribe to keep $_label',
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      "Trial features stay on past the trial only with a paid "
+                      'plan. You\'ll be billed monthly via Stripe; cancel any '
+                      'time from the portal.',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurface.withValues(alpha: 0.65),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Container(
+            height: 48,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              gradient: const LinearGradient(colors: [
+                AppPalette.auroraPeach,
+                AppPalette.auroraPink,
+              ]),
+            ),
+            child: Center(
+              child: isLoading
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.4,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Text(
+                      'Continue with Stripe',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+            ),
+          ),
         ],
       ),
     );
