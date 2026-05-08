@@ -1,0 +1,23 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Each user can only read or write their own profile + sub-collections.
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Equipment + exercise catalogs are read-only for clients.
+    // Server-side admin scripts (with no auth context) write these via the
+    // Admin SDK, which bypasses rules.
+    match /equipment/{anyId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+    match /exercises/{anyId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+  }
+}

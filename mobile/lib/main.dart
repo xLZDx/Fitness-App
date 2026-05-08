@@ -1,12 +1,31 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/auth/data/firebase_auth_repository.dart';
+import 'features/auth/state/auth_providers.dart';
+import 'features/profile/data/firestore_profile_repository.dart';
+import 'features/profile/state/profile_providers.dart';
+import 'firebase_options.dart';
 import 'shared/widgets/aurora_background.dart';
 
-void main() {
-  runApp(const ProviderScope(child: FitnessApp()));
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(
+    ProviderScope(
+      overrides: [
+        authRepositoryProvider.overrideWith((_) => FirebaseAuthRepository()),
+        profileRepositoryProvider
+            .overrideWith((_) => FirestoreProfileRepository()),
+      ],
+      child: const FitnessApp(),
+    ),
+  );
 }
 
 class FitnessApp extends ConsumerWidget {

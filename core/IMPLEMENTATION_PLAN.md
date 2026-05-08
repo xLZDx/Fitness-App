@@ -52,7 +52,7 @@
 - [x] Router redirect tightened: signed-in & not onboarded → `/onboarding`; onboarded → `/onboarding` redirects back to `/home`
 - [x] Profile tab: pulls real user + profile, shows "At a glance" summary card (age/height/weight/activity/goals) when onboarded, "Complete questionnaire" CTA when not, and the sign-out tile actually signs out via `authActionProvider`
 
-## Phase 1B — Firebase wiring 🔒 blocked on user
+## Phase 1B — Firebase wiring ✅ complete
 
 **Goal:** swap the in-memory mocks for the real backend with zero UI changes.
 
