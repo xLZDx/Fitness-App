@@ -93,7 +93,7 @@ export const createCheckoutSession = onCall(
     }
 
     const stripe = new Stripe(STRIPE_SECRET_KEY.value(), {
-      apiVersion: "2024-09-30.acacia",
+      apiVersion: "2025-02-24.acacia",
     });
     const customerId = await ensureCustomer(
       stripe,
@@ -151,7 +151,7 @@ export const createPortalSession = onCall(
     }
 
     const stripe = new Stripe(STRIPE_SECRET_KEY.value(), {
-      apiVersion: "2024-09-30.acacia",
+      apiVersion: "2025-02-24.acacia",
     });
     const portal = await stripe.billingPortal.sessions.create({
       customer: customerId,
@@ -257,7 +257,7 @@ export const stripeWebhook = onRequest(
     }
 
     const stripe = new Stripe(STRIPE_SECRET_KEY.value(), {
-      apiVersion: "2024-09-30.acacia",
+      apiVersion: "2025-02-24.acacia",
     });
 
     let event: Stripe.Event;
