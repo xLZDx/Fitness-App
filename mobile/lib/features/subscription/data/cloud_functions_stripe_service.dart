@@ -1,4 +1,5 @@
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'stripe_checkout_service.dart';
@@ -11,14 +12,17 @@ import 'subscription_models.dart';
 class CloudFunctionsStripeService implements StripeCheckoutService {
   CloudFunctionsStripeService({
     FirebaseFunctions? functions,
+    FirebaseAuth? auth,
     Future<bool> Function(Uri uri)? launcher,
   })  : _functions =
             functions ?? FirebaseFunctions.instanceFor(region: 'us-central1'),
+        _auth = auth ?? FirebaseAuth.instance,
         _launcher = launcher ??
             ((uri) =>
                 launchUrl(uri, mode: LaunchMode.externalApplication));
 
   final FirebaseFunctions _functions;
+  final FirebaseAuth _auth;
   final Future<bool> Function(Uri uri) _launcher;
 
   String _tierParam(SubscriptionTier tier) {
@@ -34,8 +38,23 @@ class CloudFunctionsStripeService implements StripeCheckoutService {
     }
   }
 
+  /// Force-refresh the user's ID token before any backend call. Anonymous
+  /// Firebase tokens last only an hour and the SDK's auto-refresh can lag
+  /// when the user has been bouncing between the app and an external
+  /// browser (e.g. Stripe Checkout). A stale token surfaces from
+  /// `cloud_functions` as `firebase_functions/unauthenticated`, which is
+  /// exactly what we hit before adding this guard.
+  Future<void> _refreshToken() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw StripeCheckoutException('Not signed in.');
+    }
+    await user.getIdToken(true);
+  }
+
   @override
   Future<void> startFreeTrial(SubscriptionTier tier) async {
+    await _refreshToken();
     final callable = _functions.httpsCallable('startFreeTrial');
     try {
       await callable.call<Map<String, dynamic>>({
@@ -48,6 +67,7 @@ class CloudFunctionsStripeService implements StripeCheckoutService {
 
   @override
   Future<void> startCheckout(SubscriptionTier tier) async {
+    await _refreshToken();
     final callable = _functions.httpsCallable('createCheckoutSession');
     final result = await callable.call<Map<String, dynamic>>({
       'tier': _tierParam(tier),
@@ -66,6 +86,7 @@ class CloudFunctionsStripeService implements StripeCheckoutService {
 
   @override
   Future<void> openCustomerPortal() async {
+    await _refreshToken();
     final callable = _functions.httpsCallable('createPortalSession');
     final result = await callable.call<Map<String, dynamic>>();
     final url = result.data['url'] as String?;
