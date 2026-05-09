@@ -21,6 +21,7 @@
   - Flutter SDK at `D:\flutter`, Android SDK at `D:\android-sdk`, AVD at `D:\android-avd\Pixel_API_34.avd`, project root at `D:\test 2\Fitness App\`.
 - Tests must stay green at every commit (no skipped, no xfail without justification)
 - Approval gate: present a plan before non-trivial work, wait for explicit OK
+- **Cross-platform discipline (2026-05-10):** Android ships first but **iOS is on the roadmap**. Every package + abstraction choice must keep iOS open. No Android-only API references in feature code — wrap them in abstraction layers (mock + Android-real + iOS-real) following the same pattern we already use for `AuthRepository` / `ProfileRepository` / `WorkoutLogRepository`. Specifically: Health Connect ↔ HealthKit goes behind a `HealthService` abstract; Stripe ↔ StoreKit goes behind the existing `StripeCheckoutService` (StoreKit slot to be added in Phase 4C). Wear OS first, Apple Watch parity Phase 7+. See `feedback_fitness_ios_future.md` in auto-memory for the full rule.
 
 ---
 
