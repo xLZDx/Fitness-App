@@ -536,6 +536,223 @@ decision before proceeding:
 
 ---
 
+## Part 4.5 — Seven market-killer features (Tier MK)
+
+These are the **absolute strongest** ideas — features that, if shipped
+well, would make this app the category leader rather than just a
+solid alternative. They're harder than Tier X (more eng, more
+partnerships, more risk) but each one would meaningfully *kill* a
+subset of competitors. Sequenced so the easiest two ship inside
+2027Q2 and the harder three are 2027Q3+ bets.
+
+### MK.1 — Live Form Coach with Voice (combines TX.3 + TX.6)
+
+**What it is:** During a working set, phone in stand or paired with
+Bluetooth earbuds, the app *speaks* form corrections in real-time.
+*"Go deeper. Three more reps. Slow on the eccentric."* Hands-free,
+eyes-forward. The form check (TX.3 / P1.3) reads pose keypoints; the
+voice engine (TX.6) does set logging *and* TTS feedback.
+
+**Why it kills:**
+- **Tempo** can't compete — hardware-locked, $2,495 device, iOS-only
+  on Move. We do it on a $200 Android phone.
+- **Future** at $149/mo gives a human coach text feedback. Ours does
+  it live, mid-rep, for $19.99/mo.
+- **Fitbod / Hevy / Centr** have nothing close.
+- Marketing line writes itself: *"The first AI personal trainer that
+  watches your form and coaches your reps. No $2,500 device. Just
+  your phone."*
+
+**Effort:** 18 days (extends TX.3 form check + TX.6 voice with a
+shared real-time loop + TTS via `flutter_tts`).
+
+**Revenue impact:** This is the feature that justifies the $19.99
+Celebrity tier without needing a celebrity. Pricing power → can push
+to $24.99.
+
+---
+
+### MK.2 — Goal-Photo → Personalised Program (Vision-LLM)
+
+**What it is:** User uploads a photo of their goal physique (a
+fitness model, an athlete, themselves N years younger). On-device
++ cloud LLM analyses the goal vs the user's current state (height,
+weight, body comp from MK.6 below) and generates a 12-week tailored
+program. Updates monthly as progress photos come in.
+
+**Why it kills:**
+- **Centr / Sweat / Ladder** sell pre-baked programs. Theirs are made
+  for everyone; ours is made for *one person*.
+- **Fitbod** generates programs but not from goal images.
+- **Future** has a human coach interpret your goals. Ours does it in
+  10 seconds.
+- Massive PR + viral moment — every fitness influencer will demo it
+  in a TikTok ("I uploaded my 22-year-old self and the app gave me a
+  comeback plan").
+
+**Effort:** 25 days eng + ~$5–10k for goal-physique tagged training
+data + ongoing Anthropic / OpenAI inference cost (~$0.05/program
+generation, profitable at any tier).
+
+**Revenue impact:** Premium-tier-defining. Lifts Standard → Celebrity
+upgrade rate measurably (we'd gate this to Celebrity).
+
+---
+
+### MK.3 — Cycle-Aware Programming for Women (huge underserved market)
+
+**What it is:** Reads menstrual cycle data from Health Connect / Apple
+Health / Clue / Flo. Adjusts programming through the month:
+follicular phase = strength + intensity push; luteal = endurance
++ steady-state; menstrual = recovery + mobility. Includes a
+postnatal track (3-12 months postpartum progression).
+
+**Why it kills:**
+- **Sweat** owns the female-fitness brand and has a postnatal track
+  but **does not adjust within the month**. They re-skin the same
+  programs.
+- **Fitbod / Hevy / Centr** ignore cycle entirely.
+- **Apple Fitness+ / NTC** have no awareness.
+- Real performance benefit (peer-reviewed: women's strength capacity
+  varies 5-15% across the cycle).
+- 50% of the addressable market is currently treated as "men minus
+  some weight."
+
+**Effort:** 12 days eng + ~$3k consultant fee (sports physiologist
+specialising in women's training). Cycle integration via Health
+Connect is well-documented.
+
+**Revenue impact:** Opens the ~$2B women's-fitness segment without
+us being a women's-only brand. Could double TAM if marketed correctly.
+
+---
+
+### MK.4 — Insurance Premium Discount Partnerships
+
+**What it is:** Partner with health insurers (Aetna, Cigna, Vitality,
+Anthem). Users who maintain a workout-streak get measurable health-
+insurance premium discounts. App displays *"Maintaining 12-week
+streak — saving $34/mo on Cigna."*
+
+**Why it kills:**
+- No fitness app currently routes the user's value back into real
+  $$ savings on a non-fitness bill. Garmin Connect / Apple Watch
+  feed insurer programs *but the user has to manually opt in via the
+  insurer.* We bridge it.
+- Real value-add. Customer LTV soars because cancelling = losing
+  insurance discount.
+- Network effect with insurers: once one signs, others follow.
+
+**Effort:** 8 days eng (API integrations, attestation flows) + 6–18
+months of BD work (insurance partnerships move slowly). Heavy legal
+review (HIPAA, state-by-state insurance regs).
+
+**Revenue impact:** Indirect — drives retention 2-3× through insurance
+discount lock-in. Plus possible direct revenue share with insurers
+(per-user-per-month fee for verified active subscribers).
+
+---
+
+### MK.5 — White-Label Gym Chain SDK (B2B distribution play)
+
+**What it is:** Open Flutter SDK + REST API. Any gym chain or fitness
+brand can embed our QR-scan + injury filter + workout log + form check
+into their *own* member app, with their own branding. We charge
+per-subscriber per-month ($1–3/MAU). They keep their UX; we power the
+features.
+
+**Why it kills:**
+- **Technogym Mywellness** is closed-source — only their hardware.
+- **iFIT** is hardware-locked.
+- **Centr / BODi** are content businesses, not platforms.
+- **No fitness platform in 2026 sells the underlying tech.**
+- Distribution multiplier: every gym member of every chain we sign
+  becomes a user. One chain = 50k–500k users overnight.
+- Coach Marketplace (TX.5) becomes more powerful when all the
+  white-labelled gyms feed into it.
+
+**Effort:** 60 days eng (it's a whole SDK + admin console + analytics
++ docs site) + ongoing maintenance + dedicated devrel headcount.
+Massive but transformational.
+
+**Revenue impact:** Long-term, **larger than the consumer subscription
+business.** SaaS-style ARR per chain, retention >95%, unit economics
+better than B2C.
+
+---
+
+### MK.6 — Continuous Body Composition via Phone Camera
+
+**What it is:** Front-camera selfie photos with on-device ML estimate
+body fat %, lean mass distribution, posture. Tracks every 2 weeks
+automatically. Replaces $200 InBody scales and $300 DEXA scans with
+something free, private, on-device.
+
+**Why it kills:**
+- **Made Health** and similar standalone apps do this but aren't
+  integrated into a workout flow. Switching cost = user has to
+  manually transcribe results.
+- **Centr** has a "before-and-after" gallery feature. Ours has actual
+  measurements feeding into the program.
+- Privacy moat: on-device, no photos leave the phone. Big
+  differentiator vs cloud-based alternatives.
+- Combined with MK.2 goal-photo + cycle-aware programming = a
+  closed personalisation loop unlike anything else on the market.
+
+**Effort:** 20 days eng + ~$10–15k for training data (volunteers with
+DEXA + photo pairs at multiple body fat %s) + ML eng help.
+
+**Revenue impact:** Premium-tier feature. Drives Standard → Celebrity
+upgrade because seeing your body comp trend monthly is sticky.
+
+---
+
+### MK.7 — Recovery as a First-Class Workout (24h cycle product)
+
+**What it is:** Reframe what "the app is for" entirely. Most apps
+optimise *training*; we optimise the entire 24-hour cycle —
+sleep, nutrition, mobility, contrast therapy, breath-work, meditation.
+Each of these is a scheduled "workout" with completion tracking,
+streak counting, and progression. *Recovery isn't a rest day; it's a
+practice.*
+
+**Why it kills:**
+- **WHOOP** measures recovery but doesn't prescribe practices.
+- **Centr** has meditation but not as part of program scheduling.
+- **Fitbod / Hevy / Strong** literally do nothing for recovery.
+- **Apple Fitness+** has cooldowns and meditation but they're
+  separate libraries.
+- Broadens the addressable use case from "active gym-goers" to "anyone
+  who cares about wellbeing." 5-10× larger market.
+- Shifts the brand from "workout app" → "performance OS."
+
+**Effort:** 25 days eng (new feature surface, content authoring tools,
+calendar integration) + ~$10k content creation (mobility flows,
+breath-work guides, scripted meditations).
+
+**Revenue impact:** Brand-defining. Repositions us from "Fitbod
+competitor" to a different category entirely. Marketing line: *"The
+first fitness app that treats sleep as a workout."*
+
+---
+
+### MK feature priority for first execution
+
+Not all 7 ship at once. Recommended order based on effort vs revenue
+impact:
+
+| Order | MK | Effort | Impact | Notes |
+|-------|----|--------|--------|-------|
+| 1 | **MK.3 Cycle-aware programming** | 12d + $3k | Doubles TAM | Easiest big win; ship 2027Q2 |
+| 2 | **MK.1 Live Form Coach with Voice** | 18d | Pricing power for Celebrity | Builds on TX.3 + TX.6; ship 2027Q3 |
+| 3 | **MK.7 Recovery as workout** | 25d + $10k | Brand reposition | Ship 2027Q3-Q4 |
+| 4 | **MK.2 Goal-Photo → Program** | 25d + $5–10k | PR moment | Cloud LLM cost manageable; ship 2028Q1 |
+| 5 | **MK.6 Body comp via camera** | 20d + $10–15k | Premium upgrade driver | Needs good training data; ship 2028Q1 |
+| 6 | **MK.4 Insurance partnerships** | 8d eng + 6-18mo BD | LTV multiplier | Start BD work 2027Q1, eng follows partner |
+| 7 | **MK.5 Gym Chain SDK** | 60d + devrel headcount | Larger than B2C long-term | Needs dedicated team; 2028H2 |
+
+---
+
 ## Part 5 — Cross-references
 
 - Existing roadmap of completed phases: [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md)

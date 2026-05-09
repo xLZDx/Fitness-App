@@ -10,8 +10,27 @@ import '../workouts/data/scheduled_session.dart';
 import '../workouts/data/workout_log.dart';
 import '../workouts/state/scheduled_session_providers.dart';
 import '../workouts/state/workout_log_providers.dart';
+import '../workouts/widgets/plate_calculator.dart';
+import '../workouts/widgets/rest_timer.dart';
+import '../workouts/widgets/warmup_calculator.dart';
 import 'data/equipment_models.dart';
 import 'state/equipment_providers.dart';
+
+/// Shows the rest timer after a successful "Mark complete". Local to this
+/// page — clears on rebuild via a StateProvider.autoDispose so navigating
+/// away resets it.
+final _restTimerVisibleProvider =
+    StateProvider.autoDispose<bool>((_) => false);
+
+/// Compound lifts get a longer rest window than accessories. Read off
+/// muscle tags so we don't have to maintain a parallel list.
+int _restSecondsFor(ExerciseItem item) {
+  final muscles = item.muscles.toSet();
+  final isCompound = muscles.intersection({
+    'quads', 'hamstrings', 'glutes', 'chest', 'back', 'lats', 'core',
+  }).length >= 2;
+  return isCompound ? 180 : 90;
+}
 
 /// Looks up an exercise from the (preloaded) equipment catalog. Internal
 /// helper so we don't need a separate FutureProvider just for this page.
@@ -70,6 +89,15 @@ class WorkoutPlayerPage extends ConsumerWidget {
               if (item.contraindications.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 _CautionCard(item: item),
+              ],
+              const SizedBox(height: 12),
+              _ToolsRow(),
+              if (ref.watch(_restTimerVisibleProvider)) ...[
+                const SizedBox(height: 12),
+                RestTimer(
+                  seconds: _restSecondsFor(item),
+                  onComplete: () {},
+                ),
               ],
               const SizedBox(height: 20),
               _MarkCompleteButton(exercise: item),
@@ -361,7 +389,9 @@ class _MarkCompleteButton extends ConsumerWidget {
               behavior: SnackBarBehavior.floating,
             ),
           );
-          GoRouter.of(context).go('/home');
+          // Stay on the page so the user can rest, then mark another set
+          // (or schedule next session). Auto-show the rest timer above.
+          ref.read(_restTimerVisibleProvider.notifier).state = true;
         },
         error: (e, _) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -414,6 +444,61 @@ class _MarkCompleteButton extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Row of small "tool" chips below the steps card. Opens a bottom sheet
+/// with the plate calculator + warm-up calculator. Cheap utility every
+/// lifter app has; we used to ship without.
+class _ToolsRow extends StatelessWidget {
+  const _ToolsRow();
+
+  void _openSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (_, controller) => SingleChildScrollView(
+          controller: controller,
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
+          child: const Column(
+            children: [
+              PlateCalculator(),
+              SizedBox(height: 14),
+              WarmupCalculator(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        ActionChip(
+          avatar: const Icon(Icons.fitness_center_rounded, size: 18),
+          label: const Text('Plates'),
+          labelStyle: theme.textTheme.labelLarge,
+          onPressed: () => _openSheet(context),
+        ),
+        ActionChip(
+          avatar: const Icon(Icons.local_fire_department_rounded, size: 18),
+          label: const Text('Warm-up'),
+          labelStyle: theme.textTheme.labelLarge,
+          onPressed: () => _openSheet(context),
+        ),
+      ],
     );
   }
 }
