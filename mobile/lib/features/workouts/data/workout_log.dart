@@ -1,3 +1,27 @@
+/// User's perceived effort on a completed set. Read by the recommendation
+/// pipeline (`exercise_filter.dart`) + `progression.dart` to nudge tier-fit
+/// ordering and next-session weight in the right direction. Freeletics'
+/// AI Coach reads a similar signal; nobody else in the top-20 does.
+enum DifficultyRating {
+  tooEasy,
+  justRight,
+  tooHard,
+}
+
+extension DifficultyRatingX on DifficultyRating {
+  /// −1 / 0 / +1 — the only form the recommendation model needs.
+  int get score {
+    switch (this) {
+      case DifficultyRating.tooEasy:
+        return -1;
+      case DifficultyRating.justRight:
+        return 0;
+      case DifficultyRating.tooHard:
+        return 1;
+    }
+  }
+}
+
 /// One completed workout, written when the user taps "Mark complete" on
 /// the workout player. The exercise title is denormalised so the progress
 /// tab can render history without re-fetching the catalog (and so logs
@@ -11,6 +35,9 @@ class WorkoutLogEntry {
     required this.completedAt,
     required this.durationMinutes,
     this.notes,
+    this.weightKg,
+    this.repsCompleted,
+    this.difficulty,
   });
 
   final String id;
@@ -20,6 +47,19 @@ class WorkoutLogEntry {
   final int durationMinutes;
   final String? notes;
 
+  /// Working weight on the bar (or selectorized cable stack). Optional —
+  /// some exercises (mobility, body-weight work) don't carry a load.
+  final double? weightKg;
+
+  /// Reps actually completed on the working set. Used by progression to
+  /// detect "made the rep target".
+  final int? repsCompleted;
+
+  /// User's post-workout perceived-effort rating. The progression engine
+  /// reads this; the recommendation pipeline re-ranks tier-fit on the
+  /// rolling average.
+  final DifficultyRating? difficulty;
+
   WorkoutLogEntry copyWith({
     String? id,
     String? exerciseId,
@@ -27,6 +67,9 @@ class WorkoutLogEntry {
     DateTime? completedAt,
     int? durationMinutes,
     String? notes,
+    double? weightKg,
+    int? repsCompleted,
+    DifficultyRating? difficulty,
   }) =>
       WorkoutLogEntry(
         id: id ?? this.id,
@@ -35,6 +78,9 @@ class WorkoutLogEntry {
         completedAt: completedAt ?? this.completedAt,
         durationMinutes: durationMinutes ?? this.durationMinutes,
         notes: notes ?? this.notes,
+        weightKg: weightKg ?? this.weightKg,
+        repsCompleted: repsCompleted ?? this.repsCompleted,
+        difficulty: difficulty ?? this.difficulty,
       );
 
   Map<String, dynamic> toJson() => {
@@ -44,6 +90,9 @@ class WorkoutLogEntry {
         'completedAt': completedAt.toIso8601String(),
         'durationMinutes': durationMinutes,
         if (notes != null) 'notes': notes,
+        if (weightKg != null) 'weightKg': weightKg,
+        if (repsCompleted != null) 'repsCompleted': repsCompleted,
+        if (difficulty != null) 'difficulty': difficulty!.name,
       };
 
   factory WorkoutLogEntry.fromJson(Map<String, dynamic> j) {
@@ -59,6 +108,16 @@ class WorkoutLogEntry {
       throw ArgumentError(
           'completedAt must be ISO-8601 string or DateTime, got ${raw.runtimeType}');
     }
+    DifficultyRating? difficulty;
+    final dn = j['difficulty'] as String?;
+    if (dn != null) {
+      for (final r in DifficultyRating.values) {
+        if (r.name == dn) {
+          difficulty = r;
+          break;
+        }
+      }
+    }
     return WorkoutLogEntry(
       id: j['id'] as String,
       exerciseId: j['exerciseId'] as String,
@@ -66,6 +125,9 @@ class WorkoutLogEntry {
       completedAt: completedAt,
       durationMinutes: (j['durationMinutes'] as num?)?.toInt() ?? 0,
       notes: j['notes'] as String?,
+      weightKg: (j['weightKg'] as num?)?.toDouble(),
+      repsCompleted: (j['repsCompleted'] as num?)?.toInt(),
+      difficulty: difficulty,
     );
   }
 
@@ -78,9 +140,12 @@ class WorkoutLogEntry {
           other.exerciseTitle == exerciseTitle &&
           other.completedAt == completedAt &&
           other.durationMinutes == durationMinutes &&
-          other.notes == notes;
+          other.notes == notes &&
+          other.weightKg == weightKg &&
+          other.repsCompleted == repsCompleted &&
+          other.difficulty == difficulty;
 
   @override
-  int get hashCode => Object.hash(
-      id, exerciseId, exerciseTitle, completedAt, durationMinutes, notes);
+  int get hashCode => Object.hash(id, exerciseId, exerciseTitle, completedAt,
+      durationMinutes, notes, weightKg, repsCompleted, difficulty);
 }

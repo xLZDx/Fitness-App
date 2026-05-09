@@ -10,6 +10,7 @@ import '../workouts/data/scheduled_session.dart';
 import '../workouts/data/workout_log.dart';
 import '../workouts/state/scheduled_session_providers.dart';
 import '../workouts/state/workout_log_providers.dart';
+import '../workouts/widgets/difficulty_rating_sheet.dart';
 import '../workouts/widgets/plate_calculator.dart';
 import '../workouts/widgets/rest_timer.dart';
 import '../workouts/widgets/warmup_calculator.dart';
@@ -381,28 +382,38 @@ class _MarkCompleteButton extends ConsumerWidget {
       await ref.read(logWorkoutActionProvider.notifier).log(entry);
       if (!context.mounted) return;
       final newState = ref.read(logWorkoutActionProvider);
-      newState.when(
-        data: (_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Logged "${exercise.title}" — nice work.'),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-          // Stay on the page so the user can rest, then mark another set
-          // (or schedule next session). Auto-show the rest timer above.
-          ref.read(_restTimerVisibleProvider.notifier).state = true;
-        },
-        error: (e, _) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Could not save: $e'),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        },
-        loading: () {},
+      if (newState.hasError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not save: ${newState.error}'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+      // Success — confirm + show rest timer.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Logged "${exercise.title}" — nice work.'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
+      ref.read(_restTimerVisibleProvider.notifier).state = true;
+
+      // Ask for a 1-tap perceived-effort rating. Skipping is fine — the
+      // rating is optional, and Freeletics' AI Coach reads a similar
+      // signal, but only this app combines it with injury filtering and
+      // progressive overload (P1.1 + P1.2 of the roadmap).
+      if (!context.mounted) return;
+      final rating = await DifficultyRatingSheet.show(
+        context,
+        exerciseTitle: exercise.title,
+      );
+      if (rating != null) {
+        await ref
+            .read(logWorkoutActionProvider.notifier)
+            .log(entry.copyWith(difficulty: rating));
+      }
     }
 
     return GlassCard(
