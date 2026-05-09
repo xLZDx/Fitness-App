@@ -7,6 +7,7 @@ import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/scroll_dim_list.dart';
 import 'data/equipment_models.dart';
 import 'state/equipment_providers.dart';
+import 'widgets/equipment_report_sheet.dart';
 
 class EquipmentDetailPage extends ConsumerWidget {
   const EquipmentDetailPage({super.key, required this.equipmentId});
@@ -78,6 +79,31 @@ class EquipmentDetailPage extends ConsumerWidget {
                     const SizedBox(height: 6),
                     Text(item.description,
                         style: theme.textTheme.bodyMedium),
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        icon: const Icon(Icons.report_gmailerrorred_outlined,
+                            size: 18),
+                        label: const Text('Report broken equipment'),
+                        onPressed: () async {
+                          final sent = await EquipmentReportSheet.show(
+                            context,
+                            equipmentId: item.id,
+                            equipmentName: item.name,
+                          );
+                          if (sent == true && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text('Report sent to maintenance — thanks.'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),

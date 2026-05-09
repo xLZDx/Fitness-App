@@ -26,5 +26,22 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if false;
     }
+
+    // Gym registry — clients can read so the QR scanner can resolve
+    // gymId → display name + maintenance metadata, but only the
+    // server (Admin SDK) writes via the gym-onboarding tooling.
+    match /gyms/{gymId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // Equipment-failure reports (TX.7). Same server-only pattern as
+    // subscriptions: the `reportEquipment` Cloud Function is the only
+    // writer, and clients have no read access (reports surface to gym
+    // staff via webhook + admin console, not the user's own app).
+    match /equipment_reports/{anyId} {
+      allow read: if false;
+      allow write: if false;
+    }
   }
 }

@@ -9,6 +9,8 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/data/firebase_auth_repository.dart';
 import 'features/auth/state/auth_providers.dart';
+import 'features/equipment/data/cloud_functions_equipment_report_service.dart';
+import 'features/equipment/state/equipment_providers.dart';
 import 'features/profile/data/firestore_profile_repository.dart';
 import 'features/profile/state/profile_providers.dart';
 import 'features/subscription/data/cloud_functions_stripe_service.dart';
@@ -47,6 +49,8 @@ Future<void> main() async {
             .overrideWith((_) => FirestoreSubscriptionRepository()),
         stripeCheckoutServiceProvider
             .overrideWith((_) => CloudFunctionsStripeService()),
+        equipmentReportServiceProvider
+            .overrideWith((_) => CloudFunctionsEquipmentReportService()),
         notificationServiceProvider.overrideWithValue(notifications),
       ],
       child: const FitnessApp(),

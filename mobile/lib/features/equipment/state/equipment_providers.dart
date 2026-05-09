@@ -3,11 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../profile/state/profile_providers.dart';
 import '../data/asset_equipment_repository.dart';
 import '../data/equipment_models.dart';
+import '../data/equipment_report_service.dart';
 import '../data/equipment_repository.dart';
 import '../data/exercise_filter.dart';
+import '../data/mock_equipment_report_service.dart';
 
 final equipmentRepositoryProvider = Provider<EquipmentRepository>((ref) {
   return AssetEquipmentRepository();
+});
+
+/// Submits broken-equipment reports. Default is the in-memory mock so
+/// unit tests don't pull in cloud_functions; production overrides in
+/// `main.dart` with `CloudFunctionsEquipmentReportService`.
+final equipmentReportServiceProvider =
+    Provider<EquipmentReportService>((ref) {
+  return MockEquipmentReportService();
 });
 
 /// Every piece of equipment in the catalog.

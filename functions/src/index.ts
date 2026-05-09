@@ -1,7 +1,8 @@
 /**
- * Cloud Functions backend for the Fitness App's Phase 4B Stripe billing.
+ * Cloud Functions backend for the Fitness App's Phase 4B Stripe billing
+ * + the TX.7 Equipment Failure Reporting B2B feature.
  *
- * Four entry points:
+ * Five entry points:
  *   - startFreeTrial         (callable) — writes the user's 14-day trial
  *                                         state into Firestore. The
  *                                         tightened firestore.rules deny
@@ -15,6 +16,11 @@
  *   - stripeWebhook          (HTTPS)    — verifies Stripe events and mirrors
  *                                         the subscription state into
  *                                         users/{uid}/subscription/main.
+ *   - reportEquipment        (callable) — TX.7. Stores a broken-equipment
+ *                                         report in equipment_reports/{id}
+ *                                         and dispatches to the gym's
+ *                                         registered webhook (Slack /
+ *                                         Teams / email proxy / custom).
  *
  * Secrets (set via `firebase functions:secrets:set`):
  *   - STRIPE_SECRET_KEY        sk_test_... (server-only, never in the app)
@@ -367,5 +373,86 @@ export const stripeWebhook = onRequest(
       logger.error("webhook handler crashed", { err });
       res.status(500).send("handler error");
     }
+  },
+);
+
+/* ------------------------------------------------------------------ */
+/* reportEquipment (TX.7)                                             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Persists a broken-equipment report at `equipment_reports/{id}` and
+ * dispatches a Slack-compatible webhook for the gym (if registered at
+ * `gyms/{gymId}.maintenanceWebhookUrl`).
+ *
+ * The dispatch is best-effort — if the webhook fails, the Firestore
+ * write still succeeds so the gym's admin console can pick the report
+ * up later.
+ */
+export const reportEquipment = onCall(
+  { region: "us-central1" },
+  async (request) => {
+    const auth = request.auth;
+    if (!auth) {
+      throw new HttpsError("unauthenticated", "Sign in to file a report.");
+    }
+    const data = request.data ?? {};
+    const equipmentId = data.equipmentId as string | undefined;
+    const gymId = (data.gymId as string | undefined) ?? "unknown";
+    const fault = (data.fault as string | undefined) ?? "other";
+    const note = (data.note as string | undefined) ?? "";
+    if (!equipmentId) {
+      throw new HttpsError("invalid-argument", "equipmentId is required.");
+    }
+
+    const reportId =
+      (data.id as string | undefined) ??
+      `${Date.now()}_${equipmentId}`;
+    const reportedAt = (data.reportedAt as string | undefined) ??
+      new Date().toISOString();
+
+    await db.doc(`equipment_reports/${reportId}`).set({
+      equipmentId,
+      gymId,
+      fault,
+      note,
+      reportedAt,
+      reporterUid: auth.uid,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      status: "open",
+    });
+
+    // Best-effort webhook dispatch. We look up gyms/{gymId} to see
+    // whether the chain registered a maintenance endpoint.
+    try {
+      const gymSnap = await db.doc(`gyms/${gymId}`).get();
+      const webhookUrl =
+        gymSnap.data()?.maintenanceWebhookUrl as string | undefined;
+      if (webhookUrl) {
+        const payload = {
+          text:
+            `Equipment report — ${fault.toUpperCase()}\n` +
+            `Gym: ${gymId}  ·  Equipment: ${equipmentId}\n` +
+            (note ? `Note: ${note}\n` : "") +
+            `Reporter: ${auth.uid}`,
+          equipmentId,
+          gymId,
+          fault,
+          note,
+          reportedAt,
+          reportId,
+        };
+        await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
+    } catch (err) {
+      logger.warn("equipment report webhook failed", { err, gymId });
+      // We swallow the error — the Firestore write succeeded.
+    }
+
+    return { reportId };
   },
 );
