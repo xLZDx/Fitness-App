@@ -10,11 +10,13 @@ class MockStripeCheckoutService implements StripeCheckoutService {
 
   /// Calls observed since construction; cleared by [reset].
   final List<SubscriptionTier> startedCheckouts = [];
+  final List<SubscriptionPeriod> checkoutPeriods = [];
   final List<SubscriptionTier> startedTrials = [];
   int portalOpens = 0;
 
   void reset() {
     startedCheckouts.clear();
+    checkoutPeriods.clear();
     startedTrials.clear();
     portalOpens = 0;
     failWith = null;
@@ -27,9 +29,13 @@ class MockStripeCheckoutService implements StripeCheckoutService {
   }
 
   @override
-  Future<void> startCheckout(SubscriptionTier tier) async {
+  Future<void> startCheckout(
+    SubscriptionTier tier, {
+    SubscriptionPeriod period = SubscriptionPeriod.monthly,
+  }) async {
     if (failWith != null) throw failWith!;
     startedCheckouts.add(tier);
+    checkoutPeriods.add(period);
   }
 
   @override

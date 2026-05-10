@@ -97,6 +97,8 @@ class SubscriptionPage extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 12),
+            const _PeriodToggle(),
+            const SizedBox(height: 12),
             _PlanCard(
               tier: SubscriptionTier.free,
               title: 'Member',
@@ -118,10 +120,9 @@ class SubscriptionPage extends ConsumerWidget {
               cta: 'Stay a Member',
             ),
             const SizedBox(height: 12),
-            _PlanCard(
+            _PlanCardForPeriod(
               tier: SubscriptionTier.standard,
               title: 'Supporter',
-              price: r'$9.99 / month · tax-deductible donation',
               tagline:
                   'Funds the mission and unlocks long-term progress + reminders.',
               features: const [
@@ -134,19 +135,12 @@ class SubscriptionPage extends ConsumerWidget {
               currentTier: tier,
               highlight: true,
               isLoading: action.isLoading,
-              onChoose: () => ref
-                  .read(subscriptionActionProvider.notifier)
-                  .chooseTier(SubscriptionTier.standard),
-              onStartTrial: () => ref
-                  .read(subscriptionActionProvider.notifier)
-                  .startTrial(SubscriptionTier.standard),
               cta: 'Become a Supporter',
             ),
             const SizedBox(height: 12),
-            _PlanCard(
+            _PlanCardForPeriod(
               tier: SubscriptionTier.celebrityTrainer,
               title: 'Sustainer',
-              price: r'$19.99 / month · tax-deductible donation',
               tagline:
                   'Powers celebrity-donated content + advanced analytics.',
               features: const [
@@ -158,12 +152,6 @@ class SubscriptionPage extends ConsumerWidget {
               ],
               currentTier: tier,
               isLoading: action.isLoading,
-              onChoose: () => ref
-                  .read(subscriptionActionProvider.notifier)
-                  .chooseTier(SubscriptionTier.celebrityTrainer),
-              onStartTrial: () => ref
-                  .read(subscriptionActionProvider.notifier)
-                  .startTrial(SubscriptionTier.celebrityTrainer),
               cta: 'Become a Sustainer',
             ),
             const SizedBox(height: 16),
@@ -797,5 +785,192 @@ class _PlanCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// Period toggle pill row (Monthly / Annual / Family / Lifetime).
+/// Lifetime is hidden for Standard tier; Family is hidden for Celebrity.
+/// We show all four and rely on `_PlanCardForPeriod` to no-op the
+/// unsupported combinations gracefully.
+class _PeriodToggle extends ConsumerWidget {
+  const _PeriodToggle();
+
+  static const _periods = SubscriptionPeriod.values;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selected = ref.watch(selectedPeriodProvider);
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (final p in _periods) ...[
+            _PeriodPill(
+              label: _shortLabel(p),
+              isActive: p == selected,
+              onTap: () =>
+                  ref.read(selectedPeriodProvider.notifier).state = p,
+              isPopular: p == SubscriptionPeriod.annual,
+            ),
+            const SizedBox(width: 8),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _shortLabel(SubscriptionPeriod p) {
+    switch (p) {
+      case SubscriptionPeriod.monthly:
+        return 'Monthly';
+      case SubscriptionPeriod.annual:
+        return 'Annual · save ~50%';
+      case SubscriptionPeriod.family2:
+        return 'Family · 2';
+      case SubscriptionPeriod.family4:
+        return 'Family · 4';
+      case SubscriptionPeriod.lifetime:
+        return 'Lifetime';
+    }
+  }
+}
+
+class _PeriodPill extends StatelessWidget {
+  const _PeriodPill({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+    this.isPopular = false,
+  });
+
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+  final bool isPopular;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: isActive
+              ? Colors.white
+              : Colors.white.withValues(alpha: 0.30),
+          border: isPopular && !isActive
+              ? Border.all(color: AppPalette.auroraTeal, width: 1.4)
+              : null,
+        ),
+        child: Text(
+          label,
+          style: theme.textTheme.labelMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: isActive
+                ? theme.colorScheme.onSurface
+                : theme.colorScheme.onSurface.withValues(alpha: 0.78),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Wrapper around [_PlanCard] that derives the price string + decides
+/// whether the plan is purchasable for the currently-selected period.
+/// Returns an empty SizedBox when the (tier, period) combo is invalid
+/// (e.g. Family on Celebrity, Lifetime on Standard).
+class _PlanCardForPeriod extends ConsumerWidget {
+  const _PlanCardForPeriod({
+    required this.tier,
+    required this.title,
+    required this.tagline,
+    required this.features,
+    required this.currentTier,
+    required this.isLoading,
+    required this.cta,
+    this.highlight = false,
+  });
+
+  final SubscriptionTier tier;
+  final String title;
+  final String tagline;
+  final List<String> features;
+  final SubscriptionTier currentTier;
+  final bool isLoading;
+  final String cta;
+  final bool highlight;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final period = ref.watch(selectedPeriodProvider);
+    final price = _priceLabelFor(tier, period);
+    if (price == null) {
+      // Unsupported combo — render a small note instead of hiding so the
+      // user understands why the card "disappeared".
+      final theme = Theme.of(context);
+      return GlassCard(
+        padding: const EdgeInsets.all(14),
+        child: Text(
+          '$title is not available on ${period.displayLabel}.',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+          ),
+        ),
+      );
+    }
+    return _PlanCard(
+      tier: tier,
+      title: title,
+      price: price,
+      tagline: tagline,
+      features: features,
+      currentTier: currentTier,
+      highlight: highlight,
+      isLoading: isLoading,
+      onChoose: () => ref
+          .read(subscriptionActionProvider.notifier)
+          .chooseTier(tier, period: period),
+      onStartTrial: period == SubscriptionPeriod.monthly
+          ? () => ref
+              .read(subscriptionActionProvider.notifier)
+              .startTrial(tier)
+          : null,
+      cta: cta,
+    );
+  }
+
+  /// Hard-coded price strings per (tier, period). Single source of truth
+  /// for what the picker advertises; the actual amounts are enforced
+  /// server-side by the Stripe price ids the Cloud Function looks up.
+  String? _priceLabelFor(SubscriptionTier t, SubscriptionPeriod p) {
+    if (t == SubscriptionTier.standard) {
+      switch (p) {
+        case SubscriptionPeriod.monthly:
+          return r'$9.99 / month · tax-deductible';
+        case SubscriptionPeriod.annual:
+          return r'$59.99 / year · ~$5/mo effective';
+        case SubscriptionPeriod.family2:
+          return r'$14.99 / month · 2 seats';
+        case SubscriptionPeriod.family4:
+          return r'$19.99 / month · 4 seats';
+        case SubscriptionPeriod.lifetime:
+          return null;
+      }
+    }
+    switch (p) {
+      case SubscriptionPeriod.monthly:
+        return r'$19.99 / month · tax-deductible';
+      case SubscriptionPeriod.annual:
+        return r'$119.99 / year · ~$9.99/mo effective';
+      case SubscriptionPeriod.lifetime:
+        return r'$499 lifetime · one-time donor';
+      case SubscriptionPeriod.family2:
+      case SubscriptionPeriod.family4:
+        return null;
+    }
   }
 }

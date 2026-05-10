@@ -52,6 +52,11 @@ final featureAccessProvider = Provider.family<bool, AppFeature>((ref, feature) {
   return canAccess(tier, feature);
 });
 
+/// UI-only state — the period the picker is currently displaying. Reset
+/// every time the page is rebuilt; not persisted.
+final selectedPeriodProvider =
+    StateProvider<SubscriptionPeriod>((_) => SubscriptionPeriod.monthly);
+
 /// Imperative controller for "Start trial" / "Choose tier" / "Cancel"
 /// actions. The Notifier surfaces an AsyncValue so the UI can render
 /// loading / error states.
@@ -92,7 +97,10 @@ class SubscriptionAction extends Notifier<AsyncValue<void>> {
   /// Picking [SubscriptionTier.free] short-circuits Stripe entirely
   /// and just clears any local record (handy for "downgrade to free"
   /// from the management page).
-  Future<void> chooseTier(SubscriptionTier tier) async {
+  Future<void> chooseTier(
+    SubscriptionTier tier, {
+    SubscriptionPeriod period = SubscriptionPeriod.monthly,
+  }) async {
     state = const AsyncValue.loading();
     try {
       final user = ref.read(authUserProvider).valueOrNull;
@@ -100,16 +108,11 @@ class SubscriptionAction extends Notifier<AsyncValue<void>> {
         throw StateError('Cannot subscribe while signed out');
       }
       if (tier == SubscriptionTier.free) {
-        // Free tier is the implicit default — picking it from the page
-        // is a no-op. Users on a paid plan downgrade through the
-        // Customer Portal ("Manage subscription"), which fires
-        // customer.subscription.deleted and the webhook handles the
-        // rollback.
         state = const AsyncValue.data(null);
         return;
       }
       final stripe = ref.read(stripeCheckoutServiceProvider);
-      await stripe.startCheckout(tier);
+      await stripe.startCheckout(tier, period: period);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);

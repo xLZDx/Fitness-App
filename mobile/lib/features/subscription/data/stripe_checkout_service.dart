@@ -19,14 +19,20 @@ abstract class StripeCheckoutService {
   /// the user already used their trial).
   Future<void> startFreeTrial(SubscriptionTier tier);
 
-  /// Asks the backend for a Stripe Checkout URL for [tier] and opens it
-  /// (browser / Custom Tab). The webhook updates the Firestore record once
-  /// the user completes payment, so callers don't need a return path —
-  /// they just listen to `currentSubscriptionProvider`.
+  /// Asks the backend for a Stripe Checkout URL for [tier] + [period]
+  /// and opens it (browser / Custom Tab). The webhook updates the
+  /// Firestore record once the user completes payment, so callers don't
+  /// need a return path — they just listen to
+  /// `currentSubscriptionProvider`.
+  ///
+  /// [period] defaults to monthly so existing call sites stay green.
   ///
   /// Throws [StripeCheckoutException] when the backend declines or the
   /// URL fails to launch.
-  Future<void> startCheckout(SubscriptionTier tier);
+  Future<void> startCheckout(
+    SubscriptionTier tier, {
+    SubscriptionPeriod period = SubscriptionPeriod.monthly,
+  });
 
   /// Opens the Stripe Customer Portal so the user can change plan or
   /// cancel. Behaviour mirrors [startCheckout].

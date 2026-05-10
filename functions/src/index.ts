@@ -38,16 +38,69 @@ const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY");
 const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET");
 const STRIPE_PRICE_STANDARD = defineSecret("STRIPE_PRICE_STANDARD");
 const STRIPE_PRICE_CELEBRITY = defineSecret("STRIPE_PRICE_CELEBRITY");
+// Phase A6: annual + family + lifetime SKUs. Each is a separate Stripe
+// price id; the dashboard owner sets the values via
+// `firebase functions:secrets:set STRIPE_PRICE_STANDARD_ANNUAL ...`.
+const STRIPE_PRICE_STANDARD_ANNUAL =
+  defineSecret("STRIPE_PRICE_STANDARD_ANNUAL");
+const STRIPE_PRICE_CELEBRITY_ANNUAL =
+  defineSecret("STRIPE_PRICE_CELEBRITY_ANNUAL");
+const STRIPE_PRICE_STANDARD_FAMILY2 =
+  defineSecret("STRIPE_PRICE_STANDARD_FAMILY2");
+const STRIPE_PRICE_STANDARD_FAMILY4 =
+  defineSecret("STRIPE_PRICE_STANDARD_FAMILY4");
+const STRIPE_PRICE_CELEBRITY_LIFETIME =
+  defineSecret("STRIPE_PRICE_CELEBRITY_LIFETIME");
 
 type Tier = "standard" | "celebrityTrainer";
+type Period =
+  | "monthly"
+  | "annual"
+  | "family2"
+  | "family4"
+  | "lifetime";
 
-function priceFor(tier: Tier): string {
+function priceFor(tier: Tier, period: Period = "monthly"): string {
   switch (tier) {
     case "standard":
-      return STRIPE_PRICE_STANDARD.value();
+      switch (period) {
+        case "monthly":
+          return STRIPE_PRICE_STANDARD.value();
+        case "annual":
+          return STRIPE_PRICE_STANDARD_ANNUAL.value();
+        case "family2":
+          return STRIPE_PRICE_STANDARD_FAMILY2.value();
+        case "family4":
+          return STRIPE_PRICE_STANDARD_FAMILY4.value();
+        case "lifetime":
+          throw new HttpsError(
+            "invalid-argument",
+            "Standard does not offer a lifetime plan.",
+          );
+      }
+      break;
     case "celebrityTrainer":
-      return STRIPE_PRICE_CELEBRITY.value();
+      switch (period) {
+        case "monthly":
+          return STRIPE_PRICE_CELEBRITY.value();
+        case "annual":
+          return STRIPE_PRICE_CELEBRITY_ANNUAL.value();
+        case "lifetime":
+          return STRIPE_PRICE_CELEBRITY_LIFETIME.value();
+        case "family2":
+        case "family4":
+          throw new HttpsError(
+            "invalid-argument",
+            "Celebrity tier does not offer family seats yet.",
+          );
+      }
+      break;
   }
+  throw new HttpsError("invalid-argument", `Unknown period: ${period}`);
+}
+
+function isOneTime(period: Period): boolean {
+  return period === "lifetime";
 }
 
 /**
@@ -142,6 +195,11 @@ export const createCheckoutSession = onCall(
       STRIPE_SECRET_KEY,
       STRIPE_PRICE_STANDARD,
       STRIPE_PRICE_CELEBRITY,
+      STRIPE_PRICE_STANDARD_ANNUAL,
+      STRIPE_PRICE_CELEBRITY_ANNUAL,
+      STRIPE_PRICE_STANDARD_FAMILY2,
+      STRIPE_PRICE_STANDARD_FAMILY4,
+      STRIPE_PRICE_CELEBRITY_LIFETIME,
     ],
     region: "us-central1",
   },
@@ -158,6 +216,19 @@ export const createCheckoutSession = onCall(
         `Unknown tier: ${String(tier)}`,
       );
     }
+    const period = (request.data?.period as Period | undefined) ?? "monthly";
+    if (
+      period !== "monthly" &&
+      period !== "annual" &&
+      period !== "family2" &&
+      period !== "family4" &&
+      period !== "lifetime"
+    ) {
+      throw new HttpsError(
+        "invalid-argument",
+        `Unknown period: ${String(period)}`,
+      );
+    }
 
     const stripe = new Stripe(STRIPE_SECRET_KEY.value(), {
       apiVersion: "2025-02-24.acacia",
@@ -168,18 +239,33 @@ export const createCheckoutSession = onCall(
       auth.token?.email ?? null,
     );
 
+    const oneTime = isOneTime(period);
     const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
+      mode: oneTime ? "payment" : "subscription",
       customer: customerId,
-      line_items: [{ price: priceFor(tier), quantity: 1 }],
-      // The deep link is registered on Android via an app-link intent
-      // filter (Phase 4B continuation). Until then these resolve to the
-      // public Stripe-hosted "thanks" pages, which is fine for the test
-      // mode round-trip — the subscription doc updates via webhook.
+      line_items: [{ price: priceFor(tier, period), quantity: 1 }],
       success_url: "https://fitnessapp.example.com/checkout-success",
       cancel_url: "https://fitnessapp.example.com/checkout-cancel",
       client_reference_id: auth.uid,
-      subscription_data: { metadata: { firebaseUid: auth.uid } },
+      ...(oneTime
+        ? {
+            payment_intent_data: {
+              metadata: {
+                firebaseUid: auth.uid,
+                tier,
+                period,
+              },
+            },
+          }
+        : {
+            subscription_data: {
+              metadata: {
+                firebaseUid: auth.uid,
+                tier,
+                period,
+              },
+            },
+          }),
       allow_promotion_codes: true,
     });
 
@@ -189,6 +275,7 @@ export const createCheckoutSession = onCall(
     logger.info("created checkout session", {
       uid: auth.uid,
       tier,
+      period,
       sessionId: session.id,
     });
     return { url: session.url };
@@ -283,6 +370,9 @@ async function applySubscription(s: Stripe.Subscription) {
 
   const status = mapStatus(s.status);
   const tier = tierFromSubscription(s);
+  const period = (s.metadata?.period as string | undefined) ?? "monthly";
+  const seatCount =
+    period === "family2" ? 2 : period === "family4" ? 4 : 1;
 
   // Stripe surfaces these timestamps as Unix seconds.
   const periodEnd = s.current_period_end
@@ -296,6 +386,8 @@ async function applySubscription(s: Stripe.Subscription) {
     {
       tier,
       status,
+      period,
+      seatCount,
       currentPeriodEndsAt: periodEnd,
       trialEndsAt: trialEnd,
       stripeCustomerId: s.customer,
@@ -304,6 +396,39 @@ async function applySubscription(s: Stripe.Subscription) {
     },
     { merge: true },
   );
+}
+
+/**
+ * Handles the one-time `lifetime` purchase that arrives as a Stripe
+ * PaymentIntent (mode: "payment") rather than a Subscription. Writes
+ * the same shape as the recurring path, with `currentPeriodEndsAt` set
+ * to the year 9999 sentinel and `isLifetime: true`.
+ */
+async function applyLifetimePayment(pi: Stripe.PaymentIntent) {
+  const uid = pi.metadata?.firebaseUid as string | undefined;
+  const tier = pi.metadata?.tier as string | undefined;
+  if (!uid || !tier) {
+    logger.error("lifetime payment without uid/tier", {
+      paymentIntentId: pi.id,
+    });
+    return;
+  }
+  await db.doc(`users/${uid}/subscription/main`).set(
+    {
+      tier,
+      status: "active",
+      period: "lifetime",
+      seatCount: 1,
+      currentPeriodEndsAt: "9999-12-31T23:59:59.000Z",
+      trialEndsAt: null,
+      isLifetime: true,
+      stripeCustomerId: pi.customer,
+      stripePaymentIntentId: pi.id,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    },
+    { merge: true },
+  );
+  logger.info("lifetime payment applied", { uid, tier });
 }
 
 export const stripeWebhook = onRequest(
@@ -357,6 +482,13 @@ export const stripeWebhook = onRequest(
           if (typeof subId === "string") {
             const sub = await stripe.subscriptions.retrieve(subId);
             await applySubscription(sub);
+          }
+          break;
+        }
+        case "payment_intent.succeeded": {
+          const pi = event.data.object as Stripe.PaymentIntent;
+          if (pi.metadata?.period === "lifetime") {
+            await applyLifetimePayment(pi);
           }
           break;
         }

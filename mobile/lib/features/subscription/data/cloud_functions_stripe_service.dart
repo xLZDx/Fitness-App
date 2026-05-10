@@ -66,11 +66,15 @@ class CloudFunctionsStripeService implements StripeCheckoutService {
   }
 
   @override
-  Future<void> startCheckout(SubscriptionTier tier) async {
+  Future<void> startCheckout(
+    SubscriptionTier tier, {
+    SubscriptionPeriod period = SubscriptionPeriod.monthly,
+  }) async {
     await _refreshToken();
     final callable = _functions.httpsCallable('createCheckoutSession');
     final result = await callable.call<Map<String, dynamic>>({
       'tier': _tierParam(tier),
+      'period': period.name,
     });
     final url = result.data['url'] as String?;
     if (url == null || url.isEmpty) {

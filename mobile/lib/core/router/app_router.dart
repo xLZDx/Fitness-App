@@ -5,14 +5,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/about/about_page.dart';
+import '../../features/ai_planner/ai_planner_page.dart';
 import '../../features/auth/data/auth_user.dart';
 import '../../features/auth/login_page.dart';
 import '../../features/auth/state/auth_providers.dart';
+import '../../features/catalog/contribute_video_page.dart';
+import '../../features/catalog/moderation_page.dart';
+import '../../features/celebrity_plans/celebrity_plans_page.dart';
+import '../../features/community/team_feed_page.dart';
 import '../../features/donor_wall/donor_wall_page.dart';
 import '../../features/equipment/equipment_detail_page.dart';
 import '../../features/equipment/workout_player_page.dart';
+import '../../features/form_check/form_check_page.dart';
 import '../../features/home/home_page.dart';
 import '../../features/onboarding/onboarding_page.dart';
+import '../../features/progress_photos/progress_photos_page.dart';
+import '../../features/social_feed/social_feed_page.dart';
+import '../../features/visual_equipment/visual_equipment_page.dart';
 import '../../features/profile/data/profile_repository.dart';
 import '../../features/profile/profile_page.dart';
 import '../../features/profile/state/profile_providers.dart';
@@ -203,6 +212,44 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/donors',
         pageBuilder: (_, __) => _fadeThrough(const DonorWallPage()),
+      ),
+      GoRoute(
+        path: '/plan',
+        pageBuilder: (_, __) => _fadeThrough(const AiPlannerPage()),
+      ),
+      GoRoute(
+        path: '/celebrity-plans',
+        pageBuilder: (_, __) => _fadeThrough(const CelebrityPlansPage()),
+      ),
+      GoRoute(
+        path: '/photos',
+        pageBuilder: (_, __) => _fadeThrough(const ProgressPhotosPage()),
+      ),
+      GoRoute(
+        path: '/community',
+        pageBuilder: (_, __) => _fadeThrough(const SocialFeedPage()),
+      ),
+      GoRoute(
+        path: '/team/:teamId',
+        pageBuilder: (_, state) => _fadeThrough(
+          TeamFeedPage(teamId: state.pathParameters['teamId']!),
+        ),
+      ),
+      GoRoute(
+        path: '/form-check',
+        pageBuilder: (_, __) => _fadeThrough(const FormCheckPage()),
+      ),
+      GoRoute(
+        path: '/recognise',
+        pageBuilder: (_, __) => _fadeThrough(const VisualEquipmentPage()),
+      ),
+      GoRoute(
+        path: '/contribute',
+        pageBuilder: (_, __) => _fadeThrough(const ContributeVideoPage()),
+      ),
+      GoRoute(
+        path: '/moderate',
+        pageBuilder: (_, __) => _fadeThrough(const CatalogModerationPage()),
       ),
       ShellRoute(
         navigatorKey: _shellKey,
