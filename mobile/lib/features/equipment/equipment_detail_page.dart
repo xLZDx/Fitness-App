@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/scroll_dim_list.dart';
+import '../workouts/widgets/plate_calculator.dart';
+import '../workouts/widgets/warmup_calculator.dart';
 import 'data/equipment_models.dart';
 import 'state/equipment_providers.dart';
 import 'widgets/equipment_report_sheet.dart';
@@ -70,6 +72,8 @@ class EquipmentDetailPage extends ConsumerWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: 12),
+              const _ToolsRow(),
               const SizedBox(height: 16),
               GlassCard(
                 child: Column(
@@ -271,6 +275,62 @@ class _ExerciseShimmer extends StatelessWidget {
         height: 80,
         child: Center(child: CircularProgressIndicator()),
       ),
+    );
+  }
+}
+
+/// Plate-calculator + warm-up calculator chips. Identical UX to the
+/// Workout Player's tools row — pulled here so users can pre-load
+/// plates before starting a session.
+class _ToolsRow extends StatelessWidget {
+  const _ToolsRow();
+
+  void _openSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (_, controller) => SingleChildScrollView(
+          controller: controller,
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
+          child: const Column(
+            children: [
+              PlateCalculator(),
+              SizedBox(height: 14),
+              WarmupCalculator(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        ActionChip(
+          avatar: const Icon(Icons.fitness_center_rounded, size: 18),
+          label: const Text('Plates'),
+          labelStyle: theme.textTheme.labelLarge,
+          onPressed: () => _openSheet(context),
+        ),
+        ActionChip(
+          avatar:
+              const Icon(Icons.local_fire_department_rounded, size: 18),
+          label: const Text('Warm-up'),
+          labelStyle: theme.textTheme.labelLarge,
+          onPressed: () => _openSheet(context),
+        ),
+      ],
     );
   }
 }

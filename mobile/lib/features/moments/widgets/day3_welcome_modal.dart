@@ -1,0 +1,115 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../core/theme/app_palette.dart';
+import '../../../shared/widgets/glass.dart';
+
+/// Day-3 nurture modal. Shown once on the user's third launch, at least
+/// 48 hours after account creation, before any premium features become
+/// visible. Soft-asks for a recurring donation.
+class Day3WelcomeModal extends StatelessWidget {
+  const Day3WelcomeModal({super.key});
+
+  static Future<void> show(BuildContext context) async {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const Padding(
+        padding: EdgeInsets.fromLTRB(16, 0, 16, 24),
+        child: SafeArea(
+          top: false,
+          child: Day3WelcomeModal(),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return GlassCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              gradient: const LinearGradient(colors: [
+                AppPalette.auroraPeach,
+                AppPalette.auroraPink,
+              ]),
+            ),
+            child: const Icon(Icons.favorite_outline,
+                color: Colors.white, size: 30),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Three days in. Welcome.',
+            style: theme.textTheme.headlineSmall
+                ?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "We're a nonprofit and the app stays free of safety paywalls. "
+            "If we've earned a few coffees of your time, would you "
+            "consider becoming a Supporter? Donations fund hosting, "
+            "physio review, and community video moderation.",
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: scheme.onSurface.withValues(alpha: 0.75),
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text('Maybe later'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    GoRouter.of(context).go('/subscription');
+                  },
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text('See ways to support'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Center(
+            child: TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                GoRouter.of(context).go('/about');
+              },
+              child: const Text('Read our mission'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

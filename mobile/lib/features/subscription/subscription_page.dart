@@ -1,22 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import 'data/subscription_models.dart';
 import 'state/subscription_providers.dart';
 
+/// "Support the mission" page (formerly Subscription).
+///
+/// The Stripe billing model is unchanged — three tiers, monthly recurring,
+/// 14-day trial. The copy reframes those tiers as **recurring donations**
+/// to the nonprofit so the language matches the 501(c)(3) framing.
+///
+/// Display labels per tier (model name → display label):
+///   - free               → "Member"
+///   - standard           → "Supporter"
+///   - celebrityTrainer   → "Sustainer"
 class SubscriptionPage extends ConsumerWidget {
   const SubscriptionPage({super.key});
 
+  static String tierLabel(SubscriptionTier t) {
+    switch (t) {
+      case SubscriptionTier.free:
+        return 'Member';
+      case SubscriptionTier.standard:
+        return 'Supporter';
+      case SubscriptionTier.celebrityTrainer:
+        return 'Sustainer';
+    }
+  }
+
   /// What the page should render given the current subscription state.
-  /// Three buckets:
-  ///   - [_PageState.picker]    — fresh user; show the 3-tier picker.
-  ///   - [_PageState.trialing]  — local-only trial (no Stripe customer).
-  ///                              Show countdown + "Subscribe to keep it".
-  ///   - [_PageState.paid]      — Stripe-backed subscription. Show the
-  ///                              Manage card that opens the Customer Portal.
+  ///   - [_PageState.picker]    fresh user; show the 3-tier picker.
+  ///   - [_PageState.trialing]  local-only trial (no Stripe customer).
+  ///   - [_PageState.paid]      Stripe-backed donation. Show the Manage card.
   _PageState _stateFor(Subscription? sub) {
     if (sub == null) return _PageState.picker;
     switch (sub.status) {
@@ -40,27 +59,22 @@ class SubscriptionPage extends ConsumerWidget {
     final state = _stateFor(sub);
 
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Subscription'),
+      appBar: const GlassAppBar(title: 'Support the mission'),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
           _StatusCard(sub: sub, effectiveTier: tier),
+          const SizedBox(height: 16),
+          const _MissionStrip(),
           const SizedBox(height: 24),
 
           if (state == _PageState.paid) ...[
-            // Stripe-backed subscription. Plan changes / cancellation /
-            // payment-method updates all go through the Customer Portal.
             _ManagePlanCard(
               isLoading: action.isLoading,
               onTap: () =>
                   ref.read(subscriptionActionProvider.notifier).cancel(),
             ),
           ] else if (state == _PageState.trialing) ...[
-            // Trial-only — there is no Stripe customer yet, so the portal
-            // would 4xx with "no customer on file". Surface the upgrade
-            // path to *the same tier* the user is trialing instead. The
-            // webhook will overwrite the trial doc with active state once
-            // checkout completes.
             _UpgradeFromTrialCard(
               tier: sub!.tier,
               isLoading: action.isLoading,
@@ -68,24 +82,32 @@ class SubscriptionPage extends ConsumerWidget {
                   ref.read(subscriptionActionProvider.notifier).chooseTier(sub.tier),
             ),
           ] else ...[
-            // Brand-new users still see the three-tier picker.
             Text(
-              'Plans',
+              'Choose a way to support',
               style: theme.textTheme.titleLarge?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Every level keeps the app free of safety paywalls and funds '
+              'community-contributed content.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
               ),
             ),
             const SizedBox(height: 12),
             _PlanCard(
               tier: SubscriptionTier.free,
-              title: 'Free',
+              title: 'Member',
               price: 'Free forever',
               tagline:
-                  'Get started, log workouts, track basic progress.',
+                  'Full app access — workouts, scanning, injury filtering, progress.',
               features: const [
-                'Full body-weight library',
-                'Basic workout logging',
-                'Last-week progress chart',
+                'Full body-weight + equipment library',
+                'Injury-aware filtering (always on)',
+                'Workout logging + last-week chart',
+                'Equipment QR scanning',
               ],
               currentTier: tier,
               isLoading: action.isLoading,
@@ -93,20 +115,21 @@ class SubscriptionPage extends ConsumerWidget {
                   ref.read(subscriptionActionProvider.notifier).chooseTier(
                         SubscriptionTier.free,
                       ),
+              cta: 'Stay a Member',
             ),
             const SizedBox(height: 12),
             _PlanCard(
               tier: SubscriptionTier.standard,
-              title: 'Standard',
-              price: r'$9.99 / month',
+              title: 'Supporter',
+              price: r'$9.99 / month · tax-deductible donation',
               tagline:
-                  'Everything you need: full equipment catalog and reminders.',
+                  'Funds the mission and unlocks long-term progress + reminders.',
               features: const [
-                'Full equipment catalog',
-                'Personalised "For you" feed',
-                'Injury-aware filtering',
-                'Schedule + reminders',
+                'Everything in Member',
                 'Long-term progress charts',
+                'Schedule + reminders',
+                'Personalised "For you" feed',
+                'Tax-deductible (501(c)(3) pending)',
               ],
               currentTier: tier,
               highlight: true,
@@ -117,20 +140,21 @@ class SubscriptionPage extends ConsumerWidget {
               onStartTrial: () => ref
                   .read(subscriptionActionProvider.notifier)
                   .startTrial(SubscriptionTier.standard),
+              cta: 'Become a Supporter',
             ),
             const SizedBox(height: 12),
             _PlanCard(
               tier: SubscriptionTier.celebrityTrainer,
-              title: 'Celebrity trainer',
-              price: r'$19.99 / month',
+              title: 'Sustainer',
+              price: r'$19.99 / month · tax-deductible donation',
               tagline:
-                  'Premium video plans, AI form coach, advanced analytics.',
+                  'Powers celebrity-donated content + advanced analytics.',
               features: const [
-                'Everything in Standard',
-                'Celebrity-led video plans',
-                'AI form coach',
-                'Body composition + advanced analytics',
-                'Priority new content',
+                'Everything in Supporter',
+                'Celebrity in-kind video donations',
+                'AI form coach (when available)',
+                'Body comp + advanced analytics',
+                'Donor-wall recognition (opt-in)',
               ],
               currentTier: tier,
               isLoading: action.isLoading,
@@ -140,7 +164,10 @@ class SubscriptionPage extends ConsumerWidget {
               onStartTrial: () => ref
                   .read(subscriptionActionProvider.notifier)
                   .startTrial(SubscriptionTier.celebrityTrainer),
+              cta: 'Become a Sustainer',
             ),
+            const SizedBox(height: 16),
+            _LearnMoreLink(),
           ],
           if (action.hasError) ...[
             const SizedBox(height: 12),
@@ -157,9 +184,51 @@ class SubscriptionPage extends ConsumerWidget {
 
 enum _PageState { picker, trialing, paid }
 
+class _MissionStrip extends StatelessWidget {
+  const _MissionStrip();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return GlassCard(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.volunteer_activism_outlined,
+              color: scheme.onSurface.withValues(alpha: 0.85), size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              "We're a nonprofit. Subscriptions are recurring donations — "
+              'they keep the app safety-paywall-free for everyone.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurface.withValues(alpha: 0.75),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LearnMoreLink extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: TextButton.icon(
+        onPressed: () => GoRouter.of(context).go('/about'),
+        icon: const Icon(Icons.info_outline_rounded, size: 18),
+        label: const Text('Learn how donations are used'),
+      ),
+    );
+  }
+}
+
 /// Surfaces an action error with a Copy button so the user can paste the
-/// full message + stack trace into a bug report. Replaces the bare
-/// `Text(action.error.toString())` we were rendering before.
+/// full message + stack trace into a bug report.
 class _ErrorCard extends StatelessWidget {
   const _ErrorCard({required this.error, this.stackTrace});
 
@@ -168,7 +237,7 @@ class _ErrorCard extends StatelessWidget {
 
   String _composePayload() {
     final buffer = StringBuffer()
-      ..writeln('Could not update subscription:')
+      ..writeln('Could not update donation:')
       ..writeln(error.toString());
     if (stackTrace != null) {
       buffer
@@ -194,7 +263,7 @@ class _ErrorCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Could not update subscription',
+                  'Could not update donation',
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: scheme.error,
@@ -268,11 +337,11 @@ class _UpgradeFromTrialCard extends StatelessWidget {
   String get _label {
     switch (tier) {
       case SubscriptionTier.standard:
-        return 'Standard · \$9.99 / month';
+        return 'Supporter · \$9.99 / month';
       case SubscriptionTier.celebrityTrainer:
-        return 'Celebrity trainer · \$19.99 / month';
+        return 'Sustainer · \$19.99 / month';
       case SubscriptionTier.free:
-        return 'Free';
+        return 'Member';
     }
   }
 
@@ -307,15 +376,15 @@ class _UpgradeFromTrialCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Subscribe to keep $_label',
+                      'Continue as $_label',
                       style: theme.textTheme.titleMedium
                           ?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      "Trial features stay on past the trial only with a paid "
-                      'plan. You\'ll be billed monthly via Stripe; cancel any '
-                      'time from the portal.',
+                      'Trial features stay on past the trial only with an '
+                      'active recurring donation. Cancel any time from the '
+                      'donor portal.',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: scheme.onSurface.withValues(alpha: 0.65),
                       ),
@@ -398,14 +467,14 @@ class _ManagePlanCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Switch plan, update card, or cancel',
+                      'Manage donation, update card, or pause',
                       style: theme.textTheme.titleMedium
                           ?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Opens the secure Stripe portal in your browser. '
-                      'Plan changes happen instantly and are pro-rated by Stripe.',
+                      'Opens the secure Stripe donor portal in your browser. '
+                      'Changes happen instantly and are pro-rated by Stripe.',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: scheme.onSurface.withValues(alpha: 0.65),
                       ),
@@ -437,7 +506,7 @@ class _ManagePlanCard extends StatelessWidget {
                       ),
                     )
                   : const Text(
-                      'Manage subscription',
+                      'Open donor portal',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -457,29 +526,18 @@ class _StatusCard extends StatelessWidget {
   final Subscription? sub;
   final SubscriptionTier effectiveTier;
 
-  String _tierLabel(SubscriptionTier t) {
-    switch (t) {
-      case SubscriptionTier.free:
-        return 'Free';
-      case SubscriptionTier.standard:
-        return 'Standard';
-      case SubscriptionTier.celebrityTrainer:
-        return 'Celebrity trainer';
-    }
-  }
-
   String _statusLabel(SubscriptionStatus s) {
     switch (s) {
       case SubscriptionStatus.none:
-        return 'No active subscription';
+        return 'Not yet supporting';
       case SubscriptionStatus.trial:
         return 'Trial';
       case SubscriptionStatus.active:
-        return 'Active';
+        return 'Supporting';
       case SubscriptionStatus.cancelled:
-        return 'Cancelling at period end';
+        return 'Pausing at period end';
       case SubscriptionStatus.expired:
-        return 'Expired';
+        return 'Lapsed';
     }
   }
 
@@ -531,7 +589,7 @@ class _StatusCard extends StatelessWidget {
                               ],
                   ),
                 ),
-                child: const Icon(Icons.workspace_premium_outlined,
+                child: const Icon(Icons.favorite_outline,
                     color: Colors.white),
               ),
               const SizedBox(width: 12),
@@ -540,7 +598,7 @@ class _StatusCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _tierLabel(effectiveTier),
+                      SubscriptionPage.tierLabel(effectiveTier),
                       style: theme.textTheme.titleLarge
                           ?.copyWith(fontWeight: FontWeight.w800),
                     ),
@@ -591,6 +649,7 @@ class _PlanCard extends StatelessWidget {
     this.onStartTrial,
     this.highlight = false,
     this.isLoading = false,
+    this.cta = 'Choose',
   });
 
   final SubscriptionTier tier;
@@ -603,6 +662,7 @@ class _PlanCard extends StatelessWidget {
   final VoidCallback? onStartTrial;
   final bool highlight;
   final bool isLoading;
+  final String cta;
 
   @override
   Widget build(BuildContext context) {
@@ -715,7 +775,7 @@ class _PlanCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    child: const Text('Start 14-day trial'),
+                    child: const Text('14-day trial'),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -729,7 +789,7 @@ class _PlanCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: Text(isCurrent ? 'Current plan' : 'Choose'),
+                  child: Text(isCurrent ? 'Current' : cta),
                 ),
               ),
             ],

@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/about/about_page.dart';
 import '../../features/auth/data/auth_user.dart';
 import '../../features/auth/login_page.dart';
 import '../../features/auth/state/auth_providers.dart';
+import '../../features/donor_wall/donor_wall_page.dart';
 import '../../features/equipment/equipment_detail_page.dart';
 import '../../features/equipment/workout_player_page.dart';
 import '../../features/home/home_page.dart';
@@ -24,7 +26,7 @@ import '../../shared/widgets/main_shell.dart';
 final _rootKey = GlobalKey<NavigatorState>();
 final _shellKey = GlobalKey<NavigatorState>();
 
-const _publicPaths = {'/splash', '/login'};
+const _publicPaths = {'/splash', '/login', '/about', '/donors'};
 
 /// Pure redirect resolution. Exposed for tests so the routing logic can be
 /// validated without spinning up the full widget tree.
@@ -193,6 +195,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/subscription',
         pageBuilder: (_, __) => _fadeThrough(const SubscriptionPage()),
+      ),
+      GoRoute(
+        path: '/about',
+        pageBuilder: (_, __) => _fadeThrough(const AboutPage()),
+      ),
+      GoRoute(
+        path: '/donors',
+        pageBuilder: (_, __) => _fadeThrough(const DonorWallPage()),
       ),
       ShellRoute(
         navigatorKey: _shellKey,

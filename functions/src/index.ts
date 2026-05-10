@@ -1,26 +1,21 @@
 /**
- * Cloud Functions backend for the Fitness App's Phase 4B Stripe billing
- * + the TX.7 Equipment Failure Reporting B2B feature.
+ * Cloud Functions backend for the Fitness App.
  *
- * Five entry points:
+ * Entry points:
  *   - startFreeTrial         (callable) — writes the user's 14-day trial
- *                                         state into Firestore. The
- *                                         tightened firestore.rules deny
- *                                         client writes to the
- *                                         subscription doc, so the trial
- *                                         start has to land server-side
- *                                         too even though it doesn't
- *                                         touch Stripe.
+ *                                         state into Firestore.
  *   - createCheckoutSession  (callable) — returns a Stripe Checkout URL.
  *   - createPortalSession    (callable) — returns a Stripe Customer Portal URL.
  *   - stripeWebhook          (HTTPS)    — verifies Stripe events and mirrors
  *                                         the subscription state into
  *                                         users/{uid}/subscription/main.
+ *   - optInDonorWall         (callable) — adds active donor to public wall.
+ *   - optOutDonorWall        (callable) — removes caller from wall.
+ *   - generateAnnualReceipt  (callable) — tax-deductible donation receipt
+ *                                         for the requested year.
  *   - reportEquipment        (callable) — TX.7. Stores a broken-equipment
- *                                         report in equipment_reports/{id}
- *                                         and dispatches to the gym's
- *                                         registered webhook (Slack /
- *                                         Teams / email proxy / custom).
+ *                                         report and dispatches to the gym's
+ *                                         registered webhook.
  *
  * Secrets (set via `firebase functions:secrets:set`):
  *   - STRIPE_SECRET_KEY        sk_test_... (server-only, never in the app)
@@ -377,17 +372,209 @@ export const stripeWebhook = onRequest(
 );
 
 /* ------------------------------------------------------------------ */
+/* Donor wall (opt-in)                                                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Adds (or updates) the calling user on the public donor wall. Requires
+ * an active Stripe-backed donation — trial-only users can't opt in.
+ *
+ * Server-side write is the only way into `donor_wall/{uid}`; the
+ * security rules deny client writes so a malicious client can't spoof
+ * a donation badge.
+ */
+export const optInDonorWall = onCall(
+  { region: "us-central1" },
+  async (request) => {
+    const auth = request.auth;
+    if (!auth) {
+      throw new HttpsError("unauthenticated", "Sign in to opt in.");
+    }
+    const subSnap = await db.doc(`users/${auth.uid}/subscription/main`).get();
+    const sub = subSnap.data();
+    const hasActive =
+      sub?.status === "active" || sub?.status === "cancelled";
+    if (!hasActive) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Donor-wall opt-in requires an active recurring donation.",
+      );
+    }
+
+    const data = request.data ?? {};
+    const rawName = (data.displayName as string | undefined)?.trim() ?? "";
+    const message = (data.message as string | undefined)?.trim() ?? "";
+    const tierFromSub =
+      sub?.tier === "celebrityTrainer" ? "sustainer" : "supporter";
+    const isLifetime = sub?.isLifetime === true;
+
+    if (rawName.length > 60) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Display name must be 60 characters or fewer.",
+      );
+    }
+    if (message.length > 200) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Message must be 200 characters or fewer.",
+      );
+    }
+
+    await db.doc(`donor_wall/${auth.uid}`).set(
+      {
+        displayName: rawName.length === 0 ? "Anonymous donor" : rawName,
+        tier: tierFromSub,
+        since:
+          (await db.doc(`donor_wall/${auth.uid}`).get()).data()?.since ??
+          new Date().toISOString(),
+        ...(message.length > 0 ? { message } : {}),
+        ...(isLifetime ? { isLifetime: true } : {}),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+    return { ok: true };
+  },
+);
+
+/** Removes the caller from the donor wall. */
+export const optOutDonorWall = onCall(
+  { region: "us-central1" },
+  async (request) => {
+    const auth = request.auth;
+    if (!auth) {
+      throw new HttpsError("unauthenticated", "Sign in first.");
+    }
+    await db.doc(`donor_wall/${auth.uid}`).delete();
+    return { ok: true };
+  },
+);
+
+/* ------------------------------------------------------------------ */
+/* generateAnnualReceipt (callable, on demand)                        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Returns a tax-deductible receipt for the calling user for the given
+ * year. The receipt is a JSON document the app can render or email; we
+ * intentionally don't attach a PDF here (lower attack surface, easier
+ * to localise client-side).
+ *
+ * The amount is derived from Stripe invoices marked `paid` between
+ * Jan 1 and Dec 31 of the requested year. No client field accepted.
+ */
+export const generateAnnualReceipt = onCall(
+  {
+    secrets: [STRIPE_SECRET_KEY],
+    region: "us-central1",
+  },
+  async (request) => {
+    const auth = request.auth;
+    if (!auth) {
+      throw new HttpsError("unauthenticated", "Sign in first.");
+    }
+    const year = Number(request.data?.year ?? new Date().getUTCFullYear());
+    if (!Number.isInteger(year) || year < 2024 || year > 2100) {
+      throw new HttpsError("invalid-argument", `Invalid year: ${year}`);
+    }
+
+    const subSnap = await db.doc(`users/${auth.uid}/subscription/main`).get();
+    const customerId = subSnap.data()?.stripeCustomerId as string | undefined;
+    if (!customerId) {
+      // Trial-only / never-donated user — return a zero receipt rather
+      // than 4xx so the client can show "no donations recorded" instead
+      // of an error.
+      return {
+        year,
+        currency: "USD",
+        totalCents: 0,
+        invoiceCount: 0,
+        items: [],
+        donorName: auth.token?.name ?? auth.token?.email ?? "Anonymous",
+        donorUid: auth.uid,
+        orgName: "Fitness App (501(c)(3) pending)",
+        notice:
+          "No donations were recorded under your account in this year.",
+      };
+    }
+
+    const stripe = new Stripe(STRIPE_SECRET_KEY.value(), {
+      apiVersion: "2025-02-24.acacia",
+    });
+
+    const start = Math.floor(Date.UTC(year, 0, 1) / 1000);
+    const end = Math.floor(Date.UTC(year + 1, 0, 1) / 1000);
+
+    let totalCents = 0;
+    const items: Array<{
+      created: string;
+      amountCents: number;
+      currency: string;
+      number: string | null;
+      description: string;
+    }> = [];
+
+    let starting_after: string | undefined;
+    while (true) {
+      const page = await stripe.invoices.list({
+        customer: customerId,
+        status: "paid",
+        created: { gte: start, lt: end },
+        limit: 100,
+        starting_after,
+      });
+      for (const inv of page.data) {
+        const amt = inv.amount_paid ?? 0;
+        totalCents += amt;
+        items.push({
+          created: new Date((inv.created ?? 0) * 1000).toISOString(),
+          amountCents: amt,
+          currency: inv.currency ?? "usd",
+          number: inv.number ?? null,
+          description: inv.lines?.data?.[0]?.description ?? "Recurring donation",
+        });
+      }
+      if (!page.has_more || page.data.length === 0) break;
+      starting_after = page.data[page.data.length - 1]?.id;
+    }
+
+    const receipt = {
+      year,
+      currency: "USD",
+      totalCents,
+      invoiceCount: items.length,
+      items,
+      donorName: auth.token?.name ?? auth.token?.email ?? "Anonymous",
+      donorUid: auth.uid,
+      orgName: "Fitness App (501(c)(3) pending)",
+      generatedAt: new Date().toISOString(),
+      notice: totalCents > 0
+        ? "Keep this receipt for your records. " +
+          "501(c)(3) status pending — once approved, prior-year donations " +
+          "made under our fiscal sponsor are retroactively deductible."
+        : "No donations were recorded under your account in this year.",
+    };
+
+    // Persist a copy so the year-end batch job has a known address.
+    await db
+      .doc(`users/${auth.uid}/receipts/${year}`)
+      .set(receipt, { merge: true });
+
+    return receipt;
+  },
+);
+
+/* ------------------------------------------------------------------ */
 /* reportEquipment (TX.7)                                             */
 /* ------------------------------------------------------------------ */
 
 /**
  * Persists a broken-equipment report at `equipment_reports/{id}` and
  * dispatches a Slack-compatible webhook for the gym (if registered at
- * `gyms/{gymId}.maintenanceWebhookUrl`).
- *
- * The dispatch is best-effort — if the webhook fails, the Firestore
- * write still succeeds so the gym's admin console can pick the report
- * up later.
+ * `gyms/{gymId}.maintenanceWebhookUrl`). The dispatch is best-effort —
+ * if the webhook fails, the Firestore write still succeeds so the gym's
+ * admin console can pick the report up later.
  */
 export const reportEquipment = onCall(
   { region: "us-central1" },

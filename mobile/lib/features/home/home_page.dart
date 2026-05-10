@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/health/widgets/health_sync_card.dart';
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/scroll_dim_list.dart';
+import '../moments/data/moment.dart';
+import '../moments/state/moment_providers.dart';
+import '../moments/widgets/day3_welcome_modal.dart';
 import '../progress/data/progress_stats.dart';
+import '../recovery/widgets/deload_banner.dart';
 import '../workouts/data/scheduled_session.dart';
 import '../workouts/state/scheduled_session_providers.dart';
 import '../workouts/state/workout_log_providers.dart';
@@ -18,7 +23,7 @@ class _Suggestion {
   final List<Color> gradient;
 }
 
-class HomePage extends ConsumerWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   static const _suggestions = <_Suggestion>[
@@ -35,7 +40,36 @@ class HomePage extends ConsumerWidget {
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  bool _maybeShowDay3Triggered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (_maybeShowDay3Triggered || !mounted) return;
+      _maybeShowDay3Triggered = true;
+      final repo = ref.read(momentRepositoryProvider);
+      await repo.bumpLaunchCount();
+      final shown = await repo.hasShown(MomentId.day3Welcome);
+      final launches = await repo.launchCount();
+      final firstLaunch = await repo.firstLaunchAt();
+      final ok = shouldShowDay3Welcome(
+        accountCreatedAt: firstLaunch ?? DateTime.now(),
+        launchCount: launches,
+        alreadyShown: shown,
+      );
+      if (!ok || !mounted) return;
+      await Day3WelcomeModal.show(context);
+      await repo.markShown(MomentId.day3Welcome);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final logs = ref.watch(workoutLogsProvider).valueOrNull ?? const [];
     final stats = deriveProgress(logs);
     final upcoming = ref.watch(upcomingSessionsProvider);
@@ -47,6 +81,9 @@ class HomePage extends ConsumerWidget {
         children: [
           _HeroCard(),
           const SizedBox(height: 28),
+          const HealthSyncCard(),
+          const SizedBox(height: 12),
+          const DeloadBanner(),
           _SectionHeader('Today'),
           const SizedBox(height: 12),
           _TodayCard(upcoming: upcoming),
@@ -92,7 +129,7 @@ class HomePage extends ConsumerWidget {
           const SizedBox(height: 32),
           _SectionHeader('Suggestions'),
           const SizedBox(height: 14),
-          for (final s in _suggestions) ...[
+          for (final s in HomePage._suggestions) ...[
             _SuggestionCard(s),
             const SizedBox(height: 16),
           ],

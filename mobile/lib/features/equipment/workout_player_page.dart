@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/scroll_dim_list.dart';
+import '../workouts/data/progression.dart';
 import '../workouts/data/scheduled_session.dart';
 import '../workouts/data/workout_log.dart';
 import '../workouts/state/scheduled_session_providers.dart';
@@ -91,6 +91,8 @@ class WorkoutPlayerPage extends ConsumerWidget {
                 const SizedBox(height: 16),
                 _CautionCard(item: item),
               ],
+              const SizedBox(height: 12),
+              _SuggestedWeightChip(exerciseId: item.id),
               const SizedBox(height: 12),
               _ToolsRow(),
               if (ref.watch(_restTimerVisibleProvider)) ...[
@@ -623,6 +625,88 @@ class _ScheduleButton extends ConsumerWidget {
     final hh = t.hour.toString().padLeft(2, '0');
     final mm = t.minute.toString().padLeft(2, '0');
     return '${months[t.month - 1]} ${t.day} · $hh:$mm';
+  }
+}
+
+/// Reads the user's recent logs for [exerciseId] and surfaces the next
+/// suggested weight via [suggestNextWeight]. Tap to copy the value into
+/// the clipboard. Hidden when there's no log history yet.
+class _SuggestedWeightChip extends ConsumerWidget {
+  const _SuggestedWeightChip({required this.exerciseId});
+  final String exerciseId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final logsAsync = ref.watch(workoutLogsProvider);
+    final logs = logsAsync.valueOrNull ?? const <WorkoutLogEntry>[];
+    final history =
+        logs.where((l) => l.exerciseId == exerciseId).toList();
+    final suggestion = suggestNextWeight(historyForExercise: history);
+    if (suggestion == null) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final colors = suggestion.isDecrease
+        ? const [AppPalette.auroraPeach, AppPalette.auroraPink]
+        : const [AppPalette.auroraTeal, AppPalette.auroraLime];
+    return GlassCard(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(11),
+              gradient: LinearGradient(colors: colors),
+            ),
+            child: Icon(
+              suggestion.isDecrease
+                  ? Icons.south_rounded
+                  : Icons.north_east_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      'Suggested: ',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color:
+                            scheme.onSurface.withValues(alpha: 0.65),
+                      ),
+                    ),
+                    Text(
+                      '${suggestion.suggestedKg.toStringAsFixed(
+                          suggestion.suggestedKg % 1 == 0 ? 0 : 1)} kg',
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w800),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  suggestion.reason,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.60),
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

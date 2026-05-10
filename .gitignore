@@ -68,3 +68,6 @@ firebase-debug.log
 *.freezed.dart
 *.gr.dart
 *.mocks.dart
+
+# Stray editor artefacts
+* - Copy.md
