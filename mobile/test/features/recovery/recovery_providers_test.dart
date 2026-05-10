@@ -42,12 +42,19 @@ void main() {
     await repo.save('me', inWindow);
     await repo.save('me', outWindow);
 
-    // Wait for the stream to emit so cached() returns the saves.
-    await Future<void>.delayed(const Duration(milliseconds: 10));
+    // Wait for the auth provider to actually emit so the action can
+    // read a non-null current user.
+    await container.read(authUserProvider.future);
 
     await container
         .read(deloadActionProvider.notifier)
         .acceptNext7Days(factor: 0.5);
+
+    // Surface any silent error.
+    final s = container.read(deloadActionProvider);
+    if (s.hasError) {
+      fail('deload action failed: ${s.error}');
+    }
 
     final all = repo.cached('me');
     final updated =

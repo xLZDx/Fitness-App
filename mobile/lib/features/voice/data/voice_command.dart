@@ -1,8 +1,8 @@
-/// TX.6 / MK.1 — Voice-only hands-free workout control.
-///
-/// Domain-restricted command grammar that maps free-form speech onto
-/// a finite set of actions. Pure: no audio bindings; the speech-to-text
-/// adapter lives next door.
+// TX.6 / MK.1 — Voice-only hands-free workout control.
+//
+// Domain-restricted command grammar that maps free-form speech onto
+// a finite set of actions. Pure: no audio bindings; the speech-to-text
+// adapter lives next door.
 
 enum VoiceCommandKind {
   startSet,

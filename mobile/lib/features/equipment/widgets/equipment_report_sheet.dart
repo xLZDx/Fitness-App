@@ -5,7 +5,6 @@ import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/glass.dart';
 import '../../auth/state/auth_providers.dart';
 import '../data/equipment_report.dart';
-import '../data/equipment_report_service.dart';
 import '../state/equipment_providers.dart';
 
 /// Modal bottom sheet for reporting broken / degraded equipment. Two-tap
