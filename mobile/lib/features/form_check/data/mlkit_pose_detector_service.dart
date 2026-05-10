@@ -28,6 +28,11 @@ class MlKitPoseDetectorService implements PoseDetectorService {
   bool _busy = false;
   bool _initialised = false;
 
+  /// Exposed so the FormCheckPage can render `CameraPreview(controller)`
+  /// against the same controller this service feeds to ML Kit. Null
+  /// until [start] resolves.
+  CameraController? get cameraController => _camera;
+
   @override
   Stream<PoseFrame> frames() => _ctrl.stream;
 

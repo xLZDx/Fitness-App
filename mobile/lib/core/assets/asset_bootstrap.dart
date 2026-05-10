@@ -1,0 +1,46 @@
+import 'dart:io';
+
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:path_provider/path_provider.dart';
+
+/// Copies bundled model assets out of the APK into the app's documents
+/// directory on first launch (or after an upgrade). ML Kit's
+/// `LocalLabelerOptions` needs an absolute file path; assets aren't
+/// addressable that way directly.
+///
+/// Safe to call on every launch — if the file already exists with the
+/// same length we skip the copy.
+class AssetBootstrap {
+  AssetBootstrap();
+
+  /// List of bundled assets to copy. Keep small (each ML model is
+  /// 4-15 MB) — bigger blobs go to a separate download-on-demand path.
+  static const _models = <String>[
+    'assets/models/equipment_v1.tflite',
+  ];
+
+  Future<void> ensureBundledAssets() async {
+    final dir = await getApplicationDocumentsDirectory();
+    for (final asset in _models) {
+      try {
+        final dest = File('${dir.path}/$asset');
+        await dest.parent.create(recursive: true);
+        final byteData = await rootBundle.load(asset);
+        if (await dest.exists() &&
+            await dest.length() == byteData.lengthInBytes) {
+          continue; // up to date
+        }
+        await dest.writeAsBytes(
+          byteData.buffer.asUint8List(
+            byteData.offsetInBytes,
+            byteData.lengthInBytes,
+          ),
+          flush: true,
+        );
+      } catch (_) {
+        // Asset isn't bundled yet (e.g. equipment model not trained).
+        // Swallow — downstream services fall back to mocks / empty.
+      }
+    }
+  }
+}

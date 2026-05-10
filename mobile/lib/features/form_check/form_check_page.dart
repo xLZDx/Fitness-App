@@ -1,27 +1,64 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
+import 'data/form_classifier.dart';
+import 'data/mlkit_pose_detector_service.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
 import 'state/form_check_providers.dart';
 
-/// Live form-check page. Shows the camera preview placeholder + a
-/// floating "cue card" that updates from the active rule classifiers.
+/// Live form-check page. Starts the pose-detection service in
+/// initState, renders the camera preview behind the cue overlay, and
+/// stops the service on dispose.
 ///
 /// Marketing line per the assessment: "form feedback on commodity
 /// Android — no $2,500 hardware required."
-class FormCheckPage extends ConsumerWidget {
+class FormCheckPage extends ConsumerStatefulWidget {
   const FormCheckPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FormCheckPage> createState() => _FormCheckPageState();
+}
+
+class _FormCheckPageState extends ConsumerState<FormCheckPage> {
+  bool _started = false;
+  Object? _startError;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        await ref.read(poseDetectorServiceProvider).start();
+        if (!mounted) return;
+        setState(() => _started = true);
+      } catch (e) {
+        if (!mounted) return;
+        setState(() => _startError = e);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // Best-effort camera/detector shutdown so the camera light goes
+    // off when the user navigates away.
+    final svc = ref.read(poseDetectorServiceProvider);
+    svc.stop();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tier = ref.watch(effectiveTierProvider);
     final isPremium = tier == SubscriptionTier.celebrityTrainer;
     final feedback = ref.watch(formFeedbackControllerProvider);
+    final svc = ref.watch(poseDetectorServiceProvider);
 
     return FrostedScaffold(
       appBar: const GlassAppBar(title: 'Form coach'),
@@ -39,11 +76,25 @@ class FormCheckPage extends ConsumerWidget {
               child: Container(
                 color: Colors.black.withValues(alpha: 0.85),
                 child: Stack(
+                  fit: StackFit.expand,
                   children: [
-                    const Center(
-                      child: Icon(Icons.videocam_outlined,
-                          color: Colors.white24, size: 80),
-                    ),
+                    if (_startError != null)
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Text(
+                            'Camera unavailable: $_startError',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: Colors.white70),
+                          ),
+                        ),
+                      )
+                    else if (!_started)
+                      const Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      )
+                    else
+                      _CameraPreview(svc: svc),
                     Positioned(
                       left: 12,
                       right: 12,
@@ -69,6 +120,29 @@ class FormCheckPage extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+class _CameraPreview extends StatelessWidget {
+  const _CameraPreview({required this.svc});
+  final dynamic svc; // PoseDetectorService
+
+  @override
+  Widget build(BuildContext context) {
+    if (svc is! MlKitPoseDetectorService) {
+      // Mock service in test/dev — show the static placeholder.
+      return const Center(
+        child: Icon(Icons.videocam_outlined,
+            color: Colors.white24, size: 80),
+      );
+    }
+    final ctl = svc.cameraController as CameraController?;
+    if (ctl == null || !ctl.value.isInitialized) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
+    }
+    return CameraPreview(ctl);
   }
 }
 
@@ -100,7 +174,7 @@ class _UpgradeCard extends StatelessWidget {
 
 class _CueCard extends StatelessWidget {
   const _CueCard({this.feedback});
-  final dynamic feedback; // FormFeedback?
+  final FormFeedback? feedback;
 
   @override
   Widget build(BuildContext context) {
@@ -121,10 +195,9 @@ class _CueCard extends StatelessWidget {
         ),
       );
     }
-    final severity = feedback.severity as int;
-    final colour = severity >= 2
+    final colour = feedback!.severity >= 2
         ? AppPalette.auroraPink
-        : severity == 1
+        : feedback!.severity == 1
             ? AppPalette.auroraPeach
             : AppPalette.auroraTeal;
     return Container(
@@ -134,7 +207,7 @@ class _CueCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
       ),
       child: Text(
-        feedback.cue as String,
+        feedback!.cue,
         style: theme.textTheme.titleSmall?.copyWith(
           color: Colors.white,
           fontWeight: FontWeight.w800,

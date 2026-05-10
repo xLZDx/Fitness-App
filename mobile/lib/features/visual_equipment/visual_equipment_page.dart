@@ -1,8 +1,7 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../shared/widgets/glass.dart';
 import 'data/visual_equipment_match.dart';
@@ -34,12 +33,26 @@ class VisualEquipmentPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: () => ref
-                .read(visualEquipmentControllerProvider.notifier)
-                .classifyBytes(_demoImageBytes()),
-            icon: const Icon(Icons.photo_camera_outlined),
-            label: const Text('Take photo'),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () => _capture(context, ref,
+                      source: ImageSource.camera),
+                  icon: const Icon(Icons.photo_camera_outlined),
+                  label: const Text('Take photo'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _capture(context, ref,
+                      source: ImageSource.gallery),
+                  icon: const Icon(Icons.photo_library_outlined),
+                  label: const Text('Pick photo'),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           matches.when(
@@ -73,10 +86,33 @@ class VisualEquipmentPage extends ConsumerWidget {
     );
   }
 
-  /// Placeholder image bytes for the "take photo" flow before the real
-  /// camera is plumbed. Length is the only thing the mock classifier
-  /// reads, so this gives a deterministic preview.
-  Uint8List _demoImageBytes() => Uint8List.fromList(List.filled(48, 0));
+  /// Pick an image (camera or gallery) and run it through the on-device
+  /// classifier. Image-picker returns an `XFile`; we read the bytes and
+  /// hand them to the controller, which routes through ML Kit.
+  Future<void> _capture(
+    BuildContext context,
+    WidgetRef ref, {
+    required ImageSource source,
+  }) async {
+    final picker = ImagePicker();
+    try {
+      final picked = await picker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        imageQuality: 88,
+      );
+      if (picked == null) return;
+      final bytes = await picked.readAsBytes();
+      await ref
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyBytes(bytes);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not capture: $e')),
+      );
+    }
+  }
 }
 
 class _MatchCard extends StatelessWidget {
