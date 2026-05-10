@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
 
@@ -9,6 +10,33 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
+
+    <!-- Health Connect (read + write). The `health` package routes these
+         through the system permission picker on Android 14+; on older
+         devices the same package falls back to Google Fit. -->
+    <uses-permission android:name="android.permission.health.READ_STEPS"/>
+    <uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED"/>
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
+    <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE"/>
+    <uses-permission android:name="android.permission.health.READ_SLEEP"/>
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY"/>
+    <uses-permission android:name="android.permission.health.WRITE_EXERCISE"/>
+
+    <!-- BLE (TX.3 buddy matching, in-gym presence). -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="31"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" tools:targetApi="31"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" tools:targetApi="31"/>
+
+    <!-- Audio (TX.6 voice-only). speech_to_text + flutter_tts. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
+    <!-- Foreground service for an active workout (rest timer, voice
+         control). FOREGROUND_SERVICE_HEALTH is the Android 14 channel
+         that wears down the kill-on-background risk. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH"/>
 
     <application
         android:label="fitness_app"
@@ -47,6 +75,20 @@
                 <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
             </intent-filter>
         </receiver>
+        <!-- Health Connect: surfaces an activity the system uses to
+             show the user our privacy-policy URL when they grant
+             permissions. Required as of Android 14. -->
+        <activity-alias
+            android:name="ViewPermissionUsageActivity"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE"/>
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS"/>
+            </intent-filter>
+        </activity-alias>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

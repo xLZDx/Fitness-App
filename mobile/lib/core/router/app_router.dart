@@ -18,6 +18,7 @@ import '../../features/equipment/equipment_detail_page.dart';
 import '../../features/equipment/workout_player_page.dart';
 import '../../features/form_check/form_check_page.dart';
 import '../../features/home/home_page.dart';
+import '../../features/marketplace/marketplace_page.dart';
 import '../../features/onboarding/onboarding_page.dart';
 import '../../features/progress_photos/progress_photos_page.dart';
 import '../../features/social_feed/social_feed_page.dart';
@@ -250,6 +251,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/moderate',
         pageBuilder: (_, __) => _fadeThrough(const CatalogModerationPage()),
+      ),
+      GoRoute(
+        path: '/coaches',
+        pageBuilder: (_, __) => _fadeThrough(const MarketplacePage()),
       ),
       ShellRoute(
         navigatorKey: _shellKey,

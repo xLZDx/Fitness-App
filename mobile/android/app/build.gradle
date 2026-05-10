@@ -51,4 +51,8 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
+
+    // Wearable Data Layer — used by MainActivity to push WearWorkoutState
+    // to the paired watch APK (see wear/ for the watch side).
+    implementation 'com.google.android.gms:play-services-wearable:18.2.0'
 }

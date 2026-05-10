@@ -8,6 +8,7 @@ import '../../shared/widgets/scroll_dim_list.dart';
 import '../workouts/data/progression.dart';
 import '../workouts/data/scheduled_session.dart';
 import '../workouts/data/workout_log.dart';
+import '../workouts/state/offline_video_providers.dart';
 import '../workouts/state/scheduled_session_providers.dart';
 import '../workouts/state/workout_log_providers.dart';
 import '../workouts/widgets/difficulty_rating_sheet.dart';
@@ -187,37 +188,62 @@ class _Pill extends StatelessWidget {
   }
 }
 
-class _VideoBlock extends StatefulWidget {
+class _VideoBlock extends ConsumerStatefulWidget {
   const _VideoBlock({required this.url});
   final String url;
 
   @override
-  State<_VideoBlock> createState() => _VideoBlockState();
+  ConsumerState<_VideoBlock> createState() => _VideoBlockState();
 }
 
-class _VideoBlockState extends State<_VideoBlock> {
-  late final VideoPlayerController _ctrl;
+class _VideoBlockState extends ConsumerState<_VideoBlock> {
+  VideoPlayerController? _ctrl;
   bool _ready = false;
   Object? _error;
+  bool _fromCache = false;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = VideoPlayerController.networkUrl(Uri.parse(widget.url))
-      ..setLooping(true)
-      ..initialize().then((_) {
-        if (!mounted) return;
-        setState(() => _ready = true);
-        _ctrl.play();
-      }).catchError((Object e) {
-        if (!mounted) return;
-        setState(() => _error = e);
+    _bootstrap();
+  }
+
+  /// Cache-first init. Checks the offline video cache for a local copy
+  /// of [widget.url]; falls back to network streaming if the cache
+  /// misses. Premium-tier users prefetch via the Schedule page so this
+  /// path almost always hits during a planned session.
+  Future<void> _bootstrap() async {
+    try {
+      final cache = ref.read(offlineVideoCacheProvider);
+      final cached = await cache.localFile(widget.url);
+      VideoPlayerController controller;
+      if (cached != null) {
+        controller = VideoPlayerController.file(cached);
+        _fromCache = true;
+      } else {
+        controller =
+            VideoPlayerController.networkUrl(Uri.parse(widget.url));
+      }
+      controller.setLooping(true);
+      await controller.initialize();
+      if (!mounted) {
+        await controller.dispose();
+        return;
+      }
+      setState(() {
+        _ctrl = controller;
+        _ready = true;
       });
+      controller.play();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = e);
+    }
   }
 
   @override
   void dispose() {
-    _ctrl.dispose();
+    _ctrl?.dispose();
     super.dispose();
   }
 
@@ -228,7 +254,8 @@ class _VideoBlockState extends State<_VideoBlock> {
         child: Text('Video unavailable: $_error'),
       );
     }
-    if (!_ready) {
+    final ctrl = _ctrl;
+    if (!_ready || ctrl == null) {
       return const GlassCard(
         child: SizedBox(
           height: 200,
@@ -239,22 +266,22 @@ class _VideoBlockState extends State<_VideoBlock> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(22),
       child: AspectRatio(
-        aspectRatio: _ctrl.value.aspectRatio == 0
+        aspectRatio: ctrl.value.aspectRatio == 0
             ? 16 / 9
-            : _ctrl.value.aspectRatio,
+            : ctrl.value.aspectRatio,
         child: Stack(
           fit: StackFit.expand,
           children: [
-            VideoPlayer(_ctrl),
+            VideoPlayer(ctrl),
             // Tap-to-toggle play/pause.
             GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () => setState(() => _ctrl.value.isPlaying
-                  ? _ctrl.pause()
-                  : _ctrl.play()),
+              onTap: () => setState(() => ctrl.value.isPlaying
+                  ? ctrl.pause()
+                  : ctrl.play()),
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 220),
-                child: _ctrl.value.isPlaying
+                child: ctrl.value.isPlaying
                     ? const SizedBox.shrink()
                     : Container(
                         color: Colors.black.withValues(alpha: 0.30),
@@ -263,6 +290,28 @@ class _VideoBlockState extends State<_VideoBlock> {
                       ),
               ),
             ),
+            if (_fromCache)
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Text(
+                    'OFFLINE',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

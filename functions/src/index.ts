@@ -13,6 +13,11 @@
  *   - optOutDonorWall        (callable) — removes caller from wall.
  *   - generateAnnualReceipt  (callable) — tax-deductible donation receipt
  *                                         for the requested year.
+ *   - startCoachOnboarding   (callable) — Stripe Connect Express
+ *                                         onboarding link for marketplace.
+ *   - bookCoachSession       (callable) — PaymentIntent + 15% platform
+ *                                         fee + transfer to coach Connect
+ *                                         account.
  *   - reportEquipment        (callable) — TX.7. Stores a broken-equipment
  *                                         report and dispatches to the gym's
  *                                         registered webhook.
@@ -489,6 +494,18 @@ export const stripeWebhook = onRequest(
           const pi = event.data.object as Stripe.PaymentIntent;
           if (pi.metadata?.period === "lifetime") {
             await applyLifetimePayment(pi);
+          } else if (pi.metadata?.kind === "coach_booking") {
+            const bookingId = pi.metadata.bookingId;
+            if (bookingId) {
+              await db.doc(`coach_bookings/${bookingId}`).set(
+                {
+                  status: "confirmed",
+                  confirmedAt:
+                    admin.firestore.FieldValue.serverTimestamp(),
+                },
+                { merge: true },
+              );
+            }
           }
           break;
         }
@@ -694,6 +711,143 @@ export const generateAnnualReceipt = onCall(
       .set(receipt, { merge: true });
 
     return receipt;
+  },
+);
+
+/* ------------------------------------------------------------------ */
+/* Stripe Connect for Coach Marketplace (TX.5)                        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Creates (or returns) a Stripe Connect Express account for the
+ * calling user, then mints an account-onboarding link the client
+ * redirects to. This is how coaches set up their payout details.
+ *
+ * The 15% platform fee is applied at booking time (see
+ * `bookCoachSession`); the Connect account is just the payout target.
+ */
+export const startCoachOnboarding = onCall(
+  { secrets: [STRIPE_SECRET_KEY], region: "us-central1" },
+  async (request) => {
+    const auth = request.auth;
+    if (!auth) {
+      throw new HttpsError("unauthenticated", "Sign in first.");
+    }
+    const stripe = new Stripe(STRIPE_SECRET_KEY.value(), {
+      apiVersion: "2025-02-24.acacia",
+    });
+    const ref = db.doc(`coach_listings/${auth.uid}`);
+    const snap = await ref.get();
+    let accountId =
+      snap.data()?.stripeConnectAccountId as string | undefined;
+    if (!accountId) {
+      const account = await stripe.accounts.create({
+        type: "express",
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
+        metadata: { firebaseUid: auth.uid },
+      });
+      accountId = account.id;
+      await ref.set(
+        {
+          stripeConnectAccountId: accountId,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+    }
+    const link = await stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: "https://fitnessapp.example.com/coach/onboarding-refresh",
+      return_url: "https://fitnessapp.example.com/coach/onboarding-done",
+      type: "account_onboarding",
+    });
+    return { url: link.url, accountId };
+  },
+);
+
+/**
+ * Books a coaching session: creates a PaymentIntent on the platform
+ * account that transfers (price - platformFee) to the coach's Connect
+ * account. PaymentIntent metadata carries the booking id so the
+ * webhook can mark the booking confirmed once the charge succeeds.
+ */
+export const bookCoachSession = onCall(
+  { secrets: [STRIPE_SECRET_KEY], region: "us-central1" },
+  async (request) => {
+    const auth = request.auth;
+    if (!auth) {
+      throw new HttpsError("unauthenticated", "Sign in first.");
+    }
+    const data = request.data ?? {};
+    const coachUid = data.coachUid as string | undefined;
+    const startsAt = data.startsAt as string | undefined;
+    const durationMinutes =
+      (data.durationMinutes as number | undefined) ?? 60;
+    if (!coachUid || !startsAt) {
+      throw new HttpsError(
+        "invalid-argument",
+        "coachUid and startsAt are required.",
+      );
+    }
+    const coachSnap = await db.doc(`coach_listings/${coachUid}`).get();
+    const coach = coachSnap.data();
+    if (!coach) {
+      throw new HttpsError("not-found", "Coach listing not found.");
+    }
+    const priceCents = (coach.priceCentsPerSession as number | undefined) ?? 0;
+    const accountId = coach.stripeConnectAccountId as string | undefined;
+    if (!accountId || priceCents <= 0) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Coach has not finished onboarding.",
+      );
+    }
+    const platformFeeCents = Math.round(priceCents * 0.15);
+
+    const stripe = new Stripe(STRIPE_SECRET_KEY.value(), {
+      apiVersion: "2025-02-24.acacia",
+    });
+    const customerId = await ensureCustomer(
+      stripe,
+      auth.uid,
+      auth.token?.email ?? null,
+    );
+
+    const bookingId = `bk_${Date.now()}_${auth.uid}`;
+    const intent = await stripe.paymentIntents.create({
+      amount: priceCents,
+      currency: (coach.currency as string | undefined) ?? "usd",
+      customer: customerId,
+      application_fee_amount: platformFeeCents,
+      transfer_data: { destination: accountId },
+      metadata: {
+        firebaseUid: auth.uid,
+        coachUid,
+        bookingId,
+        kind: "coach_booking",
+      },
+    });
+
+    await db.doc(`coach_bookings/${bookingId}`).set({
+      coachUid,
+      clientUid: auth.uid,
+      startsAt,
+      durationMinutes,
+      priceCents,
+      platformFeeCents,
+      status: "pending",
+      stripePaymentIntentId: intent.id,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      bookingId,
+      clientSecret: intent.client_secret,
+      amountCents: priceCents,
+    };
   },
 );
 
