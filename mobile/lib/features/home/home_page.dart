@@ -80,7 +80,9 @@ class _HomePageState extends ConsumerState<HomePage> {
         padding: const EdgeInsets.fromLTRB(20, 88, 20, 110),
         children: [
           _HeroCard(),
-          const SizedBox(height: 28),
+          const SizedBox(height: 16),
+          const _AiPlanCard(),
+          const SizedBox(height: 16),
           const HealthSyncCard(),
           const SizedBox(height: 12),
           const DeloadBanner(),
@@ -531,6 +533,60 @@ class _StatCard extends StatelessWidget {
             style:
                 theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// "Today's plan" CTA. Routes to the AI workout generator. The killer
+/// feature was hidden behind a URL until this card existed.
+class _AiPlanCard extends StatelessWidget {
+  const _AiPlanCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GlassCard(
+      onTap: () => GoRouter.of(context).go('/plan'),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              gradient: const LinearGradient(colors: [
+                AppPalette.auroraTeal,
+                AppPalette.auroraBlue,
+              ]),
+            ),
+            child: const Icon(Icons.auto_awesome, color: Colors.white),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Today's adaptive plan",
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Built from your intake, ratings, and recovery signals.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color:
+                        theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right_rounded,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.55)),
         ],
       ),
     );

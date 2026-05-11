@@ -21,8 +21,13 @@ void main() {
       expect(find.text('Guest'), findsOneWidget);
       // Not yet onboarded → CTA wording
       expect(find.text('Complete questionnaire'), findsOneWidget);
-      expect(find.text('Connected devices'), findsOneWidget);
+      // Discovery tiles for the new feature pages must each be reachable.
+      expect(find.text('Progress photos'), findsOneWidget);
+      expect(find.text('Coaches'), findsOneWidget);
+      expect(find.text('Celebrity plans'), findsOneWidget);
+      expect(find.text('Community'), findsOneWidget);
       expect(find.text('Subscription'), findsOneWidget);
+      expect(find.text('Our mission'), findsOneWidget);
       expect(find.text('Settings'), findsOneWidget);
       expect(find.text('Sign out'), findsOneWidget);
     });

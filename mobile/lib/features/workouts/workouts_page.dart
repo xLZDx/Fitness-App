@@ -78,6 +78,8 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
       body: ScrollDimList(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
+          const _QuickToolsRow(),
+          const SizedBox(height: 16),
           const _OfflinePrefetchCard(),
           const SizedBox(height: 16),
           SizedBox(
@@ -339,6 +341,102 @@ class _OfflinePrefetchCard extends ConsumerWidget {
               isPremium ? Icons.cloud_download_outlined : Icons.lock_outline,
               color: scheme.onSurface.withValues(alpha: 0.6),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Two side-by-side tools above the filter row: Form coach + Recognise.
+/// Both are page routes that previously had no nav surface.
+class _QuickToolsRow extends StatelessWidget {
+  const _QuickToolsRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _QuickTool(
+            icon: Icons.center_focus_strong_outlined,
+            label: 'Form coach',
+            subtitle: 'On-device pose check',
+            gradient: const [
+              AppPalette.auroraPeach,
+              AppPalette.auroraPink,
+            ],
+            onTap: () => GoRouter.of(context).go('/form-check'),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _QuickTool(
+            icon: Icons.photo_camera_outlined,
+            label: 'Recognise',
+            subtitle: 'Photo → equipment',
+            gradient: const [
+              AppPalette.auroraViolet,
+              AppPalette.auroraBlue,
+            ],
+            onTap: () => GoRouter.of(context).go('/recognise'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _QuickTool extends StatelessWidget {
+  const _QuickTool({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.gradient,
+    required this.onTap,
+  });
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final List<Color> gradient;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GlassCard(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      onTap: onTap,
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(11),
+              gradient: LinearGradient(colors: gradient),
+            ),
+            child: Icon(icon, color: Colors.white, size: 20),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w800),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                Text(subtitle,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+              ],
+            ),
+          ),
         ],
       ),
     );

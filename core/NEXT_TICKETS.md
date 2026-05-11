@@ -1,277 +1,188 @@
 # Next implementation tickets
 
-**As of 2026-05-10.** What's left of the v2 roadmap (`ROADMAP_2026_V2.md`)
-that I couldn't ship in the catch-up sprint, with concrete enough
-detail that any future session can pick up the highest-leverage one
-and start work.
+**As of 2026-05-11.** Refreshed after the 6-commit roadmap-closure
+sprint (`9849d2a` → `7c4b845` → `ee72853` → `e25101e` → `64d0cdb` →
+`f9b25e2` → plus this commit). Most original tickets are shipped;
+what's left here is either operator action or genuinely new scope.
 
-Sequenced by leverage / blockers, not roadmap tier. Mark items
-done by editing this file.
-
----
-
-## Ready to ship right now (eng-only)
-
-### 1. Wire `progression.suggestNextWeight` into `WorkoutPlayerPage`
-
-**Estimate:** 2 days.
-
-**What:** The pure helper exists (`lib/features/workouts/data/progression.dart`)
-+ tests. Need to surface it in the player page above the rep input
-field as a "Suggested: 80kg" caption with a tap-to-fill action. Should
-read from `workoutLogsProvider.future` filtered by `exerciseId`.
-
-**Files:** `mobile/lib/features/equipment/workout_player_page.dart`
-+ a small new `_SuggestedWeightChip` widget.
-
-### 2. Wire `detectDeload` into Home page banner
-
-**Estimate:** 2 days.
-
-**What:** Pure helper exists; surface verdict on `home_page.dart` as a
-dismissable banner above the Today card. Gate to Standard+ tier via
-`featureAccessProvider`. Tap "Accept deload" → call a yet-to-write
-`scheduledSessionRepository.deloadNext7Days()` that reduces the next
-week's volume to 50%.
-
-**Files:** `mobile/lib/features/home/home_page.dart`,
-`mobile/lib/features/recovery/state/recovery_providers.dart` (new),
-`mobile/lib/features/workouts/data/mock_scheduled_session_repository.dart`
-extension.
-
-### 3. P0.5 Health Connect / Apple Health sync
-
-**Estimate:** 4 days.
-
-**What:** Read step count, HR, sleep score, daily activity ring; write
-completed workouts. Package: `health: ^11.0.0` (works on both Android
-+ iOS). Wire reads into `HealthService` abstraction (mock + real),
-hook writes into `logWorkoutAction.log()` so completed workouts also
-land in system rings.
-
-**Files:** new `mobile/lib/core/health/` directory with the abstraction,
-+ `AndroidManifest.xml` permissions, + a small `HealthSyncCard` on
-`home_page.dart` Today section showing today's steps + ring %.
-
-### 4. P0.8 Offline workout download
-
-**Estimate:** 4 days.
-
-**What:** Cache `videoUrl` for the next 7 days of scheduled sessions.
-Background download with `dio` + `path_provider` to filesystem cache.
-Premium-tier feature gated via `featureAccessProvider`.
-
-**Files:** new `mobile/lib/features/workouts/data/offline_video_cache.dart`,
-`WorkoutPlayerPage` checks cache before falling back to network.
-
-### 5. P0.6+ Surface plate calculator + warm-up calculator on `EquipmentDetailPage`
-
-**Estimate:** 0.5 days.
-
-**What:** They're already on `WorkoutPlayerPage` via the `_ToolsRow`
-chips. Add the same sheet to the equipment detail page so users can
-hit the calculators before starting a workout. Trivial — copy
-`_ToolsRow`, link to existing widgets.
+Sequenced by leverage / blockers, not roadmap tier. Mark items done
+by editing this file.
 
 ---
 
-## Stripe-dashboard blocked (needs user action then ~1d eng each)
+## Operator action (no eng work to do here)
 
-### 6. P0.1 Annual subscription SKUs
+### 1. Create 5 Stripe price IDs + wire secrets
 
-**You do** (Stripe dashboard, 5 min):
-1. Add monthly recurring price + annual recurring price to Standard
-   product. Recommended: $9.99/mo + $59.99/yr (= $5/mo effective).
-2. Add monthly recurring + annual recurring + one-time lifetime price
-   to Celebrity product. Recommended: $19.99/mo + $119.99/yr + $499
-   lifetime.
-3. Send the four new price IDs back so I can drop them into Functions
-   Secret Manager.
+**You do (Stripe dashboard, ~10 min):**
+- Standard product → add 3 prices: $59.99/yr annual, $14.99/mo family-2,
+  $19.99/mo family-4.
+- Celebrity product → add 2 prices: $119.99/yr annual, $499 one-time
+  lifetime.
 
-**I do** (1.5 days):
-- Add `SubscriptionPeriod` enum (`monthly`/`annual`/`lifetime`) to the
-  model + Firestore mapping.
-- Update `createCheckoutSession` Cloud Function to accept a `period`
-  arg and look up the right price ID from secrets.
-- Update `SubscriptionPage` with monthly/annual/lifetime toggle.
-- Update tests + redeploy functions.
+**Then run** (already implemented):
+```pwsh
+pwsh scripts/ops/setup_stripe_secrets.ps1 `
+  -StandardAnnual    price_1Ab... `
+  -CelebrityAnnual   price_1Cd... `
+  -StandardFamily2   price_1Ef... `
+  -StandardFamily4   price_1Gh... `
+  -CelebrityLifetime price_1Ij...
+```
+The script prints the redeploy command.
 
-### 7. P0.2 Family plan tier
+### 2. Train + bundle `equipment_v1.tflite`
 
-**You do:** Add a "Family" recurring price ($14.99/mo for 2 seats;
-$19.99/mo for 4 seats). One product, two prices.
+**You do (~45 min in Teachable Machine):**
+- See `mobile/assets/models/README.md` for the label set + generation
+  paths.
+- Drop the file at `mobile/assets/models/equipment_v1.tflite`.
+- `AssetBootstrap.ensureBundledAssets()` copies it to docs/ on launch.
 
-**I do** (5 days):
-- Add `seats: int` + `seatedUids: List<String>` fields on
-  `Subscription`.
-- New Cloud Function `linkFamilyMember` (callable) handles the invite
-  flow: owner sends email → invitee signs in → claims a seat.
-- New `lib/features/family/family_invite_page.dart` for the deep-link
-  claim flow.
-- `SubscriptionPage` shows seat occupancy on the Manage card.
+### 3. Generate iOS scaffold
 
-### 8. P1.5 Lifetime $499 SKU on Celebrity
+```pwsh
+cd "D:\test 2\Fitness App\mobile"
+flutter create -i swift --platforms=ios .
+```
+Then apply the Info.plist keys + entitlements from
+`mobile/IOS_PERMISSIONS_TODO.md`.
 
-**You do:** Already covered by ticket #6's "lifetime price" step.
+### 4. Wear OS smoke test
 
-**I do** (2 days):
-- Cloud Function handles `checkout.session.completed` for one-time
-  payments; marks subscription active with `currentPeriodEndsAt =
-  year 9999`.
-- `SubscriptionPage` adds "Lifetime" tab next to Annual.
+Boot a Wear OS emulator, then:
+```pwsh
+pwsh scripts/dev/build_wear.ps1 -EmulatorSerial <serial>
+```
 
----
+### 5. Nonprofit launch blockers (from `core/NONPROFIT_PLAN.md`)
 
-## Big eng (multi-week, schedule explicitly)
-
-### 9. P0.3 Wear OS companion
-
-**Estimate:** 12 days (first-time Wear OS dev — budget +30%).
-
-**What:** New Flutter target under `mobile_wear/`. Display: current
-exercise + "Done set" button + rest timer (reuse `RestTimerController`
-from `lib/features/workouts/widgets/rest_timer.dart`). Communicates
-with phone via `flutter_wear` or `wear` package.
-
-**Risks:** Custom Wear OS Flutter is its own learning curve. If this
-takes >15 days, consider Kotlin native module + platform channel
-instead. Apple Watch parity is Phase 7 — not a P0 for Android-first
-launch.
-
-### 10. P0.4 Catalog scraper (Phase 2E)
-
-**Estimate:** 10 days eng + ~$5–15k content cost.
-
-**What:** Grow `assets/data/exercises.json` from 12 hand-seeded to
-~200 movements with `videoUrl` populated for each.
-
-**You do:**
-- Decide on content path:
-  - **Stock video:** $500–2000 for 200 short clips (Pond5, BBlearn) —
-    quick but visually generic.
-  - **Contract a fitness creator:** ~$5–15k for 200 hand-recorded
-    demos in a 3-day shoot. Way better quality.
-- I lean strongly toward contract. Find a CrossFit gym owner or
-  fitness influencer with their own studio space.
-
-**I do:**
-- Build the ingest pipeline + tagging tool.
-- Update `AssetEquipmentRepository` to handle the larger catalog
-  efficiently.
-- Move videos to Firebase Storage (current 12 use external CDN URLs).
-
-### 11. P1.3 MediaPipe form check on Android
-
-**Estimate:** 14 days.
-
-**What:** On-device pose detection via `google_mlkit_pose_detection`
-(Flutter wrapper for MediaPipe BlazePose). Six rule-based form
-classifiers for the highest-injury-risk movements: squat depth,
-deadlift back angle, push-up scapular stability, overhead press
-lockout, lunge knee tracking, plank alignment.
-
-**Files:** new `mobile/lib/features/form_check/` directory.
-
-**Marketing:** *"Form feedback on commodity Android — no $2,500
-hardware required."* Direct shot at Tempo (which is depth-camera-only,
-iOS-only on Move).
-
-### 12. P2.1 Team feed for Celebrity tier
-
-**Estimate:** 8 days.
-
-**What:** Each signed celebrity gets a Firestore-backed feed where
-they post workouts, motivation notes, technique tips. Subscribers
-can comment + react. Closest analogue: Ladder's team feeds.
-
-**Files:** new `mobile/lib/features/community/`, new Firestore
-subcollections, new rules for trainer-write/subscriber-read.
-
-### 13. P2.3 Progress photos
-
-**Estimate:** 6 days.
-
-**What:** Camera capture + Firebase Storage with end-to-end
-encryption (user-controlled key). Side-by-side comparison view with
-date sliders. v1 is just photos; AI body-comp estimate (MK.6) is
-later.
+- Decide fiscal-sponsor vs direct 501(c)(3) (2 weeks vs 3–6 months).
+- Recruit a DPT board member (solves the physio-review credibility
+  story without spending $5k).
+- Apply for Google for Nonprofits + Microsoft Startups for Nonprofits.
 
 ---
 
-## External-resource blocked
+## Optional next-eng pickup (not blocking)
 
-### 14. P2.2 Physio-reviewed catalog
+### 6. Push offline cache prefetch through to actual video URLs
 
-**You do:** Hire one DPT (~$5k for one-time review of 200 exercises +
-contraindication tag mappings). ATPT.org has a directory; local
-hospital networks also work.
+The `OfflineVideoCache` + the `_OfflinePrefetchCard` are wired, but
+the prefetch action's `videoUrlsFor` closure isn't passed any URLs
+in production. Need to resolve each scheduled session's exercise
+catalog entry and pull its `videoUrl`. ~2 hours.
 
-**I do** (1 day):
-- Add `reviewedBy` field per exercise.
-- Update landing page (when one exists) with "Reviewed by Dr. [X],
-  DPT" credit.
-- Document the engagement at `core/PHYSIO_REVIEW.md`.
+### 7. AES-GCM swap for the photos page wiring
 
-**Marketing:** *"Other apps tell you to consult your doctor. We built
-our exercise library with one."* This is Freeletics' explicit
-disclaimer flipped.
+`AesPhotoCipher` is implemented and tested but the page still uses
+the test-only XOR cipher (the `MockProgressPhotosRepository` never
+actually encrypts). When you wire a Firestore/Storage repo for
+production photos, plumb `AesPhotoCipher.newKey()` through
+SharedPreferences (or Keystore for hardened deployments).
 
-### 15. P2.4 Celebrity-led video plans
+### 8. Stripe Connect onboarding return-url wiring
 
-**You do:** ~$30–80k contract negotiation with a mid-tier celebrity
-trainer (find via talent agencies or fitness influencer networks +
-4–8 weeks of legal work).
+`startCoachOnboarding` returns a Stripe URL; we open it via
+`url_launcher`. The return URL is currently a placeholder
+(`fitnessapp.example.com/coach/onboarding-done`). Once the marketing
+site exists, swap the URL and add an in-app deep link to refresh the
+coach listing on return.
 
-**I do** (0 eng — this is content + legal).
+### 9. Cloud Function tests
+
+`functions/src/index.ts` has no unit tests yet. The Firebase emulator
+suite (`firebase emulators:exec`) can boot Firestore + Functions in
+a test process. Add tests for the 4 new functions:
+`startFreeTrial`, `createCheckoutSession`, `generateAnnualReceipt`,
+`bookCoachSession`. ~3 days.
+
+### 10. Visual model: ship a real catalog of stock videos via the
+moderation queue
+
+`scripts/catalog/seed_stock_videos.ps1` documents the Pexels +
+community-moderation path. Either run a 50-clip seed yourself or
+open the contribute page (`/contribute`) to a small group of users
+and clear the queue at `/moderate`.
 
 ---
 
-## Tier X game-changers (post-v1 launch)
+## Tier MK / strategic features (post-paid-ramp)
 
-Already covered in `ROADMAP_2026_V2.md` Tier X + Tier MK sections.
-Five remain (TX.4 + TX.7 are now shipped):
+The seven Tier-MK foundations are in place (cycle-aware, insurance,
+SDK, body comp, recovery-as-workout, goal-photo, form-coach). What's
+not done yet is the integration work on each:
 
-- **TX.1 AI Injury Recovery Coach** — 12d + $5–10k. Strongest
-  user-lock-in feature in the plan.
-- **TX.2 Photo-based equipment recognition** — 25d + $5k labelling.
-  Solves cold-start at non-partnered gyms.
-- **TX.3 Workout Buddy Matching** — 15d. BLE in-gym presence.
-- **TX.5 Coach Marketplace** — 30d + $10k legal. Largest long-term
-  bet; needs Stripe Connect setup first.
-- **TX.6 Voice-only hands-free workout mode** — 10d + 5d discovery.
-
-## Tier MK market-killers (2027+)
-
-Seven from `ROADMAP_2026_V2.md`:
-
-- **MK.1 Live Form Coach with Voice** (combines TX.3 + TX.6) — 18d.
-  *The* killer Celebrity-tier feature.
-- **MK.2 Goal-Photo → Personalised Program** (Vision-LLM) — 25d +
-  $5–10k. PR moment.
-- **MK.3 Cycle-Aware Programming for Women** — 12d + $3k consultant.
-  Doubles TAM. Easiest big win; ship first.
-- **MK.4 Insurance Premium Discount Partnerships** — 8d eng + 6–18mo
-  BD.
-- **MK.5 White-Label Gym Chain SDK** — 60d + dedicated devrel
-  headcount.
-- **MK.6 Continuous Body Comp via Phone Camera** — 20d + $10–15k.
-- **MK.7 Recovery as a First-Class Workout** — 25d + $10k content.
-  Reframes the brand entirely.
+- **MK.1 Live Form Coach with Voice** — voice grammar + form check
+  exist separately. Need a state machine that listens to voice while
+  the form classifiers run. ~5d.
+- **MK.2 Goal-photo → program** — the GoalPhotoRequest envelope is
+  defined; the Cloud Function calling Claude Vision is not. ~5d eng
+  + ~$2/mo Claude API budget.
+- **MK.3 Cycle-aware programming** — `phaseFor` + `hintFor` are pure
+  helpers; we need an Onboarding question for cycle-tracking opt-in +
+  a UI surface on the AI plan page that respects the phase. ~3d.
+- **MK.4 Insurance partner attestations** — `qualifiesFor` predicate
+  exists; the Cloud Function that signs the attestation and POSTs to
+  a partner doesn't. ~5d + 6-18mo BD work.
+- **MK.5 White-label SDK** — config + JWT envelope defined; building
+  the actual SDK package + the partner SSO Cloud Function is the bulk.
+  ~60d + dedicated devrel hire.
+- **MK.6 Body comp via camera** — Navy formula + onboarding-time
+  measurements work; the photo-silhouette estimator is not built.
+  Needs a TFLite silhouette model. ~20d + $10-15k content.
+- **MK.7 Recovery as a workout** — `RecoveryBlock` model + 7
+  recovery kinds defined; need the UI for scheduling a recovery
+  session like a strength session. ~5d.
 
 ---
 
 ## What's already shipped
 
-(Cross-reference for context — see `IMPLEMENTATION_PLAN.md` for the
-historical Phase 0–4B record.)
+(Historical reference — see commits `9849d2a` through latest.)
 
-- **Wave 1 (commit `bd9aa34`-prev):** Rest timer + plate calculator +
-  warm-up calculator. ✓ P0.6 + P0.7.
-- **Wave 2 (commit `bd9aa34`):** Post-workout difficulty rating sheet
-  + `WorkoutLogEntry.{weightKg, repsCompleted, difficulty}` +
-  `progression.suggestNextWeight()` pure helper. ✓ P1.1 + P1.2 (data
-  + logic; UI surfacing remains in ticket #1 above).
-- **Wave 3 (commit current):** `detectDeload()` pure helper + full
-  Equipment Failure Reporting (model + service + sheet + Cloud
-  Function + rules). ✓ TX.4 + TX.7 (UI surfacing for TX.4 in ticket
-  #2).
+**Roadmap v2:**
+- P0.1 Annual / family / lifetime SKUs (eng done; price-IDs operator)
+- P0.3 Wear OS minimal companion (data layer + native scaffold)
+- P0.4 Catalog: community video moderation pipeline (Pexels seeder)
+- P0.5 Health Connect / HealthKit abstraction
+- P0.6 Plate calculator + warm-up + rest timer
+- P0.7 Plate / warm-up on EquipmentDetailPage
+- P0.8 Offline workout download
+- P1.1 Post-workout difficulty rating
+- P1.2 Programmatic progressive overload
+- P1.3 MediaPipe form check (rule classifiers + page + live camera)
+- P2.1 Team feed for Celebrity tier
+- P2.3 Progress photos (AES-GCM encrypted)
+- P2.4 Celebrity-led video plans page
+- P3 AI workout generator (`/plan`)
+
+**Tier X:**
+- TX.1 Injury Recovery Coach (2 seeded protocols)
+- TX.2 Visual equipment recognition (image picker + ML Kit)
+- TX.3 Buddy matching (BuddyProfile + ranker)
+- TX.4 Auto-deload detection + banner
+- TX.5 Coach Marketplace (Stripe Connect + bookings)
+- TX.6 Voice-only command grammar
+- TX.7 Equipment failure reporting
+
+**Tier MK foundations** (7/7 model + repo layers).
+
+**Nonprofit eng:**
+- Subscription copy → donation framing
+- /about (mission) + /donors (wall) + /community (social feed)
+- Annual receipt Cloud Function
+- Donor-wall opt-in Cloud Function
+
+**Infra:**
+- 8 production service bindings in main.dart
+- Asset bootstrap (TFLite model copy)
+- GitHub Actions CI (flutter analyze + test + Cloud Functions tsc)
+- Debug daemon + run-with-debug + run-tests scripts
+- Stripe secrets setup script
+- Wear OS build script
+- Discovery surfaces on Home + Train + Profile pages
+
+**Test suite:** 365 tests passing, 0 failing, ~2 min runtime.
+**Build:** `flutter build apk --debug` produces a 380 MB APK
+end-to-end (debug; release build untested).
