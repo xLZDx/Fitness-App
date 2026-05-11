@@ -11,7 +11,10 @@ plugins {
 android {
     namespace = "com.fitnessapp.fitness_app"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // 20 of our plugins now require NDK 27. flutter.ndkVersion still
+    // resolves to the SDK default (older) — pin explicitly so the
+    // build doesn't print 20 warning lines on every run.
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         // flutter_local_notifications requires core library desugaring for
@@ -28,9 +31,10 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.fitnessapp.fitness_app"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 23
+        // health package needs Android 8.0+ (API 26). Health Connect
+        // itself ships from 14+ but the plugin auto-falls back to
+        // Google Fit on 26–33.
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

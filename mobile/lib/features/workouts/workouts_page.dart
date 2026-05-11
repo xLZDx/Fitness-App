@@ -7,6 +7,9 @@ import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/scroll_dim_list.dart';
 import '../equipment/data/equipment_models.dart';
 import '../equipment/state/equipment_providers.dart';
+import '../subscription/data/subscription_models.dart';
+import '../subscription/state/subscription_providers.dart';
+import 'state/offline_video_providers.dart';
 
 /// One filter chip on the Train tab. The id drives which provider feeds the
 /// list; the label is what the user sees.
@@ -75,6 +78,8 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
       body: ScrollDimList(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
+          const _OfflinePrefetchCard(),
+          const SizedBox(height: 16),
           SizedBox(
             height: 44,
             child: ListView.separated(
@@ -249,6 +254,91 @@ class _ExerciseCard extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Premium-gated "Download next week's videos for offline" card. Tapping
+/// it triggers [OfflinePrefetchAction.prefetchNext7Days]; free users see
+/// the upsell version that routes to /subscription.
+class _OfflinePrefetchCard extends ConsumerWidget {
+  const _OfflinePrefetchCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final tier = ref.watch(effectiveTierProvider);
+    final isPremium = tier != SubscriptionTier.free;
+    final action = ref.watch(offlinePrefetchActionProvider);
+
+    return GlassCard(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      onTap: () {
+        if (!isPremium) {
+          GoRouter.of(context).go('/subscription');
+          return;
+        }
+        ref
+            .read(offlinePrefetchActionProvider.notifier)
+            .prefetchNext7Days();
+      },
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(13),
+              gradient: const LinearGradient(colors: [
+                AppPalette.auroraTeal,
+                AppPalette.auroraBlue,
+              ]),
+            ),
+            child: const Icon(Icons.download_for_offline_outlined,
+                color: Colors.white),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isPremium
+                      ? 'Download next 7 days for offline'
+                      : 'Offline downloads · Supporter+',
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  action.isLoading
+                      ? 'Downloading…'
+                      : action.hasError
+                          ? 'Last run failed: ${action.error}'
+                          : 'Gym wifi is hostile — cache videos at home.',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.65),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (action.isLoading)
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          else
+            Icon(
+              isPremium ? Icons.cloud_download_outlined : Icons.lock_outline,
+              color: scheme.onSurface.withValues(alpha: 0.6),
+            ),
         ],
       ),
     );
