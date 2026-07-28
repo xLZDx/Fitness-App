@@ -36,3 +36,9 @@ result,ALWAYS-ON (every turn),50694,37010,-13684 (-27 pct),,Global 25106->25464;
 result,AGENT ENTRY (AGENTS.md on demand),593,1196,+603,,New agent cadence content
 result,DOC SURFACE,57684,59336,+1652,,CODEMAP + CONVENTIONS + INDEX - read selectively
 result,CODE SURFACE,152650,152650,0,,No production code touched in any gate
+rosetta,item,scope,status,commit,notes
+rosetta,1,Push 8 gate commits a476955..f237280,DONE,f237280,Pre-push commit-list verified; pushed exact SHA not branch tip
+rosetta,2,Global CLAUDE.md Option A - remove triple-redundant GRAB-FIRST + SSH-TIMEOUT,DONE,not-in-git,Canonical text already existed fuller in trading-bot project CLAUDE.md; RunPod/AWS-spot never used anywhere
+rosetta,2,Global CLAUDE.md Option B - dedup 14x repeated boilerplate footer,DONE,not-in-git,Replaced with 1 blanket statement; 1 of 14 was mid-sentence embedded not standalone
+rosetta,result,ALWAYS-ON after A+B,37010,36372,-638 tokens further reduction
+rosetta,correction,Self-caught stray-tab-character corruption in this plan doc from an earlier Python non-raw-string bug,fixed,,4 lines affected in the .md twin; fixed with a raw string; verified no other file affected

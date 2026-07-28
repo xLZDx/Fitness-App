@@ -181,7 +181,7 @@ contradictions left behind.
 
 ### G6 outcome — the actual token win
 
-`D:	est 2\CLAUDE.md` and `~/.claude/CLAUDE.md` are **both** loaded into every session's system
+`D:\test 2\CLAUDE.md` and `~/.claude/CLAUDE.md` are **both** loaded into every session's system
 prompt. 24 rule headings existed in both, occupying **923 of the volume file's 1,401 lines** — so
 ~22 MANDATORY rules were sent to the model twice per turn while carrying the same meaning once.
 
@@ -192,7 +192,7 @@ effectively two competing versions of several rules, which is worse than either 
 **What changed.** The volume file now carries a pointer index naming the shared rules, plus only
 what is genuinely volume-specific: the agent routing table, Agents-First routing, Aider
 configuration, Approval Gate, Git Lifecycle, Release Manager, project bootstrap. Two shared rules
-were **kept verbatim** in the volume file because they carry `D:	est 2`-specific tooling detail
+were **kept verbatim** in the volume file because they carry `D:\test 2`-specific tooling detail
 absent from global — Windows Script File Encoding (sanitizer + verifier script paths) and Diagram
 Generation Defaults (BPMN reference implementation paths).
 
@@ -208,11 +208,11 @@ MANDATORY-titled rules unreachable**.
 | File | Before | After | Delta |
 |---|---:|---:|---:|
 | `~/.claude/CLAUDE.md` | 25,106 tok | 25,464 tok | +358 (the amendment) |
-| `D:	est 2\CLAUDE.md` | 24,816 tok | 10,967 tok | **-13,849** |
+| `D:\test 2\CLAUDE.md` | 24,816 tok | 10,967 tok | **-13,849** |
 | `Fitness App/CLAUDE.md` | 772 tok | 578 tok | -194 |
 | **ALWAYS-ON total** | **50,694** | **37,010** | **-13,684 (-27%)** |
 
-> **Not under version control.** `D:	est 2` is not a git repository, so neither CLAUDE.md change is
+> **Not under version control.** `D:\test 2` is not a git repository, so neither CLAUDE.md change is
 > committed anywhere. The `.bak-20260728-g6` files beside each are the only rollback path — do not
 > delete them until the new arrangement has been lived with for a few sessions.
 
@@ -230,6 +230,63 @@ MANDATORY-titled rules unreachable**.
 The doc surface grew on purpose: `CODEMAP.md`, `CONVENTIONS.md` and `INDEX.md` are read *selectively*
 and replace unbounded exploration. Trading ~1.6k tokens of on-demand docs for a 13.7k/turn always-on
 saving, plus far cheaper navigation, is the whole trade.
+
+---
+
+## Post-G6 follow-up (Rosetta mode, same day)
+
+G6 closed the cross-file mirroring gap but left the global file's own internal bulk unexamined.
+Two further items were worked through `/rosetta` (Prepare -> Research -> Plan -> Act -> Validate,
+gated behind explicit `GO`):
+
+**Item 1 — pushed the 8 gate commits.** `git log @{u}..HEAD --oneline` matched the authorized list
+exactly (8 commits, `a476955`..`f237280`); pushed the exact SHA (`git push origin
+f237280:refs/heads/master`) per the shared-checkout rule rather than a bare branch push. Fast-forward
+`13195d7..f237280`.
+
+**Item 2 — global `~/.claude/CLAUDE.md`, Option A+B.** Research found there was **no G6-shaped lever
+left** — no internal self-duplication of comparable size (only a 1-line footer repeated 14x). The
+two real findings:
+
+- **GRAB-FIRST** and **10-MINUTE SSH TIMEOUT** (both tagged "ALL PROJECTS") were verified to be
+  triple-redundant: the trading-bot project's own `CLAUDE.md` already carried fuller, more detailed
+  versions (74 lines, with real script/data paths) that the generic global copies lacked. RunPod and
+  AWS-spot — named in the global "ALL PROJECTS" framing — were grepped across every project file and
+  found to have **zero real usage anywhere**. Removed from global; canonical text now lives only in
+  the trading-bot project file, with a pointer left behind. Hetzner was checked too: it has no
+  competitive marketplace-race dynamic (unlike Vast.ai's Reserved tab), so GRAB-FIRST's rationale
+  doesn't transfer to it, and no Hetzner-specific rule was invented to fill a gap that doesn't exist.
+- The 14x-repeated boilerplate footer ("This rule is non-negotiable...") was replaced by one blanket
+  statement near the top of the file. One of the 14 occurrences was embedded mid-sentence inside a
+  real "Reason (2026-05-18)" paragraph (not a standalone line) — a blind whole-line delete would have
+  destroyed that paragraph's actual content; it was trimmed surgically instead.
+
+**Safety.** Fresh backup (`CLAUDE.md.bak-20260728-ab-pre`, reflecting current post-G6 state, not the
+stale pre-G6 one) taken before any edit. Mechanical verification (same technique as G6, generalised
+to handle titles with internal hyphens like "GRAB-FIRST" and "10-MINUTE" that broke the naive
+section-key parser on the first pass — fixed and re-run): every one of the 37 pre-edit sections is
+either still present, or one of the 2 explicitly-verified-superseded removals, or the boilerplate
+cut. **0 of 34 MANDATORY-titled rules lost.** A content-loss sweep additionally confirmed every
+>60-char line from the pre-edit backup is either still present verbatim or traceable to one of the
+two known cuts.
+
+`~/.claude` is also not a git repository — same situation as `D:\test 2`. The `.bak-20260728-ab-pre`
+file is the only rollback path for this edit.
+
+**Measured result:**
+
+| File | Before A+B | After A+B | Delta |
+|---|---:|---:|---:|
+| `~/.claude/CLAUDE.md` | 25,464 tok | 24,826 tok | -638 |
+| **ALWAYS-ON total** | 37,010 | **36,372** | **-638** |
+
+**Self-correction made while writing this section up:** four lines in this very document had the
+`D:` drive path silently corrupted by a stray tab character, introduced by an earlier non-raw-string
+escape-sequence bug during the G6 write-up. Caught before appending further content, fixed with a
+raw string, verified zero tab characters remain in this file. **Second occurrence caught in the same
+pass:** describing that bug by literally retyping the corrupted form re-triggered it a second time,
+in both this file and its CSV twin — fixed by describing the defect in prose instead of reproducing
+the exact trigger sequence. No other file was affected (checked both CLAUDE.md files — clean).
 
 ---
 
