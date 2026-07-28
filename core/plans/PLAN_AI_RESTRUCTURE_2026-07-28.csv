@@ -23,7 +23,7 @@ findings,F8,FOUND IN G1 - mobile/integration_test does not exist but AGENTS.md l
 tracker,gate,scope,status,commit,exit_check,
 tracker,G0,Progress tracker + CSV twin + measure_context.ps1 baseline,DONE,a476955,Script parses and runs live; emits CSV; baseline recorded,
 tracker,G1,Kill contradictions - task-list path / integration_test / Copy fork / stray mp4,DONE,,audit_doc_links.ps1 PASS - 107 refs checked 0 broken 15 planned,
-tracker,G2,Split core/ engineering vs business + INDEX.md router,PENDING,,Every moved doc reachable from INDEX; no dangling references,
+tracker,G2,Split core/ into engineering / plans / business + INDEX.md router,DONE,,Audit PASS 132 refs 0 broken; every doc reachable from INDEX,
 tracker,G3,Real CODEMAP (feature to purpose to entrypoint) + docs/ index,PENDING,,Every lib/features/* dir in CODEMAP; counts match git ls-files,
 tracker,G4,Agent cadence - .claude/agents/ + slash commands,PENDING,,Cadence in AGENTS.md; every command references a real path,
 tracker,G5,CLAUDE.md to thin router + sync global fitness-app-helper skill,PENDING,,Router points only at existing files; skill matches repo reality,

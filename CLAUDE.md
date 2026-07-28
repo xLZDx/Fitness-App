@@ -34,11 +34,12 @@ Android ships first, iOS is on the roadmap. Every package + abstraction choice m
 - Secrets via env vars (`.env`, never committed; `.env.example` for templates).
 
 ## Plan & reference docs
-- `core/ROADMAP_2026_V2.md` — sequenced P0/P1/P2 + 7 Tier-X game-changers.
-- `core/COMPETITIVE_ASSESSMENT.md` — vs 15 competitors; QR-scan + injury-filter are moats.
-- `core/NONPROFIT_PLAN.md` — 501(c)(3) / fiscal-sponsor strategy.
-- `core/IMPLEMENTATION_PLAN.md` — live phase/sequence roadmap.
-- Master 75-feature list: `FITNESS_APP_TASK_LIST.md` (repo root, tracked).
+**`core/INDEX.md` is the router — read it first, then open only what the task needs.** `core/` is
+tiered: engineering reference at `core/*.md`, what-to-build-next in `core/plans/`, and
+positioning/fundraising material in `core/business/`. The business tier holds no engineering facts;
+skip it for code work.
+
+Master 75-feature list: `FITNESS_APP_TASK_LIST.md` (repo root, tracked).
 
 ## Toolchain
 - Flutter SDK: `D:\flutter`

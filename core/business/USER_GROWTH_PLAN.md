@@ -562,11 +562,11 @@ SendGrid/Resend free tier covers email).
 ## Cross-references
 
 - Strategic context: [`NONPROFIT_PLAN.md`](NONPROFIT_PLAN.md)
-- Engineering tickets: [`NEXT_TICKETS.md`](NEXT_TICKETS.md) — items
+- Engineering tickets: [`../plans/NEXT_TICKETS.md`](../plans/NEXT_TICKETS.md) — items
   P1.1, P1.2 (just shipped) directly support the in-app donation
   prompts (difficulty rating + retention signals). Items 4 (in-app
   donation modal copy), 5 (mission page) are net-new for nonprofit
   pivot.
-- Roadmap features: [`ROADMAP_2026_V2.md`](ROADMAP_2026_V2.md) — TX.3
+- Roadmap features: [`../plans/ROADMAP_2026_V2.md`](../plans/ROADMAP_2026_V2.md) — TX.3
   Buddy Matching becomes critical at Stage 3 because it adds an
   in-gym referral loop nobody else has.

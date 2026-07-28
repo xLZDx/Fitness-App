@@ -55,7 +55,7 @@ Boot a Wear OS emulator, then:
 pwsh scripts/dev/build_wear.ps1 -EmulatorSerial <serial>
 ```
 
-### 5. Nonprofit launch blockers (from `core/NONPROFIT_PLAN.md`)
+### 5. Nonprofit launch blockers (from `core/business/NONPROFIT_PLAN.md`)
 
 - Decide fiscal-sponsor vs direct 501(c)(3) (2 weeks vs 3–6 months).
 - Recruit a DPT board member (solves the physio-review credibility

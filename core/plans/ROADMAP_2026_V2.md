@@ -1,6 +1,6 @@
 # Roadmap 2026 v2 — Implementation Plan + New Game-Changer Features
 
-**Source of truth for what we build next, in what order, why, and at what cost.** Supersedes `IMPLEMENTATION_PLAN.md` for forward planning (that file remains the historical record of completed phases). Driven directly by [`COMPETITIVE_ASSESSMENT.md`](COMPETITIVE_ASSESSMENT.md).
+**Source of truth for what we build next, in what order, why, and at what cost.** Supersedes `IMPLEMENTATION_PLAN.md` for forward planning (that file remains the historical record of completed phases). Driven directly by [`../business/COMPETITIVE_ASSESSMENT.md`](../business/COMPETITIVE_ASSESSMENT.md).
 
 Author signal: this is a planning doc. Anything here is subject to change after a real implementation pass — the per-feature time estimates are realistic but not contractual.
 
@@ -756,7 +756,7 @@ impact:
 ## Part 5 — Cross-references
 
 - Existing roadmap of completed phases: [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md)
-- Competitive landscape this plan responds to: [`COMPETITIVE_ASSESSMENT.md`](COMPETITIVE_ASSESSMENT.md)
+- Competitive landscape this plan responds to: [`../business/COMPETITIVE_ASSESSMENT.md`](../business/COMPETITIVE_ASSESSMENT.md)
 - Phase 4B Stripe operational runbook: [`PHASE_4B_STRIPE_SETUP.md`](PHASE_4B_STRIPE_SETUP.md)
 - Debugging discipline: [`DEBUGGING.md`](DEBUGGING.md)
 - Master 75-feature task list (long-tail product features): [`../FITNESS_APP_TASK_LIST.md`](../FITNESS_APP_TASK_LIST.md)

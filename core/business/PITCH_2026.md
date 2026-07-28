@@ -2,7 +2,7 @@
 
 > **Audience:** angel investors / pre-seed funds.
 > **Format:** 14 slides. Each slide is the section between two `---` markers.
-> **Status note:** the project also has a parallel nonprofit / 501(c)(3) path documented in `core/NONPROFIT_PLAN.md`. This deck pitches the **for-profit** track. The two are not mutually exclusive — many social-impact startups run a PBC (public benefit corporation) for-profit entity with a sister 501(c)(3) for content + grants. The valuation/ask in this deck assumes the for-profit PBC structure.
+> **Status note:** the project also has a parallel nonprofit / 501(c)(3) path documented in `core/business/NONPROFIT_PLAN.md`. This deck pitches the **for-profit** track. The two are not mutually exclusive — many social-impact startups run a PBC (public benefit corporation) for-profit entity with a sister 501(c)(3) for content + grants. The valuation/ask in this deck assumes the for-profit PBC structure.
 > **Ask in this deck:** $500K SAFE @ $5M post-money cap, 18-month runway.
 
 ---
@@ -97,7 +97,7 @@ We don't need 1% of that market to be a $100M business.
   - QR scanner (Android)
   - Progress charting
   - Glass-morphism UI design system
-- **7 Tier-X "game-changer" features** scoped and designed in `core/ROADMAP_2026_V2.md`: Injury Recovery Coach, Visual recognition (computer vision form check), Buddy Matching, Auto-deload, Coach Marketplace, Voice-only mode, Equipment Reporting.
+- **7 Tier-X "game-changer" features** scoped and designed in `core/plans/ROADMAP_2026_V2.md`: Injury Recovery Coach, Visual recognition (computer vision form check), Buddy Matching, Auto-deload, Coach Marketplace, Voice-only mode, Equipment Reporting.
 - **Debug daemon** captures per-session flutter logs, errors, touches, screencaps, Cloud Functions logs — production-quality observability **before** users exist.
 
 ---
@@ -228,10 +228,10 @@ If that resonates — let's talk.
 
 ## Appendix — references
 
-- Product roadmap: `core/ROADMAP_2026_V2.md`
-- Competitive assessment: `core/COMPETITIVE_ASSESSMENT.md`
-- User growth plan: `core/USER_GROWTH_PLAN.md`
-- Nonprofit sister-entity plan: `core/NONPROFIT_PLAN.md` (the 501(c)(3) path is parallel, not in conflict — see preamble)
-- Implementation plan: `core/IMPLEMENTATION_PLAN.md`
+- Product roadmap: `core/plans/ROADMAP_2026_V2.md`
+- Competitive assessment: `core/business/COMPETITIVE_ASSESSMENT.md`
+- User growth plan: `core/business/USER_GROWTH_PLAN.md`
+- Nonprofit sister-entity plan: `core/business/NONPROFIT_PLAN.md` (the 501(c)(3) path is parallel, not in conflict — see preamble)
+- Implementation plan: `core/plans/IMPLEMENTATION_PLAN.md`
 - Master feature list: `FITNESS_APP_TASK_LIST.md` (in trading-assistance dir, historical reasons)
 - Test coverage: 365 passing tests, 0 failures as of 2026-05-11

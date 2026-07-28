@@ -420,5 +420,5 @@ Round-1 (apps 1-15): see commit `cd6c554` history. Round-2 (apps
 - [10 reasons to use Mywellness — Pinnacle Medical Wellness](https://www.pinnacle-pt.com/about/news/10-reasons-to-use-mywellness-app)
 - [QR codes for gyms — supercode.com](https://www.supercode.com/use-case/qr-codes-for-gyms)
 
-Round-1 sources: see `git show cd6c554:core/COMPETITIVE_ASSESSMENT.md`
+Round-1 sources: see `git show cd6c554:core/business/COMPETITIVE_ASSESSMENT.md`
 or commit history.

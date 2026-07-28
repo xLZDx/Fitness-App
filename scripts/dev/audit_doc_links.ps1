@@ -104,9 +104,14 @@ foreach ($doc in $targets) {
 
     $cands = New-Object System.Collections.Generic.List[object]
     $lineNo = 0
+    $prevLine = ''
     foreach ($line in ($text -split "`r?`n")) {
         $lineNo++
-        $isNegated = $line -match $negationRe
+        # Look back one line too: markdown prose wraps, so "...files that do not exist yet"
+        # frequently sits on the line above the paths it is talking about.
+        $isNegated = ($line -match $negationRe) -or
+                     (($prevLine.Trim() -ne '') -and ($prevLine -match $negationRe))
+        $prevLine = $line
         foreach ($m in [regex]::Matches($line, '`([^`]+)`')) {
             $cands.Add([PSCustomObject]@{ V = $m.Groups[1].Value; L = $lineNo; N = $isNegated })
         }

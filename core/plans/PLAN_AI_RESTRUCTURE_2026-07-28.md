@@ -64,6 +64,25 @@ allowed). It also skips references on lines that describe an *absence*, so a doc
 
 Result: 107 references checked, **0 broken**, 15 forward-looking (all in roadmap docs).
 
+### G2 outcome
+
+`core/` now has three tiers, because they serve different readers and were previously interleaved:
+
+| Tier | Holds | Read for a coding task? |
+|---|---|---|
+| `core/*.md` | CODEMAP, TECHSTACK, DEPENDENCIES, DEBUGGING, Firebase/Stripe setup | **Yes** |
+| `core/plans/` | ROADMAP, NEXT_TICKETS, IMPLEMENTATION_PLAN, this plan | Only when picking up new work |
+| `core/business/` | COMPETITIVE_ASSESSMENT, AGE_COHORT_STRATEGY, NONPROFIT, USER_GROWTH, PITCH | **No** — zero engineering facts |
+
+`core/INDEX.md` is the router and states that tiering explicitly, so an agent knows which docs to
+*skip* rather than discovering their irrelevance by reading them. `CLAUDE.md` now points at the
+router instead of listing individual docs, so moving a doc no longer invalidates `CLAUDE.md`.
+
+All cross-tier references were rewritten (6 docs) — the audit initially passed while still hiding
+stale `core/X.md` paths inside the PLANNED bucket, which is exactly the kind of false-green this
+plan exists to remove. The checker also gained one-line look-back so prose that wraps between a
+negation and the path it describes is not falsely flagged.
+
 ---
 
 ## Progress tracker
@@ -76,7 +95,7 @@ contradictions left behind.
 |---|---|---|---|---|
 | G0 | Progress tracker + CSV twin + `measure_context.ps1` baseline | DONE | `a476955` | Script parses, runs live, emits CSV; baseline recorded above |
 | G1 | Kill contradictions: task-list path, integration_test, Copy fork, stray `.mp4` | DONE | _(this commit)_ | `audit_doc_links.ps1` PASS: 107 refs, 0 broken |
-| G2 | Split `core/` engineering vs business; add `core/INDEX.md` router | PENDING | | Every moved doc reachable from INDEX; no dangling references anywhere in repo |
+| G2 | Split `core/` into engineering / plans / business; add `core/INDEX.md` router | DONE | _(this commit)_ | Audit PASS 132 refs / 0 broken; every doc reachable from INDEX |
 | G3 | Real CODEMAP (feature to purpose to entrypoint) + `docs/README.md` index | PENDING | | Every `lib/features/*` dir appears in CODEMAP; counts match `git ls-files` |
 | G4 | Agent cadence: `.claude/agents/` + slash commands | PENDING | | Cadence documented in AGENTS.md; every command references a real script/path |
 | G5 | `CLAUDE.md` to thin router; sync global `fitness-app-helper` skill | PENDING | | Router points only at files that exist; skill matches repo reality |

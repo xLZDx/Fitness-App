@@ -8,7 +8,7 @@ external cost gets re-evaluated through the nonprofit lens. Celebrity
 content is contributed as in-kind donations, not paid deals.
 
 This doc supersedes the for-profit assumptions in
-[`ROADMAP_2026_V2.md`](ROADMAP_2026_V2.md) and the
+[`../plans/ROADMAP_2026_V2.md`](../plans/ROADMAP_2026_V2.md) and the
 [`COMPETITIVE_ASSESSMENT.md`](COMPETITIVE_ASSESSMENT.md) pricing
 analysis. Cross-reference both for technical and competitive detail;
 this doc focuses on the *funding model + cost structure + go-to-market*
@@ -430,7 +430,7 @@ the *copy* and *receipts* shift everywhere users see them.
   nice-to-haves not necessities; free tier is fully functional)
 - Same 14-day trial mechanism (now framed as "try before donating")
 - Same Stripe Customer Portal for management
-- Annual + lifetime SKUs (per `NEXT_TICKETS.md` ticket #6)
+- Annual + lifetime SKUs (per `../plans/NEXT_TICKETS.md` ticket #6)
 
 ### What changes
 
@@ -702,7 +702,7 @@ By year 3, target structure:
 
 ---
 
-## Concrete next-action tickets (replaces NEXT_TICKETS.md priority for nonprofit pivot)
+## Concrete next-action tickets (replaces ../plans/NEXT_TICKETS.md priority for nonprofit pivot)
 
 ### Now (this week)
 
@@ -735,8 +735,8 @@ By year 3, target structure:
 
 ### Cross-references
 
-- Technical roadmap: [`ROADMAP_2026_V2.md`](ROADMAP_2026_V2.md)
-- Engineering tickets: [`NEXT_TICKETS.md`](NEXT_TICKETS.md) — most
+- Technical roadmap: [`../plans/ROADMAP_2026_V2.md`](../plans/ROADMAP_2026_V2.md)
+- Engineering tickets: [`../plans/NEXT_TICKETS.md`](../plans/NEXT_TICKETS.md) — most
   still apply; the "external-resource blocked" section gets ~80%
   cheaper with the donation pivot
 - Competitive analysis: [`COMPETITIVE_ASSESSMENT.md`](COMPETITIVE_ASSESSMENT.md) —
