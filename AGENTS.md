@@ -10,8 +10,10 @@ everyone else, and for the parts that apply regardless of which agent is reading
 cd "D:\test 2\Fitness App\mobile"
 flutter analyze
 flutter test
-flutter test integration_test
 ```
+
+There is **no** `mobile/integration_test/` directory. `flutter test integration_test` fails — do not
+run it. `mobile/test/` (71 files) is the only suite.
 
 ```powershell
 cd "D:\test 2\Fitness App"
@@ -38,9 +40,9 @@ analyze` + `flutter test` passing does not prove a UI change renders correctly.
 
 ## Testing requirement
 
-`mobile/test/` (unit + widget) and `mobile/integration_test/` are the canonical suites. 0 failures
-required before claiming a change complete. Do not report a pass count without having actually run the
-suite after the current changes.
+`mobile/test/` (unit + widget, 71 files) is the canonical suite. 0 failures required before claiming a
+change complete. Do not report a pass count without having actually run the suite after the current
+changes.
 
 ## Where everything else lives
 

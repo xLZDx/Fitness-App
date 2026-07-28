@@ -51,6 +51,18 @@ layer, while G3 (navigation) is worth the most on the per-task layer.
 | F5 | `core/CODEMAP.md` is 34 lines for 158 files and already stale (`core/ (10)` vs git's 14). No feature to purpose to entry-point mapping. | CODEMAP vs `git ls-files` |
 | F6 | `docs/` = 67 PNG screenshots with opaque names, no index; 118M untracked `logs/`; 2.8MB untracked `.mp4` at repo root | `ls`, `du -sh` |
 | F7 | Zero project agents (`.claude/agents/` absent); exactly one slash command | `find .claude -type f` |
+| F8 | **Found during G1** — `mobile/integration_test/` does not exist, yet `AGENTS.md` listed `flutter test integration_test` as a canonical command and `CLAUDE.md` documented it as a test location. Any agent following the documented build sequence hits an error. | `ls mobile/integration_test` = No such file; 71 test files all in `mobile/test/` |
+
+### G1 outcome
+
+`scripts/dev/audit_doc_links.ps1` was built to make this class of bug a gate rather than a
+discovery. It resolves each reference against the doc's own dir, the repo root, `mobile/` and
+`mobile/lib/`, then by basename, and separates two verdicts: **BROKEN** (an engineering doc names
+something absent — fails the gate) vs **PLANNED** (a roadmap doc names a future artefact — reported,
+allowed). It also skips references on lines that describe an *absence*, so a doc saying "there is no
+`foo/`" is not itself flagged.
+
+Result: 107 references checked, **0 broken**, 15 forward-looking (all in roadmap docs).
 
 ---
 
@@ -62,8 +74,8 @@ contradictions left behind.
 
 | Gate | Scope | Status | Commit | Exit check |
 |---|---|---|---|---|
-| G0 | Progress tracker + CSV twin + `measure_context.ps1` baseline | DONE | _(see CHANGELOG)_ | Script parses, runs live, emits CSV; baseline recorded above |
-| G1 | Kill contradictions: `CLAUDE.md:41`, `- Copy.md` divergence, stray `.mp4` | PENDING | | No doc claims a path that does not exist; one canonical competitive assessment |
+| G0 | Progress tracker + CSV twin + `measure_context.ps1` baseline | DONE | `a476955` | Script parses, runs live, emits CSV; baseline recorded above |
+| G1 | Kill contradictions: task-list path, integration_test, Copy fork, stray `.mp4` | DONE | _(this commit)_ | `audit_doc_links.ps1` PASS: 107 refs, 0 broken |
 | G2 | Split `core/` engineering vs business; add `core/INDEX.md` router | PENDING | | Every moved doc reachable from INDEX; no dangling references anywhere in repo |
 | G3 | Real CODEMAP (feature to purpose to entrypoint) + `docs/README.md` index | PENDING | | Every `lib/features/*` dir appears in CODEMAP; counts match `git ls-files` |
 | G4 | Agent cadence: `.claude/agents/` + slash commands | PENDING | | Cadence documented in AGENTS.md; every command references a real script/path |

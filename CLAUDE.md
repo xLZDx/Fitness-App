@@ -38,7 +38,7 @@ Android ships first, iOS is on the roadmap. Every package + abstraction choice m
 - `core/COMPETITIVE_ASSESSMENT.md` — vs 15 competitors; QR-scan + injury-filter are moats.
 - `core/NONPROFIT_PLAN.md` — 501(c)(3) / fiscal-sponsor strategy.
 - `core/IMPLEMENTATION_PLAN.md` — live phase/sequence roadmap.
-- Master 75-feature list: `FITNESS_APP_TASK_LIST.md` (lives in trading-assistance dir for historical reasons).
+- Master 75-feature list: `FITNESS_APP_TASK_LIST.md` (repo root, tracked).
 
 ## Toolchain
 - Flutter SDK: `D:\flutter`
@@ -48,8 +48,9 @@ Android ships first, iOS is on the roadmap. Every package + abstraction choice m
 - JDK is system-installed at `C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot`.
 
 ## Tests
-- `mobile/test/` — Flutter widget + unit tests.
-- `mobile/integration_test/` — integration tests.
+- `mobile/test/` — Flutter widget + unit tests (71 files). This is the **only** suite that exists.
+- There is **no** `mobile/integration_test/` — do not run `flutter test integration_test`, it will fail.
+  Integration tests are unbuilt; if you add them, create the dir and update this line and `AGENTS.md`.
 - `flutter analyze` + `flutter test` after every change. 0 failures required.
 - For UI changes: build APK + install on emulator (`Pixel_API_34`) and visually verify.
 
