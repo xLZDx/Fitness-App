@@ -5,6 +5,8 @@ description: Scaffold a new feature following this repo's exact layout conventio
 Add a feature named `$ARGUMENTS` without inventing a new structure. Every existing feature follows
 the same shape — match it, so the next reader (and `core/CODEMAP.md`) can predict where things are.
 
+Full rule set: `core/CONVENTIONS.md`. The steps below are the applied version of it.
+
 ## 1. Confirm the name is free
 
 Check `core/CODEMAP.md` and `mobile/lib/features/` — 33 features already exist. Reuse an existing

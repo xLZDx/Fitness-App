@@ -84,8 +84,10 @@ Rules that always apply, agent or not:
 | Need | Go to |
 |---|---|
 | **Which file do I open?** — features, routes, entry points | `core/CODEMAP.md` |
+| The rules a change is reviewed against | `core/CONVENTIONS.md` |
 | Index of all documentation, tiered by who reads it | `core/INDEX.md` |
-| Layout, stack, cross-platform (iOS) principle, Stripe test mode | `CLAUDE.md` |
+| Stack versions + local toolchain paths | `core/TECHSTACK.md` |
+| Router / quick facts | `CLAUDE.md` |
 | Debug daemon runbook (read first for any bug report) | `core/DEBUGGING.md` |
 | Roadmap / next tickets / implementation plan | `core/plans/` |
 | Positioning, competitors, nonprofit, pitch — **not needed for code** | `core/business/` |

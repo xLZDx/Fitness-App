@@ -11,7 +11,9 @@ against them rather than against generic Flutter advice.
 
 ## Read before reviewing
 
-`core/CODEMAP.md` — the feature map. Do not re-derive the layout by globbing; it is documented.
+- `core/CONVENTIONS.md` — the authoritative rule set. The summary below is a pointer, not a
+  replacement; if the two ever disagree, CONVENTIONS.md wins.
+- `core/CODEMAP.md` — the feature map. Do not re-derive the layout by globbing; it is documented.
 
 ## Repo conventions to check against
 

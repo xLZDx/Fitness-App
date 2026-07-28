@@ -126,6 +126,30 @@ CODEMAP in the same commit). `/fitness-debug-daemon` already existed.
 `AGENTS.md` carries the cadence table so it applies to any agent sharing the checkout, not just
 Claude Code.
 
+### G5 outcome
+
+`CLAUDE.md` is now a router: 60 lines to 43, 772 to 578 est. tokens on every turn. Detail moved to
+`core/CONVENTIONS.md` (new) — the single source for feature layout, Riverpod/go_router rules, the
+iOS-portability principle, the design system, the injury-filter safety rule and testing rules. Those
+rules had been duplicated across `CLAUDE.md`, the reviewer agent and the feature command; all three
+now point at CONVENTIONS.md and say it wins on conflict. Toolchain paths moved to `core/TECHSTACK.md`.
+
+**Measurement correction made here.** `measure_context.ps1` was counting `AGENTS.md` as always-on.
+It is not: Claude Code auto-loads only `CLAUDE.md` files into each turn's system prompt, while
+`AGENTS.md` is what Codex-style agents read automatically and is on-demand here. It is now its own
+layer. Corrected always-on baseline is **50,501 est. tokens across 3 files**, of which this repo
+owns 578 (**1.1%**).
+
+The global `fitness-app-helper` skill was rewritten (backup at `SKILL.md.bak-20260728`). It had
+drifted badly and would have actively misled: it claimed 7 features (there are 33), "15 competitors"
+(the doc says 20), that the task list lives in the trading-assistance dir (it does not), that
+`mobile/integration_test/` exists (it does not), a stale "315+ tests passing as of 2026-05-10" pass
+count, pre-split `core/` paths, and the D-drive-only policy that was retired on 2026-07-28.
+
+Honest accounting for G0–G5 on the always-on layer: it moved from 50,694 to 50,501 — about **-193
+tokens/turn**, ~0.4%. These gates bought correctness, navigation and cadence, not always-on
+reduction. That reduction is G6's job.
+
 ---
 
 ## Progress tracker
@@ -140,8 +164,8 @@ contradictions left behind.
 | G1 | Kill contradictions: task-list path, integration_test, Copy fork, stray `.mp4` | DONE | `bc0a527` | `audit_doc_links.ps1` PASS: 107 refs, 0 broken |
 | G2 | Split `core/` into engineering / plans / business; add `core/INDEX.md` router | DONE | `437cb74` | Audit PASS 132 refs / 0 broken; every doc reachable from INDEX |
 | G3 | Real CODEMAP (feature to purpose to entrypoint) + `docs/README.md` index | DONE | `c522e5c` | 33/33 features listed; 22/22 route entry files verified; audit PASS 217 refs / 0 broken |
-| G4 | Agent cadence: `.claude/agents/` + slash commands | DONE | _(this commit)_ | Cadence in AGENTS.md; audit PASS 233 refs / 0 broken |
-| G5 | `CLAUDE.md` to thin router; sync global `fitness-app-helper` skill | PENDING | | Router points only at files that exist; skill matches repo reality |
+| G4 | Agent cadence: `.claude/agents/` + slash commands | DONE | `5ad373b` | Cadence in AGENTS.md; audit PASS 233 refs / 0 broken |
+| G5 | `CLAUDE.md` to thin router; `core/CONVENTIONS.md`; sync global skill | DONE | _(this commit)_ | Audit PASS 256 refs / 0 broken; project always-on 772 to 578 tok |
 | G6 | Dedup 24 duplicated rules across global + volume CLAUDE.md | PENDING | | No MANDATORY rule lost; both files backed up; re-measure shows the cut |
 
 ### Per-gate exit protocol

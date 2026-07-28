@@ -32,4 +32,14 @@ functions/package.json, mobile/android build files. Current-state only.
 - Riverpod (not Bloc) for state; go_router for navigation
 - Firebase as BaaS; payments via Stripe -> Cloud Functions bridge (no client-side secret)
 - On-device ML for pose/equipment recognition (privacy: sensor data stays on device)
-- Android-first; iOS on roadmap (abstractions must accommodate HealthKit + App Store IAP)
+- Android-first; iOS on roadmap (abstractions must accommodate HealthKit + App Store IAP).
+  The full rule is in core/CONVENTIONS.md -- it constrains package choice, not just architecture.
+
+## Local toolchain
+
+- Flutter SDK: `D:\flutter`
+- Android SDK: `D:\android-sdk`
+- Emulator AVD: `Pixel_API_34` (under `D:\android-sdk\avd`)
+- JDK: `C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot` (system install)
+- Env vars pointing at the above: `PUB_CACHE`, `GRADLE_USER_HOME`, `TEMP`, `TMP`,
+  `ANDROID_AVD_HOME`, `ANDROID_SDK_ROOT`, `FLUTTER_ROOT`

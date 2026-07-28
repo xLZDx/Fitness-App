@@ -51,10 +51,15 @@ function Measure-FileSet {
 }
 
 # --- Layer 1: ALWAYS-ON (the CLAUDE.md inheritance chain) -------------------
+# Only CLAUDE.md files are auto-loaded into every turn's system prompt by Claude Code.
+# AGENTS.md is NOT -- it is the entry point Codex-style agents read automatically, and is
+# read on demand here. Counting it as always-on overstates the tax, so it is its own layer.
 $alwaysOn = @(
     (Join-Path $env:USERPROFILE '.claude\CLAUDE.md'),
     'D:\test 2\CLAUDE.md',
-    (Join-Path $RepoRoot 'CLAUDE.md'),
+    (Join-Path $RepoRoot 'CLAUDE.md')
+)
+$agentEntry = @(
     (Join-Path $RepoRoot 'AGENTS.md')
 )
 
@@ -77,9 +82,10 @@ if (Test-Path $libPath) {
 }
 
 $results = @(
-    (Measure-FileSet -Label '1. ALWAYS-ON  (CLAUDE.md chain)' -Paths $alwaysOn),
-    (Measure-FileSet -Label '2. DOC SURFACE (core/ + root md)' -Paths $docs),
-    (Measure-FileSet -Label '3. CODE SURFACE (mobile/lib)'     -Paths $code)
+    (Measure-FileSet -Label '1. ALWAYS-ON   (CLAUDE.md chain)'  -Paths $alwaysOn),
+    (Measure-FileSet -Label '2. AGENT ENTRY (AGENTS.md)'        -Paths $agentEntry),
+    (Measure-FileSet -Label '3. DOC SURFACE (core/ + root md)'  -Paths $docs),
+    (Measure-FileSet -Label '4. CODE SURFACE (mobile/lib)'      -Paths $code)
 )
 
 Write-Host ''

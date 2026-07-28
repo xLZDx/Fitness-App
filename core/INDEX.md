@@ -19,7 +19,8 @@ agent doing a code task from reading a 776-line nonprofit strategy doc looking f
 | Doc | What it answers |
 |---|---|
 | [CODEMAP.md](CODEMAP.md) | Where does feature X live? Which file is its entry point? **Start here for navigation.** |
-| [TECHSTACK.md](TECHSTACK.md) | What frameworks/versions/SDKs does this repo use? |
+| [CONVENTIONS.md](CONVENTIONS.md) | The rules a change is reviewed against — feature layout, Riverpod/go_router, iOS portability, injury filtering, testing. **Single source; the reviewer agent and `/fitness-feature` both point here.** |
+| [TECHSTACK.md](TECHSTACK.md) | What frameworks/versions/SDKs does this repo use, plus local toolchain paths |
 | [DEPENDENCIES.md](DEPENDENCIES.md) | What packages are pulled in, and why? (`DEPENDENCIES.csv` is the machine-readable twin) |
 | [DEBUGGING.md](DEBUGGING.md) | **Read first for any bug report.** Debug-daemon runbook — captures logs, errors, touches, screencaps per session. |
 | [PHASE_1B_FIREBASE_SETUP.md](PHASE_1B_FIREBASE_SETUP.md) | Firebase project wiring, `google-services.json`, auth setup |
