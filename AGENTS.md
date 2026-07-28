@@ -52,6 +52,13 @@ most likely wrong. Escalate to a specialist only when the operator asks, or when
 genuinely high-stakes (payments, auth, injury filtering, a migration) and an outside read would
 change the outcome.
 
+**Roster source:** the machine-wide agents (`security-reviewer`, `database-reviewer`, etc.) and
+skills come from `D:\test 2\agents-skills-repo`, installed into `~/.claude/agents/` and
+`~/.claude/skills/` per that repo's own README — add or update an agent there, not inside this
+project. **`/rosetta`** is available as an on-demand deep-workflow mode (Prepare → Research → Plan →
+Act → Validate) for larger tasks; it composes with the cadence below, it does not replace it —
+approval is still only the literal `GO` / `ГО`.
+
 When you do reach for one, pick by surface:
 
 | Surface being changed | Agent |
