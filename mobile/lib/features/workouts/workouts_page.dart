@@ -278,14 +278,17 @@ class _OfflinePrefetchCard extends ConsumerWidget {
 
     return GlassCard(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      onTap: () {
+      onTap: () async {
         if (!isPremium) {
           GoRouter.of(context).go('/subscription');
           return;
         }
-        ref
+        // Explicit wiring: resolve the catalog, then hand prefetch a real
+        // videoUrlsFor closure (shared resolver, same as the provider default).
+        final catalog = await ref.read(allExercisesProvider.future);
+        await ref
             .read(offlinePrefetchActionProvider.notifier)
-            .prefetchNext7Days();
+            .prefetchNext7Days(videoUrlsFor: videoUrlResolverFor(catalog));
       },
       child: Row(
         children: [
