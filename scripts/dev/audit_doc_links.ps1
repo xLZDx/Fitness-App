@@ -44,7 +44,8 @@ $ignoreRegex = @(
     '^\w+\.example\.com',                   # example hostnames
     '^(android|ios)/',                       # platform prose
     '^v?\d+\.\d+',                          # version strings
-    '^meta\.json$'                          # generated per-run into logs/sessions/<latest>/
+    '^meta\.json$',                         # generated per-run into logs/sessions/<latest>/
+    '^logs/'                                # runtime output (gitignored): sessions/, test_runs/
 )
 
 $extRe = '^[A-Za-z0-9_.\-/\\ ]+\.(?:md|dart|ts|tsx|ps1|json|yaml|yml|kt|gradle|xml|csv|png|tflite)$'

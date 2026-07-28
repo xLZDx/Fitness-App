@@ -44,11 +44,50 @@ analyze` + `flutter test` passing does not prove a UI change renders correctly.
 change complete. Do not report a pass count without having actually run the suite after the current
 changes.
 
+## Agent cadence
+
+Reviews here are **opt-in, not automatic.** Do not fan out a panel of reviewers on every change —
+that is expensive and low-yield. Default: do the work, self-review it, and say what you think is
+most likely wrong. Escalate to a specialist only when the operator asks, or when the change is
+genuinely high-stakes (payments, auth, injury filtering, a migration) and an outside read would
+change the outcome.
+
+When you do reach for one, pick by surface:
+
+| Surface being changed | Agent |
+|---|---|
+| Any Dart/Flutter code in this repo | `fitness-flutter-reviewer` (project-scoped — knows the layout, Riverpod/go_router conventions, iOS-portability rule, injury-filter requirement). Prefer it over the generic `flutter-reviewer`. |
+| Build/analyze/pub failures | `dart-build-resolver` |
+| Cloud Functions (`functions/src/index.ts`), auth, Firestore rules, secrets | `security-reviewer` |
+| Firestore data model / query shape | `database-reviewer` |
+| Error handling and fallback paths | `silent-failure-hunter` |
+| Tracing an unfamiliar flow across files | read `core/CODEMAP.md` first; only use `code-explorer` if the map is insufficient |
+
+Rules that always apply, agent or not:
+
+- **Read `core/CODEMAP.md` before searching the tree.** It maps all 33 features, all 22 routes, and
+  the intent-to-file table. Globbing to rediscover that is wasted work.
+- **Skip `core/business/` for code tasks.** It holds positioning and fundraising material and
+  contains no engineering facts.
+- **Read the debug-daemon session log before theorising about a bug** (`core/DEBUGGING.md`).
+
+## Slash commands
+
+| Command | Use it for |
+|---|---|
+| `/fitness-verify` | The canonical done-check: analyze, test, doc audit, UI verification |
+| `/fitness-feature <name>` | Scaffolding a new feature in the repo's exact layout + wiring its route |
+| `/fitness-debug-daemon` | Capturing logs/errors/touches/screencaps for a bug report |
+
 ## Where everything else lives
 
 | Need | Go to |
 |---|---|
+| **Which file do I open?** — features, routes, entry points | `core/CODEMAP.md` |
+| Index of all documentation, tiered by who reads it | `core/INDEX.md` |
 | Layout, stack, cross-platform (iOS) principle, Stripe test mode | `CLAUDE.md` |
 | Debug daemon runbook (read first for any bug report) | `core/DEBUGGING.md` |
-| Roadmap / competitive assessment / nonprofit plan / implementation plan | `core/` |
+| Roadmap / next tickets / implementation plan | `core/plans/` |
+| Positioning, competitors, nonprofit, pitch — **not needed for code** | `core/business/` |
 | Master 75-feature task list | `FITNESS_APP_TASK_LIST.md` |
+| Screenshot index (and why not to open them) | `docs/README.md` |

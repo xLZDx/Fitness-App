@@ -105,6 +105,27 @@ size was never the point — the point is that finding a file is now one Read of
 several Glob/Grep rounds plus opening large files to identify them. That saving shows up per task,
 not in a static byte count, and is not claimed as measured.
 
+### G4 outcome
+
+The original complaint — "agents are called manually, cadence is not defined" — is addressed
+**without** making review automatic, because the operator's standing rule is that multi-agent review
+is opt-in and panels on small changes are expensive and low-yield. So the cadence answers *which*
+agent for *which* surface, and says explicitly that the default is self-review.
+
+Added `.claude/agents/fitness-flutter-reviewer.md`: a project-scoped reviewer that knows what the
+generic `flutter-reviewer` cannot — the feature layout, Riverpod/go_router conventions, the
+iOS-portability seam at `lib/core/health/health_service.dart`, the glass design system, the fact
+that there is no `integration_test/`, and that exercise lists must pass through the injury filter
+(a safety rule, not a style one).
+
+Added two commands for the repeatable loops that were previously re-explained every session:
+`/fitness-verify` (analyze, test, doc audit, UI verification, with the `-Integration` trap called
+out) and `/fitness-feature <name>` (scaffold in the exact convention, wire the route, update the
+CODEMAP in the same commit). `/fitness-debug-daemon` already existed.
+
+`AGENTS.md` carries the cadence table so it applies to any agent sharing the checkout, not just
+Claude Code.
+
 ---
 
 ## Progress tracker
@@ -118,8 +139,8 @@ contradictions left behind.
 | G0 | Progress tracker + CSV twin + `measure_context.ps1` baseline | DONE | `a476955` | Script parses, runs live, emits CSV; baseline recorded above |
 | G1 | Kill contradictions: task-list path, integration_test, Copy fork, stray `.mp4` | DONE | `bc0a527` | `audit_doc_links.ps1` PASS: 107 refs, 0 broken |
 | G2 | Split `core/` into engineering / plans / business; add `core/INDEX.md` router | DONE | `437cb74` | Audit PASS 132 refs / 0 broken; every doc reachable from INDEX |
-| G3 | Real CODEMAP (feature to purpose to entrypoint) + `docs/README.md` index | DONE | _(this commit)_ | 33/33 features listed; 22/22 route entry files verified; audit PASS 217 refs / 0 broken |
-| G4 | Agent cadence: `.claude/agents/` + slash commands | PENDING | | Cadence documented in AGENTS.md; every command references a real script/path |
+| G3 | Real CODEMAP (feature to purpose to entrypoint) + `docs/README.md` index | DONE | `c522e5c` | 33/33 features listed; 22/22 route entry files verified; audit PASS 217 refs / 0 broken |
+| G4 | Agent cadence: `.claude/agents/` + slash commands | DONE | _(this commit)_ | Cadence in AGENTS.md; audit PASS 233 refs / 0 broken |
 | G5 | `CLAUDE.md` to thin router; sync global `fitness-app-helper` skill | PENDING | | Router points only at files that exist; skill matches repo reality |
 | G6 | Dedup 24 duplicated rules across global + volume CLAUDE.md | PENDING | | No MANDATORY rule lost; both files backed up; re-measure shows the cut |
 
