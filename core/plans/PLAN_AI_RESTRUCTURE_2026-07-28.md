@@ -165,8 +165,8 @@ contradictions left behind.
 | G2 | Split `core/` into engineering / plans / business; add `core/INDEX.md` router | DONE | `437cb74` | Audit PASS 132 refs / 0 broken; every doc reachable from INDEX |
 | G3 | Real CODEMAP (feature to purpose to entrypoint) + `docs/README.md` index | DONE | `c522e5c` | 33/33 features listed; 22/22 route entry files verified; audit PASS 217 refs / 0 broken |
 | G4 | Agent cadence: `.claude/agents/` + slash commands | DONE | `5ad373b` | Cadence in AGENTS.md; audit PASS 233 refs / 0 broken |
-| G5 | `CLAUDE.md` to thin router; `core/CONVENTIONS.md`; sync global skill | DONE | _(this commit)_ | Audit PASS 256 refs / 0 broken; project always-on 772 to 578 tok |
-| G6 | Dedup 24 duplicated rules across global + volume CLAUDE.md | PENDING | | No MANDATORY rule lost; both files backed up; re-measure shows the cut |
+| G5 | `CLAUDE.md` to thin router; `core/CONVENTIONS.md`; sync global skill | DONE | `c6a85d0` | Audit PASS 256 refs / 0 broken; project always-on 772 to 578 tok |
+| G6 | Dedup duplicated rules across global + volume CLAUDE.md | DONE | _(outside git — see note)_ | 0 of 32 MANDATORY rules unreachable; both files backed up; always-on 50,694 to 37,010 tok |
 
 ### Per-gate exit protocol
 
@@ -178,6 +178,58 @@ contradictions left behind.
 4. Local commit, atomic, one gate per commit.
 5. Summary reported to operator.
 6. Next gate. **No push** without a separate `push` command.
+
+### G6 outcome — the actual token win
+
+`D:	est 2\CLAUDE.md` and `~/.claude/CLAUDE.md` are **both** loaded into every session's system
+prompt. 24 rule headings existed in both, occupying **923 of the volume file's 1,401 lines** — so
+~22 MANDATORY rules were sent to the model twice per turn while carrying the same meaning once.
+
+Mirroring had also failed at its own goal. The two copies had drifted into different wordings —
+similarity as low as **0.15** on "Forced Articulation Before State-Changing Actions" — so there were
+effectively two competing versions of several rules, which is worse than either one alone.
+
+**What changed.** The volume file now carries a pointer index naming the shared rules, plus only
+what is genuinely volume-specific: the agent routing table, Agents-First routing, Aider
+configuration, Approval Gate, Git Lifecycle, Release Manager, project bootstrap. Two shared rules
+were **kept verbatim** in the volume file because they carry `D:	est 2`-specific tooling detail
+absent from global — Windows Script File Encoding (sanitizer + verifier script paths) and Diagram
+Generation Defaults (BPMN reference implementation paths).
+
+The Rules Sync Policy in the global file was amended in the same pass to say **point, do not
+mirror**. Without that, the next session would have "restored consistency" by copying everything
+back and undone the gate.
+
+**Safety.** Both files were backed up to `CLAUDE.md.bak-20260728-g6` before any edit, and a
+mechanical check confirmed every one of the 40 pre-edit volume sections is still reachable (present
+in the new volume file, present in global, or named in the pointer index) — **0 of 32
+MANDATORY-titled rules unreachable**.
+
+| File | Before | After | Delta |
+|---|---:|---:|---:|
+| `~/.claude/CLAUDE.md` | 25,106 tok | 25,464 tok | +358 (the amendment) |
+| `D:	est 2\CLAUDE.md` | 24,816 tok | 10,967 tok | **-13,849** |
+| `Fitness App/CLAUDE.md` | 772 tok | 578 tok | -194 |
+| **ALWAYS-ON total** | **50,694** | **37,010** | **-13,684 (-27%)** |
+
+> **Not under version control.** `D:	est 2` is not a git repository, so neither CLAUDE.md change is
+> committed anywhere. The `.bak-20260728-g6` files beside each are the only rollback path — do not
+> delete them until the new arrangement has been lived with for a few sessions.
+
+---
+
+## Final result
+
+| Layer | Baseline | After G6 | Delta |
+|---|---:|---:|---:|
+| ALWAYS-ON (every turn) | 50,694 | **37,010** | **-27%** |
+| AGENT ENTRY (`AGENTS.md`, on demand) | 593 | 1,196 | +603 (new cadence content) |
+| DOC SURFACE | 57,684 | 59,336 | +1,652 (CODEMAP, CONVENTIONS, INDEX) |
+| CODE SURFACE | 152,650 | 152,650 | unchanged — no code touched |
+
+The doc surface grew on purpose: `CODEMAP.md`, `CONVENTIONS.md` and `INDEX.md` are read *selectively*
+and replace unbounded exploration. Trading ~1.6k tokens of on-demand docs for a 13.7k/turn always-on
+saving, plus far cheaper navigation, is the whole trade.
 
 ---
 
