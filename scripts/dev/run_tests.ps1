@@ -1,9 +1,12 @@
-# Comprehensive test runner.
+﻿# Comprehensive test runner.
 #
 # Runs the whole Flutter pipeline in order:
-#   1. flutter analyze        — static type / lint / unused-import check
-#   2. flutter test            — unit + widget + golden tests
-#   3. (optional) integration  — driver-based flows when -Integration is set
+#   1. flutter analyze        -- static type / lint / unused-import check
+#   2. flutter test            -- unit + widget + golden tests
+#   3. (optional) integration  -- driver-based flows when -Integration is set.
+#                                 This repo currently has no mobile/integration_test/,
+#                                 so -Integration SKIPs cleanly rather than erroring --
+#                                 see core/CODEMAP.md.
 #
 # Outputs a per-run report under logs/test_runs/<timestamp>/ so a failure
 # can be triaged without re-running. Exits non-zero on any failure so CI
@@ -39,7 +42,7 @@ function Run-Step {
         Write-Host $_
     }
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "[$Name] FAILED (exit $LASTEXITCODE) — see $log" -ForegroundColor Red
+        Write-Host "[$Name] FAILED (exit $LASTEXITCODE) -- see $log" -ForegroundColor Red
         return $false
     }
     Write-Host "[$Name] OK" -ForegroundColor Green
@@ -61,14 +64,25 @@ try {
     } 'test.log'
 
     if ($Integration) {
-        $devices = & $Flutter devices --machine 2>$null | Out-String
-        if ($devices -notmatch [regex]::Escape($EmulatorSerial)) {
-            Write-Host "[integration] SKIPPED — emulator $EmulatorSerial not running" -ForegroundColor Yellow
+        # Directory existence is environment-independent -- check it BEFORE device connectivity.
+        # Checking device first would mask this behind an unrelated "emulator not running" SKIP
+        # whenever no emulator happens to be up, and crash with a raw Flutter error the one time
+        # someone runs this against the recommended Pixel_API_34 dev setup. This repo currently
+        # has no mobile/integration_test/ -- see core/CODEMAP.md and core/CONVENTIONS.md.
+        $IntegrationDir = Join-Path $Mobile 'integration_test'
+        if (-not (Test-Path -LiteralPath $IntegrationDir -PathType Container)) {
+            Write-Host "[integration] SKIPPED -- mobile/integration_test/ does not exist in this repo" -ForegroundColor Yellow
             $results['integration'] = $null
         } else {
-            $results['integration'] = Run-Step 'integration tests' {
-                & $Flutter test integration_test/ -d $EmulatorSerial
-            } 'integration.log'
+            $devices = & $Flutter devices --machine 2>$null | Out-String
+            if ($devices -notmatch [regex]::Escape($EmulatorSerial)) {
+                Write-Host "[integration] SKIPPED -- emulator $EmulatorSerial not running" -ForegroundColor Yellow
+                $results['integration'] = $null
+            } else {
+                $results['integration'] = Run-Step 'integration tests' {
+                    & $Flutter test integration_test/ -d $EmulatorSerial
+                } 'integration.log'
+            }
         }
     }
 
