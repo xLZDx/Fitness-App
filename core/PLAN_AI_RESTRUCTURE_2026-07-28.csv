@@ -1,0 +1,32 @@
+section,key,value_1,value_2,value_3,value_4,notes
+meta,plan,AI-Friendly Repo Restructure,2026-07-28,,,Operator GO: go g0-g6 autonomously; implementation GO only - no push
+meta,scope_excluded,mobile/lib restructure,,,,Already feature-first and consistent; moving code = risk with no token benefit
+baseline,layer,files,lines,est_tokens,,Measured 2026-07-28 19:27 local / 16:27 UTC via scripts/dev/measure_context.ps1
+baseline,1. ALWAYS-ON (CLAUDE.md chain),4,2971,51288,,Re-sent on every turn
+baseline,2. DOC SURFACE (core/ + root md),17,4775,57684,,Read while orienting
+baseline,3. CODE SURFACE (mobile/lib),158,18851,152650,,Read while working
+always_on_breakdown,file,lines,est_tokens,share_pct,,
+always_on_breakdown,C:\Users\koros\.claude\CLAUDE.md,1459,25106,49.0,,Inherited - global
+always_on_breakdown,D:\test 2\CLAUDE.md,1401,24816,48.4,,Inherited - volume
+always_on_breakdown,Fitness App\CLAUDE.md,58,772,1.5,,Project-owned
+always_on_breakdown,Fitness App\AGENTS.md,53,593,1.2,,Project-owned
+always_on_breakdown,TOTAL project-owned share,111,1365,2.7,,Fitness App owns 2.7 pct of its own always-on tax
+findings,id,finding,evidence,,,
+findings,F1,24 rule headings duplicated across global and volume CLAUDE.md; 267 lines byte-identical,comm over normalised headings,,,
+findings,F2,CLAUDE.md:41 claimed task list lives in trading-assistance dir - path does not exist,ls + git ls-files,,,
+findings,F3,core/COMPETITIVE_ASSESSMENT - Copy.md is a 605-line divergent superset of the 424-line canonical,diff,,,
+findings,F4,core/ was 4360 md lines of which 2771 (64 pct) are business docs with no engineering value,wc -l inventory,,,
+findings,F5,core/CODEMAP.md is 34 lines for 158 files and already stale,CODEMAP vs git ls-files,,,
+findings,F6,docs/ = 67 unindexed PNGs; 118M untracked logs/; 2.8MB untracked mp4 at root,ls + du -sh,,,
+findings,F7,Zero project agents; exactly one slash command,find .claude -type f,,,
+tracker,gate,scope,status,commit,exit_check,
+tracker,G0,Progress tracker + CSV twin + measure_context.ps1 baseline,DONE,,Script parses and runs live; emits CSV; baseline recorded,
+tracker,G1,Kill contradictions - CLAUDE.md:41 / Copy.md divergence / stray mp4,PENDING,,No doc claims a nonexistent path; one canonical competitive assessment,
+tracker,G2,Split core/ engineering vs business + INDEX.md router,PENDING,,Every moved doc reachable from INDEX; no dangling references,
+tracker,G3,Real CODEMAP (feature to purpose to entrypoint) + docs/ index,PENDING,,Every lib/features/* dir in CODEMAP; counts match git ls-files,
+tracker,G4,Agent cadence - .claude/agents/ + slash commands,PENDING,,Cadence in AGENTS.md; every command references a real path,
+tracker,G5,CLAUDE.md to thin router + sync global fitness-app-helper skill,PENDING,,Router points only at existing files; skill matches repo reality,
+tracker,G6,Dedup 24 duplicated rules across global and volume CLAUDE.md,PENDING,,No MANDATORY rule lost; both files backed up; re-measure shows the cut,
+expectation,certain,G6 is the largest always-on lever,G0-G5 move always-on by only 1-2k tokens,,,
+expectation,estimated,G3 is the per-task lever,Navigation reads today cost several Glob/Grep + full-file Reads,,,To be re-measured after G3 not asserted
+expectation,not_claimed,No reduction in CODE SURFACE layer,,,,Shrinking it would mean deleting features
