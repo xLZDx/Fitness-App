@@ -63,4 +63,4 @@ entirely for code work.
 | `CLAUDE.md` | repo root | Claude Code entry point — auto-loaded every session |
 | `AGENTS.md` | repo root | Tool-agnostic conventions for any other agent sharing this checkout |
 | `FITNESS_APP_TASK_LIST.md` | repo root | Master 75-feature list |
-| `docs/` | repo root | UI screenshots captured from the emulator |
+| `docs/` | repo root | Emulator screenshots — index + naming convention in [docs/README.md](../docs/README.md) |

@@ -1,34 +1,156 @@
-# CODEMAP
+# CODEMAP — where everything lives
 
-Repo-relative paths · recursive file count · short description. Current-state only.
-Generated from `git ls-files --cached --others --exclude-standard`.
+**Purpose: answer "which file do I open?" in one read, instead of several Glob/Grep rounds.**
+Paths are relative to `mobile/` unless stated. Counts verified against the working tree 2026-07-28.
 
-## / (root)
-Files: .firebaserc · .gitignore · CLAUDE.md · FITNESS_APP_TASK_LIST.md ·
-firebase.json · firestore.indexes.json · firestore.rules
+Descriptions marked **[doc]** are quoted from the module's own doc-comment (the code carries ticket
+IDs like `MK.6` / `TX.3`). Unmarked ones are derived from the route + entry filename.
 
-## mobile/ (258) -- Flutter application
-## mobile/lib/ (158) -- app source
-## mobile/lib/features/ (136) -- feature-first modules
-  workouts(18) equipment(12) subscription(10) onboarding(10) profile(6)
-  moments(6) form_check(6) auth(6) visual_equipment(5) progress_photos(5)
-  donor_wall(5) catalog(5) social_feed(4) marketplace(4) community(4)
-  celebrity_plans(4) ai_planner(4) recovery(3) personalisation(3) progress(2)
-  injury_coach(2) + 12 single-file stubs (voice, scanner, home, insurance,
-  buddy, body_comp, about, goal_photo, cycle_aware, recovery_workout, sdk_export, splash)
-## mobile/lib/core/ (15) -- health(5) notifications(4) wear(2) theme(2) router(1) assets(1)
-## mobile/lib/shared/ (5) -- shared widgets/utils
-## mobile/test/ (71) -- unit + widget tests
-## mobile/android/ (19) -- Android host + Gradle
-## mobile/assets/ (3) -- data + ML models
+---
 
-## functions/ (5) -- Cloud Functions
-## functions/src/ (1) -- index.ts (Stripe bridge)
+## Start here
 
-## wear/ (9) -- Wear OS companion
-## wear/src/ (5) -- Kotlin source
+| You want to... | Open |
+|---|---|
+| Understand app startup, DI, Firebase init | `lib/main.dart` |
+| Find which page a URL renders | `lib/core/router/app_router.dart` (296 lines, all routes) |
+| Find a feature's code | the feature table below, then `lib/features/<name>/` |
+| Change global look/colour | `lib/core/theme/app_theme.dart`, `lib/core/theme/app_palette.dart` |
+| Change bottom nav / shell chrome | `lib/shared/widgets/main_shell.dart`, `lib/shared/widgets/glass_nav_bar.dart` |
+| Touch health / wearable sync | `lib/core/health/`, `lib/core/wear/` |
+| Add or modify a Cloud Function | `functions/src/index.ts` (Stripe bridge) |
 
-## docs/ (34) -- project documentation
-## core/ (10) -- plans / roadmaps / reference docs
-## scripts/ (7) -- PowerShell dev/debug scripts
-## .github/ (1) -- CI config
+**Layout convention** — every feature follows the same shape, so guessing is safe:
+
+```
+lib/features/<name>/
+    <name>_page.dart      UI entry point (only if the feature has a screen)
+    data/                 models, repositories, pure logic  <- unit-testable, no Flutter
+    state/                Riverpod providers
+    widgets/              feature-local widgets
+```
+
+---
+
+## Routes to feature
+
+Declared in `lib/core/router/app_router.dart`. Five routes sit inside `MainShell` (bottom nav); the
+rest are pushed full-screen.
+
+| Route | Feature | Entry file |
+|---|---|---|
+| `/splash` | splash | `lib/features/splash/splash_page.dart` |
+| `/login` | auth | `lib/features/auth/login_page.dart` |
+| `/onboarding` | onboarding | `lib/features/onboarding/onboarding_page.dart` |
+| `/home` *(shell)* | home | `lib/features/home/home_page.dart` |
+| `/scan` *(shell)* | scanner | `lib/features/scanner/scanner_page.dart` |
+| `/workouts` *(shell)* | workouts | `lib/features/workouts/workouts_page.dart` |
+| `/progress` *(shell)* | progress | `lib/features/progress/progress_page.dart` |
+| `/profile` *(shell)* | profile | `lib/features/profile/profile_page.dart` |
+| `/equipment/:id` | equipment | `lib/features/equipment/equipment_detail_page.dart` |
+| `/workout/:id` | equipment | `lib/features/equipment/workout_player_page.dart` |
+| `/subscription` | subscription | `lib/features/subscription/subscription_page.dart` |
+| `/about` | about | `lib/features/about/about_page.dart` |
+| `/donors` | donor_wall | `lib/features/donor_wall/donor_wall_page.dart` |
+| `/plan` | ai_planner | `lib/features/ai_planner/ai_planner_page.dart` |
+| `/celebrity-plans` | celebrity_plans | `lib/features/celebrity_plans/celebrity_plans_page.dart` |
+| `/photos` | progress_photos | `lib/features/progress_photos/progress_photos_page.dart` |
+| `/team/:teamId` | community | `lib/features/community/team_feed_page.dart` |
+| `/form-check` | form_check | `lib/features/form_check/form_check_page.dart` |
+| `/recognise` | visual_equipment | `lib/features/visual_equipment/visual_equipment_page.dart` |
+| `/contribute` | catalog | `lib/features/catalog/contribute_video_page.dart` |
+| `/moderate` | catalog | `lib/features/catalog/moderation_page.dart` |
+| `/coaches` | marketplace | `lib/features/marketplace/marketplace_page.dart` |
+
+---
+
+## Features with a screen
+
+| Feature | Files | Lines | What it does |
+|---|---:|---:|---|
+| `workouts` | 18 | 2,302 | Workout browsing + logging. Largest feature. `lib/features/workouts/data/offline/` handles prefetch; `lib/features/workouts/widgets/` holds plate calculator, rest timer, warmup calculator |
+| `equipment` | 12 | 1,929 | Equipment detail + workout player. `lib/features/equipment/data/exercise_filter.dart` is the injury-aware filter that gates exercises |
+| `subscription` | 10 | 1,766 | Tiers, paywall, Stripe checkout. `subscription_page.dart` is 976 lines, the biggest file in the repo |
+| `onboarding` | 10 | 1,209 | Multi-step intake incl. the injury questionnaire. `lib/features/onboarding/steps/` = one file per step |
+| `profile` | 6 | 1,024 | Profile + settings. `lib/features/profile/data/firestore_profile_repository.dart` is the Firestore boundary |
+| `form_check` | 6 | 734 | On-device pose/form checking. `lib/features/form_check/data/mlkit_pose_detector_service.dart` + `lib/features/form_check/data/form_classifier.dart` |
+| `home` | 1 | 594 | Landing dashboard, single file |
+| `progress_photos` | 5 | 519 | Progress photo capture + timeline |
+| `donor_wall` | 5 | 501 | Public donor recognition (ties to the nonprofit model) |
+| `catalog` | 5 | 498 | Community video contribution + moderation queue |
+| `auth` | 6 | 479 | Firebase email / social sign-in |
+| `community` | 4 | 454 | Teams and team feeds |
+| `marketplace` | 4 | 405 | Coach marketplace |
+| `progress` | 2 | 400 | Charts + stats over logged workouts |
+| `visual_equipment` | 5 | 369 | Camera-based equipment recognition (`/recognise`) |
+| `social_feed` | 4 | 333 | Social activity feed |
+| `ai_planner` | 4 | 326 | AI-generated training plan (`/plan`) |
+| `about` | 1 | 287 | About / info page |
+| `celebrity_plans` | 4 | 228 | Celebrity-authored plans |
+| `scanner` | 1 | 157 | QR scan entry point — the core moat feature |
+| `splash` | 1 | 106 | Launch / routing gate |
+
+## Logic-only modules (no screen)
+
+No UI; other features consume their models and providers. All carry doc-comments with ticket IDs,
+quoted here.
+
+| Feature | Files | Lines | What it does |
+|---|---:|---:|---|
+| `moments` | 6 | 433 | **[doc]** In-app "moments" — one-shot celebration / nurture prompts |
+| `recovery` | 3 | 323 | **[doc]** Auto-deload signal, pure function on recent history (`lib/features/recovery/data/deload_detector.dart`) + `lib/features/recovery/widgets/deload_banner.dart` |
+| `injury_coach` | 2 | 201 | **[doc]** TX.1 Injury Recovery Coach — multi-week, day-by-day rehab plans tagged to injuries |
+| `personalisation` | 3 | 199 | **[doc]** Re-ranks the For-You feed from the user's `FitnessProfile` |
+| `voice` | 1 | 137 | **[doc]** TX.6 / MK.1 voice-only hands-free workout control; restricted command grammar |
+| `cycle_aware` | 1 | 80 | **[doc]** MK.3 Cycle-Aware Programming — 4-phase model, pure |
+| `buddy` | 1 | 75 | **[doc]** TX.3 Buddy Matching — in-gym presence via BLE |
+| `sdk_export` | 1 | 66 | **[doc]** MK.5 White-label gym-chain SDK foundations |
+| `goal_photo` | 1 | 60 | **[doc]** MK.2 Goal-photo to personalised program |
+| `body_comp` | 1 | 58 | **[doc]** MK.6 Body composition from phone camera + height/weight |
+| `insurance` | 1 | 54 | **[doc]** MK.4 Insurance discount partnerships (attestation endpoint) |
+| `recovery_workout` | 1 | 46 | **[doc]** MK.7 Recovery as a first-class workout |
+
+> The previous version of this file called these "single-file stubs". They are not stubs — each is a
+> documented domain module with a ticket ID.
+
+---
+
+## Cross-cutting — `lib/core/` (15 files)
+
+| Path | Role |
+|---|---|
+| `lib/core/router/app_router.dart` | All routes + `MainShell` wiring (296 lines) |
+| `lib/core/theme/` | `app_theme.dart`, `app_palette.dart` — global theme + colours |
+| `lib/core/health/` | Health Connect / HealthKit abstraction. `health_service.dart` is the interface, `platform_health_service.dart` the impl — **this is the iOS-portability seam** |
+| `lib/core/wear/` | Wear OS phone-side sync (`wear_sync_service.dart`) |
+| `lib/core/notifications/` | Notification service + a mock impl for tests |
+| `lib/core/assets/asset_bootstrap.dart` | Bundled asset loading |
+
+## Shared UI — `lib/shared/widgets/` (5 files)
+
+`main_shell.dart` (bottom-nav scaffold), `glass_nav_bar.dart`, `glass.dart`,
+`aurora_background.dart`, `scroll_dim_list.dart` — the glass/aurora visual language.
+
+---
+
+## Outside `mobile/lib`
+
+| Path | Files | Role |
+|---|---:|---|
+| `mobile/test/` | 71 | Unit + widget tests. **The only suite** — there is no `integration_test/` |
+| `mobile/android/` | 19 | Android host + Gradle |
+| `mobile/assets/` | 3 | Bundled data + ML models |
+| `functions/src/index.ts` | 1 | Cloud Functions — Stripe bridge |
+| `wear/src/` | 5 | Wear OS companion (Kotlin) |
+| `scripts/dev/` | 7 | `debug_daemon.ps1`, `run_app.ps1`, `run_tests.ps1`, `run_with_debug.ps1`, `build_wear.ps1`, `measure_context.ps1`, `audit_doc_links.ps1` |
+| `scripts/ops/` | 1 | `setup_stripe_secrets.ps1` |
+| `scripts/catalog/` | 1 | `seed_stock_videos.ps1` |
+| `docs/` | 67 | Emulator screenshots — see `docs/README.md` |
+
+---
+
+## Keeping this file honest
+
+Hand-maintained; nothing regenerates it. When you add or remove a feature, update the tables above
+in the same commit. `scripts/dev/audit_doc_links.ps1` fails the moment a path here stops resolving,
+which catches deletions and renames — but **not** a feature you forgot to add.

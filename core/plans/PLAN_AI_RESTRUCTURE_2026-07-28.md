@@ -79,9 +79,31 @@ Result: 107 references checked, **0 broken**, 15 forward-looking (all in roadmap
 router instead of listing individual docs, so moving a doc no longer invalidates `CLAUDE.md`.
 
 All cross-tier references were rewritten (6 docs) — the audit initially passed while still hiding
-stale `core/X.md` paths inside the PLANNED bucket, which is exactly the kind of false-green this
+stale core-relative paths inside the PLANNED bucket, which is exactly the kind of false-green this
 plan exists to remove. The checker also gained one-line look-back so prose that wraps between a
 negation and the path it describes is not falsely flagged.
+
+### G3 outcome
+
+`core/CODEMAP.md` went from 34 lines of directory counts to a navigation document: a **route to
+feature to entry-file table** (22 routes), a **feature table** for all 33 features with file counts,
+line counts and purpose, and a "Start here" table mapping intents ("change the theme", "add a Cloud
+Function") straight to files. Descriptions of the 12 logic-only modules are quoted from their own
+doc-comments — the code carries ticket IDs (`MK.6`, `TX.3`) and was already self-describing; nothing
+here is inferred prose.
+
+Corrected along the way: the old CODEMAP called those 12 modules "single-file stubs". They are not
+stubs — each is a documented domain module.
+
+`docs/README.md` indexes the 67 screenshots by phase prefix (`fb_`, `p1_`, `p2c_`, `p3d_`, `p4b_`)
+and, more usefully, tells agents **not** to open them — they are historical verification artefacts,
+not a UI spec, and images are expensive to read.
+
+Honest note on measurement: the DOC SURFACE number barely moved (57,684 to 56,709 est. tokens)
+because CODEMAP/INDEX/docs-README additions roughly offset the deleted `- Copy.md`. That layer's
+size was never the point — the point is that finding a file is now one Read of a table instead of
+several Glob/Grep rounds plus opening large files to identify them. That saving shows up per task,
+not in a static byte count, and is not claimed as measured.
 
 ---
 
@@ -94,9 +116,9 @@ contradictions left behind.
 | Gate | Scope | Status | Commit | Exit check |
 |---|---|---|---|---|
 | G0 | Progress tracker + CSV twin + `measure_context.ps1` baseline | DONE | `a476955` | Script parses, runs live, emits CSV; baseline recorded above |
-| G1 | Kill contradictions: task-list path, integration_test, Copy fork, stray `.mp4` | DONE | _(this commit)_ | `audit_doc_links.ps1` PASS: 107 refs, 0 broken |
-| G2 | Split `core/` into engineering / plans / business; add `core/INDEX.md` router | DONE | _(this commit)_ | Audit PASS 132 refs / 0 broken; every doc reachable from INDEX |
-| G3 | Real CODEMAP (feature to purpose to entrypoint) + `docs/README.md` index | PENDING | | Every `lib/features/*` dir appears in CODEMAP; counts match `git ls-files` |
+| G1 | Kill contradictions: task-list path, integration_test, Copy fork, stray `.mp4` | DONE | `bc0a527` | `audit_doc_links.ps1` PASS: 107 refs, 0 broken |
+| G2 | Split `core/` into engineering / plans / business; add `core/INDEX.md` router | DONE | `437cb74` | Audit PASS 132 refs / 0 broken; every doc reachable from INDEX |
+| G3 | Real CODEMAP (feature to purpose to entrypoint) + `docs/README.md` index | DONE | _(this commit)_ | 33/33 features listed; 22/22 route entry files verified; audit PASS 217 refs / 0 broken |
 | G4 | Agent cadence: `.claude/agents/` + slash commands | PENDING | | Cadence documented in AGENTS.md; every command references a real script/path |
 | G5 | `CLAUDE.md` to thin router; sync global `fitness-app-helper` skill | PENDING | | Router points only at files that exist; skill matches repo reality |
 | G6 | Dedup 24 duplicated rules across global + volume CLAUDE.md | PENDING | | No MANDATORY rule lost; both files backed up; re-measure shows the cut |
