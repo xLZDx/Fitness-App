@@ -1,4 +1,4 @@
-> **Inherits global rules from `D:\test 2\CLAUDE.md`** — approval gate, no-guessing, regression tests, git lifecycle (including todo-in-commits), shell pre-approval, D:-drive-only disk policy. Read that file too.
+> **Inherits global rules from `D:\test 2\CLAUDE.md`** — approval gate, no-guessing, regression tests, git lifecycle (including todo-in-commits), shell pre-approval. Read that file too.
 
 # Fitness App — Project Context
 
@@ -40,15 +40,18 @@ Android ships first, iOS is on the roadmap. Every package + abstraction choice m
 - `core/IMPLEMENTATION_PLAN.md` — live phase/sequence roadmap.
 - Master 75-feature list: `FITNESS_APP_TASK_LIST.md` (lives in trading-assistance dir for historical reasons).
 
-## Toolchain (D: drive only — see global disk policy)
+## Toolchain
 - Flutter SDK: `D:\flutter`
 - Android SDK: `D:\android-sdk`
 - AVD: `Pixel_API_34` (lives under `D:\android-sdk\avd`)
-- Pin env vars to D:: `PUB_CACHE`, `GRADLE_USER_HOME`, `TEMP`, `TMP`, `ANDROID_AVD_HOME`, `ANDROID_SDK_ROOT`, `FLUTTER_ROOT`.
-- JDK is system-installed at `C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot` (read-only OS bridge — acceptable per global policy; no project data lands there).
+- Env vars point at these D: paths: `PUB_CACHE`, `GRADLE_USER_HOME`, `TEMP`, `TMP`, `ANDROID_AVD_HOME`, `ANDROID_SDK_ROOT`, `FLUTTER_ROOT`.
+- JDK is system-installed at `C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot`.
 
 ## Tests
 - `mobile/test/` — Flutter widget + unit tests.
 - `mobile/integration_test/` — integration tests.
 - `flutter analyze` + `flutter test` after every change. 0 failures required.
 - For UI changes: build APK + install on emulator (`Pixel_API_34`) and visually verify.
+
+## Non-Claude agents
+`AGENTS.md` — tool-agnostic build/test/git-safety conventions for Codex/Aider/etc. sharing this checkout.
