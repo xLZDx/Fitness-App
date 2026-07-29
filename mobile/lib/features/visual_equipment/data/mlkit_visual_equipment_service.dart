@@ -85,11 +85,12 @@ class MlKitVisualEquipmentService implements VisualEquipmentService {
       );
       final labels = await labeler.processImage(inputImage);
       return _toMatches(labels, topK);
-    } catch (_) {
-      // Either the model isn't bundled yet or the device blocked the
-      // file read. Fall back to an empty result so the UI shows the
-      // empty-state instead of crashing.
-      return const [];
+    } catch (e) {
+      // Deliberately NOT swallowed into an empty list: "the model failed to
+      // load" and "no equipment in this photo" must not look identical to
+      // the user. The controller turns this into an error state the Scan
+      // tab renders with the reason; an empty list now means "no match".
+      throw VisualEquipmentException('$e');
     }
   }
 
@@ -106,8 +107,8 @@ class MlKitVisualEquipmentService implements VisualEquipmentService {
       final labels =
           await labeler.processImage(mlkit.InputImage.fromFilePath(path));
       return _toMatches(labels, topK);
-    } catch (_) {
-      return const [];
+    } catch (e) {
+      throw VisualEquipmentException('$e');
     }
   }
 

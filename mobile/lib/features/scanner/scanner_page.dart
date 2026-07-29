@@ -34,6 +34,10 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
   );
   bool _handling = false;
 
+  /// Distinguishes "you haven't tried yet" from "we looked and found
+  /// nothing" — the two used to render the same hint card.
+  bool _attempted = false;
+
   @override
   void dispose() {
     _controller.dispose();
@@ -65,6 +69,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
         imageQuality: 88,
       );
       if (picked == null) return;
+      setState(() => _attempted = true);
       await ref
           .read(visualEquipmentControllerProvider.notifier)
           .classifyFilePath(picked.path);
@@ -129,10 +134,19 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                OutlinedButton(
-                  key: const Key('scan-recognise-gallery'),
-                  onPressed: () => _recognise(ImageSource.gallery),
-                  child: const Icon(Icons.photo_library_outlined),
+                // The app theme gives buttons minimumSize Size.fromHeight(54),
+                // i.e. minWidth == infinity. In a Row's non-flex slot the
+                // width constraint is unbounded, so an unwrapped button forces
+                // an infinite width and the whole page fails to lay out
+                // (blank screen, no red error). Always bound button width
+                // outside Expanded.
+                SizedBox(
+                  width: 56,
+                  child: OutlinedButton(
+                    key: const Key('scan-recognise-gallery'),
+                    onPressed: () => _recognise(ImageSource.gallery),
+                    child: const Icon(Icons.photo_library_outlined),
+                  ),
                 ),
               ],
             ),
@@ -144,10 +158,10 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
               ),
               error: (e, _) => GlassCard(
                 tint: theme.colorScheme.error,
-                child: Text('Could not recognise: $e'),
+                child: Text('Recognition failed: $e'),
               ),
               data: (list) => list.isEmpty
-                  ? _HintCard(theme: theme)
+                  ? _HintCard(theme: theme, noMatch: _attempted)
                   : _Matches(matches: list),
             ),
           ],
@@ -158,8 +172,12 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
 }
 
 class _HintCard extends StatelessWidget {
-  const _HintCard({required this.theme});
+  const _HintCard({required this.theme, this.noMatch = false});
   final ThemeData theme;
+
+  /// True once a photo has been classified with no confident match, so the
+  /// copy stops reading like the user never pressed the button.
+  final bool noMatch;
 
   @override
   Widget build(BuildContext context) {
@@ -168,15 +186,21 @@ class _HintCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Point at a machine and tap Recognise',
+            noMatch
+                ? "Couldn't tell what that is"
+                : 'Point at a machine and tap Recognise',
             style: theme.textTheme.titleMedium
                 ?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 4),
           Text(
-            "We identify the equipment on-device and pull up exercises tuned "
-            "to your intake and past injuries. Equipment QR stickers are "
-            "picked up automatically while the camera is open.",
+            noMatch
+                ? "Try filling the frame with one machine, straight on, and "
+                    "avoid people or clutter in the shot."
+                : "We identify the equipment on-device and pull up exercises "
+                    "tuned to your intake and past injuries. Equipment QR "
+                    "stickers are picked up automatically while the camera "
+                    "is open.",
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
             ),

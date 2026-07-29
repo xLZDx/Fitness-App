@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/scanner/scanner_page.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_match.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_service.dart';
@@ -11,10 +12,16 @@ void main() {
   group('ScannerPage', () {
     testWidgets('leads with machine recognition, QR is the background job',
         (tester) async {
+      // MUST pump with the real app theme: it sets button minimumSize to
+      // Size.fromHeight(54) (minWidth == infinity), which crashed layout on
+      // a Row-placed button while a default-theme test stayed green.
       await tester.pumpWidget(
-        const ProviderScope(child: MaterialApp(home: ScannerPage())),
+        ProviderScope(
+          child: MaterialApp(theme: AppTheme.light(), home: const ScannerPage()),
+        ),
       );
       await tester.pump();
+      expect(tester.takeException(), isNull);
 
       // Primary action is recognising a machine from a photo.
       expect(find.byKey(const Key('scan-recognise-camera')), findsOneWidget);
@@ -36,10 +43,11 @@ void main() {
               ]),
             ),
           ],
-          child: const MaterialApp(home: ScannerPage()),
+          child: MaterialApp(theme: AppTheme.light(), home: const ScannerPage()),
         ),
       );
       await tester.pump();
+      expect(tester.takeException(), isNull);
 
       // Drive the controller directly: tapping the button would open the
       // real platform image picker, which has no test binding.

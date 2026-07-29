@@ -1,5 +1,15 @@
 import 'visual_equipment_match.dart';
 
+/// Raised when recognition itself failed (model missing, native error,
+/// unreadable file) — as opposed to succeeding with no match.
+class VisualEquipmentException implements Exception {
+  const VisualEquipmentException(this.message);
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
 /// Bridge to the on-device equipment classifier. The real impl ships
 /// a TFLite model bundled in assets/models/equipment_v1.tflite; the
 /// mock here returns deterministic results so widget tests work.
