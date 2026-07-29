@@ -90,6 +90,9 @@ flutter:
   assets:
     - assets/data/
     - assets/models/
+    # Two demo frames per exercise (start / end position). Looped by
+    # ExerciseDemo instead of shipping video — see scripts/catalog/.
+    - assets/exercises/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

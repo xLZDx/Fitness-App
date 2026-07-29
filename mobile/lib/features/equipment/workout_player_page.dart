@@ -17,6 +17,8 @@ import '../workouts/widgets/rest_timer.dart';
 import '../workouts/widgets/warmup_calculator.dart';
 import 'data/equipment_models.dart';
 import 'state/equipment_providers.dart';
+import 'widgets/exercise_demo.dart';
+import 'widgets/muscle_map.dart';
 
 /// Shows the rest timer after a successful "Mark complete". Local to this
 /// page — clears on rebuild via a StateProvider.autoDispose so navigating
@@ -82,10 +84,37 @@ class WorkoutPlayerPage extends ConsumerWidget {
             children: [
               _Hero(exercise: item),
               const SizedBox(height: 16),
+              // A real clip wins when the catalog has one; otherwise the
+              // bundled start/end frames loop as the demo. Only when there is
+              // neither do we show the "no demo" card.
               if (item.videoUrl != null)
                 _VideoBlock(url: item.videoUrl!)
+              else if (item.frames.isNotEmpty)
+                ExerciseDemo(frames: item.frames)
               else
                 _NoVideoFallback(),
+              if (item.muscles.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                GlassCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Muscles worked',
+                          style: theme.textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 8),
+                      MuscleMap(
+                        primary: item.primaryMuscles.isEmpty
+                            ? item.muscles.take(1).toList()
+                            : item.primaryMuscles,
+                        secondary: item.muscles
+                            .where((m) => !item.primaryMuscles.contains(m))
+                            .toList(),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               _StepsCard(exercise: item),
               if (item.contraindications.isNotEmpty) ...[

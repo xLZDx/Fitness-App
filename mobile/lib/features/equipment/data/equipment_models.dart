@@ -15,6 +15,8 @@ class ExerciseItem {
     required this.summary,
     required this.steps,
     this.videoUrl,
+    this.frames = const [],
+    this.primaryMuscles = const [],
     this.contraindications = const [],
   });
 
@@ -29,8 +31,17 @@ class ExerciseItem {
   final String summary;
   final List<String> steps;
 
-  /// Where the instructional video lives (Phase 2B will use this).
+  /// Where the instructional video lives, when a real clip exists.
   final String? videoUrl;
+
+  /// Bundled demo frames (start / end position of the movement). Looping
+  /// them is how the app shows a movement without shipping video: it plays
+  /// offline, weighs kilobytes, and comes from a public-domain source.
+  final List<String> frames;
+
+  /// The muscles the movement is FOR, as opposed to [muscles], which also
+  /// carries the supporting ones. Drives the muscle map's colour weighting.
+  final List<String> primaryMuscles;
 
   /// Health flags that should hide this exercise. `'knee'`, `'lower_back'`,
   /// etc. — when any matches the user's injury list, the exercise is
@@ -50,6 +61,9 @@ class ExerciseItem {
         summary: j['summary'] as String? ?? '',
         steps: List<String>.from(j['steps'] as List? ?? const []),
         videoUrl: j['videoUrl'] as String?,
+        frames: List<String>.from(j['frames'] as List? ?? const []),
+        primaryMuscles:
+            List<String>.from(j['primaryMuscles'] as List? ?? const []),
         contraindications:
             List<String>.from(j['contraindications'] as List? ?? const []),
       );
