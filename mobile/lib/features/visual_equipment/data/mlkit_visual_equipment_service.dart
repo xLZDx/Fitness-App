@@ -54,12 +54,12 @@ class MlKitVisualEquipmentService implements VisualEquipmentService {
   }
 
   Future<File> _resolveModelFile() async {
-    // Stub path; production unzips assets/models/* to the app's docs
-    // dir on first launch and remembers the absolute path. Until the
-    // bundling lands, fall back to a non-existent file (callers must
-    // guard with the mock service in dev mode).
+    // MUST match where AssetBootstrap.ensureBundledAssets copies the
+    // asset: '<docs>/<asset-path-verbatim>'. It used to read
+    // '<docs>/models/...' while the bootstrap wrote
+    // '<docs>/assets/models/...' — the model was never found.
     final dir = await getApplicationDocumentsDirectory();
-    return File('${dir.path}/models/equipment_v1.tflite');
+    return File('${dir.path}/$modelAssetPath');
   }
 
   @override
@@ -84,23 +84,45 @@ class MlKitVisualEquipmentService implements VisualEquipmentService {
         ),
       );
       final labels = await labeler.processImage(inputImage);
-      final raw = <VisualMatch>[];
-      for (final l in labels) {
-        final id = _kLabelMap[l.label.toLowerCase()];
-        if (id == null) continue;
-        raw.add(VisualMatch(
-          equipmentId: id,
-          confidence: l.confidence,
-          labelHint: l.label,
-        ));
-      }
-      return normaliseAndTopK(raw, limit: topK);
+      return _toMatches(labels, topK);
     } catch (_) {
       // Either the model isn't bundled yet or the device blocked the
       // file read. Fall back to an empty result so the UI shows the
       // empty-state instead of crashing.
       return const [];
     }
+  }
+
+  @override
+  Future<List<VisualMatch>> classifyFile({
+    required String path,
+    int topK = 3,
+  }) async {
+    try {
+      final labeler = await _ensureLabeler();
+      // fromFilePath lets the platform decode JPEG/PNG + EXIF rotation —
+      // the raw-bytes route above assumes an NV21 camera frame and
+      // produces garbage for picked photos.
+      final labels =
+          await labeler.processImage(mlkit.InputImage.fromFilePath(path));
+      return _toMatches(labels, topK);
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  List<VisualMatch> _toMatches(List<mlkit.ImageLabel> labels, int topK) {
+    final raw = <VisualMatch>[];
+    for (final l in labels) {
+      final id = _kLabelMap[l.label.toLowerCase()];
+      if (id == null) continue;
+      raw.add(VisualMatch(
+        equipmentId: id,
+        confidence: l.confidence,
+        labelHint: l.label,
+      ));
+    }
+    return normaliseAndTopK(raw, limit: topK);
   }
 
   Future<void> dispose() async {

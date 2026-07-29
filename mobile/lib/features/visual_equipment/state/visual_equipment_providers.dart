@@ -24,6 +24,20 @@ class VisualEquipmentController
       state = AsyncValue.error(e, st);
     }
   }
+
+  /// Preferred for camera/gallery captures — the file route decodes
+  /// JPEG + EXIF rotation correctly (see VisualEquipmentService).
+  Future<void> classifyFilePath(String path) async {
+    state = const AsyncValue.loading();
+    try {
+      final r = await ref
+          .read(visualEquipmentServiceProvider)
+          .classifyFile(path: path);
+      state = AsyncValue.data(r);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
 }
 
 final visualEquipmentControllerProvider = NotifierProvider<

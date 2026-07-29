@@ -10,6 +10,14 @@ abstract class VisualEquipmentService {
     required List<int> imageBytes,
     int topK = 3,
   });
+
+  /// Classify an image FILE (camera / gallery capture). Preferred over
+  /// [classify] for picked photos: the platform decoder handles JPEG
+  /// format + EXIF rotation, which raw-bytes paths cannot.
+  Future<List<VisualMatch>> classifyFile({
+    required String path,
+    int topK = 3,
+  });
 }
 
 class MockVisualEquipmentService implements VisualEquipmentService {
@@ -32,4 +40,11 @@ class MockVisualEquipmentService implements VisualEquipmentService {
       VisualMatch(equipmentId: 'dumbbell', confidence: 0.1),
     ], limit: topK);
   }
+
+  @override
+  Future<List<VisualMatch>> classifyFile({
+    required String path,
+    int topK = 3,
+  }) =>
+      classify(imageBytes: path.codeUnits, topK: topK);
 }
