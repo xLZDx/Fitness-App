@@ -9,6 +9,8 @@ import '../helpers/test_app.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
+import 'package:fitness_app/features/equipment/data/equipment_models.dart';
+import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/home/home_page.dart';
 import 'package:fitness_app/features/workouts/data/mock_scheduled_session_repository.dart';
 import 'package:fitness_app/features/workouts/state/scheduled_session_providers.dart';
@@ -24,9 +26,22 @@ Future<void> _setLargeSurface(WidgetTester tester) async {
   });
 }
 
+ExerciseItem _ex(String id, String title, List<String> primary) => ExerciseItem(
+      id: id,
+      title: title,
+      equipmentId: null,
+      muscles: primary,
+      primaryMuscles: primary,
+      difficulty: ExerciseDifficulty.beginner,
+      durationMinutes: 8,
+      summary: '',
+      steps: const [],
+    );
+
 Widget _buildApp({
   MockScheduledSessionRepository? scheduleRepo,
   AuthUser? user,
+  List<ExerciseItem>? catalog,
 }) {
   final router = GoRouter(
     initialLocation: '/home',
@@ -49,6 +64,11 @@ Widget _buildApp({
             .overrideWithValue(scheduleRepo),
       if (user != null)
         authUserProvider.overrideWith((_) => Stream.value(user)),
+      // Pinned so the Suggestions section is deterministic. The ranking itself
+      // is covered by suggestion_builder_test; this file checks the wiring
+      // from provider through card to navigation.
+      if (catalog != null)
+        forYouExercisesProvider.overrideWith((_) async => catalog),
     ],
     child: MaterialApp.router(
       theme: AppTheme.light(),
@@ -94,20 +114,46 @@ void main() {
       expect(find.byType(ScrollDimList), findsOneWidget);
     });
 
-    testWidgets('renders every suggestion title', (tester) async {
+    // Replaces a test that asserted five hardcoded titles ("Upper body
+    // power", "HIIT cardio burn", ...). Those cards were static strings with
+    // `onTap: () {}` — the test passed while the feature did nothing.
+    testWidgets('suggestions come from the catalog and open the workout',
+        (tester) async {
       await _setLargeSurface(tester);
-      await tester.pumpWidget(_buildApp());
-      await tester.pump();
+      await tester.pumpWidget(_buildApp(catalog: [
+        _ex('barbell_full_squat', 'Barbell Full Squat', ['quads']),
+        _ex('pull_up', 'Pull-up', ['lats']),
+      ]));
+      await tester.pumpAndSettle();
+
       await tester.scrollUntilVisible(
-        find.text('Active recovery'),
+        find.text('Barbell Full Squat'),
         300,
         scrollable: find.byType(Scrollable).first,
       );
-      expect(find.text('Upper body power'), findsOneWidget);
-      expect(find.text('HIIT cardio burn'), findsOneWidget);
-      expect(find.text('Mobility & recovery'), findsOneWidget);
-      expect(find.text('Full body strength'), findsOneWidget);
-      expect(find.text('Active recovery'), findsOneWidget);
+      expect(find.text('Barbell Full Squat'), findsOneWidget);
+      expect(find.text('Pull-up'), findsOneWidget);
+      expect(find.byKey(const Key('suggestions-empty')), findsNothing);
+
+      await tester.tap(find.byKey(const Key('suggestion-barbell_full_squat')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('player_barbell_full_squat'), findsOneWidget,
+          reason: 'the card must reach the real exercise, not nothing');
+    });
+
+    testWidgets('an empty catalog shows an honest empty state, not filler',
+        (tester) async {
+      await _setLargeSurface(tester);
+      await tester.pumpWidget(_buildApp(catalog: const []));
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('suggestions-empty')),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.byKey(const Key('suggestions-empty')), findsOneWidget);
     });
 
     testWidgets('Scan equipment button navigates to /scan', (tester) async {

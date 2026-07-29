@@ -11,33 +11,14 @@ import '../moments/state/moment_providers.dart';
 import '../moments/widgets/day3_welcome_modal.dart';
 import '../progress/data/progress_stats.dart';
 import '../recovery/widgets/deload_banner.dart';
+import 'data/suggestion_builder.dart';
+import 'state/suggestion_providers.dart';
 import '../workouts/data/scheduled_session.dart';
 import '../workouts/state/scheduled_session_providers.dart';
 import '../workouts/state/workout_log_providers.dart';
 
-class _Suggestion {
-  const _Suggestion(this.title, this.duration, this.subtitle, this.gradient);
-  final String title;
-  final String duration;
-  final String subtitle;
-  final List<Color> gradient;
-}
-
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
-
-  static const _suggestions = <_Suggestion>[
-    _Suggestion('Upper body power', '35 min', 'Bench, row, overhead press',
-        [AppPalette.auroraPeach, AppPalette.auroraPink]),
-    _Suggestion('HIIT cardio burn', '22 min', 'Treadmill intervals + plyometrics',
-        [AppPalette.auroraViolet, AppPalette.auroraBlue]),
-    _Suggestion('Mobility & recovery', '15 min', 'Foam roll + stretching flow',
-        [AppPalette.auroraPink, AppPalette.auroraPeach]),
-    _Suggestion('Full body strength', '45 min', 'Squat, deadlift, press',
-        [AppPalette.auroraTeal, AppPalette.auroraLime]),
-    _Suggestion('Active recovery', '20 min', 'Easy pace + breathing',
-        [AppPalette.auroraBlue, AppPalette.auroraTeal]),
-  ];
 
   @override
   ConsumerState<HomePage> createState() => _HomePageState();
@@ -131,10 +112,27 @@ class _HomePageState extends ConsumerState<HomePage> {
           const SizedBox(height: 32),
           _SectionHeader('Suggestions'),
           const SizedBox(height: 14),
-          for (final s in HomePage._suggestions) ...[
-            _SuggestionCard(s),
-            const SizedBox(height: 16),
-          ],
+          ...ref.watch(suggestionsProvider).when(
+                loading: () => const [_SuggestionsPlaceholder()],
+                error: (e, _) => [_SuggestionsMessage('Could not load: $e')],
+                data: (list) => list.isEmpty
+                    ? const [
+                        _SuggestionsMessage(
+                          'Finish the intake questionnaire and log a session — '
+                          'suggestions are built from your answers and history.',
+                        )
+                      ]
+                    : [
+                        for (var i = 0; i < list.length; i++) ...[
+                          _SuggestionCard(
+                            list[i],
+                            gradient: AppPalette
+                                .tileGradients[i % AppPalette.tileGradients.length],
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      ],
+              ),
         ],
       ),
     );
@@ -341,16 +339,20 @@ String formatScheduleLabel(DateTime t, {DateTime? now}) {
 }
 
 class _SuggestionCard extends StatelessWidget {
-  const _SuggestionCard(this.s);
-  final _Suggestion s;
+  const _SuggestionCard(this.s, {required this.gradient});
+  final WorkoutSuggestion s;
+  final List<Color> gradient;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return GlassCard(
+      key: Key('suggestion-${s.exerciseId}'),
       padding: const EdgeInsets.all(14),
-      onTap: () {},
+      // Opens the real exercise. This was `() {}` — the cards looked
+      // interactive and led nowhere.
+      onTap: () => GoRouter.of(context).push('/workout/${s.exerciseId}'),
       child: Row(
         children: [
           Container(
@@ -358,7 +360,7 @@ class _SuggestionCard extends StatelessWidget {
             height: 44,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
-              gradient: LinearGradient(colors: s.gradient),
+              gradient: LinearGradient(colors: gradient),
             ),
             child: const Icon(Icons.play_arrow_rounded,
                 color: Colors.white, size: 26),
@@ -382,7 +384,7 @@ class _SuggestionCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      s.duration,
+                      '${s.durationMinutes} min',
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: scheme.onSurface.withValues(alpha: 0.55),
                         fontWeight: FontWeight.w600,
@@ -392,8 +394,8 @@ class _SuggestionCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  s.subtitle,
-                  maxLines: 1,
+                  s.reason,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: scheme.onSurface.withValues(alpha: 0.60),
@@ -403,6 +405,41 @@ class _SuggestionCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SuggestionsPlaceholder extends StatelessWidget {
+  const _SuggestionsPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return const GlassCard(
+      child: SizedBox(
+        height: 64,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+    );
+  }
+}
+
+/// Honest empty/error state. Better than five plausible-looking cards that
+/// were never based on anything.
+class _SuggestionsMessage extends StatelessWidget {
+  const _SuggestionsMessage(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GlassCard(
+      key: const Key('suggestions-empty'),
+      child: Text(
+        text,
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+        ),
       ),
     );
   }
