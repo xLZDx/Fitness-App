@@ -7,6 +7,8 @@ import 'package:camera/camera.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart'
     as mlkit;
 
+import 'package:flutter/foundation.dart' show debugPrint;
+
 import 'pose_detector_service.dart';
 import 'pose_landmark.dart';
 
@@ -22,7 +24,10 @@ class MlKitPoseDetectorService implements PoseDetectorService {
   MlKitPoseDetectorService();
 
   CameraController? _camera;
-  late final mlkit.PoseDetector _detector;
+  // Nullable, not `late final`: stop() has to be able to release the detector
+  // and let a later start() build a new one. A `late final` field made the
+  // service single-use, which is what broke Form Check on any second visit.
+  mlkit.PoseDetector? _detector;
   final StreamController<PoseFrame> _ctrl =
       StreamController<PoseFrame>.broadcast();
   bool _busy = false;
@@ -69,7 +74,9 @@ class MlKitPoseDetectorService implements PoseDetectorService {
     try {
       final inputImage = _toMlKitImage(image);
       if (inputImage == null) return;
-      final poses = await _detector.processImage(inputImage);
+      final detector = _detector;
+      if (detector == null) return; // stopped mid-frame
+      final poses = await detector.processImage(inputImage);
       if (poses.isEmpty) return;
       final frame = _convert(poses.first);
       _ctrl.add(frame);
@@ -158,21 +165,39 @@ class MlKitPoseDetectorService implements PoseDetectorService {
     return PoseFrame(timestampMs: ts, landmarks: out);
   }
 
+  /// Releases the camera and the detector, leaving the service **restartable**.
+  ///
+  /// This used to only stop the image stream and leave `_initialised` true,
+  /// so a later [start] returned early and Form Check was dead on every
+  /// second visit — with the front camera still held. The broadcast
+  /// controller deliberately stays open: listeners re-subscribe across visits.
   @override
   Future<void> stop() async {
     if (!_initialised) return;
+    _initialised = false;
     try {
-      await _camera?.stopImageStream();
-    } catch (_) {/* tolerate "not streaming" */}
+      if (_camera?.value.isStreamingImages ?? false) {
+        await _camera!.stopImageStream();
+      }
+      await _camera?.dispose();
+    } catch (e) {
+      debugPrint('pose detector camera shutdown: $e');
+    }
+    _camera = null;
+    try {
+      await _detector?.close();
+    } catch (e) {
+      debugPrint('pose detector close: $e');
+    }
+    _detector = null;
   }
 
+  /// Terminal: releases everything and closes the stream. After this the
+  /// instance cannot be restarted — use [stop] when leaving a screen.
   @override
   Future<void> dispose() async {
     await stop();
-    await _camera?.dispose();
-    await _detector.close();
     await _ctrl.close();
-    _initialised = false;
   }
 }
 

@@ -25,18 +25,27 @@ class FormCheckPage extends ConsumerStatefulWidget {
   ConsumerState<FormCheckPage> createState() => _FormCheckPageState();
 }
 
-class _FormCheckPageState extends ConsumerState<FormCheckPage> {
+class _FormCheckPageState extends ConsumerState<FormCheckPage>
+    with WidgetsBindingObserver {
   bool _started = false;
   Object? _startError;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _startDetector();
+  }
+
+  void _startDetector() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
         await ref.read(poseDetectorServiceProvider).start();
         if (!mounted) return;
-        setState(() => _started = true);
+        setState(() {
+          _started = true;
+          _startError = null;
+        });
       } catch (e) {
         if (!mounted) return;
         setState(() => _startError = e);
@@ -44,12 +53,29 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage> {
     });
   }
 
+  /// Release the camera when the app leaves the foreground and pick it back
+  /// up on resume — a CameraController held across backgrounding comes back
+  /// frozen, and on some devices the OS revokes it outright.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      ref.read(poseDetectorServiceProvider).stop();
+      if (mounted) setState(() => _started = false);
+    } else if (state == AppLifecycleState.resumed && mounted && !_started) {
+      _startDetector();
+    }
+  }
+
   @override
   void dispose() {
-    // Best-effort camera/detector shutdown so the camera light goes
-    // off when the user navigates away.
-    final svc = ref.read(poseDetectorServiceProvider);
-    svc.stop();
+    WidgetsBinding.instance.removeObserver(this);
+    // stop() releases the camera AND leaves the service restartable, so a
+    // second visit to this page works. (It used to leave `_initialised` true,
+    // which made every later start() a silent no-op — the feature was dead
+    // after the first visit and the front camera stayed held.)
+    ref.read(poseDetectorServiceProvider).stop();
     super.dispose();
   }
 

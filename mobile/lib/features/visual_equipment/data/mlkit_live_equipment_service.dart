@@ -5,6 +5,7 @@ import 'dart:ui' show Size;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart'
     as mlkit;
 import 'package:path_provider/path_provider.dart';
@@ -12,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'live_equipment_service.dart';
 import 'live_recognition.dart';
 import 'visual_equipment_match.dart';
+import 'visual_equipment_service.dart' show VisualEquipmentException;
 
 /// Real live recogniser: back camera -> ML Kit custom labeler -> smoother.
 ///
@@ -63,6 +65,18 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
     final dir = await getApplicationDocumentsDirectory();
     // Path must match AssetBootstrap: '<docs>/<asset path verbatim>'.
     final modelFile = File('${dir.path}/$modelAssetPath');
+    // Check the model HERE, not later. `ImageLabeler(...)` is a pure Dart
+    // constructor (verified in google_mlkit_image_labeling 0.14.1
+    // image_labeler.dart:16) — the model is not loaded until the first
+    // processImage call, which happens inside the per-frame handler. Without
+    // this check a missing model fails silently on every frame forever and
+    // the UI just says "Looking…".
+    if (!await modelFile.exists()) {
+      throw VisualEquipmentException(
+        'Recognition model missing at ${modelFile.path}. The bundled model '
+        'failed to unpack on first launch — reinstalling the app fixes it.',
+      );
+    }
     _labeler = mlkit.ImageLabeler(
       options: mlkit.LocalLabelerOptions(
         modelPath: modelFile.path,
@@ -113,10 +127,22 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
       }
       final settled = _smoother.add(top);
       if (settled != null && !_ctrl.isClosed) _ctrl.add(settled);
+    } on PlatformException catch (e) {
+      // The native labeler rejected the call — a broken model, an
+      // unsupported format, a dead detector. This does NOT recover on the
+      // next frame, so surface it once and stop streaming instead of
+      // spinning silently. (Per-frame conversion errors are different and
+      // handled below.)
+      debugPrint('live recognition failed natively: ${e.code} ${e.message}');
+      if (!_ctrl.isClosed) {
+        _ctrl.addError(VisualEquipmentException(
+          'Recognition engine failed: ${e.message ?? e.code}',
+        ));
+      }
+      unawaited(stop());
     } catch (e) {
       // A frame that fails conversion is not worth surfacing — the next one
-      // recovers. A model that never loads shows up as "no recognition",
-      // which start() would already have thrown for.
+      // recovers.
       debugPrint('live recognition frame dropped: $e');
     } finally {
       _busy = false;

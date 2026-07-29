@@ -5,6 +5,7 @@
 // `pose_detector_service.dart`: the policy is pure and unit-testable, the
 // plugin needs a MethodChannel and a live binding.
 
+import 'package:flutter/foundation.dart' show debugPrint, debugPrintStack;
 import 'package:flutter_tts/flutter_tts.dart';
 
 import 'voice_coach.dart';
@@ -22,9 +23,21 @@ class TtsVoiceCoach extends GatedVoiceCoach {
 
   bool _configured = false;
 
-  /// Last engine failure, or null. Surfaced instead of swallowed so a silent
-  /// coach is diagnosable.
-  Object? lastError;
+  Object? _lastError;
+
+  /// Last engine failure, or null. On the [VoiceCoach] interface so a UI can
+  /// tell "nothing to say" from "the coach is broken" without a type check.
+  @override
+  String? get lastErrorMessage =>
+      _lastError == null ? null : '$_lastError';
+
+  void _recordError(String op, Object e, StackTrace st) {
+    _lastError = e;
+    // Without this a device with no TTS voice installed produces a coach that
+    // is simply silent, with nothing anywhere to explain why.
+    debugPrint('TtsVoiceCoach.$op failed: $e');
+    debugPrintStack(stackTrace: st);
+  }
 
   Future<void> _ensureConfigured() async {
     if (_configured) return;
@@ -42,8 +55,8 @@ class TtsVoiceCoach extends GatedVoiceCoach {
     try {
       await _ensureConfigured();
       await _tts.speak(text);
-    } catch (e) {
-      lastError = e;
+    } catch (e, st) {
+      _recordError('utter', e, st);
     }
   }
 
@@ -51,8 +64,12 @@ class TtsVoiceCoach extends GatedVoiceCoach {
   Future<void> stopSpeaking() async {
     try {
       await _tts.stop();
-    } catch (e) {
-      lastError = e;
+    } catch (e, st) {
+      // A failed stop matters more than a failed speak: cue() treats
+      // stopSpeaking() as the preempt for a severity-2 cue, so if this fails
+      // silently the "stop, protect your back" cue can overlap the nudge it
+      // was supposed to cut off.
+      _recordError('stopSpeaking(preempt)', e, st);
     }
   }
 

@@ -34,12 +34,34 @@ class ScannerPage extends ConsumerStatefulWidget {
   ConsumerState<ScannerPage> createState() => _ScannerPageState();
 }
 
-class _ScannerPageState extends ConsumerState<ScannerPage> {
+class _ScannerPageState extends ConsumerState<ScannerPage>
+    with WidgetsBindingObserver {
   final _controller = MobileScannerController(
     detectionSpeed: DetectionSpeed.noDuplicates,
     facing: CameraFacing.back,
   );
   bool _handling = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  /// Android may hand the camera to another app at any time, and "Recognise
+  /// machine" itself backgrounds us by launching the system camera. Holding a
+  /// CameraController across that produces a frozen preview on resume, so
+  /// release live mode on the way out and let the user re-arm it.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      if (ref.read(liveModeEnabledProvider)) {
+        ref.read(liveModeEnabledProvider.notifier).state = false;
+      }
+    }
+  }
 
   /// Distinguishes "you haven't tried yet" from "we looked and found
   /// nothing" — the two used to render the same hint card.
@@ -47,6 +69,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
     super.dispose();
   }
@@ -54,15 +77,25 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
   /// Every confident identification is remembered, whatever found it.
   void _remember(String equipmentId, double confidence,
       RecognitionSource source) {
+    // Fire-and-forget by design — a failed history write must never block
+    // routing to the exercises. But it must not vanish either: this is the
+    // only place record() is called, so an unhandled rejection here would be
+    // the whole feature failing invisibly.
     unawaited(
-      ref.read(recognitionHistoryRepositoryProvider).record(
+      ref
+          .read(recognitionHistoryRepositoryProvider)
+          .record(
             RecognitionEntry(
               equipmentId: equipmentId,
               recognisedAt: DateTime.now(),
               confidence: confidence,
               source: source,
             ),
-          ),
+          )
+          .catchError((Object e, StackTrace st) {
+        debugPrint('recognition history write failed ($equipmentId): $e');
+        debugPrintStack(stackTrace: st);
+      }),
     );
   }
 
@@ -136,7 +169,8 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
     final theme = Theme.of(context);
     final matches = ref.watch(visualEquipmentControllerProvider);
     final liveOn = ref.watch(liveModeEnabledProvider);
-    final live = ref.watch(liveRecognitionProvider).valueOrNull;
+    final liveAsync = ref.watch(liveRecognitionProvider);
+    final live = liveAsync.valueOrNull;
     // Record settled live readings. The repository's 5-minute dedup keeps a
     // camera held on one machine from writing a row per frame.
     ref.listen<AsyncValue<LiveRecognition?>>(liveRecognitionProvider,
@@ -230,7 +264,29 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
             ),
             if (liveOn) ...[
               const SizedBox(height: 14),
-              _LiveCard(recognition: live),
+              // An error here means the camera or the model failed, which is
+              // NOT the same as "no machine recognised yet" — spinning
+              // forever on a broken model was a real defect.
+              liveAsync.hasError
+                  ? GlassCard(
+                      key: const Key('scan-live-error'),
+                      tint: theme.colorScheme.error,
+                      child: Text('Live recognition failed: '
+                          '${liveAsync.error}'),
+                    )
+                  : _LiveCard(
+                      recognition: live,
+                      // Tapping through must release the camera first: the
+                      // equipment page is pushed ABOVE the shell, so this
+                      // page is never disposed and the stream would keep
+                      // running behind it.
+                      onOpen: (id) async {
+                        final router = GoRouter.of(context);
+                        await _setLiveMode(false);
+                        if (!mounted) return;
+                        await router.push('/equipment/$id');
+                      },
+                    ),
             ],
             const SizedBox(height: 14),
             matches.when(
@@ -296,8 +352,9 @@ class _HintCard extends StatelessWidget {
 /// Live-mode readout. Shows what the camera has settled on, how much of the
 /// vote agreed, and a way straight into the exercises.
 class _LiveCard extends StatelessWidget {
-  const _LiveCard({required this.recognition});
+  const _LiveCard({required this.recognition, required this.onOpen});
   final LiveRecognition? recognition;
+  final Future<void> Function(String equipmentId) onOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -326,7 +383,7 @@ class _LiveCard extends StatelessWidget {
     }
     return GlassCard(
       key: const Key('scan-live-result'),
-      onTap: () => context.push('/equipment/${r.equipmentId}'),
+      onTap: () => onOpen(r.equipmentId),
       child: Row(
         children: [
           Expanded(

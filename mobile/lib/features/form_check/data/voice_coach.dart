@@ -46,6 +46,7 @@ enum CueDecision {
 class CueGate {
   CueGate({
     this.minGapMs = 3000,
+    this.interruptGapMs = 1200,
     this.minSeverity = 1,
     this.interruptSeverity = 2,
     ClockMs? clock,
@@ -61,6 +62,11 @@ class CueGate {
   /// squat rep — fast enough to be corrective, slow enough to be a coach
   /// rather than a metronome.
   final int minGapMs;
+
+  /// Minimum spacing for a REPEATED interrupt-severity cue. Well under
+  /// [minGapMs]: while a dangerous position persists the warning must keep
+  /// coming, but 1.2s is long enough not to stutter over itself.
+  final int interruptGapMs;
 
   /// Severities below this are never spoken.
   final int minSeverity;
@@ -83,13 +89,26 @@ class CueGate {
     if (feedback.severity < minSeverity) return CueDecision.suppress;
     final cue = feedback.cue.trim();
     if (cue.isEmpty) return CueDecision.suppress;
-    if (cue == _lastCue) return CueDecision.suppress;
 
     final now = _clock();
+
+    // Interrupt-severity cues are checked BEFORE the repeat filter.
+    // A dangerous position persists across frames, so the classifier emits
+    // the SAME cue text every frame — with the repeat filter first, "stop,
+    // your back is rounding" was spoken once and then silenced for the rest
+    // of the dangerous streak. It still gets a floor (interruptGapMs) so it
+    // repeats at a usable cadence instead of stuttering every frame.
     if (feedback.severity >= interruptSeverity) {
+      final last = _lastSpokenAtMs;
+      final sameCue = cue == _lastCue;
+      if (sameCue && last != null && now - last < interruptGapMs) {
+        return CueDecision.suppress;
+      }
       _commit(cue, now);
       return CueDecision.preempt;
     }
+
+    if (cue == _lastCue) return CueDecision.suppress;
 
     final last = _lastSpokenAtMs;
     if (last != null && now - last < minGapMs) return CueDecision.suppress;
@@ -123,6 +142,15 @@ abstract class VoiceCoach {
   bool get muted;
 
   void setMuted(bool value);
+
+  /// Last engine failure, or null when the coach is healthy.
+  ///
+  /// On the interface, not just the TTS implementation: a coach that has gone
+  /// silent because the device has no voice installed is indistinguishable
+  /// from a coach with nothing to say, and the user doing squats cannot tell
+  /// "my form is fine" from "the coach is broken". Mirrors
+  /// [HealthService.lastErrorMessage], which is wired the same way.
+  String? get lastErrorMessage;
 
   Future<void> dispose();
 }
@@ -184,6 +212,10 @@ class MockVoiceCoach extends GatedVoiceCoach {
   int stopCalls = 0;
 
   bool disposed = false;
+
+  /// Settable so a test can drive the "coach is broken" UI path.
+  @override
+  String? lastErrorMessage;
 
   @override
   Future<void> utter(String text) async => spoken.add(text);

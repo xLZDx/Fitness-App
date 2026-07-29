@@ -34,7 +34,25 @@ final liveRecognitionProvider =
     unawaited(svc.stop());
     return Stream<LiveRecognition?>.value(null);
   }
-  unawaited(svc.start());
   ref.onDispose(() => unawaited(svc.stop()));
-  return svc.recognitions().map<LiveRecognition?>((r) => r);
+
+  // start() can fail for reasons the user must be told about: camera
+  // permission denied, camera already in use, the model missing. An
+  // unawaited future would drop those on the floor and leave the UI
+  // spinning "Looking…" forever, so funnel both readings and failures
+  // through one controller the page is already watching.
+  final out = StreamController<LiveRecognition?>();
+  final sub = svc.recognitions().listen(
+        out.add,
+        onError: out.addError,
+      );
+  ref.onDispose(() {
+    unawaited(sub.cancel());
+    unawaited(out.close());
+  });
+  svc.start().catchError((Object e, StackTrace st) {
+    if (!out.isClosed) out.addError(e, st);
+  });
+
+  return out.stream;
 });

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show debugPrint, debugPrintStack;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 
@@ -37,9 +38,14 @@ class AssetBootstrap {
           ),
           flush: true,
         );
-      } catch (_) {
-        // Asset isn't bundled yet (e.g. equipment model not trained).
-        // Swallow — downstream services fall back to mocks / empty.
+      } catch (e, st) {
+        // Never block startup on this — but never lose it either. A model
+        // that fails to unpack (disk full, interrupted write) makes every
+        // later recognition fail, and the services downstream can only
+        // report "the labeler failed", not the root cause. This log line is
+        // the only place that names it.
+        debugPrint('AssetBootstrap: failed to unpack $asset: $e');
+        debugPrintStack(stackTrace: st);
       }
     }
   }
