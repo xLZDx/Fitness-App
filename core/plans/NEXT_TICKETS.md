@@ -66,12 +66,12 @@ pwsh scripts/dev/build_wear.ps1 -EmulatorSerial <serial>
 
 ## Optional next-eng pickup (not blocking)
 
-### 6. Push offline cache prefetch through to actual video URLs
+### 6. ~~Push offline cache prefetch through to actual video URLs~~ DONE (`366fd58`)
 
-The `OfflineVideoCache` + the `_OfflinePrefetchCard` are wired, but
-the prefetch action's `videoUrlsFor` closure isn't passed any URLs
-in production. Need to resolve each scheduled session's exercise
-catalog entry and pull its `videoUrl`. ~2 hours.
+Fixed: `videoUrlResolverFor(catalog)` in `offline_video_providers.dart` resolves each
+session's `exerciseId` -> `ExerciseItem.videoUrl` via `allExercisesProvider`, used both as the
+provider's default and at the `workouts_page.dart` call site. New test:
+`test/features/workouts/state/offline_video_providers_test.dart`.
 
 ### 7. AES-GCM swap for the photos page wiring
 
