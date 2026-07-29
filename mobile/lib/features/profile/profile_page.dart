@@ -7,6 +7,7 @@ import '../../shared/widgets/glass.dart';
 import '../auth/state/auth_providers.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
+import 'data/profile_models.dart';
 import 'state/profile_providers.dart';
 
 class ProfilePage extends ConsumerWidget {
@@ -245,7 +246,10 @@ class ProfilePage extends ConsumerWidget {
 
 class _ProfileSummary extends StatelessWidget {
   const _ProfileSummary({required this.profile});
-  final dynamic profile;
+  // Typed (not dynamic): enum extension getters like `ActivityLevel.name`
+  // do not dispatch dynamically — `dynamic` here crashed the page with
+  // NoSuchMethodError the moment activityLevel was set.
+  final UserProfile profile;
 
   String _activityLabel() {
     final a = profile.personal.activityLevel;
