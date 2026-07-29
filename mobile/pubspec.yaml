@@ -62,6 +62,7 @@ dependencies:
   tflite_flutter: ^0.11.0
   google_mlkit_image_labeling: ^0.14.0
   image_picker: ^1.1.2
+  google_sign_in: ^7.1.1
 
 dev_dependencies:
   flutter_test:
