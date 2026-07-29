@@ -18,7 +18,7 @@ Widget _wrap(Widget child) => MaterialApp(
 
 void main() {
   group('ExerciseDemo', () {
-    const frames = ['assets/exercises/x/0.jpg', 'assets/exercises/x/1.jpg'];
+    const frames = ['assets/exercises/x_0.jpg', 'assets/exercises/x_1.jpg'];
 
     testWidgets('advances through frames while playing', (tester) async {
       await tester.pumpWidget(_wrap(const ExerciseDemo(frames: frames)));
@@ -56,7 +56,7 @@ void main() {
     testWidgets('a single frame renders as a still with no crash',
         (tester) async {
       await tester.pumpWidget(
-          _wrap(const ExerciseDemo(frames: ['assets/exercises/x/0.jpg'])));
+          _wrap(const ExerciseDemo(frames: ['assets/exercises/x_0.jpg'])));
       await tester.pump(const Duration(seconds: 2));
       expect(tester.takeException(), isNull);
     });
@@ -101,7 +101,7 @@ void main() {
         'durationMinutes': 8,
         'summary': 's',
         'steps': ['a'],
-        'frames': ['assets/exercises/x/0.jpg', 'assets/exercises/x/1.jpg'],
+        'frames': ['assets/exercises/x_0.jpg', 'assets/exercises/x_1.jpg'],
         'contraindications': ['knee'],
       });
       expect(item.frames, hasLength(2));

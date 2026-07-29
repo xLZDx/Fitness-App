@@ -7,7 +7,7 @@ hosting, works offline, and it is real movement data rather than a stock clip.
 
 Writes:
   mobile/assets/data/exercises.json          (app schema)
-  mobile/assets/exercises/<id>/0.jpg, 1.jpg  (demo frames)
+  mobile/assets/exercises/<id>_0.jpg, <id>_1.jpg  (demo frames, FLAT)
 
 Run:  python scripts/catalog/build_catalog.py [--limit-per-equipment 6]
 """
@@ -108,7 +108,12 @@ def _to_app(row: dict, equipment_id: str | None) -> dict:
         "durationMinutes": 8 if row.get("mechanic") == "compound" else 6,
         "summary": steps[0] if steps else "",
         "steps": steps,
-        "frames": [f"assets/exercises/{_slug(row['id'])}/{i}.jpg"
+        # Flat filenames, NOT one directory per exercise. A pubspec entry
+        # like `- assets/exercises/` covers only the files sitting directly
+        # in that directory -- Flutter does not recurse into subdirectories.
+        # The per-exercise-folder layout meant all 132 frames were silently
+        # left out of the APK and every demo rendered "Demo unavailable".
+        "frames": [f"assets/exercises/{_slug(row['id'])}_{i}.jpg"
                    for i in range(len(row.get("images", [])[:2]))],
         "contraindications": contra,
     }
@@ -146,10 +151,9 @@ def main() -> None:
     by_id = {_slug(r["id"]): r for r in source}
     for item in out:
         row = by_id[item["id"]]
-        target = IMG_OUT / item["id"]
-        target.mkdir(parents=True, exist_ok=True)
         for i, rel in enumerate(row["images"][:2]):
-            dest = target / f"{i}.jpg"
+            # Flat, for the packaging reason documented in _to_app.
+            dest = IMG_OUT / f"{item['id']}_{i}.jpg"
             if dest.exists():
                 continue
             url = SRC_IMG + urllib.parse.quote(rel)
