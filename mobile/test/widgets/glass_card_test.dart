@@ -16,7 +16,11 @@ void main() {
       expect(find.text('inside-card'), findsOneWidget);
     });
 
-    testWidgets('uses a BackdropFilter for glass blur', (tester) async {
+    // This test used to assert the opposite — that a card ALWAYS carries a
+    // BackdropFilter — which is exactly the behaviour that made scrolling
+    // crawl: 11 backdrop blurs on the workout page, 7 on home, none of them
+    // cacheable. The default is now off and the expensive path is opt-in.
+    testWidgets('does not frost the backdrop by default', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -24,7 +28,44 @@ void main() {
           ),
         ),
       );
+      expect(find.byType(BackdropFilter), findsNothing);
+    });
+
+    testWidgets('frosts the backdrop when explicitly asked', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: GlassCard(
+              blur: true,
+              child: SizedBox(width: 100, height: 100),
+            ),
+          ),
+        ),
+      );
       expect(find.byType(BackdropFilter), findsOneWidget);
+    });
+
+    testWidgets('an unfrosted card still reads as a surface', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: GlassCard(child: SizedBox(width: 100, height: 100)),
+          ),
+        ),
+      );
+      // Losing the frost means the fill carries the separation from the
+      // background on its own, so it must be meaningfully opaque.
+      // Pick the gradient-bearing box rather than `.first`: Material and the
+      // Scaffold contribute DecoratedBoxes of their own.
+      final gradients = tester
+          .widgetList<DecoratedBox>(find.byType(DecoratedBox))
+          .map((b) => b.decoration)
+          .whereType<BoxDecoration>()
+          .map((d) => d.gradient)
+          .whereType<LinearGradient>()
+          .toList();
+      expect(gradients, isNotEmpty, reason: 'the card fill should be a gradient');
+      expect(gradients.first.colors.first.a, greaterThan(0.6));
     });
 
     testWidgets('invokes onTap when pressed', (tester) async {

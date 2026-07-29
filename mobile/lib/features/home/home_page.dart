@@ -5,17 +5,17 @@ import 'package:go_router/go_router.dart';
 import '../../core/health/widgets/health_sync_card.dart';
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
-import '../../shared/widgets/scroll_dim_list.dart';
+import '../../shared/widgets/smooth_scroll_list.dart';
 import '../moments/data/moment.dart';
 import '../moments/state/moment_providers.dart';
 import '../moments/widgets/day3_welcome_modal.dart';
 import '../progress/data/progress_stats.dart';
 import '../recovery/widgets/deload_banner.dart';
-import 'data/suggestion_builder.dart';
-import 'state/suggestion_providers.dart';
 import '../workouts/data/scheduled_session.dart';
 import '../workouts/state/scheduled_session_providers.dart';
 import '../workouts/state/workout_log_providers.dart';
+import 'data/suggestion_builder.dart';
+import 'state/suggestion_providers.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -57,7 +57,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     return FrostedScaffold(
       appBar: const GlassAppBar(title: 'Home'),
-      body: ScrollDimList(
+      body: SmoothScrollList(
         padding: const EdgeInsets.fromLTRB(20, 88, 20, 110),
         children: [
           _HeroCard(),

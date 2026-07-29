@@ -11,7 +11,7 @@ import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/workouts/workouts_page.dart';
 import 'package:fitness_app/shared/widgets/aurora_background.dart';
-import 'package:fitness_app/shared/widgets/scroll_dim_list.dart';
+import 'package:fitness_app/shared/widgets/smooth_scroll_list.dart';
 
 AssetEquipmentRepository _seededRepo() {
   return AssetEquipmentRepository()
@@ -108,11 +108,11 @@ void main() {
       }
     });
 
-    testWidgets('shows a ScrollDimList for the workout list',
+    testWidgets('shows a SmoothScrollList for the workout list',
         (tester) async {
       await tester.pumpWidget(_harness(_seededRepo()));
       await tester.pumpAndSettle();
-      expect(find.byType(ScrollDimList), findsOneWidget);
+      expect(find.byType(SmoothScrollList), findsOneWidget);
     });
 
     testWidgets('"For you" surfaces every catalog exercise (no profile)',

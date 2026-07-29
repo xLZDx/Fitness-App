@@ -4,7 +4,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
-import '../../shared/widgets/scroll_dim_list.dart';
+import '../../shared/widgets/smooth_scroll_list.dart';
 import '../workouts/data/progression.dart';
 import '../workouts/data/scheduled_session.dart';
 import '../workouts/data/workout_log.dart';
@@ -79,7 +79,7 @@ class WorkoutPlayerPage extends ConsumerWidget {
               ),
             );
           }
-          return ScrollDimList(
+          return SmoothScrollList(
             padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
             children: [
               _Hero(exercise: item),

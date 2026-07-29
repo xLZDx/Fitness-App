@@ -15,7 +15,7 @@ import 'package:fitness_app/features/home/home_page.dart';
 import 'package:fitness_app/features/workouts/data/mock_scheduled_session_repository.dart';
 import 'package:fitness_app/features/workouts/state/scheduled_session_providers.dart';
 import 'package:fitness_app/shared/widgets/aurora_background.dart';
-import 'package:fitness_app/shared/widgets/scroll_dim_list.dart';
+import 'package:fitness_app/shared/widgets/smooth_scroll_list.dart';
 
 Future<void> _setLargeSurface(WidgetTester tester) async {
   tester.view.physicalSize = const Size(800, 1600);
@@ -107,11 +107,11 @@ void main() {
       expect(find.text('This week'), findsOneWidget);
     });
 
-    testWidgets('uses a ScrollDimList for the home content', (tester) async {
+    testWidgets('uses a SmoothScrollList for the home content', (tester) async {
       await _setLargeSurface(tester);
       await tester.pumpWidget(_buildApp());
       await tester.pump();
-      expect(find.byType(ScrollDimList), findsOneWidget);
+      expect(find.byType(SmoothScrollList), findsOneWidget);
     });
 
     // Replaces a test that asserted five hardcoded titles ("Upper body

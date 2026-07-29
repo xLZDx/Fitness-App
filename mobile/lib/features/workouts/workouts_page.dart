@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
-import '../../shared/widgets/scroll_dim_list.dart';
+import '../../shared/widgets/smooth_scroll_list.dart';
 import '../equipment/data/equipment_models.dart';
 import '../equipment/state/equipment_providers.dart';
 import '../subscription/data/subscription_models.dart';
@@ -75,7 +75,7 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
 
     return FrostedScaffold(
       appBar: const GlassAppBar(title: 'Train'),
-      body: ScrollDimList(
+      body: SmoothScrollList(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
           const _QuickToolsRow(),

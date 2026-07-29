@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
-import '../../shared/widgets/scroll_dim_list.dart';
+import '../../shared/widgets/smooth_scroll_list.dart';
 import '../workouts/widgets/plate_calculator.dart';
 import '../workouts/widgets/warmup_calculator.dart';
 import 'data/equipment_models.dart';
@@ -33,7 +33,7 @@ class EquipmentDetailPage extends ConsumerWidget {
           if (item == null) {
             return _NotFound(equipmentId: equipmentId);
           }
-          return ScrollDimList(
+          return SmoothScrollList(
             padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
             children: [
               GlassCard(
