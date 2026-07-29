@@ -30,6 +30,14 @@ void main() {
       expect(await s.requestAuthorization(), HealthAuthStatus.granted);
     });
 
+    test('lastErrorMessage is null by default and settable for tests',
+        () async {
+      final s = MockHealthService();
+      expect(s.lastErrorMessage, isNull);
+      s.lastErrorMessage = 'boom';
+      expect(s.lastErrorMessage, 'boom');
+    });
+
     test('writeWorkout returns true on granted', () async {
       final s = MockHealthService();
       final ok = await s.writeWorkout(HealthWorkoutWrite(

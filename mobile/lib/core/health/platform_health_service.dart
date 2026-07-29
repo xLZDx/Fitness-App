@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:health/health.dart' as h;
 
 import 'health_models.dart';
@@ -32,6 +33,18 @@ class PlatformHealthService implements HealthService {
     return false;
   }
 
+  String? _lastError;
+
+  @override
+  String? get lastErrorMessage => _lastError;
+
+  /// Records + logs a swallowed platform error so "does not work" is
+  /// diagnosable instead of silently degrading to denied/notDetermined.
+  void _recordError(String op, Object e) {
+    _lastError = e.toString();
+    debugPrint('PlatformHealthService.$op failed: $e');
+  }
+
   @override
   Future<HealthAuthStatus> currentAuthStatus() async {
     if (!_isSupported) return HealthAuthStatus.unsupported;
@@ -40,7 +53,8 @@ class PlatformHealthService implements HealthService {
       return has
           ? HealthAuthStatus.granted
           : HealthAuthStatus.notDetermined;
-    } catch (_) {
+    } catch (e) {
+      _recordError('currentAuthStatus', e);
       return HealthAuthStatus.notDetermined;
     }
   }
@@ -48,13 +62,17 @@ class PlatformHealthService implements HealthService {
   @override
   Future<HealthAuthStatus> requestAuthorization() async {
     if (!_isSupported) return HealthAuthStatus.unsupported;
+    // Clear the previous failure: a clean user-denied is NOT an error
+    // and must not surface a stale message on the sync card.
+    _lastError = null;
     try {
       await h.Health().configure();
       final ok = await h.Health().requestAuthorization(
         [..._readTypes, ..._writeTypes],
       );
       return ok ? HealthAuthStatus.granted : HealthAuthStatus.denied;
-    } catch (_) {
+    } catch (e) {
+      _recordError('requestAuthorization', e);
       return HealthAuthStatus.denied;
     }
   }
@@ -89,7 +107,8 @@ class PlatformHealthService implements HealthService {
       final out = buckets.values.map((b) => b.toSnapshot()).toList();
       out.sort((a, b) => b.dateUtc.compareTo(a.dateUtc));
       return out;
-    } catch (_) {
+    } catch (e) {
+      _recordError('readSnapshots', e);
       return const [];
     }
   }
@@ -116,7 +135,8 @@ class PlatformHealthService implements HealthService {
             .add(Duration(minutes: workout.durationMinutes)),
         totalEnergyBurned: workout.estimatedCalories,
       );
-    } catch (_) {
+    } catch (e) {
+      _recordError('writeWorkout', e);
       return false;
     }
   }

@@ -21,6 +21,11 @@
     <uses-permission android:name="android.permission.health.READ_SLEEP"/>
     <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY"/>
     <uses-permission android:name="android.permission.health.WRITE_EXERCISE"/>
+    <!-- health 11.1.1 README (Android setup): "Accessing fitness data
+         (e.g. Steps) requires permission to access the 'Activity
+         Recognition' API." Runtime-dangerous; declared here, granted
+         via the system prompt. -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
 
     <!-- BLE (TX.3 buddy matching, in-gym presence). -->
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
@@ -63,6 +68,13 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Health Connect permission-rationale entry point
+                 (pre-Android-14 path). Required by the `health` package
+                 (11.1.1 README, Android setup: "an intent-filter needs
+                 to be added to the .MainActivity activity"). -->
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE"/>
+            </intent-filter>
         </activity>
 
         <!-- flutter_local_notifications: alarm receivers -->
@@ -104,6 +116,14 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Health Connect package visibility: lets the `health` plugin
+             check whether Health Connect is installed and reach its
+             permission-rationale flow (health 11.1.1 README, Android
+             setup, "Check whether Health Connect is installed or not"). -->
+        <package android:name="com.google.android.apps.healthdata"/>
+        <intent>
+            <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE"/>
         </intent>
     </queries>
 </manifest>

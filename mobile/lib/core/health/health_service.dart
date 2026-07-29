@@ -13,6 +13,11 @@ abstract class HealthService {
   Future<HealthAuthStatus> currentAuthStatus();
   Future<HealthAuthStatus> requestAuthorization();
 
+  /// Human-readable message from the most recent platform failure, or
+  /// null when the last operation did not hit an error. Lets the UI say
+  /// WHY an authorization attempt failed instead of a silent "denied".
+  String? get lastErrorMessage;
+
   /// Returns a snapshot per day in the requested window (most recent first).
   /// Empty list when permission has not been granted or no data exists.
   Future<List<HealthSnapshot>> readSnapshots({
@@ -38,6 +43,10 @@ class MockHealthService implements HealthService {
 
   HealthAuthStatus _status;
   final List<HealthSnapshot> _snapshots = _seed();
+
+  /// Mutable so tests can simulate a platform failure message.
+  @override
+  String? lastErrorMessage;
 
   static List<HealthSnapshot> _seed() {
     final today = DateTime.now().toUtc();

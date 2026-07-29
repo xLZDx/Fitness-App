@@ -13,6 +13,11 @@ final healthAuthStatusProvider = FutureProvider<HealthAuthStatus>((ref) {
   return ref.watch(healthServiceProvider).currentAuthStatus();
 });
 
+/// Failure reason from the most recent authorization attempt, or null
+/// when it succeeded / was a clean user-denied. The sync card shows it
+/// so a platform failure isn't a silent "does not work".
+final healthAuthErrorProvider = StateProvider<String?>((ref) => null);
+
 final todayHealthProvider = FutureProvider<HealthSnapshot?>((ref) {
   return ref.watch(healthServiceProvider).readTodaySnapshot();
 });
@@ -34,14 +39,18 @@ class HealthAuthAction extends Notifier<AsyncValue<HealthAuthStatus>> {
   Future<void> request() async {
     state = const AsyncValue.loading();
     try {
-      final s =
-          await ref.read(healthServiceProvider).requestAuthorization();
+      final service = ref.read(healthServiceProvider);
+      final s = await service.requestAuthorization();
       state = AsyncValue.data(s);
+      // Surface the platform failure (if any) behind a non-granted result.
+      ref.read(healthAuthErrorProvider.notifier).state =
+          s == HealthAuthStatus.granted ? null : service.lastErrorMessage;
       // Invalidate the auth-status read so dependent FutureProviders rebuild.
       ref.invalidate(healthAuthStatusProvider);
       ref.invalidate(todayHealthProvider);
       ref.invalidate(last7DaysHealthProvider);
     } catch (e, st) {
+      ref.read(healthAuthErrorProvider.notifier).state = e.toString();
       state = AsyncValue.error(e, st);
     }
   }

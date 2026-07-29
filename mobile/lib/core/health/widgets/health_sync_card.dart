@@ -30,6 +30,7 @@ class HealthSyncCard extends ConsumerWidget {
         if (status != HealthAuthStatus.granted) {
           return _AskCard(
             isLoading: ref.watch(healthAuthActionProvider).isLoading,
+            errorText: ref.watch(healthAuthErrorProvider),
             onAsk: () =>
                 ref.read(healthAuthActionProvider.notifier).request(),
           );
@@ -50,9 +51,16 @@ class HealthSyncCard extends ConsumerWidget {
 }
 
 class _AskCard extends StatelessWidget {
-  const _AskCard({required this.isLoading, required this.onAsk});
+  const _AskCard({
+    required this.isLoading,
+    required this.onAsk,
+    this.errorText,
+  });
   final bool isLoading;
   final VoidCallback onAsk;
+
+  /// Failure reason from the last authorization attempt (null = none).
+  final String? errorText;
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +128,14 @@ class _AskCard extends StatelessWidget {
               label: Text(isLoading ? 'Asking…' : 'Connect Health'),
             ),
           ),
+          if (errorText != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Health connect failed: $errorText',
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: scheme.error),
+            ),
+          ],
         ],
       ),
     );

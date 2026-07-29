@@ -3,7 +3,7 @@ package com.fitnessapp.fitness_app
 import android.content.Context
 import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.Wearable
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
@@ -15,8 +15,14 @@ import io.flutter.plugin.common.MethodChannel
  *
  * The wearable Data Layer transfers happen via MessageClient.sendMessage
  * to every connected node — usually one paired watch.
+ *
+ * Extends FlutterFragmentActivity (NOT FlutterActivity): the `health`
+ * plugin's Health Connect permission flow uses registerForActivityResult,
+ * which needs an androidx FragmentActivity host — with plain
+ * FlutterActivity the permission request silently no-ops (health 11.1.1
+ * README, "Android 14" section).
  */
-class MainActivity: FlutterActivity() {
+class MainActivity: FlutterFragmentActivity() {
 
     companion object {
         const val CHANNEL = "fitnessapp/wear_sync"
