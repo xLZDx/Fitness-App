@@ -19,9 +19,15 @@ final liveEquipmentServiceProvider = Provider<LiveEquipmentService>((ref) {
 final liveModeEnabledProvider = StateProvider<bool>((_) => false);
 
 /// The latest settled reading, or null when nothing is confidently
-/// recognised. Starts/stops the camera with the provider's own lifecycle so
-/// leaving the tab always releases it.
-final liveRecognitionProvider = StreamProvider<LiveRecognition?>((ref) {
+/// recognised.
+///
+/// **autoDispose is load-bearing, not a style choice.** A keep-alive provider
+/// would hold the camera stream after the user leaves the Scan tab: the
+/// camera indicator would stay lit and the classifier would keep burning
+/// battery on frames nobody is looking at. With autoDispose, losing the last
+/// listener tears the stream down and [ref.onDispose] releases the camera.
+final liveRecognitionProvider =
+    StreamProvider.autoDispose<LiveRecognition?>((ref) {
   final enabled = ref.watch(liveModeEnabledProvider);
   final svc = ref.watch(liveEquipmentServiceProvider);
   if (!enabled) {
