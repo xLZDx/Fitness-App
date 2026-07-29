@@ -28,6 +28,7 @@ import '../../features/profile/profile_page.dart';
 import '../../features/profile/state/profile_providers.dart';
 import '../../features/progress/progress_page.dart';
 import '../../features/scanner/scanner_page.dart';
+import '../../features/settings/settings_page.dart';
 import '../../features/splash/splash_page.dart';
 import '../../features/subscription/subscription_page.dart';
 import '../../features/workouts/workouts_page.dart';
@@ -209,6 +210,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/about',
         pageBuilder: (_, __) => _fadeThrough(const AboutPage()),
+      ),
+      GoRoute(
+        path: '/settings',
+        pageBuilder: (_, __) => _fadeThrough(const SettingsPage()),
       ),
       GoRoute(
         path: '/donors',

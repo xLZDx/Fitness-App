@@ -145,7 +145,7 @@ class ProfilePage extends ConsumerWidget {
                   gradient: AppPalette.tileGradients[2],
                   title: 'Settings',
                   subtitle: 'Theme, notifications, language',
-                  onTap: () {},
+                  onTap: () => context.push('/settings'),
                 ),
                 _divider(context),
                 _profileTile(

@@ -10,6 +10,11 @@ import 'core/notifications/local_notification_service.dart';
 import 'core/notifications/notification_providers.dart';
 import 'core/notifications/notification_service.dart';
 import 'core/router/app_router.dart';
+// Imported for the AppThemeModeX / AppLanguageX extensions used below —
+// extension methods are only visible where their library is imported.
+import 'core/settings/app_settings.dart';
+import 'core/settings/settings_repository.dart';
+import 'core/settings/state/settings_providers.dart';
 import 'core/theme/app_theme.dart';
 import 'core/wear/state/wear_providers.dart';
 import 'core/wear/wear_sync_service.dart';
@@ -61,6 +66,12 @@ Future<void> main() async {
   // Open SharedPreferences-backed nurture-moments repository up-front so
   // the first cold-start launch counts.
   final momentRepo = await PrefsMomentRepository.open();
+
+  // Settings must be resolved BEFORE the first frame: theme and locale are
+  // read during the initial build, and loading them asynchronously would
+  // flash the wrong theme and the wrong language before settling.
+  final settingsRepo = await PrefsSettingsRepository.open();
+  final settings = await settingsRepo.load();
 
   // Copy any bundled ML models out of the APK into the docs dir so
   // ML Kit's LocalLabelerOptions can read them by absolute path.
@@ -144,6 +155,10 @@ Future<void> main() async {
         // Nurture moments + notifications.
         momentRepositoryProvider.overrideWithValue(momentRepo),
         notificationServiceProvider.overrideWithValue(notifications),
+
+        // Device preferences (theme, language, reminders).
+        settingsRepositoryProvider.overrideWithValue(settingsRepo),
+        initialSettingsProvider.overrideWithValue(settings),
       ],
       child: const FitnessApp(),
     ),
@@ -156,17 +171,18 @@ class FitnessApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
+    final settings = ref.watch(settingsControllerProvider);
+    final localeCode = settings.language.localeCode;
     return MaterialApp.router(
       title: 'Fitness App',
-      // Russian is the product default, deliberately pinned rather than
-      // following the device locale — the launch market is RU/CIS. Drop
-      // this line (and only this line) to go back to device-driven locale.
-      locale: const Locale('ru'),
+      // Russian is the product default (the launch market is RU/CIS), but the
+      // user can override it in Settings; `null` there means follow the device.
+      locale: localeCode == null ? null : Locale(localeCode),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: const <Locale>[Locale('ru'), Locale('en')],
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      themeMode: ThemeMode.system,
+      themeMode: settings.themeMode.material,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
       scrollBehavior: const _GlassScrollBehavior(),

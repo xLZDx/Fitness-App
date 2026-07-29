@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/notifications/notification_providers.dart';
+import '../../../core/settings/state/settings_providers.dart';
 import '../../auth/state/auth_providers.dart';
 import '../data/mock_scheduled_session_repository.dart';
 import '../data/scheduled_session.dart';
@@ -73,11 +74,16 @@ class ScheduleSessionAction extends Notifier<AsyncValue<void>> {
       await repo.save(user.uid, session);
       // Notification scheduling is best-effort — surface the schedule
       // success even if the platform later refuses to deliver the alert.
-      try {
-        final notifications = ref.read(notificationServiceProvider);
-        await notifications.scheduleReminder(session);
-      } catch (_) {
-        // Swallow — the user-visible save succeeded.
+      // The Settings switch gates this call, which is what makes it a real
+      // preference rather than a decorative one: with reminders off the
+      // session is still saved, it just stays silent.
+      if (ref.read(settingsControllerProvider).notificationsEnabled) {
+        try {
+          final notifications = ref.read(notificationServiceProvider);
+          await notifications.scheduleReminder(session);
+        } catch (_) {
+          // Swallow — the user-visible save succeeded.
+        }
       }
       state = const AsyncValue.data(null);
     } catch (e, st) {
