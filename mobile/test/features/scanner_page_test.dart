@@ -4,7 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/scanner/scanner_page.dart';
+import 'package:fitness_app/features/visual_equipment/data/live_equipment_service.dart';
+import 'package:fitness_app/features/visual_equipment/data/live_recognition.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_match.dart';
+import 'package:fitness_app/features/visual_equipment/state/live_equipment_providers.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_service.dart';
 import 'package:fitness_app/features/visual_equipment/state/visual_equipment_providers.dart';
 
@@ -62,6 +65,54 @@ void main() {
       expect(find.text('leg press'), findsOneWidget);
       expect(find.text('80% confidence'), findsOneWidget);
       expect(find.text('treadmill'), findsOneWidget);
+    });
+
+    testWidgets('live mode is off by default and shows no live card',
+        (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(theme: AppTheme.light(), home: const ScannerPage()),
+        ),
+      );
+      await tester.pump();
+
+      final toggle = tester.widget<Switch>(
+          find.byKey(const Key('scan-live-toggle')));
+      expect(toggle.value, isFalse);
+      expect(find.byKey(const Key('scan-live-searching')), findsNothing);
+      expect(find.byKey(const Key('scan-live-result')), findsNothing);
+    });
+
+    testWidgets('live mode shows searching, then the settled recognition',
+        (tester) async {
+      final svc = MockLiveEquipmentService(
+        smoother: RecognitionSmoother(window: 2, minConfidence: 0.1),
+      );
+      addTearDown(svc.dispose);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            liveEquipmentServiceProvider.overrideWithValue(svc),
+            liveModeEnabledProvider.overrideWith((_) => true),
+          ],
+          child: MaterialApp(theme: AppTheme.light(), home: const ScannerPage()),
+        ),
+      );
+      await tester.pump();
+
+      // Nothing settled yet.
+      expect(find.byKey(const Key('scan-live-searching')), findsOneWidget);
+
+      // Two agreeing frames fill the window and settle on one machine.
+      svc.feed(const VisualMatch(equipmentId: 'rowing_machine', confidence: 0.8));
+      svc.feed(const VisualMatch(equipmentId: 'rowing_machine', confidence: 0.6));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(find.byKey(const Key('scan-live-result')), findsOneWidget);
+      expect(find.text('rowing machine'), findsOneWidget);
+      expect(find.textContaining('100% of frames agree'), findsOneWidget);
     });
   });
 }

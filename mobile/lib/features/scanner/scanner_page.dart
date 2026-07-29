@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,8 +9,13 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import '../equipment/data/equipment_models.dart';
+import '../visual_equipment/data/live_recognition.dart';
+import '../visual_equipment/data/recognition_history.dart';
 import '../visual_equipment/data/visual_equipment_match.dart';
+import '../visual_equipment/state/live_equipment_providers.dart';
+import '../visual_equipment/state/recognition_history_providers.dart';
 import '../visual_equipment/state/visual_equipment_providers.dart';
+import '../visual_equipment/widgets/live_equipment_preview.dart';
 
 /// The Scan tab.
 ///
@@ -44,6 +51,21 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
     super.dispose();
   }
 
+  /// Every confident identification is remembered, whatever found it.
+  void _remember(String equipmentId, double confidence,
+      RecognitionSource source) {
+    unawaited(
+      ref.read(recognitionHistoryRepositoryProvider).record(
+            RecognitionEntry(
+              equipmentId: equipmentId,
+              recognisedAt: DateTime.now(),
+              confidence: confidence,
+              source: source,
+            ),
+          ),
+    );
+  }
+
   /// Background QR watcher — fires only for our own stickers.
   Future<void> _onDetect(BarcodeCapture capture) async {
     if (_handling) return;
@@ -51,11 +73,31 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
     if (result == null) return; // not ours — keep watching quietly
     _handling = true;
     await _controller.stop();
+    // A QR code names the machine exactly, so it is recorded at full
+    // confidence rather than a model score.
+    _remember(result.equipmentId, 1, RecognitionSource.qr);
     if (!mounted) return;
     await context.push('/equipment/${result.equipmentId}');
     if (!mounted) return;
     _handling = false;
     await _controller.start();
+  }
+
+  /// Live mode and the QR viewfinder both want the camera, and only one can
+  /// hold it. Stop the QR controller before handing the camera over, and
+  /// restart it when live mode is switched off.
+  Future<void> _setLiveMode(bool on) async {
+    if (on) {
+      await _controller.stop();
+    }
+    ref.read(liveModeEnabledProvider.notifier).state = on;
+    if (!on) {
+      // The live service releases the camera in its own stop(); give it the
+      // frame to finish before the QR scanner grabs the device again.
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+      if (!mounted) return;
+      await _controller.start();
+    }
   }
 
   /// Primary action: take (or pick) a photo and classify the machine.
@@ -73,6 +115,13 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
       await ref
           .read(visualEquipmentControllerProvider.notifier)
           .classifyFilePath(picked.path);
+      final top = ref
+          .read(visualEquipmentControllerProvider)
+          .valueOrNull
+          ?.firstOrNull;
+      if (top != null) {
+        _remember(top.equipmentId, top.confidence, RecognitionSource.photo);
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
@@ -86,8 +135,34 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final matches = ref.watch(visualEquipmentControllerProvider);
+    final liveOn = ref.watch(liveModeEnabledProvider);
+    final live = ref.watch(liveRecognitionProvider).valueOrNull;
+    // Record settled live readings. The repository's 5-minute dedup keeps a
+    // camera held on one machine from writing a row per frame.
+    ref.listen<AsyncValue<LiveRecognition?>>(liveRecognitionProvider,
+        (prev, next) {
+      final r = next.valueOrNull;
+      if (r == null) return;
+      _remember(r.equipmentId, r.confidence, RecognitionSource.live);
+    });
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Scan'),
+      appBar: GlassAppBar(
+        title: 'Scan',
+        actions: [
+          // Live mode is opt-in: a continuous camera stream is the most
+          // battery-expensive thing here.
+          Row(
+            children: [
+              Text('Live', style: theme.textTheme.labelLarge),
+              Switch(
+                key: const Key('scan-live-toggle'),
+                value: liveOn,
+                onChanged: _setLiveMode,
+              ),
+            ],
+          ),
+        ],
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 88, 20, 110),
@@ -99,12 +174,15 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    MobileScanner(
-                      controller: _controller,
-                      onDetect: _onDetect,
-                      errorBuilder: (context, error, child) =>
-                          _CameraUnavailable(error: error),
-                    ),
+                    if (liveOn)
+                      const LiveEquipmentPreview()
+                    else
+                      MobileScanner(
+                        controller: _controller,
+                        onDetect: _onDetect,
+                        errorBuilder: (context, error, child) =>
+                            _CameraUnavailable(error: error),
+                      ),
                     Center(
                       child: Container(
                         width: 220,
@@ -150,6 +228,10 @@ class _ScannerPageState extends ConsumerState<ScannerPage> {
                 ),
               ],
             ),
+            if (liveOn) ...[
+              const SizedBox(height: 14),
+              _LiveCard(recognition: live),
+            ],
             const SizedBox(height: 14),
             matches.when(
               loading: () => const Padding(
@@ -205,6 +287,69 @@ class _HintCard extends StatelessWidget {
               color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Live-mode readout. Shows what the camera has settled on, how much of the
+/// vote agreed, and a way straight into the exercises.
+class _LiveCard extends StatelessWidget {
+  const _LiveCard({required this.recognition});
+  final LiveRecognition? recognition;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final r = recognition;
+    if (r == null) {
+      return GlassCard(
+        key: const Key('scan-live-searching'),
+        child: Row(
+          children: [
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Looking… hold the camera on one machine',
+                style: theme.textTheme.bodyMedium,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return GlassCard(
+      key: const Key('scan-live-result'),
+      onTap: () => context.push('/equipment/${r.equipmentId}'),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  r.equipmentId.replaceAll('_', ' '),
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${(r.confidence * 100).toStringAsFixed(0)}% · '
+                  '${(r.agreement * 100).toStringAsFixed(0)}% of frames agree',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right_rounded),
         ],
       ),
     );

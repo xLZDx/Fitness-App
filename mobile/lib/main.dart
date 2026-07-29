@@ -29,7 +29,11 @@ import 'features/profile/state/profile_providers.dart';
 import 'features/subscription/data/cloud_functions_stripe_service.dart';
 import 'features/subscription/data/firestore_subscription_repository.dart';
 import 'features/subscription/state/subscription_providers.dart';
+import 'features/visual_equipment/data/firestore_recognition_history.dart';
+import 'features/visual_equipment/data/mlkit_live_equipment_service.dart';
 import 'features/visual_equipment/data/mlkit_visual_equipment_service.dart';
+import 'features/visual_equipment/state/live_equipment_providers.dart';
+import 'features/visual_equipment/state/recognition_history_providers.dart';
 import 'features/visual_equipment/state/visual_equipment_providers.dart';
 import 'features/workouts/data/firestore_scheduled_session_repository.dart';
 import 'features/workouts/data/firestore_workout_log_repository.dart';
@@ -103,6 +107,20 @@ Future<void> main() async {
         // bundled TFLite model.
         visualEquipmentServiceProvider
             .overrideWith((_) => MlKitVisualEquipmentService()),
+
+        // Live (continuous) recognition. Same model, camera stream instead
+        // of a single shot; the service holds the camera only while the
+        // Scan tab's Live switch is on.
+        liveEquipmentServiceProvider.overrideWith((ref) {
+          final svc = MlKitLiveEquipmentService();
+          ref.onDispose(svc.dispose);
+          return svc;
+        }),
+
+        // Every machine the user identifies is remembered (one row per
+        // machine, newest sighting wins).
+        recognitionHistoryRepositoryProvider
+            .overrideWith((_) => FirestoreRecognitionHistoryRepository()),
 
         // Marketplace — Stripe Connect via Cloud Functions.
         coachMarketplaceServiceProvider
