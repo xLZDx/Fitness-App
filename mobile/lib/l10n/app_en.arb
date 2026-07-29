@@ -1,0 +1,35 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Fitness App",
+  "@appTitle": {
+    "description": "Brand name. Not translated."
+  },
+  "splashTagline": "Scan. Train. Progress.",
+  "@splashTagline": {
+    "description": "Three-word product promise under the logo on the splash screen."
+  },
+
+  "commonCancel": "Cancel",
+  "commonSave": "Save",
+  "commonClose": "Close",
+  "commonRetry": "Retry",
+  "commonDone": "Done",
+  "commonNext": "Next",
+  "commonBack": "Back",
+  "commonContinue": "Continue",
+  "commonDelete": "Delete",
+  "commonEdit": "Edit",
+  "commonShare": "Share",
+  "commonSkip": "Skip",
+  "commonStart": "Start",
+  "commonLoading": "Loading…",
+  "commonSomethingWentWrong": "Something went wrong",
+  "commonMinutes": "{count} min",
+  "@commonMinutes": {
+    "description": "Short duration in minutes, e.g. '35 min'.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
+}

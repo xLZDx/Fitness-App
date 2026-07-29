@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../helpers/test_app.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/equipment/data/asset_equipment_repository.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
@@ -84,6 +86,9 @@ Widget _harness(AssetEquipmentRepository repo) {
     child: MaterialApp.router(
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
+      locale: kTestLocale,
+      localizationsDelegates: kTestLocalizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
       builder: (context, child) =>
           AuroraBackground(child: child ?? const SizedBox.shrink()),

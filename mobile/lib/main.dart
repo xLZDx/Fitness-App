@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/assets/asset_bootstrap.dart';
@@ -19,6 +20,7 @@ import 'features/donor_wall/state/donor_wall_providers.dart';
 import 'features/equipment/data/cloud_functions_equipment_report_service.dart';
 import 'features/equipment/state/equipment_providers.dart';
 import 'features/form_check/data/mlkit_pose_detector_service.dart';
+import 'features/form_check/data/tts_voice_coach.dart';
 import 'features/form_check/state/form_check_providers.dart';
 import 'features/marketplace/data/coach_marketplace_service.dart';
 import 'features/marketplace/state/marketplace_providers.dart';
@@ -103,6 +105,15 @@ Future<void> main() async {
         poseDetectorServiceProvider
             .overrideWith((_) => MlKitPoseDetectorService()),
 
+        // Spoken form cues. Defaults to MockVoiceCoach so widget tests never
+        // open a TTS MethodChannel; the throttling policy is identical in
+        // both, it lives in the shared CueGate.
+        voiceCoachProvider.overrideWith((ref) {
+          final coach = TtsVoiceCoach();
+          ref.onDispose(() => coach.dispose());
+          return coach;
+        }),
+
         // Visual equipment recognition — ML Kit image labeler with
         // bundled TFLite model.
         visualEquipmentServiceProvider
@@ -147,6 +158,12 @@ class FitnessApp extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
     return MaterialApp.router(
       title: 'Fitness App',
+      // Russian is the product default, deliberately pinned rather than
+      // following the device locale — the launch market is RU/CIS. Drop
+      // this line (and only this line) to go back to device-driven locale.
+      locale: const Locale('ru'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: const <Locale>[Locale('ru'), Locale('en')],
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: ThemeMode.system,

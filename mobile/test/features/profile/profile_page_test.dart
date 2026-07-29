@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../helpers/test_app.dart';
 
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/profile/profile_page.dart';
@@ -27,7 +30,12 @@ void main() {
         overrides: [
           currentProfileProvider.overrideWith((ref) => Stream.value(profile)),
         ],
-        child: const MaterialApp(home: ProfilePage()),
+        child: const MaterialApp(
+          locale: kTestLocale,
+          localizationsDelegates: kTestLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ProfilePage(),
+        ),
       ),
     );
     // Let the profile stream emit and the summary rebuild.

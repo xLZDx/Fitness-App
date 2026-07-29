@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../helpers/test_app.dart';
 import 'package:fitness_app/features/auth/data/auth_repository.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/data/mock_auth_repository.dart';
@@ -75,7 +77,12 @@ Widget _app({AuthRepository? repo}) {
       if (repo != null)
         authRepositoryProvider.overrideWith((ref) => repo),
     ],
-    child: const MaterialApp(home: LoginPage()),
+    child: const MaterialApp(
+      locale: kTestLocale,
+      localizationsDelegates: kTestLocalizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: LoginPage(),
+    ),
   );
 }
 

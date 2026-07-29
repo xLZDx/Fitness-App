@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../helpers/test_app.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/widgets/exercise_demo.dart';
 import 'package:fitness_app/features/equipment/widgets/muscle_map.dart';
 
-Widget _wrap(Widget child) =>
-    MaterialApp(theme: AppTheme.light(), home: Scaffold(body: child));
+Widget _wrap(Widget child) => MaterialApp(
+      theme: AppTheme.light(),
+      locale: kTestLocale,
+      localizationsDelegates: kTestLocalizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(body: child),
+    );
 
 void main() {
   group('ExerciseDemo', () {

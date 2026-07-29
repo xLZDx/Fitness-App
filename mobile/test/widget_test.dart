@@ -9,8 +9,11 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: FitnessApp()));
     await tester.pump(const Duration(milliseconds: 100));
 
+    // FitnessApp pins `locale: Locale('ru')`, so booting the real app must
+    // render Russian regardless of the host's locale. This is the guard on
+    // that default — if someone drops the pin, this assertion fails.
     expect(find.text('Fitness App'), findsOneWidget);
-    expect(find.text('Scan. Train. Progress.'), findsOneWidget);
+    expect(find.text('Сканируй. Тренируйся. Прогрессируй.'), findsOneWidget);
 
     await tester.pump(const Duration(milliseconds: 1500));
     await tester.pump(const Duration(milliseconds: 600));

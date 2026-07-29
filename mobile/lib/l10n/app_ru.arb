@@ -1,0 +1,23 @@
+{
+  "@@locale": "ru",
+
+  "appTitle": "Fitness App",
+  "splashTagline": "Сканируй. Тренируйся. Прогрессируй.",
+
+  "commonCancel": "Отмена",
+  "commonSave": "Сохранить",
+  "commonClose": "Закрыть",
+  "commonRetry": "Повторить",
+  "commonDone": "Готово",
+  "commonNext": "Далее",
+  "commonBack": "Назад",
+  "commonContinue": "Продолжить",
+  "commonDelete": "Удалить",
+  "commonEdit": "Изменить",
+  "commonShare": "Поделиться",
+  "commonSkip": "Пропустить",
+  "commonStart": "Начать",
+  "commonLoading": "Загрузка…",
+  "commonSomethingWentWrong": "Что-то пошло не так",
+  "commonMinutes": "{count} мин"
+}

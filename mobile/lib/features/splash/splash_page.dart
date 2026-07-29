@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
@@ -38,6 +39,7 @@ class _SplashPageState extends State<SplashPage>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic);
     final scale = Tween<double>(begin: 0.92, end: 1.0).animate(fade);
 
@@ -53,7 +55,7 @@ class _SplashPageState extends State<SplashPage>
                 _LogoOrb(),
                 const SizedBox(height: 28),
                 Text(
-                  'Fitness App',
+                  l10n.appTitle,
                   style:
                       Theme.of(context).textTheme.headlineMedium?.copyWith(
                             fontWeight: FontWeight.w800,
@@ -61,7 +63,7 @@ class _SplashPageState extends State<SplashPage>
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Scan. Train. Progress.',
+                  l10n.splashTagline,
                   style:
                       Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: Theme.of(context)

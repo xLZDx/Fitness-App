@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../helpers/test_app.dart';
 import 'package:fitness_app/core/router/app_router.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/about/about_page.dart';
@@ -50,6 +52,9 @@ void main() {
             capture?.call(router);
             return MaterialApp.router(
               theme: AppTheme.light(),
+              locale: kTestLocale,
+              localizationsDelegates: kTestLocalizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
               routerConfig: router,
             );
           },
@@ -181,7 +186,12 @@ void main() {
         (tester) async {
       final router = buildShellRouter();
       addTearDown(router.dispose);
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpWidget(MaterialApp.router(
+        locale: kTestLocale,
+        localizationsDelegates: kTestLocalizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router,
+      ));
       await tester.pumpAndSettle();
 
       router.go('/profile');
@@ -202,7 +212,12 @@ void main() {
         (tester) async {
       final router = buildShellRouter();
       addTearDown(router.dispose);
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpWidget(MaterialApp.router(
+        locale: kTestLocale,
+        localizationsDelegates: kTestLocalizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router,
+      ));
       await tester.pumpAndSettle();
       expect(pathOf(router), '/home');
 
@@ -217,7 +232,12 @@ void main() {
     testWidgets('fallback does not hijack pops of pushed pages', (tester) async {
       final router = buildShellRouter();
       addTearDown(router.dispose);
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpWidget(MaterialApp.router(
+        locale: kTestLocale,
+        localizationsDelegates: kTestLocalizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router,
+      ));
       await tester.pumpAndSettle();
 
       router.go('/profile');

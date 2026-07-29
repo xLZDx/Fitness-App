@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import 'package:fitness_app/features/splash/splash_page.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import '../helpers/test_app.dart';
 
 void main() {
   group('SplashPage', () {
@@ -46,6 +49,9 @@ Widget _router({required String initial}) {
   );
   return MaterialApp.router(
     theme: AppTheme.light(),
+    locale: kTestLocale,
+    localizationsDelegates: kTestLocalizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     routerConfig: router,
   );
 }

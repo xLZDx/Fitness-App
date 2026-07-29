@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../helpers/test_app.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/scanner/scanner_page.dart';
 import 'package:fitness_app/features/visual_equipment/data/live_equipment_service.dart';
@@ -20,7 +22,13 @@ void main() {
       // a Row-placed button while a default-theme test stayed green.
       await tester.pumpWidget(
         ProviderScope(
-          child: MaterialApp(theme: AppTheme.light(), home: const ScannerPage()),
+          child: MaterialApp(
+            theme: AppTheme.light(),
+            locale: kTestLocale,
+            localizationsDelegates: kTestLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const ScannerPage(),
+          ),
         ),
       );
       await tester.pump();
@@ -46,7 +54,13 @@ void main() {
               ]),
             ),
           ],
-          child: MaterialApp(theme: AppTheme.light(), home: const ScannerPage()),
+          child: MaterialApp(
+            theme: AppTheme.light(),
+            locale: kTestLocale,
+            localizationsDelegates: kTestLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const ScannerPage(),
+          ),
         ),
       );
       await tester.pump();
@@ -71,7 +85,13 @@ void main() {
         (tester) async {
       await tester.pumpWidget(
         ProviderScope(
-          child: MaterialApp(theme: AppTheme.light(), home: const ScannerPage()),
+          child: MaterialApp(
+            theme: AppTheme.light(),
+            locale: kTestLocale,
+            localizationsDelegates: kTestLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const ScannerPage(),
+          ),
         ),
       );
       await tester.pump();
@@ -96,7 +116,13 @@ void main() {
             liveEquipmentServiceProvider.overrideWithValue(svc),
             liveModeEnabledProvider.overrideWith((_) => true),
           ],
-          child: MaterialApp(theme: AppTheme.light(), home: const ScannerPage()),
+          child: MaterialApp(
+            theme: AppTheme.light(),
+            locale: kTestLocale,
+            localizationsDelegates: kTestLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const ScannerPage(),
+          ),
         ),
       );
       await tester.pump();
