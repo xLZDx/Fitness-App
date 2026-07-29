@@ -54,14 +54,27 @@ class MainShell extends StatelessWidget {
     final location = GoRouterState.of(context).uri.path;
     final selected = _indexFor(location);
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      extendBody: true,
-      body: child,
-      bottomNavigationBar: GlassNavBar(
-        items: _items,
-        selectedIndex: selected,
-        onSelect: (i) => context.go(_paths[i]),
+    return PopScope(
+      // Tab routes replace each other (`context.go`), so the shell is always
+      // the bottom entry of the root navigator: an unhandled system Back
+      // here would close the app. Allow that only on /home; on any other
+      // tab intercept Back and step to /home instead. Detail pages are
+      // pushed ABOVE the shell on the root navigator, so their pops hit the
+      // top route first and are never intercepted by this scope.
+      canPop: location == '/home',
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        context.go('/home');
+      },
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        extendBody: true,
+        body: child,
+        bottomNavigationBar: GlassNavBar(
+          items: _items,
+          selectedIndex: selected,
+          onSelect: (i) => context.go(_paths[i]),
+        ),
       ),
     );
   }

@@ -106,7 +106,7 @@ class AiPlannerPage extends ConsumerWidget {
                   for (final ex in plan.exercises) ...[
                     GlassCard(
                       onTap: () =>
-                          GoRouter.of(context).go('/workout/${ex.id}'),
+                          GoRouter.of(context).push('/workout/${ex.id}'),
                       child: Row(
                         children: [
                           Container(

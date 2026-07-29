@@ -199,7 +199,7 @@ class _ExerciseCard extends StatelessWidget {
         exercise.id.hashCode.abs() % AppPalette.tileGradients.length];
     return GlassCard(
       padding: const EdgeInsets.all(16),
-      onTap: () => GoRouter.of(context).go('/workout/${exercise.id}'),
+      onTap: () => GoRouter.of(context).push('/workout/${exercise.id}'),
       child: Row(
         children: [
           Container(
@@ -280,7 +280,7 @@ class _OfflinePrefetchCard extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       onTap: () async {
         if (!isPremium) {
-          GoRouter.of(context).go('/subscription');
+          GoRouter.of(context).push('/subscription');
           return;
         }
         // Explicit wiring: resolve the catalog, then hand prefetch a real
@@ -368,7 +368,7 @@ class _QuickToolsRow extends StatelessWidget {
               AppPalette.auroraPeach,
               AppPalette.auroraPink,
             ],
-            onTap: () => GoRouter.of(context).go('/form-check'),
+            onTap: () => GoRouter.of(context).push('/form-check'),
           ),
         ),
         const SizedBox(width: 12),
@@ -381,7 +381,7 @@ class _QuickToolsRow extends StatelessWidget {
               AppPalette.auroraViolet,
               AppPalette.auroraBlue,
             ],
-            onTap: () => GoRouter.of(context).go('/recognise'),
+            onTap: () => GoRouter.of(context).push('/recognise'),
           ),
         ),
       ],

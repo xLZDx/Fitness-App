@@ -91,7 +91,7 @@ class ProfilePage extends ConsumerWidget {
                   gradient: AppPalette.tileGradients[0],
                   title: 'Progress photos',
                   subtitle: 'End-to-end encrypted, on your device',
-                  onTap: () => context.go('/photos'),
+                  onTap: () => context.push('/photos'),
                 ),
                 _divider(context),
                 _profileTile(
@@ -100,7 +100,7 @@ class ProfilePage extends ConsumerWidget {
                   gradient: AppPalette.tileGradients[2],
                   title: 'Coaches',
                   subtitle: 'Browse 1:1 sessions (15% fee funds the org)',
-                  onTap: () => context.go('/coaches'),
+                  onTap: () => context.push('/coaches'),
                 ),
                 _divider(context),
                 _profileTile(
@@ -109,7 +109,7 @@ class ProfilePage extends ConsumerWidget {
                   gradient: AppPalette.tileGradients[4],
                   title: 'Celebrity plans',
                   subtitle: 'In-kind donated programmes',
-                  onTap: () => context.go('/celebrity-plans'),
+                  onTap: () => context.push('/celebrity-plans'),
                 ),
                 _divider(context),
                 _profileTile(
@@ -118,7 +118,7 @@ class ProfilePage extends ConsumerWidget {
                   gradient: AppPalette.tileGradients[3],
                   title: 'Community',
                   subtitle: 'Hevy-style social feed',
-                  onTap: () => context.go('/community'),
+                  onTap: () => context.push('/community'),
                 ),
                 _divider(context),
                 _profileTile(
@@ -127,7 +127,7 @@ class ProfilePage extends ConsumerWidget {
                   gradient: AppPalette.tileGradients[3],
                   title: 'Subscription',
                   subtitle: _subscriptionSubtitle(sub, tier),
-                  onTap: () => context.go('/subscription'),
+                  onTap: () => context.push('/subscription'),
                 ),
                 _divider(context),
                 _profileTile(
@@ -136,7 +136,7 @@ class ProfilePage extends ConsumerWidget {
                   gradient: AppPalette.tileGradients[0],
                   title: 'Our mission',
                   subtitle: 'How donations are used + donor wall',
-                  onTap: () => context.go('/about'),
+                  onTap: () => context.push('/about'),
                 ),
                 _divider(context),
                 _profileTile(

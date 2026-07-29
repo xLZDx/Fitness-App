@@ -83,7 +83,7 @@ class DonorWallPage extends ConsumerWidget {
           const SizedBox(height: 20),
           Center(
             child: TextButton.icon(
-              onPressed: () => GoRouter.of(context).go('/subscription'),
+              onPressed: () => GoRouter.of(context).push('/subscription'),
               icon: const Icon(Icons.favorite_outline, size: 18),
               label: const Text('Become a donor'),
             ),

@@ -49,7 +49,7 @@ class CelebrityPlansPage extends ConsumerWidget {
           if (!isPremium) ...[
             const SizedBox(height: 12),
             FilledButton.icon(
-              onPressed: () => GoRouter.of(context).go('/subscription'),
+              onPressed: () => GoRouter.of(context).push('/subscription'),
               icon: const Icon(Icons.lock_open_outlined),
               label: const Text('Become a Sustainer to unlock'),
             ),

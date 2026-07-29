@@ -146,7 +146,7 @@ class AboutPage extends StatelessWidget {
               Expanded(
                 child: FilledButton.icon(
                   onPressed: () =>
-                      GoRouter.of(context).go('/subscription'),
+                      GoRouter.of(context).push('/subscription'),
                   icon: const Icon(Icons.favorite_outline),
                   label: const Text('Support the mission'),
                   style: FilledButton.styleFrom(
@@ -162,7 +162,7 @@ class AboutPage extends StatelessWidget {
           const SizedBox(height: 12),
           Center(
             child: TextButton.icon(
-              onPressed: () => GoRouter.of(context).go('/donors'),
+              onPressed: () => GoRouter.of(context).push('/donors'),
               icon: const Icon(Icons.people_alt_outlined, size: 18),
               label: const Text('See our donor wall'),
             ),

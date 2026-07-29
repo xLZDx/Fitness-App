@@ -117,7 +117,7 @@ class _LockedHero extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: FilledButton(
-              onPressed: () => GoRouter.of(context).go('/subscription'),
+              onPressed: () => GoRouter.of(context).push('/subscription'),
               child: const Text('Become a Sustainer'),
             ),
           ),

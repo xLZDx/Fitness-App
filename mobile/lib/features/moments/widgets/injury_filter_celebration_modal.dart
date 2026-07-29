@@ -85,7 +85,7 @@ class InjuryFilterCelebrationModal extends StatelessWidget {
                 child: FilledButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    GoRouter.of(context).go('/subscription');
+                    GoRouter.of(context).push('/subscription');
                   },
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),

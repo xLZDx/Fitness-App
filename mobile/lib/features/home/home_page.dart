@@ -222,7 +222,7 @@ class _TodayCard extends StatelessWidget {
 
     final next = upcoming.first;
     return GlassCard(
-      onTap: () => GoRouter.of(context).go('/workout/${next.exerciseId}'),
+      onTap: () => GoRouter.of(context).push('/workout/${next.exerciseId}'),
       child: Row(
         children: [
           _GradientTile(
@@ -273,7 +273,7 @@ class _UpcomingCard extends StatelessWidget {
     return GlassCard(
       padding: const EdgeInsets.all(14),
       onTap: () =>
-          GoRouter.of(context).go('/workout/${session.exerciseId}'),
+          GoRouter.of(context).push('/workout/${session.exerciseId}'),
       child: Row(
         children: [
           Container(
@@ -548,7 +548,7 @@ class _AiPlanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return GlassCard(
-      onTap: () => GoRouter.of(context).go('/plan'),
+      onTap: () => GoRouter.of(context).push('/plan'),
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       child: Row(
         children: [

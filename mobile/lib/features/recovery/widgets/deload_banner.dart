@@ -110,7 +110,7 @@ class DeloadBanner extends ConsumerWidget {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () =>
-                          GoRouter.of(context).go('/subscription'),
+                          GoRouter.of(context).push('/subscription'),
                       icon: const Icon(Icons.lock_outline, size: 16),
                       label: const Text(
                         'Become a Supporter to unlock',

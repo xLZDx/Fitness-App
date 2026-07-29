@@ -37,7 +37,7 @@ class _ScannerPageState extends State<ScannerPage> {
     _handling = true;
     await _controller.stop();
     if (!mounted) return;
-    context.go('/equipment/${result.equipmentId}');
+    context.push('/equipment/${result.equipmentId}');
   }
 
   @override

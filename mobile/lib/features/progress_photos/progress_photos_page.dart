@@ -93,7 +93,7 @@ class _UpgradeCard extends StatelessWidget {
     final theme = Theme.of(context);
     return GlassCard(
       padding: const EdgeInsets.all(18),
-      onTap: () => GoRouter.of(context).go('/subscription'),
+      onTap: () => GoRouter.of(context).push('/subscription'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

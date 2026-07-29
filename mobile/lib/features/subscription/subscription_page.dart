@@ -207,7 +207,7 @@ class _LearnMoreLink extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: TextButton.icon(
-        onPressed: () => GoRouter.of(context).go('/about'),
+        onPressed: () => GoRouter.of(context).push('/about'),
         icon: const Icon(Icons.info_outline_rounded, size: 18),
         label: const Text('Learn how donations are used'),
       ),

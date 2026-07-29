@@ -85,7 +85,7 @@ class Day3WelcomeModal extends StatelessWidget {
                 child: FilledButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    GoRouter.of(context).go('/subscription');
+                    GoRouter.of(context).push('/subscription');
                   },
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -103,7 +103,7 @@ class Day3WelcomeModal extends StatelessWidget {
             child: TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                GoRouter.of(context).go('/about');
+                GoRouter.of(context).push('/about');
               },
               child: const Text('Read our mission'),
             ),
