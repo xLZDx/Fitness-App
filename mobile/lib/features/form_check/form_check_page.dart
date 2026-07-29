@@ -7,6 +7,7 @@ import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import 'data/form_classifier.dart';
 import 'data/mlkit_pose_detector_service.dart';
+import 'data/rep_counter.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
 import 'state/form_check_providers.dart';
@@ -59,9 +60,21 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage> {
     final isPremium = tier == SubscriptionTier.celebrityTrainer;
     final feedback = ref.watch(formFeedbackControllerProvider);
     final svc = ref.watch(poseDetectorServiceProvider);
+    final session = ref.watch(repSessionControllerProvider);
+    final muted = ref.watch(voiceMutedProvider);
 
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Form coach'),
+      appBar: GlassAppBar(
+        title: 'Form coach',
+        actions: [
+          IconButton(
+            icon: Icon(muted ? Icons.volume_off : Icons.volume_up),
+            tooltip: muted ? 'Unmute cues' : 'Mute cues',
+            onPressed: () =>
+                ref.read(voiceMutedProvider.notifier).state = !muted,
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
@@ -97,6 +110,11 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage> {
                       _CameraPreview(svc: svc),
                     Positioned(
                       left: 12,
+                      top: 12,
+                      child: _RepBadge(session: session),
+                    ),
+                    Positioned(
+                      left: 12,
                       right: 12,
                       bottom: 12,
                       child: _CueCard(feedback: feedback),
@@ -105,6 +123,12 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage> {
                 ),
               ),
             ),
+          ),
+          const SizedBox(height: 16),
+          _SetSummaryCard(
+            session: session,
+            onReset: () =>
+                ref.read(repSessionControllerProvider.notifier).resetSet(),
           ),
           const SizedBox(height: 16),
           GlassCard(
@@ -143,6 +167,128 @@ class _CameraPreview extends StatelessWidget {
       );
     }
     return CameraPreview(ctl);
+  }
+}
+
+/// Live rep count + phase, over the camera preview. Deliberately the largest
+/// text on the screen — mid-set, at arm's length, this is the only thing the
+/// user can actually read.
+class _RepBadge extends StatelessWidget {
+  const _RepBadge({required this.session});
+  final RepSessionState session;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '${session.repCount}',
+            key: const Key('form_check.rep_count'),
+            style: theme.textTheme.headlineMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              height: 1.0,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'reps - ${repPhaseLabel(session.phase)}',
+            key: const Key('form_check.phase'),
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: Colors.white70,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Human-readable name for a [RepPhase].
+String repPhaseLabel(RepPhase phase) => switch (phase) {
+      RepPhase.top => 'ready',
+      RepPhase.descending => 'lowering',
+      RepPhase.bottom => 'bottom',
+      RepPhase.ascending => 'driving up',
+    };
+
+/// Post-set tally: how many reps were clean, how many the rules complained
+/// about, and which rules did the complaining.
+class _SetSummaryCard extends StatelessWidget {
+  const _SetSummaryCard({required this.session, required this.onReset});
+
+  final RepSessionState session;
+  final VoidCallback onReset;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    if (session.reps.isEmpty) {
+      return GlassCard(
+        child: Text(
+          'No reps yet. Stand tall to start — reps are counted from the top '
+          'of the movement.',
+          key: const Key('form_check.summary_empty'),
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.70),
+          ),
+        ),
+      );
+    }
+
+    final offenders = <String>{
+      for (final rep in session.reps) ...rep.offendingRules,
+    };
+
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'This set',
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
+              ),
+              TextButton(
+                onPressed: onReset,
+                child: const Text('Reset set'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '${session.cleanReps} clean - ${session.sloppyReps} need work '
+            '(${session.reps.length} total)',
+            key: const Key('form_check.summary_tally'),
+            style: theme.textTheme.bodyMedium
+                ?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          if (offenders.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Flagged: ${offenders.join(', ')}',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.70),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }
 
