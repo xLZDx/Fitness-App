@@ -63,3 +63,52 @@ do not invalidate them.
 * Local commit per gate, then STOP. **No push** without a separate literal `push`.
 * 17 commits from 2026-07-29 are still local and unpushed; this plan adds more on top.
 * Testnet/test-key only; no live payment paths touched.
+
+---
+
+## Progress log (2026-07-30)
+
+Gates 1-7 built, verified and committed locally. **Nothing pushed** — no `push` given.
+
+| Gate | Commit | Proof |
+|---|---|---|
+| 1 LIVE | `f0180b5` | 8 converter tests + 3 error-surfacing; one test pins that the old concatenation had the wrong buffer length. Device proof deferred to gate 9 |
+| 2 SETTINGS | `49695d0` | 14 unit + 7 widget; theme/locale taps proven to reach the real MaterialApp; navigation test confirmed failing pre-fix via git stash |
+| 3 VIDEO | `09c301a` | 132 frames flattened; bundle assertion test through rootBundle; nested path confirmed unloadable before the fix |
+| 4 HEALTH | `e8f5d4b` | 29 health tests; guard test mutation-checked by restoring SDNN |
+| 5 SUGGEST | `8f51a07` | 16 builder tests + 2 rewritten widget tests; replaced the test that asserted five fake titles |
+| 6 MUSCLE | `647ccc6` | 10 geometry/widget tests, mutation-checked; verified by rendering to PNG twice (lower body, upper body) |
+| 7 PERF | `a3fc751` | BackdropFilter count on a card page measured 11 -> 0; budget pinned in blur_budget_test |
+
+Suite: **571/571**. Analyzer: the same 4 pre-existing issues throughout.
+
+### Deliberate non-goals, stated rather than silently dropped
+
+* **No units toggle** in Settings — nothing in the app reads a unit preference
+  (grepped: no kg/lb formatting anywhere), so it would be another inert control.
+* **No fake exercise video.** `videoUrl` and a real `video_player` block exist but
+  no exercise has a URL: free-exercise-db ships two stills per exercise and no
+  clips, and there is no free licensed source to bundle. The looped frame demo
+  (play/pause, 0.5x/1x/2x) is the on-device demo. A real video library needs a
+  licensing or user-contribution decision from the operator.
+
+### Gate 8 scope, measured
+
+227 distinct user-facing English literals across 44 files. Sub-gates:
+8a core+home+settings, 8b exercises+scan, 8c health+progress+form-check,
+8d onboarding+auth+subscription, 8e secondary pages (about, donors, community,
+marketplace, moderation, celebrity plans, contribute, photos, planner, moments).
+
+### Environment gotchas that cost time before
+
+* Antivirus HTTPS interception breaks Gradle/pip trust stores. Java truststore
+  with the extra root at `D:\tools\java-truststore\cacerts.jks`, referenced from
+  `D:\.gradle\gradle.properties` — `GRADLE_USER_HOME` is `D:\.gradle`, so a
+  profile-directory `gradle.properties` is NOT read.
+* Release build needs `proguard-rules.pro` with `-dontwarn org.tensorflow.lite.gpu.**`.
+* An emulator (`Pixel_API_34`, `emulator-5554`) is already running from the
+  previous session; launching the same AVD again fails with FATAL unless `-read-only`.
+* `boundary.toImage()` under `flutter test` must run inside `tester.runAsync`,
+  otherwise its future never completes and the test hangs.
+* Text renders as grey boxes in `flutter test` renders — no font is loaded there.
+  That is the harness, not the widget.
