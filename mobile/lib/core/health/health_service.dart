@@ -13,6 +13,15 @@ abstract class HealthService {
   Future<HealthAuthStatus> currentAuthStatus();
   Future<HealthAuthStatus> requestAuthorization();
 
+  /// True when the platform could serve health data but its supporting app is
+  /// missing or out of date — on Android, Health Connect. Always false on iOS
+  /// and on platforms with no health support at all, so the UI can tell
+  /// "fixable by the user" apart from "will never work here".
+  Future<bool> platformSetupRequired();
+
+  /// Sends the user to install or update the platform's health app.
+  Future<void> openPlatformSetup();
+
   /// Human-readable message from the most recent platform failure, or
   /// null when the last operation did not hit an error. Lets the UI say
   /// WHY an authorization attempt failed instead of a silent "denied".
@@ -38,15 +47,29 @@ abstract class HealthService {
 /// with a believable 7-day stretch so the UI has data to render before
 /// real platform permissions are wired.
 class MockHealthService implements HealthService {
-  MockHealthService({HealthAuthStatus initialStatus = HealthAuthStatus.granted})
-      : _status = initialStatus;
+  MockHealthService({
+    HealthAuthStatus initialStatus = HealthAuthStatus.granted,
+    this.setupRequired = false,
+  }) : _status = initialStatus;
 
   HealthAuthStatus _status;
   final List<HealthSnapshot> _snapshots = _seed();
 
+  /// Simulates a missing/outdated Health Connect provider.
+  bool setupRequired;
+
+  /// Counts calls so a test can prove the CTA reaches the platform.
+  int openSetupCalls = 0;
+
   /// Mutable so tests can simulate a platform failure message.
   @override
   String? lastErrorMessage;
+
+  @override
+  Future<bool> platformSetupRequired() async => setupRequired;
+
+  @override
+  Future<void> openPlatformSetup() async => openSetupCalls += 1;
 
   static List<HealthSnapshot> _seed() {
     final today = DateTime.now().toUtc();

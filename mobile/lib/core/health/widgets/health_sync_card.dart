@@ -25,7 +25,20 @@ class HealthSyncCard extends ConsumerWidget {
       error: (_, __) => const SizedBox.shrink(),
       data: (status) {
         if (status == HealthAuthStatus.unsupported) {
-          return const SizedBox.shrink();
+          // Unsupported has two very different meanings. On Android it usually
+          // means Health Connect is missing or stale, which the user can fix —
+          // so say so and offer the install. Elsewhere (web, desktop) health
+          // data will never exist and a card would be noise. Hiding both cases
+          // is why "Health Connect does not work" came with a blank screen.
+          final fixable =
+              ref.watch(healthSetupRequiredProvider).valueOrNull ?? false;
+          if (!fixable) return const SizedBox.shrink();
+          return _SetupCard(
+            message: ref.watch(healthServiceProvider).lastErrorMessage ??
+                'Health Connect is needed to sync steps, sleep and recovery.',
+            onOpen: () =>
+                ref.read(healthServiceProvider).openPlatformSetup(),
+          );
         }
         if (status != HealthAuthStatus.granted) {
           return _AskCard(
@@ -136,6 +149,51 @@ class _AskCard extends StatelessWidget {
                   ?.copyWith(color: scheme.error),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Shown when health data is unavailable for a reason the user can act on.
+class _SetupCard extends StatelessWidget {
+  const _SetupCard({required this.message, required this.onOpen});
+
+  final String message;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return GlassCard(
+      key: const Key('health-setup-card'),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Health Connect required',
+            style: theme.textTheme.titleSmall
+                ?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            message,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.onSurface.withValues(alpha: 0.65),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              key: const Key('health-setup-open'),
+              onPressed: onOpen,
+              icon: const Icon(Icons.download_outlined, size: 18),
+              label: const Text('Get Health Connect'),
+            ),
+          ),
         ],
       ),
     );

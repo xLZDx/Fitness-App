@@ -18,6 +18,13 @@ final healthAuthStatusProvider = FutureProvider<HealthAuthStatus>((ref) {
 /// so a platform failure isn't a silent "does not work".
 final healthAuthErrorProvider = StateProvider<String?>((ref) => null);
 
+/// Whether the user can fix an `unsupported` result themselves by installing
+/// or updating Health Connect. Lets the card distinguish that from web/desktop,
+/// where health data will never be available and a card would just be noise.
+final healthSetupRequiredProvider = FutureProvider<bool>((ref) {
+  return ref.watch(healthServiceProvider).platformSetupRequired();
+});
+
 final todayHealthProvider = FutureProvider<HealthSnapshot?>((ref) {
   return ref.watch(healthServiceProvider).readTodaySnapshot();
 });
