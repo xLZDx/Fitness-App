@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' show Size;
 
 import 'package:camera/camera.dart';
@@ -10,6 +9,7 @@ import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart'
     as mlkit;
 import 'package:path_provider/path_provider.dart';
 
+import '../../../core/camera/nv21_converter.dart';
 import 'live_equipment_service.dart';
 import 'live_recognition.dart';
 import 'visual_equipment_match.dart';
@@ -97,8 +97,13 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
       back,
       ResolutionPreset.medium,
       enableAudio: false,
+      // yuv420, not nv21: on Android the plugin resolves to
+      // camera_android_camerax, which documents that it ignores this
+      // argument and always emits YUV_420_888
+      // (android_camera_camerax.dart:450-453). Asking for nv21 here bought
+      // nothing and hid the need to repack — see _toInputImage.
       imageFormatGroup: Platform.isAndroid
-          ? ImageFormatGroup.nv21
+          ? ImageFormatGroup.yuv420
           : ImageFormatGroup.bgra8888,
     );
     await _camera!.initialize();
@@ -151,25 +156,27 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
 
   mlkit.InputImage? _toInputImage(CameraImage image) {
     if (image.planes.isEmpty) return null;
-    final builder = BytesBuilder();
-    for (final p in image.planes) {
-      builder.add(p.bytes);
-    }
     final rotation = mlkit.InputImageRotationValue.fromRawValue(
           _camera!.description.sensorOrientation,
         ) ??
         mlkit.InputImageRotation.rotation0deg;
-    final format = mlkit.InputImageFormatValue.fromRawValue(image.format.raw) ??
-        (Platform.isAndroid
-            ? mlkit.InputImageFormat.nv21
-            : mlkit.InputImageFormat.bgra8888);
+
+    // The format is stated, never derived from `image.format.raw`. CameraX
+    // reports YUV_420_888 (35) and ML Kit's Android bridge rejects that raw
+    // value outright (InputImageConverter.java:111), so we repack the frame
+    // into a real NV21 buffer and say so. iOS delivers a single BGRA plane
+    // and needs no repacking.
+    final android = Platform.isAndroid;
     return mlkit.InputImage.fromBytes(
-      bytes: builder.toBytes(),
+      bytes: android ? cameraImageToNv21(image) : image.planes.first.bytes,
       metadata: mlkit.InputImageMetadata(
         size: Size(image.width.toDouble(), image.height.toDouble()),
         rotation: rotation,
-        format: format,
-        bytesPerRow: image.planes.first.bytesPerRow,
+        format: android
+            ? mlkit.InputImageFormat.nv21
+            : mlkit.InputImageFormat.bgra8888,
+        // NV21 is packed unpadded, so its row stride is exactly the width.
+        bytesPerRow: android ? image.width : image.planes.first.bytesPerRow,
       ),
     );
   }

@@ -25,6 +25,20 @@ final poseDetectorServiceProvider =
   return MockPoseDetectorService(const []);
 });
 
+/// Last fatal detector failure, or null while healthy.
+///
+/// The pose stream reports native failures as stream errors. Without a sink
+/// for them they land on the Zone's uncaught-error handler and the user just
+/// sees a live camera that never counts a rep — which is precisely how the
+/// NV21 format bug stayed invisible until a device test.
+final poseErrorProvider = StateProvider<String?>((_) => null);
+
+/// Records a fatal detector error so the page can say what went wrong.
+void _recordPoseError(Ref ref, Object e) {
+  ref.read(poseErrorProvider.notifier).state =
+      e is StateError ? e.message : e.toString();
+}
+
 /// Drives the live overlay: every frame, run the active classifier set
 /// and emit the worst feedback. Null when no frame yet / no rule fires.
 class FormFeedbackController extends Notifier<FormFeedback?> {
@@ -34,7 +48,10 @@ class FormFeedbackController extends Notifier<FormFeedback?> {
   FormFeedback? build() {
     final svc = ref.watch(poseDetectorServiceProvider);
     _sub?.cancel();
-    _sub = svc.frames().listen(_onFrame);
+    _sub = svc.frames().listen(
+          _onFrame,
+          onError: (Object e) => _recordPoseError(ref, e),
+        );
     ref.onDispose(() => _sub?.cancel());
     return null;
   }
@@ -107,7 +124,10 @@ class RepSessionController extends Notifier<RepSessionState> {
     });
 
     _sub?.cancel();
-    _sub = svc.frames().listen(_onFrame);
+    _sub = svc.frames().listen(
+          _onFrame,
+          onError: (Object e) => _recordPoseError(ref, e),
+        );
     ref.onDispose(() {
       _sub?.cancel();
       _sub = null;

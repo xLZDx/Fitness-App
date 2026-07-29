@@ -88,6 +88,9 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     final svc = ref.watch(poseDetectorServiceProvider);
     final session = ref.watch(repSessionControllerProvider);
     final muted = ref.watch(voiceMutedProvider);
+    // Either the camera never opened, or the native detector died mid-stream.
+    // Both mean "no reps will be counted", so both belong in the same slot.
+    final failure = _startError ?? ref.watch(poseErrorProvider);
 
     return FrostedScaffold(
       appBar: GlassAppBar(
@@ -117,12 +120,13 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    if (_startError != null)
+                    if (failure != null)
                       Center(
                         child: Padding(
                           padding: const EdgeInsets.all(20),
                           child: Text(
-                            'Camera unavailable: $_startError',
+                            'Camera unavailable: $failure',
+                            key: const Key('form-check-error'),
                             textAlign: TextAlign.center,
                             style: const TextStyle(color: Colors.white70),
                           ),

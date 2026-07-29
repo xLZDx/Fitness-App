@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' show Size;
 
 import 'package:camera/camera.dart';
@@ -8,7 +7,9 @@ import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart'
     as mlkit;
 
 import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/services.dart' show PlatformException;
 
+import '../../../core/camera/nv21_converter.dart';
 import 'pose_detector_service.dart';
 import 'pose_landmark.dart';
 
@@ -59,8 +60,10 @@ class MlKitPoseDetectorService implements PoseDetectorService {
       front,
       ResolutionPreset.medium,
       enableAudio: false,
+      // yuv420, not nv21: camera_android_camerax ignores this argument and
+      // always emits YUV_420_888 (android_camera_camerax.dart:450-453).
       imageFormatGroup: Platform.isAndroid
-          ? ImageFormatGroup.nv21
+          ? ImageFormatGroup.yuv420
           : ImageFormatGroup.bgra8888,
     );
     await _camera!.initialize();
@@ -80,8 +83,22 @@ class MlKitPoseDetectorService implements PoseDetectorService {
       if (poses.isEmpty) return;
       final frame = _convert(poses.first);
       _ctrl.add(frame);
-    } catch (_) {
-      // Drop frames that fail conversion — the next one will recover.
+    } on PlatformException catch (e) {
+      // The native detector rejected the call outright — a bad frame format,
+      // a dead detector. This never recovers on the next frame, so surface it
+      // and stop instead of spinning silently forever. Swallowing this is why
+      // the form coach looked like "the camera works but nothing counts".
+      debugPrint('pose detection failed natively: ${e.code} ${e.message}');
+      if (!_ctrl.isClosed) {
+        _ctrl.addError(
+          StateError('Pose detection failed: ${e.message ?? e.code}'),
+        );
+      }
+      unawaited(stop());
+    } catch (e) {
+      // A single frame that fails conversion is not worth surfacing — the
+      // next one recovers.
+      debugPrint('pose frame dropped: $e');
     } finally {
       _busy = false;
     }
@@ -92,27 +109,25 @@ class MlKitPoseDetectorService implements PoseDetectorService {
   /// iOS BGRA8888.
   mlkit.InputImage? _toMlKitImage(CameraImage image) {
     if (image.planes.isEmpty) return null;
-    final builder = BytesBuilder();
-    for (final p in image.planes) {
-      builder.add(p.bytes);
-    }
-    final bytes = builder.toBytes();
-    final size = Size(image.width.toDouble(), image.height.toDouble());
     final rotation = mlkit.InputImageRotationValue.fromRawValue(
             _camera!.description.sensorOrientation) ??
         mlkit.InputImageRotation.rotation0deg;
-    final format =
-        mlkit.InputImageFormatValue.fromRawValue(image.format.raw) ??
-            (Platform.isAndroid
-                ? mlkit.InputImageFormat.nv21
-                : mlkit.InputImageFormat.bgra8888);
+
+    // Stated, not derived from `image.format.raw`: CameraX reports
+    // YUV_420_888 (35), which ML Kit's Android bridge rejects outright
+    // (InputImageConverter.java:111). We repack into real NV21 instead. This
+    // is the same defect that made live equipment recognition fail loudly and
+    // this detector fail silently.
+    final android = Platform.isAndroid;
     return mlkit.InputImage.fromBytes(
-      bytes: bytes,
+      bytes: android ? cameraImageToNv21(image) : image.planes.first.bytes,
       metadata: mlkit.InputImageMetadata(
-        size: size,
+        size: Size(image.width.toDouble(), image.height.toDouble()),
         rotation: rotation,
-        format: format,
-        bytesPerRow: image.planes.first.bytesPerRow,
+        format: android
+            ? mlkit.InputImageFormat.nv21
+            : mlkit.InputImageFormat.bgra8888,
+        bytesPerRow: android ? image.width : image.planes.first.bytesPerRow,
       ),
     );
   }
