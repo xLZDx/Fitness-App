@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../profile/data/profile_models.dart';
@@ -17,9 +18,9 @@ class StepLifestyle extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const StepTitle(
-          title: 'Lifestyle & habits',
-          subtitle: 'Recovery, nutrition, and stress all feed into your plan.',
+        StepTitle(
+          title: AppLocalizations.of(context).onboardingLifestyleHabits,
+          subtitle: AppLocalizations.of(context).onboardingRecoveryNutritionAndStressAllFeed,
           icon: Icons.restaurant_outlined,
           iconGradient: [AppPalette.auroraTeal, AppPalette.auroraLime],
         ),

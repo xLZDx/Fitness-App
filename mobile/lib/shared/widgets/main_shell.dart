@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import 'glass_nav_bar.dart';
@@ -11,38 +12,41 @@ class MainShell extends StatelessWidget {
 
   static const _paths = ['/home', '/scan', '/workouts', '/progress', '/profile'];
 
-  static final _items = <GlassNavItem>[
-    const GlassNavItem(
-      icon: Icons.home_outlined,
-      iconSelected: Icons.home_rounded,
-      label: 'Home',
-      gradient: [AppPalette.auroraPink, AppPalette.auroraViolet],
-    ),
-    const GlassNavItem(
-      icon: Icons.qr_code_scanner_outlined,
-      iconSelected: Icons.qr_code_scanner,
-      label: 'Scan',
-      gradient: [AppPalette.auroraViolet, AppPalette.auroraBlue],
-    ),
-    const GlassNavItem(
-      icon: Icons.fitness_center_outlined,
-      iconSelected: Icons.fitness_center,
-      label: 'Train',
-      gradient: [AppPalette.auroraBlue, AppPalette.auroraTeal],
-    ),
-    const GlassNavItem(
-      icon: Icons.trending_up_outlined,
-      iconSelected: Icons.trending_up,
-      label: 'Progress',
-      gradient: [AppPalette.auroraTeal, AppPalette.auroraLime],
-    ),
-    const GlassNavItem(
-      icon: Icons.person_outline,
-      iconSelected: Icons.person,
-      label: 'Profile',
-      gradient: [AppPalette.auroraPeach, AppPalette.auroraPink],
-    ),
-  ];
+  /// Built per-build rather than held as a `static final`: the labels are
+  /// localised, so they have to be resolved against the current locale. A
+  /// static list would freeze whichever language happened to load first.
+  static List<GlassNavItem> _itemsFor(AppLocalizations l10n) => <GlassNavItem>[
+        GlassNavItem(
+          icon: Icons.home_outlined,
+          iconSelected: Icons.home_rounded,
+          label: l10n.homeHome,
+          gradient: const [AppPalette.auroraPink, AppPalette.auroraViolet],
+        ),
+        GlassNavItem(
+          icon: Icons.qr_code_scanner_outlined,
+          iconSelected: Icons.qr_code_scanner,
+          label: l10n.scannerScan,
+          gradient: const [AppPalette.auroraViolet, AppPalette.auroraBlue],
+        ),
+        GlassNavItem(
+          icon: Icons.fitness_center_outlined,
+          iconSelected: Icons.fitness_center,
+          label: l10n.workoutsTrain,
+          gradient: const [AppPalette.auroraBlue, AppPalette.auroraTeal],
+        ),
+        GlassNavItem(
+          icon: Icons.trending_up_outlined,
+          iconSelected: Icons.trending_up,
+          label: l10n.progressProgress,
+          gradient: const [AppPalette.auroraTeal, AppPalette.auroraLime],
+        ),
+        GlassNavItem(
+          icon: Icons.person_outline,
+          iconSelected: Icons.person,
+          label: l10n.profileProfile,
+          gradient: const [AppPalette.auroraPeach, AppPalette.auroraPink],
+        ),
+      ];
 
   int _indexFor(String location) {
     final i = _paths.indexWhere((p) => location.startsWith(p));
@@ -71,7 +75,7 @@ class MainShell extends StatelessWidget {
         extendBody: true,
         body: child,
         bottomNavigationBar: GlassNavBar(
-          items: _items,
+          items: _itemsFor(AppLocalizations.of(context)),
           selectedIndex: selected,
           onSelect: (i) => context.go(_paths[i]),
         ),

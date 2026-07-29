@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -16,7 +17,7 @@ class SocialFeedPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final feedAsync = ref.watch(socialFeedProvider);
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Community'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).profileCommunity),
       body: Stack(
         children: [
           feedAsync.when(
@@ -39,7 +40,7 @@ class SocialFeedPage extends ConsumerWidget {
             child: FloatingActionButton.extended(
               onPressed: () => _composeSheet(context, ref),
               icon: const Icon(Icons.edit),
-              label: const Text('Post'),
+              label: Text(AppLocalizations.of(context).socialfeedPost),
             ),
           ),
         ],
@@ -70,7 +71,7 @@ class SocialFeedPage extends ConsumerWidget {
                 controller: ctl,
                 maxLines: 4,
                 decoration:
-                    const InputDecoration(hintText: 'Share something…'),
+                    InputDecoration(hintText: AppLocalizations.of(context).socialfeedShareSomething),
               ),
               const SizedBox(height: 12),
               FilledButton(
@@ -88,7 +89,7 @@ class SocialFeedPage extends ConsumerWidget {
                       );
                   if (sheet.mounted) Navigator.of(sheet).pop();
                 },
-                child: const Text('Post'),
+                child: Text(AppLocalizations.of(context).socialfeedPost),
               ),
             ],
           ),

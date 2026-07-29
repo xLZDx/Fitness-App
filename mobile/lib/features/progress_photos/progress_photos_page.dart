@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -24,7 +25,7 @@ class ProgressPhotosPage extends ConsumerWidget {
     final photosAsync = ref.watch(progressPhotosProvider);
 
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Progress photos'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).profileProgressPhotos),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
@@ -52,7 +53,7 @@ class ProgressPhotosPage extends ConsumerWidget {
               onPressed: () =>
                   ref.read(progressPhotosControllerProvider.notifier).capture(),
               icon: const Icon(Icons.photo_camera_outlined),
-              label: const Text('Take a new photo'),
+              label: Text(AppLocalizations.of(context).progressphotosTakeANewPhoto),
             ),
         ],
       ),
@@ -73,8 +74,7 @@ class _PrivacyStrip extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Photos are encrypted on your device with a key that '
-              'never leaves the phone. We never sell health data.',
+              AppLocalizations.of(context).progressphotosPhotosAreEncryptedOnYourDevice,
               style: theme.textTheme.bodySmall?.copyWith(
                 color:
                     theme.colorScheme.onSurface.withValues(alpha: 0.75),
@@ -98,14 +98,13 @@ class _UpgradeCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Trend photos are a Supporter benefit',
+            AppLocalizations.of(context).progressphotosTrendPhotosAreASupporterBenefit,
             style: theme.textTheme.titleMedium
                 ?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 4),
           Text(
-            'Compare side-by-side over weeks or months. Stays '
-            'encrypted on your device.',
+            AppLocalizations.of(context).progressphotosCompareSideBySideOverWeeks,
             style: theme.textTheme.bodySmall,
           ),
         ],

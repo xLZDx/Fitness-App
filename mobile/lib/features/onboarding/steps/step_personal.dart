@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../profile/data/profile_models.dart';
@@ -17,9 +18,9 @@ class StepPersonal extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const StepTitle(
-          title: 'Tell us about you',
-          subtitle: 'We tailor your plan around these basics.',
+        StepTitle(
+          title: AppLocalizations.of(context).onboardingTellUsAboutYou,
+          subtitle: AppLocalizations.of(context).onboardingWeTailorYourPlanAroundThese,
           icon: Icons.person_outline,
           iconGradient: [AppPalette.auroraPink, AppPalette.auroraViolet],
         ),

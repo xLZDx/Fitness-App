@@ -1,0 +1,1848 @@
+{
+  "entries": [
+    {
+      "file": "lib/core/health/widgets/health_sync_card.dart",
+      "raw": "'Sync with Health'",
+      "en": "Sync with Health",
+      "key": "healthSyncWithHealth",
+      "ru": ""
+    },
+    {
+      "file": "lib/core/health/widgets/health_sync_card.dart",
+      "raw": "'See steps, sleep + recovery here. Completed '\n                      'workouts also write back to your activity ring.'",
+      "en": "See steps, sleep + recovery here. Completed workouts also write back to your activity ring.",
+      "key": "healthSeeStepsSleepRecoveryHereCompleted",
+      "ru": ""
+    },
+    {
+      "file": "lib/core/health/widgets/health_sync_card.dart",
+      "raw": "'Health Connect required'",
+      "en": "Health Connect required",
+      "key": "healthHealthConnectRequired",
+      "ru": ""
+    },
+    {
+      "file": "lib/core/health/widgets/health_sync_card.dart",
+      "raw": "'Get Health Connect'",
+      "en": "Get Health Connect",
+      "key": "healthGetHealthConnect",
+      "ru": ""
+    },
+    {
+      "file": "lib/core/health/widgets/health_sync_card.dart",
+      "raw": "'No health data for today yet.'",
+      "en": "No health data for today yet.",
+      "key": "healthNoHealthDataForTodayYet",
+      "ru": ""
+    },
+    {
+      "file": "lib/core/health/widgets/health_sync_card.dart",
+      "raw": "\"Today's recovery\"",
+      "en": "Today's recovery",
+      "key": "healthTodaySRecovery",
+      "ru": ""
+    },
+    {
+      "file": "lib/core/health/widgets/health_sync_card.dart",
+      "raw": "'Steps'",
+      "en": "Steps",
+      "key": "healthSteps",
+      "ru": ""
+    },
+    {
+      "file": "lib/core/health/widgets/health_sync_card.dart",
+      "raw": "'Ring'",
+      "en": "Ring",
+      "key": "healthRing",
+      "ru": ""
+    },
+    {
+      "file": "lib/core/health/widgets/health_sync_card.dart",
+      "raw": "'Sleep'",
+      "en": "Sleep",
+      "key": "healthSleep",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "raw": "'Fitness for everyone, safely.'",
+      "en": "Fitness for everyone, safely.",
+      "key": "aboutFitnessForEveryoneSafely",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "raw": "\"We're a nonprofit fitness org running on a fiscal-\"\n                  'sponsorship arrangement (501(c)(3) application '\n                  'pending). Our goal: make rehab-grade exercise '\n                  'guidance available to anyone with a phone, '\n                  'regardless of ability to pay.'",
+      "en": "We're a nonprofit fitness org running on a fiscal-sponsorship arrangement (501(c)(3) application pending). Our goal: make rehab-grade exercise guidance available to anyone with a phone, regardless of ability to pay.",
+      "key": "aboutWeReANonprofitFitnessOrg",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "raw": "'Our principles'",
+      "en": "Our principles",
+      "key": "aboutOurPrinciples",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "raw": "'How donations are used'",
+      "en": "How donations are used",
+      "key": "aboutHowDonationsAreUsed",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "raw": "'Approximate, year-1 conservative budget. '\n                    'Audited financials posted annually after our '\n                    '501(c)(3) approval.'",
+      "en": "Approximate, year-1 conservative budget. Audited financials posted annually after our 501(c)(3) approval.",
+      "key": "aboutApproximateYear1ConservativeBudgetAudited",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "raw": "'Support the mission'",
+      "en": "Support the mission",
+      "key": "aboutSupportTheMission",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "raw": "'See our donor wall'",
+      "en": "See our donor wall",
+      "key": "aboutSeeOurDonorWall",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "raw": "'Safety is never paywalled'",
+      "en": "Safety is never paywalled",
+      "key": "aboutSafetyIsNeverPaywalled",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "raw": "'Open clinical content'",
+      "en": "Open clinical content",
+      "key": "aboutOpenClinicalContent",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "raw": "'Celebrities give in kind'",
+      "en": "Celebrities give in kind",
+      "key": "aboutCelebritiesGiveInKind",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "raw": "'No data resale, ever'",
+      "en": "No data resale, ever",
+      "key": "aboutNoDataResaleEver",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "raw": "'Hosting + email + tooling'",
+      "en": "Hosting + email + tooling",
+      "key": "aboutHostingEmailTooling",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "raw": "'Clinical / physio review'",
+      "en": "Clinical / physio review",
+      "key": "aboutClinicalPhysioReview",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "raw": "'Community video moderation'",
+      "en": "Community video moderation",
+      "key": "aboutCommunityVideoModeration",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "raw": "'Operations + compliance'",
+      "en": "Operations + compliance",
+      "key": "aboutOperationsCompliance",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "raw": "'Fiscal sponsor overhead'",
+      "en": "Fiscal sponsor overhead",
+      "key": "aboutFiscalSponsorOverhead",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "raw": "'Our mission'",
+      "en": "Our mission",
+      "key": "aboutOurMission",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/ai_planner/ai_planner_page.dart",
+      "raw": "'Generated from your intake (injury filter), recent ratings, '\n              'and recovery signals. Updates daily.'",
+      "en": "Generated from your intake (injury filter), recent ratings, and recovery signals. Updates daily.",
+      "key": "aiplannerGeneratedFromYourIntakeInjuryFilter",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/ai_planner/ai_planner_page.dart",
+      "raw": "'Sign in and complete onboarding to see a plan.'",
+      "en": "Sign in and complete onboarding to see a plan.",
+      "key": "aiplannerSignInAndCompleteOnboardingTo",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/ai_planner/ai_planner_page.dart",
+      "raw": "'Today\\'s plan'",
+      "en": "Today\\'s plan",
+      "key": "aiplannerTodaySPlan",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/auth/login_page.dart",
+      "raw": "'Welcome'",
+      "en": "Welcome",
+      "key": "authWelcome",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/auth/login_page.dart",
+      "raw": "'Sign in to scan equipment, track workouts, and follow plans built for you.'",
+      "en": "Sign in to scan equipment, track workouts, and follow plans built for you.",
+      "key": "authSignInToScanEquipmentTrack",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/auth/login_page.dart",
+      "raw": "'Continue with Google'",
+      "en": "Continue with Google",
+      "key": "authContinueWithGoogle",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/auth/login_page.dart",
+      "raw": "'By continuing you agree to our Terms and Privacy Policy.'",
+      "en": "By continuing you agree to our Terms and Privacy Policy.",
+      "key": "authByContinuingYouAgreeToOur",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/catalog/contribute_video_page.dart",
+      "raw": "'Help us grow the catalog. Paste a public URL to a clear, '\n              'short demo video for an exercise. Moderators review every '\n              'submission against form-safety guidelines.'",
+      "en": "Help us grow the catalog. Paste a public URL to a clear, short demo video for an exercise. Moderators review every submission against form-safety guidelines.",
+      "key": "catalogHelpUsGrowTheCatalogPaste",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/catalog/contribute_video_page.dart",
+      "raw": "'Contribute a video'",
+      "en": "Contribute a video",
+      "key": "catalogContributeAVideo",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/catalog/contribute_video_page.dart",
+      "raw": "'Exercise id (e.g. squat, deadlift)'",
+      "en": "Exercise id (e.g. squat, deadlift)",
+      "key": "catalogExerciseIdEGSquatDeadlift",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/catalog/contribute_video_page.dart",
+      "raw": "'Video URL (https://...)'",
+      "en": "Video URL (https://...)",
+      "key": "catalogVideoUrlHttps",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/catalog/contribute_video_page.dart",
+      "raw": "'Notes for moderator (optional)'",
+      "en": "Notes for moderator (optional)",
+      "key": "catalogNotesForModeratorOptional",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/catalog/moderation_page.dart",
+      "raw": "'Nothing to moderate. Great work.'",
+      "en": "Nothing to moderate. Great work.",
+      "key": "catalogNothingToModerateGreatWork",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/catalog/moderation_page.dart",
+      "raw": "'Reject'",
+      "en": "Reject",
+      "key": "catalogReject",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/catalog/moderation_page.dart",
+      "raw": "'Approve'",
+      "en": "Approve",
+      "key": "catalogApprove",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/catalog/moderation_page.dart",
+      "raw": "'Moderation queue'",
+      "en": "Moderation queue",
+      "key": "catalogModerationQueue",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/celebrity_plans/celebrity_plans_page.dart",
+      "raw": "'Plans donated in-kind by professional coaches and trainers. '\n              'Every plan respects the injury filter you set in '\n              'onboarding — no need to sub exercises in.'",
+      "en": "Plans donated in-kind by professional coaches and trainers. Every plan respects the injury filter you set in onboarding — no need to sub exercises in.",
+      "key": "celebrityplansPlansDonatedInKindByProfessional",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/celebrity_plans/celebrity_plans_page.dart",
+      "raw": "'Become a Sustainer to unlock'",
+      "en": "Become a Sustainer to unlock",
+      "key": "celebrityplansBecomeASustainerToUnlock",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/celebrity_plans/celebrity_plans_page.dart",
+      "raw": "'IN-KIND DONATION'",
+      "en": "IN-KIND DONATION",
+      "key": "celebrityplansInKindDonation",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/celebrity_plans/celebrity_plans_page.dart",
+      "raw": "'Celebrity plans'",
+      "en": "Celebrity plans",
+      "key": "celebrityplansCelebrityPlans",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/celebrity_plans/data/celebrity_plan_repository.dart",
+      "raw": "'Starter Strength · 4 weeks'",
+      "en": "Starter Strength · 4 weeks",
+      "key": "celebrityplansStarterStrength4Weeks",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/celebrity_plans/data/celebrity_plan_repository.dart",
+      "raw": "'Low-Back-Friendly · 6 weeks'",
+      "en": "Low-Back-Friendly · 6 weeks",
+      "key": "celebrityplansLowBackFriendly6Weeks",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/community/team_feed_page.dart",
+      "raw": "'Sustainer-tier feed'",
+      "en": "Sustainer-tier feed",
+      "key": "communitySustainerTierFeed",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/community/team_feed_page.dart",
+      "raw": "'Coaches post weekly workouts, motivation notes, and '\n            'technique tips here. Sustainer donors get full access.'",
+      "en": "Coaches post weekly workouts, motivation notes, and technique tips here. Sustainer donors get full access.",
+      "key": "communityCoachesPostWeeklyWorkoutsMotivationNotes",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/community/team_feed_page.dart",
+      "raw": "'Become a Sustainer'",
+      "en": "Become a Sustainer",
+      "key": "communityBecomeASustainer",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/community/team_feed_page.dart",
+      "raw": "'React'",
+      "en": "React",
+      "key": "communityReact",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/community/team_feed_page.dart",
+      "raw": "'Team feed'",
+      "en": "Team feed",
+      "key": "communityTeamFeed",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/donor_wall/data/donor_wall_repository.dart",
+      "raw": "'Keep it free. Always.'",
+      "en": "Keep it free. Always.",
+      "key": "donorwallKeepItFreeAlways",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/donor_wall/donor_wall_page.dart",
+      "raw": "'Made possible by these donors'",
+      "en": "Made possible by these donors",
+      "key": "donorwallMadePossibleByTheseDonors",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/donor_wall/donor_wall_page.dart",
+      "raw": "'Anyone can browse this list. Donors opt in '\n                        'individually — others remain anonymous.'",
+      "en": "Anyone can browse this list. Donors opt in individually — others remain anonymous.",
+      "key": "donorwallAnyoneCanBrowseThisListDonors",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/donor_wall/donor_wall_page.dart",
+      "raw": "'Become a donor'",
+      "en": "Become a donor",
+      "key": "donorwallBecomeADonor",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/donor_wall/donor_wall_page.dart",
+      "raw": "'Be the first to opt in. Open Support, then look for the '\n          '\"Add me to the donor wall\" toggle on your donation page.'",
+      "en": "Be the first to opt in. Open Support, then look for the \"Add me to the donor wall\" toggle on your donation page.",
+      "key": "donorwallBeTheFirstToOptIn",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/donor_wall/donor_wall_page.dart",
+      "raw": "'Donor wall'",
+      "en": "Donor wall",
+      "key": "donorwallDonorWall",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/equipment_detail_page.dart",
+      "raw": "'About'",
+      "en": "About",
+      "key": "equipmentAbout",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/equipment_detail_page.dart",
+      "raw": "'Report broken equipment'",
+      "en": "Report broken equipment",
+      "key": "equipmentReportBrokenEquipment",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/equipment_detail_page.dart",
+      "raw": "'Report sent to maintenance — thanks.'",
+      "en": "Report sent to maintenance — thanks.",
+      "key": "equipmentReportSentToMaintenanceThanks",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/equipment_detail_page.dart",
+      "raw": "'Recommended exercises'",
+      "en": "Recommended exercises",
+      "key": "equipmentRecommendedExercises",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/equipment_detail_page.dart",
+      "raw": "'Plates'",
+      "en": "Plates",
+      "key": "equipmentPlates",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/equipment_detail_page.dart",
+      "raw": "'Warm-up'",
+      "en": "Warm-up",
+      "key": "equipmentWarmUp",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/equipment_detail_page.dart",
+      "raw": "'Try scanning a different code, or browse manually from the Train tab.'",
+      "en": "Try scanning a different code, or browse manually from the Train tab.",
+      "key": "equipmentTryScanningADifferentCodeOr",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/equipment_detail_page.dart",
+      "raw": "'Equipment'",
+      "en": "Equipment",
+      "key": "equipmentEquipment",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/widgets/equipment_report_sheet.dart",
+      "raw": "'Report broken equipment'",
+      "en": "Report broken equipment",
+      "key": "equipmentReportBrokenEquipment",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/widgets/equipment_report_sheet.dart",
+      "raw": "'Send to maintenance'",
+      "en": "Send to maintenance",
+      "key": "equipmentSendToMaintenance",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/widgets/equipment_report_sheet.dart",
+      "raw": "'Reports are forwarded to the gym\\'s maintenance team. Your '\n              'identity is shared with the gym only if they ask to follow up.'",
+      "en": "Reports are forwarded to the gym\\'s maintenance team. Your identity is shared with the gym only if they ask to follow up.",
+      "key": "equipmentReportsAreForwardedToTheGym",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/widgets/equipment_report_sheet.dart",
+      "raw": "'Optional note (e.g. \"cable frayed near top\")'",
+      "en": "Optional note (e.g. \"cable frayed near top\")",
+      "key": "equipmentOptionalNoteEGCableFrayed",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/widgets/exercise_demo.dart",
+      "raw": "'Demo unavailable'",
+      "en": "Demo unavailable",
+      "key": "equipmentDemoUnavailable",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/workout_player_page.dart",
+      "raw": "\"We couldn't find that exercise.\"",
+      "en": "We couldn't find that exercise.",
+      "key": "equipmentWeCouldnTFindThatExercise",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/workout_player_page.dart",
+      "raw": "'Muscles worked'",
+      "en": "Muscles worked",
+      "key": "equipmentMusclesWorked",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/workout_player_page.dart",
+      "raw": "'OFFLINE'",
+      "en": "OFFLINE",
+      "key": "equipmentOffline",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/workout_player_page.dart",
+      "raw": "'No video yet — follow the steps below.'",
+      "en": "No video yet — follow the steps below.",
+      "key": "equipmentNoVideoYetFollowTheSteps",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/workout_player_page.dart",
+      "raw": "'How to do it'",
+      "en": "How to do it",
+      "key": "equipmentHowToDoIt",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/workout_player_page.dart",
+      "raw": "'Plates'",
+      "en": "Plates",
+      "key": "equipmentPlates",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/workout_player_page.dart",
+      "raw": "'Warm-up'",
+      "en": "Warm-up",
+      "key": "equipmentWarmUp",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/workout_player_page.dart",
+      "raw": "'Suggested: '",
+      "en": "Suggested: ",
+      "key": "equipmentSuggested",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/workout_player_page.dart",
+      "raw": "'Take care if you have…'",
+      "en": "Take care if you have…",
+      "key": "equipmentTakeCareIfYouHave",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/equipment/workout_player_page.dart",
+      "raw": "'Workout'",
+      "en": "Workout",
+      "key": "equipmentWorkout",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/form_check/form_check_page.dart",
+      "raw": "'Form coach runs on-device using MediaPipe pose detection. '\n              'No frames are uploaded — your camera stays private.'",
+      "en": "Form coach runs on-device using MediaPipe pose detection. No frames are uploaded — your camera stays private.",
+      "key": "formcheckFormCoachRunsOnDeviceUsing",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/form_check/form_check_page.dart",
+      "raw": "'No reps yet. Stand tall to start — reps are counted from the top '\n          'of the movement.'",
+      "en": "No reps yet. Stand tall to start — reps are counted from the top of the movement.",
+      "key": "formcheckNoRepsYetStandTallTo",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/form_check/form_check_page.dart",
+      "raw": "'This set'",
+      "en": "This set",
+      "key": "formcheckThisSet",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/form_check/form_check_page.dart",
+      "raw": "'Reset set'",
+      "en": "Reset set",
+      "key": "formcheckResetSet",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/form_check/form_check_page.dart",
+      "raw": "'Form coach is a Sustainer benefit'",
+      "en": "Form coach is a Sustainer benefit",
+      "key": "formcheckFormCoachIsASustainerBenefit",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/form_check/form_check_page.dart",
+      "raw": "'Stand back so your full body fits in the frame.'",
+      "en": "Stand back so your full body fits in the frame.",
+      "key": "formcheckStandBackSoYourFullBody",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/form_check/form_check_page.dart",
+      "raw": "'Form coach'",
+      "en": "Form coach",
+      "key": "formcheckFormCoach",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/home/home_page.dart",
+      "raw": "'No workouts scheduled'",
+      "en": "No workouts scheduled",
+      "key": "homeNoWorkoutsScheduled",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/home/home_page.dart",
+      "raw": "'Pick a plan or scan a machine to start.'",
+      "en": "Pick a plan or scan a machine to start.",
+      "key": "homePickAPlanOrScanA",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/home/home_page.dart",
+      "raw": "'GOOD MORNING'",
+      "en": "GOOD MORNING",
+      "key": "homeGoodMorning",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/home/home_page.dart",
+      "raw": "'Ready to train?'",
+      "en": "Ready to train?",
+      "key": "homeReadyToTrain",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/home/home_page.dart",
+      "raw": "'Scan a machine or pick a plan curated for you.'",
+      "en": "Scan a machine or pick a plan curated for you.",
+      "key": "homeScanAMachineOrPickA",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/home/home_page.dart",
+      "raw": "'Scan equipment'",
+      "en": "Scan equipment",
+      "key": "homeScanEquipment",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/home/home_page.dart",
+      "raw": "\"Today's adaptive plan\"",
+      "en": "Today's adaptive plan",
+      "key": "homeTodaySAdaptivePlan",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/home/home_page.dart",
+      "raw": "'Built from your intake, ratings, and recovery signals.'",
+      "en": "Built from your intake, ratings, and recovery signals.",
+      "key": "homeBuiltFromYourIntakeRatingsAnd",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/home/home_page.dart",
+      "raw": "'Home'",
+      "en": "Home",
+      "key": "homeHome",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/home/home_page.dart",
+      "raw": "'Workouts'",
+      "en": "Workouts",
+      "key": "homeWorkouts",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/home/home_page.dart",
+      "raw": "'Streak'",
+      "en": "Streak",
+      "key": "homeStreak",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/home/home_page.dart",
+      "raw": "'This week'",
+      "en": "This week",
+      "key": "homeThisWeek",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/home/home_page.dart",
+      "raw": "\"Today 07:00\"",
+      "en": "Today 07:00",
+      "key": "homeToday0700",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/injury_coach/data/injury_protocol_repository.dart",
+      "raw": "'Low-back strain — acute (weeks 1–3)'",
+      "en": "Low-back strain — acute (weeks 1–3)",
+      "key": "injurycoachLowBackStrainAcuteWeeks1",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/injury_coach/data/injury_protocol_repository.dart",
+      "raw": "'Shoulder impingement — mild (weeks 1–4)'",
+      "en": "Shoulder impingement — mild (weeks 1–4)",
+      "key": "injurycoachShoulderImpingementMildWeeks14",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/marketplace/marketplace_page.dart",
+      "raw": "'Vetted coaches who run 1:1 sessions remotely. We take a '\n              '15% platform fee that funds the nonprofit; the rest goes '\n              'to the coach.'",
+      "en": "Vetted coaches who run 1:1 sessions remotely. We take a 15% platform fee that funds the nonprofit; the rest goes to the coach.",
+      "key": "marketplaceVettedCoachesWhoRun11",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/marketplace/marketplace_page.dart",
+      "raw": "'Coaches'",
+      "en": "Coaches",
+      "key": "marketplaceCoaches",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/moments/widgets/day3_welcome_modal.dart",
+      "raw": "'Three days in. Welcome.'",
+      "en": "Three days in. Welcome.",
+      "key": "momentsThreeDaysInWelcome",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/moments/widgets/day3_welcome_modal.dart",
+      "raw": "\"We're a nonprofit and the app stays free of safety paywalls. \"\n            \"If we've earned a few coffees of your time, would you \"\n            \"consider becoming a Supporter? Donations fund hosting, \"\n            \"physio review, and community video moderation.\"",
+      "en": "We're a nonprofit and the app stays free of safety paywalls. If we've earned a few coffees of your time, would you consider becoming a Supporter? Donations fund hosting, physio review, and community video moderation.",
+      "key": "momentsWeReANonprofitAndThe",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/moments/widgets/day3_welcome_modal.dart",
+      "raw": "'Maybe later'",
+      "en": "Maybe later",
+      "key": "momentsMaybeLater",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/moments/widgets/day3_welcome_modal.dart",
+      "raw": "'See ways to support'",
+      "en": "See ways to support",
+      "key": "momentsSeeWaysToSupport",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/moments/widgets/day3_welcome_modal.dart",
+      "raw": "'Read our mission'",
+      "en": "Read our mission",
+      "key": "momentsReadOurMission",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/moments/widgets/injury_filter_celebration_modal.dart",
+      "raw": "'You just dodged a flare-up.'",
+      "en": "You just dodged a flare-up.",
+      "key": "momentsYouJustDodgedAFlareUp",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/moments/widgets/injury_filter_celebration_modal.dart",
+      "raw": "\"Injury-aware filtering is the safety promise we pin our \"\n            \"mission to — every exercise is screened against your \"\n            \"logged conditions before it surfaces. It will stay free, \"\n            \"always. If you can, help keep it that way.\"",
+      "en": "Injury-aware filtering is the safety promise we pin our mission to — every exercise is screened against your logged conditions before it surfaces. It will stay free, always. If you can, help keep it that way.",
+      "key": "momentsInjuryAwareFilteringIsTheSafety",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/moments/widgets/injury_filter_celebration_modal.dart",
+      "raw": "'Got it'",
+      "en": "Got it",
+      "key": "momentsGotIt",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/moments/widgets/injury_filter_celebration_modal.dart",
+      "raw": "'Help keep it free'",
+      "en": "Help keep it free",
+      "key": "momentsHelpKeepItFree",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/onboarding/onboarding_page.dart",
+      "raw": "'Back'",
+      "en": "Back",
+      "key": "onboardingBack",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/onboarding/steps/step_equipment.dart",
+      "raw": "'What can you train with?'",
+      "en": "What can you train with?",
+      "key": "onboardingWhatCanYouTrainWith",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/onboarding/steps/step_equipment.dart",
+      "raw": "'We pick exercises that fit what you actually own.'",
+      "en": "We pick exercises that fit what you actually own.",
+      "key": "onboardingWePickExercisesThatFitWhat",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/onboarding/steps/step_goals.dart",
+      "raw": "'What do you want to work on?'",
+      "en": "What do you want to work on?",
+      "key": "onboardingWhatDoYouWantToWork",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/onboarding/steps/step_goals.dart",
+      "raw": "'Pick as many as you like.'",
+      "en": "Pick as many as you like.",
+      "key": "onboardingPickAsManyAsYouLike",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/onboarding/steps/step_health.dart",
+      "raw": "'Health snapshot'",
+      "en": "Health snapshot",
+      "key": "onboardingHealthSnapshot",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/onboarding/steps/step_health.dart",
+      "raw": "'We use this to keep your plan safe — separate items with commas.'",
+      "en": "We use this to keep your plan safe — separate items with commas.",
+      "key": "onboardingWeUseThisToKeepYour",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/onboarding/steps/step_level.dart",
+      "raw": "'Where are you now?'",
+      "en": "Where are you now?",
+      "key": "onboardingWhereAreYouNow",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/onboarding/steps/step_level.dart",
+      "raw": "'Your starting point shapes how aggressive your plan is.'",
+      "en": "Your starting point shapes how aggressive your plan is.",
+      "key": "onboardingYourStartingPointShapesHowAggressive",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/onboarding/steps/step_lifestyle.dart",
+      "raw": "'Lifestyle & habits'",
+      "en": "Lifestyle & habits",
+      "key": "onboardingLifestyleHabits",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/onboarding/steps/step_lifestyle.dart",
+      "raw": "'Recovery, nutrition, and stress all feed into your plan.'",
+      "en": "Recovery, nutrition, and stress all feed into your plan.",
+      "key": "onboardingRecoveryNutritionAndStressAllFeed",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/onboarding/steps/step_motivation.dart",
+      "raw": "'How do you like to train?'",
+      "en": "How do you like to train?",
+      "key": "onboardingHowDoYouLikeToTrain",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/onboarding/steps/step_motivation.dart",
+      "raw": "'These tweak the tone and length of your sessions.'",
+      "en": "These tweak the tone and length of your sessions.",
+      "key": "onboardingTheseTweakTheToneAndLength",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/onboarding/steps/step_personal.dart",
+      "raw": "'Tell us about you'",
+      "en": "Tell us about you",
+      "key": "onboardingTellUsAboutYou",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/onboarding/steps/step_personal.dart",
+      "raw": "'We tailor your plan around these basics.'",
+      "en": "We tailor your plan around these basics.",
+      "key": "onboardingWeTailorYourPlanAroundThese",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/profile/profile_page.dart",
+      "raw": "'At a glance'",
+      "en": "At a glance",
+      "key": "profileAtAGlance",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/profile/profile_page.dart",
+      "raw": "'Profile'",
+      "en": "Profile",
+      "key": "profileProfile",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/profile/profile_page.dart",
+      "raw": "'Progress photos'",
+      "en": "Progress photos",
+      "key": "profileProgressPhotos",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/profile/profile_page.dart",
+      "raw": "'End-to-end encrypted, on your device'",
+      "en": "End-to-end encrypted, on your device",
+      "key": "profileEndToEndEncryptedOnYour",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/profile/profile_page.dart",
+      "raw": "'Coaches'",
+      "en": "Coaches",
+      "key": "marketplaceCoaches",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/profile/profile_page.dart",
+      "raw": "'Browse 1:1 sessions (15% fee funds the org)'",
+      "en": "Browse 1:1 sessions (15% fee funds the org)",
+      "key": "profileBrowse11Sessions15Fee",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/profile/profile_page.dart",
+      "raw": "'Celebrity plans'",
+      "en": "Celebrity plans",
+      "key": "celebrityplansCelebrityPlans",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/profile/profile_page.dart",
+      "raw": "'In-kind donated programmes'",
+      "en": "In-kind donated programmes",
+      "key": "profileInKindDonatedProgrammes",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/profile/profile_page.dart",
+      "raw": "'Community'",
+      "en": "Community",
+      "key": "profileCommunity",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/profile/profile_page.dart",
+      "raw": "'Hevy-style social feed'",
+      "en": "Hevy-style social feed",
+      "key": "profileHevyStyleSocialFeed",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/profile/profile_page.dart",
+      "raw": "'Subscription'",
+      "en": "Subscription",
+      "key": "profileSubscription",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/profile/profile_page.dart",
+      "raw": "'Our mission'",
+      "en": "Our mission",
+      "key": "aboutOurMission",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/profile/profile_page.dart",
+      "raw": "'How donations are used + donor wall'",
+      "en": "How donations are used + donor wall",
+      "key": "profileHowDonationsAreUsedDonorWall",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/profile/profile_page.dart",
+      "raw": "'Settings'",
+      "en": "Settings",
+      "key": "profileSettings",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/profile/profile_page.dart",
+      "raw": "'Theme, notifications, language'",
+      "en": "Theme, notifications, language",
+      "key": "profileThemeNotificationsLanguage",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/profile/profile_page.dart",
+      "raw": "'Sign out'",
+      "en": "Sign out",
+      "key": "profileSignOut",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/profile/profile_page.dart",
+      "raw": "'See you soon'",
+      "en": "See you soon",
+      "key": "profileSeeYouSoon",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/progress/progress_page.dart",
+      "raw": "'Last 8 weeks'",
+      "en": "Last 8 weeks",
+      "key": "progressLast8Weeks",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/progress/progress_page.dart",
+      "raw": "'Log a workout to see your trend.'",
+      "en": "Log a workout to see your trend.",
+      "key": "progressLogAWorkoutToSeeYour",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/progress/progress_page.dart",
+      "raw": "'Recent activity'",
+      "en": "Recent activity",
+      "key": "progressRecentActivity",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/progress/progress_page.dart",
+      "raw": "'Tap \"Mark complete\" on any workout to start your history.'",
+      "en": "Tap \"Mark complete\" on any workout to start your history.",
+      "key": "progressTapMarkCompleteOnAnyWorkout",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/progress/progress_page.dart",
+      "raw": "'Progress'",
+      "en": "Progress",
+      "key": "progressProgress",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/progress/progress_page.dart",
+      "raw": "'Total workouts'",
+      "en": "Total workouts",
+      "key": "progressTotalWorkouts",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/progress/progress_page.dart",
+      "raw": "'This week'",
+      "en": "This week",
+      "key": "homeThisWeek",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/progress/progress_page.dart",
+      "raw": "'Current streak'",
+      "en": "Current streak",
+      "key": "progressCurrentStreak",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/progress/progress_page.dart",
+      "raw": "'Longest'",
+      "en": "Longest",
+      "key": "progressLongest",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/progress_photos/progress_photos_page.dart",
+      "raw": "'Take a new photo'",
+      "en": "Take a new photo",
+      "key": "progressphotosTakeANewPhoto",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/progress_photos/progress_photos_page.dart",
+      "raw": "'Photos are encrypted on your device with a key that '\n              'never leaves the phone. We never sell health data.'",
+      "en": "Photos are encrypted on your device with a key that never leaves the phone. We never sell health data.",
+      "key": "progressphotosPhotosAreEncryptedOnYourDevice",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/progress_photos/progress_photos_page.dart",
+      "raw": "'Trend photos are a Supporter benefit'",
+      "en": "Trend photos are a Supporter benefit",
+      "key": "progressphotosTrendPhotosAreASupporterBenefit",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/progress_photos/progress_photos_page.dart",
+      "raw": "'Compare side-by-side over weeks or months. Stays '\n            'encrypted on your device.'",
+      "en": "Compare side-by-side over weeks or months. Stays encrypted on your device.",
+      "key": "progressphotosCompareSideBySideOverWeeks",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/progress_photos/progress_photos_page.dart",
+      "raw": "'Progress photos'",
+      "en": "Progress photos",
+      "key": "profileProgressPhotos",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/recovery/widgets/deload_banner.dart",
+      "raw": "'Auto-deload recommended'",
+      "en": "Auto-deload recommended",
+      "key": "recoveryAutoDeloadRecommended",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/recovery/widgets/deload_banner.dart",
+      "raw": "'Become a Supporter to unlock'",
+      "en": "Become a Supporter to unlock",
+      "key": "recoveryBecomeASupporterToUnlock",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/scanner/scanner_page.dart",
+      "raw": "'Live'",
+      "en": "Live",
+      "key": "scannerLive",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/scanner/scanner_page.dart",
+      "raw": "'Recognise machine'",
+      "en": "Recognise machine",
+      "key": "scannerRecogniseMachine",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/scanner/scanner_page.dart",
+      "raw": "'Looking… hold the camera on one machine'",
+      "en": "Looking… hold the camera on one machine",
+      "key": "scannerLookingHoldTheCameraOnOne",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/scanner/scanner_page.dart",
+      "raw": "'Best matches'",
+      "en": "Best matches",
+      "key": "scannerBestMatches",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/scanner/scanner_page.dart",
+      "raw": "'Camera unavailable'",
+      "en": "Camera unavailable",
+      "key": "scannerCameraUnavailable",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/scanner/scanner_page.dart",
+      "raw": "'Scan'",
+      "en": "Scan",
+      "key": "scannerScan",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/settings/settings_page.dart",
+      "raw": "'Session reminders'",
+      "en": "Session reminders",
+      "key": "settingsSessionReminders",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/settings/settings_page.dart",
+      "raw": "'About this app'",
+      "en": "About this app",
+      "key": "settingsAboutThisApp",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/settings/settings_page.dart",
+      "raw": "'Settings'",
+      "en": "Settings",
+      "key": "profileSettings",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/settings/settings_page.dart",
+      "raw": "'Appearance'",
+      "en": "Appearance",
+      "key": "settingsAppearance",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/settings/settings_page.dart",
+      "raw": "'Language'",
+      "en": "Language",
+      "key": "settingsLanguage",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/settings/settings_page.dart",
+      "raw": "'Reminders'",
+      "en": "Reminders",
+      "key": "settingsReminders",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/social_feed/social_feed_page.dart",
+      "raw": "'Post'",
+      "en": "Post",
+      "key": "socialfeedPost",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/social_feed/social_feed_page.dart",
+      "raw": "'Community'",
+      "en": "Community",
+      "key": "profileCommunity",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/social_feed/social_feed_page.dart",
+      "raw": "'Share something…'",
+      "en": "Share something…",
+      "key": "socialfeedShareSomething",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'Choose a way to support'",
+      "en": "Choose a way to support",
+      "key": "subscriptionChooseAWayToSupport",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'Every level keeps the app free of safety paywalls and funds '\n              'community-contributed content.'",
+      "en": "Every level keeps the app free of safety paywalls and funds community-contributed content.",
+      "key": "subscriptionEveryLevelKeepsTheAppFree",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "\"We're a nonprofit. Subscriptions are recurring donations — \"\n              'they keep the app safety-paywall-free for everyone.'",
+      "en": "We're a nonprofit. Subscriptions are recurring donations — they keep the app safety-paywall-free for everyone.",
+      "key": "subscriptionWeReANonprofitSubscriptionsAre",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'Learn how donations are used'",
+      "en": "Learn how donations are used",
+      "key": "subscriptionLearnHowDonationsAreUsed",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'Could not update donation'",
+      "en": "Could not update donation",
+      "key": "subscriptionCouldNotUpdateDonation",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'Error copied to clipboard'",
+      "en": "Error copied to clipboard",
+      "key": "subscriptionErrorCopiedToClipboard",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'Trial features stay on past the trial only with an '\n                      'active recurring donation. Cancel any time from the '\n                      'donor portal.'",
+      "en": "Trial features stay on past the trial only with an active recurring donation. Cancel any time from the donor portal.",
+      "key": "subscriptionTrialFeaturesStayOnPastThe",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'Continue with Stripe'",
+      "en": "Continue with Stripe",
+      "key": "subscriptionContinueWithStripe",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'Manage donation, update card, or pause'",
+      "en": "Manage donation, update card, or pause",
+      "key": "subscriptionManageDonationUpdateCardOrPause",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'Opens the secure Stripe donor portal in your browser. '\n                      'Changes happen instantly and are pro-rated by Stripe.'",
+      "en": "Opens the secure Stripe donor portal in your browser. Changes happen instantly and are pro-rated by Stripe.",
+      "key": "subscriptionOpensTheSecureStripeDonorPortal",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'Open donor portal'",
+      "en": "Open donor portal",
+      "key": "subscriptionOpenDonorPortal",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'CURRENT'",
+      "en": "CURRENT",
+      "key": "subscriptionCurrent",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'POPULAR'",
+      "en": "POPULAR",
+      "key": "subscriptionPopular",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'14-day trial'",
+      "en": "14-day trial",
+      "key": "subscription14DayTrial",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'Support the mission'",
+      "en": "Support the mission",
+      "key": "aboutSupportTheMission",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'Member'",
+      "en": "Member",
+      "key": "subscriptionMember",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'Supporter'",
+      "en": "Supporter",
+      "key": "subscriptionSupporter",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'Sustainer'",
+      "en": "Sustainer",
+      "key": "subscriptionSustainer",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "raw": "'Copy error'",
+      "en": "Copy error",
+      "key": "subscriptionCopyError",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/visual_equipment/visual_equipment_page.dart",
+      "raw": "\"Use this when the gym hasn't put up QR stickers yet — \"\n              \"snap a photo of the machine, we'll guess the model on-\"\n              \"device. Nothing leaves your phone.\"",
+      "en": "Use this when the gym hasn't put up QR stickers yet — snap a photo of the machine, we'll guess the model on-device. Nothing leaves your phone.",
+      "key": "visualequipmentUseThisWhenTheGymHasn",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/visual_equipment/visual_equipment_page.dart",
+      "raw": "'Take photo'",
+      "en": "Take photo",
+      "key": "visualequipmentTakePhoto",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/visual_equipment/visual_equipment_page.dart",
+      "raw": "'Pick photo'",
+      "en": "Pick photo",
+      "key": "visualequipmentPickPhoto",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/visual_equipment/visual_equipment_page.dart",
+      "raw": "'Best matches'",
+      "en": "Best matches",
+      "key": "scannerBestMatches",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/visual_equipment/visual_equipment_page.dart",
+      "raw": "'Recognise equipment'",
+      "en": "Recognise equipment",
+      "key": "visualequipmentRecogniseEquipment",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/widgets/difficulty_rating_sheet.dart",
+      "raw": "'How did that feel?'",
+      "en": "How did that feel?",
+      "key": "workoutsHowDidThatFeel",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/widgets/difficulty_rating_sheet.dart",
+      "raw": "'Your rating tunes future workouts — both the suggested weight '\n              'and the recommended-for-you feed adjust to keep the challenge '\n              'right where it should be.'",
+      "en": "Your rating tunes future workouts — both the suggested weight and the recommended-for-you feed adjust to keep the challenge right where it should be.",
+      "key": "workoutsYourRatingTunesFutureWorkoutsBoth",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/widgets/difficulty_rating_sheet.dart",
+      "raw": "'Too easy'",
+      "en": "Too easy",
+      "key": "workoutsTooEasy",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/widgets/difficulty_rating_sheet.dart",
+      "raw": "'Right'",
+      "en": "Right",
+      "key": "workoutsRight",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/widgets/difficulty_rating_sheet.dart",
+      "raw": "'Too hard'",
+      "en": "Too hard",
+      "key": "workoutsTooHard",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/widgets/plate_calculator.dart",
+      "raw": "'Plate calculator'",
+      "en": "Plate calculator",
+      "key": "workoutsPlateCalculator",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/widgets/plate_calculator.dart",
+      "raw": "'Per side'",
+      "en": "Per side",
+      "key": "workoutsPerSide",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/widgets/plate_calculator.dart",
+      "raw": "'Plates assumed: 25 / 20 / 15 / 10 / 5 / 2.5 / 1.25 kg.'",
+      "en": "Plates assumed: 25 / 20 / 15 / 10 / 5 / 2.5 / 1.25 kg.",
+      "key": "workoutsPlatesAssumed25201510",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/widgets/plate_calculator.dart",
+      "raw": "'Target weight'",
+      "en": "Target weight",
+      "key": "workoutsTargetWeight",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/widgets/plate_calculator.dart",
+      "raw": "'Bar weight'",
+      "en": "Bar weight",
+      "key": "workoutsBarWeight",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/widgets/warmup_calculator.dart",
+      "raw": "'Warm-up calculator'",
+      "en": "Warm-up calculator",
+      "key": "workoutsWarmUpCalculator",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/widgets/warmup_calculator.dart",
+      "raw": "'Working weight'",
+      "en": "Working weight",
+      "key": "workoutsWorkingWeight",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/widgets/warmup_calculator.dart",
+      "raw": "'Ramps prime your nervous system without burning glycogen on the warm-up.'",
+      "en": "Ramps prime your nervous system without burning glycogen on the warm-up.",
+      "key": "workoutsRampsPrimeYourNervousSystemWithout",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/workouts_page.dart",
+      "raw": "'Train'",
+      "en": "Train",
+      "key": "workoutsTrain",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/workouts_page.dart",
+      "raw": "'Form coach'",
+      "en": "Form coach",
+      "key": "formcheckFormCoach",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/workouts_page.dart",
+      "raw": "'On-device pose check'",
+      "en": "On-device pose check",
+      "key": "workoutsOnDevicePoseCheck",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/workouts_page.dart",
+      "raw": "'Recognise'",
+      "en": "Recognise",
+      "key": "workoutsRecognise",
+      "ru": ""
+    },
+    {
+      "file": "lib/features/workouts/workouts_page.dart",
+      "raw": "'Photo → equipment'",
+      "en": "Photo → equipment",
+      "key": "workoutsPhotoEquipment",
+      "ru": ""
+    },
+    {
+      "file": "lib/main.dart",
+      "raw": "'Fitness App'",
+      "en": "Fitness App",
+      "key": "mainFitnessApp",
+      "ru": ""
+    },
+    {
+      "file": "lib/shared/widgets/main_shell.dart",
+      "raw": "'Home'",
+      "en": "Home",
+      "key": "homeHome",
+      "ru": ""
+    },
+    {
+      "file": "lib/shared/widgets/main_shell.dart",
+      "raw": "'Scan'",
+      "en": "Scan",
+      "key": "scannerScan",
+      "ru": ""
+    },
+    {
+      "file": "lib/shared/widgets/main_shell.dart",
+      "raw": "'Train'",
+      "en": "Train",
+      "key": "workoutsTrain",
+      "ru": ""
+    },
+    {
+      "file": "lib/shared/widgets/main_shell.dart",
+      "raw": "'Progress'",
+      "en": "Progress",
+      "key": "progressProgress",
+      "ru": ""
+    },
+    {
+      "file": "lib/shared/widgets/main_shell.dart",
+      "raw": "'Profile'",
+      "en": "Profile",
+      "key": "profileProfile",
+      "ru": ""
+    }
+  ],
+  "interpolated": [
+    {
+      "file": "lib/core/health/widgets/health_sync_card.dart",
+      "en": "Health read failed: $e"
+    },
+    {
+      "file": "lib/core/health/widgets/health_sync_card.dart",
+      "en": "Health connect failed: $errorText"
+    },
+    {
+      "file": "lib/core/notifications/mock_notification_service.dart",
+      "en": "Workout in ${leadTime.inMinutes} minutes"
+    },
+    {
+      "file": "lib/features/about/about_page.dart",
+      "en": "${line.percent}%"
+    },
+    {
+      "file": "lib/features/ai_planner/ai_planner_page.dart",
+      "en": "Could not generate: $e"
+    },
+    {
+      "file": "lib/features/ai_planner/ai_planner_page.dart",
+      "en": "${plan.estimatedMinutes} min · intensity ${(plan.intensityFactor * 100).round()}%"
+    },
+    {
+      "file": "lib/features/ai_planner/ai_planner_page.dart",
+      "en": "${ex.durationMinutes} min · ${ex.muscles.take(2).join(\", \")}"
+    },
+    {
+      "file": "lib/features/auth/login_page.dart",
+      "en": "Sign-in failed: $e"
+    },
+    {
+      "file": "lib/features/catalog/moderation_page.dart",
+      "en": "Error: $e"
+    },
+    {
+      "file": "lib/features/catalog/moderation_page.dart",
+      "en": "Exercise: ${video.exerciseId}"
+    },
+    {
+      "file": "lib/features/catalog/moderation_page.dart",
+      "en": "by ${video.contributorDisplay}"
+    },
+    {
+      "file": "lib/features/catalog/moderation_page.dart",
+      "en": "Note: ${video.notes!}"
+    },
+    {
+      "file": "lib/features/celebrity_plans/celebrity_plans_page.dart",
+      "en": "Error: $e"
+    },
+    {
+      "file": "lib/features/celebrity_plans/celebrity_plans_page.dart",
+      "en": "by ${plan.coachName} · ${plan.weeks} weeks"
+    },
+    {
+      "file": "lib/features/community/team_feed_page.dart",
+      "en": "Could not load feed: $e"
+    },
+    {
+      "file": "lib/features/community/team_feed_page.dart",
+      "en": "${entry.key} ${entry.value}"
+    },
+    {
+      "file": "lib/features/donor_wall/donor_wall_page.dart",
+      "en": "Could not load wall: $e"
+    },
+    {
+      "file": "lib/features/donor_wall/donor_wall_page.dart",
+      "en": "\"${entry.message!}\""
+    },
+    {
+      "file": "lib/features/equipment/equipment_detail_page.dart",
+      "en": "Could not load: $e"
+    },
+    {
+      "file": "lib/features/equipment/equipment_detail_page.dart",
+      "en": "${item.manufacturer} · ${item.category}"
+    },
+    {
+      "file": "lib/features/equipment/equipment_detail_page.dart",
+      "en": "Could not load exercises: $e"
+    },
+    {
+      "file": "lib/features/equipment/equipment_detail_page.dart",
+      "en": "${exercise.durationMinutes} min"
+    },
+    {
+      "file": "lib/features/equipment/equipment_detail_page.dart",
+      "en": "We don't have $equipmentId in our catalog yet."
+    },
+    {
+      "file": "lib/features/equipment/workout_player_page.dart",
+      "en": "Could not load: $e"
+    },
+    {
+      "file": "lib/features/equipment/workout_player_page.dart",
+      "en": "Video unavailable: $_error"
+    },
+    {
+      "file": "lib/features/equipment/workout_player_page.dart",
+      "en": "Could not save: ${newState.error}"
+    },
+    {
+      "file": "lib/features/equipment/workout_player_page.dart",
+      "en": "Logged \"${exercise.title}\" — nice work."
+    },
+    {
+      "file": "lib/features/equipment/workout_player_page.dart",
+      "en": "Scheduled \"${exercise.title}\" for ${_friendlyDate(when)}."
+    },
+    {
+      "file": "lib/features/equipment/workout_player_page.dart",
+      "en": "Could not schedule: $e"
+    },
+    {
+      "file": "lib/features/form_check/form_check_page.dart",
+      "en": "Camera unavailable: $failure"
+    },
+    {
+      "file": "lib/features/form_check/form_check_page.dart",
+      "en": "${session.repCount}"
+    },
+    {
+      "file": "lib/features/form_check/form_check_page.dart",
+      "en": "reps - ${repPhaseLabel(session.phase)}"
+    },
+    {
+      "file": "lib/features/form_check/form_check_page.dart",
+      "en": "${session.cleanReps} clean - ${session.sloppyReps} need work (${session.reps.length} total)"
+    },
+    {
+      "file": "lib/features/form_check/form_check_page.dart",
+      "en": "Flagged: ${offenders.join("
+    },
+    {
+      "file": "lib/features/home/home_page.dart",
+      "en": "${formatScheduleLabel(next.scheduledFor)} · ${next.durationMinutes} min"
+    },
+    {
+      "file": "lib/features/home/home_page.dart",
+      "en": "${formatScheduleLabel(session.scheduledFor)} · ${session.durationMinutes} min"
+    },
+    {
+      "file": "lib/features/home/home_page.dart",
+      "en": "${s.durationMinutes} min"
+    },
+    {
+      "file": "lib/features/marketplace/marketplace_page.dart",
+      "en": "Error: $e"
+    },
+    {
+      "file": "lib/features/marketplace/marketplace_page.dart",
+      "en": "${coach.ratingCount} reviews"
+    },
+    {
+      "file": "lib/features/marketplace/marketplace_page.dart",
+      "en": "Booked ${coach.displayName} (booking ${result.bookingId})"
+    },
+    {
+      "file": "lib/features/onboarding/onboarding_page.dart",
+      "en": "Could not save profile: ${state.error}"
+    },
+    {
+      "file": "lib/features/onboarding/onboarding_page.dart",
+      "en": "Step ${_index + 1} of $_stepCount · ${_titles[_index]}"
+    },
+    {
+      "file": "lib/features/onboarding/steps/step_lifestyle.dart",
+      "en": "${l.stressLevel ?? 5}"
+    },
+    {
+      "file": "lib/features/progress/progress_page.dart",
+      "en": "${values[i]}"
+    },
+    {
+      "file": "lib/features/progress/progress_page.dart",
+      "en": "${_formatDate(log.completedAt)} · ${log.durationMinutes} min"
+    },
+    {
+      "file": "lib/features/progress_photos/progress_photos_page.dart",
+      "en": "Could not load photos: $e"
+    },
+    {
+      "file": "lib/features/recovery/widgets/deload_banner.dart",
+      "en": "Could not apply deload: ${action.error}"
+    },
+    {
+      "file": "lib/features/scanner/scanner_page.dart",
+      "en": "Could not capture: $e"
+    },
+    {
+      "file": "lib/features/scanner/scanner_page.dart",
+      "en": "Live recognition failed: ${liveAsync.error}"
+    },
+    {
+      "file": "lib/features/scanner/scanner_page.dart",
+      "en": "Recognition failed: $e"
+    },
+    {
+      "file": "lib/features/scanner/scanner_page.dart",
+      "en": "${(r.confidence * 100).toStringAsFixed(0)}% · ${(r.agreement * 100).toStringAsFixed(0)}% of frames agree"
+    },
+    {
+      "file": "lib/features/scanner/scanner_page.dart",
+      "en": "${(m.confidence * 100).toStringAsFixed(0)}% confidence"
+    },
+    {
+      "file": "lib/features/scanner/scanner_page.dart",
+      "en": "${error.errorCode.name} — you can still pick a photo from the gallery below."
+    },
+    {
+      "file": "lib/features/social_feed/social_feed_page.dart",
+      "en": "Error: $e"
+    },
+    {
+      "file": "lib/features/social_feed/social_feed_page.dart",
+      "en": "${post.likes}"
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "en": "Continue as $_label"
+    },
+    {
+      "file": "lib/features/subscription/subscription_page.dart",
+      "en": "$title is not available on ${period.displayLabel}."
+    },
+    {
+      "file": "lib/features/visual_equipment/visual_equipment_page.dart",
+      "en": "Could not classify: $e"
+    },
+    {
+      "file": "lib/features/visual_equipment/visual_equipment_page.dart",
+      "en": "Could not capture: $e"
+    },
+    {
+      "file": "lib/features/visual_equipment/visual_equipment_page.dart",
+      "en": "${(match.confidence * 100).toStringAsFixed(0)}% confidence"
+    },
+    {
+      "file": "lib/features/workouts/widgets/warmup_calculator.dart",
+      "en": "${_working.toStringAsFixed(_working == _working.truncateToDouble() ? 0 : 1)} kg"
+    },
+    {
+      "file": "lib/features/workouts/widgets/warmup_calculator.dart",
+      "en": "${ramp[i].kg == ramp[i].kg.truncateToDouble() ? ramp[i].kg.toInt() : ramp[i].kg} kg × ${ramp[i].reps} reps"
+    },
+    {
+      "file": "lib/features/workouts/widgets/warmup_calculator.dart",
+      "en": "${ramp[i].percent}% of working weight"
+    },
+    {
+      "file": "lib/features/workouts/workouts_page.dart",
+      "en": "Could not load workouts: $e"
+    },
+    {
+      "file": "lib/features/workouts/workouts_page.dart",
+      "en": "${exercise.durationMinutes} min"
+    }
+  ]
+}

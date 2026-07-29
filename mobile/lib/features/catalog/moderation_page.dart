@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../shared/widgets/glass.dart';
 import '../auth/state/auth_providers.dart';
@@ -17,7 +18,7 @@ class CatalogModerationPage extends ConsumerWidget {
     final theme = Theme.of(context);
     final pending = ref.watch(pendingSubmissionsProvider);
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Moderation queue'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).catalogModerationQueue),
       body: pending.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
@@ -27,7 +28,7 @@ class CatalogModerationPage extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
-                  'Nothing to moderate. Great work.',
+                  AppLocalizations.of(context).catalogNothingToModerateGreatWork,
                   style: theme.textTheme.titleMedium,
                 ),
               ),
@@ -94,7 +95,7 @@ class _SubmissionCard extends ConsumerWidget {
                     ref.invalidate(pendingSubmissionsProvider);
                   },
                   icon: const Icon(Icons.close_rounded, size: 18),
-                  label: const Text('Reject'),
+                  label: Text(AppLocalizations.of(context).catalogReject),
                 ),
               ),
               const SizedBox(width: 8),
@@ -110,7 +111,7 @@ class _SubmissionCard extends ConsumerWidget {
                     ref.invalidate(approvedSubmissionsProvider);
                   },
                   icon: const Icon(Icons.check_rounded, size: 18),
-                  label: const Text('Approve'),
+                  label: Text(AppLocalizations.of(context).catalogApprove),
                 ),
               ),
             ],

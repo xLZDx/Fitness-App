@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -26,7 +27,7 @@ class TeamFeedPage extends ConsumerWidget {
     final feedAsync = ref.watch(teamFeedProvider(teamId));
 
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Team feed'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).communityTeamFeed),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
@@ -98,7 +99,7 @@ class _LockedHero extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Sustainer-tier feed',
+                  AppLocalizations.of(context).communitySustainerTierFeed,
                   style: theme.textTheme.titleLarge
                       ?.copyWith(fontWeight: FontWeight.w800),
                 ),
@@ -107,8 +108,7 @@ class _LockedHero extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Coaches post weekly workouts, motivation notes, and '
-            'technique tips here. Sustainer donors get full access.',
+            AppLocalizations.of(context).communityCoachesPostWeeklyWorkoutsMotivationNotes,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: scheme.onSurface.withValues(alpha: 0.75),
             ),
@@ -118,7 +118,7 @@ class _LockedHero extends StatelessWidget {
             width: double.infinity,
             child: FilledButton(
               onPressed: () => GoRouter.of(context).push('/subscription'),
-              child: const Text('Become a Sustainer'),
+              child: Text(AppLocalizations.of(context).communityBecomeASustainer),
             ),
           ),
         ],
@@ -206,7 +206,7 @@ class _PostCard extends ConsumerWidget {
                 ActionChip(
                   avatar: const Icon(Icons.add_reaction_outlined,
                       size: 16),
-                  label: const Text('React'),
+                  label: Text(AppLocalizations.of(context).communityReact),
                   onPressed: () => ref
                       .read(teamFeedRepositoryProvider)
                       .react(

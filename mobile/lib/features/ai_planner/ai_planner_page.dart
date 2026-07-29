@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -20,14 +21,13 @@ class AiPlannerPage extends ConsumerWidget {
     final planAsync = ref.watch(generatedPlanProvider);
 
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Today\'s plan'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).aiplannerTodaySPlan),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
           GlassCard(
             child: Text(
-              'Generated from your intake (injury filter), recent ratings, '
-              'and recovery signals. Updates daily.',
+              AppLocalizations.of(context).aiplannerGeneratedFromYourIntakeInjuryFilter,
               style: theme.textTheme.bodyMedium,
             ),
           ),
@@ -45,7 +45,7 @@ class AiPlannerPage extends ConsumerWidget {
               if (plan == null) {
                 return GlassCard(
                   child: Text(
-                    'Sign in and complete onboarding to see a plan.',
+                    AppLocalizations.of(context).aiplannerSignInAndCompleteOnboardingTo,
                     style: theme.textTheme.bodyMedium,
                   ),
                 );

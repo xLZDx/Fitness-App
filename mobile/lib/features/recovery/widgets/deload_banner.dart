@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/glass.dart';
@@ -54,7 +55,7 @@ class DeloadBanner extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Auto-deload recommended',
+                        AppLocalizations.of(context).recoveryAutoDeloadRecommended,
                         style: theme.textTheme.titleSmall
                             ?.copyWith(fontWeight: FontWeight.w800),
                       ),
@@ -112,8 +113,8 @@ class DeloadBanner extends ConsumerWidget {
                       onPressed: () =>
                           GoRouter.of(context).push('/subscription'),
                       icon: const Icon(Icons.lock_outline, size: 16),
-                      label: const Text(
-                        'Become a Supporter to unlock',
+                      label: Text(
+                        AppLocalizations.of(context).recoveryBecomeASupporterToUnlock,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),

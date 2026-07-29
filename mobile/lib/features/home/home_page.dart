@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/health/widgets/health_sync_card.dart';
 import '../../core/theme/app_palette.dart';
@@ -56,7 +57,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final upcoming = ref.watch(upcomingSessionsProvider);
 
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Home'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).homeHome),
       body: SmoothScrollList(
         padding: const EdgeInsets.fromLTRB(20, 88, 20, 110),
         children: [
@@ -86,7 +87,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             children: [
               Expanded(
                 child: _StatCard(
-                  label: 'Workouts',
+                  label: AppLocalizations.of(context).homeWorkouts,
                   value: '${stats.total}',
                   gradient: AppPalette.tileGradients[0],
                 ),
@@ -94,7 +95,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               const SizedBox(width: 12),
               Expanded(
                 child: _StatCard(
-                  label: 'Streak',
+                  label: AppLocalizations.of(context).homeStreak,
                   value: '${stats.currentStreakDays}d',
                   gradient: AppPalette.tileGradients[1],
                 ),
@@ -102,7 +103,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               const SizedBox(width: 12),
               Expanded(
                 child: _StatCard(
-                  label: 'This week',
+                  label: AppLocalizations.of(context).homeThisWeek,
                   value: '${stats.thisWeek}',
                   gradient: AppPalette.tileGradients[2],
                 ),
@@ -200,12 +201,12 @@ class _TodayCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('No workouts scheduled',
+                  Text(AppLocalizations.of(context).homeNoWorkoutsScheduled,
                       style: theme.textTheme.titleSmall
                           ?.copyWith(fontWeight: FontWeight.w700)),
                   const SizedBox(height: 2),
                   Text(
-                    'Pick a plan or scan a machine to start.',
+                    AppLocalizations.of(context).homePickAPlanOrScanA,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: scheme.onSurface.withValues(alpha: 0.60),
                     ),
@@ -315,7 +316,7 @@ class _UpcomingCard extends StatelessWidget {
   }
 }
 
-/// Renders a friendly schedule label: "Today 07:00", "Tomorrow 18:30",
+/// Renders a friendly schedule label: AppLocalizations.of(context).homeToday0700, "Tomorrow 18:30",
 /// "Wed 14:00", or "May 20 · 09:00" beyond the next week.
 String formatScheduleLabel(DateTime t, {DateTime? now}) {
   final n = now ?? DateTime.now();
@@ -466,7 +467,7 @@ class _HeroCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'GOOD MORNING',
+                AppLocalizations.of(context).homeGoodMorning,
                 style: theme.textTheme.labelMedium?.copyWith(
                   letterSpacing: 1.4,
                   fontWeight: FontWeight.w700,
@@ -477,13 +478,13 @@ class _HeroCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Ready to train?',
+            AppLocalizations.of(context).homeReadyToTrain,
             style: theme.textTheme.headlineSmall
                 ?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 6),
           Text(
-            'Scan a machine or pick a plan curated for you.',
+            AppLocalizations.of(context).homeScanAMachineOrPickA,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
             ),
@@ -507,13 +508,13 @@ class _HeroCard extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.qr_code_scanner_rounded, color: Colors.white),
                   SizedBox(width: 10),
                   Text(
-                    'Scan equipment',
+                    AppLocalizations.of(context).homeScanEquipment,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -607,13 +608,13 @@ class _AiPlanCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Today's adaptive plan",
+                  AppLocalizations.of(context).homeTodaySAdaptivePlan,
                   style: theme.textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Built from your intake, ratings, and recovery signals.',
+                  AppLocalizations.of(context).homeBuiltFromYourIntakeRatingsAnd,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color:
                         theme.colorScheme.onSurface.withValues(alpha: 0.65),

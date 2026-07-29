@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/settings/app_settings.dart';
 import '../../core/settings/state/settings_providers.dart';
@@ -24,12 +25,13 @@ class SettingsPage extends ConsumerWidget {
     final controller = ref.read(settingsControllerProvider.notifier);
 
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Settings'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).profileSettings),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
           _Section(
-            title: 'Appearance',
+            key: const Key('settings-section-appearance'),
+            title: AppLocalizations.of(context).settingsAppearance,
             child: Column(
               children: [
                 for (final mode in AppThemeMode.values)
@@ -49,7 +51,8 @@ class SettingsPage extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           _Section(
-            title: 'Language',
+            key: const Key('settings-section-language'),
+            title: AppLocalizations.of(context).settingsLanguage,
             child: Column(
               children: [
                 for (final lang in AppLanguage.values)
@@ -69,16 +72,17 @@ class SettingsPage extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           _Section(
-            title: 'Reminders',
+            key: const Key('settings-section-reminders'),
+            title: AppLocalizations.of(context).settingsReminders,
             child: SwitchListTile(
               key: const Key('settings-notifications'),
               value: settings.notificationsEnabled,
               onChanged: controller.setNotificationsEnabled,
-              title: const Text('Session reminders'),
+              title: Text(AppLocalizations.of(context).settingsSessionReminders),
               subtitle: Text(
                 settings.notificationsEnabled
-                    ? 'A notification before each scheduled session.'
-                    : 'Scheduled sessions are saved but stay silent.',
+                    ? AppLocalizations.of(context).settingsRemindersOnBody
+                    : AppLocalizations.of(context).settingsRemindersOffBody,
                 style: theme.textTheme.bodySmall,
               ),
               contentPadding: EdgeInsets.zero,
@@ -86,13 +90,14 @@ class SettingsPage extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           GlassCard(
+            key: const Key('settings-about'),
             onTap: () => context.push('/about'),
             child: Row(
               children: [
                 Icon(Icons.info_outline, color: theme.colorScheme.primary),
                 const SizedBox(width: 14),
                 Expanded(
-                  child: Text('About this app',
+                  child: Text(AppLocalizations.of(context).settingsAboutThisApp,
                       style: theme.textTheme.titleMedium),
                 ),
                 const Icon(Icons.chevron_right),
@@ -120,7 +125,7 @@ class SettingsPage extends ConsumerWidget {
 }
 
 class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.child});
+  const _Section({super.key, required this.title, required this.child});
 
   final String title;
   final Widget child;

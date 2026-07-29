@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/glass.dart';
@@ -106,7 +107,7 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Report broken equipment',
+            Text(AppLocalizations.of(context).equipmentReportBrokenEquipment,
                 style: theme.textTheme.titleLarge
                     ?.copyWith(fontWeight: FontWeight.w800)),
             const SizedBox(height: 4),
@@ -133,7 +134,7 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
               minLines: 2,
               maxLines: 4,
               decoration: InputDecoration(
-                hintText: 'Optional note (e.g. "cable frayed near top")',
+                hintText: AppLocalizations.of(context).equipmentOptionalNoteEGCableFrayed,
                 filled: true,
                 fillColor: Colors.white.withValues(alpha: 0.32),
                 border: OutlineInputBorder(
@@ -174,13 +175,12 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
                               AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
-                    : const Text('Send to maintenance'),
+                    : Text(AppLocalizations.of(context).equipmentSendToMaintenance),
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Reports are forwarded to the gym\'s maintenance team. Your '
-              'identity is shared with the gym only if they ask to follow up.',
+              AppLocalizations.of(context).equipmentReportsAreForwardedToTheGym,
               style: theme.textTheme.labelSmall?.copyWith(
                 color: scheme.onSurface.withValues(alpha: 0.55),
               ),

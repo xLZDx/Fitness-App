@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../shared/widgets/glass.dart';
 import '../../theme/app_palette.dart';
@@ -105,14 +106,13 @@ class _AskCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Sync with Health',
+                      AppLocalizations.of(context).healthSyncWithHealth,
                       style: theme.textTheme.titleSmall
                           ?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'See steps, sleep + recovery here. Completed '
-                      'workouts also write back to your activity ring.',
+                      AppLocalizations.of(context).healthSeeStepsSleepRecoveryHereCompleted,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: scheme.onSurface.withValues(alpha: 0.65),
                       ),
@@ -173,7 +173,7 @@ class _SetupCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Health Connect required',
+            AppLocalizations.of(context).healthHealthConnectRequired,
             style: theme.textTheme.titleSmall
                 ?.copyWith(fontWeight: FontWeight.w800),
           ),
@@ -191,7 +191,7 @@ class _SetupCard extends StatelessWidget {
               key: const Key('health-setup-open'),
               onPressed: onOpen,
               icon: const Icon(Icons.download_outlined, size: 18),
-              label: const Text('Get Health Connect'),
+              label: Text(AppLocalizations.of(context).healthGetHealthConnect),
             ),
           ),
         ],
@@ -224,7 +224,7 @@ class _SnapshotCard extends StatelessWidget {
     if (snapshot == null) {
       return GlassCard(
         child: Text(
-          'No health data for today yet.',
+          AppLocalizations.of(context).healthNoHealthDataForTodayYet,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: scheme.onSurface.withValues(alpha: 0.65),
           ),
@@ -238,7 +238,7 @@ class _SnapshotCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Today's recovery",
+            AppLocalizations.of(context).healthTodaySRecovery,
             style: theme.textTheme.titleSmall
                 ?.copyWith(fontWeight: FontWeight.w800),
           ),
@@ -247,13 +247,13 @@ class _SnapshotCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _Stat(
-                  label: 'Steps',
+                  label: AppLocalizations.of(context).healthSteps,
                   value: s.steps == null ? '--' : '${s.steps}',
                 ),
               ),
               Expanded(
                 child: _Stat(
-                  label: 'Ring',
+                  label: AppLocalizations.of(context).healthRing,
                   value: s.activityRingPercent == null
                       ? '--'
                       : '${s.activityRingPercent}%',
@@ -261,7 +261,7 @@ class _SnapshotCard extends StatelessWidget {
               ),
               Expanded(
                 child: _Stat(
-                  label: 'Sleep',
+                  label: AppLocalizations.of(context).healthSleep,
                   value: s.sleepScore == null ? '--' : '${s.sleepScore}',
                 ),
               ),

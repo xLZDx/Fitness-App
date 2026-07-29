@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/glass.dart';
@@ -39,7 +40,7 @@ class DifficultyRatingSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('How did that feel?',
+            Text(AppLocalizations.of(context).workoutsHowDidThatFeel,
                 style: theme.textTheme.titleLarge
                     ?.copyWith(fontWeight: FontWeight.w800)),
             const SizedBox(height: 4),
@@ -54,7 +55,7 @@ class DifficultyRatingSheet extends StatelessWidget {
               children: [
                 _RatingPill(
                   emoji: '😅',
-                  label: 'Too easy',
+                  label: AppLocalizations.of(context).workoutsTooEasy,
                   gradient: const [
                     AppPalette.auroraTeal,
                     AppPalette.auroraLime,
@@ -65,7 +66,7 @@ class DifficultyRatingSheet extends StatelessWidget {
                 const SizedBox(width: 8),
                 _RatingPill(
                   emoji: '👍',
-                  label: 'Right',
+                  label: AppLocalizations.of(context).workoutsRight,
                   gradient: const [
                     AppPalette.auroraViolet,
                     AppPalette.auroraBlue,
@@ -76,7 +77,7 @@ class DifficultyRatingSheet extends StatelessWidget {
                 const SizedBox(width: 8),
                 _RatingPill(
                   emoji: '🥵',
-                  label: 'Too hard',
+                  label: AppLocalizations.of(context).workoutsTooHard,
                   gradient: const [
                     AppPalette.auroraPeach,
                     AppPalette.auroraPink,
@@ -88,9 +89,7 @@ class DifficultyRatingSheet extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             Text(
-              'Your rating tunes future workouts — both the suggested weight '
-              'and the recommended-for-you feed adjust to keep the challenge '
-              'right where it should be.',
+              AppLocalizations.of(context).workoutsYourRatingTunesFutureWorkoutsBoth,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: scheme.onSurface.withValues(alpha: 0.65),
               ),

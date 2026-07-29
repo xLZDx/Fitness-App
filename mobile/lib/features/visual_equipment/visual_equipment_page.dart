@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../shared/widgets/glass.dart';
 import 'data/visual_equipment_match.dart';
@@ -20,15 +21,13 @@ class VisualEquipmentPage extends ConsumerWidget {
     final theme = Theme.of(context);
     final matches = ref.watch(visualEquipmentControllerProvider);
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Recognise equipment'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).visualequipmentRecogniseEquipment),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
           GlassCard(
             child: Text(
-              "Use this when the gym hasn't put up QR stickers yet — "
-              "snap a photo of the machine, we'll guess the model on-"
-              "device. Nothing leaves your phone.",
+              AppLocalizations.of(context).visualequipmentUseThisWhenTheGymHasn,
               style: theme.textTheme.bodyMedium,
             ),
           ),
@@ -40,7 +39,7 @@ class VisualEquipmentPage extends ConsumerWidget {
                   onPressed: () => _capture(context, ref,
                       source: ImageSource.camera),
                   icon: const Icon(Icons.photo_camera_outlined),
-                  label: const Text('Take photo'),
+                  label: Text(AppLocalizations.of(context).visualequipmentTakePhoto),
                 ),
               ),
               const SizedBox(width: 8),
@@ -49,7 +48,7 @@ class VisualEquipmentPage extends ConsumerWidget {
                   onPressed: () => _capture(context, ref,
                       source: ImageSource.gallery),
                   icon: const Icon(Icons.photo_library_outlined),
-                  label: const Text('Pick photo'),
+                  label: Text(AppLocalizations.of(context).visualequipmentPickPhoto),
                 ),
               ),
             ],
@@ -68,7 +67,7 @@ class VisualEquipmentPage extends ConsumerWidget {
               return Column(
                 children: [
                   Text(
-                    'Best matches',
+                    AppLocalizations.of(context).scannerBestMatches,
                     style: theme.textTheme.titleMedium
                         ?.copyWith(fontWeight: FontWeight.w800),
                   ),

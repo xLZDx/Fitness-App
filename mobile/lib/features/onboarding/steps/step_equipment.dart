@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../state/questionnaire_notifier.dart';
@@ -22,9 +23,9 @@ class StepEquipment extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const StepTitle(
-          title: 'What can you train with?',
-          subtitle: 'We pick exercises that fit what you actually own.',
+        StepTitle(
+          title: AppLocalizations.of(context).onboardingWhatCanYouTrainWith,
+          subtitle: AppLocalizations.of(context).onboardingWePickExercisesThatFitWhat,
           icon: Icons.sports_gymnastics_outlined,
           iconGradient: [AppPalette.auroraPeach, AppPalette.auroraPink],
         ),

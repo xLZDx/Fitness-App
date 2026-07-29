@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -137,7 +138,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: isSubmitting ? null : _back,
-                        child: const Text('Back'),
+                        child: Text(AppLocalizations.of(context).onboardingBack),
                       ),
                     ),
                   if (_index > 0) const SizedBox(width: 12),

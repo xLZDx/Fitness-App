@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../profile/data/profile_models.dart';
@@ -25,9 +26,9 @@ class StepHealth extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const StepTitle(
-          title: 'Health snapshot',
-          subtitle: 'We use this to keep your plan safe — separate items with commas.',
+        StepTitle(
+          title: AppLocalizations.of(context).onboardingHealthSnapshot,
+          subtitle: AppLocalizations.of(context).onboardingWeUseThisToKeepYour,
           icon: Icons.favorite_outline,
           iconGradient: [AppPalette.auroraPink, AppPalette.auroraPeach],
         ),

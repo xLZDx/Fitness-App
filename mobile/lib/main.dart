@@ -174,6 +174,11 @@ class FitnessApp extends ConsumerWidget {
     final settings = ref.watch(settingsControllerProvider);
     final localeCode = settings.language.localeCode;
     return MaterialApp.router(
+      // NOT localised, on purpose twice over: it is the brand name, and
+      // this widget builds the MaterialApp, so there is no Localizations
+      // ancestor here yet — AppLocalizations.of(context) returns null and
+      // the non-nullable getter crashes on launch. Use onGenerateTitle if a
+      // translated title is ever wanted.
       title: 'Fitness App',
       // Russian is the product default (the launch market is RU/CIS), but the
       // user can override it in Settings; `null` there means follow the device.

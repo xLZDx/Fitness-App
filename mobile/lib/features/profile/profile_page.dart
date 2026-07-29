@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -29,7 +30,7 @@ class ProfilePage extends ConsumerWidget {
         : (user == null ? 'Sign in to sync progress' : 'Finish onboarding to unlock plans');
 
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Profile'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).profileProfile),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 120),
         children: [
@@ -89,8 +90,8 @@ class ProfilePage extends ConsumerWidget {
                   context,
                   icon: Icons.photo_library_outlined,
                   gradient: AppPalette.tileGradients[0],
-                  title: 'Progress photos',
-                  subtitle: 'End-to-end encrypted, on your device',
+                  title: AppLocalizations.of(context).profileProgressPhotos,
+                  subtitle: AppLocalizations.of(context).profileEndToEndEncryptedOnYour,
                   onTap: () => context.push('/photos'),
                 ),
                 _divider(context),
@@ -98,8 +99,8 @@ class ProfilePage extends ConsumerWidget {
                   context,
                   icon: Icons.people_alt_outlined,
                   gradient: AppPalette.tileGradients[2],
-                  title: 'Coaches',
-                  subtitle: 'Browse 1:1 sessions (15% fee funds the org)',
+                  title: AppLocalizations.of(context).marketplaceCoaches,
+                  subtitle: AppLocalizations.of(context).profileBrowse11Sessions15Fee,
                   onTap: () => context.push('/coaches'),
                 ),
                 _divider(context),
@@ -107,8 +108,8 @@ class ProfilePage extends ConsumerWidget {
                   context,
                   icon: Icons.star_outline,
                   gradient: AppPalette.tileGradients[4],
-                  title: 'Celebrity plans',
-                  subtitle: 'In-kind donated programmes',
+                  title: AppLocalizations.of(context).celebrityplansCelebrityPlans,
+                  subtitle: AppLocalizations.of(context).profileInKindDonatedProgrammes,
                   onTap: () => context.push('/celebrity-plans'),
                 ),
                 _divider(context),
@@ -116,8 +117,8 @@ class ProfilePage extends ConsumerWidget {
                   context,
                   icon: Icons.forum_outlined,
                   gradient: AppPalette.tileGradients[3],
-                  title: 'Community',
-                  subtitle: 'Hevy-style social feed',
+                  title: AppLocalizations.of(context).profileCommunity,
+                  subtitle: AppLocalizations.of(context).profileHevyStyleSocialFeed,
                   onTap: () => context.push('/community'),
                 ),
                 _divider(context),
@@ -125,7 +126,7 @@ class ProfilePage extends ConsumerWidget {
                   context,
                   icon: Icons.workspace_premium_outlined,
                   gradient: AppPalette.tileGradients[3],
-                  title: 'Subscription',
+                  title: AppLocalizations.of(context).profileSubscription,
                   subtitle: _subscriptionSubtitle(sub, tier),
                   onTap: () => context.push('/subscription'),
                 ),
@@ -134,8 +135,8 @@ class ProfilePage extends ConsumerWidget {
                   context,
                   icon: Icons.volunteer_activism_outlined,
                   gradient: AppPalette.tileGradients[0],
-                  title: 'Our mission',
-                  subtitle: 'How donations are used + donor wall',
+                  title: AppLocalizations.of(context).aboutOurMission,
+                  subtitle: AppLocalizations.of(context).profileHowDonationsAreUsedDonorWall,
                   onTap: () => context.push('/about'),
                 ),
                 _divider(context),
@@ -143,8 +144,8 @@ class ProfilePage extends ConsumerWidget {
                   context,
                   icon: Icons.settings_outlined,
                   gradient: AppPalette.tileGradients[2],
-                  title: 'Settings',
-                  subtitle: 'Theme, notifications, language',
+                  title: AppLocalizations.of(context).profileSettings,
+                  subtitle: AppLocalizations.of(context).profileThemeNotificationsLanguage,
                   onTap: () => context.push('/settings'),
                 ),
                 _divider(context),
@@ -152,8 +153,8 @@ class ProfilePage extends ConsumerWidget {
                   context,
                   icon: Icons.logout,
                   gradient: AppPalette.tileGradients[4],
-                  title: 'Sign out',
-                  subtitle: 'See you soon',
+                  title: AppLocalizations.of(context).profileSignOut,
+                  subtitle: AppLocalizations.of(context).profileSeeYouSoon,
                   onTap: () => ref.read(authActionProvider.notifier).signOut(),
                 ),
               ],
@@ -274,7 +275,7 @@ class _ProfileSummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('At a glance', style: theme.textTheme.titleMedium),
+          Text(AppLocalizations.of(context).profileAtAGlance, style: theme.textTheme.titleMedium),
           const SizedBox(height: 10),
           _row(context, 'Age', p.age?.toString() ?? '—'),
           _row(context, 'Height',

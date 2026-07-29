@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -181,13 +182,13 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     });
     return FrostedScaffold(
       appBar: GlassAppBar(
-        title: 'Scan',
+        title: AppLocalizations.of(context).scannerScan,
         actions: [
           // Live mode is opt-in: a continuous camera stream is the most
           // battery-expensive thing here.
           Row(
             children: [
-              Text('Live', style: theme.textTheme.labelLarge),
+              Text(AppLocalizations.of(context).scannerLive, style: theme.textTheme.labelLarge),
               Switch(
                 key: const Key('scan-live-toggle'),
                 value: liveOn,
@@ -242,7 +243,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                     key: const Key('scan-recognise-camera'),
                     onPressed: () => _recognise(ImageSource.camera),
                     icon: const Icon(Icons.photo_camera_outlined),
-                    label: const Text('Recognise machine'),
+                    label: Text(AppLocalizations.of(context).scannerRecogniseMachine),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -373,7 +374,7 @@ class _LiveCard extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Looking… hold the camera on one machine',
+                AppLocalizations.of(context).scannerLookingHoldTheCameraOnOne,
                 style: theme.textTheme.bodyMedium,
               ),
             ),
@@ -424,7 +425,7 @@ class _Matches extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Best matches',
+          AppLocalizations.of(context).scannerBestMatches,
           style: theme.textTheme.titleMedium
               ?.copyWith(fontWeight: FontWeight.w800),
         ),
@@ -493,7 +494,7 @@ class _CameraUnavailable extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             Text(
-              'Camera unavailable',
+              AppLocalizations.of(context).scannerCameraUnavailable,
               style: theme.textTheme.titleMedium
                   ?.copyWith(color: Colors.white, fontWeight: FontWeight.w800),
             ),

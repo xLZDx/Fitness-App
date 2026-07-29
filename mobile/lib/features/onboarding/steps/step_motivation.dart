@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../profile/data/profile_models.dart';
@@ -17,9 +18,9 @@ class StepMotivation extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const StepTitle(
-          title: 'How do you like to train?',
-          subtitle: 'These tweak the tone and length of your sessions.',
+        StepTitle(
+          title: AppLocalizations.of(context).onboardingHowDoYouLikeToTrain,
+          subtitle: AppLocalizations.of(context).onboardingTheseTweakTheToneAndLength,
           icon: Icons.bolt_outlined,
           iconGradient: [AppPalette.auroraViolet, AppPalette.auroraPink],
         ),

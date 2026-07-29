@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../state/questionnaire_notifier.dart';
@@ -34,9 +35,9 @@ class StepGoals extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const StepTitle(
-          title: 'What do you want to work on?',
-          subtitle: 'Pick as many as you like.',
+        StepTitle(
+          title: AppLocalizations.of(context).onboardingWhatDoYouWantToWork,
+          subtitle: AppLocalizations.of(context).onboardingPickAsManyAsYouLike,
           icon: Icons.flag_outlined,
           iconGradient: [AppPalette.auroraViolet, AppPalette.auroraBlue],
         ),

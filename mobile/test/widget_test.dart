@@ -18,7 +18,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1500));
     await tester.pump(const Duration(milliseconds: 600));
 
-    expect(find.text('Welcome'), findsOneWidget);
-    expect(find.text('Continue with Google'), findsOneWidget);
+    // Russian here too, for the same reason as the splash above: the login
+    // screen's copy is localised now, so English would mean the pin broke.
+    expect(find.text('Добро пожаловать'), findsOneWidget);
+    expect(find.text('Продолжить с Google'), findsOneWidget);
   });
 }

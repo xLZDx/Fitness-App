@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -23,7 +24,7 @@ class EquipmentDetailPage extends ConsumerWidget {
     final ex = ref.watch(recommendedExercisesProvider(equipmentId));
 
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Equipment'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).equipmentEquipment),
       body: eq.when(
         loading: () =>
             const Center(child: CircularProgressIndicator()),
@@ -79,7 +80,7 @@ class EquipmentDetailPage extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('About', style: theme.textTheme.titleMedium),
+                    Text(AppLocalizations.of(context).equipmentAbout, style: theme.textTheme.titleMedium),
                     const SizedBox(height: 6),
                     Text(item.description,
                         style: theme.textTheme.bodyMedium),
@@ -89,7 +90,7 @@ class EquipmentDetailPage extends ConsumerWidget {
                       child: TextButton.icon(
                         icon: const Icon(Icons.report_gmailerrorred_outlined,
                             size: 18),
-                        label: const Text('Report broken equipment'),
+                        label: Text(AppLocalizations.of(context).equipmentReportBrokenEquipment),
                         onPressed: () async {
                           final sent = await EquipmentReportSheet.show(
                             context,
@@ -98,9 +99,9 @@ class EquipmentDetailPage extends ConsumerWidget {
                           );
                           if (sent == true && context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
+                              SnackBar(
                                 content:
-                                    Text('Report sent to maintenance — thanks.'),
+                                    Text(AppLocalizations.of(context).equipmentReportSentToMaintenanceThanks),
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
@@ -113,7 +114,7 @@ class EquipmentDetailPage extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'Recommended exercises',
+                AppLocalizations.of(context).equipmentRecommendedExercises,
                 style: theme.textTheme.titleLarge?.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
                 ),
@@ -319,14 +320,14 @@ class _ToolsRow extends StatelessWidget {
       children: [
         ActionChip(
           avatar: const Icon(Icons.fitness_center_rounded, size: 18),
-          label: const Text('Plates'),
+          label: Text(AppLocalizations.of(context).equipmentPlates),
           labelStyle: theme.textTheme.labelLarge,
           onPressed: () => _openSheet(context),
         ),
         ActionChip(
           avatar:
               const Icon(Icons.local_fire_department_rounded, size: 18),
-          label: const Text('Warm-up'),
+          label: Text(AppLocalizations.of(context).equipmentWarmUp),
           labelStyle: theme.textTheme.labelLarge,
           onPressed: () => _openSheet(context),
         ),
@@ -353,7 +354,7 @@ class _NotFound extends StatelessWidget {
                 style: theme.textTheme.titleMedium),
             const SizedBox(height: 6),
             Text(
-              'Try scanning a different code, or browse manually from the Train tab.',
+              AppLocalizations.of(context).equipmentTryScanningADifferentCodeOr,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.65),

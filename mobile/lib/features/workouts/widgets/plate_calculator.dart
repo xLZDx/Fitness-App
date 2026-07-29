@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/glass.dart';
@@ -95,14 +96,14 @@ class _PlateCalculatorState extends State<PlateCalculator> {
             children: [
               const Icon(Icons.fitness_center_rounded),
               const SizedBox(width: 8),
-              Text('Plate calculator',
+              Text(AppLocalizations.of(context).workoutsPlateCalculator,
                   style: theme.textTheme.titleMedium
                       ?.copyWith(fontWeight: FontWeight.w800)),
             ],
           ),
           const SizedBox(height: 14),
           _Row(
-            label: 'Target weight',
+            label: AppLocalizations.of(context).workoutsTargetWeight,
             child: _StepperPill(
               value: _target,
               suffix: 'kg',
@@ -112,7 +113,7 @@ class _PlateCalculatorState extends State<PlateCalculator> {
           ),
           const SizedBox(height: 8),
           _Row(
-            label: 'Bar weight',
+            label: AppLocalizations.of(context).workoutsBarWeight,
             child: _StepperPill(
               value: _bar,
               suffix: 'kg',
@@ -135,7 +136,7 @@ class _PlateCalculatorState extends State<PlateCalculator> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Per side',
+                  AppLocalizations.of(context).workoutsPerSide,
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: Colors.white.withValues(alpha: 0.85),
                     letterSpacing: 0.6,
@@ -171,7 +172,7 @@ class _PlateCalculatorState extends State<PlateCalculator> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Plates assumed: 25 / 20 / 15 / 10 / 5 / 2.5 / 1.25 kg.',
+            AppLocalizations.of(context).workoutsPlatesAssumed25201510,
             style: theme.textTheme.labelSmall?.copyWith(
               color: scheme.onSurface.withValues(alpha: 0.55),
             ),

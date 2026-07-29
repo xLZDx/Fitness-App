@@ -68,9 +68,13 @@ void main() {
       await tester.pumpWidget(_buildApp(InMemorySettingsRepository()));
       await tester.pump();
 
-      expect(find.text('Appearance'), findsOneWidget);
-      expect(find.text('Language'), findsOneWidget);
-      expect(find.text('Reminders'), findsOneWidget);
+      // By Key, not by text: the app defaults to Russian now, and this test
+      // is about the controls being present, not about the copy.
+      expect(find.byKey(const Key('settings-section-appearance')),
+          findsOneWidget);
+      expect(find.byKey(const Key('settings-section-language')), findsOneWidget);
+      expect(find.byKey(const Key('settings-section-reminders')),
+          findsOneWidget);
 
       for (final mode in AppThemeMode.values) {
         expect(find.byKey(Key('settings-theme-${mode.name}')), findsOneWidget);
@@ -90,14 +94,15 @@ void main() {
       await tester.pumpWidget(_buildApp(repo));
       await tester.pump();
 
-      expect(Theme.of(tester.element(find.text('Appearance'))).brightness,
-          Brightness.light);
+      Brightness brightness() => Theme.of(
+            tester.element(find.byKey(const Key('settings-theme-dark'))),
+          ).brightness;
+      expect(brightness(), Brightness.light);
 
       await tester.tap(find.byKey(const Key('settings-theme-dark')));
       await tester.pumpAndSettle();
 
-      expect(Theme.of(tester.element(find.text('Appearance'))).brightness,
-          Brightness.dark,
+      expect(brightness(), Brightness.dark,
           reason: 'the theme choice has to drive the real MaterialApp');
       expect((await repo.load()).themeMode, AppThemeMode.dark);
     });
@@ -111,8 +116,11 @@ void main() {
       await tester.tap(find.byKey(const Key('settings-language-en')));
       await tester.pumpAndSettle();
 
-      expect(Localizations.localeOf(tester.element(find.text('Language'))),
-          const Locale('en'));
+      expect(
+        Localizations.localeOf(
+            tester.element(find.byKey(const Key('settings-language-en')))),
+        const Locale('en'),
+      );
       expect((await repo.load()).language, AppLanguage.en);
     });
 
@@ -132,13 +140,13 @@ void main() {
       await tester.pumpWidget(_buildApp(InMemorySettingsRepository()));
       await tester.pump();
 
-      expect(find.textContaining('before each scheduled session'),
-          findsOneWidget);
+      // Russian copy: the reminder switch explains the ON state.
+      expect(find.textContaining('перед каждым'), findsOneWidget);
 
       await tester.tap(find.byKey(const Key('settings-notifications')));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('stay silent'), findsOneWidget);
+      expect(find.textContaining('без звука'), findsOneWidget);
     });
 
     testWidgets('About opens the about route', (tester) async {
@@ -146,7 +154,7 @@ void main() {
       await tester.pumpWidget(_buildApp(InMemorySettingsRepository()));
       await tester.pump();
 
-      await tester.tap(find.text('About this app'));
+      await tester.tap(find.byKey(const Key('settings-about')));
       await tester.pumpAndSettle();
 
       expect(find.text('about-stub'), findsOneWidget);

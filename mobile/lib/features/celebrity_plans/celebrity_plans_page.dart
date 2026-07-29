@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -21,15 +22,13 @@ class CelebrityPlansPage extends ConsumerWidget {
     final plansAsync = ref.watch(celebrityPlansProvider);
 
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Celebrity plans'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).celebrityplansCelebrityPlans),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
           GlassCard(
             child: Text(
-              'Plans donated in-kind by professional coaches and trainers. '
-              'Every plan respects the injury filter you set in '
-              'onboarding — no need to sub exercises in.',
+              AppLocalizations.of(context).celebrityplansPlansDonatedInKindByProfessional,
               style: theme.textTheme.bodyMedium,
             ),
           ),
@@ -51,7 +50,7 @@ class CelebrityPlansPage extends ConsumerWidget {
             FilledButton.icon(
               onPressed: () => GoRouter.of(context).push('/subscription'),
               icon: const Icon(Icons.lock_open_outlined),
-              label: const Text('Become a Sustainer to unlock'),
+              label: Text(AppLocalizations.of(context).celebrityplansBecomeASustainerToUnlock),
             ),
           ],
         ],
@@ -117,8 +116,8 @@ class _PlanCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 color: Colors.white.withValues(alpha: 0.30),
               ),
-              child: const Text(
-                'IN-KIND DONATION',
+              child: Text(
+                AppLocalizations.of(context).celebrityplansInKindDonation,
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w800,

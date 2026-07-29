@@ -1,3 +1,6 @@
+import 'dart:ui' show Locale;
+
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/features/subscription/data/subscription_models.dart';
@@ -12,24 +15,33 @@ import 'package:fitness_app/features/subscription/subscription_page.dart';
 /// the page's pure helpers + the price-label resolver instead, which is
 /// what marketing copy + the nonprofit plan actually depend on.
 void main() {
+  // The labels are localised now, so the helper takes the localisations.
+  // Resolved for `en` here because this test pins the ENGLISH donation-framing
+  // copy that the nonprofit plan and marketing depend on.
+  late AppLocalizations l10n;
+
+  setUpAll(() async {
+    l10n = await AppLocalizations.delegate.load(const Locale('en'));
+  });
+
   group('SubscriptionPage.tierLabel — donation framing', () {
     test('free tier maps to "Member"', () {
       expect(
-        SubscriptionPage.tierLabel(SubscriptionTier.free),
+        SubscriptionPage.tierLabel(l10n, SubscriptionTier.free),
         'Member',
       );
     });
 
     test('standard tier maps to "Supporter"', () {
       expect(
-        SubscriptionPage.tierLabel(SubscriptionTier.standard),
+        SubscriptionPage.tierLabel(l10n, SubscriptionTier.standard),
         'Supporter',
       );
     });
 
     test('celebrityTrainer tier maps to "Sustainer"', () {
       expect(
-        SubscriptionPage.tierLabel(SubscriptionTier.celebrityTrainer),
+        SubscriptionPage.tierLabel(l10n, SubscriptionTier.celebrityTrainer),
         'Sustainer',
       );
     });

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/glass.dart';
@@ -50,16 +51,13 @@ class Day3WelcomeModal extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            'Three days in. Welcome.',
+            AppLocalizations.of(context).momentsThreeDaysInWelcome,
             style: theme.textTheme.headlineSmall
                 ?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 8),
           Text(
-            "We're a nonprofit and the app stays free of safety paywalls. "
-            "If we've earned a few coffees of your time, would you "
-            "consider becoming a Supporter? Donations fund hosting, "
-            "physio review, and community video moderation.",
+            AppLocalizations.of(context).momentsWeReANonprofitAndThe,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: scheme.onSurface.withValues(alpha: 0.75),
               height: 1.45,
@@ -77,7 +75,7 @@ class Day3WelcomeModal extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: const Text('Maybe later'),
+                  child: Text(AppLocalizations.of(context).momentsMaybeLater),
                 ),
               ),
               const SizedBox(width: 8),
@@ -93,7 +91,7 @@ class Day3WelcomeModal extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: const Text('See ways to support'),
+                  child: Text(AppLocalizations.of(context).momentsSeeWaysToSupport),
                 ),
               ),
             ],
@@ -105,7 +103,7 @@ class Day3WelcomeModal extends StatelessWidget {
                 Navigator.of(context).pop();
                 GoRouter.of(context).push('/about');
               },
-              child: const Text('Read our mission'),
+              child: Text(AppLocalizations.of(context).momentsReadOurMission),
             ),
           ),
         ],

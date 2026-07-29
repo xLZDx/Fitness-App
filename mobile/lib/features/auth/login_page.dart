@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -70,13 +71,13 @@ class LoginPage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'Welcome',
+                      AppLocalizations.of(context).authWelcome,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.headlineLarge,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Sign in to scan equipment, track workouts, and follow plans built for you.',
+                      AppLocalizations.of(context).authSignInToScanEquipmentTrack,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: scheme.onSurface.withValues(alpha: 0.70),
@@ -101,14 +102,14 @@ class LoginPage extends ConsumerWidget {
                               .read(authActionProvider.notifier)
                               .signInWithGoogle(),
                       icon: const Icon(Icons.g_mobiledata, size: 30),
-                      label: const Text('Continue with Google'),
+                      label: Text(AppLocalizations.of(context).authContinueWithGoogle),
                     ),
                   ],
                 ),
               ),
               const Spacer(),
               Text(
-                'By continuing you agree to our Terms and Privacy Policy.',
+                AppLocalizations.of(context).authByContinuingYouAgreeToOur,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: scheme.onSurface.withValues(alpha: 0.60),

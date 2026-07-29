@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../shared/widgets/glass.dart';
 import '../auth/state/auth_providers.dart';
@@ -81,15 +82,13 @@ class _ContributeVideoPageState extends ConsumerState<ContributeVideoPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Contribute a video'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).catalogContributeAVideo),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
           GlassCard(
             child: Text(
-              'Help us grow the catalog. Paste a public URL to a clear, '
-              'short demo video for an exercise. Moderators review every '
-              'submission against form-safety guidelines.',
+              AppLocalizations.of(context).catalogHelpUsGrowTheCatalogPaste,
               style: theme.textTheme.bodyMedium,
             ),
           ),
@@ -100,15 +99,15 @@ class _ContributeVideoPageState extends ConsumerState<ContributeVideoPage> {
               children: [
                 TextField(
                   controller: _exerciseCtl,
-                  decoration: const InputDecoration(
-                    labelText: 'Exercise id (e.g. squat, deadlift)',
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context).catalogExerciseIdEGSquatDeadlift,
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _urlCtl,
-                  decoration: const InputDecoration(
-                    labelText: 'Video URL (https://...)',
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context).catalogVideoUrlHttps,
                   ),
                   keyboardType: TextInputType.url,
                 ),
@@ -116,8 +115,8 @@ class _ContributeVideoPageState extends ConsumerState<ContributeVideoPage> {
                 TextField(
                   controller: _notesCtl,
                   maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes for moderator (optional)',
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context).catalogNotesForModeratorOptional,
                   ),
                 ),
               ],

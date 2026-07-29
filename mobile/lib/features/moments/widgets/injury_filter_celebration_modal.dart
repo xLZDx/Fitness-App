@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/glass.dart';
@@ -50,16 +51,13 @@ class InjuryFilterCelebrationModal extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            'You just dodged a flare-up.',
+            AppLocalizations.of(context).momentsYouJustDodgedAFlareUp,
             style: theme.textTheme.headlineSmall
                 ?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 8),
           Text(
-            "Injury-aware filtering is the safety promise we pin our "
-            "mission to — every exercise is screened against your "
-            "logged conditions before it surfaces. It will stay free, "
-            "always. If you can, help keep it that way.",
+            AppLocalizations.of(context).momentsInjuryAwareFilteringIsTheSafety,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: scheme.onSurface.withValues(alpha: 0.75),
               height: 1.45,
@@ -77,7 +75,7 @@ class InjuryFilterCelebrationModal extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: const Text('Got it'),
+                  child: Text(AppLocalizations.of(context).momentsGotIt),
                 ),
               ),
               const SizedBox(width: 8),
@@ -93,7 +91,7 @@ class InjuryFilterCelebrationModal extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: const Text('Help keep it free'),
+                  child: Text(AppLocalizations.of(context).momentsHelpKeepItFree),
                 ),
               ),
             ],

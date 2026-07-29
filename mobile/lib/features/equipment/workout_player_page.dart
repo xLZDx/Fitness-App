@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -63,7 +64,7 @@ class WorkoutPlayerPage extends ConsumerWidget {
     final exercise = ref.watch(_exerciseByIdProvider(exerciseId));
 
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Workout'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).equipmentWorkout),
       body: exercise.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Could not load: $e')),
@@ -73,7 +74,7 @@ class WorkoutPlayerPage extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
               child: GlassCard(
                 child: Text(
-                  "We couldn't find that exercise.",
+                  AppLocalizations.of(context).equipmentWeCouldnTFindThatExercise,
                   style: theme.textTheme.titleMedium,
                 ),
               ),
@@ -99,7 +100,7 @@ class WorkoutPlayerPage extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Muscles worked',
+                      Text(AppLocalizations.of(context).equipmentMusclesWorked,
                           style: theme.textTheme.titleMedium
                               ?.copyWith(fontWeight: FontWeight.w800)),
                       const SizedBox(height: 8),
@@ -330,8 +331,8 @@ class _VideoBlockState extends ConsumerState<_VideoBlock> {
                     color: Colors.black.withValues(alpha: 0.55),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Text(
-                    'OFFLINE',
+                  child: Text(
+                    AppLocalizations.of(context).equipmentOffline,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 9,
@@ -371,7 +372,7 @@ class _NoVideoFallback extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'No video yet — follow the steps below.',
+              AppLocalizations.of(context).equipmentNoVideoYetFollowTheSteps,
               style: theme.textTheme.bodyMedium,
             ),
           ),
@@ -391,7 +392,7 @@ class _StepsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('How to do it',
+          Text(AppLocalizations.of(context).equipmentHowToDoIt,
               style: theme.textTheme.titleMedium
                   ?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
@@ -579,13 +580,13 @@ class _ToolsRow extends StatelessWidget {
       children: [
         ActionChip(
           avatar: const Icon(Icons.fitness_center_rounded, size: 18),
-          label: const Text('Plates'),
+          label: Text(AppLocalizations.of(context).equipmentPlates),
           labelStyle: theme.textTheme.labelLarge,
           onPressed: () => _openSheet(context),
         ),
         ActionChip(
           avatar: const Icon(Icons.local_fire_department_rounded, size: 18),
-          label: const Text('Warm-up'),
+          label: Text(AppLocalizations.of(context).equipmentWarmUp),
           labelStyle: theme.textTheme.labelLarge,
           onPressed: () => _openSheet(context),
         ),
@@ -756,7 +757,7 @@ class _SuggestedWeightChip extends ConsumerWidget {
                   textBaseline: TextBaseline.alphabetic,
                   children: [
                     Text(
-                      'Suggested: ',
+                      AppLocalizations.of(context).equipmentSuggested,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color:
                             scheme.onSurface.withValues(alpha: 0.65),
@@ -816,7 +817,7 @@ class _CautionCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Take care if you have…',
+                Text(AppLocalizations.of(context).equipmentTakeCareIfYouHave,
                     style: theme.textTheme.titleSmall
                         ?.copyWith(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 2),

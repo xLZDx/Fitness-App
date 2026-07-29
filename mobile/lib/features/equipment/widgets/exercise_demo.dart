@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// Looping two-frame movement demo.
 ///
@@ -91,7 +92,7 @@ class _ExerciseDemoState extends State<ExerciseDemo> {
                     gaplessPlayback: true,
                     errorBuilder: (_, __, ___) => Center(
                       child: Text(
-                        'Demo unavailable',
+                        AppLocalizations.of(context).equipmentDemoUnavailable,
                         style: theme.textTheme.bodySmall,
                       ),
                     ),

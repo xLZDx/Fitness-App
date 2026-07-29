@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -17,15 +18,13 @@ class MarketplacePage extends ConsumerWidget {
     final theme = Theme.of(context);
     final listAsync = ref.watch(coachListingsProvider);
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Coaches'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).marketplaceCoaches),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
           GlassCard(
             child: Text(
-              'Vetted coaches who run 1:1 sessions remotely. We take a '
-              '15% platform fee that funds the nonprofit; the rest goes '
-              'to the coach.',
+              AppLocalizations.of(context).marketplaceVettedCoachesWhoRun11,
               style: theme.textTheme.bodyMedium,
             ),
           ),

@@ -2,6 +2,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -94,7 +95,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
 
     return FrostedScaffold(
       appBar: GlassAppBar(
-        title: 'Form coach',
+        title: AppLocalizations.of(context).formcheckFormCoach,
         actions: [
           IconButton(
             icon: Icon(muted ? Icons.volume_off : Icons.volume_up),
@@ -163,8 +164,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
           const SizedBox(height: 16),
           GlassCard(
             child: Text(
-              'Form coach runs on-device using MediaPipe pose detection. '
-              'No frames are uploaded — your camera stays private.',
+              AppLocalizations.of(context).formcheckFormCoachRunsOnDeviceUsing,
               style: theme.textTheme.bodySmall?.copyWith(
                 color:
                     theme.colorScheme.onSurface.withValues(alpha: 0.70),
@@ -266,8 +266,7 @@ class _SetSummaryCard extends StatelessWidget {
     if (session.reps.isEmpty) {
       return GlassCard(
         child: Text(
-          'No reps yet. Stand tall to start — reps are counted from the top '
-          'of the movement.',
+          AppLocalizations.of(context).formcheckNoRepsYetStandTallTo,
           key: const Key('form_check.summary_empty'),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurface.withValues(alpha: 0.70),
@@ -288,14 +287,14 @@ class _SetSummaryCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'This set',
+                  AppLocalizations.of(context).formcheckThisSet,
                   style: theme.textTheme.titleMedium
                       ?.copyWith(fontWeight: FontWeight.w800),
                 ),
               ),
               TextButton(
                 onPressed: onReset,
-                child: const Text('Reset set'),
+                child: Text(AppLocalizations.of(context).formcheckResetSet),
               ),
             ],
           ),
@@ -332,7 +331,7 @@ class _UpgradeCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Form coach is a Sustainer benefit',
+            AppLocalizations.of(context).formcheckFormCoachIsASustainerBenefit,
             style: theme.textTheme.titleMedium
                 ?.copyWith(fontWeight: FontWeight.w800),
           ),
@@ -363,7 +362,7 @@ class _CueCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
         ),
         child: Text(
-          'Stand back so your full body fits in the frame.',
+          AppLocalizations.of(context).formcheckStandBackSoYourFullBody,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w700,

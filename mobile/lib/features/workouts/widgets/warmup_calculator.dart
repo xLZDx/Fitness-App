@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/glass.dart';
@@ -64,7 +65,7 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
             children: [
               const Icon(Icons.local_fire_department_rounded),
               const SizedBox(width: 8),
-              Text('Warm-up calculator',
+              Text(AppLocalizations.of(context).workoutsWarmUpCalculator,
                   style: theme.textTheme.titleMedium
                       ?.copyWith(fontWeight: FontWeight.w800)),
             ],
@@ -74,7 +75,7 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
             children: [
               SizedBox(
                 width: 130,
-                child: Text('Working weight',
+                child: Text(AppLocalizations.of(context).workoutsWorkingWeight,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: scheme.onSurface.withValues(alpha: 0.7),
                     )),
@@ -174,7 +175,7 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
           ],
           const SizedBox(height: 8),
           Text(
-            'Ramps prime your nervous system without burning glycogen on the warm-up.',
+            AppLocalizations.of(context).workoutsRampsPrimeYourNervousSystemWithout,
             style: theme.textTheme.labelSmall?.copyWith(
               color: scheme.onSurface.withValues(alpha: 0.55),
             ),

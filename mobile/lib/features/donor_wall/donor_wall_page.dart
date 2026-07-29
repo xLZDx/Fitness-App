@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -19,7 +20,7 @@ class DonorWallPage extends ConsumerWidget {
     final entriesAsync = ref.watch(donorWallProvider);
 
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Donor wall'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).donorwallDonorWall),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
@@ -46,14 +47,13 @@ class DonorWallPage extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Made possible by these donors',
+                        AppLocalizations.of(context).donorwallMadePossibleByTheseDonors,
                         style: theme.textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w800),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Anyone can browse this list. Donors opt in '
-                        'individually — others remain anonymous.',
+                        AppLocalizations.of(context).donorwallAnyoneCanBrowseThisListDonors,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: scheme.onSurface.withValues(alpha: 0.65),
                         ),
@@ -85,7 +85,7 @@ class DonorWallPage extends ConsumerWidget {
             child: TextButton.icon(
               onPressed: () => GoRouter.of(context).push('/subscription'),
               icon: const Icon(Icons.favorite_outline, size: 18),
-              label: const Text('Become a donor'),
+              label: Text(AppLocalizations.of(context).donorwallBecomeADonor),
             ),
           ),
         ],
@@ -105,8 +105,7 @@ class _DonorList extends StatelessWidget {
       return GlassCard(
         padding: const EdgeInsets.all(20),
         child: Text(
-          'Be the first to opt in. Open Support, then look for the '
-          '"Add me to the donor wall" toggle on your donation page.',
+          AppLocalizations.of(context).donorwallBeTheFirstToOptIn,
           style: theme.textTheme.bodyMedium?.copyWith(
             color:
                 theme.colorScheme.onSurface.withValues(alpha: 0.70),

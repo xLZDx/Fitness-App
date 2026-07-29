@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../profile/data/profile_models.dart';
@@ -23,9 +24,9 @@ class StepLevel extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const StepTitle(
-          title: 'Where are you now?',
-          subtitle: 'Your starting point shapes how aggressive your plan is.',
+        StepTitle(
+          title: AppLocalizations.of(context).onboardingWhereAreYouNow,
+          subtitle: AppLocalizations.of(context).onboardingYourStartingPointShapesHowAggressive,
           icon: Icons.fitness_center_outlined,
           iconGradient: [AppPalette.auroraBlue, AppPalette.auroraTeal],
         ),

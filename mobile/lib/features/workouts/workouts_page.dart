@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -74,7 +75,7 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
     final list = ref.watch(_filteredExercisesProvider(_selected));
 
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Train'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).workoutsTrain),
       body: SmoothScrollList(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
@@ -362,8 +363,8 @@ class _QuickToolsRow extends StatelessWidget {
         Expanded(
           child: _QuickTool(
             icon: Icons.center_focus_strong_outlined,
-            label: 'Form coach',
-            subtitle: 'On-device pose check',
+            label: AppLocalizations.of(context).formcheckFormCoach,
+            subtitle: AppLocalizations.of(context).workoutsOnDevicePoseCheck,
             gradient: const [
               AppPalette.auroraPeach,
               AppPalette.auroraPink,
@@ -375,8 +376,8 @@ class _QuickToolsRow extends StatelessWidget {
         Expanded(
           child: _QuickTool(
             icon: Icons.photo_camera_outlined,
-            label: 'Recognise',
-            subtitle: 'Photo → equipment',
+            label: AppLocalizations.of(context).workoutsRecognise,
+            subtitle: AppLocalizations.of(context).workoutsPhotoEquipment,
             gradient: const [
               AppPalette.auroraViolet,
               AppPalette.auroraBlue,

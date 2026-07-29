@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -18,7 +19,7 @@ class ProgressPage extends ConsumerWidget {
     final stats = deriveProgress(logs);
 
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Progress'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).progressProgress),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 120),
         children: [
@@ -26,7 +27,7 @@ class ProgressPage extends ConsumerWidget {
             children: [
               Expanded(
                 child: _StatCard(
-                  label: 'Total workouts',
+                  label: AppLocalizations.of(context).progressTotalWorkouts,
                   value: '${stats.total}',
                   gradient: AppPalette.tileGradients[0],
                 ),
@@ -34,7 +35,7 @@ class ProgressPage extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _StatCard(
-                  label: 'This week',
+                  label: AppLocalizations.of(context).homeThisWeek,
                   value: '${stats.thisWeek}',
                   gradient: AppPalette.tileGradients[1],
                 ),
@@ -46,7 +47,7 @@ class ProgressPage extends ConsumerWidget {
             children: [
               Expanded(
                 child: _StatCard(
-                  label: 'Current streak',
+                  label: AppLocalizations.of(context).progressCurrentStreak,
                   value: '${stats.currentStreakDays}d',
                   gradient: AppPalette.tileGradients[2],
                 ),
@@ -54,7 +55,7 @@ class ProgressPage extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _StatCard(
-                  label: 'Longest',
+                  label: AppLocalizations.of(context).progressLongest,
                   value: '${stats.longestStreakDays}d',
                   gradient: AppPalette.tileGradients[4],
                 ),
@@ -63,7 +64,7 @@ class ProgressPage extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            'Last 8 weeks',
+            AppLocalizations.of(context).progressLast8Weeks,
             style: theme.textTheme.titleLarge?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
             ),
@@ -76,7 +77,7 @@ class ProgressPage extends ConsumerWidget {
               child: logs.isEmpty
                   ? Center(
                       child: Text(
-                        'Log a workout to see your trend.',
+                        AppLocalizations.of(context).progressLogAWorkoutToSeeYour,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurface
                               .withValues(alpha: 0.65),
@@ -88,7 +89,7 @@ class ProgressPage extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            'Recent activity',
+            AppLocalizations.of(context).progressRecentActivity,
             style: theme.textTheme.titleLarge?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
             ),
@@ -97,7 +98,7 @@ class ProgressPage extends ConsumerWidget {
           if (logs.isEmpty)
             GlassCard(
               child: Text(
-                'Tap "Mark complete" on any workout to start your history.',
+                AppLocalizations.of(context).progressTapMarkCompleteOnAnyWorkout,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
                 ),

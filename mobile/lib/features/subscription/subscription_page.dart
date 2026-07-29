@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -21,14 +22,16 @@ import 'state/subscription_providers.dart';
 class SubscriptionPage extends ConsumerWidget {
   const SubscriptionPage({super.key});
 
-  static String tierLabel(SubscriptionTier t) {
+  /// Takes the localisations explicitly: this is a static helper with no
+  /// BuildContext of its own, and the tier names are translated.
+  static String tierLabel(AppLocalizations l10n, SubscriptionTier t) {
     switch (t) {
       case SubscriptionTier.free:
-        return 'Member';
+        return l10n.subscriptionMember;
       case SubscriptionTier.standard:
-        return 'Supporter';
+        return l10n.subscriptionSupporter;
       case SubscriptionTier.celebrityTrainer:
-        return 'Sustainer';
+        return l10n.subscriptionSustainer;
     }
   }
 
@@ -59,7 +62,7 @@ class SubscriptionPage extends ConsumerWidget {
     final state = _stateFor(sub);
 
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Support the mission'),
+      appBar: GlassAppBar(title: AppLocalizations.of(context).aboutSupportTheMission),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
@@ -83,15 +86,14 @@ class SubscriptionPage extends ConsumerWidget {
             ),
           ] else ...[
             Text(
-              'Choose a way to support',
+              AppLocalizations.of(context).subscriptionChooseAWayToSupport,
               style: theme.textTheme.titleLarge?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              'Every level keeps the app free of safety paywalls and funds '
-              'community-contributed content.',
+              AppLocalizations.of(context).subscriptionEveryLevelKeepsTheAppFree,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
               ),
@@ -101,7 +103,7 @@ class SubscriptionPage extends ConsumerWidget {
             const SizedBox(height: 12),
             _PlanCard(
               tier: SubscriptionTier.free,
-              title: 'Member',
+              title: AppLocalizations.of(context).subscriptionMember,
               price: 'Free forever',
               tagline:
                   'Full app access — workouts, scanning, injury filtering, progress.',
@@ -122,7 +124,7 @@ class SubscriptionPage extends ConsumerWidget {
             const SizedBox(height: 12),
             _PlanCardForPeriod(
               tier: SubscriptionTier.standard,
-              title: 'Supporter',
+              title: AppLocalizations.of(context).subscriptionSupporter,
               tagline:
                   'Funds the mission and unlocks long-term progress + reminders.',
               features: const [
@@ -140,7 +142,7 @@ class SubscriptionPage extends ConsumerWidget {
             const SizedBox(height: 12),
             _PlanCardForPeriod(
               tier: SubscriptionTier.celebrityTrainer,
-              title: 'Sustainer',
+              title: AppLocalizations.of(context).subscriptionSustainer,
               tagline:
                   'Powers celebrity-donated content + advanced analytics.',
               features: const [
@@ -189,8 +191,7 @@ class _MissionStrip extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              "We're a nonprofit. Subscriptions are recurring donations — "
-              'they keep the app safety-paywall-free for everyone.',
+              AppLocalizations.of(context).subscriptionWeReANonprofitSubscriptionsAre,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: scheme.onSurface.withValues(alpha: 0.75),
               ),
@@ -209,7 +210,7 @@ class _LearnMoreLink extends StatelessWidget {
       child: TextButton.icon(
         onPressed: () => GoRouter.of(context).push('/about'),
         icon: const Icon(Icons.info_outline_rounded, size: 18),
-        label: const Text('Learn how donations are used'),
+        label: Text(AppLocalizations.of(context).subscriptionLearnHowDonationsAreUsed),
       ),
     );
   }
@@ -251,7 +252,7 @@ class _ErrorCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Could not update donation',
+                  AppLocalizations.of(context).subscriptionCouldNotUpdateDonation,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: scheme.error,
@@ -259,7 +260,7 @@ class _ErrorCard extends StatelessWidget {
                 ),
               ),
               IconButton(
-                tooltip: 'Copy error',
+                tooltip: AppLocalizations.of(context).subscriptionCopyError,
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
                 constraints:
@@ -271,8 +272,8 @@ class _ErrorCard extends StatelessWidget {
                       ClipboardData(text: _composePayload()));
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Error copied to clipboard'),
+                    SnackBar(
+                      content: Text(AppLocalizations.of(context).subscriptionErrorCopiedToClipboard),
                       behavior: SnackBarBehavior.floating,
                       duration: Duration(seconds: 2),
                     ),
@@ -322,14 +323,16 @@ class _UpgradeFromTrialCard extends StatelessWidget {
   final bool isLoading;
   final VoidCallback onUpgrade;
 
-  String get _label {
+  /// Same reason as tierLabel: a getter cannot reach a BuildContext, so the
+  /// localisations are passed in from build().
+  String _labelFor(AppLocalizations l10n) {
     switch (tier) {
       case SubscriptionTier.standard:
-        return 'Supporter · \$9.99 / month';
+        return '${l10n.subscriptionSupporter} · \$9.99 / month';
       case SubscriptionTier.celebrityTrainer:
-        return 'Sustainer · \$19.99 / month';
+        return '${l10n.subscriptionSustainer} · \$19.99 / month';
       case SubscriptionTier.free:
-        return 'Member';
+        return l10n.subscriptionMember;
     }
   }
 
@@ -364,15 +367,13 @@ class _UpgradeFromTrialCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Continue as $_label',
+                      'Continue as ${_labelFor(AppLocalizations.of(context))}',
                       style: theme.textTheme.titleMedium
                           ?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Trial features stay on past the trial only with an '
-                      'active recurring donation. Cancel any time from the '
-                      'donor portal.',
+                      AppLocalizations.of(context).subscriptionTrialFeaturesStayOnPastThe,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: scheme.onSurface.withValues(alpha: 0.65),
                       ),
@@ -403,8 +404,8 @@ class _UpgradeFromTrialCard extends StatelessWidget {
                             AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : const Text(
-                      'Continue with Stripe',
+                  : Text(
+                      AppLocalizations.of(context).subscriptionContinueWithStripe,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -455,14 +456,13 @@ class _ManagePlanCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Manage donation, update card, or pause',
+                      AppLocalizations.of(context).subscriptionManageDonationUpdateCardOrPause,
                       style: theme.textTheme.titleMedium
                           ?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Opens the secure Stripe donor portal in your browser. '
-                      'Changes happen instantly and are pro-rated by Stripe.',
+                      AppLocalizations.of(context).subscriptionOpensTheSecureStripeDonorPortal,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: scheme.onSurface.withValues(alpha: 0.65),
                       ),
@@ -493,8 +493,8 @@ class _ManagePlanCard extends StatelessWidget {
                             AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : const Text(
-                      'Open donor portal',
+                  : Text(
+                      AppLocalizations.of(context).subscriptionOpenDonorPortal,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -586,7 +586,8 @@ class _StatusCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      SubscriptionPage.tierLabel(effectiveTier),
+                      SubscriptionPage.tierLabel(
+                          AppLocalizations.of(context), effectiveTier),
                       style: theme.textTheme.titleLarge
                           ?.copyWith(fontWeight: FontWeight.w800),
                     ),
@@ -687,8 +688,8 @@ class _PlanCard extends StatelessWidget {
                                 AppPalette.auroraLime,
                               ]),
                             ),
-                            child: const Text(
-                              'CURRENT',
+                            child: Text(
+                              AppLocalizations.of(context).subscriptionCurrent,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,
@@ -705,7 +706,7 @@ class _PlanCard extends StatelessWidget {
                               color: Colors.white.withValues(alpha: 0.40),
                             ),
                             child: Text(
-                              'POPULAR',
+                              AppLocalizations.of(context).subscriptionPopular,
                               style: TextStyle(
                                 color: scheme.onSurface
                                     .withValues(alpha: 0.75),
@@ -763,7 +764,7 @@ class _PlanCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    child: const Text('14-day trial'),
+                    child: Text(AppLocalizations.of(context).subscription14DayTrial),
                   ),
                 ),
                 const SizedBox(width: 8),
