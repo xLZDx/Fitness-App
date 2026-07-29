@@ -89,13 +89,17 @@ SharedPreferences (or Keystore for hardened deployments).
 site exists, swap the URL and add an in-app deep link to refresh the
 coach listing on return.
 
-### 9. Cloud Function tests
+### 9. ~~Cloud Function tests~~ DONE (2026-07-29)
 
-`functions/src/index.ts` has no unit tests yet. The Firebase emulator
-suite (`firebase emulators:exec`) can boot Firestore + Functions in
-a test process. Add tests for the 4 new functions:
-`startFreeTrial`, `createCheckoutSession`, `generateAnnualReceipt`,
-`bookCoachSession`. ~3 days.
+Done: pure-unit jest suite at `functions/src/__tests__/index.test.ts` — 22 tests:
+`startFreeTrial` (4), `createCheckoutSession` (7), `generateAnnualReceipt` (5),
+`bookCoachSession` (6); happy paths + auth/validation failures, asserting both
+return payloads and Firestore/Stripe mock call args. firebase-admin + stripe
+fully jest-mocked, secrets = fake env values in `jest.setup.js` (no emulator
+suite, no Java dep). `npm test` 22/22 PASS; `npm run build` still clean — test
+files excluded from `lib/` via tsconfig `exclude`. Still uncovered (out of
+scope, next candidates): `stripeWebhook`, `createPortalSession`,
+`optInDonorWall`, `optOutDonorWall`, `startCoachOnboarding`, `reportEquipment`.
 
 ### 10. Visual model: ship a real catalog of stock videos via the
 moderation queue
