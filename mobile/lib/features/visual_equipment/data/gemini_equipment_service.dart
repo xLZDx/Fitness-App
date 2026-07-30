@@ -3,7 +3,9 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:firebase_ai/firebase_ai.dart';
-import 'package:flutter/foundation.dart' show debugPrint, visibleForTesting;
+import 'package:flutter/foundation.dart'
+    show compute, debugPrint, visibleForTesting;
+import 'package:image/image.dart' as img;
 
 import '../../equipment/data/equipment_alias_index.dart';
 import 'visual_equipment_match.dart';
@@ -32,6 +34,7 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
     // available to new users' on this project; 3-flash-preview answered the
     // operator's power-cage photo with {"machine":"squat rack", 0.9}.
     this.modelName = 'gemini-3-flash-preview',
+    this.timeout = const Duration(seconds: 20),
   })  : _index = index ?? EquipmentAliasIndex.load(),
         _ask = ask;
 
@@ -39,25 +42,36 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
   final Future<EquipmentAliasIndex> _index;
   final CloudAsk? _ask;
 
+  /// Verified live 2026-07-30: with the model's default "thinking" a single
+  /// photo took 25-31s; with thinking disabled, 2-5s typically (occasional
+  /// preview-model queueing still hit 15-18s). The operator's report — long
+  /// waits, then nothing after several tries — is this combined with a
+  /// classifyFile call that had NO deadline: a genuinely stalled request just
+  /// spun the spinner forever and never reached the on-device fallback below.
+  final Duration timeout;
+
   GenerativeModel? _model;
 
-  Future<String?> _askCloud(Uint8List bytes, String prompt) async {
+  Future<String?> _askCloud(Uint8List bytes, String prompt) {
     final custom = _ask;
-    if (custom != null) return custom(bytes, prompt);
+    if (custom != null) return custom(bytes, prompt).timeout(timeout);
     _model ??= FirebaseAI.googleAI().generativeModel(
       model: modelName,
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
         temperature: 0,
+        thinkingConfig: ThinkingConfig(thinkingBudget: 0),
       ),
     );
-    final response = await _model!.generateContent([
-      Content.multi([
-        InlineDataPart('image/jpeg', bytes),
-        TextPart(prompt),
-      ]),
-    ]);
-    return response.text;
+    return _model!
+        .generateContent([
+          Content.multi([
+            InlineDataPart('image/jpeg', bytes),
+            TextPart(prompt),
+          ]),
+        ])
+        .timeout(timeout)
+        .then((r) => r.text);
   }
 
   @override
@@ -66,7 +80,11 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
     int topK = 3,
   }) async {
     final index = await _index;
-    final bytes = await File(path).readAsBytes();
+    // Resized off the UI isolate: a camera still can run several MB, and on
+    // gym wifi/LTE the upload itself was a real chunk of the reported delay.
+    // 1024px keeps the model's answer quality (verified live) while cutting
+    // the payload roughly 3-4x versus a full-resolution JPEG.
+    final bytes = await compute(_resizeForCloud, path);
     final String? text;
     try {
       text = await _askCloud(bytes, buildPrompt());
@@ -170,6 +188,29 @@ ${kCanonicalMachines.join(', ')}''';
       }
     }
     return rankTopK(best.values, minConfidence: 0.01, limit: topK);
+  }
+}
+
+/// Runs on a background isolate via [compute]: decodes the photo, downsizes
+/// to at most 1024px on the long edge, and re-encodes as JPEG. A resize
+/// failure (corrupt file, unsupported format) falls back to the original
+/// bytes rather than throwing — a slightly larger upload beats no upload.
+Uint8List _resizeForCloud(String path) {
+  final bytes = File(path).readAsBytesSync();
+  try {
+    var decoded = img.decodeImage(bytes);
+    if (decoded == null) return bytes;
+    decoded = img.bakeOrientation(decoded);
+    if (decoded.width <= 1024 && decoded.height <= 1024) {
+      return Uint8List.fromList(img.encodeJpg(decoded, quality: 88));
+    }
+    final resized = decoded.width >= decoded.height
+        ? img.copyResize(decoded, width: 1024)
+        : img.copyResize(decoded, height: 1024);
+    return Uint8List.fromList(img.encodeJpg(resized, quality: 88));
+  } catch (e) {
+    debugPrint('cloud photo resize failed, sending original: $e');
+    return bytes;
   }
 }
 

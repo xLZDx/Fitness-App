@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 
 import 'package:fitness_app/features/ai_coach/ai_coach_service.dart';
 import 'package:fitness_app/features/equipment/data/equipment_alias_index.dart';
@@ -134,6 +135,64 @@ void main() {
       );
       expect(() => svc.classifyFile(path: tmp.path),
           throwsA(isA<VisualEquipmentException>()));
+    });
+
+    test('a stalled cloud call times out instead of spinning forever',
+        () async {
+      // THE regression for "после 3 раза вообще ничего не возвращает и
+      // просто спинится" -- classifyFile used to have no deadline at all.
+      final tmp = File(
+          '${Directory.systemTemp.createTempSync('scan').path}/shot.jpg');
+      tmp.writeAsBytesSync([1]);
+      final svc = GeminiVisualEquipmentService(
+        index: Future.value(index),
+        timeout: const Duration(milliseconds: 50),
+        ask: (_, __) => Future.delayed(
+            const Duration(seconds: 5), () => '{"machine": "treadmill"}'),
+      );
+      await expectLater(
+        svc.classifyFile(path: tmp.path),
+        throwsA(isA<VisualEquipmentException>().having(
+            (e) => '$e', 'message', contains('TimeoutException'))),
+      );
+    });
+
+    test('a photo above 1024px is downsized before it reaches the model',
+        () async {
+      final dir = Directory.systemTemp.createTempSync('scan');
+      final big = img.Image(width: 2000, height: 1500);
+      final path = '${dir.path}/big.jpg';
+      File(path).writeAsBytesSync(img.encodeJpg(big, quality: 90));
+
+      Uint8List? sent;
+      final svc = GeminiVisualEquipmentService(
+        index: Future.value(index),
+        ask: (bytes, _) async {
+          sent = bytes;
+          return '{"machine": "treadmill"}';
+        },
+      );
+      await svc.classifyFile(path: path);
+      final decoded = img.decodeImage(sent!)!;
+      expect(decoded.width, lessThanOrEqualTo(1024));
+      expect(decoded.height, lessThanOrEqualTo(1024));
+    });
+
+    test('an unreadable image falls back to the original bytes, not a throw',
+        () async {
+      final tmp = File(
+          '${Directory.systemTemp.createTempSync('scan').path}/junk.jpg');
+      tmp.writeAsBytesSync([1, 2, 3, 4, 5]);
+      Uint8List? sent;
+      final svc = GeminiVisualEquipmentService(
+        index: Future.value(index),
+        ask: (bytes, _) async {
+          sent = bytes;
+          return '{"machine": "treadmill"}';
+        },
+      );
+      await svc.classifyFile(path: tmp.path);
+      expect(sent, [1, 2, 3, 4, 5]);
     });
   });
 
