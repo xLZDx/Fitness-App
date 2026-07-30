@@ -1,11 +1,12 @@
 import 'visual_equipment_match.dart';
 
-/// One settled reading of what the camera is pointed at.
+/// One reading of what the camera is pointed at.
 class LiveRecognition {
   const LiveRecognition({
     required this.equipmentId,
     required this.confidence,
     required this.agreement,
+    this.settled = true,
   });
 
   final String equipmentId;
@@ -16,6 +17,13 @@ class LiveRecognition {
   /// Share of the buffered frames that agreed, 0..1. Low agreement means
   /// the camera is still moving or the machine is ambiguous.
   final double agreement;
+
+  /// True when the smoother's window, agreement and confidence bars are all
+  /// met. A tentative (false) reading is feedback, not an answer: the UI
+  /// shows it as "possibly …" and nothing records it to history. The
+  /// operator's defect was a spinner with NO feedback for as long as the
+  /// bars stayed unmet — which on a hard scene is forever.
+  final bool settled;
 }
 
 /// Majority-vote smoother over the last N frames.
@@ -30,7 +38,10 @@ class LiveRecognition {
 /// desktop test runner, this is not.
 class RecognitionSmoother {
   RecognitionSmoother({
-    this.window = 10,
+    // 6, not 10: at the labeler's real cadence a 10-frame window meant
+    // several seconds before ANY output could exist. Tentative readings
+    // (see [tentative]) cover the wait either way.
+    this.window = 6,
     this.minAgreement = 0.5,
     this.minConfidence = 0.30,
   })  : assert(window > 0),
@@ -82,6 +93,34 @@ class RecognitionSmoother {
       equipmentId: bestId,
       confidence: meanConfidence,
       agreement: agreement,
+    );
+  }
+
+  /// The current leader with no bars applied, or null when nothing in the
+  /// buffer matched anything. `settled` is always false here.
+  ///
+  /// This is what the UI shows while [add] keeps returning null, so a hard
+  /// scene degrades to "possibly: X · 23%" instead of an infinite spinner.
+  LiveRecognition? get tentative {
+    final votes = <String, List<double>>{};
+    for (final m in _buffer) {
+      if (m == null) continue;
+      votes.putIfAbsent(m.equipmentId, () => <double>[]).add(m.confidence);
+    }
+    if (votes.isEmpty) return null;
+    var bestId = '';
+    var bestVotes = <double>[];
+    for (final entry in votes.entries) {
+      if (entry.value.length > bestVotes.length) {
+        bestId = entry.key;
+        bestVotes = entry.value;
+      }
+    }
+    return LiveRecognition(
+      equipmentId: bestId,
+      confidence: bestVotes.reduce((a, b) => a + b) / bestVotes.length,
+      agreement: bestVotes.length / window,
+      settled: false,
     );
   }
 

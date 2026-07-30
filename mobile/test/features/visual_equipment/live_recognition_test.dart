@@ -60,5 +60,44 @@ void main() {
       s.reset();
       expect(s.add(_m('bench', 0.9)), isNull, reason: 'window restarted');
     });
+
+    test('a settled reading is marked settled', () {
+      final s = RecognitionSmoother(window: 2);
+      s.add(_m('bench', 0.9));
+      final r = s.add(_m('bench', 0.9));
+      expect(r!.settled, isTrue);
+    });
+
+    group('tentative', () {
+      // The operator's defect: live mode showed a spinner and NOTHING else for
+      // as long as the vote stayed below its bars — on a hard scene, forever.
+      // The tentative leader is what the UI shows during that wait.
+      test('names the leader before the window is full', () {
+        final s = RecognitionSmoother(window: 6);
+        s.add(_m('leg_press', 0.4));
+        final t = s.tentative;
+        expect(t, isNotNull);
+        expect(t!.equipmentId, 'leg_press');
+        expect(t.settled, isFalse);
+        expect(t.confidence, closeTo(0.4, 1e-9),
+            reason: 'real score, not renormalised');
+      });
+
+      test('names the leader even when the settled vote keeps failing', () {
+        final s = RecognitionSmoother(window: 4, minConfidence: 0.5);
+        for (var i = 0; i < 8; i++) {
+          expect(s.add(_m('bench', 0.2)), isNull, reason: 'mean 0.2 < 0.5');
+        }
+        expect(s.tentative!.equipmentId, 'bench');
+        expect(s.tentative!.settled, isFalse);
+      });
+
+      test('is null when nothing has matched', () {
+        final s = RecognitionSmoother(window: 4);
+        s.add(null);
+        s.add(null);
+        expect(s.tentative, isNull);
+      });
+    });
   });
 }

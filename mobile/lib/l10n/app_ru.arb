@@ -306,5 +306,8 @@
   "scannerWeIdentifyTheEquipmentOnDevice": "Мы распознаём тренажёр прямо на устройстве и подбираем упражнения с учётом вашей анкеты и прошлых травм. QR-наклейки на тренажёрах считываются автоматически, пока камера открыта.",
   "notificationsWorkoutInMinutes": "Тренировка через {arg0} мин",
   "aiplannerMinMuscles": "{arg0} мин · {arg1}",
-  "formcheckFlagged": "Ошибки: {arg0}"
+  "formcheckFlagged": "Ошибки: {arg0}",
+  "scannerPossibly": "Возможно: {arg0} · {arg1}%",
+  "scannerKeepAiming": "Продолжайте наводить рамку на тренажёр",
+  "scannerNotSureClosest": "Не уверен — самое похожее"
 }

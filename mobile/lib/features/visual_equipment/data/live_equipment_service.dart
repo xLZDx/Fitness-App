@@ -10,8 +10,10 @@ import 'visual_equipment_match.dart';
 /// lifecycle, same broadcast-stream shape — because that pattern already
 /// survives the camera-plugin quirks on real devices.
 abstract class LiveEquipmentService {
-  /// Settled readings only. The implementation smooths raw per-frame guesses
-  /// so this never flickers between candidates.
+  /// Smoothed readings. `settled == true` means the majority vote passed its
+  /// agreement + confidence bars; `settled == false` is the current leader,
+  /// emitted so the UI can show progress instead of a bare spinner. Consumers
+  /// that ACT on a reading (history, navigation) must check `settled`.
   Stream<LiveRecognition> recognitions();
 
   /// Idempotent: safe to call when already running.
@@ -54,10 +56,11 @@ class MockLiveEquipmentService implements LiveEquipmentService {
     _smoother.reset();
   }
 
-  /// Simulate one classified frame.
+  /// Simulate one classified frame. Mirrors the real service: a settled
+  /// reading when the vote passes its bars, else the tentative leader.
   void feed(VisualMatch? top) {
-    final settled = _smoother.add(top);
-    if (settled != null) _ctrl.add(settled);
+    final reading = _smoother.add(top) ?? _smoother.tentative;
+    if (reading != null) _ctrl.add(reading);
   }
 
   Future<void> dispose() => _ctrl.close();

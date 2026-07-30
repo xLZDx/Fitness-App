@@ -93,7 +93,7 @@ class MlKitVisualEquipmentService implements VisualEquipmentService {
         labelHint: l.label,
       ));
     }
-    return normaliseAndTopK(raw, limit: topK);
+    return rankTopK(raw, limit: topK);
   }
 
   Future<void> dispose() async {

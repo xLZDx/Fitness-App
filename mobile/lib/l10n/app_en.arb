@@ -688,5 +688,18 @@
         "type": "Object"
       }
     }
-  }
+  },
+  "scannerPossibly": "Possibly: {arg0} · {arg1}%",
+  "@scannerPossibly": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      },
+      "arg1": {
+        "type": "Object"
+      }
+    }
+  },
+  "scannerKeepAiming": "Keep the frame on the machine to confirm",
+  "scannerNotSureClosest": "Not sure — closest matches"
 }

@@ -283,7 +283,9 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     ref.listen<AsyncValue<LiveRecognition?>>(liveRecognitionProvider,
         (prev, next) {
       final r = next.valueOrNull;
-      if (r == null) return;
+      // Tentative readings are feedback for the user, not evidence — only a
+      // settled vote is worth remembering.
+      if (r == null || !r.settled) return;
       _remember(r.equipmentId, r.confidence, RecognitionSource.live);
     });
     return FrostedScaffold(
@@ -470,6 +472,47 @@ class _LiveCard extends StatelessWidget {
         ),
       );
     }
+    if (!r.settled) {
+      // The vote has a leader but hasn't passed its bars. Honest progress
+      // beats an infinite spinner: name the leader, show its REAL numbers,
+      // still let the user tap through if they can see it's right.
+      return GlassCard(
+        key: const Key('scan-live-tentative'),
+        onTap: () => onOpen(r.equipmentId),
+        child: Row(
+          children: [
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.of(context).scannerPossibly(
+                        r.equipmentId.replaceAll('_', ' '),
+                        (r.confidence * 100).toStringAsFixed(0)),
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  Text(
+                    AppLocalizations.of(context).scannerKeepAiming,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded),
+          ],
+        ),
+      );
+    }
     return GlassCard(
       key: const Key('scan-live-result'),
       onTap: () => onOpen(r.equipmentId),
@@ -511,14 +554,23 @@ class _Matches extends StatelessWidget {
   final Future<void> Function(String equipmentId) onOpen;
   final List<VisualMatch> matches;
 
+  /// Below this the header stops claiming "best matches" and says the app is
+  /// not sure. With honest (un-renormalised) confidences a weak top match is
+  /// visible again — the old pipeline inflated any lone survivor to 100%.
+  static const _unsureBelow = 0.45;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final unsure =
+        matches.isEmpty || matches.first.confidence < _unsureBelow;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppLocalizations.of(context).scannerBestMatches,
+          unsure
+              ? AppLocalizations.of(context).scannerNotSureClosest
+              : AppLocalizations.of(context).scannerBestMatches,
           style: theme.textTheme.titleMedium
               ?.copyWith(fontWeight: FontWeight.w800),
         ),

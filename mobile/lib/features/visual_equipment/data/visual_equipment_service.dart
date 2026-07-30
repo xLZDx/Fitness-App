@@ -38,11 +38,11 @@ class MockVisualEquipmentService implements VisualEquipmentService {
     int topK = 3,
   }) async {
     if (fixedResults.isNotEmpty) {
-      return normaliseAndTopK(fixedResults, limit: topK);
+      return rankTopK(fixedResults, limit: topK);
     }
     // Deterministic seed based on path length so tests are stable.
     final id = (path.length % 4 == 0) ? 'squat_rack' : 'barbell';
-    return normaliseAndTopK([
+    return rankTopK([
       VisualMatch(equipmentId: id, confidence: 0.7),
       VisualMatch(equipmentId: 'kettlebell', confidence: 0.2),
       VisualMatch(equipmentId: 'dumbbell', confidence: 0.1),

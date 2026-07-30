@@ -169,6 +169,33 @@ void main() {
       expect(find.byKey(const Key('scan-live-result')), findsNothing);
     });
 
+    testWidgets('an unsettled vote shows the tentative leader, not a spinner',
+        (tester) async {
+      // The reported defect: live mode produced NOTHING but a spinner. While
+      // the vote is below its bars the UI must still name the current leader
+      // with its real score.
+      final svc = MockLiveEquipmentService(
+        smoother: RecognitionSmoother(window: 4, minConfidence: 0.5),
+      );
+      addTearDown(svc.dispose);
+
+      await pumpScan(tester, overrides: [
+        liveEquipmentServiceProvider.overrideWithValue(svc),
+        liveModeEnabledProvider.overrideWith((_) => true),
+      ]);
+
+      // One weak frame: window not full, confidence bar unmet.
+      svc.feed(const VisualMatch(equipmentId: 'leg_press', confidence: 0.2));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(find.byKey(const Key('scan-live-tentative')), findsOneWidget);
+      expect(find.byKey(const Key('scan-live-result')), findsNothing);
+      expect(find.textContaining('leg press'), findsOneWidget);
+      expect(find.textContaining('20'), findsWidgets,
+          reason: 'the leader is shown with its real 20% score');
+    });
+
     testWidgets('live mode shows searching, then the settled recognition',
         (tester) async {
       final svc = MockLiveEquipmentService(

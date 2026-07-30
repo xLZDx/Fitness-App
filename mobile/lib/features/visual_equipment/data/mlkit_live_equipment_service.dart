@@ -115,8 +115,11 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
           );
         }
       }
-      final settled = _smoother.add(top);
-      if (settled != null && !_ctrl.isClosed) _ctrl.add(settled);
+      // Settled if the vote passed its bars, otherwise the current leader as
+      // a tentative reading — so the UI always has SOMETHING to show and a
+      // hard scene never reads as an infinite spinner.
+      final reading = _smoother.add(top) ?? _smoother.tentative;
+      if (reading != null && !_ctrl.isClosed) _ctrl.add(reading);
     } on PlatformException catch (e) {
       // The native labeler rejected the call — a broken model, an unsupported
       // format, a dead detector. This does NOT recover on the next frame, so
