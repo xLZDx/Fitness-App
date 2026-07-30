@@ -723,5 +723,6 @@
     }
   },
   "aiCoachRetry": "Try again",
-  "aiCoachDisclaimer": "AI-generated guidance — not medical advice. Stop on sharp pain."
+  "aiCoachDisclaimer": "AI-generated guidance — not medical advice. Stop on sharp pain.",
+  "scannerMyMachines": "My machines"
 }

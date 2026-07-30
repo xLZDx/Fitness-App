@@ -9,6 +9,8 @@ import 'package:fitness_app/core/camera/camera_session.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/scanner/scanner_page.dart';
 import 'package:fitness_app/features/visual_equipment/data/live_equipment_service.dart';
+import 'package:fitness_app/features/visual_equipment/data/recognition_history.dart';
+import 'package:fitness_app/features/visual_equipment/state/recognition_history_providers.dart';
 import 'package:fitness_app/features/visual_equipment/data/live_recognition.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_match.dart';
 import 'package:fitness_app/features/visual_equipment/state/live_equipment_providers.dart';
@@ -180,6 +182,47 @@ void main() {
       expect(find.text('treadmill'), findsOneWidget);
     });
 
+    testWidgets('remembered machines surface as "My machines" chips',
+        (tester) async {
+      // Point 9: the history store was written on every recognition but no
+      // screen ever read it. The chips route back to the machine's page.
+      final repo = MockRecognitionHistoryRepository();
+      addTearDown(repo.dispose);
+      await repo.record(RecognitionEntry(
+        equipmentId: 'leg_press',
+        recognisedAt: DateTime.utc(2026, 7, 30, 12),
+        confidence: 0.9,
+        source: RecognitionSource.photo,
+      ));
+      await repo.record(RecognitionEntry(
+        equipmentId: 'treadmill',
+        recognisedAt: DateTime.utc(2026, 7, 30, 13),
+        confidence: 0.8,
+        source: RecognitionSource.live,
+      ));
+
+      await pumpScan(tester, overrides: [
+        recognitionHistoryRepositoryProvider.overrideWithValue(repo),
+      ]);
+      await tester.pump();
+
+      await tester.scrollUntilVisible(
+          find.byKey(const Key('scan-history')), 200);
+      expect(find.text('My machines'), findsOneWidget);
+      expect(find.byKey(const Key('scan-history-treadmill')), findsOneWidget);
+      expect(find.byKey(const Key('scan-history-leg_press')), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('scan-history-treadmill')));
+      await tester.pumpAndSettle();
+      expect(find.text('equipment treadmill'), findsOneWidget,
+          reason: 'a chip routes back to the machine page');
+    });
+
+    testWidgets('no history means no section at all', (tester) async {
+      await pumpScan(tester);
+      expect(find.byKey(const Key('scan-history')), findsNothing);
+    });
+
     testWidgets('live mode is off by default and shows no live card',
         (tester) async {
       await pumpScan(tester);
@@ -242,7 +285,13 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
 
       expect(find.byKey(const Key('scan-live-result')), findsOneWidget);
-      expect(find.text('rowing machine'), findsOneWidget);
+      // Scoped to the card: the settled reading is also written to history,
+      // so a "My machines" chip with the same name legitimately appears too.
+      expect(
+          find.descendant(
+              of: find.byKey(const Key('scan-live-result')),
+              matching: find.text('rowing machine')),
+          findsOneWidget);
       expect(find.textContaining('100% of frames agree'), findsOneWidget);
     });
   });

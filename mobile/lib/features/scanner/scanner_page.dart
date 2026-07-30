@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/camera/camera_session.dart';
 import '../../core/camera/centre_crop.dart';
 import '../../core/theme/app_palette.dart';
+import '../equipment/state/equipment_providers.dart';
 import '../../shared/widgets/glass.dart';
 import '../visual_equipment/data/live_recognition.dart';
 import '../visual_equipment/data/recognition_history.dart';
@@ -390,9 +391,63 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                   ? _HintCard(theme: theme, noMatch: _attempted)
                   : _Matches(matches: list, onOpen: _openEquipment),
             ),
+            const SizedBox(height: 20),
+            _HistorySection(onOpen: _openEquipment),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// "My machines" — every machine this user has ever identified, newest
+/// first, one tap back to its exercises. The store existed and was written
+/// on every recognition; this is the first UI that READS it (operator
+/// point 9: "сохраняй все распознанные тренажёры").
+class _HistorySection extends ConsumerWidget {
+  const _HistorySection({required this.onOpen});
+  final Future<void> Function(String equipmentId) onOpen;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final entries = ref.watch(recognitionHistoryProvider).valueOrNull;
+    if (entries == null || entries.isEmpty) return const SizedBox.shrink();
+
+    // Catalog names are localized; while the catalog is still loading (or
+    // for ids from older builds) fall back to a prettified id rather than
+    // hiding the row.
+    final names = <String, String>{
+      for (final eq
+          in ref.watch(equipmentListProvider).valueOrNull ?? const [])
+        eq.id: eq.name,
+    };
+
+    return Column(
+      key: const Key('scan-history'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context).scannerMyMachines,
+          style:
+              theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final e in entries.take(12))
+              ActionChip(
+                key: Key('scan-history-${e.equipmentId}'),
+                avatar: const Icon(Icons.history, size: 16),
+                label: Text(
+                    names[e.equipmentId] ?? e.equipmentId.replaceAll('_', ' ')),
+                onPressed: () => onOpen(e.equipmentId),
+              ),
+          ],
+        ),
+      ],
     );
   }
 }
