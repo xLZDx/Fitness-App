@@ -23,7 +23,6 @@ import '../../features/marketplace/marketplace_page.dart';
 import '../../features/onboarding/onboarding_page.dart';
 import '../../features/progress_photos/progress_photos_page.dart';
 import '../../features/social_feed/social_feed_page.dart';
-import '../../features/visual_equipment/visual_equipment_page.dart';
 import '../../features/profile/data/profile_repository.dart';
 import '../../features/profile/profile_page.dart';
 import '../../features/profile/state/profile_providers.dart';
@@ -251,10 +250,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/form-check',
         pageBuilder: (_, __) => _fadeThrough(const FormCheckPage()),
-      ),
-      GoRoute(
-        path: '/recognise',
-        pageBuilder: (_, __) => _fadeThrough(const VisualEquipmentPage()),
       ),
       GoRoute(
         path: '/contribute',

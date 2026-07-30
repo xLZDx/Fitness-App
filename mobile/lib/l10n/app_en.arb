@@ -218,10 +218,6 @@
   "subscriptionSustainer": "Sustainer",
   "subscriptionTrialFeaturesStayOnPastThe": "Trial features stay on past the trial only with an active recurring donation. Cancel any time from the donor portal.",
   "subscriptionWeReANonprofitSubscriptionsAre": "We're a nonprofit. Subscriptions are recurring donations — they keep the app safety-paywall-free for everyone.",
-  "visualequipmentPickPhoto": "Pick photo",
-  "visualequipmentRecogniseEquipment": "Recognise equipment",
-  "visualequipmentTakePhoto": "Take photo",
-  "visualequipmentUseThisWhenTheGymHasn": "Use this when the gym hasn't put up QR stickers yet — snap a photo of the machine, we'll guess the model on-device. Nothing leaves your phone.",
   "workoutsBarWeight": "Bar weight",
   "workoutsHowDidThatFeel": "How did that feel?",
   "workoutsOnDevicePoseCheck": "On-device pose check",
@@ -592,14 +588,6 @@
         "type": "Object"
       },
       "arg1": {
-        "type": "Object"
-      }
-    }
-  },
-  "visualequipmentCouldNotClassify": "Could not classify: {arg0}",
-  "@visualequipmentCouldNotClassify": {
-    "placeholders": {
-      "arg0": {
         "type": "Object"
       }
     }

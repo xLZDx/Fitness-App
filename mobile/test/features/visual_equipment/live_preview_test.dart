@@ -182,6 +182,24 @@ void main() {
       expect(offenders, isEmpty);
     });
 
+    test('no raw-bytes classification path anywhere', () {
+      // The retired /recognise page fed encoded JPEG through
+      // InputImage.fromBytes with hardcoded 640x480 NV21 metadata; on-device
+      // ML Kit rejected it with InputImageConverterError (operator screenshot
+      // 2026-07-30). Only the file route decodes format + EXIF correctly, so
+      // a bytes-based classify API must not come back.
+      final offenders = <String>[];
+      for (final f in Directory('lib').listSync(recursive: true)) {
+        if (f is! File || !f.path.endsWith('.dart')) continue;
+        final src = code(f.readAsStringSync());
+        if (src.contains('classifyBytes') ||
+            src.contains('classify(imageBytes')) {
+          offenders.add(f.path);
+        }
+      }
+      expect(offenders, isEmpty);
+    });
+
     test('mobile_scanner is gone', () {
       // It was a second camera stack: it held the device whenever live mode was
       // off, and every handover was a stop, a 250ms sleep, and a hope.

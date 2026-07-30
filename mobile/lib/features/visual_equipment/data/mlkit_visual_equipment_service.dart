@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
-import 'dart:ui' show Size;
 
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart'
     as mlkit;
@@ -63,51 +61,23 @@ class MlKitVisualEquipmentService implements VisualEquipmentService {
   }
 
   @override
-  Future<List<VisualMatch>> classify({
-    required List<int> imageBytes,
-    int topK = 3,
-  }) async {
-    try {
-      final labeler = await _ensureLabeler();
-      final inputImage = mlkit.InputImage.fromBytes(
-        bytes: Uint8List.fromList(imageBytes),
-        metadata: mlkit.InputImageMetadata(
-          // Best-effort defaults; in real use the camera plugin gives us
-          // a CameraImage with proper rotation/format and we'd construct
-          // the metadata from that.
-          size: const Size(640, 480),
-          rotation: mlkit.InputImageRotation.rotation0deg,
-          format: Platform.isAndroid
-              ? mlkit.InputImageFormat.nv21
-              : mlkit.InputImageFormat.bgra8888,
-          bytesPerRow: 640,
-        ),
-      );
-      final labels = await labeler.processImage(inputImage);
-      return _toMatches(labels, topK);
-    } catch (e) {
-      // Deliberately NOT swallowed into an empty list: "the model failed to
-      // load" and "no equipment in this photo" must not look identical to
-      // the user. The controller turns this into an error state the Scan
-      // tab renders with the reason; an empty list now means "no match".
-      throw VisualEquipmentException('$e');
-    }
-  }
-
-  @override
   Future<List<VisualMatch>> classifyFile({
     required String path,
     int topK = 3,
   }) async {
     try {
       final labeler = await _ensureLabeler();
-      // fromFilePath lets the platform decode JPEG/PNG + EXIF rotation —
-      // the raw-bytes route above assumes an NV21 camera frame and
-      // produces garbage for picked photos.
+      // fromFilePath lets the platform decode JPEG/PNG + EXIF rotation.
+      // The old raw-bytes route wrapped encoded JPEG in NV21 metadata with
+      // hardcoded 640x480 and failed on-device with InputImageConverterError.
       final labels =
           await labeler.processImage(mlkit.InputImage.fromFilePath(path));
       return _toMatches(labels, topK);
     } catch (e) {
+      // Deliberately NOT swallowed into an empty list: "the model failed to
+      // load" and "no equipment in this photo" must not look identical to
+      // the user. The controller turns this into an error state the Scan
+      // tab renders with the reason; an empty list now means "no match".
       throw VisualEquipmentException('$e');
     }
   }

@@ -13,20 +13,8 @@ class VisualEquipmentController
   @override
   AsyncValue<List<VisualMatch>> build() => const AsyncValue.data([]);
 
-  Future<void> classifyBytes(List<int> bytes) async {
-    state = const AsyncValue.loading();
-    try {
-      final r = await ref
-          .read(visualEquipmentServiceProvider)
-          .classify(imageBytes: bytes);
-      state = AsyncValue.data(r);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
-  }
-
-  /// Preferred for camera/gallery captures — the file route decodes
-  /// JPEG + EXIF rotation correctly (see VisualEquipmentService).
+  /// The file route decodes JPEG + EXIF rotation correctly
+  /// (see VisualEquipmentService — the raw-bytes route is gone).
   Future<void> classifyFilePath(String path) async {
     state = const AsyncValue.loading();
     try {

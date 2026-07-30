@@ -382,7 +382,10 @@ class _QuickToolsRow extends StatelessWidget {
               AppPalette.auroraViolet,
               AppPalette.auroraBlue,
             ],
-            onTap: () => GoRouter.of(context).push('/recognise'),
+            // The Scan tab owns the camera + classifier; the old standalone
+            // /recognise page fed raw JPEG bytes into an NV21-metadata
+            // InputImage and died with InputImageConverterError on-device.
+            onTap: () => GoRouter.of(context).go('/scan'),
           ),
         ),
       ],
