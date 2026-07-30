@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/glass.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// Pure logic separated from the widget so the countdown is unit-testable
 /// without flutter_test. Holds a remaining-seconds value + an optional
@@ -177,7 +178,9 @@ class _RestTimerState extends State<RestTimer> {
             ),
           ),
           IconButton(
-            tooltip: _ctrl.isRunning ? 'Pause' : (done ? 'Reset' : 'Start'),
+            tooltip: _ctrl.isRunning
+                ? AppLocalizations.of(context).workoutsPause
+                : (done ? AppLocalizations.of(context).workoutsReset : AppLocalizations.of(context).commonStart),
             icon: Icon(_ctrl.isRunning
                 ? Icons.pause_rounded
                 : (done ? Icons.refresh_rounded : Icons.play_arrow_rounded)),

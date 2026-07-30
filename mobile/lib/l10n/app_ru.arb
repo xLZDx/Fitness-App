@@ -226,5 +226,22 @@
   "workoutsWorkingWeight": "Рабочий вес",
   "workoutsYourRatingTunesFutureWorkoutsBoth": "Ваша оценка настраивает будущие тренировки — и рекомендуемый вес, и подборку «для вас» подстроятся так, чтобы нагрузка была впору.",
   "settingsRemindersOnBody": "Уведомление перед каждым запланированным занятием.",
-  "settingsRemindersOffBody": "Запланированные занятия сохраняются, но проходят без звука."
+  "settingsRemindersOffBody": "Запланированные занятия сохраняются, но проходят без звука.",
+  "authSigningIn": "Вход…",
+  "formcheckUnmuteCues": "Включить подсказки",
+  "formcheckMuteCues": "Выключить подсказки",
+  "profileEditYourAnswers": "Изменить ответы",
+  "profilePersonalizePlan": "Настроить план под себя",
+  "workoutsPause": "Пауза",
+  "workoutsReset": "Сброс",
+  "equipmentSaving": "Сохранение…",
+  "equipmentMarkComplete": "Отметить выполненной",
+  "equipmentScheduling": "Планирование…",
+  "equipmentScheduleForLater": "Запланировать на потом",
+  "workoutsJustTheBar": "Только гриф",
+  "recoveryApplying": "Применяем…",
+  "communityNoPostsYet": "Публикаций пока нет — заходите позже.",
+  "communitySustainerOnlyPost": "🔒  Только для покровителей",
+  "equipmentAllConflictWithInjuries": "Все упражнения на этом тренажёре конфликтуют с указанными травмами. Попробуйте другой тренажёр.",
+  "progressphotosNoPhotosYet": "Фото пока нет — станьте сторонником, чтобы отслеживать прогресс."
 }

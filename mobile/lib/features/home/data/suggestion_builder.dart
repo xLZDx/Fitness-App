@@ -39,6 +39,10 @@ class WorkoutSuggestion {
 }
 
 /// Equipment whose work is primarily cardiovascular.
+///
+/// `exercise_bike` is not in the catalog yet — listed deliberately so that
+/// adding it classifies correctly on day one instead of being silently scored
+/// as resistance work.
 const _cardioEquipment = {'treadmill', 'rowing_machine', 'exercise_bike'};
 
 /// Nothing done in this window is suggested again — repeating yesterday's

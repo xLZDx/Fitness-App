@@ -527,7 +527,7 @@ class _MarkCompleteButton extends ConsumerWidget {
               const SizedBox(width: 8),
             ],
             Text(
-              loading ? 'Saving…' : 'Mark complete',
+              loading ? AppLocalizations.of(context).equipmentSaving : AppLocalizations.of(context).equipmentMarkComplete,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w800,
@@ -684,7 +684,7 @@ class _ScheduleButton extends ConsumerWidget {
               const SizedBox(width: 8),
             ],
             Text(
-              loading ? 'Scheduling…' : 'Schedule for later',
+              loading ? AppLocalizations.of(context).equipmentScheduling : AppLocalizations.of(context).equipmentScheduleForLater,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w700,

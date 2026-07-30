@@ -82,7 +82,9 @@ class ProfilePage extends ConsumerWidget {
                   gradient: AppPalette.tileGradients[1],
                   title:
                       onboarded ? 'Health questionnaire' : 'Complete questionnaire',
-                  subtitle: onboarded ? 'Edit your answers' : 'Personalize your plan',
+                  subtitle: onboarded
+                      ? AppLocalizations.of(context).profileEditYourAnswers
+                      : AppLocalizations.of(context).profilePersonalizePlan,
                   onTap: () => context.go('/onboarding'),
                 ),
                 _divider(context),

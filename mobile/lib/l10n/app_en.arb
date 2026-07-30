@@ -240,5 +240,22 @@
   "workoutsWorkingWeight": "Working weight",
   "workoutsYourRatingTunesFutureWorkoutsBoth": "Your rating tunes future workouts — both the suggested weight and the recommended-for-you feed adjust to keep the challenge right where it should be.",
   "settingsRemindersOnBody": "A notification before each scheduled session.",
-  "settingsRemindersOffBody": "Scheduled sessions are saved but stay silent."
+  "settingsRemindersOffBody": "Scheduled sessions are saved but stay silent.",
+  "authSigningIn": "Signing in…",
+  "formcheckUnmuteCues": "Unmute cues",
+  "formcheckMuteCues": "Mute cues",
+  "profileEditYourAnswers": "Edit your answers",
+  "profilePersonalizePlan": "Personalize your plan",
+  "workoutsPause": "Pause",
+  "workoutsReset": "Reset",
+  "equipmentSaving": "Saving…",
+  "equipmentMarkComplete": "Mark complete",
+  "equipmentScheduling": "Scheduling…",
+  "equipmentScheduleForLater": "Schedule for later",
+  "workoutsJustTheBar": "Just the bar",
+  "recoveryApplying": "Applying...",
+  "communityNoPostsYet": "No posts yet — check back soon.",
+  "communitySustainerOnlyPost": "🔒  Sustainer-only post",
+  "equipmentAllConflictWithInjuries": "Every exercise on this machine conflicts with your reported injuries. Try a different piece of equipment.",
+  "progressphotosNoPhotosYet": "No photos yet — become a Supporter to start tracking."
 }

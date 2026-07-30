@@ -8,6 +8,7 @@ import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import 'data/form_classifier.dart';
 import 'data/mlkit_pose_detector_service.dart';
+import 'data/pose_detector_service.dart';
 import 'data/rep_counter.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
@@ -31,6 +32,12 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
   bool _started = false;
   Object? _startError;
 
+  /// Captured at first use so dispose() can release the camera WITHOUT touching
+  /// `ref`. Reading a provider from dispose() throws "Cannot use ref after the
+  /// widget was disposed" — found by the on-device suite, invisible to the
+  /// widget tests because they never unmount this page.
+  PoseDetectorService? _service;
+
   @override
   void initState() {
     super.initState();
@@ -41,7 +48,9 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
   void _startDetector() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
-        await ref.read(poseDetectorServiceProvider).start();
+        final svc = ref.read(poseDetectorServiceProvider);
+        _service = svc;
+        await svc.start();
         if (!mounted) return;
         setState(() {
           _started = true;
@@ -62,7 +71,10 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
-      ref.read(poseDetectorServiceProvider).stop();
+      final PoseDetectorService svc =
+          _service ?? ref.read(poseDetectorServiceProvider);
+      _service = svc;
+      svc.stop();
       if (mounted) setState(() => _started = false);
     } else if (state == AppLifecycleState.resumed && mounted && !_started) {
       _startDetector();
@@ -76,7 +88,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     // second visit to this page works. (It used to leave `_initialised` true,
     // which made every later start() a silent no-op — the feature was dead
     // after the first visit and the front camera stayed held.)
-    ref.read(poseDetectorServiceProvider).stop();
+    _service?.stop();
     super.dispose();
   }
 
@@ -99,7 +111,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
         actions: [
           IconButton(
             icon: Icon(muted ? Icons.volume_off : Icons.volume_up),
-            tooltip: muted ? 'Unmute cues' : 'Mute cues',
+            tooltip: muted ? AppLocalizations.of(context).formcheckUnmuteCues : AppLocalizations.of(context).formcheckMuteCues,
             onPressed: () =>
                 ref.read(voiceMutedProvider.notifier).state = !muted,
           ),

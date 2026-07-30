@@ -146,7 +146,7 @@ class _PlateCalculatorState extends State<PlateCalculator> {
                 const SizedBox(height: 4),
                 Text(
                   load.platesPerSide.isEmpty
-                      ? 'Just the bar'
+                      ? AppLocalizations.of(context).workoutsJustTheBar
                       : load.platesPerSide
                           .map((p) => p == p.truncateToDouble()
                               ? '${p.toInt()}kg'

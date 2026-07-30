@@ -90,7 +90,7 @@ class LoginPage extends ConsumerWidget {
                           : () => ref
                               .read(authActionProvider.notifier)
                               .signInAnonymously(),
-                      label: isLoading ? 'Signing in…' : 'Continue',
+                      label: isLoading ? AppLocalizations.of(context).authSigningIn : AppLocalizations.of(context).commonContinue,
                       icon: Icons.arrow_forward_rounded,
                       loading: isLoading,
                     ),

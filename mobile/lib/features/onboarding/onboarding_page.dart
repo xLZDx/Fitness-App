@@ -175,7 +175,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                                   ),
                                 )
                               : Text(
-                                  isLast ? 'Finish' : 'Next',
+                                  isLast ? AppLocalizations.of(context).commonDone : AppLocalizations.of(context).commonNext,
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w700,

@@ -124,7 +124,7 @@ class _PhotosGrid extends StatelessWidget {
       return GlassCard(
         child: Text(
           locked
-              ? 'No photos yet — become a Supporter to start tracking.'
+              ? AppLocalizations.of(context).progressphotosNoPhotosYet
               : 'No photos yet. Tap below to take your first one.',
           style: Theme.of(context).textTheme.bodyMedium,
         ),

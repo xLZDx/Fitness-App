@@ -101,7 +101,7 @@ class DeloadBanner extends ConsumerWidget {
                           : const Icon(Icons.check_rounded, size: 18),
                       label: Text(
                         action.isLoading
-                            ? 'Applying...'
+                            ? AppLocalizations.of(context).recoveryApplying
                             : 'Accept deload (50% volume × 7d)',
                         overflow: TextOverflow.ellipsis,
                       ),

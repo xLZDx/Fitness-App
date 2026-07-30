@@ -131,7 +131,7 @@ class EquipmentDetailPage extends ConsumerWidget {
                       GlassCard(
                         child: Text(
                           rec.hiddenForInjury > 0
-                              ? 'Every exercise on this machine conflicts with your reported injuries. Try a different piece of equipment.'
+                              ? AppLocalizations.of(context).equipmentAllConflictWithInjuries
                               : 'No curated exercises yet for this machine.',
                           style: theme.textTheme.bodyMedium,
                         ),

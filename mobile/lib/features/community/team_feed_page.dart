@@ -49,7 +49,7 @@ class TeamFeedPage extends ConsumerWidget {
                 return GlassCard(
                   child: Text(
                     isPremium
-                        ? 'No posts yet — check back soon.'
+                        ? AppLocalizations.of(context).communityNoPostsYet
                         : 'Become a Sustainer to read what your coach is sharing.',
                     style: theme.textTheme.bodyMedium,
                   ),
@@ -184,7 +184,7 @@ class _PostCard extends ConsumerWidget {
             const SizedBox(height: 4),
           ],
           Text(
-            locked ? '🔒  Sustainer-only post' : post.body,
+            locked ? AppLocalizations.of(context).communitySustainerOnlyPost : post.body,
             style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
           ),
           if (!locked) ...[
