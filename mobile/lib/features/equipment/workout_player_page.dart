@@ -86,12 +86,16 @@ class WorkoutPlayerPage extends ConsumerWidget {
               _Hero(exercise: item),
               const SizedBox(height: 16),
               // A real clip wins when the catalog has one; otherwise the
-              // bundled start/end frames loop as the demo. Only when there is
-              // neither do we show the "no demo" card.
+              // start/end frames loop as the demo -- bundled assets for the
+              // original 66, network stills (same public-domain source) for
+              // everything added in the round-4 catalog expansion. Only when
+              // there is neither do we show the "no demo" card.
               if (item.videoUrl != null)
                 _VideoBlock(url: item.videoUrl!)
               else if (item.frames.isNotEmpty)
                 ExerciseDemo(frames: item.frames)
+              else if (item.imageUrls.isNotEmpty)
+                ExerciseDemo(frames: item.imageUrls)
               else
                 _NoVideoFallback(),
               if (item.muscles.isNotEmpty) ...[

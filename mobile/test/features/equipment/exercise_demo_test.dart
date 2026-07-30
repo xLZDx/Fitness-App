@@ -114,6 +114,22 @@ void main() {
       await tester.pump(const Duration(seconds: 2));
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('an http(s) frame uses Image.network, not Image.asset',
+        (tester) async {
+      // Round 4 (S0): 120 imported exercises ship network-hosted stills
+      // instead of bundled assets, to avoid repeating the APK-size
+      // regression a full 2-photo-per-exercise bundle caused. A single pump
+      // is enough -- the widget tree is built synchronously; the fetch
+      // itself is never awaited here.
+      const url = 'https://raw.githubusercontent.com/example/x/0.jpg';
+      await tester.pumpWidget(_wrap(const ExerciseDemo(frames: [url])));
+      await tester.pump();
+
+      final images = tester.widgetList<Image>(find.byType(Image));
+      expect(images, isNotEmpty);
+      expect(images.first.image, isA<NetworkImage>());
+    });
   });
 
   group('MuscleMap', () {
@@ -172,6 +188,26 @@ void main() {
       });
       expect(item.frames, hasLength(2));
       expect(item.primaryMuscles, ['quads']);
+    });
+
+    test('imageUrls parses and survives withText unchanged', () {
+      final item = ExerciseItem.fromJson(const {
+        'id': 'x',
+        'title': 'X',
+        'equipmentId': 'treadmill',
+        'muscles': ['quads'],
+        'difficulty': 'beginner',
+        'durationMinutes': 8,
+        'summary': 's',
+        'steps': ['a'],
+        'imageUrls': ['https://example.com/0.jpg', 'https://example.com/1.jpg'],
+      });
+      expect(item.imageUrls, hasLength(2));
+      expect(item.frames, isEmpty);
+      final translated =
+          item.withText(title: 'Х', summary: 'с', steps: const ['а']);
+      expect(translated.imageUrls, item.imageUrls,
+          reason: 'a translation must not touch imagery, same as frames');
     });
 
     test('older entries without frames still parse', () {

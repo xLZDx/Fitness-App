@@ -130,6 +130,83 @@ void main() {
     });
   });
 
+  group('Free Exercise DB expansion (round 4, S0)', () {
+    final ruExercises = (jsonDecode(
+            File('assets/data/exercises.ru.json').readAsStringSync()) as Map)
+        .cast<String, dynamic>();
+    final imported = exercises.where((e) => (e['id'] as String).startsWith('fedb_'));
+
+    test('closed most of the previously-empty machines', () {
+      // Round 3 shipped 32 registry ids with zero curated exercises
+      // (operator screenshot: Elliptical -> "No curated exercises yet").
+      final byId = <String, int>{};
+      for (final e in exercises) {
+        final id = e['equipmentId'] as String?;
+        if (id != null) byId[id] = (byId[id] ?? 0) + 1;
+      }
+      final stillEmpty = equipmentIds.where((id) => (byId[id] ?? 0) == 0).length;
+      expect(stillEmpty, lessThan(15),
+          reason: 'S0 must close most of the 32 machines that had zero '
+              'exercises after round 3');
+    });
+
+    test('every imported exercise has a Russian translation', () {
+      for (final e in imported) {
+        expect(ruExercises, contains(e['id']),
+            reason: '${e['id']} missing from exercises.ru.json');
+        final entry = ruExercises[e['id']] as Map;
+        expect((entry['title'] as String).trim(), isNotEmpty);
+        expect((entry['steps'] as List), isNotEmpty);
+      }
+    });
+
+    test('every imported exercise has non-empty muscles from our vocabulary',
+        () {
+      const vocab = {'adductors', 'back', 'biceps', 'calves', 'chest', 'core',
+          'forearms', 'glutes', 'hamstrings', 'lats', 'lower_back', 'quads',
+          'shoulders', 'traps', 'triceps'};
+      for (final e in imported) {
+        final muscles = (e['muscles'] as List).cast<String>();
+        expect(muscles, isNotEmpty, reason: '${e['id']} has no muscles');
+        expect(vocab, containsAll(muscles),
+            reason: '${e['id']} uses an unmapped muscle name: $muscles');
+      }
+    });
+
+    test('every imported exercise points at a real id or bodyweight', () {
+      for (final e in imported) {
+        final id = e['equipmentId'];
+        if (id != null) expect(equipmentIds, contains(id));
+      }
+    });
+
+    test('images are network URLs from the vendored public-domain source',
+        () {
+      for (final e in imported) {
+        final urls = (e['imageUrls'] as List).cast<String>();
+        expect(urls, isNotEmpty);
+        for (final u in urls) {
+          expect(u, startsWith(
+              'https://raw.githubusercontent.com/yuhonas/free-exercise-db/'));
+        }
+        // frames stays empty for imported entries -- no bundled assets were
+        // added, avoiding the APK-size regression a full bundle would cause.
+        expect(e['frames'], isEmpty);
+      }
+    });
+
+    test('no exact-title duplicate was imported over the existing catalog',
+        () {
+      final titles = exercises.map((e) => (e['title'] as String).toLowerCase());
+      final counts = <String, int>{};
+      for (final t in titles) {
+        counts[t] = (counts[t] ?? 0) + 1;
+      }
+      final dupes = counts.entries.where((e) => e.value > 1).toList();
+      expect(dupes, isEmpty, reason: 'duplicate titles: $dupes');
+    });
+  });
+
   group('equipment translation overlay', () {
     test('applies name + description, keeps structure', () {
       const base = [

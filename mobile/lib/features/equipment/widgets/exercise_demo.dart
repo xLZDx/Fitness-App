@@ -179,21 +179,53 @@ class _ExerciseDemoState extends State<ExerciseDemo>
 
 class _Frame extends StatelessWidget {
   const _Frame({required this.asset});
+
+  /// A bundled asset path, OR an http(s) URL. Catalog entries added after
+  /// the original 66-exercise bundle (Free Exercise DB round 2, 2026-07-30)
+  /// ship as network stills rather than bundled assets -- 120+ more
+  /// exercises x 2 photos each would repeat the APK-size regression the
+  /// first bundle caused.
   final String asset;
+
+  bool get _isNetwork => asset.startsWith('http');
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    Widget errorBuilder(BuildContext _, Object __, StackTrace? ___) => Center(
+          child: Text(
+            AppLocalizations.of(context).equipmentDemoUnavailable,
+            style: theme.textTheme.bodySmall,
+          ),
+        );
+    if (_isNetwork) {
+      return Image.network(
+        asset,
+        fit: BoxFit.contain,
+        gaplessPlayback: true,
+        errorBuilder: errorBuilder,
+        loadingBuilder: (context, child, progress) =>
+            progress == null ? child : const _Warming(),
+      );
+    }
     return Image.asset(
       asset,
       fit: BoxFit.contain,
       gaplessPlayback: true,
-      errorBuilder: (_, __, ___) => Center(
-        child: Text(
-          AppLocalizations.of(context).equipmentDemoUnavailable,
-          style: theme.textTheme.bodySmall,
-        ),
-      ),
+      errorBuilder: errorBuilder,
     );
   }
+}
+
+class _Warming extends StatelessWidget {
+  const _Warming();
+
+  @override
+  Widget build(BuildContext context) => const Center(
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
 }

@@ -16,6 +16,7 @@ class ExerciseItem {
     required this.steps,
     this.videoUrl,
     this.frames = const [],
+    this.imageUrls = const [],
     this.primaryMuscles = const [],
     this.contraindications = const [],
   });
@@ -38,6 +39,14 @@ class ExerciseItem {
   /// them is how the app shows a movement without shipping video: it plays
   /// offline, weighs kilobytes, and comes from a public-domain source.
   final List<String> frames;
+
+  /// Network-hosted start/end stills for catalog entries added after the
+  /// original bundle (Free Exercise DB round 2, 2026-07-30). Not bundled
+  /// into assets on purpose: 120+ exercises x 2 photos each would repeat the
+  /// APK-size regression from the first bundle. Same public-domain source
+  /// (raw.githubusercontent.com/yuhonas/free-exercise-db) as [frames],
+  /// fetched over the network with the platform image cache instead.
+  final List<String> imageUrls;
 
   /// The muscles the movement is FOR, as opposed to [muscles], which also
   /// carries the supporting ones. Drives the muscle map's colour weighting.
@@ -62,6 +71,7 @@ class ExerciseItem {
         steps: parseSteps(j['steps']),
         videoUrl: j['videoUrl'] as String?,
         frames: List<String>.from(j['frames'] as List? ?? const []),
+        imageUrls: List<String>.from(j['imageUrls'] as List? ?? const []),
         primaryMuscles:
             List<String>.from(j['primaryMuscles'] as List? ?? const []),
         contraindications:
@@ -102,6 +112,7 @@ class ExerciseItem {
         steps: steps,
         videoUrl: videoUrl,
         frames: frames,
+        imageUrls: imageUrls,
         primaryMuscles: primaryMuscles,
         contraindications: contraindications,
       );
