@@ -25,8 +25,19 @@
  * Secrets (set via `firebase functions:secrets:set`):
  *   - STRIPE_SECRET_KEY        sk_test_... (server-only, never in the app)
  *   - STRIPE_WEBHOOK_SECRET    whsec_...   (set after the first deploy)
- *   - STRIPE_PRICE_STANDARD    price_...   (Standard tier, $9.99/mo)
- *   - STRIPE_PRICE_CELEBRITY   price_...   (Celebrity tier, $19.99/mo)
+ *   - STRIPE_PRICE_STANDARD    price_...   (Supporter, $9.99/mo)
+ *   - STRIPE_PRICE_CELEBRITY   price_...   (Sustainer, $19.99/mo)
+ *   - STRIPE_PRICE_STANDARD_ANNUAL     price_... (Supporter, $59.99/yr)
+ *   - STRIPE_PRICE_CELEBRITY_ANNUAL    price_... (Sustainer, $119.99/yr)
+ *   - STRIPE_PRICE_STANDARD_FAMILY2    price_... (Supporter 2 seats, $14.99/mo)
+ *   - STRIPE_PRICE_STANDARD_FAMILY4    price_... (Supporter 4 seats, $19.99/mo)
+ *   - STRIPE_PRICE_CELEBRITY_LIFETIME  price_... (Sustainer, $499 one-time)
+ *
+ * The five above are created by `scripts/create_prices.mjs`. Their amounts come
+ * from what the paywall already displays (mobile subscription_models.dart:16-23)
+ * — charging something other than the shown price would be a worse bug than
+ * having no price at all. Secret VERSIONS bind at DEPLOY time, so changing a
+ * secret requires a redeploy before it takes effect.
  */
 
 import * as admin from "firebase-admin";
@@ -35,6 +46,7 @@ import { onRequest } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import * as logger from "firebase-functions/logger";
 import Stripe from "stripe";
+import { tierForPriceId } from "./tiers";
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -350,14 +362,29 @@ function mapStatus(s: Stripe.Subscription.Status): string {
 
 /**
  * Determines which app tier this Stripe subscription bills.
- * `priceFor()` is the inverse of this map; if a price id isn't known
- * we default to `free` so the user is never silently upgraded.
+ *
+ * Must cover EVERY recurring price `priceFor()` can hand to Checkout, not just
+ * the two monthly ones: it used to match only STANDARD and CELEBRITY, so an
+ * annual or family subscriber paid and was then written back as tier `free`.
+ * Lifetime is deliberately absent — it is a one-time payment and arrives on
+ * `payment_intent.succeeded`, never as a Subscription.
+ *
+ * Defaulting to `free` for an unknown price stays: a price we do not recognise
+ * must never silently grant a paid tier.
  */
 function tierFromSubscription(s: Stripe.Subscription): string {
-  const priceId = s.items.data[0]?.price.id;
-  if (priceId === STRIPE_PRICE_STANDARD.value()) return "standard";
-  if (priceId === STRIPE_PRICE_CELEBRITY.value()) return "celebrityTrainer";
-  return "free";
+  return tierForPriceId(s.items.data[0]?.price.id, {
+    standard: [
+      STRIPE_PRICE_STANDARD.value(),
+      STRIPE_PRICE_STANDARD_ANNUAL.value(),
+      STRIPE_PRICE_STANDARD_FAMILY2.value(),
+      STRIPE_PRICE_STANDARD_FAMILY4.value(),
+    ],
+    celebrity: [
+      STRIPE_PRICE_CELEBRITY.value(),
+      STRIPE_PRICE_CELEBRITY_ANNUAL.value(),
+    ],
+  });
 }
 
 async function applySubscription(s: Stripe.Subscription) {
