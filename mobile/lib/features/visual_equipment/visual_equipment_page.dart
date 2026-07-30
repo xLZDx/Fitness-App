@@ -35,9 +35,13 @@ class VisualEquipmentPage extends ConsumerWidget {
           Row(
             children: [
               Expanded(
+                // Sends the user to the Scan tab instead of launching the
+                // system camera, which is what `ImageSource.camera` did here.
+                // Capture lives where the camera session lives; duplicating it
+                // on this page would mean a second owner fighting for the
+                // device.
                 child: FilledButton.icon(
-                  onPressed: () => _capture(context, ref,
-                      source: ImageSource.camera),
+                  onPressed: () => GoRouter.of(context).go('/scan'),
                   icon: const Icon(Icons.photo_camera_outlined),
                   label: Text(AppLocalizations.of(context).visualequipmentTakePhoto),
                 ),
@@ -45,8 +49,7 @@ class VisualEquipmentPage extends ConsumerWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () => _capture(context, ref,
-                      source: ImageSource.gallery),
+                  onPressed: () => _capture(context, ref),
                   icon: const Icon(Icons.photo_library_outlined),
                   label: Text(AppLocalizations.of(context).visualequipmentPickPhoto),
                 ),
@@ -85,18 +88,17 @@ class VisualEquipmentPage extends ConsumerWidget {
     );
   }
 
-  /// Pick an image (camera or gallery) and run it through the on-device
+  /// Pick an image from the gallery and run it through the on-device
   /// classifier. Image-picker returns an `XFile`; we read the bytes and
   /// hand them to the controller, which routes through ML Kit.
-  Future<void> _capture(
-    BuildContext context,
-    WidgetRef ref, {
-    required ImageSource source,
-  }) async {
+  ///
+  /// Gallery only. Camera capture happens on the Scan tab, through the live
+  /// camera session — no system-camera hand-off from anywhere in the app.
+  Future<void> _capture(BuildContext context, WidgetRef ref) async {
     final picker = ImagePicker();
     try {
       final picked = await picker.pickImage(
-        source: source,
+        source: ImageSource.gallery,
         maxWidth: 1024,
         imageQuality: 88,
       );

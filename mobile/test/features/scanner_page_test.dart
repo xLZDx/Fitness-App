@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import '../helpers/test_app.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
@@ -139,6 +140,71 @@ void main() {
       expect(find.byKey(const Key('scan-live-result')), findsOneWidget);
       expect(find.text('rowing machine'), findsOneWidget);
       expect(find.textContaining('100% of frames agree'), findsOneWidget);
+    });
+
+    testWidgets('opening a photo match releases the camera first',
+        (tester) async {
+      // Regression: the match list pushed `/equipment/:id` directly, skipping
+      // the live-mode teardown the live card did. `/equipment/:id` renders above
+      // the shell so this page is never disposed and autoDispose cannot fire —
+      // the stream kept running, camera indicator lit, behind the page the user
+      // was reading.
+      final router = GoRouter(
+        routes: [
+          GoRoute(path: '/', builder: (_, __) => const ScannerPage()),
+          GoRoute(
+            path: '/equipment/:id',
+            builder: (_, s) =>
+                Scaffold(body: Text('equipment ${s.pathParameters['id']}')),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
+      late ProviderContainer container;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            liveModeEnabledProvider.overrideWith((_) => true),
+            visualEquipmentServiceProvider.overrideWithValue(
+              MockVisualEquipmentService(fixedResults: const [
+                VisualMatch(equipmentId: 'leg_press', confidence: 0.9),
+              ]),
+            ),
+          ],
+          child: MaterialApp.router(
+            theme: AppTheme.light(),
+            locale: kTestLocale,
+            localizationsDelegates: kTestLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pump();
+      container = ProviderScope.containerOf(
+          tester.element(find.byType(ScannerPage)));
+
+      await container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/machine.jpg');
+      await tester.pump();
+      expect(container.read(liveModeEnabledProvider), isTrue);
+
+      // Live mode adds a card above the results, pushing them below the fold.
+      await tester.scrollUntilVisible(find.text('leg press'), 120);
+      await tester.tap(find.text('leg press'));
+      await tester.pump();
+      expect(container.read(liveModeEnabledProvider), isFalse,
+          reason: 'camera must be released before navigating away');
+
+      // The handover waits 250ms before handing the camera back to the QR
+      // scanner, and only then pushes. A plain pumpAndSettle does not advance
+      // a pending Future.delayed.
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
+      expect(find.text('equipment leg_press'), findsOneWidget,
+          reason: 'releasing the camera must not swallow the navigation');
     });
   });
 }

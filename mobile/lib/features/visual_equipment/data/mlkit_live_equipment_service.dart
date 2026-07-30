@@ -49,9 +49,25 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
   bool _busy = false;
   bool _running = false;
 
-  /// Exposed so the Scan page can render `CameraPreview` against the same
-  /// controller this service is streaming from.
-  CameraController? get cameraController => _camera;
+  /// Published so the preview can react the instant the camera is usable.
+  ///
+  /// Assigning `_camera` alone was the black-square bug: the field flips
+  /// part-way through `start()`, which nothing in the widget tree can observe.
+  final ValueNotifier<CameraController?> _surface =
+      ValueNotifier<CameraController?>(null);
+
+  @override
+  ValueListenable<CameraController?> get cameraSurface => _surface;
+
+  /// When the last frame was handed to the labeler. Drives [_watchdog].
+  DateTime? _lastFrameAt;
+  Timer? _watchdog;
+
+  /// A live preview keeps painting the last texture even when analysis is dead,
+  /// so a stalled stream looks HEALTHIER than a broken one. Past this window
+  /// with no processed frame, say so instead of leaving the user pointing a
+  /// working-looking camera at nothing.
+  static const _frameStallAfter = Duration(seconds: 8);
 
   @override
   Stream<LiveRecognition> recognitions() => _ctrl.stream;
@@ -108,12 +124,71 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
     );
     await _camera!.initialize();
     _running = true;
+    // Publish only once initialize() has returned: a controller that is not yet
+    // initialized cannot be handed to CameraPreview.
+    _surface.value = _camera;
+    _lastFrameAt = DateTime.now();
     await _camera!.startImageStream(_onFrame);
+    _watchdog = Timer.periodic(const Duration(seconds: 2), (_) {
+      final last = _lastFrameAt;
+      if (!_running || last == null) return;
+      if (DateTime.now().difference(last) < _frameStallAfter) return;
+      _watchdog?.cancel();
+      if (!_ctrl.isClosed) {
+        _ctrl.addError(VisualEquipmentException(
+          'Камера перестала присылать кадры. Выключите и включите живой режим.',
+        ));
+      }
+      unawaited(stop());
+    });
+  }
+
+  /// Waits for the camera to become usable, or gives up.
+  ///
+  /// Used by the capture path, which can be tapped while `start()` is still in
+  /// flight. Returns null on timeout rather than throwing so the caller can
+  /// show its own message.
+  Future<CameraController?> awaitCamera({
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    bool usable() => _surface.value?.value.isInitialized ?? false;
+    if (usable()) return _surface.value;
+    final done = Completer<CameraController?>();
+    void listener() {
+      if (usable() && !done.isCompleted) done.complete(_surface.value);
+    }
+
+    _surface.addListener(listener);
+    try {
+      return await done.future.timeout(timeout, onTimeout: () => null);
+    } finally {
+      _surface.removeListener(listener);
+    }
+  }
+
+  @override
+  Future<XFile?> captureStill() async {
+    final cam = await awaitCamera();
+    if (cam == null) return null;
+    // The analysis stream is stopped around the shot deliberately. Whether
+    // takePicture() may run while startImageStream is active is plugin- and
+    // device-dependent, and nothing here needs that to be true.
+    final wasStreaming = cam.value.isStreamingImages;
+    if (wasStreaming) await cam.stopImageStream();
+    try {
+      return await cam.takePicture();
+    } finally {
+      if (wasStreaming && _running && !cam.value.isStreamingImages) {
+        _lastFrameAt = DateTime.now();
+        await cam.startImageStream(_onFrame);
+      }
+    }
   }
 
   Future<void> _onFrame(CameraImage image) async {
     if (_busy || !_running) return;
     _busy = true;
+    _lastFrameAt = DateTime.now();
     try {
       final input = _toInputImage(image);
       if (input == null) return;
@@ -185,21 +260,30 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
   Future<void> stop() async {
     _running = false;
     _smoother.reset();
+    _watchdog?.cancel();
+    _watchdog = null;
+    _lastFrameAt = null;
+    // Cleared before disposal so no listener can be handed a dead controller.
+    _surface.value = null;
     try {
       if (_camera?.value.isStreamingImages ?? false) {
         await _camera!.stopImageStream();
       }
       await _camera?.dispose();
+      _camera = null;
+      // Inside the try as well: a throw here used to escape stop() entirely,
+      // and every caller invokes it fire-and-forget.
+      await _labeler?.close();
     } catch (e) {
       debugPrint('camera shutdown: $e');
     }
     _camera = null;
-    await _labeler?.close();
     _labeler = null;
   }
 
   Future<void> dispose() async {
     await stop();
+    _surface.dispose();
     await _ctrl.close();
   }
 }
