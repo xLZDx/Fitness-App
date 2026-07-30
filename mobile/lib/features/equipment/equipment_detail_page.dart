@@ -234,6 +234,36 @@ class _ExerciseCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    // Transparency for the operator's "полностью заполняем
+                    // карточку тренажёра" ask: real vendored exercises and
+                    // AI-generated fallbacks must not look identical.
+                    if (exercise.id.startsWith('ai::')) ...[
+                      Container(
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.auto_awesome,
+                                size: 11, color: theme.colorScheme.primary),
+                            const SizedBox(width: 3),
+                            Text(
+                              AppLocalizations.of(context).equipmentAiTag,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
                     Text(
                       AppLocalizations.of(context).equipmentMin(exercise.durationMinutes),
                       style: theme.textTheme.labelSmall?.copyWith(

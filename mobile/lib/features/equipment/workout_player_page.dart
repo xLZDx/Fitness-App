@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../core/settings/state/settings_providers.dart';
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
@@ -41,6 +42,23 @@ int _restSecondsFor(ExerciseItem item) {
 /// helper so we don't need a separate FutureProvider just for this page.
 final _exerciseByIdProvider =
     FutureProvider.family<ExerciseItem?, String>((ref, id) async {
+  // AI-generated exercise ids are 'ai::<equipmentId>::<index>' — they live
+  // only in the generated-exercise cache, never in the base repo, so they
+  // need their own lookup path rather than the linear scan below.
+  if (id.startsWith('ai::')) {
+    final parts = id.split('::');
+    if (parts.length != 3) return null;
+    final equipmentId = parts[1];
+    final lang = ref.watch(effectiveLanguageCodeProvider);
+    final cached =
+        await ref.watch(generatedExerciseRepositoryProvider).get(equipmentId, lang);
+    if (cached == null) return null;
+    for (final e in cached) {
+      if (e.id == id) return e;
+    }
+    return null;
+  }
+
   final repo = ref.watch(equipmentRepositoryProvider);
   // Iterate every equipment + bodyweight pool — we only have a few hundred.
   final all = <ExerciseItem>[

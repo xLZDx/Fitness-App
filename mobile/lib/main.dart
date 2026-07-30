@@ -41,6 +41,7 @@ import 'features/subscription/data/firestore_subscription_repository.dart';
 import 'features/subscription/state/subscription_providers.dart';
 import 'features/visual_equipment/data/firestore_recognition_history.dart';
 import 'features/visual_equipment/data/mlkit_live_equipment_service.dart';
+import 'features/ai_coach/generated_exercise_repository.dart';
 import 'features/visual_equipment/data/gemini_equipment_service.dart';
 import 'features/visual_equipment/data/mlkit_visual_equipment_service.dart';
 import 'features/visual_equipment/state/live_equipment_providers.dart';
@@ -159,6 +160,12 @@ Future<void> main() async {
         // machine, newest sighting wins).
         recognitionHistoryRepositoryProvider
             .overrideWith((_) => FirestoreRecognitionHistoryRepository()),
+
+        // AI-generated exercises for machines the vendored catalog has
+        // nothing for -- cached per (user, machine, language) so a machine
+        // is billed to Gemini once, not on every page visit.
+        generatedExerciseRepositoryProvider
+            .overrideWith((_) => FirestoreGeneratedExerciseRepository()),
 
         // Marketplace — Stripe Connect via Cloud Functions.
         coachMarketplaceServiceProvider
