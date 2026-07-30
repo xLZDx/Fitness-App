@@ -42,19 +42,7 @@ class EquipmentDetailPage extends ConsumerWidget {
               GlassCard(
                 child: Row(
                   children: [
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(18),
-                        gradient: const LinearGradient(colors: [
-                          AppPalette.auroraViolet,
-                          AppPalette.auroraBlue,
-                        ]),
-                      ),
-                      child: const Icon(Icons.fitness_center,
-                          color: Colors.white, size: 30),
-                    ),
+                    _EquipmentThumb(equipmentId: item.id),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
@@ -192,6 +180,58 @@ class EquipmentDetailPage extends ConsumerWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// Machine thumbnail: a real photograph of the machine in use when the
+/// catalog has one, the gradient-and-icon placeholder when it does not.
+///
+/// The placeholder is deliberately still there rather than hidden: 11
+/// mostly-cardio machines have no vendored photo at all, and an empty slot
+/// would read as a broken image.
+class _EquipmentThumb extends ConsumerWidget {
+  const _EquipmentThumb({required this.equipmentId});
+  final String equipmentId;
+
+  static const _size = 56.0;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hero = ref.watch(equipmentHeroImageProvider(equipmentId)).valueOrNull;
+    final radius = BorderRadius.circular(18);
+    final placeholder = Container(
+      width: _size,
+      height: _size,
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        gradient: const LinearGradient(colors: [
+          AppPalette.auroraViolet,
+          AppPalette.auroraBlue,
+        ]),
+      ),
+      child: const Icon(Icons.fitness_center, color: Colors.white, size: 30),
+    );
+    if (hero == null) return placeholder;
+    return ClipRRect(
+      borderRadius: radius,
+      child: SizedBox(
+        width: _size,
+        height: _size,
+        child: hero.startsWith('http')
+            ? Image.network(
+                hero,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => placeholder,
+                loadingBuilder: (_, child, progress) =>
+                    progress == null ? child : placeholder,
+              )
+            : Image.asset(
+                hero,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => placeholder,
+              ),
       ),
     );
   }

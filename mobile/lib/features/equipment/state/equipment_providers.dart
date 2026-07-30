@@ -127,6 +127,29 @@ final allExercisesProvider = FutureProvider<List<ExerciseItem>>((ref) async {
   return List.unmodifiable(out);
 });
 
+/// A photograph to head the machine's page, or null when nothing real
+/// exists for it.
+///
+/// Sourced from the machine's own exercises rather than from a stock-photo
+/// service: those are photographs of this exact machine being used, they are
+/// already vendored under the same public-domain licence as the rest of the
+/// catalog, and every URL is one the app already fetches. A stock-photo API
+/// would need a key, an attribution surface, and a second licence to audit —
+/// for a header image that the exercise photos already provide.
+final equipmentHeroImageProvider =
+    FutureProvider.family<String?, String>((ref, equipmentId) async {
+  final exercises =
+      await ref.watch(exercisesForEquipmentProvider(equipmentId).future);
+  for (final e in exercises) {
+    if (e.imageUrls.isNotEmpty) return e.imageUrls.first;
+  }
+  // Bundled assets are asset paths, not URLs; the widget picks the loader.
+  for (final e in exercises) {
+    if (e.frames.isNotEmpty) return e.frames.first;
+  }
+  return null;
+});
+
 /// Result of running the recommendation pipeline for a specific equipment.
 class RecommendedExercises {
   const RecommendedExercises({

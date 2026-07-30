@@ -207,6 +207,30 @@ void main() {
     });
   });
 
+  group('machine hero photos (S5)', () {
+    test('most machines can source a real photo from their own exercises',
+        () {
+      // The machine card's thumbnail comes from the machine's exercises
+      // rather than a stock-photo service -- those are photographs of the
+      // actual machine, already vendored under the catalog's licence.
+      final byEquipment = <String, List<Map<String, dynamic>>>{};
+      for (final e in exercises) {
+        final id = e['equipmentId'] as String?;
+        if (id != null) byEquipment.putIfAbsent(id, () => []).add(e);
+      }
+      var covered = 0;
+      for (final id in equipmentIds) {
+        final has = (byEquipment[id] ?? const []).any((e) =>
+            (e['imageUrls'] as List? ?? const []).isNotEmpty ||
+            (e['frames'] as List? ?? const []).isNotEmpty);
+        if (has) covered++;
+      }
+      expect(covered, greaterThanOrEqualTo(30),
+          reason: 'only $covered of ${equipmentIds.length} machines have a '
+              'photo to show');
+    });
+  });
+
   group('equipment translation overlay', () {
     test('applies name + description, keeps structure', () {
       const base = [
