@@ -293,5 +293,12 @@
   "workoutsOfWorkingWeight": "{arg0}% рабочего веса",
   "healthAsking": "Запрашиваем…",
   "healthConnectHealth": "Подключить Health",
-  "notificationsMin": "{arg0} · {arg1} мин"
+  "notificationsMin": "{arg0} · {arg1} мин",
+  "settingsLicencesAndCredits": "Лицензии и благодарности",
+  "settingsFollowTheSystem": "Как в системе",
+  "settingsThemeLight": "Светлая",
+  "settingsThemeDark": "Тёмная",
+  "licencesIntro": "В приложение включены материалы, созданные другими людьми. Их условия требуют указания авторства — оно ниже.",
+  "licencesOpenPackageLicences": "Лицензии open-source библиотек",
+  "licencesLegalese": "Авторство включённых материалов указано выше. Полные тексты лицензий библиотек — здесь."
 }

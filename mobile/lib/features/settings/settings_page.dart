@@ -42,7 +42,7 @@ class SettingsPage extends ConsumerWidget {
                     onChanged: (v) {
                       if (v != null) controller.setThemeMode(v);
                     },
-                    title: Text(_themeLabel(mode)),
+                    title: Text(_themeLabel(context, mode)),
                     contentPadding: EdgeInsets.zero,
                     dense: true,
                   ),
@@ -63,7 +63,7 @@ class SettingsPage extends ConsumerWidget {
                     onChanged: (v) {
                       if (v != null) controller.setLanguage(v);
                     },
-                    title: Text(_languageLabel(lang)),
+                    title: Text(_languageLabel(context, lang)),
                     contentPadding: EdgeInsets.zero,
                     dense: true,
                   ),
@@ -104,21 +104,45 @@ class SettingsPage extends ConsumerWidget {
               ],
             ),
           ),
+          const SizedBox(height: 16),
+          // Not optional decoration: the bundled content ships under licences
+          // that require visible attribution. See core/licences/.
+          GlassCard(
+            key: const Key('settings-licences'),
+            onTap: () => context.push('/licences'),
+            child: Row(
+              children: [
+                Icon(Icons.description_outlined,
+                    color: theme.colorScheme.primary),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                      AppLocalizations.of(context).settingsLicencesAndCredits,
+                      style: theme.textTheme.titleMedium),
+                ),
+                const Icon(Icons.chevron_right),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  String _themeLabel(AppThemeMode mode) => switch (mode) {
-        AppThemeMode.system => 'Follow the system',
-        AppThemeMode.light => 'Light',
-        AppThemeMode.dark => 'Dark',
-      };
+  String _themeLabel(BuildContext context, AppThemeMode mode) {
+    final l = AppLocalizations.of(context);
+    return switch (mode) {
+      AppThemeMode.system => l.settingsFollowTheSystem,
+      AppThemeMode.light => l.settingsThemeLight,
+      AppThemeMode.dark => l.settingsThemeDark,
+    };
+  }
 
-  String _languageLabel(AppLanguage lang) => switch (lang) {
-        AppLanguage.system => 'Follow the system',
-        // Endonyms, not English names: a user looking for their own language
-        // scans for the word they actually call it.
+  String _languageLabel(BuildContext context, AppLanguage lang) =>
+      switch (lang) {
+        AppLanguage.system => AppLocalizations.of(context).settingsFollowTheSystem,
+        // Endonyms, not English names, and never translated: a user looking for
+        // their own language scans for the word they actually call it.
         AppLanguage.ru => 'Русский',
         AppLanguage.en => 'English',
       };

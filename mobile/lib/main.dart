@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/assets/asset_bootstrap.dart';
 import 'core/health/platform_health_service.dart';
+import 'core/licences/asset_licences.dart';
 import 'core/health/state/health_providers.dart';
 import 'core/notifications/local_notification_service.dart';
 import 'core/notifications/notification_providers.dart';
@@ -72,6 +73,10 @@ Future<void> main() async {
   // flash the wrong theme and the wrong language before settling.
   final settingsRepo = await PrefsSettingsRepository.open();
   final settings = await settingsRepo.load();
+
+  // Publish bundled-asset licences so they appear in showLicensePage. Cheap:
+  // the entries are generated lazily, only when that page is opened.
+  registerAssetLicences();
 
   // Copy any bundled ML models out of the APK into the docs dir so
   // ML Kit's LocalLabelerOptions can read them by absolute path.

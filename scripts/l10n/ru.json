@@ -253,5 +253,12 @@
   "workoutsKgReps": "{arg0} кг × {arg1} повт.",
   "workoutsOfWorkingWeight": "{arg0}% рабочего веса",
   "workoutsCouldNotLoadWorkouts": "Не удалось загрузить тренировки: {arg0}",
-  "notificationsMin": "{arg0} · {arg1} мин"
+  "notificationsMin": "{arg0} · {arg1} мин",
+  "settingsLicencesAndCredits": "Лицензии и благодарности",
+  "settingsFollowTheSystem": "Как в системе",
+  "settingsThemeLight": "Светлая",
+  "settingsThemeDark": "Тёмная",
+  "licencesIntro": "В приложение включены материалы, созданные другими людьми. Их условия требуют указания авторства — оно ниже.",
+  "licencesOpenPackageLicences": "Лицензии open-source библиотек",
+  "licencesLegalese": "Авторство включённых материалов указано выше. Полные тексты лицензий библиотек — здесь."
 }

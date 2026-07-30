@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/about/about_page.dart';
+import '../../features/licences/licences_page.dart';
 import '../../features/ai_planner/ai_planner_page.dart';
 import '../../features/auth/data/auth_user.dart';
 import '../../features/auth/login_page.dart';
@@ -37,7 +38,9 @@ import '../../shared/widgets/main_shell.dart';
 final _rootKey = GlobalKey<NavigatorState>();
 final _shellKey = GlobalKey<NavigatorState>();
 
-const _publicPaths = {'/splash', '/login', '/about', '/donors'};
+// /licences is public: an attribution surface that requires a login is not a
+// usable attribution surface.
+const _publicPaths = {'/splash', '/login', '/about', '/donors', '/licences'};
 
 /// Pure redirect resolution. Exposed for tests so the routing logic can be
 /// validated without spinning up the full widget tree.
@@ -210,6 +213,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/about',
         pageBuilder: (_, __) => _fadeThrough(const AboutPage()),
+      ),
+      GoRoute(
+        path: '/licences',
+        pageBuilder: (_, __) => _fadeThrough(const LicencesPage()),
       ),
       GoRoute(
         path: '/settings',
