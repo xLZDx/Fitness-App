@@ -82,7 +82,7 @@ rest are pushed full-screen.
 | `marketplace` | 4 | 405 | Coach marketplace |
 | `progress` | 2 | 400 | Charts + stats over logged workouts |
 | `visual_equipment` | 13 | ~1,300 | Equipment recognition data layer: Gemini cloud recogniser (`gemini_equipment_service.dart`, Firebase AI Logic) with on-device TFLite fallback, live smoother, recognition history. Rendered by `scanner` |
-| `ai_coach` | 2 | ~250 | Gemini-backed technique advice sheet, opened from every equipment page |
+| `ai_coach` | 4 | ~600 | Gemini-backed technique advice sheet (opened from every equipment page) + AI exercise generator with a per-(user, machine, language) Firestore cache, used only for machines the vendored catalog has nothing for |
 | `social_feed` | 4 | 333 | Social activity feed |
 | `ai_planner` | 4 | 326 | AI-generated training plan (`/plan`) |
 | `about` | 1 | 287 | About / info page |
@@ -139,7 +139,7 @@ every scroll tick, which cost the frame budget for decoration.)
 
 | Path | Files | Role |
 |---|---:|---|
-| `mobile/test/` | 98 | Unit + widget tests, 680 of them. Runs on the host via `flutter test` |
+| `mobile/test/` | 103 | Unit + widget tests, 721 of them. Runs on the host via `flutter test` |
 | `mobile/integration_test/` | 1 | `app_test.dart` — drives the real app on a device; the only place the native ML Kit bridge and the actual APK contents are visible. Needs hardware |
 | `mobile/android/` | 19 | Android host + Gradle |
 | `mobile/assets/` | 4 | Bundled data, ML models, demo frames, and the CC BY 4.0 anatomy chart |
