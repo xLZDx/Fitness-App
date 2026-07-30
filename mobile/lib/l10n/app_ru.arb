@@ -310,5 +310,12 @@
   "scannerPossibly": "Возможно: {arg0} · {arg1}%",
   "scannerKeepAiming": "Продолжайте наводить рамку на тренажёр",
   "scannerNotSureClosest": "Не уверен — самое похожее",
-  "equipmentNoCuratedYet": "Для этого тренажёра пока нет подобранных упражнений — спросите AI-тренера ниже."
+  "equipmentNoCuratedYet": "Для этого тренажёра пока нет подобранных упражнений — спросите AI-тренера ниже.",
+  "aiCoachButton": "AI-тренер",
+  "aiCoachButtonHint": "Техника, ошибки и с чего начать на этом тренажёре",
+  "aiCoachTitle": "AI-тренер — {arg0}",
+  "aiCoachThinking": "Думаю…",
+  "aiCoachFailed": "Тренер недоступен: {arg0}",
+  "aiCoachRetry": "Повторить",
+  "aiCoachDisclaimer": "Советы сгенерированы ИИ — это не медицинская рекомендация. При острой боли остановитесь."
 }

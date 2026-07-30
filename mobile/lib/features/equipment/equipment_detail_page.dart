@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../ai_coach/ai_coach_sheet.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../workouts/widgets/plate_calculator.dart';
@@ -109,6 +110,41 @@ class EquipmentDetailPage extends ConsumerWidget {
                         },
                       ),
                     ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              // The visible AI: one tap, machine-specific technique advice in
+              // the interface language. Recognition may also be cloud-backed,
+              // but this is where the user can SEE an AI working for them.
+              GlassCard(
+                key: const Key('equipment-ai-coach'),
+                onTap: () =>
+                    AiCoachSheet.show(context, machineName: item.name),
+                child: Row(
+                  children: [
+                    const Icon(Icons.auto_awesome),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context).aiCoachButton,
+                            style: theme.textTheme.titleSmall
+                                ?.copyWith(fontWeight: FontWeight.w800),
+                          ),
+                          Text(
+                            AppLocalizations.of(context).aiCoachButtonHint,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.65),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded),
                   ],
                 ),
               ),

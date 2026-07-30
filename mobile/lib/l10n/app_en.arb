@@ -702,5 +702,26 @@
   },
   "scannerKeepAiming": "Keep the frame on the machine to confirm",
   "scannerNotSureClosest": "Not sure — closest matches",
-  "equipmentNoCuratedYet": "No curated exercises for this machine yet — ask the AI coach below for ideas."
+  "equipmentNoCuratedYet": "No curated exercises for this machine yet — ask the AI coach below for ideas.",
+  "aiCoachButton": "AI coach",
+  "aiCoachButtonHint": "Technique, mistakes and where to start on this machine",
+  "aiCoachTitle": "AI coach — {arg0}",
+  "@aiCoachTitle": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "aiCoachThinking": "Thinking…",
+  "aiCoachFailed": "The coach is unavailable: {arg0}",
+  "@aiCoachFailed": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "aiCoachRetry": "Try again",
+  "aiCoachDisclaimer": "AI-generated guidance — not medical advice. Stop on sharp pain."
 }

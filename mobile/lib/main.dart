@@ -41,6 +41,7 @@ import 'features/subscription/data/firestore_subscription_repository.dart';
 import 'features/subscription/state/subscription_providers.dart';
 import 'features/visual_equipment/data/firestore_recognition_history.dart';
 import 'features/visual_equipment/data/mlkit_live_equipment_service.dart';
+import 'features/visual_equipment/data/gemini_equipment_service.dart';
 import 'features/visual_equipment/data/mlkit_visual_equipment_service.dart';
 import 'features/visual_equipment/data/qr_watcher.dart';
 import 'features/visual_equipment/state/live_equipment_providers.dart';
@@ -133,10 +134,16 @@ Future<void> main() async {
           return coach;
         }),
 
-        // Visual equipment recognition — ML Kit image labeler with
-        // bundled TFLite model.
-        visualEquipmentServiceProvider
-            .overrideWith((_) => MlKitVisualEquipmentService()),
+        // Visual equipment recognition — Gemini (Firebase AI Logic, key
+        // server-side) first, the bundled 10-class TFLite model as the
+        // offline fallback. The registry alias index pins cloud answers to
+        // catalog ids, so the model cannot route to a page we don't have.
+        visualEquipmentServiceProvider.overrideWith(
+          (_) => HybridVisualEquipmentService(
+            cloud: GeminiVisualEquipmentService(),
+            local: MlKitVisualEquipmentService(),
+          ),
+        ),
 
         // Live (continuous) recognition. Attaches the labeler to the Scan
         // tab's camera session -- it owns no camera of its own, so the QR
