@@ -112,3 +112,66 @@ marketplace, moderation, celebrity plans, contribute, photos, planner, moments).
   otherwise its future never completes and the test hangs.
 * Text renders as grey boxes in `flutter test` renders — no font is loaded there.
   That is the harness, not the widget.
+
+---
+
+## Final state (2026-07-30) — all nine gates closed
+
+| Gate | Commit | Proof |
+|---|---|---|
+| 8 RU | `7d10288` | 208 keys / 40 files via committed tooling; +15 keys in `7f7eecf`; completeness guard test |
+| device fixes | `7f7eecf` | ref-after-dispose in FormCheckPage + 13 ternary-hidden strings |
+| 9 E2E | `87b8bc9` | **8/8 on Pixel API 34** |
+| release | `60e21f9` | 1.0.0+5 |
+
+Host suite **579/579**. Analyzer: the same 4 pre-existing issues, unchanged all day.
+
+### What the on-device suite proved that the host suite could not
+
+* live recognition runs with no `ImageFormat is not supported.` (gate 1)
+* all **132** demo frames load from the installed APK via `rootBundle` (gate 3)
+* the 4.3 MB recognition model is in the APK, not a placeholder
+* the muscle map's `Path.combine` clipping survives a real graphics backend
+* the language switch retranslates a live UI
+* and it found a real crash the host suite structurally could not see:
+  `FormCheckPage.dispose()` reading a provider after disposal.
+
+### l10n tooling — how to continue
+
+```
+python scripts/l10n/extract_strings.py     # refresh spec (keeps existing ru)
+# fill scripts/l10n/ru.json
+python scripts/l10n/apply_strings.py       # patch call sites + ARB
+python scripts/l10n/fix_const.py           # analyzer-driven const cleanup
+```
+
+Invariant to preserve: **the English ARB value equals the old literal byte for
+byte**, so host tests that assert English keep passing.
+
+Known extractor blind spots (both bit once already, both now documented in the
+script): literals behind a ternary (`label: x ? 'a' : 'b'`) and prose in `body:`
+arguments.
+
+### Still English, by decision
+
+* `about_page` principles + 3 seed-data repositories (celebrity plans, donor
+  tiers, injury protocols) — prose lives in `body:` args; translated headings
+  over English paragraphs read worse than consistent English.
+* 65 interpolated strings — need ARB placeholders.
+
+### Operator actions still outstanding
+
+1. Firebase Console -> Authentication -> enable the Google provider.
+2. Samsung Health -> Settings -> Health Connect -> allow.
+3. Create the 5 annual/family/lifetime Stripe prices **and fix
+   `tierFromSubscription`** at the same time (functions/src/index.ts:356-361
+   matches only the two monthly price ids, so an annual subscriber would be
+   written as tier `free`).
+4. Deferred from the 2026-07-29 review, still open: Firestore rules for
+   `donor_wall` (Donor Wall page will hit permission-denied),
+   `payment_intent.payment_failed` unhandled, Node 20 runtime decommissioned
+   2026-10-30.
+
+### Push status
+
+**30 commits local, zero pushed.** No `push` has ever been given for any of them.
