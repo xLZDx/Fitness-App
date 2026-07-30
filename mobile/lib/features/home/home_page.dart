@@ -244,7 +244,7 @@ class _TodayCard extends StatelessWidget {
                         ?.copyWith(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 2),
                 Text(
-                  '${formatScheduleLabel(next.scheduledFor)} · ${next.durationMinutes} min',
+                  AppLocalizations.of(context).notificationsMin(formatScheduleLabel(next.scheduledFor), next.durationMinutes),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: scheme.onSurface.withValues(alpha: 0.60),
                   ),
@@ -302,7 +302,7 @@ class _UpcomingCard extends StatelessWidget {
                         ?.copyWith(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 2),
                 Text(
-                  '${formatScheduleLabel(session.scheduledFor)} · ${session.durationMinutes} min',
+                  AppLocalizations.of(context).notificationsMin(formatScheduleLabel(session.scheduledFor), session.durationMinutes),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: scheme.onSurface.withValues(alpha: 0.60),
                   ),
@@ -385,7 +385,7 @@ class _SuggestionCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      '${s.durationMinutes} min',
+                      AppLocalizations.of(context).equipmentMin(s.durationMinutes),
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: scheme.onSurface.withValues(alpha: 0.55),
                         fontWeight: FontWeight.w600,

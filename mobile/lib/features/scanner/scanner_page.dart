@@ -159,7 +159,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Could not capture: $e')));
+          .showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).scannerCouldNotCapture(e))));
     } finally {
       _handling = false;
     }
@@ -272,8 +272,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                   ? GlassCard(
                       key: const Key('scan-live-error'),
                       tint: theme.colorScheme.error,
-                      child: Text('Live recognition failed: '
-                          '${liveAsync.error}'),
+                      child: Text(AppLocalizations.of(context).scannerLiveRecognitionFailed(liveAsync.error ?? '')),
                     )
                   : _LiveCard(
                       recognition: live,
@@ -297,7 +296,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
               ),
               error: (e, _) => GlassCard(
                 tint: theme.colorScheme.error,
-                child: Text('Recognition failed: $e'),
+                child: Text(AppLocalizations.of(context).scannerRecognitionFailed(e)),
               ),
               data: (list) => list.isEmpty
                   ? _HintCard(theme: theme, noMatch: _attempted)
@@ -398,8 +397,7 @@ class _LiveCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${(r.confidence * 100).toStringAsFixed(0)}% · '
-                  '${(r.agreement * 100).toStringAsFixed(0)}% of frames agree',
+                  AppLocalizations.of(context).scannerOfFramesAgree((r.confidence * 100).toStringAsFixed(0), (r.agreement * 100).toStringAsFixed(0)),
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
                   ),
@@ -445,7 +443,7 @@ class _Matches extends StatelessWidget {
                             ?.copyWith(fontWeight: FontWeight.w800),
                       ),
                       Text(
-                        '${(m.confidence * 100).toStringAsFixed(0)}% confidence',
+                        AppLocalizations.of(context).scannerConfidence((m.confidence * 100).toStringAsFixed(0)),
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: theme.colorScheme.onSurface
                               .withValues(alpha: 0.65),
@@ -500,8 +498,7 @@ class _CameraUnavailable extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              '${error.errorCode.name} — you can still pick a photo from the '
-              'gallery below.',
+              AppLocalizations.of(context).scannerYouCanStillPickAPhoto(error.errorCode.name),
               style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
               textAlign: TextAlign.center,
             ),

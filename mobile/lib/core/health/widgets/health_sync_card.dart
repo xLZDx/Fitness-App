@@ -53,7 +53,7 @@ class HealthSyncCard extends ConsumerWidget {
               loading: () => const _LoadingTile(),
               error: (e, _) => GlassCard(
                 tint: scheme.error,
-                child: Text('Health read failed: $e',
+                child: Text(AppLocalizations.of(context).healthHealthReadFailed(e),
                     style:
                         theme.textTheme.bodySmall?.copyWith(color: scheme.error)),
               ),
@@ -138,13 +138,15 @@ class _AskCard extends StatelessWidget {
                       ),
                     )
                   : const Icon(Icons.sync_rounded, size: 18),
-              label: Text(isLoading ? 'Asking…' : 'Connect Health'),
+              label: Text(isLoading
+                  ? AppLocalizations.of(context).healthAsking
+                  : AppLocalizations.of(context).healthConnectHealth),
             ),
           ),
           if (errorText != null) ...[
             const SizedBox(height: 8),
             Text(
-              'Health connect failed: $errorText',
+              AppLocalizations.of(context).healthHealthConnectFailed(errorText!),
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: scheme.error),
             ),

@@ -80,8 +80,15 @@ def main() -> None:
     entries = spec["entries"]
 
     keys = {}
+    arity: dict[str, int] = {}
     for e in entries:
         keys.setdefault(e["key"], _unescape(e["en"]))
+        n = len(e.get("args") or [])
+        if arity.setdefault(e["key"], n) != n:
+            raise SystemExit(
+                f"key {e['key']} is used with {arity[e['key']]} and {n} "
+                f"placeholders; same text, different arity"
+            )
 
     missing = sorted(k for k in keys if not ru.get(k))
     if missing:
@@ -93,11 +100,26 @@ def main() -> None:
     if extra:
         print(f"note: {len(extra)} unused ru keys: {extra[:5]}")
 
-    # ARB treats braces as placeholder syntax.
-    braced = sorted(k for k, v in keys.items() if "{" in v or "}" in v)
-    braced += sorted(k for k in keys if "{" in ru[k] or "}" in ru[k])
-    if braced:
-        raise SystemExit(f"values contain ARB placeholder braces: {braced}")
+    # ARB treats braces as placeholder syntax. Keys that genuinely take
+    # placeholders must carry EXACTLY the same set in both languages -- a
+    # Russian string that drops `{arg0}` compiles fine and silently loses the
+    # error detail it was supposed to show.
+    def placeholders(v: str) -> set[str]:
+        return set(re.findall(r"\{(\w+)\}", v))
+
+    problems: list[str] = []
+    for k, en_value in keys.items():
+        want = {f"arg{i}" for i in range(arity[k])}
+        for lang, value in (("en", en_value), ("ru", ru[k])):
+            got = placeholders(value)
+            if got != want:
+                problems.append(f"{k} [{lang}]: expected {sorted(want)}, "
+                                f"found {sorted(got)}")
+            stray = re.sub(r"\{\w+\}", "", value)
+            if "{" in stray or "}" in stray:
+                problems.append(f"{k} [{lang}]: stray brace")
+    if problems:
+        raise SystemExit("ARB placeholder problems:\n  " + "\n  ".join(problems))
 
     by_file: dict[str, list[dict]] = {}
     for e in entries:
@@ -116,9 +138,13 @@ def main() -> None:
             if e["raw"] not in src:
                 skipped.append(f"{rel}: {e['key']}")
                 continue
-            src = src.replace(
-                e["raw"], f"AppLocalizations.of(context).{e['key']}"
-            )
+            # Not named `args`: that is the argparse namespace in this scope,
+            # and shadowing it made --dry-run crash.
+            call_args = e.get("args") or []
+            call = f"AppLocalizations.of(context).{e['key']}"
+            if call_args:
+                call += "(" + ", ".join(call_args) + ")"
+            src = src.replace(e["raw"], call)
             patched_runs += 1
         if src != original:
             src = _add_import(src)
@@ -126,13 +152,22 @@ def main() -> None:
             if not args.dry_run:
                 path.write_text(src, encoding="utf-8")
 
-    # ARB files. Sorted so diffs stay readable.
+    # ARB files. Sorted so diffs stay readable. Placeholder metadata goes in the
+    # TEMPLATE only (app_en.arb) -- gen_l10n reads types from the template, and
+    # duplicating it into every locale is how the two drift apart.
     if not args.dry_run:
         for name, table in (("app_en.arb", keys), ("app_ru.arb", ru)):
             f = ARB_DIR / name
             current = json.loads(f.read_text(encoding="utf-8"))
             for k in sorted(keys):
                 current[k] = table[k]
+                if name == "app_en.arb" and arity[k]:
+                    current[f"@{k}"] = {
+                        "placeholders": {
+                            f"arg{i}": {"type": "Object"}
+                            for i in range(arity[k])
+                        }
+                    }
             f.write_text(
                 json.dumps(current, indent=2, ensure_ascii=False) + "\n",
                 encoding="utf-8",

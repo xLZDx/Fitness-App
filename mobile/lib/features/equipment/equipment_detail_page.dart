@@ -29,7 +29,7 @@ class EquipmentDetailPage extends ConsumerWidget {
         loading: () =>
             const Center(child: CircularProgressIndicator()),
         error: (e, _) =>
-            Center(child: Text('Could not load: $e')),
+            Center(child: Text(AppLocalizations.of(context).equipmentCouldNotLoad(e))),
         data: (item) {
           if (item == null) {
             return _NotFound(equipmentId: equipmentId);
@@ -123,7 +123,7 @@ class EquipmentDetailPage extends ConsumerWidget {
               ...ex.when(
                 loading: () => [const _ExerciseShimmer()],
                 error: (e, _) => [
-                  GlassCard(child: Text('Could not load exercises: $e')),
+                  GlassCard(child: Text(AppLocalizations.of(context).equipmentCouldNotLoadExercises(e))),
                 ],
                 data: (rec) {
                   if (rec.items.isEmpty) {
@@ -199,7 +199,7 @@ class _ExerciseCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${exercise.durationMinutes} min',
+                      AppLocalizations.of(context).equipmentMin(exercise.durationMinutes),
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: theme.colorScheme.onSurface
                             .withValues(alpha: 0.55),
@@ -350,7 +350,7 @@ class _NotFound extends StatelessWidget {
           children: [
             const Icon(Icons.qr_code_scanner_outlined, size: 60),
             const SizedBox(height: 8),
-            Text("We don't have $equipmentId in our catalog yet.",
+            Text(AppLocalizations.of(context).equipmentWeDonTHaveInOur(equipmentId),
                 style: theme.textTheme.titleMedium),
             const SizedBox(height: 6),
             Text(

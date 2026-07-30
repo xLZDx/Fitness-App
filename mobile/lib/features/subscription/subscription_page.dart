@@ -367,7 +367,7 @@ class _UpgradeFromTrialCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Continue as ${_labelFor(AppLocalizations.of(context))}',
+                      AppLocalizations.of(context).subscriptionContinueAs(_labelFor(AppLocalizations.of(context))),
                       style: theme.textTheme.titleMedium
                           ?.copyWith(fontWeight: FontWeight.w800),
                     ),
@@ -916,7 +916,7 @@ class _PlanCardForPeriod extends ConsumerWidget {
       return GlassCard(
         padding: const EdgeInsets.all(14),
         child: Text(
-          '$title is not available on ${period.displayLabel}.',
+          AppLocalizations.of(context).subscriptionIsNotAvailableOn(title, period.displayLabel),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
           ),

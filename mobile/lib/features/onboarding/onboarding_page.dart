@@ -93,7 +93,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     final state = ref.read(profileSubmitProvider);
     if (state.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not save profile: ${state.error}')),
+        SnackBar(content: Text(AppLocalizations.of(context).onboardingCouldNotSaveProfile(state.error ?? ''))),
       );
       return;
     }
@@ -109,7 +109,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
     return FrostedScaffold(
       appBar: GlassAppBar(
-        title: 'Step ${_index + 1} of $_stepCount · ${_titles[_index]}',
+        title: AppLocalizations.of(context).onboardingStepOf(_index + 1, _stepCount, _titles[_index]),
       ),
       body: SafeArea(
         child: Padding(

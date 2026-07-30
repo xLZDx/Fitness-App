@@ -32,7 +32,7 @@ class MarketplacePage extends ConsumerWidget {
           listAsync.when(
             loading: () =>
                 const Center(child: CircularProgressIndicator()),
-            error: (e, _) => GlassCard(child: Text('Error: $e')),
+            error: (e, _) => GlassCard(child: Text(AppLocalizations.of(context).catalogError(e))),
             data: (list) => Column(
               children: [
                 for (final c in list) ...[
@@ -105,7 +105,7 @@ class _CoachCard extends ConsumerWidget {
                     Text(coach.ratingAverage!.toStringAsFixed(1),
                         style: theme.textTheme.titleSmall
                             ?.copyWith(fontWeight: FontWeight.w800)),
-                    Text('${coach.ratingCount} reviews',
+                    Text(AppLocalizations.of(context).marketplaceReviews(coach.ratingCount),
                         style: theme.textTheme.labelSmall),
                   ],
                 ),
@@ -147,7 +147,7 @@ class _CoachCard extends ConsumerWidget {
     if (!scaffoldCtx.mounted) return;
     ScaffoldMessenger.of(scaffoldCtx).showSnackBar(
       SnackBar(
-        content: Text('Booked ${coach.displayName} (booking ${result.bookingId})'),
+        content: Text(AppLocalizations.of(context).marketplaceBookedBooking(coach.displayName, result.bookingId)),
         behavior: SnackBarBehavior.floating,
       ),
     );

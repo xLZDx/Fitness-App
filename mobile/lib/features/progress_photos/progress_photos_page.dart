@@ -42,7 +42,7 @@ class ProgressPhotosPage extends ConsumerWidget {
             ),
             error: (e, _) => GlassCard(
               tint: theme.colorScheme.error,
-              child: Text('Could not load photos: $e'),
+              child: Text(AppLocalizations.of(context).progressphotosCouldNotLoadPhotos(e)),
             ),
             data: (photos) =>
                 _PhotosGrid(photos: photos, locked: !isPaid),

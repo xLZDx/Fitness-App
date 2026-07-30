@@ -132,7 +132,7 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
           ...list.when(
             loading: () => const [_LoadingCard()],
             error: (e, _) => [
-              GlassCard(child: Text('Could not load workouts: $e')),
+              GlassCard(child: Text(AppLocalizations.of(context).workoutsCouldNotLoadWorkouts(e))),
             ],
             data: (items) {
               if (items.isEmpty) {
@@ -232,7 +232,7 @@ class _ExerciseCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      '${exercise.durationMinutes} min',
+                      AppLocalizations.of(context).equipmentMin(exercise.durationMinutes),
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: scheme.onSurface.withValues(alpha: 0.55),
                         fontWeight: FontWeight.w600,

@@ -58,7 +58,7 @@ class VisualEquipmentPage extends ConsumerWidget {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => GlassCard(
               tint: theme.colorScheme.error,
-              child: Text('Could not classify: $e'),
+              child: Text(AppLocalizations.of(context).visualequipmentCouldNotClassify(e)),
             ),
             data: (list) {
               if (list.isEmpty) {
@@ -108,7 +108,7 @@ class VisualEquipmentPage extends ConsumerWidget {
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not capture: $e')),
+        SnackBar(content: Text(AppLocalizations.of(context).scannerCouldNotCapture(e))),
       );
     }
   }
@@ -136,7 +136,7 @@ class _MatchCard extends StatelessWidget {
                       ?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 Text(
-                  '${(match.confidence * 100).toStringAsFixed(0)}% confidence',
+                  AppLocalizations.of(context).scannerConfidence((match.confidence * 100).toStringAsFixed(0)),
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: theme.colorScheme.onSurface
                         .withValues(alpha: 0.65),

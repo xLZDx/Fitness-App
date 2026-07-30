@@ -67,7 +67,7 @@ class WorkoutPlayerPage extends ConsumerWidget {
       appBar: GlassAppBar(title: AppLocalizations.of(context).equipmentWorkout),
       body: exercise.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Could not load: $e')),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context).equipmentCouldNotLoad(e))),
         data: (item) {
           if (item == null) {
             return Padding(
@@ -281,7 +281,7 @@ class _VideoBlockState extends ConsumerState<_VideoBlock> {
   Widget build(BuildContext context) {
     if (_error != null) {
       return GlassCard(
-        child: Text('Video unavailable: $_error'),
+        child: Text(AppLocalizations.of(context).equipmentVideoUnavailable(_error ?? '')),
       );
     }
     final ctrl = _ctrl;
@@ -466,7 +466,7 @@ class _MarkCompleteButton extends ConsumerWidget {
       if (newState.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Could not save: ${newState.error}'),
+            content: Text(AppLocalizations.of(context).equipmentCouldNotSave(newState.error ?? '')),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -475,7 +475,7 @@ class _MarkCompleteButton extends ConsumerWidget {
       // Success — confirm + show rest timer.
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Logged "${exercise.title}" — nice work.'),
+          content: Text(AppLocalizations.of(context).equipmentLoggedNiceWork(exercise.title)),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -642,7 +642,7 @@ class _ScheduleButton extends ConsumerWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                  'Scheduled "${exercise.title}" for ${_friendlyDate(when)}.'),
+                  AppLocalizations.of(context).equipmentScheduledFor(exercise.title, _friendlyDate(when))),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -650,7 +650,7 @@ class _ScheduleButton extends ConsumerWidget {
         error: (e, _) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Could not schedule: $e'),
+              content: Text(AppLocalizations.of(context).equipmentCouldNotSchedule(e)),
               behavior: SnackBarBehavior.floating,
             ),
           );

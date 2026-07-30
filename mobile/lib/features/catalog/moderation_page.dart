@@ -21,7 +21,7 @@ class CatalogModerationPage extends ConsumerWidget {
       appBar: GlassAppBar(title: AppLocalizations.of(context).catalogModerationQueue),
       body: pending.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context).catalogError(e))),
         data: (list) {
           if (list.isEmpty) {
             return Center(
@@ -61,7 +61,7 @@ class _SubmissionCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Exercise: ${video.exerciseId}',
+          Text(AppLocalizations.of(context).catalogExercise(video.exerciseId),
               style: theme.textTheme.titleSmall
                   ?.copyWith(fontWeight: FontWeight.w800)),
           const SizedBox(height: 4),
@@ -72,12 +72,12 @@ class _SubmissionCard extends ConsumerWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'by ${video.contributorDisplay}',
+            AppLocalizations.of(context).catalogBy(video.contributorDisplay),
             style: theme.textTheme.labelSmall,
           ),
           if (video.notes != null) ...[
             const SizedBox(height: 6),
-            Text('Note: ${video.notes!}'),
+            Text(AppLocalizations.of(context).catalogNote(video.notes!)),
           ],
           const SizedBox(height: 12),
           Row(

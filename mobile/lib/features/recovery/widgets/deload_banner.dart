@@ -125,7 +125,7 @@ class DeloadBanner extends ConsumerWidget {
             if (action.hasError) ...[
               const SizedBox(height: 8),
               Text(
-                'Could not apply deload: ${action.error}',
+                AppLocalizations.of(context).recoveryCouldNotApplyDeload(action.error ?? ''),
                 style:
                     theme.textTheme.labelSmall?.copyWith(color: scheme.error),
               ),

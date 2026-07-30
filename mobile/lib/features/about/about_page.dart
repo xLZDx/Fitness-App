@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -10,51 +11,47 @@ import '../../shared/widgets/glass.dart';
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
 
-  static const _principles = <_Principle>[
-    _Principle(
-      icon: Icons.shield_outlined,
-      title: 'Safety is never paywalled',
-      body:
-          'Injury-aware exercise filtering, plate calculators, warm-up '
-          'ramps, and rest timers stay free for everyone — forever.',
-    ),
-    _Principle(
-      icon: Icons.medical_information_outlined,
-      title: 'Open clinical content',
-      body:
-          'Our exercise library is reviewed against open-source movement-'
-          'screening guidelines. A licensed DPT signs off on each entry '
-          'before it ships.',
-    ),
-    _Principle(
-      icon: Icons.volunteer_activism_outlined,
-      title: 'Celebrities give in kind',
-      body:
-          'Workouts from professional trainers and athletes are donated '
-          'as in-kind tax-deductible contributions, not paid endorsements.',
-    ),
-    _Principle(
-      icon: Icons.lock_open_outlined,
-      title: 'No data resale, ever',
-      body:
-          'We do not sell health data and do not run third-party ad '
-          'trackers. Funding comes from donors, grants, and gym partners.',
-    ),
-  ];
+  // Built per-locale rather than held as `static const`: the text is now a
+  // runtime lookup, and a const list cannot contain one. Taking
+  // AppLocalizations directly (not BuildContext) keeps it obvious that these
+  // are pure functions of the active locale.
+  static List<_Principle> _principles(AppLocalizations l) => <_Principle>[
+        _Principle(
+          icon: Icons.shield_outlined,
+          title: l.aboutSafetyIsNeverPaywalled,
+          body: l.aboutInjuryAwareExerciseFilteringPlateCalculators,
+        ),
+        _Principle(
+          icon: Icons.medical_information_outlined,
+          title: l.aboutOpenClinicalContent,
+          body: l.aboutOurExerciseLibraryIsReviewedAgainst,
+        ),
+        _Principle(
+          icon: Icons.volunteer_activism_outlined,
+          title: l.aboutCelebritiesGiveInKind,
+          body: l.aboutWorkoutsFromProfessionalTrainersAndAthletes,
+        ),
+        _Principle(
+          icon: Icons.lock_open_outlined,
+          title: l.aboutNoDataResaleEver,
+          body: l.aboutWeDoNotSellHealthData,
+        ),
+      ];
 
-  static const _useOfFunds = <_FundLine>[
-    _FundLine(label: 'Hosting + email + tooling', percent: 35),
-    _FundLine(label: 'Clinical / physio review', percent: 25),
-    _FundLine(label: 'Community video moderation', percent: 20),
-    _FundLine(label: 'Operations + compliance', percent: 15),
-    _FundLine(label: 'Fiscal sponsor overhead', percent: 5),
-  ];
+  static List<_FundLine> _useOfFunds(AppLocalizations l) => <_FundLine>[
+        _FundLine(label: l.aboutHostingEmailTooling, percent: 35),
+        _FundLine(label: l.aboutClinicalPhysioReview, percent: 25),
+        _FundLine(label: l.aboutCommunityVideoModeration, percent: 20),
+        _FundLine(label: l.aboutOperationsCompliance, percent: 15),
+        _FundLine(label: l.aboutFiscalSponsorOverhead, percent: 5),
+      ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     return FrostedScaffold(
-      appBar: const GlassAppBar(title: 'Our mission'),
+      appBar: GlassAppBar(title: l.aboutOurMission),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
@@ -78,17 +75,13 @@ class AboutPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Fitness for everyone, safely.',
+                  AppLocalizations.of(context).aboutFitnessForEveryoneSafely,
                   style: theme.textTheme.headlineSmall
                       ?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "We're a nonprofit fitness org running on a fiscal-"
-                  'sponsorship arrangement (501(c)(3) application '
-                  'pending). Our goal: make rehab-grade exercise '
-                  'guidance available to anyone with a phone, '
-                  'regardless of ability to pay.',
+                  AppLocalizations.of(context).aboutWeReANonprofitFitnessOrg,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color:
                         theme.colorScheme.onSurface.withValues(alpha: 0.75),
@@ -100,18 +93,18 @@ class AboutPage extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            'Our principles',
+            AppLocalizations.of(context).aboutOurPrinciples,
             style: theme.textTheme.titleLarge
                 ?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 12),
-          for (final p in _principles) ...[
+          for (final p in _principles(l)) ...[
             _PrincipleCard(p),
             const SizedBox(height: 10),
           ],
           const SizedBox(height: 24),
           Text(
-            'How donations are used',
+            AppLocalizations.of(context).aboutHowDonationsAreUsed,
             style: theme.textTheme.titleLarge
                 ?.copyWith(fontWeight: FontWeight.w800),
           ),
@@ -120,7 +113,7 @@ class AboutPage extends StatelessWidget {
             padding: const EdgeInsets.all(18),
             child: Column(
               children: [
-                for (final f in _useOfFunds) ...[
+                for (final f in _useOfFunds(l)) ...[
                   _FundBar(line: f),
                   const SizedBox(height: 10),
                 ],
@@ -128,9 +121,7 @@ class AboutPage extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Approximate, year-1 conservative budget. '
-                    'Audited financials posted annually after our '
-                    '501(c)(3) approval.',
+                    AppLocalizations.of(context).aboutApproximateYear1ConservativeBudgetAudited,
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: theme.colorScheme.onSurface
                           .withValues(alpha: 0.55),
@@ -148,7 +139,7 @@ class AboutPage extends StatelessWidget {
                   onPressed: () =>
                       GoRouter.of(context).push('/subscription'),
                   icon: const Icon(Icons.favorite_outline),
-                  label: const Text('Support the mission'),
+                  label: Text(AppLocalizations.of(context).aboutSupportTheMission),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
@@ -164,7 +155,7 @@ class AboutPage extends StatelessWidget {
             child: TextButton.icon(
               onPressed: () => GoRouter.of(context).push('/donors'),
               icon: const Icon(Icons.people_alt_outlined, size: 18),
-              label: const Text('See our donor wall'),
+              label: Text(AppLocalizations.of(context).aboutSeeOurDonorWall),
             ),
           ),
         ],

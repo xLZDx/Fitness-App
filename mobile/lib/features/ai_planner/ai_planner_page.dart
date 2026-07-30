@@ -39,7 +39,7 @@ class AiPlannerPage extends ConsumerWidget {
             ),
             error: (e, _) => GlassCard(
               tint: theme.colorScheme.error,
-              child: Text('Could not generate: $e'),
+              child: Text(AppLocalizations.of(context).aiplannerCouldNotGenerate(e)),
             ),
             data: (plan) {
               if (plan == null) {
@@ -83,8 +83,7 @@ class AiPlannerPage extends ConsumerWidget {
                                           ?.copyWith(
                                               fontWeight: FontWeight.w800)),
                                   Text(
-                                    '${plan.estimatedMinutes} min · '
-                                    'intensity ${(plan.intensityFactor * 100).round()}%',
+                                    AppLocalizations.of(context).aiplannerMinIntensity(plan.estimatedMinutes, (plan.intensityFactor * 100).round()),
                                     style:
                                         theme.textTheme.bodySmall?.copyWith(
                                       color: theme.colorScheme.onSurface

@@ -100,7 +100,7 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
                       Expanded(
                         child: Center(
                           child: Text(
-                            '${_working.toStringAsFixed(_working == _working.truncateToDouble() ? 0 : 1)} kg',
+                            AppLocalizations.of(context).workoutsKg(_working.toStringAsFixed(_working == _working.truncateToDouble() ? 0 : 1)),
                             style: theme.textTheme.titleSmall
                                 ?.copyWith(fontWeight: FontWeight.w800),
                           ),
@@ -153,14 +153,14 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${ramp[i].kg == ramp[i].kg.truncateToDouble() ? ramp[i].kg.toInt() : ramp[i].kg} kg × ${ramp[i].reps} reps',
+                          AppLocalizations.of(context).workoutsKgReps(ramp[i].kg == ramp[i].kg.truncateToDouble() ? ramp[i].kg.toInt() : ramp[i].kg, ramp[i].reps),
                           style: theme.textTheme.titleMedium?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                         Text(
-                          '${ramp[i].percent}% of working weight',
+                          AppLocalizations.of(context).workoutsOfWorkingWeight(ramp[i].percent),
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: Colors.white.withValues(alpha: 0.80),
                           ),

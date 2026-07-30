@@ -74,7 +74,7 @@ class DonorWallPage extends ConsumerWidget {
             error: (e, _) => GlassCard(
               tint: scheme.error,
               child: Text(
-                'Could not load wall: $e',
+                AppLocalizations.of(context).donorwallCouldNotLoadWall(e),
                 style: theme.textTheme.bodyMedium
                     ?.copyWith(color: scheme.error),
               ),

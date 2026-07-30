@@ -138,7 +138,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                         child: Padding(
                           padding: const EdgeInsets.all(20),
                           child: Text(
-                            'Camera unavailable: $failure',
+                            AppLocalizations.of(context).formcheckCameraUnavailable(failure),
                             key: const Key('form-check-error'),
                             textAlign: TextAlign.center,
                             style: const TextStyle(color: Colors.white70),
@@ -243,7 +243,7 @@ class _RepBadge extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            'reps - ${repPhaseLabel(session.phase)}',
+            AppLocalizations.of(context).formcheckReps(repPhaseLabel(session.phase)),
             key: const Key('form_check.phase'),
             style: theme.textTheme.labelSmall?.copyWith(
               color: Colors.white70,
@@ -312,8 +312,7 @@ class _SetSummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '${session.cleanReps} clean - ${session.sloppyReps} need work '
-            '(${session.reps.length} total)',
+            AppLocalizations.of(context).formcheckCleanNeedWorkTotal(session.cleanReps, session.sloppyReps, session.reps.length),
             key: const Key('form_check.summary_tally'),
             style: theme.textTheme.bodyMedium
                 ?.copyWith(fontWeight: FontWeight.w700),

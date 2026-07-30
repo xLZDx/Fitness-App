@@ -264,7 +264,7 @@ class _RecentLogCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${_formatDate(log.completedAt)} · ${log.durationMinutes} min',
+                  AppLocalizations.of(context).notificationsMin(_formatDate(log.completedAt), log.durationMinutes),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: scheme.onSurface.withValues(alpha: 0.60),
                   ),

@@ -257,5 +257,399 @@
   "communityNoPostsYet": "No posts yet — check back soon.",
   "communitySustainerOnlyPost": "🔒  Sustainer-only post",
   "equipmentAllConflictWithInjuries": "Every exercise on this machine conflicts with your reported injuries. Try a different piece of equipment.",
-  "progressphotosNoPhotosYet": "No photos yet — become a Supporter to start tracking."
+  "progressphotosNoPhotosYet": "No photos yet — become a Supporter to start tracking.",
+  "aboutInjuryAwareExerciseFilteringPlateCalculators": "Injury-aware exercise filtering, plate calculators, warm-up ramps, and rest timers stay free for everyone — forever.",
+  "aboutOurExerciseLibraryIsReviewedAgainst": "Our exercise library is reviewed against open-source movement-screening guidelines. A licensed DPT signs off on each entry before it ships.",
+  "aboutWeDoNotSellHealthData": "We do not sell health data and do not run third-party ad trackers. Funding comes from donors, grants, and gym partners.",
+  "aboutWorkoutsFromProfessionalTrainersAndAthletes": "Workouts from professional trainers and athletes are donated as in-kind tax-deductible contributions, not paid endorsements.",
+  "aiplannerCouldNotGenerate": "Could not generate: {arg0}",
+  "@aiplannerCouldNotGenerate": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "aiplannerMinIntensity": "{arg0} min · intensity {arg1}%",
+  "@aiplannerMinIntensity": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      },
+      "arg1": {
+        "type": "Object"
+      }
+    }
+  },
+  "authSignInFailed": "Sign-in failed: {arg0}",
+  "@authSignInFailed": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "catalogBy": "by {arg0}",
+  "@catalogBy": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "catalogError": "Error: {arg0}",
+  "@catalogError": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "catalogExercise": "Exercise: {arg0}",
+  "@catalogExercise": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "catalogNote": "Note: {arg0}",
+  "@catalogNote": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "celebrityplansByWeeks": "by {arg0} · {arg1} weeks",
+  "@celebrityplansByWeeks": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      },
+      "arg1": {
+        "type": "Object"
+      }
+    }
+  },
+  "communityCouldNotLoadFeed": "Could not load feed: {arg0}",
+  "@communityCouldNotLoadFeed": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "donorwallCouldNotLoadWall": "Could not load wall: {arg0}",
+  "@donorwallCouldNotLoadWall": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "equipmentCouldNotLoad": "Could not load: {arg0}",
+  "@equipmentCouldNotLoad": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "equipmentCouldNotLoadExercises": "Could not load exercises: {arg0}",
+  "@equipmentCouldNotLoadExercises": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "equipmentCouldNotSave": "Could not save: {arg0}",
+  "@equipmentCouldNotSave": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "equipmentCouldNotSchedule": "Could not schedule: {arg0}",
+  "@equipmentCouldNotSchedule": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "equipmentLoggedNiceWork": "Logged \"{arg0}\" — nice work.",
+  "@equipmentLoggedNiceWork": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "equipmentMin": "{arg0} min",
+  "@equipmentMin": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "equipmentScheduledFor": "Scheduled \"{arg0}\" for {arg1}.",
+  "@equipmentScheduledFor": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      },
+      "arg1": {
+        "type": "Object"
+      }
+    }
+  },
+  "equipmentVideoUnavailable": "Video unavailable: {arg0}",
+  "@equipmentVideoUnavailable": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "equipmentWeDonTHaveInOur": "We don't have {arg0} in our catalog yet.",
+  "@equipmentWeDonTHaveInOur": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "formcheckCameraUnavailable": "Camera unavailable: {arg0}",
+  "@formcheckCameraUnavailable": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "formcheckCleanNeedWorkTotal": "{arg0} clean - {arg1} need work ({arg2} total)",
+  "@formcheckCleanNeedWorkTotal": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      },
+      "arg1": {
+        "type": "Object"
+      },
+      "arg2": {
+        "type": "Object"
+      }
+    }
+  },
+  "formcheckReps": "reps - {arg0}",
+  "@formcheckReps": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "healthHealthConnectFailed": "Health connect failed: {arg0}",
+  "@healthHealthConnectFailed": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "healthHealthReadFailed": "Health read failed: {arg0}",
+  "@healthHealthReadFailed": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "marketplaceBookedBooking": "Booked {arg0} (booking {arg1})",
+  "@marketplaceBookedBooking": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      },
+      "arg1": {
+        "type": "Object"
+      }
+    }
+  },
+  "marketplaceReviews": "{arg0} reviews",
+  "@marketplaceReviews": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "onboardingCouldNotSaveProfile": "Could not save profile: {arg0}",
+  "@onboardingCouldNotSaveProfile": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "onboardingStepOf": "Step {arg0} of {arg1} · {arg2}",
+  "@onboardingStepOf": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      },
+      "arg1": {
+        "type": "Object"
+      },
+      "arg2": {
+        "type": "Object"
+      }
+    }
+  },
+  "progressphotosCouldNotLoadPhotos": "Could not load photos: {arg0}",
+  "@progressphotosCouldNotLoadPhotos": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "recoveryCouldNotApplyDeload": "Could not apply deload: {arg0}",
+  "@recoveryCouldNotApplyDeload": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "scannerConfidence": "{arg0}% confidence",
+  "@scannerConfidence": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "scannerCouldNotCapture": "Could not capture: {arg0}",
+  "@scannerCouldNotCapture": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "scannerLiveRecognitionFailed": "Live recognition failed: {arg0}",
+  "@scannerLiveRecognitionFailed": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "scannerOfFramesAgree": "{arg0}% · {arg1}% of frames agree",
+  "@scannerOfFramesAgree": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      },
+      "arg1": {
+        "type": "Object"
+      }
+    }
+  },
+  "scannerRecognitionFailed": "Recognition failed: {arg0}",
+  "@scannerRecognitionFailed": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "scannerYouCanStillPickAPhoto": "{arg0} — you can still pick a photo from the gallery below.",
+  "@scannerYouCanStillPickAPhoto": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "subscriptionContinueAs": "Continue as {arg0}",
+  "@subscriptionContinueAs": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "subscriptionIsNotAvailableOn": "{arg0} is not available on {arg1}.",
+  "@subscriptionIsNotAvailableOn": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      },
+      "arg1": {
+        "type": "Object"
+      }
+    }
+  },
+  "visualequipmentCouldNotClassify": "Could not classify: {arg0}",
+  "@visualequipmentCouldNotClassify": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "workoutsCouldNotLoadWorkouts": "Could not load workouts: {arg0}",
+  "@workoutsCouldNotLoadWorkouts": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "workoutsKg": "{arg0} kg",
+  "@workoutsKg": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "workoutsKgReps": "{arg0} kg × {arg1} reps",
+  "@workoutsKgReps": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      },
+      "arg1": {
+        "type": "Object"
+      }
+    }
+  },
+  "workoutsOfWorkingWeight": "{arg0}% of working weight",
+  "@workoutsOfWorkingWeight": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "healthAsking": "Asking…",
+  "healthConnectHealth": "Connect Health",
+  "notificationsMin": "{arg0} · {arg1} min",
+  "@notificationsMin": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      },
+      "arg1": {
+        "type": "Object"
+      }
+    }
+  }
 }

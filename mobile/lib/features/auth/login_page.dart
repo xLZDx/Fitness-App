@@ -21,7 +21,7 @@ class LoginPage extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
-            content: Text('Sign-in failed: $e'),
+            content: Text(AppLocalizations.of(context).authSignInFailed(e)),
           ),
         );
       });

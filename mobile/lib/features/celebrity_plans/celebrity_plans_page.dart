@@ -35,7 +35,7 @@ class CelebrityPlansPage extends ConsumerWidget {
           const SizedBox(height: 16),
           plansAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => GlassCard(child: Text('Error: $e')),
+            error: (e, _) => GlassCard(child: Text(AppLocalizations.of(context).catalogError(e))),
             data: (plans) => Column(
               children: [
                 for (final p in plans) ...[
@@ -96,7 +96,7 @@ class _PlanCard extends StatelessWidget {
                         style: theme.textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w800)),
                     Text(
-                      'by ${plan.coachName} · ${plan.weeks} weeks',
+                      AppLocalizations.of(context).celebrityplansByWeeks(plan.coachName, plan.weeks),
                       style: theme.textTheme.labelSmall,
                     ),
                   ],

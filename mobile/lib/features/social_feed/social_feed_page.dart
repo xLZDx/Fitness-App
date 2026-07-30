@@ -23,7 +23,7 @@ class SocialFeedPage extends ConsumerWidget {
           feedAsync.when(
             loading: () =>
                 const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(child: Text('Error: $e')),
+            error: (e, _) => Center(child: Text(AppLocalizations.of(context).catalogError(e))),
             data: (posts) => ListView(
               padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
               children: [

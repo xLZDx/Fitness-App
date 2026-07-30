@@ -42,7 +42,7 @@ class TeamFeedPage extends ConsumerWidget {
             ),
             error: (e, _) => GlassCard(
               tint: theme.colorScheme.error,
-              child: Text('Could not load feed: $e'),
+              child: Text(AppLocalizations.of(context).communityCouldNotLoadFeed(e)),
             ),
             data: (posts) {
               if (posts.isEmpty) {
