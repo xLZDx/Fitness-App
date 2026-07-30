@@ -68,6 +68,7 @@ dependencies:
   google_mlkit_image_labeling: ^0.14.0
   image_picker: ^1.1.2
   google_sign_in: ^7.1.1
+  flutter_svg: ^2.2.0
 
 dev_dependencies:
   flutter_test:
@@ -106,6 +107,9 @@ flutter:
     # Two demo frames per exercise (start / end position). Looped by
     # ExerciseDemo instead of shipping video — see scripts/catalog/.
     - assets/exercises/
+    # Anatomical muscle chart, front and back. CC BY 4.0 — credited on the
+    # /licences screen, which is a condition of shipping it.
+    - assets/anatomy/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

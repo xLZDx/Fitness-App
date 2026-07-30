@@ -1,20 +1,28 @@
 import 'package:flutter/foundation.dart' show listEquals, visibleForTesting;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+import '../data/anatomy_map.dart';
 
 /// Which muscles a movement loads, and how hard.
 enum MuscleLoad { none, secondary, primary }
 
-/// Front/back body chart that lights up the muscles an exercise works —
+/// Front/back anatomical chart that lights up the muscles an exercise works —
 /// primary in full colour, supporting muscles dimmer.
 ///
-/// Drawn with a CustomPainter rather than shipping an anatomy image: it scales
-/// to any size, themes with the app, adds no asset weight, and the region
-/// lookup stays testable as plain data.
+/// Draws real anatomical artwork (see `assets/anatomy/`, CC BY 4.0, credited on
+/// the licences screen) rather than hand-authored shapes. The previous version
+/// was a CustomPainter of hand-placed blobs; it scaled and themed nicely but it
+/// looked like hand-placed blobs, which was the complaint.
 ///
-/// Geometry lives in a normalised 0..1 box and bilateral muscles are defined
-/// once for the left side and mirrored, which halves the coordinates to get
-/// wrong and makes symmetry exact rather than hand-matched.
-class MuscleMap extends StatelessWidget {
+/// Highlighting works by rewriting the `fill` of the chart's per-muscle paths.
+/// The artwork is uniform in a way that makes this safe: every muscle path ships
+/// `fill="#BDBDBD"` and every non-muscle part (body underlayer, hands, face)
+/// ships `#E0E0E0`, so an element's role is readable from the source without
+/// walking the group structure.
+class MuscleMap extends StatefulWidget {
   const MuscleMap({
     super.key,
     required this.primary,
@@ -37,390 +45,254 @@ class MuscleMap extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return AspectRatio(
-      aspectRatio: 16 / 13,
-      child: CustomPaint(
-        painter: _MuscleMapPainter(
-          primary: primary,
-          secondary: secondary,
-          bodyColor: scheme.onSurface.withValues(alpha: 0.09),
-          outlineColor: scheme.onSurface.withValues(alpha: 0.16),
-          primaryColor: scheme.primary,
-          secondaryColor: scheme.primary.withValues(alpha: 0.38),
-          labelColor: scheme.onSurface.withValues(alpha: 0.55),
-          textDirection: Directionality.of(context),
-        ),
-      ),
-    );
-  }
+  State<MuscleMap> createState() => _MuscleMapState();
 }
 
-// ---------------------------------------------------------------------------
-// Normalised geometry helpers. All coordinates are 0..1 inside the body box:
-// x runs left-to-right across the shoulders, y from the crown to the feet.
-// ---------------------------------------------------------------------------
+/// Source fill of a muscle in the shipped artwork.
+const _muscleFill = '#BDBDBD';
 
-/// Mirrors a path across the vertical midline (x -> 1 - x).
-Path _mirrored(Path p) {
-  final m = Matrix4.identity()
-    ..translate(1.0, 0.0)
-    ..scale(-1.0, 1.0, 1.0);
-  return p.transform(m.storage);
-}
+const _frontAsset = 'assets/anatomy/muscle_front.svg';
+const _backAsset = 'assets/anatomy/muscle_back.svg';
 
-/// Closed smooth blob through [pts], each point joined by a quadratic whose
-/// control point is the midpoint offset outward. Good enough for organic
-/// muscle shapes without hand-authoring every control point.
-Path _blob(List<Offset> pts) {
-  final path = Path()..moveTo(pts.first.dx, pts.first.dy);
-  for (var i = 0; i < pts.length; i++) {
-    final cur = pts[i];
-    final next = pts[(i + 1) % pts.length];
-    final mid = Offset((cur.dx + next.dx) / 2, (cur.dy + next.dy) / 2);
-    path.quadraticBezierTo(cur.dx, cur.dy, mid.dx, mid.dy);
-  }
-  path.close();
-  return path;
-}
+/// Raw SVG text, read once per asset for the life of the process.
+final Map<String, Future<String>> _rawSvg = <String, Future<String>>{};
 
-Path _oval(double cx, double cy, double rx, double ry) => Path()
-  ..addOval(Rect.fromCenter(
-      center: Offset(cx, cy), width: rx * 2, height: ry * 2));
+Future<String> _loadSvg(String asset) =>
+    _rawSvg[asset] ??= rootBundle.loadString(asset);
 
-Path _rounded(double l, double t, double r, double b, double radius) => Path()
-  ..addRRect(RRect.fromLTRBR(l, t, r, b, Radius.circular(radius)));
+String _hex(Color c) =>
+    '#${((c.r * 255).round() << 16 | (c.g * 255).round() << 8 | (c.b * 255).round()).toRadixString(16).padLeft(6, '0')}';
 
-/// The body outline both views share: head, neck, torso tapering to the waist,
-/// arms hanging slightly away from the ribs, and legs.
+/// Rewrites every muscle fill in [svg] according to how hard it is worked.
 ///
-/// Returned as ONE unioned path so the outline traces only the exterior. Filling
-/// and stroking the parts separately left visible seams where the torso met the
-/// legs and where the hands met the arms.
-Path _silhouette() {
-  final left = <Path>[
-    // Upper arm + forearm, angled outward the way a relaxed arm hangs.
-    _blob(const [
-      Offset(0.262, 0.168),
-      Offset(0.222, 0.250),
-      Offset(0.192, 0.355),
-      Offset(0.182, 0.450),
-      Offset(0.232, 0.456),
-      Offset(0.252, 0.350),
-      Offset(0.296, 0.245),
-    ]),
-    // Hand.
-    _oval(0.206, 0.482, 0.030, 0.040),
-    // Leg: full at the hip, narrowing through the knee to the ankle.
-    _blob(const [
-      Offset(0.316, 0.452),
-      Offset(0.306, 0.560),
-      Offset(0.336, 0.660),
-      Offset(0.352, 0.760),
-      Offset(0.366, 0.880),
-      Offset(0.446, 0.880),
-      Offset(0.452, 0.755),
-      Offset(0.468, 0.650),
-      Offset(0.486, 0.545),
-      Offset(0.490, 0.452),
-    ]),
-    // Foot, angled forward from the ankle.
-    _blob(const [
-      Offset(0.362, 0.874),
-      Offset(0.352, 0.906),
-      Offset(0.360, 0.924),
-      Offset(0.446, 0.924),
-      Offset(0.452, 0.900),
-      Offset(0.450, 0.876),
-    ]),
-  ];
-
-  final parts = <Path>[
-    _oval(0.5, 0.052, 0.072, 0.061), // head
-    _rounded(0.455, 0.098, 0.545, 0.150, 0.020), // neck
-    // Torso: broad shoulders, a real waist, hips flaring again.
-    _blob(const [
-      Offset(0.246, 0.152),
-      Offset(0.236, 0.232),
-      Offset(0.296, 0.330),
-      Offset(0.346, 0.400),
-      Offset(0.312, 0.462),
-      Offset(0.500, 0.492),
-      Offset(0.688, 0.462),
-      Offset(0.654, 0.400),
-      Offset(0.704, 0.330),
-      Offset(0.764, 0.232),
-      Offset(0.754, 0.152),
-      Offset(0.500, 0.126),
-    ]),
-    ...left,
-    ...left.map(_mirrored),
-  ];
-
-  return parts.reduce((a, b) => Path.combine(PathOperation.union, a, b));
-}
-
-/// Front-view muscle groups. Keys match the catalog's muscle tags.
-Map<String, List<Path>> _frontMuscles() {
-  Path deltoid() => _blob(const [
-        Offset(0.268, 0.156),
-        Offset(0.250, 0.198),
-        Offset(0.268, 0.240),
-        Offset(0.322, 0.232),
-        Offset(0.334, 0.180),
-      ]);
-  Path pec() => _blob(const [
-        Offset(0.330, 0.188),
-        Offset(0.318, 0.240),
-        Offset(0.360, 0.276),
-        Offset(0.480, 0.268),
-        Offset(0.486, 0.192),
-        Offset(0.400, 0.176),
-      ]);
-  Path bicep() => _blob(const [
-        Offset(0.238, 0.245),
-        Offset(0.216, 0.290),
-        Offset(0.228, 0.330),
-        Offset(0.272, 0.322),
-        Offset(0.278, 0.258),
-      ]);
-  Path forearm() => _blob(const [
-        Offset(0.208, 0.352),
-        Offset(0.186, 0.400),
-        Offset(0.184, 0.446),
-        Offset(0.222, 0.446),
-        Offset(0.234, 0.386),
-      ]);
-  Path quad() => _blob(const [
-        Offset(0.338, 0.492),
-        Offset(0.320, 0.566),
-        Offset(0.336, 0.648),
-        Offset(0.396, 0.674),
-        Offset(0.450, 0.634),
-        Offset(0.464, 0.548),
-        Offset(0.442, 0.486),
-      ]);
-  Path calf() => _blob(const [
-        Offset(0.366, 0.712),
-        Offset(0.352, 0.775),
-        Offset(0.372, 0.836),
-        Offset(0.420, 0.828),
-        Offset(0.432, 0.760),
-        Offset(0.418, 0.706),
-      ]);
-
-  return {
-    'shoulders': [deltoid(), _mirrored(deltoid())],
-    'chest': [pec(), _mirrored(pec())],
-    'biceps': [bicep(), _mirrored(bicep())],
-    'forearms': [forearm(), _mirrored(forearm())],
-    // Abs as three tapering pairs plus a lower block: reads as a midsection
-    // rather than one flat slab, and narrows toward the navel like a real one.
-    'core': [
-      for (var row = 0; row < 3; row++) ...[
-        _rounded(0.416 + row * 0.006, 0.286 + row * 0.048,
-            0.497, 0.328 + row * 0.048, 0.016),
-        _rounded(0.503, 0.286 + row * 0.048,
-            0.584 - row * 0.006, 0.328 + row * 0.048, 0.016),
-      ],
-      _rounded(0.434, 0.430, 0.566, 0.468, 0.018),
-    ],
-    'quads': [quad(), _mirrored(quad())],
-    'calves': [calf(), _mirrored(calf())],
-  };
-}
-
-/// Back-view muscle groups.
-Map<String, List<Path>> _backMuscles() {
-  Path tricep() => _blob(const [
-        Offset(0.232, 0.248),
-        Offset(0.212, 0.292),
-        Offset(0.226, 0.334),
-        Offset(0.268, 0.324),
-        Offset(0.272, 0.260),
-      ]);
-  Path lat() => _blob(const [
-        Offset(0.330, 0.228),
-        Offset(0.316, 0.296),
-        Offset(0.368, 0.382),
-        Offset(0.470, 0.392),
-        Offset(0.484, 0.288),
-        Offset(0.436, 0.216),
-      ]);
-  Path glute() => _blob(const [
-        Offset(0.352, 0.424),
-        Offset(0.338, 0.466),
-        Offset(0.364, 0.504),
-        Offset(0.452, 0.498),
-        Offset(0.474, 0.452),
-        Offset(0.428, 0.418),
-      ]);
-  Path hamstring() => _blob(const [
-        Offset(0.340, 0.540),
-        Offset(0.328, 0.604),
-        Offset(0.346, 0.664),
-        Offset(0.428, 0.658),
-        Offset(0.456, 0.596),
-        Offset(0.444, 0.536),
-      ]);
-
-  return {
-    // Traps: the diamond from the neck out to both shoulders.
-    'traps': [
-      _blob(const [
-        Offset(0.500, 0.158),
-        Offset(0.352, 0.192),
-        Offset(0.412, 0.248),
-        Offset(0.500, 0.264),
-        Offset(0.588, 0.248),
-        Offset(0.648, 0.192),
-      ]),
-    ],
-    'lats': [lat(), _mirrored(lat())],
-    'triceps': [tricep(), _mirrored(tricep())],
-    // Mid-back / rhomboids, between the shoulder blades.
-    'back': [_rounded(0.430, 0.262, 0.570, 0.348, 0.020)],
-    // Erectors running down to the pelvis.
-    'lower_back': [_rounded(0.444, 0.352, 0.556, 0.462, 0.024)],
-    'glutes': [glute(), _mirrored(glute())],
-    'hamstrings': [hamstring(), _mirrored(hamstring())],
-  };
-}
-
-final _silhouetteCache = _silhouette();
-
-/// Clips every muscle shape to the body outline.
-///
-/// Hand-tuned coordinates drift out of the silhouette the moment the outline
-/// changes — narrowing the torso pushed the deltoids, lats and traps outside it,
-/// which rendered as shapes sheared off in mid-air. Intersecting makes overflow
-/// structurally impossible instead of something to re-check by eye. Done once at
-/// startup, not per frame.
-Map<String, List<Path>> _clipped(Map<String, List<Path>> muscles) {
-  return {
-    for (final e in muscles.entries)
-      e.key: [
-        for (final shape in e.value)
-          Path.combine(PathOperation.intersect, shape, _silhouetteCache),
-      ],
-  };
-}
-
-final _frontCache = _clipped(_frontMuscles());
-final _backCache = _clipped(_backMuscles());
-
-/// Geometry accessors for tests. The shapes are hand-authored coordinates, so
-/// the useful assertion is structural — every group still lands inside the body
-/// and none of them clipped away to nothing.
+/// Pure, and the only place colour decisions happen, so the mapping can be
+/// tested against the real asset without a render.
 @visibleForTesting
-Map<String, List<Path>> debugFrontMuscles() => _frontCache;
-
-@visibleForTesting
-Map<String, List<Path>> debugBackMuscles() => _backCache;
-
-@visibleForTesting
-Path debugSilhouette() => _silhouetteCache;
-
-class _MuscleMapPainter extends CustomPainter {
-  _MuscleMapPainter({
-    required this.primary,
-    required this.secondary,
-    required this.bodyColor,
-    required this.outlineColor,
-    required this.primaryColor,
-    required this.secondaryColor,
-    required this.labelColor,
-    required this.textDirection,
-  });
-
-  final List<String> primary;
-  final List<String> secondary;
-  final Color bodyColor;
-  final Color outlineColor;
-  final Color primaryColor;
-  final Color secondaryColor;
-  final Color labelColor;
-  final TextDirection textDirection;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final halfWidth = size.width / 2;
-    _paintHalf(canvas, Offset.zero, Size(halfWidth, size.height), _frontCache,
-        'Front');
-    _paintHalf(canvas, Offset(halfWidth, 0), Size(halfWidth, size.height),
-        _backCache, 'Back');
-  }
-
-  void _paintHalf(Canvas canvas, Offset origin, Size half,
-      Map<String, List<Path>> muscles, String caption) {
-    // Reserve room for the caption, then fit a body-proportioned box (roughly
-    // 1 : 2.2) inside what is left so the figure never stretches.
-    final captionRoom = half.height * 0.10;
-    final available = Size(half.width, half.height - captionRoom);
-    var boxHeight = available.height;
-    var boxWidth = boxHeight / 2.2;
-    if (boxWidth > available.width * 0.92) {
-      boxWidth = available.width * 0.92;
-      boxHeight = boxWidth * 2.2;
+String recolourChart(
+  String svg, {
+  required Map<String, List<String>> ids,
+  required List<String> primary,
+  required List<String> secondary,
+  required String primaryHex,
+  required String secondaryHex,
+  required String restingHex,
+  required String bodyHex,
+}) {
+  // id prefix -> replacement colour, strongest claim winning: a muscle listed
+  // as both primary and secondary reads as primary.
+  final claims = <String, String>{};
+  void claim(List<String> tags, String colour) {
+    for (final tag in tags) {
+      for (final prefix in ids[tag] ?? const <String>[]) {
+        claims[prefix] = colour;
+      }
     }
-    final box = Rect.fromLTWH(
-      origin.dx + (half.width - boxWidth) / 2,
-      origin.dy + (available.height - boxHeight) / 2,
-      boxWidth,
-      boxHeight,
-    );
+  }
 
-    Path scaled(Path p) => p.transform(
-          (Matrix4.identity()
-                ..translate(box.left, box.top)
-                ..scale(box.width, box.height, 1.0))
-              .storage,
-        );
+  claim(secondary, secondaryHex);
+  claim(primary, primaryHex);
 
-    final bodyPaint = Paint()..color = bodyColor;
-    final outlinePaint = Paint()
-      ..color = outlineColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = box.width * 0.012
-      ..strokeJoin = StrokeJoin.round;
+  return svg.replaceAllMapped(RegExp(r'<path\b[^>]*>'), (m) {
+    final element = m.group(0)!;
+    final idMatch = RegExp(r'\bid="([^"]+)"').firstMatch(element);
+    final fillMatch = RegExp(r'\bfill="([^"]*)"').firstMatch(element);
+    if (fillMatch == null) return element;
 
-    final body = scaled(_silhouetteCache);
-    canvas.drawPath(body, bodyPaint);
-    canvas.drawPath(body, outlinePaint);
+    final id = idMatch?.group(1) ?? '';
+    final wasMuscle = fillMatch.group(1)!.trim() == _muscleFill;
 
-    for (final entry in muscles.entries) {
-      final load = MuscleMap.loadFor(entry.key,
-          primary: primary, secondary: secondary);
-      if (load == MuscleLoad.none) continue;
-      final paint = Paint()
-        ..color = load == MuscleLoad.primary ? primaryColor : secondaryColor;
-      for (final shape in entry.value) {
-        canvas.drawPath(scaled(shape), paint);
+    String? claimed;
+    for (final entry in claims.entries) {
+      if (id.startsWith(entry.key)) {
+        claimed = entry.value;
+        break;
       }
     }
 
-    final tp = TextPainter(
-      text: TextSpan(
-        text: caption,
-        style: TextStyle(color: labelColor, fontSize: half.width * 0.085),
-      ),
-      textDirection: textDirection,
-    )..layout();
-    tp.paint(
-      canvas,
-      Offset(box.center.dx - tp.width / 2, box.bottom + captionRoom * 0.15),
+    final colour = claimed ?? (wasMuscle ? restingHex : bodyHex);
+    return element.replaceRange(
+      fillMatch.start,
+      fillMatch.end,
+      'fill="$colour"',
+    );
+  });
+}
+
+class _MuscleMapState extends State<MuscleMap> {
+  String? _front;
+  String? _back;
+
+  /// What [_front]/[_back] were built for. Recolouring a 180 KB string and
+  /// letting flutter_svg recompile it on every frame would be wasteful, and the
+  /// inputs only change when the exercise or the theme does.
+  String? _signature;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final primaryHex = _hex(scheme.primary);
+    final secondaryHex =
+        _hex(Color.lerp(scheme.surface, scheme.primary, 0.42)!);
+    final restingHex = _hex(Color.lerp(scheme.surface, scheme.onSurface, 0.16)!);
+    final bodyHex = _hex(Color.lerp(scheme.surface, scheme.onSurface, 0.07)!);
+
+    final signature = [
+      widget.primary.join(','),
+      widget.secondary.join(','),
+      primaryHex,
+      secondaryHex,
+      restingHex,
+      bodyHex,
+    ].join('|');
+
+    if (signature != _signature) {
+      _signature = signature;
+      _front = null;
+      _back = null;
+      _rebuild(
+        primaryHex: primaryHex,
+        secondaryHex: secondaryHex,
+        restingHex: restingHex,
+        bodyHex: bodyHex,
+        forSignature: signature,
+      );
+    }
+
+    final unmapped = <String>[
+      for (final m in [...widget.primary, ...widget.secondary])
+        if (kTagsWithoutShape.contains(m)) m,
+    ];
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // The aspect ratio belongs OUT here, around the pair. Putting it on each
+        // figure inside an Expanded gave them a tight width, so height was
+        // forced to width x 1137/587 with no room to shrink and the column
+        // overflowed on short boxes.
+        Flexible(
+          child: AspectRatio(
+            aspectRatio: (2 * 587) / 1137,
+            child: Row(
+              children: [
+                Expanded(child: _Chart(svg: _front)),
+                Expanded(child: _Chart(svg: _back)),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            Expanded(
+              child: _Caption(AppLocalizations.of(context).muscleMapFront),
+            ),
+            Expanded(
+              child: _Caption(AppLocalizations.of(context).muscleMapBack),
+            ),
+          ],
+        ),
+        // Worked muscles the artwork cannot show. Saying so beats colouring an
+        // approximate neighbour, which would teach the user something false.
+        if (unmapped.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            AppLocalizations.of(context)
+                .muscleMapAlsoWorked(_nameFor(context, unmapped)),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: scheme.onSurface.withValues(alpha: 0.65),
+                ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ],
     );
   }
 
-  // Compared by CONTENT, not identity: the parent rebuilds these lists on
-  // every build, so reference comparison repainted every frame while a genuine
-  // change to the same list instance would have been missed.
+  String _nameFor(BuildContext context, List<String> tags) {
+    final l = AppLocalizations.of(context);
+    return tags
+        .toSet()
+        .map((t) => switch (t) {
+              'lower_back' => l.muscleLowerBack,
+              _ => t.replaceAll('_', ' '),
+            })
+        .join(', ');
+  }
+
+  Future<void> _rebuild({
+    required String primaryHex,
+    required String secondaryHex,
+    required String restingHex,
+    required String bodyHex,
+    required String forSignature,
+  }) async {
+    final front = await _loadSvg(_frontAsset);
+    final back = await _loadSvg(_backAsset);
+    if (!mounted || _signature != forSignature) return;
+    setState(() {
+      _front = recolourChart(
+        front,
+        ids: kFrontMuscleIds,
+        primary: widget.primary,
+        secondary: widget.secondary,
+        primaryHex: primaryHex,
+        secondaryHex: secondaryHex,
+        restingHex: restingHex,
+        bodyHex: bodyHex,
+      );
+      _back = recolourChart(
+        back,
+        ids: kBackMuscleIds,
+        primary: widget.primary,
+        secondary: widget.secondary,
+        primaryHex: primaryHex,
+        secondaryHex: secondaryHex,
+        restingHex: restingHex,
+        bodyHex: bodyHex,
+      );
+    });
+  }
+
   @override
-  bool shouldRepaint(covariant _MuscleMapPainter old) =>
-      !listEquals(old.primary, primary) ||
-      !listEquals(old.secondary, secondary) ||
-      old.primaryColor != primaryColor ||
-      old.secondaryColor != secondaryColor ||
-      old.bodyColor != bodyColor;
+  void didUpdateWidget(MuscleMap old) {
+    super.didUpdateWidget(old);
+    // Compared by CONTENT: the parent rebuilds these lists on every build, so
+    // reference comparison would rebuild the chart every frame.
+    if (!listEquals(old.primary, widget.primary) ||
+        !listEquals(old.secondary, widget.secondary)) {
+      _signature = null;
+    }
+  }
+}
+
+class _Chart extends StatelessWidget {
+  const _Chart({required this.svg});
+  final String? svg;
+
+  @override
+  Widget build(BuildContext context) {
+    if (svg == null) return const SizedBox.shrink();
+    // BoxFit.contain, so the figure keeps the artwork's own proportions even
+    // though the enclosing half-box is only approximately that shape.
+    return SvgPicture.string(svg!, fit: BoxFit.contain);
+  }
+}
+
+class _Caption extends StatelessWidget {
+  const _Caption(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      style: theme.textTheme.labelSmall?.copyWith(
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+      ),
+    );
+  }
 }

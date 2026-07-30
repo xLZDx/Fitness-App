@@ -55,6 +55,16 @@ const List<AssetAttribution> kAssetAttributions = <AssetAttribution>[
     note: 'Instruction text was translated into Russian for this app; the '
         'source text is public domain.',
   ),
+  AssetAttribution(
+    what: 'Anatomical muscle chart (front and back)',
+    author: 'Ryan Graves, with element ids restructured by Kit G.',
+    licence: 'Creative Commons Attribution 4.0 International (CC BY 4.0)',
+    url: 'https://creativecommons.org/licenses/by/4.0/',
+    note: 'Original artwork: '
+        'https://www.figma.com/community/file/1320468164820924031 — '
+        'redistributed here with per-muscle element ids, and recoloured at '
+        'runtime to show which muscles an exercise works.',
+  ),
 ];
 
 /// Publishes [kAssetAttributions] into Flutter's licence registry.

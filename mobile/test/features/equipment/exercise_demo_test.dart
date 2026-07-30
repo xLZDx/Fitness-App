@@ -84,8 +84,20 @@ void main() {
         ),
       ));
       await tester.pump();
+      // Smoke check only: mounting the chart must not throw, including before
+      // its artwork has loaded.
+      //
+      // Deliberately NOT waiting for the SVG here. Doing that needs
+      // `tester.runAsync`, which also lets google_fonts fire its real HTTP
+      // fetch — this file pumps with `AppTheme.light()`, so the test would fail
+      // on a font download rather than on anything about the chart. Rendering
+      // from the real artwork is covered in muscle_map_test.dart, which wraps in
+      // a plain theme.
+      //
+      // The previous assertion here was `find.byType(CustomPaint), findsWidgets`,
+      // which any Material ancestor satisfies on its own — it asserted nothing.
       expect(tester.takeException(), isNull);
-      expect(find.byType(CustomPaint), findsWidgets);
+      expect(find.byType(MuscleMap), findsOneWidget);
     });
   });
 

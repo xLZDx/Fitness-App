@@ -658,5 +658,16 @@
   "settingsThemeDark": "Dark",
   "licencesIntro": "This app bundles content created by other people. Their terms require that they are credited, so here they are.",
   "licencesOpenPackageLicences": "Open-source package licences",
-  "licencesLegalese": "Bundled content is credited above. Package licences are listed here in full."
+  "licencesLegalese": "Bundled content is credited above. Package licences are listed here in full.",
+  "muscleMapFront": "Front",
+  "muscleMapBack": "Back",
+  "muscleLowerBack": "Lower back",
+  "muscleMapAlsoWorked": "Also worked: {arg0}",
+  "@muscleMapAlsoWorked": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  }
 }
