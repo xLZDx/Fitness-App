@@ -1,4 +1,7 @@
+import 'dart:ui' show Locale;
+
 import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/widgets.dart' show WidgetsBinding;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../notifications/notification_providers.dart';
@@ -58,3 +61,31 @@ class SettingsController extends Notifier<AppSettings> {
 
 final settingsControllerProvider =
     NotifierProvider<SettingsController, AppSettings>(SettingsController.new);
+
+/// The device's preferred locales, most-preferred first.
+///
+/// Held in a provider rather than read straight from the platform at each use
+/// site so that (a) tests can pin it, and (b) `FitnessApp` can push a new value
+/// from `didChangeLocales` when the user changes the device language while the
+/// app is running. Seeded from the platform so it is correct before the first
+/// frame even if nothing ever pushes an update.
+final deviceLocalesProvider = StateProvider<List<Locale>>(
+  (_) => List<Locale>.unmodifiable(
+    WidgetsBinding.instance.platformDispatcher.locales,
+  ),
+);
+
+/// The one answer to "what language is the user reading right now".
+///
+/// Both `MaterialApp.locale` and the bundled-content repositories derive from
+/// this, which is the point: two independent answers to that question is
+/// exactly how a half-translated screen happens. See
+/// [AppLanguageX.resolvedLocaleCode].
+final effectiveLanguageCodeProvider = Provider<String>((ref) {
+  // `select` matters: watching the whole AppSettings object would rebuild every
+  // dependent — including the exercise catalog repository — on a theme or
+  // notification toggle.
+  final language =
+      ref.watch(settingsControllerProvider.select((s) => s.language));
+  return language.resolvedLocaleCode(ref.watch(deviceLocalesProvider));
+});

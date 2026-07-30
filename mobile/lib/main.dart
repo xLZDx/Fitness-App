@@ -165,14 +165,47 @@ Future<void> main() async {
   );
 }
 
-class FitnessApp extends ConsumerWidget {
+class FitnessApp extends ConsumerStatefulWidget {
   const FitnessApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FitnessApp> createState() => _FitnessAppState();
+}
+
+/// Stateful only to observe [didChangeLocales].
+///
+/// Without it, changing the device language while the app is running would move
+/// the interface but not the bundled exercise text, because the content side
+/// reads a cached device-locale list. That is the same half-translated failure
+/// `resolvedLocaleCode` exists to prevent, just triggered at runtime.
+class _FitnessAppState extends ConsumerState<FitnessApp>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    ref.read(deviceLocalesProvider.notifier).state =
+        List<Locale>.unmodifiable(locales ?? const <Locale>[]);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
     final settings = ref.watch(settingsControllerProvider);
-    final localeCode = settings.language.localeCode;
+    // Resolved, never nullable: one source of truth shared with the exercise
+    // catalog. Passing `null` here would hand resolution to Flutter alone and
+    // leave the content layer guessing what it decided.
+    final localeCode = ref.watch(effectiveLanguageCodeProvider);
     return MaterialApp.router(
       // NOT localised, on purpose twice over: it is the brand name, and
       // this widget builds the MaterialApp, so there is no Localizations
@@ -181,10 +214,12 @@ class FitnessApp extends ConsumerWidget {
       // translated title is ever wanted.
       title: 'Fitness App',
       // Russian is the product default (the launch market is RU/CIS), but the
-      // user can override it in Settings; `null` there means follow the device.
-      locale: localeCode == null ? null : Locale(localeCode),
+      // user can override it in Settings; "system" is resolved against the
+      // device locales by `effectiveLanguageCodeProvider`.
+      locale: Locale(localeCode),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: const <Locale>[Locale('ru'), Locale('en')],
+      supportedLocales:
+          kSupportedLocaleCodes.map((c) => Locale(c)).toList(growable: false),
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: settings.themeMode.material,

@@ -59,13 +59,51 @@ class ExerciseItem {
         ),
         durationMinutes: j['durationMinutes'] as int? ?? 10,
         summary: j['summary'] as String? ?? '',
-        steps: List<String>.from(j['steps'] as List? ?? const []),
+        steps: parseSteps(j['steps']),
         videoUrl: j['videoUrl'] as String?,
         frames: List<String>.from(j['frames'] as List? ?? const []),
         primaryMuscles:
             List<String>.from(j['primaryMuscles'] as List? ?? const []),
         contraindications:
             List<String>.from(j['contraindications'] as List? ?? const []),
+      );
+
+  /// Reads a `steps` list, dropping entries that are blank or whitespace.
+  ///
+  /// Not defensive padding: the upstream catalog really does ship one, and
+  /// `barbell_squat_to_a_bench` has an empty string as its second step, which
+  /// rendered as an empty numbered row in the workout player. Filtering here
+  /// rather than in the UI keeps every consumer — and the translation
+  /// step-count check — working from the same list.
+  static List<String> parseSteps(Object? raw) => List<String>.unmodifiable(<String>[
+        for (final step in (raw as List? ?? const []))
+          if (step is String && step.trim().isNotEmpty) step,
+      ]);
+
+  /// A copy with the display text replaced by a translation.
+  ///
+  /// Deliberately narrow: only the three text fields can change. Muscles,
+  /// contraindications, frames, difficulty and duration all feed filtering,
+  /// recommendation and injury logic, so a translation file must not be able to
+  /// reach them — the worst a bad translation can do is read badly.
+  ExerciseItem withText({
+    required String title,
+    required String summary,
+    required List<String> steps,
+  }) =>
+      ExerciseItem(
+        id: id,
+        title: title,
+        equipmentId: equipmentId,
+        muscles: muscles,
+        difficulty: difficulty,
+        durationMinutes: durationMinutes,
+        summary: summary,
+        steps: steps,
+        videoUrl: videoUrl,
+        frames: frames,
+        primaryMuscles: primaryMuscles,
+        contraindications: contraindications,
       );
 }
 

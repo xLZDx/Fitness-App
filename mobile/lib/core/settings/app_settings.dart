@@ -1,4 +1,12 @@
-import 'package:flutter/material.dart' show ThemeMode;
+import 'package:flutter/material.dart' show Locale, ThemeMode;
+
+/// The locales the app actually ships translations for.
+///
+/// Order is load-bearing: this list is passed to `MaterialApp.supportedLocales`
+/// verbatim, and Flutter falls back to the FIRST entry for any device locale it
+/// cannot match. So the first entry is also what [AppLanguage.system] resolves
+/// to on an unsupported device.
+const List<String> kSupportedLocaleCodes = <String>['ru', 'en'];
 
 /// Which theme the user picked. Stored as its own enum rather than Flutter's
 /// [ThemeMode] so the persisted name never depends on a framework type.
@@ -22,6 +30,26 @@ extension AppLanguageX on AppLanguage {
         AppLanguage.ru => 'ru',
         AppLanguage.en => 'en',
       };
+
+  /// The language the user will actually SEE, resolved the same way Flutter
+  /// resolves it — so UI chrome and bundled content can never disagree.
+  ///
+  /// Testing `language == AppLanguage.ru` instead of calling this is the bug
+  /// this method exists to prevent: [AppLanguage.system] has no code of its
+  /// own, so on a device set to, say, French, Flutter resolves the interface to
+  /// `ru` (first in [kSupportedLocaleCodes]) while that equality check answers
+  /// "not Russian" and leaves bundled text in English. The result is a screen
+  /// that is half translated, with no error and nothing in the logs.
+  String resolvedLocaleCode(Iterable<Locale> deviceLocales) {
+    final own = localeCode;
+    if (own != null) return own;
+    for (final locale in deviceLocales) {
+      if (kSupportedLocaleCodes.contains(locale.languageCode)) {
+        return locale.languageCode;
+      }
+    }
+    return kSupportedLocaleCodes.first;
+  }
 }
 
 /// User-controlled app preferences, persisted locally.

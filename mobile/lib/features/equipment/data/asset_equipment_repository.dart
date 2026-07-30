@@ -1,12 +1,23 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show debugPrint, visibleForTesting;
 import 'package:flutter/services.dart' show rootBundle;
 
 import 'equipment_models.dart';
 import 'equipment_repository.dart';
 
+/// Reads the bundled catalog, optionally translated.
+///
+/// The English `exercises.json` is the base and the only source of structure:
+/// ids, muscles, contraindications and frames all come from it in every
+/// language. A translation is a text-only overlay keyed by exercise id
+/// (`exercises.<code>.json`) patched over that base, so a language can never
+/// add, drop or re-tag an exercise.
 class AssetEquipmentRepository implements EquipmentRepository {
-  AssetEquipmentRepository();
+  AssetEquipmentRepository({this.languageCode = 'en'});
+
+  /// Which translation overlay to apply. `'en'` means "the base, unmodified".
+  final String languageCode;
 
   List<EquipmentItem>? _equipment;
   List<ExerciseItem>? _exercises;
@@ -19,10 +30,64 @@ class AssetEquipmentRepository implements EquipmentRepository {
         .cast<Map<String, dynamic>>()
         .map(EquipmentItem.fromJson)
         .toList(growable: false);
-    _exercises = (jsonDecode(exJson) as List)
+    final base = (jsonDecode(exJson) as List)
         .cast<Map<String, dynamic>>()
         .map(ExerciseItem.fromJson)
         .toList(growable: false);
+    _exercises = applyTranslations(base, await _loadOverlay());
+  }
+
+  /// Loads the translation overlay, or returns empty on any failure.
+  ///
+  /// Isolated from the base load on purpose. Every screen that shows an
+  /// exercise — equipment browsing, the workout player, the For You feed, the
+  /// generated plan — resolves through this one repository, so letting a
+  /// missing or malformed translation file throw would take the whole catalog
+  /// down in BOTH languages to deliver a translation. Falling back to English
+  /// is the only acceptable failure mode, and it is logged rather than
+  /// swallowed so it stays diagnosable.
+  Future<Map<String, dynamic>> _loadOverlay() async {
+    if (languageCode == 'en') return const <String, dynamic>{};
+    final path = 'assets/data/exercises.$languageCode.json';
+    try {
+      final raw = await rootBundle.loadString(path);
+      return (jsonDecode(raw) as Map).cast<String, dynamic>();
+    } catch (e) {
+      debugPrint('translation overlay $path unusable, falling back to '
+          'English: $e');
+      return const <String, dynamic>{};
+    }
+  }
+
+  /// Patches translated text over [base].
+  ///
+  /// Returns one entry per entry of [base], in the same order, always: an id
+  /// absent from the overlay keeps its English text rather than disappearing.
+  /// `summary` is taken from the first step because that is what the base
+  /// catalog does — an invariant the test suite pins on the English data, so it
+  /// fails loudly if a future catalog rebuild breaks it instead of silently
+  /// leaving Russian summaries in English.
+  @visibleForTesting
+  static List<ExerciseItem> applyTranslations(
+    List<ExerciseItem> base,
+    Map<String, dynamic> overlay,
+  ) {
+    if (overlay.isEmpty) return base;
+    return List<ExerciseItem>.unmodifiable(<ExerciseItem>[
+      for (final item in base) _translate(item, overlay[item.id]),
+    ]);
+  }
+
+  static ExerciseItem _translate(ExerciseItem item, Object? entry) {
+    if (entry is! Map) return item;
+    final title = entry['title'];
+    final steps = ExerciseItem.parseSteps(entry['steps']);
+    if (title is! String || title.trim().isEmpty || steps.isEmpty) return item;
+    return item.withText(
+      title: title,
+      summary: steps.first,
+      steps: steps,
+    );
   }
 
   /// Test-only: pre-seed the cache without going through asset loading.

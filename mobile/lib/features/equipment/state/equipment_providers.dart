@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/settings/state/settings_providers.dart';
 import '../../profile/state/profile_providers.dart';
 import '../data/asset_equipment_repository.dart';
 import '../data/equipment_models.dart';
@@ -8,8 +9,16 @@ import '../data/equipment_repository.dart';
 import '../data/exercise_filter.dart';
 import '../data/mock_equipment_report_service.dart';
 
+/// The catalog, in the language the user is actually reading.
+///
+/// Watches the resolved language code and nothing else. Watching the whole
+/// `AppSettings` object here would mean a theme switch or a notifications
+/// toggle rebuilds this provider, and with it every derived FutureProvider —
+/// re-reading the bundled JSON from a settings screen tap.
 final equipmentRepositoryProvider = Provider<EquipmentRepository>((ref) {
-  return AssetEquipmentRepository();
+  return AssetEquipmentRepository(
+    languageCode: ref.watch(effectiveLanguageCodeProvider),
+  );
 });
 
 /// Submits broken-equipment reports. Default is the in-memory mock so
