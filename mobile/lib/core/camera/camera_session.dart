@@ -89,6 +89,16 @@ class CameraSession {
           : ImageFormatGroup.bgra8888,
     );
     await _camera!.initialize();
+    // Widest available field of view. On phones whose logical camera extends
+    // to the ultrawide lens this is the 0.6x the operator asked for; the
+    // default 1.0x could not fit a machine standing two steps away. Devices
+    // report their own floor, so this can never zoom past what exists.
+    try {
+      final minZoom = await _camera!.getMinZoomLevel();
+      if (minZoom < 1.0) await _camera!.setZoomLevel(minZoom);
+    } catch (e) {
+      debugPrint('min-zoom unavailable, staying at default: $e');
+    }
     _running = true;
     // Published only after initialize(): an uninitialized controller cannot be
     // handed to CameraPreview.

@@ -42,6 +42,12 @@ void main() {
     WidgetTester tester, {
     List<Override> overrides = const [],
   }) async {
+    // Phone-shaped surface. The viewfinder is now full-width 3:4, so on the
+    // default 800x600 test window everything below it falls outside the
+    // viewport and a lazy ListView never even builds it.
+    tester.view.physicalSize = const Size(800, 2200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
     final router = GoRouter(
       initialLocation: '/scan',
       routes: [
@@ -81,6 +87,23 @@ void main() {
       // QR is described as automatic, not as the thing the user must do.
       expect(find.textContaining('QR stickers are picked up automatically'),
           findsOneWidget);
+    });
+
+    testWidgets('the viewfinder is full-width 3:4 with a proportional frame',
+        (tester) async {
+      // Operator point 4: the old fixed 300px strip with a 220x200 frame was
+      // too small to fit a machine. The guide frame mirrors the 75% centre
+      // crop the classifier receives.
+      await pumpScan(tester);
+      final ratio = tester.widget<AspectRatio>(find.ancestor(
+        of: find.byType(LiveEquipmentPreview),
+        matching: find.byType(AspectRatio),
+      ));
+      expect(ratio.aspectRatio, 3 / 4);
+      final frame = tester.widget<FractionallySizedBox>(
+          find.byType(FractionallySizedBox));
+      expect(frame.widthFactor, 0.75);
+      expect(frame.heightFactor, 0.75);
     });
 
     testWidgets('the viewfinder is present whether or not live mode is on',

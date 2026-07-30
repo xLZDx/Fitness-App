@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/camera/camera_session.dart';
+import '../../core/camera/centre_crop.dart';
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import '../equipment/data/equipment_models.dart';
@@ -225,7 +226,10 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
         ));
         return;
       }
-      await _classify(shot.path);
+      // Classify what the user FRAMED, not the whole crowded gym: the shot is
+      // cropped to the same central region the guide frame shows. Gallery
+      // picks are deliberately not cropped — the user composed those.
+      await _classify(await centreCropForClassification(shot.path));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -311,8 +315,12 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 88, 20, 110),
           children: [
-            SizedBox(
-              height: 300,
+            // Full width, 3:4 — the old fixed 300px strip with a 220x200
+            // frame could not fit a machine standing two steps away
+            // (operator point 4). The guide frame is proportional and mirrors
+            // the 75% centre crop the classifier actually receives.
+            AspectRatio(
+              aspectRatio: 3 / 4,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(28),
                 child: Stack(
@@ -323,15 +331,17 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                     else
                       LiveEquipmentPreview(session: session),
                     Center(
-                      child: Container(
-                        width: 220,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.85),
-                            width: 2,
+                      child: FractionallySizedBox(
+                        widthFactor: 0.75,
+                        heightFactor: 0.75,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          borderRadius: BorderRadius.circular(20),
                         ),
                       ),
                     ),
