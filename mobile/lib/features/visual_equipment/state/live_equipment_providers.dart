@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/camera/camera_session.dart';
 import '../data/live_equipment_service.dart';
 import '../data/live_recognition.dart';
-import '../data/qr_watcher.dart';
 
 /// The Scan tab's camera.
 ///
@@ -30,10 +29,9 @@ final liveEquipmentServiceProvider = Provider<LiveEquipmentService>((ref) {
 /// equipment labeler is the most expensive thing this app can do, so it only
 /// runs when asked for.
 ///
-/// This gates the LABELER, not the camera. The camera and the QR watcher run
-/// whenever the Scan tab is open, which is what makes the viewfinder always
-/// show what it is pointed at — and what stops QR responsiveness from being
-/// dragged down to the labeler's cadence.
+/// This gates the LABELER, not the camera. The camera runs whenever the Scan
+/// tab is open, which is what makes the viewfinder always show what it is
+/// pointed at.
 final liveModeEnabledProvider = StateProvider<bool>((_) => false);
 
 /// The latest settled reading, or null when nothing is confidently recognised.
@@ -67,7 +65,3 @@ final liveRecognitionProvider =
 
   return out.stream;
 });
-
-/// The QR decoder. Null in tests unless overridden, so no ML Kit binding is
-/// needed to pump the Scan page.
-final qrWatcherProvider = Provider<QrWatcher?>((ref) => null);

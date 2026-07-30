@@ -107,8 +107,8 @@ class ExerciseItem {
       );
 }
 
-/// A piece of gym equipment, identified by stable id and matched at scan time
-/// via QR codes shaped like `fitness://equipment/<id>`.
+/// A piece of gym equipment, identified by stable id. Recognition resolves
+/// free-text machine names to these ids via the EquipmentAliasIndex.
 class EquipmentItem {
   const EquipmentItem({
     required this.id,
@@ -150,23 +150,4 @@ class EquipmentItem {
         description: j['description'] as String? ?? '',
         imageUrl: j['imageUrl'] as String?,
       );
-}
-
-/// Decoded QR scan target. Returns null when the payload doesn't match our
-/// scheme so the UI can show "unrecognised QR".
-class ScanResult {
-  const ScanResult({required this.equipmentId, required this.raw});
-  final String equipmentId;
-  final String raw;
-
-  static ScanResult? tryParse(String? raw) {
-    if (raw == null) return null;
-    final uri = Uri.tryParse(raw);
-    if (uri == null) return null;
-    if (uri.scheme != 'fitness') return null;
-    if (uri.host != 'equipment') return null;
-    final id = uri.pathSegments.isEmpty ? '' : uri.pathSegments.first;
-    if (id.isEmpty) return null;
-    return ScanResult(equipmentId: id, raw: raw);
-  }
 }

@@ -10,9 +10,7 @@ import '../../core/camera/camera_session.dart';
 import '../../core/camera/centre_crop.dart';
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
-import '../equipment/data/equipment_models.dart';
 import '../visual_equipment/data/live_recognition.dart';
-import '../visual_equipment/data/qr_watcher.dart';
 import '../visual_equipment/data/recognition_history.dart';
 import '../visual_equipment/data/visual_equipment_match.dart';
 import '../visual_equipment/state/live_equipment_providers.dart';
@@ -22,19 +20,16 @@ import '../visual_equipment/widgets/live_equipment_preview.dart';
 
 /// The Scan tab.
 ///
-/// Primary job: **photograph a machine and recognise it** — point the phone at
-/// any piece of equipment, tap Recognise, and it is classified on-device, then
-/// routed to the exercises tuned to the user's intake + injuries.
-///
-/// Secondary job: QR. The same viewfinder keeps watching for our
-/// `fitness://equipment/<id>` stickers and jumps straight there when one enters
-/// frame — no mode switch, no extra tap.
+/// One job: **photograph a machine and recognise it** — point the phone at
+/// any piece of equipment, tap Recognise, and it is classified (cloud first,
+/// on-device fallback), then routed to the exercises tuned to the user's
+/// intake + injuries. QR scanning was removed at the operator's request
+/// (2026-07-30, point 7): photo recognition is the one path.
 ///
 /// One camera, one owner. The viewfinder is live the whole time this tab is
 /// open, because "I cannot see what I am pointing at" was a real defect. What
 /// the Live switch gates is the equipment LABELER, not the camera: that is the
-/// expensive part, and leaving it attached would drag QR down to its cadence
-/// and burn battery for nothing when the user has not asked for it.
+/// expensive part, and it burns battery for nothing when not asked for.
 class ScannerPage extends ConsumerStatefulWidget {
   const ScannerPage({super.key});
 
@@ -55,14 +50,16 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   Object? _cameraError;
 
   GoRouter? _router;
-  StreamSubscription<ScanResult>? _qrSub;
 
   /// Captured at arm time so [_disarm] can release the camera WITHOUT touching
   /// `ref`. Reading a provider from `dispose()` throws "Cannot use ref after the
-  /// widget was disposed" — a mistake this codebase has now made twice, and one
-  /// that would leave the camera running on the way out.
+  /// widget was disposed" — a mistake this codebase has now made three times:
+  /// the third came from REMOVING awaits ahead of a `mounted`-guarded read,
+  /// which turned a path that always ran post-dispose (guard worked) into a
+  /// synchronous one where `mounted` is still true but riverpod's element is
+  /// already flagged disposed. Fields, not ref, on every teardown path.
   CameraSession? _session;
-  QrWatcher? _qr;
+  StateController<bool>? _liveMode;
 
   @override
   void initState() {
@@ -85,7 +82,12 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _router?.routerDelegate.removeListener(_onRouteChanged);
-    unawaited(_disarm());
+    // No live-mode flip here: flipping the provider mid-dispose notifies this
+    // very element after it is defunct. It is also unnecessary — the page is
+    // going away, so the autoDispose recognition provider detaches the
+    // labeler on its own. The flip is for the routes-change path, where this
+    // page stays alive under the shell.
+    unawaited(_disarm(flipLiveMode: false));
     super.dispose();
   }
 
@@ -121,26 +123,18 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     }
   }
 
-  /// Opens the camera and attaches the QR watcher. Idempotent.
+  /// Opens the camera. Idempotent.
   Future<void> _arm() async {
     if (!mounted) return;
     // `??=` on a nullable field yields a nullable static type even though the
     // provider cannot return null, hence the separate non-null read.
     _session ??= ref.read(scanCameraSessionProvider);
-    _qr ??= ref.read(qrWatcherProvider);
+    _liveMode ??= ref.read(liveModeEnabledProvider.notifier);
     final session = _session!;
-    final qr = _qr;
     try {
       await session.start();
       if (!mounted) return;
       if (_cameraError != null) setState(() => _cameraError = null);
-      if (qr != null && !qr.isRunning) {
-        await qr.start();
-        _qrSub ??= qr.results().listen(
-              _onQr,
-              onError: (Object e) => debugPrint('qr watcher: $e'),
-            );
-      }
     } catch (e) {
       // Permission denied, camera busy, no camera at all. Surfaced, because a
       // viewfinder that never appears with no explanation is the defect this
@@ -150,14 +144,17 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     }
   }
 
-  Future<void> _disarm() async {
-    await _qrSub?.cancel();
-    _qrSub = null;
-    await _qr?.stop();
-    // Guarded: on the dispose path there is no `ref` to read any more, and the
-    // provider is being torn down regardless.
-    if (mounted && ref.read(liveModeEnabledProvider)) {
-      ref.read(liveModeEnabledProvider.notifier).state = false;
+  Future<void> _disarm({bool flipLiveMode = true}) async {
+    // Fields only — no `ref` anywhere on this path, it also runs from
+    // dispose(). The try guards the teardown race where the ProviderScope is
+    // being destroyed right after this page (test teardown, app shutdown).
+    if (flipLiveMode) {
+      try {
+        final live = _liveMode;
+        if (live != null && live.state) live.state = false;
+      } catch (e) {
+        debugPrint('live-mode off on disarm skipped: $e');
+      }
     }
     await _session?.stop();
   }
@@ -185,21 +182,6 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
         debugPrintStack(stackTrace: st);
       }),
     );
-  }
-
-  /// A sticker entered frame. It names the machine exactly, so it is recorded at
-  /// full confidence rather than a model score.
-  Future<void> _onQr(ScanResult result) async {
-    if (_handling) return;
-    _handling = true;
-    try {
-      _remember(result.equipmentId, 1, RecognitionSource.qr);
-      await _openEquipment(result.equipmentId);
-    } catch (e) {
-      debugPrint('QR handling failed: $e');
-    } finally {
-      _handling = false;
-    }
   }
 
   /// Navigates away. The route listener releases the camera on its own.

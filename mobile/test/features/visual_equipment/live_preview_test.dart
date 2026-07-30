@@ -200,6 +200,26 @@ void main() {
       expect(offenders, isEmpty);
     });
 
+    test('QR scanning is gone entirely', () {
+      // Operator point 7 (2026-07-30): photo recognition only. The watcher,
+      // its barcode dependency and the provider must all stay dead.
+      expect(File('lib/features/visual_equipment/data/qr_watcher.dart').existsSync(),
+          isFalse);
+      expect(
+          File('pubspec.yaml')
+              .readAsStringSync()
+              .contains('google_mlkit_barcode_scanning'),
+          isFalse);
+      final offenders = <String>[];
+      for (final f in Directory('lib').listSync(recursive: true)) {
+        if (f is! File || !f.path.endsWith('.dart')) continue;
+        if (code(f.readAsStringSync()).contains('BarcodeScanner')) {
+          offenders.add(f.path);
+        }
+      }
+      expect(offenders, isEmpty);
+    });
+
     test('mobile_scanner is gone', () {
       // It was a second camera stack: it held the device whenever live mode was
       // off, and every handover was a stop, a 250ms sleep, and a hope.

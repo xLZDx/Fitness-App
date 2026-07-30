@@ -661,7 +661,7 @@
   "scannerCouldnTTellWhatThatIs": "Couldn't tell what that is",
   "scannerPointAtAMachineAndTapRecognise": "Point at a machine and tap Recognise",
   "scannerTryFillingTheFrameWithOne": "Try filling the frame with one machine, straight on, and avoid people or clutter in the shot.",
-  "scannerWeIdentifyTheEquipmentOnDevice": "We identify the equipment on-device and pull up exercises tuned to your intake and past injuries. Equipment QR stickers are picked up automatically while the camera is open.",
+  "scannerWeIdentifyTheEquipmentOnDevice": "Aim the frame at one machine and tap Recognise — we identify it and pull up exercises tuned to your intake and past injuries.",
   "notificationsWorkoutInMinutes": "Workout in {arg0} minutes",
   "@notificationsWorkoutInMinutes": {
     "placeholders": {

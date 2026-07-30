@@ -43,7 +43,6 @@ import 'features/visual_equipment/data/firestore_recognition_history.dart';
 import 'features/visual_equipment/data/mlkit_live_equipment_service.dart';
 import 'features/visual_equipment/data/gemini_equipment_service.dart';
 import 'features/visual_equipment/data/mlkit_visual_equipment_service.dart';
-import 'features/visual_equipment/data/qr_watcher.dart';
 import 'features/visual_equipment/state/live_equipment_providers.dart';
 import 'features/visual_equipment/state/recognition_history_providers.dart';
 import 'features/visual_equipment/state/visual_equipment_providers.dart';
@@ -146,24 +145,14 @@ Future<void> main() async {
         ),
 
         // Live (continuous) recognition. Attaches the labeler to the Scan
-        // tab's camera session -- it owns no camera of its own, so the QR
-        // watcher and the viewfinder keep working when it detaches.
+        // tab's camera session -- it owns no camera of its own, so the
+        // viewfinder keeps working when it detaches.
         liveEquipmentServiceProvider.overrideWith((ref) {
           final svc = MlKitLiveEquipmentService(
             session: ref.watch(scanCameraSessionProvider),
           );
           ref.onDispose(svc.dispose);
           return svc;
-        }),
-
-        // QR stickers, decoded from the same frames. This replaces
-        // mobile_scanner, which brought a second camera stack that had to be
-        // handed the device back and forth with a 250ms sleep.
-        qrWatcherProvider.overrideWith((ref) {
-          final watcher =
-              QrWatcher(session: ref.watch(scanCameraSessionProvider));
-          ref.onDispose(() => unawaited(watcher.dispose()));
-          return watcher;
         }),
 
         // Every machine the user identifies is remembered (one row per

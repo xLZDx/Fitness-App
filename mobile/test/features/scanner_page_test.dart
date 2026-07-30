@@ -76,17 +76,16 @@ void main() {
   }
 
   group('ScannerPage', () {
-    testWidgets('leads with machine recognition, QR is the background job',
+    testWidgets('photo recognition is the one and only path — no QR',
         (tester) async {
+      // Operator point 7: QR is removed outright, photo recognition stays.
       await pumpScan(tester);
       expect(tester.takeException(), isNull);
 
       expect(find.byKey(const Key('scan-recognise-camera')), findsOneWidget);
       expect(find.text('Recognise machine'), findsOneWidget);
       expect(find.byKey(const Key('scan-recognise-gallery')), findsOneWidget);
-      // QR is described as automatic, not as the thing the user must do.
-      expect(find.textContaining('QR stickers are picked up automatically'),
-          findsOneWidget);
+      expect(find.textContaining('QR'), findsNothing);
     });
 
     testWidgets('the viewfinder is full-width 3:4 with a proportional frame',
