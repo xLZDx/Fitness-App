@@ -147,6 +147,8 @@ void main() {
           durationMinutes: 10,
           status: ScheduledSessionStatus.pending,
         ),
+        title: 'T',
+        body: 'B',
       );
       expect(notifications.scheduled, hasLength(1));
 

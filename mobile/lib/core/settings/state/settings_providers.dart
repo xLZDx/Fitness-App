@@ -1,7 +1,6 @@
-import 'dart:ui' show Locale;
+import 'dart:ui' show Locale, PlatformDispatcher;
 
 import 'package:flutter/foundation.dart' show debugPrint;
-import 'package:flutter/widgets.dart' show WidgetsBinding;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../notifications/notification_providers.dart';
@@ -69,10 +68,13 @@ final settingsControllerProvider =
 /// from `didChangeLocales` when the user changes the device language while the
 /// app is running. Seeded from the platform so it is correct before the first
 /// frame even if nothing ever pushes an update.
+/// Read from [PlatformDispatcher] directly, NOT via `WidgetsBinding.instance`:
+/// the binding does not exist in a plain `ProviderContainer` test, and going
+/// through it made every provider that transitively needed the locale throw
+/// there. `PlatformDispatcher.instance` is available from dart:ui with no
+/// binding at all.
 final deviceLocalesProvider = StateProvider<List<Locale>>(
-  (_) => List<Locale>.unmodifiable(
-    WidgetsBinding.instance.platformDispatcher.locales,
-  ),
+  (_) => List<Locale>.unmodifiable(PlatformDispatcher.instance.locales),
 );
 
 /// The one answer to "what language is the user reading right now".

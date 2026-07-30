@@ -178,7 +178,8 @@ void main() {
       final notifications = MockNotificationService()
         ..now = () => DateTime(2026, 5, 8);
       // Pre-seed a reminder so cancel has something to clear.
-      await notifications.scheduleReminder(_s('s_1', DateTime(2026, 6, 1)));
+      await notifications.scheduleReminder(_s('s_1', DateTime(2026, 6, 1)),
+          title: 'T', body: 'B');
 
       final container = _container(
         repo: repo,

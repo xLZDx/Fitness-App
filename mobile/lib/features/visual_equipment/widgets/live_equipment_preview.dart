@@ -1,32 +1,31 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../state/live_equipment_providers.dart';
+import '../../../core/camera/camera_session.dart';
 
-/// Camera preview for live recognition.
+/// Live camera viewfinder.
 ///
-/// Rebuilds off the service's [LiveEquipmentService.cameraSurface] notifier
-/// rather than reading a getter once. That difference is the whole fix for the
-/// black square the operator reported: `liveEquipmentServiceProvider` is a plain
-/// `Provider` whose value never changes, so watching it alone built this widget
-/// exactly once — before `start()` had finished opening the camera — and nothing
-/// ever rebuilt it. The placeholder was permanent, and because the widget was
-/// also `const`, even a parent rebuild could not reach it (`Element.updateChild`
+/// Rebuilds off [CameraSession.surface] rather than reading a getter once. That
+/// difference is the whole fix for the black square the operator reported: the
+/// preview used to watch a plain `Provider` whose value never changes and read
+/// the controller as a one-shot field, so it built exactly once — before the
+/// camera had finished opening — and nothing ever rebuilt it. It was `const`
+/// too, so even a parent rebuild could not reach it (`Element.updateChild`
 /// short-circuits on an identical const widget).
 ///
-/// Two listenables, because there are two distinct transitions and neither one
+/// Two listenables, because there are two distinct transitions and neither
 /// implies the other:
-///   * null -> a controller exists (a plain field assignment inside `start()`),
+///   * null -> a controller exists (a field assignment inside `start()`),
 ///   * controller -> `isInitialized` (the controller's own `CameraValue`).
-class LiveEquipmentPreview extends ConsumerWidget {
-  const LiveEquipmentPreview({super.key});
+class LiveEquipmentPreview extends StatelessWidget {
+  const LiveEquipmentPreview({super.key, required this.session});
+
+  final CameraSession session;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final svc = ref.watch(liveEquipmentServiceProvider);
+  Widget build(BuildContext context) {
     return ValueListenableBuilder<CameraController?>(
-      valueListenable: svc.cameraSurface,
+      valueListenable: session.surface,
       builder: (context, cam, _) {
         if (cam == null) return const _Warming();
         return ValueListenableBuilder<CameraValue>(

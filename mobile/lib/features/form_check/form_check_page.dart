@@ -191,10 +191,16 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
 
 class _CameraPreview extends StatelessWidget {
   const _CameraPreview({required this.svc});
-  final dynamic svc; // PoseDetectorService
+
+  /// Typed, not `dynamic`. The old signature defeated type promotion, so the
+  /// controller had to be fished out with an `as` cast.
+  final PoseDetectorService svc;
 
   @override
   Widget build(BuildContext context) {
+    // Copied to a local: Dart promotes locals, not instance fields, so the
+    // `is!` check below would not narrow `this.svc`.
+    final svc = this.svc;
     if (svc is! MlKitPoseDetectorService) {
       // Mock service in test/dev — show the static placeholder.
       return const Center(
@@ -202,13 +208,29 @@ class _CameraPreview extends StatelessWidget {
             color: Colors.white24, size: 80),
       );
     }
-    final ctl = svc.cameraController as CameraController?;
-    if (ctl == null || !ctl.value.isInitialized) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.white),
-      );
-    }
-    return CameraPreview(ctl);
+    // Watches the session's controller instead of reading it once. The old code
+    // took `svc.cameraController as CameraController?` through a `dynamic`, so
+    // it saw whatever value happened to be there at build time and had no way
+    // to learn that the camera had become ready — the same defect that left the
+    // Scan tab's viewfinder a permanent black square.
+    return ValueListenableBuilder<CameraController?>(
+      valueListenable: svc.session.surface,
+      builder: (context, ctl, _) {
+        if (ctl == null) {
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          );
+        }
+        return ValueListenableBuilder<CameraValue>(
+          valueListenable: ctl,
+          builder: (context, value, __) => value.isInitialized
+              ? CameraPreview(ctl)
+              : const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
+        );
+      },
+    );
   }
 }
 
@@ -320,7 +342,7 @@ class _SetSummaryCard extends StatelessWidget {
           if (offenders.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(
-              'Flagged: ${offenders.join(', ')}',
+              AppLocalizations.of(context).formcheckFlagged(offenders.join(', ')),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.70),
               ),

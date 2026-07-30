@@ -132,7 +132,9 @@ class AiPlannerPage extends ConsumerWidget {
                                         ?.copyWith(
                                             fontWeight: FontWeight.w800)),
                                 Text(
-                                  '${ex.durationMinutes} min · ${ex.muscles.take(2).join(", ")}',
+                                  AppLocalizations.of(context).aiplannerMinMuscles(
+                                      ex.durationMinutes,
+                                      ex.muscles.take(2).join(', ')),
                                   style: theme.textTheme.labelSmall
                                       ?.copyWith(
                                     color: theme.colorScheme.onSurface

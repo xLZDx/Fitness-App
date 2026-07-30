@@ -54,6 +54,8 @@ class MockNotificationService implements NotificationService {
   @override
   Future<void> scheduleReminder(
     ScheduledSession session, {
+    required String title,
+    required String body,
     Duration leadTime = const Duration(minutes: 30),
   }) async {
     final fireAt = session.scheduledFor.subtract(leadTime);
@@ -66,8 +68,8 @@ class MockNotificationService implements NotificationService {
     _store[session.id] = _ScheduledReminder(
       sessionId: session.id,
       fireAt: fireAt,
-      title: 'Workout in ${leadTime.inMinutes} minutes',
-      body: '${session.exerciseTitle} · ${session.durationMinutes} min',
+      title: title,
+      body: body,
     );
   }
 

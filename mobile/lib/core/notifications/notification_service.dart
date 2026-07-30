@@ -16,8 +16,14 @@ abstract class NotificationService {
   /// [leadTime] is how far in advance of `session.scheduledFor` the
   /// notification fires (default 30 minutes). When `scheduledFor - leadTime`
   /// is in the past, no reminder is registered.
+  /// [title] and [body] are passed IN rather than built here. A notification is
+  /// user-facing text, and this class has no `BuildContext` and no business
+  /// knowing which language the user reads — building the strings here is why
+  /// reminders shouted in English in a Russian app.
   Future<void> scheduleReminder(
     ScheduledSession session, {
+    required String title,
+    required String body,
     Duration leadTime = const Duration(minutes: 30),
   });
 

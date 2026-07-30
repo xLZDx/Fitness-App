@@ -1,16 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../core/camera/camera_session.dart';
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import '../equipment/data/equipment_models.dart';
 import '../visual_equipment/data/live_recognition.dart';
+import '../visual_equipment/data/qr_watcher.dart';
 import '../visual_equipment/data/recognition_history.dart';
 import '../visual_equipment/data/visual_equipment_match.dart';
 import '../visual_equipment/state/live_equipment_providers.dart';
@@ -20,14 +21,19 @@ import '../visual_equipment/widgets/live_equipment_preview.dart';
 
 /// The Scan tab.
 ///
-/// Primary job: **photograph a machine and recognise it** — the user
-/// points the phone at any piece of equipment, taps Recognise, and we
-/// classify it on-device, then route to the exercises tuned to their
-/// intake + injuries.
+/// Primary job: **photograph a machine and recognise it** — point the phone at
+/// any piece of equipment, tap Recognise, and it is classified on-device, then
+/// routed to the exercises tuned to the user's intake + injuries.
 ///
-/// Secondary job: QR. The same live viewfinder keeps watching for our
-/// `fitness://equipment/<id>` stickers and jumps straight there when one
-/// enters frame — no mode switch, no extra tap.
+/// Secondary job: QR. The same viewfinder keeps watching for our
+/// `fitness://equipment/<id>` stickers and jumps straight there when one enters
+/// frame — no mode switch, no extra tap.
+///
+/// One camera, one owner. The viewfinder is live the whole time this tab is
+/// open, because "I cannot see what I am pointing at" was a real defect. What
+/// the Live switch gates is the equipment LABELER, not the camera: that is the
+/// expensive part, and leaving it attached would drag QR down to its cadence
+/// and burn battery for nothing when the user has not asked for it.
 class ScannerPage extends ConsumerStatefulWidget {
   const ScannerPage({super.key});
 
@@ -37,51 +43,131 @@ class ScannerPage extends ConsumerStatefulWidget {
 
 class _ScannerPageState extends ConsumerState<ScannerPage>
     with WidgetsBindingObserver {
-  final _controller = MobileScannerController(
-    detectionSpeed: DetectionSpeed.noDuplicates,
-    facing: CameraFacing.back,
-  );
   bool _handling = false;
+
+  /// Distinguishes "you haven't tried yet" from "we looked and found nothing" —
+  /// the two used to render the same hint card.
+  bool _attempted = false;
+
+  /// Set when the camera could not be opened at all, so the page can say so
+  /// instead of showing a placeholder forever.
+  Object? _cameraError;
+
+  GoRouter? _router;
+  StreamSubscription<ScanResult>? _qrSub;
+
+  /// Captured at arm time so [_disarm] can release the camera WITHOUT touching
+  /// `ref`. Reading a provider from `dispose()` throws "Cannot use ref after the
+  /// widget was disposed" — a mistake this codebase has now made twice, and one
+  /// that would leave the camera running on the way out.
+  CameraSession? _session;
+  QrWatcher? _qr;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _arm());
   }
 
-  /// Android may hand the camera to another app at any time, and "Recognise
-  /// machine" itself backgrounds us by launching the system camera. Holding a
-  /// CameraController across that produces a frozen preview on resume, so
-  /// release live mode on the way out and let the user re-arm it.
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.paused ||
-        state == AppLifecycleState.hidden) {
-      if (ref.read(liveModeEnabledProvider)) {
-        ref.read(liveModeEnabledProvider.notifier).state = false;
-      }
-    }
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final router = GoRouter.of(context);
+    if (router == _router) return;
+    _router?.routerDelegate.removeListener(_onRouteChanged);
+    _router = router;
+    router.routerDelegate.addListener(_onRouteChanged);
   }
-
-  /// Distinguishes "you haven't tried yet" from "we looked and found
-  /// nothing" — the two used to render the same hint card.
-  bool _attempted = false;
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _controller.dispose();
+    _router?.routerDelegate.removeListener(_onRouteChanged);
+    unawaited(_disarm());
     super.dispose();
   }
 
+  /// Releases the camera whenever this tab is not the visible route.
+  ///
+  /// Structural on purpose. `/equipment/:id` is a top-level route rendered ABOVE
+  /// the shell, so this page is never disposed when the user taps through and
+  /// `autoDispose` cannot fire. The previous design asked every call site to
+  /// remember to switch live mode off first, and one of them — the photo-match
+  /// list — did not, leaving the camera streaming with the indicator lit behind
+  /// the page being read. Reacting to the route instead means no call site has
+  /// to remember anything.
+  void _onRouteChanged() {
+    final onScan = (_router?.state.matchedLocation ?? '') == '/scan';
+    if (onScan) {
+      _arm();
+    } else {
+      unawaited(_disarm());
+    }
+  }
+
+  /// Android hands the camera to other apps freely; release it on the way out.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _onRouteChanged();
+      return;
+    }
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      unawaited(_disarm());
+    }
+  }
+
+  /// Opens the camera and attaches the QR watcher. Idempotent.
+  Future<void> _arm() async {
+    if (!mounted) return;
+    // `??=` on a nullable field yields a nullable static type even though the
+    // provider cannot return null, hence the separate non-null read.
+    _session ??= ref.read(scanCameraSessionProvider);
+    _qr ??= ref.read(qrWatcherProvider);
+    final session = _session!;
+    final qr = _qr;
+    try {
+      await session.start();
+      if (!mounted) return;
+      if (_cameraError != null) setState(() => _cameraError = null);
+      if (qr != null && !qr.isRunning) {
+        await qr.start();
+        _qrSub ??= qr.results().listen(
+              _onQr,
+              onError: (Object e) => debugPrint('qr watcher: $e'),
+            );
+      }
+    } catch (e) {
+      // Permission denied, camera busy, no camera at all. Surfaced, because a
+      // viewfinder that never appears with no explanation is the defect this
+      // page was reported for.
+      if (!mounted) return;
+      setState(() => _cameraError = e);
+    }
+  }
+
+  Future<void> _disarm() async {
+    await _qrSub?.cancel();
+    _qrSub = null;
+    await _qr?.stop();
+    // Guarded: on the dispose path there is no `ref` to read any more, and the
+    // provider is being torn down regardless.
+    if (mounted && ref.read(liveModeEnabledProvider)) {
+      ref.read(liveModeEnabledProvider.notifier).state = false;
+    }
+    await _session?.stop();
+  }
+
   /// Every confident identification is remembered, whatever found it.
-  void _remember(String equipmentId, double confidence,
-      RecognitionSource source) {
+  void _remember(
+      String equipmentId, double confidence, RecognitionSource source) {
     // Fire-and-forget by design — a failed history write must never block
-    // routing to the exercises. But it must not vanish either: this is the
-    // only place record() is called, so an unhandled rejection here would be
-    // the whole feature failing invisibly.
+    // routing to the exercises. But it must not vanish either: this is the only
+    // place record() is called, so an unhandled rejection here would be the
+    // whole feature failing invisibly.
     unawaited(
       ref
           .read(recognitionHistoryRepositoryProvider)
@@ -100,26 +186,14 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     );
   }
 
-  /// Background QR watcher — fires only for our own stickers.
-  ///
-  /// Wrapped in try/finally because `_handling` gates BOTH this and the
-  /// recognise button: a throw from `_controller.stop()`/`start()` used to
-  /// leave the flag latched at true, silently killing QR scanning *and* the
-  /// button for the rest of the page's life, with nothing shown to the user.
-  Future<void> _onDetect(BarcodeCapture capture) async {
+  /// A sticker entered frame. It names the machine exactly, so it is recorded at
+  /// full confidence rather than a model score.
+  Future<void> _onQr(ScanResult result) async {
     if (_handling) return;
-    final result = ScanResult.tryParse(capture.barcodes.firstOrNull?.rawValue);
-    if (result == null) return; // not ours — keep watching quietly
     _handling = true;
     try {
-      await _controller.stop();
-      // A QR code names the machine exactly, so it is recorded at full
-      // confidence rather than a model score.
       _remember(result.equipmentId, 1, RecognitionSource.qr);
-      if (!mounted) return;
-      await context.push('/equipment/${result.equipmentId}');
-      if (!mounted) return;
-      await _controller.start();
+      await _openEquipment(result.equipmentId);
     } catch (e) {
       debugPrint('QR handling failed: $e');
     } finally {
@@ -127,69 +201,23 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     }
   }
 
-  /// Live mode and the QR viewfinder both want the camera, and only one can
-  /// hold it. Stop the QR controller before handing the camera over, and
-  /// restart it when live mode is switched off.
-  Future<void> _setLiveMode(bool on) async {
-    try {
-      if (on) {
-        await _controller.stop();
-      }
-      ref.read(liveModeEnabledProvider.notifier).state = on;
-      if (!on) await _restartQrScanner();
-    } catch (e) {
-      // The mode flag is already set; a controller hiccup must not leave the
-      // page wedged. Log rather than swallow.
-      debugPrint('live-mode handover failed: $e');
-    }
-  }
-
-  /// Hands the camera back to the QR viewfinder.
-  ///
-  /// The live service releases the device in its own `stop()`; the pause gives
-  /// it the frame to finish before the QR controller grabs it again.
-  Future<void> _restartQrScanner() async {
-    await Future<void>.delayed(const Duration(milliseconds: 250));
-    if (!mounted) return;
-    await _controller.start();
-  }
-
-  /// Releases the camera and navigates away.
-  ///
-  /// Every route out of this page has to go through here. `/equipment/:id` is a
-  /// top-level route rendered above the shell, so this page is never disposed
-  /// and `autoDispose` cannot fire — the stream would keep running, camera
-  /// indicator lit, behind the page the user is reading. The match list used to
-  /// push directly and leaked exactly that way.
-  ///
-  /// The release is immediate but the QR hand-back is NOT awaited: making the
-  /// navigation wait for it puts a visible pause — the 250ms handover plus
-  /// however long the controller takes to start — in front of a tap that should
-  /// feel instant. Restarting the QR scanner only matters for coming back.
+  /// Navigates away. The route listener releases the camera on its own.
   Future<void> _openEquipment(String id) async {
-    final router = GoRouter.of(context);
-    ref.read(liveModeEnabledProvider.notifier).state = false;
-    unawaited(_restartQrScanner().catchError((Object e) {
-      debugPrint('QR scanner restart after navigation failed: $e');
-    }));
-    await router.push('/equipment/$id');
+    if (!mounted) return;
+    await GoRouter.of(context).push('/equipment/$id');
   }
 
   /// Primary action: photograph the machine WITHOUT leaving the app.
   ///
-  /// Shoots through the live service's own camera session. The old path used
+  /// Shoots through the same session the viewfinder shows. The old path used
   /// `ImagePicker(source: camera)`, which hands off to the system camera as a
-  /// separate activity — the app goes to the background, the preview freezes on
-  /// return, and it is not what the operator asked for. Live mode is armed on
-  /// demand when it is off, because that is what owns the camera.
+  /// separate activity — the app backgrounds, the preview freezes on return,
+  /// and it is not what was asked for.
   Future<void> _recogniseWithCamera() async {
     if (_handling) return;
     _handling = true;
     try {
-      if (!ref.read(liveModeEnabledProvider)) {
-        await _setLiveMode(true);
-      }
-      final shot = await ref.read(liveEquipmentServiceProvider).captureStill();
+      final shot = await ref.read(scanCameraSessionProvider).captureStill();
       if (shot == null) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -249,6 +277,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     final liveOn = ref.watch(liveModeEnabledProvider);
     final liveAsync = ref.watch(liveRecognitionProvider);
     final live = liveAsync.valueOrNull;
+    final session = ref.watch(scanCameraSessionProvider);
     // Record settled live readings. The repository's 5-minute dedup keeps a
     // camera held on one machine from writing a row per frame.
     ref.listen<AsyncValue<LiveRecognition?>>(liveRecognitionProvider,
@@ -261,15 +290,16 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
       appBar: GlassAppBar(
         title: AppLocalizations.of(context).scannerScan,
         actions: [
-          // Live mode is opt-in: a continuous camera stream is the most
-          // battery-expensive thing here.
+          // Gates the labeler, not the camera.
           Row(
             children: [
-              Text(AppLocalizations.of(context).scannerLive, style: theme.textTheme.labelLarge),
+              Text(AppLocalizations.of(context).scannerLive,
+                  style: theme.textTheme.labelLarge),
               Switch(
                 key: const Key('scan-live-toggle'),
                 value: liveOn,
-                onChanged: _setLiveMode,
+                onChanged: (on) =>
+                    ref.read(liveModeEnabledProvider.notifier).state = on,
               ),
             ],
           ),
@@ -286,15 +316,10 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    if (liveOn)
-                      const LiveEquipmentPreview()
+                    if (_cameraError != null)
+                      _CameraUnavailable(error: _cameraError!)
                     else
-                      MobileScanner(
-                        controller: _controller,
-                        onDetect: _onDetect,
-                        errorBuilder: (context, error, child) =>
-                            _CameraUnavailable(error: error),
-                      ),
+                      LiveEquipmentPreview(session: session),
                     Center(
                       child: Container(
                         width: 220,
@@ -320,16 +345,17 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                     key: const Key('scan-recognise-camera'),
                     onPressed: _recogniseWithCamera,
                     icon: const Icon(Icons.photo_camera_outlined),
-                    label: Text(AppLocalizations.of(context).scannerRecogniseMachine),
+                    label: Text(
+                        AppLocalizations.of(context).scannerRecogniseMachine),
                   ),
                 ),
                 const SizedBox(width: 8),
                 // The app theme gives buttons minimumSize Size.fromHeight(54),
-                // i.e. minWidth == infinity. In a Row's non-flex slot the
-                // width constraint is unbounded, so an unwrapped button forces
-                // an infinite width and the whole page fails to lay out
-                // (blank screen, no red error). Always bound button width
-                // outside Expanded.
+                // i.e. minWidth == infinity. In a Row's non-flex slot the width
+                // constraint is unbounded, so an unwrapped button forces an
+                // infinite width and the whole page fails to lay out (blank
+                // screen, no red error). Always bound button width outside
+                // Expanded.
                 SizedBox(
                   width: 56,
                   child: OutlinedButton(
@@ -342,19 +368,18 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
             ),
             if (liveOn) ...[
               const SizedBox(height: 14),
-              // An error here means the camera or the model failed, which is
-              // NOT the same as "no machine recognised yet" — spinning
-              // forever on a broken model was a real defect.
+              // An error here means the model or the labeler failed, which is
+              // NOT the same as "no machine recognised yet" — spinning forever
+              // on a broken model was a real defect.
               liveAsync.hasError
                   ? GlassCard(
                       key: const Key('scan-live-error'),
                       tint: theme.colorScheme.error,
-                      child: Text(AppLocalizations.of(context).scannerLiveRecognitionFailed(liveAsync.error ?? '')),
+                      child: Text(AppLocalizations.of(context)
+                          .scannerLiveRecognitionFailed(
+                              liveAsync.error ?? '')),
                     )
-                  : _LiveCard(
-                      recognition: live,
-                      onOpen: _openEquipment,
-                    ),
+                  : _LiveCard(recognition: live, onOpen: _openEquipment),
             ],
             const SizedBox(height: 14),
             matches.when(
@@ -364,7 +389,8 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
               ),
               error: (e, _) => GlassCard(
                 tint: theme.colorScheme.error,
-                child: Text(AppLocalizations.of(context).scannerRecognitionFailed(e)),
+                child:
+                    Text(AppLocalizations.of(context).scannerRecognitionFailed(e)),
               ),
               data: (list) => list.isEmpty
                   ? _HintCard(theme: theme, noMatch: _attempted)
@@ -381,32 +407,27 @@ class _HintCard extends StatelessWidget {
   const _HintCard({required this.theme, this.noMatch = false});
   final ThemeData theme;
 
-  /// True once a photo has been classified with no confident match, so the
-  /// copy stops reading like the user never pressed the button.
+  /// True once a photo has been classified with no confident match, so the copy
+  /// stops reading like the user never pressed the button.
   final bool noMatch;
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            noMatch
-                ? "Couldn't tell what that is"
-                : 'Point at a machine and tap Recognise',
+            noMatch ? l.scannerCouldnTTellWhatThatIs : l.scannerPointAtAMachineAndTapRecognise,
             style: theme.textTheme.titleMedium
                 ?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 4),
           Text(
             noMatch
-                ? "Try filling the frame with one machine, straight on, and "
-                    "avoid people or clutter in the shot."
-                : "We identify the equipment on-device and pull up exercises "
-                    "tuned to your intake and past injuries. Equipment QR "
-                    "stickers are picked up automatically while the camera "
-                    "is open.",
+                ? l.scannerTryFillingTheFrameWithOne
+                : l.scannerWeIdentifyTheEquipmentOnDevice,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
             ),
@@ -417,8 +438,8 @@ class _HintCard extends StatelessWidget {
   }
 }
 
-/// Live-mode readout. Shows what the camera has settled on, how much of the
-/// vote agreed, and a way straight into the exercises.
+/// Live-mode readout. What the camera has settled on, how much of the vote
+/// agreed, and a way straight into the exercises.
 class _LiveCard extends StatelessWidget {
   const _LiveCard({required this.recognition, required this.onOpen});
   final LiveRecognition? recognition;
@@ -465,7 +486,9 @@ class _LiveCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  AppLocalizations.of(context).scannerOfFramesAgree((r.confidence * 100).toStringAsFixed(0), (r.agreement * 100).toStringAsFixed(0)),
+                  AppLocalizations.of(context).scannerOfFramesAgree(
+                      (r.confidence * 100).toStringAsFixed(0),
+                      (r.agreement * 100).toStringAsFixed(0)),
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
                   ),
@@ -483,8 +506,8 @@ class _LiveCard extends StatelessWidget {
 class _Matches extends StatelessWidget {
   const _Matches({required this.matches, required this.onOpen});
 
-  /// Routed through the page so the camera is released first. Pushing straight
-  /// from here left the live stream running behind the equipment page.
+  /// Routed through the page so navigation is uniform; the route listener is
+  /// what releases the camera.
   final Future<void> Function(String equipmentId) onOpen;
   final List<VisualMatch> matches;
 
@@ -515,7 +538,8 @@ class _Matches extends StatelessWidget {
                             ?.copyWith(fontWeight: FontWeight.w800),
                       ),
                       Text(
-                        AppLocalizations.of(context).scannerConfidence((m.confidence * 100).toStringAsFixed(0)),
+                        AppLocalizations.of(context).scannerConfidence(
+                            (m.confidence * 100).toStringAsFixed(0)),
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: theme.colorScheme.onSurface
                               .withValues(alpha: 0.65),
@@ -537,7 +561,7 @@ class _Matches extends StatelessWidget {
 
 class _CameraUnavailable extends StatelessWidget {
   const _CameraUnavailable({required this.error});
-  final MobileScannerException error;
+  final Object error;
 
   @override
   Widget build(BuildContext context) {
@@ -570,7 +594,8 @@ class _CameraUnavailable extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              AppLocalizations.of(context).scannerYouCanStillPickAPhoto(error.errorCode.name),
+              AppLocalizations.of(context)
+                  .scannerYouCanStillPickAPhoto(error),
               style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
               textAlign: TextAlign.center,
             ),

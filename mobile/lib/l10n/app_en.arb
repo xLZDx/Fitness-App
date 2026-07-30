@@ -669,5 +669,36 @@
         "type": "Object"
       }
     }
+  },
+  "scannerCouldnTTellWhatThatIs": "Couldn't tell what that is",
+  "scannerPointAtAMachineAndTapRecognise": "Point at a machine and tap Recognise",
+  "scannerTryFillingTheFrameWithOne": "Try filling the frame with one machine, straight on, and avoid people or clutter in the shot.",
+  "scannerWeIdentifyTheEquipmentOnDevice": "We identify the equipment on-device and pull up exercises tuned to your intake and past injuries. Equipment QR stickers are picked up automatically while the camera is open.",
+  "notificationsWorkoutInMinutes": "Workout in {arg0} minutes",
+  "@notificationsWorkoutInMinutes": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "aiplannerMinMuscles": "{arg0} min · {arg1}",
+  "formcheckFlagged": "Flagged: {arg0}",
+  "@aiplannerMinMuscles": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      },
+      "arg1": {
+        "type": "Object"
+      }
+    }
+  },
+  "@formcheckFlagged": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
   }
 }

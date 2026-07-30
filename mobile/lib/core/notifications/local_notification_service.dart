@@ -62,6 +62,8 @@ class LocalNotificationService implements NotificationService {
   @override
   Future<void> scheduleReminder(
     ScheduledSession session, {
+    required String title,
+    required String body,
     Duration leadTime = const Duration(minutes: 30),
   }) async {
     if (!_initialized) await init();
@@ -85,8 +87,8 @@ class LocalNotificationService implements NotificationService {
 
     await _plugin.zonedSchedule(
       _idFor(session.id),
-      'Workout in ${leadTime.inMinutes} minutes',
-      '${session.exerciseTitle} · ${session.durationMinutes} min',
+      title,
+      body,
       tzWhen,
       details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,

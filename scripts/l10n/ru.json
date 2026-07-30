@@ -264,5 +264,12 @@
   "muscleMapFront": "Спереди",
   "muscleMapBack": "Сзади",
   "muscleLowerBack": "Поясница",
-  "muscleMapAlsoWorked": "Также работают: {arg0}"
+  "muscleMapAlsoWorked": "Также работают: {arg0}",
+  "scannerCouldnTTellWhatThatIs": "Не удалось понять, что это",
+  "scannerPointAtAMachineAndTapRecognise": "Наведите на тренажёр и нажмите «Распознать»",
+  "scannerTryFillingTheFrameWithOne": "Постарайтесь, чтобы в кадре был один тренажёр целиком, прямо перед вами, без людей и лишних предметов.",
+  "scannerWeIdentifyTheEquipmentOnDevice": "Мы распознаём тренажёр прямо на устройстве и подбираем упражнения с учётом вашей анкеты и прошлых травм. QR-наклейки на тренажёрах считываются автоматически, пока камера открыта.",
+  "notificationsWorkoutInMinutes": "Тренировка через {arg0} мин",
+  "aiplannerMinMuscles": "{arg0} мин · {arg1}",
+  "formcheckFlagged": "Ошибки: {arg0}"
 }

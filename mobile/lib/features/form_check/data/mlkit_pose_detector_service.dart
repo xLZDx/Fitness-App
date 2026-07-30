@@ -1,15 +1,13 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:ui' show Size;
 
-import 'package:camera/camera.dart';
+import 'package:google_mlkit_commons/google_mlkit_commons.dart' show InputImage;
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart'
     as mlkit;
 
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/services.dart' show PlatformException;
 
-import '../../../core/camera/nv21_converter.dart';
+import '../../../core/camera/camera_session.dart';
 import 'pose_detector_service.dart';
 import 'pose_landmark.dart';
 
@@ -22,9 +20,19 @@ import 'pose_landmark.dart';
 /// and [dispose] when leaving the screen — otherwise the camera stays
 /// hot and the detector leaks resources.
 class MlKitPoseDetectorService implements PoseDetectorService {
-  MlKitPoseDetectorService();
+  MlKitPoseDetectorService({CameraSession? session})
+      : session = session ?? CameraSession(facing: SessionFacing.front);
 
-  CameraController? _camera;
+  /// The front camera, owned by the session rather than by this detector.
+  ///
+  /// It used to build its own controller and expose it so the page could draw a
+  /// preview via `svc.cameraController as CameraController?` — a downcast of a
+  /// detector to get at a camera. The frame-format handling was also a second,
+  /// near-identical copy of the equipment recogniser's, which is two places for
+  /// the NV21 bug to come back.
+  final CameraSession session;
+
+  StreamSubscription<InputImage>? _sub;
   // Nullable, not `late final`: stop() has to be able to release the detector
   // and let a later start() build a new one. A `late final` field made the
   // service single-use, which is what broke Form Check on any second visit.
@@ -34,10 +42,7 @@ class MlKitPoseDetectorService implements PoseDetectorService {
   bool _busy = false;
   bool _initialised = false;
 
-  /// Exposed so the FormCheckPage can render `CameraPreview(controller)`
-  /// against the same controller this service feeds to ML Kit. Null
-  /// until [start] resolves.
-  CameraController? get cameraController => _camera;
+
 
   @override
   Stream<PoseFrame> frames() => _ctrl.stream;
@@ -51,32 +56,20 @@ class MlKitPoseDetectorService implements PoseDetectorService {
         model: mlkit.PoseDetectionModel.accurate,
       ),
     );
-    final cameras = await availableCameras();
-    final front = cameras.firstWhere(
-      (c) => c.lensDirection == CameraLensDirection.front,
-      orElse: () => cameras.first,
-    );
-    _camera = CameraController(
-      front,
-      ResolutionPreset.medium,
-      enableAudio: false,
-      // yuv420, not nv21: camera_android_camerax ignores this argument and
-      // always emits YUV_420_888 (android_camera_camerax.dart:450-453).
-      imageFormatGroup: Platform.isAndroid
-          ? ImageFormatGroup.yuv420
-          : ImageFormatGroup.bgra8888,
-    );
-    await _camera!.initialize();
+    await session.start();
     _initialised = true;
-    await _camera!.startImageStream(_onCameraImage);
+    _sub = session.frames().listen(
+          _onFrame,
+          onError: (Object e, StackTrace st) {
+            if (!_ctrl.isClosed) _ctrl.addError(e, st);
+          },
+        );
   }
 
-  Future<void> _onCameraImage(CameraImage image) async {
+  Future<void> _onFrame(InputImage inputImage) async {
     if (_busy) return;
     _busy = true;
     try {
-      final inputImage = _toMlKitImage(image);
-      if (inputImage == null) return;
       final detector = _detector;
       if (detector == null) return; // stopped mid-frame
       final poses = await detector.processImage(inputImage);
@@ -102,34 +95,6 @@ class MlKitPoseDetectorService implements PoseDetectorService {
     } finally {
       _busy = false;
     }
-  }
-
-  /// Convert a `CameraImage` into the format `google_mlkit_pose_detection`
-  /// expects. The plugin specifies separate paths for Android NV21 vs
-  /// iOS BGRA8888.
-  mlkit.InputImage? _toMlKitImage(CameraImage image) {
-    if (image.planes.isEmpty) return null;
-    final rotation = mlkit.InputImageRotationValue.fromRawValue(
-            _camera!.description.sensorOrientation) ??
-        mlkit.InputImageRotation.rotation0deg;
-
-    // Stated, not derived from `image.format.raw`: CameraX reports
-    // YUV_420_888 (35), which ML Kit's Android bridge rejects outright
-    // (InputImageConverter.java:111). We repack into real NV21 instead. This
-    // is the same defect that made live equipment recognition fail loudly and
-    // this detector fail silently.
-    final android = Platform.isAndroid;
-    return mlkit.InputImage.fromBytes(
-      bytes: android ? cameraImageToNv21(image) : image.planes.first.bytes,
-      metadata: mlkit.InputImageMetadata(
-        size: Size(image.width.toDouble(), image.height.toDouble()),
-        rotation: rotation,
-        format: android
-            ? mlkit.InputImageFormat.nv21
-            : mlkit.InputImageFormat.bgra8888,
-        bytesPerRow: android ? image.width : image.planes.first.bytesPerRow,
-      ),
-    );
   }
 
   /// Translate ML Kit's joint set into [PoseFrame]. We only forward the
@@ -190,15 +155,9 @@ class MlKitPoseDetectorService implements PoseDetectorService {
   Future<void> stop() async {
     if (!_initialised) return;
     _initialised = false;
-    try {
-      if (_camera?.value.isStreamingImages ?? false) {
-        await _camera!.stopImageStream();
-      }
-      await _camera?.dispose();
-    } catch (e) {
-      debugPrint('pose detector camera shutdown: $e');
-    }
-    _camera = null;
+    await _sub?.cancel();
+    _sub = null;
+    await session.stop();
     try {
       await _detector?.close();
     } catch (e) {

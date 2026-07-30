@@ -20,6 +20,7 @@ import 'package:fitness_app/features/equipment/widgets/muscle_map.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/profile/data/profile_repository.dart';
 import 'package:fitness_app/features/profile/state/profile_providers.dart';
+import 'package:fitness_app/core/camera/camera_session.dart';
 import 'package:fitness_app/features/visual_equipment/data/mlkit_live_equipment_service.dart';
 import 'package:fitness_app/features/visual_equipment/state/live_equipment_providers.dart';
 import 'package:fitness_app/shared/widgets/aurora_background.dart';
@@ -125,7 +126,7 @@ Future<void> main() async {
         initialSettingsProvider.overrideWithValue(settings),
         // The real recogniser: this is the whole point of running on a device.
         liveEquipmentServiceProvider.overrideWith((ref) {
-          final svc = MlKitLiveEquipmentService();
+          final svc = MlKitLiveEquipmentService(session: CameraSession());
           ref.onDispose(svc.dispose);
           return svc;
         }),

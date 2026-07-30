@@ -1,20 +1,16 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fitness_app/features/visual_equipment/data/live_equipment_service.dart';
-import 'package:fitness_app/features/visual_equipment/data/live_recognition.dart';
-import 'package:fitness_app/features/visual_equipment/state/live_equipment_providers.dart';
+import 'package:fitness_app/core/camera/camera_session.dart';
 import 'package:fitness_app/features/visual_equipment/widgets/live_equipment_preview.dart';
 
 /// Exposes whether anything is listening.
 ///
 /// That is the crux of the black-square defect: the old preview read a getter
-/// once, so NOTHING was subscribed to the camera becoming ready, and the
+/// once, so NOTHING was subscribed to the camera becoming ready and the
 /// placeholder was permanent. Asserting on the subscription tests the actual
 /// mechanism rather than a symptom that needs a real camera to observe.
 class _ObservableSurface extends ValueNotifier<CameraController?> {
@@ -22,75 +18,48 @@ class _ObservableSurface extends ValueNotifier<CameraController?> {
   bool get observed => hasListeners;
 }
 
-class _FakeLiveService implements LiveEquipmentService {
-  final _ObservableSurface surface = _ObservableSurface(null);
-  final StreamController<LiveRecognition> _ctrl =
-      StreamController<LiveRecognition>.broadcast();
-  int captureCalls = 0;
+/// A session whose surface the test drives by hand. Subclassing rather than
+/// reimplementing keeps the widget's contract honest — it is the real type.
+class _FakeSession extends CameraSession {
+  final _ObservableSurface fakeSurface = _ObservableSurface(null);
 
   @override
-  ValueListenable<CameraController?> get cameraSurface => surface;
-
-  @override
-  Future<XFile?> captureStill() async {
-    captureCalls++;
-    return null;
-  }
-
-  @override
-  Stream<LiveRecognition> recognitions() => _ctrl.stream;
-
-  @override
-  bool get isRunning => true;
-
-  @override
-  Future<void> start() async {}
-
-  @override
-  Future<void> stop() async {}
-
-  void dispose() {
-    surface.dispose();
-    _ctrl.close();
-  }
+  ValueListenable<CameraController?> get surface => fakeSurface;
 }
 
 void main() {
-  Widget wrap(_FakeLiveService svc) => ProviderScope(
-        overrides: [liveEquipmentServiceProvider.overrideWithValue(svc)],
-        child: const MaterialApp(
-          home: Scaffold(
-            body: SizedBox(
-              width: 300,
-              height: 300,
-              child: LiveEquipmentPreview(),
-            ),
+  Widget wrap(CameraSession session) => MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 300,
+            height: 300,
+            child: LiveEquipmentPreview(session: session),
           ),
         ),
       );
 
   testWidgets('subscribes to the camera-ready signal', (tester) async {
-    final svc = _FakeLiveService();
-    addTearDown(svc.dispose);
+    final session = _FakeSession();
+    addTearDown(session.fakeSurface.dispose);
 
-    expect(svc.surface.observed, isFalse);
-    await tester.pumpWidget(wrap(svc));
+    expect(session.fakeSurface.observed, isFalse);
+    await tester.pumpWidget(wrap(session));
     await tester.pump();
 
-    // THE regression assertion. Before the fix the preview watched only a plain
-    // `Provider` whose value never changes and read `cameraController` as a
-    // one-shot field, leaving this false forever — so when `start()` finished
-    // opening the camera, nothing in the tree found out.
-    expect(svc.surface.observed, isTrue,
+    // THE regression assertion. Before the fix the preview watched a plain
+    // `Provider` whose value never changes and read the controller as a one-shot
+    // field, leaving this false forever — so when the camera finished opening,
+    // nothing in the tree found out.
+    expect(session.fakeSurface.observed, isTrue,
         reason: 'nothing is listening for the camera to become ready');
   });
 
   testWidgets('shows the warming placeholder while there is no camera',
       (tester) async {
-    final svc = _FakeLiveService();
-    addTearDown(svc.dispose);
+    final session = _FakeSession();
+    addTearDown(session.fakeSurface.dispose);
 
-    await tester.pumpWidget(wrap(svc));
+    await tester.pumpWidget(wrap(session));
     await tester.pump();
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -100,9 +69,9 @@ void main() {
 
   testWidgets('an uninitialized controller keeps the placeholder, not a crash',
       (tester) async {
-    final svc = _FakeLiveService();
-    addTearDown(svc.dispose);
-    await tester.pumpWidget(wrap(svc));
+    final session = _FakeSession();
+    addTearDown(session.fakeSurface.dispose);
+    await tester.pumpWidget(wrap(session));
     await tester.pump();
 
     // Constructed, never initialized — CameraPreview would throw on one of
@@ -123,7 +92,7 @@ void main() {
       }
     });
 
-    svc.surface.value = controller;
+    session.fakeSurface.value = controller;
     await tester.pump();
 
     expect(find.byType(CameraPreview), findsNothing);
@@ -131,11 +100,37 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  test('the mock service satisfies the camera contract without a camera', () {
-    final svc = MockLiveEquipmentService();
-    addTearDown(svc.dispose);
-    expect(svc.cameraSurface.value, isNull);
-    expect(svc.captureStill(), completion(isNull));
+  group('CameraSession', () {
+    test('holds no camera until started', () {
+      // This is what lets widget tests pump the Scan page without a device and
+      // without a mock: an unstarted session is inert.
+      final session = CameraSession();
+      expect(session.surface.value, isNull);
+      expect(session.isRunning, isFalse);
+      expect(session.lastFrameAt, isNull);
+    });
+
+    test('facing is explicit, and defaults to the back camera', () {
+      expect(CameraSession().facing, SessionFacing.back);
+      expect(CameraSession(facing: SessionFacing.front).facing,
+          SessionFacing.front);
+    });
+
+    test('stop on a session that never started is harmless', () async {
+      final session = CameraSession();
+      await session.stop();
+      expect(session.isRunning, isFalse);
+    });
+
+    test('captureStill without a camera returns null rather than throwing',
+        () async {
+      final session = CameraSession();
+      expect(
+        await session.captureStill().timeout(const Duration(seconds: 1),
+            onTimeout: () => null),
+        isNull,
+      );
+    });
   });
 
   group('no system-camera hand-off anywhere', () {
@@ -150,9 +145,9 @@ void main() {
         .join('\n');
 
     test('ImageSource.camera does not appear in lib/', () {
-      // The operator asked for capture to stay inside the app. `ImageSource
-      // .camera` launches the system camera as a separate activity, so its
-      // absence is the mechanical guarantee that it cannot creep back in.
+      // Capture must stay inside the app. `ImageSource.camera` launches the
+      // system camera as a separate activity, so its absence is the mechanical
+      // guarantee that it cannot creep back in.
       final offenders = <String>[];
       for (final f in Directory('lib').listSync(recursive: true)) {
         if (f is! File || !f.path.endsWith('.dart')) continue;
@@ -169,6 +164,37 @@ void main() {
       final scanner =
           File('lib/features/scanner/scanner_page.dart').readAsStringSync();
       expect(scanner.contains('ImageSource.gallery'), isTrue);
+    });
+
+    test('only CameraSession opens a camera', () {
+      // The defect this prevents is architectural: two recognition services
+      // each built their own CameraController, so the preview had to downcast a
+      // detector to draw a viewfinder, and the frame-format handling existed
+      // twice.
+      final offenders = <String>[];
+      for (final f in Directory('lib').listSync(recursive: true)) {
+        if (f is! File || !f.path.endsWith('.dart')) continue;
+        if (f.path.endsWith('camera_session.dart')) continue;
+        if (code(f.readAsStringSync()).contains('CameraController(')) {
+          offenders.add(f.path);
+        }
+      }
+      expect(offenders, isEmpty);
+    });
+
+    test('mobile_scanner is gone', () {
+      // It was a second camera stack: it held the device whenever live mode was
+      // off, and every handover was a stop, a 250ms sleep, and a hope.
+      expect(File('pubspec.yaml').readAsStringSync().contains('mobile_scanner'),
+          isFalse);
+      final offenders = <String>[];
+      for (final f in Directory('lib').listSync(recursive: true)) {
+        if (f is! File || !f.path.endsWith('.dart')) continue;
+        if (code(f.readAsStringSync()).contains('mobile_scanner')) {
+          offenders.add(f.path);
+        }
+      }
+      expect(offenders, isEmpty);
     });
   });
 }

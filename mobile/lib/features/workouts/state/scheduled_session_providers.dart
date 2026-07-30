@@ -1,3 +1,7 @@
+import 'dart:ui' show Locale;
+
+import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/notifications/notification_providers.dart';
@@ -80,9 +84,24 @@ class ScheduleSessionAction extends Notifier<AsyncValue<void>> {
       if (ref.read(settingsControllerProvider).notificationsEnabled) {
         try {
           final notifications = ref.read(notificationServiceProvider);
-          await notifications.scheduleReminder(session);
-        } catch (_) {
-          // Swallow — the user-visible save succeeded.
+          // Loaded from the delegate rather than a BuildContext: this is a
+          // provider, and the reminder text has to be in the user's language
+          // wherever it is built from.
+          const leadTime = Duration(minutes: 30);
+          final l = await AppLocalizations.delegate
+              .load(Locale(ref.read(effectiveLanguageCodeProvider)));
+          await notifications.scheduleReminder(
+            session,
+            leadTime: leadTime,
+            title: l.notificationsWorkoutInMinutes(leadTime.inMinutes),
+            body: l.notificationsMin(
+                session.exerciseTitle, session.durationMinutes),
+          );
+        } catch (e) {
+          // The user-visible save succeeded, so this must not fail the action.
+          // But it is logged: a bare swallow here hid a localization-load
+          // failure that stopped reminders being registered at all.
+          debugPrint('reminder not scheduled for ${session.id}: $e');
         }
       }
       state = const AsyncValue.data(null);
