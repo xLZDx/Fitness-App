@@ -28,7 +28,10 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
   GeminiVisualEquipmentService({
     Future<EquipmentAliasIndex>? index,
     CloudAsk? ask,
-    this.modelName = 'gemini-2.5-flash',
+    // Verified live 2026-07-30: gemini-2.5-flash returns 404 'no longer
+    // available to new users' on this project; 3-flash-preview answered the
+    // operator's power-cage photo with {"machine":"squat rack", 0.9}.
+    this.modelName = 'gemini-3-flash-preview',
   })  : _index = index ?? EquipmentAliasIndex.load(),
         _ask = ask;
 

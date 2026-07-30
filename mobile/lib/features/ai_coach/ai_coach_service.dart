@@ -10,7 +10,9 @@ typedef CoachAsk = Future<String?> Function(String prompt);
 /// a chat: the page asks one well-formed question — technique, mistakes,
 /// beginner set/rep guidance for THIS machine — and renders one answer.
 class AiCoachService {
-  AiCoachService({CoachAsk? ask, this.modelName = 'gemini-2.5-flash'})
+  // Same model as recognition — gemini-2.5-flash 404s for this project
+  // (verified live 2026-07-30).
+  AiCoachService({CoachAsk? ask, this.modelName = 'gemini-3-flash-preview'})
       : _ask = ask;
 
   final String modelName;
