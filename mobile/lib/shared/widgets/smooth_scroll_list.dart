@@ -24,21 +24,19 @@ class SmoothScrollList extends StatelessWidget {
     super.key,
     required this.children,
     this.padding = EdgeInsets.zero,
-    this.physics,
-    this.controller,
   });
 
   final List<Widget> children;
   final EdgeInsetsGeometry padding;
-  final ScrollPhysics? physics;
-  final ScrollController? controller;
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      controller: controller,
       padding: padding,
-      physics: physics ??
+      // Fixed, not a parameter: every page wants the same feel, and no caller
+      // passes physics or a controller. Add a parameter when a real second
+      // case appears, not before.
+      physics:
           const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       itemCount: children.length,
       // Builder rather than a plain ListView so off-screen rows are not built
