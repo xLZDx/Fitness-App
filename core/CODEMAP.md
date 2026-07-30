@@ -57,7 +57,6 @@ rest are pushed full-screen.
 | `/photos` | progress_photos | `lib/features/progress_photos/progress_photos_page.dart` |
 | `/team/:teamId` | community | `lib/features/community/team_feed_page.dart` |
 | `/form-check` | form_check | `lib/features/form_check/form_check_page.dart` |
-| `/recognise` | visual_equipment | `lib/features/visual_equipment/visual_equipment_page.dart` |
 | `/contribute` | catalog | `lib/features/catalog/contribute_video_page.dart` |
 | `/moderate` | catalog | `lib/features/catalog/moderation_page.dart` |
 | `/coaches` | marketplace | `lib/features/marketplace/marketplace_page.dart` |
@@ -82,12 +81,13 @@ rest are pushed full-screen.
 | `community` | 4 | 454 | Teams and team feeds |
 | `marketplace` | 4 | 405 | Coach marketplace |
 | `progress` | 2 | 400 | Charts + stats over logged workouts |
-| `visual_equipment` | 5 | 369 | Camera-based equipment recognition (`/recognise`) |
+| `visual_equipment` | 13 | ~1,300 | Equipment recognition data layer: Gemini cloud recogniser (`gemini_equipment_service.dart`, Firebase AI Logic) with on-device TFLite fallback, live smoother, recognition history. Rendered by `scanner` |
+| `ai_coach` | 2 | ~250 | Gemini-backed technique advice sheet, opened from every equipment page |
 | `social_feed` | 4 | 333 | Social activity feed |
 | `ai_planner` | 4 | 326 | AI-generated training plan (`/plan`) |
 | `about` | 1 | 287 | About / info page |
 | `celebrity_plans` | 4 | 228 | Celebrity-authored plans |
-| `scanner` | 1 | 157 | QR scan entry point — the core moat feature |
+| `scanner` | 1 | ~700 | Photo-recognition tab (the core moat feature): live viewfinder at min zoom, centre-crop capture, honest confidences, "My machines" history. QR was removed 2026-07-30 (operator request) |
 | `splash` | 1 | 106 | Launch / routing gate |
 
 ## Logic-only modules (no screen)
@@ -139,7 +139,7 @@ every scroll tick, which cost the frame budget for decoration.)
 
 | Path | Files | Role |
 |---|---:|---|
-| `mobile/test/` | 96 | Unit + widget tests, 634 of them. Runs on the host via `flutter test` |
+| `mobile/test/` | 98 | Unit + widget tests, 680 of them. Runs on the host via `flutter test` |
 | `mobile/integration_test/` | 1 | `app_test.dart` — drives the real app on a device; the only place the native ML Kit bridge and the actual APK contents are visible. Needs hardware |
 | `mobile/android/` | 19 | Android host + Gradle |
 | `mobile/assets/` | 4 | Bundled data, ML models, demo frames, and the CC BY 4.0 anatomy chart |

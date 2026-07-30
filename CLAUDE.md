@@ -31,7 +31,7 @@ engineering facts** — skip it for code work.
 - **Android ships first, but every choice must accommodate iOS** — full rule in
   `core/CONVENTIONS.md`. The `HealthService` interface is the Health Connect ↔ HealthKit seam;
   do not bypass it.
-- **Tests:** `mobile/test/` (96 files, 634 tests) runs on the host — `flutter test`. There IS also
+- **Tests:** `mobile/test/` (98 files, 680 tests) runs on the host — `flutter test`. There IS also
   `mobile/integration_test/app_test.dart`, which drives the real app on a device or emulator and is
   the only thing that can see the native ML Kit bridge and what actually ends up in the APK. It
   needs hardware; `flutter test` does not run it.
