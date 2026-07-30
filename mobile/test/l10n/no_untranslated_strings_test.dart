@@ -1,0 +1,93 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+
+/// Guards the Russian UI against English leaking back in.
+///
+/// The operator has now reported untranslated strings twice ("Any · cardio",
+/// "8 min / beginner / core", "For you / Strength / Cardio / At Home",
+/// "Offline downloads · Supporter+"). Every one was a hardcoded literal or a
+/// raw catalog tag rendered straight to the screen, not a missing ARB entry —
+/// so a test that only diffs the two ARB files would have passed while the
+/// screen still read English. These check both.
+void main() {
+  final en = (jsonDecode(File('lib/l10n/app_en.arb').readAsStringSync())
+      as Map).cast<String, dynamic>();
+  final ru = (jsonDecode(File('lib/l10n/app_ru.arb').readAsStringSync())
+      as Map).cast<String, dynamic>();
+
+  /// The app's own brand name is deliberately identical in both languages.
+  const kBrandKeys = {'appTitle'};
+
+  test('every English key has a Russian entry', () {
+    final missing = en.keys
+        .where((k) => !k.startsWith('@'))
+        .where((k) => !ru.containsKey(k))
+        .toList();
+    expect(missing, isEmpty, reason: 'untranslated keys: $missing');
+  });
+
+  test('no Russian value is just the English one copied over', () {
+    final copied = <String>[];
+    for (final entry in ru.entries) {
+      if (entry.key.startsWith('@')) continue;
+      if (kBrandKeys.contains(entry.key)) continue;
+      final value = entry.value;
+      final english = en[entry.key];
+      if (value is! String || english is! String) continue;
+      // Four+ Latin letters in a row is the signal: "5 км" and "{arg0}%"
+      // are legitimately identical across languages, "Offline downloads"
+      // is not.
+      if (value == english && RegExp(r'[A-Za-z]{4,}').hasMatch(value)) {
+        copied.add('${entry.key}: $value');
+      }
+    }
+    expect(copied, isEmpty, reason: 'English left in the Russian ARB: $copied');
+  });
+
+  test('no hardcoded English sentence is passed to a Text() widget', () {
+    // Catches the class of bug the operator actually hit: a literal written
+    // straight into the widget tree, which never reaches the ARB pipeline at
+    // all.
+    final offenders = <String>[];
+    final textLiteral = RegExp(r"""Text\(\s*'([^']{4,90})'""");
+    for (final f in Directory('lib').listSync(recursive: true)) {
+      if (f is! File || !f.path.endsWith('.dart')) continue;
+      final src = f.readAsStringSync();
+      for (final m in textLiteral.allMatches(src)) {
+        final s = m.group(1)!;
+        // Two consecutive words of 3+ Latin letters = a sentence, not an
+        // identifier, a URL fragment or a unit.
+        if (RegExp(r'[A-Za-z]{3,}\s+[A-Za-z]{3,}').hasMatch(s) &&
+            !s.contains(r'$')) {
+          offenders.add('${f.path}: "$s"');
+        }
+      }
+    }
+    expect(offenders, isEmpty,
+        reason: 'hardcoded English in the widget tree: $offenders');
+  });
+
+  test('catalog vocabulary tags all have a localized label', () {
+    // The muscle/difficulty/category tags are stored in English because they
+    // drive filtering and the muscle map; CatalogLabels is what translates
+    // them for display. A tag with no label there renders as a raw English
+    // key — which is exactly how "core" and "beginner" reached the operator's
+    // screen.
+    final labels = File('lib/features/equipment/data/catalog_labels.dart')
+        .readAsStringSync();
+    const muscles = ['chest', 'back', 'lats', 'traps', 'lower_back', 'quads',
+        'hamstrings', 'calves', 'glutes', 'adductors', 'shoulders', 'biceps',
+        'triceps', 'forearms', 'core'];
+    for (final m in muscles) {
+      expect(labels, contains("case '$m':"), reason: '$m has no label');
+    }
+    for (final d in ['beginner', 'intermediate', 'advanced']) {
+      expect(labels, contains('ExerciseDifficulty.$d'), reason: '$d unlabelled');
+    }
+    for (final c in ['strength', 'cardio', 'free_weights', 'functional']) {
+      expect(labels, contains("case '$c':"), reason: '$c has no label');
+    }
+  });
+}

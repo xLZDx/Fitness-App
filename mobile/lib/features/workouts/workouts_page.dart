@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
+import '../equipment/data/catalog_labels.dart';
 import '../equipment/data/equipment_models.dart';
 import '../equipment/state/equipment_providers.dart';
 import '../subscription/data/subscription_models.dart';
@@ -13,50 +14,117 @@ import '../subscription/state/subscription_providers.dart';
 import 'state/offline_video_providers.dart';
 
 /// One filter chip on the Train tab. The id drives which provider feeds the
-/// list; the label is what the user sees.
-enum WorkoutsFilter { forYou, strength, cardio, atHome, all }
+/// list; the label is localized in [workoutsFilterLabel].
+///
+/// Round 4 (S4) added the muscle groups and the equipment-type groups: with
+/// the catalog at 192 exercises across 48 machines, five chips was not
+/// enough to find anything (operator: "добавь больше груп для сортировки в
+/// зависимости от тренажеров и группы мышц").
+enum WorkoutsFilter {
+  forYou,
+  // Equipment type.
+  machines,
+  freeWeights,
+  cardio,
+  atHome,
+  // Muscle groups, ordered the way a gym-goer thinks about a split.
+  chest,
+  back,
+  legs,
+  glutes,
+  shoulders,
+  arms,
+  core,
+  all,
+}
 
-extension on WorkoutsFilter {
-  String get label {
-    switch (this) {
-      case WorkoutsFilter.forYou:
-        return 'For you';
-      case WorkoutsFilter.strength:
-        return 'Strength';
-      case WorkoutsFilter.cardio:
-        return 'Cardio';
-      case WorkoutsFilter.atHome:
-        return 'At Home';
-      case WorkoutsFilter.all:
-        return 'All';
-    }
+/// Muscle tags each muscle-group chip covers. Uses the same vocabulary as
+/// `ExerciseItem.muscles`, so a chip can never filter on a tag the catalog
+/// does not use.
+const Map<WorkoutsFilter, Set<String>> kFilterMuscles = {
+  WorkoutsFilter.chest: {'chest'},
+  WorkoutsFilter.back: {'back', 'lats', 'traps', 'lower_back'},
+  WorkoutsFilter.legs: {'quads', 'hamstrings', 'calves', 'adductors'},
+  WorkoutsFilter.glutes: {'glutes'},
+  WorkoutsFilter.shoulders: {'shoulders'},
+  WorkoutsFilter.arms: {'biceps', 'triceps', 'forearms'},
+  WorkoutsFilter.core: {'core'},
+};
+
+/// Equipment categories each equipment-type chip covers, matching the
+/// `category` field in equipment.json.
+const Map<WorkoutsFilter, Set<String>> kFilterCategories = {
+  WorkoutsFilter.machines: {'strength'},
+  WorkoutsFilter.freeWeights: {'free_weights'},
+  WorkoutsFilter.cardio: {'cardio'},
+};
+
+String workoutsFilterLabel(AppLocalizations l, WorkoutsFilter f) {
+  switch (f) {
+    case WorkoutsFilter.forYou:
+      return l.workoutsFilterForYou;
+    case WorkoutsFilter.machines:
+      return l.workoutsFilterMachines;
+    case WorkoutsFilter.freeWeights:
+      return l.workoutsFilterFreeWeights;
+    case WorkoutsFilter.cardio:
+      return l.workoutsFilterCardio;
+    case WorkoutsFilter.atHome:
+      return l.workoutsFilterAtHome;
+    case WorkoutsFilter.chest:
+      return l.workoutsFilterChest;
+    case WorkoutsFilter.back:
+      return l.workoutsFilterBack;
+    case WorkoutsFilter.legs:
+      return l.workoutsFilterLegs;
+    case WorkoutsFilter.glutes:
+      return l.workoutsFilterGlutes;
+    case WorkoutsFilter.shoulders:
+      return l.workoutsFilterShoulders;
+    case WorkoutsFilter.arms:
+      return l.workoutsFilterArms;
+    case WorkoutsFilter.core:
+      return l.workoutsFilterCore;
+    case WorkoutsFilter.all:
+      return l.workoutsFilterAll;
   }
 }
 
 /// Resolves a filter into the actual list of exercises to show. Pulls from
 /// the recommended ("for you") feed and the raw catalog and slices by
-/// equipment category.
+/// equipment category or muscle tag.
 final _filteredExercisesProvider =
     FutureProvider.family<List<ExerciseItem>, WorkoutsFilter>((ref, filter) async {
-  switch (filter) {
-    case WorkoutsFilter.forYou:
-      return ref.watch(forYouExercisesProvider.future);
-    case WorkoutsFilter.atHome:
-      final all = await ref.watch(allExercisesProvider.future);
-      return all.where((e) => e.equipmentId == null).toList(growable: false);
-    case WorkoutsFilter.strength:
-    case WorkoutsFilter.cardio:
-      final repo = ref.watch(equipmentRepositoryProvider);
-      final equipment = await repo.listEquipment();
-      final wanted = filter == WorkoutsFilter.strength ? 'strength' : 'cardio';
-      final out = <ExerciseItem>[];
-      for (final eq in equipment.where((e) => e.category == wanted)) {
-        out.addAll(await repo.exercisesFor(eq.id));
-      }
-      return List.unmodifiable(out);
-    case WorkoutsFilter.all:
-      return ref.watch(allExercisesProvider.future);
+  if (filter == WorkoutsFilter.forYou) {
+    return ref.watch(forYouExercisesProvider.future);
   }
+  if (filter == WorkoutsFilter.all) {
+    return ref.watch(allExercisesProvider.future);
+  }
+  if (filter == WorkoutsFilter.atHome) {
+    final all = await ref.watch(allExercisesProvider.future);
+    return all.where((e) => e.equipmentId == null).toList(growable: false);
+  }
+
+  final muscles = kFilterMuscles[filter];
+  if (muscles != null) {
+    final all = await ref.watch(allExercisesProvider.future);
+    return all
+        .where((e) => e.muscles.any(muscles.contains))
+        .toList(growable: false);
+  }
+
+  final categories = kFilterCategories[filter]!;
+  final all = await ref.watch(allExercisesProvider.future);
+  final equipment =
+      await ref.watch(equipmentRepositoryProvider).listEquipment();
+  final wantedIds = {
+    for (final eq in equipment)
+      if (categories.contains(eq.category)) eq.id,
+  };
+  return all
+      .where((e) => e.equipmentId != null && wantedIds.contains(e.equipmentId))
+      .toList(growable: false);
 });
 
 class WorkoutsPage extends ConsumerStatefulWidget {
@@ -113,7 +181,8 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
                     ),
                     child: Center(
                       child: Text(
-                        filter.label,
+                        workoutsFilterLabel(
+                            AppLocalizations.of(context), filter),
                         style: TextStyle(
                           fontWeight:
                               selected ? FontWeight.w700 : FontWeight.w600,
@@ -139,7 +208,7 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
                 return [
                   GlassCard(
                     child: Text(
-                      _emptyMessage(_selected),
+                      _emptyMessage(context, _selected),
                       style: theme.textTheme.bodyMedium,
                     ),
                   ),
@@ -158,19 +227,14 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
     );
   }
 
-  String _emptyMessage(WorkoutsFilter f) {
-    switch (f) {
-      case WorkoutsFilter.forYou:
-        return "We're still building your personalised feed. Try another filter while we add more content.";
-      case WorkoutsFilter.atHome:
-        return 'No body-weight workouts in the catalog yet.';
-      case WorkoutsFilter.strength:
-        return 'No strength exercises in the catalog yet.';
-      case WorkoutsFilter.cardio:
-        return 'No cardio exercises in the catalog yet.';
-      case WorkoutsFilter.all:
-        return 'The exercise catalog is empty.';
-    }
+  String _emptyMessage(BuildContext context, WorkoutsFilter f) {
+    final l = AppLocalizations.of(context);
+    if (f == WorkoutsFilter.forYou) return l.workoutsEmptyForYou;
+    if (f == WorkoutsFilter.all) return l.workoutsEmptyAll;
+    // Every other chip is a slice of the catalog, so one message naming the
+    // slice covers them all — 12 near-identical strings would just be 12
+    // things to keep translated.
+    return l.workoutsEmptyFiltered(workoutsFilterLabel(l, f));
   }
 }
 
@@ -245,7 +309,8 @@ class _ExerciseCard extends StatelessWidget {
                   exercise.summary.isEmpty
                       ? exercise.muscles
                           .take(3)
-                          .map((m) => m.replaceAll('_', ' '))
+                          .map((m) => CatalogLabels.muscle(
+                              AppLocalizations.of(context), m))
                           .join(' · ')
                       : exercise.summary,
                   maxLines: 2,
@@ -313,18 +378,19 @@ class _OfflinePrefetchCard extends ConsumerWidget {
               children: [
                 Text(
                   isPremium
-                      ? 'Download next 7 days for offline'
-                      : 'Offline downloads · Supporter+',
+                      ? AppLocalizations.of(context).workoutsOfflineDownloadTitle
+                      : AppLocalizations.of(context).workoutsOfflineLockedTitle,
                   style: theme.textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   action.isLoading
-                      ? 'Downloading…'
+                      ? AppLocalizations.of(context).workoutsOfflineDownloading
                       : action.hasError
-                          ? 'Last run failed: ${action.error}'
-                          : 'Gym wifi is hostile — cache videos at home.',
+                          ? AppLocalizations.of(context)
+                              .workoutsOfflineFailed('${action.error}')
+                          : AppLocalizations.of(context).workoutsOfflineHint,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(

@@ -725,5 +725,84 @@
   "aiCoachRetry": "Try again",
   "aiCoachDisclaimer": "AI-generated guidance — not medical advice. Stop on sharp pain.",
   "scannerMyMachines": "My machines",
-  "equipmentAiTag": "AI"
+  "equipmentAiTag": "AI",
+  "workoutsFilterForYou": "For you",
+  "workoutsFilterMachines": "Machines",
+  "workoutsFilterFreeWeights": "Free weights",
+  "workoutsFilterCardio": "Cardio",
+  "workoutsFilterAtHome": "At home",
+  "workoutsFilterChest": "Chest",
+  "workoutsFilterBack": "Back",
+  "workoutsFilterLegs": "Legs",
+  "workoutsFilterGlutes": "Glutes",
+  "workoutsFilterShoulders": "Shoulders",
+  "workoutsFilterArms": "Arms",
+  "workoutsFilterCore": "Core",
+  "workoutsFilterAll": "All",
+  "workoutsEmptyForYou": "We're still building your personalised feed. Try another filter while we add more content.",
+  "workoutsEmptyAll": "The exercise catalog is empty.",
+  "workoutsOfflineDownloadTitle": "Download next 7 days for offline",
+  "workoutsOfflineLockedTitle": "Offline downloads · Supporter+",
+  "workoutsOfflineDownloading": "Downloading…",
+  "workoutsOfflineHint": "Gym wifi is hostile — cache videos at home.",
+  "equipmentAnyBrand": "Any brand",
+  "equipmentCategoryStrength": "Strength",
+  "equipmentCategoryCardio": "Cardio",
+  "equipmentCategoryFreeWeights": "Free weights",
+  "equipmentCategoryFunctional": "Functional",
+  "equipmentCategoryBodyweight": "Bodyweight",
+  "exerciseDifficultyBeginner": "Beginner",
+  "exerciseDifficultyIntermediate": "Intermediate",
+  "exerciseDifficultyAdvanced": "Advanced",
+  "muscleChest": "Chest",
+  "muscleBack": "Back",
+  "muscleLats": "Lats",
+  "muscleTraps": "Traps",
+  "muscleQuads": "Quads",
+  "muscleHamstrings": "Hamstrings",
+  "muscleCalves": "Calves",
+  "muscleGlutes": "Glutes",
+  "muscleAdductors": "Adductors",
+  "muscleShoulders": "Shoulders",
+  "muscleBiceps": "Biceps",
+  "muscleTriceps": "Triceps",
+  "muscleForearms": "Forearms",
+  "muscleCore": "Core",
+  "workoutsEmptyFiltered": "Nothing in \"{arg0}\" yet.",
+  "@workoutsEmptyFiltered": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "workoutsOfflineFailed": "Last run failed: {arg0}",
+  "@workoutsOfflineFailed": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "exerciseMinutes": "{arg0} min",
+  "@exerciseMinutes": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "celebrityplansSampleBadge": "SAMPLE PLAN",
+  "celebrityplansSampleStarterTitle": "Starter Strength · 4 weeks",
+  "celebrityplansSampleStarterBio": "A sample beginner programme of compound lifts, shipped as an example of what a donated plan looks like.",
+  "celebrityplansSampleLowBackTitle": "Low-back-friendly · 6 weeks",
+  "celebrityplansSampleLowBackBio": "A sample hinge-pattern programme built around a gradual return to load. Not a medical protocol.",
+  "celebrityplansWeeksOnly": "{arg0} weeks",
+  "@celebrityplansWeeksOnly": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  }
 }

@@ -96,15 +96,57 @@ Widget _harness(AssetEquipmentRepository repo) {
   );
 }
 
+/// The horizontally-scrolling filter chip row. Found by axis rather than by
+/// position: the page also has the vertical exercise list, and which of the
+/// two comes first in the tree is an implementation detail.
+final Finder _chipRow = find.byWidgetPredicate(
+  (w) => w is Scrollable && w.axisDirection == AxisDirection.right,
+);
+
 void main() {
   group('WorkoutsPage (live catalog)', () {
-    testWidgets('renders all five filter chips with For you selected',
+    testWidgets('renders equipment-type AND muscle-group filter chips',
         (tester) async {
+      // Round 4 (S4): five chips could not navigate a 192-exercise catalog
+      // across 48 machines, so the row gained muscle groups and split
+      // equipment type into machines / free weights / cardio.
       await tester.pumpWidget(_harness(_seededRepo()));
       await tester.pumpAndSettle();
 
-      for (final f in ['For you', 'Strength', 'Cardio', 'At Home', 'All']) {
+      // The chip row scrolls horizontally, so only the leading ones are
+      // laid out; assert on those plus the enum's own completeness below.
+      for (final f in ['For you', 'Machines', 'Free weights']) {
         expect(find.text(f), findsOneWidget);
+      }
+      expect(WorkoutsFilter.values.length, greaterThan(10));
+      expect(kFilterMuscles.keys, contains(WorkoutsFilter.chest));
+      expect(kFilterMuscles.keys, contains(WorkoutsFilter.glutes));
+      expect(kFilterCategories.keys, contains(WorkoutsFilter.freeWeights));
+    });
+
+    test('every muscle chip filters on tags the catalog vocabulary uses', () {
+      const vocab = {'adductors', 'back', 'biceps', 'calves', 'chest', 'core',
+          'forearms', 'glutes', 'hamstrings', 'lats', 'lower_back', 'quads',
+          'shoulders', 'traps', 'triceps'};
+      for (final entry in kFilterMuscles.entries) {
+        expect(vocab, containsAll(entry.value),
+            reason: '${entry.key} filters on a tag no exercise carries');
+      }
+    });
+
+    test('every filter is either for-you, all, at-home, muscle or category',
+        () {
+      // A chip with no rule behind it would silently render an empty list.
+      const special = {
+        WorkoutsFilter.forYou,
+        WorkoutsFilter.all,
+        WorkoutsFilter.atHome,
+      };
+      for (final f in WorkoutsFilter.values) {
+        final covered = special.contains(f) ||
+            kFilterMuscles.containsKey(f) ||
+            kFilterCategories.containsKey(f);
+        expect(covered, isTrue, reason: '$f has no filtering rule');
       }
     });
 
@@ -137,12 +179,12 @@ void main() {
       expect(find.text('Push-ups'), findsNothing);
     });
 
-    testWidgets('Strength filter restricts to strength-category equipment',
+    testWidgets('Machines filter restricts to strength-category equipment',
         (tester) async {
       await tester.pumpWidget(_harness(_seededRepo()));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Strength'));
+      await tester.tap(find.text('Machines'));
       await tester.pumpAndSettle();
 
       expect(find.text('Back squat'), findsOneWidget);
@@ -150,12 +192,31 @@ void main() {
       expect(find.text('Push-ups'), findsNothing);
     });
 
-    testWidgets('At Home filter shows only body-weight exercises',
+    testWidgets('At home filter shows only body-weight exercises',
         (tester) async {
       await tester.pumpWidget(_harness(_seededRepo()));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('At Home'));
+      await tester.scrollUntilVisible(find.text('At home'), 120,
+          scrollable: _chipRow);
+      await tester.tap(find.text('At home'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Push-ups'), findsOneWidget);
+      expect(find.text('Easy run'), findsNothing);
+      expect(find.text('Back squat'), findsNothing);
+    });
+
+    testWidgets('a muscle chip filters by muscle tag, not by equipment',
+        (tester) async {
+      await tester.pumpWidget(_harness(_seededRepo()));
+      await tester.pumpAndSettle();
+
+      // 'Chest' must find the body-weight push-up, proving the muscle chips
+      // slice on tags rather than on which machine the exercise belongs to.
+      await tester.scrollUntilVisible(find.text('Chest'), 120,
+          scrollable: _chipRow);
+      await tester.tap(find.text('Chest'));
       await tester.pumpAndSettle();
 
       expect(find.text('Push-ups'), findsOneWidget);

@@ -5,15 +5,20 @@ abstract class CelebrityPlanRepository {
   Future<CelebrityPlan?> byId(String id);
 }
 
+/// Placeholder plans shipped so the screen renders before any real donated
+/// plan exists. Every one is marked `isSample: true` and the coach name carries
+/// no invented credential — the previous seed claimed a "US-certified
+/// strength coach" and a "DPT", which is a fabricated professional
+/// qualification presented to the user as fact. Titles and bios are
+/// localized at render time (see CelebrityPlansPage), so they read in the
+/// interface language without the invented credentials coming back.
 class MockCelebrityPlanRepository implements CelebrityPlanRepository {
   static final List<CelebrityPlan> _seed = [
     const CelebrityPlan(
       id: 'starter-strength-4w',
       title: 'Starter Strength · 4 weeks',
-      coachName: 'Coach Alex',
-      coachBio:
-          'In-kind donation by a US-certified strength coach. 4-week '
-          'beginner-friendly compound lift programme.',
+      coachName: '—',
+      coachBio: '',
       weeks: 4,
       heroImageUrl: '',
       equipmentNeeded: ['barbell', 'squat_rack', 'bench_press'],
@@ -22,14 +27,13 @@ class MockCelebrityPlanRepository implements CelebrityPlanRepository {
         2: ['deadlift', 'row_barbell', 'plank'],
         4: ['squat', 'overhead_press', 'plank'],
       },
+      isSample: true,
     ),
     const CelebrityPlan(
       id: 'low-back-friendly-6w',
       title: 'Low-Back-Friendly · 6 weeks',
-      coachName: 'Dr. Maria, DPT',
-      coachBio:
-          'Pro-bono review of a hinge-pattern programme that respects '
-          'the lumbar-strain return-to-load protocol.',
+      coachName: '—',
+      coachBio: '',
       weeks: 6,
       heroImageUrl: '',
       equipmentNeeded: ['kettlebell'],
@@ -38,6 +42,7 @@ class MockCelebrityPlanRepository implements CelebrityPlanRepository {
         2: ['kb_deadlift', 'plank'],
         4: ['glute_bridge', 'birddog'],
       },
+      isSample: true,
     ),
   ];
 

@@ -59,6 +59,38 @@ class CelebrityPlansPage extends ConsumerWidget {
   }
 }
 
+/// Localized title/bio for the built-in sample plans.
+///
+/// Keyed on the plan id rather than translating the stored strings: the
+/// seed records live in Dart, not in the ARB pipeline, so anything shipped
+/// in them would stay English forever. Real (non-sample) plans keep their
+/// own text — those come from a donor and are theirs to word.
+String _title(BuildContext context, CelebrityPlan plan) {
+  if (!plan.isSample) return plan.title;
+  final l = AppLocalizations.of(context);
+  switch (plan.id) {
+    case 'starter-strength-4w':
+      return l.celebrityplansSampleStarterTitle;
+    case 'low-back-friendly-6w':
+      return l.celebrityplansSampleLowBackTitle;
+    default:
+      return plan.title;
+  }
+}
+
+String _bio(BuildContext context, CelebrityPlan plan) {
+  if (!plan.isSample) return plan.coachBio;
+  final l = AppLocalizations.of(context);
+  switch (plan.id) {
+    case 'starter-strength-4w':
+      return l.celebrityplansSampleStarterBio;
+    case 'low-back-friendly-6w':
+      return l.celebrityplansSampleLowBackBio;
+    default:
+      return plan.coachBio;
+  }
+}
+
 class _PlanCard extends StatelessWidget {
   const _PlanCard({required this.plan, required this.locked});
   final CelebrityPlan plan;
@@ -92,11 +124,15 @@ class _PlanCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(plan.title,
+                    Text(_title(context, plan),
                         style: theme.textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w800)),
                     Text(
-                      AppLocalizations.of(context).celebrityplansByWeeks(plan.coachName, plan.weeks),
+                      plan.isSample
+                          ? AppLocalizations.of(context)
+                              .celebrityplansWeeksOnly(plan.weeks)
+                          : AppLocalizations.of(context)
+                              .celebrityplansByWeeks(plan.coachName, plan.weeks),
                       style: theme.textTheme.labelSmall,
                     ),
                   ],
@@ -106,8 +142,27 @@ class _PlanCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Text(plan.coachBio, style: theme.textTheme.bodySmall),
-          if (plan.isInKindDonation) ...[
+          Text(_bio(context, plan), style: theme.textTheme.bodySmall),
+          if (plan.isSample) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: theme.colorScheme.tertiaryContainer,
+              ),
+              child: Text(
+                AppLocalizations.of(context).celebrityplansSampleBadge,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.6,
+                  color: theme.colorScheme.onTertiaryContainer,
+                ),
+              ),
+            ),
+          ],
+          if (plan.isInKindDonation && !plan.isSample) ...[
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(

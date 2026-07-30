@@ -17,6 +17,7 @@ import '../workouts/widgets/difficulty_rating_sheet.dart';
 import '../workouts/widgets/plate_calculator.dart';
 import '../workouts/widgets/rest_timer.dart';
 import '../workouts/widgets/warmup_calculator.dart';
+import 'data/catalog_labels.dart';
 import 'data/equipment_models.dart';
 import 'state/equipment_providers.dart';
 import 'widgets/exercise_demo.dart';
@@ -203,10 +204,16 @@ class _Hero extends StatelessWidget {
                   spacing: 6,
                   runSpacing: 6,
                   children: [
-                    _Pill(text: '${exercise.durationMinutes} min'),
-                    _Pill(text: exercise.difficulty.name),
+                    _Pill(
+                        text: AppLocalizations.of(context)
+                            .exerciseMinutes(exercise.durationMinutes)),
+                    _Pill(
+                        text: CatalogLabels.difficulty(
+                            AppLocalizations.of(context), exercise.difficulty)),
                     for (final m in exercise.muscles.take(3))
-                      _Pill(text: m.replaceAll('_', ' ')),
+                      _Pill(
+                          text: CatalogLabels.muscle(
+                              AppLocalizations.of(context), m)),
                   ],
                 ),
               ],

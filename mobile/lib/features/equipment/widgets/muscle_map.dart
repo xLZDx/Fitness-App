@@ -5,6 +5,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../data/anatomy_map.dart';
+import '../data/catalog_labels.dart';
 
 /// Which muscles a movement loads, and how hard.
 enum MuscleLoad { none, secondary, primary }
@@ -212,13 +213,7 @@ class _MuscleMapState extends State<MuscleMap> {
 
   String _nameFor(BuildContext context, List<String> tags) {
     final l = AppLocalizations.of(context);
-    return tags
-        .toSet()
-        .map((t) => switch (t) {
-              'lower_back' => l.muscleLowerBack,
-              _ => t.replaceAll('_', ' '),
-            })
-        .join(', ');
+    return tags.toSet().map((t) => CatalogLabels.muscle(l, t)).join(', ');
   }
 
   Future<void> _rebuild({

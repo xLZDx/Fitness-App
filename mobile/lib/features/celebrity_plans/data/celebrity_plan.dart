@@ -12,6 +12,7 @@ class CelebrityPlan {
     required this.equipmentNeeded,
     required this.dailyWorkouts,
     this.isInKindDonation = true,
+    this.isSample = false,
   });
 
   final String id;
@@ -26,4 +27,12 @@ class CelebrityPlan {
   final Map<int, List<String>> dailyWorkouts;
 
   final bool isInKindDonation;
+
+  /// True for the built-in placeholder plans — invented coaches with
+  /// invented credentials, shipped so the screen has something to render
+  /// before real donated plans exist. The UI labels these visibly: a
+  /// fabricated "US-certified strength coach" that reads as genuine is
+  /// worse than an obviously-empty screen, and that risk gets HIGHER, not
+  /// lower, once the text is translated into the reader's own language.
+  final bool isSample;
 }

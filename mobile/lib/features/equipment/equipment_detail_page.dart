@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../ai_coach/ai_coach_sheet.dart';
 import '../../shared/widgets/glass.dart';
+import 'data/catalog_labels.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../workouts/widgets/plate_calculator.dart';
 import '../workouts/widgets/warmup_calculator.dart';
@@ -62,7 +63,9 @@ class EquipmentDetailPage extends ConsumerWidget {
                           Text(item.name, style: theme.textTheme.titleLarge),
                           const SizedBox(height: 2),
                           Text(
-                            '${item.manufacturer} · ${item.category}',
+                            '${CatalogLabels.manufacturer(AppLocalizations.of(context), item.manufacturer)}'
+                            ' · '
+                            '${CatalogLabels.category(AppLocalizations.of(context), item.category)}',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurface
                                   .withValues(alpha: 0.65),
