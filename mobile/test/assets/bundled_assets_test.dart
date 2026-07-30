@@ -31,17 +31,21 @@ void main() {
       expect(json.decode(raw), isA<List<dynamic>>());
     });
 
-    test('every exercise declares at least two demo frames', () async {
+    test('no exercise declares exactly one demo frame', () async {
+      // Zero frames is legal: ExerciseDemo renders nothing (the hand-authored
+      // cardio entries ship without imagery rather than with a fabricated
+      // photo). Exactly ONE frame is the defect — it cannot animate but still
+      // renders, showing a static picture that pretends to be a demo.
       final raw = await rootBundle.loadString('assets/data/exercises.json');
       final items = (json.decode(raw) as List<dynamic>)
           .cast<Map<String, dynamic>>();
 
-      final short = <String>[];
+      final single = <String>[];
       for (final e in items) {
         final frames = (e['frames'] as List<dynamic>? ?? const []);
-        if (frames.length < 2) short.add(e['id'] as String);
+        if (frames.length == 1) single.add(e['id'] as String);
       }
-      expect(short, isEmpty,
+      expect(single, isEmpty,
           reason: 'a single frame cannot animate — the demo needs start+end');
     });
 

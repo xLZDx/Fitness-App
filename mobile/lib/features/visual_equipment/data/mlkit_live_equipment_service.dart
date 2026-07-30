@@ -41,7 +41,8 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
     'dumbbell': 'dumbbell',
     'kettlebell': 'kettlebell',
     'cable_machine': 'cable_machine',
-    'bench': 'bench_press',
+    // Mirrors the photo path: a bench is a bench, not the press station.
+    'bench': 'adjustable_bench',
     'leg_press': 'leg_press',
     'lat_pulldown': 'lat_pulldown',
     'rowing_machine': 'rowing_machine',

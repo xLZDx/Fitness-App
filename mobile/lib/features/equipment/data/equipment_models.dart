@@ -126,6 +126,22 @@ class EquipmentItem {
   final String description;
   final String? imageUrl;
 
+  /// A copy with the display text replaced by a translation. Narrow on
+  /// purpose, mirroring [ExerciseItem.withText]: id and category feed lookups
+  /// and filtering, so a translation file must not be able to reach them.
+  EquipmentItem withText({
+    required String name,
+    required String description,
+  }) =>
+      EquipmentItem(
+        id: id,
+        name: name,
+        manufacturer: manufacturer,
+        category: category,
+        description: description,
+        imageUrl: imageUrl,
+      );
+
   factory EquipmentItem.fromJson(Map<String, dynamic> j) => EquipmentItem(
         id: j['id'] as String,
         name: j['name'] as String,

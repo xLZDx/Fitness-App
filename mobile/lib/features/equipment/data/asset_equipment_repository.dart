@@ -26,15 +26,18 @@ class AssetEquipmentRepository implements EquipmentRepository {
     if (_equipment != null && _exercises != null) return;
     final eqJson = await rootBundle.loadString('assets/data/equipment.json');
     final exJson = await rootBundle.loadString('assets/data/exercises.json');
-    _equipment = (jsonDecode(eqJson) as List)
+    final eqBase = (jsonDecode(eqJson) as List)
         .cast<Map<String, dynamic>>()
         .map(EquipmentItem.fromJson)
         .toList(growable: false);
+    _equipment = applyEquipmentTranslations(
+        eqBase, await _loadOverlay('assets/data/equipment.$languageCode.json'));
     final base = (jsonDecode(exJson) as List)
         .cast<Map<String, dynamic>>()
         .map(ExerciseItem.fromJson)
         .toList(growable: false);
-    _exercises = applyTranslations(base, await _loadOverlay());
+    _exercises = applyTranslations(
+        base, await _loadOverlay('assets/data/exercises.$languageCode.json'));
   }
 
   /// Loads the translation overlay, or returns empty on any failure.
@@ -46,9 +49,8 @@ class AssetEquipmentRepository implements EquipmentRepository {
   /// down in BOTH languages to deliver a translation. Falling back to English
   /// is the only acceptable failure mode, and it is logged rather than
   /// swallowed so it stays diagnosable.
-  Future<Map<String, dynamic>> _loadOverlay() async {
+  Future<Map<String, dynamic>> _loadOverlay(String path) async {
     if (languageCode == 'en') return const <String, dynamic>{};
-    final path = 'assets/data/exercises.$languageCode.json';
     try {
       final raw = await rootBundle.loadString(path);
       return (jsonDecode(raw) as Map).cast<String, dynamic>();
@@ -57,6 +59,36 @@ class AssetEquipmentRepository implements EquipmentRepository {
           'English: $e');
       return const <String, dynamic>{};
     }
+  }
+
+  /// Patches translated equipment text over [base] — same contract as
+  /// [applyTranslations]: text only, one entry per base entry, missing ids
+  /// keep English. Before this overlay existed the machine pages showed
+  /// English descriptions under a fully Russian UI (operator screenshot,
+  /// 13:25 — 'Motorised running belt…' under 'Описание').
+  @visibleForTesting
+  static List<EquipmentItem> applyEquipmentTranslations(
+    List<EquipmentItem> base,
+    Map<String, dynamic> overlay,
+  ) {
+    if (overlay.isEmpty) return base;
+    return List<EquipmentItem>.unmodifiable(<EquipmentItem>[
+      for (final item in base) _translateEquipment(item, overlay[item.id]),
+    ]);
+  }
+
+  static EquipmentItem _translateEquipment(EquipmentItem item, Object? entry) {
+    if (entry is! Map) return item;
+    final name = entry['name'];
+    final description = entry['description'];
+    if (name is! String || name.trim().isEmpty) return item;
+    return item.withText(
+      name: name,
+      description:
+          description is String && description.trim().isNotEmpty
+              ? description
+              : item.description,
+    );
   }
 
   /// Patches translated text over [base].

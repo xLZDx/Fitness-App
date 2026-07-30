@@ -29,7 +29,10 @@ class MlKitVisualEquipmentService implements VisualEquipmentService {
     'dumbbell': 'dumbbell',
     'kettlebell': 'kettlebell',
     'cable_machine': 'cable_machine',
-    'bench': 'bench_press',
+    // A photographed bench is usually just a bench, not the press station —
+    // the operator's two flat benches must land on the bench page, not on
+    // barbell bench-press exercises.
+    'bench': 'adjustable_bench',
     'leg_press': 'leg_press',
     'lat_pulldown': 'lat_pulldown',
     'rowing_machine': 'rowing_machine',

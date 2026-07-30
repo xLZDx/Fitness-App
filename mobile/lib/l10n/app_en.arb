@@ -701,5 +701,6 @@
     }
   },
   "scannerKeepAiming": "Keep the frame on the machine to confirm",
-  "scannerNotSureClosest": "Not sure — closest matches"
+  "scannerNotSureClosest": "Not sure — closest matches",
+  "equipmentNoCuratedYet": "No curated exercises for this machine yet — ask the AI coach below for ideas."
 }

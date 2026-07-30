@@ -309,5 +309,6 @@
   "formcheckFlagged": "Ошибки: {arg0}",
   "scannerPossibly": "Возможно: {arg0} · {arg1}%",
   "scannerKeepAiming": "Продолжайте наводить рамку на тренажёр",
-  "scannerNotSureClosest": "Не уверен — самое похожее"
+  "scannerNotSureClosest": "Не уверен — самое похожее",
+  "equipmentNoCuratedYet": "Для этого тренажёра пока нет подобранных упражнений — спросите AI-тренера ниже."
 }

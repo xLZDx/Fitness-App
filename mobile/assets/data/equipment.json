@@ -1,72 +1,338 @@
 [
-  {
-    "id": "treadmill",
-    "name": "Treadmill",
-    "manufacturer": "Any",
-    "category": "cardio",
-    "description": "Motorised running belt with adjustable speed and incline. Used for warm-ups, steady-state cardio and interval work."
-  },
-  {
-    "id": "rowing_machine",
-    "name": "Rowing machine",
-    "manufacturer": "Any",
-    "category": "cardio",
-    "description": "Full-body cardio machine driven by a leg-then-arm pull. Low impact, so it suits knee-friendly conditioning."
-  },
-  {
-    "id": "squat_rack",
-    "name": "Squat rack",
-    "manufacturer": "Any",
-    "category": "strength",
-    "description": "Uprights with adjustable J-hooks and safety arms for squats, presses and rack pulls."
-  },
-  {
-    "id": "bench_press",
-    "name": "Weight bench",
-    "manufacturer": "Any",
-    "category": "strength",
-    "description": "Flat or adjustable bench used for pressing, rows and supported dumbbell work."
-  },
-  {
-    "id": "cable_machine",
-    "name": "Cable machine",
-    "manufacturer": "Any",
-    "category": "strength",
-    "description": "Adjustable pulleys with a selectorised stack. Constant tension through the full range, easy to scale."
-  },
-  {
-    "id": "leg_press",
-    "name": "Leg press",
-    "manufacturer": "Any",
-    "category": "strength",
-    "description": "Seated or angled sled that loads the quads and glutes with the back supported."
-  },
-  {
-    "id": "lat_pulldown",
-    "name": "Lat pulldown",
-    "manufacturer": "Any",
-    "category": "strength",
-    "description": "Overhead cable station for vertical pulling — the main lat builder when pull-ups are still out of reach."
-  },
-  {
-    "id": "barbell",
-    "name": "Barbell",
-    "manufacturer": "Any",
-    "category": "free_weights",
-    "description": "Olympic bar plus plates. The heaviest-loading tool in the room and the base of most strength programmes."
-  },
-  {
-    "id": "dumbbell",
-    "name": "Dumbbells",
-    "manufacturer": "Any",
-    "category": "free_weights",
-    "description": "Independent loading per side, which exposes and fixes left-right imbalances."
-  },
-  {
-    "id": "kettlebell",
-    "name": "Kettlebell",
-    "manufacturer": "Any",
-    "category": "free_weights",
-    "description": "Offset-handle weight for swings, cleans and carries — strength and conditioning in one implement."
-  }
+ {
+  "id": "treadmill",
+  "name": "Treadmill",
+  "manufacturer": "Any",
+  "category": "cardio",
+  "description": "Motorised running belt with adjustable speed and incline. Used for warm-ups, steady-state cardio and interval work."
+ },
+ {
+  "id": "rowing_machine",
+  "name": "Rowing machine",
+  "manufacturer": "Any",
+  "category": "cardio",
+  "description": "Full-body cardio machine driven by a leg-then-arm pull. Low impact, so it suits knee-friendly conditioning."
+ },
+ {
+  "id": "squat_rack",
+  "name": "Squat rack",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Uprights with adjustable J-hooks and safety arms for squats, presses and rack pulls."
+ },
+ {
+  "id": "bench_press",
+  "name": "Weight bench",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Flat or adjustable bench used for pressing, rows and supported dumbbell work."
+ },
+ {
+  "id": "cable_machine",
+  "name": "Cable machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Adjustable pulleys with a selectorised stack. Constant tension through the full range, easy to scale."
+ },
+ {
+  "id": "leg_press",
+  "name": "Leg press",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Seated or angled sled that loads the quads and glutes with the back supported."
+ },
+ {
+  "id": "lat_pulldown",
+  "name": "Lat pulldown",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Overhead cable station for vertical pulling — the main lat builder when pull-ups are still out of reach."
+ },
+ {
+  "id": "barbell",
+  "name": "Barbell",
+  "manufacturer": "Any",
+  "category": "free_weights",
+  "description": "Olympic bar plus plates. The heaviest-loading tool in the room and the base of most strength programmes."
+ },
+ {
+  "id": "dumbbell",
+  "name": "Dumbbells",
+  "manufacturer": "Any",
+  "category": "free_weights",
+  "description": "Independent loading per side, which exposes and fixes left-right imbalances."
+ },
+ {
+  "id": "kettlebell",
+  "name": "Kettlebell",
+  "manufacturer": "Any",
+  "category": "free_weights",
+  "description": "Offset-handle weight for swings, cleans and carries — strength and conditioning in one implement."
+ },
+ {
+  "id": "elliptical",
+  "name": "Elliptical trainer",
+  "manufacturer": "Any",
+  "category": "cardio",
+  "description": "Low-impact full-body cardio: gliding stride with moving handles."
+ },
+ {
+  "id": "exercise_bike",
+  "name": "Exercise bike",
+  "manufacturer": "Any",
+  "category": "cardio",
+  "description": "Stationary upright bike with adjustable resistance."
+ },
+ {
+  "id": "recumbent_bike",
+  "name": "Recumbent bike",
+  "manufacturer": "Any",
+  "category": "cardio",
+  "description": "Reclined stationary bike with back support — the gentlest cardio option."
+ },
+ {
+  "id": "stair_climber",
+  "name": "Stair climber",
+  "manufacturer": "Any",
+  "category": "cardio",
+  "description": "Rotating staircase or step pedals — climbing cardio for legs and glutes."
+ },
+ {
+  "id": "air_bike",
+  "name": "Air bike",
+  "manufacturer": "Any",
+  "category": "cardio",
+  "description": "Fan-resistance bike with moving handles; effort sets the resistance."
+ },
+ {
+  "id": "ski_erg",
+  "name": "Ski erg",
+  "manufacturer": "Any",
+  "category": "cardio",
+  "description": "Standing pull-down ergometer that mimics double-pole skiing."
+ },
+ {
+  "id": "smith_machine",
+  "name": "Smith machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Barbell fixed to vertical rails with hooks — guided squats and presses."
+ },
+ {
+  "id": "hack_squat_machine",
+  "name": "Hack squat machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Angled sled with shoulder pads for guided squats."
+ },
+ {
+  "id": "leg_extension",
+  "name": "Leg extension machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Seated machine that isolates the quadriceps by extending the knees."
+ },
+ {
+  "id": "leg_curl",
+  "name": "Leg curl machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Seated or lying machine that isolates the hamstrings by curling the knees."
+ },
+ {
+  "id": "hip_abductor_adductor",
+  "name": "Hip abductor / adductor machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Seated machine working the outer or inner thigh against pads."
+ },
+ {
+  "id": "glute_kickback_machine",
+  "name": "Glute kickback machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Standing or kneeling machine for pressing one leg back against resistance."
+ },
+ {
+  "id": "calf_raise_machine",
+  "name": "Calf raise machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Standing or seated machine loading heel raises for the calves."
+ },
+ {
+  "id": "chest_press_machine",
+  "name": "Chest press machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Seated press with handles — chest, front delts and triceps on a guided path."
+ },
+ {
+  "id": "pec_deck",
+  "name": "Pec deck / fly machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Seated fly machine bringing the arms together in front of the chest; many double as rear-delt flys."
+ },
+ {
+  "id": "shoulder_press_machine",
+  "name": "Shoulder press machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Seated overhead press with handles — delts and triceps on a guided path."
+ },
+ {
+  "id": "seated_row_machine",
+  "name": "Seated row machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Seated row — cable or lever — pulling handles to the torso for the mid-back."
+ },
+ {
+  "id": "t_bar_row",
+  "name": "T-bar row",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Chest-supported or landmine lever row for the mid-back."
+ },
+ {
+  "id": "assisted_pullup_machine",
+  "name": "Assisted pull-up machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Counterweighted platform that assists pull-ups and dips."
+ },
+ {
+  "id": "pullup_bar",
+  "name": "Pull-up bar",
+  "manufacturer": "Any",
+  "category": "bodyweight",
+  "description": "Fixed bar for pull-ups and hanging work."
+ },
+ {
+  "id": "dip_station",
+  "name": "Dip station",
+  "manufacturer": "Any",
+  "category": "bodyweight",
+  "description": "Parallel bars for dips and leg raises."
+ },
+ {
+  "id": "preacher_curl_bench",
+  "name": "Preacher curl bench",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Angled arm pad that isolates the biceps during curls."
+ },
+ {
+  "id": "bicep_curl_machine",
+  "name": "Biceps curl machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Seated machine curl with pads — guided biceps isolation."
+ },
+ {
+  "id": "tricep_extension_machine",
+  "name": "Triceps extension machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Seated machine press-down or extension isolating the triceps."
+ },
+ {
+  "id": "ab_crunch_machine",
+  "name": "Ab crunch machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Seated crunch against resistance with feet anchored."
+ },
+ {
+  "id": "rotary_torso_machine",
+  "name": "Rotary torso machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Seated twist against resistance for the obliques."
+ },
+ {
+  "id": "back_extension",
+  "name": "Back extension bench",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "45-degree or horizontal bench for extending the lower back and glutes."
+ },
+ {
+  "id": "captains_chair",
+  "name": "Captain's chair",
+  "manufacturer": "Any",
+  "category": "bodyweight",
+  "description": "Upright frame with forearm pads for hanging leg raises."
+ },
+ {
+  "id": "adjustable_bench",
+  "name": "Bench (flat / adjustable)",
+  "manufacturer": "Any",
+  "category": "free_weights",
+  "description": "Flat or incline-adjustable bench for dumbbell and bodyweight work."
+ },
+ {
+  "id": "ez_curl_bar",
+  "name": "EZ curl bar",
+  "manufacturer": "Any",
+  "category": "free_weights",
+  "description": "Cambered bar that eases wrist position for curls and extensions."
+ },
+ {
+  "id": "weight_plates",
+  "name": "Weight plates",
+  "manufacturer": "Any",
+  "category": "free_weights",
+  "description": "Plates for loading bars and machines; usable alone for raises and carries."
+ },
+ {
+  "id": "resistance_bands",
+  "name": "Resistance bands",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Elastic bands of graded resistance for assistance, warm-ups and isolation."
+ },
+ {
+  "id": "trx",
+  "name": "Suspension trainer (TRX)",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Suspended straps for bodyweight rows, presses and core work."
+ },
+ {
+  "id": "medicine_ball",
+  "name": "Medicine ball",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Weighted ball for throws, slams and core work."
+ },
+ {
+  "id": "battle_ropes",
+  "name": "Battle ropes",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Heavy ropes anchored to a point — waves and slams for conditioning."
+ },
+ {
+  "id": "plyo_box",
+  "name": "Plyo box",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Sturdy box for jumps, step-ups and elevated work."
+ },
+ {
+  "id": "punching_bag",
+  "name": "Punching bag",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Heavy bag for striking work and conditioning."
+ },
+ {
+  "id": "foam_roller",
+  "name": "Foam roller",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Firm roller for self-myofascial release and mobility work."
+ }
 ]

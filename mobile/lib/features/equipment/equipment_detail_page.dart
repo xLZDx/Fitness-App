@@ -132,7 +132,7 @@ class EquipmentDetailPage extends ConsumerWidget {
                         child: Text(
                           rec.hiddenForInjury > 0
                               ? AppLocalizations.of(context).equipmentAllConflictWithInjuries
-                              : 'No curated exercises yet for this machine.',
+                              : AppLocalizations.of(context).equipmentNoCuratedYet,
                           style: theme.textTheme.bodyMedium,
                         ),
                       ),
