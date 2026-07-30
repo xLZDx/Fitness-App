@@ -1,14 +1,23 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-/// Looping two-frame movement demo.
+/// Looping movement demo built from the catalogue's position frames.
 ///
-/// The catalog ships the start and end position of every exercise as bundled
-/// images (public-domain source). Cross-fading between them at a controllable
-/// tempo reads as a short video loop, but it is offline, a few kilobytes per
-/// exercise, and cannot buffer or 404 mid-set.
+/// Two frames is the ceiling, and that is a property of the source rather than
+/// of this widget: all 873 exercises in the public-domain free-exercise-db ship
+/// exactly two images, and the Everkinetic files on Wikimedia Commons that look
+/// like animations (`Standing-biceps-curl-1.gif`) are single-frame stills — the
+/// suffix is the position number. Every genuinely animated exercise library
+/// found is commercially licensed. So the job here is to make two frames read as
+/// a repetition rather than as a slideshow.
+///
+/// The cadence is what does that: hold the start position, move smoothly, hold
+/// the end position, then reverse. A constant-rate cross-fade — what this used
+/// to do, on a periodic Timer — reads as a dissolve between two photographs,
+/// because there is no moment where either position is simply *held*, which is
+/// what a real rep looks like.
+///
+/// Offline, a few kilobytes per exercise, and it cannot buffer or 404 mid-set.
 class ExerciseDemo extends StatefulWidget {
   const ExerciseDemo({
     super.key,
@@ -16,8 +25,7 @@ class ExerciseDemo extends StatefulWidget {
     this.autoPlay = true,
   });
 
-  /// Asset paths, in movement order. Fewer than two frames renders the first
-  /// one as a still.
+  /// Asset paths, in movement order. Fewer than two renders the first as a still.
   final List<String> frames;
   final bool autoPlay;
 
@@ -25,51 +33,81 @@ class ExerciseDemo extends StatefulWidget {
   State<ExerciseDemo> createState() => _ExerciseDemoState();
 }
 
-class _ExerciseDemoState extends State<ExerciseDemo> {
+class _ExerciseDemoState extends State<ExerciseDemo>
+    with SingleTickerProviderStateMixin {
+  /// Milliseconds for one transition, hold included.
   static const _speeds = <String, int>{'0.5x': 1600, '1x': 900, '2x': 450};
 
-  Timer? _timer;
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: Duration(milliseconds: _speeds[_speed]!),
+  )..addStatusListener(_onStatus);
+
+  /// Eased travel with a genuine pause at each end.
+  late final Animation<double> _t = _controller.drive(
+    TweenSequence<double>(<TweenSequenceItem<double>>[
+      TweenSequenceItem(tween: ConstantTween<double>(0), weight: 20),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0, end: 1)
+            .chain(CurveTween(curve: Curves.easeInOutCubic)),
+        weight: 60,
+      ),
+      TweenSequenceItem(tween: ConstantTween<double>(1), weight: 20),
+    ]),
+  );
+
   int _index = 0;
   String _speed = '1x';
   late bool _playing = widget.autoPlay && widget.frames.length > 1;
 
+  int get _next =>
+      widget.frames.isEmpty ? 0 : (_index + 1) % widget.frames.length;
+
   @override
   void initState() {
     super.initState();
-    if (_playing) _restart();
+    if (_playing) _controller.forward();
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _controller.dispose();
     super.dispose();
   }
 
-  void _restart() {
-    _timer?.cancel();
-    _timer = Timer.periodic(
-      Duration(milliseconds: _speeds[_speed]!),
-      (_) => setState(() => _index = (_index + 1) % widget.frames.length),
-    );
+  /// Advances to the next frame at the end of each transition.
+  ///
+  /// Driven by completion rather than `repeat(reverse: true)` so the same code
+  /// handles more than two frames if the catalogue ever gains them.
+  void _onStatus(AnimationStatus status) {
+    if (status != AnimationStatus.completed || !_playing) return;
+    setState(() => _index = _next);
+    _controller
+      ..reset()
+      ..forward();
   }
 
   void _toggle() {
     setState(() => _playing = !_playing);
     if (_playing) {
-      _restart();
+      _controller.forward();
     } else {
-      _timer?.cancel();
+      _controller.stop();
     }
   }
 
   void _setSpeed(String s) {
     setState(() => _speed = s);
-    if (_playing) _restart();
+    _controller.duration = Duration(milliseconds: _speeds[s]!);
+    if (_playing) {
+      _controller
+        ..reset()
+        ..forward();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     if (widget.frames.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -83,19 +121,22 @@ class _ExerciseDemoState extends State<ExerciseDemo> {
               fit: StackFit.expand,
               children: [
                 const ColoredBox(color: Colors.black12),
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 220),
-                  child: Image.asset(
-                    widget.frames[_index],
-                    key: ValueKey<int>(_index),
-                    fit: BoxFit.contain,
-                    gaplessPlayback: true,
-                    errorBuilder: (_, __, ___) => Center(
-                      child: Text(
-                        AppLocalizations.of(context).equipmentDemoUnavailable,
-                        style: theme.textTheme.bodySmall,
+                AnimatedBuilder(
+                  animation: _t,
+                  builder: (context, _) => Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // Both frames stay mounted, so neither is decoded mid-loop.
+                      Opacity(
+                        opacity: 1 - _t.value,
+                        child: _Frame(asset: widget.frames[_index]),
                       ),
-                    ),
+                      if (widget.frames.length > 1)
+                        Opacity(
+                          opacity: _t.value,
+                          child: _Frame(asset: widget.frames[_next]),
+                        ),
+                    ],
                   ),
                 ),
                 Positioned(
@@ -131,6 +172,28 @@ class _ExerciseDemoState extends State<ExerciseDemo> {
           ),
         ),
       ],
+    );
+  }
+
+}
+
+class _Frame extends StatelessWidget {
+  const _Frame({required this.asset});
+  final String asset;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Image.asset(
+      asset,
+      fit: BoxFit.contain,
+      gaplessPlayback: true,
+      errorBuilder: (_, __, ___) => Center(
+        child: Text(
+          AppLocalizations.of(context).equipmentDemoUnavailable,
+          style: theme.textTheme.bodySmall,
+        ),
+      ),
     );
   }
 }

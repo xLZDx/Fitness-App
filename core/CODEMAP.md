@@ -129,7 +129,9 @@ quoted here.
 ## Shared UI — `lib/shared/widgets/` (5 files)
 
 `main_shell.dart` (bottom-nav scaffold), `glass_nav_bar.dart`, `glass.dart`,
-`aurora_background.dart`, `scroll_dim_list.dart` — the glass/aurora visual language.
+`aurora_background.dart`, `smooth_scroll_list.dart` — the glass/aurora visual language.
+(`scroll_dim_list.dart` was deleted: it blurred and dimmed every off-centre card on
+every scroll tick, which cost the frame budget for decoration.)
 
 ---
 
@@ -137,9 +139,10 @@ quoted here.
 
 | Path | Files | Role |
 |---|---:|---|
-| `mobile/test/` | 71 | Unit + widget tests. **The only suite** — there is no `integration_test/` |
+| `mobile/test/` | 96 | Unit + widget tests, 634 of them. Runs on the host via `flutter test` |
+| `mobile/integration_test/` | 1 | `app_test.dart` — drives the real app on a device; the only place the native ML Kit bridge and the actual APK contents are visible. Needs hardware |
 | `mobile/android/` | 19 | Android host + Gradle |
-| `mobile/assets/` | 3 | Bundled data + ML models |
+| `mobile/assets/` | 4 | Bundled data, ML models, demo frames, and the CC BY 4.0 anatomy chart |
 | `functions/src/index.ts` | 1 | Cloud Functions — Stripe bridge |
 | `wear/src/` | 5 | Wear OS companion (Kotlin) |
 | `scripts/dev/` | 7 | `debug_daemon.ps1`, `run_app.ps1`, `run_tests.ps1`, `run_with_debug.ps1`, `build_wear.ps1`, `measure_context.ps1`, `audit_doc_links.ps1` |

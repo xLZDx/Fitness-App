@@ -20,37 +20,91 @@ void main() {
   group('ExerciseDemo', () {
     const frames = ['assets/exercises/x_0.jpg', 'assets/exercises/x_1.jpg'];
 
-    testWidgets('advances through frames while playing', (tester) async {
+    /// Opacity of the frame at [asset], or null when it is not mounted.
+    ///
+    /// Both frames stay in the tree and cross-fade, so which one the user sees
+    /// is a question about opacity, not about which Image exists. The old tests
+    /// read `.last` and compared asset names, which cannot distinguish "holding
+    /// the start position" from "half way through the transition" — the very
+    /// thing the cadence is about.
+    double? opacityOf(WidgetTester tester, String asset) {
+      final finder = find.ancestor(
+        of: find.image(AssetImage(asset)),
+        matching: find.byType(Opacity),
+      );
+      if (finder.evaluate().isEmpty) return null;
+      return tester.widget<Opacity>(finder.first).opacity;
+    }
+
+    testWidgets('holds the start position before moving', (tester) async {
       await tester.pumpWidget(_wrap(const ExerciseDemo(frames: frames)));
       await tester.pump();
 
-      Image shown() => tester.widgetList<Image>(find.byType(Image)).last;
-      final first = (shown().image as AssetImage).assetName;
-
-      // 1x tempo is 900ms; step past it and the other frame is on screen.
-      await tester.pump(const Duration(milliseconds: 950));
-      await tester.pump(const Duration(milliseconds: 300)); // finish fade
-      final second = (shown().image as AssetImage).assetName;
-
-      expect(second, isNot(first));
-      expect(frames, containsAll(<String>[first, second]));
+      // The first fifth of the cycle is a deliberate hold: a rep pauses at the
+      // end of the range, and without that the loop reads as a dissolve.
+      expect(opacityOf(tester, frames[0]), 1.0);
+      await tester.pump(const Duration(milliseconds: 120)); // < 20% of 900ms
+      expect(opacityOf(tester, frames[0]), 1.0);
+      expect(opacityOf(tester, frames[1]), 0.0);
     });
 
-    testWidgets('pause stops advancing', (tester) async {
+    testWidgets('crosses over mid-transition, then holds the end position',
+        (tester) async {
       await tester.pumpWidget(_wrap(const ExerciseDemo(frames: frames)));
       await tester.pump();
+
+      await tester.pump(const Duration(milliseconds: 450)); // mid-travel
+      final mid = opacityOf(tester, frames[1])!;
+      expect(mid, greaterThan(0.1));
+      expect(mid, lessThan(0.9));
+
+      await tester.pump(const Duration(milliseconds: 300)); // into the end hold
+      expect(opacityOf(tester, frames[1]), 1.0);
+    });
+
+    testWidgets('advances so the loop keeps running', (tester) async {
+      await tester.pumpWidget(_wrap(const ExerciseDemo(frames: frames)));
+      await tester.pump();
+
+      // A full cycle swaps which frame the transition starts from, so with two
+      // frames the demo runs back the other way rather than snapping.
+      await tester.pump(const Duration(milliseconds: 950));
+      await tester.pump(const Duration(milliseconds: 120));
+      expect(opacityOf(tester, frames[1]), 1.0);
+      expect(opacityOf(tester, frames[0]), 0.0);
+    });
+
+    testWidgets('pause freezes the current position', (tester) async {
+      await tester.pumpWidget(_wrap(const ExerciseDemo(frames: frames)));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 450));
 
       await tester.tap(find.byKey(const Key('exercise-demo-play')));
       await tester.pump();
-      final paused = (tester.widgetList<Image>(find.byType(Image)).last.image
-              as AssetImage)
-          .assetName;
+      final paused = opacityOf(tester, frames[1]);
 
       await tester.pump(const Duration(seconds: 3));
-      final still = (tester.widgetList<Image>(find.byType(Image)).last.image
-              as AssetImage)
-          .assetName;
-      expect(still, paused);
+      expect(opacityOf(tester, frames[1]), paused);
+    });
+
+    testWidgets('speed changes the cycle length', (tester) async {
+      // The travel phase runs from 20% to 80% of the cycle, so 380ms lands in
+      // the end hold at 2x (450ms cycle, hold from 360ms) but still mid-travel
+      // at 1x (900ms cycle, hold from 720ms). Asserting both is what makes this
+      // a test of the SPEED rather than of the curve.
+      const probe = Duration(milliseconds: 380);
+
+      await tester.pumpWidget(_wrap(const ExerciseDemo(frames: frames)));
+      await tester.pump();
+      await tester.pump(probe);
+      expect(opacityOf(tester, frames[1]), lessThan(0.9), reason: 'at 1x');
+
+      await tester.pumpWidget(_wrap(const ExerciseDemo(frames: frames)));
+      await tester.pump();
+      await tester.tap(find.text('2x'));
+      await tester.pump();
+      await tester.pump(probe);
+      expect(opacityOf(tester, frames[1]), 1.0, reason: 'at 2x');
     });
 
     testWidgets('a single frame renders as a still with no crash',
