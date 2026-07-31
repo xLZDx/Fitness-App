@@ -823,5 +823,6 @@
   "formcheckGateLowConfidence": "Too dark or too blurry to read your position.",
   "formcheckGateOutOfFrame": "Part of you is outside the frame - step back or tilt the phone.",
   "formcheckUpgradeSubtitle": "Works on the phone you already own - no depth camera, no extra hardware.",
-  "formcheckVoiceUnavailable": "Voice coaching is unavailable on this device - the steps below still work."
+  "formcheckVoiceUnavailable": "Voice coaching is unavailable on this device - the steps below still work.",
+  "scannerCloudDisclosure": "To recognise a machine the photo is sent to Google's Gemini. If that fails, an on-device model is used instead. Other people may be in shot."
 }

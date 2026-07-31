@@ -90,6 +90,35 @@ void main() {
       expect(find.textContaining('QR'), findsNothing);
     });
 
+    testWidgets('says that recognising a machine sends the photo to the cloud',
+        (tester) async {
+      // The scanner tries Gemini FIRST and only falls back to the on-device
+      // model, so every recognition uploads a photograph — one that, in a gym,
+      // contains other people. Nothing on this screen said so, while the
+      // form-check screen one tab away promised "no frames are uploaded".
+      //
+      // Asserted on the rendered text, not on the widget's existence: a strip
+      // that renders an empty or unrelated string would satisfy a key-only
+      // check while telling the user nothing.
+      await pumpScan(tester);
+      expect(find.byKey(const Key('scan-privacy-strip')), findsOneWidget);
+
+      final strip = tester.widget<Text>(
+        find.descendant(
+          of: find.byKey(const Key('scan-privacy-strip')),
+          matching: find.byType(Text),
+          matchRoot: true,
+        ),
+      );
+      final text = strip.data ?? '';
+      expect(text, contains('Google'),
+          reason: 'name who receives the photo, not "a third party"');
+      expect(text.toLowerCase(), contains('on-device'),
+          reason: 'the fallback is part of an honest description');
+      expect(text.toLowerCase(), contains('other people'),
+          reason: 'bystanders in a gym are the part users do not expect');
+    });
+
     testWidgets('the viewfinder is full-width 3:4 with a proportional frame',
         (tester) async {
       // Operator point 4: the old fixed 300px strip with a 220x200 frame was

@@ -333,6 +333,8 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
               ),
             ),
             const SizedBox(height: 14),
+            const _ScanPrivacyStrip(),
+            const SizedBox(height: 14),
             Row(
               children: [
                 Expanded(
@@ -700,6 +702,47 @@ class _CameraUnavailable extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Says out loud that recognising a machine sends the photo to Google.
+///
+/// It does: `GeminiVisualEquipmentService` puts the JPEG in a Firebase AI Logic
+/// request, and the hybrid service tries the cloud FIRST, falling back to the
+/// on-device model only when that fails. Until 2026-07-31 nothing on this
+/// screen said so — while the form-check screen, one tab away, promised the
+/// user "no frames are uploaded, your camera stays private". Two shipped
+/// screens contradicting each other is not a nuance; in a gym the frame also
+/// contains other people.
+///
+/// Modelled on `_PrivacyStrip` in `progress_photos_page.dart`, which is the
+/// pattern this app already uses when it is being honest about where an image
+/// goes.
+class _ScanPrivacyStrip extends StatelessWidget {
+  const _ScanPrivacyStrip();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GlassCard(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.cloud_upload_outlined, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              AppLocalizations.of(context).scannerCloudDisclosure,
+              key: const Key('scan-privacy-strip'),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
