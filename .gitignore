@@ -78,3 +78,7 @@ mobile/coverage/
 # Operator gym photos saved as a future training dataset for equipment_v2
 # (raw JPEGs, ~100 MB — never commit)
 data/gym_photos_*/
+
+# Python bytecode from the catalog build scripts.
+__pycache__/
+*.pyc

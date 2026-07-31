@@ -14,9 +14,16 @@ void main() {
           File('assets/data/exercises.json').readAsStringSync()) as List)
       .cast<Map<String, dynamic>>();
 
+  // `video` was added by the 2026-07-31 merge of the 677-file drop: 343 of the
+  // 511 exercises are now demonstrated by a clip rather than by stills. It is
+  // listed here because this predicate answers "is there anything to show",
+  // and a video is the strongest answer to that question there is — leaving it
+  // out would report 343 exercises as having no demo while they play one.
+  // The `videoUrl` singular is the older per-exercise field and stays.
   bool hasImagery(Map<String, dynamic> e) =>
       (e['frames'] as List? ?? const []).isNotEmpty ||
       (e['imageUrls'] as List? ?? const []).isNotEmpty ||
+      (e['video'] as Map? ?? const {}).isNotEmpty ||
       e['videoUrl'] != null;
 
   test('at least 95% of exercises have something to show', () {
