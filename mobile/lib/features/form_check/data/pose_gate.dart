@@ -83,10 +83,15 @@ class PoseGateConfig {
     this.edgeMargin = 0.02,
     this.minTorsoSpan = 0.10,
     this.unitSanitySlack = 4.0,
+    this.minBodyExtent = 0.02,
   })  : assert(minLikelihood > 0 && minLikelihood <= 1),
         assert(edgeMargin >= 0 && edgeMargin < 0.5),
         assert(minTorsoSpan >= 0 && minTorsoSpan < 1),
-        assert(unitSanitySlack >= 1);
+        assert(unitSanitySlack >= 1),
+        assert(minBodyExtent > 0 && minBodyExtent < minTorsoSpan,
+            'must sit below the torso check, or it would shadow it and every '
+            'face close-up would be reported as a bug instead of a framing '
+            'problem');
 
   /// Per-joint confidence floor.
   ///
@@ -120,6 +125,24 @@ class PoseGateConfig {
   /// only cost of setting it loose is that a truly absurd coordinate is called
   /// out one frame later.
   final double unitSanitySlack;
+
+  /// Smallest total extent a real detected body can have, as a fraction of
+  /// frame height.
+  ///
+  /// The other half of the smoke detector, and the half that is easy to forget:
+  /// [unitSanitySlack] catches coordinates that are far too BIG, which is what
+  /// happens when nothing divided them. Nothing was watching for far too SMALL,
+  /// which is what happens when something divided them twice — or once by the
+  /// wrong number. That failure is the more dangerous of the two, because the
+  /// numbers stay inside every bound and the frame is rejected as
+  /// [PoseGateVerdict.implausibleGeometry] instead: the user is told to step
+  /// back, forever, for a problem that is not theirs and that stepping back
+  /// cannot fix.
+  ///
+  /// 0.02 is two percent of the frame. A pose the detector is willing to report
+  /// at all is far larger than that; a body collapsed to a fifth of a percent by
+  /// a stray division is far smaller. Nothing real lives in between.
+  final double minBodyExtent;
 }
 
 /// Decide whether [frame] can be scored for a rule that reads [required].
@@ -185,10 +208,28 @@ PoseGateVerdict gatePose(
 /// same pipeline, so it is just as good a witness to the unit.
 bool _unitLooksWrong(PoseFrame frame, PoseGateConfig config) {
   final slack = config.unitSanitySlack;
+  var minX = double.infinity;
+  var maxX = double.negativeInfinity;
+  var minY = double.infinity;
+  var maxY = double.negativeInfinity;
+
   for (final lm in frame.landmarks.values) {
     if (lm.x.isNaN || lm.y.isNaN) return true;
     if (lm.y < -slack || lm.y > 1.0 + slack) return true;
     if (lm.x < -slack || lm.x > frame.aspectRatio + slack) return true;
+    if (lm.x < minX) minX = lm.x;
+    if (lm.x > maxX) maxX = lm.x;
+    if (lm.y < minY) minY = lm.y;
+    if (lm.y > maxY) maxY = lm.y;
+  }
+
+  // Too small to be a body, on a frame carrying enough joints to judge. Three
+  // or fewer landmarks can legitimately sit close together (a hand, a foot);
+  // a whole skeleton inside two percent of the frame cannot be anything but a
+  // scaling error.
+  if (frame.landmarks.length >= 4) {
+    final extent = math.max(maxX - minX, maxY - minY);
+    if (extent < config.minBodyExtent) return true;
   }
   return false;
 }

@@ -44,6 +44,26 @@ class MlKitPoseDetectorService implements PoseDetectorService {
   bool _busy = false;
   bool _initialised = false;
 
+  /// Frames lost in a row to an unexpected error.
+  ///
+  /// The generic catch below drops a bad frame on the assumption that the next
+  /// one recovers, which is right for a one-off and wrong for a permanent
+  /// condition wearing a transient's clothes. `MissingPluginException` is the
+  /// clearest example: it is not a `PlatformException`, so it misses the arm
+  /// that surfaces and stops, and it is thrown for every frame forever.
+  ///
+  /// Nothing else would notice. The camera session's stall watchdog keys off
+  /// its own delivery, upstream of here — the camera is healthy, it is this
+  /// stage that is dead — so it stays quiet, no error is ever recorded, and the
+  /// screen falls back to telling the user to stand back. Forever, at a working
+  /// live preview.
+  int _consecutiveFailures = 0;
+
+  /// About a second of frames at a typical rate. High enough that a burst of
+  /// genuinely unlucky frames recovers silently, low enough that a permanent
+  /// fault is named while the user is still looking at the screen.
+  static const int _maxConsecutiveFailures = 30;
+
 
 
   @override
@@ -77,6 +97,7 @@ class MlKitPoseDetectorService implements PoseDetectorService {
       final poses = await detector.processImage(inputImage);
       if (poses.isEmpty) return;
       final frame = _convert(poses.first, inputImage.metadata);
+      _consecutiveFailures = 0;
       _ctrl.add(frame);
     } on PlatformException catch (e) {
       // The native detector rejected the call outright — a bad frame format,
@@ -91,9 +112,19 @@ class MlKitPoseDetectorService implements PoseDetectorService {
       }
       unawaited(stop());
     } catch (e) {
-      // A single frame that fails conversion is not worth surfacing — the
-      // next one recovers.
+      // A single frame that fails is not worth surfacing — the next one
+      // recovers. A run of them is not a run of accidents.
       debugPrint('pose frame dropped: $e');
+      _consecutiveFailures++;
+      if (_consecutiveFailures >= _maxConsecutiveFailures) {
+        if (!_ctrl.isClosed) {
+          _ctrl.addError(StateError(
+            'Pose detection failed on '
+            '$_consecutiveFailures frames in a row: $e',
+          ));
+        }
+        unawaited(stop());
+      }
     } finally {
       _busy = false;
     }
@@ -119,11 +150,7 @@ class MlKitPoseDetectorService implements PoseDetectorService {
         type: t,
         x: x,
         y: y,
-        // z shares the detector's horizontal scale, so it takes the same
-        // divisor as x to stay comparable with it.
-        z: norm.space == PoseCoordinateSpace.pixels
-            ? lm.z / norm.imageHeight
-            : lm.z,
+        z: norm.normaliseDepth(lm.z),
         likelihood: lm.likelihood,
         side: side,
       );
@@ -212,6 +239,13 @@ class MlKitPoseDetectorService implements PoseDetectorService {
   Future<void> stop() async {
     if (!_initialised) return;
     _initialised = false;
+    // Cleared here because the in-flight frame's `finally` may never run: stop()
+    // closes the detector out from under `processImage`, and a future that never
+    // completes leaves the latch set. A stuck `_busy` makes every frame after
+    // the next start() return at the guard — no log, no error, no verdict. Same
+    // shape as the `_initialised` latch that once killed every second visit.
+    _busy = false;
+    _consecutiveFailures = 0;
     await _sub?.cancel();
     _sub = null;
     await session.stop();

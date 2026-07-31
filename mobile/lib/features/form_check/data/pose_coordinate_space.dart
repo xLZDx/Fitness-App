@@ -113,6 +113,18 @@ class PoseCoordinateNormaliser {
   /// Widest x the frame can contain: `width / height`. `y` maxes at 1.
   double get aspectRatio => imageWidth / imageHeight;
 
+  /// Converts a depth value, which ML Kit documents as sharing x's scale.
+  ///
+  /// Takes exactly the transform x takes, for that reason. Getting this wrong
+  /// costs nothing today — grepping `lib/features/form_check` shows no reader —
+  /// which is precisely why it is worth getting right now: the first person to
+  /// use z will use it believing it is comparable with x, and nothing would tell
+  /// them otherwise.
+  double normaliseDepth(double z) => switch (space) {
+        PoseCoordinateSpace.pixels => z / imageHeight,
+        PoseCoordinateSpace.normalised => z * aspectRatio,
+      };
+
   /// Converts (x, y) into the isotropic contract.
   ///
   /// Both branches land in the same space, which is the point — nothing

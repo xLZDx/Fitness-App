@@ -45,6 +45,27 @@ void _recordPoseError(Ref ref, Object e) {
       e is StateError ? e.message : e.toString();
 }
 
+/// Retires a stale error once frames are actually flowing again.
+///
+/// Nothing cleared this provider. It is app-scoped, not page-scoped, so a
+/// single transient native failure pinned "camera unavailable" onto the screen
+/// permanently — surviving leaving the page, coming back, backgrounding the app
+/// and resuming. The page reads `_startError ?? poseErrorProvider`, so even a
+/// fully successful restart could not get past it: the only exit was reinstall.
+///
+/// Cleared on a delivered FRAME rather than on `start()` returning, deliberately.
+/// Success from `start()` is precisely the weak signal that produced an earlier
+/// bug in this same feature: the camera started, the preview painted, and no
+/// frame ever arrived. A frame is the only evidence that the whole pipeline
+/// works end to end, which is the claim clearing this error makes.
+void _retirePoseError(Ref ref) {
+  // Read-and-compare rather than write-always: an unconditional write would
+  // notify every listener 30 times a second for the entire session.
+  if (ref.read(poseErrorProvider) != null) {
+    ref.read(poseErrorProvider.notifier).state = null;
+  }
+}
+
 /// Thresholds for "is this frame worth scoring". A provider so a future
 /// per-exercise profile can loosen or tighten them in one place.
 final poseGateConfigProvider =
@@ -91,6 +112,7 @@ class FormFeedbackController extends Notifier<FormFeedback?> {
   }
 
   void _onFrame(PoseFrame frame) {
+    _retirePoseError(ref);
     // Before the gate, on purpose: a frame the gate rejects is exactly the
     // frame whose coordinates are most worth knowing about.
     _probe.observe(frame);
@@ -128,6 +150,23 @@ final voiceCoachProvider = Provider<VoiceCoach>((ref) {
 /// point; this provider is the single source of truth the UI writes to.
 final voiceMutedProvider = StateProvider<bool>((_) => false);
 
+/// Last speech-engine failure, mirrored out of the coach so the UI can see it.
+///
+/// The page used to read `ref.watch(voiceCoachProvider).lastErrorMessage`.
+/// `voiceCoachProvider` is a plain `Provider` yielding one long-lived object and
+/// `lastErrorMessage` is a getter over a mutable field, so a failure mutated the
+/// field and **notified nothing** — the banner appeared only if some unrelated
+/// watched provider happened to change afterwards.
+///
+/// Which is worst exactly when it matters most: a steady user holding a steady
+/// pose produces a steady gate verdict, and both `poseGateVerdictProvider` and
+/// `poseUnitReportProvider` are deliberately built to stop notifying once their
+/// values settle. So on a phone with no Russian voice installed — which latches
+/// on the very first utterance — the coach could go permanently mute with the
+/// card explaining why never painted. That is the precise confusion the card
+/// was added to remove.
+final voiceErrorProvider = StateProvider<String?>((_) => null);
+
 /// Snapshot of the current set: how many reps, where in the movement, and
 /// the quality record for each rep completed so far.
 class RepSessionState {
@@ -156,6 +195,10 @@ class RepSessionController extends Notifier<RepSessionState> {
   StreamSubscription<PoseFrame>? _sub;
   RepCounter? _counter;
 
+  /// `cue()` is awaited off the frame path, so its completion can land after the
+  /// controller is gone. Touching `ref` then throws.
+  bool _disposed = false;
+
   @override
   RepSessionState build() {
     final svc = ref.watch(poseDetectorServiceProvider);
@@ -173,7 +216,9 @@ class RepSessionController extends Notifier<RepSessionState> {
           _onFrame,
           onError: (Object e) => _recordPoseError(ref, e),
         );
+    _disposed = false;
     ref.onDispose(() {
+      _disposed = true;
       _sub?.cancel();
       _sub = null;
     });
@@ -181,6 +226,7 @@ class RepSessionController extends Notifier<RepSessionState> {
   }
 
   void _onFrame(PoseFrame frame) {
+    _retirePoseError(ref);
     final counter = _counter;
     if (counter == null) return;
 
@@ -208,7 +254,20 @@ class RepSessionController extends Notifier<RepSessionState> {
     }
 
     if (worst != null) {
-      unawaited(ref.read(voiceCoachProvider).cue(worst));
+      final coach = ref.read(voiceCoachProvider);
+      unawaited(coach.cue(worst).whenComplete(() => _publishVoiceError(coach)));
+    }
+  }
+
+  /// Copies the coach's error state into a provider the UI can actually watch.
+  ///
+  /// After the attempt, not before: the failure this reports is raised inside
+  /// `cue()`.
+  void _publishVoiceError(VoiceCoach coach) {
+    if (_disposed) return;
+    final message = coach.lastErrorMessage;
+    if (ref.read(voiceErrorProvider) != message) {
+      ref.read(voiceErrorProvider.notifier).state = message;
     }
   }
 

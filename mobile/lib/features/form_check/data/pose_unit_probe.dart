@@ -109,17 +109,29 @@ class PoseUnitProbe {
   /// arrived.
   void observe(PoseFrame frame) {
     if (frame.landmarks.isEmpty) return;
-    _frames++;
-    _aspectRatio = frame.aspectRatio;
-    final space = frame.sourceSpace;
-    if (space != null) _spaces.add(space);
+
+    // The counter is incremented only once a coordinate has actually been
+    // folded in. Counting the frame first looked equivalent and was not: a
+    // frame whose every coordinate is NaN would leave the extents at their
+    // infinite seeds while `frames` said 1, and `summary` would render
+    // "x Infinity..-Infinity". An all-NaN frame is one of the two states that
+    // produce a unit mismatch, so the diagnostic that exists to explain that
+    // state was the one guaranteed to print nothing usable in it.
+    var usable = false;
     for (final lm in frame.landmarks.values) {
       if (lm.x.isNaN || lm.y.isNaN) continue;
+      usable = true;
       if (lm.x < _minX) _minX = lm.x;
       if (lm.x > _maxX) _maxX = lm.x;
       if (lm.y < _minY) _minY = lm.y;
       if (lm.y > _maxY) _maxY = lm.y;
     }
+    if (!usable) return;
+
+    _frames++;
+    _aspectRatio = frame.aspectRatio;
+    final space = frame.sourceSpace;
+    if (space != null) _spaces.add(space);
   }
 
   void reset() {

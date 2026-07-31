@@ -341,6 +341,43 @@ void main() {
       expect(gatePose(f, kSquatJoints), isNot(PoseGateVerdict.unitMismatch));
     });
 
+    test('coordinates divided too MUCH are a mismatch, not "step back"', () {
+      // The other half of the smoke detector, and the half that was missing.
+      // The slack check only catches values that are too big. A frame divided
+      // by the wrong scalar -- or twice -- lands entirely inside every bound and
+      // was reported as implausibleGeometry, whose text is "step back so your
+      // full body is in frame". The user would step back forever: no distance
+      // moves a coordinate that a stray division put at 0.0008.
+      final f = frame({
+        LandmarkType.leftShoulder: p(LandmarkType.leftShoulder, 0.0004, 0.0003),
+        LandmarkType.rightShoulder: p(LandmarkType.rightShoulder, 0.0009, 0.0003),
+        LandmarkType.leftHip: p(LandmarkType.leftHip, 0.0004, 0.0008),
+        LandmarkType.rightHip: p(LandmarkType.rightHip, 0.0009, 0.0008),
+        LandmarkType.leftKnee: p(LandmarkType.leftKnee, 0.0004, 0.0012),
+        LandmarkType.rightKnee: p(LandmarkType.rightKnee, 0.0009, 0.0012),
+      });
+      expect(gatePose(f, kSquatJoints), PoseGateVerdict.unitMismatch);
+      expect(gatePose(f, kSquatJoints),
+          isNot(PoseGateVerdict.implausibleGeometry));
+    });
+
+    test('a face close-up is still framing, NOT a bug report', () {
+      // The positive control for the check above, and the reason its floor sits
+      // below minTorsoSpan. A face close-up also produces a small body -- but a
+      // small body the user CAN fix by stepping back. If the new check shadowed
+      // this one, the app would answer the single most common real mistake with
+      // "something is broken, there is nothing you can do".
+      final f = frame({
+        LandmarkType.leftShoulder: p(LandmarkType.leftShoulder, 0.48, 0.15),
+        LandmarkType.rightShoulder: p(LandmarkType.rightShoulder, 0.52, 0.15),
+        LandmarkType.leftHip: p(LandmarkType.leftHip, 0.48, 0.18),
+        LandmarkType.rightHip: p(LandmarkType.rightHip, 0.52, 0.18),
+        LandmarkType.leftKnee: p(LandmarkType.leftKnee, 0.48, 0.21),
+        LandmarkType.rightKnee: p(LandmarkType.rightKnee, 0.52, 0.21),
+      });
+      expect(gatePose(f, kSquatJoints), PoseGateVerdict.implausibleGeometry);
+    });
+
     test('a NaN coordinate is a unit mismatch, not silently compared', () {
       // Every comparison against NaN is false, so an unguarded NaN sails through
       // the edge check and reaches the classifiers, which produce a NaN angle

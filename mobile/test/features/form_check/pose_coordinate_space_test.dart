@@ -153,6 +153,43 @@ void main() {
     });
   });
 
+  group('depth takes the same transform as x', () {
+    // Nothing reads z today -- grepping lib/features/form_check finds no
+    // consumer. That is exactly why this is pinned now: the first person to use
+    // it will assume it is comparable with x, and if the two branches disagreed
+    // nothing would tell them otherwise.
+    const w = 480.0;
+    const h = 640.0;
+
+    test('a depth and an x of the same raw value convert identically', () {
+      for (final space in PoseCoordinateSpace.values) {
+        final n = PoseCoordinateNormaliser(
+          space: space,
+          imageWidth: w,
+          imageHeight: h,
+        );
+        const raw = 120.0;
+        expect(n.normaliseDepth(raw), closeTo(n.normalise(raw, 0).$1, 1e-12),
+            reason: 'z shares x\'s scale in ML Kit, so it must share x\'s '
+                'transform here -- $space branch');
+      }
+    });
+
+    test('the two branches agree on the same physical depth', () {
+      final fromPixels = PoseCoordinateNormaliser(
+        space: PoseCoordinateSpace.pixels,
+        imageWidth: w,
+        imageHeight: h,
+      ).normaliseDepth(120);
+      final fromNormalised = PoseCoordinateNormaliser(
+        space: PoseCoordinateSpace.normalised,
+        imageWidth: w,
+        imageHeight: h,
+      ).normaliseDepth(120 / w);
+      expect(fromPixels, closeTo(fromNormalised, 1e-12));
+    });
+  });
+
   group('the output contract', () {
     final n = PoseCoordinateNormaliser(
       space: PoseCoordinateSpace.pixels,

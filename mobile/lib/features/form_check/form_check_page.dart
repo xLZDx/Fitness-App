@@ -177,7 +177,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
           // installed is indistinguishable from a coach with nothing to say.
           // `lastErrorMessage` existed for exactly this and nothing read it —
           // the same wiring `health_sync_card.dart` already uses for health.
-          if (ref.watch(voiceCoachProvider).lastErrorMessage != null) ...[
+          if (ref.watch(voiceErrorProvider) != null) ...[
             GlassCard(
               child: Text(
                 AppLocalizations.of(context).formcheckVoiceUnavailable,

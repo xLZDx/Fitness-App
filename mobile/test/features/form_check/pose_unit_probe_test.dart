@@ -83,6 +83,23 @@ void main() {
     expect(probe.report.summary, contains('pixels+normalised'));
   });
 
+  test('an all-NaN frame never renders as Infinity', () {
+    // The diagnostic is read off a phone screen. An all-NaN frame is one of the
+    // two states that trip PoseGateVerdict.unitMismatch, so this is precisely
+    // the moment the operator looks at this line -- and it used to answer with
+    // "x Infinity..-Infinity", because the frame counter was incremented before
+    // any coordinate had been folded in.
+    final probe = PoseUnitProbe();
+    probe.observe(f({
+      LandmarkType.leftHip: p(LandmarkType.leftHip, double.nan, double.nan),
+      LandmarkType.rightHip: p(LandmarkType.rightHip, double.nan, double.nan),
+    }));
+    expect(probe.report.isEmpty, isTrue,
+        reason: 'a frame that contributed no coordinate is not evidence');
+    expect(probe.report.summary, isNot(contains('Infinity')));
+    expect(probe.report.summary, 'pose: no frames yet');
+  });
+
   test('NaN is skipped rather than swallowing the whole range', () {
     final probe = PoseUnitProbe();
     probe.observe(f({
