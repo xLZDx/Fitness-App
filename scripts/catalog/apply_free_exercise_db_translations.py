@@ -746,6 +746,16 @@ def main() -> None:
         secondary = [MUSCLE_MAP[m] for m in src['secondaryMuscles']
                      if MUSCLE_MAP.get(m)]
         muscles = list(dict.fromkeys(primary + secondary))  # de-dup, ordered
+        # Some upstream tags map to nothing we draw -- 'neck' is the whole of
+        # it, and eight upstream rows are neck-only, so both lists come back
+        # empty and `muscles` ships as []. registry_test requires a non-empty
+        # muscle list, and the muscle map has nothing to highlight either way.
+        # close_empty_machines.py already falls back like this; this path did
+        # not, so the failure was one cap-raise away.
+        if not muscles:
+            muscles = ['core']
+        if not primary:
+            primary = ['core']
 
         exercises.append({
             'id': new_id,

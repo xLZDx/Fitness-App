@@ -66,6 +66,17 @@ OVERRIDE = {
     'Reverse Plate Curls': 'weight_plates',
 }
 
+# Upstream's level vocabulary is not ours: it says 'expert', our enum stops at
+# 'advanced'. Same table as build_catalog.py:66 and
+# apply_free_exercise_db_translations.py:30 -- this script was the one path that
+# skipped it.
+LEVEL_MAP = {
+    'beginner': 'beginner',
+    'intermediate': 'intermediate',
+    'advanced': 'advanced',
+    'expert': 'advanced',
+}
+
 MUSCLE_MAP = {
     'abdominals': 'core', 'abductors': 'adductors', 'adductors': 'adductors',
     'biceps': 'biceps', 'calves': 'calves', 'chest': 'chest',
@@ -445,7 +456,13 @@ def main() -> None:
             'equipmentId': machine,
             'muscles': muscles or ['core'],
             'primaryMuscles': primary or (muscles[:1] or ['core']),
-            'difficulty': src.get('level', 'beginner'),
+            # Mapped, not passed through. Upstream also uses 'expert', which
+            # our enum lacks; ExerciseItem.fromJson then falls back to
+            # 'beginner' SILENTLY (equipment_models.dart:65-68), so three
+            # advanced pull-up and hanging exercises shipped labelled as
+            # beginner work. A level we cannot represent must be mapped
+            # deliberately, never left for a fallback to guess at.
+            'difficulty': LEVEL_MAP.get(src.get('level'), 'beginner'),
             'durationMinutes': 8,
             'summary': steps[0] if steps else src['name'],
             'steps': steps,

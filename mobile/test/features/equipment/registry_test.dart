@@ -75,6 +75,25 @@ void main() {
       }
     });
 
+    test('every difficulty is one the app can actually read', () {
+      // `ExerciseItem.fromJson` matches the string against the enum and falls
+      // back to `beginner` on anything it does not recognise
+      // (equipment_models.dart:65-68). That fallback is silent, so a value the
+      // enum lacks does not fail loudly -- it mislabels the exercise.
+      //
+      // Three shipped entries carried "expert": One Arm Chin-Up, Hanging Leg
+      // Raise and Hanging Pike, all displayed to beginners as beginner work.
+      // The importer maps levels through LEVEL_MAP; close_empty_machines.py
+      // passed the upstream value straight through, which is how they got in.
+      const canonical = {'beginner', 'intermediate', 'advanced'};
+      final bad = exercises
+          .where((e) => !canonical.contains(e['difficulty']))
+          .map((e) => '${e['id']}=${e['difficulty']}')
+          .toList();
+      expect(bad, isEmpty,
+          reason: 'these silently render as "beginner" to the user: $bad');
+    });
+
     test('new cardio exercises use the shared muscle vocabulary', () {
       final vocab = exercises
           .expand((e) => (e['muscles'] as List? ?? const []).cast<String>())
