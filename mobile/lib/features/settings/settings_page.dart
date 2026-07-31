@@ -78,7 +78,8 @@ class SettingsPage extends ConsumerWidget {
               key: const Key('settings-notifications'),
               value: settings.notificationsEnabled,
               onChanged: controller.setNotificationsEnabled,
-              title: Text(AppLocalizations.of(context).settingsSessionReminders),
+              title:
+                  Text(AppLocalizations.of(context).settingsSessionReminders),
               subtitle: Text(
                 settings.notificationsEnabled
                     ? AppLocalizations.of(context).settingsRemindersOnBody
@@ -124,6 +125,34 @@ class SettingsPage extends ConsumerWidget {
               ],
             ),
           ),
+          const SizedBox(height: 16),
+          // The moderation console. Routed, translated, finished — and linked
+          // from nowhere, so the only person who could approve a community
+          // submission had no way to open the queue.
+          //
+          // In Settings rather than on the profile because it is an operator
+          // console, not a feature. It is not hidden behind a client-side
+          // moderator check because there is no such check to hide it behind:
+          // the Firestore rules enforce the moderator claim, and a client flag
+          // would be decoration over the real gate. A curious user who taps it
+          // sees an empty queue, which is the truth.
+          GlassCard(
+            key: const Key('settings-moderation'),
+            onTap: () => context.push('/moderate'),
+            child: Row(
+              children: [
+                Icon(Icons.rule_folder_outlined,
+                    color: theme.colorScheme.primary),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                      AppLocalizations.of(context).catalogModerationQueue,
+                      style: theme.textTheme.titleMedium),
+                ),
+                const Icon(Icons.chevron_right),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -140,7 +169,8 @@ class SettingsPage extends ConsumerWidget {
 
   String _languageLabel(BuildContext context, AppLanguage lang) =>
       switch (lang) {
-        AppLanguage.system => AppLocalizations.of(context).settingsFollowTheSystem,
+        AppLanguage.system =>
+          AppLocalizations.of(context).settingsFollowTheSystem,
         // Endonyms, not English names, and never translated: a user looking for
         // their own language scans for the word they actually call it.
         AppLanguage.ru => 'Русский',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -408,26 +409,45 @@ class _NoVideoFallback extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return GlassCard(
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              gradient: const LinearGradient(colors: [
-                AppPalette.auroraTeal,
-                AppPalette.auroraLime,
-              ]),
-            ),
-            child: const Icon(Icons.menu_book_outlined,
-                color: Colors.white, size: 24),
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  gradient: const LinearGradient(colors: [
+                    AppPalette.auroraTeal,
+                    AppPalette.auroraLime,
+                  ]),
+                ),
+                child: const Icon(Icons.menu_book_outlined,
+                    color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  AppLocalizations.of(context)
+                      .equipmentNoVideoYetFollowTheSteps,
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              AppLocalizations.of(context).equipmentNoVideoYetFollowTheSteps,
-              style: theme.textTheme.bodyMedium,
+          // `/contribute` was a finished, translated, routed page that nothing
+          // in the app linked to — a submission form nobody could open. This
+          // is where it belongs: the one moment a user is looking at a gap in
+          // the catalog is the moment to ask them to fill it.
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              key: const Key('workout.contribute_video'),
+              onPressed: () => context.push('/contribute'),
+              icon: const Icon(Icons.add_link, size: 18),
+              label: Text(AppLocalizations.of(context).catalogContributeAVideo),
             ),
           ),
         ],
