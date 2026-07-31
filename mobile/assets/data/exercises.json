@@ -7273,7 +7273,7 @@
  {
   "id": "vid_sit_up_on_exercise_ball",
   "title": "Sit-Up on an Exercise Ball",
-  "equipmentId": null,
+  "equipmentId": "stability_ball",
   "muscles": [
    "core"
   ],
@@ -7442,7 +7442,7 @@
  {
   "id": "vid_stretching_spinal_stretch_on_exercise_ball",
   "title": "Spinal Stretch on an Exercise Ball",
-  "equipmentId": null,
+  "equipmentId": "stability_ball",
   "muscles": [
    "core",
    "lower_back",
@@ -10287,7 +10287,7 @@
  {
   "id": "vid_jump_rope",
   "title": "Jump Rope",
-  "equipmentId": null,
+  "equipmentId": "skipping_rope",
   "muscles": [
    "calves",
    "quads",
@@ -10760,7 +10760,7 @@
  {
   "id": "vid_deep_push_ups",
   "title": "Deep Push-Up",
-  "equipmentId": null,
+  "equipmentId": "parallettes",
   "muscles": [
    "chest",
    "shoulders",
@@ -11324,7 +11324,7 @@
  {
   "id": "vid_stretching_standing_wheel_rollout",
   "title": "Standing Wheel Rollout",
-  "equipmentId": null,
+  "equipmentId": "ab_wheel",
   "muscles": [
    "core",
    "lats",
@@ -12665,7 +12665,7 @@
  {
   "id": "vid_ball_sit_up_on_stability_ball",
   "title": "Sit-Up on a Stability Ball",
-  "equipmentId": null,
+  "equipmentId": "stability_ball",
   "muscles": [
    "core"
   ],
@@ -12692,7 +12692,7 @@
  {
   "id": "vid_bent_knee_lying_twist_on_stability_ball",
   "title": "Bent Knee Lying Twist on a Stability Ball",
-  "equipmentId": null,
+  "equipmentId": "stability_ball",
   "muscles": [
    "core"
   ],
@@ -12826,7 +12826,7 @@
  {
   "id": "vid_crunch_legs_on_stability_ball",
   "title": "Crunch with Legs on a Stability Ball",
-  "equipmentId": null,
+  "equipmentId": "stability_ball",
   "muscles": [
    "core"
   ],
@@ -13067,7 +13067,7 @@
  {
   "id": "vid_lying_hip_lift_on_stability_ball",
   "title": "Lying Hip Lift on a Stability Ball",
-  "equipmentId": null,
+  "equipmentId": "stability_ball",
   "muscles": [
    "glutes",
    "hamstrings",
@@ -13234,7 +13234,7 @@
  {
   "id": "vid_side_bend_on_stability_ball",
   "title": "Side Bend on a Stability Ball",
-  "equipmentId": null,
+  "equipmentId": "stability_ball",
   "muscles": [
    "core"
   ],

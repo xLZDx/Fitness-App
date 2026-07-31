@@ -334,5 +334,33 @@
   "manufacturer": "Any",
   "category": "functional",
   "description": "Firm roller for self-myofascial release and mobility work."
+ },
+ {
+  "id": "stability_ball",
+  "name": "Stability ball",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Inflatable ball used as an unstable bench for core, hip and back work."
+ },
+ {
+  "id": "skipping_rope",
+  "name": "Skipping rope",
+  "manufacturer": "Any",
+  "category": "cardio",
+  "description": "Rope for skipping intervals, warm-ups and conditioning."
+ },
+ {
+  "id": "ab_wheel",
+  "name": "Ab wheel",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Wheel with two handles for rollouts that load the whole trunk."
+ },
+ {
+  "id": "parallettes",
+  "name": "Parallettes",
+  "manufacturer": "Any",
+  "category": "bodyweight",
+  "description": "Low parallel bars for push-ups, L-sits and handstand work at deeper range."
  }
 ]

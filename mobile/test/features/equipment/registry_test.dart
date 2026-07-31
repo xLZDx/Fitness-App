@@ -149,6 +149,56 @@ void main() {
     });
   });
 
+  group('the implements the video library needed', () {
+    // The 677-file drop shipped 19 exercises with no equipment because the
+    // registry had no id for what they use. Operator picked four of them to
+    // add: "фитбол, скакалки, ролика для пресса и брусьев-паралеток". The
+    // stretching strap and the two machines the source does not identify stay
+    // null, because a plausible-looking wrong machine is worse than none.
+    //
+    // The generic invariants above already cover these — aliases, Russian
+    // name, no empty machine. This pins them by NAME, because deleting an
+    // implement together with its exercises satisfies every generic rule and
+    // silently removes a category the user had.
+    const added = {
+      'stability_ball': 7,
+      'skipping_rope': 1,
+      'ab_wheel': 1,
+      'parallettes': 1,
+    };
+
+    test('each one exists and owns the exercises it was added for', () {
+      final byId = <String, int>{};
+      for (final e in exercises) {
+        final id = e['equipmentId'] as String?;
+        if (id != null) byId[id] = (byId[id] ?? 0) + 1;
+      }
+      added.forEach((id, count) {
+        expect(equipmentIds, contains(id));
+        expect(byId[id], count, reason: '$id lost or gained exercises');
+      });
+    });
+
+    test('what stayed null, stayed null on purpose', () {
+      // Five stretching entries use a strap or a belt, and two "Lever" rows
+      // name a machine the registry does not have. Guessing at those is the
+      // failure this catalog has already been through once.
+      const deliberatelyNull = [
+        'vid_stretching_calf_stretch_with_rope',
+        'vid_stretching_calf_stretch_with_strap',
+        'vid_stretching_hamstring_stretch',
+        'vid_lever_lateral_raise',
+        'vid_lever_shrug',
+      ];
+      final byId = {for (final e in exercises) e['id'] as String: e};
+      for (final id in deliberatelyNull) {
+        expect(byId[id], isNotNull, reason: '$id disappeared');
+        expect(byId[id]!['equipmentId'], isNull,
+            reason: '$id was given a machine it does not use');
+      }
+    });
+  });
+
   group('Free Exercise DB expansion (round 4, S0)', () {
     final ruExercises = (jsonDecode(
             File('assets/data/exercises.ru.json').readAsStringSync()) as Map)
