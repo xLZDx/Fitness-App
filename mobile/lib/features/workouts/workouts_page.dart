@@ -9,6 +9,7 @@ import '../../shared/widgets/smooth_scroll_list.dart';
 import '../equipment/data/catalog_labels.dart';
 import '../equipment/data/equipment_models.dart';
 import '../equipment/state/equipment_providers.dart';
+import '../personalisation/state/personalisation_providers.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
 import 'state/offline_video_providers.dart';
@@ -94,9 +95,15 @@ String workoutsFilterLabel(AppLocalizations l, WorkoutsFilter f) {
 /// the recommended ("for you") feed and the raw catalog and slices by
 /// equipment category or muscle tag.
 final _filteredExercisesProvider =
-    FutureProvider.family<List<ExerciseItem>, WorkoutsFilter>((ref, filter) async {
+    FutureProvider.family<List<ExerciseItem>, WorkoutsFilter>(
+        (ref, filter) async {
   if (filter == WorkoutsFilter.forYou) {
-    return ref.watch(forYouExercisesProvider.future);
+    // Ranked, not merely filtered. `rankedForYouProvider` puts the muscles the
+    // user has trained least in the last weeks at the top; before it was wired
+    // up here the tab called "For you" showed every user the same order, and
+    // the whole personalisation folder — a fitness model built from every
+    // logged set, a ranker, and tests for both — was watched by nothing.
+    return ref.watch(rankedForYouProvider.future);
   }
   if (filter == WorkoutsFilter.all) {
     return ref.watch(allExercisesProvider.future);
@@ -167,8 +174,8 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 280),
                     curve: Curves.easeOutCubic,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(22),
                       gradient: selected
@@ -201,7 +208,9 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
           ...list.when(
             loading: () => const [_LoadingCard()],
             error: (e, _) => [
-              GlassCard(child: Text(AppLocalizations.of(context).workoutsCouldNotLoadWorkouts(e))),
+              GlassCard(
+                  child: Text(AppLocalizations.of(context)
+                      .workoutsCouldNotLoadWorkouts(e))),
             ],
             data: (items) {
               if (items.isEmpty) {
@@ -296,7 +305,8 @@ class _ExerciseCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      AppLocalizations.of(context).equipmentMin(exercise.durationMinutes),
+                      AppLocalizations.of(context)
+                          .equipmentMin(exercise.durationMinutes),
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: scheme.onSurface.withValues(alpha: 0.55),
                         fontWeight: FontWeight.w600,
@@ -378,7 +388,8 @@ class _OfflinePrefetchCard extends ConsumerWidget {
               children: [
                 Text(
                   isPremium
-                      ? AppLocalizations.of(context).workoutsOfflineDownloadTitle
+                      ? AppLocalizations.of(context)
+                          .workoutsOfflineDownloadTitle
                       : AppLocalizations.of(context).workoutsOfflineLockedTitle,
                   style: theme.textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.w800),

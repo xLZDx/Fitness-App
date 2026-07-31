@@ -67,8 +67,7 @@ class FitnessProfile {
   static FitnessProfile get empty => const FitnessProfile(byMuscle: {});
 
   MuscleFitness scoreFor(String muscle) =>
-      byMuscle[muscle] ??
-      MuscleFitness(muscle: muscle, good: 2, total: 4);
+      byMuscle[muscle] ?? MuscleFitness(muscle: muscle, good: 2, total: 4);
 
   /// Average score across the named muscles. Used by the ranker for
   /// composite-movement (squat works quads+glutes, etc.).
@@ -110,8 +109,7 @@ FitnessProfile buildProfile(
       DifficultyRating.tooHard => 0.0,
     };
     for (final m in muscles) {
-      final cur = acc[m] ??
-          MuscleFitness(muscle: m, good: 2, total: 4);
+      final cur = acc[m] ?? MuscleFitness(muscle: m, good: 2, total: 4);
       acc[m] = MuscleFitness(
         muscle: m,
         good: cur.good + (delta * w),
