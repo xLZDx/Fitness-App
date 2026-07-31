@@ -92,20 +92,72 @@ video.
 
 ## Launch
 
-Upload preserving the tree, so the paths the catalog already advertises resolve:
+**Correction, 2026-08-01.** The first version of this section said to upload
+with `firebase storage:upload`. **There is no such command.** It was written
+from memory rather than checked, and `firebase --help` on CLI 15.17.0 has no
+storage upload of any kind — the Firebase CLI deploys storage RULES and does
+not move files. Verified before this rewrite.
+
+### Step 0 — operator, once
+
+Two things nothing on this machine can do:
+
+1. **Enable Storage** in the Firebase console for `traidingbot-b4061`. The
+   project has no storage bucket and `firebase.json` had no storage section
+   until now. Enabling creates `traidingbot-b4061.firebasestorage.app`.
+2. **Install the Google Cloud SDK** and sign in. `gcloud` and `gsutil` are not
+   installed; the Firebase CLI cannot substitute for them, and the only other
+   route is a downloaded service-account key, which is a long-lived secret on
+   disk and worse.
 
 ```bash
-# Firebase, from the drop root
-firebase storage:upload "girl-*/girl"  --project traidingbot-b4061 --to exercises/girl
-firebase storage:upload "men-*/men"    --project traidingbot-b4061 --to exercises/men
+gcloud auth login
+gcloud config set project traidingbot-b4061
 ```
 
-Then point the catalog at it — one command, reversible:
+### Step 1 — rules
 
 ```bash
-python scripts/catalog/set_video_host.py https://<bucket>.firebasestorage.app/exercises
+firebase deploy --only storage --project traidingbot-b4061
+```
+
+`storage.rules` makes `exercises/**` world-readable and client-unwritable. The
+paths are inside the APK, so they are not secret; a bucket that accepts client
+writes is a free file host for whoever decompiles it.
+
+### Step 2 — upload, preserving the tree
+
+The catalog's urls are `<base>/<gender>/<Group>/<file>.mp4`, so the upload has
+to mirror the drop exactly. `rsync` rather than `cp` so a re-run after a fix
+moves only what changed:
+
+```bash
+BUCKET=gs://traidingbot-b4061.firebasestorage.app/exercises
+cd /d/Downloads/Video
+gcloud storage rsync -r girl-*/girl "$BUCKET/girl"
+gcloud storage rsync -r men-*/men   "$BUCKET/men"
+```
+
+0.686 GB, 677 files. Well inside the 5 GB free tier.
+
+### Step 3 — point the catalog at it, AFTER the files are there
+
+Not before: the model hands a url to the player as soon as it stops being a
+placeholder, and a url that 404s renders as a spinner resolving into an error —
+strictly worse than the photographs it replaced.
+
+```bash
+python scripts/catalog/set_video_host.py \
+    https://firebasestorage.googleapis.com/v0/b/traidingbot-b4061.firebasestorage.app/o/exercises
 python scripts/catalog/set_video_host.py --reset     # undo
 ```
+
+**Check the url shape against one real file before rewriting 653 of them.**
+Firebase serves objects through a download endpoint whose path is the object
+name percent-encoded WHOLE — slashes included — with `?alt=media`. If that is
+the case here, the base above is wrong and the catalog's `<gender>/<Group>/`
+structure has to be encoded differently. Fetch one clip in a browser after the
+upload, copy the url that works, and derive the base from it.
 
 ## Monitor
 
