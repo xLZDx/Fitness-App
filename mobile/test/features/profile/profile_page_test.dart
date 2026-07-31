@@ -43,7 +43,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Activity'), findsOneWidget);
-    expect(find.text('moderately active'), findsOneWidget);
+    // "Moderately active", not "moderately active": the label is looked up
+    // now, where it used to be manufactured from the enum's own identifier by
+    // inserting a space before each capital. That trick produced a plausible
+    // English phrase for free and produced ONLY English — and it meant
+    // renaming `ActivityLevel.moderatelyActive` would have silently renamed
+    // what the user reads.
+    expect(find.text('Moderately active'), findsOneWidget);
     // The crash used to surface as the red error widget instead of the card.
     expect(find.byType(ErrorWidget), findsNothing);
   });

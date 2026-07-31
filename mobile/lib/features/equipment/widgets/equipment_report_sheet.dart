@@ -92,6 +92,7 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return Padding(
@@ -122,7 +123,7 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
               children: [
                 for (final f in EquipmentFault.values)
                   ChoiceChip(
-                    label: Text(_label(f)),
+                    label: Text(_label(l10n, f)),
                     selected: _fault == f,
                     onSelected: (_) => setState(() => _fault = f),
                   ),
@@ -134,7 +135,8 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
               minLines: 2,
               maxLines: 4,
               decoration: InputDecoration(
-                hintText: AppLocalizations.of(context).equipmentOptionalNoteEGCableFrayed,
+                hintText: AppLocalizations.of(context)
+                    .equipmentOptionalNoteEGCableFrayed,
                 filled: true,
                 fillColor: Colors.white.withValues(alpha: 0.32),
                 border: OutlineInputBorder(
@@ -175,7 +177,8 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
                               AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
-                    : Text(AppLocalizations.of(context).equipmentSendToMaintenance),
+                    : Text(AppLocalizations.of(context)
+                        .equipmentSendToMaintenance),
               ),
             ),
             const SizedBox(height: 8),
@@ -191,16 +194,16 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
     );
   }
 
-  String _label(EquipmentFault f) {
+  String _label(AppLocalizations l10n, EquipmentFault f) {
     switch (f) {
       case EquipmentFault.unsafe:
-        return 'Unsafe';
+        return l10n.equipmentFaultUnsafe;
       case EquipmentFault.degraded:
-        return 'Degraded';
+        return l10n.equipmentFaultDegraded;
       case EquipmentFault.qrMissing:
-        return 'QR missing';
+        return l10n.equipmentFaultQrMissing;
       case EquipmentFault.other:
-        return 'Other';
+        return l10n.equipmentFaultOther;
     }
   }
 }

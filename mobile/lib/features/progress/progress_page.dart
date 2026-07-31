@@ -77,7 +77,8 @@ class ProgressPage extends ConsumerWidget {
               child: logs.isEmpty
                   ? Center(
                       child: Text(
-                        AppLocalizations.of(context).progressLogAWorkoutToSeeYour,
+                        AppLocalizations.of(context)
+                            .progressLogAWorkoutToSeeYour,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurface
                               .withValues(alpha: 0.65),
@@ -98,7 +99,8 @@ class ProgressPage extends ConsumerWidget {
           if (logs.isEmpty)
             GlassCard(
               child: Text(
-                AppLocalizations.of(context).progressTapMarkCompleteOnAnyWorkout,
+                AppLocalizations.of(context)
+                    .progressTapMarkCompleteOnAnyWorkout,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
                 ),
@@ -230,6 +232,7 @@ class _RecentLogCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return GlassCard(
@@ -242,13 +245,12 @@ class _RecentLogCard extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
               gradient: LinearGradient(
-                colors: AppPalette.tileGradients[
-                    log.exerciseId.hashCode.abs() %
-                        AppPalette.tileGradients.length],
+                colors: AppPalette.tileGradients[log.exerciseId.hashCode.abs() %
+                    AppPalette.tileGradients.length],
               ),
             ),
-            child: const Icon(Icons.check_rounded,
-                color: Colors.white, size: 22),
+            child:
+                const Icon(Icons.check_rounded, color: Colors.white, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -264,7 +266,8 @@ class _RecentLogCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  AppLocalizations.of(context).notificationsMin(_formatDate(log.completedAt), log.durationMinutes),
+                  AppLocalizations.of(context).notificationsMin(
+                      _formatDate(l10n, log.completedAt), log.durationMinutes),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: scheme.onSurface.withValues(alpha: 0.60),
                   ),
@@ -277,14 +280,14 @@ class _RecentLogCard extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime when) {
+  String _formatDate(AppLocalizations l10n, DateTime when) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final wDay = DateTime(when.year, when.month, when.day);
     final diff = today.difference(wDay).inDays;
-    if (diff == 0) return 'Today';
-    if (diff == 1) return 'Yesterday';
-    if (diff < 7) return '$diff days ago';
+    if (diff == 0) return l10n.commonToday;
+    if (diff == 1) return l10n.commonYesterday;
+    if (diff < 7) return l10n.commonDaysAgo(diff);
     return '${when.year}-${when.month.toString().padLeft(2, '0')}-${when.day.toString().padLeft(2, '0')}';
   }
 }

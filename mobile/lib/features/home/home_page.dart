@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -52,6 +53,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final logs = ref.watch(workoutLogsProvider).valueOrNull ?? const [];
     final stats = deriveProgress(logs);
     final upcoming = ref.watch(upcomingSessionsProvider);
@@ -68,12 +70,12 @@ class _HomePageState extends ConsumerState<HomePage> {
           const HealthSyncCard(),
           const SizedBox(height: 12),
           const DeloadBanner(),
-          _SectionHeader('Today'),
+          _SectionHeader(l10n.homeSectionToday),
           const SizedBox(height: 12),
           _TodayCard(upcoming: upcoming),
           if (upcoming.length > 1) ...[
             const SizedBox(height: 24),
-            _SectionHeader('Upcoming'),
+            _SectionHeader(l10n.homeSectionUpcoming),
             const SizedBox(height: 12),
             for (final s in upcoming.skip(1).take(3)) ...[
               _UpcomingCard(session: s),
@@ -81,7 +83,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             ],
           ],
           const SizedBox(height: 32),
-          _SectionHeader('Quick stats'),
+          _SectionHeader(l10n.homeSectionQuickStats),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -96,7 +98,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               Expanded(
                 child: _StatCard(
                   label: AppLocalizations.of(context).homeStreak,
-                  value: '${stats.currentStreakDays}d',
+                  value: l10n.homeStreakDays(stats.currentStreakDays),
                   gradient: AppPalette.tileGradients[1],
                 ),
               ),
@@ -111,24 +113,20 @@ class _HomePageState extends ConsumerState<HomePage> {
             ],
           ),
           const SizedBox(height: 32),
-          _SectionHeader('Suggestions'),
+          _SectionHeader(l10n.homeSectionSuggestions),
           const SizedBox(height: 14),
           ...ref.watch(suggestionsProvider).when(
                 loading: () => const [_SuggestionsPlaceholder()],
-                error: (e, _) => [_SuggestionsMessage('Could not load: $e')],
+                error: (e, _) =>
+                    [_SuggestionsMessage(l10n.homeCouldNotLoad('$e'))],
                 data: (list) => list.isEmpty
-                    ? const [
-                        _SuggestionsMessage(
-                          'Finish the intake questionnaire and log a session — '
-                          'suggestions are built from your answers and history.',
-                        )
-                      ]
+                    ? [_SuggestionsMessage(l10n.homeSuggestionsEmpty)]
                     : [
                         for (var i = 0; i < list.length; i++) ...[
                           _SuggestionCard(
                             list[i],
-                            gradient: AppPalette
-                                .tileGradients[i % AppPalette.tileGradients.length],
+                            gradient: AppPalette.tileGradients[
+                                i % AppPalette.tileGradients.length],
                           ),
                           const SizedBox(height: 16),
                         ],
@@ -181,6 +179,7 @@ class _TodayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
@@ -244,7 +243,9 @@ class _TodayCard extends StatelessWidget {
                         ?.copyWith(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 2),
                 Text(
-                  AppLocalizations.of(context).notificationsMin(formatScheduleLabel(next.scheduledFor), next.durationMinutes),
+                  AppLocalizations.of(context).notificationsMin(
+                      formatScheduleLabel(l10n, next.scheduledFor),
+                      next.durationMinutes),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: scheme.onSurface.withValues(alpha: 0.60),
                   ),
@@ -267,12 +268,12 @@ class _UpcomingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return GlassCard(
       padding: const EdgeInsets.all(14),
-      onTap: () =>
-          GoRouter.of(context).push('/workout/${session.exerciseId}'),
+      onTap: () => GoRouter.of(context).push('/workout/${session.exerciseId}'),
       child: Row(
         children: [
           Container(
@@ -302,7 +303,9 @@ class _UpcomingCard extends StatelessWidget {
                         ?.copyWith(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 2),
                 Text(
-                  AppLocalizations.of(context).notificationsMin(formatScheduleLabel(session.scheduledFor), session.durationMinutes),
+                  AppLocalizations.of(context).notificationsMin(
+                      formatScheduleLabel(l10n, session.scheduledFor),
+                      session.durationMinutes),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: scheme.onSurface.withValues(alpha: 0.60),
                   ),
@@ -316,27 +319,30 @@ class _UpcomingCard extends StatelessWidget {
   }
 }
 
-/// Renders a friendly schedule label: AppLocalizations.of(context).homeToday0700, "Tomorrow 18:30",
-/// "Wed 14:00", or "May 20 · 09:00" beyond the next week.
-String formatScheduleLabel(DateTime t, {DateTime? now}) {
+/// A friendly schedule label: "Today 07:00", "Tomorrow 18:30", "Wed 14:00",
+/// or "May 20 · 09:00" beyond the next week.
+///
+/// The weekday and month names come from `intl` and the locale, not from two
+/// hard-coded English arrays. Nineteen names in an ARB file would have worked
+/// for Russian and then been wrong for the next language, and wrong in a way
+/// nobody would notice: Russian dates decline, and "20 мая" is not "мая 20".
+/// `DateFormat` already knows that for every locale Flutter ships.
+String formatScheduleLabel(AppLocalizations l10n, DateTime t, {DateTime? now}) {
   final n = now ?? DateTime.now();
   final today = DateTime(n.year, n.month, n.day);
   final target = DateTime(t.year, t.month, t.day);
   final diff = target.difference(today).inDays;
   final hh = t.hour.toString().padLeft(2, '0');
   final mm = t.minute.toString().padLeft(2, '0');
+  final time = '$hh:$mm';
+  final locale = l10n.localeName;
 
-  if (diff == 0) return 'Today $hh:$mm';
-  if (diff == 1) return 'Tomorrow $hh:$mm';
+  if (diff == 0) return l10n.homeScheduleToday(time);
+  if (diff == 1) return l10n.homeScheduleTomorrow(time);
   if (diff > 1 && diff < 7) {
-    const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return '${names[t.weekday - 1]} $hh:$mm';
+    return l10n.homeScheduleWeekday(DateFormat.E(locale).format(t), time);
   }
-  const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
-  return '${months[t.month - 1]} ${t.day} · $hh:$mm';
+  return l10n.homeScheduleDate(DateFormat.MMMd(locale).format(t), time);
 }
 
 class _SuggestionCard extends StatelessWidget {
@@ -385,7 +391,8 @@ class _SuggestionCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      AppLocalizations.of(context).equipmentMin(s.durationMinutes),
+                      AppLocalizations.of(context)
+                          .equipmentMin(s.durationMinutes),
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: scheme.onSurface.withValues(alpha: 0.55),
                         fontWeight: FontWeight.w600,
@@ -568,8 +575,8 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             value,
-            style:
-                theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+            style: theme.textTheme.titleLarge
+                ?.copyWith(fontWeight: FontWeight.w800),
           ),
         ],
       ),
@@ -614,10 +621,10 @@ class _AiPlanCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  AppLocalizations.of(context).homeBuiltFromYourIntakeRatingsAnd,
+                  AppLocalizations.of(context)
+                      .homeBuiltFromYourIntakeRatingsAnd,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color:
-                        theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
                   ),
                 ),
               ],

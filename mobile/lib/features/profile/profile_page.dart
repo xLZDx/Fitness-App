@@ -16,6 +16,7 @@ class ProfilePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final user = ref.watch(authUserProvider).valueOrNull;
@@ -24,10 +25,12 @@ class ProfilePage extends ConsumerWidget {
     final sub = ref.watch(currentSubscriptionProvider).valueOrNull;
     final tier = ref.watch(effectiveTierProvider);
 
-    final displayName = user?.displayName ?? 'Guest';
+    final displayName = user?.displayName ?? l10n.profileGuest;
     final subtitle = onboarded
-        ? 'Profile complete'
-        : (user == null ? 'Sign in to sync progress' : 'Finish onboarding to unlock plans');
+        ? l10n.profileComplete
+        : (user == null
+            ? l10n.profileSignInToSync
+            : l10n.profileFinishOnboarding);
 
     return FrostedScaffold(
       appBar: GlassAppBar(title: AppLocalizations.of(context).profileProfile),
@@ -80,8 +83,9 @@ class ProfilePage extends ConsumerWidget {
                   context,
                   icon: Icons.assignment_outlined,
                   gradient: AppPalette.tileGradients[1],
-                  title:
-                      onboarded ? 'Health questionnaire' : 'Complete questionnaire',
+                  title: onboarded
+                      ? l10n.profileHealthQuestionnaire
+                      : l10n.profileCompleteQuestionnaire,
                   subtitle: onboarded
                       ? AppLocalizations.of(context).profileEditYourAnswers
                       : AppLocalizations.of(context).profilePersonalizePlan,
@@ -93,7 +97,8 @@ class ProfilePage extends ConsumerWidget {
                   icon: Icons.photo_library_outlined,
                   gradient: AppPalette.tileGradients[0],
                   title: AppLocalizations.of(context).profileProgressPhotos,
-                  subtitle: AppLocalizations.of(context).profileEndToEndEncryptedOnYour,
+                  subtitle: AppLocalizations.of(context)
+                      .profileEndToEndEncryptedOnYour,
                   onTap: () => context.push('/photos'),
                 ),
                 _divider(context),
@@ -102,7 +107,8 @@ class ProfilePage extends ConsumerWidget {
                   icon: Icons.people_alt_outlined,
                   gradient: AppPalette.tileGradients[2],
                   title: AppLocalizations.of(context).marketplaceCoaches,
-                  subtitle: AppLocalizations.of(context).profileBrowse11Sessions15Fee,
+                  subtitle:
+                      AppLocalizations.of(context).profileBrowse11Sessions15Fee,
                   onTap: () => context.push('/coaches'),
                 ),
                 _divider(context),
@@ -110,8 +116,10 @@ class ProfilePage extends ConsumerWidget {
                   context,
                   icon: Icons.star_outline,
                   gradient: AppPalette.tileGradients[4],
-                  title: AppLocalizations.of(context).celebrityplansCelebrityPlans,
-                  subtitle: AppLocalizations.of(context).profileInKindDonatedProgrammes,
+                  title:
+                      AppLocalizations.of(context).celebrityplansCelebrityPlans,
+                  subtitle: AppLocalizations.of(context)
+                      .profileInKindDonatedProgrammes,
                   onTap: () => context.push('/celebrity-plans'),
                 ),
                 _divider(context),
@@ -120,7 +128,8 @@ class ProfilePage extends ConsumerWidget {
                   icon: Icons.forum_outlined,
                   gradient: AppPalette.tileGradients[3],
                   title: AppLocalizations.of(context).profileCommunity,
-                  subtitle: AppLocalizations.of(context).profileHevyStyleSocialFeed,
+                  subtitle:
+                      AppLocalizations.of(context).profileHevyStyleSocialFeed,
                   onTap: () => context.push('/community'),
                 ),
                 _divider(context),
@@ -129,7 +138,7 @@ class ProfilePage extends ConsumerWidget {
                   icon: Icons.workspace_premium_outlined,
                   gradient: AppPalette.tileGradients[3],
                   title: AppLocalizations.of(context).profileSubscription,
-                  subtitle: _subscriptionSubtitle(sub, tier),
+                  subtitle: _subscriptionSubtitle(l10n, sub, tier),
                   onTap: () => context.push('/subscription'),
                 ),
                 _divider(context),
@@ -138,7 +147,8 @@ class ProfilePage extends ConsumerWidget {
                   icon: Icons.volunteer_activism_outlined,
                   gradient: AppPalette.tileGradients[0],
                   title: AppLocalizations.of(context).aboutOurMission,
-                  subtitle: AppLocalizations.of(context).profileHowDonationsAreUsedDonorWall,
+                  subtitle: AppLocalizations.of(context)
+                      .profileHowDonationsAreUsedDonorWall,
                   onTap: () => context.push('/about'),
                 ),
                 _divider(context),
@@ -147,7 +157,8 @@ class ProfilePage extends ConsumerWidget {
                   icon: Icons.settings_outlined,
                   gradient: AppPalette.tileGradients[2],
                   title: AppLocalizations.of(context).profileSettings,
-                  subtitle: AppLocalizations.of(context).profileThemeNotificationsLanguage,
+                  subtitle: AppLocalizations.of(context)
+                      .profileThemeNotificationsLanguage,
                   onTap: () => context.push('/settings'),
                 ),
                 _divider(context),
@@ -201,8 +212,8 @@ class ProfilePage extends ConsumerWidget {
                   Text(
                     subtitle,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface
-                          .withValues(alpha: 0.65),
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.65),
                     ),
                   ),
                 ],
@@ -216,21 +227,22 @@ class ProfilePage extends ConsumerWidget {
     );
   }
 
-  String _subscriptionSubtitle(Subscription? sub, SubscriptionTier tier) {
+  String _subscriptionSubtitle(
+      AppLocalizations l10n, Subscription? sub, SubscriptionTier tier) {
     if (sub == null || sub.status == SubscriptionStatus.none) {
-      return 'Free · start a 14-day trial';
+      return l10n.profileFreeStartTrial;
     }
     final tierLabel = switch (tier) {
-      SubscriptionTier.free => 'Free',
-      SubscriptionTier.standard => 'Standard',
-      SubscriptionTier.celebrityTrainer => 'Celebrity trainer',
+      SubscriptionTier.free => l10n.profileTierFree,
+      SubscriptionTier.standard => l10n.profileTierStandard,
+      SubscriptionTier.celebrityTrainer => l10n.profileTierCelebrity,
     };
     final statusLabel = switch (sub.status) {
-      SubscriptionStatus.trial => 'Trial',
-      SubscriptionStatus.active => 'Active',
-      SubscriptionStatus.cancelled => 'Cancelling',
-      SubscriptionStatus.expired => 'Expired',
-      SubscriptionStatus.none => 'Free',
+      SubscriptionStatus.trial => l10n.profileSubTrial,
+      SubscriptionStatus.active => l10n.profileSubActive,
+      SubscriptionStatus.cancelled => l10n.profileSubCancelling,
+      SubscriptionStatus.expired => l10n.profileSubExpired,
+      SubscriptionStatus.none => l10n.profileSubNone,
     };
     return '$tierLabel · $statusLabel';
   }
@@ -239,10 +251,8 @@ class ProfilePage extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Container(
           height: 1,
-          color: Theme.of(context)
-              .colorScheme
-              .onSurface
-              .withValues(alpha: 0.06),
+          color:
+              Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
         ),
       );
 }
@@ -254,38 +264,54 @@ class _ProfileSummary extends StatelessWidget {
   // NoSuchMethodError the moment activityLevel was set.
   final UserProfile profile;
 
-  String _activityLabel() {
-    final a = profile.personal.activityLevel;
-    if (a == null) return '—';
-    return a.name.replaceAllMapped(
-        RegExp(r'([A-Z])'), (m) => ' ${m.group(0)!.toLowerCase()}');
-  }
+  /// The activity level, looked up rather than derived.
+  ///
+  /// This used to build the label out of the enum's own name by inserting a
+  /// space before every capital, which produced "moderately active" for free
+  /// and produced it in English only -- and tied the interface to an
+  /// identifier, so renaming the enum would have renamed what the user reads.
+  String _activityLabel(AppLocalizations l10n) =>
+      switch (profile.personal.activityLevel) {
+        null => '—',
+        ActivityLevel.sedentary => l10n.onbActivitySedentary,
+        ActivityLevel.moderatelyActive => l10n.onbActivityModerate,
+        ActivityLevel.active => l10n.onbActivityActive,
+        ActivityLevel.veryActive => l10n.onbActivityVery,
+      };
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final p = profile.personal;
+    // The same six keys the onboarding chips use. A second translation of
+    // "Muscle gain" would drift from the first the moment either is edited.
     final goalsList = <String>[
-      if (profile.goals.weightLoss) 'Weight loss',
-      if (profile.goals.muscleGain) 'Muscle gain',
-      if (profile.goals.endurance) 'Endurance',
-      if (profile.goals.strength) 'Strength',
-      if (profile.goals.flexibility) 'Flexibility',
-      if (profile.goals.generalFitness) 'General fitness',
+      if (profile.goals.weightLoss) l10n.onbGoalWeightLoss,
+      if (profile.goals.muscleGain) l10n.onbGoalMuscleGain,
+      if (profile.goals.endurance) l10n.onbGoalEndurance,
+      if (profile.goals.strength) l10n.onbGoalStrength,
+      if (profile.goals.flexibility) l10n.onbGoalFlexibility,
+      if (profile.goals.generalFitness) l10n.onbGoalGeneral,
     ];
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(AppLocalizations.of(context).profileAtAGlance, style: theme.textTheme.titleMedium),
+          Text(AppLocalizations.of(context).profileAtAGlance,
+              style: theme.textTheme.titleMedium),
           const SizedBox(height: 10),
-          _row(context, 'Age', p.age?.toString() ?? '—'),
-          _row(context, 'Height',
-              p.heightCm != null ? '${p.heightCm} cm' : '—'),
-          _row(context, 'Weight',
-              p.weightCurrentKg != null ? '${p.weightCurrentKg} kg' : '—'),
-          _row(context, 'Activity', _activityLabel()),
-          _row(context, 'Goals',
+          _row(context, l10n.profileRowAge, p.age?.toString() ?? '—'),
+          _row(context, l10n.profileRowHeight,
+              p.heightCm != null ? l10n.commonCentimetres(p.heightCm!) : '—'),
+          _row(
+              context,
+              l10n.profileRowWeight,
+              p.weightCurrentKg != null
+                  ? l10n.commonKilograms('${p.weightCurrentKg}')
+                  : '—'),
+          _row(context, l10n.profileRowActivity, _activityLabel(l10n)),
+          _row(context, l10n.profileRowGoals,
               goalsList.isEmpty ? '—' : goalsList.join(', ')),
         ],
       ),

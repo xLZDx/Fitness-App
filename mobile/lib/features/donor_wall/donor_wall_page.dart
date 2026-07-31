@@ -20,7 +20,8 @@ class DonorWallPage extends ConsumerWidget {
     final entriesAsync = ref.watch(donorWallProvider);
 
     return FrostedScaffold(
-      appBar: GlassAppBar(title: AppLocalizations.of(context).donorwallDonorWall),
+      appBar:
+          GlassAppBar(title: AppLocalizations.of(context).donorwallDonorWall),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
@@ -47,13 +48,15 @@ class DonorWallPage extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        AppLocalizations.of(context).donorwallMadePossibleByTheseDonors,
+                        AppLocalizations.of(context)
+                            .donorwallMadePossibleByTheseDonors,
                         style: theme.textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w800),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        AppLocalizations.of(context).donorwallAnyoneCanBrowseThisListDonors,
+                        AppLocalizations.of(context)
+                            .donorwallAnyoneCanBrowseThisListDonors,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: scheme.onSurface.withValues(alpha: 0.65),
                         ),
@@ -75,8 +78,8 @@ class DonorWallPage extends ConsumerWidget {
               tint: scheme.error,
               child: Text(
                 AppLocalizations.of(context).donorwallCouldNotLoadWall(e),
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: scheme.error),
+                style:
+                    theme.textTheme.bodyMedium?.copyWith(color: scheme.error),
               ),
             ),
           ),
@@ -107,8 +110,7 @@ class _DonorList extends StatelessWidget {
         child: Text(
           AppLocalizations.of(context).donorwallBeTheFirstToOptIn,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color:
-                theme.colorScheme.onSurface.withValues(alpha: 0.70),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.70),
           ),
         ),
       );
@@ -154,13 +156,14 @@ class _DonorTile extends StatelessWidget {
     }
   }
 
-  String _label() {
-    if (entry.isLifetime) return 'LIFETIME';
+  String _label(AppLocalizations l10n) {
+    if (entry.isLifetime) return l10n.donorwallLifetime;
     return entry.tier.toUpperCase();
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return GlassCard(
@@ -198,7 +201,7 @@ class _DonorTile extends StatelessWidget {
                         color: Colors.white.withValues(alpha: 0.30),
                       ),
                       child: Text(
-                        _label(),
+                        _label(l10n),
                         style: const TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w800,

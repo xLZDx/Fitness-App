@@ -42,10 +42,51 @@ PATTERNS = [
     re.compile(rf"Text\(\s*(?P<run>{_RUN})"),
     re.compile(
         r"(?:label|title|subtitle|hintText|labelText|tooltip|semanticLabel"
-        r"|helperText|errorText|message|confirmLabel|cancelLabel|body)"
+        r"|helperText|errorText|message|confirmLabel|cancelLabel|body"
+        # Added 2026-07-31, after a sweep found 190 user-facing strings the
+        # two patterns above had never seen. Every name here was carrying real
+        # interface text on the donation page, the profile page or a step of
+        # the onboarding questionnaire.
+        r"|hint|price|tagline|caption|placeholder|heading|prompt|description)"
         rf"\s*:\s*(?P<run>{_RUN})"
     ),
+    # A positional argument to a small labelled widget: `FieldLabel('Age')`,
+    # `_SectionHeader('Today')`. The onboarding questionnaire is built almost
+    # entirely out of these, which is why 97 of its strings survived the first
+    # migration untouched.
+    re.compile(rf"\b(?:FieldLabel|StepTitle|_SectionHeader|SectionHeader)"
+               rf"\(\s*(?P<run>{_RUN})\s*[,)]"),
+    # A switch arm returning a literal, which is how every enum in this app
+    # gets a display name: `Gender.female => 'Female'`, `case X: return 'Y';`.
+    re.compile(rf"=>\s*(?P<run>{_RUN})\s*,"),
+    re.compile(rf"\breturn\s+(?P<run>{_RUN});"),
 ]
+
+# Shapes the extractor can SEE but must not rewrite in place, because the
+# result would not compile. It reports them; a human restructures them.
+#
+#   static const _titles = ['Personal', ...]   a const list cannot hold a call
+#   String _label(Gender g) => switch (g)      a top-level function has no
+#                                              context to read a lookup from
+#
+# Both of those really occurred, and both needed the surrounding code changed
+# rather than the literal swapped. See `scripts/l10n/onboarding_l10n.py`.
+NEEDS_RESTRUCTURING = re.compile(r"static\s+const\s+\w+\s*=\s*[\[{]")
+
+
+def _without_comments(src: str) -> str:
+    """Blank out comment bodies, keeping line count and offsets intact.
+
+    A doc comment quoting the interface -- `/// A label: "Today 07:00"` -- is
+    documentation ABOUT a string, not a string. Reporting it sends someone to
+    translate a sentence no user will ever see, and the previous run did
+    exactly that.
+    """
+    return "\n".join(
+        "" if line.lstrip().startswith("//") else line
+        for line in src.splitlines()
+    )
+
 
 def _builds_material_app(src: str) -> bool:
     """Whether this file constructs the MaterialApp itself.
@@ -183,7 +224,7 @@ def extract() -> tuple[list[dict], list[dict]]:
     seen: dict[str, str] = {}
 
     for f in sorted(LIB.rglob("*.dart")):
-        src = f.read_text(encoding="utf-8")
+        src = _without_comments(f.read_text(encoding="utf-8"))
         rel = str(f.relative_to(ROOT / "mobile")).replace("\\", "/")
 
         runs: list[str] = []

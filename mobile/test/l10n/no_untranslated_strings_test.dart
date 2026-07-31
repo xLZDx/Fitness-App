@@ -39,7 +39,15 @@ void main() {
       // Four+ Latin letters in a row is the signal: "5 км" and "{arg0}%"
       // are legitimately identical across languages, "Offline downloads"
       // is not.
-      if (value == english && RegExp(r'[A-Za-z]{4,}').hasMatch(value)) {
+      //
+      // Placeholder NAMES are stripped first. `'{date} · {time}'` is the same
+      // string in both languages because it contains no words at all — only
+      // two substitution points and a separator — but `date` and `time` are
+      // four Latin letters each, so the raw check called it English left
+      // behind. What is being asked is whether the TEXT was translated, and a
+      // placeholder is not text.
+      final words = value.replaceAll(RegExp(r'\{\w+\}'), '');
+      if (value == english && RegExp(r'[A-Za-z]{4,}').hasMatch(words)) {
         copied.add('${entry.key}: $value');
       }
     }

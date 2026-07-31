@@ -27,7 +27,8 @@ class TeamFeedPage extends ConsumerWidget {
     final feedAsync = ref.watch(teamFeedProvider(teamId));
 
     return FrostedScaffold(
-      appBar: GlassAppBar(title: AppLocalizations.of(context).communityTeamFeed),
+      appBar:
+          GlassAppBar(title: AppLocalizations.of(context).communityTeamFeed),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
@@ -42,7 +43,8 @@ class TeamFeedPage extends ConsumerWidget {
             ),
             error: (e, _) => GlassCard(
               tint: theme.colorScheme.error,
-              child: Text(AppLocalizations.of(context).communityCouldNotLoadFeed(e)),
+              child: Text(
+                  AppLocalizations.of(context).communityCouldNotLoadFeed(e)),
             ),
             data: (posts) {
               if (posts.isEmpty) {
@@ -93,8 +95,7 @@ class _LockedHero extends StatelessWidget {
                     AppPalette.auroraPink,
                   ]),
                 ),
-                child: const Icon(Icons.lock_outline,
-                    color: Colors.white),
+                child: const Icon(Icons.lock_outline, color: Colors.white),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -108,7 +109,8 @@ class _LockedHero extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            AppLocalizations.of(context).communityCoachesPostWeeklyWorkoutsMotivationNotes,
+            AppLocalizations.of(context)
+                .communityCoachesPostWeeklyWorkoutsMotivationNotes,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: scheme.onSurface.withValues(alpha: 0.75),
             ),
@@ -118,7 +120,8 @@ class _LockedHero extends StatelessWidget {
             width: double.infinity,
             child: FilledButton(
               onPressed: () => GoRouter.of(context).push('/subscription'),
-              child: Text(AppLocalizations.of(context).communityBecomeASustainer),
+              child:
+                  Text(AppLocalizations.of(context).communityBecomeASustainer),
             ),
           ),
         ],
@@ -134,6 +137,7 @@ class _PostCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return GlassCard(
@@ -163,17 +167,15 @@ class _PostCard extends ConsumerWidget {
                         style: theme.textTheme.titleSmall
                             ?.copyWith(fontWeight: FontWeight.w800)),
                     Text(
-                      _ago(post.createdAt),
+                      _ago(l10n, post.createdAt),
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color:
-                            scheme.onSurface.withValues(alpha: 0.55),
+                        color: scheme.onSurface.withValues(alpha: 0.55),
                       ),
                     ),
                   ],
                 ),
               ),
-              if (post.isPinned)
-                const Icon(Icons.push_pin_outlined, size: 16),
+              if (post.isPinned) const Icon(Icons.push_pin_outlined, size: 16),
             ],
           ),
           const SizedBox(height: 10),
@@ -184,7 +186,9 @@ class _PostCard extends ConsumerWidget {
             const SizedBox(height: 4),
           ],
           Text(
-            locked ? AppLocalizations.of(context).communitySustainerOnlyPost : post.body,
+            locked
+                ? AppLocalizations.of(context).communitySustainerOnlyPost
+                : post.body,
             style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
           ),
           if (!locked) ...[
@@ -195,8 +199,8 @@ class _PostCard extends ConsumerWidget {
               children: [
                 for (final entry in post.reactionCounts.entries)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.30),
                       borderRadius: BorderRadius.circular(10),
@@ -204,13 +208,11 @@ class _PostCard extends ConsumerWidget {
                     child: Text('${entry.key} ${entry.value}'),
                   ),
                 ActionChip(
-                  avatar: const Icon(Icons.add_reaction_outlined,
-                      size: 16),
+                  avatar: const Icon(Icons.add_reaction_outlined, size: 16),
                   label: Text(AppLocalizations.of(context).communityReact),
                   onPressed: () => ref
                       .read(teamFeedRepositoryProvider)
-                      .react(
-                          postId: post.id, emoji: '🔥', delta: 1),
+                      .react(postId: post.id, emoji: '🔥', delta: 1),
                 ),
               ],
             ),
@@ -220,10 +222,10 @@ class _PostCard extends ConsumerWidget {
     );
   }
 
-  String _ago(DateTime t) {
+  String _ago(AppLocalizations l10n, DateTime t) {
     final d = DateTime.now().difference(t);
-    if (d.inMinutes < 60) return '${d.inMinutes}m ago';
-    if (d.inHours < 24) return '${d.inHours}h ago';
-    return '${d.inDays}d ago';
+    if (d.inMinutes < 60) return l10n.commonMinutesAgo(d.inMinutes);
+    if (d.inHours < 24) return l10n.commonHoursAgo(d.inHours);
+    return l10n.commonDaysAgoShort(d.inDays);
   }
 }

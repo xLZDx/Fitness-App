@@ -830,7 +830,9 @@ class _SuggestedWeightChip extends ConsumerWidget {
                       ),
                     ),
                     Text(
-                      '${suggestion.suggestedKg.toStringAsFixed(suggestion.suggestedKg % 1 == 0 ? 0 : 1)} kg',
+                      AppLocalizations.of(context).commonKilograms(
+                          suggestion.suggestedKg.toStringAsFixed(
+                              suggestion.suggestedKg % 1 == 0 ? 0 : 1)),
                       style: theme.textTheme.titleMedium
                           ?.copyWith(fontWeight: FontWeight.w800),
                     ),

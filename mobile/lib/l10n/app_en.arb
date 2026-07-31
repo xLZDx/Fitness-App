@@ -962,5 +962,228 @@
   "onbSession1530": "15–30 min",
   "onbSession3045": "30–45 min",
   "onbSession4560": "45–60 min",
-  "onbSession60": "Over an hour"
+  "onbSession60": "Over an hour",
+  "subFreeForever": "Free forever",
+  "subMemberTagline": "Full app access — workouts, scanning, injury filtering, progress.",
+  "subFeatureLibrary": "Full body-weight + equipment library",
+  "subFeatureInjuryFilter": "Injury-aware filtering (always on)",
+  "subFeatureLogging": "Workout logging + last-week chart",
+  "subFeatureQr": "Equipment QR scanning",
+  "subStayMember": "Stay a Member",
+  "subSupporterTagline": "Funds the mission and unlocks long-term progress + reminders.",
+  "subFeatureAllMember": "Everything in Member",
+  "subFeatureLongProgress": "Long-term progress charts",
+  "subFeatureSchedule": "Schedule + reminders",
+  "subFeatureForYou": "Personalised \"For you\" feed",
+  "subFeatureTaxDeductible": "Tax-deductible (501(c)(3) pending)",
+  "subBecomeSupporter": "Become a Supporter",
+  "subSustainerTagline": "Powers celebrity-donated content + advanced analytics.",
+  "subFeatureAllSupporter": "Everything in Supporter",
+  "subFeatureCelebrity": "Celebrity in-kind video donations",
+  "subFeatureFormCoach": "AI form coach (when available)",
+  "subFeatureBodyComp": "Body comp + advanced analytics",
+  "subFeatureDonorWall": "Donor-wall recognition (opt-in)",
+  "subBecomeSustainer": "Become a Sustainer",
+  "subStatusNone": "Not yet supporting",
+  "subStatusTrial": "Trial",
+  "subStatusActive": "Supporting",
+  "subStatusCancelling": "Pausing at period end",
+  "subStatusExpired": "Lapsed",
+  "subEndsToday": "Ends today",
+  "subEndsTomorrow": "Ends tomorrow",
+  "subPeriodMonthly": "Monthly",
+  "subPeriodAnnual": "Annual · save ~50%",
+  "subPeriodFamily2": "Family · 2",
+  "subPeriodFamily4": "Family · 4",
+  "subPeriodLifetime": "Lifetime",
+  "subChoose": "Choose",
+  "subCurrent": "Current",
+  "subPriceMonthTaxDeductible": "{amount} / month · tax-deductible",
+  "@subPriceMonthTaxDeductible": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "subPriceYearEffective": "{amount} / year · ~{effective}/mo effective",
+  "@subPriceYearEffective": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "effective": {
+        "type": "String"
+      }
+    }
+  },
+  "subPriceMonthSeats": "{amount} / month · {seats} seats",
+  "@subPriceMonthSeats": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "seats": {
+        "type": "int"
+      }
+    }
+  },
+  "subPriceLifetime": "{amount} lifetime · one-time donor",
+  "@subPriceLifetime": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "subLapsedDaysAgo": "Lapsed {days}d ago",
+  "@subLapsedDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "subEndsInDays": "Ends in {days} days",
+  "@subEndsInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "profileGuest": "Guest",
+  "profileComplete": "Profile complete",
+  "profileSignInToSync": "Sign in to sync progress",
+  "profileFinishOnboarding": "Finish onboarding to unlock plans",
+  "profileHealthQuestionnaire": "Health questionnaire",
+  "profileCompleteQuestionnaire": "Complete questionnaire",
+  "profileFreeStartTrial": "Free · start a 14-day trial",
+  "profileTierFree": "Free",
+  "profileTierStandard": "Standard",
+  "profileTierCelebrity": "Celebrity trainer",
+  "profileSubTrial": "Trial",
+  "profileSubActive": "Active",
+  "profileSubCancelling": "Cancelling",
+  "profileSubExpired": "Expired",
+  "profileSubNone": "Free",
+  "profileRowAge": "Age",
+  "profileRowHeight": "Height",
+  "profileRowWeight": "Weight",
+  "profileRowActivity": "Activity",
+  "profileRowGoals": "Goals",
+  "commonCentimetres": "{value} cm",
+  "@commonCentimetres": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "commonKilograms": "{value} kg",
+  "@commonKilograms": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "homeSectionToday": "Today",
+  "homeSectionUpcoming": "Upcoming",
+  "homeSectionQuickStats": "Quick stats",
+  "homeSectionSuggestions": "Suggestions",
+  "homeSuggestionsEmpty": "Finish the intake questionnaire and log a session — suggestions are built from your answers and history.",
+  "homeStreakDays": "{count}d",
+  "@homeStreakDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeScheduleToday": "Today {time}",
+  "@homeScheduleToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "homeScheduleTomorrow": "Tomorrow {time}",
+  "@homeScheduleTomorrow": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "homeScheduleWeekday": "{weekday} {time}",
+  "@homeScheduleWeekday": {
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "homeScheduleDate": "{date} · {time}",
+  "@homeScheduleDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "homeCouldNotLoad": "Could not load: {error}",
+  "@homeCouldNotLoad": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "commonToday": "Today",
+  "commonYesterday": "Yesterday",
+  "commonDaysAgo": "{count} days ago",
+  "@commonDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commonMinutesAgo": "{count}m ago",
+  "@commonMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commonHoursAgo": "{count}h ago",
+  "@commonHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commonDaysAgoShort": "{count}d ago",
+  "@commonDaysAgoShort": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "equipmentFaultUnsafe": "Unsafe",
+  "equipmentFaultDegraded": "Degraded",
+  "equipmentFaultQrMissing": "QR missing",
+  "equipmentFaultOther": "Other",
+  "donorwallLifetime": "LIFETIME"
 }

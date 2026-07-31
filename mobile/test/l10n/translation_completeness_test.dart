@@ -62,8 +62,12 @@ void main() {
       final rus = ru[e.key];
       if (rus == null) continue;
       if (allowedIdentical.contains(e.key)) continue;
-      // Only flag real prose: anything with a space and some length.
-      if (e.value.length < 8 || !e.value.contains(' ')) continue;
+      // Only flag real prose: anything with a space and some length, AFTER
+      // the placeholder names are removed. `'{date} · {time}'` is long and
+      // has spaces and is legitimately identical in both languages, because
+      // everything in it is either a substitution point or punctuation.
+      final prose = e.value.replaceAll(RegExp(r'\{\w+\}'), '').trim();
+      if (prose.length < 8 || !prose.contains(' ')) continue;
       if (rus == e.value) untranslated.add(e.key);
     }
     untranslated.sort();

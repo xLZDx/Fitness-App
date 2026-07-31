@@ -55,6 +55,7 @@ class SubscriptionPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final sub = ref.watch(currentSubscriptionProvider).valueOrNull;
     final tier = ref.watch(effectiveTierProvider);
@@ -62,7 +63,8 @@ class SubscriptionPage extends ConsumerWidget {
     final state = _stateFor(sub);
 
     return FrostedScaffold(
-      appBar: GlassAppBar(title: AppLocalizations.of(context).aboutSupportTheMission),
+      appBar: GlassAppBar(
+          title: AppLocalizations.of(context).aboutSupportTheMission),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
@@ -70,7 +72,6 @@ class SubscriptionPage extends ConsumerWidget {
           const SizedBox(height: 16),
           const _MissionStrip(),
           const SizedBox(height: 24),
-
           if (state == _PageState.paid) ...[
             _ManagePlanCard(
               isLoading: action.isLoading,
@@ -81,8 +82,9 @@ class SubscriptionPage extends ConsumerWidget {
             _UpgradeFromTrialCard(
               tier: sub!.tier,
               isLoading: action.isLoading,
-              onUpgrade: () =>
-                  ref.read(subscriptionActionProvider.notifier).chooseTier(sub.tier),
+              onUpgrade: () => ref
+                  .read(subscriptionActionProvider.notifier)
+                  .chooseTier(sub.tier),
             ),
           ] else ...[
             Text(
@@ -93,7 +95,8 @@ class SubscriptionPage extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              AppLocalizations.of(context).subscriptionEveryLevelKeepsTheAppFree,
+              AppLocalizations.of(context)
+                  .subscriptionEveryLevelKeepsTheAppFree,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
               ),
@@ -104,14 +107,13 @@ class SubscriptionPage extends ConsumerWidget {
             _PlanCard(
               tier: SubscriptionTier.free,
               title: AppLocalizations.of(context).subscriptionMember,
-              price: 'Free forever',
-              tagline:
-                  'Full app access — workouts, scanning, injury filtering, progress.',
-              features: const [
-                'Full body-weight + equipment library',
-                'Injury-aware filtering (always on)',
-                'Workout logging + last-week chart',
-                'Equipment QR scanning',
+              price: l10n.subFreeForever,
+              tagline: l10n.subMemberTagline,
+              features: [
+                l10n.subFeatureLibrary,
+                l10n.subFeatureInjuryFilter,
+                l10n.subFeatureLogging,
+                l10n.subFeatureQr,
               ],
               currentTier: tier,
               isLoading: action.isLoading,
@@ -125,14 +127,13 @@ class SubscriptionPage extends ConsumerWidget {
             _PlanCardForPeriod(
               tier: SubscriptionTier.standard,
               title: AppLocalizations.of(context).subscriptionSupporter,
-              tagline:
-                  'Funds the mission and unlocks long-term progress + reminders.',
-              features: const [
-                'Everything in Member',
-                'Long-term progress charts',
-                'Schedule + reminders',
-                'Personalised "For you" feed',
-                'Tax-deductible (501(c)(3) pending)',
+              tagline: l10n.subSupporterTagline,
+              features: [
+                l10n.subFeatureAllMember,
+                l10n.subFeatureLongProgress,
+                l10n.subFeatureSchedule,
+                l10n.subFeatureForYou,
+                l10n.subFeatureTaxDeductible,
               ],
               currentTier: tier,
               highlight: true,
@@ -143,14 +144,13 @@ class SubscriptionPage extends ConsumerWidget {
             _PlanCardForPeriod(
               tier: SubscriptionTier.celebrityTrainer,
               title: AppLocalizations.of(context).subscriptionSustainer,
-              tagline:
-                  'Powers celebrity-donated content + advanced analytics.',
-              features: const [
-                'Everything in Supporter',
-                'Celebrity in-kind video donations',
-                'AI form coach (when available)',
-                'Body comp + advanced analytics',
-                'Donor-wall recognition (opt-in)',
+              tagline: l10n.subSustainerTagline,
+              features: [
+                l10n.subFeatureAllSupporter,
+                l10n.subFeatureCelebrity,
+                l10n.subFeatureFormCoach,
+                l10n.subFeatureBodyComp,
+                l10n.subFeatureDonorWall,
               ],
               currentTier: tier,
               isLoading: action.isLoading,
@@ -191,7 +191,8 @@ class _MissionStrip extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              AppLocalizations.of(context).subscriptionWeReANonprofitSubscriptionsAre,
+              AppLocalizations.of(context)
+                  .subscriptionWeReANonprofitSubscriptionsAre,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: scheme.onSurface.withValues(alpha: 0.75),
               ),
@@ -210,7 +211,8 @@ class _LearnMoreLink extends StatelessWidget {
       child: TextButton.icon(
         onPressed: () => GoRouter.of(context).push('/about'),
         icon: const Icon(Icons.info_outline_rounded, size: 18),
-        label: Text(AppLocalizations.of(context).subscriptionLearnHowDonationsAreUsed),
+        label: Text(
+            AppLocalizations.of(context).subscriptionLearnHowDonationsAreUsed),
       ),
     );
   }
@@ -225,6 +227,9 @@ class _ErrorCard extends StatelessWidget {
   final StackTrace? stackTrace;
 
   String _composePayload() {
+    // Deliberately English and deliberately not localized: this is the text
+    // the Copy button puts on the clipboard for a bug report, printed above a
+    // stack trace. A Russian header on an English stack trace helps nobody.
     final buffer = StringBuffer()
       ..writeln('Could not update donation:')
       ..writeln(error.toString());
@@ -252,7 +257,8 @@ class _ErrorCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  AppLocalizations.of(context).subscriptionCouldNotUpdateDonation,
+                  AppLocalizations.of(context)
+                      .subscriptionCouldNotUpdateDonation,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: scheme.error,
@@ -263,17 +269,16 @@ class _ErrorCard extends StatelessWidget {
                 tooltip: AppLocalizations.of(context).subscriptionCopyError,
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
-                constraints:
-                    const BoxConstraints(minWidth: 36, minHeight: 36),
-                icon: Icon(Icons.copy_rounded,
-                    size: 18, color: scheme.error),
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                icon: Icon(Icons.copy_rounded, size: 18, color: scheme.error),
                 onPressed: () async {
                   await Clipboard.setData(
                       ClipboardData(text: _composePayload()));
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(AppLocalizations.of(context).subscriptionErrorCopiedToClipboard),
+                      content: Text(AppLocalizations.of(context)
+                          .subscriptionErrorCopiedToClipboard),
                       behavior: SnackBarBehavior.floating,
                       duration: Duration(seconds: 2),
                     ),
@@ -367,13 +372,15 @@ class _UpgradeFromTrialCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      AppLocalizations.of(context).subscriptionContinueAs(_labelFor(AppLocalizations.of(context))),
+                      AppLocalizations.of(context).subscriptionContinueAs(
+                          _labelFor(AppLocalizations.of(context))),
                       style: theme.textTheme.titleMedium
                           ?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      AppLocalizations.of(context).subscriptionTrialFeaturesStayOnPastThe,
+                      AppLocalizations.of(context)
+                          .subscriptionTrialFeaturesStayOnPastThe,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: scheme.onSurface.withValues(alpha: 0.65),
                       ),
@@ -400,12 +407,12 @@ class _UpgradeFromTrialCard extends StatelessWidget {
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2.4,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
                   : Text(
-                      AppLocalizations.of(context).subscriptionContinueWithStripe,
+                      AppLocalizations.of(context)
+                          .subscriptionContinueWithStripe,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -456,13 +463,15 @@ class _ManagePlanCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      AppLocalizations.of(context).subscriptionManageDonationUpdateCardOrPause,
+                      AppLocalizations.of(context)
+                          .subscriptionManageDonationUpdateCardOrPause,
                       style: theme.textTheme.titleMedium
                           ?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      AppLocalizations.of(context).subscriptionOpensTheSecureStripeDonorPortal,
+                      AppLocalizations.of(context)
+                          .subscriptionOpensTheSecureStripeDonorPortal,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: scheme.onSurface.withValues(alpha: 0.65),
                       ),
@@ -489,8 +498,7 @@ class _ManagePlanCard extends StatelessWidget {
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2.4,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
                   : Text(
@@ -514,22 +522,22 @@ class _StatusCard extends StatelessWidget {
   final Subscription? sub;
   final SubscriptionTier effectiveTier;
 
-  String _statusLabel(SubscriptionStatus s) {
+  String _statusLabel(AppLocalizations l10n, SubscriptionStatus s) {
     switch (s) {
       case SubscriptionStatus.none:
-        return 'Not yet supporting';
+        return l10n.subStatusNone;
       case SubscriptionStatus.trial:
-        return 'Trial';
+        return l10n.subStatusTrial;
       case SubscriptionStatus.active:
-        return 'Supporting';
+        return l10n.subStatusActive;
       case SubscriptionStatus.cancelled:
-        return 'Pausing at period end';
+        return l10n.subStatusCancelling;
       case SubscriptionStatus.expired:
-        return 'Lapsed';
+        return l10n.subStatusExpired;
     }
   }
 
-  String? _expiryLabel() {
+  String? _expiryLabel(AppLocalizations l10n) {
     final s = sub;
     if (s == null) return null;
     final endsAt = s.status == SubscriptionStatus.trial
@@ -537,17 +545,18 @@ class _StatusCard extends StatelessWidget {
         : s.currentPeriodEndsAt;
     if (endsAt == null) return null;
     final daysLeft = endsAt.difference(DateTime.now()).inDays;
-    if (daysLeft < 0) return 'Lapsed ${-daysLeft}d ago';
-    if (daysLeft == 0) return 'Ends today';
-    if (daysLeft == 1) return 'Ends tomorrow';
-    return 'Ends in $daysLeft days';
+    if (daysLeft < 0) return l10n.subLapsedDaysAgo(-daysLeft);
+    if (daysLeft == 0) return l10n.subEndsToday;
+    if (daysLeft == 1) return l10n.subEndsTomorrow;
+    return l10n.subEndsInDays(daysLeft);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final expiry = _expiryLabel();
+    final expiry = _expiryLabel(l10n);
     return GlassCard(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -577,8 +586,7 @@ class _StatusCard extends StatelessWidget {
                               ],
                   ),
                 ),
-                child: const Icon(Icons.favorite_outline,
-                    color: Colors.white),
+                child: const Icon(Icons.favorite_outline, color: Colors.white),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -594,7 +602,7 @@ class _StatusCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       _statusLabel(
-                          sub?.status ?? SubscriptionStatus.none),
+                          l10n, sub?.status ?? SubscriptionStatus.none),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: scheme.onSurface.withValues(alpha: 0.65),
                       ),
@@ -607,8 +615,7 @@ class _StatusCard extends StatelessWidget {
           if (expiry != null) ...[
             const SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 10, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.32),
                 borderRadius: BorderRadius.circular(10),
@@ -708,8 +715,7 @@ class _PlanCard extends StatelessWidget {
                             child: Text(
                               AppLocalizations.of(context).subscriptionPopular,
                               style: TextStyle(
-                                color: scheme.onSurface
-                                    .withValues(alpha: 0.75),
+                                color: scheme.onSurface.withValues(alpha: 0.75),
                                 fontSize: 10,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 0.6,
@@ -741,12 +747,9 @@ class _PlanCard extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.check_rounded,
-                      size: 18, color: scheme.onSurface),
+                  Icon(Icons.check_rounded, size: 18, color: scheme.onSurface),
                   const SizedBox(width: 8),
-                  Expanded(
-                      child: Text(f,
-                          style: theme.textTheme.bodyMedium)),
+                  Expanded(child: Text(f, style: theme.textTheme.bodyMedium)),
                 ],
               ),
             ),
@@ -758,13 +761,13 @@ class _PlanCard extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: isLoading ? null : onStartTrial,
                     style: OutlinedButton.styleFrom(
-                      padding:
-                          const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    child: Text(AppLocalizations.of(context).subscription14DayTrial),
+                    child: Text(
+                        AppLocalizations.of(context).subscription14DayTrial),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -800,6 +803,7 @@ class _PeriodToggle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final selected = ref.watch(selectedPeriodProvider);
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -807,10 +811,9 @@ class _PeriodToggle extends ConsumerWidget {
         children: [
           for (final p in _periods) ...[
             _PeriodPill(
-              label: _shortLabel(p),
+              label: _shortLabel(l10n, p),
               isActive: p == selected,
-              onTap: () =>
-                  ref.read(selectedPeriodProvider.notifier).state = p,
+              onTap: () => ref.read(selectedPeriodProvider.notifier).state = p,
               isPopular: p == SubscriptionPeriod.annual,
             ),
             const SizedBox(width: 8),
@@ -820,18 +823,18 @@ class _PeriodToggle extends ConsumerWidget {
     );
   }
 
-  String _shortLabel(SubscriptionPeriod p) {
+  String _shortLabel(AppLocalizations l10n, SubscriptionPeriod p) {
     switch (p) {
       case SubscriptionPeriod.monthly:
-        return 'Monthly';
+        return l10n.subPeriodMonthly;
       case SubscriptionPeriod.annual:
-        return 'Annual · save ~50%';
+        return l10n.subPeriodAnnual;
       case SubscriptionPeriod.family2:
-        return 'Family · 2';
+        return l10n.subPeriodFamily2;
       case SubscriptionPeriod.family4:
-        return 'Family · 4';
+        return l10n.subPeriodFamily4;
       case SubscriptionPeriod.lifetime:
-        return 'Lifetime';
+        return l10n.subPeriodLifetime;
     }
   }
 }
@@ -859,9 +862,7 @@ class _PeriodPill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          color: isActive
-              ? Colors.white
-              : Colors.white.withValues(alpha: 0.30),
+          color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.30),
           border: isPopular && !isActive
               ? Border.all(color: AppPalette.auroraTeal, width: 1.4)
               : null,
@@ -907,8 +908,9 @@ class _PlanCardForPeriod extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final period = ref.watch(selectedPeriodProvider);
-    final price = _priceLabelFor(tier, period);
+    final price = _priceLabelFor(l10n, tier, period);
     if (price == null) {
       // Unsupported combo — render a small note instead of hiding so the
       // user understands why the card "disappeared".
@@ -916,7 +918,8 @@ class _PlanCardForPeriod extends ConsumerWidget {
       return GlassCard(
         padding: const EdgeInsets.all(14),
         child: Text(
-          AppLocalizations.of(context).subscriptionIsNotAvailableOn(title, period.displayLabel),
+          AppLocalizations.of(context)
+              .subscriptionIsNotAvailableOn(title, period.displayLabel),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
           ),
@@ -936,9 +939,7 @@ class _PlanCardForPeriod extends ConsumerWidget {
           .read(subscriptionActionProvider.notifier)
           .chooseTier(tier, period: period),
       onStartTrial: period == SubscriptionPeriod.monthly
-          ? () => ref
-              .read(subscriptionActionProvider.notifier)
-              .startTrial(tier)
+          ? () => ref.read(subscriptionActionProvider.notifier).startTrial(tier)
           : null,
       cta: cta,
     );
@@ -947,28 +948,29 @@ class _PlanCardForPeriod extends ConsumerWidget {
   /// Hard-coded price strings per (tier, period). Single source of truth
   /// for what the picker advertises; the actual amounts are enforced
   /// server-side by the Stripe price ids the Cloud Function looks up.
-  String? _priceLabelFor(SubscriptionTier t, SubscriptionPeriod p) {
+  String? _priceLabelFor(
+      AppLocalizations l10n, SubscriptionTier t, SubscriptionPeriod p) {
     if (t == SubscriptionTier.standard) {
       switch (p) {
         case SubscriptionPeriod.monthly:
-          return r'$9.99 / month · tax-deductible';
+          return l10n.subPriceMonthTaxDeductible(r'$9.99');
         case SubscriptionPeriod.annual:
-          return r'$59.99 / year · ~$5/mo effective';
+          return l10n.subPriceYearEffective(r'$59.99', r'$5');
         case SubscriptionPeriod.family2:
-          return r'$14.99 / month · 2 seats';
+          return l10n.subPriceMonthSeats(r'$14.99', 2);
         case SubscriptionPeriod.family4:
-          return r'$19.99 / month · 4 seats';
+          return l10n.subPriceMonthSeats(r'$19.99', 4);
         case SubscriptionPeriod.lifetime:
           return null;
       }
     }
     switch (p) {
       case SubscriptionPeriod.monthly:
-        return r'$19.99 / month · tax-deductible';
+        return l10n.subPriceMonthTaxDeductible(r'$19.99');
       case SubscriptionPeriod.annual:
-        return r'$119.99 / year · ~$9.99/mo effective';
+        return l10n.subPriceYearEffective(r'$119.99', r'$9.99');
       case SubscriptionPeriod.lifetime:
-        return r'$499 lifetime · one-time donor';
+        return l10n.subPriceLifetime(r'$499');
       case SubscriptionPeriod.family2:
       case SubscriptionPeriod.family4:
         return null;
