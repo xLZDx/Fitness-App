@@ -20,6 +20,7 @@ class StepHealth extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final h = ref.watch(questionnaireDraftProvider).health;
     final notifier = ref.read(questionnaireDraftProvider.notifier);
 
@@ -32,38 +33,38 @@ class StepHealth extends ConsumerWidget {
           icon: Icons.favorite_outline,
           iconGradient: [AppPalette.auroraPink, AppPalette.auroraPeach],
         ),
-        const FieldLabel('Pre-existing conditions'),
+        FieldLabel(l10n.onbConditions),
         GlassTextField(
           value: _joinTags(h.conditions),
           maxLines: 2,
-          hint: 'e.g. asthma, diabetes',
+          hint: l10n.onbConditionsHint,
           onChanged: (v) => notifier.updateHealth(
             (s) => s.copyWith(conditions: _splitTags(v)),
           ),
         ),
-        const FieldLabel('Allergies'),
+        FieldLabel(l10n.onbAllergies),
         GlassTextField(
           value: _joinTags(h.allergies),
           maxLines: 2,
-          hint: 'e.g. peanuts, penicillin',
+          hint: l10n.onbAllergiesHint,
           onChanged: (v) => notifier.updateHealth(
             (s) => s.copyWith(allergies: _splitTags(v)),
           ),
         ),
-        const FieldLabel('Current medications'),
+        FieldLabel(l10n.onbMedications),
         GlassTextField(
           value: _joinTags(h.medications),
           maxLines: 2,
-          hint: 'e.g. ibuprofen, insulin',
+          hint: l10n.onbMedicationsHint,
           onChanged: (v) => notifier.updateHealth(
             (s) => s.copyWith(medications: _splitTags(v)),
           ),
         ),
-        const FieldLabel('Past or current injuries'),
+        FieldLabel(l10n.onbInjuries),
         GlassTextField(
           value: h.injuries.map((i) => '${i.bodyPart}: ${i.type}').join(', '),
           maxLines: 2,
-          hint: 'knee: meniscus, lower back: strain',
+          hint: l10n.onbInjuriesHint,
           onChanged: (v) {
             final injuries = v
                 .split(',')
@@ -79,25 +80,25 @@ class StepHealth extends ConsumerWidget {
             notifier.updateHealth((st) => st.copyWith(injuries: injuries));
           },
         ),
-        const FieldLabel('Physical limitations'),
+        FieldLabel(l10n.onbLimitations),
         GlassTextField(
           value: _joinTags(h.physicalLimitations),
           maxLines: 2,
-          hint: 'e.g. cannot lift overhead',
+          hint: l10n.onbLimitationsHint,
           onChanged: (v) => notifier.updateHealth(
             (s) => s.copyWith(physicalLimitations: _splitTags(v)),
           ),
         ),
-        const FieldLabel('Recent surgeries'),
+        FieldLabel(l10n.onbSurgeries),
         GlassTextField(
           value: _joinTags(h.recentSurgeries),
           maxLines: 2,
-          hint: 'e.g. ACL repair (2025)',
+          hint: l10n.onbSurgeriesHint,
           onChanged: (v) => notifier.updateHealth(
             (s) => s.copyWith(recentSurgeries: _splitTags(v)),
           ),
         ),
-        const FieldLabel('Blood pressure'),
+        FieldLabel(l10n.onbBloodPressure),
         SingleChoiceChips<BloodPressure>(
           options: const [
             BloodPressure.low,
@@ -105,19 +106,19 @@ class StepHealth extends ConsumerWidget {
             BloodPressure.high
           ],
           labelOf: (bp) => switch (bp) {
-            BloodPressure.low => 'Low',
-            BloodPressure.normal => 'Normal',
-            BloodPressure.high => 'High',
+            BloodPressure.low => l10n.onbBloodPressureLow,
+            BloodPressure.normal => l10n.onbBloodPressureNormal,
+            BloodPressure.high => l10n.onbBloodPressureHigh,
           },
           value: h.bloodPressure,
           onChanged: (bp) =>
               notifier.updateHealth((s) => s.copyWith(bloodPressure: bp)),
         ),
-        const FieldLabel('Other health concerns'),
+        FieldLabel(l10n.onbOtherHealth),
         GlassTextField(
           value: h.otherConcerns ?? '',
           maxLines: 3,
-          hint: 'Anything else we should know',
+          hint: l10n.onbOtherHealthHint,
           onChanged: (v) => notifier.updateHealth(
             (s) => s.copyWith(otherConcerns: v),
           ),

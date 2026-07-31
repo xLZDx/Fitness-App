@@ -17,6 +17,7 @@ class StepEquipment extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final eq = ref.watch(questionnaireDraftProvider).equipment;
     final notifier = ref.read(questionnaireDraftProvider.notifier);
 
@@ -25,11 +26,12 @@ class StepEquipment extends ConsumerWidget {
       children: [
         StepTitle(
           title: AppLocalizations.of(context).onboardingWhatCanYouTrainWith,
-          subtitle: AppLocalizations.of(context).onboardingWePickExercisesThatFitWhat,
+          subtitle:
+              AppLocalizations.of(context).onboardingWePickExercisesThatFitWhat,
           icon: Icons.sports_gymnastics_outlined,
           iconGradient: [AppPalette.auroraPeach, AppPalette.auroraPink],
         ),
-        const FieldLabel('Do you have access to a gym?'),
+        FieldLabel(l10n.onbGymAccess),
         SingleChoiceChips<bool>(
           options: const [true, false],
           labelOf: (b) => b ? 'Yes' : 'No',
@@ -38,11 +40,11 @@ class StepEquipment extends ConsumerWidget {
             (s) => s.copyWith(hasGymAccess: v),
           ),
         ),
-        const FieldLabel('Equipment at home'),
+        FieldLabel(l10n.onbHomeEquipment),
         GlassTextField(
           value: eq.homeEquipment.join(', '),
           maxLines: 2,
-          hint: 'e.g. dumbbells, kettlebell, mat',
+          hint: l10n.onbHomeEquipmentHint,
           onChanged: (v) => notifier.updateEquipment(
             (s) => s.copyWith(homeEquipment: _splitTags(v)),
           ),

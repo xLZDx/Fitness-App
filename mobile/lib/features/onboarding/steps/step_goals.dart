@@ -20,6 +20,7 @@ class StepGoals extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final goals = ref.watch(questionnaireDraftProvider).goals;
     final notifier = ref.read(questionnaireDraftProvider.notifier);
 
@@ -52,12 +53,12 @@ class StepGoals extends ConsumerWidget {
             _GoalKey.generalFitness,
           ],
           labelOf: (k) => switch (k) {
-            _GoalKey.weightLoss => 'Weight loss',
-            _GoalKey.muscleGain => 'Muscle gain',
-            _GoalKey.endurance => 'Endurance',
-            _GoalKey.strength => 'Strength',
-            _GoalKey.flexibility => 'Flexibility',
-            _GoalKey.generalFitness => 'General fitness',
+            _GoalKey.weightLoss => l10n.onbGoalWeightLoss,
+            _GoalKey.muscleGain => l10n.onbGoalMuscleGain,
+            _GoalKey.endurance => l10n.onbGoalEndurance,
+            _GoalKey.strength => l10n.onbGoalStrength,
+            _GoalKey.flexibility => l10n.onbGoalFlexibility,
+            _GoalKey.generalFitness => l10n.onbGoalGeneral,
           },
           values: selected,
           onChanged: (next) => notifier.updateGoals((g) => g.copyWith(
@@ -69,10 +70,10 @@ class StepGoals extends ConsumerWidget {
                 generalFitness: next.contains(_GoalKey.generalFitness),
               )),
         ),
-        const FieldLabel('Specific sport (optional)'),
+        FieldLabel(l10n.onbSport),
         GlassTextField(
           value: goals.specificSport ?? '',
-          hint: 'e.g. tennis, climbing, marathon',
+          hint: l10n.onbSportHint,
           onChanged: (v) =>
               notifier.updateGoals((g) => g.copyWith(specificSport: v)),
         ),

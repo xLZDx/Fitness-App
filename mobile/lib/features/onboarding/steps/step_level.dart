@@ -18,6 +18,7 @@ class StepLevel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final level = ref.watch(questionnaireDraftProvider).level;
     final notifier = ref.read(questionnaireDraftProvider.notifier);
 
@@ -26,11 +27,12 @@ class StepLevel extends ConsumerWidget {
       children: [
         StepTitle(
           title: AppLocalizations.of(context).onboardingWhereAreYouNow,
-          subtitle: AppLocalizations.of(context).onboardingYourStartingPointShapesHowAggressive,
+          subtitle: AppLocalizations.of(context)
+              .onboardingYourStartingPointShapesHowAggressive,
           icon: Icons.fitness_center_outlined,
           iconGradient: [AppPalette.auroraBlue, AppPalette.auroraTeal],
         ),
-        const FieldLabel('Sessions per week'),
+        FieldLabel(l10n.onbSessionsPerWeek),
         GlassTextField(
           value: level.frequencyPerWeek?.toString() ?? '',
           keyboardType: TextInputType.number,
@@ -39,16 +41,16 @@ class StepLevel extends ConsumerWidget {
             (s) => s.copyWith(frequencyPerWeek: int.tryParse(v)),
           ),
         ),
-        const FieldLabel('Exercises you currently do'),
+        FieldLabel(l10n.onbCurrentExercises),
         GlassTextField(
           value: level.currentExercises.join(', '),
           maxLines: 2,
-          hint: 'running, yoga, weights',
+          hint: l10n.onbCurrentExercisesHint,
           onChanged: (v) => notifier.updateLevel(
             (s) => s.copyWith(currentExercises: _splitTags(v)),
           ),
         ),
-        const FieldLabel('Self-rated level'),
+        FieldLabel(l10n.onbSelfRatedLevel),
         SingleChoiceChips<FitnessTier>(
           options: const [
             FitnessTier.beginner,
@@ -56,15 +58,14 @@ class StepLevel extends ConsumerWidget {
             FitnessTier.advanced,
           ],
           labelOf: (t) => switch (t) {
-            FitnessTier.beginner => 'Beginner',
-            FitnessTier.intermediate => 'Intermediate',
-            FitnessTier.advanced => 'Advanced',
+            FitnessTier.beginner => l10n.onbLevelBeginner,
+            FitnessTier.intermediate => l10n.onbLevelIntermediate,
+            FitnessTier.advanced => l10n.onbLevelAdvanced,
           },
           value: level.tier,
-          onChanged: (t) =>
-              notifier.updateLevel((s) => s.copyWith(tier: t)),
+          onChanged: (t) => notifier.updateLevel((s) => s.copyWith(tier: t)),
         ),
-        const FieldLabel('Comfortable with push-ups, squats, planks?'),
+        FieldLabel(l10n.onbBasicAbility),
         SingleChoiceChips<BasicExerciseAbility>(
           options: const [
             BasicExerciseAbility.yes,
@@ -72,13 +73,12 @@ class StepLevel extends ConsumerWidget {
             BasicExerciseAbility.no,
           ],
           labelOf: (b) => switch (b) {
-            BasicExerciseAbility.yes => 'Yes',
-            BasicExerciseAbility.partial => 'Some',
-            BasicExerciseAbility.no => 'Not yet',
+            BasicExerciseAbility.yes => l10n.onbBasicAbilityYes,
+            BasicExerciseAbility.partial => l10n.onbBasicAbilityPartial,
+            BasicExerciseAbility.no => l10n.onbBasicAbilityNo,
           },
           value: level.basics,
-          onChanged: (b) =>
-              notifier.updateLevel((s) => s.copyWith(basics: b)),
+          onChanged: (b) => notifier.updateLevel((s) => s.copyWith(basics: b)),
         ),
       ],
     );

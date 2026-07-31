@@ -12,6 +12,7 @@ class StepMotivation extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final m = ref.watch(questionnaireDraftProvider).motivation;
     final notifier = ref.read(questionnaireDraftProvider.notifier);
 
@@ -20,20 +21,21 @@ class StepMotivation extends ConsumerWidget {
       children: [
         StepTitle(
           title: AppLocalizations.of(context).onboardingHowDoYouLikeToTrain,
-          subtitle: AppLocalizations.of(context).onboardingTheseTweakTheToneAndLength,
+          subtitle:
+              AppLocalizations.of(context).onboardingTheseTweakTheToneAndLength,
           icon: Icons.bolt_outlined,
           iconGradient: [AppPalette.auroraViolet, AppPalette.auroraPink],
         ),
-        const FieldLabel('What motivates you most?'),
+        FieldLabel(l10n.onbMotivationPrompt),
         GlassTextField(
           value: m.motivation ?? '',
           maxLines: 3,
-          hint: 'A few words about why you train',
+          hint: l10n.onbMotivationHint,
           onChanged: (v) => notifier.updateMotivation(
             (s) => s.copyWith(motivation: v),
           ),
         ),
-        const FieldLabel('Preferred environment'),
+        FieldLabel(l10n.onbEnvironment),
         MultiChoiceChips<WorkoutEnvironment>(
           options: const [
             WorkoutEnvironment.highIntensity,
@@ -43,18 +45,18 @@ class StepMotivation extends ConsumerWidget {
             WorkoutEnvironment.outdoor,
           ],
           labelOf: (e) => switch (e) {
-            WorkoutEnvironment.highIntensity => 'High-intensity',
-            WorkoutEnvironment.relaxed => 'Relaxed',
-            WorkoutEnvironment.groupClasses => 'Group classes',
-            WorkoutEnvironment.oneOnOne => '1-on-1',
-            WorkoutEnvironment.outdoor => 'Outdoor',
+            WorkoutEnvironment.highIntensity => l10n.onbEnvIntense,
+            WorkoutEnvironment.relaxed => l10n.onbEnvRelaxed,
+            WorkoutEnvironment.groupClasses => l10n.onbEnvGroup,
+            WorkoutEnvironment.oneOnOne => l10n.onbEnvOneOnOne,
+            WorkoutEnvironment.outdoor => l10n.onbEnvOutdoor,
           },
           values: m.environments.toSet(),
           onChanged: (next) => notifier.updateMotivation(
             (s) => s.copyWith(environments: next.toList()),
           ),
         ),
-        const FieldLabel('Preferred session length'),
+        FieldLabel(l10n.onbSessionLength),
         SingleChoiceChips<WorkoutDuration>(
           options: const [
             WorkoutDuration.under15,
@@ -64,11 +66,11 @@ class StepMotivation extends ConsumerWidget {
             WorkoutDuration.over60,
           ],
           labelOf: (d) => switch (d) {
-            WorkoutDuration.under15 => 'Under 15 min',
-            WorkoutDuration.m15to30 => '15–30 min',
-            WorkoutDuration.m30to45 => '30–45 min',
-            WorkoutDuration.m45to60 => '45–60 min',
-            WorkoutDuration.over60 => 'Over an hour',
+            WorkoutDuration.under15 => l10n.onbSession15,
+            WorkoutDuration.m15to30 => l10n.onbSession1530,
+            WorkoutDuration.m30to45 => l10n.onbSession3045,
+            WorkoutDuration.m45to60 => l10n.onbSession4560,
+            WorkoutDuration.over60 => l10n.onbSession60,
           },
           value: m.preferredDuration,
           onChanged: (d) => notifier.updateMotivation(

@@ -12,6 +12,7 @@ class StepLifestyle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final l = ref.watch(questionnaireDraftProvider).lifestyle;
     final notifier = ref.read(questionnaireDraftProvider.notifier);
 
@@ -20,11 +21,12 @@ class StepLifestyle extends ConsumerWidget {
       children: [
         StepTitle(
           title: AppLocalizations.of(context).onboardingLifestyleHabits,
-          subtitle: AppLocalizations.of(context).onboardingRecoveryNutritionAndStressAllFeed,
+          subtitle: AppLocalizations.of(context)
+              .onboardingRecoveryNutritionAndStressAllFeed,
           icon: Icons.restaurant_outlined,
           iconGradient: [AppPalette.auroraTeal, AppPalette.auroraLime],
         ),
-        const FieldLabel('Dietary preferences'),
+        FieldLabel(l10n.onbDiet),
         MultiChoiceChips<DietaryPreference>(
           options: const [
             DietaryPreference.vegetarian,
@@ -36,19 +38,19 @@ class StepLifestyle extends ConsumerWidget {
             DietaryPreference.none,
           ],
           labelOf: (d) => switch (d) {
-            DietaryPreference.vegetarian => 'Vegetarian',
-            DietaryPreference.vegan => 'Vegan',
-            DietaryPreference.glutenFree => 'Gluten-free',
-            DietaryPreference.dairyFree => 'Dairy-free',
-            DietaryPreference.halal => 'Halal',
-            DietaryPreference.kosher => 'Kosher',
-            DietaryPreference.none => 'No restrictions',
+            DietaryPreference.vegetarian => l10n.onbDietVegetarian,
+            DietaryPreference.vegan => l10n.onbDietVegan,
+            DietaryPreference.glutenFree => l10n.onbDietGlutenFree,
+            DietaryPreference.dairyFree => l10n.onbDietDairyFree,
+            DietaryPreference.halal => l10n.onbDietHalal,
+            DietaryPreference.kosher => l10n.onbDietKosher,
+            DietaryPreference.none => l10n.onbDietNone,
           },
           values: l.diet.toSet(),
           onChanged: (next) =>
               notifier.updateLifestyle((s) => s.copyWith(diet: next.toList())),
         ),
-        const FieldLabel('Smoking'),
+        FieldLabel(l10n.onbSmoking),
         SingleChoiceChips<SmokingHabit>(
           options: const [
             SmokingHabit.never,
@@ -57,16 +59,16 @@ class StepLifestyle extends ConsumerWidget {
             SmokingHabit.regular,
           ],
           labelOf: (s) => switch (s) {
-            SmokingHabit.never => 'Never',
-            SmokingHabit.former => 'Former',
-            SmokingHabit.occasional => 'Occasional',
-            SmokingHabit.regular => 'Regular',
+            SmokingHabit.never => l10n.onbSmokingNever,
+            SmokingHabit.former => l10n.onbSmokingFormer,
+            SmokingHabit.occasional => l10n.onbSmokingOccasional,
+            SmokingHabit.regular => l10n.onbSmokingRegular,
           },
           value: l.smoking,
           onChanged: (s) =>
               notifier.updateLifestyle((st) => st.copyWith(smoking: s)),
         ),
-        const FieldLabel('Alcohol'),
+        FieldLabel(l10n.onbAlcohol),
         SingleChoiceChips<AlcoholHabit>(
           options: const [
             AlcoholHabit.none,
@@ -75,16 +77,16 @@ class StepLifestyle extends ConsumerWidget {
             AlcoholHabit.heavy,
           ],
           labelOf: (a) => switch (a) {
-            AlcoholHabit.none => 'None',
-            AlcoholHabit.light => 'Light',
-            AlcoholHabit.moderate => 'Moderate',
-            AlcoholHabit.heavy => 'Heavy',
+            AlcoholHabit.none => l10n.onbAlcoholNone,
+            AlcoholHabit.light => l10n.onbAlcoholLight,
+            AlcoholHabit.moderate => l10n.onbAlcoholModerate,
+            AlcoholHabit.heavy => l10n.onbAlcoholHeavy,
           },
           value: l.alcohol,
           onChanged: (a) =>
               notifier.updateLifestyle((st) => st.copyWith(alcohol: a)),
         ),
-        const FieldLabel('Sleep (hours per night)'),
+        FieldLabel(l10n.onbSleepHours),
         GlassTextField(
           value: l.sleepHoursPerNight?.toString() ?? '',
           keyboardType: TextInputType.number,
@@ -93,7 +95,7 @@ class StepLifestyle extends ConsumerWidget {
             (s) => s.copyWith(sleepHoursPerNight: int.tryParse(v)),
           ),
         ),
-        const FieldLabel('Stress level (1–10)'),
+        FieldLabel(l10n.onbStressLevel),
         Slider(
           min: 1,
           max: 10,
@@ -104,7 +106,7 @@ class StepLifestyle extends ConsumerWidget {
             (s) => s.copyWith(stressLevel: v.round()),
           ),
         ),
-        const FieldLabel('Occupation'),
+        FieldLabel(l10n.onbOccupation),
         SingleChoiceChips<OccupationActivity>(
           options: const [
             OccupationActivity.sedentary,
@@ -113,10 +115,10 @@ class StepLifestyle extends ConsumerWidget {
             OccupationActivity.veryActive,
           ],
           labelOf: (o) => switch (o) {
-            OccupationActivity.sedentary => 'Sedentary',
-            OccupationActivity.lightlyActive => 'Lightly active',
-            OccupationActivity.active => 'Active',
-            OccupationActivity.veryActive => 'Very active',
+            OccupationActivity.sedentary => l10n.onbActivitySedentary,
+            OccupationActivity.lightlyActive => l10n.onbActivityLight,
+            OccupationActivity.active => l10n.onbActivityActive,
+            OccupationActivity.veryActive => l10n.onbActivityVery,
           },
           value: l.occupation,
           onChanged: (o) =>

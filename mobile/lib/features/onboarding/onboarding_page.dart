@@ -25,15 +25,18 @@ class OnboardingPage extends ConsumerStatefulWidget {
 class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   final _ctrl = PageController();
 
-  static const _titles = [
-    'Personal',
-    'Health',
-    'Goals',
-    'Fitness level',
-    'Lifestyle',
-    'Equipment',
-    'Motivation',
-  ];
+  /// The seven step names, in order. A function rather than a `static const`
+  /// list: a translated string is a method call on the localizations object,
+  /// and a const list cannot hold one.
+  static List<String> _titles(AppLocalizations l10n) => [
+        l10n.onbStepPersonal,
+        l10n.onbStepHealth,
+        l10n.onbStepGoals,
+        l10n.onbStepLevel,
+        l10n.onbStepLifestyle,
+        l10n.onbStepEquipment,
+        l10n.onbStepMotivation,
+      ];
 
   static const _stepCount = 7;
 
@@ -93,7 +96,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     final state = ref.read(profileSubmitProvider);
     if (state.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).onboardingCouldNotSaveProfile(state.error ?? ''))),
+        SnackBar(
+            content: Text(AppLocalizations.of(context)
+                .onboardingCouldNotSaveProfile(state.error ?? ''))),
       );
       return;
     }
@@ -102,6 +107,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final submitState = ref.watch(profileSubmitProvider);
     final isSubmitting = submitState.isLoading;
@@ -109,7 +115,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
     return FrostedScaffold(
       appBar: GlassAppBar(
-        title: AppLocalizations.of(context).onboardingStepOf(_index + 1, _stepCount, _titles[_index]),
+        title: AppLocalizations.of(context)
+            .onboardingStepOf(_index + 1, _stepCount, _titles(l10n)[_index]),
       ),
       body: SafeArea(
         child: Padding(
@@ -138,7 +145,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: isSubmitting ? null : _back,
-                        child: Text(AppLocalizations.of(context).onboardingBack),
+                        child:
+                            Text(AppLocalizations.of(context).onboardingBack),
                       ),
                     ),
                   if (_index > 0) const SizedBox(width: 12),
@@ -175,7 +183,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                                   ),
                                 )
                               : Text(
-                                  isLast ? AppLocalizations.of(context).commonDone : AppLocalizations.of(context).commonNext,
+                                  isLast
+                                      ? AppLocalizations.of(context).commonDone
+                                      : AppLocalizations.of(context).commonNext,
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w700,

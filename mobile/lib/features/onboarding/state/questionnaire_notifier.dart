@@ -9,8 +9,7 @@ import '../../profile/state/profile_providers.dart';
 /// Hydrates from any cached profile on first build, so partial answers
 /// survive app restarts (or refreshes from the in-memory mock).
 final questionnaireDraftProvider =
-    NotifierProvider<QuestionnaireDraft, UserProfile>(
-        QuestionnaireDraft.new);
+    NotifierProvider<QuestionnaireDraft, UserProfile>(QuestionnaireDraft.new);
 
 class QuestionnaireDraft extends Notifier<UserProfile> {
   @override

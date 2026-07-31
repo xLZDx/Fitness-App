@@ -12,6 +12,7 @@ class StepPersonal extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final personal = ref.watch(questionnaireDraftProvider).personal;
     final notifier = ref.read(questionnaireDraftProvider.notifier);
 
@@ -20,11 +21,12 @@ class StepPersonal extends ConsumerWidget {
       children: [
         StepTitle(
           title: AppLocalizations.of(context).onboardingTellUsAboutYou,
-          subtitle: AppLocalizations.of(context).onboardingWeTailorYourPlanAroundThese,
+          subtitle: AppLocalizations.of(context)
+              .onboardingWeTailorYourPlanAroundThese,
           icon: Icons.person_outline,
           iconGradient: [AppPalette.auroraPink, AppPalette.auroraViolet],
         ),
-        const FieldLabel('Age'),
+        FieldLabel(l10n.onbAge),
         GlassTextField(
           value: personal.age?.toString() ?? '',
           keyboardType: TextInputType.number,
@@ -33,7 +35,7 @@ class StepPersonal extends ConsumerWidget {
             (p) => p.copyWith(age: int.tryParse(v)),
           ),
         ),
-        const FieldLabel('Gender'),
+        FieldLabel(l10n.onbGender),
         SingleChoiceChips<Gender>(
           options: const [
             Gender.female,
@@ -41,12 +43,12 @@ class StepPersonal extends ConsumerWidget {
             Gender.nonBinary,
             Gender.preferNotToSay
           ],
-          labelOf: _genderLabel,
+          labelOf: (g) => _genderLabel(l10n, g),
           value: personal.gender,
           onChanged: (g) =>
               notifier.updatePersonal((p) => p.copyWith(gender: g)),
         ),
-        const FieldLabel('Height (cm)'),
+        FieldLabel(l10n.onbHeightCm),
         GlassTextField(
           value: personal.heightCm?.toString() ?? '',
           keyboardType: TextInputType.number,
@@ -55,27 +57,25 @@ class StepPersonal extends ConsumerWidget {
             (p) => p.copyWith(heightCm: int.tryParse(v)),
           ),
         ),
-        const FieldLabel('Current weight (kg)'),
+        FieldLabel(l10n.onbWeightCurrent),
         GlassTextField(
           value: personal.weightCurrentKg?.toString() ?? '',
-          keyboardType:
-              const TextInputType.numberWithOptions(decimal: true),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
           hint: '72',
           onChanged: (v) => notifier.updatePersonal(
             (p) => p.copyWith(weightCurrentKg: double.tryParse(v)),
           ),
         ),
-        const FieldLabel('Target weight (kg, optional)'),
+        FieldLabel(l10n.onbWeightTarget),
         GlassTextField(
           value: personal.weightTargetKg?.toString() ?? '',
-          keyboardType:
-              const TextInputType.numberWithOptions(decimal: true),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
           hint: '70',
           onChanged: (v) => notifier.updatePersonal(
             (p) => p.copyWith(weightTargetKg: double.tryParse(v)),
           ),
         ),
-        const FieldLabel('Activity level'),
+        FieldLabel(l10n.onbActivityLevel),
         SingleChoiceChips<ActivityLevel>(
           options: const [
             ActivityLevel.sedentary,
@@ -83,7 +83,7 @@ class StepPersonal extends ConsumerWidget {
             ActivityLevel.active,
             ActivityLevel.veryActive,
           ],
-          labelOf: _activityLabel,
+          labelOf: (a) => _activityLabel(l10n, a),
           value: personal.activityLevel,
           onChanged: (a) =>
               notifier.updatePersonal((p) => p.copyWith(activityLevel: a)),
@@ -93,16 +93,18 @@ class StepPersonal extends ConsumerWidget {
   }
 }
 
-String _genderLabel(Gender g) => switch (g) {
-      Gender.female => 'Female',
-      Gender.male => 'Male',
-      Gender.nonBinary => 'Non-binary',
-      Gender.preferNotToSay => 'Prefer not to say',
+// The label functions take the localizations object rather than reading it
+// from a context: they are top-level, so there is no context to read.
+String _genderLabel(AppLocalizations l10n, Gender g) => switch (g) {
+      Gender.female => l10n.onbGenderFemale,
+      Gender.male => l10n.onbGenderMale,
+      Gender.nonBinary => l10n.onbGenderNonBinary,
+      Gender.preferNotToSay => l10n.onbGenderPreferNotToSay,
     };
 
-String _activityLabel(ActivityLevel a) => switch (a) {
-      ActivityLevel.sedentary => 'Sedentary',
-      ActivityLevel.moderatelyActive => 'Moderately active',
-      ActivityLevel.active => 'Active',
-      ActivityLevel.veryActive => 'Very active',
+String _activityLabel(AppLocalizations l10n, ActivityLevel a) => switch (a) {
+      ActivityLevel.sedentary => l10n.onbActivitySedentary,
+      ActivityLevel.moderatelyActive => l10n.onbActivityModerate,
+      ActivityLevel.active => l10n.onbActivityActive,
+      ActivityLevel.veryActive => l10n.onbActivityVery,
     };
