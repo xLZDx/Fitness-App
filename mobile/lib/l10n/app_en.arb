@@ -822,6 +822,12 @@
   "formcheckPhaseDrivingUp": "driving up",
   "formcheckGateLowConfidence": "Too dark or too blurry to read your position.",
   "formcheckGateOutOfFrame": "Part of you is outside the frame - step back or tilt the phone.",
+  "formcheckReadyPrompt": "Ready - do a rep.",
+  "formcheckRepClean": "Clean rep",
+  "formcheckRepFaulted": "Something was off on that rep.",
+  "formcheckExerciseSquat": "Squat",
+  "formcheckExercisePushup": "Push-up",
+  "formcheckExerciseDeadlift": "Deadlift",
   "formcheckGateUnitMismatch": "Something is wrong on our side - the camera is reporting positions this app cannot read. Counting and form checks have paused.",
   "@formcheckGateUnitMismatch": {
     "description": "Shown when landmark coordinates arrive outside the documented range. Two constraints, both learned the hard way. It must not ask the user to move: no amount of stepping back changes a coordinate the app failed to convert. And it must not promise that rep counting continues - RepSessionController drops every unscorable frame before the counter sees it, so the count freezes. An earlier version of this string promised exactly that and was false in both languages."

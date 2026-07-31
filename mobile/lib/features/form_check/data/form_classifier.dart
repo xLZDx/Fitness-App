@@ -80,7 +80,29 @@ abstract class FormClassifier {
   FormFeedback? evaluate(PoseFrame frame);
 }
 
-/// Squat depth — flags partial reps when hip never drops below knee.
+/// Squat depth. **Reports; never warns.** Same reason as the hinge rule below,
+/// found the same way: on a real device, on a real body.
+///
+/// The rule compares `hipY` with `kneeY` in image space and calls the rep
+/// shallow when the hip does not get under the knee. That comparison is not a
+/// property of the squat — it is a property of where the phone is standing.
+/// A phone on the floor looking up, a phone at hip height, and a phone at chest
+/// height see three different hip-to-knee relationships at the *same* depth,
+/// because the projection changes. Nothing in the pipeline knows the camera's
+/// pose, so nothing can correct for it.
+///
+/// Operator report, 2026-07-31, with video: eight consecutive squats scored
+/// "0 clean, 8 with errors", the coach saying "half rep, lighten the bar and
+/// sit deeper" — verbatim response: *"ниже уже некуда было"*. There was no
+/// deeper to go. The phone was low and close; at that angle the hip never
+/// crosses the knee in the picture no matter how deep the squat is.
+///
+/// A threshold cannot fix this, in the same way and for the same reason the
+/// deadlift rule could not be retuned: the fault and the correct execution are
+/// not separable in the signal available. What separates them is knowing the
+/// target pose, which is what the silhouette match is being built to provide.
+/// Until it exists this rule contributes its metric to the rep record and says
+/// nothing.
 class SquatDepthClassifier implements FormClassifier {
   @override
   String get rule => 'squat.depth';
@@ -106,26 +128,17 @@ class SquatDepthClassifier implements FormClassifier {
     final kneeY = (lKnee.y + rKnee.y) / 2;
     // Image y grows downward; "below knee" means hipY > kneeY.
     final ratio = hipY - kneeY;
-    if (ratio >= 0) {
-      return FormFeedback(
-        rule: rule,
-        severity: 0,
-        cueKey: FormCueKey.squatDepthGood,
-        metric: ratio,
-      );
-    }
-    if (ratio > -0.04) {
-      return FormFeedback(
-        rule: rule,
-        severity: 1,
-        cueKey: FormCueKey.squatDepthAlmost,
-        metric: ratio,
-      );
-    }
+    // Severity 0 in every arm, deliberately. The thresholds below still choose
+    // WHICH observation to record, but none of them is entitled to raise an
+    // alarm, because the quantity they compare is camera-dependent.
     return FormFeedback(
       rule: rule,
-      severity: 2,
-      cueKey: FormCueKey.squatDepthHalf,
+      severity: 0,
+      cueKey: ratio >= 0
+          ? FormCueKey.squatDepthGood
+          : ratio > -0.04
+              ? FormCueKey.squatDepthAlmost
+              : FormCueKey.squatDepthHalf,
       metric: ratio,
     );
   }

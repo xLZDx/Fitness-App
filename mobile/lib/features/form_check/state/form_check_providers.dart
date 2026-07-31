@@ -10,19 +10,30 @@ import '../data/pose_unit_probe.dart';
 import '../data/rep_counter.dart';
 import '../data/voice_coach.dart';
 
-/// Currently-active classifier set.
+/// What the user says they are doing. Rules are chosen from this.
+enum FormExercise { squat, pushup, deadlift }
+
+/// The movement being coached. Squat by default: it is what the shipped rep
+/// counter's signal (hip-versus-knee height) actually tracks.
+final selectedExerciseProvider =
+    StateProvider<FormExercise>((_) => FormExercise.squat);
+
+/// Classifiers for the selected movement, and only those.
 ///
-/// **All three run on every frame, always.** There is no exercise picker in the
-/// UI, so a squatting user is also evaluated by the hip-hinge rule and the
-/// push-up rule. That is why the operator's post-set summary listed three rule
-/// ids at once, and it is why fixing an individual rule's thresholds is
-/// cosmetic until the set is chosen per exercise (gate V0c).
-final activeClassifiersProvider =
-    StateProvider<List<FormClassifier>>((_) => [
-          SquatDepthClassifier(),
-          DeadliftHipHingeClassifier(),
-          PushupAlignmentClassifier(),
-        ]);
+/// Every rule used to run on every frame, because there was no picker. So a
+/// squatting user was also judged by the push-up rule — which measures the
+/// shoulder-hip-ankle angle and calls it "body line". On someone standing up
+/// out of a squat that angle sweeps through the whole range, so the rule fired
+/// constantly. The operator's set summary read "Ошибки: Глубина приседа, Линия
+/// корпуса" for eight consecutive squats; half of that was a push-up rule
+/// grading a squat, and it was never going to be fixed by tuning it.
+final activeClassifiersProvider = Provider<List<FormClassifier>>((ref) {
+  return switch (ref.watch(selectedExerciseProvider)) {
+    FormExercise.squat => [SquatDepthClassifier()],
+    FormExercise.pushup => [PushupAlignmentClassifier()],
+    FormExercise.deadlift => [DeadliftHipHingeClassifier()],
+  };
+});
 
 final poseDetectorServiceProvider =
     Provider<PoseDetectorService>((_) {
@@ -174,11 +185,26 @@ class RepSessionState {
     this.repCount = 0,
     this.phase = RepPhase.top,
     this.reps = const <RepQuality>[],
+    this.lastRepCue,
   });
 
   final int repCount;
   final RepPhase phase;
   final List<RepQuality> reps;
+
+  /// The single fault of the rep just finished, or null when it had none.
+  ///
+  /// One per rep, chosen at the rep boundary. The screen used to render the
+  /// current *frame's* feedback, which changes many times a second, so the card
+  /// flickered between messages throughout every repetition. Operator, watching
+  /// it: *"то что она постоянно повторяет одно и то же это бесит"*.
+  ///
+  /// A coach watches the rep and then says one thing. This is that.
+  final FormFeedback? lastRepCue;
+
+  /// Whether the rep just finished had any fault. Null before the first rep.
+  bool? get lastRepClean =>
+      reps.isEmpty ? null : reps.last.isClean;
 
   int get cleanReps => reps.where((r) => r.isClean).length;
 
@@ -198,6 +224,9 @@ class RepSessionController extends Notifier<RepSessionState> {
   /// `cue()` is awaited off the frame path, so its completion can land after the
   /// controller is gone. Touching `ref` then throws.
   bool _disposed = false;
+
+  /// Worst fault seen since the current repetition began, or null.
+  FormFeedback? _worstThisRep;
 
   @override
   RepSessionState build() {
@@ -242,20 +271,37 @@ class RepSessionController extends Notifier<RepSessionState> {
     if (!result.scorable) return;
 
     final feedback = result.feedback;
+    // Remember the worst thing seen SO FAR in this repetition, rather than
+    // reacting to it. The decision to speak belongs at the rep boundary.
     final worst = result.worst;
-
-    final event = counter.update(frame, feedback: feedback);
-    if (event != null) {
-      state = RepSessionState(
-        repCount: counter.repCount,
-        phase: counter.phase,
-        reps: counter.reps,
-      );
+    if (worst != null &&
+        worst.severity >= 1 &&
+        worst.severity > (_worstThisRep?.severity ?? 0)) {
+      _worstThisRep = worst;
     }
 
-    if (worst != null) {
+    final event = counter.update(frame, feedback: feedback);
+    if (event == null) return;
+
+    final finished = event.kind == RepEventKind.repCompleted;
+    final cue = finished ? _worstThisRep : state.lastRepCue;
+    if (finished) _worstThisRep = null;
+
+    state = RepSessionState(
+      repCount: counter.repCount,
+      phase: counter.phase,
+      reps: counter.reps,
+      lastRepCue: cue,
+    );
+
+    // At most one utterance per completed repetition. The coach's own gate
+    // still applies underneath — mute, severity floor, and not repeating the
+    // identical sentence within its repeat window — but the PACING is the rep,
+    // not a stopwatch. Before this, a severity-2 cue was re-spoken every 1.2s
+    // for as long as the position held, which is what made it unbearable.
+    if (finished && cue != null) {
       final coach = ref.read(voiceCoachProvider);
-      unawaited(coach.cue(worst).whenComplete(() => _publishVoiceError(coach)));
+      unawaited(coach.cue(cue).whenComplete(() => _publishVoiceError(coach)));
     }
   }
 
@@ -274,6 +320,7 @@ class RepSessionController extends Notifier<RepSessionState> {
   /// Start a new set: clear the count and the quality log.
   void resetSet() {
     _counter?.reset();
+    _worstThisRep = null;
     unawaited(ref.read(voiceCoachProvider).stop());
     state = const RepSessionState();
   }

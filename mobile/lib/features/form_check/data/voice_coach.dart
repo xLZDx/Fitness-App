@@ -36,8 +36,7 @@ enum CueDecision {
 ///
 /// Policy, in order:
 ///   1. Below [minSeverity] — silent. "Good depth" every rep is noise.
-///   2. Identical to the last cue spoken — silent. Never the same sentence
-///      twice in a row.
+///   2. Identical to the last cue spoken, within [repeatGapMs] — silent.
 ///   3. At or above [interruptSeverity] — spoken immediately, bypassing the
 ///      throttle window and preempting anything queued. A "stop, your back is
 ///      rounding" that waits its turn behind "chest up" is a safety defect.
@@ -47,6 +46,7 @@ class CueGate {
   CueGate({
     this.minGapMs = 3000,
     this.interruptGapMs = 1200,
+    this.repeatGapMs = 20000,
     this.minSeverity = 1,
     this.interruptSeverity = 2,
     ClockMs? clock,
@@ -67,6 +67,18 @@ class CueGate {
   /// [minGapMs]: while a dangerous position persists the warning must keep
   /// coming, but 1.2s is long enough not to stutter over itself.
   final int interruptGapMs;
+
+  /// How long the same cue stays silenced before it may be said again.
+  ///
+  /// Rule 2 used to be absolute — the same sentence was never spoken twice in a
+  /// row, ever. Paired with the per-rep pacing in `RepSessionController` that
+  /// turns into permanent silence: a user repeating one mistake hears about it
+  /// once and then nothing, for the rest of the set.
+  ///
+  /// Twenty seconds is a handful of reps. Long enough not to nag — the red
+  /// banner is what carries a persisting fault — short enough that a fault the
+  /// user never fixed gets said again while it still matters.
+  final int repeatGapMs;
 
   /// Severities below this are never spoken.
   final int minSeverity;
@@ -125,9 +137,10 @@ class CueGate {
       return CueDecision.preempt;
     }
 
-    if (cue == _lastCue) return CueDecision.suppress;
-
     final last = _lastSpokenAtMs;
+    if (cue == _lastCue && last != null && now - last < repeatGapMs) {
+      return CueDecision.suppress;
+    }
     if (last != null && now - last < minGapMs) return CueDecision.suppress;
 
     return CueDecision.speak;

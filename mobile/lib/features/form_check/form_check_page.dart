@@ -98,7 +98,11 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     final theme = Theme.of(context);
     final tier = ref.watch(effectiveTierProvider);
     final isPremium = tier == SubscriptionTier.celebrityTrainer;
-    final feedback = ref.watch(formFeedbackControllerProvider);
+    // Watched for its side effects, not its value: building this controller is
+    // what subscribes to the frame stream, which is what feeds the gate verdict
+    // and the coordinate probe. The card itself now reads the rep verdict
+    // instead of the current frame's feedback.
+    ref.watch(formFeedbackControllerProvider);
     final svc = ref.watch(poseDetectorServiceProvider);
     final session = ref.watch(repSessionControllerProvider);
     final muted = ref.watch(voiceMutedProvider);
@@ -126,6 +130,11 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
             _UpgradeCard(),
             const SizedBox(height: 16),
           ],
+          // Which movement is being coached. Above the camera on purpose: the
+          // rules that will judge you are chosen here, so it should be read
+          // before the set, not discovered after it.
+          const _ExercisePicker(),
+          const SizedBox(height: 12),
           AspectRatio(
             aspectRatio: 9 / 16,
             child: ClipRRect(
@@ -163,7 +172,8 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                       right: 12,
                       bottom: 12,
                       child: _CueCard(
-                        feedback: feedback,
+                        feedback: session.lastRepCue,
+                        clean: session.lastRepClean,
                         gateVerdict: gateVerdict,
                       ),
                     ),
@@ -420,7 +430,21 @@ class _UpgradeCard extends StatelessWidget {
 }
 
 class _CueCard extends StatelessWidget {
-  const _CueCard({this.feedback, this.gateVerdict = PoseGateVerdict.ok});
+  const _CueCard({
+    this.feedback,
+    this.clean,
+    this.gateVerdict = PoseGateVerdict.ok,
+  });
+
+  /// Whether the last completed repetition was faultless. Null before the
+  /// first one finishes.
+  ///
+  /// This card is now a **verdict on a repetition**, not a readout of the
+  /// current frame. Green when the rep was clean, red when it was not, and it
+  /// changes once per rep. It used to re-render whatever the latest frame
+  /// produced — several times a second, cycling between messages for the whole
+  /// movement.
+  final bool? clean;
 
   final FormFeedback? feedback;
 
@@ -433,43 +457,95 @@ class _CueCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    if (feedback == null) {
+    // A blocked frame always wins the card: whatever the last rep scored, the
+    // user needs to know the coach cannot currently see them.
+    if (!gateVerdict.isScorable) {
       final hint = poseGateHint(l10n, gateVerdict);
-      return Container(
+      return _band(
+        theme,
+        Colors.white.withValues(alpha: 0.18),
+        hint.isEmpty ? l10n.formcheckStandBackSoYourFullBody : hint,
+        const Key('form_check.gate_hint'),
+      );
+    }
+
+    // Nothing finished yet. Say so rather than showing a colour that would be
+    // read as a verdict on a rep that has not happened.
+    if (clean == null) {
+      return _band(
+        theme,
+        Colors.white.withValues(alpha: 0.18),
+        l10n.formcheckReadyPrompt,
+        const Key('form_check.ready'),
+      );
+    }
+
+    // Two colours, one per repetition. Red carries the one cue; green says the
+    // rep was clean and says it in three words, because a green banner that
+    // explains itself at length is just noise wearing a friendly colour.
+    if (clean!) {
+      return _band(theme, AppPalette.auroraTeal.withValues(alpha: 0.92),
+          l10n.formcheckRepClean, const Key('form_check.rep_clean'));
+    }
+    return _band(
+      theme,
+      AppPalette.auroraPink.withValues(alpha: 0.92),
+      feedback == null
+          ? l10n.formcheckRepFaulted
+          : formCueText(l10n, feedback!.cueKey),
+      const Key('form_check.cue'),
+    );
+  }
+
+  Widget _band(ThemeData theme, Color colour, String text, Key key) =>
+      Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.18),
+          color: colour,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Text(
-          hint.isEmpty ? l10n.formcheckStandBackSoYourFullBody : hint,
-          key: const Key('form_check.gate_hint'),
-          style: theme.textTheme.bodyMedium?.copyWith(
+          text,
+          key: key,
+          style: theme.textTheme.titleSmall?.copyWith(
             color: Colors.white,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
           ),
         ),
       );
-    }
-    final colour = feedback!.severity >= 2
-        ? AppPalette.auroraPink
-        : feedback!.severity == 1
-            ? AppPalette.auroraPeach
-            : AppPalette.auroraTeal;
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: colour.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Text(
-        formCueText(l10n, feedback!.cueKey),
-        key: const Key('form_check.cue'),
-        style: theme.textTheme.titleSmall?.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
+}
+
+/// Choose the movement, and with it the rules that will judge it.
+///
+/// Before this existed every rule ran on every frame, so a squatting user was
+/// also graded by the push-up rule — which is how a set of eight squats came
+/// back reporting "Ошибки: Глубина приседа, Линия корпуса". Half of that was a
+/// rule for a different exercise entirely, and no amount of tuning it would
+/// have helped.
+class _ExercisePicker extends ConsumerWidget {
+  const _ExercisePicker();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final selected = ref.watch(selectedExerciseProvider);
+    String label(FormExercise e) => switch (e) {
+          FormExercise.squat => l10n.formcheckExerciseSquat,
+          FormExercise.pushup => l10n.formcheckExercisePushup,
+          FormExercise.deadlift => l10n.formcheckExerciseDeadlift,
+        };
+    return Wrap(
+      spacing: 8,
+      children: [
+        for (final e in FormExercise.values)
+          ChoiceChip(
+            key: Key('form_check.exercise.${e.name}'),
+            label: Text(label(e)),
+            selected: e == selected,
+            onSelected: (_) =>
+                ref.read(selectedExerciseProvider.notifier).state = e,
+          ),
+      ],
     );
   }
 }

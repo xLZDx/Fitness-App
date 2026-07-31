@@ -9,6 +9,8 @@ import 'package:fitness_app/features/form_check/data/pose_landmark.dart';
 import 'package:fitness_app/features/form_check/data/voice_coach.dart';
 import 'package:fitness_app/features/form_check/state/form_check_providers.dart';
 
+import 'unscorable_frame_test.dart' show oneSquat;
+
 /// Stands in for the ML Kit service when the native detector dies: the stream
 /// stays open but carries an error instead of frames.
 class _ErroringPoseService implements PoseDetectorService {
@@ -54,19 +56,44 @@ class _FailingVoiceCoach implements VoiceCoach {
   Future<void> dispose() async {}
 }
 
-/// A frame a rule can actually score, so the coach is genuinely asked to speak.
-/// A frame the gate rejects would exercise nothing.
-PoseFrame _squatFrame() {
-  PoseLandmark p(LandmarkType t, double x, double y) =>
-      PoseLandmark(type: t, x: x, y: y, likelihood: 0.95);
-  return PoseFrame(timestampMs: 1, landmarks: {
-    LandmarkType.leftShoulder: p(LandmarkType.leftShoulder, 0.45, 0.20),
-    LandmarkType.rightShoulder: p(LandmarkType.rightShoulder, 0.55, 0.20),
-    LandmarkType.leftHip: p(LandmarkType.leftHip, 0.45, 0.55),
-    LandmarkType.rightHip: p(LandmarkType.rightHip, 0.55, 0.55),
-    LandmarkType.leftKnee: p(LandmarkType.leftKnee, 0.45, 0.70),
-    LandmarkType.rightKnee: p(LandmarkType.rightKnee, 0.55, 0.70),
-  });
+/// Always faults, so the speech path is reached without depending on any rule's
+/// thresholds.
+class _AlwaysFaults implements FormClassifier {
+  @override
+  String get rule => 'test.always';
+
+  @override
+  Set<LandmarkType> get requiredLandmarks => const {
+        LandmarkType.leftHip,
+        LandmarkType.rightHip,
+        LandmarkType.leftKnee,
+        LandmarkType.rightKnee,
+      };
+
+  @override
+  FormFeedback? evaluate(PoseFrame frame) => const FormFeedback(
+        rule: 'test.always',
+        severity: 2,
+        cueKey: FormCueKey.pushupAlignSagging,
+      );
+}
+
+/// Drives a whole repetition, because cues are now emitted at the rep boundary
+/// rather than per frame. A single frame reaches the classifier and never
+/// reaches the coach.
+Future<ProviderContainer> _runOneFaultedRep(VoiceCoach coach) async {
+  final svc = MockPoseDetectorService(oneSquat(0));
+  final container = ProviderContainer(overrides: [
+    poseDetectorServiceProvider.overrideWithValue(svc),
+    voiceCoachProvider.overrideWithValue(coach),
+    activeClassifiersProvider.overrideWithValue([_AlwaysFaults()]),
+  ]);
+  addTearDown(container.dispose);
+  container.read(repSessionControllerProvider);
+  await svc.start();
+  await pumpEventQueue();
+  addTearDown(svc.dispose);
+  return container;
 }
 
 void main() {
@@ -139,40 +166,16 @@ void main() {
 
     test('a failing coach populates voiceErrorProvider', () async {
       final coach = _FailingVoiceCoach();
-      final svc = MockPoseDetectorService([_squatFrame()]);
-      final container = ProviderContainer(overrides: [
-        poseDetectorServiceProvider.overrideWithValue(svc),
-        voiceCoachProvider.overrideWithValue(coach),
-      ]);
-      addTearDown(container.dispose);
-
-      container.read(repSessionControllerProvider);
-      expect(container.read(voiceErrorProvider), isNull);
-
-      await svc.start();
-      await pumpEventQueue();
+      final container = await _runOneFaultedRep(coach);
 
       expect(container.read(voiceErrorProvider), contains('no voice installed'),
           reason: 'silence must be distinguishable from "your form is fine"');
-      await svc.dispose();
     });
 
     test('a healthy coach leaves it null', () async {
       // The positive control: the banner must not appear on a working device.
-      final coach = MockVoiceCoach();
-      final svc = MockPoseDetectorService([_squatFrame()]);
-      final container = ProviderContainer(overrides: [
-        poseDetectorServiceProvider.overrideWithValue(svc),
-        voiceCoachProvider.overrideWithValue(coach),
-      ]);
-      addTearDown(container.dispose);
-
-      container.read(repSessionControllerProvider);
-      await svc.start();
-      await pumpEventQueue();
-
+      final container = await _runOneFaultedRep(MockVoiceCoach());
       expect(container.read(voiceErrorProvider), isNull);
-      await svc.dispose();
     });
   });
 
