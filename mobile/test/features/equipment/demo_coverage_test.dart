@@ -41,6 +41,14 @@ void main() {
       'treadmill_intervals',
       'rowing_steady',
       'rowing_intervals',
+      // A1, 2026-07-31: the air bike and the ski erg for the same reason —
+      // the public-domain source has no entry for either machine, and a
+      // fabricated photo of someone on a fan bike is worse than an honest
+      // "no video yet, follow the steps".
+      'air_bike_intervals',
+      'air_bike_steady',
+      'ski_erg_intervals',
+      'ski_erg_steady',
     };
     final without = exercises
         .where((e) => !hasImagery(e))

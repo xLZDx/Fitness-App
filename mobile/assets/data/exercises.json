@@ -5708,5 +5708,701 @@
    "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Machine_Triceps_Extension/0.jpg",
    "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Machine_Triceps_Extension/1.jpg"
   ]
+ },
+ {
+  "id": "fedb_elliptical_trainer",
+  "title": "Elliptical Trainer",
+  "equipmentId": "elliptical",
+  "muscles": [
+   "quads",
+   "calves",
+   "glutes",
+   "hamstrings"
+  ],
+  "primaryMuscles": [
+   "quads"
+  ],
+  "difficulty": "intermediate",
+  "durationMinutes": 8,
+  "summary": "Step onto the pedals and take hold of the moving handles.",
+  "steps": [
+   "Step onto the pedals and take hold of the moving handles.",
+   "Set the resistance and start moving - your feet trace a long oval and never leave the pedals.",
+   "Keep your torso upright rather than leaning on the handles."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Elliptical_Trainer/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Elliptical_Trainer/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_stairmaster",
+  "title": "Stairmaster",
+  "equipmentId": "stair_climber",
+  "muscles": [
+   "quads",
+   "calves",
+   "glutes",
+   "hamstrings"
+  ],
+  "primaryMuscles": [
+   "quads"
+  ],
+  "difficulty": "intermediate",
+  "durationMinutes": 8,
+  "summary": "Step onto the stairs and hold the rails without putting weight on them.",
+  "steps": [
+   "Step onto the stairs and hold the rails without putting weight on them.",
+   "Set the pace and climb, straightening the leg fully at the top.",
+   "Stay upright instead of hunching over the console."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Stairmaster/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Stairmaster/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_step_mill",
+  "title": "Step Mill",
+  "equipmentId": "stair_climber",
+  "muscles": [
+   "quads",
+   "calves",
+   "glutes",
+   "hamstrings"
+  ],
+  "primaryMuscles": [
+   "quads"
+  ],
+  "difficulty": "intermediate",
+  "durationMinutes": 8,
+  "summary": "Step onto the moving stairs and hold the rails for balance.",
+  "steps": [
+   "Step onto the moving stairs and hold the rails for balance.",
+   "Climb at the set pace, placing the whole foot on each step.",
+   "Do not lean your weight on the rails - it takes the work off your legs."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Step_Mill/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Step_Mill/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_bicycling_stationary",
+  "title": "Bicycling, Stationary",
+  "equipmentId": "exercise_bike",
+  "muscles": [
+   "quads",
+   "calves",
+   "glutes",
+   "hamstrings"
+  ],
+  "primaryMuscles": [
+   "quads"
+  ],
+  "difficulty": "beginner",
+  "durationMinutes": 8,
+  "summary": "Set the saddle so your leg is almost straight at the bottom.",
+  "steps": [
+   "Set the saddle so your leg is almost straight at the bottom.",
+   "Set the resistance and pedal at an even pace.",
+   "Keep your back neutral instead of collapsing onto the bars."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bicycling_Stationary/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bicycling_Stationary/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_recumbent_bike",
+  "title": "Recumbent Bike",
+  "equipmentId": "recumbent_bike",
+  "muscles": [
+   "quads",
+   "calves",
+   "glutes",
+   "hamstrings"
+  ],
+  "primaryMuscles": [
+   "quads"
+  ],
+  "difficulty": "beginner",
+  "durationMinutes": 8,
+  "summary": "Sit back against the rest and set the distance to the pedals.",
+  "steps": [
+   "Sit back against the rest and set the distance to the pedals.",
+   "Pedal at an even pace with a resistance you can hold.",
+   "Leave a small bend in the knee at full extension."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Recumbent_Bike/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Recumbent_Bike/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_battling_ropes",
+  "title": "Battling Ropes",
+  "equipmentId": "battle_ropes",
+  "muscles": [
+   "shoulders",
+   "chest",
+   "forearms"
+  ],
+  "primaryMuscles": [
+   "shoulders"
+  ],
+  "difficulty": "beginner",
+  "durationMinutes": 8,
+  "summary": "Take an end in each hand, stand in a quarter squat, feet hip width.",
+  "steps": [
+   "Take an end in each hand, stand in a quarter squat, feet hip width.",
+   "Raise and drop the arms alternately to send waves down the ropes.",
+   "Work with the whole body rather than only the arms; keep the back flat."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Battling_Ropes/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Battling_Ropes/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_rope_climb",
+  "title": "Rope Climb",
+  "equipmentId": "battle_ropes",
+  "muscles": [
+   "lats",
+   "biceps",
+   "forearms",
+   "back",
+   "shoulders"
+  ],
+  "primaryMuscles": [
+   "lats"
+  ],
+  "difficulty": "intermediate",
+  "durationMinutes": 8,
+  "summary": "Grip the rope as high as you can reach and clamp it between your feet.",
+  "steps": [
+   "Grip the rope as high as you can reach and clamp it between your feet.",
+   "Pull up, tuck the knees, re-clamp higher and stand through the legs.",
+   "Come down under control, hand over hand, rather than sliding."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Rope_Climb/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Rope_Climb/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_pullups",
+  "title": "Pullups",
+  "equipmentId": "pullup_bar",
+  "muscles": [
+   "lats",
+   "biceps",
+   "back"
+  ],
+  "primaryMuscles": [
+   "lats"
+  ],
+  "difficulty": "beginner",
+  "durationMinutes": 8,
+  "summary": "Take an overhand grip a little wider than the shoulders and hang.",
+  "steps": [
+   "Take an overhand grip a little wider than the shoulders and hang.",
+   "Pull the shoulder blades down and together until the chin clears the bar.",
+   "Lower under control to straight arms."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pullups/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pullups/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_chin-up",
+  "title": "Chin-Up",
+  "equipmentId": "pullup_bar",
+  "muscles": [
+   "lats",
+   "biceps",
+   "forearms",
+   "back"
+  ],
+  "primaryMuscles": [
+   "lats"
+  ],
+  "difficulty": "beginner",
+  "durationMinutes": 8,
+  "summary": "Take an underhand grip at shoulder width and hang.",
+  "steps": [
+   "Take an underhand grip at shoulder width and hang.",
+   "Pull with the elbows driving down and back until the chin clears the bar.",
+   "Lower slowly rather than dropping."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Chin-Up/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Chin-Up/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_muscle_up",
+  "title": "Muscle Up",
+  "equipmentId": "pullup_bar",
+  "muscles": [
+   "lats",
+   "core",
+   "biceps",
+   "forearms",
+   "back",
+   "shoulders",
+   "traps",
+   "triceps"
+  ],
+  "primaryMuscles": [
+   "lats"
+  ],
+  "difficulty": "intermediate",
+  "durationMinutes": 8,
+  "summary": "Hang from the bar with an overhand grip and build a small swing.",
+  "steps": [
+   "Hang from the bar with an overhand grip and build a small swing.",
+   "Pull hard and drive the chest over the bar, rolling the wrists over.",
+   "Press to straight arms, then reverse the path down."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Muscle_Up/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Muscle_Up/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_one_arm_chin-up",
+  "title": "One Arm Chin-Up",
+  "equipmentId": "pullup_bar",
+  "muscles": [
+   "back",
+   "biceps",
+   "forearms",
+   "lats"
+  ],
+  "primaryMuscles": [
+   "back"
+  ],
+  "difficulty": "expert",
+  "durationMinutes": 8,
+  "summary": "Take the bar with one hand and tuck the other behind your back.",
+  "steps": [
+   "Take the bar with one hand and tuck the other behind your back.",
+   "Pull until the chin clears the bar without letting the torso rotate.",
+   "Lower under control, then match the reps on the other arm."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One_Arm_Chin-Up/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One_Arm_Chin-Up/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_scapular_pull-up",
+  "title": "Scapular Pull-Up",
+  "equipmentId": "pullup_bar",
+  "muscles": [
+   "traps",
+   "lats",
+   "back"
+  ],
+  "primaryMuscles": [
+   "traps"
+  ],
+  "difficulty": "beginner",
+  "durationMinutes": 8,
+  "summary": "Hang from the bar with straight arms and relaxed shoulders.",
+  "steps": [
+   "Hang from the bar with straight arms and relaxed shoulders.",
+   "Without bending the arms, pull the shoulder blades down and together.",
+   "Return to a free hang. The movement is short and comes only from the shoulder blades."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Scapular_Pull-Up/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Scapular_Pull-Up/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_kipping_muscle_up",
+  "title": "Kipping Muscle Up",
+  "equipmentId": "pullup_bar",
+  "muscles": [
+   "lats",
+   "core",
+   "biceps",
+   "forearms",
+   "back",
+   "shoulders",
+   "traps",
+   "triceps"
+  ],
+  "primaryMuscles": [
+   "lats"
+  ],
+  "difficulty": "intermediate",
+  "durationMinutes": 8,
+  "summary": "Hang from the bar and set up a pendulum with the whole body.",
+  "steps": [
+   "Hang from the bar and set up a pendulum with the whole body.",
+   "On the forward swing pull hard and drive the chest over the bar.",
+   "Press to straight arms, then come down and damp the swing."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Kipping_Muscle_Up/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Kipping_Muscle_Up/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_hanging_leg_raise",
+  "title": "Hanging Leg Raise",
+  "equipmentId": "captains_chair",
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "difficulty": "expert",
+  "durationMinutes": 8,
+  "summary": "Hang from a bar or brace on the parallel bars with the torso still.",
+  "steps": [
+   "Hang from a bar or brace on the parallel bars with the torso still.",
+   "Raise straight legs to horizontal by curling the pelvis upward.",
+   "Lower slowly without swinging."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hanging_Leg_Raise/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hanging_Leg_Raise/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_hanging_pike",
+  "title": "Hanging Pike",
+  "equipmentId": "captains_chair",
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "difficulty": "expert",
+  "durationMinutes": 8,
+  "summary": "Hang from the bar with an overhand grip.",
+  "steps": [
+   "Hang from the bar with an overhand grip.",
+   "Raise straight legs toward the bar, folding at the hips.",
+   "Lower under control to a full hang."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hanging_Pike/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hanging_Pike/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_russian_twist",
+  "title": "Russian Twist",
+  "equipmentId": "rotary_torso_machine",
+  "muscles": [
+   "core",
+   "lower_back"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "difficulty": "intermediate",
+  "durationMinutes": 8,
+  "summary": "Sit with the knees bent and lean back to about forty-five degrees.",
+  "steps": [
+   "Sit with the knees bent and lean back to about forty-five degrees.",
+   "Rotate the torso left and right, letting the hands follow.",
+   "Keep the back flat - the rotation comes from the torso, not the arms."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Russian_Twist/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Russian_Twist/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_cable_russian_twists",
+  "title": "Cable Russian Twists",
+  "equipmentId": "rotary_torso_machine",
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "difficulty": "beginner",
+  "durationMinutes": 8,
+  "summary": "Sit side-on to a low pulley and take the handle in both hands.",
+  "steps": [
+   "Sit side-on to a low pulley and take the handle in both hands.",
+   "Lean back and rotate the torso away from the pulley and back.",
+   "Move the hands with the torso, keeping them on the line of the chest."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Russian_Twists/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Russian_Twists/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_seated_barbell_twist",
+  "title": "Seated Barbell Twist",
+  "equipmentId": "rotary_torso_machine",
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "difficulty": "beginner",
+  "durationMinutes": 8,
+  "summary": "Sit on a bench with the bar across your shoulders and feet flat.",
+  "steps": [
+   "Sit on a bench with the bar across your shoulders and feet flat.",
+   "Rotate the torso left and right through a comfortable range.",
+   "Keep the hips still - the movement belongs to the upper back."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Barbell_Twist/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Barbell_Twist/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_front_plate_raise",
+  "title": "Front Plate Raise",
+  "equipmentId": "weight_plates",
+  "muscles": [
+   "shoulders"
+  ],
+  "primaryMuscles": [
+   "shoulders"
+  ],
+  "difficulty": "intermediate",
+  "durationMinutes": 8,
+  "summary": "Hold a plate by its edges with both hands, arms down in front.",
+  "steps": [
+   "Hold a plate by its edges with both hands, arms down in front.",
+   "Raise the plate to eye level with straight arms.",
+   "Lower slowly without help from the torso."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Front_Plate_Raise/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Front_Plate_Raise/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_plate_pinch",
+  "title": "Plate Pinch",
+  "equipmentId": "weight_plates",
+  "muscles": [
+   "forearms"
+  ],
+  "primaryMuscles": [
+   "forearms"
+  ],
+  "difficulty": "intermediate",
+  "durationMinutes": 8,
+  "summary": "Hold two plates smooth sides out and pinch them with the fingers.",
+  "steps": [
+   "Hold two plates smooth sides out and pinch them with the fingers.",
+   "Hold them at your side for as long as you can.",
+   "Set the plates down under control rather than dropping them."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plate_Pinch/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plate_Pinch/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_plate_twist",
+  "title": "Plate Twist",
+  "equipmentId": "weight_plates",
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "difficulty": "intermediate",
+  "durationMinutes": 8,
+  "summary": "Sit with the knees bent and hold a plate in both hands at the chest.",
+  "steps": [
+   "Sit with the knees bent and hold a plate in both hands at the chest.",
+   "Lean back and rotate the torso with the plate left and right.",
+   "Keep the back flat and the movement smooth."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plate_Twist/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plate_Twist/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "fedb_reverse_plate_curls",
+  "title": "Reverse Plate Curls",
+  "equipmentId": "weight_plates",
+  "muscles": [
+   "biceps",
+   "forearms"
+  ],
+  "primaryMuscles": [
+   "biceps"
+  ],
+  "difficulty": "beginner",
+  "durationMinutes": 8,
+  "summary": "Hold a plate by its edges with both hands, arms hanging down.",
+  "steps": [
+   "Hold a plate by its edges with both hands, arms hanging down.",
+   "Bend the elbows to bring the plate to chest height, upper arms still.",
+   "Lower slowly to straight arms."
+  ],
+  "frames": [],
+  "imageUrls": [
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Plate_Curls/0.jpg",
+   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Plate_Curls/1.jpg"
+  ],
+  "contraindications": []
+ },
+ {
+  "id": "air_bike_intervals",
+  "title": "Air Bike Intervals",
+  "equipmentId": "air_bike",
+  "muscles": [
+   "quads",
+   "hamstrings",
+   "shoulders",
+   "core"
+  ],
+  "primaryMuscles": [
+   "quads"
+  ],
+  "difficulty": "intermediate",
+  "durationMinutes": 12,
+  "summary": "Set the seat so your leg is almost straight at the bottom of the pedal stroke.",
+  "steps": [
+   "Set the seat so your leg is almost straight at the bottom of the pedal stroke.",
+   "Warm up for three minutes at an easy pace, using both arms and legs.",
+   "Work hard for 20 seconds, then pedal easily for 90 seconds. Repeat six times.",
+   "Finish with two minutes of easy pedalling."
+  ],
+  "frames": [],
+  "imageUrls": [],
+  "contraindications": []
+ },
+ {
+  "id": "air_bike_steady",
+  "title": "Air Bike Steady Effort",
+  "equipmentId": "air_bike",
+  "muscles": [
+   "quads",
+   "hamstrings",
+   "shoulders"
+  ],
+  "primaryMuscles": [
+   "quads"
+  ],
+  "difficulty": "beginner",
+  "durationMinutes": 15,
+  "summary": "Sit tall, shoulders relaxed, hands on the moving handles.",
+  "steps": [
+   "Sit tall, shoulders relaxed, hands on the moving handles.",
+   "Pedal at a pace you could hold a conversation at for fifteen minutes.",
+   "Keep the effort even — the fan gets harder the faster you go, so do not start too fast."
+  ],
+  "frames": [],
+  "imageUrls": [],
+  "contraindications": []
+ },
+ {
+  "id": "ski_erg_intervals",
+  "title": "Ski Erg Intervals",
+  "equipmentId": "ski_erg",
+  "muscles": [
+   "lats",
+   "triceps",
+   "core",
+   "shoulders"
+  ],
+  "primaryMuscles": [
+   "lats"
+  ],
+  "difficulty": "intermediate",
+  "durationMinutes": 12,
+  "summary": "Stand tall, grip the handles above your head, feet under your hips.",
+  "steps": [
+   "Stand tall, grip the handles above your head, feet under your hips.",
+   "Hinge at the hips and pull the handles down past your thighs, finishing with straight arms.",
+   "Stand back up and reset. Work for 30 seconds, rest for 60, repeat eight times."
+  ],
+  "frames": [],
+  "imageUrls": [],
+  "contraindications": []
+ },
+ {
+  "id": "ski_erg_steady",
+  "title": "Ski Erg Steady Pull",
+  "equipmentId": "ski_erg",
+  "muscles": [
+   "lats",
+   "triceps",
+   "core"
+  ],
+  "primaryMuscles": [
+   "lats"
+  ],
+  "difficulty": "beginner",
+  "durationMinutes": 10,
+  "summary": "Grip the handles overhead with a tall spine and soft knees.",
+  "steps": [
+   "Grip the handles overhead with a tall spine and soft knees.",
+   "Drive the handles down using your lats and your body weight, not just your arms.",
+   "Return smoothly to the top and continue at an even pace for ten minutes."
+  ],
+  "frames": [],
+  "imageUrls": [],
+  "contraindications": []
  }
 ]

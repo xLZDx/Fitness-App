@@ -136,18 +136,25 @@ void main() {
         .cast<String, dynamic>();
     final imported = exercises.where((e) => (e['id'] as String).startsWith('fedb_'));
 
-    test('closed most of the previously-empty machines', () {
-      // Round 3 shipped 32 registry ids with zero curated exercises
-      // (operator screenshot: Elliptical -> "No curated exercises yet").
+    test('NO machine has zero exercises', () {
+      // Round 3 shipped 32 registry ids with zero curated exercises (operator
+      // screenshot: Elliptical -> "No curated exercises yet"). Round 4 got it
+      // to 11. A1 closed the rest: nine from upstream entries my own category
+      // filter had been dropping, two hand-authored because the source has
+      // nothing for an air bike or a ski erg.
+      //
+      // Exactly zero, not "fewer than N". The previous version of this test
+      // asserted `lessThan(15)`, which is how eleven empty machines stayed
+      // green for a whole round.
       final byId = <String, int>{};
       for (final e in exercises) {
         final id = e['equipmentId'] as String?;
         if (id != null) byId[id] = (byId[id] ?? 0) + 1;
       }
-      final stillEmpty = equipmentIds.where((id) => (byId[id] ?? 0) == 0).length;
-      expect(stillEmpty, lessThan(15),
-          reason: 'S0 must close most of the 32 machines that had zero '
-              'exercises after round 3');
+      final stillEmpty =
+          equipmentIds.where((id) => (byId[id] ?? 0) == 0).toList()..sort();
+      expect(stillEmpty, isEmpty,
+          reason: 'machines the user can open and find nothing in: $stillEmpty');
     });
 
     test('every imported exercise has a Russian translation', () {
