@@ -124,6 +124,63 @@ const pushupTopTarget = PoseTarget(
   bones: _sideViewBones,
 );
 
+/// The bottom of a push-up: chest close to the floor, elbows drawn back past
+/// the ribs, the shoulder-to-ankle line still straight and now nearly flat.
+///
+/// The wrist does not move — it is on the floor — so the whole body rotates
+/// about the toes and the arm folds. Segment lengths are held to within a few
+/// percent of [pushupTopTarget]'s, because a demonstration that stretches the
+/// forearm while it bends is read as a glitch rather than as a movement.
+///
+/// Used for the demonstration only. Scoring a push-up still compares against
+/// the top position, which is a deliberate difference from the squat and worth
+/// naming: the rep counter's signal is hip-versus-knee height, which does not
+/// track a push-up at all, so there is no counted push-up rep for a bottom
+/// target to judge yet.
+const pushupBottomTarget = PoseTarget(
+  id: 'pushup.bottom',
+  joints: {
+    LandmarkType.leftShoulder: (0.31, 0.72),
+    LandmarkType.leftElbow: (0.44, 0.72),
+    LandmarkType.leftWrist: (0.35, 0.80),
+    LandmarkType.leftHip: (0.52, 0.73),
+    LandmarkType.leftKnee: (0.70, 0.75),
+    LandmarkType.leftAnkle: (0.88, 0.78),
+  },
+  bones: _sideViewBones,
+);
+
+/// A pose part-way between two targets, for drawing a movement instead of a
+/// position.
+///
+/// Only joints present in BOTH ends survive: a joint that appears half way
+/// through would pop into existence mid-demonstration. [t] is clamped, so a
+/// caller driving this from an animation that overshoots — a spring curve, an
+/// `AnimationController` with a `Curves.elasticOut` — cannot fling the limbs
+/// past either end of the movement.
+PoseTarget lerpPoseTarget(PoseTarget from, PoseTarget to, double t) {
+  final k = t.clamp(0.0, 1.0);
+  final joints = <LandmarkType, (double, double)>{};
+  for (final entry in from.joints.entries) {
+    final b = to.joints[entry.key];
+    if (b == null) continue;
+    final a = entry.value;
+    joints[entry.key] = (
+      a.$1 + (b.$1 - a.$1) * k,
+      a.$2 + (b.$2 - a.$2) * k,
+    );
+  }
+  return PoseTarget(
+    id: '${from.id}->${to.id}',
+    joints: joints,
+    // Bones name joint pairs, so any bone whose ends did not both survive
+    // would draw a line to a joint that is not there.
+    bones: from.bones
+        .where((b) => joints.containsKey(b.$1) && joints.containsKey(b.$2))
+        .toList(growable: false),
+  );
+}
+
 /// Below this the pose is not the target pose. The operator's number.
 const double kPoseMatchPassing = 0.80;
 
@@ -159,7 +216,9 @@ const double _zeroScoreAtOffset = 0.6;
 /// Returns null when the frame does not carry enough of the target's joints to
 /// judge — "cannot tell" is not a low score, and reporting it as one would tell
 /// a user their form is wrong when the truth is that their knee is out of shot.
-double? poseMatchScore(PoseFrame frame, PoseTarget target, {
+double? poseMatchScore(
+  PoseFrame frame,
+  PoseTarget target, {
   double minLikelihood = 0.5,
 }) {
   final pairs = <((double, double), (double, double))>[];

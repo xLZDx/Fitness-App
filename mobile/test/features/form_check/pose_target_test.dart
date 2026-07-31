@@ -108,7 +108,8 @@ void main() {
           squatBottomTarget)!;
       final bad = poseMatchScore(poseOf(squatTopTarget), squatBottomTarget)!;
       expect(good - bad, greaterThan(0.4),
-          reason: 'good=${good.toStringAsFixed(2)} bad=${bad.toStringAsFixed(2)}'
+          reason:
+              'good=${good.toStringAsFixed(2)} bad=${bad.toStringAsFixed(2)}'
               ' — the gap between a real rep and a non-rep must be wide');
     });
 
@@ -222,6 +223,99 @@ void main() {
       final score = poseMatchScore(poseOf(squatTopTarget), squatBottomTarget)!;
       expect(score, lessThan(0.6),
           reason: 'top vs bottom scored ${score.toStringAsFixed(2)}');
+    });
+  });
+
+  group('the demonstration', () {
+    // Operator: *"лучше добавить анимацию как правильно надо делать"*. A single
+    // outline says where to arrive and not how to get there, and for a squat
+    // the how is the whole difference between the shape that scores and the
+    // shape that does not.
+    //
+    // The motion lives here rather than in a widget test: what a widget test
+    // can prove is that the page draws a demonstration instead of a target,
+    // and what it cannot easily prove is that the drawing MOVES. This can.
+
+    test('the ends of the movement are the authored poses', () {
+      for (final (from, to) in [
+        (squatTopTarget, squatBottomTarget),
+        (pushupTopTarget, pushupBottomTarget),
+      ]) {
+        expect(lerpPoseTarget(from, to, 0).joints, equals(from.joints));
+        expect(lerpPoseTarget(from, to, 1).joints, equals(to.joints));
+      }
+    });
+
+    test('the middle is between them, joint by joint', () {
+      final mid = lerpPoseTarget(squatTopTarget, squatBottomTarget, 0.5);
+      expect(mid.joints, isNotEmpty);
+      mid.joints.forEach((k, m) {
+        final a = squatTopTarget.joints[k]!;
+        final b = squatBottomTarget.joints[k]!;
+        expect(m.$1, closeTo((a.$1 + b.$1) / 2, 1e-9), reason: '$k x');
+        expect(m.$2, closeTo((a.$2 + b.$2) / 2, 1e-9), reason: '$k y');
+      });
+    });
+
+    test('it actually moves — every frame is a different pose', () {
+      // A demonstration that renders one frozen frame is the bug this feature
+      // would most plausibly ship with, and it looks exactly like a static
+      // outline.
+      final seen = <String>{};
+      for (var i = 0; i <= 10; i++) {
+        final p = lerpPoseTarget(squatTopTarget, squatBottomTarget, i / 10);
+        seen.add(p.joints.entries
+            .map((e) => '${e.key}:${e.value.$1},${e.value.$2}')
+            .join('|'));
+      }
+      expect(seen, hasLength(11));
+    });
+
+    test('overshoot is clamped to the ends of the movement', () {
+      // An eased or springy curve can pass either end. Limbs must not fly
+      // past the bottom of the squat because the animation overshot.
+      expect(lerpPoseTarget(squatTopTarget, squatBottomTarget, 1.4).joints,
+          equals(squatBottomTarget.joints));
+      expect(lerpPoseTarget(squatTopTarget, squatBottomTarget, -0.3).joints,
+          equals(squatTopTarget.joints));
+    });
+
+    test('a joint missing from either end is dropped, along with its bone', () {
+      // A joint that appeared halfway through would pop into existence
+      // mid-movement, and a bone drawn to a joint that is not there throws.
+      const partial = PoseTarget(
+        id: 'test.partial',
+        joints: {
+          LandmarkType.leftShoulder: (0.5, 0.3),
+          LandmarkType.leftHip: (0.5, 0.5),
+        },
+        bones: [
+          (LandmarkType.leftShoulder, LandmarkType.leftHip),
+          (LandmarkType.leftHip, LandmarkType.leftKnee),
+        ],
+      );
+      final mid = lerpPoseTarget(partial, squatBottomTarget, 0.5);
+
+      expect(mid.joints.keys,
+          unorderedEquals([LandmarkType.leftShoulder, LandmarkType.leftHip]));
+      expect(mid.bones, hasLength(1),
+          reason: 'the hip-to-knee bone has no knee to reach');
+      for (final (a, b) in mid.bones) {
+        expect(mid.joints.containsKey(a), isTrue);
+        expect(mid.joints.containsKey(b), isTrue);
+      }
+    });
+
+    test('the push-up ends are different shapes, and both are drawable', () {
+      final score =
+          poseMatchScore(poseOf(pushupTopTarget), pushupBottomTarget)!;
+      expect(score, lessThan(0.8),
+          reason: 'top vs bottom scored ${score.toStringAsFixed(2)} — a '
+              'demonstration between two near-identical poses shows nothing');
+      for (final j in pushupBottomTarget.joints.values) {
+        expect(j.$1, inInclusiveRange(0.0, 1.0));
+        expect(j.$2, inInclusiveRange(0.0, 1.0));
+      }
     });
   });
 }

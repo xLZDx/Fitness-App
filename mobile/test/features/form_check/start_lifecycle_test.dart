@@ -97,7 +97,7 @@ void main() {
     expect(find.byKey(const Key('form-check-error-detail')), findsNothing);
 
     svc.starts.first.complete();
-    await t.pumpAndSettle();
+    await t.pump();
   });
 
   testWidgets('retry actually tries again', (t) async {
@@ -121,7 +121,7 @@ void main() {
     expect(find.byKey(const Key('form-check-error')), findsNothing);
 
     svc.starts.first.complete();
-    await t.pumpAndSettle();
+    await t.pump();
   });
 
   testWidgets('a real failure names itself and offers a retry', (t) async {
@@ -164,7 +164,7 @@ void main() {
         reason: 'nor invent a failure — the session was simply cancelled');
 
     svc.stops.first.complete();
-    await t.pumpAndSettle();
+    await t.pump();
   });
 
   testWidgets('a fresh visit does not show the last visit\'s verdict',
@@ -203,7 +203,7 @@ void main() {
     expect(container.read(poseMatchProvider), isNull);
 
     svc.starts.first.complete();
-    await t.pumpAndSettle();
+    await t.pump();
   });
 
   testWidgets('resuming waits for the teardown before reopening', (t) async {
@@ -228,6 +228,6 @@ void main() {
     expect(svc.startCount, 2, reason: 'and it must run once the stop lands');
 
     svc.starts.last.complete();
-    await t.pumpAndSettle();
+    await t.pump();
   });
 }

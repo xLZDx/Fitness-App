@@ -1,6 +1,7 @@
 import 'dart:async' show TimeoutException;
 
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -34,7 +35,30 @@ class FormCheckPage extends ConsumerStatefulWidget {
 }
 
 class _FormCheckPageState extends ConsumerState<FormCheckPage>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+  /// Drives the demonstration loop: down on the way out, up on the way back.
+  ///
+  /// One second each way. Slower reads as a stretch rather than a repetition;
+  /// faster is hard to follow while also trying to copy it.
+  late final AnimationController _demo = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1000),
+  );
+
+  /// Run the demonstration only while it is on screen.
+  ///
+  /// A repeating controller ticks whether or not anything is listening, so
+  /// leaving it running would keep the vsync alive for the whole set — next to
+  /// a camera and a pose detector, on a phone the user is not holding.
+  void _syncDemo(bool wanted) {
+    if (wanted == _demo.isAnimating) return;
+    if (wanted) {
+      _demo.repeat(reverse: true);
+    } else {
+      _demo.stop();
+    }
+  }
+
   bool _started = false;
   Object? _startError;
 
@@ -136,6 +160,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
 
   @override
   void dispose() {
+    _demo.dispose();
     WidgetsBinding.instance.removeObserver(this);
     // stop() releases the camera AND leaves the service restartable, so a
     // second visit to this page works. (It used to leave `_initialised` true,
@@ -159,10 +184,18 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     final session = ref.watch(repSessionControllerProvider);
     final muted = ref.watch(voiceMutedProvider);
     final gateVerdict = ref.watch(poseGateVerdictProvider);
-    final target = ref.watch(poseTargetProvider);
     // Either the camera never opened, or the native detector died mid-stream.
     // Both mean "no reps will be counted", so both belong in the same slot.
     final failure = _startError ?? ref.watch(poseErrorProvider);
+
+    // Demonstrate until the movement starts, and get out of the way the
+    // instant it does: an outline that keeps moving is not one you can hit.
+    // Never over a spinner or an error — there is nothing to copy it onto.
+    final demonstrating = failure == null &&
+        _started &&
+        session.repCount == 0 &&
+        session.phase == RepPhase.top;
+    _syncDemo(demonstrating);
 
     return FrostedScaffold(
       appBar: GlassAppBar(
@@ -217,20 +250,16 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                     // card sat directly on top of the retry button — an error
                     // screen whose one useful control could not be pressed.
                     if (failure == null) ...[
-                      // Over the preview, under the readouts: the shape to aim
-                      // at. Drawn only when the selected movement has one.
-                      if (target != null)
-                        Positioned.fill(
-                          child: IgnorePointer(
-                            child: CustomPaint(
-                              key: const Key('form_check.silhouette'),
-                              painter: _SilhouettePainter(
-                                target: target,
-                                match: ref.watch(poseMatchProvider),
-                              ),
-                            ),
+                      // Over the preview, under the readouts: what to do, then
+                      // the shape to arrive at.
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: _Silhouette(
+                            demo: _demo,
+                            demonstrating: demonstrating,
                           ),
                         ),
+                      ),
                       Positioned(
                         left: 12,
                         top: 12,
@@ -731,13 +760,69 @@ class _ExercisePicker extends ConsumerWidget {
 /// turns that from a hidden assumption into an instruction the user can follow.
 /// A target the user could not see would repeat the exact mistake that made two
 /// earlier rules wrong: judging against a reference nobody agreed to.
+/// The outline over the camera: a looping demonstration of the movement before
+/// the set, and the shape to arrive at once it has started.
+///
+/// The two are drawn differently on purpose. A demonstration is a suggestion —
+/// thin, dimmer, and moving. A target is an instruction — solid, and still, so
+/// that "get 80% of the way into this" is a question with an answer. Drawing
+/// both the same way would invite the user to chase the animation, which is
+/// exactly the shape they cannot match, because it is never in one place.
+class _Silhouette extends ConsumerWidget {
+  const _Silhouette({required this.demo, required this.demonstrating});
+
+  final Animation<double> demo;
+  final bool demonstrating;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final target = ref.watch(poseTargetProvider);
+    final pair = ref.watch(poseDemoProvider);
+
+    if (demonstrating && pair != null) {
+      final (from, to) = pair;
+      return AnimatedBuilder(
+        animation: demo,
+        builder: (_, __) => CustomPaint(
+          key: const Key('form_check.demo'),
+          painter: _SilhouettePainter(
+            // Eased rather than linear: a real repetition does not travel at a
+            // constant speed, and a constant-speed stick figure reads as a
+            // machine rather than as a movement to copy.
+            target: lerpPoseTarget(
+                from, to, Curves.easeInOutCubic.transform(demo.value)),
+            match: null,
+            isDemo: true,
+          ),
+        ),
+      );
+    }
+
+    if (target == null) return const SizedBox.shrink();
+    return CustomPaint(
+      key: const Key('form_check.silhouette'),
+      painter: _SilhouettePainter(
+        target: target,
+        match: ref.watch(poseMatchProvider),
+      ),
+    );
+  }
+}
+
 class _SilhouettePainter extends CustomPainter {
-  const _SilhouettePainter({required this.target, required this.match});
+  const _SilhouettePainter({
+    required this.target,
+    required this.match,
+    this.isDemo = false,
+  });
 
   final PoseTarget target;
 
   /// Live match, 0..1, or null when the body cannot be read.
   final double? match;
+
+  /// Drawing the movement rather than the position to reach.
+  final bool isDemo;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -747,10 +832,20 @@ class _SilhouettePainter extends CustomPainter {
     final colour = reached ? AppPalette.auroraTeal : Colors.white;
     final stroke = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = reached ? 5 : 4
+      ..strokeWidth = isDemo
+          ? 3
+          : reached
+              ? 5
+              : 4
       ..strokeCap = StrokeCap.round
-      ..color = colour.withValues(alpha: reached ? 0.95 : 0.55);
-    final joint = Paint()..color = colour.withValues(alpha: 0.9);
+      ..color = colour.withValues(
+          alpha: isDemo
+              ? 0.4
+              : reached
+                  ? 0.95
+                  : 0.55);
+    final joint = Paint()
+      ..color = colour.withValues(alpha: isDemo ? 0.55 : 0.9);
 
     Offset at(LandmarkType t) {
       final j = target.joints[t]!;
@@ -761,16 +856,28 @@ class _SilhouettePainter extends CustomPainter {
       canvas.drawLine(at(a), at(b), stroke);
     }
     for (final t in target.joints.keys) {
-      canvas.drawCircle(at(t), reached ? 7 : 5, joint);
+      canvas.drawCircle(
+          at(t),
+          isDemo
+              ? 4
+              : reached
+                  ? 7
+                  : 5,
+          joint);
     }
   }
 
   @override
   bool shouldRepaint(_SilhouettePainter old) =>
       old.target.id != target.id ||
-      // Only when it crosses the line: repainting on every decimal of a live
-      // score would rebuild this overlay on every camera frame for no visible
-      // difference.
+      old.isDemo != isDemo ||
+      // A demonstration is a new pose every frame and its id never changes, so
+      // it has to be compared by content or the animation would render as a
+      // single frozen frame.
+      (isDemo && !mapEquals(old.target.joints, target.joints)) ||
+      // Otherwise only when the score crosses the line: repainting on every
+      // decimal of a live score would rebuild this overlay on every camera
+      // frame for no visible difference.
       ((old.match ?? 0) >= kPoseMatchPassing) !=
           ((match ?? 0) >= kPoseMatchPassing);
 }

@@ -32,6 +32,21 @@ final poseTargetProvider = Provider<PoseTarget?>((ref) {
   };
 });
 
+/// The two ends of the movement to demonstrate, or null when there is nothing
+/// authored to demonstrate.
+///
+/// Operator, after the first silhouette build: *"лучше добавить анимацию как
+/// правильно надо делать"*. A single outline says where to arrive; it does not
+/// say how — and for a squat the how is the whole difference between the shape
+/// that scores and the shape that does not.
+final poseDemoProvider = Provider<(PoseTarget, PoseTarget)?>((ref) {
+  return switch (ref.watch(selectedExerciseProvider)) {
+    FormExercise.squat => (squatTopTarget, squatBottomTarget),
+    FormExercise.pushup => (pushupTopTarget, pushupBottomTarget),
+    FormExercise.deadlift => null,
+  };
+});
+
 /// How well the CURRENT frame matches the target, or null when it cannot be
 /// judged. Drives the live outline colour, so the user can see themselves
 /// approaching the shape instead of finding out afterwards.
