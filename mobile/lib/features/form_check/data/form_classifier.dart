@@ -261,16 +261,24 @@ double _angleDeg(PoseLandmark a, PoseLandmark b, PoseLandmark c) {
 
 /// What a whole classifier set made of one frame.
 ///
-/// Invariant, asserted rather than merely intended: `verdict == ok` exactly when
-/// [feedback] is non-empty. Without it a caller could build "scorable but
-/// nothing to say" (the UI shows no cue and no hint — the user cannot tell
-/// working from broken) or "blocked but here is a fault" (a cue rendered from a
-/// frame the gate rejected).
+/// Invariant, asserted rather than merely intended: feedback only ever comes
+/// from a frame the gate accepted. A cue rendered from a rejected frame is a
+/// confident statement about a body the detector could not see.
+///
+/// The converse is NOT an invariant, and asserting it was a mistake worth
+/// recording. "Scorable with nothing to say" is the normal state of a rule set
+/// that only speaks up when something is wrong, and pinning `ok == hasFeedback`
+/// forced the opposite: every quiet frame had to be labelled unreadable, which
+/// the controller then dropped before the rep counter. The screen would have
+/// blamed the user's framing for a count that had stopped because their form
+/// was fine. The distinction the old comment worried about — working versus
+/// broken — is the UI's to draw, and it draws it from the verdict plus the rep
+/// state, not from the presence of a complaint.
 class GatedEvaluation {
   GatedEvaluation({required this.feedback, required this.verdict})
       : assert(
-          (verdict == PoseGateVerdict.ok) == feedback.isNotEmpty,
-          'verdict must be ok exactly when feedback is non-empty',
+          feedback.isEmpty || verdict == PoseGateVerdict.ok,
+          'feedback may only come from a frame the gate accepted',
         );
 
   /// Feedback from the rules whose inputs passed [gatePose]. Empty when the
@@ -307,6 +315,7 @@ GatedEvaluation evaluateGated(
 }) {
   final feedback = <FormFeedback>[];
   PoseGateVerdict? worstBlock;
+  var somethingScoredIt = false;
 
   for (final c in classifiers) {
     final verdict = gatePose(frame, c.requiredLandmarks, config: config);
@@ -321,16 +330,38 @@ GatedEvaluation evaluateGated(
       }
       continue;
     }
+    somethingScoredIt = true;
     final f = c.evaluate(frame);
     if (f != null) feedback.add(f);
   }
 
-  if (feedback.isNotEmpty) {
+  // No rules at all. There is no joint list to gate against, but the
+  // frame-level checks — the unit contract and torso plausibility — read the
+  // whole frame and still apply, and the caller still has to be told whether
+  // this frame can be trusted. Answering "missing joints" here would silently
+  // stop rep counting for any movement that ships without per-frame rules,
+  // which is the direction the coach is moving: the silhouette judges the rep,
+  // not a running commentary on every frame.
+  if (classifiers.isEmpty) {
     return GatedEvaluation(
-      feedback: feedback,
-      verdict: PoseGateVerdict.ok,
+      feedback: const [],
+      verdict: gatePose(frame, const <LandmarkType>{}, config: config),
     );
   }
+
+  // A rule ran and had nothing to say. That is a READABLE frame with no fault,
+  // and it used to be reported as `missingJoints` — the same answer as "there
+  // is no body in the picture". The controller drops every unscorable frame
+  // before the rep counter sees it, so a classifier that stays quiet on a good
+  // repetition would stop the count dead, with the screen blaming the user's
+  // framing. Every shipped rule currently returns a severity-0 observation on
+  // every frame, which is the only reason this has not been visible.
+  if (somethingScoredIt) {
+    return GatedEvaluation(feedback: feedback, verdict: PoseGateVerdict.ok);
+  }
+
+  // Unreachable: a non-empty rule set in which nothing scored means every rule
+  // was blocked, and each of those assigned `worstBlock`.
   return GatedEvaluation(
     feedback: const [],
     verdict: worstBlock ?? PoseGateVerdict.missingJoints,

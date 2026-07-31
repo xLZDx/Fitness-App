@@ -263,7 +263,10 @@
   "equipmentScheduledFor": "«{arg0}» запланировано на {arg1}.",
   "equipmentVideoUnavailable": "Видео недоступно: {arg0}",
   "equipmentWeDonTHaveInOur": "«{arg0}» пока нет в нашем каталоге.",
-  "formcheckCameraUnavailable": "Камера недоступна: {arg0}",
+  "formcheckCameraUnavailable": "Не удалось открыть камеру.",
+  "formcheckCameraTimedOut": "Камера не открылась за отведённое время. Возможно, её занимает другое приложение: закройте его и попробуйте снова.",
+  "formcheckErrorDetail": "Подробности: {arg0}",
+  "formcheckTryAgain": "Попробовать снова",
   "formcheckCleanNeedWorkTotal": "{arg0} чисто — {arg1} с ошибками (всего {arg2})",
   "formcheckReps": "повторения — {arg0}",
   "healthHealthConnectFailed": "Не удалось подключиться к Health Connect: {arg0}",
@@ -400,5 +403,8 @@
   "formcheckGateUnitMismatch": "Это сбой на нашей стороне: камера отдаёт координаты, которые приложение не может разобрать. Подсчёт и проверка техники приостановлены.",
   "formcheckUpgradeSubtitle": "Работает на вашем телефоне: без камеры глубины и без дополнительного оборудования.",
   "formcheckVoiceUnavailable": "Голосовые подсказки на этом устройстве недоступны. Шаги ниже работают.",
+  "formcheckWaitingForTop": "встаньте прямо, чтобы начать счёт",
+  "formcheckRepNotCounted": "Попытка не засчитана: движение не дошло до конца.",
+  "formcheckRepNotCountedTooFast": "Попытка не засчитана: слишком быстро для повторения.",
   "scannerCloudDisclosure": "Чтобы распознать тренажёр, фотография отправляется в Google Gemini. Если это не удалось, используется модель на устройстве. В кадр могут попасть посторонние люди."
 }

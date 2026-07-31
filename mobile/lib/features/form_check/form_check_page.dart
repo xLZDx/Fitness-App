@@ -1,3 +1,5 @@
+import 'dart:async' show TimeoutException;
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +15,7 @@ import 'data/pose_detector_service.dart';
 import 'data/pose_gate.dart';
 import 'data/pose_landmark.dart';
 import 'data/pose_target.dart';
+import 'data/rep_counter.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
 import 'state/form_check_providers.dart';
@@ -35,6 +38,24 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
   bool _started = false;
   Object? _startError;
 
+  /// How long `start()` may take before the screen stops waiting.
+  ///
+  /// Opening a camera and loading the ML Kit model takes a second or two on a
+  /// slow device. Fifteen is generous for that and still finite, which is the
+  /// point: there was no bound at all, so a native call that never returned —
+  /// the camera held by another app, a permission dialog that never resolved —
+  /// left a spinner turning forever, with no message and no way out.
+  static const _startTimeout = Duration(seconds: 15);
+
+  /// Invalidates in-flight starts. Every start captures the value; a start
+  /// whose token has moved on discards its own result instead of writing it.
+  int _lifecycle = 0;
+
+  /// A teardown still running. Starting the camera on top of one is how the
+  /// preview comes back as a permanently black rectangle while `_started` says
+  /// everything is fine.
+  Future<void>? _stopping;
+
   /// Captured at first use so dispose() can release the camera WITHOUT touching
   /// `ref`. Reading a provider from dispose() throws "Cannot use ref after the
   /// widget was disposed" — found by the on-device suite, invisible to the
@@ -45,22 +66,49 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // The rep session and the match readout are app-scoped, so they outlive
+    // this page. Walking back in showed the last set's count and the verdict
+    // banner from a repetition performed minutes ago, over a camera that had
+    // not yet delivered a frame. Cleared on a fresh mount only — a lifecycle
+    // resume goes through `didChangeAppLifecycleState`, and wiping the count
+    // because someone glanced at a notification would be worse than stale.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(repSessionControllerProvider.notifier).resetSet();
+      ref.read(poseMatchProvider.notifier).state = null;
+    });
     _startDetector();
   }
 
   void _startDetector() {
+    final token = ++_lifecycle;
+    _started = false;
+    _startError = null;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
+        // Let any teardown finish first. Backgrounding the app fires stop()
+        // and resuming fires start(); nothing sequenced them, so a fast
+        // switch away and back could run the two against the same camera.
+        final stopping = _stopping;
+        if (stopping != null) {
+          await stopping;
+          _stopping = null;
+        }
+        if (!mounted || token != _lifecycle) return;
+
         final svc = ref.read(poseDetectorServiceProvider);
         _service = svc;
-        await svc.start();
-        if (!mounted) return;
+        await svc.start().timeout(_startTimeout);
+        // Two guards, not one. `mounted` catches the page being closed;
+        // the token catches a newer start or a stop that overtook this one,
+        // which would otherwise flip `_started` to true over a dead camera.
+        if (!mounted || token != _lifecycle) return;
         setState(() {
           _started = true;
           _startError = null;
         });
       } catch (e) {
-        if (!mounted) return;
+        if (!mounted || token != _lifecycle) return;
         setState(() => _startError = e);
       }
     });
@@ -77,7 +125,9 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
       final PoseDetectorService svc =
           _service ?? ref.read(poseDetectorServiceProvider);
       _service = svc;
-      svc.stop();
+      // Any start still in flight belongs to the session being torn down.
+      _lifecycle++;
+      _stopping = svc.stop();
       if (mounted) setState(() => _started = false);
     } else if (state == AppLifecycleState.resumed && mounted && !_started) {
       _startDetector();
@@ -120,7 +170,9 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
         actions: [
           IconButton(
             icon: Icon(muted ? Icons.volume_off : Icons.volume_up),
-            tooltip: muted ? AppLocalizations.of(context).formcheckUnmuteCues : AppLocalizations.of(context).formcheckMuteCues,
+            tooltip: muted
+                ? AppLocalizations.of(context).formcheckUnmuteCues
+                : AppLocalizations.of(context).formcheckMuteCues,
             onPressed: () =>
                 ref.read(voiceMutedProvider.notifier).state = !muted,
           ),
@@ -149,14 +201,9 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                   children: [
                     if (failure != null)
                       Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Text(
-                            AppLocalizations.of(context).formcheckCameraUnavailable(failure),
-                            key: const Key('form-check-error'),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(color: Colors.white70),
-                          ),
+                        child: _StartFailure(
+                          failure: failure,
+                          onRetry: _startDetector,
                         ),
                       )
                     else if (!_started)
@@ -165,40 +212,47 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                       )
                     else
                       _CameraPreview(svc: svc),
-                    // Over the preview, under the readouts: the shape to aim
-                    // at. Drawn only when the selected movement has one.
-                    if (target != null)
-                      Positioned.fill(
-                        child: IgnorePointer(
-                          child: CustomPaint(
-                            key: const Key('form_check.silhouette'),
-                            painter: _SilhouettePainter(
-                              target: target,
-                              match: ref.watch(poseMatchProvider),
+                    // Everything below is a readout of a running camera. With
+                    // no camera there is nothing to read out, and the bottom
+                    // card sat directly on top of the retry button — an error
+                    // screen whose one useful control could not be pressed.
+                    if (failure == null) ...[
+                      // Over the preview, under the readouts: the shape to aim
+                      // at. Drawn only when the selected movement has one.
+                      if (target != null)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: CustomPaint(
+                              key: const Key('form_check.silhouette'),
+                              painter: _SilhouettePainter(
+                                target: target,
+                                match: ref.watch(poseMatchProvider),
+                              ),
                             ),
                           ),
                         ),
+                      Positioned(
+                        left: 12,
+                        top: 12,
+                        child: _RepBadge(session: session),
                       ),
-                    Positioned(
-                      left: 12,
-                      top: 12,
-                      child: _RepBadge(session: session),
-                    ),
-                    const Positioned(
-                      right: 12,
-                      top: 12,
-                      child: _MatchReadout(),
-                    ),
-                    Positioned(
-                      left: 12,
-                      right: 12,
-                      bottom: 12,
-                      child: _CueCard(
-                        feedback: session.lastRepCue,
-                        clean: session.lastRepClean,
-                        gateVerdict: gateVerdict,
+                      const Positioned(
+                        right: 12,
+                        top: 12,
+                        child: _MatchReadout(),
                       ),
-                    ),
+                      Positioned(
+                        left: 12,
+                        right: 12,
+                        bottom: 12,
+                        child: _CueCard(
+                          feedback: session.lastRepCue,
+                          clean: session.lastRepClean,
+                          gateVerdict: gateVerdict,
+                          reject: session.lastReject,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -249,8 +303,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
             child: Text(
               AppLocalizations.of(context).formcheckFormCoachRunsOnDeviceUsing,
               style: theme.textTheme.bodySmall?.copyWith(
-                color:
-                    theme.colorScheme.onSurface.withValues(alpha: 0.70),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.70),
               ),
             ),
           ),
@@ -275,8 +328,7 @@ class _CameraPreview extends StatelessWidget {
     if (svc is! MlKitPoseDetectorService) {
       // Mock service in test/dev — show the static placeholder.
       return const Center(
-        child: Icon(Icons.videocam_outlined,
-            color: Colors.white24, size: 80),
+        child: Icon(Icons.videocam_outlined, color: Colors.white24, size: 80),
       );
     }
     // Watches the session's controller instead of reading it once. The old code
@@ -301,6 +353,65 @@ class _CameraPreview extends StatelessWidget {
                 ),
         );
       },
+    );
+  }
+}
+
+/// The camera did not start, and what to do about it.
+///
+/// Three separate fixes live in this one widget, and they are related. The
+/// screen used to render `"Камера недоступна: $e"` — a Russian sentence with a
+/// platform exception spliced into the middle of it, which is neither Russian
+/// nor useful. It offered no way to try again, so a transient failure ended the
+/// session. And the most common failure of all, a `start()` that never returns,
+/// did not reach here at all: it showed a spinner, forever.
+class _StartFailure extends StatelessWidget {
+  const _StartFailure({required this.failure, required this.onRetry});
+
+  final Object failure;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final timedOut = failure is TimeoutException;
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            timedOut
+                ? l10n.formcheckCameraTimedOut
+                : l10n.formcheckCameraUnavailable,
+            key: const Key('form-check-error'),
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white70),
+          ),
+          // The raw error on its own line, and only when it says something the
+          // headline does not. A timeout's `toString()` is "TimeoutException
+          // after 0:00:15.000000" — the sentence above already covers it.
+          if (!timedOut) ...[
+            const SizedBox(height: 8),
+            Text(
+              l10n.formcheckErrorDetail(failure),
+              key: const Key('form-check-error-detail'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white38,
+                fontSize: 11,
+                fontFamily: 'monospace',
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+          TextButton(
+            key: const Key('form-check-retry'),
+            onPressed: onRetry,
+            child: Text(l10n.formcheckTryAgain),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -335,15 +446,29 @@ class _RepBadge extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 2),
-          Text(
-            AppLocalizations.of(context)
-                .formcheckReps(repPhaseText(AppLocalizations.of(context), session.phase)),
-            key: const Key('form_check.phase'),
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: Colors.white70,
-              fontWeight: FontWeight.w700,
+          // Before the counter has seen the lifter standing it will not start
+          // a lap, so the number cannot move however hard the user works. Say
+          // what is being waited for; the phase word ("ready") was true and
+          // useless, because it looks identical to a counter that has died.
+          if (!session.isArmed)
+            Text(
+              AppLocalizations.of(context).formcheckWaitingForTop,
+              key: const Key('form_check.waiting_for_top'),
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: AppPalette.auroraPeach,
+                fontWeight: FontWeight.w700,
+              ),
+            )
+          else
+            Text(
+              AppLocalizations.of(context).formcheckReps(
+                  repPhaseText(AppLocalizations.of(context), session.phase)),
+              key: const Key('form_check.phase'),
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: Colors.white70,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -403,7 +528,8 @@ class _SetSummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            AppLocalizations.of(context).formcheckCleanNeedWorkTotal(session.cleanReps, session.sloppyReps, session.reps.length),
+            AppLocalizations.of(context).formcheckCleanNeedWorkTotal(
+                session.cleanReps, session.sloppyReps, session.reps.length),
             key: const Key('form_check.summary_tally'),
             style: theme.textTheme.bodyMedium
                 ?.copyWith(fontWeight: FontWeight.w700),
@@ -411,7 +537,8 @@ class _SetSummaryCard extends StatelessWidget {
           if (offenders.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(
-              AppLocalizations.of(context).formcheckFlagged(offenders.join(', ')),
+              AppLocalizations.of(context)
+                  .formcheckFlagged(offenders.join(', ')),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.70),
               ),
@@ -456,7 +583,16 @@ class _CueCard extends StatelessWidget {
     this.feedback,
     this.clean,
     this.gateVerdict = PoseGateVerdict.ok,
+    this.reject,
   });
+
+  /// Why the most recent attempt was thrown away, or null when the last thing
+  /// that happened was a counted repetition.
+  ///
+  /// This outranks the previous rep's verdict: a green "clean rep" banner
+  /// sitting over a count that just refused to move is the screen actively
+  /// misleading the user about what it saw.
+  final RepRejectReason? reject;
 
   /// Whether the last completed repetition was faultless. Null before the
   /// first one finishes.
@@ -488,6 +624,20 @@ class _CueCard extends StatelessWidget {
         Colors.white.withValues(alpha: 0.18),
         hint.isEmpty ? l10n.formcheckStandBackSoYourFullBody : hint,
         const Key('form_check.gate_hint'),
+      );
+    }
+
+    // An attempt that was started and discarded. It produced no count, and
+    // silence here is what makes that look like the detector losing the body.
+    if (reject != null) {
+      return _band(
+        theme,
+        AppPalette.auroraPeach.withValues(alpha: 0.92),
+        switch (reject!) {
+          RepRejectReason.incomplete => l10n.formcheckRepNotCounted,
+          RepRejectReason.tooFast => l10n.formcheckRepNotCountedTooFast,
+        },
+        const Key('form_check.rep_rejected'),
       );
     }
 

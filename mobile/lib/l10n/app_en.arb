@@ -419,14 +419,23 @@
       }
     }
   },
-  "formcheckCameraUnavailable": "Camera unavailable: {arg0}",
+  "formcheckCameraUnavailable": "The camera could not be opened.",
   "@formcheckCameraUnavailable": {
+    "description": "Headline for a camera that failed to start for a reason we have no specific text for. The raw error goes on its own line below via formcheckErrorDetail, rather than inside this sentence: it arrives from the platform in English and reads as a broken translation when spliced into a Russian one."
+  },
+  "formcheckCameraTimedOut": "The camera did not open in time. Another app may still be holding it - close it and try again.",
+  "@formcheckCameraTimedOut": {
+    "description": "Shown when start() has not returned within the timeout. Before this the screen simply showed a spinner forever, with no message and no way out."
+  },
+  "formcheckErrorDetail": "Details: {arg0}",
+  "@formcheckErrorDetail": {
     "placeholders": {
       "arg0": {
         "type": "Object"
       }
     }
   },
+  "formcheckTryAgain": "Try again",
   "formcheckCleanNeedWorkTotal": "{arg0} clean - {arg1} need work ({arg2} total)",
   "@formcheckCleanNeedWorkTotal": {
     "placeholders": {
@@ -844,5 +853,17 @@
   },
   "formcheckUpgradeSubtitle": "Works on the phone you already own - no depth camera, no extra hardware.",
   "formcheckVoiceUnavailable": "Voice coaching is unavailable on this device - the steps below still work.",
+  "formcheckWaitingForTop": "stand tall to start counting",
+  "@formcheckWaitingForTop": {
+    "description": "Shown under the rep count while the counter has not yet seen the lifter standing at the top. Until it does, the count physically cannot move, and a frozen zero with no explanation reads as a broken app."
+  },
+  "formcheckRepNotCounted": "That attempt did not count - the movement came back short.",
+  "@formcheckRepNotCounted": {
+    "description": "A lap the counter discarded as incomplete. Deliberately says the attempt was not counted rather than telling the user to go deeper: the counter measures hip height against knee height, which depends on where the phone is standing, and an earlier cue built on that quantity told the operator to sink lower at the bottom of a full squat."
+  },
+  "formcheckRepNotCountedTooFast": "That attempt did not count - too fast to be a rep.",
+  "@formcheckRepNotCountedTooFast": {
+    "description": "A lap completed faster than a body can move, which is usually a tracking glitch rather than the user rushing. Stated as a fact about the count, not as a correction."
+  },
   "scannerCloudDisclosure": "To recognise a machine the photo is sent to Google's Gemini. If that fails, an on-device model is used instead. Other people may be in shot."
 }

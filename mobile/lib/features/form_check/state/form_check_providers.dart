@@ -54,8 +54,7 @@ final activeClassifiersProvider = Provider<List<FormClassifier>>((ref) {
   };
 });
 
-final poseDetectorServiceProvider =
-    Provider<PoseDetectorService>((_) {
+final poseDetectorServiceProvider = Provider<PoseDetectorService>((_) {
   // Default mock yields nothing — production binds the MlKit-backed
   // service from main.dart.
   return MockPoseDetectorService(const []);
@@ -207,7 +206,27 @@ class RepSessionState {
     this.lastRepCue,
     this.lastRepPeakMatch,
     this.lastRepMissedTarget,
+    this.isArmed = false,
+    this.lastReject,
   });
+
+  /// Whether the counter has seen the lifter standing at the top and is
+  /// therefore willing to start a repetition.
+  ///
+  /// Until this is true the count cannot move, no matter what the user does.
+  /// That is correct behaviour — opening the camera mid-squat and standing up
+  /// is not a repetition — but it is indistinguishable from a broken counter
+  /// unless the screen says so. It did not, and a frozen `0` is the loudest
+  /// thing on the page.
+  final bool isArmed;
+
+  /// Why the most recent attempt was thrown away, or null if the last thing
+  /// that happened was a counted repetition.
+  ///
+  /// [RepCounter] has always reported this and nothing read it: a lap that
+  /// came back up short vanished with no count and no explanation, which reads
+  /// exactly like the detector losing track of the body.
+  final RepRejectReason? lastReject;
 
   /// Closest the body got to the target shape during the last rep, 0..1.
   final double? lastRepPeakMatch;
@@ -308,52 +327,70 @@ class RepSessionController extends Notifier<RepSessionState> {
     // repeated safety warning.
     if (!result.scorable) return;
 
-    // How close to the target shape this frame got. Kept as the rep's PEAK:
-    // a squat passes through the bottom position for a fraction of a second,
-    // so the question is "did they reach it", not "are they in it right now".
+    // How close to the target shape this frame got. The readout on screen is
+    // live and updates every frame; what the REP is judged on is the peak,
+    // because a squat passes through the bottom for a fraction of a second and
+    // the question is "did they reach it", not "are they in it right now".
     final target = ref.read(poseTargetProvider);
+    double? match;
     if (target != null) {
-      final match = poseMatchScore(frame, target);
+      match = poseMatchScore(frame, target);
       ref.read(poseMatchProvider.notifier).state = match;
+    }
+
+    final wasInRep = counter.phase != RepPhase.top;
+    final event = counter.update(frame, feedback: result.feedback);
+
+    // Accumulate only while a repetition is actually in flight — which is what
+    // RepCounter does with its own severity log, and what this did not. Frames
+    // spent standing between reps were folded into the next one, so a fault
+    // seen while resting was reported as a fault in the rep that followed, and
+    // a movement whose target IS the top position could peak its silhouette
+    // score without anybody moving. Both directions of the same mistake.
+    //
+    // `wasInRep ||` catches the two boundary frames: the one that starts the
+    // descent (top before, descending after) and the one that completes the
+    // lap (ascending before, top after). Neither belongs to the rest state.
+    if (wasInRep || counter.phase != RepPhase.top) {
       if (match != null && match > (_peakMatchThisRep ?? -1)) {
         _peakMatchThisRep = match;
       }
+      // Remember the worst thing seen so far, rather than reacting to it. The
+      // decision to speak belongs at the rep boundary.
+      final worst = result.worst;
+      if (worst != null &&
+          worst.severity >= 1 &&
+          worst.severity > (_worstThisRep?.severity ?? 0)) {
+        _worstThisRep = worst;
+      }
     }
 
-    final feedback = result.feedback;
-    // Remember the worst thing seen SO FAR in this repetition, rather than
-    // reacting to it. The decision to speak belongs at the rep boundary.
-    final worst = result.worst;
-    if (worst != null &&
-        worst.severity >= 1 &&
-        worst.severity > (_worstThisRep?.severity ?? 0)) {
-      _worstThisRep = worst;
+    if (event == null) {
+      // Arming reports nothing: the counter quietly starts accepting laps on
+      // the first frame that shows the lifter standing. Until then the count
+      // physically cannot move, and a `0` that never budges is the single most
+      // alarming thing this screen can display. Publish the transition so the
+      // badge can say what it is waiting for.
+      if (counter.isArmed != state.isArmed) state = _carryOver(counter);
+      return;
     }
 
-    final event = counter.update(frame, feedback: feedback);
-    if (event == null) return;
-
-    final finished = event.kind == RepEventKind.repCompleted;
+    switch (event.kind) {
+      case RepEventKind.phaseChanged:
+        state = _carryOver(counter);
+        return;
+      case RepEventKind.repRejected:
+        _onRepRejected(counter, event, target);
+        return;
+      case RepEventKind.repCompleted:
+        break;
+    }
 
     // The silhouette is the verdict. A rep that never reached the target shape
     // is not a correct rep, however cleanly the per-frame rules ran — and this
     // is what gives the coach something true to say again. With both absolute
     // rules withdrawn it had nothing, and marked every rep clean; operator, on
     // that build: "все повторения правильные даже если я неправильно делаю".
-    if (!finished) {
-      // A phase change or a rejected lap: republish the counter, keep the last
-      // completed rep's verdict on screen.
-      state = RepSessionState(
-        repCount: counter.repCount,
-        phase: counter.phase,
-        reps: counter.reps,
-        lastRepCue: state.lastRepCue,
-        lastRepPeakMatch: state.lastRepPeakMatch,
-        lastRepMissedTarget: state.lastRepMissedTarget,
-      );
-      return;
-    }
-
     final peak = _peakMatchThisRep;
     final judged = target != null && peak != null;
     final missed = judged && peak < kPoseMatchPassing;
@@ -373,6 +410,7 @@ class RepSessionController extends Notifier<RepSessionState> {
       repCount: counter.repCount,
       phase: counter.phase,
       reps: counter.reps,
+      isArmed: counter.isArmed,
       lastRepCue: cue,
       lastRepPeakMatch: peak,
       lastRepMissedTarget: judged ? missed : null,
@@ -383,7 +421,70 @@ class RepSessionController extends Notifier<RepSessionState> {
     // identical sentence within its repeat window — but the PACING is the rep,
     // not a stopwatch. Before this, a severity-2 cue was re-spoken every 1.2s
     // for as long as the position held, which is what made it unbearable.
-    if (finished && cue != null) {
+    if (cue != null) {
+      final coach = ref.read(voiceCoachProvider);
+      unawaited(coach.cue(cue).whenComplete(() => _publishVoiceError(coach)));
+    }
+  }
+
+  /// Republish the counter's live numbers while keeping the last verdict.
+  ///
+  /// Phase changes and arming say nothing about how the previous repetition
+  /// went, so the banner must survive them; without this the verdict would be
+  /// wiped the instant the next descent began, which is well under a second
+  /// after it appeared.
+  RepSessionState _carryOver(RepCounter counter) => RepSessionState(
+        repCount: counter.repCount,
+        phase: counter.phase,
+        reps: counter.reps,
+        isArmed: counter.isArmed,
+        lastReject: state.lastReject,
+        lastRepCue: state.lastRepCue,
+        lastRepPeakMatch: state.lastRepPeakMatch,
+        lastRepMissedTarget: state.lastRepMissedTarget,
+      );
+
+  /// An attempt that started and was thrown away.
+  ///
+  /// It produces no count, and until now it produced no words either: the lap
+  /// simply evaporated. From the user's side that is identical to the detector
+  /// losing the body, and the natural response is to stop trusting the number.
+  void _onRepRejected(RepCounter counter, RepEvent event, PoseTarget? target) {
+    final peak = _peakMatchThisRep;
+    // A discarded lap must not leak into the next one. The counter clears its
+    // own severity log on discard; these two accumulators live out here and
+    // did not, so a fault seen during a half rep was spoken at the end of the
+    // NEXT repetition and attributed to it.
+    _worstThisRep = null;
+    _peakMatchThisRep = null;
+
+    // Only the silhouette is allowed to blame the user for a rejection. The
+    // counter's own signal is hip-height-minus-knee-height — the same
+    // camera-dependent quantity that got the depth RULE withdrawn, after it
+    // told the operator to sink lower at the bottom of a full squat: "ниже уже
+    // некуда было". A rejection measured with that signal is reported on
+    // screen and never spoken aloud as a fault.
+    final cue = (target != null && peak != null && peak < kPoseMatchPassing)
+        ? FormFeedback(
+            rule: 'silhouette.match',
+            severity: 2,
+            cueKey: FormCueKey.silhouetteMissed,
+            metric: peak,
+          )
+        : null;
+
+    state = RepSessionState(
+      repCount: counter.repCount,
+      phase: counter.phase,
+      reps: counter.reps,
+      isArmed: counter.isArmed,
+      lastReject: event.rejectReason,
+      lastRepCue: state.lastRepCue,
+      lastRepPeakMatch: state.lastRepPeakMatch,
+      lastRepMissedTarget: state.lastRepMissedTarget,
+    );
+
+    if (cue != null) {
       final coach = ref.read(voiceCoachProvider);
       unawaited(coach.cue(cue).whenComplete(() => _publishVoiceError(coach)));
     }
@@ -405,6 +506,9 @@ class RepSessionController extends Notifier<RepSessionState> {
   void resetSet() {
     _counter?.reset();
     _worstThisRep = null;
+    // Also the silhouette peak. Left behind, the best shape of the previous
+    // set would be credited to the first rep of the next one.
+    _peakMatchThisRep = null;
     unawaited(ref.read(voiceCoachProvider).stop());
     state = const RepSessionState();
   }
