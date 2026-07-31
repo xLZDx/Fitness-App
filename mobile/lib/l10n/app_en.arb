@@ -1185,5 +1185,6 @@
   "equipmentFaultDegraded": "Degraded",
   "equipmentFaultQrMissing": "QR missing",
   "equipmentFaultOther": "Other",
-  "donorwallLifetime": "LIFETIME"
+  "donorwallLifetime": "LIFETIME",
+  "formcheckShowSkeleton": "Show what the camera sees"
 }

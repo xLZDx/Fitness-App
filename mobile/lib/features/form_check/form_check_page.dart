@@ -15,6 +15,7 @@ import 'data/mlkit_pose_detector_service.dart';
 import 'data/pose_detector_service.dart';
 import 'data/pose_gate.dart';
 import 'data/pose_landmark.dart';
+import 'data/pose_projection.dart';
 import 'data/pose_target.dart';
 import 'data/rep_counter.dart';
 import '../subscription/data/subscription_models.dart';
@@ -202,6 +203,19 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
         title: AppLocalizations.of(context).formcheckFormCoach,
         actions: [
           IconButton(
+            icon: Icon(ref.watch(showSkeletonProvider)
+                ? Icons.accessibility_new
+                : Icons.accessibility_outlined),
+            tooltip: AppLocalizations.of(context).formcheckShowSkeleton,
+            onPressed: () {
+              final on = !ref.read(showSkeletonProvider);
+              ref.read(showSkeletonProvider.notifier).state = on;
+              // Drop the held frame on the way out, so switching back on
+              // cannot flash a pose from a minute ago over a live camera.
+              if (!on) ref.read(latestPoseFrameProvider.notifier).state = null;
+            },
+          ),
+          IconButton(
             icon: Icon(muted ? Icons.volume_off : Icons.volume_up),
             tooltip: muted
                 ? AppLocalizations.of(context).formcheckUnmuteCues
@@ -250,6 +264,12 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                     // card sat directly on top of the retry button — an error
                     // screen whose one useful control could not be pressed.
                     if (failure == null) ...[
+                      // Directly over the preview and under everything else:
+                      // it is a picture of the camera's input, so it belongs
+                      // against the input rather than on top of the verdicts.
+                      const Positioned.fill(
+                        child: IgnorePointer(child: _SkeletonOverlay()),
+                      ),
                       // Over the preview, under the readouts: what to do, then
                       // the shape to arrive at.
                       Positioned.fill(
@@ -384,6 +404,97 @@ class _CameraPreview extends StatelessWidget {
       },
     );
   }
+}
+
+/// The body as the detector sees it, drawn over the preview.
+///
+/// Every other readout on this page is a conclusion — a count, a verdict, a
+/// percentage — and a wrong conclusion has two very different causes: the rule
+/// misjudged a good repetition, or the detector never found the body. Those
+/// want opposite responses from the user, and nothing on screen told them
+/// apart. This does, in one glance.
+class _SkeletonOverlay extends ConsumerWidget {
+  const _SkeletonOverlay();
+
+  /// Drawn as a body rather than as thirteen dots: a stick figure is legible at
+  /// arm's length mid-set, a scatter of points is not.
+  static const _bones = <(LandmarkType, LandmarkType)>[
+    (LandmarkType.leftShoulder, LandmarkType.rightShoulder),
+    (LandmarkType.leftHip, LandmarkType.rightHip),
+    (LandmarkType.leftShoulder, LandmarkType.leftHip),
+    (LandmarkType.rightShoulder, LandmarkType.rightHip),
+    (LandmarkType.leftShoulder, LandmarkType.leftElbow),
+    (LandmarkType.leftElbow, LandmarkType.leftWrist),
+    (LandmarkType.rightShoulder, LandmarkType.rightElbow),
+    (LandmarkType.rightElbow, LandmarkType.rightWrist),
+    (LandmarkType.leftHip, LandmarkType.leftKnee),
+    (LandmarkType.leftKnee, LandmarkType.leftAnkle),
+    (LandmarkType.rightHip, LandmarkType.rightKnee),
+    (LandmarkType.rightKnee, LandmarkType.rightAnkle),
+  ];
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(showSkeletonProvider)) return const SizedBox.shrink();
+    final frame = ref.watch(latestPoseFrameProvider);
+    if (frame == null) return const SizedBox.shrink();
+    return CustomPaint(
+      key: const Key('form_check.skeleton'),
+      painter: _SkeletonPainter(frame: frame, bones: _bones),
+    );
+  }
+}
+
+class _SkeletonPainter extends CustomPainter {
+  const _SkeletonPainter({required this.frame, required this.bones});
+
+  final PoseFrame frame;
+  final List<(LandmarkType, LandmarkType)> bones;
+
+  Offset? _at(LandmarkType t, Size size) {
+    final lm = frame.landmarks[t];
+    if (lm == null) return null;
+    return projectLandmark(lm.x, lm.y,
+        frameAspect: frame.aspectRatio, canvas: size);
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final stroke = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round
+      ..color = AppPalette.auroraViolet.withValues(alpha: 0.85);
+
+    for (final (a, b) in bones) {
+      final pa = _at(a, size);
+      final pb = _at(b, size);
+      // A bone is drawn only when both ends exist. Reaching for a missing
+      // joint's coordinate would put it at the origin, and a limb running to
+      // the top-left corner looks like a detector that has lost its mind
+      // rather than one that simply cannot see an ankle.
+      if (pa != null && pb != null) canvas.drawLine(pa, pb, stroke);
+    }
+
+    for (final entry in frame.landmarks.entries) {
+      final p = _at(entry.key, size);
+      if (p == null) continue;
+      // Confidence is the point of showing this at all: a joint the detector
+      // is guessing at is drawn faint, so "it sees me but is unsure about my
+      // left ankle" is visible without reading a number.
+      canvas.drawCircle(
+        p,
+        4,
+        Paint()
+          ..color = Colors.white.withValues(
+              alpha: 0.25 + 0.7 * entry.value.likelihood.clamp(0, 1)),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SkeletonPainter old) =>
+      old.frame.timestampMs != frame.timestampMs;
 }
 
 /// The camera did not start, and what to do about it.

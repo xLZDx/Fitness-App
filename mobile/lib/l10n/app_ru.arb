@@ -588,5 +588,6 @@
   "equipmentFaultDegraded": "Работает плохо",
   "equipmentFaultQrMissing": "Нет QR-кода",
   "equipmentFaultOther": "Другое",
-  "donorwallLifetime": "НАВСЕГДА"
+  "donorwallLifetime": "НАВСЕГДА",
+  "formcheckShowSkeleton": "Показать, что видит камера"
 }

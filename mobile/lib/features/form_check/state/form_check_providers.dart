@@ -47,6 +47,25 @@ final poseDemoProvider = Provider<(PoseTarget, PoseTarget)?>((ref) {
   };
 });
 
+/// The most recent frame the detector produced, or null before the first one.
+///
+/// Exists so the screen can draw what the app actually sees. Everything else on
+/// this page is a CONCLUSION about the body — a count, a verdict, a match
+/// percentage — and when a conclusion is wrong there is no way to tell whether
+/// the rule misjudged a good rep or the detector never found the body at all.
+/// Those two want opposite responses from the user.
+final latestPoseFrameProvider = StateProvider<PoseFrame?>((_) => null);
+
+/// Whether to draw the detected skeleton over the preview.
+///
+/// Off by default and behind a toggle, deliberately. The projection from camera
+/// space to preview space depends on how the platform crops and whether it has
+/// already mirrored the front camera, and neither is settled until it is seen on
+/// a real device — the same way the coordinate unit was settled. A skeleton
+/// drawn a few percent off reads as "the app cannot see me", which is exactly
+/// the wrong conclusion and worse than drawing nothing.
+final showSkeletonProvider = StateProvider<bool>((_) => false);
+
 /// How well the CURRENT frame matches the target, or null when it cannot be
 /// judged. Drives the live outline colour, so the user can see themselves
 /// approaching the shape instead of finding out afterwards.
@@ -157,6 +176,13 @@ class FormFeedbackController extends Notifier<FormFeedback?> {
 
   void _onFrame(PoseFrame frame) {
     _retirePoseError(ref);
+    // Published before the gate, like the probe below and for the same reason:
+    // the frames worth LOOKING at are the ones the gate is about to reject.
+    // Only while the overlay is on — otherwise this would notify a listener
+    // thirty times a second for a picture nobody is drawing.
+    if (ref.read(showSkeletonProvider)) {
+      ref.read(latestPoseFrameProvider.notifier).state = frame;
+    }
     // Before the gate, on purpose: a frame the gate rejects is exactly the
     // frame whose coordinates are most worth knowing about.
     _probe.observe(frame);
