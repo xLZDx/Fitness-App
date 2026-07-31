@@ -10,6 +10,7 @@ import '../../shared/widgets/smooth_scroll_list.dart';
 import '../workouts/data/progression.dart';
 import '../workouts/data/scheduled_session.dart';
 import '../workouts/data/workout_log.dart';
+import '../profile/state/profile_providers.dart';
 import '../workouts/state/offline_video_providers.dart';
 import '../workouts/state/scheduled_session_providers.dart';
 import '../workouts/state/workout_log_providers.dart';
@@ -26,16 +27,22 @@ import 'widgets/muscle_map.dart';
 /// Shows the rest timer after a successful "Mark complete". Local to this
 /// page — clears on rebuild via a StateProvider.autoDispose so navigating
 /// away resets it.
-final _restTimerVisibleProvider =
-    StateProvider.autoDispose<bool>((_) => false);
+final _restTimerVisibleProvider = StateProvider.autoDispose<bool>((_) => false);
 
 /// Compound lifts get a longer rest window than accessories. Read off
 /// muscle tags so we don't have to maintain a parallel list.
 int _restSecondsFor(ExerciseItem item) {
   final muscles = item.muscles.toSet();
   final isCompound = muscles.intersection({
-    'quads', 'hamstrings', 'glutes', 'chest', 'back', 'lats', 'core',
-  }).length >= 2;
+        'quads',
+        'hamstrings',
+        'glutes',
+        'chest',
+        'back',
+        'lats',
+        'core',
+      }).length >=
+      2;
   return isCompound ? 180 : 90;
 }
 
@@ -51,8 +58,9 @@ final _exerciseByIdProvider =
     if (parts.length != 3) return null;
     final equipmentId = parts[1];
     final lang = ref.watch(effectiveLanguageCodeProvider);
-    final cached =
-        await ref.watch(generatedExerciseRepositoryProvider).get(equipmentId, lang);
+    final cached = await ref
+        .watch(generatedExerciseRepositoryProvider)
+        .get(equipmentId, lang);
     if (cached == null) return null;
     for (final e in cached) {
       if (e.id == id) return e;
@@ -64,7 +72,8 @@ final _exerciseByIdProvider =
   // Iterate every equipment + bodyweight pool — we only have a few hundred.
   final all = <ExerciseItem>[
     ...await repo.bodyweightExercises(),
-    for (final eq in await repo.listEquipment()) ...await repo.exercisesFor(eq.id),
+    for (final eq in await repo.listEquipment())
+      ...await repo.exercisesFor(eq.id),
   ];
   for (final e in all) {
     if (e.id == id) return e;
@@ -86,19 +95,31 @@ class WorkoutPlayerPage extends ConsumerWidget {
       appBar: GlassAppBar(title: AppLocalizations.of(context).equipmentWorkout),
       body: exercise.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text(AppLocalizations.of(context).equipmentCouldNotLoad(e))),
+        error: (e, _) => Center(
+            child: Text(AppLocalizations.of(context).equipmentCouldNotLoad(e))),
         data: (item) {
           if (item == null) {
             return Padding(
               padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
               child: GlassCard(
                 child: Text(
-                  AppLocalizations.of(context).equipmentWeCouldnTFindThatExercise,
+                  AppLocalizations.of(context)
+                      .equipmentWeCouldnTFindThatExercise,
                   style: theme.textTheme.titleMedium,
                 ),
               ),
             );
           }
+          // Which body to demonstrate on. Read from the profile, and null when
+          // the user has not said or has said they would rather not — in which
+          // case there is nothing to infer from, and the model falls back to
+          // whichever clip exists.
+          final demoVideo = item.playableVideoFor(ExerciseItem.bodyForGender(ref
+                  .watch(currentProfileProvider)
+                  .valueOrNull
+                  ?.personal
+                  .gender)) ??
+              item.videoUrl;
           return SmoothScrollList(
             padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
             children: [
@@ -109,8 +130,14 @@ class WorkoutPlayerPage extends ConsumerWidget {
               // original 66, network stills (same public-domain source) for
               // everything added in the round-4 catalog expansion. Only when
               // there is neither do we show the "no demo" card.
-              if (item.videoUrl != null)
-                _VideoBlock(url: item.videoUrl!)
+              //
+              // `playableVideoFor` returns null while the library's host is
+              // unchosen, so the 343 exercises that carry a clip keep showing
+              // whatever they showed before rather than a player that spins
+              // and then fails. The day the host is set, they switch over with
+              // no further change here.
+              if (demoVideo != null)
+                _VideoBlock(url: demoVideo)
               else if (item.frames.isNotEmpty)
                 ExerciseDemo(frames: item.frames)
               else if (item.imageUrls.isNotEmpty)
@@ -184,8 +211,8 @@ class _Hero extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
               gradient: LinearGradient(
-                colors: AppPalette.tileGradients[
-                    exercise.id.hashCode.abs() % AppPalette.tileGradients.length],
+                colors: AppPalette.tileGradients[exercise.id.hashCode.abs() %
+                    AppPalette.tileGradients.length],
               ),
             ),
             child: const Icon(Icons.play_arrow_rounded,
@@ -280,8 +307,7 @@ class _VideoBlockState extends ConsumerState<_VideoBlock> {
         controller = VideoPlayerController.file(cached);
         _fromCache = true;
       } else {
-        controller =
-            VideoPlayerController.networkUrl(Uri.parse(widget.url));
+        controller = VideoPlayerController.networkUrl(Uri.parse(widget.url));
       }
       controller.setLooping(true);
       await controller.initialize();
@@ -310,7 +336,8 @@ class _VideoBlockState extends ConsumerState<_VideoBlock> {
   Widget build(BuildContext context) {
     if (_error != null) {
       return GlassCard(
-        child: Text(AppLocalizations.of(context).equipmentVideoUnavailable(_error ?? '')),
+        child: Text(AppLocalizations.of(context)
+            .equipmentVideoUnavailable(_error ?? '')),
       );
     }
     final ctrl = _ctrl;
@@ -325,9 +352,8 @@ class _VideoBlockState extends ConsumerState<_VideoBlock> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(22),
       child: AspectRatio(
-        aspectRatio: ctrl.value.aspectRatio == 0
-            ? 16 / 9
-            : ctrl.value.aspectRatio,
+        aspectRatio:
+            ctrl.value.aspectRatio == 0 ? 16 / 9 : ctrl.value.aspectRatio,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -335,9 +361,8 @@ class _VideoBlockState extends ConsumerState<_VideoBlock> {
             // Tap-to-toggle play/pause.
             GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () => setState(() => ctrl.value.isPlaying
-                  ? ctrl.pause()
-                  : ctrl.play()),
+              onTap: () => setState(
+                  () => ctrl.value.isPlaying ? ctrl.pause() : ctrl.play()),
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 220),
                 child: ctrl.value.isPlaying
@@ -354,8 +379,8 @@ class _VideoBlockState extends ConsumerState<_VideoBlock> {
                 top: 8,
                 left: 8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.55),
                     borderRadius: BorderRadius.circular(6),
@@ -495,7 +520,8 @@ class _MarkCompleteButton extends ConsumerWidget {
       if (newState.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context).equipmentCouldNotSave(newState.error ?? '')),
+            content: Text(AppLocalizations.of(context)
+                .equipmentCouldNotSave(newState.error ?? '')),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -504,7 +530,8 @@ class _MarkCompleteButton extends ConsumerWidget {
       // Success — confirm + show rest timer.
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context).equipmentLoggedNiceWork(exercise.title)),
+          content: Text(AppLocalizations.of(context)
+              .equipmentLoggedNiceWork(exercise.title)),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -556,7 +583,9 @@ class _MarkCompleteButton extends ConsumerWidget {
               const SizedBox(width: 8),
             ],
             Text(
-              loading ? AppLocalizations.of(context).equipmentSaving : AppLocalizations.of(context).equipmentMarkComplete,
+              loading
+                  ? AppLocalizations.of(context).equipmentSaving
+                  : AppLocalizations.of(context).equipmentMarkComplete,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w800,
@@ -661,17 +690,15 @@ class _ScheduleButton extends ConsumerWidget {
         scheduledFor: when,
         durationMinutes: exercise.durationMinutes,
       );
-      await ref
-          .read(scheduleSessionActionProvider.notifier)
-          .schedule(session);
+      await ref.read(scheduleSessionActionProvider.notifier).schedule(session);
       if (!context.mounted) return;
       final newState = ref.read(scheduleSessionActionProvider);
       newState.when(
         data: (_) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                  AppLocalizations.of(context).equipmentScheduledFor(exercise.title, _friendlyDate(when))),
+              content: Text(AppLocalizations.of(context)
+                  .equipmentScheduledFor(exercise.title, _friendlyDate(when))),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -679,7 +706,8 @@ class _ScheduleButton extends ConsumerWidget {
         error: (e, _) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context).equipmentCouldNotSchedule(e)),
+              content: Text(
+                  AppLocalizations.of(context).equipmentCouldNotSchedule(e)),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -708,12 +736,13 @@ class _ScheduleButton extends ConsumerWidget {
               ),
               const SizedBox(width: 10),
             ] else ...[
-              Icon(Icons.event_outlined,
-                  color: theme.colorScheme.onSurface),
+              Icon(Icons.event_outlined, color: theme.colorScheme.onSurface),
               const SizedBox(width: 8),
             ],
             Text(
-              loading ? AppLocalizations.of(context).equipmentScheduling : AppLocalizations.of(context).equipmentScheduleForLater,
+              loading
+                  ? AppLocalizations.of(context).equipmentScheduling
+                  : AppLocalizations.of(context).equipmentScheduleForLater,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w700,
@@ -727,8 +756,18 @@ class _ScheduleButton extends ConsumerWidget {
 
   String _friendlyDate(DateTime t) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     final hh = t.hour.toString().padLeft(2, '0');
     final mm = t.minute.toString().padLeft(2, '0');
@@ -747,8 +786,7 @@ class _SuggestedWeightChip extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final logsAsync = ref.watch(workoutLogsProvider);
     final logs = logsAsync.valueOrNull ?? const <WorkoutLogEntry>[];
-    final history =
-        logs.where((l) => l.exerciseId == exerciseId).toList();
+    final history = logs.where((l) => l.exerciseId == exerciseId).toList();
     final suggestion = suggestNextWeight(historyForExercise: history);
     if (suggestion == null) return const SizedBox.shrink();
 
@@ -788,13 +826,11 @@ class _SuggestedWeightChip extends ConsumerWidget {
                     Text(
                       AppLocalizations.of(context).equipmentSuggested,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color:
-                            scheme.onSurface.withValues(alpha: 0.65),
+                        color: scheme.onSurface.withValues(alpha: 0.65),
                       ),
                     ),
                     Text(
-                      '${suggestion.suggestedKg.toStringAsFixed(
-                          suggestion.suggestedKg % 1 == 0 ? 0 : 1)} kg',
+                      '${suggestion.suggestedKg.toStringAsFixed(suggestion.suggestedKg % 1 == 0 ? 0 : 1)} kg',
                       style: theme.textTheme.titleMedium
                           ?.copyWith(fontWeight: FontWeight.w800),
                     ),
@@ -838,8 +874,7 @@ class _CautionCard extends StatelessWidget {
                 AppPalette.auroraPink,
               ]),
             ),
-            child: const Icon(Icons.warning_amber_rounded,
-                color: Colors.white),
+            child: const Icon(Icons.warning_amber_rounded, color: Colors.white),
           ),
           const SizedBox(width: 10),
           Expanded(

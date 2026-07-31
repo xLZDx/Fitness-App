@@ -22,7 +22,26 @@ final offlineVideoCacheProvider = Provider<OfflineVideoCache>((ref) {
 Iterable<String?> Function(ScheduledSession) videoUrlResolverFor(
     List<ExerciseItem> catalog) {
   final byId = {for (final e in catalog) e.id: e};
-  return (session) => [byId[session.exerciseId]?.videoUrl];
+  return (session) {
+    final item = byId[session.exerciseId];
+    if (item == null) return const [null];
+    // Both bodies, not the user's one. Prefetch runs ahead of the session, and
+    // the point of caching is that the clip is there whichever demonstration
+    // the page ends up choosing — a profile edited between the prefetch and
+    // the workout must not turn a cached session back into a streaming one.
+    // `playableVideoFor` filters each one, so nothing is queued while the
+    // library's host is still unchosen.
+    //
+    // A set, because 33 of the 343 exercises were filmed on one body only and
+    // both lookups then answer with the same url. The prefetch loop downloads
+    // whatever it is handed, so a duplicate would be a second download of a
+    // file already on disk.
+    return <String?>{
+      item.videoUrl,
+      item.playableVideoFor('girl'),
+      item.playableVideoFor('men'),
+    };
+  };
 }
 
 /// Pulls the [videoUrl] of every scheduled session in the next 7 days

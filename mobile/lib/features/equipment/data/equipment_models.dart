@@ -15,6 +15,7 @@ class ExerciseItem {
     required this.summary,
     required this.steps,
     this.videoUrl,
+    this.video = const {},
     this.frames = const [],
     this.imageUrls = const [],
     this.primaryMuscles = const [],
@@ -34,6 +35,49 @@ class ExerciseItem {
 
   /// Where the instructional video lives, when a real clip exists.
   final String? videoUrl;
+
+  /// Demonstration clips keyed by the body performing them: `'girl'`, `'men'`.
+  ///
+  /// 343 of the 511 catalog entries carry one, most of them both. Two rather
+  /// than one because the same movement looks different on different bodies
+  /// and the operator's whole reason for the library was *"чтобы всем
+  /// показывали то, что нужно"* — a woman's demonstration of a hip thrust is
+  /// not interchangeable with a man's.
+  final Map<String, String> video;
+
+  /// Marks a url whose host has not been chosen yet.
+  ///
+  /// The catalog ships absolute urls so that picking a host is one constant to
+  /// change rather than 653 rows to rewrite. Until that happens every one of
+  /// them points here, and handing such a url to a video player produces a
+  /// spinner that resolves into an error — worse than the stills it would have
+  /// replaced. [playableVideoFor] is what keeps that off the screen.
+  static const unresolvedHost = 'VIDEO_HOST_PLACEHOLDER';
+
+  /// Which of the two bodies to show, from what the user told us about
+  /// themselves. Null — and "prefer not to say" — means we were not told, so
+  /// there is nothing to infer from and either clip is equally right.
+  static String? bodyForGender(Object? gender) => switch (gender?.toString()) {
+        'Gender.female' => 'girl',
+        'Gender.male' => 'men',
+        _ => null,
+      };
+
+  /// The clip to play, or null when there is nothing worth playing.
+  ///
+  /// Null in three cases, all of which must fall back to the stills: no clip
+  /// at all, and the two that would otherwise render a broken player — a clip
+  /// whose host is still [unresolvedHost], and a preference for a body this
+  /// exercise was only filmed on the other of.
+  String? playableVideoFor(String? body) {
+    if (video.isEmpty) return null;
+    // Preference first, then whichever exists. 33 exercises were filmed on one
+    // body only, and showing the one we have beats showing nothing.
+    final url = (body != null ? video[body] : null) ??
+        video['men'] ??
+        video.values.first;
+    return url.contains(unresolvedHost) ? null : url;
+  }
 
   /// Bundled demo frames (start / end position of the movement). Looping
   /// them is how the app shows a movement without shipping video: it plays
@@ -70,6 +114,10 @@ class ExerciseItem {
         summary: j['summary'] as String? ?? '',
         steps: parseSteps(j['steps']),
         videoUrl: j['videoUrl'] as String?,
+        video: Map<String, String>.unmodifiable(<String, String>{
+          for (final e in (j['video'] as Map? ?? const {}).entries)
+            e.key as String: e.value as String,
+        }),
         frames: List<String>.from(j['frames'] as List? ?? const []),
         imageUrls: List<String>.from(j['imageUrls'] as List? ?? const []),
         primaryMuscles:
@@ -85,7 +133,8 @@ class ExerciseItem {
   /// rendered as an empty numbered row in the workout player. Filtering here
   /// rather than in the UI keeps every consumer — and the translation
   /// step-count check — working from the same list.
-  static List<String> parseSteps(Object? raw) => List<String>.unmodifiable(<String>[
+  static List<String> parseSteps(Object? raw) =>
+      List<String>.unmodifiable(<String>[
         for (final step in (raw as List? ?? const []))
           if (step is String && step.trim().isNotEmpty) step,
       ]);
@@ -111,6 +160,7 @@ class ExerciseItem {
         summary: summary,
         steps: steps,
         videoUrl: videoUrl,
+        video: video,
         frames: frames,
         imageUrls: imageUrls,
         primaryMuscles: primaryMuscles,
