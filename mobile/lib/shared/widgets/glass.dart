@@ -9,6 +9,7 @@ class GlassCard extends StatelessWidget {
     this.borderRadius = 26,
     this.blurSigma = 28,
     this.blur = false,
+    this.floating = false,
     this.tint,
     this.gradient,
     this.onTap,
@@ -33,31 +34,64 @@ class GlassCard extends StatelessWidget {
   /// app bar and nav bar.
   final bool blur;
 
+  /// Whether this card floats over content it does not control.
+  ///
+  /// A card inside a page sits on the app's own background, so a fill of white
+  /// at 0.22 reads as a surface. A bottom sheet sits on WHATEVER was on screen
+  /// when it opened, and at that opacity the page shows straight through it:
+  /// the operator's day-3 donation sheet rendered its heading directly on top
+  /// of "Восстановление за сегодня", "Шаги 834" and a stats row, and none of
+  /// the three was readable. *"поздравление с 3 днем просто наезжает и не
+  /// читается"*.
+  ///
+  /// The barrier behind the sheet was not the problem and darkening it further
+  /// would not have fixed it — text over dimmed text is still text over text.
+  /// A sheet needs to be a surface, not a tint.
+  final bool floating;
+
   final Color? tint;
   final Gradient? gradient;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final base = tint ?? Colors.white;
 
     // Without the frost the fill carries the whole separation from the
     // background, so it runs more opaque than the blurred variant.
     final fill = gradient ??
-        LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: blur
-              ? [
-                  base.withValues(alpha: isDark ? 0.16 : 0.50),
-                  base.withValues(alpha: isDark ? 0.06 : 0.28),
-                ]
-              : [
-                  base.withValues(alpha: isDark ? 0.22 : 0.68),
-                  base.withValues(alpha: isDark ? 0.12 : 0.46),
+        (floating
+            // Opaque, and the app's own surface colour rather than white at a
+            // high alpha: white-over-anything shifts hue with whatever is
+            // behind it, which is how a "glass" sheet ends up looking like a
+            // different colour on every screen it opens over.
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color.alphaBlend(
+                      base.withValues(alpha: isDark ? 0.10 : 0.55),
+                      theme.colorScheme.surface),
+                  Color.alphaBlend(
+                      base.withValues(alpha: isDark ? 0.04 : 0.30),
+                      theme.colorScheme.surface),
                 ],
-        );
+              )
+            : LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: blur
+                    ? [
+                        base.withValues(alpha: isDark ? 0.16 : 0.50),
+                        base.withValues(alpha: isDark ? 0.06 : 0.28),
+                      ]
+                    : [
+                        base.withValues(alpha: isDark ? 0.22 : 0.68),
+                        base.withValues(alpha: isDark ? 0.12 : 0.46),
+                      ],
+              ));
 
     Widget surface = DecoratedBox(
       decoration: BoxDecoration(

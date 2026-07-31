@@ -941,22 +941,26 @@ class _SilhouettePainter extends CustomPainter {
     // are still in the position and can feel what it corresponds to.
     final reached = (match ?? 0) >= kPoseMatchPassing;
     final colour = reached ? AppPalette.auroraTeal : Colors.white;
+    final alpha = isDemo
+        ? 0.45
+        : reached
+            ? 0.95
+            : 0.65;
+
+    // Limbs are drawn as thick round-capped strokes rather than hairlines, and
+    // a head is drawn above the shoulders. Six dots joined by five thin lines
+    // is geometrically the same figure and reads as a squiggle — operator, on
+    // his phone: "человеческий силует привратился а закорючку". The whole
+    // instruction is "stand inside this shape", so it has to look like a body
+    // from across a room, in motion, at a glance.
+    final limbWidth =
+        (size.shortestSide * (isDemo ? 0.035 : 0.045)).clamp(6, 26).toDouble();
     final stroke = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = isDemo
-          ? 3
-          : reached
-              ? 5
-              : 4
+      ..strokeWidth = limbWidth
       ..strokeCap = StrokeCap.round
-      ..color = colour.withValues(
-          alpha: isDemo
-              ? 0.4
-              : reached
-                  ? 0.95
-                  : 0.55);
-    final joint = Paint()
-      ..color = colour.withValues(alpha: isDemo ? 0.55 : 0.9);
+      ..strokeJoin = StrokeJoin.round
+      ..color = colour.withValues(alpha: alpha * 0.55);
 
     Offset at(LandmarkType t) {
       final j = target.joints[t]!;
@@ -966,15 +970,26 @@ class _SilhouettePainter extends CustomPainter {
     for (final (a, b) in target.bones) {
       canvas.drawLine(at(a), at(b), stroke);
     }
-    for (final t in target.joints.keys) {
+
+    final head = target.head;
+    if (head != null) {
+      // Outlined, not filled: a solid disc over a live camera hides the face
+      // of the person trying to line themselves up with it.
       canvas.drawCircle(
-          at(t),
-          isDemo
-              ? 4
-              : reached
-                  ? 7
-                  : 5,
-          joint);
+        Offset(head.$1 * size.width, head.$2 * size.height),
+        head.$3 * size.height,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = limbWidth * 0.55
+          ..color = colour.withValues(alpha: alpha),
+      );
+    }
+
+    // The joints on top of the limbs, so the shape reads as articulated rather
+    // than as one bent tube.
+    final joint = Paint()..color = colour.withValues(alpha: alpha);
+    for (final t in target.joints.keys) {
+      canvas.drawCircle(at(t), limbWidth * 0.34, joint);
     }
   }
 

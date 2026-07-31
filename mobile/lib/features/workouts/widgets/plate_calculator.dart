@@ -89,6 +89,7 @@ class _PlateCalculatorState extends State<PlateCalculator> {
     final load = solvePlateLoad(targetKg: _target, barKg: _bar);
 
     return GlassCard(
+      floating: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

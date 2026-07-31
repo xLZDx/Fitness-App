@@ -35,6 +35,7 @@ class DifficultyRatingSheet extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
       child: GlassCard(
+        floating: true,
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -60,8 +61,8 @@ class DifficultyRatingSheet extends StatelessWidget {
                     AppPalette.auroraTeal,
                     AppPalette.auroraLime,
                   ],
-                  onTap: () => Navigator.of(context)
-                      .pop(DifficultyRating.tooEasy),
+                  onTap: () =>
+                      Navigator.of(context).pop(DifficultyRating.tooEasy),
                 ),
                 const SizedBox(width: 8),
                 _RatingPill(
@@ -71,8 +72,8 @@ class DifficultyRatingSheet extends StatelessWidget {
                     AppPalette.auroraViolet,
                     AppPalette.auroraBlue,
                   ],
-                  onTap: () => Navigator.of(context)
-                      .pop(DifficultyRating.justRight),
+                  onTap: () =>
+                      Navigator.of(context).pop(DifficultyRating.justRight),
                 ),
                 const SizedBox(width: 8),
                 _RatingPill(
@@ -82,14 +83,15 @@ class DifficultyRatingSheet extends StatelessWidget {
                     AppPalette.auroraPeach,
                     AppPalette.auroraPink,
                   ],
-                  onTap: () => Navigator.of(context)
-                      .pop(DifficultyRating.tooHard),
+                  onTap: () =>
+                      Navigator.of(context).pop(DifficultyRating.tooHard),
                 ),
               ],
             ),
             const SizedBox(height: 14),
             Text(
-              AppLocalizations.of(context).workoutsYourRatingTunesFutureWorkoutsBoth,
+              AppLocalizations.of(context)
+                  .workoutsYourRatingTunesFutureWorkoutsBoth,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: scheme.onSurface.withValues(alpha: 0.65),
               ),

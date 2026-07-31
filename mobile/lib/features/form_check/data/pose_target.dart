@@ -63,6 +63,44 @@ class PoseTarget {
 
   /// Which joints to connect when drawing. Not used for scoring.
   final List<(LandmarkType, LandmarkType)> bones;
+
+  /// Where to draw a head, as `(x, y, radius)`, or null when the torso cannot
+  /// be located.
+  ///
+  /// DRAWN, never scored. The scored set stays the six joints a side view
+  /// actually shows, because from the side one arm and one leg are behind the
+  /// body and the detector's estimates for them are guesses — comparing
+  /// against a guess is how a target starts failing people for standing at a
+  /// slightly different angle.
+  ///
+  /// But six dots joined by five lines is not a person. Operator, looking at
+  /// it on his phone: *"человеческий силует привратился а закорючку"*. He is
+  /// right, and it matters more than it sounds: the whole instruction is
+  /// "stand inside this shape", which needs the shape to read as a body at a
+  /// glance, from across a room, while moving.
+  ///
+  /// Derived rather than authored so it cannot drift out of step with the
+  /// pose: the head sits above the shoulder along the hip-to-shoulder line,
+  /// which keeps it over the chest when the torso inclines into a squat
+  /// instead of hanging in the air where a standing head would have been.
+  (double, double, double)? get head {
+    final shoulder = joints[LandmarkType.leftShoulder];
+    final hip = joints[LandmarkType.leftHip];
+    if (shoulder == null || hip == null) return null;
+    final dx = shoulder.$1 - hip.$1;
+    final dy = shoulder.$2 - hip.$2;
+    final torso = math.sqrt(dx * dx + dy * dy);
+    if (torso <= 0) return null;
+    // Proportions of a drawn figure, not of a person: far enough clear of the
+    // shoulder to read as a neck, small enough not to dominate the outline.
+    const reach = 0.42;
+    const radius = 0.17;
+    return (
+      shoulder.$1 + dx / torso * torso * reach,
+      shoulder.$2 + dy / torso * torso * reach,
+      torso * radius,
+    );
+  }
 }
 
 /// The joints a side-view lower-body target is described by.

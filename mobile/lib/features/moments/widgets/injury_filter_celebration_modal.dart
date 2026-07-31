@@ -31,6 +31,7 @@ class InjuryFilterCelebrationModal extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return GlassCard(
+      floating: true,
       padding: const EdgeInsets.all(20),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -91,7 +92,8 @@ class InjuryFilterCelebrationModal extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: Text(AppLocalizations.of(context).momentsHelpKeepItFree),
+                  child:
+                      Text(AppLocalizations.of(context).momentsHelpKeepItFree),
                 ),
               ),
             ],

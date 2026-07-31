@@ -58,6 +58,7 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
     final ramp = rampForWorkingWeight(_working);
 
     return GlassCard(
+      floating: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -94,13 +95,17 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
                         visualDensity: VisualDensity.compact,
                         iconSize: 18,
                         icon: const Icon(Icons.remove_rounded),
-                        onPressed: () =>
-                            setState(() => _working = (_working - 2.5).clamp(0, 999)),
+                        onPressed: () => setState(
+                            () => _working = (_working - 2.5).clamp(0, 999)),
                       ),
                       Expanded(
                         child: Center(
                           child: Text(
-                            AppLocalizations.of(context).workoutsKg(_working.toStringAsFixed(_working == _working.truncateToDouble() ? 0 : 1)),
+                            AppLocalizations.of(context).workoutsKg(
+                                _working.toStringAsFixed(
+                                    _working == _working.truncateToDouble()
+                                        ? 0
+                                        : 1)),
                             style: theme.textTheme.titleSmall
                                 ?.copyWith(fontWeight: FontWeight.w800),
                           ),
@@ -110,8 +115,7 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
                         visualDensity: VisualDensity.compact,
                         iconSize: 18,
                         icon: const Icon(Icons.add_rounded),
-                        onPressed: () =>
-                            setState(() => _working += 2.5),
+                        onPressed: () => setState(() => _working += 2.5),
                       ),
                     ],
                   ),
@@ -126,7 +130,8 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
                 gradient: LinearGradient(
-                  colors: AppPalette.tileGradients[i % AppPalette.tileGradients.length],
+                  colors: AppPalette
+                      .tileGradients[i % AppPalette.tileGradients.length],
                 ),
               ),
               child: Row(
@@ -153,14 +158,19 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          AppLocalizations.of(context).workoutsKgReps(ramp[i].kg == ramp[i].kg.truncateToDouble() ? ramp[i].kg.toInt() : ramp[i].kg, ramp[i].reps),
+                          AppLocalizations.of(context).workoutsKgReps(
+                              ramp[i].kg == ramp[i].kg.truncateToDouble()
+                                  ? ramp[i].kg.toInt()
+                                  : ramp[i].kg,
+                              ramp[i].reps),
                           style: theme.textTheme.titleMedium?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                         Text(
-                          AppLocalizations.of(context).workoutsOfWorkingWeight(ramp[i].percent),
+                          AppLocalizations.of(context)
+                              .workoutsOfWorkingWeight(ramp[i].percent),
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: Colors.white.withValues(alpha: 0.80),
                           ),
@@ -175,7 +185,8 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
           ],
           const SizedBox(height: 8),
           Text(
-            AppLocalizations.of(context).workoutsRampsPrimeYourNervousSystemWithout,
+            AppLocalizations.of(context)
+                .workoutsRampsPrimeYourNervousSystemWithout,
             style: theme.textTheme.labelSmall?.copyWith(
               color: scheme.onSurface.withValues(alpha: 0.55),
             ),

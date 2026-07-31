@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/features/form_check/data/pose_landmark.dart';
@@ -223,6 +225,81 @@ void main() {
       final score = poseMatchScore(poseOf(squatTopTarget), squatBottomTarget)!;
       expect(score, lessThan(0.6),
           reason: 'top vs bottom scored ${score.toStringAsFixed(2)}');
+    });
+  });
+
+  group('the figure reads as a body', () {
+    // Operator, looking at the shipped outline on his phone: *"человеческий
+    // силует привратился а закорючку"*. He was right — six joints and five
+    // lines is geometrically a person and visually a zigzag. The instruction
+    // the whole feature rests on is "stand inside this shape", which needs the
+    // shape to be recognisable at a glance, in motion, from across a room.
+    //
+    // The head is DERIVED and DRAWN, never scored. From the side one arm and
+    // one leg are behind the body, so the detector's estimates for them are
+    // guesses; comparing against a guess is how a target starts failing people
+    // for standing at a slightly different angle.
+
+    test('every drawable target has a head', () {
+      for (final t in [
+        squatTopTarget,
+        squatBottomTarget,
+        pushupTopTarget,
+        pushupBottomTarget
+      ]) {
+        expect(t.head, isNotNull, reason: t.id);
+      }
+    });
+
+    test('the head is above the shoulder, along the torso', () {
+      // Not "above" in screen terms — along the hip-to-shoulder line. At the
+      // bottom of a squat the torso inclines about 45 degrees, and a head
+      // pinned to screen-vertical would float off the chest into the air.
+      final head = squatBottomTarget.head!;
+      final sh = squatBottomTarget.joints[LandmarkType.leftShoulder]!;
+      final hip = squatBottomTarget.joints[LandmarkType.leftHip]!;
+      // Same direction as hip -> shoulder, continued past the shoulder.
+      final tx = sh.$1 - hip.$1, ty = sh.$2 - hip.$2;
+      final hx = head.$1 - sh.$1, hy = head.$2 - sh.$2;
+      final cross = tx * hy - ty * hx;
+      expect(cross.abs(), lessThan(1e-9), reason: 'head is off the torso line');
+      expect(tx * hx + ty * hy, greaterThan(0),
+          reason: 'head is on the hip side of the shoulder');
+    });
+
+    test('the head scales with the body, and stays a head', () {
+      for (final t in [squatTopTarget, squatBottomTarget]) {
+        final sh = t.joints[LandmarkType.leftShoulder]!;
+        final hip = t.joints[LandmarkType.leftHip]!;
+        final torso = math
+            .sqrt(math.pow(sh.$1 - hip.$1, 2) + math.pow(sh.$2 - hip.$2, 2));
+        final r = t.head!.$3;
+        expect(r, greaterThan(torso * 0.10),
+            reason: '${t.id}: too small to see');
+        expect(r, lessThan(torso * 0.30),
+            reason: '${t.id}: a head that big is a balloon');
+      }
+    });
+
+    test('a target with no torso draws no head rather than guessing', () {
+      const armOnly = PoseTarget(
+        id: 'test.arm',
+        joints: {
+          LandmarkType.leftElbow: (0.5, 0.4),
+          LandmarkType.leftWrist: (0.5, 0.6),
+        },
+        bones: [(LandmarkType.leftElbow, LandmarkType.leftWrist)],
+      );
+      expect(armOnly.head, isNull);
+    });
+
+    test('the head is not part of what gets scored', () {
+      // The guard that keeps drawing and measuring separate. If a head ever
+      // reached `joints`, `poseMatchScore` would start comparing against a
+      // landmark no detector reports.
+      for (final t in [squatTopTarget, squatBottomTarget, pushupTopTarget]) {
+        expect(t.joints.containsKey(LandmarkType.nose), isFalse, reason: t.id);
+      }
     });
   });
 

@@ -21,9 +21,9 @@ class SocialFeedPage extends ConsumerWidget {
       body: Stack(
         children: [
           feedAsync.when(
-            loading: () =>
-                const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(child: Text(AppLocalizations.of(context).catalogError(e))),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Center(
+                child: Text(AppLocalizations.of(context).catalogError(e))),
             data: (posts) => ListView(
               padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
               children: [
@@ -62,6 +62,7 @@ class SocialFeedPage extends ConsumerWidget {
           bottom: MediaQuery.of(sheet).viewInsets.bottom + 16,
         ),
         child: GlassCard(
+          floating: true,
           padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -70,8 +71,9 @@ class SocialFeedPage extends ConsumerWidget {
               TextField(
                 controller: ctl,
                 maxLines: 4,
-                decoration:
-                    InputDecoration(hintText: AppLocalizations.of(context).socialfeedShareSomething),
+                decoration: InputDecoration(
+                    hintText:
+                        AppLocalizations.of(context).socialfeedShareSomething),
               ),
               const SizedBox(height: 12),
               FilledButton(
@@ -117,9 +119,7 @@ class _PostCard extends ConsumerWidget {
                 radius: 16,
                 backgroundColor: AppPalette.auroraTeal,
                 child: Text(
-                  post.authorDisplay.isEmpty
-                      ? '?'
-                      : post.authorDisplay[0],
+                  post.authorDisplay.isEmpty ? '?' : post.authorDisplay[0],
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
@@ -131,8 +131,7 @@ class _PostCard extends ConsumerWidget {
                   style: theme.textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.w800)),
               const Spacer(),
-              Text(_ago(post.createdAt),
-                  style: theme.textTheme.labelSmall),
+              Text(_ago(post.createdAt), style: theme.textTheme.labelSmall),
             ],
           ),
           const SizedBox(height: 8),
@@ -143,9 +142,7 @@ class _PostCard extends ConsumerWidget {
               IconButton(
                 visualDensity: VisualDensity.compact,
                 icon: Icon(
-                  post.likedByMe
-                      ? Icons.favorite
-                      : Icons.favorite_outline,
+                  post.likedByMe ? Icons.favorite : Icons.favorite_outline,
                   color: post.likedByMe ? AppPalette.auroraPink : null,
                 ),
                 onPressed: () async {

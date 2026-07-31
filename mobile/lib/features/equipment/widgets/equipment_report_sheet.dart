@@ -103,6 +103,7 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
         24 + MediaQuery.of(context).viewInsets.bottom,
       ),
       child: GlassCard(
+        floating: true,
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
