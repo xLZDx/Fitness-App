@@ -6,6 +6,7 @@ import '../data/form_classifier.dart';
 import '../data/pose_detector_service.dart';
 import '../data/pose_gate.dart';
 import '../data/pose_landmark.dart';
+import '../data/pose_target.dart';
 import '../data/pose_unit_probe.dart';
 import '../data/rep_counter.dart';
 import '../data/voice_coach.dart';
@@ -17,6 +18,24 @@ enum FormExercise { squat, pushup, deadlift }
 /// counter's signal (hip-versus-knee height) actually tracks.
 final selectedExerciseProvider =
     StateProvider<FormExercise>((_) => FormExercise.squat);
+
+/// The shape the user is aiming at, for the selected movement.
+///
+/// Null when the movement has no authored target yet — in which case the
+/// silhouette is not drawn and no rep is failed for missing it, because failing
+/// someone against a target that does not exist is worse than not judging.
+final poseTargetProvider = Provider<PoseTarget?>((ref) {
+  return switch (ref.watch(selectedExerciseProvider)) {
+    FormExercise.squat => squatBottomTarget,
+    FormExercise.pushup => pushupTopTarget,
+    FormExercise.deadlift => null,
+  };
+});
+
+/// How well the CURRENT frame matches the target, or null when it cannot be
+/// judged. Drives the live outline colour, so the user can see themselves
+/// approaching the shape instead of finding out afterwards.
+final poseMatchProvider = StateProvider<double?>((_) => null);
 
 /// Classifiers for the selected movement, and only those.
 ///
@@ -186,7 +205,16 @@ class RepSessionState {
     this.phase = RepPhase.top,
     this.reps = const <RepQuality>[],
     this.lastRepCue,
+    this.lastRepPeakMatch,
+    this.lastRepMissedTarget,
   });
+
+  /// Closest the body got to the target shape during the last rep, 0..1.
+  final double? lastRepPeakMatch;
+
+  /// Whether the last rep failed to reach the silhouette. Null when there was
+  /// no target to reach, or nothing to measure against it.
+  final bool? lastRepMissedTarget;
 
   final int repCount;
   final RepPhase phase;
@@ -202,9 +230,16 @@ class RepSessionState {
   /// A coach watches the rep and then says one thing. This is that.
   final FormFeedback? lastRepCue;
 
-  /// Whether the rep just finished had any fault. Null before the first rep.
-  bool? get lastRepClean =>
-      reps.isEmpty ? null : reps.last.isClean;
+  /// Whether the rep just finished was a good one. Null before the first rep.
+  ///
+  /// Missing the silhouette counts as a fault in its own right: the per-frame
+  /// rules can all be quiet — most of them are, deliberately — while the body
+  /// never went near the target shape.
+  bool? get lastRepClean {
+    if (reps.isEmpty) return null;
+    if (lastRepMissedTarget == true) return false;
+    return reps.last.isClean;
+  }
 
   int get cleanReps => reps.where((r) => r.isClean).length;
 
@@ -227,6 +262,9 @@ class RepSessionController extends Notifier<RepSessionState> {
 
   /// Worst fault seen since the current repetition began, or null.
   FormFeedback? _worstThisRep;
+
+  /// Closest the body got to the target shape during the current repetition.
+  double? _peakMatchThisRep;
 
   @override
   RepSessionState build() {
@@ -270,6 +308,18 @@ class RepSessionController extends Notifier<RepSessionState> {
     // repeated safety warning.
     if (!result.scorable) return;
 
+    // How close to the target shape this frame got. Kept as the rep's PEAK:
+    // a squat passes through the bottom position for a fraction of a second,
+    // so the question is "did they reach it", not "are they in it right now".
+    final target = ref.read(poseTargetProvider);
+    if (target != null) {
+      final match = poseMatchScore(frame, target);
+      ref.read(poseMatchProvider.notifier).state = match;
+      if (match != null && match > (_peakMatchThisRep ?? -1)) {
+        _peakMatchThisRep = match;
+      }
+    }
+
     final feedback = result.feedback;
     // Remember the worst thing seen SO FAR in this repetition, rather than
     // reacting to it. The decision to speak belongs at the rep boundary.
@@ -284,14 +334,48 @@ class RepSessionController extends Notifier<RepSessionState> {
     if (event == null) return;
 
     final finished = event.kind == RepEventKind.repCompleted;
-    final cue = finished ? _worstThisRep : state.lastRepCue;
-    if (finished) _worstThisRep = null;
+
+    // The silhouette is the verdict. A rep that never reached the target shape
+    // is not a correct rep, however cleanly the per-frame rules ran — and this
+    // is what gives the coach something true to say again. With both absolute
+    // rules withdrawn it had nothing, and marked every rep clean; operator, on
+    // that build: "все повторения правильные даже если я неправильно делаю".
+    if (!finished) {
+      // A phase change or a rejected lap: republish the counter, keep the last
+      // completed rep's verdict on screen.
+      state = RepSessionState(
+        repCount: counter.repCount,
+        phase: counter.phase,
+        reps: counter.reps,
+        lastRepCue: state.lastRepCue,
+        lastRepPeakMatch: state.lastRepPeakMatch,
+        lastRepMissedTarget: state.lastRepMissedTarget,
+      );
+      return;
+    }
+
+    final peak = _peakMatchThisRep;
+    final judged = target != null && peak != null;
+    final missed = judged && peak < kPoseMatchPassing;
+    var cue = _worstThisRep;
+    if (missed) {
+      cue = FormFeedback(
+        rule: 'silhouette.match',
+        severity: 2,
+        cueKey: FormCueKey.silhouetteMissed,
+        metric: peak,
+      );
+    }
+    _worstThisRep = null;
+    _peakMatchThisRep = null;
 
     state = RepSessionState(
       repCount: counter.repCount,
       phase: counter.phase,
       reps: counter.reps,
       lastRepCue: cue,
+      lastRepPeakMatch: peak,
+      lastRepMissedTarget: judged ? missed : null,
     );
 
     // At most one utterance per completed repetition. The coach's own gate

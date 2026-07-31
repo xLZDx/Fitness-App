@@ -11,6 +11,8 @@ import 'data/form_classifier.dart';
 import 'data/mlkit_pose_detector_service.dart';
 import 'data/pose_detector_service.dart';
 import 'data/pose_gate.dart';
+import 'data/pose_landmark.dart';
+import 'data/pose_target.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
 import 'state/form_check_providers.dart';
@@ -107,6 +109,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     final session = ref.watch(repSessionControllerProvider);
     final muted = ref.watch(voiceMutedProvider);
     final gateVerdict = ref.watch(poseGateVerdictProvider);
+    final target = ref.watch(poseTargetProvider);
     // Either the camera never opened, or the native detector died mid-stream.
     // Both mean "no reps will be counted", so both belong in the same slot.
     final failure = _startError ?? ref.watch(poseErrorProvider);
@@ -162,10 +165,29 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                       )
                     else
                       _CameraPreview(svc: svc),
+                    // Over the preview, under the readouts: the shape to aim
+                    // at. Drawn only when the selected movement has one.
+                    if (target != null)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: CustomPaint(
+                            key: const Key('form_check.silhouette'),
+                            painter: _SilhouettePainter(
+                              target: target,
+                              match: ref.watch(poseMatchProvider),
+                            ),
+                          ),
+                        ),
+                      ),
                     Positioned(
                       left: 12,
                       top: 12,
                       child: _RepBadge(session: session),
+                    ),
+                    const Positioned(
+                      right: 12,
+                      top: 12,
+                      child: _MatchReadout(),
                     ),
                     Positioned(
                       left: 12,
@@ -546,6 +568,89 @@ class _ExercisePicker extends ConsumerWidget {
                 ref.read(selectedExerciseProvider.notifier).state = e,
           ),
       ],
+    );
+  }
+}
+
+/// The shape to stand in, painted over the camera.
+///
+/// This is the part that makes the match score legitimate. The score is
+/// invariant to where the user stands and how big they appear, but NOT to the
+/// angle they are filmed from — a squat from the front and the same squat from
+/// the side are different shapes on a flat image. Drawing the target is what
+/// turns that from a hidden assumption into an instruction the user can follow.
+/// A target the user could not see would repeat the exact mistake that made two
+/// earlier rules wrong: judging against a reference nobody agreed to.
+class _SilhouettePainter extends CustomPainter {
+  const _SilhouettePainter({required this.target, required this.match});
+
+  final PoseTarget target;
+
+  /// Live match, 0..1, or null when the body cannot be read.
+  final double? match;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Green once the shape is reached, so the user gets the answer while they
+    // are still in the position and can feel what it corresponds to.
+    final reached = (match ?? 0) >= kPoseMatchPassing;
+    final colour = reached ? AppPalette.auroraTeal : Colors.white;
+    final stroke = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = reached ? 5 : 4
+      ..strokeCap = StrokeCap.round
+      ..color = colour.withValues(alpha: reached ? 0.95 : 0.55);
+    final joint = Paint()..color = colour.withValues(alpha: 0.9);
+
+    Offset at(LandmarkType t) {
+      final j = target.joints[t]!;
+      return Offset(j.$1 * size.width, j.$2 * size.height);
+    }
+
+    for (final (a, b) in target.bones) {
+      canvas.drawLine(at(a), at(b), stroke);
+    }
+    for (final t in target.joints.keys) {
+      canvas.drawCircle(at(t), reached ? 7 : 5, joint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SilhouettePainter old) =>
+      old.target.id != target.id ||
+      // Only when it crosses the line: repainting on every decimal of a live
+      // score would rebuild this overlay on every camera frame for no visible
+      // difference.
+      ((old.match ?? 0) >= kPoseMatchPassing) !=
+          ((match ?? 0) >= kPoseMatchPassing);
+}
+
+/// Live match readout. Small, and only while there is something to report.
+class _MatchReadout extends ConsumerWidget {
+  const _MatchReadout();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final match = ref.watch(poseMatchProvider);
+    if (match == null) return const SizedBox.shrink();
+    final pct = (match * 100).round();
+    final reached = match >= kPoseMatchPassing;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: (reached ? AppPalette.auroraTeal : Colors.black)
+            .withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        AppLocalizations.of(context).formcheckSilhouetteMatch(pct),
+        key: const Key('form_check.match'),
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w800,
+          fontSize: 12,
+        ),
+      ),
     );
   }
 }

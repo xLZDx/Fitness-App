@@ -32,6 +32,7 @@ String formCueText(AppLocalizations l10n, FormCueKey cueKey) =>
       FormCueKey.pushupAlignStraight => l10n.formcheckCuePushupAlignStraight,
       FormCueKey.pushupAlignTuck => l10n.formcheckCuePushupAlignTuck,
       FormCueKey.pushupAlignSagging => l10n.formcheckCuePushupAlignSagging,
+      FormCueKey.silhouetteMissed => l10n.formcheckCueSilhouetteMissed,
     };
 
 /// Human name for a rule id, for the post-set tally.

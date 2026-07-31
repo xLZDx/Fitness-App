@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitness_app/features/form_check/data/form_classifier.dart';
 import 'package:fitness_app/features/form_check/data/pose_detector_service.dart';
 import 'package:fitness_app/features/form_check/data/pose_landmark.dart';
+import 'package:fitness_app/features/form_check/data/pose_target.dart';
 import 'package:fitness_app/features/form_check/data/voice_coach.dart';
 import 'package:fitness_app/features/form_check/state/form_check_providers.dart';
 
@@ -58,6 +59,7 @@ Future<(MockVoiceCoach, RepSessionState, int)> runReps(int reps) async {
     poseDetectorServiceProvider.overrideWithValue(svc),
     voiceCoachProvider.overrideWithValue(coach),
     activeClassifiersProvider.overrideWithValue([_AlwaysFaults()]),
+    poseTargetProvider.overrideWithValue(null),
   ]);
   addTearDown(container.dispose);
 
@@ -70,6 +72,7 @@ Future<(MockVoiceCoach, RepSessionState, int)> runReps(int reps) async {
 }
 
 void main() {
+  silhouetteTests();
   test('a set of three reps produces at most three utterances', () async {
     final (coach, state, frameCount) = await runReps(3);
 
@@ -110,6 +113,9 @@ void main() {
       poseDetectorServiceProvider.overrideWithValue(svc),
       voiceCoachProvider.overrideWithValue(coach),
       activeClassifiersProvider.overrideWithValue([SquatDepthClassifier()]),
+      // No target: this test is about the RULES having nothing to say, and a
+      // stick-figure fixture would fail a silhouette it was never drawn for.
+      poseTargetProvider.overrideWithValue(null),
     ]);
     addTearDown(container.dispose);
 
@@ -151,5 +157,132 @@ void main() {
       expect(container.read(activeClassifiersProvider).map((c) => c.rule),
           ['pushup.alignment']);
     });
+  });
+}
+
+/// The silhouette gate: a repetition that never reached the target shape is not
+/// a correct repetition, whatever the per-frame rules said.
+///
+/// Operator, on the build where both absolute rules had been withdrawn and
+/// nothing had replaced them: *"новый билд вообще больше не говорит ничего и
+/// все повторения правильные даже если я неправильно делаю"*. Silence was the
+/// honest answer to a coach with no reliable measure — and a useless one. These
+/// tests are the difference between the two.
+/// The silhouette gate: a repetition that never reached the target shape is not
+/// a correct repetition, whatever the per-frame rules said.
+///
+/// Operator, on the build where both absolute rules had been withdrawn and
+/// nothing had replaced them: *"новый билд вообще больше не говорит ничего и
+/// все повторения правильные даже если я неправильно делаю"*. Silence was the
+/// honest answer for a coach with no reliable measure, and a useless one. This
+/// is the difference between the two.
+///
+/// Both fixtures are built by interpolating the SHIPPED targets rather than by
+/// hand. A hand-drawn "good squat" would only ever prove that my drawing
+/// matches my own target.
+PoseFrame _blend(int ts, double t, {bool upright = false}) {
+  PoseLandmark lm(LandmarkType k, (double, double) a, (double, double) b) {
+    var x = a.$1 + (b.$1 - a.$1) * t;
+    final y = a.$2 + (b.$2 - a.$2) * t;
+    // The shallow variant keeps everything stacked vertically: hips drop, but
+    // the torso never inclines and the knees never travel forward. It reaches
+    // the same DEPTH and is a different SHAPE, which is the distinction the
+    // silhouette exists to make and hip-versus-knee height cannot.
+    if (upright) x = a.$1;
+    return PoseLandmark(type: k, x: x, y: y, likelihood: 0.95);
+  }
+
+  final out = <LandmarkType, PoseLandmark>{};
+  for (final k in squatTopTarget.joints.keys) {
+    out[k] = lm(k, squatTopTarget.joints[k]!, squatBottomTarget.joints[k]!);
+  }
+  // The counter reads both hips and both knees; the targets carry the left side
+  // only, so mirror it.
+  out[LandmarkType.rightHip] = PoseLandmark(
+      type: LandmarkType.rightHip,
+      x: out[LandmarkType.leftHip]!.x + 0.04,
+      y: out[LandmarkType.leftHip]!.y,
+      likelihood: 0.95);
+  out[LandmarkType.rightKnee] = PoseLandmark(
+      type: LandmarkType.rightKnee,
+      x: out[LandmarkType.leftKnee]!.x + 0.04,
+      y: out[LandmarkType.leftKnee]!.y,
+      likelihood: 0.95);
+  out[LandmarkType.rightShoulder] = PoseLandmark(
+      type: LandmarkType.rightShoulder,
+      x: out[LandmarkType.leftShoulder]!.x + 0.04,
+      y: out[LandmarkType.leftShoulder]!.y,
+      likelihood: 0.95);
+  return PoseFrame(timestampMs: ts, landmarks: out);
+}
+
+List<PoseFrame> _squatRep({required bool upright}) {
+  final out = <PoseFrame>[];
+  var ts = 0;
+  void hold(double t, int n) {
+    for (var i = 0; i < n; i++) {
+      out.add(_blend(ts += 100, t, upright: upright));
+    }
+  }
+
+  hold(0, 4);
+  for (var t = 0.15; t < 1.0; t += 0.15) {
+    out.add(_blend(ts += 100, t, upright: upright));
+  }
+  hold(1.0, 4);
+  for (var t = 0.85; t > 0.0; t -= 0.15) {
+    out.add(_blend(ts += 100, t, upright: upright));
+  }
+  hold(0, 4);
+  return out;
+}
+
+Future<RepSessionState> _runSquat(List<PoseFrame> frames) async {
+  final svc = MockPoseDetectorService(frames);
+  final container = ProviderContainer(overrides: [
+    poseDetectorServiceProvider.overrideWithValue(svc),
+    voiceCoachProvider.overrideWithValue(MockVoiceCoach()),
+  ]);
+  addTearDown(container.dispose);
+  container.read(selectedExerciseProvider.notifier).state = FormExercise.squat;
+  container.read(repSessionControllerProvider);
+  await svc.start();
+  await pumpEventQueue();
+  final s = container.read(repSessionControllerProvider);
+  await svc.dispose();
+  return s;
+}
+
+void silhouetteTests() {
+  test('a squat done in the target shape passes', () async {
+    final s = await _runSquat(_squatRep(upright: false));
+    expect(s.repCount, greaterThan(0), reason: 'the rep must be counted');
+    expect(s.lastRepPeakMatch, isNotNull,
+        reason: 'a full body must be scorable against the target');
+    expect(s.lastRepMissedTarget, isFalse,
+        reason: 'peak ${s.lastRepPeakMatch}');
+    expect(s.lastRepClean, isTrue);
+  });
+
+  test('the same DEPTH in the wrong SHAPE fails', () async {
+    // This is the case the withdrawn depth rule could never have caught, and
+    // the case the operator hit from the other side: both reps reach the same
+    // hip height, so hipY-versus-kneeY cannot tell them apart. The silhouette
+    // can, because it compares the whole body.
+    final s = await _runSquat(_squatRep(upright: true));
+    expect(s.repCount, greaterThan(0),
+        reason: 'it is still a repetition -- it must be counted and then '
+            'judged, not silently ignored');
+    expect(s.lastRepMissedTarget, isTrue,
+        reason: 'peak ${s.lastRepPeakMatch}');
+    expect(s.lastRepClean, isFalse);
+    expect(s.lastRepCue?.cueKey, FormCueKey.silhouetteMissed);
+  });
+
+  test('the good rep scores strictly higher than the bad one', () async {
+    final good = await _runSquat(_squatRep(upright: false));
+    final bad = await _runSquat(_squatRep(upright: true));
+    expect(good.lastRepPeakMatch!, greaterThan(bad.lastRepPeakMatch!),
+        reason: 'good=${good.lastRepPeakMatch} bad=${bad.lastRepPeakMatch}');
   });
 }

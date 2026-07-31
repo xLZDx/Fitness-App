@@ -30,6 +30,10 @@ enum FormCueKey {
   pushupAlignStraight,
   pushupAlignTuck,
   pushupAlignSagging,
+
+  /// The repetition never reached the shape on screen. Emitted by the
+  /// silhouette match rather than by a per-frame rule.
+  silhouetteMissed,
 }
 
 /// Result of a single rule running on a single frame.
