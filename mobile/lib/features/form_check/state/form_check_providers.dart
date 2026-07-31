@@ -6,6 +6,7 @@ import '../data/form_classifier.dart';
 import '../data/pose_detector_service.dart';
 import '../data/pose_gate.dart';
 import '../data/pose_landmark.dart';
+import '../data/pose_unit_probe.dart';
 import '../data/rep_counter.dart';
 import '../data/voice_coach.dart';
 
@@ -62,10 +63,20 @@ final poseGateConfigProvider =
 final poseGateVerdictProvider =
     StateProvider<PoseGateVerdict>((_) => PoseGateVerdict.ok);
 
+/// What the coordinates actually measured this session.
+///
+/// Read-only: nothing in the scoring path consults it. It exists because every
+/// threshold in the gate, the rep counter and the classifiers was picked against
+/// an assumed range, and this is the first thing in the app that reports the
+/// real one. See `pose_unit_probe.dart`.
+final poseUnitReportProvider =
+    StateProvider<PoseUnitReport>((_) => PoseUnitReport.empty);
+
 /// Drives the live overlay: every frame, run the active classifier set
 /// and emit the worst feedback. Null when no frame yet / no rule fires.
 class FormFeedbackController extends Notifier<FormFeedback?> {
   StreamSubscription<PoseFrame>? _sub;
+  final PoseUnitProbe _probe = PoseUnitProbe();
 
   @override
   FormFeedback? build() {
@@ -80,6 +91,11 @@ class FormFeedbackController extends Notifier<FormFeedback?> {
   }
 
   void _onFrame(PoseFrame frame) {
+    // Before the gate, on purpose: a frame the gate rejects is exactly the
+    // frame whose coordinates are most worth knowing about.
+    _probe.observe(frame);
+    ref.read(poseUnitReportProvider.notifier).state = _probe.report;
+
     final classifiers = ref.read(activeClassifiersProvider);
     final result = evaluateGated(
       classifiers,

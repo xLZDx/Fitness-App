@@ -170,6 +170,13 @@ void main() {
           lessThan(PoseGateVerdict.outOfFrame.priority));
       expect(PoseGateVerdict.outOfFrame.priority,
           lessThan(PoseGateVerdict.implausibleGeometry.priority));
+      // A unit mismatch outranks every user-fixable reason, because it is not
+      // one: showing "step back" ahead of it sends the user to fix a problem
+      // that is not theirs and cannot be fixed by moving.
+      expect(PoseGateVerdict.unitMismatch.priority,
+          lessThan(PoseGateVerdict.missingJoints.priority));
+      expect(PoseGateVerdict.unitMismatch.priority,
+          greaterThan(PoseGateVerdict.ok.priority));
       expect(PoseGateVerdict.ok.isScorable, isTrue);
     });
   });
@@ -252,6 +259,99 @@ void main() {
         expect(hinge(x, 0.50)!.severity, 0);
         expect(hinge(0.50, x)!.severity, 0);
       }
+    });
+  });
+
+  group('the frame carries the shape of its own coordinate space', () {
+    // V0b. Before this the gate compared x against 1.0 on every frame, which is
+    // the right bound only for a square picture -- and no phone camera produces
+    // one. See pose_coordinate_space.dart for the contract.
+
+    PoseFrame portrait(Map<LandmarkType, PoseLandmark> ls) => PoseFrame(
+          timestampMs: 0,
+          landmarks: ls,
+          aspectRatio: 0.5625, // 9:16, the shape of a phone in portrait
+        );
+
+    test('x past the right edge of a portrait frame is out of frame', () {
+      // 0.9 is inside [0,1] and outside [0, 0.5625]. Under the old bound this
+      // frame scored normally, measuring a hip that was off the picture.
+      final f = portrait({
+        LandmarkType.leftShoulder: p(LandmarkType.leftShoulder, 0.30, 0.20),
+        LandmarkType.rightShoulder: p(LandmarkType.rightShoulder, 0.35, 0.20),
+        LandmarkType.leftHip: p(LandmarkType.leftHip, 0.90, 0.50),
+        LandmarkType.rightHip: p(LandmarkType.rightHip, 0.90, 0.50),
+        LandmarkType.leftKnee: p(LandmarkType.leftKnee, 0.30, 0.70),
+        LandmarkType.rightKnee: p(LandmarkType.rightKnee, 0.30, 0.70),
+      });
+      expect(gatePose(f, kSquatJoints), PoseGateVerdict.outOfFrame);
+    });
+
+    test('the same x is fine on a frame that is actually that wide', () {
+      // The positive control: 0.9 is not intrinsically bad, it is bad relative
+      // to a bound. Without this the test above would also pass if the gate had
+      // simply started rejecting everything.
+      final ls = {
+        LandmarkType.leftShoulder: p(LandmarkType.leftShoulder, 0.30, 0.20),
+        LandmarkType.rightShoulder: p(LandmarkType.rightShoulder, 0.35, 0.20),
+        LandmarkType.leftHip: p(LandmarkType.leftHip, 0.90, 0.50),
+        LandmarkType.rightHip: p(LandmarkType.rightHip, 0.90, 0.50),
+        LandmarkType.leftKnee: p(LandmarkType.leftKnee, 0.30, 0.70),
+        LandmarkType.rightKnee: p(LandmarkType.rightKnee, 0.30, 0.70),
+      };
+      final wide =
+          PoseFrame(timestampMs: 0, landmarks: ls, aspectRatio: 1.78);
+      expect(gatePose(wide, kSquatJoints), PoseGateVerdict.ok);
+    });
+  });
+
+  group('coordinates that never got converted are reported as a bug', () {
+    test('raw pixels are a unit mismatch, NOT out of frame', () {
+      // The regression that matters most here is the verdict, not the refusal.
+      // Either way the frame is rejected; only one of them tells the user the
+      // truth. "Step back" cannot move a coordinate from 300 to 0.5, so the
+      // user would keep stepping back, keep failing, and conclude they are the
+      // problem.
+      final f = frame({
+        LandmarkType.leftShoulder: p(LandmarkType.leftShoulder, 150, 200),
+        LandmarkType.rightShoulder: p(LandmarkType.rightShoulder, 330, 200),
+        LandmarkType.leftHip: p(LandmarkType.leftHip, 200, 350),
+        LandmarkType.rightHip: p(LandmarkType.rightHip, 280, 350),
+        LandmarkType.leftKnee: p(LandmarkType.leftKnee, 200, 520),
+        LandmarkType.rightKnee: p(LandmarkType.rightKnee, 280, 520),
+      });
+      expect(gatePose(f, kSquatJoints), PoseGateVerdict.unitMismatch);
+      expect(gatePose(f, kSquatJoints), isNot(PoseGateVerdict.outOfFrame));
+    });
+
+    test('a legitimately extrapolated joint is NOT a unit mismatch', () {
+      // BlazePose reports joints just outside the picture. Those are ordinary
+      // and must stay ordinary: if the smoke detector fires on them, every user
+      // whose feet leave the bottom of frame is told the app is broken.
+      final f = frame({
+        LandmarkType.leftShoulder: p(LandmarkType.leftShoulder, 0.40, 0.20),
+        LandmarkType.rightShoulder: p(LandmarkType.rightShoulder, 0.60, 0.20),
+        LandmarkType.leftHip: p(LandmarkType.leftHip, 0.40, 0.55),
+        LandmarkType.rightHip: p(LandmarkType.rightHip, 0.60, 0.55),
+        LandmarkType.leftKnee: p(LandmarkType.leftKnee, 0.40, 0.85),
+        LandmarkType.rightKnee: p(LandmarkType.rightKnee, 0.60, 0.85),
+        LandmarkType.leftAnkle: p(LandmarkType.leftAnkle, 0.40, 1.20),
+        LandmarkType.rightAnkle: p(LandmarkType.rightAnkle, 0.60, 1.25),
+      });
+      expect(gatePose(f, kSquatJoints), isNot(PoseGateVerdict.unitMismatch));
+    });
+
+    test('a NaN coordinate is a unit mismatch, not silently compared', () {
+      // Every comparison against NaN is false, so an unguarded NaN sails through
+      // the edge check and reaches the classifiers, which produce a NaN angle
+      // and a confident verdict from it.
+      final f = frame({
+        LandmarkType.leftHip: p(LandmarkType.leftHip, double.nan, 0.50),
+        LandmarkType.rightHip: p(LandmarkType.rightHip, 0.55, 0.50),
+        LandmarkType.leftKnee: p(LandmarkType.leftKnee, 0.45, 0.70),
+        LandmarkType.rightKnee: p(LandmarkType.rightKnee, 0.55, 0.70),
+      });
+      expect(gatePose(f, kSquatJoints), PoseGateVerdict.unitMismatch);
     });
   });
 }

@@ -18,11 +18,12 @@
 /// real fault it will ever report.
 ///
 /// Thresholds here are opening values chosen from the failure they must catch,
-/// not measured on a device fleet — and they are expressed in whatever unit the
-/// landmarks arrive in, which as of this writing is **not settled** (the plugin
-/// documents image space; the incident above is arithmetically inconsistent with
-/// image space). Do not tune them until the diagnostic in
-/// `pose_unit_probe.dart` has been read off a real device.
+/// not measured on a device fleet. They are expressed in the isotropic frame
+/// space defined by `pose_coordinate_space.dart` — `y ∈ [0, 1]`,
+/// `x ∈ [0, aspectRatio]` — which the detector now genuinely produces, rather
+/// than in the unit a doc comment once claimed and nothing enforced. Do not tune
+/// them until `pose_unit_probe.dart` has been read off a real device: knowing
+/// the unit is not the same as knowing what a real body measures in it.
 library;
 
 import 'dart:math' as math;
@@ -39,20 +40,31 @@ enum PoseGateVerdict {
   /// Usable: every joint the rule needs is present, confident and in frame.
   ok(priority: 0),
 
+  /// Coordinates are nowhere near the contract in `pose_coordinate_space.dart`
+  /// — orders of magnitude out, not merely off-frame. Something upstream
+  /// bypassed the conversion.
+  ///
+  /// Separate from [outOfFrame] deliberately, and ranked above it, because the
+  /// two demand opposite responses. "Step back" is sound advice to a user who is
+  /// standing too close and useless-to-cruel advice to a user hitting a bug: no
+  /// amount of stepping back moves a coordinate from 300 to 0.5, so they would
+  /// step back until they gave up, having done nothing wrong.
+  unitMismatch(priority: 1),
+
   /// A joint the rule needs was not reported at all.
-  missingJoints(priority: 1),
+  missingJoints(priority: 2),
 
   /// Joints are reported but the detector is guessing — the signature of a
   /// body that is not really in the picture.
-  lowConfidence(priority: 2),
+  lowConfidence(priority: 3),
 
   /// Joints sit on or past the frame edge: the body is cropped, so any measure
   /// taken from them is against a boundary, not a limb.
-  outOfFrame(priority: 3),
+  outOfFrame(priority: 4),
 
   /// The torso is too small to be a real one at this framing — what a face
   /// close-up collapses to once the hips are extrapolated.
-  implausibleGeometry(priority: 4);
+  implausibleGeometry(priority: 5);
 
   const PoseGateVerdict({required this.priority});
 
@@ -70,9 +82,11 @@ class PoseGateConfig {
     this.minLikelihood = 0.7,
     this.edgeMargin = 0.02,
     this.minTorsoSpan = 0.10,
+    this.unitSanitySlack = 4.0,
   })  : assert(minLikelihood > 0 && minLikelihood <= 1),
         assert(edgeMargin >= 0 && edgeMargin < 0.5),
-        assert(minTorsoSpan >= 0 && minTorsoSpan < 1);
+        assert(minTorsoSpan >= 0 && minTorsoSpan < 1),
+        assert(unitSanitySlack >= 1);
 
   /// Per-joint confidence floor.
   ///
@@ -95,6 +109,17 @@ class PoseGateConfig {
   /// shipped rules — and would have rejected every supine exercise. A gate
   /// built to stop false alarms had turned itself into a false silence.
   final double minTorsoSpan;
+
+  /// How far outside the contract a coordinate may stray before the frame is
+  /// called a unit mismatch rather than a body out of shot.
+  ///
+  /// Wide on purpose. This is not a framing check — [edgeMargin] does that — it
+  /// is a smoke detector for a conversion that did not run, and the two
+  /// hypotheses it separates differ by a factor of several hundred. Set it tight
+  /// and a legitimately extrapolated ankle below the frame reads as a bug; the
+  /// only cost of setting it loose is that a truly absurd coordinate is called
+  /// out one frame later.
+  final double unitSanitySlack;
 }
 
 /// Decide whether [frame] can be scored for a rule that reads [required].
@@ -117,6 +142,12 @@ PoseGateVerdict gatePose(
   Set<LandmarkType> required, {
   PoseGateConfig config = const PoseGateConfig(),
 }) {
+  // Before anything else: are these coordinates even in the unit the rest of
+  // this function is written in. Every check below is a bare number compared
+  // against a landmark, so if the contract was bypassed they do not fail —
+  // they produce a confident, specific and wrong answer.
+  if (_unitLooksWrong(frame, config)) return PoseGateVerdict.unitMismatch;
+
   for (final type in required) {
     final lm = frame.landmarks[type];
     if (lm == null) return PoseGateVerdict.missingJoints;
@@ -125,11 +156,16 @@ PoseGateVerdict gatePose(
     }
   }
 
+  // Per-axis, because the axes have different extents: y tops out at 1 while x
+  // tops out at the aspect ratio. Checking x against 1.0 on a 9:16 portrait
+  // frame passes any x in (0.5625, 1.0] — coordinates that are off the right
+  // edge of the picture — as comfortably inside it.
   final lo = config.edgeMargin;
-  final hi = 1.0 - config.edgeMargin;
+  final yHi = 1.0 - config.edgeMargin;
+  final xHi = frame.aspectRatio - config.edgeMargin;
   for (final type in required) {
     final lm = frame.landmarks[type]!;
-    if (lm.x <= lo || lm.x >= hi || lm.y <= lo || lm.y >= hi) {
+    if (lm.x <= lo || lm.x >= xHi || lm.y <= lo || lm.y >= yHi) {
       return PoseGateVerdict.outOfFrame;
     }
   }
@@ -139,6 +175,22 @@ PoseGateVerdict gatePose(
   }
 
   return PoseGateVerdict.ok;
+}
+
+/// Frame-level sanity: is any coordinate so far outside the contract that the
+/// conversion in `pose_coordinate_space.dart` cannot have run.
+///
+/// Reads every landmark, not just the rule's, and ignores likelihood: a joint
+/// the detector has no confidence in still had its coordinate produced by the
+/// same pipeline, so it is just as good a witness to the unit.
+bool _unitLooksWrong(PoseFrame frame, PoseGateConfig config) {
+  final slack = config.unitSanitySlack;
+  for (final lm in frame.landmarks.values) {
+    if (lm.x.isNaN || lm.y.isNaN) return true;
+    if (lm.y < -slack || lm.y > 1.0 + slack) return true;
+    if (lm.x < -slack || lm.x > frame.aspectRatio + slack) return true;
+  }
+  return false;
 }
 
 /// Frame-level sanity: is the torso big enough to belong to a real person.

@@ -63,6 +63,11 @@ String poseGateHint(AppLocalizations l10n, PoseGateVerdict verdict) =>
       PoseGateVerdict.outOfFrame => l10n.formcheckGateOutOfFrame,
       PoseGateVerdict.implausibleGeometry =>
         l10n.formcheckStandBackSoYourFullBody,
+      // The only verdict whose text asks the user to do nothing, because there
+      // is nothing they can do. Every other hint names a correction; this one
+      // names a limitation and says what still works, so the screen is not
+      // silently degraded into looking broken.
+      PoseGateVerdict.unitMismatch => l10n.formcheckGateUnitMismatch,
     };
 
 /// Name of the phase of a repetition.

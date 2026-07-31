@@ -190,6 +190,23 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
             ),
             const SizedBox(height: 16),
           ],
+          // The coordinate diagnostic. Deliberately on screen in a release
+          // build rather than behind `kDebugMode`: the measurement it exists to
+          // produce can only be taken on the operator's own phone, in the gym,
+          // with a real body in frame — a value that never leaves a debug build
+          // is a value nobody ever reads. It disappears once V0c has the number.
+          if (!ref.watch(poseUnitReportProvider).isEmpty) ...[
+            Text(
+              ref.watch(poseUnitReportProvider).summary,
+              key: const Key('form-check-unit-probe'),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.white38,
+                fontFamily: 'monospace',
+                fontSize: 11,
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           _SetSummaryCard(
             session: session,
             onReset: () =>

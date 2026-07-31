@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:google_mlkit_commons/google_mlkit_commons.dart' show InputImage;
+import 'package:google_mlkit_commons/google_mlkit_commons.dart'
+    show InputImage, InputImageMetadata, InputImageRotation;
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart'
     as mlkit;
 
@@ -8,6 +9,7 @@ import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/services.dart' show PlatformException;
 
 import '../../../core/camera/camera_session.dart';
+import 'pose_coordinate_space.dart';
 import 'pose_detector_service.dart';
 import 'pose_landmark.dart';
 
@@ -74,7 +76,7 @@ class MlKitPoseDetectorService implements PoseDetectorService {
       if (detector == null) return; // stopped mid-frame
       final poses = await detector.processImage(inputImage);
       if (poses.isEmpty) return;
-      final frame = _convert(poses.first);
+      final frame = _convert(poses.first, inputImage.metadata);
       _ctrl.add(frame);
     } on PlatformException catch (e) {
       // The native detector rejected the call outright — a bad frame format,
@@ -97,20 +99,31 @@ class MlKitPoseDetectorService implements PoseDetectorService {
     }
   }
 
-  /// Translate ML Kit's joint set into [PoseFrame]. We only forward the
+  /// Translate ML Kit's joint set into [PoseFrame], converting coordinates into
+  /// the isotropic contract in `pose_coordinate_space.dart`. We only forward the
   /// joints our classifiers actually read, so the wire stays light.
-  PoseFrame _convert(mlkit.Pose pose) {
+  ///
+  /// This is the **only** place raw detector coordinates exist. Everything
+  /// downstream — gate, rep counter, every classifier — is written against the
+  /// converted unit, and had been since before anything converted anything.
+  PoseFrame _convert(mlkit.Pose pose, InputImageMetadata? metadata) {
     final ts = DateTime.now().millisecondsSinceEpoch;
+    final norm = _normaliserFor(pose, metadata);
     final out = <LandmarkType, PoseLandmark>{};
     void add(LandmarkType t, mlkit.PoseLandmarkType src,
         {LandmarkSide side = LandmarkSide.center}) {
       final lm = pose.landmarks[src];
       if (lm == null) return;
+      final (x, y) = norm.normalise(lm.x, lm.y);
       out[t] = PoseLandmark(
         type: t,
-        x: lm.x,
-        y: lm.y,
-        z: lm.z,
+        x: x,
+        y: y,
+        // z shares the detector's horizontal scale, so it takes the same
+        // divisor as x to stay comparable with it.
+        z: norm.space == PoseCoordinateSpace.pixels
+            ? lm.z / norm.imageHeight
+            : lm.z,
         likelihood: lm.likelihood,
         side: side,
       );
@@ -142,7 +155,51 @@ class MlKitPoseDetectorService implements PoseDetectorService {
     add(LandmarkType.rightAnkle, mlkit.PoseLandmarkType.rightAnkle,
         side: LandmarkSide.right);
 
-    return PoseFrame(timestampMs: ts, landmarks: out);
+    return PoseFrame(
+      timestampMs: ts,
+      landmarks: out,
+      aspectRatio: norm.aspectRatio,
+      sourceSpace: norm.space,
+    );
+  }
+
+  /// Builds the converter for one frame: the post-rotation frame size, plus the
+  /// space the raw values are actually in, measured rather than assumed.
+  ///
+  /// Falls back to a square frame when metadata is absent, which cannot happen
+  /// for a camera-stream image (`camera_session.dart` always supplies it) but is
+  /// possible for an `InputImage` built from a file path. A square frame is the
+  /// identity for the aspect correction, so the fallback degrades to "no
+  /// horizontal correction" instead of to a wrong one.
+  PoseCoordinateNormaliser _normaliserFor(
+    mlkit.Pose pose,
+    InputImageMetadata? metadata,
+  ) {
+    var w = metadata?.size.width ?? 1.0;
+    var h = metadata?.size.height ?? 1.0;
+    // ML Kit reports landmarks in the upright image, so a sensor mounted at
+    // 90° or 270° means the frame the coordinates live in has the camera's
+    // width and height swapped. Getting this backwards does not corrupt the
+    // angles — both axes still share one divisor — but it does put the x bound
+    // in the wrong place, which is the gate's edge check.
+    final rotation = metadata?.rotation;
+    if (rotation == InputImageRotation.rotation90deg ||
+        rotation == InputImageRotation.rotation270deg) {
+      final swap = w;
+      w = h;
+      h = swap;
+    }
+    if (w <= 0 || h <= 0) {
+      w = 1.0;
+      h = 1.0;
+    }
+    return PoseCoordinateNormaliser(
+      space: detectCoordinateSpace(
+        pose.landmarks.values.expand((lm) => [lm.x, lm.y]),
+      ),
+      imageWidth: w,
+      imageHeight: h,
+    );
   }
 
   /// Releases the camera and the detector, leaving the service **restartable**.
