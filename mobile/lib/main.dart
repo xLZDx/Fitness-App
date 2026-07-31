@@ -27,6 +27,7 @@ import 'features/donor_wall/data/cloud_donor_wall_repository.dart';
 import 'features/donor_wall/state/donor_wall_providers.dart';
 import 'features/equipment/data/cloud_functions_equipment_report_service.dart';
 import 'features/equipment/state/equipment_providers.dart';
+import 'features/form_check/data/cue_text.dart';
 import 'features/form_check/data/mlkit_pose_detector_service.dart';
 import 'features/form_check/data/tts_voice_coach.dart';
 import 'features/form_check/state/form_check_providers.dart';
@@ -129,7 +130,39 @@ Future<void> main() async {
         // open a TTS MethodChannel; the throttling policy is identical in
         // both, it lives in the shared CueGate.
         voiceCoachProvider.overrideWith((ref) {
-          final coach = TtsVoiceCoach();
+          // The coach speaks whatever language the app is in. Both halves of
+          // that matter and both were broken: the cues were English literals
+          // baked into the classifiers, and the engine was pinned to en-US, so
+          // even translated text would have been read by an English voice.
+          final lang = ref.watch(effectiveLanguageCodeProvider);
+          AppLocalizations? l10n;
+          Object? l10nError;
+          // `unawaited` silences the lint, not the error — without an explicit
+          // handler a failed load left `l10n` null forever and every cue
+          // resolved to nothing. A coach that goes permanently, invisibly mute
+          // is the exact defect this whole gate exists to remove.
+          unawaited(AppLocalizations.delegate.load(Locale(lang)).then(
+            (loaded) => l10n = loaded,
+            onError: (Object e, StackTrace st) {
+              l10nError = e;
+              debugPrint('form-coach localisation failed to load: $e');
+            },
+          ));
+          final coach = TtsVoiceCoach(
+            languageTag: lang == 'ru' ? 'ru-RU' : 'en-US',
+            // Empty until the bundle lands (a few milliseconds at startup).
+            // GatedVoiceCoach skips empty text, so the coach is briefly silent
+            // rather than reading a raw key like "squat.depth.half" out loud.
+            resolveText: (key) {
+              final loaded = l10n;
+              if (loaded != null) return formCueText(loaded, key);
+              // Still loading (a few milliseconds at startup): stay quiet, the
+              // next frame will resolve. Failed outright: say the key. It is
+              // ugly on purpose — a broken coach the user can hear is
+              // recoverable, a silent one is not.
+              return l10nError == null ? '' : key.name;
+            },
+          );
           ref.onDispose(() => coach.dispose());
           return coach;
         }),

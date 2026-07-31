@@ -6,10 +6,11 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
+import 'data/cue_text.dart';
 import 'data/form_classifier.dart';
 import 'data/mlkit_pose_detector_service.dart';
 import 'data/pose_detector_service.dart';
-import 'data/rep_counter.dart';
+import 'data/pose_gate.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
 import 'state/form_check_providers.dart';
@@ -101,6 +102,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     final svc = ref.watch(poseDetectorServiceProvider);
     final session = ref.watch(repSessionControllerProvider);
     final muted = ref.watch(voiceMutedProvider);
+    final gateVerdict = ref.watch(poseGateVerdictProvider);
     // Either the camera never opened, or the native detector died mid-stream.
     // Both mean "no reps will be counted", so both belong in the same slot.
     final failure = _startError ?? ref.watch(poseErrorProvider);
@@ -160,7 +162,10 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                       left: 12,
                       right: 12,
                       bottom: 12,
-                      child: _CueCard(feedback: feedback),
+                      child: _CueCard(
+                        feedback: feedback,
+                        gateVerdict: gateVerdict,
+                      ),
                     ),
                   ],
                 ),
@@ -168,6 +173,23 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
             ),
           ),
           const SizedBox(height: 16),
+          // A coach that has gone silent because the device has no voice
+          // installed is indistinguishable from a coach with nothing to say.
+          // `lastErrorMessage` existed for exactly this and nothing read it —
+          // the same wiring `health_sync_card.dart` already uses for health.
+          if (ref.watch(voiceCoachProvider).lastErrorMessage != null) ...[
+            GlassCard(
+              child: Text(
+                AppLocalizations.of(context).formcheckVoiceUnavailable,
+                key: const Key('form_check.voice_error'),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: AppPalette.auroraPeach,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           _SetSummaryCard(
             session: session,
             onReset: () =>
@@ -265,7 +287,8 @@ class _RepBadge extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            AppLocalizations.of(context).formcheckReps(repPhaseLabel(session.phase)),
+            AppLocalizations.of(context)
+                .formcheckReps(repPhaseText(AppLocalizations.of(context), session.phase)),
             key: const Key('form_check.phase'),
             style: theme.textTheme.labelSmall?.copyWith(
               color: Colors.white70,
@@ -277,14 +300,6 @@ class _RepBadge extends StatelessWidget {
     );
   }
 }
-
-/// Human-readable name for a [RepPhase].
-String repPhaseLabel(RepPhase phase) => switch (phase) {
-      RepPhase.top => 'ready',
-      RepPhase.descending => 'lowering',
-      RepPhase.bottom => 'bottom',
-      RepPhase.ascending => 'driving up',
-    };
 
 /// Post-set tally: how many reps were clean, how many the rules complained
 /// about, and which rules did the complaining.
@@ -309,8 +324,13 @@ class _SetSummaryCard extends StatelessWidget {
       );
     }
 
+    // Rule ids are internal. They reached the operator's screen verbatim as
+    // "Ошибки: squat.depth, deadlift.back_angle, pushup.alignment" — English
+    // identifiers on a Russian page. Translate at the boundary.
     final offenders = <String>{
-      for (final rep in session.reps) ...rep.offendingRules,
+      for (final rep in session.reps)
+        for (final rule in rep.offendingRules)
+          formRuleName(AppLocalizations.of(context), rule),
     };
 
     return GlassCard(
@@ -369,9 +389,11 @@ class _UpgradeCard extends StatelessWidget {
                 ?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 4),
+          // Was a raw English literal quoting a competitor's hardware price.
+          // Localized, and the unverifiable price claim dropped — what the
+          // feature actually does is the honest version of the same pitch.
           Text(
-            r'Free of $2,500 hardware. Works on your phone — no '
-            'depth-camera required.',
+            AppLocalizations.of(context).formcheckUpgradeSubtitle,
             style: theme.textTheme.bodySmall,
           ),
         ],
@@ -381,13 +403,21 @@ class _UpgradeCard extends StatelessWidget {
 }
 
 class _CueCard extends StatelessWidget {
-  const _CueCard({this.feedback});
+  const _CueCard({this.feedback, this.gateVerdict = PoseGateVerdict.ok});
+
   final FormFeedback? feedback;
+
+  /// Why the last frame was unscorable. Drives the placeholder text, so
+  /// "step back" and "too dark to read your position" are told apart instead
+  /// of both showing the same generic line.
+  final PoseGateVerdict gateVerdict;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     if (feedback == null) {
+      final hint = poseGateHint(l10n, gateVerdict);
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -395,7 +425,8 @@ class _CueCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
         ),
         child: Text(
-          AppLocalizations.of(context).formcheckStandBackSoYourFullBody,
+          hint.isEmpty ? l10n.formcheckStandBackSoYourFullBody : hint,
+          key: const Key('form_check.gate_hint'),
           style: theme.textTheme.bodyMedium?.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w700,
@@ -415,7 +446,8 @@ class _CueCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
       ),
       child: Text(
-        feedback!.cue,
+        formCueText(l10n, feedback!.cueKey),
+        key: const Key('form_check.cue'),
         style: theme.textTheme.titleSmall?.copyWith(
           color: Colors.white,
           fontWeight: FontWeight.w800,

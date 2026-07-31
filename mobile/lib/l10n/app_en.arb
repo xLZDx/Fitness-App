@@ -804,5 +804,24 @@
         "type": "Object"
       }
     }
-  }
+  },
+  "formcheckCueSquatDepthGood": "Good depth. Drive up.",
+  "formcheckCueSquatDepthAlmost": "Almost there - sink a touch lower.",
+  "formcheckCueSquatDepthHalf": "Half-rep. Lighten the bar and hit depth.",
+  "formcheckCueDeadliftHipHingeShallow": "Torso is close to upright.",
+  "formcheckCueDeadliftHipHingeDeep": "Deep hip hinge.",
+  "formcheckCuePushupAlignStraight": "Plank line is straight.",
+  "formcheckCuePushupAlignTuck": "Tuck your hips - keep one straight line.",
+  "formcheckCuePushupAlignSagging": "Hips are sagging. Brace your core.",
+  "formcheckRuleSquatDepth": "Squat depth",
+  "formcheckRuleDeadliftHipHinge": "Hip hinge",
+  "formcheckRulePushupAlignment": "Body line",
+  "formcheckPhaseReady": "ready",
+  "formcheckPhaseLowering": "lowering",
+  "formcheckPhaseBottom": "bottom",
+  "formcheckPhaseDrivingUp": "driving up",
+  "formcheckGateLowConfidence": "Too dark or too blurry to read your position.",
+  "formcheckGateOutOfFrame": "Part of you is outside the frame - step back or tilt the phone.",
+  "formcheckUpgradeSubtitle": "Works on the phone you already own - no depth camera, no extra hardware.",
+  "formcheckVoiceUnavailable": "Voice coaching is unavailable on this device - the steps below still work."
 }

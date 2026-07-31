@@ -76,19 +76,37 @@ class CueGate {
 
   final ClockMs _clock;
 
-  String? _lastCue;
+  FormCueKey? _lastCue;
   int? _lastSpokenAtMs;
 
   /// The last cue actually released to the speaker, or null.
-  String? get lastCue => _lastCue;
+  FormCueKey? get lastCue => _lastCue;
 
   /// When [lastCue] was released, or null.
   int? get lastSpokenAtMs => _lastSpokenAtMs;
 
+  /// Decide AND record. Convenience for callers that always speak whatever
+  /// they are given; [peek] + [commit] is the pair to use when speaking can
+  /// still fail after the decision.
   CueDecision decide(FormFeedback feedback) {
+    final decision = peek(feedback);
+    if (decision != CueDecision.suppress) commit(feedback);
+    return decision;
+  }
+
+  /// Decide WITHOUT recording. Pure — call it as often as you like.
+  ///
+  /// The split exists because recording before the cue is actually delivered
+  /// reintroduces the defect this whole feature was written to remove: if the
+  /// text failed to resolve, the cue was dropped while the gate believed it had
+  /// fired — so the throttle then silenced the *next*, real attempt to say the
+  /// same thing. For a "stop, you are about to hurt yourself" cue that is the
+  /// worst possible place to lose a message.
+  CueDecision peek(FormFeedback feedback) {
     if (feedback.severity < minSeverity) return CueDecision.suppress;
-    final cue = feedback.cue.trim();
-    if (cue.isEmpty) return CueDecision.suppress;
+    // Identity is the cue KEY, not the rendered sentence: "is this the same
+    // fault as last time" must not change answer when the app's language does.
+    final cue = feedback.cueKey;
 
     final now = _clock();
 
@@ -104,7 +122,6 @@ class CueGate {
       if (sameCue && last != null && now - last < interruptGapMs) {
         return CueDecision.suppress;
       }
-      _commit(cue, now);
       return CueDecision.preempt;
     }
 
@@ -113,13 +130,14 @@ class CueGate {
     final last = _lastSpokenAtMs;
     if (last != null && now - last < minGapMs) return CueDecision.suppress;
 
-    _commit(cue, now);
     return CueDecision.speak;
   }
 
-  void _commit(String cue, int now) {
-    _lastCue = cue;
-    _lastSpokenAtMs = now;
+  /// Record that [feedback]'s cue was actually delivered. Call only after the
+  /// speaker has been given something to say.
+  void commit(FormFeedback feedback) {
+    _lastCue = feedback.cueKey;
+    _lastSpokenAtMs = _clock();
   }
 
   /// Forget what was said and when. Call between sets, or on unmute, so a
@@ -129,6 +147,15 @@ class CueGate {
     _lastSpokenAtMs = null;
   }
 }
+
+/// Turns a cue key into the sentence a coach should say.
+///
+/// Injected rather than imported so this file stays Flutter-free: resolving a
+/// key needs `AppLocalizations`, and dragging that in here would put a
+/// generated localization class inside every unit test of the throttle policy.
+typedef CueTextResolver = String Function(FormCueKey cueKey);
+
+String _identityResolver(FormCueKey cueKey) => cueKey.name;
 
 /// Speaks form cues out loud.
 abstract class VoiceCoach {
@@ -158,9 +185,19 @@ abstract class VoiceCoach {
 /// [VoiceCoach] with the gating and mute logic applied, leaving subclasses
 /// to implement only "say this string" and "shut up".
 abstract class GatedVoiceCoach implements VoiceCoach {
-  GatedVoiceCoach({CueGate? gate}) : gate = gate ?? CueGate();
+  GatedVoiceCoach({CueGate? gate, CueTextResolver? resolveText})
+      : gate = gate ?? CueGate(),
+        resolveText = resolveText ?? _identityResolver;
 
   final CueGate gate;
+
+  /// Turns a cue key into the sentence to speak.
+  ///
+  /// Defaults to the identity, which means an unwired coach speaks the key
+  /// itself — deliberately ugly rather than silently English, so a missing
+  /// binding is obvious the first time anyone hears it. `main.dart` binds the
+  /// real resolver against the app's active locale.
+  final CueTextResolver resolveText;
 
   bool _muted = false;
 
@@ -179,12 +216,20 @@ abstract class GatedVoiceCoach implements VoiceCoach {
   @override
   Future<void> cue(FormFeedback feedback) async {
     if (_muted) return;
-    final decision = gate.decide(feedback);
+    final decision = gate.peek(feedback);
     if (decision == CueDecision.suppress) return;
+
+    // Resolve BEFORE committing. An unresolvable cue must leave the gate
+    // untouched so the next frame can try again, rather than being counted as
+    // spoken and silencing the retry.
+    final text = resolveText(feedback.cueKey).trim();
+    if (text.isEmpty) return;
+
     if (decision == CueDecision.preempt) {
       await stopSpeaking();
     }
-    await utter(feedback.cue.trim());
+    gate.commit(feedback);
+    await utter(text);
   }
 
   @override
@@ -202,7 +247,7 @@ abstract class GatedVoiceCoach implements VoiceCoach {
 
 /// Test double. Records what would have been said instead of saying it.
 class MockVoiceCoach extends GatedVoiceCoach {
-  MockVoiceCoach({super.gate});
+  MockVoiceCoach({super.gate, super.resolveText});
 
   /// Every cue released to the "speaker", in order.
   final List<String> spoken = <String>[];

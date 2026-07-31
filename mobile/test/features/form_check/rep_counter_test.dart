@@ -84,7 +84,7 @@ List<RepEvent> drive(
 }
 
 FormFeedback fb(int severity, {String rule = 'squat.depth'}) =>
-    FormFeedback(rule: rule, severity: severity, cue: 'cue-$severity');
+    FormFeedback(rule: rule, severity: severity, cueKey: FormCueKey.values[severity]);
 
 void main() {
   group('squatDepthSignal', () {
