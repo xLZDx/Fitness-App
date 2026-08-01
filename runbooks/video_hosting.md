@@ -4,7 +4,7 @@ Putting the 677-file exercise library somewhere the app can fetch it, and
 pointing the catalog at it.
 
 **Done, 2026-08-01.** 677 objects live in
-`gs://traidingbot-b4061-exercise-videos/exercises`, the catalog points at them,
+`gs://traidingbot-b4061-videos-eu/exercises`, the catalog points at them,
 and four clips were fetched anonymously — `206 Partial Content`, `video/mp4`,
 including a filename carrying spaces and brackets. Range requests answer, which
 is what a player needs to seek.
@@ -28,14 +28,23 @@ is what a player needs to seek.
 | | plain GCS bucket (chosen) | Firebase Storage | Cloudflare R2 |
 |---|---|---|---|
 | Free storage | 5 GB always-free | 5 GB | 10 GB-month |
-| Free egress | **1 GB / month** (N. America) | 100 GB / month | **unlimited** |
+| Free egress | none — see below | 100 GB / month | **unlimited** |
 | Then, storage | $0.020 / GB | $0.026 / GB | $0.015 / GB-month |
 | Then, egress | ~$0.12 / GB | $0.12 / GB | $0 |
 
 0.686 GB of storage is free on all three. Egress is where they differ, and the
-chosen option has the *smallest* free allowance — about a thousand plays a
-month at this library's ~1 MB average, then roughly twelve cents per thousand
-after that. That is deliberate; the reason is below, and it is not about money.
+chosen option has the smallest allowance of all: GCS's always-free 1 GB/month
+of egress applies to **North America only**, and this bucket is in
+`europe-west1`. So every byte served is billed, at roughly $0.12/GB — about
+twelve cents per thousand plays at this library's ~1 MB average.
+
+That is deliberate and it is the correct trade. The bucket sits in Europe
+because the phone is in Moldova: the first version put it in us-central1 to
+match the project's Cloud Functions buckets, which was tidy and wrong —
+functions are called by other Google services, video is fetched by a person
+waiting for a clip to start. Measured from this machine, europe-west1 answered
+in ~220 ms against ~350 ms from us-central1. Paying twelve cents a thousand to
+remove a third of the start-up wait is not a close call.
 
 R2 is the endgame if this ever carries real traffic, and moving is one
 constant — which is exactly what buying the 2000-clip animation pack would
@@ -107,7 +116,7 @@ with a video.
 ```bash
 python scripts/ops/create_video_bucket.py     # idempotent
 python scripts/ops/upload_video_library.py    # re-runnable, size-checked
-python scripts/catalog/set_video_host.py     https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises
+python scripts/catalog/set_video_host.py     https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises
 ```
 
 The upload compares every object's size before sending, so a second run after a
@@ -135,7 +144,7 @@ line.
 ```bash
 python scripts/catalog/set_video_host.py --reset
 # then delete the bucket in the console, or:
-#   DELETE https://storage.googleapis.com/storage/v1/b/traidingbot-b4061-exercise-videos
+#   DELETE https://storage.googleapis.com/storage/v1/b/traidingbot-b4061-videos-eu
 ```
 
 Safe: the drop is on disk and the upload is a plain directory copy.

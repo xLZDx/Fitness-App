@@ -41,8 +41,16 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from firebase_api import PROJECT, access_token, api  # noqa: E402
 
-BUCKET = f'{PROJECT}-exercise-videos'
-LOCATION = 'US-CENTRAL1'
+BUCKET = f'{PROJECT}-videos-eu'
+# EUROPE-WEST1, not us-central1.
+#
+# The first version of this matched the project's Cloud Functions buckets,
+# which was tidy and wrong: functions are called by other Google services,
+# video is fetched by a phone. The phone is in Moldova, and the round trip
+# to Iowa costs about 80 ms on every first byte — paid once per clip, on a
+# screen whose whole job is to start playing quickly. Firestore is already
+# in eur3, so this also puts the two in the same part of the world.
+LOCATION = 'EUROPE-WEST1'
 
 
 def main() -> None:

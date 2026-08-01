@@ -39,7 +39,7 @@ void main() {
   /// as a side effect of hosting some demonstration clips would settle
   /// something much larger than the task.
   const base =
-      'https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises';
+      'https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises';
 
   /// The twelve folders the drop is organised by. The two gender trees disagree
   /// on case ('Abs' vs 'abs'), which is why this is compared lowercased.

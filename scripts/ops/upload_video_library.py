@@ -25,7 +25,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from firebase_api import access_token, api  # noqa: E402
 
-BUCKET = 'traidingbot-b4061-exercise-videos'
+BUCKET = 'traidingbot-b4061-videos-eu'
 DROP = Path('D:/Downloads/Video')
 PREFIX = 'exercises'
 
