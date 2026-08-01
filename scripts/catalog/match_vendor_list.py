@@ -40,6 +40,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 CATALOG = ROOT / 'mobile' / 'assets' / 'data' / 'exercises.json'
 VENDOR = Path('D:/Downloads/EXERCISE LIST.xlsx')
+# The richer workbook: names PLUS instructions, tips, muscles and equipment.
+# Only ~1,500 of its 2,579 rows carry that metadata — the vendor says it is
+# still being filled in by hand — so it supplements the name list rather than
+# replacing it.
+VENDOR_META = Path('D:/Downloads/1500+ exercise data.xlsx')
 REPORT_ALL = ROOT / 'core' / 'vendor_coverage_all_511.csv'
 REPORT_GAP = ROOT / 'core' / 'vendor_coverage_gap_168.csv'
 
@@ -58,6 +63,11 @@ SYNONYMS = {
     'presses': 'press', 'extensions': 'extension', 'crunches': 'crunch',
     'twists': 'twist', 'stretches': 'stretch', 'flyes': 'fly', 'flys': 'fly',
     'deadlifts': 'deadlift', 'dips': 'dip', 'thrusts': 'thrust',
+    # Equipment, where the two sources spell the same machine differently.
+    'pulldown': 'pull down', 'plyo': 'plyometric', 'plyometric': 'box',
+    'adjustable': 'bench', 'plates': 'plate', 'erg': 'ergometer',
+    'abductor': 'abduction', 'adductor': 'adduction', 'ropes': 'rope',
+    'recumbent': 'bike', 'stair': 'stairs',
 }
 
 # Words that carry no discriminating power between two exercise names.
@@ -179,4 +189,71 @@ def main() -> None:
 
 
 if __name__ == '__main__':
-    main()
+    if '--equipment' not in sys.argv:
+        main()
+
+def equipment_report() -> None:
+    """Which of our equipment the vendor's library appears not to cover.
+
+    Reported as an UPPER BOUND on what will still be missing, never as a
+    finding. It compares vocabularies, and two catalogs describing the same
+    machine in different words look like a gap when they are not — the first
+    run of this said `pullup_bar` was absent while the vendor's own equipment
+    column reads "Pull Up Bar" fifteen times.
+
+    Which is also the reason the vendor's offer to cross-reference the list
+    themselves is still the answer. This is for deciding what to ask them
+    about, not for deciding whether to buy.
+    """
+    try:
+        import openpyxl
+    except ImportError:
+        sys.exit('pip install openpyxl')
+    import collections
+
+    ws = openpyxl.load_workbook(VENDOR_META, read_only=True)['Sheet1']
+    vend = [r for r in ws.iter_rows(min_row=2, values_only=True) if r[1]]
+
+    def words(*fields: object) -> set[str]:
+        out: set[str] = set()
+        for f in fields:
+            out.update(norm(str(f or '')))
+        return out
+
+    vend_words = [words(r[6], r[1]) for r in vend]
+
+    rows = json.loads(CATALOG.read_text(encoding='utf-8'))
+    gap = [r for r in rows if not r.get('video')]
+    by_eq = collections.Counter(
+        r.get('equipmentId') or 'bodyweight' for r in gap)
+
+    absent = []
+    print(f'{"our equipment":28} {"gap":>4}  vendor rows naming all its words')
+    print('-' * 68)
+    for eq, n in by_eq.most_common():
+        ours = set(norm(eq))
+        if not ours:
+            continue
+        hits = sum(1 for w in vend_words if ours <= w)
+        if hits == 0:
+            absent.append((eq, n))
+        print(f'{eq:28} {n:>4}  {hits:>5}'
+              f'{"   <-- nothing found" if hits == 0 else ""}')
+    print('-' * 68)
+    print()
+    print(f'UPPER BOUND on what stays missing: {len(absent)} kinds of '
+          f'equipment, {sum(n for _, n in absent)} of {len(gap)} exercises')
+    for eq, n in absent:
+        print(f'  {eq:28} {n}')
+    print()
+    print('metadata completeness in the vendor workbook:')
+    for i, name in enumerate(
+            ('Categories', 'Exercise', 'Instructions', 'Tips',
+             'Primary muscles', 'Secondary muscles', 'Equipment')):
+        filled = sum(1 for r in vend if r[i] not in (None, '', 'None'))
+        print(f'  {name:20} {filled:>5} of {len(vend)} '
+              f'({filled / len(vend) * 100:.0f}%)')
+
+
+if '--equipment' in sys.argv:
+    equipment_report()
