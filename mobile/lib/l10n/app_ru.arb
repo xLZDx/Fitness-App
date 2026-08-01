@@ -605,5 +605,6 @@
   "formcheckBodyWeight": "вес",
   "formcheckStandSideOn": "Встаньте боком к камере — силуэт нарисован сбоку.",
   "equipmentClipOfflineStillShown": "Нет сети — показан кадр",
-  "equipmentClipCouldNotLoad": "Ролик не загрузился"
+  "equipmentClipCouldNotLoad": "Ролик не загрузился",
+  "workoutsFilterStretching": "Растяжка"
 }

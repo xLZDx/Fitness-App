@@ -21,7 +21,17 @@ class ExerciseItem {
     this.imageUrls = const [],
     this.primaryMuscles = const [],
     this.contraindications = const [],
+    this.isStretch = false,
   });
+
+  /// Stretching, mobility and Pilates work.
+  ///
+  /// Arrived with the video library and reached nothing: 65 exercises the
+  /// catalog already knew were mobility work, with no way to ask for them.
+  /// Operator: *"не вижу новые упражнения на растяжку егу и пилатес в списке
+  /// категорий"*. They were there — the list had thirteen chips and none of
+  /// them was this one.
+  final bool isStretch;
 
   final String id;
   final String title;
@@ -159,6 +169,7 @@ class ExerciseItem {
             List<String>.from(j['primaryMuscles'] as List? ?? const []),
         contraindications:
             List<String>.from(j['contraindications'] as List? ?? const []),
+        isStretch: j['isStretch'] as bool? ?? false,
       );
 
   /// Reads a `steps` list, dropping entries that are blank or whitespace.
@@ -201,6 +212,7 @@ class ExerciseItem {
         imageUrls: imageUrls,
         primaryMuscles: primaryMuscles,
         contraindications: contraindications,
+        isStretch: isStretch,
       );
 }
 

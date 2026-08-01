@@ -36,6 +36,12 @@ enum WorkoutsFilter {
   shoulders,
   arms,
   core,
+  // Not a muscle group and not an equipment type, so it gets its own arm of
+  // the resolver. 65 exercises the catalog already flagged and nothing could
+  // ask for — operator: "не вижу новые упражнения на растяжку егу и пилатес
+  // в списке категорий". One chip rather than three: yoga is one exercise and
+  // Pilates is three, which is not a category, it is a rounding error.
+  stretching,
   all,
 }
 
@@ -86,6 +92,8 @@ String workoutsFilterLabel(AppLocalizations l, WorkoutsFilter f) {
       return l.workoutsFilterArms;
     case WorkoutsFilter.core:
       return l.workoutsFilterCore;
+    case WorkoutsFilter.stretching:
+      return l.workoutsFilterStretching;
     case WorkoutsFilter.all:
       return l.workoutsFilterAll;
   }
@@ -126,6 +134,10 @@ final _filteredExercisesProvider =
   if (filter == WorkoutsFilter.atHome) {
     final all = await ref.watch(allExercisesProvider.future);
     return videoFirst(all.where((e) => e.equipmentId == null).toList());
+  }
+  if (filter == WorkoutsFilter.stretching) {
+    final all = await ref.watch(allExercisesProvider.future);
+    return videoFirst(all.where((e) => e.isStretch).toList());
   }
 
   final muscles = kFilterMuscles[filter];

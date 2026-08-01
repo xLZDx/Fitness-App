@@ -2017,7 +2017,8 @@
     ],
     "contraindications": [
       "knee"
-    ]
+    ],
+    "isStretch": true
   },
   {
     "id": "alternate_heel_touchers",
@@ -13810,7 +13811,8 @@
     },
     "poster": {
       "girl": "assets/posters/girl/vid_corkscrew_pilates.jpg"
-    }
+    },
+    "isStretch": true
   },
   {
     "id": "vid_crunch_floor_female",
@@ -14017,7 +14019,8 @@
     },
     "poster": {
       "girl": "assets/posters/girl/vid_hundred_pilates.jpg"
-    }
+    },
+    "isStretch": true
   },
   {
     "id": "vid_jack_knife_floor",
@@ -14107,7 +14110,8 @@
     },
     "poster": {
       "girl": "assets/posters/girl/vid_jackknife_pilates.jpg"
-    }
+    },
+    "isStretch": true
   },
   {
     "id": "vid_leg_raise_hip_lift",

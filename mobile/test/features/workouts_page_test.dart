@@ -137,10 +137,13 @@ void main() {
     test('every filter is either for-you, all, at-home, muscle or category',
         () {
       // A chip with no rule behind it would silently render an empty list.
+      // This guard is why `stretching` could not be added as a label only —
+      // it caught the half-finished version.
       const special = {
         WorkoutsFilter.forYou,
         WorkoutsFilter.all,
         WorkoutsFilter.atHome,
+        WorkoutsFilter.stretching,
       };
       for (final f in WorkoutsFilter.values) {
         final covered = special.contains(f) ||

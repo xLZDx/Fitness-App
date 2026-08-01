@@ -158,11 +158,29 @@ void main() {
       // filtered it out of the upstream source entirely, so before this merge
       // the catalog had none. Asserting the exact count is what makes a silent
       // loss — a group file that stops being merged, say — visible.
+      //
+      // 65, not the 61 that arrived with the library. `widen_stretch_flag.py`
+      // marked four more the importer had missed — three Pilates movements and
+      // one older free-exercise-db stretch — because they were about to be
+      // hidden by the very filter that was added to surface them.
       final stretches = exercises.where((e) => e['isStretch'] == true).toList();
-      expect(stretches, hasLength(61));
+      expect(stretches, hasLength(65));
+
+      // The clip check applies to the 61 from the library. The four widened
+      // ones are older rows and one of them predates the video library
+      // entirely, so demanding a clip of them would be asserting something
+      // that was never true.
+      const widened = {
+        'all_fours_quad_stretch',
+        'vid_corkscrew_pilates',
+        'vid_hundred_pilates',
+        'vid_jackknife_pilates',
+      };
       for (final e in stretches) {
-        expect(e['video'], isNotNull,
-            reason: '${e['id']} is a stretch with no clip to show');
+        if (!widened.contains(e['id'])) {
+          expect(e['video'], isNotNull,
+              reason: '${e['id']} is a stretch with no clip to show');
+        }
         expect((e['muscles'] as List), isNotEmpty, reason: '${e['id']}');
       }
     });
