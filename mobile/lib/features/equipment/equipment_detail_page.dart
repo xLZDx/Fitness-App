@@ -13,6 +13,7 @@ import '../workouts/widgets/warmup_calculator.dart';
 import 'data/equipment_models.dart';
 import 'state/equipment_providers.dart';
 import 'widgets/equipment_report_sheet.dart';
+import 'widgets/exercise_thumb.dart';
 
 class EquipmentDetailPage extends ConsumerWidget {
   const EquipmentDetailPage({super.key, required this.equipmentId});
@@ -248,19 +249,7 @@ class _ExerciseCard extends StatelessWidget {
       onTap: () => GoRouter.of(context).push('/workout/${exercise.id}'),
       child: Row(
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              gradient: LinearGradient(
-                colors: AppPalette.tileGradients[
-                    exercise.id.hashCode.abs() % AppPalette.tileGradients.length],
-              ),
-            ),
-            child: const Icon(Icons.play_arrow_rounded,
-                color: Colors.white, size: 28),
-          ),
+          ExerciseThumb(exercise: exercise, size: 52),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

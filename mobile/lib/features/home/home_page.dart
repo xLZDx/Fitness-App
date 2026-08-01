@@ -18,6 +18,7 @@ import '../workouts/state/scheduled_session_providers.dart';
 import '../workouts/state/workout_log_providers.dart';
 import 'data/suggestion_builder.dart';
 import 'state/suggestion_providers.dart';
+import '../equipment/widgets/exercise_thumb.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -362,16 +363,10 @@ class _SuggestionCard extends StatelessWidget {
       onTap: () => GoRouter.of(context).push('/workout/${s.exerciseId}'),
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              gradient: LinearGradient(colors: gradient),
-            ),
-            child: const Icon(Icons.play_arrow_rounded,
-                color: Colors.white, size: 26),
-          ),
+          // Only a suggestion id is in scope here, not a catalog row, so
+          // this renders the fallback tile — but through the shared widget,
+          // so it is the same shape and radius as everywhere else.
+          const ExerciseThumb(exercise: null, size: 48),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

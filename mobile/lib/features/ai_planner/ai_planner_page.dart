@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import 'state/ai_planner_providers.dart';
+import '../equipment/widgets/exercise_thumb.dart';
 
 /// "AI workout generator" page. Surfaces the [GeneratedPlan] from the
 /// pure builder. Reads:
@@ -108,20 +109,7 @@ class AiPlannerPage extends ConsumerWidget {
                           GoRouter.of(context).push('/workout/${ex.id}'),
                       child: Row(
                         children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(14),
-                              gradient: LinearGradient(
-                                colors: AppPalette.tileGradients[
-                                    ex.id.hashCode.abs() %
-                                        AppPalette.tileGradients.length],
-                              ),
-                            ),
-                            child: const Icon(Icons.play_arrow_rounded,
-                                color: Colors.white),
-                          ),
+                          ExerciseThumb(exercise: ex, size: 48),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(

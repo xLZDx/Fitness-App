@@ -24,6 +24,7 @@ import 'data/equipment_models.dart';
 import 'state/equipment_providers.dart';
 import 'widgets/exercise_demo.dart';
 import 'widgets/muscle_map.dart';
+import 'widgets/exercise_thumb.dart';
 
 /// Shows the rest timer after a successful "Mark complete". Local to this
 /// page — clears on rebuild via a StateProvider.autoDispose so navigating
@@ -206,19 +207,7 @@ class _Hero extends StatelessWidget {
     return GlassCard(
       child: Row(
         children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              gradient: LinearGradient(
-                colors: AppPalette.tileGradients[exercise.id.hashCode.abs() %
-                    AppPalette.tileGradients.length],
-              ),
-            ),
-            child: const Icon(Icons.play_arrow_rounded,
-                color: Colors.white, size: 30),
-          ),
+          ExerciseThumb(exercise: exercise, size: 56),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
