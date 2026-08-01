@@ -67,12 +67,12 @@ rest are pushed full-screen.
 
 | Feature | Files | Lines | What it does |
 |---|---:|---:|---|
-| `workouts` | 18 | 2,302 | Workout browsing + logging. Largest feature. `lib/features/workouts/data/offline/` handles prefetch; `lib/features/workouts/widgets/` holds plate calculator, rest timer, warmup calculator |
-| `equipment` | 12 | 1,929 | Equipment detail + workout player. `lib/features/equipment/data/exercise_filter.dart` is the injury-aware filter that gates exercises |
-| `subscription` | 10 | 1,766 | Tiers, paywall, Stripe checkout. `subscription_page.dart` is 976 lines, the biggest file in the repo |
+| `workouts` | 22 | 3,385 | Workout browsing + logging. `lib/features/workouts/data/offline/` handles prefetch; `widgets/` holds the plate, rest and warm-up calculators plus `set_timer_card.dart`. The timed set lives in `data/set_session.dart` (pure, clock-free) driven by `state/set_timer_providers.dart` (owns the only clock) with `data/cue_player.dart` for the three synthesised sounds |
+| `equipment` | 18 | 3,449 | Equipment detail + workout player. `data/exercise_filter.dart` is the injury-aware filter that gates exercises; `widgets/exercise_thumb.dart` is the one tile every list renders an exercise as (bundled poster, gradient fallback) |
+| `subscription` | 10 | 1,834 | Tiers, paywall, Stripe checkout. `subscription_page.dart` is the biggest file in the repo. `effectiveTierProvider` is the single point that decides the tier — including the Settings test-access override |
 | `onboarding` | 10 | 1,209 | Multi-step intake incl. the injury questionnaire. `lib/features/onboarding/steps/` = one file per step |
 | `profile` | 6 | 1,024 | Profile + settings. `lib/features/profile/data/firestore_profile_repository.dart` is the Firestore boundary |
-| `form_check` | 6 | 734 | On-device pose/form checking. `lib/features/form_check/data/mlkit_pose_detector_service.dart` + `lib/features/form_check/data/form_classifier.dart` |
+| `form_check` | 16 | 4,799 | On-device pose/form checking. `data/mlkit_pose_detector_service.dart` + `data/form_classifier.dart`; `data/pose_silhouette.dart` builds the two-sided outline (drawn only — scoring still reads the six authored side-view joints) and `data/pose_projection.dart` maps measured landmarks onto the preview |
 | `home` | 1 | 594 | Landing dashboard, single file |
 | `progress_photos` | 5 | 519 | Progress photo capture + timeline |
 | `donor_wall` | 5 | 501 | Public donor recognition (ties to the nonprofit model) |
