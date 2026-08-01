@@ -606,5 +606,10 @@
   "formcheckStandSideOn": "Встаньте боком к камере — силуэт нарисован сбоку.",
   "equipmentClipOfflineStillShown": "Нет сети — показан кадр",
   "equipmentClipCouldNotLoad": "Ролик не загрузился",
-  "workoutsFilterStretching": "Растяжка"
+  "workoutsFilterStretching": "Растяжка",
+  "settingsTestAccess": "Тестовый доступ",
+  "settingsTestAccessBody": "Открывает платные функции только на этом телефоне. Ничего не списывается и никуда не отправляется — настоящая подписка не меняется.",
+  "settingsTierOff": "Выключено — по настоящей подписке",
+  "settingsTierStandard": "Как Supporter",
+  "settingsTierCelebrity": "Как Sustainer (всё)"
 }

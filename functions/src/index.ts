@@ -121,6 +121,33 @@ function isOneTime(period: Period): boolean {
 }
 
 /**
+ * Where Stripe sends the browser after checkout.
+ *
+ * This project's own Firebase Hosting site. The previous value was
+ * `https://fitnessapp.example.com`, which is a placeholder domain and does not
+ * resolve — so a successful payment ended on a browser error page. The pages
+ * live in `public/` and ship with `firebase deploy --only hosting`.
+ */
+const RETURN_ORIGIN = "https://traidingbot-b4061.web.app";
+
+/**
+ * The locale Stripe should render checkout in.
+ *
+ * Stripe defaults to guessing from the browser's Accept-Language, which is how
+ * a Russian-speaking user got an English payment sheet from an app that had
+ * just walked them through a Russian onboarding.
+ *
+ * Only the two languages the app itself ships are honoured. Anything else —
+ * including nothing at all — becomes "auto", because passing an unsupported
+ * value makes Stripe reject the whole session, and failing to sell somebody a
+ * subscription is a far worse outcome than showing them English.
+ */
+function checkoutLocale(raw: unknown): Stripe.Checkout.SessionCreateParams.Locale {
+  const code = String(raw ?? "").slice(0, 2).toLowerCase();
+  return code === "ru" ? "ru" : code === "en" ? "en" : "auto";
+}
+
+/**
  * Looks up the Stripe customer id stored on the user's subscription doc, or
  * creates a fresh customer the first time we see them. The customer's
  * metadata carries the firebase uid so the webhook can route events back to
@@ -261,8 +288,17 @@ export const createCheckoutSession = onCall(
       mode: oneTime ? "payment" : "subscription",
       customer: customerId,
       line_items: [{ price: priceFor(tier, period), quantity: 1 }],
-      success_url: "https://fitnessapp.example.com/checkout-success",
-      cancel_url: "https://fitnessapp.example.com/checkout-cancel",
+      // Real pages on this project's own hosting site. They used to point at
+      // `fitnessapp.example.com`, a domain that does not exist: the payment
+      // went through and the user landed on a browser error, which reads as
+      // "it failed" on the one screen where that matters most.
+      success_url: `${RETURN_ORIGIN}/checkout-success`,
+      cancel_url: `${RETURN_ORIGIN}/checkout-cancel`,
+      // Stripe otherwise guesses from the browser, which is why a Russian
+      // user saw an English checkout. Passed from the app's current locale;
+      // "auto" when it sends nothing, which is still better than a guess made
+      // by whichever browser the payment sheet happened to open in.
+      locale: checkoutLocale(request.data?.locale),
       client_reference_id: auth.uid,
       ...(oneTime
         ? {

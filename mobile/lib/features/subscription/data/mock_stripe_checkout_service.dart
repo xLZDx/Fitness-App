@@ -32,11 +32,18 @@ class MockStripeCheckoutService implements StripeCheckoutService {
   Future<void> startCheckout(
     SubscriptionTier tier, {
     SubscriptionPeriod period = SubscriptionPeriod.monthly,
+    String? languageCode,
   }) async {
     if (failWith != null) throw failWith!;
     startedCheckouts.add(tier);
     checkoutPeriods.add(period);
+    checkoutLocales.add(languageCode);
   }
+
+  /// What language each checkout was asked to render in. Recorded so a test
+  /// can prove the locale actually leaves the app — it used to be dropped
+  /// silently and Stripe guessed English.
+  final List<String?> checkoutLocales = [];
 
   @override
   Future<void> openCustomerPortal() async {

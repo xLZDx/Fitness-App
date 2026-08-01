@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Оплата отменена</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100dvh; display: grid; place-items: center;
+    padding: 24px;
+    font: 16px/1.5 -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+    color: #F1ECFF;
+    background: linear-gradient(160deg, #16072E 0%, #050214 55%, #0B1233 100%);
+  }
+  .card {
+    max-width: 420px; width: 100%; text-align: center;
+    padding: 40px 28px; border-radius: 28px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.10);
+  }
+  .mark {
+    width: 76px; height: 76px; margin: 0 auto 22px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: rgba(255,255,255,.09);
+  }
+  .mark svg { width: 34px; height: 34px; }
+  h1 { margin: 0 0 10px; font-size: 25px; letter-spacing: -.02em; }
+  p { margin: 0 0 8px; color: rgba(241,236,255,.68); }
+  .quiet { font-size: 13px; color: rgba(241,236,255,.42); margin-top: 22px; }
+</style>
+</head>
+<body>
+  <main class="card">
+    <div class="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(241,236,255,.75)"
+           stroke-width="2.4" stroke-linecap="round">
+        <path d="M6 6l12 12M18 6L6 18"/>
+      </svg>
+    </div>
+    <h1>Оплата отменена</h1>
+    <p>Ничего не списано.</p>
+    <p>Закройте вкладку и вернитесь в приложение.</p>
+    <p class="quiet">Оформить подписку можно в любой момент из профиля.</p>
+  </main>
+</body>
+</html>

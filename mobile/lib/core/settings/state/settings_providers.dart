@@ -36,6 +36,9 @@ class SettingsController extends Notifier<AppSettings> {
   Future<void> setLanguage(AppLanguage language) =>
       _update(state.copyWith(language: language));
 
+  Future<void> setTierOverride(TierOverride override) =>
+      _update(state.copyWith(tierOverride: override));
+
   Future<void> setNotificationsEnabled(bool enabled) async {
     await _update(state.copyWith(notificationsEnabled: enabled));
     if (enabled) return;

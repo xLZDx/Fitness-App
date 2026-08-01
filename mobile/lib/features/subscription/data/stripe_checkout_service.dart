@@ -27,11 +27,16 @@ abstract class StripeCheckoutService {
   ///
   /// [period] defaults to monthly so existing call sites stay green.
   ///
+  /// [languageCode] is the app's current language, forwarded so Stripe renders
+  /// checkout in it. Without it Stripe guesses from the browser, which is how
+  /// a Russian onboarding handed the user an English payment sheet.
+  ///
   /// Throws [StripeCheckoutException] when the backend declines or the
   /// URL fails to launch.
   Future<void> startCheckout(
     SubscriptionTier tier, {
     SubscriptionPeriod period = SubscriptionPeriod.monthly,
+    String? languageCode,
   });
 
   /// Opens the Stripe Customer Portal so the user can change plan or

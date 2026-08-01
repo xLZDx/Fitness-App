@@ -69,12 +69,14 @@ class CloudFunctionsStripeService implements StripeCheckoutService {
   Future<void> startCheckout(
     SubscriptionTier tier, {
     SubscriptionPeriod period = SubscriptionPeriod.monthly,
+    String? languageCode,
   }) async {
     await _refreshToken();
     final callable = _functions.httpsCallable('createCheckoutSession');
     final result = await callable.call<Map<String, dynamic>>({
       'tier': _tierParam(tier),
       'period': period.name,
+      if (languageCode != null) 'locale': languageCode,
     });
     final url = result.data['url'] as String?;
     if (url == null || url.isEmpty) {

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Оплата прошла</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100dvh; display: grid; place-items: center;
+    padding: 24px;
+    font: 16px/1.5 -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+    color: #F1ECFF;
+    background: linear-gradient(160deg, #16072E 0%, #050214 55%, #0B1233 100%);
+  }
+  .card {
+    max-width: 420px; width: 100%; text-align: center;
+    padding: 40px 28px; border-radius: 28px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.10);
+  }
+  .mark {
+    width: 76px; height: 76px; margin: 0 auto 22px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: linear-gradient(135deg, #2BE5C2, #C2F562);
+  }
+  .mark svg { width: 38px; height: 38px; }
+  h1 { margin: 0 0 10px; font-size: 25px; letter-spacing: -.02em; }
+  p { margin: 0 0 8px; color: rgba(241,236,255,.68); }
+  .quiet { font-size: 13px; color: rgba(241,236,255,.42); margin-top: 22px; }
+</style>
+</head>
+<body>
+  <main class="card">
+    <div class="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#050214" stroke-width="3"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 12.5l5.2 5.2L20 7"/>
+      </svg>
+    </div>
+    <h1>Оплата прошла</h1>
+    <p>Можно закрыть эту вкладку и вернуться в приложение.</p>
+    <p>Подписка появится там в течение минуты.</p>
+    <p class="quiet">
+      Если через несколько минут ничего не изменилось — потяните экран
+      профиля вниз, чтобы обновить.
+    </p>
+  </main>
+</body>
+</html>

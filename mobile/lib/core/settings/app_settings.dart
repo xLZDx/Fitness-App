@@ -52,6 +52,27 @@ extension AppLanguageX on AppLanguage {
   }
 }
 
+/// Overrides the subscription tier, for exercising paid features without
+/// paying.
+///
+/// `off` means "use the real subscription", and is the only value a normal
+/// user will ever have. The others force [effectiveTierProvider] to answer a
+/// tier the account has not bought.
+///
+/// This exists because the paid surfaces could not be tested at all. Stripe is
+/// in sandbox, sandbox only accepts its own test card numbers, and the operator
+/// — reasonably — tried a made-up one, got declined, and concluded the flow was
+/// broken. A local switch answers that in a second and does not require anyone
+/// to remember `4242 4242 4242 4242`.
+///
+/// It is deliberately NOT a fake payment record: nothing is written to
+/// Firestore, no Stripe object is invented, and the webhook path is untouched.
+/// It only changes what this device believes about itself, which is exactly as
+/// much power as a test switch should have. The app is personal-use software,
+/// so it ships in release rather than hiding behind `kDebugMode` — a switch
+/// that only works in a build the operator never installs is not a test tool.
+enum TierOverride { off, standard, celebrity }
+
 /// User-controlled app preferences, persisted locally.
 ///
 /// Defaults deliberately match the shipped behaviour before settings existed:
@@ -61,10 +82,14 @@ class AppSettings {
     this.themeMode = AppThemeMode.system,
     this.language = AppLanguage.ru,
     this.notificationsEnabled = true,
+    this.tierOverride = TierOverride.off,
   });
 
   final AppThemeMode themeMode;
   final AppLanguage language;
+
+  /// See [TierOverride]. Off for anyone who has not deliberately turned it on.
+  final TierOverride tierOverride;
 
   /// When false, session reminders are not scheduled at all. This gates the
   /// real call site — it is not a decorative switch.
@@ -74,11 +99,13 @@ class AppSettings {
     AppThemeMode? themeMode,
     AppLanguage? language,
     bool? notificationsEnabled,
+    TierOverride? tierOverride,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
       language: language ?? this.language,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      tierOverride: tierOverride ?? this.tierOverride,
     );
   }
 
@@ -87,12 +114,15 @@ class AppSettings {
       other is AppSettings &&
       other.themeMode == themeMode &&
       other.language == language &&
-      other.notificationsEnabled == notificationsEnabled;
+      other.notificationsEnabled == notificationsEnabled &&
+      other.tierOverride == tierOverride;
 
   @override
-  int get hashCode => Object.hash(themeMode, language, notificationsEnabled);
+  int get hashCode =>
+      Object.hash(themeMode, language, notificationsEnabled, tierOverride);
 
   @override
   String toString() => 'AppSettings(theme: ${themeMode.name}, '
-      'language: ${language.name}, notifications: $notificationsEnabled)';
+      'language: ${language.name}, notifications: $notificationsEnabled, '
+      'tierOverride: ${tierOverride.name})';
 }

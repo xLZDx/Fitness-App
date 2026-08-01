@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/settings/app_settings.dart';
+import '../../../core/settings/state/settings_providers.dart';
 import '../../auth/state/auth_providers.dart';
 import '../data/feature_gates.dart';
 import '../data/mock_stripe_checkout_service.dart';
@@ -40,7 +42,26 @@ final currentSubscriptionProvider = StreamProvider<Subscription?>((ref) {
 
 /// The tier the rest of the app should gate on. Resolves trial/period
 /// expiry server-side in case Firestore hasn't synced the lapse yet.
+///
+/// Honours [TierOverride] first. That switch is off unless somebody turned it
+/// on in Settings, and it exists because there was no way to exercise a paid
+/// screen at all: checkout is in Stripe sandbox, which only accepts its own
+/// test cards, so trying the app's premium features meant either knowing
+/// `4242 4242 4242 4242` by heart or believing the flow was broken.
+///
+/// Reading it HERE rather than at each gate is what makes it trustworthy: one
+/// place decides the tier, so the override cannot leave half the app thinking
+/// the user paid and the other half thinking they did not.
 final effectiveTierProvider = Provider<SubscriptionTier>((ref) {
+  final override = ref.watch(settingsControllerProvider).tierOverride;
+  switch (override) {
+    case TierOverride.standard:
+      return SubscriptionTier.standard;
+    case TierOverride.celebrity:
+      return SubscriptionTier.celebrityTrainer;
+    case TierOverride.off:
+      break;
+  }
   final sub = ref.watch(currentSubscriptionProvider).valueOrNull;
   return effectiveTier(sub);
 });
@@ -112,7 +133,12 @@ class SubscriptionAction extends Notifier<AsyncValue<void>> {
         return;
       }
       final stripe = ref.read(stripeCheckoutServiceProvider);
-      await stripe.startCheckout(tier, period: period);
+      // The language the app is in, so the payment sheet is in it too.
+      await stripe.startCheckout(
+        tier,
+        period: period,
+        languageCode: ref.read(effectiveLanguageCodeProvider),
+      );
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);

@@ -18,6 +18,7 @@ class PrefsSettingsRepository implements SettingsRepository {
   static const _themeKey = 'settings.theme_mode';
   static const _languageKey = 'settings.language';
   static const _notificationsKey = 'settings.notifications_enabled';
+  static const _tierOverrideKey = 'settings.tier_override';
 
   static Future<PrefsSettingsRepository> open() async {
     return PrefsSettingsRepository(await SharedPreferences.getInstance());
@@ -54,6 +55,11 @@ class PrefsSettingsRepository implements SettingsRepository {
       ),
       notificationsEnabled: _prefs.getBool(_notificationsKey) ??
           defaults.notificationsEnabled,
+      tierOverride: _readEnum(
+        _prefs.getString(_tierOverrideKey),
+        TierOverride.values,
+        defaults.tierOverride,
+      ),
     );
   }
 
@@ -62,6 +68,7 @@ class PrefsSettingsRepository implements SettingsRepository {
     await _prefs.setString(_themeKey, settings.themeMode.name);
     await _prefs.setString(_languageKey, settings.language.name);
     await _prefs.setBool(_notificationsKey, settings.notificationsEnabled);
+    await _prefs.setString(_tierOverrideKey, settings.tierOverride.name);
   }
 }
 

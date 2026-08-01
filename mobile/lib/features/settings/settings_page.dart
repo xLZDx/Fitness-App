@@ -90,6 +90,44 @@ class SettingsPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
+          // Unlocks the paid surfaces on this device only. Nothing is written
+          // to Firestore and no Stripe object is invented — it changes what
+          // this phone believes about itself and nothing else. It exists
+          // because there was no way to open a premium screen at all: Stripe
+          // is in sandbox, sandbox rejects made-up card numbers, and the
+          // reasonable conclusion from a declined card is "the app is broken".
+          _Section(
+            key: const Key('settings-section-tier'),
+            title: AppLocalizations.of(context).settingsTestAccess,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Text(
+                    AppLocalizations.of(context).settingsTestAccessBody,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.62),
+                    ),
+                  ),
+                ),
+                for (final o in TierOverride.values)
+                  RadioListTile<TierOverride>(
+                    key: Key('settings-tier-${o.name}'),
+                    value: o,
+                    groupValue: settings.tierOverride,
+                    onChanged: (v) {
+                      if (v != null) controller.setTierOverride(v);
+                    },
+                    title: Text(_tierLabel(context, o)),
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
           GlassCard(
             key: const Key('settings-about'),
             onTap: () => context.push('/about'),
@@ -175,6 +213,14 @@ class SettingsPage extends ConsumerWidget {
         // their own language scans for the word they actually call it.
         AppLanguage.ru => 'Русский',
         AppLanguage.en => 'English',
+      };
+
+  String _tierLabel(BuildContext context, TierOverride o) => switch (o) {
+        TierOverride.off => AppLocalizations.of(context).settingsTierOff,
+        TierOverride.standard =>
+          AppLocalizations.of(context).settingsTierStandard,
+        TierOverride.celebrity =>
+          AppLocalizations.of(context).settingsTierCelebrity,
       };
 }
 
