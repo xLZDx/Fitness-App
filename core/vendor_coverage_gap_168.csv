@@ -1,0 +1,169 @@
+﻿id,our_title,equipmentId,muscles,match_kind,vendor_name,score
+3_4_sit_up,3/4 Sit-Up,,core,exact,3-4 Sit-up,1.00
+ab_crunch_machine,Ab Crunch Machine,ab_crunch_machine,core,exact,Abdominal Crunches Machine,1.00
+air_bike,Air Bike,,core,exact,air bike,1.00
+all_fours_quad_stretch,All Fours Quad Stretch,,quads,exact,ALL FOURS QUAD STRETCH,1.00
+barbell_deadlift,Barbell Deadlift,barbell,lower_back|calves|forearms|glutes|hamstrings|lats|back|quads|traps,exact,Barbell Deadlift,1.00
+barbell_full_squat,Barbell Full Squat,squat_rack,quads|calves|glutes|hamstrings|lower_back,exact,Barbell Full Squat,1.00
+fedb_barbell_glute_bridge,Barbell Glute Bridge,barbell,glutes|calves|hamstrings,exact,Barbell glute bridge,1.00
+fedb_barbell_hip_thrust,Barbell Hip Thrust,barbell,glutes|calves|hamstrings,exact,Barbell Hip Thrust,1.00
+barbell_side_split_squat,Barbell Side Split Squat,squat_rack,quads|calves|hamstrings|lower_back,exact,Barbell side split squat,1.00
+barbell_squat_to_a_bench,Barbell Squat To A Bench,squat_rack,quads|calves|glutes|hamstrings|lower_back,exact,Barbell bench squats,1.00
+bench_press_with_bands,Bench Press - With Bands,bench_press,chest|shoulders|triceps,exact,Band Bench Press,1.00
+bent_arm_dumbbell_pullover,Bent-Arm Dumbbell Pullover,dumbbell,chest|lats|shoulders|triceps,exact,Dumbbell Bent Arm Pullover,1.00
+fedb_body-up,Body-Up,,triceps|core|forearms,exact,Body-up,1.00
+fedb_cable_preacher_curl,Cable Preacher Curl,preacher_curl_bench,biceps|forearms,exact,Cable preacher curl,1.00
+fedb_cable_rear_delt_fly,Cable Rear Delt Fly,pec_deck,shoulders,exact,Cable rear delt fly,1.00
+fedb_deadlift_with_bands,Deadlift with Bands,resistance_bands,lower_back|forearms|glutes|hamstrings|back|quads|traps,exact,Band Deadlift,1.00
+fedb_decline_dumbbell_flyes,Decline Dumbbell Flyes,dumbbell,chest,exact,Dumbbell decline fly,1.00
+fedb_flat_bench_cable_flyes,Flat Bench Cable Flyes,adjustable_bench,chest,exact,Flat bench cable fly,1.00
+fedb_front_plate_raise,Front Plate Raise,weight_plates,shoulders,exact,Plate front raise,1.00
+fedb_lateral_box_jump,Lateral Box Jump,plyo_box,adductors|calves|glutes|hamstrings|quads,exact,Lateral Box Jump,1.00
+fedb_reverse_machine_flyes,Reverse Machine Flyes,pec_deck,shoulders,exact,Reverse Machine Fly,1.00
+advanced_kettlebell_windmill,Advanced Kettlebell Windmill,kettlebell,core|glutes|hamstrings|shoulders,likely,Kettlebell Windmill,0.67
+air_bike_intervals,Air Bike Intervals,air_bike,quads|hamstrings|shoulders|core,likely,Air Bike (VERSION 2),0.67
+alternate_heel_touchers,Alternate Heel Touchers,,core,likely,Alternate heel touch side kick squat,0.67
+alternating_cable_shoulder_press,Alternating Cable Shoulder Press,cable_machine,shoulders|triceps,likely,Lateral raise to shoulder press Resistance band cable,0.75
+alternating_deltoid_raise,Alternating Deltoid Raise,dumbbell,shoulders,likely,Bridge with alternating leg raise,0.67
+alternating_floor_press,Alternating Floor Press,kettlebell,chest|core|shoulders|triceps,likely,Barbell floor chest press,0.67
+alternating_hang_clean,Alternating Hang Clean,kettlebell,hamstrings|biceps|calves|forearms|glutes|lower_back|traps,likely,Barbell Hang Clean,0.67
+alternating_kettlebell_press,Alternating Kettlebell Press,kettlebell,shoulders|triceps,likely,Dumbbell Alternating Arnold Press,0.67
+alternating_kettlebell_row,Alternating Kettlebell Row,kettlebell,back|biceps|lats,likely,Dumbbell Alternating Pendlay Row,0.67
+alternating_renegade_row,Alternating Renegade Row,kettlebell,back|core|biceps|chest|lats|triceps,likely,Dumbbell Alternating Pendlay Row,0.67
+fedb_back_flyes_-_with_bands,Back Flyes - With Bands,resistance_bands,shoulders|back|triceps,likely,Band Chest Fly,0.67
+fedb_backward_medicine_ball_throw,Backward Medicine Ball Throw,medicine_ball,shoulders,likely,Medicine Ball Chest Throw With Abs,0.75
+barbell_ab_rollout,Barbell Ab Rollout,barbell,core|lower_back|shoulders,likely,Barbell rollout,0.67
+barbell_bench_press_medium_grip,Barbell Bench Press - Medium Grip,bench_press,chest|shoulders|triceps,likely,Barbell close grip bench press,0.80
+barbell_hack_squat,Barbell Hack Squat,squat_rack,quads|calves|forearms|hamstrings,likely,Barbell  squat back POV,0.67
+fedb_barbell_incline_shoulder_raise,Barbell Incline Shoulder Raise,barbell,shoulders|chest,likely,Barbell Incline Shoulders Press (inside squat cage),0.75
+fedb_barbell_seated_calf_raise,Barbell Seated Calf Raise,calf_raise_machine,calves,likely,Barbell seated on knee calve raises,0.75
+barbell_walking_lunge,Barbell Walking Lunge,barbell,quads|calves|glutes|hamstrings,likely,Barbell Curtsy Lunge,0.67
+bench_press_powerlifting,Bench Press - Powerlifting,bench_press,triceps|chest|forearms|lats|shoulders,likely,Band Bench Press,0.67
+bench_press_with_chains,Bench Press with Chains,bench_press,triceps|chest|lats|shoulders,likely,Band Bench Press,0.67
+fedb_bent-knee_hip_raise,Bent-Knee Hip Raise,,core,likely,Resistance Band Lying Bent Knee Hip Abduction,0.75
+fedb_body_tricep_press,Body Tricep Press,,triceps,likely,Band Cross Body One Arm Chest Press,0.67
+bodyweight_mid_row,Bodyweight Mid Row,,back|biceps|lats,likely,Bodyweight kneeling push-up row,0.67
+bodyweight_walking_lunge,Bodyweight Walking Lunge,,quads|calves|glutes|hamstrings,likely,Bodyweight forward lunge,0.67
+fedb_box_squat_with_bands,Box Squat with Bands,resistance_bands,quads|adductors|calves|glutes|hamstrings|lower_back,likely,Band single leg split squat,0.67
+fedb_box_squat_with_chains,Box Squat with Chains,plyo_box,quads|adductors|calves|glutes|hamstrings|lower_back,likely,Barbell box squat,0.67
+fedb_cross_over_-_with_bands,Cross Over - With Bands,resistance_bands,chest|biceps|shoulders,likely,Band Bent over One Arm Kickback,0.67
+fedb_decline_ez_bar_triceps_extension,Decline EZ Bar Triceps Extension,ez_curl_bar,triceps,likely,Cable triceps overhead extension (ez bar),0.80
+fedb_double_kettlebell_jerk,Double Kettlebell Jerk,kettlebell,shoulders|calves|quads|triceps,likely,Double Kettlebell Sled Push,0.67
+fedb_double_kettlebell_push_press,Double Kettlebell Push Press,kettlebell,shoulders|calves|quads|triceps,likely,Double Kettlebell Sled Push,0.75
+fedb_double_kettlebell_snatch,Double Kettlebell Snatch,kettlebell,shoulders|glutes|hamstrings|quads,likely,Kettlebell Snatch,0.67
+fedb_double_kettlebell_windmill,Double Kettlebell Windmill,kettlebell,core|glutes|hamstrings|shoulders|triceps,likely,Kettlebell Windmill,0.67
+fedb_dumbbell_bench_press_with_neutral_grip,Dumbbell Bench Press with Neutral Grip,bench_press,chest|shoulders|triceps,likely,Dumbbell Decline Close Neutral Grip Press,0.80
+fedb_front_box_jump,Front Box Jump,plyo_box,hamstrings|adductors|calves|glutes|quads,likely,Box jump,0.67
+fedb_glute_ham_raise,Glute Ham Raise,back_extension,hamstrings|calves|glutes,likely,Resistance Band Side Plank Glute Raise,0.67
+fedb_hammer_grip_incline_db_bench_press,Hammer Grip Incline DB Bench Press,bench_press,chest|shoulders|triceps,likely,Dumbbell Hammer Grip Incline Bench Two Arm Row,0.83
+fedb_heavy_bag_thrust,Heavy Bag Thrust,punching_bag,chest|core|shoulders|triceps,likely,Heavy Bag Sled Drag,0.67
+fedb_incline_bench_pull,Incline Bench Pull,adjustable_bench,back|lats|shoulders,likely,Band Hammer Grip Incline Bench Two Arm Row,0.67
+fedb_incline_cable_chest_press,Incline Cable Chest Press,chest_press_machine,chest|shoulders|triceps,likely,Chest press high to low cable Resistance band,0.75
+fedb_leverage_chest_press,Leverage Chest Press,chest_press_machine,chest|shoulders|triceps,likely,Band Cross Body One Arm Chest Press,0.67
+fedb_leverage_decline_chest_press,Leverage Decline Chest Press,chest_press_machine,chest|shoulders|triceps,likely,Dumbbell chest press decline,0.75
+leverage_high_row,Leverage High Row,seated_row_machine,back|lats,likely,Band Kneeling Single Arm High Row,0.67
+fedb_leverage_incline_chest_press,Leverage Incline Chest Press,chest_press_machine,chest|shoulders|triceps,likely,Dumbbell chest press incline bench,0.75
+fedb_leverage_shoulder_press,Leverage Shoulder Press,shoulder_press_machine,shoulders|triceps,likely,Band Behind Neck Shoulder Press,0.67
+fedb_low_cable_crossover,Low Cable Crossover,cable_machine,chest|shoulders,likely,Bicep curl low cable machine normal grip,0.67
+fedb_lying_machine_squat,Lying Machine Squat,hack_squat_machine,quads|calves|glutes|hamstrings,likely,Calf raise on hack squat machine,0.67
+fedb_machine_preacher_curls,Machine Preacher Curls,preacher_curl_bench,biceps,likely,band kneeling preacher curl,0.67
+fedb_machine_shoulder_military_press,Machine Shoulder (Military) Press,shoulder_press_machine,shoulders|triceps,likely,Smith machine shoulder press,0.75
+fedb_medicine_ball_chest_pass,Medicine Ball Chest Pass,medicine_ball,chest|shoulders|triceps,likely,Medicine Ball Chest Throw With Abs,0.75
+fedb_medicine_ball_scoop_throw,Medicine Ball Scoop Throw,medicine_ball,shoulders|core|hamstrings|quads,likely,Medicine Ball Chest Throw With Abs,0.75
+narrow_stance_hack_squats,Narrow Stance Hack Squats,hack_squat_machine,quads|calves|glutes|hamstrings,likely,barbell narrow stance full squat,0.75
+narrow_stance_leg_press,Narrow Stance Leg Press,leg_press,quads|calves|glutes|hamstrings,likely,Leg press machine close stance,0.75
+fedb_one_arm_chin-up,One Arm Chin-Up,pullup_bar,back|biceps|forearms|lats,likely,Band Bent over One Arm Kickback,0.67
+fedb_reverse_plate_curls,Reverse Plate Curls,weight_plates,biceps|forearms,likely,Band Reverse Spider Curl,0.67
+rope_straight_arm_pulldown,Rope Straight-Arm Pulldown,lat_pulldown,lats,likely,Cable straight arm pulldown,0.75
+fedb_single-arm_cable_crossover,Single-Arm Cable Crossover,cable_machine,chest,likely,Cable Single Arm Reverse Fly,0.75
+sled_drag_harness,Sled Drag - Harness,leg_press,quads|calves|glutes|hamstrings,likely,Crawl With Sled Drag,0.67
+fedb_smith_machine_bench_press,Smith Machine Bench Press,smith_machine,chest|shoulders|triceps,likely,Smith machine press decline,0.75
+fedb_standing_cable_chest_press,Standing Cable Chest Press,chest_press_machine,chest|shoulders|triceps,likely,Arnold press cable Resistance band standing,0.75
+fedb_two-arm_dumbbell_preacher_curl,Two-Arm Dumbbell Preacher Curl,preacher_curl_bench,biceps,likely,Dumbbell Hammer Preacher Curl Simultaneous Arms,0.80
+fedb_v-bar_pulldown,V-Bar Pulldown,lat_pulldown,lats|biceps|back|shoulders,likely,Cable bar lateral pulldown,0.67
+fedb_weighted_ball_hyperextension,Weighted Ball Hyperextension,back_extension,lower_back|glutes|hamstrings|back,likely,Russian twist weighted ball,0.67
+fedb_wide-grip_lat_pulldown,Wide-Grip Lat Pulldown,lat_pulldown,lats|biceps|back|shoulders,likely,Cable close grip front lat pulldown,0.75
+90_90_hamstring,90/90 Hamstring,,hamstrings|calves,maybe,90 degree heel touch,0.50
+fedb_ab_roller,Ab Roller,foam_roller,core|shoulders,maybe,Ab Mat Sit-up,0.50
+air_bike_steady,Air Bike Steady Effort,air_bike,quads|hamstrings|shoulders,maybe,Air Bike (VERSION 2),0.50
+around_the_worlds,Around The Worlds,dumbbell,chest|shoulders,maybe,Around the world superman hold,0.50
+barbell_ab_rollout_on_knees,Barbell Ab Rollout - On Knees,barbell,core|lower_back|shoulders,maybe,Barbell rollout,0.50
+fedb_barbell_rollout_from_bench,Barbell Rollout from Bench,barbell,core|glutes|hamstrings|lats|shoulders,maybe,Barbell Bench Lateral Step-up,0.50
+bear_crawl_sled_drags,Bear Crawl Sled Drags,leg_press,quads|calves|glutes|hamstrings,maybe,Crawl With Sled Drag,0.50
+fedb_bench_jump,Bench Jump,adjustable_bench,quads|calves|glutes|hamstrings,maybe,180 Jump Turns,0.50
+bench_sprint,Bench Sprint,plyo_box,quads|calves|glutes|hamstrings,maybe,Assault AirBike Sprint Speed,0.50
+fedb_bent_over_dumbbell_rear_delt_raise_with_head_on_bench,Bent Over Dumbbell Rear Delt Raise With Head On Bench,dumbbell,shoulders,maybe,Bent over rear delt fly dumbbell,0.62
+bent_over_low_pulley_side_lateral,Bent Over Low-Pulley Side Lateral,cable_machine,shoulders|lower_back|back|traps,maybe,Cable bent over one arm lateral raise,0.50
+fedb_bicycling_stationary,"Bicycling, Stationary",exercise_bike,quads|calves|glutes|hamstrings,maybe,Stationary Exercise Bike,0.50
+bosu_ball_cable_crunch_with_side_bends,Bosu Ball Cable Crunch With Side Bends,cable_machine,core,maybe,Crunch (on bosu ball),0.50
+fedb_box_jump_multiple_response,Box Jump (Multiple Response),plyo_box,hamstrings|adductors|calves|glutes|quads,maybe,Box jump,0.50
+fedb_box_skip,Box Skip,plyo_box,hamstrings|adductors|calves|glutes|quads,maybe,Barbell box squat,0.50
+fedb_close-grip_push-up_off_of_a_dumbbell,Close-Grip Push-Up off of a Dumbbell,dumbbell,triceps|core|chest|shoulders,maybe,Cable triceps push down ez bar close grip,0.60
+fedb_decline_close-grip_bench_to_skull_crusher,Decline Close-Grip Bench To Skull Crusher,adjustable_bench,triceps|chest|shoulders,maybe,Barbell close grip bench press,0.50
+fedb_elliptical_trainer,Elliptical Trainer,elliptical,quads|calves|glutes|hamstrings,maybe,Gym Elliptical Machine Fast Speed,0.50
+fedb_extended_range_one-arm_kettlebell_floor_press,Extended Range One-Arm Kettlebell Floor Press,kettlebell,chest|shoulders|triceps,maybe,Dumbbell One Arm Floor Press,0.57
+fedb_flat_bench_leg_pull-in,Flat Bench Leg Pull-In,adjustable_bench,core,maybe,Alternate leg pull,0.50
+fedb_hanging_pike,Hanging Pike,captains_chair,core,maybe,Decline diamond pike push-up,0.50
+fedb_hyperextensions_with_no_hyperextension_bench,Hyperextensions With No Hyperextension Bench,back_extension,lower_back|glutes|hamstrings,maybe,Weighted Back Extensions on Hyperextension Bench,0.50
+treadmill_incline_walk,Incline Walk,treadmill,glutes|hamstrings|quads|calves,maybe,Band Hammer Grip Incline Bench Two Arm Row,0.50
+fedb_kipping_muscle_up,Kipping Muscle Up,pullup_bar,lats|core|biceps|forearms|back|shoulders|traps|triceps,maybe,Barbell muscle clean,0.50
+fedb_medicine_ball_full_twist,Medicine Ball Full Twist,medicine_ball,core|shoulders,maybe,Barbell seated twist on exercise ball,0.50
+fedb_rack_delivery,Rack Delivery,squat_rack,shoulders|forearms|traps,maybe,barbell front rack lunge,0.50
+fedb_rack_pulls,Rack Pulls,squat_rack,lower_back|forearms|glutes|hamstrings|traps,maybe,barbell front rack lunge,0.50
+fedb_recumbent_bike,Recumbent Bike,recumbent_bike,quads|calves|glutes|hamstrings,maybe,Air Bike (VERSION 2),0.50
+fedb_reverse_band_box_squat,Reverse Band Box Squat,plyo_box,quads|adductors|calves|forearms|glutes|hamstrings|lower_back,maybe,Band Lying Reverse Grip Pressdown,0.50
+rocky_pull_ups_pulldowns,Rocky Pull-Ups/Pulldowns,lat_pulldown,lats|biceps|back|shoulders,maybe,Bench pull-ups,0.50
+fedb_rope_climb,Rope Climb,battle_ropes,lats|biceps|forearms|back|shoulders,maybe,Battle Rope Alternating Arm Waves,0.50
+rowing_intervals,Row Intervals,rowing_machine,lats|back|quads|hamstrings|glutes|core,maybe,Band bent-over row,0.50
+fedb_seated_band_hamstring_curl,Seated Band Hamstring Curl,leg_curl,hamstrings,maybe,Alternate Bicep Curl Resistance Band,0.50
+ski_erg_steady,Ski Erg Steady Pull,ski_erg,lats|triceps|core,maybe,Ski Ergometer Cross Country Ski Alternating Arm Pull,0.50
+fedb_smith_incline_shoulder_raise,Smith Incline Shoulder Raise,smith_machine,shoulders|chest,maybe,Band Incline T Raise,0.50
+fedb_smith_machine_bent_over_row,Smith Machine Bent Over Row,smith_machine,back|biceps|lats|shoulders,maybe,Band bent-over row,0.60
+rowing_steady,Steady Row,rowing_machine,lats|back|quads|hamstrings|glutes|core,maybe,Band bent-over row,0.50
+fedb_step_mill,Step Mill,stair_climber,quads|calves|glutes|hamstrings,maybe,4 Corners Side Step,0.50
+fedb_t-bar_row_with_handle,T-Bar Row with Handle,t_bar_row,back|biceps|lats,maybe,Bent-over Row with bar,0.50
+fedb_thigh_abductor,Thigh Abductor,hip_abductor_adductor,adductors|glutes,maybe,Bouncing inner thigh tap,0.50
+fedb_thigh_adductor,Thigh Adductor,hip_abductor_adductor,adductors|glutes|hamstrings,maybe,Adductor dynamic stretch,0.50
+treadmill_warmup_walk,Warm-up Walk,treadmill,quads|hamstrings|glutes|calves,maybe,Band Warm up Shoulder Stretch,0.50
+fedb_wrist_roller,Wrist Roller,foam_roller,forearms|shoulders,maybe,Band Wrist Curl,0.50
+barbell_curls_lying_against_an_incline,Barbell Curls Lying Against An Incline,barbell,biceps,none,Band Incline Alternate Hammer Curl,0.40
+fedb_butt_lift_bridge,Butt Lift (Bridge),,glutes|hamstrings,none,Alternate toe tap leg lift,0.33
+cable_hammer_curls_rope_attachment,Cable Hammer Curls - Rope Attachment,cable_machine,biceps,none,Alternate hammer curl seated dumbbells,0.40
+fedb_double_kettlebell_alternating_hang_clean,Double Kettlebell Alternating Hang Clean,kettlebell,hamstrings|biceps|calves|forearms|glutes|lower_back|quads|traps,none,Barbell Hang Clean,0.40
+full_range_of_motion_lat_pulldown,Full Range-Of-Motion Lat Pulldown,lat_pulldown,lats|biceps|back|shoulders,none,band kneeling lat pulldown,0.40
+fedb_knee_hip_raise_on_parallel_bars,Knee/Hip Raise On Parallel Bars,dip_station,core,none,Barbell seated on knee calve raises,0.40
+leverage_iso_row,Leverage Iso Row,seated_row_machine,lats|biceps|back,none,Band bent-over row,0.33
+fedb_one-arm_medicine_ball_slam,One-Arm Medicine Ball Slam,medicine_ball,core|lats|shoulders,none,Band Bent over One Arm Kickback,0.40
+treadmill_intervals,Run Intervals,treadmill,quads|hamstrings|glutes|calves|core,none,,0.00
+ski_erg_intervals,Ski Erg Intervals,ski_erg,lats|triceps|core|shoulders,none,Ski Ergometer Cross Country Ski Alternating Arm Pull,0.33
+sled_overhead_backward_walk,Sled Overhead Backward Walk,leg_press,shoulders|calves|back|quads,none,Arm circles backward,0.25
+fedb_smith_machine_behind_the_back_shrug,Smith Machine Behind the Back Shrug,smith_machine,traps|shoulders,none,Arms Behind Back Chest Stretch,0.40
+fedb_stairmaster,Stairmaster,stair_climber,quads|calves|glutes|hamstrings,none,,0.00
+treadmill_steady_run,Steady-State Run,treadmill,quads|hamstrings|glutes|calves|core,none,,0.00
+fedb_stride_jump_crossover,Stride Jump Crossover,cable_machine,quads|adductors|calves|hamstrings,none,180 Jump Turns,0.33
+fedb_wide-grip_pulldown_behind_the_neck,Wide-Grip Pulldown Behind The Neck,lat_pulldown,lats|biceps|back|shoulders,none,Assisted chin up reverse wide grip,0.40
+alternate_hammer_curl,Alternate Hammer Curl,dumbbell,biceps|forearms,subset,Alternate hammer curl seated dumbbells,1.00
+fedb_barbell_shoulder_press,Barbell Shoulder Press,shoulder_press_machine,shoulders|chest|triceps,subset,Barbell Incline Shoulders Press (inside squat cage),1.00
+fedb_bottoms_up,Bottoms Up,,core,subset,Bottoms-up half rep,1.00
+box_squat,Box Squat,squat_rack,quads|adductors|calves|glutes|hamstrings|lower_back,subset,Barbell box squat,1.00
+cable_chest_press,Cable Chest Press,cable_machine,chest|shoulders|triceps,subset,Chest press high to low cable Resistance band,1.00
+cable_crossover,Cable Crossover,cable_machine,chest|shoulders,subset,Biceps curl cable wide grip crossover machine,1.00
+cable_deadlifts,Cable Deadlifts,cable_machine,quads|forearms|glutes|hamstrings|lower_back,subset,Cable Single Leg Deadlift,1.00
+fedb_cable_shoulder_press,Cable Shoulder Press,shoulder_press_machine,shoulders|triceps,subset,Lateral raise to shoulder press Resistance band cable,1.00
+fedb_calf_press,Calf Press,calf_raise_machine,calves,subset,Calf raise leg press machine,1.00
+calf_press_on_the_leg_press_machine,Calf Press On The Leg Press Machine,leg_press,calves,subset,Calf raise leg press machine,1.00
+fedb_close-grip_ez_bar_curl,Close-Grip EZ Bar Curl,ez_curl_bar,biceps|forearms,subset,Ez bar biceps curl close grip,1.00
+fedb_decline_smith_press,Decline Smith Press,smith_machine,chest|shoulders|triceps,subset,Smith machine press decline,1.00
+fedb_dip_machine,Dip Machine,tricep_extension_machine,triceps|chest|shoulders,subset,Chest dip machine,1.00
+fedb_dumbbell_one-arm_shoulder_press,Dumbbell One-Arm Shoulder Press,shoulder_press_machine,shoulders|triceps,subset,Dumbbell One Arm Shoulder Press (VERSION 2),1.00
+fedb_dumbbell_seated_one-leg_calf_raise,Dumbbell Seated One-Leg Calf Raise,calf_raise_machine,calves,subset,Dumbbell Seated One Leg Calf Raise Hammer Grip,1.00
+fedb_glute_kickback,Glute Kickback,glute_kickback_machine,glutes|hamstrings,subset,Resistance Band Standing Balance Glute Kickback,1.00
+fedb_machine_bicep_curl,Machine Bicep Curl,bicep_curl_machine,biceps,subset,Bicep curl low cable machine normal grip,1.00
+fedb_muscle_up,Muscle Up,pullup_bar,lats|core|biceps|forearms|back|shoulders|traps|triceps,subset,Barbell muscle clean,1.00
+one_arm_lat_pulldown,One Arm Lat Pulldown,lat_pulldown,lats|biceps|back,subset,Cable one arm lat pulldown,1.00
+fedb_plate_pinch,Plate Pinch,weight_plates,forearms,subset,Plate Pinch Grip Deadlift,1.00
+fedb_plate_twist,Plate Twist,weight_plates,core,subset,Plate Russian Twist,1.00
+fedb_pullups,Pullups,pullup_bar,lats|biceps|back,subset,Alternate leg pull,1.00
+fedb_single-leg_leg_extension,Single-Leg Leg Extension,leg_extension,quads,subset,Seated leg extension single leg,1.00
+fedb_upright_cable_row,Upright Cable Row,seated_row_machine,traps|shoulders,subset,Cable upright row with EZ bar,1.00
+fedb_zottman_preacher_curl,Zottman Preacher Curl,preacher_curl_bench,biceps|forearms,subset,Dumbbell One Arm Zottman Preacher Curl,1.00

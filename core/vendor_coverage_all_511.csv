@@ -1,0 +1,512 @@
+﻿id,our_title,equipmentId,muscles,match_kind,vendor_name,score
+3_4_sit_up,3/4 Sit-Up,,core,exact,3-4 Sit-up,1.00
+vid_45_degree_bycicle_twisting_crunch,45-Degree Bicycle Twisting Crunch,,core,exact,45 degree Bicycle Twisting Crunch,1.00
+vid_45_degree_side_bend,45-Degree Side Bend,back_extension,core|lower_back,exact,45 Degree Side Bend,1.00
+ab_crunch_machine,Ab Crunch Machine,ab_crunch_machine,core,exact,Abdominal Crunches Machine,1.00
+vid_stretching_above_head_chest_stretch,Above-Head Chest Stretch,,chest|shoulders,exact,Above Head Chest Stretch,1.00
+vid_stretching_adductor_stretch,Adductor Stretch,,adductors,exact,adductor stretch,1.00
+air_bike,Air Bike,,core,exact,air bike,1.00
+vid_air_twisting_crunch,Air Twisting Crunch,,core,exact,air twisting crunch,1.00
+all_fours_quad_stretch,All Fours Quad Stretch,,quads,exact,ALL FOURS QUAD STRETCH,1.00
+vid_stretching_all_fours_squad_stretch,All-Fours Quad Stretch,,quads,exact,ALL FOURS QUAD STRETCH,1.00
+alternate_incline_dumbbell_curl,Alternate Incline Dumbbell Curl,dumbbell,biceps|forearms,exact,Dumbbell Incline Alternate Curl,1.00
+arnold_dumbbell_press,Arnold Dumbbell Press,dumbbell,shoulders|triceps,exact,Arnold press dumbbell,1.00
+fedb_ball_leg_curl,Ball Leg Curl,leg_curl,hamstrings|calves|glutes,exact,Exercise Ball Leg Curl,1.00
+vid_band_bent_over_hip_extension,Band Bent-Over Hip Extension,resistance_bands,glutes|hamstrings,exact,Band Bent-over Hip Extension,1.00
+vid_band_bent_over_row,Band Bent-Over Row,resistance_bands,back|lats|biceps,exact,Band bent-over row,1.00
+vid_band_decline_sit_ups,Band Decline Sit-Up,resistance_bands,core,exact,Band Decline Sit up,1.00
+vid_band_high_fly,Band High Fly,resistance_bands,chest|shoulders|triceps,exact,Band high fly,1.00
+vid_band_hip_adduction,Band Hip Adduction,resistance_bands,adductors,exact,Band Hip Adduction,1.00
+vid_band_side_bend,Band Side Bend,resistance_bands,core,exact,Band side bend,1.00
+vid_band_standing_rear_delt_row,Band Standing Rear Delt Row,resistance_bands,shoulders|back,exact,Band standing rear delt row,1.00
+vid_stretching_band_warm_up_shoulder_stretch,Band Warm-Up Shoulder Stretch,resistance_bands,shoulders|chest,exact,Band Warm up Shoulder Stretch,1.00
+vid_barbell_clean_and_press,Barbell Clean and Press,barbell,quads|glutes|shoulders|traps,exact,Barbell clean and press,1.00
+barbell_curl,Barbell Curl,barbell,biceps|forearms,exact,Barbell Curl,1.00
+barbell_deadlift,Barbell Deadlift,barbell,lower_back|calves|forearms|glutes|hamstrings|lats|back|quads|traps,exact,Barbell Deadlift,1.00
+vid_barbell_drag_curl,Barbell Drag Curl,barbell,biceps|forearms,exact,Barbell drag curl,1.00
+vid_barbell_front_raise,Barbell Front Raise,barbell,shoulders,exact,Front raises barbell,1.00
+vid_barbell_front_chest_squat,Barbell Front Squat,barbell,quads|glutes|hamstrings,exact,Barbell front squats,1.00
+barbell_full_squat,Barbell Full Squat,squat_rack,quads|calves|glutes|hamstrings|lower_back,exact,Barbell Full Squat,1.00
+fedb_barbell_glute_bridge,Barbell Glute Bridge,barbell,glutes|calves|hamstrings,exact,Barbell glute bridge,1.00
+fedb_barbell_hip_thrust,Barbell Hip Thrust,barbell,glutes|calves|hamstrings,exact,Barbell Hip Thrust,1.00
+fedb_barbell_lunge,Barbell Lunge,barbell,quads|calves|glutes|hamstrings,exact,Barbell lunges,1.00
+barbell_side_split_squat,Barbell Side Split Squat,squat_rack,quads|calves|hamstrings|lower_back,exact,Barbell side split squat,1.00
+barbell_squat_to_a_bench,Barbell Squat To A Bench,squat_rack,quads|calves|glutes|hamstrings|lower_back,exact,Barbell bench squats,1.00
+vid_barbell_straight_leg_deadlift,Barbell Straight-Leg Deadlift,barbell,hamstrings|glutes|back|lower_back,exact,Barbell straight leg deadlift,1.00
+vid_barbell_upright_row_wide_grip,Barbell Upright Row - Wide Grip,barbell,shoulders|traps,exact,Barbell wide grip upright row,1.00
+bench_press_with_bands,Bench Press - With Bands,bench_press,chest|shoulders|triceps,exact,Band Bench Press,1.00
+vid_bent_knee_lying_twist,Bent Knee Lying Twist,,core|lower_back,exact,Bent knee lying twist,1.00
+vid_bent_knee_lying_twist_on_stability_ball,Bent Knee Lying Twist on a Stability Ball,stability_ball,core,exact,Bent knee lying twist (on stability ball),1.00
+bent_arm_dumbbell_pullover,Bent-Arm Dumbbell Pullover,dumbbell,chest|lats|shoulders|triceps,exact,Dumbbell Bent Arm Pullover,1.00
+vid_stretching_boat_stretch,Boat Stretch,,core|hamstrings,exact,Boat stretch,1.00
+fedb_body-up,Body-Up,,triceps|core|forearms,exact,Body-up,1.00
+fedb_bodyweight_squat,Bodyweight Squat,,quads|glutes|hamstrings,exact,bodyweight squats,1.00
+vid_burpee,Burpee,,quads|chest|core|shoulders,exact,Burpee,1.00
+vid_stretching_butterfly_yoga_pose,Butterfly Yoga Pose,,adductors,exact,Butterfly yoga pose,1.00
+vid_cable_crossover_reverse_fly,Cable Crossover Reverse Fly,cable_machine,shoulders|back,exact,Reverse cable fly on crossover,1.00
+vid_cable_lateral_raise,Cable Lateral Raise,cable_machine,shoulders,exact,Cable lateral raises,1.00
+vid_cable_lying_triceps_extension,Cable Lying Triceps Extension,cable_machine,triceps,exact,Cable lying triceps extension,1.00
+vid_cable_one_arm_curl,Cable One-Arm Curl,cable_machine,biceps|forearms,exact,Cable one arm curl,1.00
+vid_cable_one_arm_forward_raise,Cable One-Arm Front Raise,cable_machine,shoulders,exact,Cable one arm front raise,1.00
+vid_cable_one_arm_lateral_pulldown,Cable One-Arm Lat Pulldown,cable_machine,back|lats|biceps,exact,Cable one arm lat pulldown,1.00
+fedb_cable_preacher_curl,Cable Preacher Curl,preacher_curl_bench,biceps|forearms,exact,Cable preacher curl,1.00
+fedb_cable_rear_delt_fly,Cable Rear Delt Fly,pec_deck,shoulders,exact,Cable rear delt fly,1.00
+vid_cable_standing_crunch,Cable Standing Crunch,cable_machine,core,exact,Cable Standing Crunch,1.00
+vid_cable_straight_back_seated_high_row_reverse_grip,Cable Straight-Back Seated High Row - Reverse Grip,cable_machine,back|lats|biceps,exact,Cable reverse grip straight back seated high row,1.00
+vid_stretching_calf_stretch_with_rope,Calf Stretch with a Rope,,calves,exact,Calf stretch with rope,1.00
+vid_stretching_ceiling_look_stretch,Ceiling Look Stretch,,quads|chest|core,exact,Ceiling look stretch,1.00
+vid_chest_dips,Chest Dip,dip_station,chest|shoulders|triceps,exact,Chest dip,1.00
+vid_chest_lift_with_rotation,Chest Lift with Rotation,,core,exact,Chest lift with rotation,1.00
+fedb_chin-up,Chin-Up,pullup_bar,lats|biceps|forearms|back,exact,Chin up,1.00
+fedb_close-grip_barbell_bench_press,Close-Grip Barbell Bench Press,bench_press,triceps|chest|shoulders,exact,Close grip barbell bench press,1.00
+vid_close_grip_push_ups,Close-Grip Push-Up,,triceps|chest|shoulders,exact,Close grip push up,1.00
+vid_commando_pull_up,Commando Pull-Up,pullup_bar,back|lats|biceps,exact,Commando pull-up,1.00
+vid_stretching_crossover_kneeling_hip_flexor_stretch,Crossover Kneeling Hip Flexor Stretch,,quads|core,exact,Crossover kneeling hip flexor stretch,1.00
+vid_crunch_leg_raise,Crunch with Leg Raise,,core,exact,Crunch leg raise,1.00
+vid_crunch_legs_on_stability_ball,Crunch with Legs on a Stability Ball,stability_ball,core,exact,Crunch (legs on stability ball),1.00
+vid_crunch_straight_leg_up,Crunch with Straight Leg Up,,core,exact,Crunch (straight leg up),1.00
+fedb_deadlift_with_bands,Deadlift with Bands,resistance_bands,lower_back|forearms|glutes|hamstrings|back|quads|traps,exact,Band Deadlift,1.00
+fedb_decline_barbell_bench_press,Decline Barbell Bench Press,bench_press,chest|shoulders|triceps,exact,Barbell bench press decline,1.00
+fedb_decline_dumbbell_bench_press,Decline Dumbbell Bench Press,bench_press,chest|shoulders|triceps,exact,Dumbbell Decline Bench Press,1.00
+fedb_decline_dumbbell_flyes,Decline Dumbbell Flyes,dumbbell,chest,exact,Dumbbell decline fly,1.00
+vid_deep_push_ups,Deep Push-Up,parallettes,chest|shoulders|triceps,exact,Deep push-up,1.00
+vid_donkey_calf_raise,Donkey Calf Raise,calf_raise_machine,calves,exact,Donkey calf raise,1.00
+fedb_dumbbell_bench_press,Dumbbell Bench Press,bench_press,chest|shoulders|triceps,exact,Dumbbell Bench Press,1.00
+vid_dumbbell_bent_over_row,Dumbbell Bent-Over Row,dumbbell,back|lats|biceps,exact,Dumbbells bent over row,1.00
+vid_dumbbell_concentration_curl,Dumbbell Concentration Curl,dumbbell,biceps|forearms,exact,Concentration curls dumbbell,1.00
+vid_dumbbell_decline_fly_45_degree,Dumbbell Decline Fly,dumbbell,chest|shoulders|triceps,exact,Dumbbell decline fly,1.00
+vid_dumbbell_front_raise,Dumbbell Front Raise,dumbbell,shoulders,exact,Dumbbell Front Raise,1.00
+vid_dumbbell_front_squat,Dumbbell Front Squat,dumbbell,quads|glutes|hamstrings|calves,exact,Dumbbell Front Squat,1.00
+vid_dumbbell_goblet_squat,Dumbbell Goblet Squat,dumbbell,quads|glutes|hamstrings,exact,Dumbbell Goblet Squat,1.00
+vid_dumbbell_incline_bench_press,Dumbbell Incline Bench Press,dumbbell,chest|shoulders|triceps,exact,Dumbbell Incline Bench Press,1.00
+vid_dumbbell_incline_fly,Dumbbell Incline Fly,dumbbell,chest|shoulders|triceps,exact,Dumbbell Incline Fly,1.00
+vid_dumbbell_incline_fly_on_exercise_ball,Dumbbell Incline Fly on an Exercise Ball,dumbbell,chest|shoulders|triceps|core,exact,Dumbbell Incline Fly on Exercise Ball,1.00
+vid_dumbbell_incline_rear_lateral_raise,Dumbbell Incline Rear Lateral Raise,dumbbell,shoulders|back,exact,Dumbbell Incline Rear Lateral Raise,1.00
+vid_dumbbell_incline_row,Dumbbell Incline Row,dumbbell,back|lats|biceps,exact,Dumbbell Incline Row,1.00
+vid_dumbbell_incline_shrug,Dumbbell Incline Shrug,dumbbell,traps|shoulders,exact,Dumbbell Incline Shrug,1.00
+vid_dumbbell_iron_cross,Dumbbell Iron Cross,dumbbell,shoulders|chest,exact,Dumbbell Iron Cross,1.00
+vid_dumbbell_kickback,Dumbbell Kickback,dumbbell,triceps,exact,Dumbbell Kickback,1.00
+vid_dumbbell_lateral_raise,Dumbbell Lateral Raise,dumbbell,shoulders,exact,Lateral raises dumbbell,1.00
+vid_dumbbell_lying_rear_delt_row,Dumbbell Lying Rear Delt Row,dumbbell,shoulders|back,exact,Dumbbell Lying Rear Delt Row,1.00
+vid_dumbbell_lying_triceps_extension,Dumbbell Lying Triceps Extension,dumbbell,triceps,exact,Dumbbell Lying Triceps Extension,1.00
+vid_dumbbell_one_arm_lateral_raise,Dumbbell One-Arm Lateral Raise,dumbbell,shoulders,exact,Dumbbell One Arm Lateral Raise,1.00
+vid_dumbbell_over_bench_wrist_curl,Dumbbell Over-Bench Reverse Wrist Curl,dumbbell,forearms,exact,Dumbbell Over Bench Reverse Wrist Curl,1.00
+vid_dumbbell_preacher_curl_over_exercise_ball,Dumbbell Preacher Curl Over an Exercise Ball,dumbbell,biceps|forearms,exact,Dumbbell Preacher Curl over Exercise Ball,1.00
+vid_dumbbell_prone_incline_curl,Dumbbell Prone Incline Curl,dumbbell,biceps|forearms,exact,Dumbbell Prone Incline Curl,1.00
+vid_dumbbell_rear_delt_row,Dumbbell Rear Delt Row,dumbbell,shoulders|back,exact,Dumbbell Rear Delt Row,1.00
+vid_dumbbell_seated_front_raise,Dumbbell Seated Front Raise,dumbbell,shoulders,exact,Front raises dumbbell seated,1.00
+vid_dumbbell_seated_kickback,Dumbbell Seated Kickback,dumbbell,triceps,exact,Dumbbell Seated Kickback,1.00
+vid_dumbbell_seated_lateral_raise,Dumbbell Seated Lateral Raise,dumbbell,shoulders,exact,Dumbbell Seated Lateral Raise,1.00
+vid_dumbbell_seated_neutral_wrist_curl,Dumbbell Seated Neutral Wrist Curl,dumbbell,forearms,exact,Dumbbell Seated Neutral Wrist Curl,1.00
+vid_dumbbell_seated_preacher_curl,Dumbbell Seated Preacher Curl,preacher_curl_bench,biceps|forearms,exact,Dumbbell Seated Preacher Curl,1.00
+vid_dumbbell_side_bend,Dumbbell Side Bend,dumbbell,core,exact,Dumbbell Side Bend,1.00
+vid_dumbbell_single_leg_squat,Dumbbell Single-Leg Squat,dumbbell,quads|glutes|hamstrings,exact,Dumbbell Single Leg Squat,1.00
+vid_dumbbell_squat,Dumbbell Squat,dumbbell,quads|glutes|hamstrings,exact,Dumbbell squats,1.00
+vid_dumbbell_standing_calf_raise,Dumbbell Standing Calf Raise,dumbbell,calves,exact,Dumbbell standing calf raise,1.00
+vid_dumbbell_stiff_leg_deadlift,Dumbbell Stiff-Leg Deadlift,dumbbell,hamstrings|glutes|back|lower_back,exact,Dumbbell Stiff Leg Deadlift,1.00
+vid_dumbbell_upright_row,Dumbbell Upright Row,dumbbell,shoulders|traps,exact,Upright row dumbbell,1.00
+vid_stretching_dynamic_back_stretch,Dynamic Back Stretch,,back|shoulders,exact,Dynamic Back Stretch,1.00
+vid_stretching_elbows_back_stretch,Elbows Back Stretch,,back|chest|shoulders,exact,Elbows Back Stretch,1.00
+fedb_flat_bench_cable_flyes,Flat Bench Cable Flyes,adjustable_bench,chest,exact,Flat bench cable fly,1.00
+vid_crunch_floor_female,Floor Crunch,,core,exact,Crunch floor,1.00
+fedb_front_plate_raise,Front Plate Raise,weight_plates,shoulders,exact,Plate front raise,1.00
+fedb_hanging_leg_raise,Hanging Leg Raise,captains_chair,core,exact,Hanging Leg Raises,1.00
+vid_stretching_iron_cross_stretch,Iron Cross Stretch,,core|lower_back|glutes,exact,Iron cross stretch,1.00
+vid_jumping_jack,Jumping Jack,,calves|shoulders|quads,exact,Jumping jack,1.00
+fedb_lateral_box_jump,Lateral Box Jump,plyo_box,adductors|calves|glutes|hamstrings|quads,exact,Lateral Box Jump,1.00
+vid_stretching_quadriceps_lying_stretch,Lying Quadriceps Stretch,,quads,exact,Lying quadriceps stretch,1.00
+vid_lying_supine_dumbbell_curl,Lying Supine Dumbbell Curl,dumbbell,biceps|forearms,exact,Dumbbell Lying Supine Curl,1.00
+vid_lever_back_extension,Machine Back Extension,back_extension,lower_back|glutes,exact,Back extension machine,1.00
+vid_lever_chest_press,Machine Chest Press,chest_press_machine,chest|shoulders|triceps,exact,Chest Press Machine,1.00
+vid_lever_incline_hammer_chest_press,Machine Incline Chest Press,chest_press_machine,chest|shoulders|triceps,exact,Machine chest press incline,1.00
+vid_lever_kneeling_leg_curl,Machine Kneeling Leg Curl,leg_curl,hamstrings,exact,Kneeling leg curl machine,1.00
+vid_lever_lateral_raise,Machine Lateral Raise,,shoulders,exact,Machine Lateral Raise,1.00
+vid_stretching_rear_deltoid_stretch,Rear Deltoid Stretch,,shoulders|back,exact,Rear deltoid stretch,1.00
+vid_reverse_crunch_female,Reverse Crunch,,core,exact,Reverse crunch,1.00
+fedb_reverse_machine_flyes,Reverse Machine Flyes,pec_deck,shoulders,exact,Reverse Machine Fly,1.00
+vid_running,Running,,quads|hamstrings|glutes|calves,exact,Running,1.00
+fedb_russian_twist,Russian Twist,rotary_torso_machine,core|lower_back,exact,Russian twist,1.00
+fedb_seated_barbell_twist,Seated Barbell Twist,rotary_torso_machine,core,exact,Barbell seated twist,1.00
+vid_stretching_seated_calf_stretch,Seated Calf Stretch,,calves,exact,Seated calf stretch,1.00
+vid_side_bridge_side_plank,Side Plank,,core,exact,Side plank,1.00
+vid_stretching_side_wrist_pull_stretch,Side Wrist Pull Stretch,,forearms|shoulders,exact,Side wrist pull stretch,1.00
+vid_sit_ups,Sit-Up,,core,exact,Situps,1.00
+vid_sit_up_on_exercise_ball,Sit-Up on an Exercise Ball,stability_ball,core,exact,Ball Sit-up,1.00
+fedb_smith_machine_calf_raise,Smith Machine Calf Raise,smith_machine,calves,exact,Smith machine calf raise,1.00
+vid_stretching_standing_lateral_stretch,Standing Lateral Stretch,,core|lats,exact,Standing lateral stretch,1.00
+vid_stretching_quadriceps_stretch,Standing Quadriceps Stretch,,quads,exact,Standing Quadriceps Stretch,1.00
+vid_stationary_bike,Stationary Bike,exercise_bike,quads|hamstrings|calves,exact,Stationary Exercise Bike,1.00
+vid_treadmill_running,Treadmill Running,treadmill,quads|hamstrings|glutes|calves,exact,Treadmill Running,1.00
+vid_v_up,V-Up,,core,exact,V up,1.00
+advanced_kettlebell_windmill,Advanced Kettlebell Windmill,kettlebell,core|glutes|hamstrings|shoulders,likely,Kettlebell Windmill,0.67
+air_bike_intervals,Air Bike Intervals,air_bike,quads|hamstrings|shoulders|core,likely,Air Bike (VERSION 2),0.67
+alternate_heel_touchers,Alternate Heel Touchers,,core,likely,Alternate heel touch side kick squat,0.67
+alternating_cable_shoulder_press,Alternating Cable Shoulder Press,cable_machine,shoulders|triceps,likely,Lateral raise to shoulder press Resistance band cable,0.75
+alternating_deltoid_raise,Alternating Deltoid Raise,dumbbell,shoulders,likely,Bridge with alternating leg raise,0.67
+alternating_floor_press,Alternating Floor Press,kettlebell,chest|core|shoulders|triceps,likely,Barbell floor chest press,0.67
+alternating_hang_clean,Alternating Hang Clean,kettlebell,hamstrings|biceps|calves|forearms|glutes|lower_back|traps,likely,Barbell Hang Clean,0.67
+alternating_kettlebell_press,Alternating Kettlebell Press,kettlebell,shoulders|triceps,likely,Dumbbell Alternating Arnold Press,0.67
+alternating_kettlebell_row,Alternating Kettlebell Row,kettlebell,back|biceps|lats,likely,Dumbbell Alternating Pendlay Row,0.67
+alternating_renegade_row,Alternating Renegade Row,kettlebell,back|core|biceps|chest|lats|triceps,likely,Dumbbell Alternating Pendlay Row,0.67
+fedb_back_flyes_-_with_bands,Back Flyes - With Bands,resistance_bands,shoulders|back|triceps,likely,Band Chest Fly,0.67
+fedb_backward_medicine_ball_throw,Backward Medicine Ball Throw,medicine_ball,shoulders,likely,Medicine Ball Chest Throw With Abs,0.75
+fedb_band_assisted_pull-up,Band Assisted Pull-Up,assisted_pullup_machine,lats|core|forearms|back,likely,Assisted parallel close grip pull up,0.67
+vid_band_bent_over_rear_lateral_raise,Band Bent-Over Rear Lateral Raise,resistance_bands,shoulders|back,likely,Bent over rear deltoid fly Resistance band,0.67
+vid_band_kneeling_one_arm_pulldown,Band Kneeling One-Arm Pulldown,resistance_bands,back|lats|biceps,likely,Resistance Band Kneeling Cross Body Single Straight Arm Supinated Pulldown,0.80
+vid_band_leg_curl,Band Lying Leg Curl,resistance_bands,hamstrings,likely,Band Standing Leg Curl,0.75
+vid_band_one_arm_forward_raise,Band One-Arm Front Raise,resistance_bands,shoulders,likely,Cable one arm front raise,0.80
+vid_band_one_arm_twisting_seated_row,Band One-Arm Twisting Seated Row,resistance_bands,back|lats|biceps,likely,Cable seated one arm alternate row,0.67
+vid_band_overhead_triceps_extension,Band Overhead Triceps Extension,resistance_bands,triceps,likely,Band Incline Triceps Extension,0.75
+vid_band_pull_through,Band Pull Through,resistance_bands,glutes|hamstrings|lower_back,likely,Band Face Pull,0.67
+vid_band_seated_leg_extension,Band Seated Leg Extension,resistance_bands,quads,likely,Seated leg extension single leg,0.75
+vid_band_side_triceps_pushdown,Band Side Triceps Pushdown,resistance_bands,triceps,likely,Band Triceps Pushdown Single Arm,0.75
+vid_band_standing_crunch,Band Standing Crunch,resistance_bands,core,likely,Arnold press cable Resistance band standing,0.67
+vid_band_standing_lift,Band Standing Lift,resistance_bands,core,likely,Arnold press cable Resistance band standing,0.67
+vid_band_twist,Band Standing Twist,resistance_bands,core,likely,Arnold press cable Resistance band standing,0.67
+vid_band_straight_back_seated_row,Band Straight-Back Seated Row,resistance_bands,back|lats|biceps,likely,Cable reverse grip straight back seated high row,0.80
+vid_band_twist_up_down,Band Twist - Up and Down,resistance_bands,core,likely,Band Lying Press Down,0.67
+barbell_ab_rollout,Barbell Ab Rollout,barbell,core|lower_back|shoulders,likely,Barbell rollout,0.67
+barbell_bench_press_medium_grip,Barbell Bench Press - Medium Grip,bench_press,chest|shoulders|triceps,likely,Barbell close grip bench press,0.80
+vid_barbell_bent_over_row_overgrip,Barbell Bent-Over Row - Overhand Grip,barbell,back|lats|biceps,likely,Barbell bent over row pronated grip,0.83
+vid_barbell_underhand_bent_over_row,Barbell Bent-Over Row - Underhand Grip,barbell,back|lats|biceps,likely,Barbell bent over row pronated grip,0.83
+barbell_guillotine_bench_press,Barbell Guillotine Bench Press,bench_press,chest|shoulders|triceps,likely,Barbell bench press,0.75
+barbell_hack_squat,Barbell Hack Squat,squat_rack,quads|calves|forearms|hamstrings,likely,Barbell  squat back POV,0.67
+barbell_incline_bench_press_medium_grip,Barbell Incline Bench Press - Medium Grip,bench_press,chest|shoulders|triceps,likely,Barbell bench press incline,0.67
+fedb_barbell_incline_shoulder_raise,Barbell Incline Shoulder Raise,barbell,shoulders|chest,likely,Barbell Incline Shoulders Press (inside squat cage),0.75
+vid_barbell_prone_incline_curl,Barbell Prone Incline Curl,barbell,biceps|forearms,likely,Band Prone Incline Curl,0.75
+fedb_barbell_rear_delt_row,Barbell Rear Delt Row,barbell,shoulders|biceps|lats|back,likely,Band standing rear delt row,0.75
+vid_barbell_seated_behind_head_military_press,Barbell Seated Behind-the-Head Press,barbell,shoulders|triceps,likely,Barbell seated behind neck military press,0.80
+fedb_barbell_seated_calf_raise,Barbell Seated Calf Raise,calf_raise_machine,calves,likely,Barbell seated on knee calve raises,0.75
+vid_barbell_standing_back_wrist_curl,Barbell Standing Behind-the-Back Wrist Curl,barbell,forearms,likely,Barbell standing back wrist curl,0.83
+barbell_walking_lunge,Barbell Walking Lunge,barbell,quads|calves|glutes|hamstrings,likely,Barbell Curtsy Lunge,0.67
+vid_stretching_back_pec_stretch,Behind-the-Back Pec Stretch,,chest|shoulders,likely,Arms Behind Back Chest Stretch,0.75
+bench_press_powerlifting,Bench Press - Powerlifting,bench_press,triceps|chest|forearms|lats|shoulders,likely,Band Bench Press,0.67
+bench_press_with_chains,Bench Press with Chains,bench_press,triceps|chest|lats|shoulders,likely,Band Bench Press,0.67
+fedb_bent-knee_hip_raise,Bent-Knee Hip Raise,,core,likely,Resistance Band Lying Bent Knee Hip Abduction,0.75
+fedb_body_tricep_press,Body Tricep Press,,triceps,likely,Band Cross Body One Arm Chest Press,0.67
+bodyweight_mid_row,Bodyweight Mid Row,,back|biceps|lats,likely,Bodyweight kneeling push-up row,0.67
+bodyweight_walking_lunge,Bodyweight Walking Lunge,,quads|calves|glutes|hamstrings,likely,Bodyweight forward lunge,0.67
+fedb_box_squat_with_bands,Box Squat with Bands,resistance_bands,quads|adductors|calves|glutes|hamstrings|lower_back,likely,Band single leg split squat,0.67
+fedb_box_squat_with_chains,Box Squat with Chains,plyo_box,quads|adductors|calves|glutes|hamstrings|lower_back,likely,Barbell box squat,0.67
+vid_cable_rope_high_pulley_overhead_triceps_extension,Cable High-Pulley Overhead Rope Extension,cable_machine,triceps,likely,Cable overhead extension rope,0.67
+vid_cable_bar_lateral_pulldown_reverse_grip,Cable Lat Pulldown - Reverse Grip,cable_machine,back|lats|biceps,likely,Cable close grip front lat pulldown,0.80
+vid_cable_bar_lateral_pulldown_wide_shoulder_grip,Cable Lat Pulldown - Wide Grip,cable_machine,back|lats|biceps,likely,Cable close grip front lat pulldown,0.80
+vid_cable_lying_fly_flat_bench_cable_fly,Cable Lying Fly on a Flat Bench,cable_machine,chest|shoulders|triceps,likely,Flat bench cable fly,0.80
+vid_cable_one_arm_twisting_seated_row,Cable One-Arm Twisting Seated Row,cable_machine,back|lats|biceps,likely,Cable seated one arm alternate row,0.83
+vid_cable_overhead_triceps_extension_rope_attachment,Cable Overhead Triceps Extension - Rope,cable_machine,triceps,likely,Cable overhead extension rope,0.80
+vid_cable_pulldown,Cable Pulldown - Close Underhand Grip,cable_machine,back|lats|biceps,likely,Cable close grip front lat pulldown,0.80
+vid_cable_pushdown_rope_attachment,Cable Rope Pushdown,cable_machine,triceps,likely,Cable Cross Pushdown,0.67
+fedb_cable_russian_twists,Cable Russian Twists,rotary_torso_machine,core,likely,Cable twist,0.67
+vid_cable_seated_high_row_v_bar,Cable Seated High Row - V-Bar,cable_machine,back|lats|biceps,likely,Cable Seated Row With V Bar,0.83
+vid_cable_seated_row_normal_grip,Cable Seated Row - Normal Grip,cable_machine,back|lats|biceps,likely,Cable reverse grip straight back seated high row,0.80
+vid_cable_seated_row_parallel_grip,Cable Seated Row - Parallel Grip,cable_machine,back|lats|biceps,likely,Cable reverse grip straight back seated high row,0.80
+vid_cable_seated_row_wide_grip,Cable Seated Row - Wide Grip,cable_machine,back|lats|shoulders,likely,Cable reverse grip straight back seated high row,0.80
+vid_cable_standing_lift,Cable Standing Lift,cable_machine,core,likely,Arnold press cable Resistance band standing,0.67
+vid_cable_standing_one_arm_triceps_extension,Cable Standing One-Arm Triceps Extension,cable_machine,triceps,likely,Dumbbell Lying One Arm Neutral Triceps Extension,0.67
+vid_cable_straight_back_seated_row_v_grip,Cable Straight-Back Seated Row - V-Grip,cable_machine,back|lats|biceps,likely,Cable reverse grip straight back seated high row,0.86
+vid_stretching_chin_to_chest_stretch,Chin-to-Chest Stretch,,traps|back,likely,Above head chest stretch,0.67
+vid_close_feet_leg_press,Close-Feet Leg Press,leg_press,quads|glutes|hamstrings,likely,Leg press machine close stance,0.75
+fedb_cross_over_-_with_bands,Cross Over - With Bands,resistance_bands,chest|biceps|shoulders,likely,Band Bent over One Arm Kickback,0.67
+fedb_decline_ez_bar_triceps_extension,Decline EZ Bar Triceps Extension,ez_curl_bar,triceps,likely,Cable triceps overhead extension (ez bar),0.80
+fedb_double_kettlebell_jerk,Double Kettlebell Jerk,kettlebell,shoulders|calves|quads|triceps,likely,Double Kettlebell Sled Push,0.67
+fedb_double_kettlebell_push_press,Double Kettlebell Push Press,kettlebell,shoulders|calves|quads|triceps,likely,Double Kettlebell Sled Push,0.75
+fedb_double_kettlebell_snatch,Double Kettlebell Snatch,kettlebell,shoulders|glutes|hamstrings|quads,likely,Kettlebell Snatch,0.67
+fedb_double_kettlebell_windmill,Double Kettlebell Windmill,kettlebell,core|glutes|hamstrings|shoulders|triceps,likely,Kettlebell Windmill,0.67
+fedb_dumbbell_bench_press_with_neutral_grip,Dumbbell Bench Press with Neutral Grip,bench_press,chest|shoulders|triceps,likely,Dumbbell Decline Close Neutral Grip Press,0.80
+vid_dumbbell_rear_lateral_raise,Dumbbell Bent-Over Rear Lateral Raise,dumbbell,shoulders|back,likely,Bent over rear delt fly dumbbell,0.67
+vid_dumbbell_lying_alternate_extension,Dumbbell Lying Alternating Triceps Extension,dumbbell,triceps,likely,Dumbbell Lying One Arm Neutral Triceps Extension,0.80
+vid_dumbbell_lying_hammer_press,Dumbbell Lying Hammer Press,dumbbell,chest|shoulders|triceps,likely,Dumbbell Decline Hammer Press,0.75
+vid_dumbbell_lying_femoral,Dumbbell Lying Leg Curl,dumbbell,hamstrings,likely,Bodyweight lying leg curl,0.75
+vid_dumbbell_palm_rotational_bent_over_row,Dumbbell Palm-Rotational Bent-Over Row,dumbbell,back|lats|biceps,likely,Dumbbell Bent-Over Reverse Row,0.67
+vid_dumbbell_pronate_grip_triceps_extension,Dumbbell Pronated-Grip Triceps Extension,dumbbell,triceps,likely,Dumbbell Pronate-grip Triceps Extension,0.80
+vid_dumbbell_reverse_grip_row,Dumbbell Reverse-Grip Row,dumbbell,back|lats|biceps,likely,Band Lying Reverse Grip Row,0.75
+vid_dumbbell_seated_triceps_extension,Dumbbell Seated Triceps Extension,dumbbell,triceps,likely,Dumbbell Decline triceps pull-over extension,0.75
+vid_stretching_dynamic_chest_stretch,Dynamic Chest Stretch,,chest|shoulders,likely,Above head chest stretch,0.67
+vid_ez_barbell_lying_triceps_extension,EZ-Bar Lying Triceps Extension,ez_curl_bar,triceps,likely,Cable triceps overhead extension (ez bar),0.80
+fedb_front_box_jump,Front Box Jump,plyo_box,hamstrings|adductors|calves|glutes|quads,likely,Box jump,0.67
+vid_stretching_front_toe_touch,Front Toe Touch,,hamstrings|lower_back,likely,Basic toe touch,0.67
+fedb_glute_ham_raise,Glute Ham Raise,back_extension,hamstrings|calves|glutes,likely,Resistance Band Side Plank Glute Raise,0.67
+fedb_hammer_grip_incline_db_bench_press,Hammer Grip Incline DB Bench Press,bench_press,chest|shoulders|triceps,likely,Dumbbell Hammer Grip Incline Bench Two Arm Row,0.83
+vid_hammer_grip_pull_up,Hammer-Grip Pull-Up,pullup_bar,back|lats|biceps,likely,Assisted parallel close grip pull up,0.67
+fedb_heavy_bag_thrust,Heavy Bag Thrust,punching_bag,chest|core|shoulders|triceps,likely,Heavy Bag Sled Drag,0.67
+vid_stretching_hip_extension_stretch,Hip Extension Stretch,,glutes|lower_back,likely,Band Bent-over Hip Extension,0.67
+vid_hip_raise_bridge,Hip Raise Bridge,,glutes|hamstrings|core,likely,Bridge hip abduction,0.67
+fedb_incline_bench_pull,Incline Bench Pull,adjustable_bench,back|lats|shoulders,likely,Band Hammer Grip Incline Bench Two Arm Row,0.67
+fedb_incline_cable_chest_press,Incline Cable Chest Press,chest_press_machine,chest|shoulders|triceps,likely,Chest press high to low cable Resistance band,0.75
+vid_incline_leg_hip_raise,Incline Leg Hip Raise,adjustable_bench,core,likely,Suspension Trainer with Grips Hanging Leg Hip Raise,0.75
+inverted_row_with_straps,Inverted Row with Straps,trx,back|biceps|lats,likely,Inverted rows on smith machine,0.67
+vid_stretching_kneeling_back_rotation_stretch,Kneeling Back Rotation Stretch,,chest|back|shoulders,likely,Middle back rotation stretch,0.75
+vid_stretching_kneeling_triceps_extension,Kneeling Triceps Stretch,,triceps|shoulders,likely,Bodyweight kneeling triceps extension,0.67
+vid_leg_raise_hip_lift,Leg Raise Hip Lift,,core,likely,Suspension Trainer with Grips Hanging Leg Hip Raise,0.75
+fedb_leverage_chest_press,Leverage Chest Press,chest_press_machine,chest|shoulders|triceps,likely,Band Cross Body One Arm Chest Press,0.67
+fedb_leverage_decline_chest_press,Leverage Decline Chest Press,chest_press_machine,chest|shoulders|triceps,likely,Dumbbell chest press decline,0.75
+leverage_high_row,Leverage High Row,seated_row_machine,back|lats,likely,Band Kneeling Single Arm High Row,0.67
+fedb_leverage_incline_chest_press,Leverage Incline Chest Press,chest_press_machine,chest|shoulders|triceps,likely,Dumbbell chest press incline bench,0.75
+fedb_leverage_shoulder_press,Leverage Shoulder Press,shoulder_press_machine,shoulders|triceps,likely,Band Behind Neck Shoulder Press,0.67
+fedb_low_cable_crossover,Low Cable Crossover,cable_machine,chest|shoulders,likely,Bicep curl low cable machine normal grip,0.67
+fedb_lying_machine_squat,Lying Machine Squat,hack_squat_machine,quads|calves|glutes|hamstrings,likely,Calf raise on hack squat machine,0.67
+vid_lying_straight_leg_raise,Lying Straight Leg Raise,,core,likely,Alternate lying floor leg raise,0.75
+vid_lever_high_row,Machine High Row,seated_row_machine,back|lats|biceps,likely,Band Kneeling Single Arm High Row,0.67
+vid_lever_horizontal_leg_press,Machine Horizontal Leg Press,leg_press,quads|glutes|hamstrings,likely,Calf raise leg press machine,0.75
+vid_lever_lying_chest_press,Machine Lying Chest Press,chest_press_machine,chest|shoulders|triceps,likely,Chest Press Machine,0.75
+fedb_machine_preacher_curls,Machine Preacher Curls,preacher_curl_bench,biceps,likely,band kneeling preacher curl,0.67
+vid_lever_seated_crunch,Machine Seated Crunch,ab_crunch_machine,core,likely,Abdominal Crunches Machine,0.67
+vid_lever_seated_dips,Machine Seated Dip,tricep_extension_machine,triceps|chest,likely,Chest dip machine,0.67
+vid_lever_seated_hip_abduction,Machine Seated Hip Abduction,hip_abductor_adductor,glutes,likely,Resistance Band Seated Hip Abduction,0.75
+vid_lever_seated_hip_adduction,Machine Seated Hip Adduction,hip_abductor_adductor,adductors,likely,Seated hip abductor machine,0.75
+vid_lever_seated_reverse_fly,Machine Seated Reverse Fly,pec_deck,shoulders|back,likely,Reverse machine fly,0.75
+fedb_machine_shoulder_military_press,Machine Shoulder (Military) Press,shoulder_press_machine,shoulders|triceps,likely,Smith machine shoulder press,0.75
+vid_lever_t_bar_row,Machine T-Bar Row,t_bar_row,back|lats|biceps,likely,Seated cable row V bar machine,0.75
+fedb_medicine_ball_chest_pass,Medicine Ball Chest Pass,medicine_ball,chest|shoulders|triceps,likely,Medicine Ball Chest Throw With Abs,0.75
+fedb_medicine_ball_scoop_throw,Medicine Ball Scoop Throw,medicine_ball,shoulders|core|hamstrings|quads,likely,Medicine Ball Chest Throw With Abs,0.75
+narrow_stance_hack_squats,Narrow Stance Hack Squats,hack_squat_machine,quads|calves|glutes|hamstrings,likely,barbell narrow stance full squat,0.75
+narrow_stance_leg_press,Narrow Stance Leg Press,leg_press,quads|calves|glutes|hamstrings,likely,Leg press machine close stance,0.75
+fedb_one_arm_chin-up,One Arm Chin-Up,pullup_bar,back|biceps|forearms|lats,likely,Band Bent over One Arm Kickback,0.67
+vid_stretching_plyo_side_lunge_stretch,Plyometric Side Lunge Stretch,,adductors|quads|glutes,likely,Plyo side lunge stretch,0.75
+vid_pull_up_wide_front_grip,Pull-Up - Wide Grip to the Chest,pullup_bar,back|lats|biceps,likely,Assisted pull up wide grip,0.75
+vid_stretching_reverse_dip,Reverse Dip Stretch,adjustable_bench,triceps|chest|shoulders,likely,Reverse shoulder stretch,0.67
+fedb_reverse_plate_curls,Reverse Plate Curls,weight_plates,biceps|forearms,likely,Band Reverse Spider Curl,0.67
+vid_ring_high_row,Ring High Row,trx,back|lats|shoulders,likely,Band Kneeling Single Arm High Row,0.67
+fedb_rocking_standing_calf_raise,Rocking Standing Calf Raise,calf_raise_machine,calves,likely,Barbell standing leg calf raise,0.75
+rope_straight_arm_pulldown,Rope Straight-Arm Pulldown,lat_pulldown,lats,likely,Cable straight arm pulldown,0.75
+vid_stretching_runners_stretch,Runner's Stretch,,hamstrings|calves|quads,likely,Runner stretch,0.67
+vid_stretching_seated_lower_back_stretch,Seated Lower Back Stretch,,lower_back,likely,Exercise ball lower back dynamic stretch,0.75
+vid_stretching_single_straight_leg_stretch,Single Straight Leg Stretch,,core|hamstrings,likely,Hamstring lying straight leg stretch,0.75
+fedb_single-arm_cable_crossover,Single-Arm Cable Crossover,cable_machine,chest,likely,Cable Single Arm Reverse Fly,0.75
+vid_single_dumbbell_stiff_leg_deadlift,Single-Dumbbell Stiff-Leg Deadlift,dumbbell,hamstrings|glutes|back|lower_back,likely,Dumbbell Single Leg Deadlift,0.80
+vid_ball_sit_up_on_stability_ball,Sit-Up on a Stability Ball,stability_ball,core,likely,Ball Sit-up,0.67
+vid_sled_45_degree_leg_wide_press,Sled 45-Degree Wide-Stance Leg Press,leg_press,quads|glutes|adductors,likely,Leg press wide high stance,0.67
+sled_drag_harness,Sled Drag - Harness,leg_press,quads|calves|glutes|hamstrings,likely,Crawl With Sled Drag,0.67
+fedb_smith_machine_bench_press,Smith Machine Bench Press,smith_machine,chest|shoulders|triceps,likely,Smith machine press decline,0.75
+vid_smith_chair_squat,Smith Machine Chair Squat,smith_machine,quads|glutes|hamstrings,likely,Smith machine bulgarian split squat,0.75
+vid_smith_deadlift_deadlift,Smith Machine Deadlift,smith_machine,hamstrings|glutes|back|lower_back,likely,Inverted rows on smith machine,0.67
+vid_smith_seated_shoulder_press,Smith Machine Seated Shoulder Press,smith_machine,shoulders|triceps,likely,Smith machine shoulder press,0.80
+vid_stretching_spinal_stretch_on_exercise_ball,Spinal Stretch on an Exercise Ball,stability_ball,core|lower_back|chest,likely,Chest stretch with exercise ball,0.67
+vid_stretching_spine_stretch_forward,Spine Stretch Forward,,back|hamstrings|core,likely,Backward Forward Turn to Side Neck Stretch,0.67
+vid_stretching_stairs_calf_stretch,Stairs Calf Stretch,,calves,likely,Calf push stretch with hands against wall,0.67
+vid_stretching_standing_back_rotation_stretch,Standing Back Rotation Stretch,,back|core,likely,Back stretch standing with bench,0.75
+vid_stretching_standing_bench_calf_stretch,Standing Bench Calf Stretch,adjustable_bench,calves,likely,Back stretch standing with bench,0.75
+fedb_standing_cable_chest_press,Standing Cable Chest Press,chest_press_machine,chest|shoulders|triceps,likely,Arnold press cable Resistance band standing,0.75
+vid_cable_standing_fly_crossover_fly,Standing Cable Crossover Fly,cable_machine,chest|shoulders|triceps,likely,cable reverse fly on crossover,0.75
+vid_cable_standing_inner_curl,Standing Cable Inner Biceps Curl,cable_machine,biceps|forearms,likely,Cable one arm inner biceps curl,0.80
+vid_stretching_knee_raise,Standing Knee Raise,,glutes|core,likely,Barbell seated on knee calve raises,0.67
+fedb_two-arm_dumbbell_preacher_curl,Two-Arm Dumbbell Preacher Curl,preacher_curl_bench,biceps,likely,Dumbbell Hammer Preacher Curl Simultaneous Arms,0.80
+fedb_v-bar_pulldown,V-Bar Pulldown,lat_pulldown,lats|biceps|back|shoulders,likely,Cable bar lateral pulldown,0.67
+fedb_weighted_ball_hyperextension,Weighted Ball Hyperextension,back_extension,lower_back|glutes|hamstrings|back,likely,Russian twist weighted ball,0.67
+vid_weighted_lying_twist,Weighted Lying Twist,,core,likely,Bent knee lying twist,0.67
+vid_weighted_sissy_squat,Weighted Sissy Squat,weight_plates,quads,likely,Bodyweight kneeling sissy squat,0.67
+fedb_wide-grip_lat_pulldown,Wide-Grip Lat Pulldown,lat_pulldown,lats|biceps|back|shoulders,likely,Cable close grip front lat pulldown,0.75
+90_90_hamstring,90/90 Hamstring,,hamstrings|calves,maybe,90 degree heel touch,0.50
+fedb_ab_roller,Ab Roller,foam_roller,core|shoulders,maybe,Ab Mat Sit-up,0.50
+air_bike_steady,Air Bike Steady Effort,air_bike,quads|hamstrings|shoulders,maybe,Air Bike (VERSION 2),0.50
+vid_sit_up,Anchored Sit-Up,,core,maybe,3-4 Sit-up,0.50
+around_the_worlds,Around The Worlds,dumbbell,chest|shoulders,maybe,Around the world superman hold,0.50
+barbell_ab_rollout_on_knees,Barbell Ab Rollout - On Knees,barbell,core|lower_back|shoulders,maybe,Barbell rollout,0.50
+vid_barbell_reverse_wrist_curl_over_grip,Barbell Reverse Wrist Curl - Overhand Grip,barbell,forearms,maybe,Barbell bicep curl close grip,0.50
+fedb_barbell_rollout_from_bench,Barbell Rollout from Bench,barbell,core|glutes|hamstrings|lats|shoulders,maybe,Barbell Bench Lateral Step-up,0.50
+bear_crawl_sled_drags,Bear Crawl Sled Drags,leg_press,quads|calves|glutes|hamstrings,maybe,Crawl With Sled Drag,0.50
+fedb_bench_jump,Bench Jump,adjustable_bench,quads|calves|glutes|hamstrings,maybe,180 Jump Turns,0.50
+bench_sprint,Bench Sprint,plyo_box,quads|calves|glutes|hamstrings,maybe,Assault AirBike Sprint Speed,0.50
+fedb_bent_over_dumbbell_rear_delt_raise_with_head_on_bench,Bent Over Dumbbell Rear Delt Raise With Head On Bench,dumbbell,shoulders,maybe,Bent over rear delt fly dumbbell,0.62
+bent_over_low_pulley_side_lateral,Bent Over Low-Pulley Side Lateral,cable_machine,shoulders|lower_back|back|traps,maybe,Cable bent over one arm lateral raise,0.50
+fedb_bicycling_stationary,"Bicycling, Stationary",exercise_bike,quads|calves|glutes|hamstrings,maybe,Stationary Exercise Bike,0.50
+bosu_ball_cable_crunch_with_side_bends,Bosu Ball Cable Crunch With Side Bends,cable_machine,core,maybe,Crunch (on bosu ball),0.50
+fedb_box_jump_multiple_response,Box Jump (Multiple Response),plyo_box,hamstrings|adductors|calves|glutes|quads,maybe,Box jump,0.50
+fedb_box_skip,Box Skip,plyo_box,hamstrings|adductors|calves|glutes|quads,maybe,Barbell box squat,0.50
+vid_cable_rear_delt_row_with_rope,Cable Rear Delt Row with a Rope,cable_machine,shoulders|back,maybe,Band standing rear delt row,0.60
+fedb_close-grip_push-up_off_of_a_dumbbell,Close-Grip Push-Up off of a Dumbbell,dumbbell,triceps|core|chest|shoulders,maybe,Cable triceps push down ez bar close grip,0.60
+fedb_decline_close-grip_bench_to_skull_crusher,Decline Close-Grip Bench To Skull Crusher,adjustable_bench,triceps|chest|shoulders,maybe,Barbell close grip bench press,0.50
+vid_dumbbell_behind_back_wrist_curl,Dumbbell Behind-the-Back Wrist Curl,dumbbell,forearms,maybe,Barbell standing back wrist curl,0.60
+vid_dumbbell_bench_seated_press,Dumbbell Seated Press with Back Support,dumbbell,shoulders|triceps,maybe,Dumbbell Arnold Press Seated,0.60
+fedb_elliptical_trainer,Elliptical Trainer,elliptical,quads|calves|glutes|hamstrings,maybe,Gym Elliptical Machine Fast Speed,0.50
+fedb_extended_range_one-arm_kettlebell_floor_press,Extended Range One-Arm Kettlebell Floor Press,kettlebell,chest|shoulders|triceps,maybe,Dumbbell One Arm Floor Press,0.57
+fedb_flat_bench_leg_pull-in,Flat Bench Leg Pull-In,adjustable_bench,core,maybe,Alternate leg pull,0.50
+fedb_flat_bench_lying_leg_raise,Flat Bench Lying Leg Raise,adjustable_bench,core,maybe,Alternate lying floor leg raise,0.60
+vid_jack_knife_floor,Floor Jackknife,,core,maybe,Alternate lying floor leg raise,0.50
+fedb_hanging_pike,Hanging Pike,captains_chair,core,maybe,Decline diamond pike push-up,0.50
+vid_stretching_hip_circles_stretch,Hip Circles,,glutes|core,maybe,Ankle circles,0.50
+vid_stretching_hip_flexor_stretch_rear_foot_elevated,Hip Flexor Stretch - Rear Foot Elevated,,quads|core,maybe,Crossover kneeling hip flexor stretch,0.50
+fedb_hyperextensions_with_no_hyperextension_bench,Hyperextensions With No Hyperextension Bench,back_extension,lower_back|glutes|hamstrings,maybe,Weighted Back Extensions on Hyperextension Bench,0.50
+treadmill_incline_walk,Incline Walk,treadmill,glutes|hamstrings|quads|calves,maybe,Band Hammer Grip Incline Bench Two Arm Row,0.50
+vid_inverted_row_between_chairs,Inverted Row Between Chairs,,back|lats|biceps,maybe,Dips between chairs,0.50
+vid_jump_step_up,Jump Step-Up,plyo_box,quads|glutes|calves,maybe,180 Jump Turns,0.50
+fedb_kipping_muscle_up,Kipping Muscle Up,pullup_bar,lats|core|biceps|forearms|back|shoulders|traps|triceps,maybe,Barbell muscle clean,0.50
+vid_landmine_180,Landmine 180,barbell,core,maybe,180 Jump Turns,0.50
+vid_stretching_calf_stretch_with_strap,Lying Calf Stretch with a Strap,,calves|hamstrings,maybe,Calf push stretch with hands against wall,0.50
+vid_lying_hip_lift_on_stability_ball,Lying Hip Lift on a Stability Ball,stability_ball,glutes|hamstrings|core,maybe,Bent knee lying twist (on stability ball),0.60
+lying_t_bar_row,Lying T-Bar Row,t_bar_row,back|biceps|lats,maybe,Band Lying Reverse Grip Row,0.50
+vid_lever_reverse_t_bar_row,Machine Reverse-Grip T-Bar Row,t_bar_row,back|lats|biceps,maybe,Band Lying Reverse Grip Row,0.50
+vid_lever_seated_leg_raise_crunch,Machine Seated Leg Raise Crunch,ab_crunch_machine,core,maybe,Calf raise leg press machine,0.60
+vid_lever_shrug,Machine Shrug,,traps|forearms,maybe,Abdominal Crunches Machine,0.50
+vid_lever_standing_hip_extension,Machine Standing Hip Extension,glute_kickback_machine,glutes|hamstrings,maybe,Back extension machine,0.50
+vid_lever_standing_rear_kick,Machine Standing Rear Kick,glute_kickback_machine,glutes|hamstrings,maybe,band kneeling rear kick,0.50
+vid_lever_triceps_extension_neutral_grip,Machine Triceps Extension - Neutral Grip,tricep_extension_machine,triceps,maybe,Dumbbell Lying One Arm Neutral Triceps Extension,0.60
+fedb_medicine_ball_full_twist,Medicine Ball Full Twist,medicine_ball,core|shoulders,maybe,Barbell seated twist on exercise ball,0.50
+vid_medicine_ball_sit_up_wall,Medicine Ball Wall Sit-Up,medicine_ball,core,maybe,Ball Sit-up,0.50
+vid_stretching_peroneals_stretch,Peroneals Stretch,,calves,maybe,90 to 90 Stretch,0.50
+vid_pull_up_wide_back_grip,Pull-Up - Wide Grip Behind the Neck,pullup_bar,back|lats|biceps,maybe,Assisted pull up wide grip,0.60
+fedb_rack_delivery,Rack Delivery,squat_rack,shoulders|forearms|traps,maybe,barbell front rack lunge,0.50
+fedb_rack_pulls,Rack Pulls,squat_rack,lower_back|forearms|glutes|hamstrings|traps,maybe,barbell front rack lunge,0.50
+fedb_recumbent_bike,Recumbent Bike,recumbent_bike,quads|calves|glutes|hamstrings,maybe,Air Bike (VERSION 2),0.50
+fedb_reverse_band_box_squat,Reverse Band Box Squat,plyo_box,quads|adductors|calves|forearms|glutes|hamstrings|lower_back,maybe,Band Lying Reverse Grip Pressdown,0.50
+fedb_reverse_hyperextension,Reverse Hyperextension,back_extension,hamstrings|calves|glutes,maybe,4 Reverse Lunge and 4 Side Taps,0.50
+vid_reverse_grip_machine_lat_pulldown,Reverse-Grip Machine Lat Pulldown,lat_pulldown,back|lats|biceps,maybe,Cable close grip front lat pulldown,0.60
+rocky_pull_ups_pulldowns,Rocky Pull-Ups/Pulldowns,lat_pulldown,lats|biceps|back|shoulders,maybe,Bench pull-ups,0.50
+fedb_rope_climb,Rope Climb,battle_ropes,lats|biceps|forearms|back|shoulders,maybe,Battle Rope Alternating Arm Waves,0.50
+vid_rotate_push_up_female,Rotating Push-Up,,chest|core|shoulders|triceps,maybe,Archer push up,0.50
+rowing_intervals,Row Intervals,rowing_machine,lats|back|quads|hamstrings|glutes|core,maybe,Band bent-over row,0.50
+vid_scapula_dips,Scapular Dip,dip_station,traps|shoulders,maybe,Bench dip (knees bent),0.50
+fedb_scapular_pull-up,Scapular Pull-Up,pullup_bar,traps|lats|back,maybe,Alternate leg pull,0.50
+fedb_seated_band_hamstring_curl,Seated Band Hamstring Curl,leg_curl,hamstrings,maybe,Alternate Bicep Curl Resistance Band,0.50
+vid_seated_twist_straight_arm,Seated Twist - Straight Arm,,core,maybe,Barbell seated twist,0.50
+vid_stretching_seated_twist_straight_arm,Seated Twist Stretch - Straight Arm,,core|lower_back,maybe,Seated Figure Four With Twist Glute Stretch,0.60
+vid_side_bend_on_stability_ball,Side Bend on a Stability Ball,stability_ball,core,maybe,45 degree side bend,0.50
+vid_stretching_single_leg_stretch_bent_knee,Single Leg Stretch - Bent Knee,,core|glutes,maybe,Lying Single Leg Extended On Wall Hamstrings Stretch,0.60
+ski_erg_steady,Ski Erg Steady Pull,ski_erg,lats|triceps|core,maybe,Ski Ergometer Cross Country Ski Alternating Arm Pull,0.50
+vid_sled_45_degree_calf_press,Sled 45-Degree Calf Press,leg_press,calves,maybe,Calf raise leg press machine,0.50
+fedb_smith_incline_shoulder_raise,Smith Incline Shoulder Raise,smith_machine,shoulders|chest,maybe,Band Incline T Raise,0.50
+fedb_smith_machine_bent_over_row,Smith Machine Bent Over Row,smith_machine,back|biceps|lats|shoulders,maybe,Band bent-over row,0.60
+vid_stretching_standing_reach_up_back_rotation_stretch,Standing Reach-Up Back Rotation Stretch,,chest|back|shoulders,maybe,Back stretch standing with bench,0.60
+vid_stretching_standing_side_bend_bent_arm,Standing Side Bend - Bent Arm,,core|lats,maybe,Arm Tuck Side Bend,0.60
+rowing_steady,Steady Row,rowing_machine,lats|back|quads|hamstrings|glutes|core,maybe,Band bent-over row,0.50
+fedb_step_mill,Step Mill,stair_climber,quads|calves|glutes|hamstrings,maybe,4 Corners Side Step,0.50
+fedb_t-bar_row_with_handle,T-Bar Row with Handle,t_bar_row,back|biceps|lats,maybe,Bent-over Row with bar,0.50
+fedb_thigh_abductor,Thigh Abductor,hip_abductor_adductor,adductors|glutes,maybe,Bouncing inner thigh tap,0.50
+fedb_thigh_adductor,Thigh Adductor,hip_abductor_adductor,adductors|glutes|hamstrings,maybe,Adductor dynamic stretch,0.50
+treadmill_warmup_walk,Warm-up Walk,treadmill,quads|hamstrings|glutes|calves,maybe,Band Warm up Shoulder Stretch,0.50
+vid_weighted_leg_extension_crunch,Weighted Leg Extension Crunch,,core,maybe,Cable Standing Leg Extension,0.50
+vid_stretching_wrist_circles,Wrist Circles,,forearms,maybe,Ankle circles,0.50
+fedb_wrist_roller,Wrist Roller,foam_roller,forearms|shoulders,maybe,Band Wrist Curl,0.50
+barbell_curls_lying_against_an_incline,Barbell Curls Lying Against An Incline,barbell,biceps,none,Band Incline Alternate Hammer Curl,0.40
+fedb_battling_ropes,Battling Ropes,battle_ropes,shoulders|chest|forearms,none,,0.00
+fedb_butt_lift_bridge,Butt Lift (Bridge),,glutes|hamstrings,none,Alternate toe tap leg lift,0.33
+cable_hammer_curls_rope_attachment,Cable Hammer Curls - Rope Attachment,cable_machine,biceps,none,Alternate hammer curl seated dumbbells,0.40
+fedb_double_kettlebell_alternating_hang_clean,Double Kettlebell Alternating Hang Clean,kettlebell,hamstrings|biceps|calves|forearms|glutes|lower_back|quads|traps,none,Barbell Hang Clean,0.40
+vid_elliptical,Elliptical Trainer Workout,elliptical,quads|glutes|hamstrings|calves,none,Gym Elliptical Machine Fast Speed,0.33
+vid_stretching_feet_and_ankles_rotation_stretch,Feet and Ankle Rotations,,calves,none,Ankle - Dorsal Flexion,0.33
+vid_stretching_feet_and_ankles_stretch,Feet and Ankle Stretch,,calves,none,90 to 90 Stretch,0.33
+vid_stretching_flexion_leg_sit_up,Flexion Leg Sit-Up,,core,none,3 Leg Chatarunga Pose,0.33
+full_range_of_motion_lat_pulldown,Full Range-Of-Motion Lat Pulldown,lat_pulldown,lats|biceps|back|shoulders,none,band kneeling lat pulldown,0.40
+fedb_knee_hip_raise_on_parallel_bars,Knee/Hip Raise On Parallel Bars,dip_station,core,none,Barbell seated on knee calve raises,0.40
+leverage_iso_row,Leverage Iso Row,seated_row_machine,lats|biceps|back,none,Band bent-over row,0.33
+vid_lying_scissor_kick_female,Lying Scissor Kick,,core,none,alternate front kick in place,0.33
+fedb_one-arm_medicine_ball_slam,One-Arm Medicine Ball Slam,medicine_ball,core|lats|shoulders,none,Band Bent over One Arm Kickback,0.40
+vid_otis_ups,Otis-Up,weight_plates,core,none,,0.00
+vid_corkscrew_pilates,Pilates Corkscrew,,core,none,,0.00
+vid_hundred_pilates,Pilates Hundred,,core,none,,0.00
+vid_jackknife_pilates,Pilates Jackknife,,core,none,,0.00
+vid_rear_decline_bridge,Rear Decline Bridge,,glutes|hamstrings|lower_back,none,Band Decline Sit up,0.33
+treadmill_intervals,Run Intervals,treadmill,quads|hamstrings|glutes|calves|core,none,,0.00
+vid_stretching_seated_wide_angle_pose_sequence,Seated Wide Angle Pose Sequence,,adductors|hamstrings|lower_back,none,Easy Seated Twist Pose,0.40
+vid_stretching_sitting_bent_over_back_stretch,Sitting Bent-Over Back Stretch,,back|hamstrings|lower_back,none,Arms Behind Back Chest Stretch,0.40
+ski_erg_intervals,Ski Erg Intervals,ski_erg,lats|triceps|core|shoulders,none,Ski Ergometer Cross Country Ski Alternating Arm Pull,0.33
+sled_overhead_backward_walk,Sled Overhead Backward Walk,leg_press,shoulders|calves|back|quads,none,Arm circles backward,0.25
+fedb_smith_machine_behind_the_back_shrug,Smith Machine Behind the Back Shrug,smith_machine,traps|shoulders,none,Arms Behind Back Chest Stretch,0.40
+vid_spell_caster,Spell Caster,dumbbell,core,none,,0.00
+vid_jack_split_crunches,Split Jackknife Crunch,,core,none,45 degree bicycle twisting crunch,0.33
+fedb_stairmaster,Stairmaster,stair_climber,quads|calves|glutes|hamstrings,none,,0.00
+treadmill_steady_run,Steady-State Run,treadmill,quads|hamstrings|glutes|calves|core,none,,0.00
+fedb_stride_jump_crossover,Stride Jump Crossover,cable_machine,quads|adductors|calves|hamstrings,none,180 Jump Turns,0.33
+vid_vertical_leg_raise_on_parallel_bars,Vertical Leg Raise on Parallel Bars,captains_chair,core,none,Alternate leg raise,0.40
+fedb_wide-grip_pulldown_behind_the_neck,Wide-Grip Pulldown Behind The Neck,lat_pulldown,lats|biceps|back|shoulders,none,Assisted chin up reverse wide grip,0.40
+vid_45_degree_hyperextension,45-Degree Hyperextension,back_extension,lower_back|glutes|hamstrings,subset,45 degree hyperextension (arms in front of chest),1.00
+alternate_hammer_curl,Alternate Hammer Curl,dumbbell,biceps|forearms,subset,Alternate hammer curl seated dumbbells,1.00
+anti_gravity_press,Anti-Gravity Press,barbell,shoulders|back|traps|triceps,subset,EZ Barbell Anti Gravity Press,1.00
+vid_band_hip_abduction,Band Hip Abduction,resistance_bands,glutes,subset,Resistance Band Lying Bent Knee Hip Abduction,1.00
+vid_band_one_leg_kickback_bent_position,Band One-Leg Kickback,resistance_bands,glutes|hamstrings,subset,Resistance Band One Leg Kickback (Bent Position),1.00
+vid_band_seated_row,Band Seated Row,resistance_bands,back|lats|biceps,subset,Seated Resistance band - cable rows,1.00
+vid_band_triceps_pushdown,Band Triceps Pushdown,resistance_bands,triceps,subset,Band Triceps Pushdown Single Arm,1.00
+fedb_barbell_shoulder_press,Barbell Shoulder Press,shoulder_press_machine,shoulders|chest|triceps,subset,Barbell Incline Shoulders Press (inside squat cage),1.00
+vid_barbell_shrug,Barbell Shrug,barbell,traps|forearms,subset,Barbell Back Wide Shrug,1.00
+barbell_squat,Barbell Squat,squat_rack,quads|calves|glutes|hamstrings|lower_back,subset,Barbell  squat back POV,1.00
+bench_dips,Bench Dips,,triceps|chest|shoulders,subset,Bench dip (knees bent),1.00
+fedb_bottoms_up,Bottoms Up,,core,subset,Bottoms-up half rep,1.00
+box_squat,Box Squat,squat_rack,quads|adductors|calves|glutes|hamstrings|lower_back,subset,Barbell box squat,1.00
+vid_stretching_bridge_pose_setu_bandhasana,Bridge Pose,,glutes|lower_back|hamstrings,subset,Bridge pose setu bandhasana,1.00
+cable_chest_press,Cable Chest Press,cable_machine,chest|shoulders|triceps,subset,Chest press high to low cable Resistance band,1.00
+cable_crossover,Cable Crossover,cable_machine,chest|shoulders,subset,Biceps curl cable wide grip crossover machine,1.00
+cable_crunch,Cable Crunch,cable_machine,core,subset,Cable Standing Crunch,1.00
+cable_deadlifts,Cable Deadlifts,cable_machine,quads|forearms|glutes|hamstrings|lower_back,subset,Cable Single Leg Deadlift,1.00
+vid_cable_front_raise,Cable Front Raise,cable_machine,shoulders,subset,Cable front raises straight bar,1.00
+vid_cable_one_arm_lateral_raise,Cable One-Arm Lateral Raise,cable_machine,shoulders,subset,Cable bent over one arm lateral raise,1.00
+fedb_cable_shoulder_press,Cable Shoulder Press,shoulder_press_machine,shoulders|triceps,subset,Lateral raise to shoulder press Resistance band cable,1.00
+vid_cable_triceps_pushdown,Cable Triceps Pushdown,cable_machine,triceps,subset,Cable reverse grip triceps pushdown (EZ bar),1.00
+fedb_calf_press,Calf Press,calf_raise_machine,calves,subset,Calf raise leg press machine,1.00
+calf_press_on_the_leg_press_machine,Calf Press On The Leg Press Machine,leg_press,calves,subset,Calf raise leg press machine,1.00
+fedb_calf_raise_on_a_dumbbell,Calf Raise On A Dumbbell,calf_raise_machine,calves,subset,Dumbbell Seated Calf Raise,1.00
+fedb_calf_raises_-_with_bands,Calf Raises - With Bands,resistance_bands,calves,subset,Band Two Legs Calf Raise - (Band under both legs) VERSION 2,1.00
+vid_chin_ups_narrow_parallel_grip,Chin-Up - Narrow Parallel Grip,pullup_bar,back|lats|biceps,subset,Chin ups (narrow parallel grip),1.00
+vid_close_grip_chin_up,Close-Grip Chin-Up,pullup_bar,back|lats|biceps,subset,Assisted chin up reverse close grip,1.00
+fedb_close-grip_dumbbell_press,Close-Grip Dumbbell Press,dumbbell,triceps|chest|shoulders,subset,Dumbbell close grip shoulder press sit up,1.00
+fedb_close-grip_ez_bar_curl,Close-Grip EZ Bar Curl,ez_curl_bar,biceps|forearms,subset,Ez bar biceps curl close grip,1.00
+close_grip_front_lat_pulldown,Close-Grip Front Lat Pulldown,lat_pulldown,lats|biceps|back|shoulders,subset,Cable close grip front lat pulldown,1.00
+vid_crunch_on_bench,Crunch on a Bench,adjustable_bench,core,subset,Decline bench oblique crunches,1.00
+fedb_decline_dumbbell_triceps_extension,Decline Dumbbell Triceps Extension,dumbbell,triceps,subset,Dumbbell Decline triceps pull-over extension,1.00
+fedb_decline_smith_press,Decline Smith Press,smith_machine,chest|shoulders|triceps,subset,Smith machine press decline,1.00
+fedb_dip_machine,Dip Machine,tricep_extension_machine,triceps|chest|shoulders,subset,Chest dip machine,1.00
+fedb_dumbbell_alternate_bicep_curl,Dumbbell Alternate Bicep Curl,dumbbell,biceps|forearms,subset,Alternate bicep curl standing dumbbells,1.00
+vid_dumbbell_biceps_curl,Dumbbell Biceps Curl,dumbbell,biceps|forearms,subset,Alternating biceps curl seated dumbbells,1.00
+vid_dumbbell_cross_body_hammer_curl,Dumbbell Cross-Body Hammer Curl,dumbbell,biceps|forearms,subset,Dumbbell Cross Body Hammer Curl (Version 2),1.00
+vid_dumbbell_deadlift,Dumbbell Deadlift,dumbbell,hamstrings|glutes|back|lower_back,subset,Dumbbell close Legs Deadlift,1.00
+vid_dumbbell_fly,Dumbbell Fly,dumbbell,chest|shoulders|triceps,subset,Bent over rear delt fly dumbbell,1.00
+vid_dumbbell_fly_on_exercise_ball,Dumbbell Fly on an Exercise Ball,dumbbell,chest|shoulders|triceps|core,subset,Dumbbell Incline Fly on Exercise Ball,1.00
+vid_dumbbell_hammer_grip_incline_bench_row,Dumbbell Hammer-Grip Incline Bench Row,dumbbell,back|lats|biceps,subset,Dumbbell Hammer Grip Incline Bench Two Arm Row,1.00
+vid_dumbbell_incline_biceps_curl,Dumbbell Incline Biceps Curl,dumbbell,biceps|forearms,subset,Dumbbell Incline Biceps Simultaneous Curl,1.00
+vid_dumbbell_incline_hammer_curl,Dumbbell Incline Hammer Curl,dumbbell,biceps|forearms,subset,Dumbbell Incline Alternate Hammer Curl,1.00
+vid_dumbbell_incline_hammer_press,Dumbbell Incline Hammer Press,dumbbell,shoulders|chest|triceps,subset,Dumbbell Incline Hammer Shoulder Press,1.00
+vid_dumbbell_lunge,Dumbbell Lunge,dumbbell,quads|glutes|hamstrings,subset,Dumbbell curtsy lunge,1.00
+fedb_dumbbell_one-arm_shoulder_press,Dumbbell One-Arm Shoulder Press,shoulder_press_machine,shoulders|triceps,subset,Dumbbell One Arm Shoulder Press (VERSION 2),1.00
+vid_dumbbell_one_arm_triceps_extension,Dumbbell One-Arm Triceps Extension,dumbbell,triceps,subset,Dumbbell Lying One Arm Neutral Triceps Extension,1.00
+vid_dumbbell_alternate_seated_biceps_curl,Dumbbell Seated Alternating Curl,dumbbell,biceps|forearms,subset,Alternating biceps curl seated dumbbells,1.00
+fedb_dumbbell_seated_one-leg_calf_raise,Dumbbell Seated One-Leg Calf Raise,calf_raise_machine,calves,subset,Dumbbell Seated One Leg Calf Raise Hammer Grip,1.00
+fedb_dumbbell_shoulder_press,Dumbbell Shoulder Press,shoulder_press_machine,shoulders|triceps,subset,Dumbbell Alternate Shoulder Press,1.00
+vid_dumbbell_shrug,Dumbbell Shrug,dumbbell,traps|forearms,subset,Dumbbell Decline Shrug,1.00
+vid_dumbbell_single_leg_calf_raise,Dumbbell Single-Leg Calf Raise,dumbbell,calves,subset,Dumbbell Single Leg Calf Raise Wall Support,1.00
+vid_dumbbell_bar_grip_sumo_squat,Dumbbell Sumo Squat,dumbbell,quads|glutes|adductors,subset,Dumbbell Bar Grip Sumo Squat,1.00
+vid_ez_barbell_biceps_curl,EZ-Bar Biceps Curl,ez_curl_bar,biceps|forearms,subset,Cable biceps curl (EZ bar),1.00
+vid_front_plank_female,Front Plank,,core,subset,Unilateral Front Plank,1.00
+fedb_glute_kickback,Glute Kickback,glute_kickback_machine,glutes|hamstrings,subset,Resistance Band Standing Balance Glute Kickback,1.00
+fedb_hack_squat,Hack Squat,hack_squat_machine,quads|calves|glutes|hamstrings,subset,Calf raise on hack squat machine,1.00
+vid_stretching_hamstring_stretch,Hamstring Stretch,,hamstrings|calves,subset,Exercise ball seated hamstring stretch,1.00
+vid_hanging_straight_leg_hip_raise,Hanging Straight Leg Hip Raise,pullup_bar,core,subset,Suspension Trainer with Grips Hanging Straight Leg Hip Raise,1.00
+vid_hanging_straight_leg_raise,Hanging Straight Leg Raise,pullup_bar,core,subset,Suspension Trainer with Grips Hanging Straight Leg Hip Raise,1.00
+fedb_hip_extension_with_bands,Hip Extension with Bands,resistance_bands,glutes|hamstrings,subset,Band Bent-over Hip Extension,1.00
+vid_stretching_hip_flexor_and_quad_stretch,Hip Flexor and Quad Stretch,,quads,subset,Intermediate hip flexor and quad stretch,1.00
+vid_incline_push_ups,Incline Push-Up,adjustable_bench,chest|shoulders|triceps,subset,incline diamond push up On Bench,1.00
+vid_jump_rope,Jump Rope,skipping_rope,calves|quads|shoulders,subset,Jump Rope alternating foot,1.00
+vid_kettlebell_deadlift,Kettlebell Deadlift,kettlebell,hamstrings|glutes|back|lower_back,subset,Kettlebell Single Leg Deadlift,1.00
+vid_stretching_circles_knee_stretch,Knee Circles,,calves|quads,subset,Circles knee stretch,1.00
+vid_stretching_kneeling_lat_stretch,Kneeling Lat Stretch,,lats|back,subset,Kneeling lat floor stretch,1.00
+fedb_leg_extensions,Leg Extensions,leg_extension,quads,subset,Cable Standing Leg Extension,1.00
+leg_press,Leg Press,leg_press,quads|calves|glutes|hamstrings,subset,Band Leg Press,1.00
+vid_lying_floor_leg_raise,Lying Floor Leg Raise,,core,subset,Alternate lying floor leg raise,1.00
+fedb_lying_leg_curls,Lying Leg Curls,leg_curl,hamstrings,subset,Bodyweight lying leg curl,1.00
+fedb_machine_bicep_curl,Machine Bicep Curl,bicep_curl_machine,biceps,subset,Bicep curl low cable machine normal grip,1.00
+vid_lever_military_press,Machine Shoulder Press,shoulder_press_machine,shoulders|triceps,subset,Smith machine shoulder press,1.00
+fedb_machine_triceps_extension,Machine Triceps Extension,tricep_extension_machine,triceps,subset,Triceps rope extension on crossover machine,1.00
+vid_stretching_middle_back_stretch,Middle Back Stretch,,back|core,subset,Middle back rotation stretch,1.00
+vid_military_press,Military Press,barbell,shoulders|triceps,subset,Barbell behind neck military press,1.00
+fedb_muscle_up,Muscle Up,pullup_bar,lats|core|biceps|forearms|back|shoulders|traps|triceps,subset,Barbell muscle clean,1.00
+vid_stretching_neck_side_stretch,Neck Side Stretch,,traps,subset,Backward Forward Turn to Side Neck Stretch,1.00
+fedb_one_arm_dumbbell_preacher_curl,One Arm Dumbbell Preacher Curl,preacher_curl_bench,biceps,subset,Dumbbell One Arm Hammer Preacher Curl,1.00
+one_arm_lat_pulldown,One Arm Lat Pulldown,lat_pulldown,lats|biceps|back,subset,Cable one arm lat pulldown,1.00
+vid_lever_pec_deck_fly,Pec Deck Fly,pec_deck,chest|shoulders,subset,Pec deck fly machine,1.00
+fedb_plate_pinch,Plate Pinch,weight_plates,forearms,subset,Plate Pinch Grip Deadlift,1.00
+fedb_plate_twist,Plate Twist,weight_plates,core,subset,Plate Russian Twist,1.00
+fedb_preacher_curl,Preacher Curl,preacher_curl_bench,biceps,subset,band kneeling preacher curl,1.00
+fedb_pullups,Pullups,pullup_bar,lats|biceps|back,subset,Alternate leg pull,1.00
+vid_push_ups,Push-Up,,chest|shoulders|triceps,subset,Archer push up,1.00
+vid_reverse_grip_pull_up,Reverse-Grip Pull-Up,pullup_bar,back|lats|biceps,subset,Reverse grip lat pull down,1.00
+fedb_seated_calf_raise,Seated Calf Raise,calf_raise_machine,calves,subset,Dumbbell Seated Calf Raise,1.00
+fedb_seated_leg_curl,Seated Leg Curl,leg_curl,hamstrings,subset,Seated leg curl machine,1.00
+vid_stretching_seated_shoulder_flexor_depresor_retractor,Seated Shoulder Flexor and Retractor Stretch,,shoulders|chest|back,subset,Seated shoulder flexor depressor retractor stretch,1.00
+fedb_single-leg_leg_extension,Single-Leg Leg Extension,leg_extension,quads,subset,Seated leg extension single leg,1.00
+vid_stretching_spine_stretch,Spine Stretch,,back|lower_back|core,subset,Legs hand reach spine stretch,1.00
+fedb_standing_leg_curl,Standing Leg Curl,leg_curl,hamstrings,subset,Band Standing Leg Curl,1.00
+vid_stretching_standing_wheel_rollout,Standing Wheel Rollout,ab_wheel,core|lats|shoulders,subset,Standing Ab Wheel Rollout,1.00
+straight_arm_pulldown,Straight-Arm Pulldown,lat_pulldown,lats,subset,Cable straight arm pulldown,1.00
+vid_triceps_dips,Triceps Dip,dip_station,triceps|chest|shoulders,subset,Bench triceps dip leg curls,1.00
+vid_twisting_crunch,Twisting Crunch,,core,subset,45 degree bicycle twisting crunch,1.00
+fedb_upright_cable_row,Upright Cable Row,seated_row_machine,traps|shoulders,subset,Cable upright row with EZ bar,1.00
+vid_wide_grip_push_ups,Wide-Grip Push-Up,,chest|shoulders|triceps,subset,Cable triceps push down ez bar wide grip,1.00
+fedb_zottman_preacher_curl,Zottman Preacher Curl,preacher_curl_bench,biceps|forearms,subset,Dumbbell One Arm Zottman Preacher Curl,1.00
