@@ -64,10 +64,23 @@ Found by listing the archive, and all three are import bugs waiting to happen:
 
 1. **297 files have a leading or trailing space** — `superman .mp4`,
    `box jump  .mp4`. A space at the end of an object key is legal, invisible
-   and unforgettable.
+   and unforgettable. 280 of them have no twin, so this is sloppy naming
+   across one batch rather than a marker of anything.
 2. **17 groups collide case-insensitively** — `Dead Bug.mp4` and
-   `dead bug .mp4` are two files for one exercise. Uploading both wastes
-   storage; picking arbitrarily between them is worse.
+   `dead bug .mp4` are two files for one exercise. **Settled by looking**:
+   a frame was pulled from all 34 and stacked in pairs
+   (`core/bundle/duplicate_pairs_1.png`, `_2.png`). Every pair is the same
+   movement rendered twice — an older character and machine set against a
+   newer one. None of the 17 is two different exercises.
+
+   The shape of it: all 17 have exactly one side carrying a trailing space,
+   and in 13 of 17 that side is the larger file. So **keep the larger file
+   and record the discarded name**; it is the longer render, and 13/17 with
+   a visual check beats any rule derived from the filename.
+
+   One pair deserves a second look before the rule is applied blindly:
+   `calf raise on hack squat machine` shows two visibly different machines,
+   not two renders of one.
 3. **No stable ids.** The vendor says so outright and recommends assigning our
    own. We already have that mechanism — it is what built the current library.
 
@@ -155,5 +168,5 @@ the operator's own responsibility and cannot be recreated later.
 - Throughput on a quiet machine.
 - Whether the last archive is 1080p horizontal (preferred source) or the 9:16
   vertical cut (wrong shape for our player).
-- Which of the 17 colliding name pairs are genuinely two different exercises.
-  Somebody has to watch them.
+- Whether `calf raise on hack squat machine` is one exercise or two — the
+  only one of the 17 pairs the frames did not settle.
