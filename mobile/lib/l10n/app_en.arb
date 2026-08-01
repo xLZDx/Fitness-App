@@ -1264,5 +1264,10 @@
         "type": "int"
       }
     }
-  }
+  },
+  "subscriptionPeriodMonthly": "Monthly",
+  "subscriptionPeriodAnnual": "Annual",
+  "subscriptionPeriodFamily2": "Family · 2 seats",
+  "subscriptionPeriodFamily4": "Family · 4 seats",
+  "subscriptionPeriodLifetime": "Lifetime"
 }

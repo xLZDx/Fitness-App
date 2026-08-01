@@ -919,7 +919,8 @@ class _PlanCardForPeriod extends ConsumerWidget {
         padding: const EdgeInsets.all(14),
         child: Text(
           AppLocalizations.of(context)
-              .subscriptionIsNotAvailableOn(title, period.displayLabel),
+              .subscriptionIsNotAvailableOn(
+                  title, period.label(AppLocalizations.of(context))),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
           ),

@@ -667,5 +667,10 @@
         "type": "int"
       }
     }
-  }
+  },
+  "subscriptionPeriodMonthly": "Помесячно",
+  "subscriptionPeriodAnnual": "На год",
+  "subscriptionPeriodFamily2": "Семейная · 2 места",
+  "subscriptionPeriodFamily4": "Семейная · 4 места",
+  "subscriptionPeriodLifetime": "Навсегда"
 }

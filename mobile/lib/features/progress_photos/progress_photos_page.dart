@@ -9,6 +9,7 @@ import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
 import 'data/progress_photo.dart';
 import 'state/progress_photos_providers.dart';
+import 'package:intl/intl.dart';
 
 /// Progress photos page. End-to-end encrypted; the device key never
 /// leaves SharedPreferences. Free users see the empty-state copy +
@@ -168,7 +169,7 @@ class _PhotoTile extends StatelessWidget {
               right: 6,
               bottom: 6,
               child: Text(
-                _date(photo.takenAt),
+                _date(context, photo.takenAt),
                 textAlign: TextAlign.center,
                 style: theme.textTheme.labelSmall
                     ?.copyWith(color: Colors.white, fontWeight: FontWeight.w700),
@@ -180,11 +181,9 @@ class _PhotoTile extends StatelessWidget {
     );
   }
 
-  String _date(DateTime t) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    return '${months[t.month - 1]} ${t.day}';
-  }
+  /// Locale-correct, not two hard-coded English arrays. Russian dates
+  /// decline — "20 мая", never "мая 20" — and `DateFormat` knows that for
+  /// every locale Flutter ships.
+  String _date(BuildContext context, DateTime t) =>
+      DateFormat.MMMd(AppLocalizations.of(context).localeName).format(t);
 }

@@ -18,6 +18,7 @@ import '../workouts/state/workout_log_providers.dart';
 import '../workouts/widgets/difficulty_rating_sheet.dart';
 import '../workouts/widgets/plate_calculator.dart';
 import '../workouts/widgets/rest_timer.dart';
+import '../home/home_page.dart' show formatScheduleLabel;
 import '../workouts/widgets/set_timer_card.dart';
 import '../workouts/widgets/warmup_calculator.dart';
 import 'data/catalog_labels.dart';
@@ -812,7 +813,8 @@ class _ScheduleButton extends ConsumerWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context)
-                  .equipmentScheduledFor(exercise.title, _friendlyDate(when))),
+                  .equipmentScheduledFor(exercise.title,
+                      formatScheduleLabel(AppLocalizations.of(context), when))),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -868,25 +870,6 @@ class _ScheduleButton extends ConsumerWidget {
     );
   }
 
-  String _friendlyDate(DateTime t) {
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    final hh = t.hour.toString().padLeft(2, '0');
-    final mm = t.minute.toString().padLeft(2, '0');
-    return '${months[t.month - 1]} ${t.day} · $hh:$mm';
-  }
 }
 
 /// Reads the user's recent logs for [exerciseId] and surfaces the next

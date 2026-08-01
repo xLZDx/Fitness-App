@@ -77,6 +77,45 @@ void main() {
         reason: 'hardcoded English in the widget tree: $offenders');
   });
 
+  test('no English month or weekday tables outside intl', () {
+    // Two of these were shipping: the scheduling confirmation on the exercise
+    // page and the date under a progress photo, each with its own hardcoded
+    // ['Jan','Feb',...]. The widget-tree scan above cannot see them — the
+    // literal is in a helper, not in a `Text(...)`.
+    //
+    // Russian dates decline, so even a translated array would be wrong: it is
+    // "20 мая", never "мая 20". `DateFormat.MMMd(locale)` knows that for every
+    // locale Flutter ships, which is why the rule is "no table at all" rather
+    // than "translate the table".
+    final offenders = <String>[];
+    final table = RegExp(r"'(Jan|Mon)'\s*,\s*'(Feb|Tue)'");
+    for (final f in Directory('lib').listSync(recursive: true)) {
+      if (f is! File || !f.path.endsWith('.dart')) continue;
+      if (table.hasMatch(f.readAsStringSync())) offenders.add(f.path);
+    }
+    expect(offenders, isEmpty,
+        reason: 'hardcoded date names — use DateFormat with the locale: '
+            '$offenders');
+  });
+
+  test('user-facing enum labels go through the ARB, not a Dart switch', () {
+    // `SubscriptionPeriod.displayLabel` returned 'Monthly' / 'Family · 2
+    // seats' and was rendered straight into the Russian subscription page.
+    // It is now `label(l10n)`, and the English version is renamed to
+    // `debugLabel` so that reaching for it in a widget looks wrong.
+    final src = File('lib/features/subscription/data/subscription_models.dart')
+        .readAsStringSync();
+    expect(src, contains('String label(AppLocalizations l10n)'));
+    expect(src, isNot(contains('String get displayLabel')),
+        reason: 'a getter named like a display string invites use in the UI');
+
+    for (final f in Directory('lib').listSync(recursive: true)) {
+      if (f is! File || !f.path.endsWith('.dart')) continue;
+      expect(f.readAsStringSync(), isNot(contains('.debugLabel')),
+          reason: '${f.path} renders the English label');
+    }
+  });
+
   test('catalog vocabulary tags all have a localized label', () {
     // The muscle/difficulty/category tags are stored in English because they
     // drive filtering and the muscle map; CatalogLabels is what translates

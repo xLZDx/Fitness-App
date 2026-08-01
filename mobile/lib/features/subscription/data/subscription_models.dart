@@ -1,3 +1,5 @@
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 /// Three-tier subscription ladder. Order matters: a higher index implies
 /// every entitlement of the lower indices.
 enum SubscriptionTier {
@@ -30,7 +32,13 @@ enum SubscriptionPeriod {
 }
 
 extension SubscriptionPeriodLabel on SubscriptionPeriod {
-  String get displayLabel {
+  /// English, and NOT for display.
+  ///
+  /// Kept for logs and analytics, where a stable machine-readable name is the
+  /// point. The screen must use [label] — this one used to be rendered
+  /// straight into the Russian subscription page, which is exactly the class
+  /// of bug `no_untranslated_strings_test` exists to catch.
+  String get debugLabel {
     switch (this) {
       case SubscriptionPeriod.monthly:
         return 'Monthly';
@@ -42,6 +50,22 @@ extension SubscriptionPeriodLabel on SubscriptionPeriod {
         return 'Family · 4 seats';
       case SubscriptionPeriod.lifetime:
         return 'Lifetime';
+    }
+  }
+
+  /// What the user reads.
+  String label(AppLocalizations l10n) {
+    switch (this) {
+      case SubscriptionPeriod.monthly:
+        return l10n.subscriptionPeriodMonthly;
+      case SubscriptionPeriod.annual:
+        return l10n.subscriptionPeriodAnnual;
+      case SubscriptionPeriod.family2:
+        return l10n.subscriptionPeriodFamily2;
+      case SubscriptionPeriod.family4:
+        return l10n.subscriptionPeriodFamily4;
+      case SubscriptionPeriod.lifetime:
+        return l10n.subscriptionPeriodLifetime;
     }
   }
 

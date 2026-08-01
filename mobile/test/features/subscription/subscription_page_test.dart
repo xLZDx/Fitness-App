@@ -47,13 +47,17 @@ void main() {
     });
   });
 
-  group('SubscriptionPeriod display labels — pricing toggle copy', () {
-    test('monthly / annual / family / lifetime labels', () {
-      expect(SubscriptionPeriod.monthly.displayLabel, 'Monthly');
-      expect(SubscriptionPeriod.annual.displayLabel, 'Annual');
-      expect(SubscriptionPeriod.family2.displayLabel, 'Family · 2 seats');
-      expect(SubscriptionPeriod.family4.displayLabel, 'Family · 4 seats');
-      expect(SubscriptionPeriod.lifetime.displayLabel, 'Lifetime');
+  group('SubscriptionPeriod labels', () {
+    // `debugLabel`, not `displayLabel`. The getter used to be rendered
+    // straight into the Russian subscription page; it is now for logs only,
+    // and `label(l10n)` is what the screen reads. Renaming it is what makes
+    // reaching for the English one look wrong at the call site.
+    test('the machine-readable names are stable', () {
+      expect(SubscriptionPeriod.monthly.debugLabel, 'Monthly');
+      expect(SubscriptionPeriod.annual.debugLabel, 'Annual');
+      expect(SubscriptionPeriod.family2.debugLabel, 'Family · 2 seats');
+      expect(SubscriptionPeriod.family4.debugLabel, 'Family · 4 seats');
+      expect(SubscriptionPeriod.lifetime.debugLabel, 'Lifetime');
     });
   });
 
