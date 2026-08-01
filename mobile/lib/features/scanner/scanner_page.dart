@@ -294,109 +294,112 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
           ),
         ],
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 88, 20, 110),
-          children: [
-            // Full width, 3:4 — the old fixed 300px strip with a 220x200
-            // frame could not fit a machine standing two steps away
-            // (operator point 4). The guide frame is proportional and mirrors
-            // the 75% centre crop the classifier actually receives.
-            AspectRatio(
-              aspectRatio: 3 / 4,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(28),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    if (_cameraError != null)
-                      _CameraUnavailable(error: _cameraError!)
-                    else
-                      LiveEquipmentPreview(session: session),
-                    Center(
-                      child: FractionallySizedBox(
-                        widthFactor: 0.75,
-                        heightFactor: 0.75,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.85),
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(20),
+      // No SafeArea. `FrostedScaffold` sets `extendBodyBehindAppBar`, so the
+      // list already starts at y=0 and the 92 below clears the bar exactly as
+      // it does on every other page. Wrapping it in a SafeArea counted the
+      // status bar a second time, which is the empty band the operator circled
+      // — about 128 logical points of nothing between the title and the
+      // viewfinder.
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(12, 92, 12, 110),
+        children: [
+          // As tall as the screen allows. Recognition is aiming, and aiming is
+          // the whole screen's job — operator: "камера была почти во весь
+          // экран". The guide frame is proportional and mirrors the 75% centre
+          // crop the classifier actually receives.
+          SizedBox(
+            height: MediaQuery.sizeOf(context).height * 0.68,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (_cameraError != null)
+                    _CameraUnavailable(error: _cameraError!)
+                  else
+                    LiveEquipmentPreview(session: session),
+                  Center(
+                    child: FractionallySizedBox(
+                      widthFactor: 0.75,
+                      heightFactor: 0.75,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.85),
+                            width: 2,
                           ),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 14),
-            const _ScanPrivacyStrip(),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: FilledButton.icon(
-                    key: const Key('scan-recognise-camera'),
-                    onPressed: _recogniseWithCamera,
-                    icon: const Icon(Icons.photo_camera_outlined),
-                    label: Text(
-                        AppLocalizations.of(context).scannerRecogniseMachine),
-                  ),
+          ),
+          const SizedBox(height: 14),
+          const _ScanPrivacyStrip(),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  key: const Key('scan-recognise-camera'),
+                  onPressed: _recogniseWithCamera,
+                  icon: const Icon(Icons.photo_camera_outlined),
+                  label: Text(
+                      AppLocalizations.of(context).scannerRecogniseMachine),
                 ),
-                const SizedBox(width: 8),
-                // The app theme gives buttons minimumSize Size.fromHeight(54),
-                // i.e. minWidth == infinity. In a Row's non-flex slot the width
-                // constraint is unbounded, so an unwrapped button forces an
-                // infinite width and the whole page fails to lay out (blank
-                // screen, no red error). Always bound button width outside
-                // Expanded.
-                SizedBox(
-                  width: 56,
-                  child: OutlinedButton(
-                    key: const Key('scan-recognise-gallery'),
-                    onPressed: _recogniseFromGallery,
-                    child: const Icon(Icons.photo_library_outlined),
-                  ),
+              ),
+              const SizedBox(width: 8),
+              // The app theme gives buttons minimumSize Size.fromHeight(54),
+              // i.e. minWidth == infinity. In a Row's non-flex slot the width
+              // constraint is unbounded, so an unwrapped button forces an
+              // infinite width and the whole page fails to lay out (blank
+              // screen, no red error). Always bound button width outside
+              // Expanded.
+              SizedBox(
+                width: 56,
+                child: OutlinedButton(
+                  key: const Key('scan-recognise-gallery'),
+                  onPressed: _recogniseFromGallery,
+                  child: const Icon(Icons.photo_library_outlined),
                 ),
-              ],
-            ),
-            if (liveOn) ...[
-              const SizedBox(height: 14),
-              // An error here means the model or the labeler failed, which is
-              // NOT the same as "no machine recognised yet" — spinning forever
-              // on a broken model was a real defect.
-              liveAsync.hasError
-                  ? GlassCard(
-                      key: const Key('scan-live-error'),
-                      tint: theme.colorScheme.error,
-                      child: Text(AppLocalizations.of(context)
-                          .scannerLiveRecognitionFailed(
-                              liveAsync.error ?? '')),
-                    )
-                  : _LiveCard(recognition: live, onOpen: _openEquipment),
+              ),
             ],
+          ),
+          if (liveOn) ...[
             const SizedBox(height: 14),
-            matches.when(
-              loading: () => const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              error: (e, _) => GlassCard(
-                tint: theme.colorScheme.error,
-                child:
-                    Text(AppLocalizations.of(context).scannerRecognitionFailed(e)),
-              ),
-              data: (list) => list.isEmpty
-                  ? _HintCard(theme: theme, noMatch: _attempted)
-                  : _Matches(matches: list, onOpen: _openEquipment),
-            ),
-            const SizedBox(height: 20),
-            _HistorySection(onOpen: _openEquipment),
+            // An error here means the model or the labeler failed, which is
+            // NOT the same as "no machine recognised yet" — spinning forever
+            // on a broken model was a real defect.
+            liveAsync.hasError
+                ? GlassCard(
+                    key: const Key('scan-live-error'),
+                    tint: theme.colorScheme.error,
+                    child: Text(AppLocalizations.of(context)
+                        .scannerLiveRecognitionFailed(liveAsync.error ?? '')),
+                  )
+                : _LiveCard(recognition: live, onOpen: _openEquipment),
           ],
-        ),
+          const SizedBox(height: 14),
+          matches.when(
+            loading: () => const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (e, _) => GlassCard(
+              tint: theme.colorScheme.error,
+              child: Text(
+                  AppLocalizations.of(context).scannerRecognitionFailed(e)),
+            ),
+            data: (list) => list.isEmpty
+                ? _HintCard(theme: theme, noMatch: _attempted)
+                : _Matches(matches: list, onOpen: _openEquipment),
+          ),
+          const SizedBox(height: 20),
+          _HistorySection(onOpen: _openEquipment),
+        ],
       ),
     );
   }
@@ -420,8 +423,7 @@ class _HistorySection extends ConsumerWidget {
     // for ids from older builds) fall back to a prettified id rather than
     // hiding the row.
     final names = <String, String>{
-      for (final eq
-          in ref.watch(equipmentListProvider).valueOrNull ?? const [])
+      for (final eq in ref.watch(equipmentListProvider).valueOrNull ?? const [])
         eq.id: eq.name,
     };
 
@@ -431,8 +433,8 @@ class _HistorySection extends ConsumerWidget {
       children: [
         Text(
           AppLocalizations.of(context).scannerMyMachines,
-          style:
-              theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+          style: theme.textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 8),
         Wrap(
@@ -470,7 +472,9 @@ class _HintCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            noMatch ? l.scannerCouldnTTellWhatThatIs : l.scannerPointAtAMachineAndTapRecognise,
+            noMatch
+                ? l.scannerCouldnTTellWhatThatIs
+                : l.scannerPointAtAMachineAndTapRecognise,
             style: theme.textTheme.titleMedium
                 ?.copyWith(fontWeight: FontWeight.w700),
           ),
@@ -611,8 +615,7 @@ class _Matches extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final unsure =
-        matches.isEmpty || matches.first.confidence < _unsureBelow;
+    final unsure = matches.isEmpty || matches.first.confidence < _unsureBelow;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -695,8 +698,7 @@ class _CameraUnavailable extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              AppLocalizations.of(context)
-                  .scannerYouCanStillPickAPhoto(error),
+              AppLocalizations.of(context).scannerYouCanStillPickAPhoto(error),
               style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
               textAlign: TextAlign.center,
             ),

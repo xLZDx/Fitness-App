@@ -9,11 +9,18 @@ import 'dart:ui' show Offset, Size;
 /// of some other shape entirely — a 9:16 panel on this page — and `CameraPreview`
 /// fills it, cropping whatever does not fit.
 ///
-/// So drawing a landmark is not `x * width, y * height`. That is the mapping the
-/// silhouette uses, and it is right for the silhouette because those targets are
-/// AUTHORED in the box's own coordinates. A measured landmark is in the camera's,
-/// and scaling the two axes by different factors is a shear: a straight back
-/// would render as a bent one, most visibly on a body that fills the frame.
+/// So drawing a landmark is not `x * width, y * height`. Scaling the two axes by
+/// different factors is a shear: a straight back renders as a bent one, most
+/// visibly on a body that fills the frame.
+///
+/// This comment used to go on to say that `x * width, y * height` was fine for
+/// the silhouette, "because those targets are AUTHORED in the box's own
+/// coordinates". That was wrong, and a screen recording of the coach is what
+/// proved it: on this page's 9:16 panel the outline came out squeezed 1.78x
+/// horizontally — a tall thin stalk under a large circle. Coordinates authored
+/// to look like a person encode a claim about proportion, and a per-axis scale
+/// destroys it exactly as thoroughly here as anywhere else. The silhouette now
+/// fits itself with one scale, in `pose_silhouette.dart`.
 ///
 /// This is the same class of mistake as the anisotropic normalisation that was
 /// already fixed once inside the detector, which is why it is a named function

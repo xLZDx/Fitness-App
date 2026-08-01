@@ -119,21 +119,42 @@ void main() {
           reason: 'bystanders in a gym are the part users do not expect');
     });
 
-    testWidgets('the viewfinder is full-width 3:4 with a proportional frame',
-        (tester) async {
-      // Operator point 4: the old fixed 300px strip with a 220x200 frame was
-      // too small to fit a machine. The guide frame mirrors the 75% centre
-      // crop the classifier receives.
+    testWidgets('the viewfinder takes most of the screen', (tester) async {
+      // Operator point 4 asked for a viewfinder big enough to fit a machine;
+      // point 6, later, asked for the rest of it — "камера была почти во весь
+      // экран" — after a screen recording showed a wide empty band above it.
+      // So this no longer pins a 3:4 box, it pins the share of the screen.
       await pumpScan(tester);
-      final ratio = tester.widget<AspectRatio>(find.ancestor(
-        of: find.byType(LiveEquipmentPreview),
-        matching: find.byType(AspectRatio),
-      ));
-      expect(ratio.aspectRatio, 3 / 4);
-      final frame = tester.widget<FractionallySizedBox>(
-          find.byType(FractionallySizedBox));
+      final screen =
+          tester.view.physicalSize.height / tester.view.devicePixelRatio;
+      final preview = tester.getRect(find.byType(LiveEquipmentPreview));
+      expect(preview.height / screen, greaterThan(0.6));
+
+      final frame = tester
+          .widget<FractionallySizedBox>(find.byType(FractionallySizedBox));
       expect(frame.widthFactor, 0.75);
       expect(frame.heightFactor, 0.75);
+    });
+
+    testWidgets('nothing separates the app bar from the viewfinder',
+        (tester) async {
+      // The band the operator circled: this page wrapped its list in a
+      // SafeArea AND padded 88 from the top, but `FrostedScaffold` already
+      // draws the body behind the bar — so the status-bar inset was counted
+      // twice, about 128 logical points of empty purple.
+      await pumpScan(tester);
+      expect(
+        find.ancestor(
+          of: find.byType(LiveEquipmentPreview),
+          matching: find.byType(SafeArea),
+        ),
+        findsNothing,
+        reason: 'a SafeArea here double-counts the status bar',
+      );
+      // The viewfinder starts just under a 64pt bar plus the inset, not a
+      // screen-eighth below it.
+      final top = tester.getRect(find.byType(LiveEquipmentPreview)).top;
+      expect(top, lessThan(110));
     });
 
     testWidgets('the viewfinder is present whether or not live mode is on',

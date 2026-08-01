@@ -2,10 +2,13 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../profile/data/profile_models.dart';
+import '../../profile/state/profile_providers.dart';
 import '../data/form_classifier.dart';
 import '../data/pose_detector_service.dart';
 import '../data/pose_gate.dart';
 import '../data/pose_landmark.dart';
+import '../data/pose_silhouette.dart';
 import '../data/pose_target.dart';
 import '../data/pose_unit_probe.dart';
 import '../data/rep_counter.dart';
@@ -13,6 +16,49 @@ import '../data/voice_coach.dart';
 
 /// What the user says they are doing. Rules are chosen from this.
 enum FormExercise { squat, pushup, deadlift }
+
+/// How broad to draw the outline, from whatever the intake collected.
+///
+/// Operator: *"бери рост вес из анкеты чтобы понять рост человека, так как
+/// силует для девочки 150 см будет другой нежели мужика 2метра ростом"*. The
+/// request is answered, with one correction stated where it is made rather
+/// than quietly: height does not scale the outline. The figure is fitted to
+/// the camera panel, and how large a body appears in that panel is set by how
+/// far it stands from the phone. What does differ between those two people on
+/// screen is breadth — shoulder-to-hip ratio and overall width — so that is
+/// what this reads, with height feeding the BMI rather than the size.
+///
+/// Missing answers are not guessed at. `nonBinary` and `preferNotToSay` take
+/// the neutral build, which is the reason those answers exist.
+final silhouetteBuildProvider = Provider<BodyBuild>((ref) {
+  final personal = ref.watch(currentProfileProvider).valueOrNull?.personal;
+  if (personal == null) return BodyBuild.unknown;
+  return BodyBuild.forBody(
+    sex: switch (personal.gender) {
+      Gender.male => SilhouetteSex.male,
+      Gender.female => SilhouetteSex.female,
+      _ => SilhouetteSex.unspecified,
+    },
+    heightCm: personal.heightCm,
+    weightKg: personal.weightCurrentKg,
+  );
+});
+
+/// Which intake answers the silhouette would use and does not have.
+///
+/// Drives the prompt on the coach page. Empty means there is nothing to ask
+/// for — including when the user has answered "prefer not to say", which IS an
+/// answer and must not be asked again.
+final missingBodyAnswersProvider = Provider<Set<BodyAnswer>>((ref) {
+  final personal = ref.watch(currentProfileProvider).valueOrNull?.personal;
+  return {
+    if (personal?.gender == null) BodyAnswer.gender,
+    if (personal?.heightCm == null) BodyAnswer.height,
+    if (personal?.weightCurrentKg == null) BodyAnswer.weight,
+  };
+});
+
+enum BodyAnswer { gender, height, weight }
 
 /// The movement being coached. Squat by default: it is what the shipped rep
 /// counter's signal (hip-versus-knee height) actually tracks.

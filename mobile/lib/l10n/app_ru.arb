@@ -589,5 +589,19 @@
   "equipmentFaultQrMissing": "Нет QR-кода",
   "equipmentFaultOther": "Другое",
   "donorwallLifetime": "НАВСЕГДА",
-  "formcheckShowSkeleton": "Показать, что видит камера"
+  "formcheckShowSkeleton": "Показать, что видит камера",
+  "navScan": "Скан",
+  "formcheckTuneTheOutline": "Подогнать силуэт под вас",
+  "formcheckMissingAnswers": "Не хватает: {arg0}",
+  "@formcheckMissingAnswers": {
+    "placeholders": {
+      "arg0": {
+        "type": "String"
+      }
+    }
+  },
+  "formcheckBodyGender": "пол",
+  "formcheckBodyHeight": "рост",
+  "formcheckBodyWeight": "вес",
+  "formcheckStandSideOn": "Встаньте боком к камере — силуэт нарисован сбоку."
 }

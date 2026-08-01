@@ -10,7 +10,13 @@ class MainShell extends StatelessWidget {
 
   final Widget child;
 
-  static const _paths = ['/home', '/scan', '/workouts', '/progress', '/profile'];
+  static const _paths = [
+    '/home',
+    '/scan',
+    '/workouts',
+    '/progress',
+    '/profile'
+  ];
 
   /// Built per-build rather than held as a `static final`: the labels are
   /// localised, so they have to be resolved against the current locale. A
@@ -25,7 +31,11 @@ class MainShell extends StatelessWidget {
         GlassNavItem(
           icon: Icons.qr_code_scanner_outlined,
           iconSelected: Icons.qr_code_scanner,
-          label: l10n.scannerScan,
+          // `scannerScan` ("Распознавание" / "Recognition") is the page's
+          // title and stays that. A nav label is one word wide: on the
+          // operator's phone the long form wrapped to two lines and pushed
+          // the tab out of line with its neighbours.
+          label: l10n.navScan,
           gradient: const [AppPalette.auroraViolet, AppPalette.auroraBlue],
         ),
         GlassNavItem(

@@ -16,6 +16,7 @@ import 'data/pose_detector_service.dart';
 import 'data/pose_gate.dart';
 import 'data/pose_landmark.dart';
 import 'data/pose_projection.dart';
+import 'data/pose_silhouette.dart';
 import 'data/pose_target.dart';
 import 'data/rep_counter.dart';
 import '../subscription/data/subscription_models.dart';
@@ -232,6 +233,12 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
             _UpgradeCard(),
             const SizedBox(height: 16),
           ],
+          // Asked for here rather than left to the profile tab, because this
+          // is the one screen where the answers visibly change something: the
+          // outline the user is about to aim at. Operator: "если етих данных
+          // нет в анкете то как только кто то заходит к тренеру тот должен
+          // предложить дозаполнить нехватающих деталей."
+          const _CompleteProfileCard(),
           // Which movement is being coached. Above the camera on purpose: the
           // rules that will judge you are chosen here, so it should be read
           // before the set, not discovered after it.
@@ -629,7 +636,13 @@ class _SetSummaryCard extends StatelessWidget {
     if (session.reps.isEmpty) {
       return GlassCard(
         child: Text(
-          AppLocalizations.of(context).formcheckNoRepsYetStandTallTo,
+          // Which way to face, said out loud. The targets are authored as side
+          // views and the outline is drawn from the side, but nothing on the
+          // screen said so — the operator filmed himself head-on and the coach
+          // repeatedly told him he had not reached a shape that, from that
+          // angle, he could not reach. The instruction costs one line.
+          '${AppLocalizations.of(context).formcheckStandSideOn}\n'
+          '${AppLocalizations.of(context).formcheckNoRepsYetStandTallTo}',
           key: const Key('form_check.summary_empty'),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurface.withValues(alpha: 0.70),
@@ -889,6 +902,7 @@ class _Silhouette extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final target = ref.watch(poseTargetProvider);
     final pair = ref.watch(poseDemoProvider);
+    final build = ref.watch(silhouetteBuildProvider);
 
     if (demonstrating && pair != null) {
       final (from, to) = pair;
@@ -903,6 +917,7 @@ class _Silhouette extends ConsumerWidget {
             target: lerpPoseTarget(
                 from, to, Curves.easeInOutCubic.transform(demo.value)),
             match: null,
+            build: build,
             isDemo: true,
           ),
         ),
@@ -915,6 +930,77 @@ class _Silhouette extends ConsumerWidget {
       painter: _SilhouettePainter(
         target: target,
         match: ref.watch(poseMatchProvider),
+        build: build,
+      ),
+    );
+  }
+}
+
+/// Offers to fill in the intake answers the outline would use.
+///
+/// Renders nothing when there is nothing missing, which includes the user who
+/// answered "prefer not to say" — that is an answer, and asking again would
+/// make it look like it had not been heard.
+class _CompleteProfileCard extends ConsumerWidget {
+  const _CompleteProfileCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final missing = ref.watch(missingBodyAnswersProvider);
+    if (missing.isEmpty) return const SizedBox.shrink();
+
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final names = [
+      if (missing.contains(BodyAnswer.gender)) l10n.formcheckBodyGender,
+      if (missing.contains(BodyAnswer.height)) l10n.formcheckBodyHeight,
+      if (missing.contains(BodyAnswer.weight)) l10n.formcheckBodyWeight,
+    ].join(', ');
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: GlassCard(
+        key: const Key('form_check.complete_profile'),
+        onTap: () => GoRouter.of(context).push('/profile'),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(13),
+                gradient: const LinearGradient(colors: [
+                  AppPalette.auroraViolet,
+                  AppPalette.auroraBlue,
+                ]),
+              ),
+              child: const Icon(Icons.straighten_rounded, color: Colors.white),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.formcheckTuneTheOutline,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    l10n.formcheckMissingAnswers(names),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.68),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+          ],
+        ),
       ),
     );
   }
@@ -924,6 +1010,7 @@ class _SilhouettePainter extends CustomPainter {
   const _SilhouettePainter({
     required this.target,
     required this.match,
+    required this.build,
     this.isDemo = false,
   });
 
@@ -932,11 +1019,24 @@ class _SilhouettePainter extends CustomPainter {
   /// Live match, 0..1, or null when the body cannot be read.
   final double? match;
 
+  /// How broad to draw it, from the intake.
+  final BodyBuild build;
+
   /// Drawing the movement rather than the position to reach.
   final bool isDemo;
 
   @override
   void paint(Canvas canvas, Size size) {
+    // A two-sided body, and ONE scale for both axes. Drawing straight from
+    // `target.joints` gave half a skeleton, and multiplying x by the panel
+    // width while multiplying y by its height squeezed that half horizontally
+    // by 1.78x on a 9:16 panel — together, the "закорючка" the operator saw
+    // twice. Both faults live in `pose_silhouette.dart` now, with tests.
+    final figure = buildSilhouette(target, build: build);
+    if (figure.segments.isEmpty) return;
+    final (scale, origin) = fitSilhouette(figure.bounds, size);
+    Offset place(Offset p) => p * scale + origin;
+
     // Green once the shape is reached, so the user gets the answer while they
     // are still in the position and can feel what it corresponds to.
     final reached = (match ?? 0) >= kPoseMatchPassing;
@@ -947,14 +1047,8 @@ class _SilhouettePainter extends CustomPainter {
             ? 0.95
             : 0.65;
 
-    // Limbs are drawn as thick round-capped strokes rather than hairlines, and
-    // a head is drawn above the shoulders. Six dots joined by five thin lines
-    // is geometrically the same figure and reads as a squiggle — operator, on
-    // his phone: "человеческий силует привратился а закорючку". The whole
-    // instruction is "stand inside this shape", so it has to look like a body
-    // from across a room, in motion, at a glance.
     final limbWidth =
-        (size.shortestSide * (isDemo ? 0.035 : 0.045)).clamp(6, 26).toDouble();
+        (figure.limbThickness * scale * (isDemo ? 0.85 : 1.0)).clamp(4.0, 30.0);
     final stroke = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = limbWidth
@@ -962,22 +1056,35 @@ class _SilhouettePainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round
       ..color = colour.withValues(alpha: alpha * 0.55);
 
-    Offset at(LandmarkType t) {
-      final j = target.joints[t]!;
-      return Offset(j.$1 * size.width, j.$2 * size.height);
+    // Trunk first, limbs over it. A filled torso is what gives the outline a
+    // centre; without it a deep squat, where the arms swing across the thighs,
+    // renders as crossing bars with no body in the middle of them.
+    if (figure.torso.isNotEmpty) {
+      final path = Path()
+        ..addPolygon([for (final p in figure.torso) place(p)], true);
+      canvas.drawPath(
+          path, Paint()..color = colour.withValues(alpha: alpha * 0.30));
+      canvas.drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = limbWidth * 0.45
+          ..strokeJoin = StrokeJoin.round
+          ..color = colour.withValues(alpha: alpha * 0.55),
+      );
     }
 
-    for (final (a, b) in target.bones) {
-      canvas.drawLine(at(a), at(b), stroke);
+    for (final (a, b) in figure.segments) {
+      canvas.drawLine(place(a), place(b), stroke);
     }
 
-    final head = target.head;
+    final head = figure.head;
     if (head != null) {
       // Outlined, not filled: a solid disc over a live camera hides the face
       // of the person trying to line themselves up with it.
       canvas.drawCircle(
-        Offset(head.$1 * size.width, head.$2 * size.height),
-        head.$3 * size.height,
+        place(head.$1),
+        head.$2 * scale,
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = limbWidth * 0.55
@@ -988,8 +1095,8 @@ class _SilhouettePainter extends CustomPainter {
     // The joints on top of the limbs, so the shape reads as articulated rather
     // than as one bent tube.
     final joint = Paint()..color = colour.withValues(alpha: alpha);
-    for (final t in target.joints.keys) {
-      canvas.drawCircle(at(t), limbWidth * 0.34, joint);
+    for (final p in figure.joints) {
+      canvas.drawCircle(place(p), limbWidth * 0.30, joint);
     }
   }
 
@@ -997,6 +1104,7 @@ class _SilhouettePainter extends CustomPainter {
   bool shouldRepaint(_SilhouettePainter old) =>
       old.target.id != target.id ||
       old.isDemo != isDemo ||
+      old.build != build ||
       // A demonstration is a new pose every frame and its id never changes, so
       // it has to be compared by content or the animation would render as a
       // single frozen frame.

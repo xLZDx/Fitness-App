@@ -1186,5 +1186,19 @@
   "equipmentFaultQrMissing": "QR missing",
   "equipmentFaultOther": "Other",
   "donorwallLifetime": "LIFETIME",
-  "formcheckShowSkeleton": "Show what the camera sees"
+  "formcheckShowSkeleton": "Show what the camera sees",
+  "navScan": "Scan",
+  "formcheckTuneTheOutline": "Tune the outline to you",
+  "formcheckMissingAnswers": "Still needed: {arg0}",
+  "@formcheckMissingAnswers": {
+    "placeholders": {
+      "arg0": {
+        "type": "String"
+      }
+    }
+  },
+  "formcheckBodyGender": "sex",
+  "formcheckBodyHeight": "height",
+  "formcheckBodyWeight": "weight",
+  "formcheckStandSideOn": "Stand side-on to the camera — the outline is drawn from the side."
 }
