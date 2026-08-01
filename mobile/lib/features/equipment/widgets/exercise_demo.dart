@@ -36,7 +36,16 @@ class ExerciseDemo extends StatefulWidget {
 class _ExerciseDemoState extends State<ExerciseDemo>
     with SingleTickerProviderStateMixin {
   /// Milliseconds for one transition, hold included.
-  static const _speeds = <String, int>{'0.5x': 1600, '1x': 900, '2x': 450};
+  ///
+  /// The same four labels as the video block, so the two demo paths offer the
+  /// same control rather than two different ones — the operator's complaint
+  /// about the catalog was that it does not look like one thing.
+  static const _speeds = <String, int>{
+    '0.5x': 1800,
+    '1x': 900,
+    '2x': 450,
+    '3x': 300,
+  };
 
   late final AnimationController _controller = AnimationController(
     vsync: this,

@@ -1200,5 +1200,7 @@
   "formcheckBodyGender": "sex",
   "formcheckBodyHeight": "height",
   "formcheckBodyWeight": "weight",
-  "formcheckStandSideOn": "Stand side-on to the camera — the outline is drawn from the side."
+  "formcheckStandSideOn": "Stand side-on to the camera — the outline is drawn from the side.",
+  "equipmentClipOfflineStillShown": "No connection — showing the still",
+  "equipmentClipCouldNotLoad": "The clip could not be loaded"
 }

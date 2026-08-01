@@ -16,6 +16,7 @@ class ExerciseItem {
     required this.steps,
     this.videoUrl,
     this.video = const {},
+    this.poster = const {},
     this.frames = const [],
     this.imageUrls = const [],
     this.primaryMuscles = const [],
@@ -79,6 +80,36 @@ class ExerciseItem {
     return url.contains(unresolvedHost) ? null : url;
   }
 
+  /// Bundled still for the clip, keyed the same way as [video].
+  ///
+  /// Its whole job is to be on screen before the network has been asked for
+  /// anything. Cut from the clip itself, so the poster IS the video's first
+  /// position rather than a different photograph of the same movement — the
+  /// swap from still to playing clip has nothing to jump.
+  final Map<String, String> poster;
+
+  /// The still to show while — or instead of — the clip.
+  ///
+  /// Falls back the same way [playableVideoFor] does, and for the same reason:
+  /// showing the body we filmed beats showing nothing. Returns null only when
+  /// this exercise has no clip at all, in which case the caller is on the
+  /// stills path anyway.
+  String? posterFor(String? body) {
+    if (poster.isEmpty) return null;
+    return (body != null ? poster[body] : null) ??
+        poster['men'] ??
+        poster.values.first;
+  }
+
+  /// Whether this exercise can show a real clip.
+  ///
+  /// Used to sort: the 168 entries without one go to the end of every list.
+  /// Operator: *"Оставшиеся 168 убрать в конец списков"*. Not hidden — an
+  /// exercise with written steps and a muscle map is still worth reaching,
+  /// and hiding a third of the catalog to make the top of it look uniform
+  /// is a trade nobody asked for.
+  bool get hasVideo => video.values.any((u) => !u.contains(unresolvedHost));
+
   /// Bundled demo frames (start / end position of the movement). Looping
   /// them is how the app shows a movement without shipping video: it plays
   /// offline, weighs kilobytes, and comes from a public-domain source.
@@ -116,6 +147,10 @@ class ExerciseItem {
         videoUrl: j['videoUrl'] as String?,
         video: Map<String, String>.unmodifiable(<String, String>{
           for (final e in (j['video'] as Map? ?? const {}).entries)
+            e.key as String: e.value as String,
+        }),
+        poster: Map<String, String>.unmodifiable(<String, String>{
+          for (final e in (j['poster'] as Map? ?? const {}).entries)
             e.key as String: e.value as String,
         }),
         frames: List<String>.from(j['frames'] as List? ?? const []),
@@ -161,6 +196,7 @@ class ExerciseItem {
         steps: steps,
         videoUrl: videoUrl,
         video: video,
+        poster: poster,
         frames: frames,
         imageUrls: imageUrls,
         primaryMuscles: primaryMuscles,

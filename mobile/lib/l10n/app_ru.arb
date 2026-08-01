@@ -603,5 +603,7 @@
   "formcheckBodyGender": "пол",
   "formcheckBodyHeight": "рост",
   "formcheckBodyWeight": "вес",
-  "formcheckStandSideOn": "Встаньте боком к камере — силуэт нарисован сбоку."
+  "formcheckStandSideOn": "Встаньте боком к камере — силуэт нарисован сбоку.",
+  "equipmentClipOfflineStillShown": "Нет сети — показан кадр",
+  "equipmentClipCouldNotLoad": "Ролик не загрузился"
 }

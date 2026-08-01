@@ -111,6 +111,14 @@ flutter:
     # Anatomical muscle chart, front and back. CC BY 4.0 — credited on the
     # /licences screen, which is a condition of shipping it.
     - assets/anatomy/
+    # One still per clip, per body: the frame half a second in. Bundled rather
+    # than hosted so the demo has something to show INSTANTLY and with no
+    # network at all — the operator's report was that a clip loads in seconds
+    # but shows a spinner until it does, and offline shows nothing whatsoever.
+    # 653 files, 3.6 MB, affordable only because these clips are 3D renders on
+    # flat white, which JPEG takes to ~5 KB at 400px.
+    - assets/posters/girl/
+    - assets/posters/men/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

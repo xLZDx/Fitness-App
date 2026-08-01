@@ -91,6 +91,21 @@ String workoutsFilterLabel(AppLocalizations l, WorkoutsFilter f) {
   }
 }
 
+/// Exercises that can show a clip first, the rest after — order preserved
+/// inside each group.
+///
+/// Operator: *"Оставшиеся 168 убрать в конец списков"*. A stable partition
+/// rather than a sort, so it composes with the "For you" ranking instead of
+/// replacing it: the ranker still decides which muscles come first, this only
+/// decides that a demonstrated exercise outranks an undemonstrated one at the
+/// same rank.
+///
+/// Public and pure so the behaviour can be tested without a catalog.
+List<ExerciseItem> videoFirst(List<ExerciseItem> items) => [
+      ...items.where((e) => e.hasVideo),
+      ...items.where((e) => !e.hasVideo),
+    ];
+
 /// Resolves a filter into the actual list of exercises to show. Pulls from
 /// the recommended ("for you") feed and the raw catalog and slices by
 /// equipment category or muscle tag.
@@ -103,22 +118,21 @@ final _filteredExercisesProvider =
     // up here the tab called "For you" showed every user the same order, and
     // the whole personalisation folder — a fitness model built from every
     // logged set, a ranker, and tests for both — was watched by nothing.
-    return ref.watch(rankedForYouProvider.future);
+    return videoFirst(await ref.watch(rankedForYouProvider.future));
   }
   if (filter == WorkoutsFilter.all) {
-    return ref.watch(allExercisesProvider.future);
+    return videoFirst(await ref.watch(allExercisesProvider.future));
   }
   if (filter == WorkoutsFilter.atHome) {
     final all = await ref.watch(allExercisesProvider.future);
-    return all.where((e) => e.equipmentId == null).toList(growable: false);
+    return videoFirst(all.where((e) => e.equipmentId == null).toList());
   }
 
   final muscles = kFilterMuscles[filter];
   if (muscles != null) {
     final all = await ref.watch(allExercisesProvider.future);
-    return all
-        .where((e) => e.muscles.any(muscles.contains))
-        .toList(growable: false);
+    return videoFirst(
+        all.where((e) => e.muscles.any(muscles.contains)).toList());
   }
 
   final categories = kFilterCategories[filter]!;
@@ -129,9 +143,9 @@ final _filteredExercisesProvider =
     for (final eq in equipment)
       if (categories.contains(eq.category)) eq.id,
   };
-  return all
+  return videoFirst(all
       .where((e) => e.equipmentId != null && wantedIds.contains(e.equipmentId))
-      .toList(growable: false);
+      .toList());
 });
 
 class WorkoutsPage extends ConsumerStatefulWidget {

@@ -115,12 +115,12 @@ class WorkoutPlayerPage extends ConsumerWidget {
           // the user has not said or has said they would rather not — in which
           // case there is nothing to infer from, and the model falls back to
           // whichever clip exists.
-          final demoVideo = item.playableVideoFor(ExerciseItem.bodyForGender(ref
-                  .watch(currentProfileProvider)
-                  .valueOrNull
-                  ?.personal
-                  .gender)) ??
-              item.videoUrl;
+          final body = ExerciseItem.bodyForGender(ref
+              .watch(currentProfileProvider)
+              .valueOrNull
+              ?.personal
+              .gender);
+          final demoVideo = item.playableVideoFor(body) ?? item.videoUrl;
           return SmoothScrollList(
             padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
             children: [
@@ -138,7 +138,7 @@ class WorkoutPlayerPage extends ConsumerWidget {
               // and then fails. The day the host is set, they switch over with
               // no further change here.
               if (demoVideo != null)
-                _VideoBlock(url: demoVideo)
+                _VideoBlock(url: demoVideo, poster: item.posterFor(body))
               else if (item.frames.isNotEmpty)
                 ExerciseDemo(frames: item.frames)
               else if (item.imageUrls.isNotEmpty)
@@ -275,19 +275,48 @@ class _Pill extends StatelessWidget {
   }
 }
 
+/// The clip, with its own first frame underneath it.
+///
+/// Two operator reports, one block. *"видео загружается за секунды, но мы
+/// договаривались что превью картинка будет сразу а видео подтягивать потом,
+/// но этого нет"* — there was nothing to show first, so it showed a spinner.
+/// And *"если нет интернета то даже изначальной картинки не будет"* — with no
+/// connection the block resolved to an error card and the exercise had no
+/// picture at all.
+///
+/// The poster is a bundled asset cut from the clip itself, so it paints on the
+/// first frame, costs no request, and survives aeroplane mode. The video fades
+/// in over it when it is ready; if it never becomes ready, the poster simply
+/// stays, with a quiet line saying the clip could not be fetched. A still
+/// picture of the exercise plus an explanation is a far better failure than a
+/// grey card containing an exception.
 class _VideoBlock extends ConsumerStatefulWidget {
-  const _VideoBlock({required this.url});
+  const _VideoBlock({required this.url, required this.poster});
   final String url;
+
+  /// Bundled asset path, or null for the handful of clips cut before posters
+  /// existed.
+  final String? poster;
 
   @override
   ConsumerState<_VideoBlock> createState() => _VideoBlockState();
 }
 
 class _VideoBlockState extends ConsumerState<_VideoBlock> {
+  /// Playback rates. Operator asked for x1/x2/x3; 0.5 is kept because slowing
+  /// a movement down is the thing people actually do when learning one.
+  static const _speeds = <String, double>{
+    '0.5x': 0.5,
+    '1x': 1.0,
+    '2x': 2.0,
+    '3x': 3.0,
+  };
+
   VideoPlayerController? _ctrl;
   bool _ready = false;
   Object? _error;
   bool _fromCache = false;
+  String _speed = '1x';
 
   @override
   void initState() {
@@ -333,49 +362,95 @@ class _VideoBlockState extends ConsumerState<_VideoBlock> {
     super.dispose();
   }
 
+  void _setSpeed(String s) {
+    setState(() => _speed = s);
+    _ctrl?.setPlaybackSpeed(_speeds[s]!);
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (_error != null) {
-      return GlassCard(
-        child: Text(AppLocalizations.of(context)
-            .equipmentVideoUnavailable(_error ?? '')),
-      );
-    }
     final ctrl = _ctrl;
-    if (!_ready || ctrl == null) {
-      return const GlassCard(
-        child: SizedBox(
-          height: 200,
-          child: Center(child: CircularProgressIndicator()),
-        ),
-      );
-    }
+    final playing = _ready && ctrl != null;
+    final poster = widget.poster;
+
+    // The clip's own aspect once known; the library's own 400x230 poster ratio
+    // until then. Guessing 16:9 made the block jump on the frame the video
+    // arrived, which is exactly the flicker a poster exists to remove.
+    final aspect = playing && ctrl.value.aspectRatio != 0
+        ? ctrl.value.aspectRatio
+        : 400 / 230;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(22),
       child: AspectRatio(
-        aspectRatio:
-            ctrl.value.aspectRatio == 0 ? 16 / 9 : ctrl.value.aspectRatio,
+        aspectRatio: aspect,
         child: Stack(
           fit: StackFit.expand,
           children: [
-            VideoPlayer(ctrl),
-            // Tap-to-toggle play/pause.
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => setState(
-                  () => ctrl.value.isPlaying ? ctrl.pause() : ctrl.play()),
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 220),
-                child: ctrl.value.isPlaying
-                    ? const SizedBox.shrink()
-                    : Container(
-                        color: Colors.black.withValues(alpha: 0.30),
-                        child: const Icon(Icons.play_arrow_rounded,
-                            color: Colors.white, size: 80),
-                      ),
+            const ColoredBox(color: Colors.black12),
+            if (poster != null)
+              Image.asset(poster,
+                  key: const Key('workout.poster'),
+                  fit: BoxFit.contain,
+                  gaplessPlayback: true),
+            if (playing)
+              // Faded in rather than swapped: the poster is the clip's own
+              // first frame, so a cut would be invisible except for the
+              // single-frame flash of a decode.
+              AnimatedOpacity(
+                opacity: 1,
+                duration: const Duration(milliseconds: 180),
+                child: VideoPlayer(ctrl),
               ),
-            ),
-            if (_fromCache)
+            if (playing)
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => setState(
+                    () => ctrl.value.isPlaying ? ctrl.pause() : ctrl.play()),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 220),
+                  child: ctrl.value.isPlaying
+                      ? const SizedBox.shrink()
+                      : Container(
+                          color: Colors.black.withValues(alpha: 0.30),
+                          child: const Icon(Icons.play_arrow_rounded,
+                              color: Colors.white, size: 80),
+                        ),
+                ),
+              ),
+            if (playing)
+              Positioned(
+                right: 8,
+                bottom: 8,
+                child: Row(
+                  key: const Key('workout.speeds'),
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final s in _speeds.keys)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4),
+                        child: ChoiceChip(
+                          label: Text(s),
+                          selected: _speed == s,
+                          onSelected: (_) => _setSpeed(s),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            // Only while there is neither a picture nor a clip. With a poster
+            // up there is nothing to wait for on screen, and a spinner over a
+            // perfectly good still just says "broken".
+            if (!playing && poster == null && _error == null)
+              const Center(child: CircularProgressIndicator()),
+            if (_error != null)
+              Positioned(
+                left: 8,
+                right: 8,
+                bottom: 8,
+                child: _VideoFailedNote(hasPoster: poster != null),
+              ),
+            if (_fromCache && playing)
               Positioned(
                 top: 8,
                 left: 8,
@@ -388,7 +463,7 @@ class _VideoBlockState extends ConsumerState<_VideoBlock> {
                   ),
                   child: Text(
                     AppLocalizations.of(context).equipmentOffline,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 9,
                       fontWeight: FontWeight.w800,
@@ -399,6 +474,30 @@ class _VideoBlockState extends ConsumerState<_VideoBlock> {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Says the clip did not arrive, without taking the picture away.
+class _VideoFailedNote extends StatelessWidget {
+  const _VideoFailedNote({required this.hasPoster});
+  final bool hasPoster;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const Key('workout.video_failed'),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.62),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        hasPoster
+            ? AppLocalizations.of(context).equipmentClipOfflineStillShown
+            : AppLocalizations.of(context).equipmentClipCouldNotLoad,
+        style: const TextStyle(color: Colors.white, fontSize: 11),
       ),
     );
   }
