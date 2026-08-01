@@ -50,6 +50,13 @@ class _FailingVoiceCoach implements VoiceCoach {
   void setMuted(bool value) => muted = value;
 
   @override
+  Future<void> say(String text) async {
+    // Same failure as `cue`: this double exists to model a phone with no TTS
+    // voice installed, and that phone cannot speak a plain sentence either.
+    lastErrorMessage = 'MissingPluginException: no voice installed';
+  }
+
+  @override
   Future<void> stop() async {}
 
   @override

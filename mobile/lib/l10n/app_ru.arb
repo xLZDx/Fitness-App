@@ -611,5 +611,61 @@
   "settingsTestAccessBody": "Открывает платные функции только на этом телефоне. Ничего не списывается и никуда не отправляется — настоящая подписка не меняется.",
   "settingsTierOff": "Выключено — по настоящей подписке",
   "settingsTierStandard": "Как Supporter",
-  "settingsTierCelebrity": "Как Sustainer (всё)"
+  "settingsTierCelebrity": "Как Sustainer (всё)",
+  "timerTitle": "Подход по времени",
+  "timerReady": "готов",
+  "timerGetReady": "приготовьтесь",
+  "timerWork": "работа",
+  "timerRest": "отдых",
+  "timerDone": "готово",
+  "timerStart": "Начать",
+  "timerPause": "Пауза",
+  "timerResume": "Продолжить",
+  "timerAgain": "Ещё раз",
+  "timerSkip": "Пропустить",
+  "timerStop": "Стоп",
+  "timerSounds": "Звуки",
+  "timerVoice": "Голосовое сопровождение",
+  "timerPlanSummary": "{arg0} подхода · {arg1} с работы · {arg2} с отдыха",
+  "timerSetOf": "Подход {arg0} из {arg1}",
+  "timerSpokenIntro": "{arg0}. {arg1} подхода по {arg2} секунд, между ними {arg3} секунд отдыха.",
+  "@timerPlanSummary": {
+    "placeholders": {
+      "arg0": {
+        "type": "int"
+      },
+      "arg1": {
+        "type": "int"
+      },
+      "arg2": {
+        "type": "int"
+      }
+    }
+  },
+  "@timerSetOf": {
+    "placeholders": {
+      "arg0": {
+        "type": "int"
+      },
+      "arg1": {
+        "type": "int"
+      }
+    }
+  },
+  "@timerSpokenIntro": {
+    "placeholders": {
+      "arg0": {
+        "type": "String"
+      },
+      "arg1": {
+        "type": "int"
+      },
+      "arg2": {
+        "type": "int"
+      },
+      "arg3": {
+        "type": "int"
+      }
+    }
+  }
 }

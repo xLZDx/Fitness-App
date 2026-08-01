@@ -176,6 +176,19 @@ abstract class VoiceCoach {
   /// [CueGate] and mute state — callers may call this every frame.
   Future<void> cue(FormFeedback feedback);
 
+  /// Speak [text] now, subject only to mute.
+  ///
+  /// Lower-level than [cue]: no gate, no cue key, no de-duplication. It exists
+  /// because the set timer needs to say a sentence the form coach's cue
+  /// vocabulary has no word for — "three sets of thirty seconds, keep your
+  /// lower back flat" — and giving the timer its own speech engine would mean
+  /// two of them competing for the same speaker.
+  ///
+  /// Callers that speak on a schedule should use this. Callers that speak in
+  /// reaction to a stream of frames should use [cue], which is what stops the
+  /// coach repeating itself forty times a second.
+  Future<void> say(String text);
+
   /// Stop speaking immediately and clear the gate.
   Future<void> stop();
 
@@ -243,6 +256,14 @@ abstract class GatedVoiceCoach implements VoiceCoach {
     }
     gate.commit(feedback);
     await utter(text);
+  }
+
+  @override
+  Future<void> say(String text) async {
+    if (_muted) return;
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return;
+    await utter(trimmed);
   }
 
   @override

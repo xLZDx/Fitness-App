@@ -1208,5 +1208,61 @@
   "settingsTestAccessBody": "Unlocks paid features on this phone only. Nothing is charged and nothing is sent anywhere — the real subscription is unaffected.",
   "settingsTierOff": "Off — use my real subscription",
   "settingsTierStandard": "As Supporter",
-  "settingsTierCelebrity": "As Sustainer (everything)"
+  "settingsTierCelebrity": "As Sustainer (everything)",
+  "timerTitle": "Timed set",
+  "timerReady": "ready",
+  "timerGetReady": "get ready",
+  "timerWork": "work",
+  "timerRest": "rest",
+  "timerDone": "done",
+  "timerStart": "Start",
+  "timerPause": "Pause",
+  "timerResume": "Resume",
+  "timerAgain": "Again",
+  "timerSkip": "Skip",
+  "timerStop": "Stop",
+  "timerSounds": "Sounds",
+  "timerVoice": "Spoken guidance",
+  "timerPlanSummary": "{arg0} sets · {arg1} s work · {arg2} s rest",
+  "timerSetOf": "Set {arg0} of {arg1}",
+  "timerSpokenIntro": "{arg0}. {arg1} sets of {arg2} seconds, {arg3} seconds rest between them.",
+  "@timerPlanSummary": {
+    "placeholders": {
+      "arg0": {
+        "type": "int"
+      },
+      "arg1": {
+        "type": "int"
+      },
+      "arg2": {
+        "type": "int"
+      }
+    }
+  },
+  "@timerSetOf": {
+    "placeholders": {
+      "arg0": {
+        "type": "int"
+      },
+      "arg1": {
+        "type": "int"
+      }
+    }
+  },
+  "@timerSpokenIntro": {
+    "placeholders": {
+      "arg0": {
+        "type": "String"
+      },
+      "arg1": {
+        "type": "int"
+      },
+      "arg2": {
+        "type": "int"
+      },
+      "arg3": {
+        "type": "int"
+      }
+    }
+  }
 }

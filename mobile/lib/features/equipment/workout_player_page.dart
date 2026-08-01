@@ -18,6 +18,7 @@ import '../workouts/state/workout_log_providers.dart';
 import '../workouts/widgets/difficulty_rating_sheet.dart';
 import '../workouts/widgets/plate_calculator.dart';
 import '../workouts/widgets/rest_timer.dart';
+import '../workouts/widgets/set_timer_card.dart';
 import '../workouts/widgets/warmup_calculator.dart';
 import 'data/catalog_labels.dart';
 import 'data/equipment_models.dart';
@@ -176,6 +177,11 @@ class WorkoutPlayerPage extends ConsumerWidget {
               ],
               const SizedBox(height: 12),
               _SuggestedWeightChip(exerciseId: item.id),
+              const SizedBox(height: 16),
+              // Above the tools and below the instructions: you read how to do
+              // it, then you do it. Operator: "к упражнения нужно добавить
+              // таймер... нужна кнопка начать упражнение".
+              SetTimerCard(exercise: item),
               const SizedBox(height: 12),
               _ToolsRow(),
               if (ref.watch(_restTimerVisibleProvider)) ...[
