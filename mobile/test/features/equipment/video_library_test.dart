@@ -14,32 +14,52 @@ import 'package:flutter_test/flutter_test.dart';
 /// host constant, a path that stops mirroring the drop so a re-upload silently
 /// 404s, and a row that lost the text it needs when there is no clip to play.
 void main() {
-  final exercises = (jsonDecode(
-          File('assets/data/exercises.json').readAsStringSync()) as List)
-      .cast<Map<String, dynamic>>();
-  final ru = (jsonDecode(
-          File('assets/data/exercises.ru.json').readAsStringSync()) as Map)
-      .cast<String, dynamic>();
-  final equipmentIds = (jsonDecode(
-          File('assets/data/equipment.json').readAsStringSync()) as List)
-      .cast<Map<String, dynamic>>()
-      .map((e) => e['id'] as String)
-      .toSet();
+  final exercises =
+      (jsonDecode(File('assets/data/exercises.json').readAsStringSync())
+              as List)
+          .cast<Map<String, dynamic>>();
+  final ru =
+      (jsonDecode(File('assets/data/exercises.ru.json').readAsStringSync())
+              as Map)
+          .cast<String, dynamic>();
+  final equipmentIds =
+      (jsonDecode(File('assets/data/equipment.json').readAsStringSync())
+              as List)
+          .cast<Map<String, dynamic>>()
+          .map((e) => e['id'] as String)
+          .toSet();
 
   /// The single point of truth for the host, mirrored from
-  /// `merge_video_library.py`. Moving hosts is one edit there plus one here.
-  const base = 'https://VIDEO_HOST_PLACEHOLDER/exercises';
+  /// `scripts/catalog/set_video_host.py`. Moving hosts is one run of that
+  /// script plus one edit here.
+  ///
+  /// A plain public Cloud Storage bucket rather than Firebase Storage: the
+  /// Firebase-managed bucket needs the project's DEFAULT RESOURCE LOCATION,
+  /// which is permanent and decides where Firestore lives too. Choosing that
+  /// as a side effect of hosting some demonstration clips would settle
+  /// something much larger than the task.
+  const base =
+      'https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises';
 
   /// The twelve folders the drop is organised by. The two gender trees disagree
   /// on case ('Abs' vs 'abs'), which is why this is compared lowercased.
   const groups = {
-    'abs', 'back', 'biceps', 'calves', 'cardio', 'chest', 'forearms',
-    'hips', 'mix', 'shoulders', 'trapezius', 'triceps',
+    'abs',
+    'back',
+    'biceps',
+    'calves',
+    'cardio',
+    'chest',
+    'forearms',
+    'hips',
+    'mix',
+    'shoulders',
+    'trapezius',
+    'triceps',
   };
 
-  List<Map<String, dynamic>> withVideo() => exercises
-      .where((e) => e['video'] != null)
-      .toList();
+  List<Map<String, dynamic>> withVideo() =>
+      exercises.where((e) => e['video'] != null).toList();
 
   group('video library', () {
     test('every video is a non-empty map of gender to url', () {
@@ -94,10 +114,12 @@ void main() {
             return;
           }
           if (parts[0] != gender) {
-            broken.add('${e['id']} keyed $gender but the path says ${parts[0]}');
+            broken
+                .add('${e['id']} keyed $gender but the path says ${parts[0]}');
           }
           if (!groups.contains(parts[1].toLowerCase())) {
-            broken.add('${e['id']}/$gender is in an unknown folder ${parts[1]}');
+            broken
+                .add('${e['id']}/$gender is in an unknown folder ${parts[1]}');
           }
           if (!parts[2].endsWith('.mp4')) {
             broken.add('${e['id']}/$gender is not an .mp4: ${parts[2]}');
@@ -120,7 +142,8 @@ void main() {
           broken.add('$id has no Russian entry at all');
           continue;
         }
-        final rs = (entry['steps'] as List).where((s) => '$s'.trim().isNotEmpty);
+        final rs =
+            (entry['steps'] as List).where((s) => '$s'.trim().isNotEmpty);
         if (rs.isEmpty) broken.add('$id has no Russian steps');
         if ((entry['title'] as String).trim().isEmpty) {
           broken.add('$id has an empty Russian title');
@@ -135,8 +158,7 @@ void main() {
       // filtered it out of the upstream source entirely, so before this merge
       // the catalog had none. Asserting the exact count is what makes a silent
       // loss — a group file that stops being merged, say — visible.
-      final stretches =
-          exercises.where((e) => e['isStretch'] == true).toList();
+      final stretches = exercises.where((e) => e['isStretch'] == true).toList();
       expect(stretches, hasLength(61));
       for (final e in stretches) {
         expect(e['video'], isNotNull,
@@ -180,8 +202,7 @@ void main() {
             reason: '$legacy disappeared in the merge');
       }
       // …and the ones that gained a clip really did gain it.
-      final chinUp =
-          exercises.firstWhere((e) => e['id'] == 'fedb_chin-up');
+      final chinUp = exercises.firstWhere((e) => e['id'] == 'fedb_chin-up');
       expect(chinUp['video'], isNotNull);
     });
 
@@ -189,15 +210,19 @@ void main() {
       // The ~150 older exercises the drop does not cover keep their stills.
       // If a rebuild ever dropped `frames`, they would render as blank cards
       // and this is the only place that would notice.
-      final stillsOnly =
-          exercises.where((e) => e['video'] == null).toList();
+      final stillsOnly = exercises.where((e) => e['video'] == null).toList();
       expect(stillsOnly, hasLength(168));
       const noImageryByDesign = {
-        'treadmill_warmup_walk', 'treadmill_incline_walk',
-        'treadmill_steady_run', 'treadmill_intervals',
-        'rowing_steady', 'rowing_intervals',
-        'air_bike_intervals', 'air_bike_steady',
-        'ski_erg_intervals', 'ski_erg_steady',
+        'treadmill_warmup_walk',
+        'treadmill_incline_walk',
+        'treadmill_steady_run',
+        'treadmill_intervals',
+        'rowing_steady',
+        'rowing_intervals',
+        'air_bike_intervals',
+        'air_bike_steady',
+        'ski_erg_intervals',
+        'ski_erg_steady',
       };
       final blank = stillsOnly
           .where((e) =>
@@ -265,16 +290,18 @@ void main() {
       expect(videoOnly, 293);
     });
 
-    test('the host is still a placeholder', () {
+    test('every url is on the real host', () {
+      // This used to assert the opposite — that the host was still a
+      // placeholder — and it was written to fail on the day one was chosen.
+      // It did, on 2026-08-01, which is what a note left in a test is for.
+      // 677 objects uploaded, four fetched anonymously with 206 and
+      // `video/mp4` including a name carrying spaces and brackets.
       final urls = [
         for (final e in withVideo())
           ...(e['video'] as Map).values.cast<String>(),
       ];
       expect(urls, hasLength(653));
-      expect(urls.every((u) => u.startsWith(base)), isTrue,
-          reason: 'when this fails the host has been chosen — at that point '
-              'confirm ExerciseItem actually reads `video`, or those 293 '
-              'exercises will still display nothing, on a real host');
+      expect(urls.every((u) => u.startsWith(base)), isTrue);
     });
   });
 }

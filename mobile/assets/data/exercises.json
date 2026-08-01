@@ -61,8 +61,8 @@
    "shoulder"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Barbell%20Bench%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Barbell%20Bench%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Barbell%20Bench%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Barbell%20Bench%20Press.mp4"
   }
  },
  {
@@ -96,8 +96,8 @@
    "shoulder"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Barbell%20Incline%20Bench%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Barbell%20Incline%20Bench%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Barbell%20Incline%20Bench%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Barbell%20Incline%20Bench%20Press.mp4"
   }
  },
  {
@@ -281,8 +281,8 @@
    "knee"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Smith%20Leg%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Smith%20Leg%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Smith%20Leg%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Smith%20Leg%20Press.mp4"
   }
  },
  {
@@ -407,8 +407,8 @@
    "shoulder"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Close%20Grip%20Front%20Lat%20Pulldown.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Close%20Grip%20Front%20Lat%20Pulldown.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Cable%20Close%20Grip%20Front%20Lat%20Pulldown.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Cable%20Close%20Grip%20Front%20Lat%20Pulldown.mp4"
   }
  },
  {
@@ -553,8 +553,8 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Straight%20Arm%20Pulldown.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Straight%20Arm%20Pulldown.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Cable%20Straight%20Arm%20Pulldown.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Cable%20Straight%20Arm%20Pulldown.mp4"
   }
  },
  {
@@ -686,8 +686,8 @@
    "lower_back"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Classic%20Barbell%20Squat.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Classic%20Barbell%20Squat.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Classic%20Barbell%20Squat.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Classic%20Barbell%20Squat.mp4"
   }
  },
  {
@@ -816,8 +816,8 @@
    "elbow"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Inverted%20Row%20With%20Straps.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Inverted%20Row%20With%20Straps.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Inverted%20Row%20With%20Straps.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Inverted%20Row%20With%20Straps.mp4"
   }
  },
  {
@@ -905,8 +905,8 @@
    "elbow"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cambered%20Bar%20Lying%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cambered%20Bar%20Lying%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Cambered%20Bar%20Lying%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Cambered%20Bar%20Lying%20Row.mp4"
   }
  },
  {
@@ -1115,8 +1115,8 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Cable%20Kneeling%20Crunch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Cable%20Kneeling%20Crunch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Cable%20Kneeling%20Crunch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Cable%20Kneeling%20Crunch.mp4"
   }
  },
  {
@@ -1361,8 +1361,8 @@
    "elbow"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Incline%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Incline%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Dumbbell%20Incline%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Dumbbell%20Incline%20Curl.mp4"
   }
  },
  {
@@ -1423,8 +1423,8 @@
    "shoulder"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Arnold%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Arnold%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Dumbbell%20Arnold%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Dumbbell%20Arnold%20Press.mp4"
   }
  },
  {
@@ -1518,8 +1518,8 @@
    "shoulder"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/EZ%20Barbell%20Anti%20Gravity%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/EZ%20Barbell%20Anti%20Gravity%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/EZ%20Barbell%20Anti%20Gravity%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/EZ%20Barbell%20Anti%20Gravity%20Press.mp4"
   }
  },
  {
@@ -1611,8 +1611,8 @@
    "elbow"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Barbell%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Barbell%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Barbell%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Barbell%20Curl.mp4"
   }
  },
  {
@@ -2023,8 +2023,8 @@
    "shoulder"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Bench%20Dips.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Bench%20Dips.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Bench%20Dips.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Bench%20Dips.mp4"
   }
  },
  {
@@ -2304,8 +2304,8 @@
    "knee"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Squat.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Squat.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Squat.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Squat.mp4"
   }
  },
  {
@@ -2513,8 +2513,8 @@
    "lower_back"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Bench%20Leg%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Bench%20Leg%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Bench%20Leg%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Bench%20Leg%20Raise.mp4"
   }
  },
  {
@@ -2579,8 +2579,8 @@
    "shoulder"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Band%20Assisted%20Pull-up.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Band%20Assisted%20Pull-up.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Band%20Assisted%20Pull-up.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Band%20Assisted%20Pull-up.mp4"
   }
  },
  {
@@ -2674,8 +2674,8 @@
    "lower_back"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Lever%20Reverse%20Hyperextension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Lever%20Reverse%20Hyperextension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Lever%20Reverse%20Hyperextension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Lever%20Reverse%20Hyperextension.mp4"
   }
  },
  {
@@ -2828,8 +2828,8 @@
    "knee"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Barbell%20Lunge.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Barbell%20Lunge.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Barbell%20Lunge.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Barbell%20Lunge.mp4"
   }
  },
  {
@@ -2864,8 +2864,8 @@
    "shoulder"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Trapezius/Barbell%20Rear%20Delt%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Trapezius/Barbell%20Rear%20Delt%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Trapezius/Barbell%20Rear%20Delt%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Trapezius/Barbell%20Rear%20Delt%20Raise.mp4"
   }
  },
  {
@@ -2932,7 +2932,7 @@
    "shoulder"
   ],
   "video": {
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Barbell%20Close%20Grip%20Bench%20Press.mp4"
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Barbell%20Close%20Grip%20Bench%20Press.mp4"
   }
  },
  {
@@ -2967,8 +2967,8 @@
    "shoulder"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Barbell%20Decline%20Bench%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Barbell%20Decline%20Bench%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Barbell%20Decline%20Bench%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Barbell%20Decline%20Bench%20Press.mp4"
   }
  },
  {
@@ -3003,8 +3003,8 @@
    "shoulder"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Decline%20Dumbbell%20Bench%20Press%20%2845%20degree%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Decline%20Dumbbell%20Bench%20Press%20%2845%20degree%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Decline%20Dumbbell%20Bench%20Press%20%2845%20degree%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Decline%20Dumbbell%20Bench%20Press%20%2845%20degree%29.mp4"
   }
  },
  {
@@ -3036,8 +3036,8 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Dumbbell%20Bench%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Dumbbell%20Bench%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Dumbbell%20Bench%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Dumbbell%20Bench%20Press.mp4"
   }
  },
  {
@@ -3295,8 +3295,8 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Dumbbell%20Seated%20Calf%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Dumbbell%20Seated%20Calf%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Dumbbell%20Seated%20Calf%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Dumbbell%20Seated%20Calf%20Raise.mp4"
   }
  },
  {
@@ -3357,8 +3357,8 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Lever%20Standing%20Calf%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Lever%20Standing%20Calf%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Lever%20Standing%20Calf%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Lever%20Standing%20Calf%20Raise.mp4"
   }
  },
  {
@@ -3389,8 +3389,8 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Lever%20Seated%20Calf%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Lever%20Seated%20Calf%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Lever%20Seated%20Calf%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Lever%20Seated%20Calf%20Raise.mp4"
   }
  },
  {
@@ -3621,8 +3621,8 @@
    "elbow"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20Close%20Grip%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20Close%20Grip%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Dumbbell%20Close%20Grip%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Dumbbell%20Close%20Grip%20Press.mp4"
   }
  },
  {
@@ -3714,8 +3714,8 @@
    "elbow"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20Incline%20Triceps%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20Incline%20Triceps%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Dumbbell%20Incline%20Triceps%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Dumbbell%20Incline%20Triceps%20Extension.mp4"
   }
  },
  {
@@ -3748,8 +3748,8 @@
    "elbow"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Alternate%20Biceps%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Alternate%20Biceps%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Dumbbell%20Alternate%20Biceps%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Dumbbell%20Alternate%20Biceps%20Curl.mp4"
   }
  },
  {
@@ -3934,8 +3934,8 @@
    "knee"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Sled%20Hack%20Squat.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Sled%20Hack%20Squat.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Sled%20Hack%20Squat.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Sled%20Hack%20Squat.mp4"
   }
  },
  {
@@ -4341,7 +4341,7 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Leg%20Curl%20%28on%20stability%20ball%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Leg%20Curl%20%28on%20stability%20ball%29.mp4"
   }
  },
  {
@@ -4370,8 +4370,8 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Lying%20Leg%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Lying%20Leg%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Lever%20Lying%20Leg%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Lever%20Lying%20Leg%20Curl.mp4"
   }
  },
  {
@@ -4427,8 +4427,8 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Seated%20Leg%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Seated%20Leg%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Lever%20Seated%20Leg%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Lever%20Seated%20Leg%20Curl.mp4"
   }
  },
  {
@@ -4458,8 +4458,8 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Band%20Standing%20Leg%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Band%20Standing%20Leg%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Band%20Standing%20Leg%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Band%20Standing%20Leg%20Curl.mp4"
   }
  },
  {
@@ -4490,8 +4490,8 @@
    "knee"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Leg%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Leg%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Lever%20Leg%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Lever%20Leg%20Extension.mp4"
   }
  },
  {
@@ -5012,8 +5012,8 @@
    "elbow"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20One%20Arm%20Zottman%20Preacher%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20One%20Arm%20Zottman%20Preacher%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Dumbbell%20One%20Arm%20Zottman%20Preacher%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Dumbbell%20One%20Arm%20Zottman%20Preacher%20Curl.mp4"
   }
  },
  {
@@ -5045,8 +5045,8 @@
    "elbow"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Lever%20Preacher%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Lever%20Preacher%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Lever%20Preacher%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Lever%20Preacher%20Curl.mp4"
   }
  },
  {
@@ -5229,8 +5229,8 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Band%20Standing%20Calf%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Band%20Standing%20Calf%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Band%20Standing%20Calf%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Band%20Standing%20Calf%20Raise.mp4"
   }
  },
  {
@@ -5325,8 +5325,8 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Band%20Standing%20Hip%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Band%20Standing%20Hip%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Band%20Standing%20Hip%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Band%20Standing%20Hip%20Extension.mp4"
   }
  },
  {
@@ -5480,8 +5480,8 @@
    "shoulder"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Alternate%20Shoulder%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Alternate%20Shoulder%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Dumbbell%20Alternate%20Shoulder%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Dumbbell%20Alternate%20Shoulder%20Press.mp4"
   }
  },
  {
@@ -5723,8 +5723,8 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Smith%20Calf%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Smith%20Calf%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Smith%20Calf%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Smith%20Calf%20Raise.mp4"
   }
  },
  {
@@ -5875,8 +5875,8 @@
    "elbow"
   ],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Lever%20Triceps%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Lever%20Triceps%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Lever%20Triceps%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Lever%20Triceps%20Extension.mp4"
   }
  },
  {
@@ -6046,8 +6046,8 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Battling%20Ropes.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Battling%20Ropes.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Cardio/Battling%20Ropes.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/cardio/Battling%20Ropes.mp4"
   }
  },
  {
@@ -6134,8 +6134,8 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Chin-ups%20%20Pull-Ups.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Chin-ups%20%20Pull-Ups.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Chin-ups%20%20Pull-Ups.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Chin-ups%20%20Pull-Ups.mp4"
   }
  },
  {
@@ -6225,8 +6225,8 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Pull-up%20%28shoulder%20grip%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Pull-up%20%28shoulder%20grip%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Pull-up%20%28shoulder%20grip%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Pull-up%20%28shoulder%20grip%29.mp4"
   }
  },
  {
@@ -6286,8 +6286,8 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Hanging%20Leg%20Hip%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Hanging%20Leg%20Hip%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Hanging%20Leg%20Hip%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Hanging%20Leg%20Hip%20Raise.mp4"
   }
  },
  {
@@ -6341,7 +6341,7 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Russian%20Twist%20%28on%20stability%20ball%20arms%20straight%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Russian%20Twist%20%28on%20stability%20ball%20arms%20straight%29.mp4"
   }
  },
  {
@@ -6369,8 +6369,8 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Cable%20Twist%20%28up-down%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Cable%20Twist%20%28up-down%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Cable%20Twist%20%28up-down%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Cable%20Twist%20%28up-down%29.mp4"
   }
  },
  {
@@ -6398,7 +6398,7 @@
   ],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Seated%20Twist%20%28on%20stability%20ball%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Seated%20Twist%20%28on%20stability%20ball%29.mp4"
   }
  },
  {
@@ -6625,8 +6625,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/45%20Degree%20Bycicle%20Twisting%20Crunch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/45%20Degree%20Bycicle%20Twisting%20Crunch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/45%20Degree%20Bycicle%20Twisting%20Crunch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/45%20Degree%20Bycicle%20Twisting%20Crunch.mp4"
   }
  },
  {
@@ -6654,8 +6654,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/45%20Degree%20Side%20Bend.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/45%20Degree%20Side%20Bend.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/45%20Degree%20Side%20Bend.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/45%20Degree%20Side%20Bend.mp4"
   }
  },
  {
@@ -6682,8 +6682,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Air%20Twisting%20Crunch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Air%20Twisting%20Crunch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Air%20Twisting%20Crunch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Air%20Twisting%20Crunch.mp4"
   }
  },
  {
@@ -6709,8 +6709,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Band%20Decline%20Sit-ups.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Band%20Decline%20Sit-ups.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Band%20Decline%20Sit-ups.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Band%20Decline%20Sit-ups.mp4"
   }
  },
  {
@@ -6737,8 +6737,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Band%20Side%20Bend.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Band%20Side%20Bend.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Band%20Side%20Bend.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Band%20Side%20Bend.mp4"
   }
  },
  {
@@ -6765,8 +6765,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Band%20Standing%20Crunch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Band%20Standing%20Crunch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Band%20Standing%20Crunch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Band%20Standing%20Crunch.mp4"
   }
  },
  {
@@ -6793,8 +6793,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Band%20Standing%20Lift.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Band%20Standing%20Lift.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Band%20Standing%20Lift.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Band%20Standing%20Lift.mp4"
   }
  },
  {
@@ -6821,8 +6821,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Band%20Twist.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Band%20Twist.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Band%20Twist.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Band%20Twist.mp4"
   }
  },
  {
@@ -6849,8 +6849,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Band%20Twist%20%28Up-down%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Band%20Twist%20%28Up-down%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Band%20Twist%20%28Up-down%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Band%20Twist%20%28Up-down%29.mp4"
   }
  },
  {
@@ -6878,8 +6878,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Bent%20Knee%20Lying%20Twist.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Bent%20Knee%20Lying%20Twist.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Bent%20Knee%20Lying%20Twist.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Bent%20Knee%20Lying%20Twist.mp4"
   }
  },
  {
@@ -6906,8 +6906,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Cable%20Standing%20Crunch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Cable%20Standing%20Crunch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Cable%20Standing%20Crunch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Cable%20Standing%20Crunch.mp4"
   }
  },
  {
@@ -6937,8 +6937,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Cable%20Standing%20Lift.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Cable%20Standing%20Lift.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Cable%20Standing%20Lift.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Cable%20Standing%20Lift.mp4"
   }
  },
  {
@@ -6964,8 +6964,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Crunch%20%28on%20bench%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Crunch%20%28on%20bench%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Crunch%20%28on%20bench%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Crunch%20%28on%20bench%29.mp4"
   }
  },
  {
@@ -6991,8 +6991,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Dumbbell%20Side%20Bend.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Dumbbell%20Side%20Bend.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Dumbbell%20Side%20Bend.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Dumbbell%20Side%20Bend.mp4"
   }
  },
  {
@@ -7019,7 +7019,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Hanging%20Straight%20Leg%20Hip%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Hanging%20Straight%20Leg%20Hip%20Raise.mp4"
   }
  },
  {
@@ -7045,8 +7045,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Hanging%20Straight%20Leg%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Hanging%20Straight%20Leg%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Hanging%20Straight%20Leg%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Hanging%20Straight%20Leg%20Raise.mp4"
   }
  },
  {
@@ -7073,8 +7073,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Incline%20Leg%20Hip%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Incline%20Leg%20Hip%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Incline%20Leg%20Hip%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Incline%20Leg%20Hip%20Raise.mp4"
   }
  },
  {
@@ -7101,8 +7101,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Landmine%20180.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Landmine%20180.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Landmine%20180.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Landmine%20180.mp4"
   }
  },
  {
@@ -7128,8 +7128,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Lever%20Seated%20Crunch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Lever%20Seated%20Crunch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Lever%20Seated%20Crunch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Lever%20Seated%20Crunch.mp4"
   }
  },
  {
@@ -7155,8 +7155,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Lever%20Seated%20Leg%20Raise%20Crunch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Lever%20Seated%20Leg%20Raise%20Crunch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Lever%20Seated%20Leg%20Raise%20Crunch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Lever%20Seated%20Leg%20Raise%20Crunch.mp4"
   }
  },
  {
@@ -7183,8 +7183,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Lying%20Floor%20Leg%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Lying%20Floor%20Leg%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Lying%20Floor%20Leg%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Lying%20Floor%20Leg%20Raise.mp4"
   }
  },
  {
@@ -7211,8 +7211,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Lying%20Straight%20Leg%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Lying%20Straight%20Leg%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Lying%20Straight%20Leg%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Lying%20Straight%20Leg%20Raise.mp4"
   }
  },
  {
@@ -7239,8 +7239,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Otis-ups.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Otis-ups.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Otis-ups.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Otis-ups.mp4"
   }
  },
  {
@@ -7266,8 +7266,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Side%20Bridge%20-%20Side%20Plank.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Side%20Bridge%20-%20Side%20Plank.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Side%20Bridge%20-%20Side%20Plank.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Side%20Bridge%20-%20Side%20Plank.mp4"
   }
  },
  {
@@ -7294,8 +7294,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Sit-up%20On%20Exercise%20Ball.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Sit-up%20On%20Exercise%20Ball.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Sit-up%20On%20Exercise%20Ball.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Sit-up%20On%20Exercise%20Ball.mp4"
   }
  },
  {
@@ -7322,8 +7322,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Sit-ups.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Sit-ups.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Sit-ups.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Sit-ups.mp4"
   }
  },
  {
@@ -7349,8 +7349,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Spell%20Caster.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Spell%20Caster.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Spell%20Caster.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Spell%20Caster.mp4"
   }
  },
  {
@@ -7376,8 +7376,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Stretching%20-%20Chin-to-chest%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Stretching%20-%20Chin-to-chest%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Stretching%20-%20Chin-to-chest%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Stretching%20-%20Chin-to-chest%20Stretch.mp4"
   }
  },
  {
@@ -7406,8 +7406,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Stretching%20-%20Iron%20Cross%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Stretching%20-%20Iron%20Cross%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Stretching%20-%20Iron%20Cross%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Stretching%20-%20Iron%20Cross%20Stretch.mp4"
   }
  },
  {
@@ -7435,8 +7435,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Stretching%20-%20Seated%20Twist%20%28straight%20arm%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Stretching%20-%20Seated%20Twist%20%28straight%20arm%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Stretching%20-%20Seated%20Twist%20%28straight%20arm%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Stretching%20-%20Seated%20Twist%20%28straight%20arm%29.mp4"
   }
  },
  {
@@ -7465,8 +7465,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Stretching%20-%20Spinal%20Stretch%20On%20Exercise%20Ball.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Stretching%20-%20Spinal%20Stretch%20On%20Exercise%20Ball.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Stretching%20-%20Spinal%20Stretch%20On%20Exercise%20Ball.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Stretching%20-%20Spinal%20Stretch%20On%20Exercise%20Ball.mp4"
   }
  },
  {
@@ -7494,8 +7494,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Stretching%20-%20Standing%20Side%20Bend%20%28bent%20arm%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Stretching%20-%20Standing%20Side%20Bend%20%28bent%20arm%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Stretching%20-%20Standing%20Side%20Bend%20%28bent%20arm%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Stretching%20-%20Standing%20Side%20Bend%20%28bent%20arm%29.mp4"
   }
  },
  {
@@ -7522,8 +7522,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Twisting%20Crunch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Twisting%20Crunch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Twisting%20Crunch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Twisting%20Crunch.mp4"
   }
  },
  {
@@ -7550,8 +7550,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/V-up.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/V-up.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/V-up.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/V-up.mp4"
   }
  },
  {
@@ -7578,8 +7578,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Vertical%20Leg%20Raise%20%28on%20parallel%20bars%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Vertical%20Leg%20Raise%20%28on%20parallel%20bars%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Abs/Vertical%20Leg%20Raise%20%28on%20parallel%20bars%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Vertical%20Leg%20Raise%20%28on%20parallel%20bars%29.mp4"
   }
  },
  {
@@ -7606,8 +7606,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Weighted%20Leg%20Extension%20Crunch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Weighted%20Leg%20Extension%20Crunch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Weighted%20Leg%20Extension%20Crunch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/abs/Weighted%20Leg%20Extension%20Crunch.mp4"
   }
  },
  {
@@ -7636,8 +7636,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/45%20Degree%20Hyperextension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/45%20Degree%20Hyperextension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/45%20Degree%20Hyperextension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/45%20Degree%20Hyperextension.mp4"
   }
  },
  {
@@ -7665,8 +7665,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Band%20Bent-over%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Band%20Bent-over%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Band%20Bent-over%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Band%20Bent-over%20Row.mp4"
   }
  },
  {
@@ -7694,8 +7694,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Band%20Kneeling%20One%20Arm%20Pulldown.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Band%20Kneeling%20One%20Arm%20Pulldown.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Band%20Kneeling%20One%20Arm%20Pulldown.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Band%20Kneeling%20One%20Arm%20Pulldown.mp4"
   }
  },
  {
@@ -7723,8 +7723,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Band%20One%20Arm%20Twisting%20Seated%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Band%20One%20Arm%20Twisting%20Seated%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Band%20One%20Arm%20Twisting%20Seated%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Band%20One%20Arm%20Twisting%20Seated%20Row.mp4"
   }
  },
  {
@@ -7751,8 +7751,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Band%20One%20Leg%20Kickback%20Bent%20Position.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Band%20One%20Leg%20Kickback%20Bent%20Position.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Band%20One%20Leg%20Kickback%20Bent%20Position.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Band%20One%20Leg%20Kickback%20Bent%20Position.mp4"
   }
  },
  {
@@ -7781,8 +7781,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Band%20Pull%20Through.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Band%20Pull%20Through.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Band%20Pull%20Through.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Band%20Pull%20Through.mp4"
   }
  },
  {
@@ -7810,8 +7810,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Band%20Seated%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Band%20Seated%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Band%20Seated%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Band%20Seated%20Row.mp4"
   }
  },
  {
@@ -7839,8 +7839,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Band%20Straight%20Back%20Seated%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Band%20Straight%20Back%20Seated%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Band%20Straight%20Back%20Seated%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Band%20Straight%20Back%20Seated%20Row.mp4"
   }
  },
  {
@@ -7868,8 +7868,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Barbell%20Bent-over%20Row%20Overgrip.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Barbell%20Bent-over%20Row%20Overgrip.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Barbell%20Bent-over%20Row%20Overgrip.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Barbell%20Bent-over%20Row%20Overgrip.mp4"
   }
  },
  {
@@ -7899,8 +7899,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Barbell%20Straight%20Leg%20Deadlift.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Barbell%20Straight%20Leg%20Deadlift.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Barbell%20Straight%20Leg%20Deadlift.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Barbell%20Straight%20Leg%20Deadlift.mp4"
   }
  },
  {
@@ -7929,8 +7929,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Barbell%20Underhand%20Bent-over%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Barbell%20Underhand%20Bent-over%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Barbell%20Underhand%20Bent-over%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Barbell%20Underhand%20Bent-over%20Row.mp4"
   }
  },
  {
@@ -7959,8 +7959,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Bar%20Lateral%20Pulldown%20%28reverse-grip%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Bar%20Lateral%20Pulldown%20%28reverse-grip%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Cable%20Bar%20Lateral%20Pulldown%20%28reverse-grip%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Cable%20Bar%20Lateral%20Pulldown%20%28reverse-grip%29.mp4"
   }
  },
  {
@@ -7989,8 +7989,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Bar%20Lateral%20Pulldown%20%28wide%20shoulder%20grip%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Bar%20Lateral%20Pulldown%20%28wide%20shoulder%20grip%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Cable%20Bar%20Lateral%20Pulldown%20%28wide%20shoulder%20grip%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Cable%20Bar%20Lateral%20Pulldown%20%28wide%20shoulder%20grip%29.mp4"
   }
  },
  {
@@ -8018,8 +8018,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20One%20Arm%20Lateral%20Pulldown.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20One%20Arm%20Lateral%20Pulldown.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Cable%20One%20Arm%20Lateral%20Pulldown.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Cable%20One%20Arm%20Lateral%20Pulldown.mp4"
   }
  },
  {
@@ -8049,8 +8049,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20One%20Arm%20Twisting%20Seated%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20One%20Arm%20Twisting%20Seated%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Cable%20One%20Arm%20Twisting%20Seated%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Cable%20One%20Arm%20Twisting%20Seated%20Row.mp4"
   }
  },
  {
@@ -8080,8 +8080,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Pulldown.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Pulldown.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Cable%20Pulldown.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Cable%20Pulldown.mp4"
   }
  },
  {
@@ -8110,8 +8110,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Seated%20High%20Row%20%28V-bar%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Seated%20High%20Row%20%28V-bar%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Cable%20Seated%20High%20Row%20%28V-bar%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Cable%20Seated%20High%20Row%20%28V-bar%29.mp4"
   }
  },
  {
@@ -8140,8 +8140,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Seated%20Row%20%28normal%20grip%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Seated%20Row%20%28normal%20grip%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Cable%20Seated%20Row%20%28normal%20grip%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Cable%20Seated%20Row%20%28normal%20grip%29.mp4"
   }
  },
  {
@@ -8170,8 +8170,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Seated%20Row%20%28parallel%20grip%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Seated%20Row%20%28parallel%20grip%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Cable%20Seated%20Row%20%28parallel%20grip%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Cable%20Seated%20Row%20%28parallel%20grip%29.mp4"
   }
  },
  {
@@ -8200,8 +8200,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Seated%20Row%20%28wide-grip%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Seated%20Row%20%28wide-grip%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Cable%20Seated%20Row%20%28wide-grip%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Cable%20Seated%20Row%20%28wide-grip%29.mp4"
   }
  },
  {
@@ -8230,8 +8230,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Straight%20Back%20Seated%20High%20Row%20%28reverse-grip%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Straight%20Back%20Seated%20High%20Row%20%28reverse-grip%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Cable%20Straight%20Back%20Seated%20High%20Row%20%28reverse-grip%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Cable%20Straight%20Back%20Seated%20High%20Row%20%28reverse-grip%29.mp4"
   }
  },
  {
@@ -8260,8 +8260,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Straight%20Back%20Seated%20Row%20%28V-grip%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Straight%20Back%20Seated%20Row%20%28V-grip%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Cable%20Straight%20Back%20Seated%20Row%20%28V-grip%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Cable%20Straight%20Back%20Seated%20Row%20%28V-grip%29.mp4"
   }
  },
  {
@@ -8290,8 +8290,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Chin-ups%20%28narrow%20parallel%20grip%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Chin-ups%20%28narrow%20parallel%20grip%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Chin-ups%20%28narrow%20parallel%20grip%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Chin-ups%20%28narrow%20parallel%20grip%29.mp4"
   }
  },
  {
@@ -8320,8 +8320,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Close%20Grip%20Chin-up.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Close%20Grip%20Chin-up.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Close%20Grip%20Chin-up.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Close%20Grip%20Chin-up.mp4"
   }
  },
  {
@@ -8350,8 +8350,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Commando%20Pull-up.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Commando%20Pull-up.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Commando%20Pull-up.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Commando%20Pull-up.mp4"
   }
  },
  {
@@ -8379,8 +8379,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Dumbbell%20Bent-over%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Dumbbell%20Bent-over%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Dumbbell%20Bent-over%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Dumbbell%20Bent-over%20Row.mp4"
   }
  },
  {
@@ -8410,8 +8410,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Dumbbell%20Deadlift.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Dumbbell%20Deadlift.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Dumbbell%20Deadlift.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Dumbbell%20Deadlift.mp4"
   }
  },
  {
@@ -8440,8 +8440,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Dumbbell%20Hammer%20Grip%20Incline%20Bench%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Dumbbell%20Hammer%20Grip%20Incline%20Bench%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Dumbbell%20Hammer%20Grip%20Incline%20Bench%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Dumbbell%20Hammer%20Grip%20Incline%20Bench%20Row.mp4"
   }
  },
  {
@@ -8469,8 +8469,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Dumbbell%20Incline%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Dumbbell%20Incline%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Dumbbell%20Incline%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Dumbbell%20Incline%20Row.mp4"
   }
  },
  {
@@ -8498,8 +8498,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Dumbbell%20Lying%20Rear%20Delt%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Dumbbell%20Lying%20Rear%20Delt%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Dumbbell%20Lying%20Rear%20Delt%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Dumbbell%20Lying%20Rear%20Delt%20Row.mp4"
   }
  },
  {
@@ -8528,8 +8528,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Dumbbell%20Palm%20Rotational%20Bent%20Over%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Dumbbell%20Palm%20Rotational%20Bent%20Over%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Dumbbell%20Palm%20Rotational%20Bent%20Over%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Dumbbell%20Palm%20Rotational%20Bent%20Over%20Row.mp4"
   }
  },
  {
@@ -8558,8 +8558,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Dumbbell%20Reverse%20Grip%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Dumbbell%20Reverse%20Grip%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Dumbbell%20Reverse%20Grip%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Dumbbell%20Reverse%20Grip%20Row.mp4"
   }
  },
  {
@@ -8589,8 +8589,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Dumbbell%20Stiff%20Leg%20Deadlift.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Dumbbell%20Stiff%20Leg%20Deadlift.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Dumbbell%20Stiff%20Leg%20Deadlift.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Dumbbell%20Stiff%20Leg%20Deadlift.mp4"
   }
  },
  {
@@ -8619,8 +8619,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Hammer%20Grip%20Pull-up.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Hammer%20Grip%20Pull-up.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Hammer%20Grip%20Pull-up.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Hammer%20Grip%20Pull-up.mp4"
   }
  },
  {
@@ -8649,8 +8649,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Inverted%20Row%20Between%20Chairs.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Inverted%20Row%20Between%20Chairs.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Inverted%20Row%20Between%20Chairs.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Inverted%20Row%20Between%20Chairs.mp4"
   }
  },
  {
@@ -8680,8 +8680,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Kettlebell%20Deadlift.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Kettlebell%20Deadlift.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Kettlebell%20Deadlift.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Kettlebell%20Deadlift.mp4"
   }
  },
  {
@@ -8709,8 +8709,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Lever%20Back%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Lever%20Back%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Lever%20Back%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Lever%20Back%20Extension.mp4"
   }
  },
  {
@@ -8739,8 +8739,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Lever%20High%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Lever%20High%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Lever%20High%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Lever%20High%20Row.mp4"
   }
  },
  {
@@ -8769,8 +8769,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Lever%20Reverse%20T-Bar%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Lever%20Reverse%20T-Bar%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Lever%20Reverse%20T-Bar%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Lever%20Reverse%20T-Bar%20Row.mp4"
   }
  },
  {
@@ -8800,8 +8800,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Lever%20T-bar%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Lever%20T-bar%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Lever%20T-bar%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Lever%20T-bar%20Row.mp4"
   }
  },
  {
@@ -8830,8 +8830,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Pull-up%20%28wide%20back%20grip%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Pull-up%20%28wide%20back%20grip%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Pull-up%20%28wide%20back%20grip%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Pull-up%20%28wide%20back%20grip%29.mp4"
   }
  },
  {
@@ -8860,8 +8860,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Pull-up%20%28wide%20front%20grip%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Pull-up%20%28wide%20front%20grip%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Pull-up%20%28wide%20front%20grip%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Pull-up%20%28wide%20front%20grip%29.mp4"
   }
  },
  {
@@ -8890,8 +8890,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Reverse%20Grip%20Machine%20Lat%20Pulldown.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Reverse%20Grip%20Machine%20Lat%20Pulldown.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Reverse%20Grip%20Machine%20Lat%20Pulldown.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Reverse%20Grip%20Machine%20Lat%20Pulldown.mp4"
   }
  },
  {
@@ -8920,8 +8920,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Reverse%20Grip%20Pull-up.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Reverse%20Grip%20Pull-up.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Reverse%20Grip%20Pull-up.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Reverse%20Grip%20Pull-up.mp4"
   }
  },
  {
@@ -8950,8 +8950,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Ring%20High%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Ring%20High%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Ring%20High%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Ring%20High%20Row.mp4"
   }
  },
  {
@@ -8981,8 +8981,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Single%20Dumbbell%20Stiff%20Leg%20Deadlift.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Single%20Dumbbell%20Stiff%20Leg%20Deadlift.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Single%20Dumbbell%20Stiff%20Leg%20Deadlift.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Single%20Dumbbell%20Stiff%20Leg%20Deadlift.mp4"
   }
  },
  {
@@ -9012,8 +9012,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Smith%20Deadlift%20-%20Deadlift.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Smith%20Deadlift%20-%20Deadlift.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Smith%20Deadlift%20-%20Deadlift.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Smith%20Deadlift%20-%20Deadlift.mp4"
   }
  },
  {
@@ -9039,8 +9039,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Dynamic%20Back%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Dynamic%20Back%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Stretching%20-%20Dynamic%20Back%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Stretching%20-%20Dynamic%20Back%20Stretch.mp4"
   }
  },
  {
@@ -9069,8 +9069,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Elbows%20Back%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Elbows%20Back%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Stretching%20-%20Elbows%20Back%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Stretching%20-%20Elbows%20Back%20Stretch.mp4"
   }
  },
  {
@@ -9098,8 +9098,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Kneeling%20Lat%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Kneeling%20Lat%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Stretching%20-%20Kneeling%20Lat%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Stretching%20-%20Kneeling%20Lat%20Stretch.mp4"
   }
  },
  {
@@ -9125,8 +9125,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Middle%20Back%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Middle%20Back%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Stretching%20-%20Middle%20Back%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Stretching%20-%20Middle%20Back%20Stretch.mp4"
   }
  },
  {
@@ -9153,8 +9153,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Seated%20Lower%20Back%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Seated%20Lower%20Back%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Stretching%20-%20Seated%20Lower%20Back%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Stretching%20-%20Seated%20Lower%20Back%20Stretch.mp4"
   }
  },
  {
@@ -9184,8 +9184,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Seated%20Wide%20Angle%20Pose%20Sequence.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Seated%20Wide%20Angle%20Pose%20Sequence.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Stretching%20-%20Seated%20Wide%20Angle%20Pose%20Sequence.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Stretching%20-%20Seated%20Wide%20Angle%20Pose%20Sequence.mp4"
   }
  },
  {
@@ -9214,8 +9214,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Sitting%20Bent%20Over%20Back%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Sitting%20Bent%20Over%20Back%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Stretching%20-%20Sitting%20Bent%20Over%20Back%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Stretching%20-%20Sitting%20Bent%20Over%20Back%20Stretch.mp4"
   }
  },
  {
@@ -9245,8 +9245,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Spine%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Spine%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Stretching%20-%20Spine%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Stretching%20-%20Spine%20Stretch.mp4"
   }
  },
  {
@@ -9276,8 +9276,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Spine%20Stretch%20Forward.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Spine%20Stretch%20Forward.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Stretching%20-%20Spine%20Stretch%20Forward.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Stretching%20-%20Spine%20Stretch%20Forward.mp4"
   }
  },
  {
@@ -9305,8 +9305,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Standing%20Back%20Rotation%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Standing%20Back%20Rotation%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Stretching%20-%20Standing%20Back%20Rotation%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Stretching%20-%20Standing%20Back%20Rotation%20Stretch.mp4"
   }
  },
  {
@@ -9334,8 +9334,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Standing%20Lateral%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Standing%20Lateral%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Back/Stretching%20-%20Standing%20Lateral%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/back/Stretching%20-%20Standing%20Lateral%20Stretch.mp4"
   }
  },
  {
@@ -9363,8 +9363,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Barbell%20Drag%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Barbell%20Drag%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Barbell%20Drag%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Barbell%20Drag%20Curl.mp4"
   }
  },
  {
@@ -9391,7 +9391,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Barbell%20Prone%20Incline%20Curl.mp4"
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Barbell%20Prone%20Incline%20Curl.mp4"
   }
  },
  {
@@ -9420,8 +9420,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Cable%20One%20Arm%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Cable%20One%20Arm%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Cable%20One%20Arm%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Cable%20One%20Arm%20Curl.mp4"
   }
  },
  {
@@ -9448,8 +9448,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Cable%20Standing%20Inner%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Cable%20Standing%20Inner%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Cable%20Standing%20Inner%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Cable%20Standing%20Inner%20Curl.mp4"
   }
  },
  {
@@ -9477,8 +9477,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Alternate%20Seated%20Biceps%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Alternate%20Seated%20Biceps%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Dumbbell%20Alternate%20Seated%20Biceps%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Dumbbell%20Alternate%20Seated%20Biceps%20Curl.mp4"
   }
  },
  {
@@ -9505,8 +9505,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Biceps%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Biceps%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Dumbbell%20Biceps%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Dumbbell%20Biceps%20Curl.mp4"
   }
  },
  {
@@ -9534,8 +9534,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Concentration%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Concentration%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Dumbbell%20Concentration%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Dumbbell%20Concentration%20Curl.mp4"
   }
  },
  {
@@ -9562,8 +9562,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Cross%20Body%20Hammer%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Cross%20Body%20Hammer%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Dumbbell%20Cross%20Body%20Hammer%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Dumbbell%20Cross%20Body%20Hammer%20Curl.mp4"
   }
  },
  {
@@ -9591,8 +9591,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Incline%20Biceps%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Incline%20Biceps%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Dumbbell%20Incline%20Biceps%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Dumbbell%20Incline%20Biceps%20Curl.mp4"
   }
  },
  {
@@ -9620,8 +9620,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Incline%20Hammer%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Incline%20Hammer%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Dumbbell%20Incline%20Hammer%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Dumbbell%20Incline%20Hammer%20Curl.mp4"
   }
  },
  {
@@ -9648,8 +9648,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Preacher%20Curl%20Over%20Exercise%20Ball.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Preacher%20Curl%20Over%20Exercise%20Ball.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Dumbbell%20Preacher%20Curl%20Over%20Exercise%20Ball.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Dumbbell%20Preacher%20Curl%20Over%20Exercise%20Ball.mp4"
   }
  },
  {
@@ -9678,8 +9678,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Prone%20Incline%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Prone%20Incline%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Dumbbell%20Prone%20Incline%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Dumbbell%20Prone%20Incline%20Curl.mp4"
   }
  },
  {
@@ -9706,8 +9706,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Seated%20Preacher%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Seated%20Preacher%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Dumbbell%20Seated%20Preacher%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Dumbbell%20Seated%20Preacher%20Curl.mp4"
   }
  },
  {
@@ -9734,8 +9734,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/EZ%20Barbell%20Biceps%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/EZ%20Barbell%20Biceps%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/EZ%20Barbell%20Biceps%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/EZ%20Barbell%20Biceps%20Curl.mp4"
   }
  },
  {
@@ -9763,8 +9763,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Lying%20Supine%20Dumbbell%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Lying%20Supine%20Dumbbell%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Lying%20Supine%20Dumbbell%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Lying%20Supine%20Dumbbell%20Curl.mp4"
   }
  },
  {
@@ -9791,8 +9791,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Stretching%20-%20Butterfly%20Yoga%20Pose.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Stretching%20-%20Butterfly%20Yoga%20Pose.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Biceps/Stretching%20-%20Butterfly%20Yoga%20Pose.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/biceps/Stretching%20-%20Butterfly%20Yoga%20Pose.mp4"
   }
  },
  {
@@ -9824,8 +9824,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Barbell%20Clean%20And%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Barbell%20Clean%20And%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Barbell%20Clean%20And%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Barbell%20Clean%20And%20Press.mp4"
   }
  },
  {
@@ -9852,8 +9852,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Donkey%20Calf%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Donkey%20Calf%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Donkey%20Calf%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Donkey%20Calf%20Raise.mp4"
   }
  },
  {
@@ -9883,8 +9883,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Dumbbell%20Front%20Squat.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Dumbbell%20Front%20Squat.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Dumbbell%20Front%20Squat.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Dumbbell%20Front%20Squat.mp4"
   }
  },
  {
@@ -9911,8 +9911,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Dumbbell%20Single%20Leg%20Calf%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Dumbbell%20Single%20Leg%20Calf%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Dumbbell%20Single%20Leg%20Calf%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Dumbbell%20Single%20Leg%20Calf%20Raise.mp4"
   }
  },
  {
@@ -9938,8 +9938,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Dumbbell%20Standing%20Calf%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Dumbbell%20Standing%20Calf%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Dumbbell%20Standing%20Calf%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Dumbbell%20Standing%20Calf%20Raise.mp4"
   }
  },
  {
@@ -9966,8 +9966,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Sled%2045%20Degree%20Calf%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Sled%2045%20Degree%20Calf%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Sled%2045%20Degree%20Calf%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Sled%2045%20Degree%20Calf%20Press.mp4"
   }
  },
  {
@@ -9994,8 +9994,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Calf%20Stretch%20with%20Rope.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Calf%20Stretch%20with%20Rope.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Stretching%20-%20Calf%20Stretch%20with%20Rope.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Stretching%20-%20Calf%20Stretch%20with%20Rope.mp4"
   }
  },
  {
@@ -10023,8 +10023,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Calf%20Stretch%20with%20Strap.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Calf%20Stretch%20with%20Strap.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Stretching%20-%20Calf%20Stretch%20with%20Strap.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Stretching%20-%20Calf%20Stretch%20with%20Strap.mp4"
   }
  },
  {
@@ -10052,8 +10052,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Circles%20Knee%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Circles%20Knee%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Stretching%20-%20Circles%20Knee%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Stretching%20-%20Circles%20Knee%20Stretch.mp4"
   }
  },
  {
@@ -10080,8 +10080,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Feet%20and%20Ankles%20Rotation%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Feet%20and%20Ankles%20Rotation%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Stretching%20-%20Feet%20and%20Ankles%20Rotation%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Stretching%20-%20Feet%20and%20Ankles%20Rotation%20Stretch.mp4"
   }
  },
  {
@@ -10108,8 +10108,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Feet%20and%20Ankles%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Feet%20and%20Ankles%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Stretching%20-%20Feet%20and%20Ankles%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Stretching%20-%20Feet%20and%20Ankles%20Stretch.mp4"
   }
  },
  {
@@ -10134,8 +10134,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Peroneals%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Peroneals%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Stretching%20-%20Peroneals%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Stretching%20-%20Peroneals%20Stretch.mp4"
   }
  },
  {
@@ -10162,8 +10162,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Seated%20Calf%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Seated%20Calf%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Stretching%20-%20Seated%20Calf%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Stretching%20-%20Seated%20Calf%20Stretch.mp4"
   }
  },
  {
@@ -10190,8 +10190,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Stairs%20Calf%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Stairs%20Calf%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Stretching%20-%20Stairs%20Calf%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Stretching%20-%20Stairs%20Calf%20Stretch.mp4"
   }
  },
  {
@@ -10218,8 +10218,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Standing%20Bench%20Calf%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Standing%20Bench%20Calf%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Calves/Stretching%20-%20Standing%20Bench%20Calf%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/calves/Stretching%20-%20Standing%20Bench%20Calf%20Stretch.mp4"
   }
  },
  {
@@ -10249,8 +10249,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Burpee.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Burpee.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Cardio/Burpee.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/cardio/Burpee.mp4"
   }
  },
  {
@@ -10280,8 +10280,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Elliptical.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Elliptical.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Cardio/Elliptical.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/cardio/Elliptical.mp4"
   }
  },
  {
@@ -10310,8 +10310,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Jump%20Rope.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Jump%20Rope.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Cardio/Jump%20Rope.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/cardio/Jump%20Rope.mp4"
   }
  },
  {
@@ -10340,8 +10340,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Jump%20Step-up.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Jump%20Step-up.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Cardio/Jump%20Step-up.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/cardio/Jump%20Step-up.mp4"
   }
  },
  {
@@ -10370,8 +10370,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Jumping%20Jack.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Jumping%20Jack.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Cardio/Jumping%20Jack.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/cardio/Jumping%20Jack.mp4"
   }
  },
  {
@@ -10401,8 +10401,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Running.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Running.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Cardio/Running.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/cardio/Running.mp4"
   }
  },
  {
@@ -10431,8 +10431,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Stationary%20Bike.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Stationary%20Bike.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Cardio/Stationary%20Bike.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/cardio/Stationary%20Bike.mp4"
   }
  },
  {
@@ -10461,8 +10461,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Stretching%20-%20Bridge%20Pose%20Setu%20Bandhasana.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Stretching%20-%20Bridge%20Pose%20Setu%20Bandhasana.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Cardio/Stretching%20-%20Bridge%20Pose%20Setu%20Bandhasana.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/cardio/Stretching%20-%20Bridge%20Pose%20Setu%20Bandhasana.mp4"
   }
  },
  {
@@ -10489,8 +10489,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Stretching%20-%20Flexion%20Leg%20Sit-up.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Stretching%20-%20Flexion%20Leg%20Sit-up.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Cardio/Stretching%20-%20Flexion%20Leg%20Sit-up.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/cardio/Stretching%20-%20Flexion%20Leg%20Sit-up.mp4"
   }
  },
  {
@@ -10518,8 +10518,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Stretching%20-%20Front%20Toe%20Touch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Stretching%20-%20Front%20Toe%20Touch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Cardio/Stretching%20-%20Front%20Toe%20Touch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/cardio/Stretching%20-%20Front%20Toe%20Touch.mp4"
   }
  },
  {
@@ -10549,8 +10549,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Stretching%20-%20Plyo%20Side%20Lunge%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Stretching%20-%20Plyo%20Side%20Lunge%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Cardio/Stretching%20-%20Plyo%20Side%20Lunge%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/cardio/Stretching%20-%20Plyo%20Side%20Lunge%20Stretch.mp4"
   }
  },
  {
@@ -10578,8 +10578,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Stretching%20-%20Single%20Leg%20Stretch%20%28bent%20knee%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Stretching%20-%20Single%20Leg%20Stretch%20%28bent%20knee%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Cardio/Stretching%20-%20Single%20Leg%20Stretch%20%28bent%20knee%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/cardio/Stretching%20-%20Single%20Leg%20Stretch%20%28bent%20knee%29.mp4"
   }
  },
  {
@@ -10607,8 +10607,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Stretching%20-%20Single%20Straight%20Leg%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Stretching%20-%20Single%20Straight%20Leg%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Cardio/Stretching%20-%20Single%20Straight%20Leg%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/cardio/Stretching%20-%20Single%20Straight%20Leg%20Stretch.mp4"
   }
  },
  {
@@ -10635,8 +10635,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Treadmill%20Running.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Treadmill%20Running.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Cardio/Treadmill%20Running.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/cardio/Treadmill%20Running.mp4"
   }
  },
  {
@@ -10664,8 +10664,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Band%20High%20Fly.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Band%20High%20Fly.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Band%20High%20Fly.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Band%20High%20Fly.mp4"
   }
  },
  {
@@ -10694,8 +10694,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Cable%20Lying%20Fly%2C%20Flat%20Bench%20Cable%20Fly.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Cable%20Lying%20Fly%2C%20Flat%20Bench%20Cable%20Fly.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Cable%20Lying%20Fly%2C%20Flat%20Bench%20Cable%20Fly.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Cable%20Lying%20Fly%2C%20Flat%20Bench%20Cable%20Fly.mp4"
   }
  },
  {
@@ -10724,8 +10724,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Cable%20Standing%20Fly%2C%20Crossover%20fly.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Cable%20Standing%20Fly%2C%20Crossover%20fly.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Cable%20Standing%20Fly%2C%20Crossover%20fly.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Cable%20Standing%20Fly%2C%20Crossover%20fly.mp4"
   }
  },
  {
@@ -10753,8 +10753,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Chest%20Dips.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Chest%20Dips.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Chest%20Dips.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Chest%20Dips.mp4"
   }
  },
  {
@@ -10782,8 +10782,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Deep%20Push-ups.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Deep%20Push-ups.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Deep%20Push-ups.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Deep%20Push-ups.mp4"
   }
  },
  {
@@ -10812,8 +10812,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Dumbbell%20Decline%20Fly%20%2845%20degree%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Dumbbell%20Decline%20Fly%20%2845%20degree%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Dumbbell%20Decline%20Fly%20%2845%20degree%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Dumbbell%20Decline%20Fly%20%2845%20degree%29.mp4"
   }
  },
  {
@@ -10842,8 +10842,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Dumbbell%20Fly.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Dumbbell%20Fly.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Dumbbell%20Fly.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Dumbbell%20Fly.mp4"
   }
  },
  {
@@ -10873,8 +10873,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Dumbbell%20Fly%20On%20Exercise%20Ball.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Dumbbell%20Fly%20On%20Exercise%20Ball.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Dumbbell%20Fly%20On%20Exercise%20Ball.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Dumbbell%20Fly%20On%20Exercise%20Ball.mp4"
   }
  },
  {
@@ -10903,8 +10903,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Dumbbell%20Incline%20Bench%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Dumbbell%20Incline%20Bench%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Dumbbell%20Incline%20Bench%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Dumbbell%20Incline%20Bench%20Press.mp4"
   }
  },
  {
@@ -10933,8 +10933,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Dumbbell%20Incline%20Fly.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Dumbbell%20Incline%20Fly.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Dumbbell%20Incline%20Fly.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Dumbbell%20Incline%20Fly.mp4"
   }
  },
  {
@@ -10964,8 +10964,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Dumbbell%20Incline%20Fly%20On%20Exercise%20Ball.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Dumbbell%20Incline%20Fly%20On%20Exercise%20Ball.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Dumbbell%20Incline%20Fly%20On%20Exercise%20Ball.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Dumbbell%20Incline%20Fly%20On%20Exercise%20Ball.mp4"
   }
  },
  {
@@ -10994,8 +10994,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Dumbbell%20Lying%20Hammer%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Dumbbell%20Lying%20Hammer%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Dumbbell%20Lying%20Hammer%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Dumbbell%20Lying%20Hammer%20Press.mp4"
   }
  },
  {
@@ -11023,8 +11023,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Incline%20Push-Ups.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Incline%20Push-Ups.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Incline%20Push-Ups.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Incline%20Push-Ups.mp4"
   }
  },
  {
@@ -11053,8 +11053,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Lever%20Chest%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Lever%20Chest%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Lever%20Chest%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Lever%20Chest%20Press.mp4"
   }
  },
  {
@@ -11083,8 +11083,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Lever%20Incline%20Hammer%20Chest%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Lever%20Incline%20Hammer%20Chest%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Lever%20Incline%20Hammer%20Chest%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Lever%20Incline%20Hammer%20Chest%20Press.mp4"
   }
  },
  {
@@ -11113,8 +11113,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Lever%20Lying%20Chest%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Lever%20Lying%20Chest%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Lever%20Lying%20Chest%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Lever%20Lying%20Chest%20Press.mp4"
   }
  },
  {
@@ -11142,8 +11142,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Lever%20Pec%20Deck%20Fly.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Lever%20Pec%20Deck%20Fly.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Lever%20Pec%20Deck%20Fly.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Lever%20Pec%20Deck%20Fly.mp4"
   }
  },
  {
@@ -11172,8 +11172,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Push-ups.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Push-ups.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Push-ups.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Push-ups.mp4"
   }
  },
  {
@@ -11201,8 +11201,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Stretching%20-%20Above%20Head%20Chest%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Stretching%20-%20Above%20Head%20Chest%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Stretching%20-%20Above%20Head%20Chest%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Stretching%20-%20Above%20Head%20Chest%20Stretch.mp4"
   }
  },
  {
@@ -11230,8 +11230,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Stretching%20-%20Back%20Pec%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Stretching%20-%20Back%20Pec%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Stretching%20-%20Back%20Pec%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Stretching%20-%20Back%20Pec%20Stretch.mp4"
   }
  },
  {
@@ -11257,8 +11257,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Stretching%20-%20Dynamic%20Chest%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Stretching%20-%20Dynamic%20Chest%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Stretching%20-%20Dynamic%20Chest%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Stretching%20-%20Dynamic%20Chest%20Stretch.mp4"
   }
  },
  {
@@ -11287,8 +11287,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Stretching%20-%20Kneeling%20Back%20Rotation%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Stretching%20-%20Kneeling%20Back%20Rotation%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Stretching%20-%20Kneeling%20Back%20Rotation%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Stretching%20-%20Kneeling%20Back%20Rotation%20Stretch.mp4"
   }
  },
  {
@@ -11317,8 +11317,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Stretching%20-%20Standing%20Reach%20Up%20Back%20Rotation%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Stretching%20-%20Standing%20Reach%20Up%20Back%20Rotation%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Stretching%20-%20Standing%20Reach%20Up%20Back%20Rotation%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Stretching%20-%20Standing%20Reach%20Up%20Back%20Rotation%20Stretch.mp4"
   }
  },
  {
@@ -11348,8 +11348,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Stretching%20-%20Standing%20Wheel%20Rollout.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Stretching%20-%20Standing%20Wheel%20Rollout.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Stretching%20-%20Standing%20Wheel%20Rollout.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Stretching%20-%20Standing%20Wheel%20Rollout.mp4"
   }
  },
  {
@@ -11377,8 +11377,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Triceps%20Dips.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Triceps%20Dips.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Triceps%20Dips.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Triceps%20Dips.mp4"
   }
  },
  {
@@ -11406,8 +11406,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Wide%20Grip%20Push-ups.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Wide%20Grip%20Push-ups.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Chest/Wide%20Grip%20Push-ups.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/chest/Wide%20Grip%20Push-ups.mp4"
   }
  },
  {
@@ -11433,8 +11433,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Forearms/Barbell%20Reverse%20Wrist%20Curl%20%28over-grip%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Forearms/Barbell%20Reverse%20Wrist%20Curl%20%28over-grip%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Forearms/Barbell%20Reverse%20Wrist%20Curl%20%28over-grip%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Forearms/Barbell%20Reverse%20Wrist%20Curl%20%28over-grip%29.mp4"
   }
  },
  {
@@ -11462,8 +11462,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Forearms/Barbell%20Standing%20Back%20Wrist%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Forearms/Barbell%20Standing%20Back%20Wrist%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Forearms/Barbell%20Standing%20Back%20Wrist%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Forearms/Barbell%20Standing%20Back%20Wrist%20Curl.mp4"
   }
  },
  {
@@ -11489,8 +11489,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Forearms/Dumbbell%20Behind%20Back%20Wrist%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Forearms/Dumbbell%20Behind%20Back%20Wrist%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Forearms/Dumbbell%20Behind%20Back%20Wrist%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Forearms/Dumbbell%20Behind%20Back%20Wrist%20Curl.mp4"
   }
  },
  {
@@ -11519,8 +11519,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Forearms/Dumbbell%20Over%20Bench%20Wrist%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Forearms/Dumbbell%20Over%20Bench%20Wrist%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Forearms/Dumbbell%20Over%20Bench%20Wrist%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Forearms/Dumbbell%20Over%20Bench%20Wrist%20Curl.mp4"
   }
  },
  {
@@ -11546,8 +11546,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Forearms/Dumbbell%20Seated%20Neutral%20Wrist%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Forearms/Dumbbell%20Seated%20Neutral%20Wrist%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Forearms/Dumbbell%20Seated%20Neutral%20Wrist%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Forearms/Dumbbell%20Seated%20Neutral%20Wrist%20Curl.mp4"
   }
  },
  {
@@ -11573,8 +11573,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Forearms/Stretching%20-%20Side%20Wrist%20Pull%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Forearms/Stretching%20-%20Side%20Wrist%20Pull%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Forearms/Stretching%20-%20Side%20Wrist%20Pull%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Forearms/Stretching%20-%20Side%20Wrist%20Pull%20Stretch.mp4"
   }
  },
  {
@@ -11600,8 +11600,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Forearms/Stretching%20-%20Wrist%20Circles.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Forearms/Stretching%20-%20Wrist%20Circles.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Forearms/Stretching%20-%20Wrist%20Circles.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Forearms/Stretching%20-%20Wrist%20Circles.mp4"
   }
  },
  {
@@ -11628,8 +11628,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Band%20Bent%20Over%20Hip%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Band%20Bent%20Over%20Hip%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Band%20Bent%20Over%20Hip%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Band%20Bent%20Over%20Hip%20Extension.mp4"
   }
  },
  {
@@ -11655,8 +11655,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Band%20Hip%20Abduction.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Band%20Hip%20Abduction.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Band%20Hip%20Abduction.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Band%20Hip%20Abduction.mp4"
   }
  },
  {
@@ -11682,8 +11682,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Band%20Hip%20Adduction.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Band%20Hip%20Adduction.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Band%20Hip%20Adduction.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Band%20Hip%20Adduction.mp4"
   }
  },
  {
@@ -11709,8 +11709,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Band%20Leg%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Band%20Leg%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Band%20Leg%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Band%20Leg%20Curl.mp4"
   }
  },
  {
@@ -11736,8 +11736,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Band%20Seated%20Leg%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Band%20Seated%20Leg%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Band%20Seated%20Leg%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Band%20Seated%20Leg%20Extension.mp4"
   }
  },
  {
@@ -11767,8 +11767,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Barbell%20Front%20Chest%20Squat.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Barbell%20Front%20Chest%20Squat.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Barbell%20Front%20Chest%20Squat.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Barbell%20Front%20Chest%20Squat.mp4"
   }
  },
  {
@@ -11797,8 +11797,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Close%20Feet%20Leg%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Close%20Feet%20Leg%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Close%20Feet%20Leg%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Close%20Feet%20Leg%20Press.mp4"
   }
  },
  {
@@ -11827,8 +11827,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Dumbbell%20Bar%20Grip%20Sumo%20Squat.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Dumbbell%20Bar%20Grip%20Sumo%20Squat.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Dumbbell%20Bar%20Grip%20Sumo%20Squat.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Dumbbell%20Bar%20Grip%20Sumo%20Squat.mp4"
   }
  },
  {
@@ -11857,8 +11857,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Dumbbell%20Goblet%20Squat.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Dumbbell%20Goblet%20Squat.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Dumbbell%20Goblet%20Squat.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Dumbbell%20Goblet%20Squat.mp4"
   }
  },
  {
@@ -11886,8 +11886,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Dumbbell%20Lunge.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Dumbbell%20Lunge.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Dumbbell%20Lunge.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Dumbbell%20Lunge.mp4"
   }
  },
  {
@@ -11913,8 +11913,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Dumbbell%20Lying%20Femoral.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Dumbbell%20Lying%20Femoral.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Dumbbell%20Lying%20Femoral.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Dumbbell%20Lying%20Femoral.mp4"
   }
  },
  {
@@ -11943,8 +11943,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Dumbbell%20Single%20Leg%20Squat.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Dumbbell%20Single%20Leg%20Squat.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Dumbbell%20Single%20Leg%20Squat.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Dumbbell%20Single%20Leg%20Squat.mp4"
   }
  },
  {
@@ -11973,8 +11973,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Dumbbell%20Squat.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Dumbbell%20Squat.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Dumbbell%20Squat.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Dumbbell%20Squat.mp4"
   }
  },
  {
@@ -12003,8 +12003,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Horizontal%20Leg%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Horizontal%20Leg%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Lever%20Horizontal%20Leg%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Lever%20Horizontal%20Leg%20Press.mp4"
   }
  },
  {
@@ -12030,8 +12030,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Kneeling%20Leg%20Curl.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Kneeling%20Leg%20Curl.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Lever%20Kneeling%20Leg%20Curl.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Lever%20Kneeling%20Leg%20Curl.mp4"
   }
  },
  {
@@ -12057,8 +12057,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Seated%20Hip%20Abduction.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Seated%20Hip%20Abduction.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Lever%20Seated%20Hip%20Abduction.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Lever%20Seated%20Hip%20Abduction.mp4"
   }
  },
  {
@@ -12084,8 +12084,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Seated%20Hip%20Adduction.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Seated%20Hip%20Adduction.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Lever%20Seated%20Hip%20Adduction.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Lever%20Seated%20Hip%20Adduction.mp4"
   }
  },
  {
@@ -12112,8 +12112,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Standing%20Hip%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Standing%20Hip%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Lever%20Standing%20Hip%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Lever%20Standing%20Hip%20Extension.mp4"
   }
  },
  {
@@ -12140,8 +12140,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Standing%20Rear%20Kick.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Standing%20Rear%20Kick.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Lever%20Standing%20Rear%20Kick.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Lever%20Standing%20Rear%20Kick.mp4"
   }
  },
  {
@@ -12170,8 +12170,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Rear%20Decline%20Bridge.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Rear%20Decline%20Bridge.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Rear%20Decline%20Bridge.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Rear%20Decline%20Bridge.mp4"
   }
  },
  {
@@ -12200,8 +12200,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Sled%2045%20Degree%20Leg%20Wide%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Sled%2045%20Degree%20Leg%20Wide%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Sled%2045%20Degree%20Leg%20Wide%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Sled%2045%20Degree%20Leg%20Wide%20Press.mp4"
   }
  },
  {
@@ -12231,8 +12231,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Smith%20Chair%20Squat.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Smith%20Chair%20Squat.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Smith%20Chair%20Squat.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Smith%20Chair%20Squat.mp4"
   }
  },
  {
@@ -12259,8 +12259,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Adductor%20stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Adductor%20stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Stretching%20-%20Adductor%20stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Stretching%20-%20Adductor%20stretch.mp4"
   }
  },
  {
@@ -12287,8 +12287,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20All%20Fours%20Squad%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20All%20Fours%20Squad%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Stretching%20-%20All%20Fours%20Squad%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Stretching%20-%20All%20Fours%20Squad%20Stretch.mp4"
   }
  },
  {
@@ -12316,8 +12316,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Boat%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Boat%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Stretching%20-%20Boat%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Stretching%20-%20Boat%20Stretch.mp4"
   }
  },
  {
@@ -12346,8 +12346,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Ceiling%20Look%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Ceiling%20Look%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Stretching%20-%20Ceiling%20Look%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Stretching%20-%20Ceiling%20Look%20Stretch.mp4"
   }
  },
  {
@@ -12375,8 +12375,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Crossover%20Kneeling%20Hip%20Flexor%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Crossover%20Kneeling%20Hip%20Flexor%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Stretching%20-%20Crossover%20Kneeling%20Hip%20Flexor%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Stretching%20-%20Crossover%20Kneeling%20Hip%20Flexor%20Stretch.mp4"
   }
  },
  {
@@ -12403,8 +12403,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Hamstring%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Hamstring%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Stretching%20-%20Hamstring%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Stretching%20-%20Hamstring%20Stretch.mp4"
   }
  },
  {
@@ -12432,8 +12432,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Hip%20Circles%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Hip%20Circles%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Stretching%20-%20Hip%20Circles%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Stretching%20-%20Hip%20Circles%20Stretch.mp4"
   }
  },
  {
@@ -12461,8 +12461,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Hip%20Extension%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Hip%20Extension%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Stretching%20-%20Hip%20Extension%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Stretching%20-%20Hip%20Extension%20Stretch.mp4"
   }
  },
  {
@@ -12487,8 +12487,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Hip%20Flexor%20and%20Quad%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Hip%20Flexor%20and%20Quad%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Stretching%20-%20Hip%20Flexor%20and%20Quad%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Stretching%20-%20Hip%20Flexor%20and%20Quad%20Stretch.mp4"
   }
  },
  {
@@ -12516,8 +12516,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Hip%20Flexor%20Stretch%20Rear%20foot%20elevated.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Hip%20Flexor%20Stretch%20Rear%20foot%20elevated.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Stretching%20-%20Hip%20Flexor%20Stretch%20Rear%20foot%20elevated.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Stretching%20-%20Hip%20Flexor%20Stretch%20Rear%20foot%20elevated.mp4"
   }
  },
  {
@@ -12545,8 +12545,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Knee%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Knee%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Stretching%20-%20Knee%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Stretching%20-%20Knee%20Raise.mp4"
   }
  },
  {
@@ -12573,8 +12573,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Quadriceps%20lying%20stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Quadriceps%20lying%20stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Stretching%20-%20Quadriceps%20lying%20stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Stretching%20-%20Quadriceps%20lying%20stretch.mp4"
   }
  },
  {
@@ -12601,8 +12601,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Quadriceps%20stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Quadriceps%20stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Stretching%20-%20Quadriceps%20stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Stretching%20-%20Quadriceps%20stretch.mp4"
   }
  },
  {
@@ -12631,8 +12631,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Runners%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Runners%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Stretching%20-%20Runners%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Stretching%20-%20Runners%20Stretch.mp4"
   }
  },
  {
@@ -12658,8 +12658,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Weighted%20Sissy%20Squat.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Weighted%20Sissy%20Squat.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Hips/Weighted%20Sissy%20Squat.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Hips/Weighted%20Sissy%20Squat.mp4"
   }
  },
  {
@@ -12686,7 +12686,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Ball%20Sit-up%20%28on%20stability%20ball%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Ball%20Sit-up%20%28on%20stability%20ball%29.mp4"
   }
  },
  {
@@ -12713,7 +12713,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Bent%20knee%20Lying%20%20twist%20%28On%20Stability%20Ball%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Bent%20knee%20Lying%20%20twist%20%28On%20Stability%20Ball%29.mp4"
   }
  },
  {
@@ -12740,7 +12740,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Chest%20Lift%20with%20Rotation.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Chest%20Lift%20with%20Rotation.mp4"
   }
  },
  {
@@ -12767,7 +12767,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Corkscrew%20Pilates.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Corkscrew%20Pilates.mp4"
   }
  },
  {
@@ -12793,7 +12793,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Crunch%20Floor%20%28female%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Crunch%20Floor%20%28female%29.mp4"
   }
  },
  {
@@ -12820,7 +12820,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Crunch%20%28leg%20raise%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Crunch%20%28leg%20raise%29.mp4"
   }
  },
  {
@@ -12846,7 +12846,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Crunch%20%28legs%20on%20stability%20ball%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Crunch%20%28legs%20on%20stability%20ball%29.mp4"
   }
  },
  {
@@ -12872,7 +12872,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Crunch%20%28straight%20leg%20up%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Crunch%20%28straight%20leg%20up%29.mp4"
   }
  },
  {
@@ -12898,7 +12898,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Front%20Plank%20%28female%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Front%20Plank%20%28female%29.mp4"
   }
  },
  {
@@ -12926,7 +12926,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Hip%20Raise%20Bridge.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Hip%20Raise%20Bridge.mp4"
   }
  },
  {
@@ -12953,7 +12953,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Hundred%20Pilates.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Hundred%20Pilates.mp4"
   }
  },
  {
@@ -12980,7 +12980,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Jack%20knife%20Floor.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Jack%20knife%20Floor.mp4"
   }
  },
  {
@@ -13007,7 +13007,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Jack%20Split%20Crunches.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Jack%20Split%20Crunches.mp4"
   }
  },
  {
@@ -13034,7 +13034,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/JackKnife%20Pilates.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/JackKnife%20Pilates.mp4"
   }
  },
  {
@@ -13061,7 +13061,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Leg%20Raise%20Hip%20Lift.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Leg%20Raise%20Hip%20Lift.mp4"
   }
  },
  {
@@ -13090,7 +13090,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Lying%20Hip%20Lift%20%28on%20stability%20ball%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Lying%20Hip%20Lift%20%28on%20stability%20ball%29.mp4"
   }
  },
  {
@@ -13117,7 +13117,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Lying%20Scissor%20Kick%20%28female%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Lying%20Scissor%20Kick%20%28female%29.mp4"
   }
  },
  {
@@ -13144,7 +13144,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Medicine%20Ball%20Sit-up%20%28wall%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Medicine%20Ball%20Sit-up%20%28wall%29.mp4"
   }
  },
  {
@@ -13171,7 +13171,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Reverse%20Crunch%20%28female%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Reverse%20Crunch%20%28female%29.mp4"
   }
  },
  {
@@ -13201,7 +13201,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Rotate%20Push%20up%20%28female%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Rotate%20Push%20up%20%28female%29.mp4"
   }
  },
  {
@@ -13228,7 +13228,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Seated%20Twist%20%28straight%20arm%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Seated%20Twist%20%28straight%20arm%29.mp4"
   }
  },
  {
@@ -13255,7 +13255,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Side%20Bend%20%28on%20stability%20ball%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Side%20Bend%20%28on%20stability%20ball%29.mp4"
   }
  },
  {
@@ -13282,7 +13282,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Sit%20Up.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Sit%20Up.mp4"
   }
  },
  {
@@ -13309,7 +13309,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Weighted%20Lying%20Twist.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/mix/Weighted%20Lying%20Twist.mp4"
   }
  },
  {
@@ -13336,8 +13336,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Band%20Bent-over%20Rear%20Lateral%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Band%20Bent-over%20Rear%20Lateral%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Band%20Bent-over%20Rear%20Lateral%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Band%20Bent-over%20Rear%20Lateral%20Raise.mp4"
   }
  },
  {
@@ -13363,8 +13363,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Band%20One%20Arm%20Forward%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Band%20One%20Arm%20Forward%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Band%20One%20Arm%20Forward%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Band%20One%20Arm%20Forward%20Raise.mp4"
   }
  },
  {
@@ -13391,7 +13391,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Band%20Standing%20Rear%20Delt%20Row.mp4"
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Band%20Standing%20Rear%20Delt%20Row.mp4"
   }
  },
  {
@@ -13417,8 +13417,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Barbell%20Front%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Barbell%20Front%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Barbell%20Front%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Barbell%20Front%20Raise.mp4"
   }
  },
  {
@@ -13446,8 +13446,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Barbell%20Seated%20Behind%20Head%20Military%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Barbell%20Seated%20Behind%20Head%20Military%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Barbell%20Seated%20Behind%20Head%20Military%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Barbell%20Seated%20Behind%20Head%20Military%20Press.mp4"
   }
  },
  {
@@ -13475,8 +13475,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Barbell%20Upright%20Row%20%28wide-grip%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Barbell%20Upright%20Row%20%28wide-grip%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Barbell%20Upright%20Row%20%28wide-grip%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Barbell%20Upright%20Row%20%28wide-grip%29.mp4"
   }
  },
  {
@@ -13503,8 +13503,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Cable%20Crossover%20Reverse%20Fly.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Cable%20Crossover%20Reverse%20Fly.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Cable%20Crossover%20Reverse%20Fly.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Cable%20Crossover%20Reverse%20Fly.mp4"
   }
  },
  {
@@ -13530,8 +13530,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Cable%20Front%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Cable%20Front%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Cable%20Front%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Cable%20Front%20Raise.mp4"
   }
  },
  {
@@ -13557,8 +13557,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Cable%20Lateral%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Cable%20Lateral%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Cable%20Lateral%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Cable%20Lateral%20Raise.mp4"
   }
  },
  {
@@ -13584,8 +13584,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Cable%20One%20Arm%20Forward%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Cable%20One%20Arm%20Forward%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Cable%20One%20Arm%20Forward%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Cable%20One%20Arm%20Forward%20Raise.mp4"
   }
  },
  {
@@ -13611,8 +13611,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Cable%20One%20Arm%20Lateral%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Cable%20One%20Arm%20Lateral%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Cable%20One%20Arm%20Lateral%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Cable%20One%20Arm%20Lateral%20Raise.mp4"
   }
  },
  {
@@ -13641,8 +13641,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Cable%20Rear%20Delt%20Row%20%28with%20rope%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Cable%20Rear%20Delt%20Row%20%28with%20rope%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Cable%20Rear%20Delt%20Row%20%28with%20rope%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Cable%20Rear%20Delt%20Row%20%28with%20rope%29.mp4"
   }
  },
  {
@@ -13670,8 +13670,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Bench%20Seated%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Bench%20Seated%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Dumbbell%20Bench%20Seated%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Dumbbell%20Bench%20Seated%20Press.mp4"
   }
  },
  {
@@ -13697,8 +13697,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Front%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Front%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Dumbbell%20Front%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Dumbbell%20Front%20Raise.mp4"
   }
  },
  {
@@ -13727,8 +13727,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Incline%20Hammer%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Incline%20Hammer%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Dumbbell%20Incline%20Hammer%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Dumbbell%20Incline%20Hammer%20Press.mp4"
   }
  },
  {
@@ -13756,7 +13756,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Incline%20Rear%20Lateral%20Raise.mp4"
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Dumbbell%20Incline%20Rear%20Lateral%20Raise.mp4"
   }
  },
  {
@@ -13784,8 +13784,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Iron%20Cross.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Iron%20Cross.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Dumbbell%20Iron%20Cross.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Dumbbell%20Iron%20Cross.mp4"
   }
  },
  {
@@ -13811,8 +13811,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Lateral%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Lateral%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Dumbbell%20Lateral%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Dumbbell%20Lateral%20Raise.mp4"
   }
  },
  {
@@ -13838,8 +13838,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20One%20Arm%20Lateral%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20One%20Arm%20Lateral%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Dumbbell%20One%20Arm%20Lateral%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Dumbbell%20One%20Arm%20Lateral%20Raise.mp4"
   }
  },
  {
@@ -13867,8 +13867,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Rear%20Delt%20Row.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Rear%20Delt%20Row.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Dumbbell%20Rear%20Delt%20Row.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Dumbbell%20Rear%20Delt%20Row.mp4"
   }
  },
  {
@@ -13895,8 +13895,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Rear%20Lateral%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Rear%20Lateral%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Dumbbell%20Rear%20Lateral%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Dumbbell%20Rear%20Lateral%20Raise.mp4"
   }
  },
  {
@@ -13923,8 +13923,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Seated%20Front%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Seated%20Front%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Dumbbell%20Seated%20Front%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Dumbbell%20Seated%20Front%20Raise.mp4"
   }
  },
  {
@@ -13951,8 +13951,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Seated%20Lateral%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Seated%20Lateral%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Dumbbell%20Seated%20Lateral%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Dumbbell%20Seated%20Lateral%20Raise.mp4"
   }
  },
  {
@@ -13979,7 +13979,7 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Upright%20Row.mp4"
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Dumbbell%20Upright%20Row.mp4"
   }
  },
  {
@@ -14005,8 +14005,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Lever%20Lateral%20Raise.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Lever%20Lateral%20Raise.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Lever%20Lateral%20Raise.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Lever%20Lateral%20Raise.mp4"
   }
  },
  {
@@ -14033,8 +14033,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Lever%20Military%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Lever%20Military%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Lever%20Military%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Lever%20Military%20Press.mp4"
   }
  },
  {
@@ -14061,8 +14061,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Lever%20Seated%20Reverse%20Fly.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Lever%20Seated%20Reverse%20Fly.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Lever%20Seated%20Reverse%20Fly.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Lever%20Seated%20Reverse%20Fly.mp4"
   }
  },
  {
@@ -14091,8 +14091,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Military%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Military%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Military%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Military%20Press.mp4"
   }
  },
  {
@@ -14120,8 +14120,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Smith%20Seated%20Shoulder%20Press.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Smith%20Seated%20Shoulder%20Press.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Smith%20Seated%20Shoulder%20Press.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Smith%20Seated%20Shoulder%20Press.mp4"
   }
  },
  {
@@ -14149,8 +14149,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Stretching%20-%20Band%20Warm-up%20Shoulder%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Stretching%20-%20Band%20Warm-up%20Shoulder%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Stretching%20-%20Band%20Warm-up%20Shoulder%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Stretching%20-%20Band%20Warm-up%20Shoulder%20Stretch.mp4"
   }
  },
  {
@@ -14178,8 +14178,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Stretching%20-%20Rear%20Deltoid%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Stretching%20-%20Rear%20Deltoid%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Stretching%20-%20Rear%20Deltoid%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Stretching%20-%20Rear%20Deltoid%20Stretch.mp4"
   }
  },
  {
@@ -14208,8 +14208,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Stretching%20-%20Seated%20Shoulder%20Flexor%20Depresor%20Retractor.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Stretching%20-%20Seated%20Shoulder%20Flexor%20Depresor%20Retractor.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Shoulders/Stretching%20-%20Seated%20Shoulder%20Flexor%20Depresor%20Retractor.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Shoulders/Stretching%20-%20Seated%20Shoulder%20Flexor%20Depresor%20Retractor.mp4"
   }
  },
  {
@@ -14236,8 +14236,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Trapezius/Barbell%20Shrug.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Trapezius/Barbell%20Shrug.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Trapezius/Barbell%20Shrug.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Trapezius/Barbell%20Shrug.mp4"
   }
  },
  {
@@ -14264,8 +14264,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Trapezius/Dumbbell%20Incline%20Shrug.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Trapezius/Dumbbell%20Incline%20Shrug.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Trapezius/Dumbbell%20Incline%20Shrug.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Trapezius/Dumbbell%20Incline%20Shrug.mp4"
   }
  },
  {
@@ -14292,8 +14292,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Trapezius/Dumbbell%20Shrug.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Trapezius/Dumbbell%20Shrug.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Trapezius/Dumbbell%20Shrug.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Trapezius/Dumbbell%20Shrug.mp4"
   }
  },
  {
@@ -14320,8 +14320,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Trapezius/Lever%20Shrug.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Trapezius/Lever%20Shrug.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Trapezius/Lever%20Shrug.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Trapezius/Lever%20Shrug.mp4"
   }
  },
  {
@@ -14348,8 +14348,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Trapezius/Scapula%20Dips.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Trapezius/Scapula%20Dips.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Trapezius/Scapula%20Dips.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Trapezius/Scapula%20Dips.mp4"
   }
  },
  {
@@ -14374,8 +14374,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Trapezius/Stretching%20-%20Neck%20Side%20Stretch.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Trapezius/Stretching%20-%20Neck%20Side%20Stretch.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Trapezius/Stretching%20-%20Neck%20Side%20Stretch.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Trapezius/Stretching%20-%20Neck%20Side%20Stretch.mp4"
   }
  },
  {
@@ -14401,8 +14401,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Band%20Overhead%20Triceps%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Band%20Overhead%20Triceps%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Band%20Overhead%20Triceps%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Band%20Overhead%20Triceps%20Extension.mp4"
   }
  },
  {
@@ -14428,8 +14428,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Band%20Side%20Triceps%20Pushdown.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Band%20Side%20Triceps%20Pushdown.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Band%20Side%20Triceps%20Pushdown.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Band%20Side%20Triceps%20Pushdown.mp4"
   }
  },
  {
@@ -14455,8 +14455,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Band%20Triceps%20Pushdown.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Band%20Triceps%20Pushdown.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Band%20Triceps%20Pushdown.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Band%20Triceps%20Pushdown.mp4"
   }
  },
  {
@@ -14483,8 +14483,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Cable%20Lying%20Triceps%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Cable%20Lying%20Triceps%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Cable%20Lying%20Triceps%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Cable%20Lying%20Triceps%20Extension.mp4"
   }
  },
  {
@@ -14511,8 +14511,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Cable%20Overhead%20Triceps%20Extension%20%28rope%20attachment%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Cable%20Overhead%20Triceps%20Extension%20%28rope%20attachment%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Cable%20Overhead%20Triceps%20Extension%20%28rope%20attachment%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Cable%20Overhead%20Triceps%20Extension%20%28rope%20attachment%29.mp4"
   }
  },
  {
@@ -14538,8 +14538,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Cable%20Pushdown%20%28rope%20attachment%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Cable%20Pushdown%20%28rope%20attachment%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Cable%20Pushdown%20%28rope%20attachment%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Cable%20Pushdown%20%28rope%20attachment%29.mp4"
   }
  },
  {
@@ -14565,8 +14565,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Cable%20Rope%20High%20Pulley%20Overhead%20Triceps%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Cable%20Rope%20High%20Pulley%20Overhead%20Triceps%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Cable%20Rope%20High%20Pulley%20Overhead%20Triceps%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Cable%20Rope%20High%20Pulley%20Overhead%20Triceps%20Extension.mp4"
   }
  },
  {
@@ -14594,8 +14594,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Cable%20Standing%20One%20Arm%20Triceps%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Cable%20Standing%20One%20Arm%20Triceps%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Cable%20Standing%20One%20Arm%20Triceps%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Cable%20Standing%20One%20Arm%20Triceps%20Extension.mp4"
   }
  },
  {
@@ -14622,8 +14622,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Cable%20Triceps%20Pushdown.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Cable%20Triceps%20Pushdown.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Cable%20Triceps%20Pushdown.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Cable%20Triceps%20Pushdown.mp4"
   }
  },
  {
@@ -14651,8 +14651,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Close%20Grip%20Push-ups.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Close%20Grip%20Push-ups.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Close%20Grip%20Push-ups.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Close%20Grip%20Push-ups.mp4"
   }
  },
  {
@@ -14678,8 +14678,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20Kickback.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20Kickback.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Dumbbell%20Kickback.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Dumbbell%20Kickback.mp4"
   }
  },
  {
@@ -14706,8 +14706,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20Lying%20Alternate%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20Lying%20Alternate%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Dumbbell%20Lying%20Alternate%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Dumbbell%20Lying%20Alternate%20Extension.mp4"
   }
  },
  {
@@ -14733,8 +14733,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20Lying%20Triceps%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20Lying%20Triceps%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Dumbbell%20Lying%20Triceps%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Dumbbell%20Lying%20Triceps%20Extension.mp4"
   }
  },
  {
@@ -14762,8 +14762,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20One%20Arm%20Triceps%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20One%20Arm%20Triceps%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Dumbbell%20One%20Arm%20Triceps%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Dumbbell%20One%20Arm%20Triceps%20Extension.mp4"
   }
  },
  {
@@ -14789,8 +14789,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20Pronate-grip%20Triceps%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20Pronate-grip%20Triceps%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Dumbbell%20Pronate-grip%20Triceps%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Dumbbell%20Pronate-grip%20Triceps%20Extension.mp4"
   }
  },
  {
@@ -14816,8 +14816,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20Seated%20Kickback.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20Seated%20Kickback.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Dumbbell%20Seated%20Kickback.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Dumbbell%20Seated%20Kickback.mp4"
   }
  },
  {
@@ -14844,8 +14844,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20Seated%20Triceps%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20Seated%20Triceps%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Dumbbell%20Seated%20Triceps%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Dumbbell%20Seated%20Triceps%20Extension.mp4"
   }
  },
  {
@@ -14872,8 +14872,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/EZ%20Barbell%20Lying%20Triceps%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/EZ%20Barbell%20Lying%20Triceps%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/EZ%20Barbell%20Lying%20Triceps%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/EZ%20Barbell%20Lying%20Triceps%20Extension.mp4"
   }
  },
  {
@@ -14900,8 +14900,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Lever%20Seated%20Dips.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Lever%20Seated%20Dips.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Lever%20Seated%20Dips.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Lever%20Seated%20Dips.mp4"
   }
  },
  {
@@ -14927,8 +14927,8 @@
   "imageUrls": [],
   "contraindications": [],
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Lever%20Triceps%20Extension%20%28neutral%20grip%29.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Lever%20Triceps%20Extension%20%28neutral%20grip%29.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Lever%20Triceps%20Extension%20%28neutral%20grip%29.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Lever%20Triceps%20Extension%20%28neutral%20grip%29.mp4"
   }
  },
  {
@@ -14956,8 +14956,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Stretching%20-%20Kneeling%20Triceps%20Extension.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Stretching%20-%20Kneeling%20Triceps%20Extension.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Stretching%20-%20Kneeling%20Triceps%20Extension.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Stretching%20-%20Kneeling%20Triceps%20Extension.mp4"
   }
  },
  {
@@ -14986,8 +14986,8 @@
   "contraindications": [],
   "isStretch": true,
   "video": {
-   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Stretching%20-%20Reverse%20Dip.mp4",
-   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Stretching%20-%20Reverse%20Dip.mp4"
+   "girl": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/girl/Triceps/Stretching%20-%20Reverse%20Dip.mp4",
+   "men": "https://storage.googleapis.com/traidingbot-b4061-exercise-videos/exercises/men/Triceps/Stretching%20-%20Reverse%20Dip.mp4"
   }
  }
 ]

@@ -114,15 +114,22 @@ void main() {
       expect(item(video: unhosted).playableVideoFor(null), isNull);
     });
 
-    test('the whole shipped catalog is unplayable right now', () {
-      // Stated rather than implied. This fails the day a host is chosen,
-      // which is exactly when someone should come back and read this file.
+    test('the shipped catalog is playable now', () {
+      // The inverse of what stood here until 2026-08-01, when the host was
+      // chosen and this test failed on cue. Every exercise that carries a clip
+      // must now hand one to the player — a catalog that advertises 343 videos
+      // and returns null for them is the state this whole file exists to
+      // prevent going unnoticed.
       final rows =
           (jsonDecode(File('assets/data/exercises.json').readAsStringSync())
                   as List)
               .cast<Map<String, dynamic>>()
-              .map(ExerciseItem.fromJson);
-      expect(rows.where((e) => e.playableVideoFor(null) != null), isEmpty);
+              .map(ExerciseItem.fromJson)
+              .toList();
+      final withClips = rows.where((e) => e.video.isNotEmpty);
+      expect(withClips, hasLength(343));
+      expect(withClips.where((e) => e.playableVideoFor(null) == null), isEmpty,
+          reason: 'an exercise with a clip that refuses to play it');
     });
 
     test('no clip at all is null, not an empty string', () {
