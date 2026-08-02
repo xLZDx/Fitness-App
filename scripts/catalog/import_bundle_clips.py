@@ -186,11 +186,14 @@ def main() -> None:
             for body in ("girl", "men"):
                 if body in clips:
                     video[body] = clips[body]
-            # A woman must not be shown the men's render when a women's one
-            # exists; where it does not, the app already falls back and the
-            # operator has accepted that (the models differ only by hair).
-            if "girl" not in video and "men" in video:
-                video["girl"] = video["men"]
+            # Deliberately NOT copying the men's key into `girl` when the
+            # women's render is missing. The app already falls back --
+            # `ExerciseItem.playableVideoFor`, preference then men then
+            # whichever exists -- and the operator has accepted seeing it (the
+            # two models differ only by hair and a top). Duplicating the key
+            # here would make the catalog claim a women's clip that does not
+            # exist, corrupting any later coverage count and cutting a second
+            # identical poster into the APK.
             if video:
                 if args.write:
                     entry["video"] = video
