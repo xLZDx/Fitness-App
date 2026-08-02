@@ -139,7 +139,7 @@ every scroll tick, which cost the frame budget for decoration.)
 
 | Path | Files | Role |
 |---|---:|---|
-| `mobile/test/` | 103 | Unit + widget tests, 721 of them. Runs on the host via `flutter test` |
+| `mobile/test/` | 131 | Unit + widget tests, 1002 of them. Runs on the host via `flutter test` |
 | `mobile/integration_test/` | 1 | `app_test.dart` — drives the real app on a device; the only place the native ML Kit bridge and the actual APK contents are visible. Needs hardware |
 | `mobile/android/` | 19 | Android host + Gradle |
 | `mobile/assets/` | 4 | Bundled data, ML models, demo frames, and the CC BY 4.0 anatomy chart |
