@@ -143,11 +143,11 @@ every scroll tick, which cost the frame budget for decoration.)
 | `mobile/integration_test/` | 1 | `app_test.dart` — drives the real app on a device; the only place the native ML Kit bridge and the actual APK contents are visible. Needs hardware |
 | `mobile/android/` | 19 | Android host + Gradle |
 | `mobile/assets/` | 4 | Bundled data, ML models, demo frames, and the CC BY 4.0 anatomy chart |
-| `functions/src/index.ts` | 1 | Cloud Functions — Stripe bridge |
+| `functions/src/` | 5 | Cloud Functions — the Stripe bridge, and `video_urls.ts`, which mints short-lived signed URLs for the licensed clips |
 | `wear/src/` | 5 | Wear OS companion (Kotlin) |
 | `scripts/dev/` | 7 | `debug_daemon.ps1`, `run_app.ps1`, `run_tests.ps1`, `run_with_debug.ps1`, `build_wear.ps1`, `measure_context.ps1`, `audit_doc_links.ps1` |
-| `scripts/ops/` | 1 | `setup_stripe_secrets.ps1` |
-| `scripts/catalog/` | 1 | `seed_stock_videos.ps1` |
+| `scripts/ops/` | 5 | `setup_stripe_secrets.ps1`, `firebase_api.py` (borrows the signed-in CLI's token; never prints it), `upload_video_library.py` |
+| `scripts/catalog/` | 62 | Building the exercise catalog. `bundle_layout.py` + its 25 tests are the naming policy for the purchased library; `transcode_bundle.py` streams clips out of the 42 GB archive; `import_bundle_clips.py` points the catalog at them; `provision_video_bucket.py` and `verify_clip_signing.py` create and prove the private-bucket chain |
 | `docs/` | 67 | Emulator screenshots — see `docs/README.md` |
 
 ---

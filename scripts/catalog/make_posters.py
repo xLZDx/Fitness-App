@@ -119,7 +119,16 @@ def main() -> None:
             rel = f'assets/posters/{gender}/{row["id"]}.jpg'
             dst = ROOT / 'mobile' / rel
             dst.parent.mkdir(parents=True, exist_ok=True)
-            if dst.exists():
+            # Regenerated when the clip is newer than the poster, not merely
+            # skipped when a poster exists.
+            #
+            # 243 exercises moved from the public library to the licensed one,
+            # and the two are different renders of the same movement — a
+            # different character, a different machine. Keeping the old still
+            # would put a picture of one render in front of a video of another,
+            # and the swap from poster to playing clip would jump, which is the
+            # single thing this poster exists to prevent.
+            if dst.exists() and dst.stat().st_mtime >= src.stat().st_mtime:
                 poster[gender] = rel
                 skipped += 1
                 continue
