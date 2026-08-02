@@ -39,7 +39,12 @@ import concurrent.futures
 import json
 import subprocess
 import sys
+import tempfile
+import threading
+import zipfile
 from pathlib import Path
+
+from bundle_layout import plan_import
 
 # Sampled from the delivered clips, not assumed. See the module docstring for
 # what a guessed value did.
@@ -85,6 +90,52 @@ def build_filter(key: bool) -> tuple[list[str], str]:
     return ['-filter_complex', graph], 'chroma-keyed'
 
 
+class ZipLibrary:
+    """Feeds clips straight out of the archive, one at a time.
+
+    Extracting the 4K bundle first would write 42 GB to disk, read it all back,
+    and leave it there -- for a job whose entire output is under a gigabyte. So
+    each worker pulls its own member to a temp file, encodes it, and deletes it:
+    peak extra disk is `jobs` clips, about seventy megabytes, instead of forty
+    gigabytes.
+
+    A ZipFile is not safe to share across threads -- concurrent reads move one
+    shared file position -- so each thread gets its own handle. Opening one
+    re-reads the central directory, which for 2,578 entries is milliseconds and
+    happens once per thread, not once per clip.
+    """
+
+    def __init__(self, path: Path):
+        self.path = path
+        self._local = threading.local()
+
+    @property
+    def _zip(self) -> zipfile.ZipFile:
+        handle = getattr(self._local, "zip", None)
+        if handle is None:
+            handle = zipfile.ZipFile(self.path)
+            self._local.zip = handle
+        return handle
+
+    def listing(self) -> dict[str, int]:
+        with zipfile.ZipFile(self.path) as z:
+            return {i.filename: i.file_size for i in z.infolist() if not i.is_dir()}
+
+    def extract(self, member: str, into: Path) -> Path:
+        # Suffix matters: ffmpeg picks its demuxer partly from the extension,
+        # and a temp file called `tmp8kd2` makes it work harder to guess.
+        fd, name = tempfile.mkstemp(suffix=".mp4", dir=into)
+        target = Path(name)
+        try:
+            with self._zip.open(member) as src, open(fd, "wb") as dst:
+                while chunk := src.read(1 << 20):
+                    dst.write(chunk)
+        except BaseException:
+            target.unlink(missing_ok=True)
+            raise
+        return target
+
+
 def transcode(src: Path, dst: Path, key: bool) -> tuple[Path, str]:
     dst.parent.mkdir(parents=True, exist_ok=True)
     # Written under a temporary name and renamed only on success.
@@ -94,7 +145,12 @@ def transcode(src: Path, dst: Path, key: bool) -> tuple[Path, str]:
     # "Invalid data found"), and the resume check below happily counted them
     # as done because they existed and were non-empty. An interrupted run
     # would have poisoned the output set silently.
-    tmp = dst.with_suffix('.partial')
+    # `.partial.mp4`, not `.partial`: ffmpeg picks its output container from the
+    # extension, and `x.partial` makes it give up with "unable to choose an
+    # output format". The guard above was added after an interrupted run left
+    # unplayable files, and until this dry run it had never itself been run --
+    # so the fix for the silent-corruption bug was a total-failure bug.
+    tmp = dst.with_suffix('.partial.mp4')
     vf, _ = build_filter(key)
     cmd = [
         'ffmpeg', '-v', 'error', '-i', str(src), *vf,
@@ -121,9 +177,35 @@ def transcode(src: Path, dst: Path, key: bool) -> tuple[Path, str]:
     return dst, ''
 
 
+def _plan_from_zip(source: Path, dest: Path) -> tuple[list, dict, ZipLibrary]:
+    """Every clip worth encoding, under the object key it will be served from."""
+    library = ZipLibrary(source)
+    listing = library.listing()
+    plan = plan_import(listing)
+
+    print(f'{len(listing)} members -> {len(plan.chosen)} clips '
+          f'({plan.total_discarded} duplicate renders dropped)')
+    if plan.ambiguous:
+        # Not a warning to be scrolled past: the frames showed two different
+        # machines, so one real exercise is being left out of the library.
+        print('  AMBIGUOUS (two different machines, larger kept):')
+        for key in plan.ambiguous:
+            print(f'    {key}')
+
+    todo = [(member, dest / key) for key, member in sorted(plan.chosen.items())]
+    manifest = {
+        'source': source.name,
+        'chosen': plan.chosen,
+        'discarded': plan.discarded,
+        'ambiguous': plan.ambiguous,
+    }
+    return todo, manifest, library
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument('source', type=Path, help='directory of .mp4 files')
+    ap.add_argument('source', type=Path,
+                    help='directory of .mp4 files, or a .zip of them')
     ap.add_argument('dest', type=Path)
     ap.add_argument('--key', action='store_true',
                     help='composite a green screen onto white')
@@ -132,51 +214,94 @@ def main() -> None:
                     help='stop after N files (for a dry run)')
     args = ap.parse_args()
 
-    if not args.source.is_dir():
-        sys.exit(f'not a directory: {args.source}')
+    library: ZipLibrary | None = None
+    manifest: dict = {}
+    if args.source.is_file() and args.source.suffix.lower() == '.zip':
+        todo_all, manifest, library = _plan_from_zip(args.source, args.dest)
+    elif args.source.is_dir():
+        files = sorted(args.source.rglob('*.mp4'))
+        todo_all = [(f, args.dest / f.relative_to(args.source)) for f in files]
+    else:
+        sys.exit(f'not a directory or .zip: {args.source}')
 
-    files = sorted(args.source.rglob('*.mp4'))
-    if args.limit:
-        files = files[:args.limit]
-    if not files:
+    if not todo_all:
         sys.exit('no .mp4 found')
+    if args.limit:
+        todo_all = todo_all[:args.limit]
 
     _, label = build_filter(args.key)
-    print(f'{len(files)} clips, {label}, {HEIGHT}p{FPS} crf{CRF}, '
+    print(f'{len(todo_all)} clips, {label}, {HEIGHT}p{FPS} crf{CRF}, '
           f'{args.jobs} at a time')
 
     todo = []
-    for f in files:
-        rel = f.relative_to(args.source)
-        out = args.dest / rel
+    for src, out in todo_all:
         # Re-runnable: a clip already transcoded is left alone, so an
         # interrupted 2,500-file run resumes instead of starting over. Safe
         # only because a partial encode never reaches this name.
         if out.exists() and out.stat().st_size > 0:
             continue
         # A leftover .partial from a killed run is garbage, not progress.
-        out.with_suffix('.partial').unlink(missing_ok=True)
-        todo.append((f, out))
-    print(f'{len(files) - len(todo)} already done, {len(todo)} to do')
+        out.with_suffix('.partial.mp4').unlink(missing_ok=True)
+        todo.append((src, out))
+    print(f'{len(todo_all) - len(todo)} already done, {len(todo)} to do')
+
+    scratch = args.dest / '_scratch'
+    if library:
+        scratch.mkdir(parents=True, exist_ok=True)
+
+    def run_one(src, out: Path) -> tuple[Path, str, int]:
+        """Returns (output, error, source bytes)."""
+        if library is None:
+            return (*transcode(src, out, args.key), src.stat().st_size)
+        local = library.extract(src, scratch)
+        try:
+            size = local.stat().st_size
+            dst, err = transcode(local, out, args.key)
+            return dst, err, size
+        finally:
+            # The whole point of streaming from the archive: the copy does not
+            # outlive the encode.
+            local.unlink(missing_ok=True)
 
     done = failed = 0
     src_bytes = out_bytes = 0
-    with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        futures = {pool.submit(transcode, s, d, args.key): (s, d)
-                   for s, d in todo}
-        for fut in concurrent.futures.as_completed(futures):
-            s, d = futures[fut]
-            _, err = fut.result()
-            if err:
-                failed += 1
-                print(f'  FAILED {s.name}: {err}')
-                continue
-            done += 1
-            src_bytes += s.stat().st_size
-            out_bytes += d.stat().st_size
-            if done % 25 == 0:
-                print(f'  {done}/{len(todo)}  '
-                      f'{src_bytes / 2**30:.1f} GB -> {out_bytes / 2**30:.2f} GB')
+    try:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
+            futures = {pool.submit(run_one, s, d): (s, d) for s, d in todo}
+            for fut in concurrent.futures.as_completed(futures):
+                s, d = futures[fut]
+                name = s if isinstance(s, str) else s.name
+                try:
+                    _, err, size = fut.result()
+                except Exception as exc:  # noqa: BLE001 - one clip must not end the run
+                    failed += 1
+                    print(f'  FAILED {name}: {exc}')
+                    continue
+                if err:
+                    failed += 1
+                    print(f'  FAILED {name}: {err}')
+                    continue
+                done += 1
+                src_bytes += size
+                out_bytes += d.stat().st_size
+                if done % 25 == 0:
+                    print(f'  {done}/{len(todo)}  '
+                          f'{src_bytes / 2**30:.1f} GB -> {out_bytes / 2**30:.2f} GB',
+                          flush=True)
+    finally:
+        if library:
+            for leftover in scratch.glob('*.mp4'):
+                leftover.unlink(missing_ok=True)
+            scratch.rmdir() if not any(scratch.iterdir()) else None
+
+    if manifest:
+        # Written after the run so it describes what actually exists. The
+        # vendor assigns no stable ids and recommends we assign our own; this
+        # file is the only record of which delivered name became which object.
+        manifest_path = args.dest / 'import_map.json'
+        manifest_path.write_text(json.dumps(manifest, indent=1, sort_keys=True),
+                                 encoding='utf-8')
+        print(f'wrote {manifest_path}')
 
     print(f'\ntranscoded {done}, failed {failed}')
     if done:
