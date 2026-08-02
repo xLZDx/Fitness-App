@@ -79,15 +79,37 @@ class OfflinePrefetchAction extends Notifier<AsyncValue<void>> {
       // catalog is only read when no closure is supplied.
       final resolve = videoUrlsFor ??
           videoUrlResolverFor(await ref.read(allExercisesProvider.future));
+      // Collect first, resolve once, then download.
+      //
+      // A licensed clip's catalog entry is an object key, not a URL, and Dio
+      // cannot fetch `exercises/girl/Legs/Squat.mp4`. Resolving them one at a
+      // time would also mean one round trip per clip; `resolveAll` batches,
+      // chunks at the backend's cap of sixty, and drops only the clips whose
+      // chunk failed rather than the whole week.
+      final references = <String>{};
       for (final s in sessions) {
         if (s.scheduledFor.isBefore(now) || s.scheduledFor.isAfter(cutoff)) {
           continue;
         }
-        final urls = resolve(s);
-        for (final u in urls) {
-          if (u == null || u.isEmpty) continue;
-          await cache.download(u);
+        for (final u in resolve(s)) {
+          if (u != null && u.isNotEmpty) references.add(u);
         }
+      }
+      if (references.isEmpty) {
+        state = const AsyncValue.data(null);
+        return;
+      }
+      final playable = await ref.read(clipUrlResolverProvider)
+          .resolveAll(references);
+      for (final reference in references) {
+        final url = playable[reference];
+        // Absent means signing failed. Skipped rather than aborted: a week's
+        // prefetch should deliver what it can, and the clip still streams.
+        if (url == null) continue;
+        // Cached under the REFERENCE, fetched from the signed URL. Keying on
+        // the URL would put a fifteen-minute expiry in the filename and the
+        // cache would never hit again.
+        await cache.download(reference, from: url);
       }
       state = const AsyncValue.data(null);
     } catch (e, st) {

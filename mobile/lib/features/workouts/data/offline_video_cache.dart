@@ -9,13 +9,28 @@ import 'package:path_provider/path_provider.dart';
 /// basements with no signal. Premium-tier feature gated by the caller —
 /// this layer doesn't know about subscriptions.
 ///
-/// Each URL is hashed (sha1) into a stable filename inside the app's
+/// Each key is hashed (sha1) into a stable filename inside the app's
 /// document directory. The cache is *idempotent* — calling
-/// [download] for an already-cached URL is a no-op that completes
+/// [download] for an already-cached key is a no-op that completes
 /// immediately. [localFile] returns the file iff it exists.
+///
+/// ## The key is the catalog reference, never the URL it was fetched from
+///
+/// Licensed clips live in a private bucket and are reached through a signed
+/// URL that expires after fifteen minutes, so the URL is different on every
+/// request. Hashing it would produce a new filename each time: nothing would
+/// ever be found, and a premium user's "downloaded for offline" library would
+/// silently re-download itself forever while reporting success.
+///
+/// So [download] takes the stable key first and the thing to fetch second.
+/// For the public library the two are the same string and [from] can be
+/// omitted, which is why every existing call site still reads correctly.
 abstract class OfflineVideoCache {
   Future<File?> localFile(String url);
-  Future<File> download(String url, {ProgressCallback? onProgress});
+
+  /// Caches under [url]; fetches [from] when the two differ.
+  Future<File> download(String url,
+      {String? from, ProgressCallback? onProgress});
   Future<void> evict(String url);
   Future<int> sizeBytes();
   Future<void> clear();
@@ -57,13 +72,13 @@ class FileOfflineVideoCache implements OfflineVideoCache {
 
   @override
   Future<File> download(String url,
-      {ProgressCallback? onProgress}) async {
+      {String? from, ProgressCallback? onProgress}) async {
     final dir = await _cacheDir();
     final dest = File('${dir.path}/${_filenameFor(url)}');
     if (await dest.exists()) return dest;
     final tmp = File('${dest.path}.part');
     await _dio.download(
-      url,
+      from ?? url,
       tmp.path,
       onReceiveProgress: onProgress,
       options: Options(
@@ -116,8 +131,10 @@ class InMemoryOfflineVideoCache implements OfflineVideoCache {
 
   @override
   Future<File> download(String url,
-      {ProgressCallback? onProgress}) async {
-    _store[url] = _FakeBlob(url, 1024 * 1024);
+      {String? from, ProgressCallback? onProgress}) async {
+    // Keyed on [url] like the real one, so a test that caches a licensed
+    // reference and then looks it up behaves the same way the device does.
+    _store[url] = _FakeBlob(from ?? url, 1024 * 1024);
     onProgress?.call(1024 * 1024, 1024 * 1024);
     // Tests don't actually need the File handle; return a synthetic.
     return File('memory://$url');
@@ -141,6 +158,11 @@ class InMemoryOfflineVideoCache implements OfflineVideoCache {
   Future<void> clear() async => _store.clear();
 
   bool isCached(String url) => _store.containsKey(url);
+
+  /// What was actually fetched for [url], as opposed to what it is filed
+  /// under. The two differ for licensed clips, and a test that cannot see the
+  /// difference cannot catch the cache being keyed on an expiring URL.
+  String? fetchedFor(String url) => _store[url]?.url;
 }
 
 class _FakeBlob {
