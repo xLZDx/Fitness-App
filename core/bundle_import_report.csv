@@ -1,512 +1,512 @@
-id,title,pass,score,vendor_match,girl,men,had_video_before
-barbell_bench_press_medium_grip,Barbell Bench Press - Medium Grip,fuzzy,0.67,barbell bench close grip press,,,False
-barbell_guillotine_bench_press,Barbell Guillotine Bench Press,fuzzy,0.75,barbell bench press,,,True
-barbell_incline_bench_press_medium_grip,Barbell Incline Bench Press - Medium Grip,fuzzy,0.67,barbell bench incline press,,,True
-bench_press_powerlifting,Bench Press - Powerlifting,none,0.50,band bench press,,,False
-bench_press_with_bands,Bench Press - With Bands,exact,1.00,band bench press,exercises/girl/Chest/Band Bench Press.mp4,,False
-bench_press_with_chains,Bench Press with Chains,none,0.50,band bench press,,,False
-bear_crawl_sled_drags,Bear Crawl Sled Drags,none,0.40,crawl drag sled,,,False
-calf_press_on_the_leg_press_machine,Calf Press On The Leg Press Machine,subset,1.00,calf leg machine press raise,exercises/girl/Legs/Calf raise leg press machine.mp4,exercises/men/Legs/Calf raise leg press machine.mp4,False
-leg_press,Leg Press,subset,1.00,band leg press,exercises/girl/Legs/Band Leg Press.mp4,exercises/men/Legs/Band Leg Press.mp4,True
-narrow_stance_leg_press,Narrow Stance Leg Press,none,0.50,leg machine normal press stance,,,False
-sled_drag_harness,Sled Drag - Harness,none,0.50,crawl drag sled,,,False
-sled_overhead_backward_walk,Sled Overhead Backward Walk,none,0.20,gorilla walk,,,False
-close_grip_front_lat_pulldown,Close-Grip Front Lat Pulldown,subset,1.00,cable close down front grip lat pull,,exercises/men/Back/Cable Close Grip Front Lat Pulldown.mp4,True
-full_range_of_motion_lat_pulldown,Full Range-Of-Motion Lat Pulldown,none,0.38,band down kneeling lat pull,,,False
-one_arm_lat_pulldown,One Arm Lat Pulldown,subset,1.00,arm cable down lat one pull,,exercises/men/Back/Cable one arm lat pulldown.mp4,False
-rocky_pull_ups_pulldowns,Rocky Pull-Ups/Pulldowns,none,0.40,bench pull ups,,,False
-rope_straight_arm_pulldown,Rope Straight-Arm Pulldown,fuzzy,0.67,arm cable down pull straight,,,False
-straight_arm_pulldown,Straight-Arm Pulldown,subset,1.00,arm cable down pull straight,,exercises/men/Back/Cable Straight Arm Pulldown.mp4,True
-barbell_full_squat,Barbell Full Squat,exact,1.00,barbell full squat,exercises/girl/Legs/Barbell Full Squat.mp4,exercises/men/Powerlifting/Barbell full squat.mp4,False
-barbell_hack_squat,Barbell Hack Squat,none,0.50,barbell bench squat,,,False
-barbell_side_split_squat,Barbell Side Split Squat,exact,1.00,barbell side split squat,,exercises/men/Legs/Barbell side split squat.mp4,False
-barbell_squat,Barbell Squat,subset,1.00,barbell bench squat,exercises/girl/Legs/Barbell Bench Squat.mp4,exercises/men/Legs/Barbell bench squats.mp4,True
-barbell_squat_to_a_bench,Barbell Squat To A Bench,exact,1.00,barbell bench squat,exercises/girl/Legs/Barbell Bench Squat.mp4,exercises/men/Legs/Barbell bench squats.mp4,False
-box_squat,Box Squat,subset,1.00,barbell box squat,exercises/girl/Legs/Barbell Box Squat.mp4,exercises/men/Legs/Barbell box squat.mp4,False
-bodyweight_mid_row,Bodyweight Mid Row,none,0.40,bodyweight kneeling push row,,,False
-inverted_row_with_straps,Inverted Row with Straps,none,0.40,inverted machine row smith,,,True
-leverage_high_row,Leverage High Row,none,0.33,grips high row suspension trainer,,,False
-leverage_iso_row,Leverage Iso Row,none,0.25,kettlebell row,,,False
-lying_t_bar_row,Lying T-Bar Row,none,0.40,barbell lying row,,,True
-narrow_stance_hack_squats,Narrow Stance Hack Squats,fuzzy,0.60,barbell narrow squat stance,,,False
-ab_crunch_machine,Ab Crunch Machine,exact,1.00,ab crunch machine,exercises/girl/Abdominals/Abdominal Crunches Machine.mp4,exercises/men/Abdominals/abdominal crunches machine.mp4,False
-barbell_walking_lunge,Barbell Walking Lunge,fuzzy,0.67,barbell lunge,,,False
-bench_sprint,Bench Sprint,none,0.25,assisted bench chin,,,False
-bodyweight_walking_lunge,Bodyweight Walking Lunge,none,0.50,bodyweight forward lunge,,,False
-bosu_ball_cable_crunch_with_side_bends,Bosu Ball Cable Crunch With Side Bends,none,0.50,ball bosu crunch,,,False
-cable_crunch,Cable Crunch,subset,1.00,cable crunch standing,exercises/girl/Abdominals/Cable Standing Crunch.mp4,exercises/men/Abdominals/Cable Standing Crunch.mp4,True
-advanced_kettlebell_windmill,Advanced Kettlebell Windmill,fuzzy,0.67,kettlebell windmill,,,False
-alternating_floor_press,Alternating Floor Press,none,0.40,barbell chest floor press,,,False
-alternating_hang_clean,Alternating Hang Clean,none,0.50,barbell clean hang,,,False
-alternating_kettlebell_press,Alternating Kettlebell Press,none,0.50,kettlebell press sit,,,False
-alternating_kettlebell_row,Alternating Kettlebell Row,fuzzy,0.67,kettlebell row,,,False
-alternating_renegade_row,Alternating Renegade Row,none,0.50,push renegade row,,,False
-alternate_hammer_curl,Alternate Hammer Curl,subset,1.00,alternate curl dumbbell hammer seated,exercises/girl/Biceps/Alternate Hammer Curl Seated Dumbbells.mp4,exercises/men/Biceps/Dumbbell Alternate Seated Hammer Curl.mp4,False
-alternate_incline_dumbbell_curl,Alternate Incline Dumbbell Curl,exact,1.00,alternate curl dumbbell incline,,exercises/men/Biceps/Dumbbell Incline Alternate Curl.mp4,True
-alternating_deltoid_raise,Alternating Deltoid Raise,none,0.40,alternating bridge leg raise,,,False
-arnold_dumbbell_press,Arnold Dumbbell Press,exact,1.00,arnold dumbbell press,,exercises/men/Shoulders/arnold press dumbbell.mp4,True
-around_the_worlds,Around The Worlds,none,0.25,around dumbbell pullover,,,False
-bent_arm_dumbbell_pullover,Bent-Arm Dumbbell Pullover,exact,1.00,arm bent dumbbell pullover,,exercises/men/Back/Dumbbell Bent Arm Pullover.mp4,False
-anti_gravity_press,Anti-Gravity Press,subset,1.00,anti barbell ezbar gravity press,,exercises/men/Shoulders/EZ Barbell Anti Gravity Press.mp4,True
-barbell_ab_rollout,Barbell Ab Rollout,fuzzy,0.67,barbell rollout,,,False
-barbell_ab_rollout_on_knees,Barbell Ab Rollout - On Knees,none,0.50,barbell rollout,,,False
-barbell_curl,Barbell Curl,exact,1.00,barbell curl,exercises/girl/Biceps/Barbell Curl.mp4,,True
-barbell_curls_lying_against_an_incline,Barbell Curls Lying Against An Incline,none,0.40,barbell curl,,,False
-barbell_deadlift,Barbell Deadlift,exact,1.00,barbell deadlift,exercises/girl/Powerlifting/Barbell Deadlift.mp4,,False
-alternating_cable_shoulder_press,Alternating Cable Shoulder Press,none,0.38,band cable lateral press raise resistance shoulder,,,False
-bent_over_low_pulley_side_lateral,Bent Over Low-Pulley Side Lateral,none,0.30,arm bent cable lateral one over raise,,,False
-cable_chest_press,Cable Chest Press,subset,1.00,band cable chest high low press resistance,,exercises/men/Chest/chest press high to low cable resistance band.mp4,False
-cable_crossover,Cable Crossover,subset,1.00,cable chest crossover upper,,exercises/men/Chest/Cable Upper Chest Crossover.mp4,False
-cable_deadlifts,Cable Deadlifts,subset,1.00,cable deadlift leg single,exercises/girl/Legs/Cable Single Leg Deadlift.mp4,exercises/men/Legs/Cable Single Leg Deadlift.mp4,False
-cable_hammer_curls_rope_attachment,Cable Hammer Curls - Rope Attachment,none,0.33,cable curl hamstrings,,,False
-3_4_sit_up,3/4 Sit-Up,exact,1.00,3 4 sit,exercises/girl/Abdominals/3-4 Sit-up.mp4,,False
-90_90_hamstring,90/90 Hamstring,none,0.33,90 stretch,,,False
-air_bike,Air Bike,exact,1.00,air bike,exercises/girl/Abdominals/air bike.mp4,,False
-all_fours_quad_stretch,All Fours Quad Stretch,exact,1.00,all fours quad stretch,exercises/girl/Stretching - Mobility/ALL FOURS QUAD STRETCH.mp4,exercises/men/Stretching - Mobility/All fours quad stretch.mp4,False
-alternate_heel_touchers,Alternate Heel Touchers,none,0.50,alternate heel touches,,,False
-bench_dips,Bench Dips,subset,1.00,bench chest dip,,exercises/men/Chest/Chest Dip on Bench.mp4,True
-treadmill_warmup_walk,Warm-up Walk,none,0.33,gorilla walk,,,False
-treadmill_incline_walk,Incline Walk,none,0.33,gorilla walk,,,False
-treadmill_steady_run,Steady-State Run,none,0.00,,,,False
-treadmill_intervals,Run Intervals,none,0.00,,,,False
-rowing_steady,Steady Row,none,0.33,kettlebell row,,,False
-rowing_intervals,Row Intervals,none,0.33,kettlebell row,,,False
-fedb_bent-knee_hip_raise,Bent-Knee Hip Raise,none,0.43,band bent knee lying raise resistance,,,False
-fedb_body_tricep_press,Body Tricep Press,none,0.33,extension overhead plate press tricep,,,False
-fedb_body-up,Body-Up,exact,1.00,body,,exercises/men/Triceps/Body-Up.mp4,False
-fedb_bodyweight_squat,Bodyweight Squat,exact,1.00,bodyweight squat,,exercises/men/Legs/bodyweight squats.mp4,True
-fedb_bottoms_up,Bottoms Up,subset,1.00,bottoms half rep,,exercises/men/Abdominals/Bottoms-Up half rep.mp4,False
-fedb_butt_lift_bridge,Butt Lift (Bridge),none,0.25,butt kicks,,,False
-fedb_bench_jump,Bench Jump,none,0.33,jump star,,,False
-fedb_decline_close-grip_bench_to_skull_crusher,Decline Close-Grip Bench To Skull Crusher,none,0.43,crusher decline kettlebell skull,,,False
-fedb_flat_bench_cable_flyes,Flat Bench Cable Flyes,exact,1.00,bench cable flat fly,,exercises/men/Chest/flat bench cable fly.mp4,False
-fedb_flat_bench_leg_pull-in,Flat Bench Leg Pull-In,none,0.40,alternate leg pull,,,False
-fedb_flat_bench_lying_leg_raise,Flat Bench Lying Leg Raise,fuzzy,0.60,leg lying raise,,,True
-fedb_incline_bench_pull,Incline Bench Pull,none,0.50,bench pull ups,,,False
-fedb_band_assisted_pull-up,Band Assisted Pull-Up,fuzzy,0.67,assisted pull,,,True
-fedb_glute_ham_raise,Glute Ham Raise,none,0.29,band glutes plank raise resistance side,,,False
-fedb_hyperextensions_with_no_hyperextension_bench,Hyperextensions With No Hyperextension Bench,none,0.29,back bench extension hyperextension weighted,,,False
-fedb_reverse_hyperextension,Reverse Hyperextension,none,0.33,plank reverse,,,True
-fedb_weighted_ball_hyperextension,Weighted Ball Hyperextension,none,0.40,ball russian twist weighted,,,False
-fedb_barbell_glute_bridge,Barbell Glute Bridge,exact,1.00,barbell bridge glutes,,exercises/men/Legs/Barbell glute bridge.mp4,False
-fedb_barbell_hip_thrust,Barbell Hip Thrust,exact,1.00,barbell hip thrust,exercises/girl/Legs/Barbell Hip Thrust.mp4,exercises/men/Legs/Barbell Hip Thrust.mp4,False
-fedb_barbell_incline_shoulder_raise,Barbell Incline Shoulder Raise,fuzzy,0.60,barbell incline press shoulder,,,False
-fedb_barbell_lunge,Barbell Lunge,exact,1.00,barbell lunge,exercises/girl/Legs/Barbell Lunge.mp4,exercises/men/Legs/Barbell lunges.mp4,True
-fedb_barbell_rear_delt_row,Barbell Rear Delt Row,fuzzy,0.60,delt kettlebell rear row,,,True
-fedb_barbell_rollout_from_bench,Barbell Rollout from Bench,none,0.50,barbell rollout,,,False
-fedb_close-grip_barbell_bench_press,Close-Grip Barbell Bench Press,exact,1.00,barbell bench close grip press,,exercises/men/Triceps/close grip barbell bench press.mp4,True
-fedb_decline_barbell_bench_press,Decline Barbell Bench Press,exact,1.00,barbell bench decline press,,exercises/men/Chest/barbell bench press decline.mp4,True
-fedb_decline_dumbbell_bench_press,Decline Dumbbell Bench Press,exact,1.00,bench decline dumbbell press,,exercises/men/Chest/Dumbbell Decline Bench Press.mp4,True
-fedb_dumbbell_bench_press,Dumbbell Bench Press,exact,1.00,bench dumbbell press,,exercises/men/Chest/Dumbbell Bench Press.mp4,True
-fedb_dumbbell_bench_press_with_neutral_grip,Dumbbell Bench Press with Neutral Grip,fuzzy,0.60,bench dumbbell press,,,False
-fedb_hammer_grip_incline_db_bench_press,Hammer Grip Incline DB Bench Press,fuzzy,0.67,bench dumbbell incline press,,,False
-fedb_machine_bicep_curl,Machine Bicep Curl,subset,1.00,bicep cable curl grip low machine normal,,exercises/men/Biceps/bicep curl low cable machine normal grip.mp4,False
-fedb_low_cable_crossover,Low Cable Crossover,none,0.50,cable fly low,,,False
-fedb_single-arm_cable_crossover,Single-Arm Cable Crossover,none,0.50,arm cable fly reverse single,,,False
-fedb_stride_jump_crossover,Stride Jump Crossover,none,0.25,arm crossover,,,False
-fedb_barbell_seated_calf_raise,Barbell Seated Calf Raise,fuzzy,0.60,calf kettlebell raise seated,,,False
-fedb_calf_press,Calf Press,subset,1.00,calf leg machine press raise,exercises/girl/Legs/Calf raise leg press machine.mp4,exercises/men/Legs/Calf raise leg press machine.mp4,False
-fedb_calf_raise_on_a_dumbbell,Calf Raise On A Dumbbell,subset,1.00,calf dumbbell raise seated,,exercises/men/Legs/Dumbbell Seated Calf Raise.mp4,True
-fedb_dumbbell_seated_one-leg_calf_raise,Dumbbell Seated One-Leg Calf Raise,subset,1.00,calf dumbbell grip hammer leg one raise seated,,exercises/men/Legs/Dumbbell Seated One Leg Calf Raise Hammer Grip.mp4,False
-fedb_rocking_standing_calf_raise,Rocking Standing Calf Raise,fuzzy,0.60,bodyweight calf raise standing,,,True
-fedb_seated_calf_raise,Seated Calf Raise,subset,1.00,calf kettlebell raise seated,exercises/girl/Legs/Kettlebell Seated Calf Raise.mp4,exercises/men/Legs/Kettlebell Seated Calf Raise.mp4,True
-fedb_incline_cable_chest_press,Incline Cable Chest Press,fuzzy,0.60,chest incline machine press,,,False
-fedb_leverage_chest_press,Leverage Chest Press,none,0.50,chest machine press,,,False
-fedb_leverage_decline_chest_press,Leverage Decline Chest Press,fuzzy,0.60,chest decline dumbbell press,,,False
-fedb_leverage_incline_chest_press,Leverage Incline Chest Press,fuzzy,0.60,chest incline machine press,,,False
-fedb_standing_cable_chest_press,Standing Cable Chest Press,none,0.43,arnold band cable press resistance standing,,,False
-fedb_knee_hip_raise_on_parallel_bars,Knee/Hip Raise On Parallel Bars,none,0.33,flat knee raise,,,False
-fedb_bent_over_dumbbell_rear_delt_raise_with_head_on_bench,Bent Over Dumbbell Rear Delt Raise With Head On Bench,none,0.56,bent delt dumbbell fly over rear,,,False
-fedb_close-grip_dumbbell_press,Close-Grip Dumbbell Press,subset,1.00,close decline dumbbell grip neutral press,exercises/girl/Chest/Dumbbell Decline Close Neutral Grip Press.mp4,exercises/men/Chest/Dumbbell Decline Close Neutral Grip Press.mp4,True
-fedb_close-grip_push-up_off_of_a_dumbbell,Close-Grip Push-Up off of a Dumbbell,fuzzy,0.60,close grip push,,,False
-fedb_decline_dumbbell_flyes,Decline Dumbbell Flyes,exact,1.00,decline dumbbell fly,,exercises/men/Chest/Dumbbell Decline Fly.mp4,False
-fedb_decline_dumbbell_triceps_extension,Decline Dumbbell Triceps Extension,subset,1.00,decline dumbbell extension over pull triceps,,exercises/men/Triceps/Dumbbell Decline triceps pull-over extension.mp4,True
-fedb_dumbbell_alternate_bicep_curl,Dumbbell Alternate Bicep Curl,subset,1.00,alternate bicep curl dumbbell incline,,exercises/men/Biceps/Dumbbell Incline Alternate Bicep Curl.mp4,True
-fedb_close-grip_ez_bar_curl,Close-Grip EZ Bar Curl,subset,1.00,bar biceps close curl ezbar grip,,exercises/men/Biceps/Ez bar biceps curl close grip.mp4,False
-fedb_decline_ez_bar_triceps_extension,Decline EZ Bar Triceps Extension,none,0.57,bar cable extension ezbar overhead triceps,,,False
-fedb_ab_roller,Ab Roller,none,0.33,ab tuck,,,False
-fedb_wrist_roller,Wrist Roller,none,0.25,cable extension wrist,,,False
-fedb_glute_kickback,Glute Kickback,subset,1.00,balance band glutes kickback resistance standing,exercises/girl/Legs/Resistance Band Standing Balance Glute Kickback.mp4,exercises/men/Legs/Resistance Band Standing Balance Glute Kickback.mp4,False
-fedb_hack_squat,Hack Squat,subset,1.00,hack machine squat,exercises/girl/Legs/Hack Squat Machine.mp4,exercises/men/Legs/Hack Squat Machine Squat.mp4,True
-fedb_lying_machine_squat,Lying Machine Squat,none,0.50,hack machine squat,,,False
-fedb_thigh_abductor,Thigh Abductor,none,0.33,abduction shoulder,,,False
-fedb_thigh_adductor,Thigh Adductor,none,0.33,adduction stretch,,,False
-fedb_double_kettlebell_alternating_hang_clean,Double Kettlebell Alternating Hang Clean,none,0.33,barbell clean hang,,,False
-fedb_double_kettlebell_jerk,Double Kettlebell Jerk,none,0.40,double kettlebell push sled,,,False
-fedb_double_kettlebell_push_press,Double Kettlebell Push Press,fuzzy,0.60,double kettlebell push sled,,,False
-fedb_double_kettlebell_snatch,Double Kettlebell Snatch,fuzzy,0.67,kettlebell snatch,,,False
-fedb_double_kettlebell_windmill,Double Kettlebell Windmill,fuzzy,0.67,kettlebell windmill,,,False
-fedb_extended_range_one-arm_kettlebell_floor_press,Extended Range One-Arm Kettlebell Floor Press,none,0.50,arm dumbbell floor one press,,,False
-fedb_v-bar_pulldown,V-Bar Pulldown,subset,1.00,bar down lat pull v,,exercises/men/Back/v bar lat pull down.mp4,False
-fedb_wide-grip_lat_pulldown,Wide-Grip Lat Pulldown,exact,1.00,down grip lat pull wide,,exercises/men/Back/lat pull down wide grip.mp4,False
-fedb_wide-grip_pulldown_behind_the_neck,Wide-Grip Pulldown Behind The Neck,none,0.57,down grip lat pull wide,,,False
-fedb_ball_leg_curl,Ball Leg Curl,exact,1.00,ball curl leg,,exercises/men/Legs/Exercise Ball Leg Curl.mp4,True
-fedb_lying_leg_curls,Lying Leg Curls,subset,1.00,bodyweight curl leg lying,,exercises/men/Legs/bodyweight lying leg curl.mp4,True
-fedb_seated_band_hamstring_curl,Seated Band Hamstring Curl,none,0.40,band concentration curl,,,False
-fedb_seated_leg_curl,Seated Leg Curl,subset,1.00,curl leg machine seated,,exercises/men/Legs/Seated leg curl machine.mp4,True
-fedb_standing_leg_curl,Standing Leg Curl,subset,1.00,band curl leg standing,exercises/girl/Legs/Band Standing Leg Curl.mp4,,True
-fedb_leg_extensions,Leg Extensions,subset,1.00,extension leg lever,exercises/girl/Legs/Lever Leg Extension.mp4,exercises/men/Legs/Lever Leg Extension.mp4,True
-fedb_single-leg_leg_extension,Single-Leg Leg Extension,subset,1.00,extension leg seated single,exercises/girl/Legs/Seated leg extension single leg.mp4,exercises/men/Legs/Seated leg extension single leg.mp4,False
-fedb_backward_medicine_ball_throw,Backward Medicine Ball Throw,fuzzy,0.60,ball medicine rotational throw,,,False
-fedb_medicine_ball_chest_pass,Medicine Ball Chest Pass,none,0.50,ab ball chest medicine throw,,,False
-fedb_medicine_ball_full_twist,Medicine Ball Full Twist,none,0.40,ball jumps medicine,,,False
-fedb_medicine_ball_scoop_throw,Medicine Ball Scoop Throw,fuzzy,0.60,ball medicine rotational throw,,,False
-fedb_one-arm_medicine_ball_slam,One-Arm Medicine Ball Slam,none,0.33,arm one push,,,False
-fedb_cable_rear_delt_fly,Cable Rear Delt Fly,exact,1.00,cable delt fly rear,,exercises/men/Shoulders/cable rear delt fly.mp4,False
-fedb_reverse_machine_flyes,Reverse Machine Flyes,exact,1.00,fly machine reverse,exercises/girl/Shoulders/Reverse machine fly.mp4,exercises/men/Shoulders/Reverse Machine Fly.mp4,False
-fedb_box_jump_multiple_response,Box Jump (Multiple Response),none,0.50,box jump,,,False
-fedb_box_skip,Box Skip,none,0.33,box jump,,,False
-fedb_box_squat_with_chains,Box Squat with Chains,none,0.50,barbell box squat,,,False
-fedb_front_box_jump,Front Box Jump,fuzzy,0.67,box jump,,,False
-fedb_lateral_box_jump,Lateral Box Jump,exact,1.00,box jump lateral,exercises/girl/Legs/Lateral Box Jump.mp4,exercises/men/Legs/Lateral Box Jump.mp4,False
-fedb_reverse_band_box_squat,Reverse Band Box Squat,none,0.40,band row squat,,,False
-fedb_cable_preacher_curl,Cable Preacher Curl,exact,1.00,cable curl preacher,,exercises/men/Biceps/Cable Preacher Curl.mp4,False
-fedb_machine_preacher_curls,Machine Preacher Curls,none,0.50,curl kettlebell preacher,,,False
-fedb_one_arm_dumbbell_preacher_curl,One Arm Dumbbell Preacher Curl,subset,1.00,arm curl dumbbell hammer one preacher,,exercises/men/Biceps/Dumbbell One Arm Hammer Preacher Curl.mp4,True
-fedb_preacher_curl,Preacher Curl,subset,1.00,curl kettlebell preacher,exercises/girl/Biceps/Kettlebell Preacher Curl.mp4,exercises/men/Biceps/Kettlebell Preacher Curl.mp4,True
-fedb_two-arm_dumbbell_preacher_curl,Two-Arm Dumbbell Preacher Curl,fuzzy,0.60,curl dumbbell preacher,,,False
-fedb_zottman_preacher_curl,Zottman Preacher Curl,subset,1.00,curl dumbbell preacher zottman,,exercises/men/Biceps/Dumbbell Zottman Preacher Curl.mp4,False
-fedb_heavy_bag_thrust,Heavy Bag Thrust,none,0.40,bag drag heavy sled,,,False
-fedb_back_flyes_-_with_bands,Back Flyes - With Bands,none,0.50,band chest fly,,,False
-fedb_box_squat_with_bands,Box Squat with Bands,none,0.50,band row squat,,,False
-fedb_calf_raises_-_with_bands,Calf Raises - With Bands,subset,1.00,band calf raise resistance standing,,exercises/men/Legs/standing calf raise resistance band.mp4,True
-fedb_cross_over_-_with_bands,Cross Over - With Bands,none,0.50,abduction band cross,,,False
-fedb_deadlift_with_bands,Deadlift with Bands,exact,1.00,band deadlift,exercises/girl/Legs/Band Deadlift.mp4,exercises/men/Back/Band Deadlift.mp4,False
-fedb_hip_extension_with_bands,Hip Extension with Bands,subset,1.00,band bent extension hip over,exercises/girl/Legs/Band Bent-over Hip Extension.mp4,,True
-fedb_upright_cable_row,Upright Cable Row,subset,1.00,bar cable ezbar row upright,,exercises/men/Shoulders/cable upright row with EZ bar.mp4,False
-fedb_barbell_shoulder_press,Barbell Shoulder Press,subset,1.00,barbell incline press shoulder,exercises/girl/Shoulders/Barbell Incline Shoulders Press.mp4,,False
-fedb_cable_shoulder_press,Cable Shoulder Press,subset,1.00,band cable lateral press raise resistance shoulder,,exercises/men/Shoulders/lateral raise to shoulder press resistance band cable.mp4,False
-fedb_dumbbell_one-arm_shoulder_press,Dumbbell One-Arm Shoulder Press,subset,1.00,2 arm dumbbell one press shoulder,,exercises/men/Shoulders/Dumbbell One Arm Shoulder Press (VERSION 2).mp4,False
-fedb_dumbbell_shoulder_press,Dumbbell Shoulder Press,subset,1.00,dumbbell press shoulder squat,,exercises/men/Legs/Dumbbell Squats to Shoulder Press.mp4,True
-fedb_leverage_shoulder_press,Leverage Shoulder Press,none,0.40,band press seated shoulder,,,False
-fedb_machine_shoulder_military_press,Machine Shoulder (Military) Press,fuzzy,0.60,machine press shoulder smith,,,False
-fedb_decline_smith_press,Decline Smith Press,subset,1.00,decline machine press smith,,exercises/men/Chest/smith machine press decline.mp4,False
-fedb_smith_incline_shoulder_raise,Smith Incline Shoulder Raise,none,0.33,band incline raise t,,,False
-fedb_smith_machine_behind_the_back_shrug,Smith Machine Behind the Back Shrug,none,0.33,back extension machine,,,False
-fedb_smith_machine_bench_press,Smith Machine Bench Press,fuzzy,0.60,decline machine press smith,,,False
-fedb_smith_machine_bent_over_row,Smith Machine Bent Over Row,none,0.50,band bent over row,,,False
-fedb_smith_machine_calf_raise,Smith Machine Calf Raise,exact,1.00,calf machine raise smith,,exercises/men/Legs/smith machine calf raise.mp4,True
-fedb_rack_delivery,Rack Delivery,none,0.25,barbell pull rack,,,False
-fedb_rack_pulls,Rack Pulls,none,0.33,pulls superman,,,False
-fedb_t-bar_row_with_handle,T-Bar Row with Handle,none,0.33,bar bent over row,,,False
-fedb_dip_machine,Dip Machine,subset,1.00,chest dip machine,,exercises/men/Chest/chest dip machine.mp4,False
-fedb_machine_triceps_extension,Machine Triceps Extension,none,0.50,extension machine tricep,,,True
-fedb_elliptical_trainer,Elliptical Trainer,none,0.20,chin grips suspension trainer,,,False
-fedb_stairmaster,Stairmaster,none,0.00,,,,False
-fedb_step_mill,Step Mill,none,0.33,45 step,,,False
-fedb_bicycling_stationary,"Bicycling, Stationary",none,0.33,bike stationary,,,False
-fedb_recumbent_bike,Recumbent Bike,subset,1.00,air bike,exercises/girl/Abdominals/air bike.mp4,,False
-fedb_battling_ropes,Battling Ropes,none,0.25,jump rope row,,,True
-fedb_rope_climb,Rope Climb,none,0.25,jump rope row,,,False
-fedb_pullups,Pullups,subset,1.00,assisted pull,exercises/girl/Back/Assisted Pull-up.mp4,exercises/men/Back/Assisted pull up.mp4,False
-fedb_chin-up,Chin-Up,exact,1.00,chin,,exercises/men/Back/chin up.mp4,True
-fedb_muscle_up,Muscle Up,subset,1.00,bodyweight muscle,,exercises/men/Back/Bodyweight Muscle-up.mp4,False
-fedb_one_arm_chin-up,One Arm Chin-Up,none,0.50,arm one push,,,False
-fedb_scapular_pull-up,Scapular Pull-Up,none,0.33,assisted pull,,,True
-fedb_kipping_muscle_up,Kipping Muscle Up,none,0.33,kipping pull,,,False
-fedb_hanging_leg_raise,Hanging Leg Raise,exact,1.00,hanging leg raise,exercises/girl/Abdominals/Hanging Leg Raises.mp4,,True
-fedb_hanging_pike,Hanging Pike,none,0.33,pike push,,,False
-fedb_russian_twist,Russian Twist,exact,1.00,russian twist,,exercises/men/Abdominals/russian twist.mp4,True
-fedb_cable_russian_twists,Cable Russian Twists,fuzzy,0.67,cable twist,,,True
-fedb_seated_barbell_twist,Seated Barbell Twist,exact,1.00,barbell seated twist,,exercises/men/Abdominals/Barbell seated twist.mp4,True
-fedb_front_plate_raise,Front Plate Raise,exact,1.00,front plate raise,,exercises/men/Shoulders/plate front raise.mp4,False
-fedb_plate_pinch,Plate Pinch,subset,1.00,deadlift grip pinch plate,exercises/girl/Back/Plate Pinch Grip Deadlift.mp4,exercises/men/Back/Plate Pinch Grip Deadlift.mp4,False
-fedb_plate_twist,Plate Twist,subset,1.00,plate russian twist,exercises/girl/Abdominals/Plate Russian Twist.mp4,exercises/men/Abdominals/Plate Russian Twist.mp4,False
-fedb_reverse_plate_curls,Reverse Plate Curls,none,0.50,cable curl reverse,,,False
-air_bike_intervals,Air Bike Intervals,fuzzy,0.67,air bike,,,False
-air_bike_steady,Air Bike Steady Effort,none,0.50,air bike,,,False
-ski_erg_intervals,Ski Erg Intervals,none,0.33,country cross ergometer fly ski,,,False
-ski_erg_steady,Ski Erg Steady Pull,none,0.43,basic country cross ergometer pull ski,,,False
-vid_45_degree_bycicle_twisting_crunch,45-Degree Bicycle Twisting Crunch,exact,1.00,45 bicycle crunch twisting,exercises/girl/Abdominals/45 degree Bicycle Twisting Crunch.mp4,,True
-vid_45_degree_side_bend,45-Degree Side Bend,exact,1.00,45 bend side,exercises/girl/Abdominals/45 Degree Side Bend.mp4,exercises/men/Abdominals/45 degree side bend.mp4,True
-vid_air_twisting_crunch,Air Twisting Crunch,exact,1.00,air crunch twisting,exercises/girl/Abdominals/air twisting crunch.mp4,exercises/men/Abdominals/air twisting crunch.mp4,True
-vid_band_decline_sit_ups,Band Decline Sit-Up,exact,1.00,band decline sit,exercises/girl/Abdominals/Band Decline Sit up.mp4,,True
-vid_band_side_bend,Band Side Bend,exact,1.00,band bend side,exercises/girl/Abdominals/Band side bend.mp4,,True
-vid_band_standing_crunch,Band Standing Crunch,none,0.50,band bicycle crunch,,,True
-vid_band_standing_lift,Band Standing Lift,none,0.40,band curl leg standing,,,True
-vid_band_twist,Band Standing Twist,none,0.50,plate standing twist,,,True
-vid_band_twist_up_down,Band Twist - Up and Down,none,0.50,cable down twist,,,True
-vid_bent_knee_lying_twist,Bent Knee Lying Twist,exact,1.00,bent knee lying twist,,exercises/men/Abdominals/Bent knee Lying Twist.mp4,True
-vid_cable_standing_crunch,Cable Standing Crunch,exact,1.00,cable crunch standing,exercises/girl/Abdominals/Cable Standing Crunch.mp4,exercises/men/Abdominals/Cable Standing Crunch.mp4,True
-vid_cable_standing_lift,Cable Standing Lift,none,0.50,cable crunch standing,,,True
-vid_crunch_on_bench,Crunch on a Bench,none,0.33,ab crunch,,,True
-vid_dumbbell_side_bend,Dumbbell Side Bend,exact,1.00,bend dumbbell side,,exercises/men/Abdominals/Dumbbell Side Bend.mp4,True
-vid_hanging_straight_leg_hip_raise,Hanging Straight Leg Hip Raise,subset,1.00,grips hanging hip leg raise straight suspension trainer,exercises/girl/Abdominals/Suspension Trainer with Grips Hanging Straight Leg Hip Raise.mp4,exercises/men/Abdominals/Suspension Trainer with Grips Hanging Straight Leg Hip Raise.mp4,True
-vid_hanging_straight_leg_raise,Hanging Straight Leg Raise,subset,1.00,grips hanging hip leg raise straight suspension trainer,exercises/girl/Abdominals/Suspension Trainer with Grips Hanging Straight Leg Hip Raise.mp4,exercises/men/Abdominals/Suspension Trainer with Grips Hanging Straight Leg Hip Raise.mp4,True
-vid_incline_leg_hip_raise,Incline Leg Hip Raise,none,0.40,alternate leg raise,,,True
-vid_landmine_180,Landmine 180,none,0.33,landmine row,,,True
-vid_lever_seated_crunch,Machine Seated Crunch,none,0.50,ab crunch machine,,,True
-vid_lever_seated_leg_raise_crunch,Machine Seated Leg Raise Crunch,fuzzy,0.60,crunch leg raise,,,True
-vid_lying_floor_leg_raise,Lying Floor Leg Raise,subset,1.00,alternate floor leg lying raise,exercises/girl/Abdominals/Alternate Lying Floor Leg Raise.mp4,exercises/men/Abdominals/Alternate lying floor leg raise.mp4,True
-vid_lying_straight_leg_raise,Lying Straight Leg Raise,fuzzy,0.75,leg raise straight,,,True
-vid_otis_ups,Otis-Up,none,0.00,,,,True
-vid_side_bridge_side_plank,Side Plank,exact,1.00,plank side,,exercises/men/Abdominals/side plank.mp4,True
-vid_sit_up_on_exercise_ball,Sit-Up on an Exercise Ball,exact,1.00,ball sit,exercises/girl/Abdominals/Ball Sit-up.mp4,,True
-vid_sit_ups,Sit-Up,exact,1.00,sit,,exercises/men/Abdominals/Situps.mp4,True
-vid_spell_caster,Spell Caster,none,0.00,,,,True
-vid_stretching_chin_to_chest_stretch,Chin-to-Chest Stretch,none,0.50,ball chest stretch,,,True
-vid_stretching_iron_cross_stretch,Iron Cross Stretch,exact,1.00,cross iron stretch,,exercises/men/Stretching - Mobility/iron cross stretch.mp4,True
-vid_stretching_seated_twist_straight_arm,Seated Twist Stretch - Straight Arm,none,0.43,calf leg seated straight stretch,,,True
-vid_stretching_spinal_stretch_on_exercise_ball,Spinal Stretch on an Exercise Ball,none,0.50,ball chest stretch,,,True
-vid_stretching_standing_side_bend_bent_arm,Standing Side Bend - Bent Arm,none,0.50,arm bend side tuck,,,True
-vid_twisting_crunch,Twisting Crunch,subset,1.00,air crunch twisting,exercises/girl/Abdominals/air twisting crunch.mp4,exercises/men/Abdominals/air twisting crunch.mp4,True
-vid_v_up,V-Up,exact,1.00,v,,exercises/men/Abdominals/v up.mp4,True
-vid_vertical_leg_raise_on_parallel_bars,Vertical Leg Raise on Parallel Bars,none,0.33,alternate leg raise,,,True
-vid_weighted_leg_extension_crunch,Weighted Leg Extension Crunch,none,0.40,extension leg lever,,,True
-vid_45_degree_hyperextension,45-Degree Hyperextension,subset,1.00,45 hyperextension twisting,exercises/girl/Abdominals/45 degree twisting hyperextension.mp4,exercises/men/Abdominals/45 degree twisting hyperextension.mp4,True
-vid_band_bent_over_row,Band Bent-Over Row,exact,1.00,band bent over row,exercises/girl/Back/Band bent-over row.mp4,exercises/men/Back/Band bent-over row.mp4,True
-vid_band_kneeling_one_arm_pulldown,Band Kneeling One-Arm Pulldown,none,0.57,band down kneeling lat pull,,,True
-vid_band_one_arm_twisting_seated_row,Band One-Arm Twisting Seated Row,none,0.50,alternate arm cable one row seated,,,True
-vid_band_one_leg_kickback_bent_position,Band One-Leg Kickback,subset,1.00,band bent kickback leg one position resistance,exercises/girl/Legs/Resistance Band One Leg Kickback (Bent Position).mp4,exercises/men/Legs/Resistance Band One Leg Kickback (Bent Position).mp4,True
-vid_band_pull_through,Band Pull Through,fuzzy,0.67,band pull,,,True
-vid_band_seated_row,Band Seated Row,subset,1.00,band cable resistance row seated,,exercises/men/Back/seated resistance band - cable rows.mp4,True
-vid_band_straight_back_seated_row,Band Straight-Back Seated Row,none,0.44,back cable grip high reverse row seated straight,,,True
-vid_barbell_bent_over_row_overgrip,Barbell Bent-Over Row - Overhand Grip,fuzzy,0.71,barbell bent grip over pronated row,,,True
-vid_barbell_straight_leg_deadlift,Barbell Straight-Leg Deadlift,exact,1.00,barbell deadlift leg straight,,exercises/men/Legs/Barbell straight leg deadlift.mp4,True
-vid_barbell_underhand_bent_over_row,Barbell Bent-Over Row - Underhand Grip,fuzzy,0.83,barbell bent over row underhand,,,True
-vid_cable_bar_lateral_pulldown_reverse_grip,Cable Lat Pulldown - Reverse Grip,fuzzy,0.83,down grip lat pull reverse,,,True
-vid_cable_bar_lateral_pulldown_wide_shoulder_grip,Cable Lat Pulldown - Wide Grip,fuzzy,0.83,down grip lat pull wide,,,True
-vid_cable_one_arm_lateral_pulldown,Cable One-Arm Lat Pulldown,exact,1.00,arm cable down lat one pull,,exercises/men/Back/Cable one arm lat pulldown.mp4,True
-vid_cable_one_arm_twisting_seated_row,Cable One-Arm Twisting Seated Row,fuzzy,0.71,alternate arm cable one row seated,,,True
-vid_cable_pulldown,Cable Pulldown - Close Underhand Grip,fuzzy,0.62,cable close down front grip lat pull,,,True
-vid_cable_seated_high_row_v_bar,Cable Seated High Row - V-Bar,fuzzy,0.71,bar cable machine row seated v,,,True
-vid_cable_seated_row_normal_grip,Cable Seated Row - Normal Grip,fuzzy,0.67,cable grip row seated supine,,,True
-vid_cable_seated_row_parallel_grip,Cable Seated Row - Parallel Grip,fuzzy,0.67,cable grip row seated supine,,,True
-vid_cable_seated_row_wide_grip,Cable Seated Row - Wide Grip,fuzzy,0.67,cable grip row seated supine,,,True
-vid_cable_straight_back_seated_high_row_reverse_grip,Cable Straight-Back Seated High Row - Reverse Grip,exact,1.00,back cable grip high reverse row seated straight,,exercises/men/Back/cable reverse grip straight back seated high row.mp4,True
-vid_cable_straight_back_seated_row_v_grip,Cable Straight-Back Seated Row - V-Grip,fuzzy,0.67,back cable grip high reverse row seated straight,,,True
-vid_chin_ups_narrow_parallel_grip,Chin-Up - Narrow Parallel Grip,subset,1.00,chin grip narrow parallel ups,,exercises/men/Back/Chin ups (narrow parallel grip).mp4,True
-vid_close_grip_chin_up,Close-Grip Chin-Up,subset,1.00,chin close grip reverse,,exercises/men/Back/Close-reverse Grip Chin-Up.mp4,True
-vid_commando_pull_up,Commando Pull-Up,exact,1.00,commando pull,,exercises/men/Back/Commando Pull-up.mp4,True
-vid_dumbbell_bent_over_row,Dumbbell Bent-Over Row,exact,1.00,bent dumbbell over row,,exercises/men/Back/dumbbells bent over row.mp4,True
-vid_dumbbell_deadlift,Dumbbell Deadlift,subset,1.00,deadlift dumbbell staggered,exercises/girl/Legs/Dumbbell Staggered Deadlift.mp4,exercises/men/Legs/Dumbbell Staggered Deadlift.mp4,True
-vid_dumbbell_hammer_grip_incline_bench_row,Dumbbell Hammer-Grip Incline Bench Row,subset,1.00,arm bench dumbbell grip hammer incline row two,,exercises/men/Back/Dumbbell Hammer Grip Incline Bench Two Arm Row.mp4,True
-vid_dumbbell_incline_row,Dumbbell Incline Row,exact,1.00,dumbbell incline row,,exercises/men/Back/Dumbbell Incline Row.mp4,True
-vid_dumbbell_lying_rear_delt_row,Dumbbell Lying Rear Delt Row,exact,1.00,delt dumbbell lying rear row,,exercises/men/Shoulders/Dumbbell Lying Rear Delt Row.mp4,True
-vid_dumbbell_palm_rotational_bent_over_row,Dumbbell Palm-Rotational Bent-Over Row,fuzzy,0.67,bent dumbbell over row,,,True
-vid_dumbbell_reverse_grip_row,Dumbbell Reverse-Grip Row,none,0.50,band grip lying reverse row,,,True
-vid_dumbbell_stiff_leg_deadlift,Dumbbell Stiff-Leg Deadlift,exact,1.00,deadlift dumbbell leg stiff,,exercises/men/Legs/Dumbbell Stiff Leg Deadlift.mp4,True
-vid_hammer_grip_pull_up,Hammer-Grip Pull-Up,none,0.50,grip normal pull,,,True
-vid_inverted_row_between_chairs,Inverted Row Between Chairs,none,0.40,between chairs dip,,,True
-vid_kettlebell_deadlift,Kettlebell Deadlift,subset,1.00,deadlift kettlebell staggered,exercises/girl/Legs/Kettlebell Staggered Deadlift.mp4,exercises/men/Legs/Kettlebell Staggered Deadlift.mp4,True
-vid_lever_back_extension,Machine Back Extension,exact,1.00,back extension machine,,exercises/men/Back/back extension machine.mp4,True
-vid_lever_high_row,Machine High Row,none,0.50,machine row seated,,,True
-vid_lever_reverse_t_bar_row,Machine Reverse-Grip T-Bar Row,none,0.38,band grip lying reverse row,,,True
-vid_lever_t_bar_row,Machine T-Bar Row,none,0.43,bar cable machine row seated v,,,True
-vid_pull_up_wide_back_grip,Pull-Up - Wide Grip Behind the Neck,fuzzy,0.60,grip pull wide,,,True
-vid_pull_up_wide_front_grip,Pull-Up - Wide Grip to the Chest,fuzzy,0.75,grip pull wide,,,True
-vid_reverse_grip_machine_lat_pulldown,Reverse-Grip Machine Lat Pulldown,fuzzy,0.83,down grip lat pull reverse,,,True
-vid_reverse_grip_pull_up,Reverse-Grip Pull-Up,subset,1.00,down grip lat pull reverse,,exercises/men/Back/reverse grip lat pull down.mp4,True
-vid_ring_high_row,Ring High Row,none,0.33,grips high row suspension trainer,,,True
-vid_single_dumbbell_stiff_leg_deadlift,Single-Dumbbell Stiff-Leg Deadlift,fuzzy,0.80,deadlift dumbbell leg single,,,True
-vid_smith_deadlift_deadlift,Smith Machine Deadlift,none,0.40,hip machine smith thrust,,,True
-vid_stretching_dynamic_back_stretch,Dynamic Back Stretch,exact,1.00,back dynamic stretch,,exercises/men/Stretching - Mobility/Dynamic Back Stretch.mp4,True
-vid_stretching_elbows_back_stretch,Elbows Back Stretch,exact,1.00,back elbows stretch,,exercises/men/Stretching - Mobility/Elbows Back Stretch.mp4,True
-vid_stretching_kneeling_lat_stretch,Kneeling Lat Stretch,subset,1.00,floor kneeling lat stretch,,exercises/men/Stretching - Mobility/kneeling lat floor stretch.mp4,True
-vid_stretching_middle_back_stretch,Middle Back Stretch,subset,1.00,back middle rotation stretch,,exercises/men/Stretching - Mobility/middle back rotation stretch.mp4,True
-vid_stretching_seated_lower_back_stretch,Seated Lower Back Stretch,none,0.50,back child lower pose stretch,,,True
-vid_stretching_seated_wide_angle_pose_sequence,Seated Wide Angle Pose Sequence,none,0.29,easy pose seated twist,,,True
-vid_stretching_sitting_bent_over_back_stretch,Sitting Bent-Over Back Stretch,none,0.33,back shoulder stretch,,,True
-vid_stretching_spine_stretch,Spine Stretch,subset,1.00,hand leg reach spine stretch,,exercises/men/Stretching - Mobility/Legs hand reach spine stretch.mp4,True
-vid_stretching_spine_stretch_forward,Spine Stretch Forward,none,0.33,hand leg reach spine stretch,,,True
-vid_stretching_standing_back_rotation_stretch,Standing Back Rotation Stretch,fuzzy,0.60,back bench standing stretch,,,True
-vid_stretching_standing_lateral_stretch,Standing Lateral Stretch,exact,1.00,lateral standing stretch,,exercises/men/Stretching - Mobility/standing lateral stretch.mp4,True
-vid_barbell_drag_curl,Barbell Drag Curl,exact,1.00,barbell curl drag,,exercises/men/Biceps/barbell drag curl.mp4,True
-vid_barbell_prone_incline_curl,Barbell Prone Incline Curl,fuzzy,0.60,band curl incline prone,,,True
-vid_cable_one_arm_curl,Cable One-Arm Curl,exact,1.00,arm cable curl one,,exercises/men/Biceps/Cable One Arm Curl.mp4,True
-vid_cable_standing_inner_curl,Standing Cable Inner Biceps Curl,fuzzy,0.60,biceps cable curl,,,True
-vid_dumbbell_alternate_seated_biceps_curl,Dumbbell Seated Alternating Curl,subset,1.00,alternating biceps curl dumbbell seated,exercises/girl/Biceps/Alternating Biceps Curl Seated Dumbbells.mp4,exercises/men/Biceps/alternating biceps curl seated dumbbells.mp4,True
-vid_dumbbell_biceps_curl,Dumbbell Biceps Curl,subset,1.00,alternate biceps curl dumbbell,,exercises/men/Biceps/Dumbbell Alternate Biceps Curl.mp4,True
-vid_dumbbell_concentration_curl,Dumbbell Concentration Curl,exact,1.00,concentration curl dumbbell,,exercises/men/Biceps/concentration curls dumbbell.mp4,True
-vid_dumbbell_cross_body_hammer_curl,Dumbbell Cross-Body Hammer Curl,subset,1.00,2 body cross curl dumbbell hammer,,exercises/men/Biceps/Dumbbell Cross Body Hammer Curl (Version 2).mp4,True
-vid_dumbbell_incline_biceps_curl,Dumbbell Incline Biceps Curl,subset,1.00,biceps curl dumbbell incline simultaneous,,exercises/men/Biceps/Dumbbell Incline Biceps Simultaneous Curl.mp4,True
-vid_dumbbell_incline_hammer_curl,Dumbbell Incline Hammer Curl,subset,1.00,alternate curl dumbbell hammer incline,,exercises/men/Biceps/Dumbbell Incline Alternate Hammer Curl.mp4,True
-vid_dumbbell_preacher_curl_over_exercise_ball,Dumbbell Preacher Curl Over an Exercise Ball,exact,1.00,ball curl dumbbell over preacher,,exercises/men/Biceps/Dumbbell Preacher Curl over Exercise Ball.mp4,True
-vid_dumbbell_prone_incline_curl,Dumbbell Prone Incline Curl,exact,1.00,curl dumbbell incline prone,,exercises/men/Biceps/Dumbbell Prone Incline Curl.mp4,True
-vid_dumbbell_seated_preacher_curl,Dumbbell Seated Preacher Curl,exact,1.00,curl dumbbell preacher seated,,exercises/men/Biceps/Dumbbell Seated Preacher Curl.mp4,True
-vid_ez_barbell_biceps_curl,EZ-Bar Biceps Curl,subset,1.00,bar biceps cable curl ezbar,,exercises/men/Biceps/Cable Biceps Curl (EZ-bar).mp4,True
-vid_lying_supine_dumbbell_curl,Lying Supine Dumbbell Curl,exact,1.00,curl dumbbell lying supine,,exercises/men/Biceps/Dumbbell Lying Supine Curl.mp4,True
-vid_stretching_butterfly_yoga_pose,Butterfly Yoga Pose,exact,1.00,butterfly pose yoga,,exercises/men/Yoga/Butterfly Yoga Pose.mp4,True
-vid_barbell_clean_and_press,Barbell Clean and Press,exact,1.00,barbell clean press,,exercises/men/Powerlifting/Barbell clean and press.mp4,True
-vid_donkey_calf_raise,Donkey Calf Raise,exact,1.00,calf donkey raise,,exercises/men/Legs/Donkey Calf Raise.mp4,True
-vid_dumbbell_front_squat,Dumbbell Front Squat,exact,1.00,dumbbell front squat,,exercises/men/Legs/Dumbbell Front Squat.mp4,True
-vid_dumbbell_single_leg_calf_raise,Dumbbell Single-Leg Calf Raise,subset,1.00,calf dumbbell leg raise single standing,,exercises/men/Legs/Dumbbell Standing Single Leg Calf Raise.mp4,True
-vid_dumbbell_standing_calf_raise,Dumbbell Standing Calf Raise,exact,1.00,calf dumbbell raise standing,,exercises/men/Legs/dumbbell standing calf raise.mp4,True
-vid_sled_45_degree_calf_press,Sled 45-Degree Calf Press,none,0.29,calf leg machine press raise,,,True
-vid_stretching_calf_stretch_with_rope,Calf Stretch with a Rope,exact,1.00,calf rope stretch,,exercises/men/Stretching - Mobility/Calf Stretch with Rope.mp4,True
-vid_stretching_calf_stretch_with_strap,Lying Calf Stretch with a Strap,none,0.40,calf rope stretch,,,True
-vid_stretching_circles_knee_stretch,Knee Circles,subset,1.00,circles knee stretch,,exercises/men/Stretching - Mobility/circles knee stretch.mp4,True
-vid_stretching_feet_and_ankles_rotation_stretch,Feet and Ankle Rotations,none,0.25,ankle circles,,,True
-vid_stretching_feet_and_ankles_stretch,Feet and Ankle Stretch,none,0.25,ankle circles,,,True
-vid_stretching_peroneals_stretch,Peroneals Stretch,none,0.33,90 stretch,,,True
-vid_stretching_seated_calf_stretch,Seated Calf Stretch,exact,1.00,calf seated stretch,,exercises/men/Stretching - Mobility/seated calf stretch.mp4,True
-vid_stretching_stairs_calf_stretch,Stairs Calf Stretch,none,0.50,calf rope stretch,,,True
-vid_stretching_standing_bench_calf_stretch,Standing Bench Calf Stretch,fuzzy,0.60,back bench standing stretch,,,True
-vid_burpee,Burpee,exact,1.00,burpee,,exercises/men/Calisthenics-Cardio-Plyo-Functional/Burpee.mp4,True
-vid_elliptical,Elliptical Trainer Workout,none,0.17,chin grips suspension trainer,,,True
-vid_jump_rope,Jump Rope,subset,1.00,jump rope row,,exercises/men/Back/Jump Rope row.mp4,True
-vid_jump_step_up,Jump Step-Up,none,0.33,45 step,,,True
-vid_jumping_jack,Jumping Jack,exact,1.00,jack jumping,,exercises/men/Calisthenics-Cardio-Plyo-Functional/jumping jack.mp4,True
-vid_running,Running,exact,1.00,running,exercises/girl/Calisthenics-Cardio-Plyo-Functional/Running.mp4,exercises/men/Calisthenics-Cardio-Plyo-Functional/Running.mp4,True
-vid_stationary_bike,Stationary Bike,exact,1.00,bike stationary,,exercises/men/Calisthenics-Cardio-Plyo-Functional/Stationary Exercise Bike.mp4,True
-vid_stretching_bridge_pose_setu_bandhasana,Bridge Pose,subset,1.00,bandhasana bridge pose setu,,exercises/men/Yoga/bridge pose setu bandhasana.mp4,True
-vid_stretching_flexion_leg_sit_up,Flexion Leg Sit-Up,none,0.33,sit,,,True
-vid_stretching_front_toe_touch,Front Toe Touch,none,0.50,standing toe touch,,,True
-vid_stretching_plyo_side_lunge_stretch,Plyometric Side Lunge Stretch,fuzzy,0.60,lunge plyometric side stretch,,,True
-vid_stretching_single_leg_stretch_bent_knee,Single Leg Stretch - Bent Knee,none,0.43,hamstrings leg seated single stretch,,,True
-vid_stretching_single_straight_leg_stretch,Single Straight Leg Stretch,none,0.50,hamstrings leg standing straight stretch,,,True
-vid_treadmill_running,Treadmill Running,exact,1.00,running treadmill,,exercises/men/Calisthenics-Cardio-Plyo-Functional/Treadmill Running.mp4,True
-vid_band_high_fly,Band High Fly,exact,1.00,band fly high,exercises/girl/Chest/Band high fly.mp4,,True
-vid_cable_lying_fly_flat_bench_cable_fly,Cable Lying Fly on a Flat Bench,fuzzy,0.80,bench cable flat fly,,,True
-vid_cable_standing_fly_crossover_fly,Standing Cable Crossover Fly,fuzzy,0.60,cable crossover fly reverse,,,True
-vid_chest_dips,Chest Dip,exact,1.00,chest dip,,exercises/men/Chest/chest dip.mp4,True
-vid_deep_push_ups,Deep Push-Up,exact,1.00,deep push,,exercises/men/Chest/Deep Push-Up.mp4,True
-vid_dumbbell_decline_fly_45_degree,Dumbbell Decline Fly,exact,1.00,decline dumbbell fly,,exercises/men/Chest/Dumbbell Decline Fly.mp4,True
-vid_dumbbell_fly,Dumbbell Fly,subset,1.00,decline dumbbell fly,,exercises/men/Chest/Dumbbell Decline Fly.mp4,True
-vid_dumbbell_fly_on_exercise_ball,Dumbbell Fly on an Exercise Ball,subset,1.00,ball dumbbell fly incline,,exercises/men/Chest/Dumbbell Incline Fly on Exercise Ball.mp4,True
-vid_dumbbell_incline_bench_press,Dumbbell Incline Bench Press,exact,1.00,bench dumbbell incline press,,exercises/men/Chest/Dumbbell Incline Bench Press.mp4,True
-vid_dumbbell_incline_fly,Dumbbell Incline Fly,exact,1.00,dumbbell fly incline,,exercises/men/Chest/Dumbbell Incline Fly.mp4,True
-vid_dumbbell_incline_fly_on_exercise_ball,Dumbbell Incline Fly on an Exercise Ball,exact,1.00,ball dumbbell fly incline,,exercises/men/Chest/Dumbbell Incline Fly on Exercise Ball.mp4,True
-vid_dumbbell_lying_hammer_press,Dumbbell Lying Hammer Press,fuzzy,0.60,decline dumbbell hammer press,,,True
-vid_incline_push_ups,Incline Push-Up,subset,1.00,box incline push,,exercises/men/Chest/Incline Push-Up (on box).mp4,True
-vid_lever_chest_press,Machine Chest Press,exact,1.00,chest machine press,exercises/girl/Chest/Chest Press Machine.mp4,exercises/men/Chest/Chest Press Machine.mp4,True
-vid_lever_incline_hammer_chest_press,Machine Incline Chest Press,exact,1.00,chest incline machine press,,exercises/men/Chest/machine chest press incline.mp4,True
-vid_lever_lying_chest_press,Machine Lying Chest Press,fuzzy,0.75,chest machine press,,,True
-vid_lever_pec_deck_fly,Pec Deck Fly,subset,1.00,deck fly machine pec,,exercises/men/Chest/pec deck fly machine.mp4,True
-vid_push_ups,Push-Up,subset,1.00,plank push,exercises/girl/Calisthenics-Cardio-Plyo-Functional/Plank Pushup.mp4,exercises/men/Calisthenics-Cardio-Plyo-Functional/Plank Pushup.mp4,True
-vid_stretching_above_head_chest_stretch,Above-Head Chest Stretch,exact,1.00,above chest head stretch,exercises/girl/Stretching - Mobility/Above Head Chest Stretch.mp4,exercises/men/Stretching - Mobility/Above head chest stretch.mp4,True
-vid_stretching_back_pec_stretch,Behind-the-Back Pec Stretch,fuzzy,0.75,back pec stretch,,,True
-vid_stretching_dynamic_chest_stretch,Dynamic Chest Stretch,none,0.50,adduction dynamic stretch,,,True
-vid_stretching_kneeling_back_rotation_stretch,Kneeling Back Rotation Stretch,fuzzy,0.60,back middle rotation stretch,,,True
-vid_stretching_standing_reach_up_back_rotation_stretch,Standing Reach-Up Back Rotation Stretch,none,0.50,back bench standing stretch,,,True
-vid_stretching_standing_wheel_rollout,Standing Wheel Rollout,subset,1.00,ab rollout standing wheel,exercises/girl/Abdominals/Standing Ab Wheel Rollout.mp4,exercises/men/Abdominals/Standing Ab Wheel Rollout.mp4,True
-vid_triceps_dips,Triceps Dip,subset,1.00,chair dip triceps,,exercises/men/Triceps/chair triceps dips.mp4,True
-vid_wide_grip_push_ups,Wide-Grip Push-Up,subset,1.00,bar cable down ezbar grip push triceps wide,,exercises/men/Triceps/cable triceps push down ez bar wide grip.mp4,True
-vid_barbell_reverse_wrist_curl_over_grip,Barbell Reverse Wrist Curl - Overhand Grip,none,0.50,barbell curl reverse,,,True
-vid_barbell_standing_back_wrist_curl,Barbell Standing Behind-the-Back Wrist Curl,fuzzy,0.83,back barbell curl standing wrist,,,True
-vid_dumbbell_behind_back_wrist_curl,Dumbbell Behind-the-Back Wrist Curl,fuzzy,0.60,curl dumbbell wrist,,,True
-vid_dumbbell_over_bench_wrist_curl,Dumbbell Over-Bench Reverse Wrist Curl,exact,1.00,bench curl dumbbell over reverse wrist,,exercises/men/Forearms/Dumbbell Over Bench Reverse Wrist Curl.mp4,True
-vid_dumbbell_seated_neutral_wrist_curl,Dumbbell Seated Neutral Wrist Curl,exact,1.00,curl dumbbell neutral seated wrist,,exercises/men/Forearms/Dumbbell Seated Neutral Wrist Curl.mp4,True
-vid_stretching_side_wrist_pull_stretch,Side Wrist Pull Stretch,exact,1.00,pull side stretch wrist,,exercises/men/Stretching - Mobility/side wrist pull stretch.mp4,True
-vid_stretching_wrist_circles,Wrist Circles,none,0.33,ankle circles,,,True
-vid_band_bent_over_hip_extension,Band Bent-Over Hip Extension,exact,1.00,band bent extension hip over,exercises/girl/Legs/Band Bent-over Hip Extension.mp4,,True
-vid_band_hip_abduction,Band Hip Abduction,subset,1.00,abduction band hip resistance seated,exercises/girl/Legs/Resistance Band Seated Hip Abduction.mp4,exercises/men/Legs/Resistance Band Seated Hip Abduction.mp4,True
-vid_band_hip_adduction,Band Hip Adduction,exact,1.00,adduction band hip,exercises/girl/Legs/Band Hip Adduction.mp4,exercises/men/Legs/Band Hip Adduction.mp4,True
-vid_band_leg_curl,Band Lying Leg Curl,fuzzy,0.60,band curl leg standing,,,True
-vid_band_seated_leg_extension,Band Seated Leg Extension,fuzzy,0.60,extension leg seated single,,,True
-vid_barbell_front_chest_squat,Barbell Front Squat,exact,1.00,barbell front squat,exercises/girl/Legs/barbell front squat.mp4,exercises/men/Legs/Barbell front squats.mp4,True
-vid_close_feet_leg_press,Close-Feet Leg Press,none,0.50,close leg machine press stance,,,True
-vid_dumbbell_bar_grip_sumo_squat,Dumbbell Sumo Squat,subset,1.00,bar dumbbell grip squat sumo,,exercises/men/Legs/Dumbbell Bar Grip Sumo Squat.mp4,True
-vid_dumbbell_goblet_squat,Dumbbell Goblet Squat,exact,1.00,dumbbell goblet squat,,exercises/men/Legs/Dumbbell Goblet Squat.mp4,True
-vid_dumbbell_lunge,Dumbbell Lunge,subset,1.00,curtsy dumbbell lunge,,exercises/men/Legs/Dumbbell Curtsy Lunge.mp4,True
-vid_dumbbell_lying_femoral,Dumbbell Lying Leg Curl,fuzzy,0.60,curl dumbbell lying supine,,,True
-vid_dumbbell_single_leg_squat,Dumbbell Single-Leg Squat,exact,1.00,dumbbell leg single squat,,exercises/men/Legs/Dumbbell Single Leg Squat.mp4,True
-vid_dumbbell_squat,Dumbbell Squat,exact,1.00,dumbbell squat,,exercises/men/Legs/Dumbbell Squats.mp4,True
-vid_lever_horizontal_leg_press,Machine Horizontal Leg Press,fuzzy,0.75,horizontal leg press,,,True
-vid_lever_kneeling_leg_curl,Machine Kneeling Leg Curl,exact,1.00,curl kneeling leg machine,,exercises/men/Legs/kneeling leg curl machine.mp4,True
-vid_lever_seated_hip_abduction,Machine Seated Hip Abduction,exact,1.00,abduction hip machine seated,exercises/girl/Legs/Seated Hip Abductor Machine.mp4,exercises/men/Legs/Seated Hip Abductor Machine.mp4,True
-vid_lever_seated_hip_adduction,Machine Seated Hip Adduction,exact,1.00,adduction hip machine seated,exercises/girl/Legs/Seated machine hip adductor.mp4,exercises/men/Legs/Seated Machine Hip Adductor.mp4,True
-vid_lever_standing_hip_extension,Machine Standing Hip Extension,none,0.40,extension machine tricep,,,True
-vid_lever_standing_rear_kick,Machine Standing Rear Kick,none,0.33,band kick kneeling rear,,,True
-vid_rear_decline_bridge,Rear Decline Bridge,none,0.25,decline sit,,,True
-vid_sled_45_degree_leg_wide_press,Sled 45-Degree Wide-Stance Leg Press,none,0.57,high leg press stance wide,,,True
-vid_smith_chair_squat,Smith Machine Chair Squat,fuzzy,0.60,machine normal smith squat,,,True
-vid_stretching_adductor_stretch,Adductor Stretch,exact,1.00,adduction stretch,exercises/girl/Stretching - Mobility/adductor stretch.mp4,exercises/men/Stretching - Mobility/Adductor stretch.mp4,True
-vid_stretching_all_fours_squad_stretch,All-Fours Quad Stretch,exact,1.00,all fours quad stretch,exercises/girl/Stretching - Mobility/ALL FOURS QUAD STRETCH.mp4,exercises/men/Stretching - Mobility/All fours quad stretch.mp4,True
-vid_stretching_boat_stretch,Boat Stretch,exact,1.00,boat stretch,,exercises/men/Stretching - Mobility/Boat Stretch.mp4,True
-vid_stretching_ceiling_look_stretch,Ceiling Look Stretch,exact,1.00,ceiling look stretch,,exercises/men/Stretching - Mobility/Ceiling Look Stretch.mp4,True
-vid_stretching_crossover_kneeling_hip_flexor_stretch,Crossover Kneeling Hip Flexor Stretch,exact,1.00,crossover flexor hip kneeling stretch,,exercises/men/Stretching - Mobility/Crossover Kneeling Hip Flexor Stretch.mp4,True
-vid_stretching_hamstring_stretch,Hamstring Stretch,subset,1.00,ball hamstrings seated stretch,,exercises/men/Stretching - Mobility/exercise ball seated hamstring stretch.mp4,True
-vid_stretching_hip_circles_stretch,Hip Circles,none,0.33,ankle circles,,,True
-vid_stretching_hip_extension_stretch,Hip Extension Stretch,none,0.40,extension glutes hip multi,,,True
-vid_stretching_hip_flexor_and_quad_stretch,Hip Flexor and Quad Stretch,subset,1.00,flexor hip intermediate quad stretch,,exercises/men/Stretching - Mobility/intermediate hip flexor and quad stretch.mp4,True
-vid_stretching_hip_flexor_stretch_rear_foot_elevated,Hip Flexor Stretch - Rear Foot Elevated,none,0.43,ball flexor hip stretch,,,True
-vid_stretching_knee_raise,Standing Knee Raise,none,0.50,flat knee raise,,,True
-vid_stretching_quadriceps_lying_stretch,Lying Quadriceps Stretch,exact,1.00,lying quadriceps stretch,,exercises/men/Stretching - Mobility/lying quadriceps stretch.mp4,True
-vid_stretching_quadriceps_stretch,Standing Quadriceps Stretch,exact,1.00,quadriceps standing stretch,exercises/girl/Stretching - Mobility/Standing Quadriceps Stretch.mp4,exercises/men/Stretching - Mobility/standing quadriceps stretch.mp4,True
-vid_stretching_runners_stretch,Runner's Stretch,fuzzy,0.67,runner stretch,,,True
-vid_weighted_sissy_squat,Weighted Sissy Squat,none,0.50,bodyweight sissy squat,,,True
-vid_ball_sit_up_on_stability_ball,Sit-Up on a Stability Ball,fuzzy,0.67,ball sit,,,True
-vid_bent_knee_lying_twist_on_stability_ball,Bent Knee Lying Twist on a Stability Ball,exact,1.00,ball bent knee lying stability twist,,exercises/men/Abdominals/Bent knee Lying Twist (On Stability Ball).mp4,True
-vid_chest_lift_with_rotation,Chest Lift with Rotation,exact,1.00,chest lift rotation,,exercises/men/Abdominals/chest lift with rotation.mp4,True
-vid_corkscrew_pilates,Pilates Corkscrew,none,0.00,,,,True
-vid_crunch_floor_female,Floor Crunch,exact,1.00,crunch floor,,exercises/men/Abdominals/Crunch Floor.mp4,True
-vid_crunch_leg_raise,Crunch with Leg Raise,exact,1.00,crunch leg raise,,exercises/men/Abdominals/Crunch leg raise.mp4,True
-vid_crunch_legs_on_stability_ball,Crunch with Legs on a Stability Ball,exact,1.00,ball crunch leg stability,,exercises/men/Abdominals/Crunch (legs on stability ball).mp4,True
-vid_crunch_straight_leg_up,Crunch with Straight Leg Up,exact,1.00,crunch leg straight,,exercises/men/Abdominals/Crunch (straight leg up).mp4,True
-vid_front_plank_female,Front Plank,subset,1.00,front plank unilateral,exercises/girl/Calisthenics-Cardio-Plyo-Functional/Unilateral Front Plank.mp4,exercises/men/Calisthenics-Cardio-Plyo-Functional/Unilateral Front Plank.mp4,True
-vid_hip_raise_bridge,Hip Raise Bridge,none,0.50,abduction bridge hip,,,True
-vid_hundred_pilates,Pilates Hundred,none,0.00,,,,True
-vid_jack_knife_floor,Floor Jackknife,none,0.33,crunch floor,,,True
-vid_jack_split_crunches,Split Jackknife Crunch,none,0.25,ab crunch,,,True
-vid_jackknife_pilates,Pilates Jackknife,none,0.00,,,,True
-vid_leg_raise_hip_lift,Leg Raise Hip Lift,none,0.40,alternate leg raise,,,True
-vid_lying_hip_lift_on_stability_ball,Lying Hip Lift on a Stability Ball,none,0.38,ball bent knee lying stability twist,,,True
-vid_lying_scissor_kick_female,Lying Scissor Kick,none,0.25,kick scissors,,,True
-vid_medicine_ball_sit_up_wall,Medicine Ball Wall Sit-Up,none,0.50,ball sit,,,True
-vid_reverse_crunch_female,Reverse Crunch,exact,1.00,crunch reverse,,exercises/men/Abdominals/reverse crunch.mp4,True
-vid_rotate_push_up_female,Rotating Push-Up,none,0.33,plank push,,,True
-vid_seated_twist_straight_arm,Seated Twist - Straight Arm,none,0.40,barbell seated twist,,,True
-vid_side_bend_on_stability_ball,Side Bend on a Stability Ball,none,0.40,45 bend side,,,True
-vid_sit_up,Anchored Sit-Up,none,0.50,sit,,,True
-vid_weighted_lying_twist,Weighted Lying Twist,none,0.40,bent knee lying twist,,,True
-vid_band_bent_over_rear_lateral_raise,Band Bent-Over Rear Lateral Raise,none,0.44,band bent deltoid fly over rear resistance,,,True
-vid_band_one_arm_forward_raise,Band One-Arm Front Raise,fuzzy,0.67,arm cable front one raise,,,True
-vid_band_standing_rear_delt_row,Band Standing Rear Delt Row,exact,1.00,band delt rear row standing,exercises/girl/Shoulders/Band standing rear delt row.mp4,,True
-vid_barbell_front_raise,Barbell Front Raise,exact,1.00,barbell front raise,,exercises/men/Shoulders/front raises barbell.mp4,True
-vid_barbell_seated_behind_head_military_press,Barbell Seated Behind-the-Head Press,none,0.57,barbell behind military neck press seated,,,True
-vid_barbell_upright_row_wide_grip,Barbell Upright Row - Wide Grip,exact,1.00,barbell grip row upright wide,,exercises/men/Back/Barbell wide grip Upright Row.mp4,True
-vid_cable_crossover_reverse_fly,Cable Crossover Reverse Fly,exact,1.00,cable crossover fly reverse,,exercises/men/Shoulders/cable reverse fly on crossover.mp4,True
-vid_cable_front_raise,Cable Front Raise,subset,1.00,bar cable front raise straight,,exercises/men/Shoulders/cable front raises straight bar.mp4,True
-vid_cable_lateral_raise,Cable Lateral Raise,exact,1.00,cable lateral raise,,exercises/men/Shoulders/cable lateral raises.mp4,True
-vid_cable_one_arm_forward_raise,Cable One-Arm Front Raise,exact,1.00,arm cable front one raise,,exercises/men/Shoulders/Cable One Arm Front Raise.mp4,True
-vid_cable_one_arm_lateral_raise,Cable One-Arm Lateral Raise,subset,1.00,arm bent cable lateral one over raise,,exercises/men/Shoulders/Cable Bent Over One Arm Lateral Raise.mp4,True
-vid_cable_rear_delt_row_with_rope,Cable Rear Delt Row with a Rope,none,0.50,delt kettlebell rear row,,,True
-vid_dumbbell_bench_seated_press,Dumbbell Seated Press with Back Support,none,0.50,arnold dumbbell press seated,,,True
-vid_dumbbell_front_raise,Dumbbell Front Raise,exact,1.00,dumbbell front raise,,exercises/men/Shoulders/Dumbbell Front Raise.mp4,True
-vid_dumbbell_incline_hammer_press,Dumbbell Incline Hammer Press,subset,1.00,dumbbell hammer incline press shoulder,,exercises/men/Shoulders/Dumbbell Incline Hammer Shoulder Press.mp4,True
-vid_dumbbell_incline_rear_lateral_raise,Dumbbell Incline Rear Lateral Raise,exact,1.00,dumbbell incline lateral raise rear,,exercises/men/Shoulders/Dumbbell Incline Rear Lateral Raise.mp4,True
-vid_dumbbell_iron_cross,Dumbbell Iron Cross,exact,1.00,cross dumbbell iron,,exercises/men/Calisthenics-Cardio-Plyo-Functional/Dumbbell Iron Cross.mp4,True
-vid_dumbbell_lateral_raise,Dumbbell Lateral Raise,exact,1.00,dumbbell lateral raise,,exercises/men/Shoulders/lateral raises dumbbell.mp4,True
-vid_dumbbell_one_arm_lateral_raise,Dumbbell One-Arm Lateral Raise,exact,1.00,arm dumbbell lateral one raise,,exercises/men/Shoulders/Dumbbell One Arm Lateral Raise.mp4,True
-vid_dumbbell_rear_delt_row,Dumbbell Rear Delt Row,exact,1.00,delt dumbbell rear row,,exercises/men/Shoulders/Dumbbell Rear Delt Row.mp4,True
-vid_dumbbell_rear_lateral_raise,Dumbbell Bent-Over Rear Lateral Raise,fuzzy,0.67,dumbbell lateral raise rear,,,True
-vid_dumbbell_seated_front_raise,Dumbbell Seated Front Raise,exact,1.00,dumbbell front raise seated,,exercises/men/Shoulders/Dumbbell Seated Front Raise.mp4,True
-vid_dumbbell_seated_lateral_raise,Dumbbell Seated Lateral Raise,exact,1.00,dumbbell lateral raise seated,,exercises/men/Shoulders/Dumbbell Seated Lateral Raise.mp4,True
-vid_dumbbell_upright_row,Dumbbell Upright Row,exact,1.00,dumbbell row upright,,exercises/men/Shoulders/upright row dumbbell.mp4,True
-vid_lever_lateral_raise,Machine Lateral Raise,exact,1.00,lateral machine raise,exercises/girl/Shoulders/Machine Lateral Raise.mp4,exercises/men/Shoulders/machine lateral raise.mp4,True
-vid_lever_military_press,Machine Shoulder Press,subset,1.00,machine press shoulder smith,,exercises/men/Shoulders/smith machine shoulder press.mp4,True
-vid_lever_seated_reverse_fly,Machine Seated Reverse Fly,fuzzy,0.75,fly machine reverse,,,True
-vid_military_press,Military Press,subset,1.00,bodyweight military press,,exercises/men/Shoulders/military press bodyweight.mp4,True
-vid_smith_seated_shoulder_press,Smith Machine Seated Shoulder Press,fuzzy,0.80,machine press shoulder smith,,,True
-vid_stretching_band_warm_up_shoulder_stretch,Band Warm-Up Shoulder Stretch,exact,1.00,band shoulder stretch warm,exercises/girl/Stretching - Mobility/Band Warm up Shoulder Stretch.mp4,,True
-vid_stretching_rear_deltoid_stretch,Rear Deltoid Stretch,exact,1.00,deltoid rear stretch,,exercises/men/Stretching - Mobility/rear deltoid stretch.mp4,True
-vid_stretching_seated_shoulder_flexor_depresor_retractor,Seated Shoulder Flexor and Retractor Stretch,subset,1.00,depressor flexor retractor seated shoulder stretch,,exercises/men/Shoulders/seated shoulder flexor depressor retractor stretch.mp4,True
-vid_barbell_shrug,Barbell Shrug,subset,1.00,barbell jump shrug,exercises/girl/Calisthenics-Cardio-Plyo-Functional/Barbell Jump Shrug.mp4,exercises/men/Calisthenics-Cardio-Plyo-Functional/Barbell Jump Shrug.mp4,True
-vid_dumbbell_incline_shrug,Dumbbell Incline Shrug,exact,1.00,dumbbell incline shrug,,exercises/men/Shoulders/Dumbbell Incline Shrug.mp4,True
-vid_dumbbell_shrug,Dumbbell Shrug,subset,1.00,dumbbell shrug silverback,exercises/girl/Shoulders/Dumbbell Silverback Shrug.mp4,exercises/men/Shoulders/Dumbbell Silverback Shrug.mp4,True
-vid_lever_shrug,Machine Shrug,none,0.33,fly machine,,,True
-vid_scapula_dips,Scapular Dip,none,0.33,dip ring,,,True
-vid_stretching_neck_side_stretch,Neck Side Stretch,subset,1.00,backward forward neck side stretch turn,exercises/girl/Stretching - Mobility/Backward Forward Turn to Side Neck Stretch.mp4,exercises/men/Stretching - Mobility/Backward Forward Turn to Side Neck Stretch.mp4,True
-vid_band_overhead_triceps_extension,Band Overhead Triceps Extension,fuzzy,0.60,band extension incline triceps,,,True
-vid_band_side_triceps_pushdown,Band Side Triceps Pushdown,none,0.50,arm band pushdown single triceps,,,True
-vid_band_triceps_pushdown,Band Triceps Pushdown,subset,1.00,arm band pushdown single triceps,exercises/girl/Triceps/Band Triceps Pushdown Single Arm.mp4,exercises/men/Triceps/Band Triceps Pushdown Single Arm.mp4,True
-vid_cable_lying_triceps_extension,Cable Lying Triceps Extension,exact,1.00,cable extension lying triceps,,exercises/men/Triceps/cable lying triceps extension.mp4,True
-vid_cable_overhead_triceps_extension_rope_attachment,Cable Overhead Triceps Extension - Rope,fuzzy,0.80,cable extension overhead rope,,,True
-vid_cable_pushdown_rope_attachment,Cable Rope Pushdown,fuzzy,0.67,cable pushdown,,,True
-vid_cable_rope_high_pulley_overhead_triceps_extension,Cable High-Pulley Overhead Rope Extension,fuzzy,0.67,cable extension overhead rope,,,True
-vid_cable_standing_one_arm_triceps_extension,Cable Standing One-Arm Triceps Extension,none,0.57,arm dumbbell extension one standing,,,True
-vid_cable_triceps_pushdown,Cable Triceps Pushdown,subset,1.00,bar cable ezbar grip pushdown reverse triceps,,exercises/men/Triceps/Cable Reverse Grip Triceps Pushdown (EZ-bar).mp4,True
-vid_close_grip_push_ups,Close-Grip Push-Up,exact,1.00,close grip push,,exercises/men/Chest/Close Grip Push up.mp4,True
-vid_dumbbell_kickback,Dumbbell Kickback,exact,1.00,dumbbell kickback,,exercises/men/Triceps/Dumbbell Kickback.mp4,True
-vid_dumbbell_lying_alternate_extension,Dumbbell Lying Alternating Triceps Extension,fuzzy,0.80,dumbbell extension lying triceps,,,True
-vid_dumbbell_lying_triceps_extension,Dumbbell Lying Triceps Extension,exact,1.00,dumbbell extension lying triceps,,exercises/men/Triceps/Dumbbell Lying Triceps Extension.mp4,True
-vid_dumbbell_one_arm_triceps_extension,Dumbbell One-Arm Triceps Extension,subset,1.00,arm bench dumbbell extension one triceps,,exercises/men/Triceps/Dumbbell One Arm Triceps Extension (on bench).mp4,True
-vid_dumbbell_pronate_grip_triceps_extension,Dumbbell Pronated-Grip Triceps Extension,fuzzy,0.67,dumbbell extension grip pronate triceps,,,True
-vid_dumbbell_seated_kickback,Dumbbell Seated Kickback,exact,1.00,dumbbell kickback seated,,exercises/men/Triceps/Dumbbell Seated Kickback.mp4,True
-vid_dumbbell_seated_triceps_extension,Dumbbell Seated Triceps Extension,fuzzy,0.60,dumbbell extension incline triceps,,,True
-vid_ez_barbell_lying_triceps_extension,EZ-Bar Lying Triceps Extension,none,0.57,bar cable extension ezbar overhead triceps,,,True
-vid_lever_seated_dips,Machine Seated Dip,none,0.50,machine row seated,,,True
-vid_lever_triceps_extension_neutral_grip,Machine Triceps Extension - Neutral Grip,none,0.43,dumbbell extension grip pronate triceps,,,True
-vid_stretching_kneeling_triceps_extension,Kneeling Triceps Stretch,none,0.50,light stretch triceps,,,True
-vid_stretching_reverse_dip,Reverse Dip Stretch,none,0.50,reverse shoulder stretch,,,True
+id,title,pass,score,why_not,vendor_match,girl,men,had_video_before
+barbell_bench_press_medium_grip,Barbell Bench Press - Medium Grip,fuzzy,0.67,,barbell bench close grip press,,,False
+barbell_guillotine_bench_press,Barbell Guillotine Bench Press,fuzzy,0.75,,barbell bench press,,,True
+barbell_incline_bench_press_medium_grip,Barbell Incline Bench Press - Medium Grip,fuzzy,0.67,,barbell bench incline press,,,True
+bench_press_powerlifting,Bench Press - Powerlifting,none,0.50,,band bench press,,,False
+bench_press_with_bands,Bench Press - With Bands,exact,1.00,,band bench press,exercises/girl/Chest/Band Bench Press.mp4,,False
+bench_press_with_chains,Bench Press with Chains,none,0.50,,band bench press,,,False
+bear_crawl_sled_drags,Bear Crawl Sled Drags,none,0.40,,crawl drag sled,,,False
+calf_press_on_the_leg_press_machine,Calf Press On The Leg Press Machine,rejected,1.00,adds movement ['raise'],calf leg machine press raise,,,False
+leg_press,Leg Press,subset,1.00,,horizontal leg press,,,True
+narrow_stance_leg_press,Narrow Stance Leg Press,none,0.50,,leg machine normal press stance,,,False
+sled_drag_harness,Sled Drag - Harness,none,0.50,,crawl drag sled,,,False
+sled_overhead_backward_walk,Sled Overhead Backward Walk,none,0.20,,gorilla walk,,,False
+close_grip_front_lat_pulldown,Close-Grip Front Lat Pulldown,rejected,1.00,adds equipment ['cable'],cable close down front grip lat pull,,,True
+full_range_of_motion_lat_pulldown,Full Range-Of-Motion Lat Pulldown,none,0.38,,band down kneeling lat pull,,,False
+one_arm_lat_pulldown,One Arm Lat Pulldown,rejected,1.00,adds equipment ['cable'],arm cable down lat one pull,,,False
+rocky_pull_ups_pulldowns,Rocky Pull-Ups/Pulldowns,none,0.40,,bench pull ups,,,False
+rope_straight_arm_pulldown,Rope Straight-Arm Pulldown,fuzzy,0.67,,arm cable down pull straight,,,False
+straight_arm_pulldown,Straight-Arm Pulldown,rejected,1.00,"adds equipment ['band', 'resistance']",arm band body cross down pull resistance single straight supinated,,,True
+barbell_full_squat,Barbell Full Squat,exact,1.00,,barbell full squat,exercises/girl/Legs/Barbell Full Squat.mp4,exercises/men/Powerlifting/Barbell full squat.mp4,False
+barbell_hack_squat,Barbell Hack Squat,none,0.50,,barbell bench squat,,,False
+barbell_side_split_squat,Barbell Side Split Squat,exact,1.00,,barbell side split squat,,exercises/men/Legs/Barbell side split squat.mp4,False
+barbell_squat,Barbell Squat,subset,1.00,,barbell full squat,,,True
+barbell_squat_to_a_bench,Barbell Squat To A Bench,exact,1.00,,barbell bench squat,exercises/girl/Legs/Barbell Bench Squat.mp4,exercises/men/Legs/Barbell bench squats.mp4,False
+box_squat,Box Squat,rejected,1.00,adds equipment ['barbell'],barbell box squat,,,False
+bodyweight_mid_row,Bodyweight Mid Row,none,0.40,,bodyweight kneeling push row,,,False
+inverted_row_with_straps,Inverted Row with Straps,none,0.40,,inverted machine row smith,,,True
+leverage_high_row,Leverage High Row,none,0.33,,grips high row suspension trainer,,,False
+leverage_iso_row,Leverage Iso Row,none,0.25,,kettlebell row,,,False
+lying_t_bar_row,Lying T-Bar Row,none,0.40,,barbell lying row,,,True
+narrow_stance_hack_squats,Narrow Stance Hack Squats,fuzzy,0.60,,barbell narrow squat stance,,,False
+ab_crunch_machine,Ab Crunch Machine,exact,1.00,,ab crunch machine,exercises/girl/Abdominals/Abdominal Crunches Machine.mp4,exercises/men/Abdominals/abdominal crunches machine.mp4,False
+barbell_walking_lunge,Barbell Walking Lunge,fuzzy,0.67,,barbell lunge,,,False
+bench_sprint,Bench Sprint,none,0.25,,assisted bench chin,,,False
+bodyweight_walking_lunge,Bodyweight Walking Lunge,none,0.50,,bodyweight forward lunge,,,False
+bosu_ball_cable_crunch_with_side_bends,Bosu Ball Cable Crunch With Side Bends,none,0.50,,ball bosu crunch,,,False
+cable_crunch,Cable Crunch,rejected,1.00,adds variant ['standing'],cable crunch standing,,,True
+advanced_kettlebell_windmill,Advanced Kettlebell Windmill,fuzzy,0.67,,kettlebell windmill,,,False
+alternating_floor_press,Alternating Floor Press,none,0.40,,barbell chest floor press,,,False
+alternating_hang_clean,Alternating Hang Clean,none,0.50,,barbell clean hang,,,False
+alternating_kettlebell_press,Alternating Kettlebell Press,none,0.50,,kettlebell press sit,,,False
+alternating_kettlebell_row,Alternating Kettlebell Row,fuzzy,0.67,,kettlebell row,,,False
+alternating_renegade_row,Alternating Renegade Row,none,0.50,,push renegade row,,,False
+alternate_hammer_curl,Alternate Hammer Curl,rejected,1.00,adds equipment ['dumbbell'],alternate curl dumbbell hammer seated,,,False
+alternate_incline_dumbbell_curl,Alternate Incline Dumbbell Curl,exact,1.00,,alternate curl dumbbell incline,,exercises/men/Biceps/Dumbbell Incline Alternate Curl.mp4,True
+alternating_deltoid_raise,Alternating Deltoid Raise,none,0.40,,alternating bridge leg raise,,,False
+arnold_dumbbell_press,Arnold Dumbbell Press,exact,1.00,,arnold dumbbell press,,exercises/men/Shoulders/arnold press dumbbell.mp4,True
+around_the_worlds,Around The Worlds,none,0.25,,around dumbbell pullover,,,False
+bent_arm_dumbbell_pullover,Bent-Arm Dumbbell Pullover,exact,1.00,,arm bent dumbbell pullover,,exercises/men/Back/Dumbbell Bent Arm Pullover.mp4,False
+anti_gravity_press,Anti-Gravity Press,rejected,1.00,"adds equipment ['barbell', 'ezbar']",anti barbell ezbar gravity press,,,True
+barbell_ab_rollout,Barbell Ab Rollout,fuzzy,0.67,,barbell rollout,,,False
+barbell_ab_rollout_on_knees,Barbell Ab Rollout - On Knees,none,0.50,,barbell rollout,,,False
+barbell_curl,Barbell Curl,exact,1.00,,barbell curl,exercises/girl/Biceps/Barbell Curl.mp4,,True
+barbell_curls_lying_against_an_incline,Barbell Curls Lying Against An Incline,none,0.40,,barbell curl,,,False
+barbell_deadlift,Barbell Deadlift,exact,1.00,,barbell deadlift,exercises/girl/Powerlifting/Barbell Deadlift.mp4,,False
+alternating_cable_shoulder_press,Alternating Cable Shoulder Press,none,0.38,,band cable lateral press raise resistance shoulder,,,False
+bent_over_low_pulley_side_lateral,Bent Over Low-Pulley Side Lateral,none,0.30,,arm bent cable lateral one over raise,,,False
+cable_chest_press,Cable Chest Press,rejected,1.00,"adds equipment ['band', 'resistance']",band cable chest high low press resistance,,,False
+cable_crossover,Cable Crossover,rejected,1.00,adds equipment ['machine'],cable crossover kickback machine tricep,,,False
+cable_deadlifts,Cable Deadlifts,rejected,1.00,"adds variant ['leg', 'single']",cable deadlift leg single,,,False
+cable_hammer_curls_rope_attachment,Cable Hammer Curls - Rope Attachment,none,0.33,,cable curl hamstrings,,,False
+3_4_sit_up,3/4 Sit-Up,exact,1.00,,3 4 sit,exercises/girl/Abdominals/3-4 Sit-up.mp4,,False
+90_90_hamstring,90/90 Hamstring,none,0.33,,90 stretch,,,False
+air_bike,Air Bike,exact,1.00,,air bike,exercises/girl/Abdominals/air bike.mp4,,False
+all_fours_quad_stretch,All Fours Quad Stretch,exact,1.00,,all fours quad stretch,exercises/girl/Stretching - Mobility/ALL FOURS QUAD STRETCH.mp4,exercises/men/Stretching - Mobility/All fours quad stretch.mp4,False
+alternate_heel_touchers,Alternate Heel Touchers,none,0.50,,alternate heel touches,,,False
+bench_dips,Bench Dips,subset,1.00,,bench dip floor,,,True
+treadmill_warmup_walk,Warm-up Walk,none,0.33,,gorilla walk,,,False
+treadmill_incline_walk,Incline Walk,none,0.33,,gorilla walk,,,False
+treadmill_steady_run,Steady-State Run,none,0.00,,,,,False
+treadmill_intervals,Run Intervals,none,0.00,,,,,False
+rowing_steady,Steady Row,none,0.33,,kettlebell row,,,False
+rowing_intervals,Row Intervals,none,0.33,,kettlebell row,,,False
+fedb_bent-knee_hip_raise,Bent-Knee Hip Raise,none,0.43,,band bent knee lying raise resistance,,,False
+fedb_body_tricep_press,Body Tricep Press,none,0.33,,extension overhead plate press tricep,,,False
+fedb_body-up,Body-Up,exact,1.00,,body,,exercises/men/Triceps/Body-Up.mp4,False
+fedb_bodyweight_squat,Bodyweight Squat,exact,1.00,,bodyweight squat,,exercises/men/Legs/bodyweight squats.mp4,True
+fedb_bottoms_up,Bottoms Up,rejected,1.00,adds variant ['half'],bottoms half rep,,,False
+fedb_butt_lift_bridge,Butt Lift (Bridge),none,0.25,,butt kicks,,,False
+fedb_bench_jump,Bench Jump,none,0.33,,jump star,,,False
+fedb_decline_close-grip_bench_to_skull_crusher,Decline Close-Grip Bench To Skull Crusher,none,0.43,,crusher decline kettlebell skull,,,False
+fedb_flat_bench_cable_flyes,Flat Bench Cable Flyes,exact,1.00,,bench cable flat fly,,exercises/men/Chest/flat bench cable fly.mp4,False
+fedb_flat_bench_leg_pull-in,Flat Bench Leg Pull-In,none,0.40,,alternate leg pull,,,False
+fedb_flat_bench_lying_leg_raise,Flat Bench Lying Leg Raise,fuzzy,0.60,,leg lying raise,,,True
+fedb_incline_bench_pull,Incline Bench Pull,none,0.50,,bench pull ups,,,False
+fedb_band_assisted_pull-up,Band Assisted Pull-Up,fuzzy,0.67,,assisted pull,,,True
+fedb_glute_ham_raise,Glute Ham Raise,none,0.29,,band glutes plank raise resistance side,,,False
+fedb_hyperextensions_with_no_hyperextension_bench,Hyperextensions With No Hyperextension Bench,none,0.29,,back bench extension hyperextension weighted,,,False
+fedb_reverse_hyperextension,Reverse Hyperextension,none,0.33,,plank reverse,,,True
+fedb_weighted_ball_hyperextension,Weighted Ball Hyperextension,none,0.40,,ball russian twist weighted,,,False
+fedb_barbell_glute_bridge,Barbell Glute Bridge,exact,1.00,,barbell bridge glutes,,exercises/men/Legs/Barbell glute bridge.mp4,False
+fedb_barbell_hip_thrust,Barbell Hip Thrust,exact,1.00,,barbell hip thrust,exercises/girl/Legs/Barbell Hip Thrust.mp4,exercises/men/Legs/Barbell Hip Thrust.mp4,False
+fedb_barbell_incline_shoulder_raise,Barbell Incline Shoulder Raise,fuzzy,0.60,,barbell incline press shoulder,,,False
+fedb_barbell_lunge,Barbell Lunge,exact,1.00,,barbell lunge,exercises/girl/Legs/Barbell Lunge.mp4,exercises/men/Legs/Barbell lunges.mp4,True
+fedb_barbell_rear_delt_row,Barbell Rear Delt Row,fuzzy,0.60,,delt kettlebell rear row,,,True
+fedb_barbell_rollout_from_bench,Barbell Rollout from Bench,none,0.50,,barbell rollout,,,False
+fedb_close-grip_barbell_bench_press,Close-Grip Barbell Bench Press,exact,1.00,,barbell bench close grip press,,exercises/men/Triceps/close grip barbell bench press.mp4,True
+fedb_decline_barbell_bench_press,Decline Barbell Bench Press,exact,1.00,,barbell bench decline press,,exercises/men/Chest/barbell bench press decline.mp4,True
+fedb_decline_dumbbell_bench_press,Decline Dumbbell Bench Press,exact,1.00,,bench decline dumbbell press,,exercises/men/Chest/Dumbbell Decline Bench Press.mp4,True
+fedb_dumbbell_bench_press,Dumbbell Bench Press,exact,1.00,,bench dumbbell press,,exercises/men/Chest/Dumbbell Bench Press.mp4,True
+fedb_dumbbell_bench_press_with_neutral_grip,Dumbbell Bench Press with Neutral Grip,fuzzy,0.60,,bench dumbbell press,,,False
+fedb_hammer_grip_incline_db_bench_press,Hammer Grip Incline DB Bench Press,fuzzy,0.67,,bench dumbbell incline press,,,False
+fedb_machine_bicep_curl,Machine Bicep Curl,rejected,1.00,adds equipment ['cable'],bicep cable curl grip low machine normal,,,False
+fedb_low_cable_crossover,Low Cable Crossover,none,0.50,,cable fly low,,,False
+fedb_single-arm_cable_crossover,Single-Arm Cable Crossover,none,0.50,,arm cable fly reverse single,,,False
+fedb_stride_jump_crossover,Stride Jump Crossover,none,0.25,,arm crossover,,,False
+fedb_barbell_seated_calf_raise,Barbell Seated Calf Raise,fuzzy,0.60,,calf kettlebell raise seated,,,False
+fedb_calf_press,Calf Press,rejected,1.00,adds equipment ['machine'],calf leg machine press raise,,,False
+fedb_calf_raise_on_a_dumbbell,Calf Raise On A Dumbbell,rejected,1.00,adds variant ['seated'],calf dumbbell raise seated,,,True
+fedb_dumbbell_seated_one-leg_calf_raise,Dumbbell Seated One-Leg Calf Raise,rejected,1.00,adds equipment ['hammer'],calf dumbbell grip hammer leg one raise seated,,,False
+fedb_rocking_standing_calf_raise,Rocking Standing Calf Raise,fuzzy,0.60,,bodyweight calf raise standing,,,True
+fedb_seated_calf_raise,Seated Calf Raise,rejected,1.00,adds equipment ['kettlebell'],calf kettlebell raise seated,,,True
+fedb_incline_cable_chest_press,Incline Cable Chest Press,fuzzy,0.60,,chest incline machine press,,,False
+fedb_leverage_chest_press,Leverage Chest Press,none,0.50,,chest machine press,,,False
+fedb_leverage_decline_chest_press,Leverage Decline Chest Press,fuzzy,0.60,,chest decline dumbbell press,,,False
+fedb_leverage_incline_chest_press,Leverage Incline Chest Press,fuzzy,0.60,,chest incline machine press,,,False
+fedb_standing_cable_chest_press,Standing Cable Chest Press,none,0.43,,arnold band cable press resistance standing,,,False
+fedb_knee_hip_raise_on_parallel_bars,Knee/Hip Raise On Parallel Bars,none,0.33,,flat knee raise,,,False
+fedb_bent_over_dumbbell_rear_delt_raise_with_head_on_bench,Bent Over Dumbbell Rear Delt Raise With Head On Bench,none,0.56,,bent delt dumbbell fly over rear,,,False
+fedb_close-grip_dumbbell_press,Close-Grip Dumbbell Press,subset,1.00,,close dumbbell grip press shoulder sit,,,True
+fedb_close-grip_push-up_off_of_a_dumbbell,Close-Grip Push-Up off of a Dumbbell,fuzzy,0.60,,close grip push,,,False
+fedb_decline_dumbbell_flyes,Decline Dumbbell Flyes,exact,1.00,,decline dumbbell fly,,exercises/men/Chest/Dumbbell Decline Fly.mp4,False
+fedb_decline_dumbbell_triceps_extension,Decline Dumbbell Triceps Extension,rejected,1.00,adds movement ['pull'],decline dumbbell extension over pull triceps,,,True
+fedb_dumbbell_alternate_bicep_curl,Dumbbell Alternate Bicep Curl,rejected,1.00,adds variant ['incline'],alternate bicep curl dumbbell incline,,,True
+fedb_close-grip_ez_bar_curl,Close-Grip EZ Bar Curl,subset,1.00,,bar biceps close curl ezbar grip,,,False
+fedb_decline_ez_bar_triceps_extension,Decline EZ Bar Triceps Extension,none,0.57,,bar cable extension ezbar overhead triceps,,,False
+fedb_ab_roller,Ab Roller,none,0.33,,ab tuck,,,False
+fedb_wrist_roller,Wrist Roller,none,0.25,,cable extension wrist,,,False
+fedb_glute_kickback,Glute Kickback,rejected,1.00,"adds equipment ['band', 'resistance']",2 balance band glutes kickback resistance standing,,,False
+fedb_hack_squat,Hack Squat,rejected,1.00,adds equipment ['machine'],calf hack machine raise squat,,,True
+fedb_lying_machine_squat,Lying Machine Squat,none,0.50,,hack machine squat,,,False
+fedb_thigh_abductor,Thigh Abductor,none,0.33,,abduction shoulder,,,False
+fedb_thigh_adductor,Thigh Adductor,none,0.33,,adduction stretch,,,False
+fedb_double_kettlebell_alternating_hang_clean,Double Kettlebell Alternating Hang Clean,none,0.33,,barbell clean hang,,,False
+fedb_double_kettlebell_jerk,Double Kettlebell Jerk,none,0.40,,double kettlebell push sled,,,False
+fedb_double_kettlebell_push_press,Double Kettlebell Push Press,fuzzy,0.60,,double kettlebell push sled,,,False
+fedb_double_kettlebell_snatch,Double Kettlebell Snatch,fuzzy,0.67,,kettlebell snatch,,,False
+fedb_double_kettlebell_windmill,Double Kettlebell Windmill,fuzzy,0.67,,kettlebell windmill,,,False
+fedb_extended_range_one-arm_kettlebell_floor_press,Extended Range One-Arm Kettlebell Floor Press,none,0.50,,arm dumbbell floor one press,,,False
+fedb_v-bar_pulldown,V-Bar Pulldown,subset,1.00,,bar down lat pull v,,,False
+fedb_wide-grip_lat_pulldown,Wide-Grip Lat Pulldown,exact,1.00,,down grip lat pull wide,,exercises/men/Back/lat pull down wide grip.mp4,False
+fedb_wide-grip_pulldown_behind_the_neck,Wide-Grip Pulldown Behind The Neck,none,0.57,,down grip lat pull wide,,,False
+fedb_ball_leg_curl,Ball Leg Curl,exact,1.00,,ball curl leg,,exercises/men/Legs/Exercise Ball Leg Curl.mp4,True
+fedb_lying_leg_curls,Lying Leg Curls,subset,1.00,,bodyweight curl leg lying,,,True
+fedb_seated_band_hamstring_curl,Seated Band Hamstring Curl,none,0.40,,band concentration curl,,,False
+fedb_seated_leg_curl,Seated Leg Curl,rejected,1.00,adds equipment ['machine'],curl leg machine seated,,,True
+fedb_standing_leg_curl,Standing Leg Curl,rejected,1.00,adds equipment ['band'],band curl leg standing,,,True
+fedb_leg_extensions,Leg Extensions,subset,1.00,,extension leg lever,,,True
+fedb_single-leg_leg_extension,Single-Leg Leg Extension,rejected,1.00,adds variant ['seated'],extension leg seated single,,,False
+fedb_backward_medicine_ball_throw,Backward Medicine Ball Throw,fuzzy,0.60,,ball medicine rotational throw,,,False
+fedb_medicine_ball_chest_pass,Medicine Ball Chest Pass,none,0.50,,ab ball chest medicine throw,,,False
+fedb_medicine_ball_full_twist,Medicine Ball Full Twist,none,0.40,,ball jumps medicine,,,False
+fedb_medicine_ball_scoop_throw,Medicine Ball Scoop Throw,fuzzy,0.60,,ball medicine rotational throw,,,False
+fedb_one-arm_medicine_ball_slam,One-Arm Medicine Ball Slam,none,0.33,,arm one push,,,False
+fedb_cable_rear_delt_fly,Cable Rear Delt Fly,exact,1.00,,cable delt fly rear,,exercises/men/Shoulders/cable rear delt fly.mp4,False
+fedb_reverse_machine_flyes,Reverse Machine Flyes,exact,1.00,,fly machine reverse,exercises/girl/Shoulders/Reverse machine fly.mp4,exercises/men/Shoulders/Reverse Machine Fly.mp4,False
+fedb_box_jump_multiple_response,Box Jump (Multiple Response),none,0.50,,box jump,,,False
+fedb_box_skip,Box Skip,none,0.33,,box jump,,,False
+fedb_box_squat_with_chains,Box Squat with Chains,none,0.50,,barbell box squat,,,False
+fedb_front_box_jump,Front Box Jump,fuzzy,0.67,,box jump,,,False
+fedb_lateral_box_jump,Lateral Box Jump,exact,1.00,,box jump lateral,exercises/girl/Legs/Lateral Box Jump.mp4,exercises/men/Legs/Lateral Box Jump.mp4,False
+fedb_reverse_band_box_squat,Reverse Band Box Squat,none,0.40,,band row squat,,,False
+fedb_cable_preacher_curl,Cable Preacher Curl,exact,1.00,,cable curl preacher,,exercises/men/Biceps/Cable Preacher Curl.mp4,False
+fedb_machine_preacher_curls,Machine Preacher Curls,none,0.50,,curl kettlebell preacher,,,False
+fedb_one_arm_dumbbell_preacher_curl,One Arm Dumbbell Preacher Curl,subset,1.00,,arm curl dumbbell one preacher zottman,,,True
+fedb_preacher_curl,Preacher Curl,rejected,1.00,adds equipment ['band'],band curl kneeling preacher,,,True
+fedb_two-arm_dumbbell_preacher_curl,Two-Arm Dumbbell Preacher Curl,fuzzy,0.60,,curl dumbbell preacher,,,False
+fedb_zottman_preacher_curl,Zottman Preacher Curl,rejected,1.00,adds equipment ['dumbbell'],arm curl dumbbell one preacher zottman,,,False
+fedb_heavy_bag_thrust,Heavy Bag Thrust,none,0.40,,bag drag heavy sled,,,False
+fedb_back_flyes_-_with_bands,Back Flyes - With Bands,none,0.50,,band chest fly,,,False
+fedb_box_squat_with_bands,Box Squat with Bands,none,0.50,,band row squat,,,False
+fedb_calf_raises_-_with_bands,Calf Raises - With Bands,rejected,1.00,adds variant ['leg'],2 band both calf leg raise two under,,,True
+fedb_cross_over_-_with_bands,Cross Over - With Bands,none,0.50,,abduction band cross,,,False
+fedb_deadlift_with_bands,Deadlift with Bands,exact,1.00,,band deadlift,exercises/girl/Legs/Band Deadlift.mp4,exercises/men/Back/Band Deadlift.mp4,False
+fedb_hip_extension_with_bands,Hip Extension with Bands,rejected,1.00,adds variant ['bent'],band bent extension hip over,,,True
+fedb_upright_cable_row,Upright Cable Row,subset,1.00,,bar cable row straight upright,,,False
+fedb_barbell_shoulder_press,Barbell Shoulder Press,rejected,1.00,adds movement ['squat'],barbell cage incline inside press shoulder squat,,,False
+fedb_cable_shoulder_press,Cable Shoulder Press,rejected,1.00,"adds equipment ['band', 'resistance']",band cable lateral press raise resistance shoulder,,,False
+fedb_dumbbell_one-arm_shoulder_press,Dumbbell One-Arm Shoulder Press,subset,1.00,,2 arm dumbbell one press shoulder,,,False
+fedb_dumbbell_shoulder_press,Dumbbell Shoulder Press,rejected,1.00,adds movement ['squat'],dumbbell press shoulder squat,,,True
+fedb_leverage_shoulder_press,Leverage Shoulder Press,none,0.40,,band press seated shoulder,,,False
+fedb_machine_shoulder_military_press,Machine Shoulder (Military) Press,fuzzy,0.60,,machine press shoulder smith,,,False
+fedb_decline_smith_press,Decline Smith Press,rejected,1.00,adds equipment ['machine'],decline machine press smith,,,False
+fedb_smith_incline_shoulder_raise,Smith Incline Shoulder Raise,none,0.33,,band incline raise t,,,False
+fedb_smith_machine_behind_the_back_shrug,Smith Machine Behind the Back Shrug,none,0.33,,back extension machine,,,False
+fedb_smith_machine_bench_press,Smith Machine Bench Press,fuzzy,0.60,,decline machine press smith,,,False
+fedb_smith_machine_bent_over_row,Smith Machine Bent Over Row,none,0.50,,band bent over row,,,False
+fedb_smith_machine_calf_raise,Smith Machine Calf Raise,exact,1.00,,calf machine raise smith,,exercises/men/Legs/smith machine calf raise.mp4,True
+fedb_rack_delivery,Rack Delivery,none,0.25,,barbell pull rack,,,False
+fedb_rack_pulls,Rack Pulls,none,0.33,,pulls superman,,,False
+fedb_t-bar_row_with_handle,T-Bar Row with Handle,none,0.33,,bar bent over row,,,False
+fedb_dip_machine,Dip Machine,subset,1.00,,dip machine triceps,,,False
+fedb_machine_triceps_extension,Machine Triceps Extension,none,0.50,,extension machine tricep,,,True
+fedb_elliptical_trainer,Elliptical Trainer,none,0.20,,chin grips suspension trainer,,,False
+fedb_stairmaster,Stairmaster,none,0.00,,,,,False
+fedb_step_mill,Step Mill,none,0.33,,45 step,,,False
+fedb_bicycling_stationary,"Bicycling, Stationary",none,0.33,,bike stationary,,,False
+fedb_recumbent_bike,Recumbent Bike,subset,1.00,,air bike,,,False
+fedb_battling_ropes,Battling Ropes,none,0.25,,jump rope row,,,True
+fedb_rope_climb,Rope Climb,none,0.25,,jump rope row,,,False
+fedb_pullups,Pullups,subset,1.00,,kipping pull,,,False
+fedb_chin-up,Chin-Up,exact,1.00,,chin,,exercises/men/Back/chin up.mp4,True
+fedb_muscle_up,Muscle Up,subset,1.00,,bodyweight muscle,,,False
+fedb_one_arm_chin-up,One Arm Chin-Up,none,0.50,,arm one push,,,False
+fedb_scapular_pull-up,Scapular Pull-Up,none,0.33,,assisted pull,,,True
+fedb_kipping_muscle_up,Kipping Muscle Up,none,0.33,,kipping pull,,,False
+fedb_hanging_leg_raise,Hanging Leg Raise,exact,1.00,,hanging leg raise,exercises/girl/Abdominals/Hanging Leg Raises.mp4,,True
+fedb_hanging_pike,Hanging Pike,none,0.33,,pike push,,,False
+fedb_russian_twist,Russian Twist,exact,1.00,,russian twist,,exercises/men/Abdominals/russian twist.mp4,True
+fedb_cable_russian_twists,Cable Russian Twists,fuzzy,0.67,,cable twist,,,True
+fedb_seated_barbell_twist,Seated Barbell Twist,exact,1.00,,barbell seated twist,,exercises/men/Abdominals/Barbell seated twist.mp4,True
+fedb_front_plate_raise,Front Plate Raise,exact,1.00,,front plate raise,,exercises/men/Shoulders/plate front raise.mp4,False
+fedb_plate_pinch,Plate Pinch,rejected,1.00,adds variant ['side'],bend grip pinch plate side,,,False
+fedb_plate_twist,Plate Twist,subset,1.00,,plate russian twist,,,False
+fedb_reverse_plate_curls,Reverse Plate Curls,none,0.50,,cable curl reverse,,,False
+air_bike_intervals,Air Bike Intervals,fuzzy,0.67,,air bike,,,False
+air_bike_steady,Air Bike Steady Effort,none,0.50,,air bike,,,False
+ski_erg_intervals,Ski Erg Intervals,none,0.33,,country cross ergometer fly ski,,,False
+ski_erg_steady,Ski Erg Steady Pull,none,0.43,,basic country cross ergometer pull ski,,,False
+vid_45_degree_bycicle_twisting_crunch,45-Degree Bicycle Twisting Crunch,exact,1.00,,45 bicycle crunch twisting,exercises/girl/Abdominals/45 degree Bicycle Twisting Crunch.mp4,,True
+vid_45_degree_side_bend,45-Degree Side Bend,exact,1.00,,45 bend side,exercises/girl/Abdominals/45 Degree Side Bend.mp4,exercises/men/Abdominals/45 degree side bend.mp4,True
+vid_air_twisting_crunch,Air Twisting Crunch,exact,1.00,,air crunch twisting,exercises/girl/Abdominals/air twisting crunch.mp4,exercises/men/Abdominals/air twisting crunch.mp4,True
+vid_band_decline_sit_ups,Band Decline Sit-Up,exact,1.00,,band decline sit,exercises/girl/Abdominals/Band Decline Sit up.mp4,,True
+vid_band_side_bend,Band Side Bend,exact,1.00,,band bend side,exercises/girl/Abdominals/Band side bend.mp4,,True
+vid_band_standing_crunch,Band Standing Crunch,none,0.50,,band bicycle crunch,,,True
+vid_band_standing_lift,Band Standing Lift,none,0.40,,band curl leg standing,,,True
+vid_band_twist,Band Standing Twist,none,0.50,,plate standing twist,,,True
+vid_band_twist_up_down,Band Twist - Up and Down,none,0.50,,cable down twist,,,True
+vid_bent_knee_lying_twist,Bent Knee Lying Twist,exact,1.00,,bent knee lying twist,,exercises/men/Abdominals/Bent knee Lying Twist.mp4,True
+vid_cable_standing_crunch,Cable Standing Crunch,exact,1.00,,cable crunch standing,exercises/girl/Abdominals/Cable Standing Crunch.mp4,exercises/men/Abdominals/Cable Standing Crunch.mp4,True
+vid_cable_standing_lift,Cable Standing Lift,none,0.50,,cable crunch standing,,,True
+vid_crunch_on_bench,Crunch on a Bench,none,0.33,,ab crunch,,,True
+vid_dumbbell_side_bend,Dumbbell Side Bend,exact,1.00,,bend dumbbell side,,exercises/men/Abdominals/Dumbbell Side Bend.mp4,True
+vid_hanging_straight_leg_hip_raise,Hanging Straight Leg Hip Raise,rejected,1.00,"adds equipment ['grips', 'suspension', 'trainer']",grips hanging hip leg raise straight suspension trainer,,,True
+vid_hanging_straight_leg_raise,Hanging Straight Leg Raise,rejected,1.00,"adds equipment ['grips', 'suspension', 'trainer']",grips hanging hip leg raise straight suspension trainer,,,True
+vid_incline_leg_hip_raise,Incline Leg Hip Raise,none,0.40,,alternate leg raise,,,True
+vid_landmine_180,Landmine 180,none,0.33,,landmine row,,,True
+vid_lever_seated_crunch,Machine Seated Crunch,none,0.50,,ab crunch machine,,,True
+vid_lever_seated_leg_raise_crunch,Machine Seated Leg Raise Crunch,fuzzy,0.60,,crunch leg raise,,,True
+vid_lying_floor_leg_raise,Lying Floor Leg Raise,rejected,1.00,adds variant ['alternate'],alternate floor leg lying raise,,,True
+vid_lying_straight_leg_raise,Lying Straight Leg Raise,fuzzy,0.75,,leg raise straight,,,True
+vid_otis_ups,Otis-Up,none,0.00,,,,,True
+vid_side_bridge_side_plank,Side Plank,exact,1.00,,plank side,,exercises/men/Abdominals/side plank.mp4,True
+vid_sit_up_on_exercise_ball,Sit-Up on an Exercise Ball,exact,1.00,,ball sit,exercises/girl/Abdominals/Ball Sit-up.mp4,,True
+vid_sit_ups,Sit-Up,exact,1.00,,sit,,exercises/men/Abdominals/Situps.mp4,True
+vid_spell_caster,Spell Caster,none,0.00,,,,,True
+vid_stretching_chin_to_chest_stretch,Chin-to-Chest Stretch,none,0.50,,ball chest stretch,,,True
+vid_stretching_iron_cross_stretch,Iron Cross Stretch,exact,1.00,,cross iron stretch,,exercises/men/Stretching - Mobility/iron cross stretch.mp4,True
+vid_stretching_seated_twist_straight_arm,Seated Twist Stretch - Straight Arm,none,0.43,,calf leg seated straight stretch,,,True
+vid_stretching_spinal_stretch_on_exercise_ball,Spinal Stretch on an Exercise Ball,none,0.50,,ball chest stretch,,,True
+vid_stretching_standing_side_bend_bent_arm,Standing Side Bend - Bent Arm,none,0.50,,arm bend side tuck,,,True
+vid_twisting_crunch,Twisting Crunch,subset,1.00,,air crunch twisting,,,True
+vid_v_up,V-Up,exact,1.00,,v,,exercises/men/Abdominals/v up.mp4,True
+vid_vertical_leg_raise_on_parallel_bars,Vertical Leg Raise on Parallel Bars,none,0.33,,alternate leg raise,,,True
+vid_weighted_leg_extension_crunch,Weighted Leg Extension Crunch,none,0.40,,extension leg lever,,,True
+vid_45_degree_hyperextension,45-Degree Hyperextension,subset,1.00,,45 hyperextension twisting,,,True
+vid_band_bent_over_row,Band Bent-Over Row,exact,1.00,,band bent over row,exercises/girl/Back/Band bent-over row.mp4,exercises/men/Back/Band bent-over row.mp4,True
+vid_band_kneeling_one_arm_pulldown,Band Kneeling One-Arm Pulldown,none,0.57,,band down kneeling lat pull,,,True
+vid_band_one_arm_twisting_seated_row,Band One-Arm Twisting Seated Row,none,0.50,,alternate arm cable one row seated,,,True
+vid_band_one_leg_kickback_bent_position,Band One-Leg Kickback,rejected,1.00,adds equipment ['resistance'],band bent kickback leg one position resistance,,,True
+vid_band_pull_through,Band Pull Through,fuzzy,0.67,,band pull,,,True
+vid_band_seated_row,Band Seated Row,rejected,1.00,"adds equipment ['cable', 'resistance']",band cable resistance row seated,,,True
+vid_band_straight_back_seated_row,Band Straight-Back Seated Row,none,0.44,,back cable grip high reverse row seated straight,,,True
+vid_barbell_bent_over_row_overgrip,Barbell Bent-Over Row - Overhand Grip,fuzzy,0.71,,barbell bent grip over pronated row,,,True
+vid_barbell_straight_leg_deadlift,Barbell Straight-Leg Deadlift,exact,1.00,,barbell deadlift leg straight,,exercises/men/Legs/Barbell straight leg deadlift.mp4,True
+vid_barbell_underhand_bent_over_row,Barbell Bent-Over Row - Underhand Grip,fuzzy,0.83,,barbell bent over row underhand,,,True
+vid_cable_bar_lateral_pulldown_reverse_grip,Cable Lat Pulldown - Reverse Grip,fuzzy,0.83,,down grip lat pull reverse,,,True
+vid_cable_bar_lateral_pulldown_wide_shoulder_grip,Cable Lat Pulldown - Wide Grip,fuzzy,0.83,,down grip lat pull wide,,,True
+vid_cable_one_arm_lateral_pulldown,Cable One-Arm Lat Pulldown,exact,1.00,,arm cable down lat one pull,,exercises/men/Back/Cable one arm lat pulldown.mp4,True
+vid_cable_one_arm_twisting_seated_row,Cable One-Arm Twisting Seated Row,fuzzy,0.71,,alternate arm cable one row seated,,,True
+vid_cable_pulldown,Cable Pulldown - Close Underhand Grip,fuzzy,0.62,,cable close down front grip lat pull,,,True
+vid_cable_seated_high_row_v_bar,Cable Seated High Row - V-Bar,fuzzy,0.71,,bar cable machine row seated v,,,True
+vid_cable_seated_row_normal_grip,Cable Seated Row - Normal Grip,fuzzy,0.67,,cable grip row seated supine,,,True
+vid_cable_seated_row_parallel_grip,Cable Seated Row - Parallel Grip,fuzzy,0.67,,cable grip row seated supine,,,True
+vid_cable_seated_row_wide_grip,Cable Seated Row - Wide Grip,fuzzy,0.67,,cable grip row seated supine,,,True
+vid_cable_straight_back_seated_high_row_reverse_grip,Cable Straight-Back Seated High Row - Reverse Grip,exact,1.00,,back cable grip high reverse row seated straight,,exercises/men/Back/cable reverse grip straight back seated high row.mp4,True
+vid_cable_straight_back_seated_row_v_grip,Cable Straight-Back Seated Row - V-Grip,fuzzy,0.67,,back cable grip high reverse row seated straight,,,True
+vid_chin_ups_narrow_parallel_grip,Chin-Up - Narrow Parallel Grip,subset,1.00,,chin grip narrow parallel ups,,,True
+vid_close_grip_chin_up,Close-Grip Chin-Up,rejected,1.00,adds variant ['assisted'],assisted chin close grip underhand,,,True
+vid_commando_pull_up,Commando Pull-Up,exact,1.00,,commando pull,,exercises/men/Back/Commando Pull-up.mp4,True
+vid_dumbbell_bent_over_row,Dumbbell Bent-Over Row,exact,1.00,,bent dumbbell over row,,exercises/men/Back/dumbbells bent over row.mp4,True
+vid_dumbbell_deadlift,Dumbbell Deadlift,subset,1.00,,deadlift dumbbell staggered,,,True
+vid_dumbbell_hammer_grip_incline_bench_row,Dumbbell Hammer-Grip Incline Bench Row,rejected,1.00,adds variant ['arm'],arm bench dumbbell grip hammer incline row two,,,True
+vid_dumbbell_incline_row,Dumbbell Incline Row,exact,1.00,,dumbbell incline row,,exercises/men/Back/Dumbbell Incline Row.mp4,True
+vid_dumbbell_lying_rear_delt_row,Dumbbell Lying Rear Delt Row,exact,1.00,,delt dumbbell lying rear row,,exercises/men/Shoulders/Dumbbell Lying Rear Delt Row.mp4,True
+vid_dumbbell_palm_rotational_bent_over_row,Dumbbell Palm-Rotational Bent-Over Row,fuzzy,0.67,,bent dumbbell over row,,,True
+vid_dumbbell_reverse_grip_row,Dumbbell Reverse-Grip Row,none,0.50,,band grip lying reverse row,,,True
+vid_dumbbell_stiff_leg_deadlift,Dumbbell Stiff-Leg Deadlift,exact,1.00,,deadlift dumbbell leg stiff,,exercises/men/Legs/Dumbbell Stiff Leg Deadlift.mp4,True
+vid_hammer_grip_pull_up,Hammer-Grip Pull-Up,none,0.50,,grip normal pull,,,True
+vid_inverted_row_between_chairs,Inverted Row Between Chairs,none,0.40,,between chairs dip,,,True
+vid_kettlebell_deadlift,Kettlebell Deadlift,subset,1.00,,deadlift kettlebell staggered,,,True
+vid_lever_back_extension,Machine Back Extension,exact,1.00,,back extension machine,,exercises/men/Back/back extension machine.mp4,True
+vid_lever_high_row,Machine High Row,none,0.50,,machine row seated,,,True
+vid_lever_reverse_t_bar_row,Machine Reverse-Grip T-Bar Row,none,0.38,,band grip lying reverse row,,,True
+vid_lever_t_bar_row,Machine T-Bar Row,none,0.43,,bar cable machine row seated v,,,True
+vid_pull_up_wide_back_grip,Pull-Up - Wide Grip Behind the Neck,fuzzy,0.60,,grip pull wide,,,True
+vid_pull_up_wide_front_grip,Pull-Up - Wide Grip to the Chest,fuzzy,0.75,,grip pull wide,,,True
+vid_reverse_grip_machine_lat_pulldown,Reverse-Grip Machine Lat Pulldown,fuzzy,0.83,,down grip lat pull reverse,,,True
+vid_reverse_grip_pull_up,Reverse-Grip Pull-Up,subset,1.00,,down grip lat pull reverse,,,True
+vid_ring_high_row,Ring High Row,none,0.33,,grips high row suspension trainer,,,True
+vid_single_dumbbell_stiff_leg_deadlift,Single-Dumbbell Stiff-Leg Deadlift,fuzzy,0.80,,deadlift dumbbell leg single,,,True
+vid_smith_deadlift_deadlift,Smith Machine Deadlift,none,0.40,,hip machine smith thrust,,,True
+vid_stretching_dynamic_back_stretch,Dynamic Back Stretch,exact,1.00,,back dynamic stretch,,exercises/men/Stretching - Mobility/Dynamic Back Stretch.mp4,True
+vid_stretching_elbows_back_stretch,Elbows Back Stretch,exact,1.00,,back elbows stretch,,exercises/men/Stretching - Mobility/Elbows Back Stretch.mp4,True
+vid_stretching_kneeling_lat_stretch,Kneeling Lat Stretch,subset,1.00,,floor kneeling lat stretch,,,True
+vid_stretching_middle_back_stretch,Middle Back Stretch,subset,1.00,,back middle rotation stretch,,,True
+vid_stretching_seated_lower_back_stretch,Seated Lower Back Stretch,none,0.50,,back child lower pose stretch,,,True
+vid_stretching_seated_wide_angle_pose_sequence,Seated Wide Angle Pose Sequence,none,0.29,,easy pose seated twist,,,True
+vid_stretching_sitting_bent_over_back_stretch,Sitting Bent-Over Back Stretch,none,0.33,,back shoulder stretch,,,True
+vid_stretching_spine_stretch,Spine Stretch,rejected,1.00,adds variant ['leg'],hand leg reach spine stretch,,,True
+vid_stretching_spine_stretch_forward,Spine Stretch Forward,none,0.33,,hand leg reach spine stretch,,,True
+vid_stretching_standing_back_rotation_stretch,Standing Back Rotation Stretch,fuzzy,0.60,,back bench standing stretch,,,True
+vid_stretching_standing_lateral_stretch,Standing Lateral Stretch,exact,1.00,,lateral standing stretch,,exercises/men/Stretching - Mobility/standing lateral stretch.mp4,True
+vid_barbell_drag_curl,Barbell Drag Curl,exact,1.00,,barbell curl drag,,exercises/men/Biceps/barbell drag curl.mp4,True
+vid_barbell_prone_incline_curl,Barbell Prone Incline Curl,fuzzy,0.60,,band curl incline prone,,,True
+vid_cable_one_arm_curl,Cable One-Arm Curl,exact,1.00,,arm cable curl one,,exercises/men/Biceps/Cable One Arm Curl.mp4,True
+vid_cable_standing_inner_curl,Standing Cable Inner Biceps Curl,fuzzy,0.60,,biceps cable curl,,,True
+vid_dumbbell_alternate_seated_biceps_curl,Dumbbell Seated Alternating Curl,subset,1.00,,alternating biceps curl dumbbell seated,,,True
+vid_dumbbell_biceps_curl,Dumbbell Biceps Curl,subset,1.00,,biceps curl dumbbell simultaneous,,,True
+vid_dumbbell_concentration_curl,Dumbbell Concentration Curl,exact,1.00,,concentration curl dumbbell,,exercises/men/Biceps/concentration curls dumbbell.mp4,True
+vid_dumbbell_cross_body_hammer_curl,Dumbbell Cross-Body Hammer Curl,subset,1.00,,2 body cross curl dumbbell hammer,,,True
+vid_dumbbell_incline_biceps_curl,Dumbbell Incline Biceps Curl,subset,1.00,,biceps curl dumbbell incline simultaneous,,,True
+vid_dumbbell_incline_hammer_curl,Dumbbell Incline Hammer Curl,subset,1.00,,curl dumbbell hammer incline simultaneous,,,True
+vid_dumbbell_preacher_curl_over_exercise_ball,Dumbbell Preacher Curl Over an Exercise Ball,exact,1.00,,ball curl dumbbell over preacher,,exercises/men/Biceps/Dumbbell Preacher Curl over Exercise Ball.mp4,True
+vid_dumbbell_prone_incline_curl,Dumbbell Prone Incline Curl,exact,1.00,,curl dumbbell incline prone,,exercises/men/Biceps/Dumbbell Prone Incline Curl.mp4,True
+vid_dumbbell_seated_preacher_curl,Dumbbell Seated Preacher Curl,exact,1.00,,curl dumbbell preacher seated,,exercises/men/Biceps/Dumbbell Seated Preacher Curl.mp4,True
+vid_ez_barbell_biceps_curl,EZ-Bar Biceps Curl,subset,1.00,,bar biceps curl ezbar grip normal,,,True
+vid_lying_supine_dumbbell_curl,Lying Supine Dumbbell Curl,exact,1.00,,curl dumbbell lying supine,,exercises/men/Biceps/Dumbbell Lying Supine Curl.mp4,True
+vid_stretching_butterfly_yoga_pose,Butterfly Yoga Pose,exact,1.00,,butterfly pose yoga,,exercises/men/Yoga/Butterfly Yoga Pose.mp4,True
+vid_barbell_clean_and_press,Barbell Clean and Press,exact,1.00,,barbell clean press,,exercises/men/Powerlifting/Barbell clean and press.mp4,True
+vid_donkey_calf_raise,Donkey Calf Raise,exact,1.00,,calf donkey raise,,exercises/men/Legs/Donkey Calf Raise.mp4,True
+vid_dumbbell_front_squat,Dumbbell Front Squat,exact,1.00,,dumbbell front squat,,exercises/men/Legs/Dumbbell Front Squat.mp4,True
+vid_dumbbell_single_leg_calf_raise,Dumbbell Single-Leg Calf Raise,subset,1.00,,calf dumbbell leg raise single support wall,,,True
+vid_dumbbell_standing_calf_raise,Dumbbell Standing Calf Raise,exact,1.00,,calf dumbbell raise standing,,exercises/men/Legs/dumbbell standing calf raise.mp4,True
+vid_sled_45_degree_calf_press,Sled 45-Degree Calf Press,none,0.29,,calf leg machine press raise,,,True
+vid_stretching_calf_stretch_with_rope,Calf Stretch with a Rope,exact,1.00,,calf rope stretch,,exercises/men/Stretching - Mobility/Calf Stretch with Rope.mp4,True
+vid_stretching_calf_stretch_with_strap,Lying Calf Stretch with a Strap,none,0.40,,calf rope stretch,,,True
+vid_stretching_circles_knee_stretch,Knee Circles,subset,1.00,,circles knee stretch,,,True
+vid_stretching_feet_and_ankles_rotation_stretch,Feet and Ankle Rotations,none,0.25,,ankle circles,,,True
+vid_stretching_feet_and_ankles_stretch,Feet and Ankle Stretch,none,0.25,,ankle circles,,,True
+vid_stretching_peroneals_stretch,Peroneals Stretch,none,0.33,,90 stretch,,,True
+vid_stretching_seated_calf_stretch,Seated Calf Stretch,exact,1.00,,calf seated stretch,,exercises/men/Stretching - Mobility/seated calf stretch.mp4,True
+vid_stretching_stairs_calf_stretch,Stairs Calf Stretch,none,0.50,,calf rope stretch,,,True
+vid_stretching_standing_bench_calf_stretch,Standing Bench Calf Stretch,fuzzy,0.60,,back bench standing stretch,,,True
+vid_burpee,Burpee,exact,1.00,,burpee,,exercises/men/Calisthenics-Cardio-Plyo-Functional/Burpee.mp4,True
+vid_elliptical,Elliptical Trainer Workout,none,0.17,,chin grips suspension trainer,,,True
+vid_jump_rope,Jump Rope,subset,1.00,,basic jump rope,,,True
+vid_jump_step_up,Jump Step-Up,none,0.33,,45 step,,,True
+vid_jumping_jack,Jumping Jack,exact,1.00,,jack jumping,,exercises/men/Calisthenics-Cardio-Plyo-Functional/jumping jack.mp4,True
+vid_running,Running,exact,1.00,,running,exercises/girl/Calisthenics-Cardio-Plyo-Functional/Running.mp4,exercises/men/Calisthenics-Cardio-Plyo-Functional/Running.mp4,True
+vid_stationary_bike,Stationary Bike,exact,1.00,,bike stationary,,exercises/men/Calisthenics-Cardio-Plyo-Functional/Stationary Exercise Bike.mp4,True
+vid_stretching_bridge_pose_setu_bandhasana,Bridge Pose,subset,1.00,,bandhasana bridge pose setu,,,True
+vid_stretching_flexion_leg_sit_up,Flexion Leg Sit-Up,none,0.33,,sit,,,True
+vid_stretching_front_toe_touch,Front Toe Touch,none,0.50,,standing toe touch,,,True
+vid_stretching_plyo_side_lunge_stretch,Plyometric Side Lunge Stretch,fuzzy,0.60,,lunge plyometric side stretch,,,True
+vid_stretching_single_leg_stretch_bent_knee,Single Leg Stretch - Bent Knee,none,0.43,,hamstrings leg seated single stretch,,,True
+vid_stretching_single_straight_leg_stretch,Single Straight Leg Stretch,none,0.50,,hamstrings leg standing straight stretch,,,True
+vid_treadmill_running,Treadmill Running,exact,1.00,,running treadmill,,exercises/men/Calisthenics-Cardio-Plyo-Functional/Treadmill Running.mp4,True
+vid_band_high_fly,Band High Fly,exact,1.00,,band fly high,exercises/girl/Chest/Band high fly.mp4,,True
+vid_cable_lying_fly_flat_bench_cable_fly,Cable Lying Fly on a Flat Bench,fuzzy,0.80,,bench cable flat fly,,,True
+vid_cable_standing_fly_crossover_fly,Standing Cable Crossover Fly,fuzzy,0.60,,cable crossover fly reverse,,,True
+vid_chest_dips,Chest Dip,exact,1.00,,chest dip,,exercises/men/Chest/chest dip.mp4,True
+vid_deep_push_ups,Deep Push-Up,exact,1.00,,deep push,,exercises/men/Chest/Deep Push-Up.mp4,True
+vid_dumbbell_decline_fly_45_degree,Dumbbell Decline Fly,exact,1.00,,decline dumbbell fly,,exercises/men/Chest/Dumbbell Decline Fly.mp4,True
+vid_dumbbell_fly,Dumbbell Fly,subset,1.00,,dumbbell floor fly,,,True
+vid_dumbbell_fly_on_exercise_ball,Dumbbell Fly on an Exercise Ball,rejected,1.00,adds variant ['incline'],ball dumbbell fly incline,,,True
+vid_dumbbell_incline_bench_press,Dumbbell Incline Bench Press,exact,1.00,,bench dumbbell incline press,,exercises/men/Chest/Dumbbell Incline Bench Press.mp4,True
+vid_dumbbell_incline_fly,Dumbbell Incline Fly,exact,1.00,,dumbbell fly incline,,exercises/men/Chest/Dumbbell Incline Fly.mp4,True
+vid_dumbbell_incline_fly_on_exercise_ball,Dumbbell Incline Fly on an Exercise Ball,exact,1.00,,ball dumbbell fly incline,,exercises/men/Chest/Dumbbell Incline Fly on Exercise Ball.mp4,True
+vid_dumbbell_lying_hammer_press,Dumbbell Lying Hammer Press,fuzzy,0.60,,decline dumbbell hammer press,,,True
+vid_incline_push_ups,Incline Push-Up,rejected,1.00,adds equipment ['box'],box incline push,,,True
+vid_lever_chest_press,Machine Chest Press,exact,1.00,,chest machine press,exercises/girl/Chest/Chest Press Machine.mp4,exercises/men/Chest/Chest Press Machine.mp4,True
+vid_lever_incline_hammer_chest_press,Machine Incline Chest Press,exact,1.00,,chest incline machine press,,exercises/men/Chest/machine chest press incline.mp4,True
+vid_lever_lying_chest_press,Machine Lying Chest Press,fuzzy,0.75,,chest machine press,,,True
+vid_lever_pec_deck_fly,Pec Deck Fly,rejected,1.00,adds equipment ['machine'],deck flies fly machine pec,,,True
+vid_push_ups,Push-Up,subset,1.00,,archer push,,,True
+vid_stretching_above_head_chest_stretch,Above-Head Chest Stretch,exact,1.00,,above chest head stretch,exercises/girl/Stretching - Mobility/Above Head Chest Stretch.mp4,exercises/men/Stretching - Mobility/Above head chest stretch.mp4,True
+vid_stretching_back_pec_stretch,Behind-the-Back Pec Stretch,fuzzy,0.75,,back pec stretch,,,True
+vid_stretching_dynamic_chest_stretch,Dynamic Chest Stretch,none,0.50,,adduction dynamic stretch,,,True
+vid_stretching_kneeling_back_rotation_stretch,Kneeling Back Rotation Stretch,fuzzy,0.60,,back middle rotation stretch,,,True
+vid_stretching_standing_reach_up_back_rotation_stretch,Standing Reach-Up Back Rotation Stretch,none,0.50,,back bench standing stretch,,,True
+vid_stretching_standing_wheel_rollout,Standing Wheel Rollout,subset,1.00,,ab rollout standing wheel,,,True
+vid_triceps_dips,Triceps Dip,rejected,1.00,adds equipment ['bench'],bench curl dip leg triceps,,,True
+vid_wide_grip_push_ups,Wide-Grip Push-Up,rejected,1.00,"adds equipment ['cable', 'ezbar']",bar cable down ezbar grip push triceps wide,,,True
+vid_barbell_reverse_wrist_curl_over_grip,Barbell Reverse Wrist Curl - Overhand Grip,none,0.50,,barbell curl reverse,,,True
+vid_barbell_standing_back_wrist_curl,Barbell Standing Behind-the-Back Wrist Curl,fuzzy,0.83,,back barbell curl standing wrist,,,True
+vid_dumbbell_behind_back_wrist_curl,Dumbbell Behind-the-Back Wrist Curl,fuzzy,0.60,,curl dumbbell wrist,,,True
+vid_dumbbell_over_bench_wrist_curl,Dumbbell Over-Bench Reverse Wrist Curl,exact,1.00,,bench curl dumbbell over reverse wrist,,exercises/men/Forearms/Dumbbell Over Bench Reverse Wrist Curl.mp4,True
+vid_dumbbell_seated_neutral_wrist_curl,Dumbbell Seated Neutral Wrist Curl,exact,1.00,,curl dumbbell neutral seated wrist,,exercises/men/Forearms/Dumbbell Seated Neutral Wrist Curl.mp4,True
+vid_stretching_side_wrist_pull_stretch,Side Wrist Pull Stretch,exact,1.00,,pull side stretch wrist,,exercises/men/Stretching - Mobility/side wrist pull stretch.mp4,True
+vid_stretching_wrist_circles,Wrist Circles,none,0.33,,ankle circles,,,True
+vid_band_bent_over_hip_extension,Band Bent-Over Hip Extension,exact,1.00,,band bent extension hip over,exercises/girl/Legs/Band Bent-over Hip Extension.mp4,,True
+vid_band_hip_abduction,Band Hip Abduction,rejected,1.00,adds equipment ['resistance'],abduction band hip resistance seated,,,True
+vid_band_hip_adduction,Band Hip Adduction,exact,1.00,,adduction band hip,exercises/girl/Legs/Band Hip Adduction.mp4,exercises/men/Legs/Band Hip Adduction.mp4,True
+vid_band_leg_curl,Band Lying Leg Curl,fuzzy,0.60,,band curl leg standing,,,True
+vid_band_seated_leg_extension,Band Seated Leg Extension,fuzzy,0.60,,extension leg seated single,,,True
+vid_barbell_front_chest_squat,Barbell Front Squat,exact,1.00,,barbell front squat,exercises/girl/Legs/barbell front squat.mp4,exercises/men/Legs/Barbell front squats.mp4,True
+vid_close_feet_leg_press,Close-Feet Leg Press,none,0.50,,close leg machine press stance,,,True
+vid_dumbbell_bar_grip_sumo_squat,Dumbbell Sumo Squat,subset,1.00,,bar dumbbell grip squat sumo,,,True
+vid_dumbbell_goblet_squat,Dumbbell Goblet Squat,exact,1.00,,dumbbell goblet squat,,exercises/men/Legs/Dumbbell Goblet Squat.mp4,True
+vid_dumbbell_lunge,Dumbbell Lunge,subset,1.00,,curtsy dumbbell lunge,,,True
+vid_dumbbell_lying_femoral,Dumbbell Lying Leg Curl,fuzzy,0.60,,curl dumbbell lying supine,,,True
+vid_dumbbell_single_leg_squat,Dumbbell Single-Leg Squat,exact,1.00,,dumbbell leg single squat,,exercises/men/Legs/Dumbbell Single Leg Squat.mp4,True
+vid_dumbbell_squat,Dumbbell Squat,exact,1.00,,dumbbell squat,,exercises/men/Legs/Dumbbell Squats.mp4,True
+vid_lever_horizontal_leg_press,Machine Horizontal Leg Press,fuzzy,0.75,,horizontal leg press,,,True
+vid_lever_kneeling_leg_curl,Machine Kneeling Leg Curl,exact,1.00,,curl kneeling leg machine,,exercises/men/Legs/kneeling leg curl machine.mp4,True
+vid_lever_seated_hip_abduction,Machine Seated Hip Abduction,exact,1.00,,abduction hip machine seated,exercises/girl/Legs/Seated Hip Abductor Machine.mp4,exercises/men/Legs/Seated Hip Abductor Machine.mp4,True
+vid_lever_seated_hip_adduction,Machine Seated Hip Adduction,exact,1.00,,adduction hip machine seated,exercises/girl/Legs/Seated machine hip adductor.mp4,exercises/men/Legs/Seated Machine Hip Adductor.mp4,True
+vid_lever_standing_hip_extension,Machine Standing Hip Extension,none,0.40,,extension machine tricep,,,True
+vid_lever_standing_rear_kick,Machine Standing Rear Kick,none,0.33,,band kick kneeling rear,,,True
+vid_rear_decline_bridge,Rear Decline Bridge,none,0.25,,decline sit,,,True
+vid_sled_45_degree_leg_wide_press,Sled 45-Degree Wide-Stance Leg Press,none,0.57,,high leg press stance wide,,,True
+vid_smith_chair_squat,Smith Machine Chair Squat,fuzzy,0.60,,machine normal smith squat,,,True
+vid_stretching_adductor_stretch,Adductor Stretch,exact,1.00,,adduction stretch,exercises/girl/Stretching - Mobility/adductor stretch.mp4,exercises/men/Stretching - Mobility/Adductor stretch.mp4,True
+vid_stretching_all_fours_squad_stretch,All-Fours Quad Stretch,exact,1.00,,all fours quad stretch,exercises/girl/Stretching - Mobility/ALL FOURS QUAD STRETCH.mp4,exercises/men/Stretching - Mobility/All fours quad stretch.mp4,True
+vid_stretching_boat_stretch,Boat Stretch,exact,1.00,,boat stretch,,exercises/men/Stretching - Mobility/Boat Stretch.mp4,True
+vid_stretching_ceiling_look_stretch,Ceiling Look Stretch,exact,1.00,,ceiling look stretch,,exercises/men/Stretching - Mobility/Ceiling Look Stretch.mp4,True
+vid_stretching_crossover_kneeling_hip_flexor_stretch,Crossover Kneeling Hip Flexor Stretch,exact,1.00,,crossover flexor hip kneeling stretch,,exercises/men/Stretching - Mobility/Crossover Kneeling Hip Flexor Stretch.mp4,True
+vid_stretching_hamstring_stretch,Hamstring Stretch,rejected,1.00,"adds variant ['leg', 'lying', 'single']",extended hamstrings leg lying single stretch wall,,,True
+vid_stretching_hip_circles_stretch,Hip Circles,none,0.33,,ankle circles,,,True
+vid_stretching_hip_extension_stretch,Hip Extension Stretch,none,0.40,,extension glutes hip multi,,,True
+vid_stretching_hip_flexor_and_quad_stretch,Hip Flexor and Quad Stretch,subset,1.00,,flexor hip intermediate quad stretch,,,True
+vid_stretching_hip_flexor_stretch_rear_foot_elevated,Hip Flexor Stretch - Rear Foot Elevated,none,0.43,,ball flexor hip stretch,,,True
+vid_stretching_knee_raise,Standing Knee Raise,none,0.50,,flat knee raise,,,True
+vid_stretching_quadriceps_lying_stretch,Lying Quadriceps Stretch,exact,1.00,,lying quadriceps stretch,,exercises/men/Stretching - Mobility/lying quadriceps stretch.mp4,True
+vid_stretching_quadriceps_stretch,Standing Quadriceps Stretch,exact,1.00,,quadriceps standing stretch,exercises/girl/Stretching - Mobility/Standing Quadriceps Stretch.mp4,exercises/men/Stretching - Mobility/standing quadriceps stretch.mp4,True
+vid_stretching_runners_stretch,Runner's Stretch,fuzzy,0.67,,runner stretch,,,True
+vid_weighted_sissy_squat,Weighted Sissy Squat,none,0.50,,bodyweight sissy squat,,,True
+vid_ball_sit_up_on_stability_ball,Sit-Up on a Stability Ball,fuzzy,0.67,,ball sit,,,True
+vid_bent_knee_lying_twist_on_stability_ball,Bent Knee Lying Twist on a Stability Ball,exact,1.00,,ball bent knee lying stability twist,,exercises/men/Abdominals/Bent knee Lying Twist (On Stability Ball).mp4,True
+vid_chest_lift_with_rotation,Chest Lift with Rotation,exact,1.00,,chest lift rotation,,exercises/men/Abdominals/chest lift with rotation.mp4,True
+vid_corkscrew_pilates,Pilates Corkscrew,none,0.00,,,,,True
+vid_crunch_floor_female,Floor Crunch,exact,1.00,,crunch floor,,exercises/men/Abdominals/Crunch Floor.mp4,True
+vid_crunch_leg_raise,Crunch with Leg Raise,exact,1.00,,crunch leg raise,,exercises/men/Abdominals/Crunch leg raise.mp4,True
+vid_crunch_legs_on_stability_ball,Crunch with Legs on a Stability Ball,exact,1.00,,ball crunch leg stability,,exercises/men/Abdominals/Crunch (legs on stability ball).mp4,True
+vid_crunch_straight_leg_up,Crunch with Straight Leg Up,exact,1.00,,crunch leg straight,,exercises/men/Abdominals/Crunch (straight leg up).mp4,True
+vid_front_plank_female,Front Plank,subset,1.00,,front plank unilateral,,,True
+vid_hip_raise_bridge,Hip Raise Bridge,none,0.50,,abduction bridge hip,,,True
+vid_hundred_pilates,Pilates Hundred,none,0.00,,,,,True
+vid_jack_knife_floor,Floor Jackknife,none,0.33,,crunch floor,,,True
+vid_jack_split_crunches,Split Jackknife Crunch,none,0.25,,ab crunch,,,True
+vid_jackknife_pilates,Pilates Jackknife,none,0.00,,,,,True
+vid_leg_raise_hip_lift,Leg Raise Hip Lift,none,0.40,,alternate leg raise,,,True
+vid_lying_hip_lift_on_stability_ball,Lying Hip Lift on a Stability Ball,none,0.38,,ball bent knee lying stability twist,,,True
+vid_lying_scissor_kick_female,Lying Scissor Kick,none,0.25,,kick scissors,,,True
+vid_medicine_ball_sit_up_wall,Medicine Ball Wall Sit-Up,none,0.50,,ball sit,,,True
+vid_reverse_crunch_female,Reverse Crunch,exact,1.00,,crunch reverse,,exercises/men/Abdominals/reverse crunch.mp4,True
+vid_rotate_push_up_female,Rotating Push-Up,none,0.33,,plank push,,,True
+vid_seated_twist_straight_arm,Seated Twist - Straight Arm,none,0.40,,barbell seated twist,,,True
+vid_side_bend_on_stability_ball,Side Bend on a Stability Ball,none,0.40,,45 bend side,,,True
+vid_sit_up,Anchored Sit-Up,none,0.50,,sit,,,True
+vid_weighted_lying_twist,Weighted Lying Twist,none,0.40,,bent knee lying twist,,,True
+vid_band_bent_over_rear_lateral_raise,Band Bent-Over Rear Lateral Raise,none,0.44,,band bent deltoid fly over rear resistance,,,True
+vid_band_one_arm_forward_raise,Band One-Arm Front Raise,fuzzy,0.67,,arm cable front one raise,,,True
+vid_band_standing_rear_delt_row,Band Standing Rear Delt Row,exact,1.00,,band delt rear row standing,exercises/girl/Shoulders/Band standing rear delt row.mp4,,True
+vid_barbell_front_raise,Barbell Front Raise,exact,1.00,,barbell front raise,,exercises/men/Shoulders/front raises barbell.mp4,True
+vid_barbell_seated_behind_head_military_press,Barbell Seated Behind-the-Head Press,none,0.57,,barbell behind military neck press seated,,,True
+vid_barbell_upright_row_wide_grip,Barbell Upright Row - Wide Grip,exact,1.00,,barbell grip row upright wide,,exercises/men/Back/Barbell wide grip Upright Row.mp4,True
+vid_cable_crossover_reverse_fly,Cable Crossover Reverse Fly,exact,1.00,,cable crossover fly reverse,,exercises/men/Shoulders/cable reverse fly on crossover.mp4,True
+vid_cable_front_raise,Cable Front Raise,subset,1.00,,bar cable front raise straight,,,True
+vid_cable_lateral_raise,Cable Lateral Raise,exact,1.00,,cable lateral raise,,exercises/men/Shoulders/cable lateral raises.mp4,True
+vid_cable_one_arm_forward_raise,Cable One-Arm Front Raise,exact,1.00,,arm cable front one raise,,exercises/men/Shoulders/Cable One Arm Front Raise.mp4,True
+vid_cable_one_arm_lateral_raise,Cable One-Arm Lateral Raise,rejected,1.00,adds variant ['bent'],arm bent cable lateral one over raise,,,True
+vid_cable_rear_delt_row_with_rope,Cable Rear Delt Row with a Rope,none,0.50,,delt kettlebell rear row,,,True
+vid_dumbbell_bench_seated_press,Dumbbell Seated Press with Back Support,none,0.50,,arnold dumbbell press seated,,,True
+vid_dumbbell_front_raise,Dumbbell Front Raise,exact,1.00,,dumbbell front raise,,exercises/men/Shoulders/Dumbbell Front Raise.mp4,True
+vid_dumbbell_incline_hammer_press,Dumbbell Incline Hammer Press,subset,1.00,,dumbbell hammer incline press shoulder,,,True
+vid_dumbbell_incline_rear_lateral_raise,Dumbbell Incline Rear Lateral Raise,exact,1.00,,dumbbell incline lateral raise rear,,exercises/men/Shoulders/Dumbbell Incline Rear Lateral Raise.mp4,True
+vid_dumbbell_iron_cross,Dumbbell Iron Cross,exact,1.00,,cross dumbbell iron,,exercises/men/Calisthenics-Cardio-Plyo-Functional/Dumbbell Iron Cross.mp4,True
+vid_dumbbell_lateral_raise,Dumbbell Lateral Raise,exact,1.00,,dumbbell lateral raise,,exercises/men/Shoulders/lateral raises dumbbell.mp4,True
+vid_dumbbell_one_arm_lateral_raise,Dumbbell One-Arm Lateral Raise,exact,1.00,,arm dumbbell lateral one raise,,exercises/men/Shoulders/Dumbbell One Arm Lateral Raise.mp4,True
+vid_dumbbell_rear_delt_row,Dumbbell Rear Delt Row,exact,1.00,,delt dumbbell rear row,,exercises/men/Shoulders/Dumbbell Rear Delt Row.mp4,True
+vid_dumbbell_rear_lateral_raise,Dumbbell Bent-Over Rear Lateral Raise,fuzzy,0.67,,dumbbell lateral raise rear,,,True
+vid_dumbbell_seated_front_raise,Dumbbell Seated Front Raise,exact,1.00,,dumbbell front raise seated,,exercises/men/Shoulders/Dumbbell Seated Front Raise.mp4,True
+vid_dumbbell_seated_lateral_raise,Dumbbell Seated Lateral Raise,exact,1.00,,dumbbell lateral raise seated,,exercises/men/Shoulders/Dumbbell Seated Lateral Raise.mp4,True
+vid_dumbbell_upright_row,Dumbbell Upright Row,exact,1.00,,dumbbell row upright,,exercises/men/Shoulders/upright row dumbbell.mp4,True
+vid_lever_lateral_raise,Machine Lateral Raise,exact,1.00,,lateral machine raise,exercises/girl/Shoulders/Machine Lateral Raise.mp4,exercises/men/Shoulders/machine lateral raise.mp4,True
+vid_lever_military_press,Machine Shoulder Press,rejected,1.00,adds equipment ['smith'],machine press shoulder smith,,,True
+vid_lever_seated_reverse_fly,Machine Seated Reverse Fly,fuzzy,0.75,,fly machine reverse,,,True
+vid_military_press,Military Press,subset,1.00,,bodyweight military press,,,True
+vid_smith_seated_shoulder_press,Smith Machine Seated Shoulder Press,fuzzy,0.80,,machine press shoulder smith,,,True
+vid_stretching_band_warm_up_shoulder_stretch,Band Warm-Up Shoulder Stretch,exact,1.00,,band shoulder stretch warm,exercises/girl/Stretching - Mobility/Band Warm up Shoulder Stretch.mp4,,True
+vid_stretching_rear_deltoid_stretch,Rear Deltoid Stretch,exact,1.00,,deltoid rear stretch,,exercises/men/Stretching - Mobility/rear deltoid stretch.mp4,True
+vid_stretching_seated_shoulder_flexor_depresor_retractor,Seated Shoulder Flexor and Retractor Stretch,subset,1.00,,depressor flexor retractor seated shoulder stretch,,,True
+vid_barbell_shrug,Barbell Shrug,subset,1.00,,barbell shrug silverback,,,True
+vid_dumbbell_incline_shrug,Dumbbell Incline Shrug,exact,1.00,,dumbbell incline shrug,,exercises/men/Shoulders/Dumbbell Incline Shrug.mp4,True
+vid_dumbbell_shrug,Dumbbell Shrug,subset,1.00,,dumbbell shrug silverback,,,True
+vid_lever_shrug,Machine Shrug,none,0.33,,fly machine,,,True
+vid_scapula_dips,Scapular Dip,none,0.33,,dip ring,,,True
+vid_stretching_neck_side_stretch,Neck Side Stretch,subset,1.00,,backward forward neck side stretch turn,,,True
+vid_band_overhead_triceps_extension,Band Overhead Triceps Extension,fuzzy,0.60,,band extension incline triceps,,,True
+vid_band_side_triceps_pushdown,Band Side Triceps Pushdown,none,0.50,,arm band pushdown single triceps,,,True
+vid_band_triceps_pushdown,Band Triceps Pushdown,rejected,1.00,"adds variant ['arm', 'single']",arm band pushdown single triceps,,,True
+vid_cable_lying_triceps_extension,Cable Lying Triceps Extension,exact,1.00,,cable extension lying triceps,,exercises/men/Triceps/cable lying triceps extension.mp4,True
+vid_cable_overhead_triceps_extension_rope_attachment,Cable Overhead Triceps Extension - Rope,fuzzy,0.80,,cable extension overhead rope,,,True
+vid_cable_pushdown_rope_attachment,Cable Rope Pushdown,fuzzy,0.67,,cable pushdown,,,True
+vid_cable_rope_high_pulley_overhead_triceps_extension,Cable High-Pulley Overhead Rope Extension,fuzzy,0.67,,cable extension overhead rope,,,True
+vid_cable_standing_one_arm_triceps_extension,Cable Standing One-Arm Triceps Extension,none,0.57,,arm dumbbell extension one standing,,,True
+vid_cable_triceps_pushdown,Cable Triceps Pushdown,rejected,1.00,adds equipment ['ezbar'],bar cable ezbar grip pushdown reverse triceps,,,True
+vid_close_grip_push_ups,Close-Grip Push-Up,exact,1.00,,close grip push,,exercises/men/Chest/Close Grip Push up.mp4,True
+vid_dumbbell_kickback,Dumbbell Kickback,exact,1.00,,dumbbell kickback,,exercises/men/Triceps/Dumbbell Kickback.mp4,True
+vid_dumbbell_lying_alternate_extension,Dumbbell Lying Alternating Triceps Extension,fuzzy,0.80,,dumbbell extension lying triceps,,,True
+vid_dumbbell_lying_triceps_extension,Dumbbell Lying Triceps Extension,exact,1.00,,dumbbell extension lying triceps,,exercises/men/Triceps/Dumbbell Lying Triceps Extension.mp4,True
+vid_dumbbell_one_arm_triceps_extension,Dumbbell One-Arm Triceps Extension,rejected,1.00,"adds variant ['lying', 'neutral']",arm dumbbell extension lying neutral one triceps,,,True
+vid_dumbbell_pronate_grip_triceps_extension,Dumbbell Pronated-Grip Triceps Extension,fuzzy,0.67,,dumbbell extension grip pronate triceps,,,True
+vid_dumbbell_seated_kickback,Dumbbell Seated Kickback,exact,1.00,,dumbbell kickback seated,,exercises/men/Triceps/Dumbbell Seated Kickback.mp4,True
+vid_dumbbell_seated_triceps_extension,Dumbbell Seated Triceps Extension,fuzzy,0.60,,dumbbell extension incline triceps,,,True
+vid_ez_barbell_lying_triceps_extension,EZ-Bar Lying Triceps Extension,none,0.57,,bar cable extension ezbar overhead triceps,,,True
+vid_lever_seated_dips,Machine Seated Dip,none,0.50,,machine row seated,,,True
+vid_lever_triceps_extension_neutral_grip,Machine Triceps Extension - Neutral Grip,none,0.43,,dumbbell extension grip pronate triceps,,,True
+vid_stretching_kneeling_triceps_extension,Kneeling Triceps Stretch,none,0.50,,light stretch triceps,,,True
+vid_stretching_reverse_dip,Reverse Dip Stretch,none,0.50,,reverse shoulder stretch,,,True

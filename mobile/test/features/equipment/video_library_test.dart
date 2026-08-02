@@ -41,8 +41,9 @@ void main() {
   const base =
       'https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises';
 
-  /// The twelve folders the drop is organised by. The two gender trees disagree
-  /// on case ('Abs' vs 'abs'), which is why this is compared lowercased.
+  /// The twelve folders the ORIGINAL drop is organised by. The two gender trees
+  /// disagree on case ('Abs' vs 'abs'), which is why this is compared
+  /// lowercased.
   const groups = {
     'abs',
     'back',
@@ -57,6 +58,16 @@ void main() {
     'trapezius',
     'triceps',
   };
+
+  /// Exactly the pattern `functions/src/video_urls.ts` will sign, character for
+  /// character. A key this rejects is a clip that can never play: the function
+  /// answers `invalid-argument`, the block keeps its poster up, and nothing
+  /// anywhere reports a fault. Mirrored deliberately rather than shared —
+  /// TypeScript and Dart cannot import one regex, and a copy that is checked
+  /// against the real catalog on every run is better than a shared constant
+  /// nothing exercises.
+  final licensedKey =
+      RegExp(r'^exercises/(girl|men)/[^/]{1,120}/[^/]{1,160}\.mp4$');
 
   List<Map<String, dynamic>> withVideo() =>
       exercises.where((e) => e['video'] != null).toList();
@@ -79,15 +90,24 @@ void main() {
       expect(broken, isEmpty);
     });
 
-    test('the two-gender exercises really carry both urls', () {
-      // 310 of the 343 were filmed twice. This is a count, not a ratio,
-      // because losing one gender is exactly the kind of regression a ratio
-      // would round away.
+    test('the two-gender exercises really carry both references', () {
+      // Counts, not ratios, because losing one gender is exactly the kind of
+      // regression a ratio would round away.
+      //
+      // Moved 343 -> 365 by the licensed import of 2026-08-02: 142 exercises
+      // now point at the purchased library and 22 of them had no clip at all
+      // before. `one` grew from 33 to 36 because the bundle filmed some
+      // movements on a single body.
+      //
+      // Only exact name matches were applied. 48 subset candidates are strong
+      // but unproven and sit in core/bundle_import_report.csv awaiting an eye
+      // that knows a front squat from a back squat; `--include-subset` applies
+      // them and moves these three numbers.
       final both = withVideo().where((e) => (e['video'] as Map).length == 2);
       final one = withVideo().where((e) => (e['video'] as Map).length == 1);
-      expect(both, hasLength(310));
-      expect(one, hasLength(33));
-      expect(withVideo(), hasLength(343));
+      expect(both, hasLength(329));
+      expect(one, hasLength(36));
+      expect(withVideo(), hasLength(365));
 
       for (final e in both) {
         final v = (e['video'] as Map).cast<String, dynamic>();
@@ -95,38 +115,72 @@ void main() {
       }
     });
 
-    test('every url is on the base host and mirrors the drop layout', () {
-      // The path is `<gender>/<Group>/<file>.mp4` relative to the base, exactly
-      // as the files sit on disk, so re-uploading the drop is a directory copy
-      // rather than a rename pass. A url whose gender segment disagrees with
-      // its own key would 404 on a host that never had the old layout.
+    test('every reference is either a public url or a signable object key', () {
+      // The catalog holds two shapes on purpose, and this is the invariant
+      // that replaced "everything is on one public host".
+      //
+      //   public    <base>/<gender>/<Group>/<file>.mp4 — the original drop,
+      //             still served straight from a world-readable bucket
+      //   licensed  exercises/<gender>/<Group>/<file>.mp4 — the purchased
+      //             library, private, signed per request because the vendor's
+      //             permission forbids permanent downloadable links
+      //
+      // `ClipUrlResolver.isDirect` is the whole seam between them, so the one
+      // thing that must hold for BOTH is that the gender segment agrees with
+      // the key it is filed under. A mismatch shows a man the women's clip,
+      // and no test of the app's logic would ever catch it.
       final broken = <String>[];
+      var publicCount = 0;
+      var licensedCount = 0;
+
       for (final e in withVideo()) {
         final v = (e['video'] as Map).cast<String, String>();
-        v.forEach((gender, url) {
-          if (!url.startsWith('$base/')) {
-            broken.add('${e['id']}/$gender is not on the base host: $url');
+        v.forEach((gender, ref) {
+          if (ref.startsWith('http')) {
+            publicCount++;
+            if (!ref.startsWith('$base/')) {
+              broken.add('${e['id']}/$gender is not on the base host: $ref');
+              return;
+            }
+            final parts = ref.substring(base.length + 1).split('/');
+            if (parts.length != 3) {
+              broken.add('${e['id']}/$gender is not gender/group/file: $ref');
+              return;
+            }
+            if (parts[0] != gender) {
+              broken
+                  .add('${e['id']} keyed $gender but the path says ${parts[0]}');
+            }
+            if (!groups.contains(parts[1].toLowerCase())) {
+              broken
+                  .add('${e['id']}/$gender is in an unknown folder ${parts[1]}');
+            }
+            if (!parts[2].endsWith('.mp4')) {
+              broken.add('${e['id']}/$gender is not an .mp4: ${parts[2]}');
+            }
             return;
           }
-          final parts = url.substring(base.length + 1).split('/');
-          if (parts.length != 3) {
-            broken.add('${e['id']}/$gender is not gender/group/file: $url');
+
+          licensedCount++;
+          if (!licensedKey.hasMatch(ref)) {
+            // The function would answer invalid-argument and the exercise
+            // would show its poster forever, looking like a slow network.
+            broken.add('${e['id']}/$gender is a key clipUrl will not sign: $ref');
             return;
           }
-          if (parts[0] != gender) {
-            broken
-                .add('${e['id']} keyed $gender but the path says ${parts[0]}');
-          }
-          if (!groups.contains(parts[1].toLowerCase())) {
-            broken
-                .add('${e['id']}/$gender is in an unknown folder ${parts[1]}');
-          }
-          if (!parts[2].endsWith('.mp4')) {
-            broken.add('${e['id']}/$gender is not an .mp4: ${parts[2]}');
+          if (ref.split('/')[1] != gender) {
+            broken.add('${e['id']} keyed $gender but the object says '
+                '${ref.split('/')[1]}');
           }
         });
       }
+
       expect(broken, isEmpty);
+      // Pinned so a botched re-import that quietly reverts every licensed
+      // entry to a public url still passes every shape check above and fails
+      // right here.
+      expect(licensedCount, 166, reason: 'licensed object keys');
+      expect(publicCount, 528, reason: 'public urls still being served');
     });
 
     test('no exercise ships without text in either language', () {
@@ -225,11 +279,16 @@ void main() {
     });
 
     test('exercises with no clip still have their photographs', () {
-      // The ~150 older exercises the drop does not cover keep their stills.
-      // If a rebuild ever dropped `frames`, they would render as blank cards
-      // and this is the only place that would notice.
+      // The older exercises no library covers keep their stills. If a rebuild
+      // ever dropped `frames`, they would render as blank cards and this is
+      // the only place that would notice.
+      //
+      // 168 -> 146 with the licensed import of 2026-08-02: 22 of these had no
+      // clip at all and now have one. The remaining 146 are the honest gap.
+      // Many have a subset or fuzzy vendor candidate that was deliberately not
+      // applied — see core/bundle_import_report.csv.
       final stillsOnly = exercises.where((e) => e['video'] == null).toList();
-      expect(stillsOnly, hasLength(168));
+      expect(stillsOnly, hasLength(146));
       const noImageryByDesign = {
         'treadmill_warmup_walk',
         'treadmill_incline_walk',
@@ -260,13 +319,41 @@ void main() {
     // have failed to load in its entirety on the day the real host went live,
     // and nothing before that moment could have noticed.
 
-    test('every url parses, with nothing left to escape', () {
+    test('every public url parses, with nothing left to escape', () {
       final bad = <String>[];
       for (final e in withVideo()) {
-        for (final url in (e['video'] as Map).values.cast<String>()) {
-          if (Uri.tryParse(url) == null || url.contains(' ')) {
-            bad.add('${e['id']}: $url');
+        for (final ref in (e['video'] as Map).values.cast<String>()) {
+          if (!ref.startsWith('http')) continue;
+          if (Uri.tryParse(ref) == null || ref.contains(' ')) {
+            bad.add('${e['id']}: $ref');
           }
+        }
+      }
+      expect(bad, isEmpty);
+    });
+
+    test('every licensed key is RAW, not encoded', () {
+      // The exact opposite requirement, and it is easy to get backwards.
+      //
+      // A public url is fetched by a browser, so its spaces must be escaped. A
+      // licensed key is not fetched — it is the object's NAME, handed to
+      // `clipUrl` and used verbatim to look the object up. Percent-encode it
+      // and the lookup asks for an object literally called
+      // `Barbell%20Squat.mp4`, which does not exist. The bucket says no such
+      // object, the function says internal error, and the exercise shows its
+      // poster forever.
+      //
+      // 297 delivered filenames also carry stray spaces, so this is not a
+      // theoretical hazard — it is the same hazard from the other end.
+      final bad = <String>[];
+      for (final e in withVideo()) {
+        for (final ref in (e['video'] as Map).values.cast<String>()) {
+          if (ref.startsWith('http')) continue;
+          if (ref.contains('%')) bad.add('${e['id']}: encoded key $ref');
+          if (Uri.decodeFull(ref) != ref) {
+            bad.add('${e['id']}: key does not survive a decode: $ref');
+          }
+          if (ref != ref.trim()) bad.add('${e['id']}: key has stray space');
         }
       }
       expect(bad, isEmpty);
@@ -276,8 +363,15 @@ void main() {
       // The path has to survive decoding back to the drop's real filename, or
       // a re-upload that mirrors the directory tree will 404 on every clip.
       for (final e in withVideo()) {
-        for (final url in (e['video'] as Map).values.cast<String>()) {
-          final decoded = Uri.decodeFull(url);
+        for (final ref in (e['video'] as Map).values.cast<String>()) {
+          if (!ref.startsWith('http')) {
+            // The licensed tree is laid out under the object key itself, so
+            // there is no encoding to undo — the key IS the path on disk.
+            expect(ref, endsWith('.mp4'), reason: e['id'] as String);
+            expect(ref, startsWith('exercises/'), reason: e['id'] as String);
+            continue;
+          }
+          final decoded = Uri.decodeFull(ref);
           expect(decoded, endsWith('.mp4'), reason: e['id'] as String);
           expect(decoded, startsWith('$base/'), reason: e['id'] as String);
         }
@@ -289,15 +383,16 @@ void main() {
     // On the record, because it is otherwise hidden by a redefinition. Adding
     // 293 exercises with no photographs would have dropped `demo_coverage_test`
     // from ~95% to 40.7%; counting `video` as imagery kept that test green.
-    // Counting it is right in principle — a clip is the strongest demo there
-    // is — but as of this commit those 293 exercises show the user nothing:
-    // `ExerciseItem` parses `videoUrl` and not `video`, and every url points
-    // at a host that does not exist.
     //
-    // This test exists so that stops being invisible. It is meant to FAIL the
-    // day either of those changes, as a prompt to check the other one.
+    // When this was written those 293 showed the user nothing — `ExerciseItem`
+    // parsed `videoUrl` and not `video`, and every url pointed at a host that
+    // did not exist. Both are fixed: the host went live 2026-08-01 and every
+    // one of these now carries a bundled poster as well, so the count is no
+    // longer a debt. It is kept as a count because it is the number of
+    // exercises whose ONLY moving demonstration is the clip, and if a rebuild
+    // ever loses their posters again this is where it shows.
 
-    test('293 exercises depend on a video that is not yet playable', () {
+    test('293 exercises are demonstrated by the clip alone', () {
       final videoOnly = exercises
           .where((e) =>
               e['video'] != null &&
@@ -308,18 +403,30 @@ void main() {
       expect(videoOnly, 293);
     });
 
-    test('every url is on the real host', () {
-      // This used to assert the opposite — that the host was still a
-      // placeholder — and it was written to fail on the day one was chosen.
-      // It did, on 2026-08-01, which is what a note left in a test is for.
-      // 677 objects uploaded, four fetched anonymously with 206 and
-      // `video/mp4` including a name carrying spaces and brackets.
-      final urls = [
+    test('the library is part public, part licensed, and both are served', () {
+      // This started life asserting the host was still a placeholder, written
+      // to fail the day one was chosen. It did, on 2026-08-01. It then
+      // asserted every url was on the real host, and failed again on
+      // 2026-08-02 when the licensed library arrived somewhere else — which is
+      // the same note doing the same job a second time.
+      //
+      // The library is now genuinely two things and will be for a while: 528
+      // public urls from the original drop, and 166 object keys signed per
+      // request because the vendor forbids permanent downloadable links. This
+      // pins the split so that finishing the migration is a deliberate edit
+      // here rather than something that drifts.
+      final refs = [
         for (final e in withVideo())
           ...(e['video'] as Map).values.cast<String>(),
       ];
-      expect(urls, hasLength(653));
-      expect(urls.every((u) => u.startsWith(base)), isTrue);
+      expect(refs, hasLength(694));
+      expect(refs.where((u) => u.startsWith(base)), hasLength(528));
+      expect(refs.where((u) => u.startsWith('exercises/')), hasLength(166));
+      expect(
+        refs.every((u) => u.startsWith(base) || u.startsWith('exercises/')),
+        isTrue,
+        reason: 'a reference that is neither can never be played',
+      );
     });
   });
 }

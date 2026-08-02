@@ -171,7 +171,18 @@
     "contraindications": [
       "elbow",
       "shoulder"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Chest/Band Bench Press.mp4"
+    },
+    "tips": [
+      "1. Ensure the resistance band is securely placed under the bench to avoid slipping",
+      "2. Exhale as you press the band upward and inhale as you lower it back down",
+      "3. Perform the exercise slowly and with control to maximize muscle engagement"
+    ],
+    "poster": {
+      "girl": "assets/posters/girl/bench_press_with_bands.jpg"
+    }
   },
   {
     "id": "bench_press_with_chains",
@@ -609,7 +620,20 @@
     "contraindications": [
       "knee",
       "lower_back"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Legs/Barbell Full Squat.mp4",
+      "men": "exercises/men/Powerlifting/Barbell full squat.mp4"
+    },
+    "tips": [
+      "1. Keep your chest up and back straight to maintain proper posture and alignment",
+      "2. Focus on driving through your heels to engage your glutes and quadriceps effectively",
+      "3. Breathe steadily, exhaling as you stand up and inhaling as you lower down"
+    ],
+    "poster": {
+      "girl": "assets/posters/girl/barbell_full_squat.jpg",
+      "men": "assets/posters/men/barbell_full_squat.jpg"
+    }
   },
   {
     "id": "barbell_hack_squat",
@@ -670,7 +694,18 @@
     "contraindications": [
       "knee",
       "lower_back"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Legs/Barbell side split squat.mp4"
+    },
+    "tips": [
+      "1. Focus on hip mobility to ensure a deep and effective squat",
+      "2. Keep your spine neutral to avoid any forward or backward tilt",
+      "3. Drive through your heels to engage your glutes and ensure proper movement mechanics"
+    ],
+    "poster": {
+      "men": "assets/posters/men/barbell_side_split_squat.jpg"
+    }
   },
   {
     "id": "barbell_squat",
@@ -748,7 +783,20 @@
     "contraindications": [
       "knee",
       "lower_back"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Legs/Barbell Bench Squat.mp4",
+      "men": "exercises/men/Legs/Barbell bench squats.mp4"
+    },
+    "tips": [
+      "1. Ensure your knees track over your toes to prevent knee injuries and ensure proper form",
+      "2. Keep your chest up and back straight throughout the movement to maintain proper alignment",
+      "3. Breathe steadily, exhaling as you push up and inhaling as you lower down"
+    ],
+    "poster": {
+      "girl": "assets/posters/girl/barbell_squat_to_a_bench.jpg",
+      "men": "assets/posters/men/barbell_squat_to_a_bench.jpg"
+    }
   },
   {
     "id": "box_squat",
@@ -997,7 +1045,20 @@
       "assets/exercises/ab_crunch_machine_0.jpg",
       "assets/exercises/ab_crunch_machine_1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Abdominals/Abdominal Crunches Machine.mp4",
+      "men": "exercises/men/Abdominals/abdominal crunches machine.mp4"
+    },
+    "tips": [
+      "1. Exhale as you crunch forward and inhale as you return to the starting position",
+      "2. Avoid using momentum; focus on engaging your abdominal muscles throughout the exercise",
+      "3. Ensure your lower back remains in contact with the backrest of the machine"
+    ],
+    "poster": {
+      "girl": "assets/posters/girl/ab_crunch_machine.jpg",
+      "men": "assets/posters/men/ab_crunch_machine.jpg"
+    }
   },
   {
     "id": "barbell_walking_lunge",
@@ -1398,12 +1459,17 @@
     ],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Biceps/Dumbbell%20Incline%20Curl.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/biceps/Dumbbell%20Incline%20Curl.mp4"
+      "men": "exercises/men/Biceps/Dumbbell Incline Alternate Curl.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/alternate_incline_dumbbell_curl.jpg",
       "men": "assets/posters/men/alternate_incline_dumbbell_curl.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your upper arms stationary to isolate the biceps",
+      "2. Maintain a controlled motion to prevent swinging or using momentum",
+      "3. Exhale as you curl the dumbbell upward and inhale as you lower it"
+    ]
   },
   {
     "id": "alternating_deltoid_raise",
@@ -1464,12 +1530,18 @@
     ],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Shoulders/Dumbbell%20Arnold%20Press.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Dumbbell%20Arnold%20Press.mp4"
+      "men": "exercises/men/Shoulders/arnold press dumbbell.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/arnold_dumbbell_press.jpg",
       "men": "assets/posters/men/arnold_dumbbell_press.jpg"
-    }
+    },
+    "tips": [
+      "1. Rotate your wrists smoothly during the pressing and lowering phases to avoid strain",
+      "2. Breathe steadily, exhaling as you press the weights up and inhaling as you lower them back down",
+      "3. Keep your feet firmly planted to provide a stable base of support",
+      "4. Focus on the full range of motion to engage all parts of the shoulder muscles effectively"
+    ]
   },
   {
     "id": "around_the_worlds",
@@ -1529,7 +1601,18 @@
     "contraindications": [
       "elbow",
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Back/Dumbbell Bent Arm Pullover.mp4"
+    },
+    "tips": [
+      "1. Avoid letting your elbows flare out; maintain a slight bend throughout the movement",
+      "2. Ensure your shoulders and upper back remain in contact with the bench throughout the exercise",
+      "3. Perform the movement slowly and with control to maximize muscle engagement and prevent injury"
+    ],
+    "poster": {
+      "men": "assets/posters/men/bent_arm_dumbbell_pullover.jpg"
+    }
   },
   {
     "id": "anti_gravity_press",
@@ -1659,13 +1742,18 @@
       "elbow"
     ],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Biceps/Barbell%20Curl.mp4",
+      "girl": "exercises/girl/Biceps/Barbell Curl.mp4",
       "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/biceps/Barbell%20Curl.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/barbell_curl.jpg",
       "men": "assets/posters/men/barbell_curl.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your elbows stationary and close to your body throughout the movement",
+      "2. Avoid using momentum or swinging your body to lift the barbell",
+      "3. Exhale as you curl the barbell up and inhale as you lower it"
+    ]
   },
   {
     "id": "barbell_curls_lying_against_an_incline",
@@ -1729,7 +1817,18 @@
     "contraindications": [
       "knee",
       "lower_back"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Powerlifting/Barbell Deadlift.mp4"
+    },
+    "tips": [
+      "1. Keep your head in line with your spine to maintain proper neck alignment and prevent strain",
+      "2. Visualize pulling the barbell back rather than up, to keep it close to your body and use the correct muscle groups",
+      "3. Use a mixed grip (one hand overhand, one hand underhand) for heavier lifts to enhance grip strength"
+    ],
+    "poster": {
+      "girl": "assets/posters/girl/barbell_deadlift.jpg"
+    }
   },
   {
     "id": "alternating_cable_shoulder_press",
@@ -1936,7 +2035,18 @@
       "assets/exercises/3_4_sit_up_0.jpg",
       "assets/exercises/3_4_sit_up_1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Abdominals/3-4 Sit-up.mp4"
+    },
+    "tips": [
+      "1. Keep your core engaged throughout the exercise to avoid straining your lower back",
+      "2. Avoid pulling on your neck with your hands; use your abdominal muscles to lift your upper body",
+      "3. Breathe steadily, exhaling as you lift and inhaling as you lower"
+    ],
+    "poster": {
+      "girl": "assets/posters/girl/3_4_sit_up.jpg"
+    }
   },
   {
     "id": "90_90_hamstring",
@@ -1991,7 +2101,18 @@
       "assets/exercises/air_bike_0.jpg",
       "assets/exercises/air_bike_1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Abdominals/air bike.mp4"
+    },
+    "tips": [
+      "1. Keep your core engaged throughout the exercise to maximize muscle activation and protect your lower back",
+      "2. Perform the movement slowly and with control, avoiding the use of momentum to maximize effectiveness",
+      "3. Breathe steadily, exhaling as you twist and bring your elbow to your knee, and inhaling as you switch sides"
+    ],
+    "poster": {
+      "girl": "assets/posters/girl/air_bike.jpg"
+    }
   },
   {
     "id": "all_fours_quad_stretch",
@@ -2018,7 +2139,20 @@
     "contraindications": [
       "knee"
     ],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "girl": "exercises/girl/Stretching - Mobility/ALL FOURS QUAD STRETCH.mp4",
+      "men": "exercises/men/Stretching - Mobility/All fours quad stretch.mp4"
+    },
+    "tips": [
+      "1. Keep your core engaged to maintain balance and stability throughout the stretch",
+      "2. Avoid arching your back; maintain a neutral spine to protect your lower back",
+      "3. Breathe deeply and steadily throughout the stretch to help relax your muscles"
+    ],
+    "poster": {
+      "girl": "assets/posters/girl/all_fours_quad_stretch.jpg",
+      "men": "assets/posters/men/all_fours_quad_stretch.jpg"
+    }
   },
   {
     "id": "alternate_heel_touchers",
@@ -2330,7 +2464,16 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Body-Up/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Body-Up/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Triceps/Body-Up.mp4"
+    },
+    "tips": [
+      "Triceps (Triceps Brachii), Chest (Pectoralis Major)"
+    ],
+    "poster": {
+      "men": "assets/posters/men/fedb_body-up.jpg"
+    }
   },
   {
     "id": "fedb_bodyweight_squat",
@@ -2362,12 +2505,17 @@
     ],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Squat.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Squat.mp4"
+      "men": "exercises/men/Legs/bodyweight squats.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/fedb_bodyweight_squat.jpg",
       "men": "assets/posters/men/fedb_bodyweight_squat.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your feet flat on the floor to maintain balance and stability",
+      "2. Ensure your knees are aligned with your toes during the squat to prevent strain on your knees",
+      "3. Perform the movement slowly and with control to maximize muscle activation and prevent injury"
+    ]
   },
   {
     "id": "fedb_bottoms_up",
@@ -2517,7 +2665,18 @@
     ],
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Chest/flat bench cable fly.mp4"
+    },
+    "tips": [
+      "1. Keep a slight bend in your elbows throughout the movement to avoid straining your joints",
+      "2. Focus on engaging your chest muscles throughout the movement",
+      "3. Inhale as you loer the handles back down and exhale as you raise them up"
+    ],
+    "poster": {
+      "men": "assets/posters/men/fedb_flat_bench_cable_flyes.jpg"
+    }
   },
   {
     "id": "fedb_flat_bench_leg_pull-in",
@@ -2809,7 +2968,19 @@
     ],
     "contraindications": [
       "lower_back"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Legs/Barbell glute bridge.mp4"
+    },
+    "tips": [
+      "1. Drive through your heels to engage your glutes and hamstrings effectively",
+      "2. Ensure your knees stay in line with your toes and do not flare out or cave inward",
+      "3. Breathe steadily, exhaling as you lift your hips and inhaling as you lower them back down",
+      "4. Use a pad or towel on the barbell for added comfort on your hips"
+    ],
+    "poster": {
+      "men": "assets/posters/men/fedb_barbell_glute_bridge.jpg"
+    }
   },
   {
     "id": "fedb_barbell_hip_thrust",
@@ -2838,7 +3009,21 @@
     ],
     "contraindications": [
       "lower_back"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Legs/Barbell Hip Thrust.mp4",
+      "men": "exercises/men/Legs/Barbell Hip Thrust.mp4"
+    },
+    "tips": [
+      "1. Drive through your heels to engage your glutes and hamstrings effectively",
+      "2. Ensure your knees stay in line with your toes and do not flare out or cave inward",
+      "3. Breathe steadily, exhaling as you lift your hips and inhaling as you lower them back down",
+      "4. Use a pad or towel on the barbell for added comfort on your hips"
+    ],
+    "poster": {
+      "girl": "assets/posters/girl/fedb_barbell_hip_thrust.jpg",
+      "men": "assets/posters/men/fedb_barbell_hip_thrust.jpg"
+    }
   },
   {
     "id": "fedb_barbell_incline_shoulder_raise",
@@ -2901,13 +3086,18 @@
       "knee"
     ],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Barbell%20Lunge.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Barbell%20Lunge.mp4"
+      "girl": "exercises/girl/Legs/Barbell Lunge.mp4",
+      "men": "exercises/men/Legs/Barbell lunges.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/fedb_barbell_lunge.jpg",
       "men": "assets/posters/men/fedb_barbell_lunge.jpg"
-    }
+    },
+    "tips": [
+      "1. Use a weight that allows for proper form and technique throughout the exercise",
+      "2. Drive through the heel of your front foot to engage your glutes and quadriceps more effectively",
+      "3. Keep your head up and eyes forward to maintain balance and proper form"
+    ]
   },
   {
     "id": "fedb_barbell_rear_delt_row",
@@ -3013,11 +3203,16 @@
       "shoulder"
     ],
     "video": {
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Triceps/Barbell%20Close%20Grip%20Bench%20Press.mp4"
+      "men": "exercises/men/Triceps/close grip barbell bench press.mp4"
     },
     "poster": {
       "men": "assets/posters/men/fedb_close-grip_barbell_bench_press.jpg"
-    }
+    },
+    "tips": [
+      "1. Maintain a controlled pace to ensure that you're using muscle strength rather than momentum",
+      "2. Keep your feet flat on the floor to maintain stability and support your lower back",
+      "3. Breathe steadily, exhaling as you press the barbell up and inhaling as you lower it back down"
+    ]
   },
   {
     "id": "fedb_decline_barbell_bench_press",
@@ -3052,12 +3247,17 @@
     ],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Chest/Barbell%20Decline%20Bench%20Press.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/chest/Barbell%20Decline%20Bench%20Press.mp4"
+      "men": "exercises/men/Chest/barbell bench press decline.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/fedb_decline_barbell_bench_press.jpg",
       "men": "assets/posters/men/fedb_decline_barbell_bench_press.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your feet secured under the foot pads to maintain stability and prevent sliding",
+      "2. Engage your core to maintain a stable and strong torso throughout the movement",
+      "3. Lower the barbell slowly and with control to prevent injury and maximize muscle engagement"
+    ]
   },
   {
     "id": "fedb_decline_dumbbell_bench_press",
@@ -3092,12 +3292,17 @@
     ],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Chest/Decline%20Dumbbell%20Bench%20Press%20%2845%20degree%29.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/chest/Decline%20Dumbbell%20Bench%20Press%20%2845%20degree%29.mp4"
+      "men": "exercises/men/Chest/Dumbbell Decline Bench Press.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/fedb_decline_dumbbell_bench_press.jpg",
       "men": "assets/posters/men/fedb_decline_dumbbell_bench_press.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your feet firmly planted and secured to avoid slipping",
+      "2. Maintain a slight bend in your elbows at the top of the movement to protect your joints",
+      "3. Concentrate on using your chest muscles to press the weights, minimizing shoulder involvement"
+    ]
   },
   {
     "id": "fedb_dumbbell_bench_press",
@@ -3129,12 +3334,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Chest/Dumbbell%20Bench%20Press.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/chest/Dumbbell%20Bench%20Press.mp4"
+      "men": "exercises/men/Chest/Dumbbell Bench Press.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/fedb_dumbbell_bench_press.jpg",
       "men": "assets/posters/men/fedb_dumbbell_bench_press.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your wrists straight and aligned with your forearms throughout the exercise",
+      "2. Avoid flaring your elbows too much; maintain a 45-degree angle to protect your shoulder joints",
+      "3. Breathe in as you lower the dumbbells and exhale as you press them back up"
+    ]
   },
   {
     "id": "fedb_dumbbell_bench_press_with_neutral_grip",
@@ -3795,7 +4005,18 @@
     ],
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Chest/Dumbbell Decline Fly.mp4"
+    },
+    "tips": [
+      "1. Exhale as you raise the dumbbells and inhale as you lower them",
+      "2. Avoid locking your elbows; maintain a slight bend to protect your joints",
+      "3. Ensure your wrists remain straight and aligned with your forearms"
+    ],
+    "poster": {
+      "men": "assets/posters/men/fedb_decline_dumbbell_flyes.jpg"
+    }
   },
   {
     "id": "fedb_decline_dumbbell_triceps_extension",
@@ -4401,7 +4622,18 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Lat_Pulldown/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Lat_Pulldown/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Back/lat pull down wide grip.mp4"
+    },
+    "tips": [
+      "1. Keep your back straight and avoid leaning backward excessively",
+      "2. Focus on engaging your back muscles throughout the movement",
+      "3. Exhale as you pull the bar down and inhale as you return to the starting position"
+    ],
+    "poster": {
+      "men": "assets/posters/men/fedb_wide-grip_lat_pulldown.jpg"
+    }
   },
   {
     "id": "fedb_wide-grip_pulldown_behind_the_neck",
@@ -4465,11 +4697,18 @@
     ],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Leg%20Curl%20%28on%20stability%20ball%29.mp4"
+      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Leg%20Curl%20%28on%20stability%20ball%29.mp4",
+      "men": "exercises/men/Legs/Exercise Ball Leg Curl.mp4"
     },
     "poster": {
-      "girl": "assets/posters/girl/fedb_ball_leg_curl.jpg"
-    }
+      "girl": "assets/posters/girl/fedb_ball_leg_curl.jpg",
+      "men": "assets/posters/men/fedb_ball_leg_curl.jpg"
+    },
+    "tips": [
+      "1. Use a properly inflated exercise ball to provide stability and ease of movement",
+      "2. Move slowly and with control to maximize muscle engagement and prevent injury",
+      "3. Focus on steady breathing, exhaling as you curl the ball in and inhaling as you extend your legs"
+    ]
   },
   {
     "id": "fedb_lying_leg_curls",
@@ -4836,7 +5075,18 @@
     ],
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Shoulders/cable rear delt fly.mp4"
+    },
+    "tips": [
+      "1. Exhale as you pull the handles apart and inhale as you return to the starting position",
+      "2. Use a lighter weight to ensure proper form and gradually increase the resistance as you get stronger",
+      "3. Focus on engaging your rear deltoids and upper back during the movement"
+    ],
+    "poster": {
+      "men": "assets/posters/men/fedb_cable_rear_delt_fly.jpg"
+    }
   },
   {
     "id": "fedb_reverse_machine_flyes",
@@ -4864,7 +5114,20 @@
     ],
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Shoulders/Reverse machine fly.mp4",
+      "men": "exercises/men/Shoulders/Reverse Machine Fly.mp4"
+    },
+    "tips": [
+      "1. Exhale as you pull the handles outward and inhale as you return to the starting position",
+      "2. Keep your elbows slightly bent to reduce strain on your joints",
+      "3. Focus on engaging your upper back and shoulder muscles throughout the movement"
+    ],
+    "poster": {
+      "girl": "assets/posters/girl/fedb_reverse_machine_flyes.jpg",
+      "men": "assets/posters/men/fedb_reverse_machine_flyes.jpg"
+    }
   },
   {
     "id": "fedb_box_jump_multiple_response",
@@ -5028,7 +5291,15 @@
     ],
     "contraindications": [
       "knee"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Legs/Lateral Box Jump.mp4",
+      "men": "exercises/men/Legs/Lateral Box Jump.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_lateral_box_jump.jpg",
+      "men": "assets/posters/men/fedb_lateral_box_jump.jpg"
+    }
   },
   {
     "id": "fedb_reverse_band_box_squat",
@@ -5095,7 +5366,18 @@
     ],
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Biceps/Cable Preacher Curl.mp4"
+    },
+    "tips": [
+      "1. Exhale as you curl the bar up and inhale as you lower it back down",
+      "2. Maintain a neutral wrist position to prevent strain",
+      "3. Focus on squeezing your biceps at the top of the movement"
+    ],
+    "poster": {
+      "men": "assets/posters/men/fedb_cable_preacher_curl.jpg"
+    }
   },
   {
     "id": "fedb_machine_preacher_curls",
@@ -5451,7 +5733,20 @@
     ],
     "contraindications": [
       "lower_back"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Legs/Band Deadlift.mp4",
+      "men": "exercises/men/Back/Band Deadlift.mp4"
+    },
+    "tips": [
+      "1. Ensure the resistance band is securely placed under your feet to avoid slipping",
+      "2. Exhale as you stand up and inhale as you lower back down",
+      "3. Use a resistance band with appropriate tension to ensure you can perform the exercise with good form"
+    ],
+    "poster": {
+      "girl": "assets/posters/girl/fedb_deadlift_with_bands.jpg",
+      "men": "assets/posters/men/fedb_deadlift_with_bands.jpg"
+    }
   },
   {
     "id": "fedb_hip_extension_with_bands",
@@ -5887,12 +6182,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Calves/Smith%20Calf%20Raise.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/calves/Smith%20Calf%20Raise.mp4"
+      "men": "exercises/men/Legs/smith machine calf raise.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/fedb_smith_machine_calf_raise.jpg",
       "men": "assets/posters/men/fedb_smith_machine_calf_raise.jpg"
-    }
+    },
+    "tips": [
+      "1. Breathe steadily, exhaling as you lift your heels and inhaling as you lower them back down",
+      "2. Perform the movement slowly and with control to maximize muscle activation and reduce injury risk",
+      "3. Ensure your knees remain slightly bent to avoid knee strain"
+    ]
   },
   {
     "id": "fedb_rack_delivery",
@@ -6310,12 +6610,19 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Back/Chin-ups%20%20Pull-Ups.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/back/Chin-ups%20%20Pull-Ups.mp4"
+      "men": "exercises/men/Back/chin up.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/fedb_chin-up.jpg",
       "men": "assets/posters/men/fedb_chin-up.jpg"
-    }
+    },
+    "tips": [
+      "1. Focus on using your biceps and back muscles to lift your body, avoiding excessive momentum",
+      "2. Perform the movement slowly and with control, especially during the lowering phase, to maximize muscle activation and prevent injury",
+      "3. Ensure your shoulders remain down and away from your ears to avoid unnecessary strain",
+      "4. Breathe steadily throughout the exercise, exhaling as you pull up and inhaling as you lower yourself",
+      "5. Use a full range of motion by fully extending your arms at the bottom and bringing your chin above the bar at the top"
+    ]
   },
   {
     "id": "fedb_muscle_up",
@@ -6469,7 +6776,7 @@
     ],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Abs/Hanging%20Leg%20Hip%20Raise.mp4",
+      "girl": "exercises/girl/Abdominals/Hanging Leg Raises.mp4",
       "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/abs/Hanging%20Leg%20Hip%20Raise.mp4"
     },
     "poster": {
@@ -6528,11 +6835,18 @@
     ],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Russian%20Twist%20%28on%20stability%20ball%20arms%20straight%29.mp4"
+      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Russian%20Twist%20%28on%20stability%20ball%20arms%20straight%29.mp4",
+      "men": "exercises/men/Abdominals/russian twist.mp4"
     },
     "poster": {
-      "girl": "assets/posters/girl/fedb_russian_twist.jpg"
-    }
+      "girl": "assets/posters/girl/fedb_russian_twist.jpg",
+      "men": "assets/posters/men/fedb_russian_twist.jpg"
+    },
+    "tips": [
+      "1. Move your torso, not just your arms, to ensure you are engaging your oblique muscles",
+      "2. Breathe steadily, exhaling as you rotate to each side and inhaling as you return to the center",
+      "3. Keep your back straight and avoid hunching your shoulders to maintain proper form"
+    ]
   },
   {
     "id": "fedb_cable_russian_twists",
@@ -6592,11 +6906,18 @@
     ],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Seated%20Twist%20%28on%20stability%20ball%29.mp4"
+      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Seated%20Twist%20%28on%20stability%20ball%29.mp4",
+      "men": "exercises/men/Abdominals/Barbell seated twist.mp4"
     },
     "poster": {
-      "girl": "assets/posters/girl/fedb_seated_barbell_twist.jpg"
-    }
+      "girl": "assets/posters/girl/fedb_seated_barbell_twist.jpg",
+      "men": "assets/posters/men/fedb_seated_barbell_twist.jpg"
+    },
+    "tips": [
+      "1. Engage your core muscles to stabilize your spine and maintain proper form",
+      "2. Maintain an upright posture to avoid straining your lower back",
+      "3. Use a weight that allows for proper form and control throughout the exercise to prevent strain or injury"
+    ]
   },
   {
     "id": "fedb_front_plate_raise",
@@ -6621,7 +6942,18 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Front_Plate_Raise/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Front_Plate_Raise/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Shoulders/plate front raise.mp4"
+    },
+    "tips": [
+      "1. Avoid using momentum to lift the plate; focus on a slow and controlled movement",
+      "2. Keep a slight bend in your elbows to protect your joints",
+      "3. Breathe steadily, exhaling as you lift the plate and inhaling as you lower it"
+    ],
+    "poster": {
+      "men": "assets/posters/men/fedb_front_plate_raise.jpg"
+    }
   },
   {
     "id": "fedb_plate_pinch",
@@ -6822,13 +7154,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Abs/45%20Degree%20Bycicle%20Twisting%20Crunch.mp4",
+      "girl": "exercises/girl/Abdominals/45 degree Bicycle Twisting Crunch.mp4",
       "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/abs/45%20Degree%20Bycicle%20Twisting%20Crunch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_45_degree_bycicle_twisting_crunch.jpg",
       "men": "assets/posters/men/vid_45_degree_bycicle_twisting_crunch.jpg"
-    }
+    },
+    "tips": [
+      "1. Ensure your feet are securely positioned on the hyperextension bench to maintain stability throughout the exercise",
+      "2. Focus on engaging your core muscles to lift and twist, avoiding pulling on your neck with your hands",
+      "3. Perform the exercise with controlled movements to maximize muscle engagement and reduce the risk of strain"
+    ]
   },
   {
     "id": "vid_45_degree_side_bend",
@@ -6855,13 +7192,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Abs/45%20Degree%20Side%20Bend.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/abs/45%20Degree%20Side%20Bend.mp4"
+      "girl": "exercises/girl/Abdominals/45 Degree Side Bend.mp4",
+      "men": "exercises/men/Abdominals/45 degree side bend.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_45_degree_side_bend.jpg",
       "men": "assets/posters/men/vid_45_degree_side_bend.jpg"
-    }
+    },
+    "tips": [
+      "1. Maintain a steady and controlled pace to ensure proper form and prevent strain",
+      "2. Focus on using your oblique muscles to lift your upper body, avoiding any jerking or sudden movements",
+      "3. Keep your neck in a neutral position to avoid straining it during the exercise"
+    ]
   },
   {
     "id": "vid_air_twisting_crunch",
@@ -6887,13 +7229,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Abs/Air%20Twisting%20Crunch.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/abs/Air%20Twisting%20Crunch.mp4"
+      "girl": "exercises/girl/Abdominals/air twisting crunch.mp4",
+      "men": "exercises/men/Abdominals/air twisting crunch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_air_twisting_crunch.jpg",
       "men": "assets/posters/men/vid_air_twisting_crunch.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your core engaged throughout the exercise to maximize muscle activation and protect your lower back",
+      "2. Perform the movement slowly and with control, avoiding the use of momentum to maximize effectiveness",
+      "3. Breathe steadily, exhaling as you twist and bring your elbow to your knee, and inhaling as you switch sides"
+    ]
   },
   {
     "id": "vid_band_decline_sit_ups",
@@ -6918,13 +7265,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Abs/Band%20Decline%20Sit-ups.mp4",
+      "girl": "exercises/girl/Abdominals/Band Decline Sit up.mp4",
       "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/abs/Band%20Decline%20Sit-ups.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_band_decline_sit_ups.jpg",
       "men": "assets/posters/men/vid_band_decline_sit_ups.jpg"
-    }
+    },
+    "tips": [
+      "1. Ensure the resistance band is securely anchored behind the headrest to avoid slipping",
+      "2. Exhale as you lift your upper body and inhale as you lower it back down",
+      "3. Avoid pulling on the band with your arms; focus on using your abs to lift your body"
+    ]
   },
   {
     "id": "vid_band_side_bend",
@@ -6950,13 +7302,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Abs/Band%20Side%20Bend.mp4",
+      "girl": "exercises/girl/Abdominals/Band side bend.mp4",
       "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/abs/Band%20Side%20Bend.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_band_side_bend.jpg",
       "men": "assets/posters/men/vid_band_side_bend.jpg"
-    }
+    },
+    "tips": [
+      "1. Engage your core to help stabilize your body and prevent unnecessary movement",
+      "2. Avoid bending forward or backward; focus on bending directly to the side",
+      "3. Breathe steadily, exhaling as you bend to the side and inhaling as you return to the upright position"
+    ]
   },
   {
     "id": "vid_band_standing_crunch",
@@ -7112,12 +7469,17 @@
     "isStretch": true,
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Abs/Bent%20Knee%20Lying%20Twist.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/abs/Bent%20Knee%20Lying%20Twist.mp4"
+      "men": "exercises/men/Abdominals/Bent knee Lying Twist.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_bent_knee_lying_twist.jpg",
       "men": "assets/posters/men/vid_bent_knee_lying_twist.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your shoulders flat on the floor to maximize the stretch in your spine and obliques",
+      "2. Move slowly and with control to avoid straining your back",
+      "3. Breathe deeply and steadily, exhaling as you lower your knees to the side and inhaling as you bring them back to the center"
+    ]
   },
   {
     "id": "vid_cable_standing_crunch",
@@ -7143,8 +7505,8 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Abs/Cable%20Standing%20Crunch.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/abs/Cable%20Standing%20Crunch.mp4"
+      "girl": "exercises/girl/Abdominals/Cable Standing Crunch.mp4",
+      "men": "exercises/men/Abdominals/Cable Standing Crunch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_cable_standing_crunch.jpg",
@@ -7241,12 +7603,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Abs/Dumbbell%20Side%20Bend.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/abs/Dumbbell%20Side%20Bend.mp4"
+      "men": "exercises/men/Abdominals/Dumbbell Side Bend.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_side_bend.jpg",
       "men": "assets/posters/men/vid_dumbbell_side_bend.jpg"
-    }
+    },
+    "tips": [
+      "1. Avoid using momentum; focus on a slow and controlled movement",
+      "2. Exhale as you bend to the side and inhale as you return to the starting position",
+      "3. Keep your head and neck in a neutral position, facing forward"
+    ]
   },
   {
     "id": "vid_hanging_straight_leg_hip_raise",
@@ -7555,12 +7922,18 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Abs/Side%20Bridge%20-%20Side%20Plank.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/abs/Side%20Bridge%20-%20Side%20Plank.mp4"
+      "men": "exercises/men/Abdominals/side plank.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_side_bridge_side_plank.jpg",
       "men": "assets/posters/men/vid_side_bridge_side_plank.jpg"
-    }
+    },
+    "tips": [
+      "1. Ensure your elbow is directly under your shoulder to support your upper body",
+      "2. Focus on keeping your head in line with your spine to prevent neck strain",
+      "3. Maintain a straight body line, avoiding any sagging or lifting of the hips",
+      "4. Perform the exercise on a comfortable, non-slip surface to ensure safety and reduce discomfort"
+    ]
   },
   {
     "id": "vid_sit_up_on_exercise_ball",
@@ -7586,13 +7959,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Abs/Sit-up%20On%20Exercise%20Ball.mp4",
+      "girl": "exercises/girl/Abdominals/Ball Sit-up.mp4",
       "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/abs/Sit-up%20On%20Exercise%20Ball.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_sit_up_on_exercise_ball.jpg",
       "men": "assets/posters/men/vid_sit_up_on_exercise_ball.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your core engaged throughout the exercise to maintain stability and proper form",
+      "2. Avoid pulling on your neck with your hands to prevent strain; use your core muscles to lift your body",
+      "3. Perform the movement slowly and with control to maximize muscle activation and prevent injury"
+    ]
   },
   {
     "id": "vid_sit_ups",
@@ -7619,12 +7997,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Abs/Sit-ups.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/abs/Sit-ups.mp4"
+      "men": "exercises/men/Abdominals/Situps.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_sit_ups.jpg",
       "men": "assets/posters/men/vid_sit_ups.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your core engaged throughout the exercise to maximize muscle engagement and support your lower back",
+      "2. Move your body slowly and with control to avoid using momentum and to prevent injury",
+      "3. Breathe steadily, exhaling as you lift your torso and inhaling as you lower it back down"
+    ]
   },
   {
     "id": "vid_spell_caster",
@@ -7715,12 +8098,17 @@
     "isStretch": true,
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Abs/Stretching%20-%20Iron%20Cross%20Stretch.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/abs/Stretching%20-%20Iron%20Cross%20Stretch.mp4"
+      "men": "exercises/men/Stretching - Mobility/iron cross stretch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_iron_cross_stretch.jpg",
       "men": "assets/posters/men/vid_stretching_iron_cross_stretch.jpg"
-    }
+    },
+    "tips": [
+      "1. Only stretch as far as is comfortable without causing pain or discomfort",
+      "2. Perform the stretch on a comfortable surface, such as a yoga mat, to prevent discomfort or injury",
+      "3. If you have limited flexibility, bend your knee slightly to reduce strain and gradually work towards straightening your leg"
+    ]
   },
   {
     "id": "vid_stretching_seated_twist_straight_arm",
@@ -7879,12 +8267,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Abs/V-up.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/abs/V-up.mp4"
+      "men": "exercises/men/Abdominals/v up.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_v_up.jpg",
       "men": "assets/posters/men/vid_v_up.jpg"
-    }
+    },
+    "tips": [
+      "1. Breathe steadily: exhale as you lift into the 'V' position and inhale as you lower back down",
+      "2. Avoid using momentum to lift your legs and torso; focus on using your abdominal muscles",
+      "3. Keep your legs and arms straight throughout the movement for maximum effectiveness"
+    ]
   },
   {
     "id": "vid_vertical_leg_raise_on_parallel_bars",
@@ -8009,13 +8402,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Back/Band%20Bent-over%20Row.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/back/Band%20Bent-over%20Row.mp4"
+      "girl": "exercises/girl/Back/Band bent-over row.mp4",
+      "men": "exercises/men/Back/Band bent-over row.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_band_bent_over_row.jpg",
       "men": "assets/posters/men/vid_band_bent_over_row.jpg"
-    }
+    },
+    "tips": [
+      "1. Ensure the resistance band is securely placed under your feet to avoid slipping",
+      "2. Exhale as you pull the band towards your torso and inhale as you lower it back down",
+      "3. Perform the exercise slowly and with control to maximize muscle engagement"
+    ]
   },
   {
     "id": "vid_band_kneeling_one_arm_pulldown",
@@ -8276,12 +8674,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Back/Barbell%20Straight%20Leg%20Deadlift.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/back/Barbell%20Straight%20Leg%20Deadlift.mp4"
+      "men": "exercises/men/Legs/Barbell straight leg deadlift.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_barbell_straight_leg_deadlift.jpg",
       "men": "assets/posters/men/vid_barbell_straight_leg_deadlift.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your back straight throughout the movement to avoid rounding your spine",
+      "2. Focus on hinging at your hips rather than bending your lower back",
+      "3. Ensure your knees are slightly bent to avoid locking them and putting stress on your joints"
+    ]
   },
   {
     "id": "vid_barbell_underhand_bent_over_row",
@@ -8411,12 +8814,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Back/Cable%20One%20Arm%20Lateral%20Pulldown.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/back/Cable%20One%20Arm%20Lateral%20Pulldown.mp4"
+      "men": "exercises/men/Back/Cable one arm lat pulldown.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_cable_one_arm_lateral_pulldown.jpg",
       "men": "assets/posters/men/vid_cable_one_arm_lateral_pulldown.jpg"
-    }
+    },
+    "tips": [
+      "1. Exhale as you pull the handle down and inhale as you extend it back",
+      "2. Focus on squeezing your shoulder blade towards your spine as you pull down",
+      "3. Maintain a neutral wrist position to prevent strain"
+    ]
   },
   {
     "id": "vid_cable_one_arm_twisting_seated_row",
@@ -8651,12 +9059,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Back/Cable%20Straight%20Back%20Seated%20High%20Row%20%28reverse-grip%29.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/back/Cable%20Straight%20Back%20Seated%20High%20Row%20%28reverse-grip%29.mp4"
+      "men": "exercises/men/Back/cable reverse grip straight back seated high row.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_cable_straight_back_seated_high_row_reverse_grip.jpg",
       "men": "assets/posters/men/vid_cable_straight_back_seated_high_row_reverse_grip.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your back straight and avoid leaning back or using momentum",
+      "2. Focus on squeezing your shoulder blades together at the bottom of the movement",
+      "3. Exhale as you pull the bar down and inhale as you extend it back up"
+    ]
   },
   {
     "id": "vid_cable_straight_back_seated_row_v_grip",
@@ -8787,12 +9200,18 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Back/Commando%20Pull-up.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/back/Commando%20Pull-up.mp4"
+      "men": "exercises/men/Back/Commando Pull-up.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_commando_pull_up.jpg",
       "men": "assets/posters/men/vid_commando_pull_up.jpg"
-    }
+    },
+    "tips": [
+      "1. Use a full range of motion by fully extending your arms at the bottom and bringing your head above the bar at the top",
+      "2. Perform the movement slowly and with control, especially during the lowering phase, to maximize muscle activation and prevent injury",
+      "3. Ensure your shoulders remain down and away from your ears to avoid unnecessary strain",
+      "4. Breathe steadily throughout the exercise, exhaling as you pull up and inhaling as you lower yourself"
+    ]
   },
   {
     "id": "vid_dumbbell_bent_over_row",
@@ -8820,12 +9239,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Back/Dumbbell%20Bent-over%20Row.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/back/Dumbbell%20Bent-over%20Row.mp4"
+      "men": "exercises/men/Back/dumbbells bent over row.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_bent_over_row.jpg",
       "men": "assets/posters/men/vid_dumbbell_bent_over_row.jpg"
-    }
+    },
+    "tips": [
+      "1. Avoid using momentum; perform the movement slowly and with control to maximize muscle engagement",
+      "2. Breathe out as you pull the dumbbells towards your torso and breathe in as you lower them back down",
+      "3. Ensure your elbows remain close to your body throughout the exercise to protect your joints"
+    ]
   },
   {
     "id": "vid_dumbbell_deadlift",
@@ -8922,12 +9346,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Back/Dumbbell%20Incline%20Row.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/back/Dumbbell%20Incline%20Row.mp4"
+      "men": "exercises/men/Back/Dumbbell Incline Row.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_incline_row.jpg",
       "men": "assets/posters/men/vid_dumbbell_incline_row.jpg"
-    }
+    },
+    "tips": [
+      "1. Use a slow and controlled motion to maximize muscle engagement and avoid swinging",
+      "2. Ensure your wrists remain straight and aligned with your forearms",
+      "3. Select a weight that allows for proper form and control throughout the exercise"
+    ]
   },
   {
     "id": "vid_dumbbell_lying_rear_delt_row",
@@ -8955,12 +9384,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Back/Dumbbell%20Lying%20Rear%20Delt%20Row.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/back/Dumbbell%20Lying%20Rear%20Delt%20Row.mp4"
+      "men": "exercises/men/Shoulders/Dumbbell Lying Rear Delt Row.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_lying_rear_delt_row.jpg",
       "men": "assets/posters/men/vid_dumbbell_lying_rear_delt_row.jpg"
-    }
+    },
+    "tips": [
+      "1. Avoid using momentum to lift the weights; use controlled motions for effective muscle engagement",
+      "2. Breathe out as you lift the dumbbells and breathe in as you lower them",
+      "3. Ensure your body remains stable on the bench and avoid lifting your chest"
+    ]
   },
   {
     "id": "vid_dumbbell_palm_rotational_bent_over_row",
@@ -9058,12 +9492,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Back/Dumbbell%20Stiff%20Leg%20Deadlift.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/back/Dumbbell%20Stiff%20Leg%20Deadlift.mp4"
+      "men": "exercises/men/Legs/Dumbbell Stiff Leg Deadlift.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_stiff_leg_deadlift.jpg",
       "men": "assets/posters/men/vid_dumbbell_stiff_leg_deadlift.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your back straight and avoid rounding your shoulders",
+      "2. Engage your core throughout the exercise for stability",
+      "3. Focus on hinging at the hips rather than bending at the waist"
+    ]
   },
   {
     "id": "vid_hammer_grip_pull_up",
@@ -9194,12 +9633,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Back/Lever%20Back%20Extension.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/back/Lever%20Back%20Extension.mp4"
+      "men": "exercises/men/Back/back extension machine.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_lever_back_extension.jpg",
       "men": "assets/posters/men/vid_lever_back_extension.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your movements slow and controlled to maintain proper form and maximize muscle engagement",
+      "2. Avoid hyperextending your back; stop when your body forms a straight line to prevent strain on your lower back",
+      "3. Engage your core muscles throughout the exercise to support your spine and maintain stability"
+    ]
   },
   {
     "id": "vid_lever_high_row",
@@ -9568,12 +10012,17 @@
     "isStretch": true,
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Back/Stretching%20-%20Dynamic%20Back%20Stretch.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/back/Stretching%20-%20Dynamic%20Back%20Stretch.mp4"
+      "men": "exercises/men/Stretching - Mobility/Dynamic Back Stretch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_dynamic_back_stretch.jpg",
       "men": "assets/posters/men/vid_stretching_dynamic_back_stretch.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your back straight throughout the movement to ensure a proper stretch and prevent strain",
+      "2. Focus on pushing your hips downwards rather than bending at the waist to enhance the stretch in your back",
+      "3. Use controlled movements to avoid jerking or sudden motions that could lead to injury"
+    ]
   },
   {
     "id": "vid_stretching_elbows_back_stretch",
@@ -9602,12 +10051,17 @@
     "isStretch": true,
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Back/Stretching%20-%20Elbows%20Back%20Stretch.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/back/Stretching%20-%20Elbows%20Back%20Stretch.mp4"
+      "men": "exercises/men/Stretching - Mobility/Elbows Back Stretch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_elbows_back_stretch.jpg",
       "men": "assets/posters/men/vid_stretching_elbows_back_stretch.jpg"
-    }
+    },
+    "tips": [
+      "1. Engage your core muscles to support your lower back as you lean backward",
+      "2. Avoid overextending your lower back; only lean back as far as comfortable without causing pain",
+      "3. Breathe deeply throughout the exercise, inhaling as you prepare to stretch and exhaling as you lean back"
+    ]
   },
   {
     "id": "vid_stretching_kneeling_lat_stretch",
@@ -9903,12 +10357,17 @@
     "isStretch": true,
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Back/Stretching%20-%20Standing%20Lateral%20Stretch.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/back/Stretching%20-%20Standing%20Lateral%20Stretch.mp4"
+      "men": "exercises/men/Stretching - Mobility/standing lateral stretch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_standing_lateral_stretch.jpg",
       "men": "assets/posters/men/vid_stretching_standing_lateral_stretch.jpg"
-    }
+    },
+    "tips": [
+      "1. Perform the stretch slowly and with control to maximize muscle flexibility and reduce injury risk",
+      "2. Gradually increase the depth of the stretch as your flexibility improves",
+      "3. Focus on keeping your back straight and avoiding excessive rounding of your spine"
+    ]
   },
   {
     "id": "vid_barbell_drag_curl",
@@ -9936,12 +10395,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Biceps/Barbell%20Drag%20Curl.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/biceps/Barbell%20Drag%20Curl.mp4"
+      "men": "exercises/men/Biceps/barbell drag curl.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_barbell_drag_curl.jpg",
       "men": "assets/posters/men/vid_barbell_drag_curl.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your elbows back to ensure the barbell stays close to your torso throughout the movement",
+      "2. Maintain a controlled pace to ensure that you're using muscle strength rather than momentum",
+      "3. Keep your back straight and shoulders back to maintain proper posture"
+    ]
   },
   {
     "id": "vid_barbell_prone_incline_curl",
@@ -10000,12 +10464,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Biceps/Cable%20One%20Arm%20Curl.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/biceps/Cable%20One%20Arm%20Curl.mp4"
+      "men": "exercises/men/Biceps/Cable One Arm Curl.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_cable_one_arm_curl.jpg",
       "men": "assets/posters/men/vid_cable_one_arm_curl.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your elbow close to your torso throughout the exercise",
+      "2. Exhale as you curl the handle up and inhale as you lower it back down",
+      "3. Focus on squeezing your biceps at the top of the movement"
+    ]
   },
   {
     "id": "vid_cable_standing_inner_curl",
@@ -10130,12 +10599,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Biceps/Dumbbell%20Concentration%20Curl.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/biceps/Dumbbell%20Concentration%20Curl.mp4"
+      "men": "exercises/men/Biceps/concentration curls dumbbell.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_concentration_curl.jpg",
       "men": "assets/posters/men/vid_dumbbell_concentration_curl.jpg"
-    }
+    },
+    "tips": [
+      "1. Focus on squeezing the biceps at the top of the movement to maximize muscle activation",
+      "2. Ensure your back remains straight and avoid leaning back as you lift the weight",
+      "3. Use a weight that allows you to perform the exercise with proper form and without straining"
+    ]
   },
   {
     "id": "vid_dumbbell_cross_body_hammer_curl",
@@ -10260,12 +10734,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Biceps/Dumbbell%20Preacher%20Curl%20Over%20Exercise%20Ball.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/biceps/Dumbbell%20Preacher%20Curl%20Over%20Exercise%20Ball.mp4"
+      "men": "exercises/men/Biceps/Dumbbell Preacher Curl over Exercise Ball.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_preacher_curl_over_exercise_ball.jpg",
       "men": "assets/posters/men/vid_dumbbell_preacher_curl_over_exercise_ball.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your upper arms pressed firmly against the exercise ball to isolate the biceps",
+      "2. Avoid using momentum; focus on a slow and controlled movement",
+      "3. Exhale as you curl the dumbbells upward and inhale as you lower them back down"
+    ]
   },
   {
     "id": "vid_dumbbell_prone_incline_curl",
@@ -10294,12 +10773,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Biceps/Dumbbell%20Prone%20Incline%20Curl.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/biceps/Dumbbell%20Prone%20Incline%20Curl.mp4"
+      "men": "exercises/men/Biceps/Dumbbell Prone Incline Curl.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_prone_incline_curl.jpg",
       "men": "assets/posters/men/vid_dumbbell_prone_incline_curl.jpg"
-    }
+    },
+    "tips": [
+      "1. Focus on a slow and controlled motion to maximize bicep engagement",
+      "2. Keep your wrists straight and aligned with your forearms",
+      "3. Avoid swinging the weights to isolate the biceps during the curl"
+    ]
   },
   {
     "id": "vid_dumbbell_seated_preacher_curl",
@@ -10326,12 +10810,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Biceps/Dumbbell%20Seated%20Preacher%20Curl.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/biceps/Dumbbell%20Seated%20Preacher%20Curl.mp4"
+      "men": "exercises/men/Biceps/Dumbbell Seated Preacher Curl.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_seated_preacher_curl.jpg",
       "men": "assets/posters/men/vid_dumbbell_seated_preacher_curl.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your upper arms pressed against the pad to isolate the biceps",
+      "2. Ensure your wrists remain straight and aligned with your forearms",
+      "3. Avoid locking your elbows at the bottom of the movement"
+    ]
   },
   {
     "id": "vid_ez_barbell_biceps_curl",
@@ -10391,12 +10880,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Biceps/Lying%20Supine%20Dumbbell%20Curl.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/biceps/Lying%20Supine%20Dumbbell%20Curl.mp4"
+      "men": "exercises/men/Biceps/Dumbbell Lying Supine Curl.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_lying_supine_dumbbell_curl.jpg",
       "men": "assets/posters/men/vid_lying_supine_dumbbell_curl.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your upper arms stationary and only move your forearms to ensure maximum bicep engagement",
+      "2. Avoid using momentum; focus on a slow and controlled motion throughout the exercise",
+      "3. Use a weight that allows for proper form and control throughout the exercise"
+    ]
   },
   {
     "id": "vid_stretching_butterfly_yoga_pose",
@@ -10423,12 +10917,17 @@
     "isStretch": true,
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Biceps/Stretching%20-%20Butterfly%20Yoga%20Pose.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/biceps/Stretching%20-%20Butterfly%20Yoga%20Pose.mp4"
+      "men": "exercises/men/Yoga/Butterfly Yoga Pose.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_butterfly_yoga_pose.jpg",
       "men": "assets/posters/men/vid_stretching_butterfly_yoga_pose.jpg"
-    }
+    },
+    "tips": [
+      "1. Maintain a gentle arch in your back while leaning forward to ensure a proper stretch and avoid straining",
+      "2. Inhale deeply and exhale slowly throughout the pose to help relax your muscles and enhance the stretch",
+      "3. Apply gentle pressure to your knees without forcing them down to prevent overstraining your hip joints"
+    ]
   },
   {
     "id": "vid_barbell_clean_and_press",
@@ -10460,12 +10959,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Barbell%20Clean%20And%20Press.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Barbell%20Clean%20And%20Press.mp4"
+      "men": "exercises/men/Powerlifting/Barbell clean and press.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_barbell_clean_and_press.jpg",
       "men": "assets/posters/men/vid_barbell_clean_and_press.jpg"
-    }
+    },
+    "tips": [
+      "1. Focus on leg drive during the clean to generate power from your lower body",
+      "2. Keep your grip firm but not too tight to allow smooth wrist rotation during the clean",
+      "3. Exhale powerfully as you press the bar overhead to stabilize your core"
+    ]
   },
   {
     "id": "vid_donkey_calf_raise",
@@ -10492,12 +10996,18 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Calves/Donkey%20Calf%20Raise.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/calves/Donkey%20Calf%20Raise.mp4"
+      "men": "exercises/men/Legs/Donkey Calf Raise.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_donkey_calf_raise.jpg",
       "men": "assets/posters/men/vid_donkey_calf_raise.jpg"
-    }
+    },
+    "tips": [
+      "1. Ensure your grip on the bench is secure to maintain balance and focus the effort on your calves",
+      "2. Keep your back flat and avoid rounding your shoulders to prevent unnecessary strain on your back",
+      "3. Emphasize the upward and downward movements equally to enhance muscle growth and strength in your calves",
+      "4. Maintain a slow, controlled pace to increase the intensity of the muscle contraction and effectiveness of the exercise"
+    ]
   },
   {
     "id": "vid_dumbbell_front_squat",
@@ -10527,12 +11037,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Dumbbell%20Front%20Squat.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Dumbbell%20Front%20Squat.mp4"
+      "men": "exercises/men/Legs/Dumbbell Front Squat.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_front_squat.jpg",
       "men": "assets/posters/men/vid_dumbbell_front_squat.jpg"
-    }
+    },
+    "tips": [
+      "1. Ensure your elbows stay up and forward to keep the dumbbells stable on your shoulders",
+      "2. Avoid letting your knees collapse inward; keep them aligned with your toes",
+      "3. Maintain a neutral spine and avoid rounding your back"
+    ]
   },
   {
     "id": "vid_dumbbell_single_leg_calf_raise",
@@ -10590,12 +11105,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Calves/Dumbbell%20Standing%20Calf%20Raise.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/calves/Dumbbell%20Standing%20Calf%20Raise.mp4"
+      "men": "exercises/men/Legs/dumbbell standing calf raise.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_standing_calf_raise.jpg",
       "men": "assets/posters/men/vid_dumbbell_standing_calf_raise.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your movements slow and controlled to maximize muscle engagement",
+      "2. Avoid bouncing at the top or bottom of the movement",
+      "3. Maintain a straight posture throughout the exercise"
+    ]
   },
   {
     "id": "vid_sled_45_degree_calf_press",
@@ -10654,12 +11174,17 @@
     "isStretch": true,
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Calves/Stretching%20-%20Calf%20Stretch%20with%20Rope.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/calves/Stretching%20-%20Calf%20Stretch%20with%20Rope.mp4"
+      "men": "exercises/men/Stretching - Mobility/Calf Stretch with Rope.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_calf_stretch_with_rope.jpg",
       "men": "assets/posters/men/vid_stretching_calf_stretch_with_rope.jpg"
-    }
+    },
+    "tips": [
+      "1. Breathe deeply and steadily throughout the stretch to help relax your muscles",
+      "2. Use a moderate amount of tension on the rope to ensure a good stretch without causing discomfort or pain",
+      "3. Focus on feeling the stretch in your calf muscle, not your lower back or hamstrings"
+    ]
   },
   {
     "id": "vid_stretching_calf_stretch_with_strap",
@@ -10846,12 +11371,18 @@
     "isStretch": true,
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Calves/Stretching%20-%20Seated%20Calf%20Stretch.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/calves/Stretching%20-%20Seated%20Calf%20Stretch.mp4"
+      "men": "exercises/men/Stretching - Mobility/seated calf stretch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_seated_calf_stretch.jpg",
       "men": "assets/posters/men/vid_stretching_seated_calf_stretch.jpg"
-    }
+    },
+    "tips": [
+      "1. Focus on maintaining a straight back to enhance the effectiveness of the stretch",
+      "2. Ensure your movements are slow and controlled to prevent overstretching or injury",
+      "3. If you find it difficult to reach your toes, use a towel or strap for assistance without forcing the stretch",
+      "4. Keep your shoulders relaxed and away from your ears to prevent unnecessary tension"
+    ]
   },
   {
     "id": "vid_stretching_stairs_calf_stretch",
@@ -10945,12 +11476,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Cardio/Burpee.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/cardio/Burpee.mp4"
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Burpee.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_burpee.jpg",
       "men": "assets/posters/men/vid_burpee.jpg"
-    }
+    },
+    "tips": [
+      "1. Start with a moderate pace to master the form, then gradually increase your speed as you become more comfortable with the movement",
+      "2. Ensure your movements are fluid and controlled to avoid unnecessary strain on your joints",
+      "3. Focus on landing softly during the jump to reduce impact on your knees and ankles"
+    ]
   },
   {
     "id": "vid_elliptical",
@@ -11082,12 +11618,18 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Cardio/Jumping%20Jack.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/cardio/Jumping%20Jack.mp4"
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/jumping jack.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_jumping_jack.jpg",
       "men": "assets/posters/men/vid_jumping_jack.jpg"
-    }
+    },
+    "tips": [
+      "1. Maintain a slight bend in your knees throughout the exercise to absorb impact and reduce strain on your joints",
+      "2. Keep your movements light and quick to enhance cardiovascular benefits",
+      "3. Engage your shoulders and back muscles when raising your arms to ensure full range of motion",
+      "4. Keep your gaze forward and your head in a neutral position to maintain alignment"
+    ]
   },
   {
     "id": "vid_running",
@@ -11116,13 +11658,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Cardio/Running.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/cardio/Running.mp4"
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Running.mp4",
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Running.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_running.jpg",
       "men": "assets/posters/men/vid_running.jpg"
-    }
+    },
+    "tips": [
+      "1. Stay hydrated and take breaks, especially during longer runs",
+      "2. Breathe steadily and rhythmically to maintain oxygen flow during the run",
+      "3. Focus on maintaining a relaxed posture and avoid tensing your shoulders"
+    ]
   },
   {
     "id": "vid_stationary_bike",
@@ -11151,12 +11698,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Cardio/Stationary%20Bike.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/cardio/Stationary%20Bike.mp4"
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Stationary Exercise Bike.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stationary_bike.jpg",
       "men": "assets/posters/men/vid_stationary_bike.jpg"
-    }
+    },
+    "tips": [
+      "1. Maintain good posture by keeping your back straight and shoulders relaxed to avoid strain",
+      "2. Start with a lower resistance level if you are a beginner and gradually increase it as you build strength and endurance",
+      "3. Breathe steadily throughout the exercise, inhaling deeply and exhaling fully"
+    ]
   },
   {
     "id": "vid_stretching_bridge_pose_setu_bandhasana",
@@ -11383,12 +11935,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Cardio/Treadmill%20Running.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/cardio/Treadmill%20Running.mp4"
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Treadmill Running.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_treadmill_running.jpg",
       "men": "assets/posters/men/vid_treadmill_running.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your head up and gaze forward, avoiding looking down at your feet",
+      "2. Use a smooth, natural stride to reduce the impact on your joints",
+      "3. Ensure the treadmill speed is set at a comfortable level that allows you to maintain good form"
+    ]
   },
   {
     "id": "vid_band_high_fly",
@@ -11415,13 +11972,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Chest/Band%20High%20Fly.mp4",
+      "girl": "exercises/girl/Chest/Band high fly.mp4",
       "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/chest/Band%20High%20Fly.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_band_high_fly.jpg",
       "men": "assets/posters/men/vid_band_high_fly.jpg"
-    }
+    },
+    "tips": [
+      "1. Ensure the resistance band is securely anchored to avoid slipping",
+      "2. Exhale as you bring your hands together and inhale as you return to the starting position",
+      "3. Focus on squeezing your chest muscles as you bring your hands together"
+    ]
   },
   {
     "id": "vid_cable_lying_fly_flat_bench_cable_fly",
@@ -11517,12 +12079,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Chest/Chest%20Dips.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/chest/Chest%20Dips.mp4"
+      "men": "exercises/men/Chest/chest dip.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_chest_dips.jpg",
       "men": "assets/posters/men/vid_chest_dips.jpg"
-    }
+    },
+    "tips": [
+      "1. Focus on leaning forward slightly to emphasize the chest muscles rather than the triceps",
+      "2. Avoid locking your elbows at the top of the movement to keep tension on your muscles",
+      "3. Ensure your shoulders remain down and away from your ears to avoid unnecessary strain"
+    ]
   },
   {
     "id": "vid_deep_push_ups",
@@ -11550,12 +12117,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Chest/Deep%20Push-ups.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/chest/Deep%20Push-ups.mp4"
+      "men": "exercises/men/Chest/Deep Push-Up.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_deep_push_ups.jpg",
       "men": "assets/posters/men/vid_deep_push_ups.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your core engaged throughout the exercise to maintain a straight body line and avoid sagging your hips",
+      "2. Breathe steadily throughout the exercise, exhaling as you push up and inhaling as you lower down",
+      "3. Perform the movement with control to maximize muscle activation and prevent injury"
+    ]
   },
   {
     "id": "vid_dumbbell_decline_fly_45_degree",
@@ -11584,12 +12156,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Chest/Dumbbell%20Decline%20Fly%20%2845%20degree%29.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/chest/Dumbbell%20Decline%20Fly%20%2845%20degree%29.mp4"
+      "men": "exercises/men/Chest/Dumbbell Decline Fly.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_decline_fly_45_degree.jpg",
       "men": "assets/posters/men/vid_dumbbell_decline_fly_45_degree.jpg"
-    }
+    },
+    "tips": [
+      "1. Exhale as you raise the dumbbells and inhale as you lower them",
+      "2. Avoid locking your elbows; maintain a slight bend to protect your joints",
+      "3. Ensure your wrists remain straight and aligned with your forearms"
+    ]
   },
   {
     "id": "vid_dumbbell_fly",
@@ -11687,12 +12264,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Chest/Dumbbell%20Incline%20Bench%20Press.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/chest/Dumbbell%20Incline%20Bench%20Press.mp4"
+      "men": "exercises/men/Chest/Dumbbell Incline Bench Press.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_incline_bench_press.jpg",
       "men": "assets/posters/men/vid_dumbbell_incline_bench_press.jpg"
-    }
+    },
+    "tips": [
+      "1. Ensure your wrists remain straight and aligned with your forearms",
+      "2. Avoid locking your elbows at the top of the press to protect your joints",
+      "3. Use a weight that allows for proper form and control"
+    ]
   },
   {
     "id": "vid_dumbbell_incline_fly",
@@ -11721,12 +12303,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Chest/Dumbbell%20Incline%20Fly.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/chest/Dumbbell%20Incline%20Fly.mp4"
+      "men": "exercises/men/Chest/Dumbbell Incline Fly.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_incline_fly.jpg",
       "men": "assets/posters/men/vid_dumbbell_incline_fly.jpg"
-    }
+    },
+    "tips": [
+      "1. Exhale as you raise the dumbbells and inhale as you lower them",
+      "2. Avoid locking your elbows; maintain a slight bend to protect your joints",
+      "3. Ensure your wrists remain straight and aligned with your forearms"
+    ]
   },
   {
     "id": "vid_dumbbell_incline_fly_on_exercise_ball",
@@ -11756,12 +12343,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Chest/Dumbbell%20Incline%20Fly%20On%20Exercise%20Ball.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/chest/Dumbbell%20Incline%20Fly%20On%20Exercise%20Ball.mp4"
+      "men": "exercises/men/Chest/Dumbbell Incline Fly on Exercise Ball.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_incline_fly_on_exercise_ball.jpg",
       "men": "assets/posters/men/vid_dumbbell_incline_fly_on_exercise_ball.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your back supported on the ball and your hips lowered to maintain a stable position",
+      "2. Engage your core to stabilize your body and maintain proper form",
+      "3. Exhale as you raise the dumbbells and inhale as you lower them"
+    ]
   },
   {
     "id": "vid_dumbbell_lying_hammer_press",
@@ -11856,13 +12448,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Chest/Lever%20Chest%20Press.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/chest/Lever%20Chest%20Press.mp4"
+      "girl": "exercises/girl/Chest/Chest Press Machine.mp4",
+      "men": "exercises/men/Chest/Chest Press Machine.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_lever_chest_press.jpg",
       "men": "assets/posters/men/vid_lever_chest_press.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your back and head flat against the backrest to maintain proper form",
+      "2. Focus on engaging your chest muscles throughout the movement",
+      "3. Exhale as you push the handles forward and inhale as you return to the starting position"
+    ]
   },
   {
     "id": "vid_lever_incline_hammer_chest_press",
@@ -11891,12 +12488,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Chest/Lever%20Incline%20Hammer%20Chest%20Press.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/chest/Lever%20Incline%20Hammer%20Chest%20Press.mp4"
+      "men": "exercises/men/Chest/machine chest press incline.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_lever_incline_hammer_chest_press.jpg",
       "men": "assets/posters/men/vid_lever_incline_hammer_chest_press.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your back pressed against the backrest throughout the exercise",
+      "2. Focus on engaging your chest muscles throughout the movement",
+      "3. Exhale as you press the handles forward and downward, and inhale as you return them to the starting position"
+    ]
   },
   {
     "id": "vid_lever_lying_chest_press",
@@ -12024,13 +12626,18 @@
     "contraindications": [],
     "isStretch": true,
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Chest/Stretching%20-%20Above%20Head%20Chest%20Stretch.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/chest/Stretching%20-%20Above%20Head%20Chest%20Stretch.mp4"
+      "girl": "exercises/girl/Stretching - Mobility/Above Head Chest Stretch.mp4",
+      "men": "exercises/men/Stretching - Mobility/Above head chest stretch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_above_head_chest_stretch.jpg",
       "men": "assets/posters/men/vid_stretching_above_head_chest_stretch.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your shoulders relaxed and avoid hunching them up towards your ears",
+      "2. Breathe deeply and steadily throughout the stretch to help relax your muscles",
+      "3. Maintain a straight back and engaged core to ensure proper form and maximize the stretch"
+    ]
   },
   {
     "id": "vid_stretching_back_pec_stretch",
@@ -12387,12 +12994,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Forearms/Dumbbell%20Over%20Bench%20Wrist%20Curl.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Forearms/Dumbbell%20Over%20Bench%20Wrist%20Curl.mp4"
+      "men": "exercises/men/Forearms/Dumbbell Over Bench Reverse Wrist Curl.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_over_bench_wrist_curl.jpg",
       "men": "assets/posters/men/vid_dumbbell_over_bench_wrist_curl.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your forearms pressed firmly against the bench to isolate the wrist movement",
+      "2. Use a controlled motion to lift and lower the dumbbells, avoiding any jerking movements",
+      "3. Avoid using your shoulder or upper arm to lift the weight"
+    ]
   },
   {
     "id": "vid_dumbbell_seated_neutral_wrist_curl",
@@ -12418,12 +13030,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Forearms/Dumbbell%20Seated%20Neutral%20Wrist%20Curl.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Forearms/Dumbbell%20Seated%20Neutral%20Wrist%20Curl.mp4"
+      "men": "exercises/men/Forearms/Dumbbell Seated Neutral Wrist Curl.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_seated_neutral_wrist_curl.jpg",
       "men": "assets/posters/men/vid_dumbbell_seated_neutral_wrist_curl.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your forearms stationary on your thighs throughout the exercise",
+      "2. Focus on moving only your wrists; avoid using your arms to lift the weights",
+      "3. Choose a weight that allows for proper form and control"
+    ]
   },
   {
     "id": "vid_stretching_side_wrist_pull_stretch",
@@ -12449,12 +13066,17 @@
     "isStretch": true,
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Forearms/Stretching%20-%20Side%20Wrist%20Pull%20Stretch.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Forearms/Stretching%20-%20Side%20Wrist%20Pull%20Stretch.mp4"
+      "men": "exercises/men/Stretching - Mobility/side wrist pull stretch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_side_wrist_pull_stretch.jpg",
       "men": "assets/posters/men/vid_stretching_side_wrist_pull_stretch.jpg"
-    }
+    },
+    "tips": [
+      "1. Move your wrist slowly and with control to avoid any sudden movements that could cause strain",
+      "2. Breathe deeply and steadily as you hold the stretch",
+      "3. Focus on relaxing into the stretch to allow your muscles to lengthen fully"
+    ]
   },
   {
     "id": "vid_stretching_wrist_circles",
@@ -12511,13 +13133,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Band%20Bent%20Over%20Hip%20Extension.mp4",
+      "girl": "exercises/girl/Legs/Band Bent-over Hip Extension.mp4",
       "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Band%20Bent%20Over%20Hip%20Extension.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_band_bent_over_hip_extension.jpg",
       "men": "assets/posters/men/vid_band_bent_over_hip_extension.jpg"
-    }
+    },
+    "tips": [
+      "1. Ensure the resistance band is securely attached to the equipment and your ankle to avoid slipping",
+      "2. Exhale as you lift your leg back and inhale as you return to the starting position",
+      "3. Maintain a slight bend in your supporting knee to protect your knee joint and lower back"
+    ]
   },
   {
     "id": "vid_band_hip_abduction",
@@ -12573,8 +13200,8 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Band%20Hip%20Adduction.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Band%20Hip%20Adduction.mp4"
+      "girl": "exercises/girl/Legs/Band Hip Adduction.mp4",
+      "men": "exercises/men/Legs/Band Hip Adduction.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_band_hip_adduction.jpg",
@@ -12670,13 +13297,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Barbell%20Front%20Chest%20Squat.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Barbell%20Front%20Chest%20Squat.mp4"
+      "girl": "exercises/girl/Legs/barbell front squat.mp4",
+      "men": "exercises/men/Legs/Barbell front squats.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_barbell_front_chest_squat.jpg",
       "men": "assets/posters/men/vid_barbell_front_chest_squat.jpg"
-    }
+    },
+    "tips": [
+      "1. Exhale as you stand up from the squat and inhale as you lower into the squat",
+      "2. Keep your chest up and avoid leaning forward excessively",
+      "3. Focus on engaging your quadriceps and glutes throughout the movement"
+    ]
   },
   {
     "id": "vid_close_feet_leg_press",
@@ -12773,12 +13405,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Dumbbell%20Goblet%20Squat.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Dumbbell%20Goblet%20Squat.mp4"
+      "men": "exercises/men/Legs/Dumbbell Goblet Squat.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_goblet_squat.jpg",
       "men": "assets/posters/men/vid_dumbbell_goblet_squat.jpg"
-    }
+    },
+    "tips": [
+      "1. Ensure your knees track over your toes and do not cave inward",
+      "2. Maintain a neutral spine and avoid rounding your back",
+      "3. Focus on pushing through your heels to engage your glutes and quadriceps effectively"
+    ]
   },
   {
     "id": "vid_dumbbell_lunge",
@@ -12871,12 +13508,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Dumbbell%20Single%20Leg%20Squat.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Dumbbell%20Single%20Leg%20Squat.mp4"
+      "men": "exercises/men/Legs/Dumbbell Single Leg Squat.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_single_leg_squat.jpg",
       "men": "assets/posters/men/vid_dumbbell_single_leg_squat.jpg"
-    }
+    },
+    "tips": [
+      "1. Start with a lower weight or no weight to master the form before increasing the resistance",
+      "2. Keep your torso upright and avoid leaning forward",
+      "3. Keep your balance by engaging your core and focusing on a fixed point in front of you"
+    ]
   },
   {
     "id": "vid_dumbbell_squat",
@@ -12905,12 +13547,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Dumbbell%20Squat.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Dumbbell%20Squat.mp4"
+      "men": "exercises/men/Legs/Dumbbell Squats.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_squat.jpg",
       "men": "assets/posters/men/vid_dumbbell_squat.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your feet flat on the floor to maintain stability",
+      "2. Align your knees with your toes throughout the movement to prevent straining your knees",
+      "3. Lower yourself in a controlled manner to maintain balance and form"
+    ]
   },
   {
     "id": "vid_lever_horizontal_leg_press",
@@ -12970,12 +13617,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Lever%20Kneeling%20Leg%20Curl.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Lever%20Kneeling%20Leg%20Curl.mp4"
+      "men": "exercises/men/Legs/kneeling leg curl machine.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_lever_kneeling_leg_curl.jpg",
       "men": "assets/posters/men/vid_lever_kneeling_leg_curl.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your back straight and avoid arching or rounding your spine",
+      "2. Focus on engaging your hamstrings throughout the movement",
+      "3. Exhale as you curl your leg up and inhale as you lower it back down"
+    ]
   },
   {
     "id": "vid_lever_seated_hip_abduction",
@@ -13000,13 +13652,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Lever%20Seated%20Hip%20Abduction.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Lever%20Seated%20Hip%20Abduction.mp4"
+      "girl": "exercises/girl/Legs/Seated Hip Abductor Machine.mp4",
+      "men": "exercises/men/Legs/Seated Hip Abductor Machine.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_lever_seated_hip_abduction.jpg",
       "men": "assets/posters/men/vid_lever_seated_hip_abduction.jpg"
-    }
+    },
+    "tips": [
+      "1. Sit upright with your back firmly against the backrest to maintain proper posture",
+      "2. Focus on squeezing your glutes and outer thighs throughout the movement",
+      "3. Perform the movement slowly and avoid using momentum to push the legs outward"
+    ]
   },
   {
     "id": "vid_lever_seated_hip_adduction",
@@ -13031,8 +13688,8 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Lever%20Seated%20Hip%20Adduction.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Lever%20Seated%20Hip%20Adduction.mp4"
+      "girl": "exercises/girl/Legs/Seated machine hip adductor.mp4",
+      "men": "exercises/men/Legs/Seated Machine Hip Adductor.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_lever_seated_hip_adduction.jpg",
@@ -13230,13 +13887,18 @@
     "contraindications": [],
     "isStretch": true,
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Stretching%20-%20Adductor%20stretch.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Stretching%20-%20Adductor%20stretch.mp4"
+      "girl": "exercises/girl/Stretching - Mobility/adductor stretch.mp4",
+      "men": "exercises/men/Stretching - Mobility/Adductor stretch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_adductor_stretch.jpg",
       "men": "assets/posters/men/vid_stretching_adductor_stretch.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your core engaged to maintain stability and control throughout the stretch",
+      "2. Focus on maintaining a steady breathing pattern, inhaling deeply through your nose and exhaling through your mouth while holding the stretch",
+      "3. Perform the stretch slowly and avoid any sudden movements to prevent strain"
+    ]
   },
   {
     "id": "vid_stretching_all_fours_squad_stretch",
@@ -13262,13 +13924,18 @@
     "contraindications": [],
     "isStretch": true,
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Stretching%20-%20All%20Fours%20Squad%20Stretch.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Stretching%20-%20All%20Fours%20Squad%20Stretch.mp4"
+      "girl": "exercises/girl/Stretching - Mobility/ALL FOURS QUAD STRETCH.mp4",
+      "men": "exercises/men/Stretching - Mobility/All fours quad stretch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_all_fours_squad_stretch.jpg",
       "men": "assets/posters/men/vid_stretching_all_fours_squad_stretch.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your core engaged to maintain balance and stability throughout the stretch",
+      "2. Avoid arching your back; maintain a neutral spine to protect your lower back",
+      "3. Breathe deeply and steadily throughout the stretch to help relax your muscles"
+    ]
   },
   {
     "id": "vid_stretching_boat_stretch",
@@ -13296,12 +13963,17 @@
     "isStretch": true,
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Stretching%20-%20Boat%20Stretch.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Stretching%20-%20Boat%20Stretch.mp4"
+      "men": "exercises/men/Stretching - Mobility/Boat Stretch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_boat_stretch.jpg",
       "men": "assets/posters/men/vid_stretching_boat_stretch.jpg"
-    }
+    },
+    "tips": [
+      "1. Engage your core to maintain balance and prevent your lower back from rounding",
+      "2. Keep your chest lifted and shoulders relaxed to ensure proper form",
+      "3. Breathe deeply and steadily to help maintain the stretch and balance"
+    ]
   },
   {
     "id": "vid_stretching_ceiling_look_stretch",
@@ -13330,12 +14002,18 @@
     "isStretch": true,
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Stretching%20-%20Ceiling%20Look%20Stretch.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Stretching%20-%20Ceiling%20Look%20Stretch.mp4"
+      "men": "exercises/men/Stretching - Mobility/Ceiling Look Stretch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_ceiling_look_stretch.jpg",
       "men": "assets/posters/men/vid_stretching_ceiling_look_stretch.jpg"
-    }
+    },
+    "tips": [
+      "1. Breathe deeply and evenly, inhaling as you lift your torso and exhaling as you return to the starting position",
+      "2. Avoid forcing the stretch; only lean back as far as is comfortable without causing pain",
+      "3. Use a mat or cushion under your knees for added comfort and support",
+      "4. Perform this stretch to enhance flexibility in your spine and relieve tension in your chest and neck"
+    ]
   },
   {
     "id": "vid_stretching_crossover_kneeling_hip_flexor_stretch",
@@ -13363,12 +14041,17 @@
     "isStretch": true,
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Stretching%20-%20Crossover%20Kneeling%20Hip%20Flexor%20Stretch.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Stretching%20-%20Crossover%20Kneeling%20Hip%20Flexor%20Stretch.mp4"
+      "men": "exercises/men/Stretching - Mobility/Crossover Kneeling Hip Flexor Stretch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_crossover_kneeling_hip_flexor_stretch.jpg",
       "men": "assets/posters/men/vid_stretching_crossover_kneeling_hip_flexor_stretch.jpg"
-    }
+    },
+    "tips": [
+      "1. Ensure your front knee is aligned over your ankle to avoid unnecessary strain on your knee joint",
+      "2. Perform the stretch with control to avoid overextending your hip flexors",
+      "3. Breathe deeply and steadily throughout the stretch, inhaling through your nose and exhaling through your mouth"
+    ]
   },
   {
     "id": "vid_stretching_hamstring_stretch",
@@ -13589,12 +14272,17 @@
     "isStretch": true,
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Stretching%20-%20Quadriceps%20lying%20stretch.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Stretching%20-%20Quadriceps%20lying%20stretch.mp4"
+      "men": "exercises/men/Stretching - Mobility/lying quadriceps stretch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_quadriceps_lying_stretch.jpg",
       "men": "assets/posters/men/vid_stretching_quadriceps_lying_stretch.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your hips pressed into the floor to maximize the stretch in your quadriceps and avoid straining your lower back",
+      "2. Move slowly and with control to avoid any sudden movements that could cause strain",
+      "3. If you cannot reach your foot comfortably, use a towel or strap around your ankle to assist with the stretch"
+    ]
   },
   {
     "id": "vid_stretching_quadriceps_stretch",
@@ -13620,13 +14308,18 @@
     "contraindications": [],
     "isStretch": true,
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Hips/Stretching%20-%20Quadriceps%20stretch.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Hips/Stretching%20-%20Quadriceps%20stretch.mp4"
+      "girl": "exercises/girl/Stretching - Mobility/Standing Quadriceps Stretch.mp4",
+      "men": "exercises/men/Stretching - Mobility/standing quadriceps stretch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_quadriceps_stretch.jpg",
       "men": "assets/posters/men/vid_stretching_quadriceps_stretch.jpg"
-    }
+    },
+    "tips": [
+      "1. Perform the stretch slowly and with control to maximize muscle flexibility and reduce injury risk",
+      "2. Ensure your supporting leg remains slightly bent to maintain balance",
+      "3. Focus on keeping your torso upright and avoid leaning forward or backward"
+    ]
   },
   {
     "id": "vid_stretching_runners_stretch",
@@ -13747,11 +14440,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Bent%20knee%20Lying%20%20twist%20%28On%20Stability%20Ball%29.mp4"
+      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Bent%20knee%20Lying%20%20twist%20%28On%20Stability%20Ball%29.mp4",
+      "men": "exercises/men/Abdominals/Bent knee Lying Twist (On Stability Ball).mp4"
     },
     "poster": {
-      "girl": "assets/posters/girl/vid_bent_knee_lying_twist_on_stability_ball.jpg"
-    }
+      "girl": "assets/posters/girl/vid_bent_knee_lying_twist_on_stability_ball.jpg",
+      "men": "assets/posters/men/vid_bent_knee_lying_twist_on_stability_ball.jpg"
+    },
+    "tips": [
+      "1. Keep your shoulders flat on the floor to maximize the stretch in your spine and obliques",
+      "2. Move slowly and with control to avoid straining your back",
+      "3. Breathe deeply and steadily, exhaling as you lower your knees to the side and inhaling as you bring them back to the center"
+    ]
   },
   {
     "id": "vid_chest_lift_with_rotation",
@@ -13777,11 +14477,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Chest%20Lift%20with%20Rotation.mp4"
+      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Chest%20Lift%20with%20Rotation.mp4",
+      "men": "exercises/men/Abdominals/chest lift with rotation.mp4"
     },
     "poster": {
-      "girl": "assets/posters/girl/vid_chest_lift_with_rotation.jpg"
-    }
+      "girl": "assets/posters/girl/vid_chest_lift_with_rotation.jpg",
+      "men": "assets/posters/men/vid_chest_lift_with_rotation.jpg"
+    },
+    "tips": [
+      "1. Avoid pulling on your neck with your hands; use your abdominal muscles to lift and rotate your torso",
+      "2. Keep your elbows wide to ensure you are using your core muscles rather than your arms",
+      "3. Make sure your lower back remains pressed against the floor throughout the exercise"
+    ]
   },
   {
     "id": "vid_corkscrew_pilates",
@@ -13837,11 +14544,19 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Crunch%20Floor%20%28female%29.mp4"
+      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Crunch%20Floor%20%28female%29.mp4",
+      "men": "exercises/men/Abdominals/Crunch Floor.mp4"
     },
     "poster": {
-      "girl": "assets/posters/girl/vid_crunch_floor_female.jpg"
-    }
+      "girl": "assets/posters/girl/vid_crunch_floor_female.jpg",
+      "men": "assets/posters/men/vid_crunch_floor_female.jpg"
+    },
+    "tips": [
+      "1. Avoid pulling on your neck with your hands; focus on using your abdominal muscles to lift your shoulders",
+      "2. Perform the movement with control to maximize muscle activation and prevent injury",
+      "3. Breathe steadily throughout the exercise, exhaling as you lift your shoulders and inhaling as you lower them",
+      "4. Ensure your lower back remains pressed into the floor to avoid unnecessary strain"
+    ]
   },
   {
     "id": "vid_crunch_leg_raise",
@@ -13867,11 +14582,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Crunch%20%28leg%20raise%29.mp4"
+      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Crunch%20%28leg%20raise%29.mp4",
+      "men": "exercises/men/Abdominals/Crunch leg raise.mp4"
     },
     "poster": {
-      "girl": "assets/posters/girl/vid_crunch_leg_raise.jpg"
-    }
+      "girl": "assets/posters/girl/vid_crunch_leg_raise.jpg",
+      "men": "assets/posters/men/vid_crunch_leg_raise.jpg"
+    },
+    "tips": [
+      "1. Avoid using your neck or momentum to lift your shoulders; focus on using your abdominal muscles",
+      "2. Use a mat or soft surface to support your back and prevent discomfort during the exercise",
+      "3. Breathe steadily throughout the exercise, exhaling as you lift your shoulders and knees, and inhaling as you lower them"
+    ]
   },
   {
     "id": "vid_crunch_legs_on_stability_ball",
@@ -13896,11 +14618,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Crunch%20%28legs%20on%20stability%20ball%29.mp4"
+      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Crunch%20%28legs%20on%20stability%20ball%29.mp4",
+      "men": "exercises/men/Abdominals/Crunch (legs on stability ball).mp4"
     },
     "poster": {
-      "girl": "assets/posters/girl/vid_crunch_legs_on_stability_ball.jpg"
-    }
+      "girl": "assets/posters/girl/vid_crunch_legs_on_stability_ball.jpg",
+      "men": "assets/posters/men/vid_crunch_legs_on_stability_ball.jpg"
+    },
+    "tips": [
+      "1. Keep your core engaged throughout the exercise to maintain stability and support your lower back",
+      "2. Avoid pulling on your neck with your hands; focus on using your abdominal muscles to lift your shoulders",
+      "3. Breathe steadily throughout the exercise, exhaling as you lift your shoulders and inhaling as you lower them"
+    ]
   },
   {
     "id": "vid_crunch_straight_leg_up",
@@ -13925,11 +14654,19 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Crunch%20%28straight%20leg%20up%29.mp4"
+      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Crunch%20%28straight%20leg%20up%29.mp4",
+      "men": "exercises/men/Abdominals/Crunch (straight leg up).mp4"
     },
     "poster": {
-      "girl": "assets/posters/girl/vid_crunch_straight_leg_up.jpg"
-    }
+      "girl": "assets/posters/girl/vid_crunch_straight_leg_up.jpg",
+      "men": "assets/posters/men/vid_crunch_straight_leg_up.jpg"
+    },
+    "tips": [
+      "1. Avoid using your neck or momentum to lift your shoulders; focus on using your abdominal muscles",
+      "2. Use a mat or soft surface to support your back and prevent discomfort during the exercise",
+      "3. Breathe steadily throughout the exercise, exhaling as you lift your shoulders and inhaling as you lower them",
+      "4. Ensure your lower back remains pressed into the floor to avoid unnecessary strain"
+    ]
   },
   {
     "id": "vid_front_plank_female",
@@ -14259,11 +14996,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Reverse%20Crunch%20%28female%29.mp4"
+      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/mix/Reverse%20Crunch%20%28female%29.mp4",
+      "men": "exercises/men/Abdominals/reverse crunch.mp4"
     },
     "poster": {
-      "girl": "assets/posters/girl/vid_reverse_crunch_female.jpg"
-    }
+      "girl": "assets/posters/girl/vid_reverse_crunch_female.jpg",
+      "men": "assets/posters/men/vid_reverse_crunch_female.jpg"
+    },
+    "tips": [
+      "1. Avoid using momentum to lift your hips; focus on using your abdominal muscles",
+      "2. Breathe steadily, exhaling as you lift your hips and inhaling as you lower them back down",
+      "3. Keep your head and shoulders relaxed on the floor to avoid straining your neck"
+    ]
   },
   {
     "id": "vid_rotate_push_up_female",
@@ -14505,11 +15249,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Band%20Standing%20Rear%20Delt%20Row.mp4"
+      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Band%20Standing%20Rear%20Delt%20Row.mp4",
+      "girl": "exercises/girl/Shoulders/Band standing rear delt row.mp4"
     },
     "poster": {
+      "girl": "assets/posters/girl/vid_band_standing_rear_delt_row.jpg",
       "men": "assets/posters/men/vid_band_standing_rear_delt_row.jpg"
-    }
+    },
+    "tips": [
+      "1. Breathe steadily, exhaling as you pull the band towards your chin and inhaling as you return to the starting position",
+      "2. Focus on squeezing your shoulder blades together at the top of the movement to maximize rear delt engagement",
+      "3. Adjust the band’s resistance by stepping on it closer to or farther from the anchor point"
+    ]
   },
   {
     "id": "vid_barbell_front_raise",
@@ -14535,12 +15286,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Shoulders/Barbell%20Front%20Raise.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Barbell%20Front%20Raise.mp4"
+      "men": "exercises/men/Shoulders/front raises barbell.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_barbell_front_raise.jpg",
       "men": "assets/posters/men/vid_barbell_front_raise.jpg"
-    }
+    },
+    "tips": [
+      "1. Maintain a slight bend in your elbows to reduce strain on the joints",
+      "2. Lift with your shoulders rather than swinging your body to ensure proper muscle engagement",
+      "3. Keep your core tight to support your lower back and maintain proper posture"
+    ]
   },
   {
     "id": "vid_barbell_seated_behind_head_military_press",
@@ -14601,12 +15357,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Shoulders/Barbell%20Upright%20Row%20%28wide-grip%29.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Barbell%20Upright%20Row%20%28wide-grip%29.mp4"
+      "men": "exercises/men/Back/Barbell wide grip Upright Row.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_barbell_upright_row_wide_grip.jpg",
       "men": "assets/posters/men/vid_barbell_upright_row_wide_grip.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your chest up and back straight throughout the movement to avoid leaning forward",
+      "2. Lead with your elbows to ensure proper muscle engagement and avoid wrist strain",
+      "3. Avoid using momentum or swinging your body to lift the barbell"
+    ]
   },
   {
     "id": "vid_cable_crossover_reverse_fly",
@@ -14633,12 +15394,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Shoulders/Cable%20Crossover%20Reverse%20Fly.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Cable%20Crossover%20Reverse%20Fly.mp4"
+      "men": "exercises/men/Shoulders/cable reverse fly on crossover.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_cable_crossover_reverse_fly.jpg",
       "men": "assets/posters/men/vid_cable_crossover_reverse_fly.jpg"
-    }
+    },
+    "tips": [
+      "1. Exhale as you pull the handles outward and inhale as you return to the starting position",
+      "2. Keep your elbows slightly bent to reduce strain on your joints",
+      "3. Focus on engaging your upper back and shoulder muscles throughout the movement"
+    ]
   },
   {
     "id": "vid_cable_front_raise",
@@ -14695,12 +15461,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Shoulders/Cable%20Lateral%20Raise.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Cable%20Lateral%20Raise.mp4"
+      "men": "exercises/men/Shoulders/cable lateral raises.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_cable_lateral_raise.jpg",
       "men": "assets/posters/men/vid_cable_lateral_raise.jpg"
-    }
+    },
+    "tips": [
+      "1. Choose a weight that allows you to complete the exercise with proper form",
+      "2. Exhale as you raise the handles and inhale as you lower them back down",
+      "3. Avoid using momentum; focus on the contraction of your shoulder muscles"
+    ]
   },
   {
     "id": "vid_cable_one_arm_forward_raise",
@@ -14726,12 +15497,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Shoulders/Cable%20One%20Arm%20Forward%20Raise.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Cable%20One%20Arm%20Forward%20Raise.mp4"
+      "men": "exercises/men/Shoulders/Cable One Arm Front Raise.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_cable_one_arm_forward_raise.jpg",
       "men": "assets/posters/men/vid_cable_one_arm_forward_raise.jpg"
-    }
+    },
+    "tips": [
+      "1. Avoid locking your elbow; keep a slight bend to reduce strain on your joints",
+      "2. Exhale as you raise the handle and inhale as you lower it back down",
+      "3. Avoid locking your elbow; keep a slight bend to reduce strain on your joints"
+    ]
   },
   {
     "id": "vid_cable_one_arm_lateral_raise",
@@ -14855,12 +15631,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Shoulders/Dumbbell%20Front%20Raise.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Dumbbell%20Front%20Raise.mp4"
+      "men": "exercises/men/Shoulders/Dumbbell Front Raise.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_front_raise.jpg",
       "men": "assets/posters/men/vid_dumbbell_front_raise.jpg"
-    }
+    },
+    "tips": [
+      "1. Avoid swinging the weights; use a controlled motion to lift and lower the dumbbells",
+      "2. Maintain a slight bend in your elbows to reduce joint strain",
+      "3. Keep your shoulders down and relaxed throughout the exercise"
+    ]
   },
   {
     "id": "vid_dumbbell_incline_hammer_press",
@@ -14921,11 +15702,16 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Dumbbell%20Incline%20Rear%20Lateral%20Raise.mp4"
+      "men": "exercises/men/Shoulders/Dumbbell Incline Rear Lateral Raise.mp4"
     },
     "poster": {
       "men": "assets/posters/men/vid_dumbbell_incline_rear_lateral_raise.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep a slight bend in your elbows throughout the exercise to protect your joints",
+      "2. Ensure your wrists remain straight and aligned with your forearms",
+      "3. Select a weight that allows for proper form and control throughout the exercise"
+    ]
   },
   {
     "id": "vid_dumbbell_iron_cross",
@@ -14953,12 +15739,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Shoulders/Dumbbell%20Iron%20Cross.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Dumbbell%20Iron%20Cross.mp4"
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Dumbbell Iron Cross.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_iron_cross.jpg",
       "men": "assets/posters/men/vid_dumbbell_iron_cross.jpg"
-    }
+    },
+    "tips": [
+      "1. Use a slow and controlled motion to maximize muscle engagement and prevent momentum from taking over",
+      "2. Keep your wrists straight and aligned with your forearms throughout the movement",
+      "3. Start with lighter weights to ensure proper form before progressing to heavier dumbbells"
+    ]
   },
   {
     "id": "vid_dumbbell_lateral_raise",
@@ -14984,12 +15775,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Shoulders/Dumbbell%20Lateral%20Raise.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Dumbbell%20Lateral%20Raise.mp4"
+      "men": "exercises/men/Shoulders/lateral raises dumbbell.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_lateral_raise.jpg",
       "men": "assets/posters/men/vid_dumbbell_lateral_raise.jpg"
-    }
+    },
+    "tips": [
+      "1. Do not raise the dumbbells higher than shoulder height to prevent shoulder strain",
+      "2. Maintain a slight bend in your elbows throughout the exercise",
+      "3. Keep your wrists straight and aligned with your forearms"
+    ]
   },
   {
     "id": "vid_dumbbell_one_arm_lateral_raise",
@@ -15015,12 +15811,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Shoulders/Dumbbell%20One%20Arm%20Lateral%20Raise.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Dumbbell%20One%20Arm%20Lateral%20Raise.mp4"
+      "men": "exercises/men/Shoulders/Dumbbell One Arm Lateral Raise.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_one_arm_lateral_raise.jpg",
       "men": "assets/posters/men/vid_dumbbell_one_arm_lateral_raise.jpg"
-    }
+    },
+    "tips": [
+      "1. Perform the movement slowly and deliberately for maximum control",
+      "2. Avoid using momentum or swinging the dumbbell",
+      "3. Keep your wrist straight and aligned with your forearm"
+    ]
   },
   {
     "id": "vid_dumbbell_rear_delt_row",
@@ -15048,12 +15849,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Shoulders/Dumbbell%20Rear%20Delt%20Row.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Dumbbell%20Rear%20Delt%20Row.mp4"
+      "men": "exercises/men/Shoulders/Dumbbell Rear Delt Row.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_rear_delt_row.jpg",
       "men": "assets/posters/men/vid_dumbbell_rear_delt_row.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your elbow flared out to the side to target the rear delts effectively",
+      "2. Exhale as you row the dumbbell up and inhale as you lower it back down",
+      "3. Use a controlled and steady pace to maintain proper form and muscle engagement"
+    ]
   },
   {
     "id": "vid_dumbbell_rear_lateral_raise",
@@ -15112,12 +15918,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Shoulders/Dumbbell%20Seated%20Front%20Raise.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Dumbbell%20Seated%20Front%20Raise.mp4"
+      "men": "exercises/men/Shoulders/Dumbbell Seated Front Raise.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_seated_front_raise.jpg",
       "men": "assets/posters/men/vid_dumbbell_seated_front_raise.jpg"
-    }
+    },
+    "tips": [
+      "1. Avoid using momentum; focus on slow and controlled movements",
+      "2. Exhale as you lift the dumbbells and inhale as you lower them",
+      "3. Maintain a slight bend in your elbows to reduce strain on your joints"
+    ]
   },
   {
     "id": "vid_dumbbell_seated_lateral_raise",
@@ -15144,12 +15955,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Shoulders/Dumbbell%20Seated%20Lateral%20Raise.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Dumbbell%20Seated%20Lateral%20Raise.mp4"
+      "men": "exercises/men/Shoulders/Dumbbell Seated Lateral Raise.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_seated_lateral_raise.jpg",
       "men": "assets/posters/men/vid_dumbbell_seated_lateral_raise.jpg"
-    }
+    },
+    "tips": [
+      "1. Avoid using momentum; lift and lower the weights in a controlled manner",
+      "2. Do not lock your elbows; maintain a slight bend to protect your joints",
+      "3. Exhale as you lift the dumbbells and inhale as you lower them"
+    ]
   },
   {
     "id": "vid_dumbbell_upright_row",
@@ -15175,11 +15991,16 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Dumbbell%20Upright%20Row.mp4"
+      "men": "exercises/men/Shoulders/upright row dumbbell.mp4"
     },
     "poster": {
       "men": "assets/posters/men/vid_dumbbell_upright_row.jpg"
-    }
+    },
+    "tips": [
+      "1. Breathe steadily: exhale as you lift the dumbbells and inhale as you lower them",
+      "2. Focus on using your shoulders and upper back to lift the dumbbells, avoiding excessive use of your biceps",
+      "3. Avoid lifting the dumbbells too high, which can put unnecessary strain on your shoulder joints"
+    ]
   },
   {
     "id": "vid_lever_lateral_raise",
@@ -15204,13 +16025,18 @@
     "imageUrls": [],
     "contraindications": [],
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Shoulders/Lever%20Lateral%20Raise.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Lever%20Lateral%20Raise.mp4"
+      "girl": "exercises/girl/Shoulders/Machine Lateral Raise.mp4",
+      "men": "exercises/men/Shoulders/machine lateral raise.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_lever_lateral_raise.jpg",
       "men": "assets/posters/men/vid_lever_lateral_raise.jpg"
-    }
+    },
+    "tips": [
+      "1. Exhale as you raise your arms and inhale as you lower them back down",
+      "2. Use a moderate weight to ensure proper form and gradually increase the resistance as you get stronger",
+      "3. Focus on engaging your shoulder muscles throughout the movement"
+    ]
   },
   {
     "id": "vid_lever_military_press",
@@ -15368,13 +16194,18 @@
     "contraindications": [],
     "isStretch": true,
     "video": {
-      "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Shoulders/Stretching%20-%20Band%20Warm-up%20Shoulder%20Stretch.mp4",
+      "girl": "exercises/girl/Stretching - Mobility/Band Warm up Shoulder Stretch.mp4",
       "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Stretching%20-%20Band%20Warm-up%20Shoulder%20Stretch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_band_warm_up_shoulder_stretch.jpg",
       "men": "assets/posters/men/vid_stretching_band_warm_up_shoulder_stretch.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your arms straight but not locked to avoid joint strain",
+      "2. Ensure the resistance band has appropriate tension to provide an effective stretch without causing discomfort",
+      "3. Perform the stretch slowly and with control to maximize muscle activation and reduce the risk of injury"
+    ]
   },
   {
     "id": "vid_stretching_rear_deltoid_stretch",
@@ -15402,12 +16233,17 @@
     "isStretch": true,
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Shoulders/Stretching%20-%20Rear%20Deltoid%20Stretch.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Shoulders/Stretching%20-%20Rear%20Deltoid%20Stretch.mp4"
+      "men": "exercises/men/Stretching - Mobility/rear deltoid stretch.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_stretching_rear_deltoid_stretch.jpg",
       "men": "assets/posters/men/vid_stretching_rear_deltoid_stretch.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your shoulders relaxed and away from your ears to maximize the stretch",
+      "2. Avoid twisting your torso; keep your upper body facing forward",
+      "3. Move slowly and with control to avoid any sudden movements that could cause strain"
+    ]
   },
   {
     "id": "vid_stretching_seated_shoulder_flexor_depresor_retractor",
@@ -15500,12 +16336,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Trapezius/Dumbbell%20Incline%20Shrug.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Trapezius/Dumbbell%20Incline%20Shrug.mp4"
+      "men": "exercises/men/Shoulders/Dumbbell Incline Shrug.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_incline_shrug.jpg",
       "men": "assets/posters/men/vid_dumbbell_incline_shrug.jpg"
-    }
+    },
+    "tips": [
+      "1. Exhale as you shrug your shoulders upward and inhale as you lower them",
+      "2. Focus on lifting your shoulders straight up and down, avoiding any circular or forward motion",
+      "3. Use a slow and controlled motion to maximize muscle engagement and avoid swinging"
+    ]
   },
   {
     "id": "vid_dumbbell_shrug",
@@ -15751,12 +16592,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Triceps/Cable%20Lying%20Triceps%20Extension.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Triceps/Cable%20Lying%20Triceps%20Extension.mp4"
+      "men": "exercises/men/Triceps/cable lying triceps extension.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_cable_lying_triceps_extension.jpg",
       "men": "assets/posters/men/vid_cable_lying_triceps_extension.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your upper arms stationary and only move your forearms to isolate the triceps",
+      "2. Focus on the contraction of your triceps as you extend your arms",
+      "3. Exhale as you extend your arms and inhale as you lower the bar"
+    ]
   },
   {
     "id": "vid_cable_overhead_triceps_extension_rope_attachment",
@@ -15943,12 +16789,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Triceps/Close%20Grip%20Push-ups.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Triceps/Close%20Grip%20Push-ups.mp4"
+      "men": "exercises/men/Chest/Close Grip Push up.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_close_grip_push_ups.jpg",
       "men": "assets/posters/men/vid_close_grip_push_ups.jpg"
-    }
+    },
+    "tips": [
+      "1. Focus on using your triceps and chest muscles to lift your body, keeping your elbows close to your sides",
+      "2. Perform the movement with control, especially during the lowering phase, to maximize muscle activation and prevent injury",
+      "3. Breathe steadily throughout the exercise, exhaling as you push up and inhaling as you lower yourself"
+    ]
   },
   {
     "id": "vid_dumbbell_kickback",
@@ -15974,12 +16825,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Triceps/Dumbbell%20Kickback.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Triceps/Dumbbell%20Kickback.mp4"
+      "men": "exercises/men/Triceps/Dumbbell Kickback.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_kickback.jpg",
       "men": "assets/posters/men/vid_dumbbell_kickback.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your upper arm stationary throughout the movement to isolate the triceps effectively",
+      "2. Engage your core to maintain stability and prevent excessive movement of your torso",
+      "3. Use a controlled motion, avoiding swinging the dumbbell to ensure proper muscle engagement"
+    ]
   },
   {
     "id": "vid_dumbbell_lying_alternate_extension",
@@ -16037,12 +16893,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Triceps/Dumbbell%20Lying%20Triceps%20Extension.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Triceps/Dumbbell%20Lying%20Triceps%20Extension.mp4"
+      "men": "exercises/men/Triceps/Dumbbell Lying Triceps Extension.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_lying_triceps_extension.jpg",
       "men": "assets/posters/men/vid_dumbbell_lying_triceps_extension.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your upper arms stationary and only move your forearms to ensure maximum triceps engagement",
+      "2. Avoid using momentum; focus on a slow and controlled motion throughout the exercise",
+      "3. Maintain a neutral wrist position to prevent strain and injuries"
+    ]
   },
   {
     "id": "vid_dumbbell_one_arm_triceps_extension",
@@ -16132,12 +16993,17 @@
     "contraindications": [],
     "video": {
       "girl": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/girl/Triceps/Dumbbell%20Seated%20Kickback.mp4",
-      "men": "https://storage.googleapis.com/traidingbot-b4061-videos-eu/exercises/men/Triceps/Dumbbell%20Seated%20Kickback.mp4"
+      "men": "exercises/men/Triceps/Dumbbell Seated Kickback.mp4"
     },
     "poster": {
       "girl": "assets/posters/girl/vid_dumbbell_seated_kickback.jpg",
       "men": "assets/posters/men/vid_dumbbell_seated_kickback.jpg"
-    }
+    },
+    "tips": [
+      "1. Keep your back straight and avoid rounding your shoulders",
+      "2. Exhale as you extend your arm and inhale as you return to the starting position",
+      "3. Use a controlled motion, focusing on squeezing your triceps at the top"
+    ]
   },
   {
     "id": "vid_dumbbell_seated_triceps_extension",
