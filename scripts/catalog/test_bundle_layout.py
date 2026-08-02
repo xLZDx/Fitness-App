@@ -47,6 +47,25 @@ class TestGender:
         # 1,815 of 2,578 carry no suffix, and many have a _Female twin.
         assert split_gender("Superman") == ("Superman", "men")
 
+    def test_a_version_marker_after_the_gender_does_not_hide_it(self):
+        # One delivered clip is `...Inverted Row on floor_female_1`. Anchoring
+        # hard to the end filed it under men -- the same failure the
+        # case-insensitivity guards against, arriving through a second door.
+        assert split_gender("Inverted Row_female_1") == ("Inverted Row_1", "girl")
+        assert split_gender("Inverted Row_1") == ("Inverted Row_1", "men")
+
+    def test_the_versioned_pair_lines_up_as_one_exercise(self):
+        # Both renders must land on the same stem, or the woman's clip is a
+        # different exercise from the man's and nothing pairs.
+        girl = split_gender("Inverted Row_female_1")
+        men = split_gender("Inverted Row_1")
+        assert girl[0] == men[0]
+        assert {girl[1], men[1]} == {"girl", "men"}
+
+    def test_a_word_ending_in_male_is_not_a_gender_marker(self):
+        assert split_gender("Shemale Press")[1] == "men"
+        assert split_gender("Barbell Row")[0] == "Barbell Row"
+
 
 class TestWhitespace:
     """297 delivered stems cannot be stored under their own names on Windows."""

@@ -42,6 +42,9 @@ ROOT = Path(__file__).resolve().parents[2]
 CATALOG = ROOT / 'mobile' / 'assets' / 'data' / 'exercises.json'
 POSTERS = ROOT / 'mobile' / 'assets' / 'posters'
 DROP = Path('D:/Downloads/Video')
+# Where the licensed library is transcoded to, laid out under the object keys
+# it will be served from.
+BUNDLE = Path('D:/bundle/720')
 
 WIDTH = 400
 QUALITY = 5  # ffmpeg -q:v, 2 best .. 31 worst
@@ -70,7 +73,17 @@ def local_for(url: str, roots: dict[str, Path]) -> Path | None:
     of which contain spaces and some of which contain brackets. Decoding is
     the whole job, and getting it wrong is silent — a missing poster, not an
     error — so the caller counts what came back None.
+
+    Since the licensed import, a catalog entry may hold an object key rather
+    than a url — `exercises/girl/Legs/Squat.mp4`, to be signed at play time.
+    Those resolve against the transcoder's output tree, which is laid out under
+    exactly the key they will be served from. Same seam the app uses:
+    `startsWith('http')` and nothing more.
     """
+    if not url.startswith('http'):
+        candidate = BUNDLE / url
+        return candidate if candidate.exists() else None
+
     path = urllib.parse.urlparse(url).path
     parts = [urllib.parse.unquote(p) for p in path.split('/') if p]
     # .../exercises/<gender>/<Group>/<file>.mp4

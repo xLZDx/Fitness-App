@@ -32,7 +32,15 @@ from dataclasses import dataclass, field
 # Case-insensitive, and anchored to the end of the stem so an exercise that
 # merely contains the word -- "female" appears in no current name, but the
 # archive is not ours to constrain -- is not caught by accident.
-_GENDER = re.compile(r"_(female|male)\s*$", re.IGNORECASE)
+#
+# The lookahead allows a version marker to sit after the gender, because one
+# delivered clip does exactly that: `...Inverted Row on floor_female_1.mp4`.
+# A rule anchored hard to the end filed it under men, which is the failure the
+# case-insensitivity above exists to prevent, arriving through a second door.
+# The marker is kept in the stem so the pair `..._1` / `..._female_1` still
+# resolves to one exercise with two renders rather than colliding with a
+# differently-versioned clip.
+_GENDER = re.compile(r"_(female|male)(?=(?:_\d+)?\s*$)", re.IGNORECASE)
 
 # The one pair whose two files are genuinely different machines, not two renders
 # of one exercise. Kept by name so the resolver reports it instead of silently
@@ -59,7 +67,8 @@ def split_gender(stem: str) -> tuple[str, str]:
     if not match:
         return canonical_stem(stem), "men"
     body = "girl" if match.group(1).lower() == "female" else "men"
-    return canonical_stem(stem[: match.start()]), body
+    without = stem[: match.start()] + stem[match.end() :]
+    return canonical_stem(without), body
 
 
 def object_path(member: str) -> str:

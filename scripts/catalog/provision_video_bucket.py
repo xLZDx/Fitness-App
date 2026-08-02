@@ -11,10 +11,11 @@ WHY IT TALKS TO THE REST API INSTEAD OF gcloud
 
 gcloud is not installed on this machine, and installing a 200 MB SDK to make
 two API calls is a poor trade. The Firebase CLI is already signed in with
-`cloud-platform` scope, so this borrows that grant: it exchanges the CLI's
-refresh token for a short-lived access token in memory. Nothing is written to
-disk, nothing is printed, and no service-account key is ever downloaded --
-which is the same reason the signing itself goes through IAM (see
+`cloud-platform` scope, so this borrows that grant through
+`scripts/ops/firebase_api.py`, which the library upload already uses: the CLI's
+refresh token is exchanged for a short-lived access token in memory, never
+written to disk and never printed. No service-account key is ever downloaded --
+the same reason the signing itself goes through IAM (see
 `functions/src/video_urls.ts`).
 
 WHAT IT DOES
@@ -42,7 +43,9 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-PROJECT = "traidingbot-b4061"
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "ops"))
+from firebase_api import PROJECT, access_token  # noqa: E402
+
 BUCKET = f"{PROJECT}-videos-private"
 
 # Matches the existing public library so the licensed clips are served from the
@@ -50,17 +53,6 @@ BUCKET = f"{PROJECT}-videos-private"
 LOCATION = "EU"
 
 TOKEN_CREATOR = "roles/iam.serviceAccountTokenCreator"
-
-# firebase-tools' own OAuth client. These are published constants of the CLI,
-# not secrets -- they identify the application, they do not authorise anything
-# on their own. The refresh token is what carries the authority, and it stays
-# in memory.
-CLI_CLIENT_ID = (
-    "563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com"
-)
-CLI_CLIENT_SECRET = "j9iVZfS8kkCEFUPaAeJV0sAi"
-
-CREDENTIALS = pathlib.Path.home() / ".config/configstore/firebase-tools.json"
 
 
 class ProvisionError(RuntimeError):
@@ -82,44 +74,6 @@ def _request(method: str, url: str, token: str, body: dict | None = None) -> dic
         # Re-raised with the body: Google's errors say WHY (billing, permission,
         # name taken) and a bare "409" would send the reader guessing.
         raise ProvisionError(f"{method} {url} -> {exc.code}\n{detail}") from None
-
-
-def access_token() -> str:
-    """A short-lived token borrowed from the signed-in Firebase CLI.
-
-    Never returned to a shell, never logged. The caller passes it straight to
-    `_request`.
-    """
-    if not CREDENTIALS.exists():
-        raise ProvisionError(
-            f"No Firebase CLI credentials at {CREDENTIALS}. Run: firebase login"
-        )
-    stored = json.loads(CREDENTIALS.read_text(encoding="utf-8"))
-    refresh = (stored.get("tokens") or {}).get("refresh_token")
-    if not refresh:
-        raise ProvisionError("Firebase CLI is not signed in (no refresh token).")
-
-    payload = urllib.parse.urlencode(
-        {
-            "client_id": CLI_CLIENT_ID,
-            "client_secret": CLI_CLIENT_SECRET,
-            "refresh_token": refresh,
-            "grant_type": "refresh_token",
-        }
-    ).encode()
-    req = urllib.request.Request(
-        "https://oauth2.googleapis.com/token", data=payload, method="POST"
-    )
-    try:
-        with urllib.request.urlopen(req) as resp:
-            token = json.loads(resp.read()).get("access_token")
-    except urllib.error.HTTPError as exc:
-        raise ProvisionError(
-            "Could not refresh the Firebase CLI token; run: firebase login --reauth"
-        ) from None
-    if not token:
-        raise ProvisionError("Token endpoint returned no access_token.")
-    return token
 
 
 # --------------------------------------------------------------------------

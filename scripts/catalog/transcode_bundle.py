@@ -245,7 +245,11 @@ def main() -> None:
         todo.append((src, out))
     print(f'{len(todo_all) - len(todo)} already done, {len(todo)} to do')
 
-    scratch = args.dest / '_scratch'
+    # Beside the output tree, never inside it. A half-written temp file living
+    # under `dest/` is picked up by anything that walks the tree for uploadable
+    # clips -- which is exactly what happened: the uploader globbed a scratch
+    # file and then crashed when the encoder deleted it a moment later.
+    scratch = args.dest.parent / f'{args.dest.name}_scratch'
     if library:
         scratch.mkdir(parents=True, exist_ok=True)
 

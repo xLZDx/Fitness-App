@@ -16,6 +16,7 @@ the first frame, and makes others refuse it. Every file here is video/mp4.
 """
 from __future__ import annotations
 
+import argparse
 import concurrent.futures
 import sys
 import urllib.parse
@@ -29,6 +30,13 @@ BUCKET = 'traidingbot-b4061-videos-eu'
 DROP = Path('D:/Downloads/Video')
 PREFIX = 'exercises'
 
+# The licensed library. Its tree is already laid out under the object keys it
+# will be served from -- see `scripts/catalog/bundle_layout.py` -- so it needs
+# no gender-root discovery, unlike the drop, which arrives inside dated
+# wrapper directories.
+LICENSED_BUCKET = 'traidingbot-b4061-videos-private'
+LICENSED_TREE = Path('D:/bundle/720')
+
 
 def gender_roots(drop: Path) -> dict[str, Path]:
     roots = {}
@@ -40,12 +48,12 @@ def gender_roots(drop: Path) -> dict[str, Path]:
     return roots
 
 
-def existing(token: str) -> dict[str, int]:
+def existing(token: str, bucket: str = BUCKET) -> dict[str, int]:
     """Object name -> size, for everything already in the bucket."""
     out: dict[str, int] = {}
     page = None
     while True:
-        url = (f'https://storage.googleapis.com/storage/v1/b/{BUCKET}/o'
+        url = (f'https://storage.googleapis.com/storage/v1/b/{bucket}/o'
                f'?prefix={PREFIX}/&fields=items(name,size),nextPageToken'
                '&maxResults=1000')
         if page:
@@ -60,9 +68,9 @@ def existing(token: str) -> dict[str, int]:
             return out
 
 
-def upload(local: Path, name: str, token: str) -> tuple[str, str]:
+def upload(local: Path, name: str, token: str, bucket: str) -> tuple[str, str]:
     url = ('https://storage.googleapis.com/upload/storage/v1/b/'
-           f'{BUCKET}/o?uploadType=media&name={urllib.parse.quote(name, safe="")}')
+           f'{bucket}/o?uploadType=media&name={urllib.parse.quote(name, safe="")}')
     req = urllib.request.Request(url, data=local.read_bytes(), method='POST')
     req.add_header('Authorization', f'Bearer {token}')
     req.add_header('Content-Type', 'video/mp4')
@@ -75,18 +83,48 @@ def upload(local: Path, name: str, token: str) -> tuple[str, str]:
 
 
 def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--licensed', action='store_true',
+                    help='upload the purchased library to the private bucket')
+    args = ap.parse_args()
+
+    bucket = LICENSED_BUCKET if args.licensed else BUCKET
     token = access_token()
-    roots = gender_roots(DROP)
 
     wanted: dict[str, Path] = {}
-    for gender, root in roots.items():
-        for p in sorted(root.rglob('*.mp4')):
-            wanted[f'{PREFIX}/{gender}/{p.parent.name}/{p.name}'] = p
+    if args.licensed:
+        if not LICENSED_TREE.is_dir():
+            sys.exit(f'no transcoded library at {LICENSED_TREE}')
+        for p in sorted(LICENSED_TREE.rglob('*.mp4')):
+            key = p.relative_to(LICENSED_TREE).as_posix()
+            # Anything not yet a finished clip. A `.partial.mp4` is an encode in
+            # flight and a `_scratch/` entry is a source copy about to be
+            # deleted; uploading either publishes a truncated video, and both
+            # can vanish between the glob and the read.
+            if key.endswith('.partial.mp4') or key.startswith('_'):
+                continue
+            # The path under the tree IS the object key; that is the point of
+            # laying it out this way. Rebuilding the key from parts here would
+            # be a second implementation of the naming policy, free to drift.
+            wanted[key] = p
+    else:
+        for gender, root in gender_roots(DROP).items():
+            for p in sorted(root.rglob('*.mp4')):
+                wanted[f'{PREFIX}/{gender}/{p.parent.name}/{p.name}'] = p
+    print(f'bucket: {bucket}')
     print(f'local files: {len(wanted)}')
 
-    have = existing(token)
-    todo = {n: p for n, p in wanted.items()
-            if have.get(n) != p.stat().st_size}
+    have = existing(token, bucket)
+    todo = {}
+    for name, path in wanted.items():
+        try:
+            size = path.stat().st_size
+        except OSError:
+            # Raced with a still-running transcode. Not fatal: the next run
+            # picks it up, and crashing here would abandon 2,000 good uploads.
+            continue
+        if have.get(name) != size:
+            todo[name] = path
     print(f'already uploaded and the right size: {len(wanted) - len(todo)}')
     print(f'to upload: {len(todo)}')
     if not todo:
@@ -96,7 +134,8 @@ def main() -> None:
     done = failed = 0
     errors: list[str] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
-        futures = [pool.submit(upload, p, n, token) for n, p in todo.items()]
+        futures = [pool.submit(upload, p, n, token, bucket)
+                   for n, p in todo.items()]
         for f in concurrent.futures.as_completed(futures):
             name, err = f.result()
             if err:
