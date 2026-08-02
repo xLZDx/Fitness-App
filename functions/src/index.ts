@@ -992,3 +992,8 @@ export const reportEquipment = onCall(
     return { reportId };
   },
 );
+
+// Signed, expiring URLs for the licensed clip library. Kept in its own module
+// because it is the one part of this file that exists to satisfy a contract
+// rather than a feature request — see the header of video_urls.ts.
+export { clipUrl, clipUrls } from "./video_urls";

@@ -326,6 +326,10 @@ class _VideoBlockState extends ConsumerState<_VideoBlock> {
   /// path almost always hits during a planned session.
   Future<void> _bootstrap() async {
     try {
+      // Cache lookup uses the catalog REFERENCE, not the resolved URL. A
+      // signed URL carries an expiry and a signature, so it is different on
+      // every request — keying the cache on it would mean nothing was ever
+      // found and the same clip downloaded forever.
       final cache = ref.read(offlineVideoCacheProvider);
       final cached = await cache.localFile(widget.url);
       VideoPlayerController controller;
@@ -333,7 +337,17 @@ class _VideoBlockState extends ConsumerState<_VideoBlock> {
         controller = VideoPlayerController.file(cached);
         _fromCache = true;
       } else {
-        controller = VideoPlayerController.networkUrl(Uri.parse(widget.url));
+        final playable =
+            await ref.read(clipUrlResolverProvider).resolve(widget.url);
+        if (playable == null) {
+          // Signing failed or the object is gone. The poster is already on
+          // screen; leave it there and say why rather than replacing a
+          // picture of the exercise with an exception.
+          if (mounted) setState(() => _error = 'unresolved');
+          return;
+        }
+        if (!mounted) return;
+        controller = VideoPlayerController.networkUrl(Uri.parse(playable));
       }
       controller.setLooping(true);
       await controller.initialize();

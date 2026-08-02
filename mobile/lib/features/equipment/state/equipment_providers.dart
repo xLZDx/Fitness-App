@@ -6,6 +6,7 @@ import '../../ai_coach/ai_exercise_generator.dart';
 import '../../ai_coach/generated_exercise_repository.dart';
 import '../../profile/state/profile_providers.dart';
 import '../data/asset_equipment_repository.dart';
+import '../data/clip_url_resolver.dart';
 import '../data/equipment_models.dart';
 import '../data/equipment_report_service.dart';
 import '../data/equipment_repository.dart';
@@ -184,4 +185,14 @@ final forYouExercisesProvider = FutureProvider<List<ExerciseItem>>((ref) async {
   final all = await ref.watch(allExercisesProvider.future);
   final profile = ref.watch(currentProfileProvider).valueOrNull;
   return recommended(all, profile);
+});
+
+/// Where a clip reference becomes a playable URL.
+///
+/// The licensed library lives in a private bucket, so its catalog entries are
+/// object paths rather than URLs and have to be signed per request — see
+/// `clip_url_resolver.dart`. Overridden in tests with a passthrough so the
+/// widget suite needs no Firebase.
+final clipUrlResolverProvider = Provider<ClipUrlResolver>((ref) {
+  return FunctionsClipUrlResolver();
 });
