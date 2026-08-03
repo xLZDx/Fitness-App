@@ -138,7 +138,7 @@ void main() {
       }
     });
 
-    test('the gap is 174 and is not hidden behind a still', () {
+    test('the gap is 156 and is not hidden behind a still', () {
       // A count, so that "we added clips" and "we stopped showing the gap" can
       // never be confused for one another.
       //
@@ -150,12 +150,12 @@ void main() {
       // rather than by filename, which recovered 151 of them.
       // core/CLIP_LICENCE_AUDIT_2026-08-03.md, core/legacy_match_proposals.csv.
       expect(rows, hasLength(511));
-      expect(withDemonstration(rows), hasLength(337));
+      expect(withDemonstration(rows), hasLength(355));
     });
 
     test('every dropped entry really had no clip, not merely no poster', () {
       final dropped = rows.where((e) => e.playableVideoFor(null) == null);
-      expect(dropped, hasLength(174));
+      expect(dropped, hasLength(156));
       for (final e in dropped) {
         expect(e.video.values.where((u) => !u.contains(ExerciseItem.unresolvedHost)),
             isEmpty,

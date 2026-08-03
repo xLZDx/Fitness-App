@@ -106,9 +106,9 @@ void main() {
       // reasoning per exercise is core/subset_verdicts.csv.
       final both = withVideo().where((e) => (e['video'] as Map).length == 2);
       final one = withVideo().where((e) => (e['video'] as Map).length == 1);
-      expect(both, hasLength(80));
-      expect(one, hasLength(257));
-      expect(withVideo(), hasLength(337));
+      expect(both, hasLength(85));
+      expect(one, hasLength(270));
+      expect(withVideo(), hasLength(355));
 
       for (final e in both) {
         final v = (e['video'] as Map).cast<String, dynamic>();
@@ -180,7 +180,7 @@ void main() {
       // Pinned so a botched re-import that quietly reverts every licensed
       // entry to a public url still passes every shape check above and fails
       // right here.
-      expect(licensedCount, 417, reason: 'licensed object keys');
+      expect(licensedCount, 440, reason: 'licensed object keys');
       expect(publicCount, 0,
           reason: 'a public url here is unlicensed footage being served again');
     });
@@ -231,7 +231,7 @@ void main() {
       // a group file that stops being merged. What each row can DEMONSTRATE is
       // the clip-only rule's business, and it hides the other 37 rather than
       // showing them empty.
-      expect(stretches.where((e) => e['video'] != null), hasLength(42));
+      expect(stretches.where((e) => e['video'] != null), hasLength(48));
       for (final e in stretches) {
         expect((e['muscles'] as List), isNotEmpty, reason: '${e['id']}');
         for (final ref in ((e['video'] as Map?) ?? const {}).values) {
@@ -298,7 +298,7 @@ void main() {
       // chose `Archer push up` for "Push-Up" while `Normal Push-up` sat in the
       // same library. See core/CLIP_LICENCE_AUDIT_2026-08-03.md.
       final stillsOnly = exercises.where((e) => e['video'] == null).toList();
-      expect(stillsOnly, hasLength(174));
+      expect(stillsOnly, hasLength(156));
       const noImageryByDesign = {
         'treadmill_warmup_walk',
         'treadmill_incline_walk',
@@ -329,7 +329,7 @@ void main() {
       // neither. They are hidden by the clip-only rule rather than shown
       // empty, and they are the queue in
       // core/CLIP_LICENCE_AUDIT_2026-08-03.md.
-      expect(blank, hasLength(83));
+      expect(blank, hasLength(68));
     });
   });
 
@@ -414,7 +414,7 @@ void main() {
     // exercises whose ONLY moving demonstration is the clip, and if a rebuild
     // ever loses their posters again this is where it shows.
 
-    test('220 exercises are demonstrated by the clip alone', () {
+    test('235 exercises are demonstrated by the clip alone', () {
       final videoOnly = exercises
           .where((e) =>
               e['video'] != null &&
@@ -422,7 +422,7 @@ void main() {
               (e['imageUrls'] as List? ?? const []).isEmpty &&
               e['videoUrl'] == null)
           .length;
-      expect(videoOnly, 220);
+      expect(videoOnly, 235);
     });
 
     test('every clip in the library is licensed', () {
@@ -446,9 +446,9 @@ void main() {
         for (final e in withVideo())
           ...(e['video'] as Map).values.cast<String>(),
       ];
-      expect(refs, hasLength(417));
+      expect(refs, hasLength(440));
       expect(refs.where((u) => u.startsWith(base)), isEmpty);
-      expect(refs.where((u) => u.startsWith('exercises/')), hasLength(417));
+      expect(refs.where((u) => u.startsWith('exercises/')), hasLength(440));
     });
   });
 }

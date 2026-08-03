@@ -2138,7 +2138,13 @@
     ],
     "contraindications": [
       "knee"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Stretching - Mobility/90 to 90 Stretch.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/90_90_hamstring.jpg"
+    }
   },
   {
     "id": "air_bike",
@@ -5106,7 +5112,15 @@
     ],
     "contraindications": [
       "lower_back"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Overhead Med Ball Throw.mp4",
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Overhead Med Ball Throw.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_backward_medicine_ball_throw.jpg",
+      "men": "assets/posters/men/fedb_backward_medicine_ball_throw.jpg"
+    }
   },
   {
     "id": "fedb_medicine_ball_chest_pass",
@@ -6754,7 +6768,13 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Recumbent_Bike/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Recumbent_Bike/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Stationary Exercise Bike.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_recumbent_bike.jpg"
+    }
   },
   {
     "id": "fedb_battling_ropes",
@@ -7323,7 +7343,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Abdominals/air bike.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/air_bike_intervals.jpg"
+    }
   },
   {
     "id": "air_bike_steady",
@@ -7378,7 +7404,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Ski Ergometer Cross Country Ski Basic Pull.mp4",
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Ski Ergometer Cross Country Ski Basic Pull.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/ski_erg_intervals.jpg",
+      "men": "assets/posters/men/ski_erg_intervals.jpg"
+    }
   },
   {
     "id": "ski_erg_steady",
@@ -7944,7 +7978,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Abdominals/Landmine Oblique Twist.mp4",
+      "men": "exercises/men/Abdominals/Landmine Oblique Twist.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_landmine_180.jpg",
+      "men": "assets/posters/men/vid_landmine_180.jpg"
+    }
   },
   {
     "id": "vid_lever_seated_crunch",
@@ -8976,7 +9018,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Back/reverse grip lat pull down.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_cable_pulldown.jpg"
+    }
   },
   {
     "id": "vid_cable_seated_high_row_v_bar",
@@ -9002,7 +9050,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Back/seated cable row V bar machine.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_cable_seated_high_row_v_bar.jpg"
+    }
   },
   {
     "id": "vid_cable_seated_row_normal_grip",
@@ -10212,7 +10266,13 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "men": "exercises/men/Stretching - Mobility/Legs hand reach spine stretch.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_stretching_spine_stretch_forward.jpg"
+    }
   },
   {
     "id": "vid_stretching_standing_back_rotation_stretch",
@@ -11280,7 +11340,13 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "men": "exercises/men/Stretching - Mobility/standing gastrocnemius stretch.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_stretching_standing_bench_calf_stretch.jpg"
+    }
   },
   {
     "id": "vid_burpee",
@@ -12503,7 +12569,13 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "men": "exercises/men/Stretching - Mobility/middle back rotation stretch.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_stretching_standing_reach_up_back_rotation_stretch.jpg"
+    }
   },
   {
     "id": "vid_stretching_standing_wheel_rollout",
@@ -13460,7 +13532,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Legs/leg press wide high stance.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_sled_45_degree_leg_wide_press.jpg"
+    }
   },
   {
     "id": "vid_smith_chair_squat",
@@ -13487,7 +13565,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Legs/Normal Squat Smith Machine.mp4",
+      "men": "exercises/men/Legs/Normal Squat Smith Machine.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_smith_chair_squat.jpg",
+      "men": "assets/posters/men/vid_smith_chair_squat.jpg"
+    }
   },
   {
     "id": "vid_stretching_adductor_stretch",
@@ -13695,7 +13781,13 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "men": "exercises/men/Stretching - Mobility/hamstring lying straight leg stretch.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_stretching_hamstring_stretch.jpg"
+    }
   },
   {
     "id": "vid_stretching_hip_circles_stretch",
@@ -13745,7 +13837,13 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "men": "exercises/men/Stretching - Mobility/lying hip flexor stretch.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_stretching_hip_extension_stretch.jpg"
+    }
   },
   {
     "id": "vid_stretching_hip_flexor_and_quad_stretch",
@@ -14606,7 +14704,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Stretching - Mobility/exercise ball lying side lat stretch.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_side_bend_on_stability_ball.jpg"
+    }
   },
   {
     "id": "vid_sit_up",
@@ -15936,7 +16040,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Triceps/Band Triceps Pushdown Single Arm.mp4",
+      "men": "exercises/men/Triceps/Band Triceps Pushdown Single Arm.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_band_side_triceps_pushdown.jpg",
+      "men": "assets/posters/men/vid_band_side_triceps_pushdown.jpg"
+    }
   },
   {
     "id": "vid_band_triceps_pushdown",
@@ -16531,6 +16643,12 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "men": "exercises/men/Stretching - Mobility/triceps light stretch.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_stretching_reverse_dip.jpg"
+    }
   }
 ]

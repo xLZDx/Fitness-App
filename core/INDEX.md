@@ -26,6 +26,7 @@ agent doing a code task from reading a 776-line nonprofit strategy doc looking f
 | [PHASE_1B_FIREBASE_SETUP.md](PHASE_1B_FIREBASE_SETUP.md) | Firebase project wiring, `google-services.json`, auth setup |
 | [PHASE_4B_STRIPE_SETUP.md](PHASE_4B_STRIPE_SETUP.md) | Stripe **test-mode** price IDs and secret slots |
 | [CLIP_LICENCE_AUDIT_2026-08-03.md](CLIP_LICENCE_AUDIT_2026-08-03.md) | **Where every exercise clip comes from and whether we may host it.** Read before touching `exercises.json` or the video buckets. CSV twin beside it; per-exercise verdicts in `subset_verdicts.csv` |
+| [CATALOG_STATE_2026-08-03.md](CATALOG_STATE_2026-08-03.md) | **How many exercises ship, how many play a clip, and what is still missing.** Start here for any catalog-coverage question. CSV twin beside it; the clipless list is `CLIPLESS_FOR_REVIEW.csv` |
 
 Also here: `context_baseline.csv` — measured AI-context cost over time, appended by
 `scripts/dev/measure_context.ps1`.

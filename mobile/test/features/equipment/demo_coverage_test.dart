@@ -53,13 +53,13 @@ void main() {
   });
 
   test('what the user is actually shown is a clip or nothing', () {
-    // The number that matters now. 337 of 511 play; the other 174 are hidden
+    // The number that matters now. 355 of 511 play; the other 156 are hidden
     // rather than papered over with a photograph, and every one of them is a
     // piece of footage we owe — see core/CLIP_LICENCE_AUDIT_2026-08-03.md.
     final withClip = exercises
         .where((e) => (e['video'] as Map? ?? const {}).isNotEmpty)
         .length;
-    expect(withClip, 337);
+    expect(withClip, 355);
     expect(exercises, hasLength(511));
   });
 
@@ -96,12 +96,12 @@ void main() {
     // elliptical and stepmill clips, and the semantic re-match found them. So
     // `allowed` is now a list of exercises that MAY have no imagery, not one
     // that must have none.
-    expect(without, hasLength(83),
+    expect(without, hasLength(68),
         reason: 'an exercise shipping with nothing at all must move this');
     // The rest are the 158 that had an unlicensed clip and no stills behind
     // it. This asserts the size rather than the membership so that a NEW
     // exercise shipping empty still moves the number and fails here.
-    expect(without.difference(allowed), hasLength(80));
+    expect(without.difference(allowed), hasLength(67));
   });
 
   test('every exercise without imagery still carries steps and muscles', () {

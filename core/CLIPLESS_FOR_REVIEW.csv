@@ -1,0 +1,157 @@
+title,id,equipment,previously,why_no_clip,closest_vendor_clip,closeness,still_has_photos
+Barbell Prone Incline Curl,vid_barbell_prone_incline_curl,barbell,had unlicensed animation,"Different equipment or named variants, no exact match.",Dumbbell Prone Incline Curl,0.91,no
+Barbell Incline Shoulder Raise,fedb_barbell_incline_shoulder_raise,barbell,never had a clip,Incline barbell shrug not matched by candidates.,Barbell Incline Shoulders Press,0.89,yes
+Dumbbell Lying Hammer Press,vid_dumbbell_lying_hammer_press,dumbbell,had unlicensed animation,No candidate specifies 'hammer' (neutral grip) for a flat press.,Dumbbell Decline Hammer Press,0.89,no
+Barbell Rear Delt Row,fedb_barbell_rear_delt_row,barbell,had unlicensed animation,Specific rear delt row variant not matched by candidates.,Dumbbell Rear Delt Row,0.88,yes
+Standing Leg Curl,fedb_standing_leg_curl,leg_curl,had unlicensed animation,No 'Standing Leg Curl Machine' match; other options are different equipment/posi,Band Standing Leg Curl,0.87,yes
+Barbell Guillotine Bench Press,barbell_guillotine_bench_press,bench_press,had unlicensed animation,not asked,Barbell Inclined Bench Press,0.86,yes
+Dumbbell Lying Leg Curl,vid_dumbbell_lying_femoral,dumbbell,had unlicensed animation,"No candidate matches dumbbell, lying (prone), and leg curl.",Dumbbell Lying Supine Curl,0.86,no
+Standing Knee Raise,vid_stretching_knee_raise,,had unlicensed animation,"No candidate matches standing, holding one knee to chest.",standing y raise,0.86,no
+Cable Rope Pushdown,vid_cable_pushdown_rope_attachment,cable_machine,had unlicensed animation,not asked,Cable Pushdown,0.85,no
+Double Kettlebell Windmill,fedb_double_kettlebell_windmill,kettlebell,never had a clip,Specific 'Double Kettlebell' variant not found.,Kettlebell Windmill,0.84,yes
+Dumbbell Fly on an Exercise Ball,vid_dumbbell_fly_on_exercise_ball,dumbbell,had unlicensed animation,Incline variant is different; no flat fly on exercise ball.,Dumbbell Incline Fly on Exercise Ball,0.84,no
+Dumbbell Lying Alternating Triceps Extension,vid_dumbbell_lying_alternate_extension,dumbbell,had unlicensed animation,No alternating dumbbell lying triceps extension.,Dumbbell Lying Triceps Extension,0.84,no
+Band Lying Leg Curl,vid_band_leg_curl,resistance_bands,had unlicensed animation,Specific 'lying' position with band not found.,Band Standing Leg Curl,0.83,no
+Band Seated Row,vid_band_seated_row,resistance_bands,had unlicensed animation,"No candidate matches band, two-arm, and seated row exactly.",Band Squat Row,0.83,no
+Band Standing Crunch,vid_band_standing_crunch,resistance_bands,had unlicensed animation,"Candidates use different equipment, position, or are variants.",Cable Standing Crunch,0.83,no
+Double Kettlebell Snatch,fedb_double_kettlebell_snatch,kettlebell,never had a clip,Specific double kettlebell snatch; 'Kettlebell Snatch' implies single or generic,Kettlebell Snatch,0.83,yes
+Band One-Arm Front Raise,vid_band_one_arm_forward_raise,resistance_bands,had unlicensed animation,No candidate specifies 'one-arm' for a band front raise.,Cable One Arm Front Raise,0.82,no
+Band Standing Twist,vid_band_twist,resistance_bands,had unlicensed animation,Different equipment or movement for all candidates.,Plate Standing Twist,0.82,no
+Cable Russian Twists,fedb_cable_russian_twists,rotary_torso_machine,had unlicensed animation,'Russian' implies specific body position; 'Cable Twist' is too generic.,Plate Russian Twist,0.82,yes
+Barbell Hack Squat,barbell_hack_squat,squat_rack,never had a clip,Barbell hack squat holds bar behind body; no candidate matches this.,Ball Headlock Squat,0.81,yes
+Kipping Muscle Up,fedb_kipping_muscle_up,pullup_bar,never had a clip,Kipping is a named variant; 'Bodyweight Muscle-up' is different.,Kipping Pull Up,0.81,yes
+Machine Bicep Curl,fedb_machine_bicep_curl,bicep_curl_machine,never had a clip,"Specific machine with pads, not cable or free weight.",Landmine Bicep Curl,0.81,yes
+Rocking Standing Calf Raise,fedb_rocking_standing_calf_raise,calf_raise_machine,had unlicensed animation,rocking is heel-to-toe; the candidate is a loaded barbell raise,Bodyweight Standing Calf Raise,0.81,yes
+Bodyweight Walking Lunge,bodyweight_walking_lunge,,never had a clip,Walking is a specific variant; other bodyweight lunges are different.,Bodyweight Rear Lunge,0.80,yes
+Double Kettlebell Push Press,fedb_double_kettlebell_push_press,kettlebell,never had a clip,Specific double kettlebell push press; candidates are different movements or equ,Double Kettlebell Sled Push,0.80,yes
+Medicine Ball Scoop Throw,fedb_medicine_ball_scoop_throw,medicine_ball,never had a clip,Specific backward overhead throw. Candidates are forward throws or different mov,Medicine Ball Rotational Throw,0.80,yes
+Alternating Hang Clean,alternating_hang_clean,kettlebell,never had a clip,"No candidate matches kettlebell, alternating, and hang clean. Dumbbells are diff",Alternating Hamstring Curl,0.79,yes
+Band Triceps Pushdown,vid_band_triceps_pushdown,resistance_bands,had unlicensed animation,No two-hand band pushdown; single-arm is a variant.,Band Triceps Pushdown Single Arm,0.79,no
+Decline Dumbbell Triceps Extension,fedb_decline_dumbbell_triceps_extension,dumbbell,had unlicensed animation,"No candidate matches decline, dumbbell, triceps extension.",Dumbbell Lying Triceps Extension,0.79,yes
+Kneeling Back Rotation Stretch,vid_stretching_kneeling_back_rotation_stretch,,had unlicensed animation,"No candidate matches specific kneeling, hand-behind-head rotation.",middle back rotation stretch,0.79,no
+Smith Incline Shoulder Raise,fedb_smith_incline_shoulder_raise,smith_machine,never had a clip,a raise is not a press,smith machine shoulder press,0.79,yes
+Barbell Incline Bench Press - Medium Grip,barbell_incline_bench_press_medium_grip,bench_press,had unlicensed animation,not asked,Barbell Inclined Bench Press,0.78,yes
+Double Kettlebell Jerk,fedb_double_kettlebell_jerk,kettlebell,never had a clip,Specific double kettlebell jerk; candidates are different movements or equipment,Double Kettlebell Sled Push,0.78,yes
+Machine Preacher Curls,fedb_machine_preacher_curls,preacher_curl_bench,never had a clip,No candidate uses a machine for preacher curls.,Cable Preacher Curl,0.78,yes
+Seated Lower Back Stretch,vid_stretching_seated_lower_back_stretch,,had unlicensed animation,not asked,Child Pose Lower back Stretch,0.78,no
+Standing Cable Chest Press,fedb_standing_cable_chest_press,chest_press_machine,never had a clip,"No candidate matches standing, cable, and chest press.",landmine chest press,0.78,yes
+Cable Deadlifts,cable_deadlifts,cable_machine,never had a clip,No cable deadlift; candidates are different equipment or variants.,Barbell Deadlift,0.77,yes
+Cable Standing One-Arm Triceps Extension,vid_cable_standing_one_arm_triceps_extension,cable_machine,had unlicensed animation,"No single-arm, standing, supinated grip cable pushdown.",Dumbbell Standing Triceps Extension,0.77,no
+Scapular Pull-Up,fedb_scapular_pull-up,pullup_bar,had unlicensed animation,Specific straight-arm movement; no candidate matches this.,Scapula push up,0.77,yes
+Close-Grip Dumbbell Press,fedb_close-grip_dumbbell_press,dumbbell,had unlicensed animation,a Svend press is a standing plate squeeze; ours is a press lying on a bench,close grip barbell bench press,0.76,yes
+Decline EZ Bar Triceps Extension,fedb_decline_ez_bar_triceps_extension,ez_curl_bar,never had a clip,"No candidate matches decline, EZ bar, triceps extension.",Dumbbell Incline Triceps Extension,0.76,yes
+Hyperextensions With No Hyperextension Bench,fedb_hyperextensions_with_no_hyperextension_bench,back_extension,never had a clip,"Bodyweight hyperextension on flat bench, no exact match.",Weighted Back Extensions on Hyperextension Bench,0.76,yes
+Medicine Ball Chest Pass,fedb_medicine_ball_chest_pass,medicine_ball,never had a clip,No exact 'Medicine Ball Chest Pass'; 'with abs' is a variant.,Medicine Ball Chest Throw With Abs,0.76,yes
+Band Standing Lift,vid_band_standing_lift,resistance_bands,had unlicensed animation,No candidate matches the specific diagonal lifting motion.,Band Standing Leg Curl,0.75,no
+Barbell Walking Lunge,barbell_walking_lunge,barbell,never had a clip,Walking is a specific variant; other barbell lunges are different.,Barbell Pause Lunge,0.75,yes
+Cable Standing Lift,vid_cable_standing_lift,cable_machine,had unlicensed animation,No candidate matches a low-to-high cable lift.,Cable Standing Crunch,0.75,no
+Alternating Cable Shoulder Press,alternating_cable_shoulder_press,cable_machine,never had a clip,"No cable shoulder press, all are different equipment or variants.",Dumbbell Alternate Shoulder Press,0.74,yes
+Alternating Floor Press,alternating_floor_press,kettlebell,never had a clip,"No candidate matches kettlebell, alternating, and floor press. Dumbbells are dif",Alternate lying floor leg raise,0.74,yes
+Bear Crawl Sled Drags,bear_crawl_sled_drags,leg_press,never had a clip,not asked,Lateral Sled Drag,0.74,yes
+Medicine Ball Full Twist,fedb_medicine_ball_full_twist,medicine_ball,never had a clip,"Standing, partner twist. Candidates are seated, different equipment, or no partn",Medicine Ball Jumps,0.74,yes
+Peroneals Stretch,vid_stretching_peroneals_stretch,,had unlicensed animation,"No candidate matches seated, band-assisted foot inversion.",Pigeon Glutes Stretch,0.74,no
+Single-Arm Cable Crossover,fedb_single-arm_cable_crossover,cable_machine,never had a clip,No candidate matches single-arm cable chest crossover/fly.,Arm double crossover,0.74,yes
+Triceps Dip,vid_triceps_dips,dip_station,had unlicensed animation,a chest dip leans forward and trains the chest; ours stays upright,Floor Tricep Dip,0.74,no
+Band Seated Leg Extension,vid_band_seated_leg_extension,resistance_bands,had unlicensed animation,No candidate matches 'band seated leg extension'.,Lever Leg Extension,0.73,no
+Barbell Rollout from Bench,fedb_barbell_rollout_from_bench,barbell,never had a clip,Different body position (from bench vs floor) makes it different.,Barbell rollout,0.73,yes
+Incline Cable Chest Press,fedb_incline_cable_chest_press,chest_press_machine,never had a clip,No candidate matches incline cable chest press movement.,Band Incline Bench Press,0.73,yes
+One Arm Chin-Up,fedb_one_arm_chin-up,pullup_bar,never had a clip,Unilateral variant; 'chin up' is bilateral. Pulldown is not pull-up.,One Arm Push Up,0.73,yes
+Plate Pinch,fedb_plate_pinch,weight_plates,never had a clip,All candidates add movements; original is static hold.,Plate Reach,0.73,yes
+Reverse Hyperextension,fedb_reverse_hyperextension,back_extension,had unlicensed animation,Specific machine/movement not matched by candidates.,Lever Leg Extension,0.73,yes
+Single Straight Leg Stretch,vid_stretching_single_straight_leg_stretch,,had unlicensed animation,No candidate matches dynamic alternating straight-leg stretch with head up.,Standing Straight-Leg Hamstring Stretch,0.73,no
+Smith Machine Deadlift,vid_smith_deadlift_deadlift,smith_machine,had unlicensed animation,not asked,smith machine press decline,0.73,no
+Weighted Lying Twist,vid_weighted_lying_twist,,had unlicensed animation,No candidate matches 'weighted' lying twist with hands holding weight.,Bent knee Lying Twist,0.73,no
+Calf Raise On A Dumbbell,fedb_calf_raise_on_a_dumbbell,calf_raise_machine,had unlicensed animation,"Specific equipment: standing on a dumbbell handle, not a step.",lateral raises dumbbell,0.72,yes
+Hammer Grip Incline DB Bench Press,fedb_hammer_grip_incline_db_bench_press,bench_press,never had a clip,"Incline, dumbbell, hammer grip, chest press not matched.",Band Incline Bench Press,0.72,yes
+Cable Chest Press,cable_chest_press,cable_machine,never had a clip,No pure cable chest press; candidates are different equipment or variants.,Barbell Smith Chest Press,0.71,yes
+Cable Shoulder Press,fedb_cable_shoulder_press,shoulder_press_machine,never had a clip,No candidate is a standard cable shoulder press without variants or other equipm,Barbell Incline Shoulders Press,0.71,yes
+Dumbbell Behind-the-Back Wrist Curl,vid_dumbbell_behind_back_wrist_curl,dumbbell,had unlicensed animation,Specific 'behind-the-back' variant not found.,Dumbbell One arm Wrist Curl,0.71,no
+Incline Bench Pull,fedb_incline_bench_pull,adjustable_bench,never had a clip,Incline dumbbell row; candidates use different equipment or movement.,Band Incline Bench Press,0.71,yes
+Machine Seated Leg Raise Crunch,vid_lever_seated_leg_raise_crunch,ab_crunch_machine,had unlicensed animation,"Specific machine exercise, no match found.",Decline Bent Leg Reverse Crunch,0.71,no
+Stride Jump Crossover,fedb_stride_jump_crossover,cable_machine,never had a clip,a lateral box jump is a different movement,Arm crossover,0.71,yes
+Alternating Deltoid Raise,alternating_deltoid_raise,dumbbell,never had a clip,No candidate matches alternating dumbbell front deltoid raise.,Alternating Leg Lifts,0.70,yes
+Alternating Renegade Row,alternating_renegade_row,kettlebell,never had a clip,No candidate matches kettlebell renegade row. Dumbbells are different equipment.,Plate Alternating Deadstop Row,0.70,yes
+Bodyweight Mid Row,bodyweight_mid_row,,never had a clip,Specific body position with legs over apparatus not matched by candidates.,Bodyweight Windmill,0.70,yes
+Cable Seated Row - Wide Grip,vid_cable_seated_row_wide_grip,cable_machine,had unlicensed animation,not asked,Cable Underhand Pulldown Wide Grips,0.70,no
+Chin-to-Chest Stretch,vid_stretching_chin_to_chest_stretch,,had unlicensed animation,"Specific neck stretch with hand position, no match.",Bent Arm Chest Stretch,0.70,no
+Inverted Row Between Chairs,vid_inverted_row_between_chairs,,had unlicensed animation,not asked,Dips between Chairs,0.70,no
+Rack Delivery,fedb_rack_delivery,squat_rack,never had a clip,No candidate matches the specific barbell rack delivery drill.,Back lever,0.70,yes
+Reverse Band Box Squat,fedb_reverse_band_box_squat,plyo_box,never had a clip,"Reverse band is a specific variant, changing resistance profile.",Resistance Band Squat,0.70,yes
+Seated Band Hamstring Curl,fedb_seated_band_hamstring_curl,leg_curl,never had a clip,No 'Seated Band Hamstring Curl'; 'Resistance Band Leg Curl' is too general.,Cable Hamstring Curl,0.70,yes
+Smith Machine Bent Over Row,fedb_smith_machine_bent_over_row,smith_machine,never had a clip,No candidate matches smith machine and bent-over row.,Cable Bent Over Row,0.70,yes
+Dumbbell Bench Press with Neutral Grip,fedb_dumbbell_bench_press_with_neutral_grip,bench_press,never had a clip,"Flat bench, dumbbell, neutral grip press not matched.",Dumbbell Bench Press,0.69,yes
+Lying Hip Lift on a Stability Ball,vid_lying_hip_lift_on_stability_ball,stability_ball,had unlicensed animation,No candidate matches hip lift specifically on stability ball.,Bent knee Lying Twist (On Stability Ball),0.69,no
+Medicine Ball Wall Sit-Up,vid_medicine_ball_sit_up_wall,medicine_ball,had unlicensed animation,a chest throw is not a wall sit-up,Exercise Ball Wall Squat,0.69,no
+Reverse Plate Curls,fedb_reverse_plate_curls,weight_plates,never had a clip,Candidates use different equipment or are named variants.,Reverse Plank,0.69,yes
+Seated Wide Angle Pose Sequence,vid_stretching_seated_wide_angle_pose_sequence,,had unlicensed animation,not asked,Extended Side Angle Pose,0.69,no
+Wrist Circles,vid_stretching_wrist_circles,,had unlicensed animation,No candidate describes wrist circles movement.,leg lift circles,0.69,no
+Box Squat with Chains,fedb_box_squat_with_chains,plyo_box,never had a clip,chains are absent from the library,Normal Squat Smith Machine,0.68,yes
+Cable Rear Delt Row with a Rope,vid_cable_rear_delt_row_with_rope,cable_machine,had unlicensed animation,No candidate matches cable rear delt row with rope attachment.,Cable Face Pull With Rope,0.68,no
+Incline Leg Hip Raise,vid_incline_leg_hip_raise,adjustable_bench,had unlicensed animation,No candidate specifies incline or hip lift on bench.,Band Incline Y Raise,0.68,no
+Barbell Bench Press - Medium Grip,barbell_bench_press_medium_grip,bench_press,never had a clip,not asked,Barbell Wide Bench Press,0.67,yes
+Cable One-Arm Twisting Seated Row,vid_cable_one_arm_twisting_seated_row,cable_machine,had unlicensed animation,"No candidate matches cable, one-arm, twisting, and seated row.",Cable One Arm Bent over Row,0.67,no
+Hip Circles,vid_stretching_hip_circles_stretch,,had unlicensed animation,No candidate matches standing bodyweight hip circles.,Ankle circles,0.67,no
+Machine Reverse-Grip T-Bar Row,vid_lever_reverse_t_bar_row,t_bar_row,had unlicensed animation,not asked,Band Lying Reverse Grip Row,0.67,no
+Machine Shrug,vid_lever_shrug,,had unlicensed animation,No candidate is a generic 'machine shrug' or specific variant.,Machine Fly,0.67,no
+One-Arm Medicine Ball Slam,fedb_one-arm_medicine_ball_slam,medicine_ball,never had a clip,Unilateral slam. Candidates are bilateral or different movements/equipment.,Medicine Ball Jumps,0.67,yes
+Scapular Dip,vid_scapula_dips,dip_station,had unlicensed animation,All dip candidates involve elbow bend; scapula push-up is different position.,Scapula push up,0.67,no
+Sled Drag - Harness,sled_drag_harness,leg_press,never had a clip,No candidate matches sled drag with harness; all are pushes or different equipme,Sled Drag and Row,0.67,yes
+Weighted Leg Extension Crunch,vid_weighted_leg_extension_crunch,,had unlicensed animation,"Specific weighted crunch with leg extension, no match.",Lever Leg Extension,0.67,no
+Double Kettlebell Alternating Hang Clean,fedb_double_kettlebell_alternating_hang_clean,kettlebell,never had a clip,Specific double kettlebell alternating hang clean; candidates are different move,Dumbbell Alternating Arnold Press,0.66,yes
+Body Tricep Press,fedb_body_tricep_press,,never had a clip,"Specific bodyweight tricep press against a bar, no match found.",Band Leg Press,0.65,yes
+Dumbbell Palm-Rotational Bent-Over Row,vid_dumbbell_palm_rotational_bent_over_row,dumbbell,had unlicensed animation,not asked,Dumbbell Bent-Over Reverse Row,0.65,no
+Glute Ham Raise,fedb_glute_ham_raise,back_extension,never had a clip,"Specific GHD machine exercise, no match found.",Plate Lateral Raise,0.65,yes
+Glute Kickback,fedb_glute_kickback,glute_kickback_machine,never had a clip,Bodyweight kneeling glute kickback; candidates use equipment or different moveme,Dumbbell Kickback,0.65,yes
+Lying Machine Squat,fedb_lying_machine_squat,hack_squat_machine,never had a clip,"Specific lying machine squat; candidates are different machines, positions, or m",Hack Squat Machine Squat,0.65,yes
+Rear Decline Bridge,vid_rear_decline_bridge,,had unlicensed animation,No candidate matches a reverse plank/bridge with elevated feet.,Barbell Decline Shrug,0.65,no
+Reverse-Grip Pull-Up,vid_reverse_grip_pull_up,pullup_bar,had unlicensed animation,not asked,Close-reverse Grip Chin-Up,0.65,no
+Sled Overhead Backward Walk,sled_overhead_backward_walk,leg_press,never had a clip,"No candidate matches sled, overhead, and backward walk combination.",Cable Overhead Curl,0.65,yes
+Incline Walk,treadmill_incline_walk,treadmill,never had a clip,No treadmill incline walk; 'Treadmill walk' lacks incline.,Band Incline Fly,0.64,no
+Narrow Stance Hack Squats,narrow_stance_hack_squats,hack_squat_machine,never had a clip,"Narrow stance is a specific variant, not general hack squat.",Landmine Hack Squat,0.64,yes
+Cable Seated Row - Parallel Grip,vid_cable_seated_row_parallel_grip,cable_machine,had unlicensed animation,not asked,Cable Seated rear lateral raise,0.63,no
+Crunch on a Bench,vid_crunch_on_bench,adjustable_bench,had unlicensed animation,All crunch candidates are on different equipment or variants.,Chest Dip on Bench,0.63,no
+Heavy Bag Thrust,fedb_heavy_bag_thrust,punching_bag,never had a clip,No candidate matches the rotational heavy bag pushing movement.,Heavy Bag Sled Drag,0.63,yes
+Bottoms Up,fedb_bottoms_up,,never had a clip,No exact match; 'half rep' is a named variant.,Bottoms-Up half rep,0.62,yes
+Feet and Ankle Stretch,vid_stretching_feet_and_ankles_stretch,,had unlicensed animation,"No candidate matches kneeling, sitting on heels, feet flat.",dead hang stretch,0.62,no
+Hip Extension with Bands,fedb_hip_extension_with_bands,resistance_bands,had unlicensed animation,"""Bent-over"" is a different body position/variant for hip extension.",Tricep Extension Machine,0.62,yes
+Pilates Hundred,vid_hundred_pilates,,had unlicensed animation,No candidate matches arm pumping with elevated legs.,Plate Press,0.62,no
+Smith Machine Behind the Back Shrug,fedb_smith_machine_behind_the_back_shrug,smith_machine,never had a clip,"No candidate matches smith machine, behind-back, and shrug.",biceps stretch behind the back,0.62,yes
+Box Squat with Bands,fedb_box_squat_with_bands,resistance_bands,never had a clip,"No candidate includes barbell, box, and resistance bands.",Normal Squat Smith Machine,0.61,yes
+Leverage Iso Row,leverage_iso_row,seated_row_machine,never had a clip,Different equipment (leverage machine vs. cable/free weight).,Sled Drag and Row,0.61,yes
+Pilates Corkscrew,vid_corkscrew_pilates,,had unlicensed animation,"No candidate matches lying, circling both legs together.",Plate Car Driver,0.61,no
+Sitting Bent-Over Back Stretch,vid_stretching_sitting_bent_over_back_stretch,,had unlicensed animation,No candidate matches sitting bent-over back stretch.,Crouching Heel Back Calf Stretch,0.61,no
+Machine Standing Rear Kick,vid_lever_standing_rear_kick,glute_kickback_machine,had unlicensed animation,"No candidate matches machine, standing, and rear kick.",Cable Standing Crunch,0.60,no
+Seated Twist - Straight Arm,vid_seated_twist_straight_arm,,had unlicensed animation,a russian twist is done lying with feet up; ours is seated upright with arms extended,Band Wrist Curl Single Arm,0.60,no
+Band Twist - Up and Down,vid_band_twist_up_down,resistance_bands,had unlicensed animation,Cable variant is different equipment; other movements differ.,Band Fixed Back Underhand Pulldown,0.59,no
+Cross Over - With Bands,fedb_cross_over_-_with_bands,resistance_bands,never had a clip,No candidate clearly describes a band-resisted chest crossover/fly.,Bent-over Row with bar,0.58,yes
+Decline Close-Grip Bench To Skull Crusher,fedb_decline_close-grip_bench_to_skull_crusher,adjustable_bench,never had a clip,"Specific compound movement with barbell, no exact match.",Decline Bench Full Sit up,0.58,yes
+Pilates Jackknife,vid_jackknife_pilates,,had unlicensed animation,No candidate matches specific Pilates jackknife movement.,Plate Deadlift,0.58,no
+Wrist Roller,fedb_wrist_roller,foam_roller,never had a clip,No candidate uses a wrist roller as equipment.,Band Wrist Curl Single Arm,0.58,yes
+Lying T-Bar Row,lying_t_bar_row,t_bar_row,had unlicensed animation,Different equipment (T-bar machine vs. barbell).,Laying Lateral Raise,0.57,yes
+Machine T-Bar Row,vid_lever_t_bar_row,t_bar_row,had unlicensed animation,not asked,Machine Fly,0.57,no
+Pull-Up - Wide Grip Behind the Neck,vid_pull_up_wide_back_grip,pullup_bar,had unlicensed animation,not asked,pull up wide grip front view,0.57,no
+Spell Caster,vid_spell_caster,dumbbell,had unlicensed animation,"Unique standing dumbbell torso rotation, no match.",Barbell Thruster,0.57,no
+Band Straight-Back Seated Row,vid_band_straight_back_seated_row,resistance_bands,had unlicensed animation,"No candidate matches band, two-arm, straight-back, and seated row.",Band Squat Row,0.56,no
+Barbell Curls Lying Against An Incline,barbell_curls_lying_against_an_incline,barbell,never had a clip,No candidate matches barbell curl lying against an incline.,Barbell Lying extension,0.56,yes
+Bench Press with Chains,bench_press_with_chains,bench_press,never had a clip,not asked,Band Bench Press,0.56,yes
+Bosu Ball Cable Crunch With Side Bends,bosu_ball_cable_crunch_with_side_bends,cable_machine,never had a clip,"No candidate combines bosu ball, cable, crunch, and side bends.",Plate Pinch Grip Side Bend,0.56,yes
+Box Skip,fedb_box_skip,plyo_box,never had a clip,Skipping over boxes for height. Candidates are jumps onto boxes or generic.,Body Slide,0.56,yes
+Machine Shoulder (Military) Press,fedb_machine_shoulder_military_press,shoulder_press_machine,never had a clip,a Smith machine is not the plate-loaded shoulder press machine,Barbell Standing Military Press,0.56,yes
+Leg Raise Hip Lift,vid_leg_raise_hip_lift,,had unlicensed animation,No candidate explicitly describes hip lift from vertical legs.,Dip Leg Raise on couch,0.55,no
+Band One-Arm Twisting Seated Row,vid_band_one_arm_twisting_seated_row,resistance_bands,had unlicensed animation,"No candidate matches band, one-arm, twisting, and seated row.",Cable One Arm Bent over Row,0.54,no
+Bench Sprint,bench_sprint,plyo_box,never had a clip,"a bench sprint is fast alternating foot taps, not step-ups",Bench Pull-ups,0.54,yes
+Seated Twist Stretch - Straight Arm,vid_stretching_seated_twist_straight_arm,,had unlicensed animation,"Specific seated straight-arm torso stretch, no match.",cable upright row with straight bar,0.54,no
+Single Leg Stretch - Bent Knee,vid_stretching_single_leg_stretch_bent_knee,,had unlicensed animation,No candidate matches dynamic alternating bent-knee stretch with head up.,Side Chest Stretch On Wall,0.54,no
+Extended Range One-Arm Kettlebell Floor Press,fedb_extended_range_one-arm_kettlebell_floor_press,kettlebell,never had a clip,No 'Kettlebell One-Arm Floor Press' match; dumbbell is different equipment.,Single Kettlebell Sled Push,0.53,yes
+Hammer-Grip Pull-Up,vid_hammer_grip_pull_up,pullup_bar,had unlicensed animation,not asked,Kipping Pull Up,0.53,no
+Rocky Pull-Ups/Pulldowns,rocky_pull_ups_pulldowns,lat_pulldown,never had a clip,"Rocky pull-ups are a specific variant, not a generic wide grip pull-up.",Cable Pulldown,0.53,yes
+Knee/Hip Raise On Parallel Bars,fedb_knee_hip_raise_on_parallel_bars,dip_station,never had a clip,No candidate matches knee/hip raise on parallel bars.,lateral raises on cable machine,0.52,yes
+Rope Climb,fedb_rope_climb,battle_ropes,never had a clip,No candidate depicts the act of climbing a rope.,mountain climbers,0.52,yes
+Jump Step-Up,vid_jump_step_up,plyo_box,had unlicensed animation,No candidate matches jump step-up movement; variants are different.,Dumbbell Single Leg Step-Up,0.51,no
+Full Range-Of-Motion Lat Pulldown,full_range_of_motion_lat_pulldown,lat_pulldown,never had a clip,Specific crisscrossed grip and hand rotation not matched by candidates.,Cable Close Grip Front Lat Pulldown,0.50,yes
+Bench Press - Powerlifting,bench_press_powerlifting,bench_press,never had a clip,not asked,Chest Bench Press Correct stance,0.48,yes
+Stairmaster,fedb_stairmaster,stair_climber,never had a clip,No candidate is a Stairmaster machine exercise.,Plate Thruster,0.48,yes
+Otis-Up,vid_otis_ups,weight_plates,had unlicensed animation,"Specific sit-up with overhead plate press, no match.",Assisted Sit-Up,0.45,no
+Hip Flexor Stretch - Rear Foot Elevated,vid_stretching_hip_flexor_stretch_rear_foot_elevated,,had unlicensed animation,No candidate specifies rear foot elevated on bench.,Dumbbell Goblet Split Squat Front Foot Elevanted,0.44,no
+Split Jackknife Crunch,vid_jack_split_crunches,,had unlicensed animation,"No candidate matches split leg, reaching crunch.",Band Bicycle Crunch,0.44,no
+Cable Hammer Curls - Rope Attachment,cable_hammer_curls_rope_attachment,cable_machine,never had a clip,No cable hammer curl with rope; candidates are different equipment or variants.,Cable Face Pull With Rope,0.39,yes

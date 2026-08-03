@@ -61,10 +61,10 @@ void main() {
       // the 219 references is now an object key rather than a url — so this
       // also pins that the parser did not quietly start dropping the ones it
       // cannot recognise as a link.
-      expect(parsed.where((e) => e.video.isNotEmpty), hasLength(337));
+      expect(parsed.where((e) => e.video.isNotEmpty), hasLength(355));
       // 329 -> 33 two-body entries: the scaffold filmed nearly everything
       // twice and the purchased pack often films a movement once.
-      expect(parsed.where((e) => e.video.length == 2), hasLength(80));
+      expect(parsed.where((e) => e.video.length == 2), hasLength(85));
       for (final e in parsed.where((e) => e.video.isNotEmpty)) {
         expect(e.video.keys, everyElement(anyOf('girl', 'men')), reason: e.id);
       }
@@ -144,7 +144,7 @@ void main() {
               .map(ExerciseItem.fromJson)
               .toList();
       final withClips = rows.where((e) => e.video.isNotEmpty);
-      expect(withClips, hasLength(337));
+      expect(withClips, hasLength(355));
       expect(withClips.where((e) => e.playableVideoFor(null) == null), isEmpty,
           reason: 'an exercise with a clip that refuses to play it');
     });

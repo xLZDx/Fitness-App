@@ -1,0 +1,30 @@
+section,item,value,note
+ships,vendor catalog entries,1887,all licensed
+ships,vendor entries playing a clip,1887,100%
+ships,legacy catalog entries,511,
+ships,legacy entries playing a clip,355,69%
+ships,total exercises shown to the user,2242,"all licensed, all animation"
+ships,legacy half switchable off (H3),yes,"with it off: 1887, all vendor"
+bucket,objects in the private licensed bucket,2577,
+bucket,object keys referenced by both catalogs,2541,
+bucket,referenced but MISSING from the bucket,0,nothing 404s on the phone
+bucket,in bucket but referenced by neither,36,34 duplicate renders + 1 anatomy demo + 2 real gaps
+gap,Barbell front raise,not in catalog,"present in the pack, never imported"
+gap,cable machine high to low,not in catalog,catalog has only the opposite Low to High
+vendor_check,entries with a clip,1887/1887,
+vendor_check,missing a poster,0,
+vendor_check,poster missing for one body,0,
+vendor_check,poster path present but file absent on disk,0,
+vendor_check,missing Russian translation,0,
+vendor_check,Russian step-count mismatch,0,
+vendor_check,carries a muscle tag,1705/1887,182 deliberately untagged
+legacy_progress,after exact name-match import,142,"101 of them half-converted, one body only"
+legacy_progress,after removing the unlicensed scaffold,186,
+legacy_progress,after semantic re-match round one,337,
+legacy_progress,after round two (failed batch re-asked),355,
+correction,Recumbent Bike verdict,WRONG,I claimed no stationary bike existed; Stationary Exercise Bike does. Search output was truncated at 20 of 29 hits
+remaining,exercises with no clip,156,
+remaining,"of those, previously played the unlicensed scaffold",80,
+remaining,"of those, never had a clip at any point",76,
+remaining,"of those, lost a LICENSED clip",0,
+remaining,closeness >= 0.75 to a vendor clip,46,where a false negative would hide - review these first
