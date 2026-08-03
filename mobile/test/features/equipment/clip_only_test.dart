@@ -138,18 +138,22 @@ void main() {
       }
     });
 
-    test('the gap is 146 and is not hidden behind a still', () {
+    test('the gap is 325 and is not hidden behind a still', () {
       // A count, so that "we added clips" and "we stopped showing the gap" can
-      // never be confused for one another. 365 shown of 511; every one of the
-      // 146 dropped is an exercise we owe footage for, listed in
-      // core/bundle_import_report.csv.
+      // never be confused for one another.
+      //
+      // 365 -> 186 shown on 2026-08-03, and the drop is the point rather than
+      // a regression: 324 of those 365 were playing clips from an unlicensed
+      // Drive scaffold that predates the purchased pack, 101 of them on one
+      // body only. Removing them is what "only vendor resources" means. The
+      // per-exercise reasoning is core/CLIP_LICENCE_AUDIT_2026-08-03.md.
       expect(rows, hasLength(511));
-      expect(withDemonstration(rows), hasLength(365));
+      expect(withDemonstration(rows), hasLength(186));
     });
 
     test('every dropped entry really had no clip, not merely no poster', () {
       final dropped = rows.where((e) => e.playableVideoFor(null) == null);
-      expect(dropped, hasLength(146));
+      expect(dropped, hasLength(325));
       for (final e in dropped) {
         expect(e.video.values.where((u) => !u.contains(ExerciseItem.unresolvedHost)),
             isEmpty,

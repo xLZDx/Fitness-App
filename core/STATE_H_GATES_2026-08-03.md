@@ -21,6 +21,8 @@ An exercise the app cannot play is an exercise the app does not show.
 - Player shows a clip or the honest "no video" card. Both photograph branches
   removed; `ExerciseDemo` deleted as dead code.
 - Legacy catalog 511 → 365 shown. The 146 are hidden, **not deleted**.
+  (365 → 186 later the same day, when the unlicensed scaffold came out — see
+  the licence-audit section below.)
 - 1002 tests, 0 failures.
 
 **Do not "fix" the 146 by cutting them.** Measured: 52 have a vendor candidate
@@ -140,6 +142,22 @@ not touch.
 Not done here, and worth naming: `_attempted` in the scanner is widget state
 that duplicates what the controller already knows. It works; it is the kind of
 duplication that goes wrong later.
+
+## After H5 — the licence audit that the 48 turned into
+
+Reviewing the 48 subset candidates surfaced something bigger than the 48:
+**324 of the 511 legacy entries were still serving clips from the unlicensed
+Drive scaffold**, over a bucket that grants `objectViewer` to `allUsers`. 101
+of them were half-converted — one body licensed, the other not — which is why
+`526dfcf`'s "142 exercises play licensed clips" was true and still misleading.
+
+Full write-up, with the frame-by-frame reasoning for each of the 48:
+`core/CLIP_LICENCE_AUDIT_2026-08-03.md` (+ CSV twin, + `core/subset_verdicts.csv`).
+
+Shipped with it: `relicense_legacy_catalog.py`, `sweep_orphan_posters.py`.
+Legacy catalog 142 → **186 licensed, 0 unlicensed**; 498 poster stills deleted
+(2.9 MB), because a poster is cut from its clip and a still of an unlicensed
+clip is unlicensed footage in the APK.
 
 ## Not touched, waiting on the operator
 

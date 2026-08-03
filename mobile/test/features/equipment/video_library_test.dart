@@ -94,20 +94,21 @@ void main() {
       // Counts, not ratios, because losing one gender is exactly the kind of
       // regression a ratio would round away.
       //
-      // Moved 343 -> 365 by the licensed import of 2026-08-02: 142 exercises
-      // now point at the purchased library and 22 of them had no clip at all
-      // before. `one` grew from 33 to 36 because the bundle filmed some
-      // movements on a single body.
+      // Moved 343 -> 365 by the licensed import of 2026-08-02, then -> 186 on
+      // 2026-08-03 when the unlicensed scaffold was removed. `both` collapsed
+      // from 329 to 33 because the scaffold was the half that had two bodies:
+      // it filmed nearly everything twice, and the purchased pack often films
+      // a movement once. So most entries now legitimately carry a single body,
+      // and `ExerciseItem.playableVideoFor` falls back across genders --
+      // deliberately, since the two models differ by hair and a top.
       //
-      // Only exact name matches were applied. 48 subset candidates are strong
-      // but unproven and sit in core/bundle_import_report.csv awaiting an eye
-      // that knows a front squat from a back squat; `--include-subset` applies
-      // them and moves these three numbers.
+      // The 48 subset candidates were judged one at a time and applied; the
+      // reasoning per exercise is core/subset_verdicts.csv.
       final both = withVideo().where((e) => (e['video'] as Map).length == 2);
       final one = withVideo().where((e) => (e['video'] as Map).length == 1);
-      expect(both, hasLength(329));
-      expect(one, hasLength(36));
-      expect(withVideo(), hasLength(365));
+      expect(both, hasLength(33));
+      expect(one, hasLength(153));
+      expect(withVideo(), hasLength(186));
 
       for (final e in both) {
         final v = (e['video'] as Map).cast<String, dynamic>();
@@ -179,8 +180,9 @@ void main() {
       // Pinned so a botched re-import that quietly reverts every licensed
       // entry to a public url still passes every shape check above and fails
       // right here.
-      expect(licensedCount, 166, reason: 'licensed object keys');
-      expect(publicCount, 528, reason: 'public urls still being served');
+      expect(licensedCount, 219, reason: 'licensed object keys');
+      expect(publicCount, 0,
+          reason: 'a public url here is unlicensed footage being served again');
     });
 
     test('no exercise ships without text in either language', () {
@@ -220,22 +222,22 @@ void main() {
       final stretches = exercises.where((e) => e['isStretch'] == true).toList();
       expect(stretches, hasLength(65));
 
-      // The clip check applies to the 61 from the library. The four widened
-      // ones are older rows and one of them predates the video library
-      // entirely, so demanding a clip of them would be asserting something
-      // that was never true.
-      const widened = {
-        'all_fours_quad_stretch',
-        'vid_corkscrew_pilates',
-        'vid_hundred_pilates',
-        'vid_jackknife_pilates',
-      };
+      // This used to demand a clip of all 61 that came from the library. That
+      // held while the unlicensed scaffold was still being served: the
+      // scaffold is where the stretching clips came from, and removing it on
+      // 2026-08-03 left 28 of the 65 with a licensed clip.
+      //
+      // The category count above is the invariant worth keeping -- it catches
+      // a group file that stops being merged. What each row can DEMONSTRATE is
+      // the clip-only rule's business, and it hides the other 37 rather than
+      // showing them empty.
+      expect(stretches.where((e) => e['video'] != null), hasLength(28));
       for (final e in stretches) {
-        if (!widened.contains(e['id'])) {
-          expect(e['video'], isNotNull,
-              reason: '${e['id']} is a stretch with no clip to show');
-        }
         expect((e['muscles'] as List), isNotEmpty, reason: '${e['id']}');
+        for (final ref in ((e['video'] as Map?) ?? const {}).values) {
+          expect('$ref'.startsWith('http'), isFalse,
+              reason: '${e['id']} is back on an unlicensed url');
+        }
       }
     });
 
@@ -273,9 +275,16 @@ void main() {
         expect(ids, contains(legacy),
             reason: '$legacy disappeared in the merge');
       }
-      // …and the ones that gained a clip really did gain it.
-      final chinUp = exercises.firstWhere((e) => e['id'] == 'fedb_chin-up');
-      expect(chinUp['video'], isNotNull);
+      // …and the ones that gained a licensed clip really did gain it.
+      // This used to name `fedb_chin-up`, which had a scaffold clip and no
+      // licensed one, so it now legitimately has no video at all. Naming an
+      // exercise that survived the relicensing is the same check without the
+      // false alarm.
+      final squat =
+          exercises.firstWhere((e) => e['id'] == 'fedb_bodyweight_squat');
+      expect(squat['video'], isNotNull);
+      expect((squat['video'] as Map).values.every((v) => !'$v'.startsWith('http')),
+          isTrue);
     });
 
     test('exercises with no clip still have their photographs', () {
@@ -283,12 +292,13 @@ void main() {
       // ever dropped `frames`, they would render as blank cards and this is
       // the only place that would notice.
       //
-      // 168 -> 146 with the licensed import of 2026-08-02: 22 of these had no
-      // clip at all and now have one. The remaining 146 are the honest gap.
-      // Many have a subset or fuzzy vendor candidate that was deliberately not
-      // applied — see core/bundle_import_report.csv.
+      // 168 -> 146 with the licensed import of 2026-08-02, then -> 325 on
+      // 2026-08-03 when the unlicensed Drive scaffold came out. Most of those
+      // 325 are recoverable: the matcher only ever compared filenames, and it
+      // chose `Archer push up` for "Push-Up" while `Normal Push-up` sat in the
+      // same library. See core/CLIP_LICENCE_AUDIT_2026-08-03.md.
       final stillsOnly = exercises.where((e) => e['video'] == null).toList();
-      expect(stillsOnly, hasLength(146));
+      expect(stillsOnly, hasLength(325));
       const noImageryByDesign = {
         'treadmill_warmup_walk',
         'treadmill_incline_walk',
@@ -307,7 +317,16 @@ void main() {
               (e['imageUrls'] as List? ?? const []).isEmpty)
           .map((e) => e['id'] as String)
           .toSet();
-      expect(blank.difference(noImageryByDesign), isEmpty);
+      // Every hand-authored cardio entry must still be in here -- that set was
+      // the reason this test exists, and losing one would mean a rebuild had
+      // dropped it.
+      expect(noImageryByDesign.difference(blank), isEmpty);
+      // The rest of `blank` is what removing the unlicensed scaffold left
+      // behind: 168 exercises that had a clip and no photographs, and now have
+      // neither. They are hidden by the clip-only rule rather than shown
+      // empty, and they are the queue in
+      // core/CLIP_LICENCE_AUDIT_2026-08-03.md.
+      expect(blank, hasLength(168));
     });
   });
 
@@ -392,7 +411,7 @@ void main() {
     // exercises whose ONLY moving demonstration is the clip, and if a rebuild
     // ever loses their posters again this is where it shows.
 
-    test('293 exercises are demonstrated by the clip alone', () {
+    test('135 exercises are demonstrated by the clip alone', () {
       final videoOnly = exercises
           .where((e) =>
               e['video'] != null &&
@@ -400,33 +419,33 @@ void main() {
               (e['imageUrls'] as List? ?? const []).isEmpty &&
               e['videoUrl'] == null)
           .length;
-      expect(videoOnly, 293);
+      expect(videoOnly, 135);
     });
 
-    test('the library is part public, part licensed, and both are served', () {
+    test('every clip in the library is licensed', () {
       // This started life asserting the host was still a placeholder, written
       // to fail the day one was chosen. It did, on 2026-08-01. It then
       // asserted every url was on the real host, and failed again on
       // 2026-08-02 when the licensed library arrived somewhere else — which is
       // the same note doing the same job a second time.
       //
-      // The library is now genuinely two things and will be for a while: 528
-      // public urls from the original drop, and 166 object keys signed per
-      // request because the vendor forbids permanent downloadable links. This
-      // pins the split so that finishing the migration is a deliberate edit
-      // here rather than something that drifts.
+      // It then asserted the library was two things at once -- 528 public
+      // urls from the original drop plus 166 licensed object keys -- and said
+      // the split was pinned "so that finishing the migration is a deliberate
+      // edit here rather than something that drifts". This is that edit.
+      //
+      // The public half was never licensed: those clips came from a public
+      // Drive folder and the pack that permits hosting was bought afterwards.
+      // Every one of them is gone, and a public url reappearing here means
+      // unlicensed footage is being served again -- which is why this asserts
+      // zero rather than a smaller number.
       final refs = [
         for (final e in withVideo())
           ...(e['video'] as Map).values.cast<String>(),
       ];
-      expect(refs, hasLength(694));
-      expect(refs.where((u) => u.startsWith(base)), hasLength(528));
-      expect(refs.where((u) => u.startsWith('exercises/')), hasLength(166));
-      expect(
-        refs.every((u) => u.startsWith(base) || u.startsWith('exercises/')),
-        isTrue,
-        reason: 'a reference that is neither can never be played',
-      );
+      expect(refs, hasLength(219));
+      expect(refs.where((u) => u.startsWith(base)), isEmpty);
+      expect(refs.where((u) => u.startsWith('exercises/')), hasLength(219));
     });
   });
 }

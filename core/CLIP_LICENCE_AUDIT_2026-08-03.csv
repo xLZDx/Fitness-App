@@ -1,0 +1,37 @@
+section,item,before,after,note
+finding,legacy entries fully licensed,41,,"the purchased pack, applied 2026-08-02"
+finding,legacy entries MIXED (one body licensed one scaffold),101,,"the importer fills one body at a time and nothing checked the other"
+finding,legacy entries fully unlicensed scaffold,223,,"clips from a public Drive folder that predate the purchased pack"
+finding,legacy entries with no clip at all,146,,"hidden by the H1 clip-only rule"
+finding,TOTAL serving unlicensed footage,324,0,"the reason for this whole pass"
+finding,bundled poster stills cut from unlicensed clips,528,0,"a poster IS the clip's first frame, so these were unlicensed footage in the APK"
+finding,public bucket traidingbot-b4061-videos-eu,"677 clips, allUsers objectViewer",unchanged,"STILL UP - needs the operator's word"
+verdicts,subset candidates accepted as matched,,31,"the name-matcher's pick was right"
+verdicts,subset candidates pointed at a DIFFERENT vendor clip,,13,"the correct clip was in the same library under another name"
+verdicts,subset candidates rejected,,4,"no clip in the library is this exercise"
+replacement,Push-Up,Archer push up,Normal Push-up,"archer is a much harder unilateral variant"
+replacement,Pullups,Kipping Pull Up,pull up normal grip,"kipping is a different movement"
+replacement,Military Press,military press bodyweight,Barbell Standing Military Press,"ours is a barbell press"
+replacement,Lying Leg Curls,bodyweight lying leg curl,lying leg curl machine,"ours is the machine"
+replacement,Barbell Shrug,Barbell Silverback Shrug,barbell shrugs,"frame: silverback is a BENT-OVER shrug"
+replacement,Dumbbell Shrug,Dumbbell Silverback Shrug,dumbbell shrugs,"frame: silverback is a BENT-OVER shrug"
+replacement,Front Plank,Unilateral Front Plank,plank on elbows,"unilateral is a different exercise"
+replacement,Dumbbell Fly,Dumbbell floor Fly,dumbbell fly flat bench,"the floor limits the range of motion"
+replacement,Dumbbell Lunge,Dumbbell Curtsy Lunge,Dumbbell Lunge Alternating on the spot,"curtsy is a different movement pattern"
+replacement,Dumbbell Deadlift,Dumbbell Staggered Deadlift,Dumbbell close Legs Deadlift,"frames: the candidate was a staggered stance"
+replacement,Kettlebell Deadlift,Kettlebell Staggered Deadlift,Single Kettlebell Deadlift,"the candidate was a staggered stance"
+replacement,45-Degree Hyperextension,45 degree twisting hyperextension,45 degree hyperextension arms to chest,"the candidate was the twisting variant"
+replacement,Leg Press,Horizontal Leg Press,leg press machine normal stance,"frames: we were showing a Smith-machine improvisation; the vendor has a 45-degree sled"
+rejection,Close-Grip Dumbbell Press,,,"frames: the candidate is a sit-up while pressing. No dumbbell close-grip bench press in the library"
+rejection,Dumbbell Incline Hammer Press,,,"frames: the candidate is a SHOULDER press; ours is an incline chest press"
+rejection,Recumbent Bike,,,"the library has no recumbent or upright stationary bike, only air/assault bikes"
+rejection,Reverse-Grip Pull-Up,,,"the candidate was a lat PULLDOWN. No plain supinated pull-up exists in the library"
+result,legacy entries with a licensed clip,142 (101 only half),186,
+result,legacy entries serving unlicensed footage,324,0,
+result,legacy entries hidden by H1,146,325,
+result,poster stills on disk,3256,2758,
+result,APK weight from posters (MB),15.2,12.3,
+result,catalog the user sees,,"1887 vendor + 186 legacy","all licensed, all animation"
+open,public bucket still up,,,"677 unlicensed clips readable by allUsers; installed builds (1.0.0+14) still point at it"
+open,325 hidden legacy exercises,,,"many recoverable - the matcher only ever compared filenames; 268 remain unexamined (82 fuzzy, 186 no-match)"
+open,machine header photograph,,,"equipmentHeroImageProvider still draws imageUrls/frames - public-domain, so a consistency question not a licence one"

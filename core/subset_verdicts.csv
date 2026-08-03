@@ -1,0 +1,49 @@
+id,title,verdict,heuristic_pick,chosen_clip,vendor_stem,reason
+barbell_squat,Barbell Squat,accept,barbell full squat,barbell full squat,barbell full squat,"frame: barbell back squat, 'full' is depth"
+bench_dips,Bench Dips,accept,bench dip floor,bench dip on floor,bench dip floor,feet on the floor IS the standard bench dip
+vid_stretching_bridge_pose_setu_bandhasana,Bridge Pose,accept,bandhasana bridge pose setu,bridge pose setu bandhasana,bandhasana bridge pose setu,
+vid_cable_front_raise,Cable Front Raise,accept,bar cable front raise straight,cable front raises straight bar,bar cable front raise straight,
+vid_chin_ups_narrow_parallel_grip,Chin-Up - Narrow Parallel Grip,accept,chin grip narrow parallel ups,chin ups (narrow parallel grip),chin grip narrow parallel ups,
+fedb_close-grip_ez_bar_curl,Close-Grip EZ Bar Curl,accept,bar biceps close curl ezbar grip,ez bar biceps curl close grip,bar biceps close curl ezbar grip,
+fedb_dip_machine,Dip Machine,accept,dip machine triceps,triceps dip machine,dip machine triceps,
+vid_dumbbell_biceps_curl,Dumbbell Biceps Curl,accept,biceps curl dumbbell simultaneous,dumbbell simultaneous biceps curl,biceps curl dumbbell simultaneous,'simultaneous' = both arms = the plain curl
+vid_dumbbell_cross_body_hammer_curl,Dumbbell Cross-Body Hammer Curl,accept,2 body cross curl dumbbell hammer,dumbbell cross body hammer curl (version 2),2 body cross curl dumbbell hammer,
+vid_dumbbell_incline_biceps_curl,Dumbbell Incline Biceps Curl,accept,biceps curl dumbbell incline simultaneous,dumbbell incline biceps simultaneous curl,biceps curl dumbbell incline simultaneous,
+vid_dumbbell_incline_hammer_curl,Dumbbell Incline Hammer Curl,accept,curl dumbbell hammer incline simultaneous,dumbbell incline hammer simultaneous curl,curl dumbbell hammer incline simultaneous,
+fedb_dumbbell_one-arm_shoulder_press,Dumbbell One-Arm Shoulder Press,accept,2 arm dumbbell one press shoulder,dumbbell one arm shoulder press (version 2),2 arm dumbbell one press shoulder,
+vid_dumbbell_alternate_seated_biceps_curl,Dumbbell Seated Alternating Curl,accept,alternating biceps curl dumbbell seated,alternating biceps curl seated dumbbells,alternating biceps curl dumbbell seated,
+vid_dumbbell_single_leg_calf_raise,Dumbbell Single-Leg Calf Raise,accept,calf dumbbell leg raise single support wall,dumbbell single leg calf raise wall support,calf dumbbell leg raise single support wall,"the wall is balance support, not a different exercise"
+vid_dumbbell_bar_grip_sumo_squat,Dumbbell Sumo Squat,accept,bar dumbbell grip squat sumo,dumbbell bar grip sumo squat,bar dumbbell grip squat sumo,same filename as the clip we already show
+vid_ez_barbell_biceps_curl,EZ-Bar Biceps Curl,accept,bar biceps curl ezbar grip normal,ez bar biceps curl normal grip,bar biceps curl ezbar grip normal,
+vid_stretching_hip_flexor_and_quad_stretch,Hip Flexor and Quad Stretch,accept,flexor hip intermediate quad stretch,intermediate hip flexor and quad stretch,flexor hip intermediate quad stretch,
+vid_jump_rope,Jump Rope,accept,basic jump rope,jump rope basic jump,basic jump rope,
+vid_stretching_circles_knee_stretch,Knee Circles,accept,circles knee stretch,circles knee stretch,circles knee stretch,
+vid_stretching_kneeling_lat_stretch,Kneeling Lat Stretch,accept,floor kneeling lat stretch,kneeling lat floor stretch,floor kneeling lat stretch,
+fedb_leg_extensions,Leg Extensions,accept,extension leg lever,lever leg extension,extension leg lever,same filename as the clip we already show
+vid_stretching_middle_back_stretch,Middle Back Stretch,accept,back middle rotation stretch,middle back rotation stretch,back middle rotation stretch,
+fedb_muscle_up,Muscle Up,accept,bodyweight muscle,bodyweight muscle-up,bodyweight muscle,
+vid_stretching_neck_side_stretch,Neck Side Stretch,accept,backward forward neck side stretch turn,backward forward turn to side neck stretch,backward forward neck side stretch turn,a sequence that contains the side stretch; no side-only clip exists
+fedb_one_arm_dumbbell_preacher_curl,One Arm Dumbbell Preacher Curl,accept,arm curl dumbbell one preacher zottman,dumbbell one arm zottman preacher curl,arm curl dumbbell one preacher zottman,same filename as the clip we already show; our title just omits 'Zottman'
+fedb_plate_twist,Plate Twist,accept,plate russian twist,plate russian twist,plate russian twist,
+vid_stretching_seated_shoulder_flexor_depresor_retractor,Seated Shoulder Flexor and Retractor Stretch,accept,depressor flexor retractor seated shoulder stretch,seated shoulder flexor depressor retractor stretch,depressor flexor retractor seated shoulder stretch,
+vid_stretching_standing_wheel_rollout,Standing Wheel Rollout,accept,ab rollout standing wheel,standing ab wheel rollout,ab rollout standing wheel,
+vid_twisting_crunch,Twisting Crunch,accept,air crunch twisting,air twisting crunch,air crunch twisting,"frames: same movement, arms differ"
+fedb_upright_cable_row,Upright Cable Row,accept,bar cable row straight upright,cable upright row with straight bar,bar cable row straight upright,
+fedb_v-bar_pulldown,V-Bar Pulldown,accept,bar down lat pull v,v bar lat pull down,bar down lat pull v,
+fedb_close-grip_dumbbell_press,Close-Grip Dumbbell Press,reject,close dumbbell grip press shoulder sit,,,"frames: ours is a close-grip press lying on a bench, the candidate is a sit-up while pressing. No dumbbell close-grip bench press in the library"
+vid_dumbbell_incline_hammer_press,Dumbbell Incline Hammer Press,reject,dumbbell hammer incline press shoulder,,,"frames: the candidate is a SHOULDER press, ours is an incline chest press. No incline hammer chest press in the library"
+fedb_recumbent_bike,Recumbent Bike,reject,air bike,,,"the library has no recumbent or upright stationary bike at all, only air/assault bikes, which are a different machine"
+vid_reverse_grip_pull_up,Reverse-Grip Pull-Up,reject,down grip lat pull reverse,,,"the candidate was a lat PULLDOWN, not a pull-up. The library has no plain supinated pull-up, only close-grip and narrow-parallel variants"
+vid_45_degree_hyperextension,45-Degree Hyperextension,replace,45 hyperextension twisting,45 degree hyperextension arms to chest,45 arm chest hyperextension,the candidate was the TWISTING variant; the plain one exists
+vid_barbell_shrug,Barbell Shrug,replace,barbell shrug silverback,barbell shrugs,barbell shrugs,frame: 'Silverback' is a BENT-OVER shrug. The plain standing one exists
+vid_dumbbell_deadlift,Dumbbell Deadlift,replace,deadlift dumbbell staggered,dumbbell close legs deadlift,close deadlift dumbbell leg,frames: the candidate was a STAGGERED stance; close-legs matches our clip
+vid_dumbbell_fly,Dumbbell Fly,replace,dumbbell floor fly,dumbbell fly flat bench,bench dumbbell flat fly,"the candidate was a FLOOR fly, which limits the range of motion"
+vid_dumbbell_lunge,Dumbbell Lunge,replace,curtsy dumbbell lunge,dumbbell lunge alternating on the spot,alternating dumbbell lunge spot,"the candidate was a CURTSY lunge, a different movement pattern"
+vid_dumbbell_shrug,Dumbbell Shrug,replace,dumbbell shrug silverback,dumbbell shrugs,dumbbell shrugs,'Silverback' is a BENT-OVER shrug
+vid_front_plank_female,Front Plank,replace,front plank unilateral,plank on elbows,elbows plank,the candidate was a UNILATERAL plank
+vid_kettlebell_deadlift,Kettlebell Deadlift,replace,deadlift kettlebell staggered,single kettlebell deadlift,deadlift kettlebell single,the candidate was a STAGGERED stance
+leg_press,Leg Press,replace,horizontal leg press,leg press machine normal stance,leg machine normal press stance,"frames: our clip is a Smith-machine improvisation, the candidate a horizontal machine; the 45-degree sled is what 'leg press' means"
+fedb_lying_leg_curls,Lying Leg Curls,replace,bodyweight curl leg lying,lying leg curl machine,curl leg lying machine,the candidate was the BODYWEIGHT version; the machine version exists
+vid_military_press,Military Press,replace,bodyweight military press,barbell standing military press,barbell military press standing,the candidate was the BODYWEIGHT version
+fedb_pullups,Pullups,replace,kipping pull,pull up normal grip,grip normal pull,"the candidate was a KIPPING pull-up, a different movement; the strict one exists"
+vid_push_ups,Push-Up,replace,archer push,normal push-up,normal push,"the candidate was an ARCHER push-up, a much harder unilateral variant"

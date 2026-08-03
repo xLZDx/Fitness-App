@@ -54,13 +54,17 @@ void main() {
       final parsed = rows.map(ExerciseItem.fromJson).toList();
 
       expect(parsed, hasLength(511));
-      // 343 -> 365 with the licensed import of 2026-08-02. `fromJson` has to
-      // keep reading `video` whatever the values look like, and after the
-      // import 166 of them are object keys rather than urls — so this also
-      // pins that the parser did not quietly start dropping the ones it
+      // 343 -> 365 with the licensed import of 2026-08-02, then -> 186 on
+      // 2026-08-03 when the unlicensed Drive scaffold was removed from the
+      // catalog. `fromJson` has to
+      // keep reading `video` whatever the values look like, and every one of
+      // the 219 references is now an object key rather than a url — so this
+      // also pins that the parser did not quietly start dropping the ones it
       // cannot recognise as a link.
-      expect(parsed.where((e) => e.video.isNotEmpty), hasLength(365));
-      expect(parsed.where((e) => e.video.length == 2), hasLength(329));
+      expect(parsed.where((e) => e.video.isNotEmpty), hasLength(186));
+      // 329 -> 33 two-body entries: the scaffold filmed nearly everything
+      // twice and the purchased pack often films a movement once.
+      expect(parsed.where((e) => e.video.length == 2), hasLength(33));
       for (final e in parsed.where((e) => e.video.isNotEmpty)) {
         expect(e.video.keys, everyElement(anyOf('girl', 'men')), reason: e.id);
       }
@@ -122,11 +126,12 @@ void main() {
     test('the shipped catalog is playable now', () {
       // The inverse of what stood here until 2026-08-01, when the host was
       // chosen and this test failed on cue. Every exercise that carries a clip
-      // must now hand one to the player — a catalog that advertises 365 videos
+      // must now hand one to the player — a catalog that advertises 186 videos
       // and returns null for them is the state this whole file exists to
       // prevent going unnoticed.
       //
-      // 343 -> 365 with the licensed import of 2026-08-02. What
+      // 343 -> 365 with the licensed import, then -> 186 when the unlicensed
+      // scaffold came out on 2026-08-03. What
       // `playableVideoFor` returns for those 166 licensed entries is an object
       // key, not a url; it is `ClipUrlResolver` that turns it into something a
       // player can open. "Non-null" is still exactly the right assertion here,
@@ -139,7 +144,7 @@ void main() {
               .map(ExerciseItem.fromJson)
               .toList();
       final withClips = rows.where((e) => e.video.isNotEmpty);
-      expect(withClips, hasLength(365));
+      expect(withClips, hasLength(186));
       expect(withClips.where((e) => e.playableVideoFor(null) == null), isEmpty,
           reason: 'an exercise with a clip that refuses to play it');
     });

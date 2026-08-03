@@ -64,12 +64,17 @@ void main() {
     expect(ru.poster, s.poster, reason: 'the poster must survive too');
   });
 
-  test('almost all of them can show a clip', () {
-    // Worth pinning because it is the reason this chip is worth having: the
-    // mobility set came from the video library, so it is the best-demonstrated
-    // corner of the catalog.
+  test('a fair share of them can still show a clip', () {
+    // Was >85%, and that WAS the reason this chip was worth having: the
+    // mobility set came from the video library. It came from the UNLICENSED
+    // half of it -- the Drive scaffold that predates the purchased pack -- so
+    // removing that on 2026-08-03 took it to 43%.
+    //
+    // Kept as a floor rather than deleted: a rebuild that drops the stretching
+    // clips entirely is still a defect this notices, and the number goes back
+    // up as the rest are re-matched against the vendor library.
     final st = catalog.where((e) => e.isStretch).toList();
     final withVideo = st.where((e) => e.hasVideo).length;
-    expect(withVideo / st.length, greaterThan(0.85));
+    expect(withVideo / st.length, greaterThan(0.40));
   });
 }

@@ -25,6 +25,7 @@ agent doing a code task from reading a 776-line nonprofit strategy doc looking f
 | [DEBUGGING.md](DEBUGGING.md) | **Read first for any bug report.** Debug-daemon runbook — captures logs, errors, touches, screencaps per session. |
 | [PHASE_1B_FIREBASE_SETUP.md](PHASE_1B_FIREBASE_SETUP.md) | Firebase project wiring, `google-services.json`, auth setup |
 | [PHASE_4B_STRIPE_SETUP.md](PHASE_4B_STRIPE_SETUP.md) | Stripe **test-mode** price IDs and secret slots |
+| [CLIP_LICENCE_AUDIT_2026-08-03.md](CLIP_LICENCE_AUDIT_2026-08-03.md) | **Where every exercise clip comes from and whether we may host it.** Read before touching `exercises.json` or the video buckets. CSV twin beside it; per-exercise verdicts in `subset_verdicts.csv` |
 
 Also here: `context_baseline.csv` — measured AI-context cost over time, appended by
 `scripts/dev/measure_context.ps1`.
