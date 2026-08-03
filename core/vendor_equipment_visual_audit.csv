@@ -19,7 +19,7 @@ ea_5_sec_fist_against_chin,5 Sec Fist Against Chin,,none,1.0,,none,confirmed_no_
 ea_90_degree_heel_touch,90 Degree Heel Touch,,none,1.0,,none,confirmed_no_equipment,
 ea_90_degree_heels_touch,90 Degree Heels Touch,,none,1.0,,none,confirmed_no_equipment,
 ea_90_to_90_stretch,90 to 90 Stretch,,none,1.0,,none,confirmed_no_equipment,
-ea_ab_mat_sit_up,Ab Mat Sit-up,,Ab mat,1.0,,none,unresolved,
+ea_ab_mat_sit_up,Ab Mat Sit-up,,Ab mat,1.0,,Ab mat,resolved,"batch 3, registry expansion (52->67): "
 ea_ab_tuck,Ab Tuck,Dip Station,Dip Station,1.0,True,Dip station,resolved,
 ea_ab_wheel_all_the_way_out,AB Wheel All the Way Out,Ab wheel,Ab wheel,1.0,True,Ab wheel,resolved,
 ea_ab_wheel_halfway_out,AB Wheel Halfway Out,Ab wheel,Ab wheel,1.0,True,Ab wheel,resolved,
@@ -39,16 +39,16 @@ ea_across_chest_shoulder_stretch,Across Chest Shoulder Stretch,,none,1.0,,none,c
 ea_adductor_dynamic_stretch,Adductor Dynamic Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_adductor_stretch,Adductor Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_adductor_stretch_side_standing,Adductor Stretch Side Standing,,none,1.0,,none,confirmed_no_equipment,
-ea_agility_ladder_advanced_hop_position,Agility Ladder Advanced Hop Position,,Agility ladder,1.0,,none,unresolved,
-ea_agility_ladder_advanced_single_leg,Agility Ladder Advanced Single-leg,,agility ladder,1.0,,none,unresolved,
-ea_agility_ladder_advancing_laterally_switching_base,Agility Ladder Advancing Laterally Switching Base,,agility ladder,1.0,,none,unresolved,
-ea_agility_ladder_in_in_out_out,Agility Ladder in in Out Out,,agility ladder,1.0,,none,unresolved,
-ea_agility_ladder_in_in_out_out_moving_laterally,Agility Ladder in in Out Out Moving Laterally,,agility ladder,1.0,,none,unresolved,
-ea_agility_ladder_in_in_out_out_with_knee_lift,Agility Ladder in in Out Out with Knee Lift,,agility ladder,1.0,,none,unresolved,
-ea_agility_ladder_lateral_movement_in_in_out,Agility Ladder Lateral Movement in in Out,,agility ladder,1.0,,none,unresolved,
-ea_agility_ladder_lateral_movement_with_double_hop,Agility Ladder Lateral Movement with Double Hop,,agility ladder,1.0,,none,unresolved,
-ea_agility_ladder_skipping_1_touch,Agility Ladder Skipping 1 Touch,,agility ladder,1.0,,none,unresolved,
-ea_agility_ladder_skipping_2_touches,Agility Ladder Skipping 2 Touches,,agility ladder,1.0,,none,unresolved,
+ea_agility_ladder_advanced_hop_position,Agility Ladder Advanced Hop Position,,Agility ladder,1.0,,Agility ladder,resolved,"batch 3, registry expansion (52->67): "
+ea_agility_ladder_advanced_single_leg,Agility Ladder Advanced Single-leg,,agility ladder,1.0,,Agility ladder,resolved,"batch 3, registry expansion (52->67): "
+ea_agility_ladder_advancing_laterally_switching_base,Agility Ladder Advancing Laterally Switching Base,,agility ladder,1.0,,Agility ladder,resolved,"batch 3, registry expansion (52->67): "
+ea_agility_ladder_in_in_out_out,Agility Ladder in in Out Out,,agility ladder,1.0,,Agility ladder,resolved,"batch 3, registry expansion (52->67): "
+ea_agility_ladder_in_in_out_out_moving_laterally,Agility Ladder in in Out Out Moving Laterally,,agility ladder,1.0,,Agility ladder,resolved,"batch 3, registry expansion (52->67): "
+ea_agility_ladder_in_in_out_out_with_knee_lift,Agility Ladder in in Out Out with Knee Lift,,agility ladder,1.0,,Agility ladder,resolved,"batch 3, registry expansion (52->67): "
+ea_agility_ladder_lateral_movement_in_in_out,Agility Ladder Lateral Movement in in Out,,agility ladder,1.0,,Agility ladder,resolved,"batch 3, registry expansion (52->67): "
+ea_agility_ladder_lateral_movement_with_double_hop,Agility Ladder Lateral Movement with Double Hop,,agility ladder,1.0,,Agility ladder,resolved,"batch 3, registry expansion (52->67): "
+ea_agility_ladder_skipping_1_touch,Agility Ladder Skipping 1 Touch,,agility ladder,1.0,,Agility ladder,resolved,"batch 3, registry expansion (52->67): "
+ea_agility_ladder_skipping_2_touches,Agility Ladder Skipping 2 Touches,,agility ladder,1.0,,Agility ladder,resolved,"batch 3, registry expansion (52->67): "
 ea_air_bike,Air Bike,,none,1.0,,none,confirmed_no_equipment,
 ea_air_bike_crunch,Air Bike Crunch,,none,1.0,,none,confirmed_no_equipment,
 ea_air_bike_version_2,Air Bike (version 2),,none,1.0,,none,confirmed_no_equipment,
@@ -150,8 +150,8 @@ ea_back_stretch_standing_with_bench,Back Stretch Standing with Bench,,adjustable
 ea_backhand_raise,Backhand Raise,,none,1.0,,none,confirmed_no_equipment,
 ea_backward_abdominal_stretch,Backward Abdominal Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_backward_forward_turn_to_side_neck_stretch,Backward Forward Turn to Side Neck Stretch,,none,1.0,,none,confirmed_no_equipment,
-ea_balance_board_lateral_squat,Balance Board Lateral Squat,Balance Board,Balance Board,1.0,True,none,unresolved,
-ea_balance_board_version_2,Balance Board (version 2),Balance Board,Balance Board,1.0,True,none,unresolved,
+ea_balance_board_lateral_squat,Balance Board Lateral Squat,Balance Board,Balance Board,1.0,True,Balance board,resolved,"batch 3, registry expansion (52->67): "
+ea_balance_board_version_2,Balance Board (version 2),Balance Board,Balance Board,1.0,True,Balance board,resolved,"batch 3, registry expansion (52->67): "
 ea_ball_headlock_squat,Ball Headlock Squat,Exercise Ball,Exercise ball,1.0,True,Stability ball,resolved,
 ea_ball_sit_up,Ball Sit-up,Exercise Ball,Exercise Ball,1.0,True,Stability ball,resolved,
 ea_ball_slams,Ball Slams,,medicine ball,1.0,,Medicine ball,resolved,
@@ -662,7 +662,7 @@ ea_chair_pose,Chair Pose,,none,1.0,,none,confirmed_no_equipment,
 ea_chair_triceps_dips,Chair Triceps Dips,Chair,Chair,1.0,True,none,unresolved,
 ea_chest_bench_press_correct_stance,Chest Bench Press Correct Stance,,"Barbell, Weight plates, Weight bench",1.0,,Weight bench,resolved,
 ea_chest_dip,Chest Dip,Chair,Power tower / Dip station,1.0,False,Dip station,resolved,promoted on manual review: 
-ea_chest_dip_machine,Chest Dip Machine,Seated Dip Machine,Seated Dip Machine,1.0,True,none,unresolved,
+ea_chest_dip_machine,Chest Dip Machine,Seated Dip Machine,Seated Dip Machine,1.0,True,Seated dip machine,resolved,"batch 3, registry expansion (52->67): "
 ea_chest_dip_on_bench,Chest Dip on Bench,,bench,1.0,,Bench (flat / adjustable),resolved,
 ea_chest_dip_on_dip_station,Chest Dip (on Dip Station),Dip stand,Dip station,1.0,True,Dip station,resolved,
 ea_chest_dip_weighted,Chest Dip Weighted,Dip Pull Up Station,Dip station and dumbbell,1.0,True,Dip station,resolved,
@@ -682,7 +682,7 @@ ea_chest_stretch_with_exercise_ball,Chest Stretch with Exercise Ball,Exercise Ba
 ea_chest_tap_push_up,Chest Tap Push Up,,none,1.0,,none,confirmed_no_equipment,
 ea_child_pose_arms_extended_left_right,Child Pose Arms Extended Left Right,,none,1.0,,none,confirmed_no_equipment,
 ea_child_pose_arms_on_side,Child Pose Arms on Side,,none,1.0,,none,confirmed_no_equipment,
-ea_child_pose_elbows_on_block,Child Pose Elbows on Block,,yoga blocks,1.0,,none,unresolved,
+ea_child_pose_elbows_on_block,Child Pose Elbows on Block,,yoga blocks,1.0,,Yoga blocks,resolved,"batch 3, registry expansion (52->67): "
 ea_child_pose_lower_back_stretch,Child Pose Lower Back Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_child_pose_up,Child Pose Up,,none,1.0,,none,confirmed_no_equipment,
 ea_chin_up,Chin Up,Pull Up Bar,Pull up bar,1.0,True,Pull-up bar,resolved,
@@ -721,7 +721,7 @@ ea_crab_twist_toe_touch,Crab Twist Toe Touch,,none,1.0,,none,confirmed_no_equipm
 ea_crawl_with_sled_drag,Crawl with Sled Drag,,"Sled, harness, weight plates",1.0,,Weight plates,resolved,
 ea_crescent_moon_pose,Crescent Moon Pose,,none,1.0,,none,confirmed_no_equipment,
 ea_crescent_moon_pose_quad_stretch,Crescent Moon Pose Quad Stretch,,none,1.0,,none,confirmed_no_equipment,
-ea_crescent_moon_pose_quad_stretch_with_block,Crescent Moon Pose Quad Stretch with Block,,Yoga block,1.0,,none,unresolved,
+ea_crescent_moon_pose_quad_stretch_with_block,Crescent Moon Pose Quad Stretch with Block,,Yoga block,1.0,,Yoga blocks,resolved,"batch 3, registry expansion (52->67): "
 ea_criss_cross_arms_lift,Criss Cross Arms Lift,,none,1.0,,none,confirmed_no_equipment,
 ea_criss_cross_bow_tie_pose,Criss Cross Bow Tie Pose,,none,1.0,,none,confirmed_no_equipment,
 ea_criss_cross_elbow_to_knee,Criss Cross Elbow to Knee,,none,1.0,,none,confirmed_no_equipment,
@@ -741,12 +741,12 @@ ea_crunch_frog_on_floor,Crunch Frog on Floor,,none,1.0,,none,confirmed_no_equipm
 ea_crunch_hands_overhead,Crunch (hands Overhead),,none,1.0,,none,confirmed_no_equipment,
 ea_crunch_leg_raise,Crunch Leg Raise,,none,1.0,,none,confirmed_no_equipment,
 ea_crunch_legs_on_stability_ball,Crunch (legs on Stability Ball),,Stability ball,1.0,,Stability ball,resolved,
-ea_crunch_on_bosu_ball,Crunch (on Bosu Ball),,Bosu Ball,1.0,,none,unresolved,
+ea_crunch_on_bosu_ball,Crunch (on Bosu Ball),,Bosu Ball,1.0,,Bosu ball,resolved,"batch 3, registry expansion (52->67): "
 ea_crunch_on_stability_ball,Crunch (on Stability Ball),,stability ball,1.0,,Stability ball,resolved,
 ea_crunch_straight_leg_up,Crunch (straight Leg Up),,none,1.0,,none,confirmed_no_equipment,
 ea_crunch_with_medicine_ball,Crunch with Medicine Ball,,medicine ball,1.0,,Medicine ball,resolved,
 ea_curtsy_lunge_bodyweight,Curtsy Lunge Bodyweight,,none,1.0,,none,confirmed_no_equipment,
-ea_curtsy_lunge_slide_with_towel,Curtsy Lunge Slide with Towel,,sliding disc,0.9,,none,unresolved,
+ea_curtsy_lunge_slide_with_towel,Curtsy Lunge Slide with Towel,,sliding disc,0.9,,Sliding discs,resolved,"batch 3, registry expansion (52->67): "
 ea_curtsy_lunges_resistance_band,Curtsy Lunges Resistance Band,Resistance Band,Resistance Band,1.0,True,Resistance bands,resolved,
 ea_curtsy_squat,Curtsy Squat,,none,1.0,,none,confirmed_no_equipment,
 ea_dead_bug,Dead Bug,,none,1.0,,none,confirmed_no_equipment,
@@ -1089,7 +1089,7 @@ ea_dumbbell_straight_leg_russian_twist,Dumbbell Straight Leg Russian Twist,Dumbb
 ea_dumbbell_suitcase_carry,Dumbbell Suitcase Carry,Dumbbells,Dumbbell,1.0,True,Dumbbells,resolved,
 ea_dumbbell_suitcase_crunch,Dumbbell Suitcase Crunch,,Dumbbell,1.0,,Dumbbells,resolved,
 ea_dumbbell_sumo_squat_off_benches,Dumbbell Sumo Squat Off Benches,Dumbbells,"Dumbbell, Weight benches",1.0,True,Dumbbells,resolved,
-ea_dumbbell_supported_sissy_squat,Dumbbell Supported Sissy Squat,Dumbbells,Sissy squat machine,1.0,False,none,DISAGREEMENT,
+ea_dumbbell_supported_sissy_squat,Dumbbell Supported Sissy Squat,Dumbbells,Sissy squat machine,1.0,False,Sissy squat machine,resolved,"batch 3, registry expansion (52->67): "
 ea_dumbbell_svend_press,Dumbbell Svend Press,Dumbbells,Dumbbell,1.0,True,Dumbbells,resolved,
 ea_dumbbell_swing,Dumbbell Swing,,Dumbbell,1.0,,Dumbbells,resolved,
 ea_dumbbell_tate_press,Dumbbell Tate Press,Dumbbells,"Dumbbells, Weight bench",1.0,True,Weight bench,resolved,
@@ -1140,7 +1140,7 @@ ea_exercise_ball_wall_squat,Exercise Ball Wall Squat,,"stability ball, wall",1.0
 ea_explosive_push_ups,Explosive Push Ups,,none,1.0,,none,confirmed_no_equipment,
 ea_extended_side_angle,Extended Side Angle,,none,1.0,,none,confirmed_no_equipment,
 ea_extended_side_angle_pose,Extended Side Angle Pose,,none,1.0,,none,confirmed_no_equipment,
-ea_extended_side_angle_pose_with_block,Extended Side Angle Pose with Block,,Yoga block,1.0,,none,unresolved,
+ea_extended_side_angle_pose_with_block,Extended Side Angle Pose with Block,,Yoga block,1.0,,Yoga blocks,resolved,"batch 3, registry expansion (52->67): "
 ea_extension_and_inclination_neck_stretch,Extension and Inclination Neck Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_extension_of_arms_in_vertical_stretch,Extension of Arms in Vertical Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_ez_bar_biceps_curl_close_grip,Ez Bar Biceps Curl Close Grip,Ez Bar,"EZ bar, weight plates",1.0,True,EZ curl bar,resolved,
@@ -1391,7 +1391,7 @@ ea_lateral_raise_to_shoulder_press_resistance_band_cable,Lateral Raise to Should
 ea_lateral_raises_dumbbell,Lateral Raises Dumbbell,Dumbbells,Dumbbells,1.0,True,Dumbbells,resolved,
 ea_lateral_raises_dumbbell_seated_with_swing,Lateral Raises Dumbbell Seated with Swing,,"Dumbbells, Weight bench",1.0,,Weight bench,resolved,
 ea_lateral_raises_on_cable_machine,Lateral Raises on Cable Machine,,cable machine,1.0,,Cable machine,resolved,
-ea_lateral_sled_drag,Lateral Sled Drag,,weighted sled,1.0,,none,unresolved,
+ea_lateral_sled_drag,Lateral Sled Drag,,weighted sled,1.0,,Weighted sled,resolved,"batch 3, registry expansion (52->67): "
 ea_lats_stretch_elbow_on_wall,Lats Stretch Elbow on Wall,,wall,1.0,,none,unresolved,
 ea_lats_stretch_on_wall,Lats Stretch on Wall,,wall,1.0,,none,unresolved,
 ea_lawnmower_row,Lawnmower Row,,"Dumbbell, Bench",1.0,,Dumbbells,resolved,
@@ -1451,7 +1451,7 @@ ea_lying_single_leg_extended_on_wall_hamstrings_stretch,Lying Single Leg Extende
 ea_machine_chest_press_decline,Machine Chest Press Decline,Chest Press Machine,Chest Press Machine,1.0,True,Chest press machine,resolved,
 ea_machine_chest_press_incline,Machine Chest Press Incline,Chest Press Machine,Incline chest press machine,1.0,True,Chest press machine,resolved,
 ea_machine_fly,Machine Fly,Dual Pec Fly Machine,Pec Fly Machine,1.0,True,Pec deck / fly machine,resolved,
-ea_machine_lateral_raise,Machine Lateral Raise,,Machine Lateral Raise station,1.0,,none,unresolved,
+ea_machine_lateral_raise,Machine Lateral Raise,,Machine Lateral Raise station,1.0,,Lateral raise machine,resolved,"batch 3, registry expansion (52->67): "
 ea_major_groups_muscle_body,Major Groups Muscle Body,,none,1.0,,none,confirmed_no_equipment,
 ea_med_ball_front_squat_raise,Med Ball Front Squat Raise,,medicine ball,1.0,,Medicine ball,resolved,
 ea_med_ball_half_kneeling_wood_choppers,Med Ball Half Kneeling Wood Choppers,,medicine ball,1.0,,Medicine ball,resolved,
@@ -1473,7 +1473,7 @@ ea_mountain_climbers,Mountain Climbers,,none,1.0,,none,confirmed_no_equipment,
 ea_mts_iso_lateral_kneeling_leg_curl,MTS Iso-lateral Kneeling LEG CURL,MTS Iso-Lateral Kneeling Leg Curl Machine,MTS Iso-lateral Kneeling LEG CURL machine,1.0,True,Leg curl machine,resolved,
 ea_multi_hip_abduction,Multi Hip Abduction,Multi Hip Machine,Multi Hip Machine,1.0,True,Hip abductor / adductor machine,resolved,
 ea_multi_hip_adduction,Multi Hip Adduction,,Multi Hip machine,1.0,,Hip abductor / adductor machine,resolved,
-ea_multi_hip_glute_extension,Multi Hip Glute Extension,Multi Hip Machine,Multi Hip Machine,1.0,True,none,unresolved,
+ea_multi_hip_glute_extension,Multi Hip Glute Extension,Multi Hip Machine,Multi Hip Machine,1.0,True,Multi hip machine,resolved,"batch 3, registry expansion (52->67): "
 ea_narrow_stance_heels_elevated_dumbbell_goblet_squats,Narrow Stance Heels Elevated Dumbbell Goblet Squats,,"dumbbell, weight plate",1.0,,Dumbbells,resolved,
 ea_nordic_hamstring_curl_with_partner,Nordic Hamstring Curl with Partner,,none,1.0,,none,confirmed_no_equipment,
 ea_normal_push_up,Normal Push-up,,none,1.0,,none,confirmed_no_equipment,
@@ -1582,20 +1582,20 @@ ea_push_up_and_rotation,Push Up and Rotation,,none,1.0,,none,confirmed_no_equipm
 ea_push_up_plus,Push Up Plus,,none,1.0,,none,confirmed_no_equipment,
 ea_push_ups_bodyweight,Push Ups Bodyweight,,none,1.0,,none,confirmed_no_equipment,
 ea_pushup_to_renegade_row,Pushup to Renegade Row,,dumbbells,1.0,,Dumbbells,resolved,
-ea_pyramid_pose_blocks,Pyramid Pose Blocks,,yoga blocks,1.0,,none,unresolved,
-ea_pyramid_pose_calf_blocks,Pyramid Pose Calf Blocks,,calf blocks,1.0,,none,unresolved,
+ea_pyramid_pose_blocks,Pyramid Pose Blocks,,yoga blocks,1.0,,Yoga blocks,resolved,"batch 3, registry expansion (52->67): "
+ea_pyramid_pose_calf_blocks,Pyramid Pose Calf Blocks,,calf blocks,1.0,,Yoga blocks,resolved,"batch 3, registry expansion (52->67): "
 ea_pyramid_pose_parsvottanasana,Pyramid Pose - Parsvottanasana,,none,1.0,,none,confirmed_no_equipment,
 ea_pyramid_prayer,Pyramid Prayer,,weight bench,1.0,,Weight bench,resolved,
 ea_raised_leg_crunch,Raised Leg Crunch,,none,1.0,,none,confirmed_no_equipment,
 ea_reaching_up_shoulder_stretch,Reaching Up Shoulder Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
 ea_rear_deltoid_fly_cable_resistance_band,Rear Deltoid Fly Cable Resistance Band,Resistance Band,Resistance Band,1.0,True,Resistance bands,resolved,
 ea_rear_deltoid_stretch,Rear Deltoid Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
-ea_rebounder_high_knee_runs,Rebounder High Knee Runs,,mini trampoline (rebounder),1.0,,none,unresolved,
-ea_rebounder_in_out_from_ground,Rebounder in & Out From Ground,,mini trampoline (rebounder),1.0,,none,unresolved,
-ea_rebounder_in_out_jacks,Rebounder in & Out Jacks,,mini trampoline (rebounder),1.0,,none,unresolved,
-ea_rebounder_knee_jumps,Rebounder Knee Jumps,,mini trampoline (rebounder),1.0,,none,unresolved,
-ea_rebounder_knee_pushes,Rebounder Knee Pushes,,mini trampoline (rebounder),1.0,,none,unresolved,
-ea_rebounder_light_jumps,Rebounder Light Jumps,,mini trampoline (rebounder),1.0,,none,unresolved,
+ea_rebounder_high_knee_runs,Rebounder High Knee Runs,,mini trampoline (rebounder),1.0,,Mini trampoline,resolved,"batch 3, registry expansion (52->67): "
+ea_rebounder_in_out_from_ground,Rebounder in & Out From Ground,,mini trampoline (rebounder),1.0,,Mini trampoline,resolved,"batch 3, registry expansion (52->67): "
+ea_rebounder_in_out_jacks,Rebounder in & Out Jacks,,mini trampoline (rebounder),1.0,,Mini trampoline,resolved,"batch 3, registry expansion (52->67): "
+ea_rebounder_knee_jumps,Rebounder Knee Jumps,,mini trampoline (rebounder),1.0,,Mini trampoline,resolved,"batch 3, registry expansion (52->67): "
+ea_rebounder_knee_pushes,Rebounder Knee Pushes,,mini trampoline (rebounder),1.0,,Mini trampoline,resolved,"batch 3, registry expansion (52->67): "
+ea_rebounder_light_jumps,Rebounder Light Jumps,,mini trampoline (rebounder),1.0,,Mini trampoline,resolved,"batch 3, registry expansion (52->67): "
 ea_reclining_pigeon_pose,Reclining Pigeon Pose,,none,1.0,,none,confirmed_no_equipment,
 ea_resistance_band_assisted_front_rack_stretch,Resistance Band Assisted Front Rack Stretch,Resistance Band,"Resistance band, Squat rack",1.0,True,Squat rack,resolved,
 ea_resistance_band_assisted_push_up,Resistance Band Assisted Push-up,,"Squat rack, resistance bands",1.0,,Squat rack,resolved,
@@ -1655,14 +1655,14 @@ ea_reverse_shoulder_stretch,Reverse Shoulder Stretch,Yoga Mat,Plyo box,1.0,False
 ea_revolved_head_to_knee,Revolved Head to Knee,,none,1.0,,none,confirmed_no_equipment,
 ea_revolved_side_angle_pose_with_prayer_hands,Revolved Side Angle Pose with Prayer Hands,,none,1.0,,none,confirmed_no_equipment,
 ea_revolved_side_angle_pose_with_prayer_hands_beginner,Revolved Side Angle Pose with Prayer Hands Beginner,,none,1.0,,none,confirmed_no_equipment,
-ea_ring_dips,Ring Dips,,Gymnastic rings,1.0,,none,unresolved,
+ea_ring_dips,Ring Dips,,Gymnastic rings,1.0,,Gymnastic rings,resolved,"batch 3, registry expansion (52->67): "
 ea_romanian_deadlift_barbell,Romanian Deadlift Barbell,,"barbell, weight plates",1.0,,Barbell,resolved,
 ea_runner_stretch,Runner Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
 ea_runners_lunge,Runners Lunge,,none,1.0,,none,confirmed_no_equipment,
 ea_running,Running,,none,1.0,,none,confirmed_no_equipment,
 ea_russian_twist,Russian Twist,,none,1.0,,none,confirmed_no_equipment,
 ea_russian_twist_weighted_ball,Russian Twist Weighted Ball,,medicine ball,1.0,,Medicine ball,resolved,
-ea_sandbag_cleans,Sandbag Cleans,,sandbag,1.0,,none,unresolved,
+ea_sandbag_cleans,Sandbag Cleans,,sandbag,1.0,,Sandbag,resolved,"batch 3, registry expansion (52->67): "
 ea_scapula_push_up,Scapula Push Up,,none,1.0,,none,confirmed_no_equipment,
 ea_scissors_kick,Scissors Kick,,none,1.0,,none,confirmed_no_equipment,
 ea_scorpion_twist_pose,Scorpion Twist Pose,,none,1.0,,none,confirmed_no_equipment,
@@ -1746,7 +1746,7 @@ ea_ski_ergometer_cross_country_ski_squat_wide_lat_pull,Ski Ergometer Cross Count
 ea_ski_ergometer_cross_country_ski_triceps_extension_pull,Ski Ergometer Cross Country Ski Triceps Extension Pull,Ski Ergometer,Ski Ergometer,1.0,True,Ski erg,resolved,
 ea_skipping,Skipping,,none,0.95,,none,confirmed_no_equipment,
 ea_sled_battle_rope_pull,Sled Battle Rope Pull,,"Sled, weight plates, battle rope",1.0,,Battle ropes,resolved,
-ea_sled_drag_and_row,Sled Drag and Row,,weighted sled,1.0,,none,unresolved,
+ea_sled_drag_and_row,Sled Drag and Row,,weighted sled,1.0,,Weighted sled,resolved,"batch 3, registry expansion (52->67): "
 ea_smith_machine_bulgarian_split_squat,Smith Machine Bulgarian Split Squat,Smith Machine,"Smith machine, plyo box, weight plates",1.0,True,Smith machine,resolved,
 ea_smith_machine_calf_raise,Smith Machine Calf Raise,Smith Machine,Smith Machine,1.0,True,Smith machine,resolved,
 ea_smith_machine_narrow_stance_heels_elevated_squats,Smith Machine Narrow Stance Heels Elevated Squats,,"Smith machine, weight plates",1.0,,Smith machine,resolved,
@@ -1849,10 +1849,10 @@ ea_treadmill_walk,Treadmill Walk,,Treadmill,1.0,,Treadmill,resolved,
 ea_tricep_cable_kickback_on_crossover_machine,Tricep Cable Kickback on Crossover Machine,Cable Pulley Machine,Cable Pulley Machine,1.0,True,Cable machine,resolved,
 ea_tricep_extension_machine,Tricep Extension Machine,Triceps Extension Machine,Triceps extension machine,1.0,True,Triceps extension machine,resolved,
 ea_tricep_rope_extension_on_crossover_machine,Tricep Rope Extension on Crossover Machine,,cable machine with rope attachment,1.0,,Cable machine,resolved,
-ea_triceps_dip_machine,Triceps Dip Machine,Triceps Dips Machine,Triceps Dip Machine,1.0,True,none,unresolved,
+ea_triceps_dip_machine,Triceps Dip Machine,Triceps Dips Machine,Triceps Dip Machine,1.0,True,Seated dip machine,resolved,"batch 3, registry expansion (52->67): "
 ea_triceps_light_stretch,Triceps Light Stretch,,none,1.0,,none,confirmed_no_equipment,
-ea_tyre_flip,Tyre Flip,,tyre,1.0,,none,unresolved,
-ea_tyre_hammering,Tyre Hammering,,"tyre, sledgehammer",1.0,,none,unresolved,
+ea_tyre_flip,Tyre Flip,,tyre,1.0,,Tyre,resolved,"batch 3, registry expansion (52->67): "
+ea_tyre_hammering,Tyre Hammering,,"tyre, sledgehammer",1.0,,Tyre,resolved,"batch 3, registry expansion (52->67): "
 ea_unilateral_box_jump,Unilateral Box Jump,,plyo box,1.0,,Plyo box,resolved,
 ea_unilateral_box_jump_bilateral_deceleration,Unilateral Box Jump - Bilateral Deceleration,,plyo box,1.0,,Plyo box,resolved,
 ea_unilateral_front_plank,Unilateral Front Plank,,none,1.0,,none,confirmed_no_equipment,

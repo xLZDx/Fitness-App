@@ -1,75 +1,31 @@
 {
- "ab_crunch_machine": [
-  "ab crunch machine",
-  "ab machine",
-  "abdominal machine",
-  "crunch machine",
-  "пресс-машина",
-  "скручивания сидя",
-  "тренажёр для пресса"
+ "treadmill": [
+  "running machine",
+  "treadmill",
+  "бегова дорожка",
+  "беговая дорожка",
+  "дорожка"
  ],
- "ab_wheel": [
-  "ab roller",
-  "ab wheel",
-  "abdominal wheel",
-  "wheel rollout",
-  "гимнастический ролик",
-  "колесо для пресса",
-  "ролик для пресса"
+ "rowing_machine": [
+  "concept2",
+  "erg",
+  "ergometer",
+  "rower",
+  "rowing machine",
+  "гребля",
+  "гребной",
+  "гребной тренажёр"
  ],
- "adjustable_bench": [
-  "adjustable bench",
-  "bench",
-  "bench (flat / adjustable)",
-  "flat bench",
-  "incline bench",
-  "utility bench",
-  "weight bench",
-  "лавка",
-  "наклонная скамья",
-  "скамейка",
-  "скамья",
-  "скамья (прямая / регулируемая)"
- ],
- "air_bike": [
-  "air bike",
-  "airdyne",
-  "assault bike",
-  "fan bike",
-  "ассолт байк",
-  "аэробайк",
-  "эйрбайк"
- ],
- "assisted_pullup_machine": [
-  "assisted pull-up",
-  "assisted pull-up machine",
-  "assisted pullup machine",
-  "gravitron",
-  "гравитрон",
-  "подтягивания с противовесом"
- ],
- "back_extension": [
-  "back extension",
-  "back extension bench",
-  "ghd",
-  "glute ham developer",
-  "hyperextension",
-  "roman chair back extension",
-  "гиперэкстензия",
-  "разгибание спины",
-  "экстензия"
- ],
- "barbell": [
-  "barbell",
-  "olympic bar",
-  "гриф",
-  "штанга"
- ],
- "battle_ropes": [
-  "battle rope",
-  "battle ropes",
-  "канат",
-  "канаты"
+ "squat_rack": [
+  "half rack",
+  "power cage",
+  "power rack",
+  "rack",
+  "squat rack",
+  "рама",
+  "силовая рама",
+  "стойка для приседаний",
+  "стойки"
  ],
  "bench_press": [
   "bench press",
@@ -78,14 +34,6 @@
   "жим лёжа",
   "жим лёжа (стойка)",
   "стойка для жима"
- ],
- "bicep_curl_machine": [
-  "arm curl machine",
-  "bicep curl machine",
-  "biceps curl machine",
-  "бицепс-машина",
-  "сгибание рук",
-  "сгибание рук (тренажёр)"
  ],
  "cable_machine": [
   "cable crossover",
@@ -100,42 +48,27 @@
   "блочный тренажёр (кроссовер)",
   "кроссовер"
  ],
- "calf_raise_machine": [
-  "calf machine",
-  "calf raise",
-  "calf raise machine",
-  "seated calf raise",
-  "standing calf raise",
-  "голень тренажёр",
-  "икры",
-  "подъёмы на носки",
-  "подъёмы на носки (тренажёр)"
+ "leg_press": [
+  "45 degree leg press",
+  "leg press",
+  "sled press",
+  "жим ногами",
+  "жим платформы",
+  "платформа"
  ],
- "captains_chair": [
-  "captain's chair",
-  "captains chair",
-  "knee raise station",
-  "leg raise station",
-  "vertical knee raise",
-  "подъемы ног",
-  "подъём ног в упоре",
-  "стойка для подъёма ног",
-  "стойка для пресса"
+ "lat_pulldown": [
+  "lat machine",
+  "lat pulldown",
+  "pulldown",
+  "вертикальная тяга",
+  "верхняя тяга",
+  "тяга верхнего блока"
  ],
- "chest_press_machine": [
-  "chest press",
-  "chest press machine",
-  "seated chest press",
-  "грудной жим",
-  "жим от груди",
-  "жим от груди (тренажёр)",
-  "жим сидя"
- ],
- "dip_station": [
-  "dip bars",
-  "dip station",
-  "parallel bars",
-  "брусья"
+ "barbell": [
+  "barbell",
+  "olympic bar",
+  "гриф",
+  "штанга"
  ],
  "dumbbell": [
   "dumbbell",
@@ -143,6 +76,11 @@
   "гантели",
   "гантель",
   "гантельный ряд"
+ ],
+ "kettlebell": [
+  "kettlebell",
+  "гири",
+  "гиря"
  ],
  "elliptical": [
   "cross trainer",
@@ -163,31 +101,42 @@
   "велотренажёр",
   "сайкл"
  ],
- "ez_curl_bar": [
-  "curl bar",
-  "ez bar",
-  "ez curl bar",
-  "ez-гриф",
-  "изогнутый гриф",
-  "кривой гриф"
+ "recumbent_bike": [
+  "recumbent bike",
+  "горизонтальный велосипед",
+  "горизонтальный велотренажёр"
  ],
- "foam_roller": [
-  "foam roller",
-  "roller",
-  "валик",
-  "массажный ролик",
-  "массажный ролл",
-  "ролл"
+ "stair_climber": [
+  "stair climber",
+  "stairmaster",
+  "stepmill",
+  "stepper",
+  "клаймбер",
+  "лестница",
+  "степпер",
+  "степпер / лестница"
  ],
- "glute_kickback_machine": [
-  "glute kickback",
-  "glute kickback machine",
-  "glute machine",
-  "kickback machine",
-  "махи ногой",
-  "отведение ноги назад",
-  "отведение ноги назад (ягодичные)",
-  "ягодичный тренажёр"
+ "air_bike": [
+  "air bike",
+  "airdyne",
+  "assault bike",
+  "fan bike",
+  "ассолт байк",
+  "аэробайк",
+  "эйрбайк"
+ ],
+ "ski_erg": [
+  "ski erg",
+  "skierg",
+  "лыжи",
+  "лыжный тренажёр"
+ ],
+ "smith_machine": [
+  "smith",
+  "smith machine",
+  "машина смита",
+  "смит",
+  "тренажёр смита"
  ],
  "hack_squat_machine": [
   "hack squat",
@@ -195,6 +144,22 @@
   "гакк",
   "гакк приседания",
   "гакк-машина"
+ ],
+ "leg_extension": [
+  "leg extension",
+  "leg extension machine",
+  "quad extension",
+  "разгибание ног",
+  "разгибания ног"
+ ],
+ "leg_curl": [
+  "hamstring curl",
+  "leg curl",
+  "leg curl machine",
+  "lying leg curl",
+  "seated leg curl",
+  "сгибание ног",
+  "сгибания ног"
  ],
  "hip_abductor_adductor": [
   "abductor machine",
@@ -208,61 +173,35 @@
   "сведение ног",
   "сведение разведение ног"
  ],
- "kettlebell": [
-  "kettlebell",
-  "гири",
-  "гиря"
+ "glute_kickback_machine": [
+  "glute kickback",
+  "glute kickback machine",
+  "glute machine",
+  "kickback machine",
+  "махи ногой",
+  "отведение ноги назад",
+  "отведение ноги назад (ягодичные)",
+  "ягодичный тренажёр"
  ],
- "lat_pulldown": [
-  "lat machine",
-  "lat pulldown",
-  "pulldown",
-  "вертикальная тяга",
-  "верхняя тяга",
-  "тяга верхнего блока"
+ "calf_raise_machine": [
+  "calf machine",
+  "calf raise",
+  "calf raise machine",
+  "seated calf raise",
+  "standing calf raise",
+  "голень тренажёр",
+  "икры",
+  "подъёмы на носки",
+  "подъёмы на носки (тренажёр)"
  ],
- "leg_curl": [
-  "hamstring curl",
-  "leg curl",
-  "leg curl machine",
-  "lying leg curl",
-  "seated leg curl",
-  "сгибание ног",
-  "сгибания ног"
- ],
- "leg_extension": [
-  "leg extension",
-  "leg extension machine",
-  "quad extension",
-  "разгибание ног",
-  "разгибания ног"
- ],
- "leg_press": [
-  "45 degree leg press",
-  "leg press",
-  "sled press",
-  "жим ногами",
-  "жим платформы",
-  "платформа"
- ],
- "medicine_ball": [
-  "med ball",
-  "medicine ball",
-  "slam ball",
-  "wall ball",
-  "медбол",
-  "медицинский мяч",
-  "слэмбол"
- ],
- "parallettes": [
-  "paralettes",
-  "parallette",
-  "parallettes",
-  "push up handles",
-  "push-up bars",
-  "брусья-паралетки",
-  "паралетки",
-  "упоры для отжиманий"
+ "chest_press_machine": [
+  "chest press",
+  "chest press machine",
+  "seated chest press",
+  "грудной жим",
+  "жим от груди",
+  "жим от груди (тренажёр)",
+  "жим сидя"
  ],
  "pec_deck": [
   "butterfly machine",
@@ -277,70 +216,14 @@
   "пек-дек",
   "сведение рук"
  ],
- "plyo_box": [
-  "box",
-  "jump box",
-  "plyo box",
-  "plyometric box",
-  "бокс для запрыгиваний",
-  "плиобокс",
-  "тумба"
- ],
- "preacher_curl_bench": [
-  "preacher bench",
-  "preacher curl",
-  "preacher curl bench",
-  "scott bench",
-  "пюпитр",
-  "скамья скотта"
- ],
- "pullup_bar": [
-  "chin-up bar",
-  "pull-up bar",
-  "pullup bar",
-  "перекладина",
-  "турник"
- ],
- "punching_bag": [
-  "boxing bag",
-  "heavy bag",
-  "punching bag",
-  "боксёрская груша",
-  "груша",
-  "мешок"
- ],
- "recumbent_bike": [
-  "recumbent bike",
-  "горизонтальный велосипед",
-  "горизонтальный велотренажёр"
- ],
- "resistance_bands": [
-  "bands",
-  "resistance band",
-  "resistance bands",
-  "ленты",
-  "резинки",
-  "резиновые ленты",
-  "эспандер"
- ],
- "rotary_torso_machine": [
-  "rotary torso",
-  "rotary torso machine",
-  "torso rotation",
-  "twist machine",
-  "повороты корпуса",
-  "ротация корпуса",
-  "ротация корпуса (тренажёр)"
- ],
- "rowing_machine": [
-  "concept2",
-  "erg",
-  "ergometer",
-  "rower",
-  "rowing machine",
-  "гребля",
-  "гребной",
-  "гребной тренажёр"
+ "shoulder_press_machine": [
+  "overhead press machine",
+  "shoulder press",
+  "shoulder press machine",
+  "жим вверх сидя",
+  "жим на плечи",
+  "жим на плечи (тренажёр)",
+  "плечевой жим"
  ],
  "seated_row_machine": [
   "cable row",
@@ -355,45 +238,185 @@
   "рычажная тяга",
   "тяга к поясу"
  ],
- "shoulder_press_machine": [
-  "overhead press machine",
-  "shoulder press",
-  "shoulder press machine",
-  "жим вверх сидя",
-  "жим на плечи",
-  "жим на плечи (тренажёр)",
-  "плечевой жим"
+ "t_bar_row": [
+  "landmine row",
+  "t bar row",
+  "t-bar row",
+  "т гриф",
+  "т-гриф",
+  "тяга т-грифа"
  ],
- "ski_erg": [
-  "ski erg",
-  "skierg",
-  "лыжи",
-  "лыжный тренажёр"
+ "assisted_pullup_machine": [
+  "assisted pull-up",
+  "assisted pull-up machine",
+  "assisted pullup machine",
+  "gravitron",
+  "гравитрон",
+  "подтягивания с противовесом"
  ],
- "skipping_rope": [
-  "jump rope",
-  "skipping rope",
-  "speed rope",
-  "прыгалка",
-  "скакалка"
+ "pullup_bar": [
+  "chin-up bar",
+  "pull-up bar",
+  "pullup bar",
+  "перекладина",
+  "турник"
  ],
- "smith_machine": [
-  "smith",
-  "smith machine",
-  "машина смита",
-  "смит",
-  "тренажёр смита"
+ "dip_station": [
+  "dip bars",
+  "dip station",
+  "parallel bars",
+  "брусья"
  ],
- "squat_rack": [
-  "half rack",
-  "power cage",
-  "power rack",
-  "rack",
-  "squat rack",
-  "рама",
-  "силовая рама",
-  "стойка для приседаний",
-  "стойки"
+ "preacher_curl_bench": [
+  "preacher bench",
+  "preacher curl",
+  "preacher curl bench",
+  "scott bench",
+  "пюпитр",
+  "скамья скотта"
+ ],
+ "bicep_curl_machine": [
+  "arm curl machine",
+  "bicep curl machine",
+  "biceps curl machine",
+  "бицепс-машина",
+  "сгибание рук",
+  "сгибание рук (тренажёр)"
+ ],
+ "tricep_extension_machine": [
+  "tricep extension machine",
+  "tricep machine",
+  "triceps extension machine",
+  "разгибание рук",
+  "разгибание рук (тренажёр)",
+  "трицепс-машина"
+ ],
+ "ab_crunch_machine": [
+  "ab crunch machine",
+  "ab machine",
+  "abdominal machine",
+  "crunch machine",
+  "пресс-машина",
+  "скручивания сидя",
+  "тренажёр для пресса"
+ ],
+ "rotary_torso_machine": [
+  "rotary torso",
+  "rotary torso machine",
+  "torso rotation",
+  "twist machine",
+  "повороты корпуса",
+  "ротация корпуса",
+  "ротация корпуса (тренажёр)"
+ ],
+ "back_extension": [
+  "back extension",
+  "back extension bench",
+  "ghd",
+  "glute ham developer",
+  "hyperextension",
+  "roman chair back extension",
+  "гиперэкстензия",
+  "разгибание спины",
+  "экстензия"
+ ],
+ "captains_chair": [
+  "captain's chair",
+  "captains chair",
+  "knee raise station",
+  "leg raise station",
+  "vertical knee raise",
+  "подъемы ног",
+  "подъём ног в упоре",
+  "стойка для подъёма ног",
+  "стойка для пресса"
+ ],
+ "adjustable_bench": [
+  "adjustable bench",
+  "bench",
+  "bench (flat / adjustable)",
+  "flat bench",
+  "incline bench",
+  "utility bench",
+  "weight bench",
+  "лавка",
+  "наклонная скамья",
+  "скамейка",
+  "скамья",
+  "скамья (прямая / регулируемая)"
+ ],
+ "ez_curl_bar": [
+  "curl bar",
+  "ez bar",
+  "ez curl bar",
+  "ez-гриф",
+  "изогнутый гриф",
+  "кривой гриф"
+ ],
+ "weight_plates": [
+  "bumper plates",
+  "plates",
+  "weight plates",
+  "блины",
+  "диски"
+ ],
+ "resistance_bands": [
+  "bands",
+  "resistance band",
+  "resistance bands",
+  "ленты",
+  "резинки",
+  "резиновые ленты",
+  "эспандер"
+ ],
+ "trx": [
+  "suspension straps",
+  "suspension trainer",
+  "suspension trainer (trx)",
+  "trx",
+  "петли",
+  "петли trx",
+  "подвесные петли"
+ ],
+ "medicine_ball": [
+  "med ball",
+  "medicine ball",
+  "slam ball",
+  "wall ball",
+  "медбол",
+  "медицинский мяч",
+  "слэмбол"
+ ],
+ "battle_ropes": [
+  "battle rope",
+  "battle ropes",
+  "канат",
+  "канаты"
+ ],
+ "plyo_box": [
+  "box",
+  "jump box",
+  "plyo box",
+  "plyometric box",
+  "бокс для запрыгиваний",
+  "плиобокс",
+  "тумба"
+ ],
+ "punching_bag": [
+  "boxing bag",
+  "heavy bag",
+  "punching bag",
+  "боксёрская груша",
+  "груша",
+  "мешок"
+ ],
+ "foam_roller": [
+  "foam roller",
+  "roller",
+  "валик",
+  "массажный ролик",
+  "массажный ролл",
+  "ролл"
  ],
  "stability_ball": [
   "balance ball",
@@ -406,54 +429,174 @@
   "фитбол",
   "швейцарский мяч"
  ],
- "stair_climber": [
-  "stair climber",
-  "stairmaster",
-  "stepmill",
-  "stepper",
-  "клаймбер",
-  "лестница",
-  "степпер",
-  "степпер / лестница"
+ "skipping_rope": [
+  "jump rope",
+  "skipping rope",
+  "speed rope",
+  "прыгалка",
+  "скакалка"
  ],
- "t_bar_row": [
-  "landmine row",
-  "t bar row",
-  "t-bar row",
-  "т гриф",
-  "т-гриф",
-  "тяга т-грифа"
+ "ab_wheel": [
+  "ab roller",
+  "ab wheel",
+  "abdominal wheel",
+  "wheel rollout",
+  "гимнастический ролик",
+  "колесо для пресса",
+  "ролик для пресса"
  ],
- "treadmill": [
-  "running machine",
-  "treadmill",
-  "бегова дорожка",
-  "беговая дорожка",
-  "дорожка"
+ "parallettes": [
+  "paralettes",
+  "parallette",
+  "parallettes",
+  "push up handles",
+  "push-up bars",
+  "брусья-паралетки",
+  "паралетки",
+  "упоры для отжиманий"
  ],
- "tricep_extension_machine": [
+ "seated_dip_machine": [
+  "chest dip machine",
   "dip machine",
-  "tricep extension machine",
-  "tricep machine",
-  "triceps extension machine",
-  "разгибание рук",
-  "разгибание рук (тренажёр)",
-  "трицепс-машина"
+  "lever dip machine",
+  "seated dip machine",
+  "sitting dip machine",
+  "triceps dip machine",
+  "дожимной тренажёр",
+  "тренажёр для отжиманий",
+  "тренажёр для отжиманий (сидя)",
+  "трицепс машина сидя"
  ],
- "trx": [
-  "suspension straps",
-  "suspension trainer",
-  "suspension trainer (trx)",
-  "trx",
-  "петли",
-  "петли trx",
-  "подвесные петли"
+ "multi_hip_machine": [
+  "glute extension machine",
+  "hip machine",
+  "multi hip machine",
+  "multi-hip",
+  "standing hip machine",
+  "мульти-хип",
+  "мульти-хип машина",
+  "тренажёр для бедра стоя",
+  "тренажёр для ягодичных стоя"
  ],
- "weight_plates": [
-  "bumper plates",
-  "plates",
-  "weight plates",
-  "блины",
-  "диски"
+ "lateral_raise_machine": [
+  "delt machine",
+  "lateral raise machine",
+  "machine lateral raise",
+  "shoulder lateral machine",
+  "махи в стороны тренажёр",
+  "разведение рук тренажёр",
+  "тренажёр для дельт",
+  "тренажёр для разведения рук (плечи)"
+ ],
+ "sissy_squat_machine": [
+  "quad isolator",
+  "sissy squat bench",
+  "sissy squat frame",
+  "sissy squat machine",
+  "рама для сисси-приседа",
+  "тренажёр для сисси-приседа",
+  "тренажёр сисси-присед"
+ ],
+ "agility_ladder": [
+  "agility ladder",
+  "coordination ladder",
+  "footwork ladder",
+  "speed ladder",
+  "координационная лестница",
+  "лестница для ног",
+  "скоростная лестница"
+ ],
+ "mini_trampoline": [
+  "fitness trampoline",
+  "jump trampoline",
+  "mini trampoline",
+  "rebounder",
+  "батут",
+  "мини-батут",
+  "ребаундер"
+ ],
+ "balance_board": [
+  "balance board",
+  "rocker board",
+  "stability board",
+  "wobble board",
+  "балансборд",
+  "балансировочная доска",
+  "доска для баланса"
+ ],
+ "yoga_blocks": [
+  "foam block",
+  "pilates block",
+  "yoga block",
+  "yoga blocks",
+  "блок для йоги",
+  "йога-блок",
+  "йога-блоки"
+ ],
+ "weighted_sled": [
+  "drag sled",
+  "prowler",
+  "push sled",
+  "sled",
+  "weighted sled",
+  "проулер",
+  "сани",
+  "сани с грузом",
+  "сани с отягощением"
+ ],
+ "ab_mat": [
+  "ab mat",
+  "ab pad",
+  "core pad",
+  "sit-up pad",
+  "валик для пресса",
+  "подушка для пресса"
+ ],
+ "bosu_ball": [
+  "balance dome",
+  "bosu",
+  "bosu ball",
+  "half dome trainer",
+  "босу",
+  "босу (полусфера)",
+  "босу мяч",
+  "полусфера"
+ ],
+ "sliding_disc": [
+  "core sliders",
+  "gliding disc",
+  "slider",
+  "sliders",
+  "sliding disc",
+  "sliding discs",
+  "глайдинг диски",
+  "диски для скольжения",
+  "слайдеры",
+  "слайдеры (диски для скольжения)"
+ ],
+ "sandbag": [
+  "sand bag",
+  "sandbag",
+  "strongman sandbag",
+  "мешок с песком",
+  "сэндбэг"
+ ],
+ "gymnastic_rings": [
+  "gymnastic rings",
+  "ring training",
+  "rings",
+  "suspended rings",
+  "гимнастические кольца",
+  "кольца"
+ ],
+ "tyre": [
+  "sledgehammer",
+  "tire",
+  "tractor tyre",
+  "truck tyre",
+  "tyre",
+  "кувалда",
+  "покрышка",
+  "шина"
  ]
 }

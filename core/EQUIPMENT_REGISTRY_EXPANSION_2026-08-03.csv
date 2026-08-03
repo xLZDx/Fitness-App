@@ -1,0 +1,35 @@
+section,item,value,note
+bug,kCanonicalMachines 48 vs equipment.json 52,4 machines unreachable by camera,stability_ball / skipping_rope / ab_wheel / parallettes -- found independently of the 44-item review
+bug,build_registry.py's M dict,also stuck at 48,would have crashed on assert set(existing) <= set(M) if run as-is
+bug,equipment.ru.json / equipment_aliases.json,already had all 52,only the generator and the Dart prompt list had drifted
+fix,tricep_extension_machine alias 'dip machine',removed,wrong mapping; a triceps extension is not a dip; no test depended on it
+new,seated_dip_machine,2 exercises,Chest Dip Machine + Triceps Dip Machine -- same rig two clips
+new,multi_hip_machine,1 exercise,Multi Hip Glute Extension
+new,lateral_raise_machine,1 exercise,Machine Lateral Raise
+new,sissy_squat_machine,1 exercise,Dumbbell Supported Sissy Squat
+new,agility_ladder,10 exercises,
+new,mini_trampoline,6 exercises,
+new,balance_board,2 exercises,
+new,yoga_blocks,5 exercises,incl. one vision had separately called 'calf blocks' -- same object
+new,weighted_sled,2 exercises,
+new,ab_mat,1 exercise,
+new,bosu_ball,1 exercise,
+new,sliding_disc,1 exercise,poster shows an actual disc despite the title saying 'towel'
+new,sandbag,1 exercise,
+new,gymnastic_rings,1 exercise,
+new,tyre,2 exercises,Tyre Flip + Tyre Hammering
+result,equipment.json,52 -> 67,
+result,kCanonicalMachines,48 -> 67,now exactly matches the registry
+result,vendor exercises linked,1335 -> 1372,
+result,machines with >=1 vendor exercise,48/67 -> 63/67,
+result,vendor_equipment_needs_review.csv,86 -> 49,
+test,registry_test.dart NO machine has zero exercises,fixed to check legacy+vendor union,was legacy-only; would have called all 15 new machines empty
+test,gemini_equipment_service_test.dart,added reverse-direction check,every registry id must be reachable through kCanonicalMachines -- this would have caught the original 48-vs-52 bug
+finding,4 pre-existing vendor-empty machines are NOT blank today,recumbent_bike=1 / glute_kickback_machine=3 / t_bar_row=4 / rotary_torso_machine=3 legacy exercises,relevant to the still-open legacy-catalog-removal decision
+not_done,vertical pole,2 exercises left open,own id vs existing bodyweight station -- undecided
+not_done,push-up blocks/risers,1 exercise left open,possible parallettes alias -- undecided
+not_done,aerobic step platform,1 exercise left open,possible plyo_box alias -- undecided
+not_done,outdoor air walker,3 exercises left open,needs a location/context concept the registry does not have
+not_done,requiredProps/environmental_support status field,not built,plain-text note column already covers it; nothing reads a dedicated field
+not_done,primaryEquipmentId/requiredEquipmentIds[] schema,not built,equipmentId + equipmentLabel already cover today's need
+tests,full suite,green,targeted 59/59 first then full suite

@@ -215,8 +215,21 @@ void main() {
       // Exactly zero, not "fewer than N". The previous version of this test
       // asserted `lessThan(15)`, which is how eleven empty machines stayed
       // green for a whole round.
+      //
+      // 2026-08-03: the real page merges legacy + vendor
+      // (`AssetEquipmentRepository._ensureLoaded` loads both), so this check
+      // now does too. Checking legacy alone would call the 15 machines this
+      // gate added empty -- they only exist in the vendor pack -- when the
+      // app shows them exercises just fine. The 4 pre-existing ids with zero
+      // vendor coverage (recumbent_bike, glute_kickback_machine, t_bar_row,
+      // rotary_torso_machine) stay covered here through legacy alone, same
+      // as before this gate.
+      final vendorExercises = (jsonDecode(File(
+              'assets/data/exercises_vendor.json')
+          .readAsStringSync()) as List)
+          .cast<Map<String, dynamic>>();
       final byId = <String, int>{};
-      for (final e in exercises) {
+      for (final e in [...exercises, ...vendorExercises]) {
         final id = e['equipmentId'] as String?;
         if (id != null) byId[id] = (byId[id] ?? 0) + 1;
       }

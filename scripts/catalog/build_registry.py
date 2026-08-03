@@ -173,7 +173,7 @@ m('bicep_curl_machine', 'Biceps curl machine', 'Сгибание рук (тре�
 m('tricep_extension_machine', 'Triceps extension machine', 'Разгибание рук (тренажёр)', 'strength',
   'Seated machine press-down or extension isolating the triceps.',
   'Разгибание рук сидя — изолированная работа трицепса по направляющим.',
-  ['tricep extension machine', 'tricep machine', 'dip machine', 'разгибание рук', 'трицепс-машина'])
+  ['tricep extension machine', 'tricep machine', 'разгибание рук', 'трицепс-машина'])
 m('ab_crunch_machine', 'Ab crunch machine', 'Тренажёр для пресса', 'strength',
   'Seated crunch against resistance with feet anchored.',
   'Скручивания сидя с сопротивлением и фиксацией ног.',
@@ -235,6 +235,112 @@ m('foam_roller', 'Foam roller', 'Массажный ролл', 'functional',
   'Firm roller for self-myofascial release and mobility work.',
   'Жёсткий ролл для самомассажа и мобильности.',
   ['foam roller', 'roller', 'ролл', 'массажный ролик', 'валик'])
+
+# --- existing ids added to equipment.json after this generator was last run
+# (2026-08-03): kept M in sync so a future run does not crash on the
+# 'existing <= M' assertion, and so equipment.ru.json / equipment_aliases.json
+# stay reproducible from source instead of only living in the JSON output.
+# en/ru/aliases copied verbatim from the shipped files; nothing here changes
+# what is already on disk. ---
+m('stability_ball', 'Stability ball', 'Фитбол', 'functional', None,
+  'Надувной мяч как нестабильная опора для пресса, таза и спины.',
+  ['balance ball', 'exercise ball', 'stability ball', 'swiss ball', 'yoga ball',
+   'гимнастический мяч', 'мяч для фитнеса', 'фитбол', 'швейцарский мяч'])
+m('skipping_rope', 'Skipping rope', 'Скакалка', 'cardio', None,
+  'Скакалка для прыжковых интервалов, разминки и общей выносливости.',
+  ['jump rope', 'skipping rope', 'speed rope', 'прыгалка', 'скакалка'])
+m('ab_wheel', 'Ab wheel', 'Ролик для пресса', 'functional', None,
+  'Колесо с двумя рукоятями для раскатов на пресс и корпус.',
+  ['ab roller', 'ab wheel', 'abdominal wheel', 'wheel rollout',
+   'гимнастический ролик', 'колесо для пресса', 'ролик для пресса'])
+m('parallettes', 'Parallettes', 'Брусья-паралетки', 'bodyweight', None,
+  'Низкие параллельные брусья для отжиманий, уголка и стоек.',
+  ['paralettes', 'parallette', 'parallettes', 'push up handles', 'push-up bars',
+   'брусья-паралетки', 'паралетки', 'упоры для отжиманий'])
+
+# --- new ids, 2026-08-03 batch 3: the 15 machine types that came out of
+# looking at the poster for every one of the 44 vendor exercises that could
+# not resolve to any of the 52 -- not external stock photos or names, real
+# equipment already visible in our own licensed clips
+# (core/EQUIPMENT_GAP_ITEMS_2026-08-03.csv is the per-exercise trail). 37 of
+# the 44 belong to these 15; the other 4 groups (vertical pole, push-up
+# blocks, aerobic step, outdoor air walker) stay out -- each is either a
+# judgement call against an existing id or a different (outdoor) context,
+# left for a deliberate decision rather than folded in here. ---
+m('seated_dip_machine', 'Seated dip machine', 'Тренажёр для отжиманий (сидя)', 'strength',
+  'Seated, plate-loaded lever machine that presses down against resistance -- chest, shoulders and triceps.',
+  'Сидя, рычажный тренажёр с отягощением для дожима вниз -- грудь, плечи и трицепс.',
+  ['seated dip machine', 'chest dip machine', 'triceps dip machine', 'dip machine',
+   'lever dip machine', 'sitting dip machine', 'тренажёр для отжиманий',
+   'дожимной тренажёр', 'трицепс машина сидя'])
+m('multi_hip_machine', 'Multi hip machine', 'Мульти-хип машина', 'strength',
+  'Standing lever machine with a leg strap for hip flexion, extension, abduction and adduction against a weight stack.',
+  'Стоя, рычажный тренажёр с креплением на ногу для сгибания, разгибания, отведения и приведения бедра под нагрузкой.',
+  ['multi hip machine', 'multi-hip', 'hip machine', 'standing hip machine',
+   'glute extension machine', 'мульти-хип', 'тренажёр для бедра стоя',
+   'тренажёр для ягодичных стоя'])
+m('lateral_raise_machine', 'Lateral raise machine', 'Тренажёр для разведения рук (плечи)', 'strength',
+  'Seated machine with arm pads that raises the arms out to the sides against resistance -- isolates the shoulders.',
+  'Сидя, тренажёр с упорами для рук, поднимающий руки в стороны под нагрузкой -- изоляция дельт.',
+  ['lateral raise machine', 'machine lateral raise', 'shoulder lateral machine',
+   'delt machine', 'тренажёр для дельт', 'разведение рук тренажёр', 'махи в стороны тренажёр'])
+m('sissy_squat_machine', 'Sissy squat machine', 'Тренажёр для сисси-приседа', 'strength',
+  'Frame with an ankle brace that lets the body lean back on straight hips while the knees bend -- isolates the quads.',
+  'Рама с упором для голеней, позволяющая отклоняться назад с прямым тазом и сгибать колени -- изоляция квадрицепса.',
+  ['sissy squat machine', 'sissy squat frame', 'sissy squat bench', 'quad isolator',
+   'тренажёр сисси-присед', 'рама для сисси-приседа'])
+m('agility_ladder', 'Agility ladder', 'Координационная лестница', 'functional',
+  'Flat floor ladder used for fast footwork, speed and coordination drills.',
+  'Плоская лестница на полу для отработки быстрой работы ног, скорости и координации.',
+  ['agility ladder', 'speed ladder', 'coordination ladder', 'footwork ladder',
+   'координационная лестница', 'скоростная лестница', 'лестница для ног'])
+m('mini_trampoline', 'Mini trampoline', 'Мини-батут', 'cardio',
+  'Small round trampoline for low-impact jumping cardio.',
+  'Небольшой круглый батут для низкоударного прыжкового кардио.',
+  ['mini trampoline', 'rebounder', 'fitness trampoline', 'jump trampoline',
+   'мини-батут', 'батут', 'ребаундер'])
+m('balance_board', 'Balance board', 'Балансборд', 'functional',
+  'Unstable board that tilts or rocks, used to train ankle and core stability.',
+  'Неустойчивая доска, которая наклоняется или качается -- тренировка устойчивости голеностопа и корпуса.',
+  ['balance board', 'wobble board', 'stability board', 'rocker board',
+   'балансборд', 'доска для баланса', 'балансировочная доска'])
+m('yoga_blocks', 'Yoga blocks', 'Йога-блоки', 'functional',
+  'Firm rectangular blocks that extend your reach or support a pose in stretching and yoga.',
+  'Плотные прямоугольные блоки, которые продлевают досягаемость руки или поддерживают позу при растяжке и йоге.',
+  ['yoga block', 'yoga blocks', 'foam block', 'pilates block', 'йога-блок',
+   'йога-блоки', 'блок для йоги'])
+m('weighted_sled', 'Weighted sled', 'Сани с отягощением', 'functional',
+  'Loaded sled pushed or dragged across the floor for full-body conditioning.',
+  'Нагруженные сани, которые толкают или тянут по полу -- кондиционная нагрузка на всё тело.',
+  ['weighted sled', 'sled', 'prowler', 'drag sled', 'push sled', 'сани',
+   'сани с грузом', 'проулер'])
+m('ab_mat', 'Ab mat', 'Валик для пресса', 'functional',
+  'Small padded wedge placed under the lower back to increase range of motion on sit-ups and crunches.',
+  'Небольшой мягкий валик под поясницу -- увеличивает амплитуду при скручиваниях и подъёмах корпуса.',
+  ['ab mat', 'ab pad', 'sit-up pad', 'core pad', 'валик для пресса', 'подушка для пресса'])
+m('bosu_ball', 'Bosu ball', 'Босу (полусфера)', 'functional',
+  'Half-dome balance trainer, flat side up or down, used for unstable-surface strength and balance work.',
+  'Тренажёр-полусфера для баланса, плоской стороной вверх или вниз -- силовая работа и баланс на нестабильной опоре.',
+  ['bosu ball', 'bosu', 'half dome trainer', 'balance dome', 'босу', 'полусфера', 'босу мяч'])
+m('sliding_disc', 'Sliding discs', 'Слайдеры (диски для скольжения)', 'functional',
+  'Small flat discs placed under hands or feet that glide on the floor, adding an unstable, low-impact resistance element.',
+  'Небольшие плоские диски под руки или ноги, скользящие по полу -- нестабильная, низкоударная нагрузка.',
+  ['sliding disc', 'sliding discs', 'gliding disc', 'core sliders', 'slider', 'sliders',
+   'слайдеры', 'диски для скольжения', 'глайдинг диски'])
+m('sandbag', 'Sandbag', 'Сэндбэг', 'functional',
+  'Flexible, shifting-weight bag used for cleans, carries and full-body strength work.',
+  'Мягкая сумка с сыпучим грузом для тяг, переносок и силовой работы на всё тело.',
+  ['sandbag', 'sand bag', 'strongman sandbag', 'сэндбэг', 'мешок с песком'])
+m('gymnastic_rings', 'Gymnastic rings', 'Гимнастические кольца', 'bodyweight',
+  'Suspended rings for dips, rows and holds that add instability to bodyweight training.',
+  'Подвесные кольца для отжиманий, тяг и удержаний -- нестабильная опора для тренировки с собственным весом.',
+  ['gymnastic rings', 'rings', 'ring training', 'suspended rings',
+   'гимнастические кольца', 'кольца'])
+m('tyre', 'Tyre', 'Покрышка', 'functional',
+  'Large vehicle tyre flipped, dragged or struck with a sledgehammer for full-body strength and conditioning.',
+  'Большая покрышка, которую переворачивают, тащат или бьют кувалдой -- силовая и кондиционная работа на всё тело.',
+  ['tyre', 'tire', 'truck tyre', 'tractor tyre', 'sledgehammer',
+   'покрышка', 'шина', 'кувалда'])
 
 # ---------------------------------------------------------------------------
 # Exercise repairs: title -> correct equipmentId (None = bodyweight).

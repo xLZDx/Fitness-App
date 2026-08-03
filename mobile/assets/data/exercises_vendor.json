@@ -722,7 +722,7 @@
   {
     "id": "ea_ab_mat_sit_up",
     "title": "Ab Mat Sit-up",
-    "equipmentId": null,
+    "equipmentId": "ab_mat",
     "muscles": [
       "core",
       "lower_back"
@@ -1448,7 +1448,7 @@
   {
     "id": "ea_agility_ladder_advanced_hop_position",
     "title": "Agility Ladder Advanced Hop Position",
-    "equipmentId": null,
+    "equipmentId": "agility_ladder",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -1470,7 +1470,7 @@
   {
     "id": "ea_agility_ladder_advanced_single_leg",
     "title": "Agility Ladder Advanced Single-leg",
-    "equipmentId": null,
+    "equipmentId": "agility_ladder",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -1492,7 +1492,7 @@
   {
     "id": "ea_agility_ladder_advancing_laterally_switching_base",
     "title": "Agility Ladder Advancing Laterally Switching Base",
-    "equipmentId": null,
+    "equipmentId": "agility_ladder",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -1514,7 +1514,7 @@
   {
     "id": "ea_agility_ladder_in_in_out_out",
     "title": "Agility Ladder in in Out Out",
-    "equipmentId": null,
+    "equipmentId": "agility_ladder",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -1536,7 +1536,7 @@
   {
     "id": "ea_agility_ladder_in_in_out_out_moving_laterally",
     "title": "Agility Ladder in in Out Out Moving Laterally",
-    "equipmentId": null,
+    "equipmentId": "agility_ladder",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -1558,7 +1558,7 @@
   {
     "id": "ea_agility_ladder_in_in_out_out_with_knee_lift",
     "title": "Agility Ladder in in Out Out with Knee Lift",
-    "equipmentId": null,
+    "equipmentId": "agility_ladder",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -1580,7 +1580,7 @@
   {
     "id": "ea_agility_ladder_lateral_movement_in_in_out",
     "title": "Agility Ladder Lateral Movement in in Out",
-    "equipmentId": null,
+    "equipmentId": "agility_ladder",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -1602,7 +1602,7 @@
   {
     "id": "ea_agility_ladder_lateral_movement_with_double_hop",
     "title": "Agility Ladder Lateral Movement with Double Hop",
-    "equipmentId": null,
+    "equipmentId": "agility_ladder",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -1624,7 +1624,7 @@
   {
     "id": "ea_agility_ladder_skipping_1_touch",
     "title": "Agility Ladder Skipping 1 Touch",
-    "equipmentId": null,
+    "equipmentId": "agility_ladder",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -1646,7 +1646,7 @@
   {
     "id": "ea_agility_ladder_skipping_2_touches",
     "title": "Agility Ladder Skipping 2 Touches",
-    "equipmentId": null,
+    "equipmentId": "agility_ladder",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -5338,7 +5338,7 @@
   {
     "id": "ea_balance_board_version_2",
     "title": "Balance Board (version 2)",
-    "equipmentId": null,
+    "equipmentId": "balance_board",
     "muscles": [
       "glutes"
     ],
@@ -5370,7 +5370,7 @@
   {
     "id": "ea_balance_board_lateral_squat",
     "title": "Balance Board Lateral Squat",
-    "equipmentId": null,
+    "equipmentId": "balance_board",
     "muscles": [
       "quads",
       "glutes",
@@ -23677,7 +23677,7 @@
   {
     "id": "ea_chest_dip_machine",
     "title": "Chest Dip Machine",
-    "equipmentId": null,
+    "equipmentId": "seated_dip_machine",
     "muscles": [
       "chest",
       "triceps",
@@ -24345,7 +24345,7 @@
   {
     "id": "ea_child_pose_elbows_on_block",
     "title": "Child Pose Elbows on Block",
-    "equipmentId": null,
+    "equipmentId": "yoga_blocks",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -25743,7 +25743,7 @@
   {
     "id": "ea_crescent_moon_pose_quad_stretch_with_block",
     "title": "Crescent Moon Pose Quad Stretch with Block",
-    "equipmentId": null,
+    "equipmentId": "yoga_blocks",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -26304,7 +26304,7 @@
   {
     "id": "ea_crunch_on_bosu_ball",
     "title": "Crunch (on Bosu Ball)",
-    "equipmentId": null,
+    "equipmentId": "bosu_ball",
     "muscles": [
       "core",
       "lower_back",
@@ -26597,7 +26597,7 @@
   {
     "id": "ea_curtsy_lunge_slide_with_towel",
     "title": "Curtsy Lunge Slide with Towel",
-    "equipmentId": null,
+    "equipmentId": "sliding_disc",
     "muscles": [
       "quads",
       "glutes",
@@ -38420,7 +38420,7 @@
   {
     "id": "ea_dumbbell_supported_sissy_squat",
     "title": "Dumbbell Supported Sissy Squat",
-    "equipmentId": null,
+    "equipmentId": "sissy_squat_machine",
     "muscles": [
       "quads",
       "lower_back",
@@ -40160,7 +40160,7 @@
   {
     "id": "ea_extended_side_angle_pose_with_block",
     "title": "Extended Side Angle Pose with Block",
-    "equipmentId": null,
+    "equipmentId": "yoga_blocks",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -47883,7 +47883,7 @@
   {
     "id": "ea_lateral_sled_drag",
     "title": "Lateral Sled Drag",
-    "equipmentId": null,
+    "equipmentId": "weighted_sled",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -49788,7 +49788,7 @@
   {
     "id": "ea_machine_lateral_raise",
     "title": "Machine Lateral Raise",
-    "equipmentId": null,
+    "equipmentId": "lateral_raise_machine",
     "muscles": [
       "shoulders",
       "traps"
@@ -50406,7 +50406,7 @@
   {
     "id": "ea_multi_hip_glute_extension",
     "title": "Multi Hip Glute Extension",
-    "equipmentId": null,
+    "equipmentId": "multi_hip_machine",
     "muscles": [
       "glutes",
       "hamstrings",
@@ -53538,7 +53538,7 @@
   {
     "id": "ea_pyramid_pose_blocks",
     "title": "Pyramid Pose Blocks",
-    "equipmentId": null,
+    "equipmentId": "yoga_blocks",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -53560,7 +53560,7 @@
   {
     "id": "ea_pyramid_pose_calf_blocks",
     "title": "Pyramid Pose Calf Blocks",
-    "equipmentId": null,
+    "equipmentId": "yoga_blocks",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -53742,7 +53742,7 @@
   {
     "id": "ea_rebounder_high_knee_runs",
     "title": "Rebounder High Knee Runs",
-    "equipmentId": null,
+    "equipmentId": "mini_trampoline",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -53764,7 +53764,7 @@
   {
     "id": "ea_rebounder_in_out_from_ground",
     "title": "Rebounder in & Out From Ground",
-    "equipmentId": null,
+    "equipmentId": "mini_trampoline",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -53786,7 +53786,7 @@
   {
     "id": "ea_rebounder_in_out_jacks",
     "title": "Rebounder in & Out Jacks",
-    "equipmentId": null,
+    "equipmentId": "mini_trampoline",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -53808,7 +53808,7 @@
   {
     "id": "ea_rebounder_knee_jumps",
     "title": "Rebounder Knee Jumps",
-    "equipmentId": null,
+    "equipmentId": "mini_trampoline",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -53830,7 +53830,7 @@
   {
     "id": "ea_rebounder_knee_pushes",
     "title": "Rebounder Knee Pushes",
-    "equipmentId": null,
+    "equipmentId": "mini_trampoline",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -53852,7 +53852,7 @@
   {
     "id": "ea_rebounder_light_jumps",
     "title": "Rebounder Light Jumps",
-    "equipmentId": null,
+    "equipmentId": "mini_trampoline",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -55956,7 +55956,7 @@
   {
     "id": "ea_ring_dips",
     "title": "Ring Dips",
-    "equipmentId": null,
+    "equipmentId": "gymnastic_rings",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -56188,7 +56188,7 @@
   {
     "id": "ea_sandbag_cleans",
     "title": "Sandbag Cleans",
-    "equipmentId": null,
+    "equipmentId": "sandbag",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -59018,7 +59018,7 @@
   {
     "id": "ea_sled_drag_and_row",
     "title": "Sled Drag and Row",
-    "equipmentId": null,
+    "equipmentId": "weighted_sled",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -62738,7 +62738,7 @@
   {
     "id": "ea_triceps_dip_machine",
     "title": "Triceps Dip Machine",
-    "equipmentId": null,
+    "equipmentId": "seated_dip_machine",
     "muscles": [
       "triceps",
       "shoulders",
@@ -62809,7 +62809,7 @@
   {
     "id": "ea_tyre_flip",
     "title": "Tyre Flip",
-    "equipmentId": null,
+    "equipmentId": "tyre",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -62831,7 +62831,7 @@
   {
     "id": "ea_tyre_hammering",
     "title": "Tyre Hammering",
-    "equipmentId": null,
+    "equipmentId": "tyre",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",

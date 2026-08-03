@@ -131,6 +131,11 @@ ${kCanonicalMachines.join(', ')}''';
   /// Canonical EN names the prompt offers. Kept in one place and asserted
   /// against the alias index by the test suite, so a registry rename cannot
   /// silently break the prompt.
+  ///
+  /// 2026-08-03: 4 machines (`stability ball` .. `parallettes`) had been in
+  /// `equipment.json` for a while without ever being added here -- the camera
+  /// could not recognise them even though their pages already existed. Found
+  /// while re-syncing this list for the batch below; fixed in the same pass.
   @visibleForTesting
   static const List<String> kCanonicalMachines = [
     'treadmill', 'rowing machine', 'squat rack', 'bench press station',
@@ -147,6 +152,14 @@ ${kCanonicalMachines.join(', ')}''';
     'flat bench', 'ez curl bar', 'weight plates', 'resistance bands',
     'suspension trainer', 'medicine ball', 'battle ropes', 'plyo box',
     'punching bag', 'foam roller',
+    // previously missing (2026-08-03 drift fix)
+    'stability ball', 'skipping rope', 'ab wheel', 'parallettes',
+    // new, 2026-08-03: real equipment found in the vendor pack's own clips
+    // (core/EQUIPMENT_GAP_ITEMS_2026-08-03.csv), not external stock names
+    'seated dip machine', 'multi hip machine', 'lateral raise machine',
+    'sissy squat machine', 'agility ladder', 'mini trampoline',
+    'balance board', 'yoga blocks', 'weighted sled', 'ab mat', 'bosu ball',
+    'sliding discs', 'sandbag', 'gymnastic rings', 'tyre',
   ];
 
   /// Parses the model's JSON (tolerating ```json fences) and resolves every

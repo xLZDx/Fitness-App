@@ -99,6 +99,29 @@ void main() {
     }
   });
 
+  test('every registry machine is reachable through the prompt', () {
+    // The other direction of the check above. 2026-08-03: `equipment.json`
+    // grew to 52 while `kCanonicalMachines` stayed at 48 for an unknown
+    // number of commits -- the check above never caught it because it only
+    // ever walked the (smaller, stale) prompt list. Four machines
+    // (stability ball, skipping rope, ab wheel, parallettes) had real pages
+    // the camera could never return. This walks the registry instead, so a
+    // future rename or addition that forgets the prompt fails here first.
+    final equipmentIds =
+        (jsonDecode(File('assets/data/equipment.json').readAsStringSync())
+                as List)
+            .cast<Map<String, dynamic>>()
+            .map((e) => e['id'] as String)
+            .toSet();
+    final reachable = GeminiVisualEquipmentService.kCanonicalMachines
+        .map(index.resolve)
+        .whereType<String>()
+        .toSet();
+    final unreachable = equipmentIds.difference(reachable).toList()..sort();
+    expect(unreachable, isEmpty,
+        reason: 'the camera can never return these machines: $unreachable');
+  });
+
   test('the prompt tells the model to look at the CENTER of the frame', () {
     // Operator: machines stand shoulder to shoulder in a real gym; framing
     // one alone is impossible. The center rule is the contract.

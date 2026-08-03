@@ -217,18 +217,19 @@ void main() {
     // that stayed unresolved are core/vendor_equipment_needs_review.csv.
     test('most exercises resolve, most machines get at least one', () {
       final linked = parsed.where((e) => e.equipmentId != null).length;
-      // 58% by name alone; the visual pass reached 1,330/1,887 -- kept as a
-      // floor so a regression is caught without re-pinning an exact count
+      // 58% by name alone; the visual pass reached 1,330/1,887, then 1,372
+      // once the registry grew from 52 to 67 machines (2026-08-03) -- kept as
+      // a floor so a regression is caught without re-pinning an exact count
       // every time the review list moves it by one or two.
-      expect(linked, greaterThanOrEqualTo(1300));
+      expect(linked, greaterThanOrEqualTo(1370));
 
       final machinesCovered =
           parsed.map((e) => e.equipmentId).whereType<String>().toSet();
-      // 4 of 52 are a genuine gap in the purchased library, not a pipeline
+      // 4 of 67 are a genuine gap in the purchased library, not a pipeline
       // miss -- confirmed by hand: recumbent_bike (only an upright exercise
       // bike exists), glute_kickback_machine (only cable/dumbbell/band
       // variants), t_bar_row, rotary_torso_machine.
-      expect(machinesCovered.length, greaterThanOrEqualTo(48));
+      expect(machinesCovered.length, greaterThanOrEqualTo(63));
     });
 
     test('every equipmentId assigned is a real registry machine', () {

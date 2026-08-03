@@ -362,5 +362,110 @@
   "manufacturer": "Any",
   "category": "bodyweight",
   "description": "Low parallel bars for push-ups, L-sits and handstand work at deeper range."
+ },
+ {
+  "id": "seated_dip_machine",
+  "name": "Seated dip machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Seated, plate-loaded lever machine that presses down against resistance -- chest, shoulders and triceps."
+ },
+ {
+  "id": "multi_hip_machine",
+  "name": "Multi hip machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Standing lever machine with a leg strap for hip flexion, extension, abduction and adduction against a weight stack."
+ },
+ {
+  "id": "lateral_raise_machine",
+  "name": "Lateral raise machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Seated machine with arm pads that raises the arms out to the sides against resistance -- isolates the shoulders."
+ },
+ {
+  "id": "sissy_squat_machine",
+  "name": "Sissy squat machine",
+  "manufacturer": "Any",
+  "category": "strength",
+  "description": "Frame with an ankle brace that lets the body lean back on straight hips while the knees bend -- isolates the quads."
+ },
+ {
+  "id": "agility_ladder",
+  "name": "Agility ladder",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Flat floor ladder used for fast footwork, speed and coordination drills."
+ },
+ {
+  "id": "mini_trampoline",
+  "name": "Mini trampoline",
+  "manufacturer": "Any",
+  "category": "cardio",
+  "description": "Small round trampoline for low-impact jumping cardio."
+ },
+ {
+  "id": "balance_board",
+  "name": "Balance board",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Unstable board that tilts or rocks, used to train ankle and core stability."
+ },
+ {
+  "id": "yoga_blocks",
+  "name": "Yoga blocks",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Firm rectangular blocks that extend your reach or support a pose in stretching and yoga."
+ },
+ {
+  "id": "weighted_sled",
+  "name": "Weighted sled",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Loaded sled pushed or dragged across the floor for full-body conditioning."
+ },
+ {
+  "id": "ab_mat",
+  "name": "Ab mat",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Small padded wedge placed under the lower back to increase range of motion on sit-ups and crunches."
+ },
+ {
+  "id": "bosu_ball",
+  "name": "Bosu ball",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Half-dome balance trainer, flat side up or down, used for unstable-surface strength and balance work."
+ },
+ {
+  "id": "sliding_disc",
+  "name": "Sliding discs",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Small flat discs placed under hands or feet that glide on the floor, adding an unstable, low-impact resistance element."
+ },
+ {
+  "id": "sandbag",
+  "name": "Sandbag",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Flexible, shifting-weight bag used for cleans, carries and full-body strength work."
+ },
+ {
+  "id": "gymnastic_rings",
+  "name": "Gymnastic rings",
+  "manufacturer": "Any",
+  "category": "bodyweight",
+  "description": "Suspended rings for dips, rows and holds that add instability to bodyweight training."
+ },
+ {
+  "id": "tyre",
+  "name": "Tyre",
+  "manufacturer": "Any",
+  "category": "functional",
+  "description": "Large vehicle tyre flipped, dragged or struck with a sledgehammer for full-body strength and conditioning."
  }
 ]
