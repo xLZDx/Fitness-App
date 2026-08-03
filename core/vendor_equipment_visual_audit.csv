@@ -639,7 +639,7 @@ ea_calf_raise_leg_press_machine,Calf Raise Leg Press Machine,,"Leg press machine
 ea_calf_raise_on_hack_squat_machine,Calf Raise on Hack Squat Machine,,Hack squat machine,1.0,,Hack squat machine,resolved,
 ea_calf_raise_with_wall_support,Calf Raise with Wall Support,,wall,1.0,,none,unresolved,
 ea_calf_stretch_with_hands_against_wall,Calf Stretch with Hands Against Wall,Yoga Mat,Wall,1.0,False,none,DISAGREEMENT,
-ea_calf_stretch_with_rope,Calf Stretch with Rope,Yoga Mat,resistance band,1.0,False,Resistance bands,DISAGREEMENT,
+ea_calf_stretch_with_rope,Calf Stretch with Rope,Yoga Mat,resistance band,1.0,False,Resistance bands,resolved,"batch 2, promoted on manual review (poster frame hides the held implement; title + sheet agree): "
 ea_calve_stretch_foot_on_wall,Calve Stretch Foot on Wall,,wall,1.0,,none,unresolved,
 ea_calve_stretch_from_wall_to_floor,Calve Stretch From Wall to Floor,,wall,1.0,,none,unresolved,
 ea_calves_stretch_on_stairs,Calves Stretch on Stairs,Yoga Mat,stairs,1.0,False,none,DISAGREEMENT,
@@ -856,7 +856,7 @@ ea_dumbbell_feet_elevated_figure_four_glute_bridge,Dumbbell Feet Elevated Figure
 ea_dumbbell_feet_elevated_glute_bridge,Dumbbell Feet Elevated Glute Bridge,"Dumbbell, Box","Dumbbell, Box",1.0,True,Dumbbells,resolved,
 ea_dumbbell_feet_elevated_single_leg_glute_bridge,Dumbbell Feet Elevated Single Leg Glute Bridge,"Dumbbell, Box",Box,1.0,False,Plyo box,resolved,promoted on manual review: 
 ea_dumbbell_feet_elevated_staggered_glute_bridge,Dumbbell Feet Elevated Staggered Glute Bridge,"Dumbbell, Box",Box,0.9,False,Plyo box,resolved,promoted on manual review: 
-ea_dumbbell_figure_four_glute_bridge,Dumbbell Figure Four Glute Bridge,Dumbbell,none,1.0,False,none,DISAGREEMENT,
+ea_dumbbell_figure_four_glute_bridge,Dumbbell Figure Four Glute Bridge,Dumbbell,none,1.0,False,Dumbbells,resolved,"batch 2, promoted on manual review (poster frame hides the held implement; title + sheet agree): "
 ea_dumbbell_figure_four_hip_thrust,Dumbbell Figure Four Hip Thrust,"Bench, Dumbbell",Bench,0.95,False,Weight bench,resolved,promoted on manual review: 
 ea_dumbbell_floor_fly,Dumbbell Floor Fly,Dumbbells,Dumbbells,1.0,True,Dumbbells,resolved,
 ea_dumbbell_fly_flat_bench,Dumbbell Fly Flat Bench,Dumbbells,"Dumbbells, Weight bench",1.0,True,Weight bench,resolved,
@@ -869,11 +869,11 @@ ea_dumbbell_front_raise_version_2,Dumbbell Front Raise (version 2),Dumbbells,Dum
 ea_dumbbell_front_squat,Dumbbell Front Squat,Dumbbells,Dumbbells,1.0,True,Dumbbells,resolved,
 ea_dumbbell_glute_bridge,Dumbbell Glute Bridge,Dumbbells,Dumbbell,1.0,True,Dumbbells,resolved,
 ea_dumbbell_goblet_2_sec_hold_squat,Dumbbell Goblet 2 Sec Hold Squat,Dumbbells,Dumbbell,1.0,True,Dumbbells,resolved,
-ea_dumbbell_goblet_curtsy_lunge,Dumbbell Goblet Curtsy Lunge,Dumbbells,none,0.9,False,none,DISAGREEMENT,
+ea_dumbbell_goblet_curtsy_lunge,Dumbbell Goblet Curtsy Lunge,Dumbbells,none,0.9,False,Dumbbells,resolved,"batch 2, promoted on manual review (poster frame hides the held implement; title + sheet agree): "
 ea_dumbbell_goblet_forward_lunge,Dumbbell Goblet Forward Lunge,Dumbbells,Dumbbell,1.0,True,Dumbbells,resolved,
 ea_dumbbell_goblet_good_morning,Dumbbell Goblet Good Morning,,none,0.9,,none,confirmed_no_equipment,
 ea_dumbbell_goblet_reverse_lunge,Dumbbell Goblet Reverse Lunge,,dumbbell,1.0,,Dumbbells,resolved,
-ea_dumbbell_goblet_split_squat,Dumbbell Goblet Split Squat,Dumbbells,none,0.95,False,none,DISAGREEMENT,
+ea_dumbbell_goblet_split_squat,Dumbbell Goblet Split Squat,Dumbbells,none,0.95,False,Dumbbells,resolved,"batch 2, promoted on manual review (poster frame hides the held implement; title + sheet agree): "
 ea_dumbbell_goblet_split_squat_front_foot_elevanted,Dumbbell Goblet Split Squat Front Foot Elevanted,Dumbbells,"Dumbbell, Step platform",1.0,True,Dumbbells,resolved,
 ea_dumbbell_goblet_squat,Dumbbell Goblet Squat,Dumbbells,Dumbbell,1.0,True,Dumbbells,resolved,
 ea_dumbbell_half_biceps_curl_for_21s,Dumbbell Half Biceps Curl For 21s,Dumbbells,Dumbbells,1.0,True,Dumbbells,resolved,
@@ -1317,7 +1317,7 @@ ea_kettlebell_skull_crusher,Kettlebell Skull Crusher,,"Kettlebell, Weight bench"
 ea_kettlebell_sled_drag,Kettlebell Sled Drag,,"kettlebell, sled, rope",1.0,,Kettlebell,resolved,
 ea_kettlebell_snatch,Kettlebell Snatch,,Kettlebell,1.0,,Kettlebell,resolved,
 ea_kettlebell_split_squat,Kettlebell Split Squat,Kettlebells,Kettlebells,1.0,True,Kettlebell,resolved,
-ea_kettlebell_squats,Kettlebell Squats,Kettlebells,none,1.0,False,none,DISAGREEMENT,
+ea_kettlebell_squats,Kettlebell Squats,Kettlebells,none,1.0,False,Kettlebell,resolved,"batch 2, promoted on manual review (poster frame hides the held implement; title + sheet agree): "
 ea_kettlebell_staggered_deadlift,Kettlebell Staggered Deadlift,,kettlebells,1.0,,Kettlebell,resolved,
 ea_kettlebell_standing_bottoms_up_one_arm_shoulder_press,Kettlebell Standing Bottoms-up One Arm Shoulder Press,Kettlebells,Kettlebell,1.0,True,Kettlebell,resolved,
 ea_kettlebell_standing_tricep_extension,Kettlebell Standing Tricep Extension,,Kettlebell,1.0,,Kettlebell,resolved,

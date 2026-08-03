@@ -1,0 +1,45 @@
+group,id,title,what_is_actually_shown,note
+seated dip/triceps machine,ea_chest_dip_machine,Chest Dip Machine,"seated, plate-loaded lever machine with a weight stack",verified by poster; looks like the same machine class as the next row, different brand/angle
+seated dip/triceps machine,ea_triceps_dip_machine,Triceps Dip Machine,"seated, plate-loaded lever machine with a weight stack",verified by poster; near-identical rig to Chest Dip Machine -- likely one canonical machine, two clips
+multi hip machine,ea_multi_hip_glute_extension,Multi Hip Glute Extension,"standing lever/cable machine, leg strap, weight stack",verified by poster; distinct from the registry's seated hip_abductor_adductor
+lateral raise machine,ea_machine_lateral_raise,Machine Lateral Raise,"seated machine, arm pads, weight stack, lateral-raise motion",verified by poster; distinct from shoulder_press_machine and pec_deck
+sissy squat machine,ea_dumbbell_supported_sissy_squat,Dumbbell Supported Sissy Squat,"dedicated sissy-squat frame with ankle brace; dumbbell is only a counterweight",verified by poster in the equipment-linking pass; not a dumbbell exercise at heart
+agility ladder,ea_agility_ladder_advanced_hop_position,Agility Ladder Advanced Hop Position,flat agility ladder on the floor,name is self-explanatory
+agility ladder,ea_agility_ladder_advanced_single_leg,Agility Ladder Advanced Single-leg,flat agility ladder on the floor,
+agility ladder,ea_agility_ladder_advancing_laterally_switching_base,Agility Ladder Advancing Laterally Switching Base,flat agility ladder on the floor,
+agility ladder,ea_agility_ladder_in_in_out_out,Agility Ladder in in Out Out,flat agility ladder on the floor,
+agility ladder,ea_agility_ladder_in_in_out_out_moving_laterally,Agility Ladder in in Out Out Moving Laterally,flat agility ladder on the floor,
+agility ladder,ea_agility_ladder_in_in_out_out_with_knee_lift,Agility Ladder in in Out Out with Knee Lift,flat agility ladder on the floor,
+agility ladder,ea_agility_ladder_lateral_movement_in_in_out,Agility Ladder Lateral Movement in in Out,flat agility ladder on the floor,
+agility ladder,ea_agility_ladder_lateral_movement_with_double_hop,Agility Ladder Lateral Movement with Double Hop,flat agility ladder on the floor,
+agility ladder,ea_agility_ladder_skipping_1_touch,Agility Ladder Skipping 1 Touch,flat agility ladder on the floor,
+agility ladder,ea_agility_ladder_skipping_2_touches,Agility Ladder Skipping 2 Touches,flat agility ladder on the floor,
+mini trampoline / rebounder,ea_rebounder_high_knee_runs,Rebounder High Knee Runs,round mini trampoline,name is self-explanatory
+mini trampoline / rebounder,ea_rebounder_in_out_from_ground,Rebounder in & Out From Ground,round mini trampoline,
+mini trampoline / rebounder,ea_rebounder_in_out_jacks,Rebounder in & Out Jacks,round mini trampoline,
+mini trampoline / rebounder,ea_rebounder_knee_jumps,Rebounder Knee Jumps,round mini trampoline,
+mini trampoline / rebounder,ea_rebounder_knee_pushes,Rebounder Knee Pushes,round mini trampoline,
+mini trampoline / rebounder,ea_rebounder_light_jumps,Rebounder Light Jumps,round mini trampoline,
+balance board,ea_balance_board_lateral_squat,Balance Board Lateral Squat,wobble/balance board,name is self-explanatory
+balance board,ea_balance_board_version_2,Balance Board (version 2),wobble/balance board,
+yoga block(s),ea_pyramid_pose_blocks,Pyramid Pose Blocks,grey rectangular yoga block(s) on the floor,name is self-explanatory
+yoga block(s),ea_child_pose_elbows_on_block,Child Pose Elbows on Block,grey rectangular yoga block,
+yoga block(s),ea_crescent_moon_pose_quad_stretch_with_block,Crescent Moon Pose Quad Stretch with Block,grey rectangular yoga block,
+yoga block(s),ea_extended_side_angle_pose_with_block,Extended Side Angle Pose with Block,grey rectangular yoga block,
+yoga block(s),ea_pyramid_pose_calf_blocks,Pyramid Pose Calf Blocks,"two stacked grey blocks under the feet -- verified by poster, same object as the other yoga-block rows",vision had labelled this one separately as 'calf blocks'; it is the same prop
+weighted sled,ea_lateral_sled_drag,Lateral Sled Drag,weighted sled with rope/handle,name is self-explanatory
+weighted sled,ea_sled_drag_and_row,Sled Drag and Row,weighted sled with rope/handle,
+ab mat,ea_ab_mat_sit_up,Ab Mat Sit-up,"small padded wedge under the lower back, verified by poster",distinct from a yoga mat and from anything in the registry
+bosu ball,ea_crunch_on_bosu_ball,Crunch (on Bosu Ball),half-dome balance ball,name is self-explanatory
+sliding disc,ea_curtsy_lunge_slide_with_towel,Curtsy Lunge Slide with Towel,"a small flat gliding disc under the foot, verified by poster -- despite the title saying 'towel'",the render shows an actual disc, not fabric
+sandbag,ea_sandbag_cleans,Sandbag Cleans,sandbag,name is self-explanatory
+gymnastic rings,ea_ring_dips,Ring Dips,suspended gymnastic rings,name is self-explanatory
+tyre,ea_tyre_flip,Tyre Flip,large tyre,name is self-explanatory
+tyre + sledgehammer,ea_tyre_hammering,Tyre Hammering,tyre and a sledgehammer,name is self-explanatory
+vertical pole,ea_fixed_bar_stretch,Fixed Bar Stretch,"fixed vertical post, held at chest height while seated/leaning -- verified by poster",not a pull-up bar (that is horizontal, overhead)
+vertical pole,ea_dragonfly,Dragonfly,"same vertical post, gripped at floor level, body held horizontal -- verified by poster",same object as the row above
+push-up blocks/risers,ea_elevated_push_up,Elevated Push Up,"two rectangular push-up risers under the hands, verified by poster",closest registry relative is parallettes but these are solid blocks, not bars -- judgement call, left as a gap
+aerobic step platform,ea_decline_kneeling_push_up,Decline Kneeling Push Up,"tiered aerobic step platform under the feet, verified by poster",closest registry relative is plyo_box but this is a stepped platform, not a single box -- judgement call, left as a gap
+outdoor park equipment,ea_air_swing_running,Air Swing Running,outdoor public-park air-walker unit,out of scope for an indoor commercial-gym registry
+outdoor park equipment,ea_air_swing_side_to_side_swing,Air Swing Side to Side Swing,outdoor public-park air-walker unit,out of scope
+outdoor park equipment,ea_air_swing_walking,Air Swing Walking,outdoor public-park air-walker unit,out of scope

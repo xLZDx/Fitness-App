@@ -1,10 +1,6 @@
 id,title,sheet_claim,equipment_seen,confidence,matches_sheet_claim,registry_machine,status,note
-ea_dumbbell_figure_four_glute_bridge,Dumbbell Figure Four Glute Bridge,Dumbbell,none,1.0,False,none,DISAGREEMENT,
-ea_dumbbell_goblet_curtsy_lunge,Dumbbell Goblet Curtsy Lunge,Dumbbells,none,0.9,False,none,DISAGREEMENT,
-ea_dumbbell_goblet_split_squat,Dumbbell Goblet Split Squat,Dumbbells,none,0.95,False,none,DISAGREEMENT,
 ea_dumbbell_standing_wrist_curl,Dumbbell Standing Wrist Curl,Dumbbells,Barbell,1.0,False,none,DISAGREEMENT,"REJECTED on manual review: poster clearly shows dumbbells, not a barbell"
 ea_dumbbell_supported_sissy_squat,Dumbbell Supported Sissy Squat,Dumbbells,Sissy squat machine,1.0,False,none,DISAGREEMENT,
-ea_kettlebell_squats,Kettlebell Squats,Kettlebells,none,1.0,False,none,DISAGREEMENT,
 ea_ab_mat_sit_up,Ab Mat Sit-up,,Ab mat,1.0,,none,unresolved,
 ea_agility_ladder_advanced_hop_position,Agility Ladder Advanced Hop Position,,Agility ladder,1.0,,none,unresolved,
 ea_agility_ladder_advanced_single_leg,Agility Ladder Advanced Single-leg,,agility ladder,1.0,,none,unresolved,

@@ -7,7 +7,7 @@ question (what IS this machine); this is the one the machine detail page
 actually depends on.
 
 CSV twins: `core/vendor_equipment_visual_audit.csv` (all 1,887, full trail),
-`core/vendor_equipment_needs_review.csv` (90 rows still open).
+`core/vendor_equipment_needs_review.csv` (86 rows still open, after batch 2).
 
 ---
 
@@ -62,11 +62,16 @@ doesn't.
 
 | | |
 |---|---|
-| resolved to a specific machine | **1,330 / 1,887 (70%)** |
+| resolved to a specific machine | **1,335 / 1,887 (71%)**, was 1,330 before batch 2 |
 | confirmed no equipment (correct, not a problem) | 436 |
 | unresolved — no registry match | 84 |
-| needed a manual look (disagreement) | 96 → resolved by eye |
+| needed a manual look (disagreement), raw model output | 56 → resolved by eye across two batches |
 | **registry machines with ≥1 vendor exercise** | **48 / 52** |
+
+(The first version of this table said "96" for the disagreement row — a
+digit-transposition typo caught while re-deriving these numbers from the CSV
+for batch 2, not a re-measurement. The raw model output was 56; 1,311 + 436 +
+84 + 56 = 1,887 is the actual arithmetic.)
 
 ### The 96 disagreements, by hand
 
@@ -112,10 +117,69 @@ Confirmed by direct search, not inferred from the null count:
 home" filter) is untouched — both fields now coexist on every linked entry.
 16 new tests in `vendor_catalog_test.dart`. Full suite green.
 
+## Batch 2 — "what's with the remaining 557"
+
+Operator: *"я хочу понять что с оставшимися 537 упражнений, у них нет
+тренажеров или таких тренажеров нет в нашей базе из 52?"*. Re-derived the
+real number from `core/vendor_equipment_visual_audit.csv` rather than from
+memory: 1,887 − 1,330 = **557**, split `resolved / confirmed_no_equipment(436)
+/ unresolved(84) / DISAGREEMENT(37)`.
+
+The 37 still labelled `DISAGREEMENT` are not one thing: **31 of them are the
+same "Yoga Mat" sheet-noise stretches already excluded from the review list**
+in batch 1 — their status field was just never cleaned up after the noise fix,
+which is cosmetic, not open work. The other **6 are the genuine sheet-vs-vision
+conflicts** batch 1's manual pass should have covered and didn't.
+
+Looked at the poster for each of those 6 directly:
+
+- **4 resolved now** — `Kettlebell Squats`, `Dumbbell Figure Four Glute
+  Bridge`, `Dumbbell Goblet Curtsy Lunge`, `Dumbbell Goblet Split Squat`. The
+  render pack's "goblet hold" / "resting on hip" poses don't draw the held
+  implement at all — title and the vendor sheet both agree on what it is, the
+  frame just can't show it. Applied as `kettlebell` / `dumbbell`.
+- **1 stays a genuine gap** — `Dumbbell Supported Sissy Squat`: the poster
+  shows a dedicated sissy-squat frame, the dumbbell is only a counterweight.
+  No matching machine in the 52; correctly left unlinked.
+- **1 stays rejected** — `Dumbbell Standing Wrist Curl` (batch 1's finding,
+  unchanged).
+
+Also found, while re-deriving these counts, a row the noise-fix had silently
+dropped: `Calf Stretch with Rope` — vision had already answered "Resistance
+bands" (a real registry name) during batch 1, but the row's sheet value was
+the noise token `"Yoga Mat"`, so it was excluded from the review list without
+ever being promoted. It sat unresolved for no reason for one whole cycle.
+Applied as `resistance_bands`, flagged here rather than silently — the title
+says "Rope", so this is a judgement call (a stretch strap is functionally the
+same tool as the registry's elastic band) more than a certain read.
+
+Net: **1,335 / 1,887 (71%)**, machine coverage unchanged at 48/52 (all three
+implements already had other exercises linked to them).
+
+The rest of the 557 breaks down like this, from the actual `equipment_seen`
+text on the 84 `unresolved` rows, not a guess:
+
+| | count | what it means |
+|---|---|---|
+| genuinely no equipment | 436 + 31 | correct — not a gap |
+| prop, not gym gear (wall, chair, couch, doorway, water bottle...) | 41 | correct call to leave unlinked; a wall isn't purchasable equipment |
+| real equipment, absent from the 52 | 36 | agility ladder (10), mini trampoline (6), yoga blocks (4), balance board (2), sled (2), + bosu/slider/rings/sandbag/tyre/ab-mat/step-bench singles |
+| a real, distinct machine close to but not the same as a registry entry | 4 | seated dip machine, triceps dip machine, multi-hip machine, lateral-raise station |
+| outdoor/park equipment, out of scope | 3 | air-walker-type outdoor units |
+
+Every one of the 44 in the "real equipment" rows (36 + 4 + a genuine
+sissy-squat gap surfaced separately), by exercise id, with a poster-verified
+note where the free-text label alone was ambiguous:
+`core/EQUIPMENT_GAP_ITEMS_2026-08-03.csv`. Two corrections came out of that
+pass: `Pyramid Pose Calf Blocks` is the same yoga block as the other four
+block rows, not a separate prop; and `Chest Dip Machine` / `Triceps Dip
+Machine` are the same real machine type shot twice, not two.
+
 ## Still open
 
-90 rows in `core/vendor_equipment_needs_review.csv`: 84 where nothing in the
-registry matches what the clip shows, 6 where I deliberately withheld a link
-(the wrist-curl rejection, plus 5 where vision correctly found nothing
-distinctive to go on). None of these block the next gate — they are exercises
-that either need no machine page or need a second look later.
+86 rows in `core/vendor_equipment_needs_review.csv` (was 90 before batch 2):
+84 where nothing in the registry matches what the clip shows, 2 where a link
+was deliberately withheld (the wrist-curl rejection, the sissy-squat genuine
+gap). None of these block the next gate — batch 2's breakdown above shows
+most of the 84 are either non-equipment props or real gear that would need a
+new registry entry to link, not a matching miss.

@@ -22861,7 +22861,7 @@
   {
     "id": "ea_calf_stretch_with_rope",
     "title": "Calf Stretch with Rope",
-    "equipmentId": null,
+    "equipmentId": "resistance_bands",
     "muscles": [
       "calves",
       "hamstrings"
@@ -30410,7 +30410,7 @@
   {
     "id": "ea_dumbbell_figure_four_glute_bridge",
     "title": "Dumbbell Figure Four Glute Bridge",
-    "equipmentId": null,
+    "equipmentId": "dumbbell",
     "muscles": [
       "glutes",
       "hamstrings",
@@ -30885,7 +30885,7 @@
   {
     "id": "ea_dumbbell_goblet_curtsy_lunge",
     "title": "Dumbbell Goblet Curtsy Lunge",
-    "equipmentId": null,
+    "equipmentId": "dumbbell",
     "muscles": [
       "quads",
       "glutes",
@@ -31011,7 +31011,7 @@
   {
     "id": "ea_dumbbell_goblet_split_squat",
     "title": "Dumbbell Goblet Split Squat",
-    "equipmentId": null,
+    "equipmentId": "dumbbell",
     "muscles": [
       "quads",
       "glutes",
@@ -45740,7 +45740,7 @@
   {
     "id": "ea_kettlebell_squats",
     "title": "Kettlebell Squats",
-    "equipmentId": null,
+    "equipmentId": "kettlebell",
     "muscles": [
       "quads",
       "glutes",

@@ -2,12 +2,12 @@ section,item,value,note
 problem,machine detail pages before this gate,0/1887 vendor exercises had equipmentId,every one of 52 pages fell back to AI text with no video
 method,"first pass: name + sheet, via alias index","1088/1887, 44/52 machines",not trusted - operator: verify everything
 method,"second pass: independent vision per exercise, one call each",1887/1887 checked,
-result,resolved to a specific registry machine,1330/1887,70%
+result,resolved to a specific registry machine (after batch 2),1335/1887,71%
 result,confirmed no equipment (correct),436,
 result,unresolved - no registry match,84,
 result,registry machines with >=1 vendor exercise,48/52,
 fix,prompt bug: generic implement vs specific station,fixed before full run,Barbell Squat was answering 'Barbell' instead of 'Squat rack'
-review,disagreements between vision and the vendor sheet,96 total,
+review,disagreements between vision and the vendor sheet (raw model output),56 total,corrected from a digit-transposition typo (was written as 96)
 review,of those: sheet noise (Yoga Mat treated as a real claim),~30,fixed - Yoga Mat now excluded like None
 review,of those: real equipment found despite noisy sheet default,9,"confirmed by eye, all promoted"
 review,"of those: genuine sheet-vs-vision conflict, judged by eye",18,"17 promoted (vision right), 1 rejected (vision wrong)"
@@ -16,7 +16,21 @@ gap,recumbent_bike,genuine - library only has an upright exercise bike,Stationar
 gap,glute_kickback_machine,genuine - only cable/band/dumbbell variants exist,
 gap,t_bar_row,genuine - no matching clip,
 gap,rotary_torso_machine,genuine - no matching clip,
-applied,equipmentId written to exercises_vendor.json,1330 entries,
-applied,equipmentLabel preserved alongside,yes,needsEquipment / at-home filter unaffected
+applied,equipmentId written to exercises_vendor.json,1330 entries,batch 1
 tests,new tests in vendor_catalog_test.dart,16,
-remaining,rows in vendor_equipment_needs_review.csv,90,84 unresolved + 6 deliberately withheld
+batch2,trigger,operator asked what the remaining 557 (not 537) actually are,re-derived from CSV not memory
+batch2,status label found stale,31 of 37 DISAGREEMENT rows,same Yoga Mat noise stretches already excluded from review in batch 1 - cosmetic only
+batch2,genuine disagreements batch 1 left unreviewed,6,looked at each poster directly
+batch2,resolved: Kettlebell Squats -> kettlebell,poster pose does not render held item,title + sheet agree
+batch2,resolved: Dumbbell Figure Four Glute Bridge -> dumbbell,poster pose does not render held item,title + sheet agree
+batch2,resolved: Dumbbell Goblet Curtsy Lunge -> dumbbell,poster pose does not render held item,title + sheet agree
+batch2,resolved: Dumbbell Goblet Split Squat -> dumbbell,poster pose does not render held item,title + sheet agree
+batch2,stays a genuine gap: Dumbbell Supported Sissy Squat,dedicated sissy-squat frame in poster,dumbbell is only a counterweight, no matching machine
+batch2,orphan found: Calf Stretch with Rope -> resistance_bands,vision resolved this in batch 1 but noise-filter dropped it before promotion,applied now; title says Rope so this is a judgement call
+applied,equipmentId written to exercises_vendor.json (batch 2),5 entries,kettlebell x1 / dumbbell x3 / resistance_bands x1
+breakdown,of the 557 not linked: genuinely no equipment,436 + 31,not a gap
+breakdown,of the 557 not linked: prop not gym gear (wall/chair/couch/doorway/...),41,correct to leave unlinked
+breakdown,of the 557 not linked: real equipment absent from the 52,36,agility ladder / trampoline / yoga blocks / balance board / sled / bosu / slider / rings / sandbag / tyre / ab-mat / step-bench
+breakdown,of the 557 not linked: real distinct machine close to but not a registry entry,4,seated dip machine / triceps dip machine / multi-hip machine / lateral-raise station
+breakdown,of the 557 not linked: outdoor/park equipment out of scope,3,air-walker-type outdoor units
+remaining,rows in vendor_equipment_needs_review.csv,86,84 unresolved + 2 deliberately withheld (was 90 before batch 2)
