@@ -75,6 +75,6 @@ void main() {
     // up as the rest are re-matched against the vendor library.
     final st = catalog.where((e) => e.isStretch).toList();
     final withVideo = st.where((e) => e.hasVideo).length;
-    expect(withVideo / st.length, greaterThan(0.40));
+    expect(withVideo / st.length, greaterThan(0.60));
   });
 }

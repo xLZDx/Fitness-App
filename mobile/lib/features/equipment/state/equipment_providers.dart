@@ -143,25 +143,28 @@ final allExercisesProvider = FutureProvider<List<ExerciseItem>>((ref) async {
   return List.unmodifiable(withDemonstration(out));
 });
 
-/// A photograph to head the machine's page, or null when nothing real
-/// exists for it.
+/// An image to head the machine's page, or null when nothing real exists.
 ///
-/// Sourced from the machine's own exercises rather than from a stock-photo
-/// service: those are photographs of this exact machine being used, they are
-/// already vendored under the same public-domain licence as the rest of the
-/// catalog, and every URL is one the app already fetches. A stock-photo API
-/// would need a key, an attribution surface, and a second licence to audit —
-/// for a header image that the exercise photos already provide.
+/// **The clip's own poster, and nothing else.** Operator: *"фото должно быть
+/// превью ролика"*.
+///
+/// This used to read `imageUrls` then `frames` — photographs of a man in a gym,
+/// from the free-exercise-db import. They are properly licensed, so this was
+/// never a legal problem; it was the same inconsistency the clip-only rule was
+/// written to end. Every exercise list, every player and every card shows a 3D
+/// render on flat white, and then the machine's header showed a photograph.
+///
+/// A poster is cut from its clip, so this is literally the first frame of a
+/// demonstration this machine actually has. When the machine has no clip there
+/// is no header, which is the honest state — and the scan gate is what makes
+/// that state useful.
 final equipmentHeroImageProvider =
     FutureProvider.family<String?, String>((ref, equipmentId) async {
   final exercises =
       await ref.watch(exercisesForEquipmentProvider(equipmentId).future);
   for (final e in exercises) {
-    if (e.imageUrls.isNotEmpty) return e.imageUrls.first;
-  }
-  // Bundled assets are asset paths, not URLs; the widget picks the loader.
-  for (final e in exercises) {
-    if (e.frames.isNotEmpty) return e.frames.first;
+    final poster = e.posterFor(null);
+    if (poster != null) return poster;
   }
   return null;
 });

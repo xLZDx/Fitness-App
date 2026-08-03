@@ -1,0 +1,314 @@
+id,title,verdict,chosen_clip,vendor_stem,confidence,why
+90_90_hamstring,90/90 Hamstring,none,,,1.0,"Specific single-leg extension from 90/90 position, no direct match."
+air_bike_intervals,Air Bike Intervals,none,,,0.0,"Exercise is an interval pattern, not a single speed."
+alternating_cable_shoulder_press,Alternating Cable Shoulder Press,none,,,1.0,Different equipment or named variant.
+alternating_deltoid_raise,Alternating Deltoid Raise,none,,,1.0,Different equipment or movement angle for all candidates.
+alternating_floor_press,Alternating Floor Press,none,,,0.0,No matching kettlebell alternating floor press
+alternating_hang_clean,Alternating Hang Clean,none,,,0.0,No matching kettlebell alternating hang clean
+alternating_renegade_row,Alternating Renegade Row,none,,,0.0,No matching kettlebell renegade row (dumbbell is different equipment)
+fedb_backward_medicine_ball_throw,Backward Medicine Ball Throw,none,,,1.0,'Backward' specifies a variant; 'Overhead Med Ball Throw' is general.
+vid_band_leg_curl,Band Lying Leg Curl,none,,,1.0,No candidate specifies 'lying' leg curl with a band.
+vid_band_one_arm_forward_raise,Band One-Arm Front Raise,none,,,1.0,"Exercise is one-arm; candidate is ambiguous, likely two-arm."
+vid_band_one_arm_twisting_seated_row,Band One-Arm Twisting Seated Row,none,,,1.0,No candidate includes 'twisting' for a seated band row.
+vid_band_seated_leg_extension,Band Seated Leg Extension,none,,,1.0,"No candidate matches band, seated, and leg extension."
+vid_band_seated_row,Band Seated Row,none,,,1.0,No candidate matches equipment and no variants.
+vid_band_side_triceps_pushdown,Band Side Triceps Pushdown,none,,,1.0,No candidate matches the specific 'side' anchor and movement path.
+vid_band_standing_crunch,Band Standing Crunch,none,,,0.0,No clip matches equipment (band) and position (standing).
+vid_band_standing_lift,Band Standing Lift,none,,,1.0,No candidate matches diagonal band lift movement.
+vid_band_twist,Band Standing Twist,none,,,1.0,No candidate matches standing band horizontal torso twist.
+vid_band_straight_back_seated_row,Band Straight-Back Seated Row,none,,,1.0,No candidate matches specific 'straight-back' variant with band.
+vid_band_triceps_pushdown,Band Triceps Pushdown,none,,,1.0,"No candidate matches band triceps pushdown (bilateral, standing, standard)."
+vid_band_twist_up_down,Band Twist - Up and Down,none,,,1.0,Cable vs Band is different equipment.
+barbell_curls_lying_against_an_incline,Barbell Curls Lying Against An Incline,none,,,1.0,"No candidate matches barbell, curl, and lying incline (supine)."
+barbell_hack_squat,Barbell Hack Squat,none,,,1.0,No candidate matches barbell held behind the body.
+fedb_barbell_incline_shoulder_raise,Barbell Incline Shoulder Raise,none,,,1.0,Specific scapular protraction movement with barbell not found.
+vid_barbell_prone_incline_curl,Barbell Prone Incline Curl,none,,,1.0,"No match: equipment, position, or variant differs"
+fedb_barbell_rear_delt_row,Barbell Rear Delt Row,none,,,1.0,Specific rear delt barbell row form not matched.
+fedb_barbell_rollout_from_bench,Barbell Rollout from Bench,none,,,1.0,Different body position (kneeling on bench vs. floor).
+barbell_walking_lunge,Barbell Walking Lunge,none,,,1.0,Specific 'Walking' variant not found; 'lunges' is too general.
+bench_sprint,Bench Sprint,none,,,1.0,"a bench sprint is fast alternating foot taps, not step-ups"
+fedb_body_tricep_press,Body Tricep Press,none,,,1.0,"Specific bodyweight press against a fixed bar, no match."
+bodyweight_mid_row,Bodyweight Mid Row,none,,,1.0,"Unique movement, no matching candidate."
+bodyweight_walking_lunge,Bodyweight Walking Lunge,none,,,1.0,Specific 'Walking' variant not found; 'Forward Lunge' is different.
+bosu_ball_cable_crunch_with_side_bends,Bosu Ball Cable Crunch With Side Bends,none,,,1.0,"No candidate combines Bosu, Cable, Crunch, and Side Bends."
+fedb_bottoms_up,Bottoms Up,none,,,1.0,"Specific reverse crunch/hip raise, no exact match."
+fedb_box_skip,Box Skip,none,,,0.0,No clip for skipping *with* boxes; 'skipping' is too general.
+fedb_box_squat_with_bands,Box Squat with Bands,none,,,1.0,"No candidate includes both barbell, box, and resistance bands."
+fedb_box_squat_with_chains,Box Squat with Chains,none,,,0.9,chains are absent from the library
+cable_chest_press,Cable Chest Press,none,,,1.0,Different equipment or different movement.
+cable_deadlifts,Cable Deadlifts,none,,,1.0,Different equipment or named variant.
+cable_hammer_curls_rope_attachment,Cable Hammer Curls - Rope Attachment,none,,,1.0,"Different equipment, movement, or named variant."
+vid_cable_one_arm_twisting_seated_row,Cable One-Arm Twisting Seated Row,none,,,1.0,Twisting is a named variant not in candidate.
+vid_cable_pulldown,Cable Pulldown - Close Underhand Grip,none,,,1.0,No candidate specifies both close and underhand grip.
+vid_cable_rear_delt_row_with_rope,Cable Rear Delt Row with a Rope,none,,,1.0,No candidate matches 'rear delt row' and 'rope' attachment.
+vid_cable_pushdown_rope_attachment,Cable Rope Pushdown,none,,,1.0,Specific rope attachment and neutral grip not matched by candidates.
+fedb_cable_russian_twists,Cable Russian Twists,none,,,1.0,Different equipment or body position; 'Cable Twist' is too generic.
+vid_cable_seated_high_row_v_bar,Cable Seated High Row - V-Bar,none,,,1.0,No candidate specifies both high row and V-bar.
+vid_cable_seated_row_parallel_grip,Cable Seated Row - Parallel Grip,none,,,1.0,"V-bar is a specific handle, not generic parallel grip."
+vid_cable_seated_row_wide_grip,Cable Seated Row - Wide Grip,none,,,1.0,No candidate specifies 'wide grip' for a cable seated row.
+fedb_cable_shoulder_press,Cable Shoulder Press,none,,,0.0,No candidate matches a standard standing cable shoulder press.
+vid_cable_standing_lift,Cable Standing Lift,none,,,0.9,a twisting pull is a different movement
+vid_cable_standing_one_arm_triceps_extension,Cable Standing One-Arm Triceps Extension,none,,,1.0,No candidate matches one-arm cable triceps pushdown with supinated grip.
+fedb_calf_raise_on_a_dumbbell,Calf Raise On A Dumbbell,none,,,0.0,No clip for standing on a dumbbell handle for calf raise.
+vid_stretching_chin_to_chest_stretch,Chin-to-Chest Stretch,none,,,1.0,Eagle Arms is a named variant with different arm position.
+fedb_close-grip_dumbbell_press,Close-Grip Dumbbell Press,none,,,1.0,"Unique single dumbbell, two-hand grip, and body position not matched."
+fedb_cross_over_-_with_bands,Cross Over - With Bands,none,,,0.0,No candidate matches a standing resistance band chest crossover/fly.
+vid_crunch_on_bench,Crunch on a Bench,none,,,1.0,All crunch candidates use different equipment or variants.
+fedb_decline_close-grip_bench_to_skull_crusher,Decline Close-Grip Bench To Skull Crusher,none,,,1.0,"No candidate combines decline, close-grip, bench press, and skull crusher with b"
+fedb_decline_dumbbell_triceps_extension,Decline Dumbbell Triceps Extension,none,,,1.0,"Decline body position is a specific variant, not matched by candidates."
+fedb_decline_ez_bar_triceps_extension,Decline EZ Bar Triceps Extension,none,,,1.0,Decline position is different from general lying position.
+fedb_double_kettlebell_alternating_hang_clean,Double Kettlebell Alternating Hang Clean,none,,,0.0,No candidate matches double kettlebell alternating hang clean.
+fedb_double_kettlebell_jerk,Double Kettlebell Jerk,none,,,0.0,No candidate matches double kettlebell jerk movement.
+fedb_double_kettlebell_push_press,Double Kettlebell Push Press,none,,,0.0,No double kettlebell push press. Dumbbell push press is different equipment.
+fedb_double_kettlebell_snatch,Double Kettlebell Snatch,none,,,0.0,No double kettlebell snatch. Single kettlebell snatch is different.
+fedb_double_kettlebell_windmill,Double Kettlebell Windmill,none,,,0.9,"Double Kettlebell implies two KBs, candidate is single KB."
+vid_dumbbell_behind_back_wrist_curl,Dumbbell Behind-the-Back Wrist Curl,none,,,1.0,"No candidate specifies dumbbell, behind-back, and pronated grip."
+fedb_dumbbell_bench_press_with_neutral_grip,Dumbbell Bench Press with Neutral Grip,none,,,1.0,"Neutral grip is a specific variant, not generic bench press."
+vid_dumbbell_fly_on_exercise_ball,Dumbbell Fly on an Exercise Ball,none,,,1.0,No exact match for flat dumbbell fly on exercise ball.
+vid_dumbbell_lying_alternate_extension,Dumbbell Lying Alternating Triceps Extension,none,,,1.0,Alternating is a specific variant not found in candidates.
+vid_dumbbell_lying_hammer_press,Dumbbell Lying Hammer Press,none,,,1.0,No exact match for flat bench hammer press.
+vid_dumbbell_lying_femoral,Dumbbell Lying Leg Curl,none,,,1.0,No dumbbell lying leg curl match; equipment differs.
+vid_dumbbell_palm_rotational_bent_over_row,Dumbbell Palm-Rotational Bent-Over Row,none,,,1.0,No dumbbell bent-over row candidate specifies palm rotation.
+fedb_extended_range_one-arm_kettlebell_floor_press,Extended Range One-Arm Kettlebell Floor Press,none,,,1.0,No kettlebell one-arm floor press; 'extended range' is a variant.
+vid_stretching_feet_and_ankles_stretch,Feet and Ankle Stretch,none,,,1.0,"No match for specific kneeling, tops-of-feet stretch"
+full_range_of_motion_lat_pulldown,Full Range-Of-Motion Lat Pulldown,none,,,1.0,"No candidate matches specific setup (crisscrossed arms, hand rotation)."
+fedb_glute_ham_raise,Glute Ham Raise,none,,,1.0,"Specific machine exercise, no match found."
+fedb_glute_kickback,Glute Kickback,none,,,1.0,All kickback candidates use equipment or are standing.
+fedb_hammer_grip_incline_db_bench_press,Hammer Grip Incline DB Bench Press,none,,,1.0,"Hammer grip is a specific variant, not generic incline press."
+vid_hammer_grip_pull_up,Hammer-Grip Pull-Up,none,,,1.0,Assisted/close grip are variants/different equipment.
+fedb_heavy_bag_thrust,Heavy Bag Thrust,none,,,1.0,No candidate matches the rotational heavy bag pushing movement.
+fedb_hip_extension_with_bands,Hip Extension with Bands,none,,,0.0,"No candidate matches a standing, upright resistance band hip extension."
+fedb_hyperextensions_with_no_hyperextension_bench,Hyperextensions With No Hyperextension Bench,none,,,1.0,"Specific setup (flat bench, no hyperextension bench) not matched."
+fedb_incline_bench_pull,Incline Bench Pull,none,,,1.0,No candidate matches an incline dumbbell pull/row; band version uses different e
+fedb_incline_cable_chest_press,Incline Cable Chest Press,none,,,1.0,"No candidate matches incline, cable, and chest press."
+vid_incline_leg_hip_raise,Incline Leg Hip Raise,none,,,0.9,No candidate matches incline bench and hip lift.
+treadmill_incline_walk,Incline Walk,none,,,1.0,No candidate specifies 'incline' for treadmill walking.
+vid_inverted_row_between_chairs,Inverted Row Between Chairs,none,,,1.0,All inverted row candidates use different equipment.
+vid_jump_step_up,Jump Step-Up,none,,,1.0,No candidate matches plyometric step-up with leg swap.
+fedb_kipping_muscle_up,Kipping Muscle Up,none,,,1.0,Kipping is a variant; 'Bodyweight Muscle-up' is strict; 'Kipping Pull Up' is dif
+fedb_knee_hip_raise_on_parallel_bars,Knee/Hip Raise On Parallel Bars,none,,,1.0,Specific equipment (parallel bars) and body position not matched.
+vid_stretching_kneeling_back_rotation_stretch,Kneeling Back Rotation Stretch,none,,,0.9,Specific kneeling position and arm placement not matched.
+vid_landmine_180,Landmine 180,none,,,0.8,No candidate matches specific 180-degree landmine rotational swing.
+vid_leg_raise_hip_lift,Leg Raise Hip Lift,none,,,1.0,No candidate matches hip lift from vertical leg position.
+leverage_iso_row,Leverage Iso Row,none,,,1.0,No candidate matches leverage machine iso row.
+vid_lying_hip_lift_on_stability_ball,Lying Hip Lift on a Stability Ball,none,,,1.0,No candidate is solely a hip lift on a stability ball.
+fedb_lying_machine_squat,Lying Machine Squat,none,,,1.0,No candidate matches a lying machine squat movement.
+lying_t_bar_row,Lying T-Bar Row,none,,,1.0,Different equipment (barbell vs T-bar machine).
+fedb_machine_bicep_curl,Machine Bicep Curl,none,,,1.0,"Different equipment (machine vs. cable, barbell, dumbbell)."
+fedb_machine_preacher_curls,Machine Preacher Curls,none,,,0.0,All preacher curl candidates use different primary equipment.
+vid_lever_reverse_t_bar_row,Machine Reverse-Grip T-Bar Row,none,,,1.0,No machine T-bar row with reverse grip.
+vid_lever_seated_leg_raise_crunch,Machine Seated Leg Raise Crunch,none,,,0.9,"No candidate matches machine, seated, simultaneous leg raise crunch."
+fedb_machine_shoulder_military_press,Machine Shoulder (Military) Press,none,,,1.0,No candidate is a machine shoulder press with handles.
+vid_lever_shrug,Machine Shrug,none,,,1.0,No candidate matches machine shrug; all use different equipment or are variants.
+vid_lever_standing_rear_kick,Machine Standing Rear Kick,none,,,1.0,No machine standing rear kick match; equipment/position differs.
+vid_lever_t_bar_row,Machine T-Bar Row,none,,,1.0,No machine T-bar row candidate found.
+fedb_medicine_ball_chest_pass,Medicine Ball Chest Pass,none,,,1.0,"'With Abs' is a named variant, making it a different exercise."
+fedb_medicine_ball_full_twist,Medicine Ball Full Twist,none,,,1.0,No candidate matches the specific partner-based twisting movement.
+fedb_medicine_ball_scoop_throw,Medicine Ball Scoop Throw,none,,,1.0,'Scoop' and 'backward' are specific variants not matched.
+vid_medicine_ball_sit_up_wall,Medicine Ball Wall Sit-Up,none,,,0.7,Wall target is specific; candidate is too generic.
+narrow_stance_hack_squats,Narrow Stance Hack Squats,none,,,1.0,Narrow stance is a named variant.
+fedb_one_arm_chin-up,One Arm Chin-Up,none,,,1.0,Unilateral variant is different; all others are different movements/equipment.
+fedb_one-arm_medicine_ball_slam,One-Arm Medicine Ball Slam,none,,,1.0,"'One-Arm' is a unilateral variant, making it a different exercise."
+vid_otis_ups,Otis-Up,none,,,1.0,No candidate includes the overhead plate press.
+vid_stretching_peroneals_stretch,Peroneals Stretch,none,,,1.0,No candidate matches peroneal stretch with foot inversion.
+vid_corkscrew_pilates,Pilates Corkscrew,none,,,1.0,No candidate matches the specific leg circling movement.
+vid_hundred_pilates,Pilates Hundred,none,,,1.0,No candidate matches specific Pilates Hundred movement.
+vid_jackknife_pilates,Pilates Jackknife,none,,,1.0,No candidate matches specific inverted Pilates Jackknife movement.
+fedb_plate_pinch,Plate Pinch,none,,,1.0,Exercise is a static hold; all candidates are dynamic movements.
+vid_pull_up_wide_back_grip,Pull-Up - Wide Grip Behind the Neck,none,,,1.0,Pulldown is not a pull-up.
+fedb_rack_delivery,Rack Delivery,none,,,1.0,No candidate matches the specific 'rack delivery' movement.
+vid_rear_decline_bridge,Rear Decline Bridge,none,,,1.0,No bodyweight decline bridge match; decline position missing.
+fedb_recumbent_bike,Recumbent Bike,none,,,1.0,No candidate specifically describes a recumbent bike.
+fedb_reverse_band_box_squat,Reverse Band Box Squat,none,,,0.9,reverse-band accommodating resistance is absent from the library
+vid_stretching_reverse_dip,Reverse Dip Stretch,none,,,1.0,Specific bench dip stretch; no matching clip.
+fedb_reverse_hyperextension,Reverse Hyperextension,none,,,1.0,"Specific machine exercise, no match found."
+fedb_reverse_plate_curls,Reverse Plate Curls,none,,,0.0,No clip matches equipment (plate) and exact movement.
+vid_reverse_grip_pull_up,Reverse-Grip Pull-Up,none,,,0.9,the candidate is WIDE grip; ours is shoulder width (same call as the 48)
+fedb_rocking_standing_calf_raise,Rocking Standing Calf Raise,none,,,1.0,rocking is heel-to-toe; the candidate is a loaded barbell calf raise
+rocky_pull_ups_pulldowns,Rocky Pull-Ups/Pulldowns,none,,,1.0,rocky pull-ups alternate front and behind the neck; a wide-grip pull-up is not that
+fedb_rope_climb,Rope Climb,none,,,1.0,No candidate describes vertical rope climbing movement.
+vid_scapula_dips,Scapular Dip,none,,,1.0,Scapular dip requires straight arms; all dip candidates bend elbows.
+fedb_scapular_pull-up,Scapular Pull-Up,none,,,1.0,"All candidates are full pull-ups, different equipment, or different movements."
+fedb_seated_band_hamstring_curl,Seated Band Hamstring Curl,none,,,0.9,Candidate 'Resistance Band Leg Curl' does not specify 'seated' position.
+vid_stretching_seated_lower_back_stretch,Seated Lower Back Stretch,none,,,1.0,No clip matches seated forward bend with rounded lower back.
+vid_seated_twist_straight_arm,Seated Twist - Straight Arm,none,,,1.0,"No candidate matches body position, equipment, and movement."
+vid_stretching_seated_twist_straight_arm,Seated Twist Stretch - Straight Arm,none,,,1.0,No candidate matches the specific straight-arm seated twist.
+vid_stretching_seated_wide_angle_pose_sequence,Seated Wide Angle Pose Sequence,none,,,1.0,No clip matches seated wide-angle forward fold from hips.
+vid_side_bend_on_stability_ball,Side Bend on a Stability Ball,none,,,1.0,No candidate matches the specific equipment and movement.
+vid_stretching_single_leg_stretch_bent_knee,Single Leg Stretch - Bent Knee,none,,,0.0,No candidate matches dynamic alternating bent-knee stretch.
+vid_stretching_single_straight_leg_stretch,Single Straight Leg Stretch,none,,,0.0,No candidate matches dynamic pulsing/scissoring straight leg stretch.
+fedb_single-arm_cable_crossover,Single-Arm Cable Crossover,none,,,1.0,Unilateral variant not matched by any candidate.
+vid_stretching_sitting_bent_over_back_stretch,Sitting Bent-Over Back Stretch,none,,,1.0,No clip matches seated forward fold with legs extended and rounded back.
+ski_erg_intervals,Ski Erg Intervals,none,,,0.0,"Exercise is an interval pattern, not just basic pull."
+sled_drag_harness,Sled Drag - Harness,none,,,1.0,No candidate matches specific harness equipment or simple drag.
+sled_overhead_backward_walk,Sled Overhead Backward Walk,none,,,1.0,"No candidate matches sled, overhead, and backward walk."
+fedb_smith_incline_shoulder_raise,Smith Incline Shoulder Raise,none,,,0.8,a raise is not a press
+fedb_smith_machine_behind_the_back_shrug,Smith Machine Behind the Back Shrug,none,,,1.0,No candidate is a smith machine behind the back shrug.
+fedb_smith_machine_bent_over_row,Smith Machine Bent Over Row,none,,,1.0,Different equipment or different movement for all candidates.
+vid_smith_deadlift_deadlift,Smith Machine Deadlift,none,,,1.0,No Smith Machine Deadlift clip found.
+vid_spell_caster,Spell Caster,none,,,1.0,No candidate matches the specific rotational dumbbell swing.
+vid_stretching_spine_stretch_forward,Spine Stretch Forward,none,,,1.0,No clip matches seated forward fold with legs slightly wide and spinal articulat
+vid_jack_split_crunches,Split Jackknife Crunch,none,,,1.0,No candidate matches unilateral straight-leg jackknife crunch.
+fedb_stairmaster,Stairmaster,none,,,1.0,No candidate matches stair climbing machine movement.
+vid_stretching_standing_bench_calf_stretch,Standing Bench Calf Stretch,none,,,1.0,No candidate matches standing calf stretch using a bench.
+fedb_standing_cable_chest_press,Standing Cable Chest Press,none,,,1.0,"No candidate matches standing, cable, and chest press."
+vid_stretching_knee_raise,Standing Knee Raise,none,,,1.0,No candidate matches standing knee to chest hold.
+fedb_standing_leg_curl,Standing Leg Curl,none,,,1.0,No standing leg curl machine; band version is different equipment.
+vid_stretching_standing_reach_up_back_rotation_stretch,Standing Reach-Up Back Rotation Stretch,none,,,0.9,"Specific standing, reach-up, and rotation not matched."
+fedb_stride_jump_crossover,Stride Jump Crossover,none,,,0.9,a lateral box jump is a different movement
+vid_triceps_dips,Triceps Dip,none,,,0.9,Different equipment or named variant (chest dip).
+vid_weighted_leg_extension_crunch,Weighted Leg Extension Crunch,none,,,1.0,"No candidate combines weighted, leg extension, and crunch."
+vid_weighted_lying_twist,Weighted Lying Twist,none,,,1.0,"Weighted exercise, no candidate specifies weight for lying twist."
+vid_stretching_wrist_circles,Wrist Circles,none,,,1.0,No candidate describes wrist circles; others are curls/extensions or arm circles
+fedb_wrist_roller,Wrist Roller,none,,,1.0,No candidate uses a wrist roller or matches the rolling motion.
+fedb_ab_roller,Ab Roller,proposed,AB Wheel All The Way out,ab all way wheel,1.0,guard flagged 'adds equipment ['wheel']'; judged the same exercise
+advanced_kettlebell_windmill,Advanced Kettlebell Windmill,proposed,Kettlebell Windmill,kettlebell windmill,1.0,"'Advanced' describes execution, not a different movement pattern."
+air_bike_steady,Air Bike Steady Effort,proposed,air bike,air bike,1.0,Generic air bike clip matches steady pace.
+alternate_hammer_curl,Alternate Hammer Curl,proposed,Alternate hammer curl standing dumbbells,alternate curl dumbbell hammer standing,1.0,guard flagged 'adds equipment ['dumbbell']'; judged the same exercise
+alternate_heel_touchers,Alternate Heel Touchers,proposed,Alternate heel touches,alternate heel touches,1.0,Exact name and movement match for alternating heel touches.
+alternating_kettlebell_press,Alternating Kettlebell Press,proposed,Kettlebell Seesaw Press,kettlebell press seesaw,1.0,Exact match for alternating overhead press with kettlebells
+alternating_kettlebell_row,Alternating Kettlebell Row,proposed,Kettlebell Gorilla Row,gorilla kettlebell row,1.0,Exact match for alternating bent-over row with two kettlebells
+vid_sit_up,Anchored Sit-Up,proposed,Situps,sit,1.0,"Instructions describe a standard sit-up, which 'Situps' represents."
+anti_gravity_press,Anti-Gravity Press,proposed,EZ Barbell Anti Gravity Press,anti barbell ezbar gravity press,1.0,"guard flagged 'adds equipment ['barbell', 'ezbar']'; judged the same exercise"
+around_the_worlds,Around The Worlds,proposed,Dumbbell Around The World,around dumbbell world,1.0,guard flagged 'adds equipment ['dumbbell']'; judged the same exercise
+fedb_back_flyes_-_with_bands,Back Flyes - With Bands,proposed,Band Reverse Fly,band fly reverse,1.0,guard flagged 'adds variant ['reverse']'; judged the same exercise
+fedb_band_assisted_pull-up,Band Assisted Pull-Up,proposed,Band Pull Up,band pull,1.0,Band Pull Up is synonymous with Band Assisted Pull-Up.
+vid_band_bent_over_rear_lateral_raise,Band Bent-Over Rear Lateral Raise,proposed,bent over rear deltoid fly resistance band,band bent deltoid fly over rear resistance,1.0,guard flagged 'adds equipment ['resistance']'; judged the same exercise
+vid_band_hip_abduction,Band Hip Abduction,proposed,Resistance Band Standing Hip Abduction,abduction band hip resistance standing,1.0,guard flagged 'adds equipment ['resistance']'; judged the same exercise
+vid_band_kneeling_one_arm_pulldown,Band Kneeling One-Arm Pulldown,proposed,band kneeling lat pulldown,band down kneeling lat pull,1.0,"Exact match for band, kneeling, and pulldown."
+vid_band_one_leg_kickback_bent_position,Band One-Leg Kickback,proposed,Resistance Band One Leg Kickback (Bent Position),band bent kickback leg one position resistance,1.0,guard flagged 'adds equipment ['resistance']'; judged the same exercise
+vid_band_overhead_triceps_extension,Band Overhead Triceps Extension,proposed,overhead extension resistance band both arms,arm band both extension overhead resistance,1.0,guard flagged 'adds equipment ['resistance']'; judged the same exercise
+vid_band_pull_through,Band Pull Through,proposed,Band Pullthrough,band pullthrough,1.0,Exact match in name and equipment.
+barbell_ab_rollout,Barbell Ab Rollout,proposed,Barbell rollout,barbell rollout,1.0,Generic name matches the standard barbell rollout movement.
+barbell_ab_rollout_on_knees,Barbell Ab Rollout - On Knees,proposed,Barbell rollout,barbell rollout,1.0,Generic name matches the standard barbell rollout movement.
+vid_barbell_bent_over_row_overgrip,Barbell Bent-Over Row - Overhand Grip,proposed,Barbell bent over row pronated grip,barbell bent grip over pronated row,1.0,"Exact match in equipment, movement, and grip."
+vid_barbell_underhand_bent_over_row,Barbell Bent-Over Row - Underhand Grip,proposed,Barbell Underhand Bent over Row,barbell bent over row underhand,1.0,"Exact match in equipment, movement, and grip."
+vid_barbell_reverse_wrist_curl_over_grip,Barbell Reverse Wrist Curl - Overhand Grip,proposed,barbell palm down wrist curl over a bench,barbell bench curl down over palm wrist,1.0,guard flagged 'adds equipment ['bench']'; judged the same exercise
+vid_barbell_seated_behind_head_military_press,Barbell Seated Behind-the-Head Press,proposed,Barbell seated behind neck military press,barbell behind military neck press seated,1.0,Direct synonym match for 'behind-the-head' and 'military press'.
+fedb_barbell_seated_calf_raise,Barbell Seated Calf Raise,proposed,barbell seated on knee calve raises,barbell calve knee raise seated,1.0,guard flagged 'adds variant ['knee']'; judged the same exercise
+fedb_barbell_shoulder_press,Barbell Shoulder Press,proposed,seated shoulder press barbell,barbell press seated shoulder,1.0,guard flagged 'adds variant ['seated']'; judged the same exercise
+vid_barbell_standing_back_wrist_curl,Barbell Standing Behind-the-Back Wrist Curl,proposed,Barbell standing back wrist curl,back barbell curl standing wrist,1.0,"Matches equipment, position, and movement exactly."
+fedb_battling_ropes,Battling Ropes,proposed,Battle Rope Alternating Arm Waves,alternating arm battle rope waves,1.0,guard flagged 'adds variant ['arm']'; judged the same exercise
+vid_stretching_back_pec_stretch,Behind-the-Back Pec Stretch,proposed,Arms Behind Back Chest Stretch,arm back behind chest stretch,1.0,"guard flagged 'adds variant ['arm', 'chest']'; judged the same exercise"
+fedb_bench_jump,Bench Jump,proposed,box jump,box jump,1.0,guard flagged 'adds equipment ['box']'; judged the same exercise
+fedb_bent_over_dumbbell_rear_delt_raise_with_head_on_bench,Bent Over Dumbbell Rear Delt Raise With Head On Bench,proposed,bent over rear delt fly dumbbell,bent delt dumbbell fly over rear,0.9,guard flagged 'adds movement ['fly']'; judged the same exercise
+bent_over_low_pulley_side_lateral,Bent Over Low-Pulley Side Lateral,proposed,Cable Bent Over One Arm Lateral Raise,arm bent cable lateral one over raise,1.0,guard flagged 'adds equipment ['cable']'; judged the same exercise
+fedb_bent-knee_hip_raise,Bent-Knee Hip Raise,proposed,Flat Knee Raise,flat knee raise,0.9,"Lying, bent knees, raising hips off floor."
+fedb_bicycling_stationary,"Bicycling, Stationary",proposed,Stationary Exercise Bike,bike stationary,1.0,Direct match for stationary bicycling exercise.
+fedb_box_jump_multiple_response,Box Jump (Multiple Response),proposed,box jump,box jump,1.0,"Standard box jump, 'multiple response' implies repetition."
+box_squat,Box Squat,proposed,Barbell box squat,barbell box squat,1.0,guard flagged 'adds equipment ['barbell']'; judged the same exercise
+fedb_butt_lift_bridge,Butt Lift (Bridge),proposed,Glute Bridge Bodyweight,bodyweight bridge glutes,1.0,Standard bodyweight glute bridge movement.
+cable_crossover,Cable Crossover,proposed,Cable Upper Chest Crossover,cable chest crossover upper,0.9,"guard flagged 'adds variant ['chest', 'upper']'; judged the same exercise"
+cable_crunch,Cable Crunch,proposed,high cable kneeling crunch,cable crunch high kneeling,1.0,"guard flagged 'adds variant ['high', 'kneeling']'; judged the same exercise"
+vid_cable_rope_high_pulley_overhead_triceps_extension,Cable High-Pulley Overhead Rope Extension,proposed,cable overhead extension rope,cable extension overhead rope,1.0,"Matches equipment, attachment, movement, and overhead position."
+vid_cable_bar_lateral_pulldown_reverse_grip,Cable Lat Pulldown - Reverse Grip,proposed,reverse grip lat pull down,down grip lat pull reverse,1.0,"Exact match for equipment, movement, and grip."
+vid_cable_bar_lateral_pulldown_wide_shoulder_grip,Cable Lat Pulldown - Wide Grip,proposed,lat pull down wide grip,down grip lat pull wide,1.0,Direct match for lat pulldown and wide grip.
+vid_cable_lying_fly_flat_bench_cable_fly,Cable Lying Fly on a Flat Bench,proposed,flat bench cable fly,bench cable flat fly,1.0,Exact name match for exercise description.
+vid_cable_one_arm_lateral_raise,Cable One-Arm Lateral Raise,proposed,lateral raises on cable machine,cable lateral machine raise,0.9,guard flagged 'adds equipment ['machine']'; judged the same exercise
+vid_cable_overhead_triceps_extension_rope_attachment,Cable Overhead Triceps Extension - Rope,proposed,cable overhead extension rope,cable extension overhead rope,1.0,"Exact match for equipment, movement, and attachment type."
+vid_cable_seated_row_normal_grip,Cable Seated Row - Normal Grip,proposed,straight bar cable row normal grip,bar cable grip normal row straight,1.0,"Direct match for cable row, normal grip, straight bar."
+vid_cable_straight_back_seated_row_v_grip,Cable Straight-Back Seated Row - V-Grip,proposed,seated cable row V bar machine,bar cable machine row seated v,1.0,guard flagged 'adds equipment ['machine']'; judged the same exercise
+vid_cable_triceps_pushdown,Cable Triceps Pushdown,proposed,Cable Pushdown,cable pushdown,1.0,Generic name matches the described standard triceps pushdown.
+fedb_calf_press,Calf Press,proposed,Calf raise leg press machine,calf leg machine press raise,1.0,guard flagged 'adds equipment ['machine']'; judged the same exercise
+calf_press_on_the_leg_press_machine,Calf Press On The Leg Press Machine,proposed,Calf raise leg press machine,calf leg machine press raise,1.0,guard flagged 'adds movement ['raise']'; judged the same exercise
+fedb_calf_raises_-_with_bands,Calf Raises - With Bands,proposed,standing calf raise resistance band,band calf raise resistance standing,1.0,guard flagged 'adds equipment ['resistance']'; judged the same exercise
+vid_close_feet_leg_press,Close-Feet Leg Press,proposed,leg press machine close stance,close leg machine press stance,1.0,guard flagged 'adds equipment ['machine']'; judged the same exercise
+vid_close_grip_chin_up,Close-Grip Chin-Up,proposed,Close-reverse Grip Chin-Up,chin close grip reverse,1.0,guard flagged 'adds variant ['reverse']'; judged the same exercise
+close_grip_front_lat_pulldown,Close-Grip Front Lat Pulldown,proposed,lat pull down close grip,close down grip lat pull,1.0,"Direct match of movement, equipment, and grip."
+fedb_close-grip_push-up_off_of_a_dumbbell,Close-Grip Push-Up off of a Dumbbell,proposed,Close Grip Push up,close grip push,0.9,Dumbbell is a prop for hand placement; core movement is identical.
+fedb_decline_smith_press,Decline Smith Press,proposed,smith machine press decline,decline machine press smith,1.0,guard flagged 'adds equipment ['machine']'; judged the same exercise
+fedb_dumbbell_alternate_bicep_curl,Dumbbell Alternate Bicep Curl,proposed,Dumbbell Alternate Biceps Curl,alternate biceps curl dumbbell,1.0,"Exact match for movement, equipment, and alternating action."
+vid_dumbbell_rear_lateral_raise,Dumbbell Bent-Over Rear Lateral Raise,proposed,Dumbbell Rear Lateral Raise,dumbbell lateral raise rear,1.0,"Matches equipment, movement; bent-over is standard."
+vid_dumbbell_hammer_grip_incline_bench_row,Dumbbell Hammer-Grip Incline Bench Row,proposed,Dumbbell Hammer Grip Incline Bench Two Arm Row,arm bench dumbbell grip hammer incline row two,1.0,guard flagged 'adds variant ['arm']'; judged the same exercise
+vid_dumbbell_incline_hammer_press,Dumbbell Incline Hammer Press,proposed,Dumbbell Incline Hammer Shoulder Press,dumbbell hammer incline press shoulder,1.0,"Matches equipment, incline, hammer grip, and overhead press."
+vid_dumbbell_one_arm_triceps_extension,Dumbbell One-Arm Triceps Extension,proposed,Dumbbell One Arm Triceps Extension (on bench),arm bench dumbbell extension one triceps,1.0,guard flagged 'adds equipment ['bench']'; judged the same exercise
+vid_dumbbell_pronate_grip_triceps_extension,Dumbbell Pronated-Grip Triceps Extension,proposed,Dumbbell Pronate-grip Triceps Extension,dumbbell extension grip pronate triceps,1.0,"Exact name match, implies correct movement and grip."
+vid_dumbbell_reverse_grip_row,Dumbbell Reverse-Grip Row,proposed,Dumbbell Bent-Over Reverse Row,bent dumbbell over reverse row,1.0,guard flagged 'adds variant ['bent']'; judged the same exercise
+fedb_dumbbell_seated_one-leg_calf_raise,Dumbbell Seated One-Leg Calf Raise,proposed,Dumbbell Seated One Leg Calf Raise Hammer Grip,calf dumbbell grip hammer leg one raise seated,0.9,guard flagged 'adds equipment ['hammer']'; judged the same exercise
+vid_dumbbell_bench_seated_press,Dumbbell Seated Press with Back Support,proposed,Dumbbell Bench Seated Press,bench dumbbell press seated,1.0,guard flagged 'adds equipment ['bench']'; judged the same exercise
+vid_dumbbell_seated_triceps_extension,Dumbbell Seated Triceps Extension,proposed,dumbbell overhead extension seated,dumbbell extension overhead seated,1.0,guard flagged 'adds variant ['overhead']'; judged the same exercise
+fedb_dumbbell_shoulder_press,Dumbbell Shoulder Press,proposed,Dumbbell Seated Shoulder Press,dumbbell press seated shoulder,1.0,guard flagged 'adds variant ['seated']'; judged the same exercise
+vid_stretching_dynamic_chest_stretch,Dynamic Chest Stretch,proposed,Arms Wide Chest Stretch,arm chest stretch wide,0.9,"guard flagged 'adds variant ['arm', 'wide']'; judged the same exercise"
+vid_ez_barbell_lying_triceps_extension,EZ-Bar Lying Triceps Extension,proposed,Barbell lying triceps skull crushers,barbell crushers lying skull triceps,1.0,guard flagged 'adds equipment ['barbell']'; judged the same exercise
+fedb_elliptical_trainer,Elliptical Trainer,proposed,Gym Elliptical Machine Sprint Speed,elliptical machine speed sprint,1.0,guard flagged 'adds equipment ['machine']'; judged the same exercise
+vid_elliptical,Elliptical Trainer Workout,proposed,Gym Elliptical Machine Normal Speed,elliptical machine normal speed,1.0,guard flagged 'adds equipment ['machine']'; judged the same exercise
+vid_stretching_feet_and_ankles_rotation_stretch,Feet and Ankle Rotations,proposed,Ankle circles,ankle circles,1.0,Rotations and circles are synonymous for this movement
+fedb_flat_bench_leg_pull-in,Flat Bench Leg Pull-In,proposed,bench knee tucks,bench knee tucks,1.0,guard flagged 'adds variant ['knee']'; judged the same exercise
+fedb_flat_bench_lying_leg_raise,Flat Bench Lying Leg Raise,proposed,lying leg raise,leg lying raise,0.9,"Standard lying leg raise, often performed on a flat surface like a bench."
+vid_stretching_flexion_leg_sit_up,Flexion Leg Sit-Up,proposed,Situps,sit,1.0,Description matches a standard bodyweight sit-up.
+vid_jack_knife_floor,Floor Jackknife,proposed,jack knives,jack knives,1.0,"Movement matches a tuck jackknife, a type of jackknife."
+fedb_front_box_jump,Front Box Jump,proposed,box jump,box jump,1.0,"Standard box jump, 'front' clarifies direction, not a variant."
+vid_stretching_front_toe_touch,Front Toe Touch,proposed,standing toe touch,standing toe touch,1.0,guard flagged 'adds variant ['standing']'; judged the same exercise
+fedb_hack_squat,Hack Squat,proposed,Hack Squat Machine Squat,hack machine squat,1.0,guard flagged 'adds equipment ['machine']'; judged the same exercise
+fedb_hanging_pike,Hanging Pike,proposed,Hanging Leg Raises,hanging leg raise,0.9,guard flagged 'adds movement ['raise']'; judged the same exercise
+vid_hanging_straight_leg_hip_raise,Hanging Straight Leg Hip Raise,proposed,Hanging Leg Raises,hanging leg raise,0.95,General term encompasses straight leg and hip raise.
+vid_hanging_straight_leg_raise,Hanging Straight Leg Raise,proposed,Hanging Leg Raises,hanging leg raise,0.9,Standard hanging leg raise implies straight legs.
+vid_hip_raise_bridge,Hip Raise Bridge,proposed,Glute Bridge Bodyweight,bodyweight bridge glutes,1.0,Direct match for bodyweight hip raise bridge.
+vid_incline_push_ups,Incline Push-Up,proposed,Incline Push-Up (on box),box incline push,1.0,guard flagged 'adds equipment ['box']'; judged the same exercise
+inverted_row_with_straps,Inverted Row with Straps,proposed,Suspension Trainer with Grips Inverted Row,grips inverted row suspension trainer,1.0,"guard flagged 'adds equipment ['grips', 'suspension', 'trainer']'; judged the same exercise"
+vid_stretching_kneeling_triceps_extension,Kneeling Triceps Stretch,proposed,overhead triceps stretch side angle,angle overhead side stretch triceps,0.9,"guard flagged 'adds variant ['overhead', 'side']'; judged the same exercise"
+fedb_leverage_chest_press,Leverage Chest Press,proposed,Chest Press Machine,chest machine press,0.9,guard flagged 'adds equipment ['machine']'; judged the same exercise
+fedb_leverage_decline_chest_press,Leverage Decline Chest Press,proposed,machine chest press decline,chest decline machine press,1.0,guard flagged 'adds equipment ['machine']'; judged the same exercise
+leverage_high_row,Leverage High Row,proposed,Hammer Strength Plate Loaded High Row Both Arms,arm both hammer high loaded plate row strength,1.0,"guard flagged 'adds equipment ['hammer', 'plate']'; judged the same exercise"
+fedb_leverage_incline_chest_press,Leverage Incline Chest Press,proposed,machine chest press incline,chest incline machine press,1.0,guard flagged 'adds equipment ['machine']'; judged the same exercise
+fedb_leverage_shoulder_press,Leverage Shoulder Press,proposed,Iso Lateral Shoulder Press Both Arms,arm both iso lateral press shoulder,0.9,"guard flagged 'adds variant ['arm', 'iso', 'lateral']'; judged the same exercise"
+fedb_low_cable_crossover,Low Cable Crossover,proposed,Cable low fly,cable fly low,0.9,guard flagged 'adds movement ['fly']'; judged the same exercise
+vid_stretching_calf_stretch_with_strap,Lying Calf Stretch with a Strap,proposed,Calf Stretch with Rope,calf rope stretch,1.0,guard flagged 'adds equipment ['rope']'; judged the same exercise
+vid_lying_floor_leg_raise,Lying Floor Leg Raise,proposed,lying leg raise,leg lying raise,0.9,Direct match; 'floor' implied by 'lying'.
+vid_lying_scissor_kick_female,Lying Scissor Kick,proposed,scissors kick,kick scissors,1.0,Exact name and movement match.
+vid_lying_straight_leg_raise,Lying Straight Leg Raise,proposed,Leg raises (straight legs),leg raise straight,1.0,Direct match for body position and movement.
+vid_lever_high_row,Machine High Row,proposed,Hammer Strength Plate Loaded High Row Both Arms,arm both hammer high loaded plate row strength,1.0,"guard flagged 'adds equipment ['hammer', 'plate']'; judged the same exercise"
+vid_lever_horizontal_leg_press,Machine Horizontal Leg Press,proposed,Horizontal Leg Press,horizontal leg press,0.95,Matches horizontal leg press machine; normal stance implied.
+vid_lever_lying_chest_press,Machine Lying Chest Press,proposed,Chest Press Machine,chest machine press,1.0,Exact match for machine chest press.
+vid_lever_seated_crunch,Machine Seated Crunch,proposed,abdominal crunches machine,ab crunch machine,1.0,"Exact match for machine, seated, and crunch movement."
+vid_lever_seated_dips,Machine Seated Dip,proposed,triceps dip machine,dip machine triceps,0.9,"Machine, seated, performs a dip movement."
+vid_lever_seated_reverse_fly,Machine Seated Reverse Fly,proposed,Reverse Machine Fly,fly machine reverse,1.0,"Matches equipment, movement; seated is implied by machine."
+vid_lever_military_press,Machine Shoulder Press,proposed,Iso Lateral Shoulder Press Both Arms,arm both iso lateral press shoulder,0.9,"guard flagged 'adds variant ['arm', 'iso', 'lateral']'; judged the same exercise"
+vid_lever_standing_hip_extension,Machine Standing Hip Extension,proposed,Multi Hip Glute Extension,extension glutes hip multi,1.0,"Matches machine, standing position, and hip extension."
+fedb_machine_triceps_extension,Machine Triceps Extension,proposed,Tricep Extension Machine,extension machine tricep,1.0,Exact match for the exercise name and equipment.
+vid_lever_triceps_extension_neutral_grip,Machine Triceps Extension - Neutral Grip,proposed,Tricep Extension Machine,extension machine tricep,1.0,Exact match for 'Machine Triceps Extension'.
+narrow_stance_leg_press,Narrow Stance Leg Press,proposed,leg press machine close stance,close leg machine press stance,1.0,guard flagged 'adds equipment ['machine']'; judged the same exercise
+one_arm_lat_pulldown,One Arm Lat Pulldown,proposed,Cable one arm lat pulldown,arm cable down lat one pull,1.0,guard flagged 'adds equipment ['cable']'; judged the same exercise
+vid_lever_pec_deck_fly,Pec Deck Fly,proposed,pec deck fly machine,deck fly machine pec,1.0,guard flagged 'adds equipment ['machine']'; judged the same exercise
+vid_stretching_plyo_side_lunge_stretch,Plyometric Side Lunge Stretch,proposed,plyo side lunge stretch,lunge plyometric side stretch,1.0,"Exact name match, movement description aligns."
+fedb_preacher_curl,Preacher Curl,proposed,preacher curl ez bar,bar curl ezbar preacher,1.0,guard flagged 'adds equipment ['ezbar']'; judged the same exercise
+vid_pull_up_wide_front_grip,Pull-Up - Wide Grip to the Chest,proposed,pull up wide grip,grip pull wide,1.0,Direct match for wide grip pull-up.
+fedb_rack_pulls,Rack Pulls,proposed,Barbell rack pull,barbell pull rack,1.0,guard flagged 'adds equipment ['barbell']'; judged the same exercise
+vid_reverse_grip_machine_lat_pulldown,Reverse-Grip Machine Lat Pulldown,proposed,reverse grip lat pull down,down grip lat pull reverse,1.0,Direct match for reverse grip machine pulldown.
+vid_ring_high_row,Ring High Row,proposed,Suspension Trainer with Grips High Row,grips high row suspension trainer,1.0,"guard flagged 'adds equipment ['grips', 'suspension', 'trainer']'; judged the same exercise"
+rope_straight_arm_pulldown,Rope Straight-Arm Pulldown,proposed,Cable Straight Arm Pulldown,arm cable down pull straight,1.0,guard flagged 'adds equipment ['cable']'; judged the same exercise
+vid_rotate_push_up_female,Rotating Push-Up,proposed,Normal Push-up,normal push,0.9,Instructions describe a normal push-up movement.
+rowing_intervals,Row Intervals,proposed,Gym Rowing Machine Fast Speed,fast machine rowing speed,1.0,"overridden by hand: the rowing ERG, not a seated row machine"
+treadmill_intervals,Run Intervals,proposed,Running,running,0.9,"Core movement is running; 'intervals' describes structure, not different movemen"
+vid_stretching_runners_stretch,Runner's Stretch,proposed,runner stretch,runner stretch,1.0,"Direct name match, movement description aligns perfectly."
+fedb_seated_calf_raise,Seated Calf Raise,proposed,seated calf machine,calf machine seated,1.0,guard flagged 'adds equipment ['machine']'; judged the same exercise
+fedb_seated_leg_curl,Seated Leg Curl,proposed,Seated leg curl machine,curl leg machine seated,1.0,guard flagged 'adds equipment ['machine']'; judged the same exercise
+vid_single_dumbbell_stiff_leg_deadlift,Single-Dumbbell Stiff-Leg Deadlift,proposed,Dumbbell Stiff Leg Deadlift,deadlift dumbbell leg stiff,1.0,Direct match for dumbbell stiff-leg deadlift.
+fedb_single-leg_leg_extension,Single-Leg Leg Extension,proposed,Seated leg extension single leg,extension leg seated single,1.0,guard flagged 'adds variant ['seated']'; judged the same exercise
+vid_ball_sit_up_on_stability_ball,Sit-Up on a Stability Ball,proposed,Ball Sit-up,ball sit,1.0,Direct name match for sit-up on stability ball.
+ski_erg_steady,Ski Erg Steady Pull,proposed,Ski Ergometer Cross Country Ski Basic Pull,basic country cross ergometer pull ski,1.0,guard flagged 'adds variant ['cross']'; judged the same exercise
+vid_sled_45_degree_calf_press,Sled 45-Degree Calf Press,proposed,Calf raise leg press machine,calf leg machine press raise,0.9,guard flagged 'adds equipment ['machine']'; judged the same exercise
+fedb_smith_machine_bench_press,Smith Machine Bench Press,proposed,smith machine press flat,flat machine press smith,1.0,"Exact match for smith machine, flat, and press."
+vid_smith_seated_shoulder_press,Smith Machine Seated Shoulder Press,proposed,smith machine shoulder press,machine press shoulder smith,1.0,"Matches equipment, movement; seated is confirmed by instructions."
+vid_stretching_spinal_stretch_on_exercise_ball,Spinal Stretch on an Exercise Ball,proposed,exercise ball back stretch,back ball stretch,1.0,guard flagged 'adds variant ['back']'; judged the same exercise
+vid_stretching_spine_stretch,Spine Stretch,proposed,Cat Stretch,cat stretch,1.0,Cat Stretch is the exact movement described (Cat Pose).
+vid_stretching_stairs_calf_stretch,Stairs Calf Stretch,proposed,Calves stretch on stairs,calves stairs stretch,1.0,Exact match for calf stretch performed on stairs.
+vid_stretching_standing_back_rotation_stretch,Standing Back Rotation Stretch,proposed,middle back rotation stretch,back middle rotation stretch,1.0,Clip name directly describes the standing upper body rotation.
+vid_cable_standing_fly_crossover_fly,Standing Cable Crossover Fly,proposed,Cable Standing Up Straight Crossovers,cable crossovers standing straight,1.0,Matches standing cable crossover movement and description.
+vid_cable_standing_inner_curl,Standing Cable Inner Biceps Curl,proposed,biceps curl cable wide grip,biceps cable curl grip wide,1.0,guard flagged 'adds variant ['wide']'; judged the same exercise
+vid_stretching_standing_side_bend_bent_arm,Standing Side Bend - Bent Arm,proposed,Arm Tuck Side Bend,arm bend side tuck,0.8,"Matches standing, side bend, and bent arm position."
+rowing_steady,Steady Row,proposed,Gym Rowing Machine Normal Speed,machine normal rowing speed,1.0,"overridden by hand: the rowing ERG, not a seated row machine"
+treadmill_steady_run,Steady-State Run,proposed,Treadmill Running,running treadmill,1.0,Core movement is running on a treadmill; 'steady-state' is intensity.
+fedb_step_mill,Step Mill,proposed,Stepmill machine Steps,machine stepmill steps,1.0,guard flagged 'adds equipment ['machine']'; judged the same exercise
+straight_arm_pulldown,Straight-Arm Pulldown,proposed,Cable Straight Arm Pulldown,arm cable down pull straight,1.0,guard flagged 'adds equipment ['cable']'; judged the same exercise
+fedb_t-bar_row_with_handle,T-Bar Row with Handle,proposed,Landmine row,landmine row,0.9,guard flagged 'adds equipment ['landmine']'; judged the same exercise
+fedb_thigh_abductor,Thigh Abductor,proposed,Seated Hip Abductor Machine,abduction hip machine seated,1.0,guard flagged 'adds equipment ['machine']'; judged the same exercise
+fedb_thigh_adductor,Thigh Adductor,proposed,Seated Machine Hip Adductor,adduction hip machine seated,1.0,guard flagged 'adds equipment ['machine']'; judged the same exercise
+fedb_two-arm_dumbbell_preacher_curl,Two-Arm Dumbbell Preacher Curl,proposed,preacher curl dumbbells simultaneous,curl dumbbell preacher simultaneous,1.0,"Exact match for equipment, arms, and movement."
+vid_vertical_leg_raise_on_parallel_bars,Vertical Leg Raise on Parallel Bars,proposed,Captains chair leg raise,captains chair leg raise,1.0,guard flagged 'adds equipment ['chair']'; judged the same exercise
+treadmill_warmup_walk,Warm-up Walk,proposed,Treadmill walk,treadmill walk,1.0,Core movement is walking on a treadmill; 'warm-up' is a purpose.
+fedb_weighted_ball_hyperextension,Weighted Ball Hyperextension,proposed,Back extension on exercise ball,back ball extension,0.9,guard flagged 'adds movement ['extension']'; judged the same exercise
+vid_weighted_sissy_squat,Weighted Sissy Squat,proposed,Dumbbell Supported Sissy Squat,dumbbell sissy squat supported,0.9,guard flagged 'adds equipment ['dumbbell']'; judged the same exercise
+fedb_wide-grip_pulldown_behind_the_neck,Wide-Grip Pulldown Behind The Neck,proposed,behind neck lat pull down machine,behind down lat machine neck pull,0.9,guard flagged 'adds equipment ['machine']'; judged the same exercise
+vid_wide_grip_push_ups,Wide-Grip Push-Up,proposed,wide push ups bodyweight,bodyweight push ups wide,1.0,Exact match for wide grip push-up.
+fedb_zottman_preacher_curl,Zottman Preacher Curl,proposed,Dumbbell Zottman Preacher Curl,curl dumbbell preacher zottman,1.0,guard flagged 'adds equipment ['dumbbell']'; judged the same exercise

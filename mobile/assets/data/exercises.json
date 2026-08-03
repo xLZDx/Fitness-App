@@ -251,7 +251,15 @@
       "assets/exercises/calf_press_on_the_leg_press_machine_0.jpg",
       "assets/exercises/calf_press_on_the_leg_press_machine_1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Legs/Calf raise leg press machine.mp4",
+      "men": "exercises/men/Legs/Calf raise leg press machine.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/calf_press_on_the_leg_press_machine.jpg",
+      "men": "assets/posters/men/calf_press_on_the_leg_press_machine.jpg"
+    }
   },
   {
     "id": "leg_press",
@@ -321,7 +329,13 @@
     ],
     "contraindications": [
       "knee"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Legs/leg press machine close stance.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/narrow_stance_leg_press.jpg"
+    }
   },
   {
     "id": "sled_drag_harness",
@@ -412,7 +426,13 @@
     "contraindications": [
       "elbow",
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Back/lat pull down close grip.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/close_grip_front_lat_pulldown.jpg"
+    }
   },
   {
     "id": "full_range_of_motion_lat_pulldown",
@@ -470,7 +490,13 @@
     ],
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Back/Cable one arm lat pulldown.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/one_arm_lat_pulldown.jpg"
+    }
   },
   {
     "id": "rocky_pull_ups_pulldowns",
@@ -528,7 +554,13 @@
       "assets/exercises/rope_straight_arm_pulldown_0.jpg",
       "assets/exercises/rope_straight_arm_pulldown_1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Back/Cable Straight Arm Pulldown.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/rope_straight_arm_pulldown.jpg"
+    }
   },
   {
     "id": "straight_arm_pulldown",
@@ -554,7 +586,13 @@
       "assets/exercises/straight_arm_pulldown_0.jpg",
       "assets/exercises/straight_arm_pulldown_1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Back/Cable Straight Arm Pulldown.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/straight_arm_pulldown.jpg"
+    }
   },
   {
     "id": "barbell_full_squat",
@@ -797,7 +835,15 @@
     "contraindications": [
       "knee",
       "lower_back"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Legs/Barbell Box Squat.mp4",
+      "men": "exercises/men/Legs/Barbell box squat.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/box_squat.jpg",
+      "men": "assets/posters/men/box_squat.jpg"
+    }
   },
   {
     "id": "bodyweight_mid_row",
@@ -854,7 +900,15 @@
     ],
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Back/Suspension Trainer with Grips Inverted Row.mp4",
+      "men": "exercises/men/Shoulders/Suspension Trainer with Grips Inverted Row.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/inverted_row_with_straps.jpg",
+      "men": "assets/posters/men/inverted_row_with_straps.jpg"
+    }
   },
   {
     "id": "leverage_high_row",
@@ -880,7 +934,15 @@
       "assets/exercises/leverage_high_row_0.jpg",
       "assets/exercises/leverage_high_row_1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Back/Hammer Strength Plate Loaded High Row Both Arms.mp4",
+      "men": "exercises/men/Back/Hammer Strength Plate Loaded High Row Both Arms.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/leverage_high_row.jpg",
+      "men": "assets/posters/men/leverage_high_row.jpg"
+    }
   },
   {
     "id": "leverage_iso_row",
@@ -1158,7 +1220,13 @@
       "assets/exercises/cable_crunch_0.jpg",
       "assets/exercises/cable_crunch_1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Abdominals/high cable kneeling crunch.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/cable_crunch.jpg"
+    }
   },
   {
     "id": "advanced_kettlebell_windmill",
@@ -1189,7 +1257,15 @@
     "contraindications": [
       "knee",
       "shoulder"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Kettlebell Windmill.mp4",
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Kettlebell Windmill.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/advanced_kettlebell_windmill.jpg",
+      "men": "assets/posters/men/advanced_kettlebell_windmill.jpg"
+    }
   },
   {
     "id": "alternating_floor_press",
@@ -1282,7 +1358,13 @@
     "contraindications": [
       "elbow",
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Shoulders/Kettlebell Seesaw Press.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/alternating_kettlebell_press.jpg"
+    }
   },
   {
     "id": "alternating_kettlebell_row",
@@ -1310,7 +1392,15 @@
     ],
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Back/Kettlebell Gorilla Row.mp4",
+      "men": "exercises/men/Back/Kettlebell Gorilla Row.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/alternating_kettlebell_row.jpg",
+      "men": "assets/posters/men/alternating_kettlebell_row.jpg"
+    }
   },
   {
     "id": "alternating_renegade_row",
@@ -1371,7 +1461,15 @@
     ],
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Biceps/Alternate Hammer Curl Standing Dumbbells.mp4",
+      "men": "exercises/men/Biceps/Alternate hammer curl standing dumbbells.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/alternate_hammer_curl.jpg",
+      "men": "assets/posters/men/alternate_hammer_curl.jpg"
+    }
   },
   {
     "id": "alternate_incline_dumbbell_curl",
@@ -1508,7 +1606,13 @@
     ],
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Shoulders/Dumbbell Around The World.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/around_the_worlds.jpg"
+    }
   },
   {
     "id": "bent_arm_dumbbell_pullover",
@@ -1583,7 +1687,13 @@
     "contraindications": [
       "elbow",
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Shoulders/EZ Barbell Anti Gravity Press.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/anti_gravity_press.jpg"
+    }
   },
   {
     "id": "barbell_ab_rollout",
@@ -1613,7 +1723,13 @@
     "contraindications": [
       "lower_back",
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Abdominals/Barbell rollout.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/barbell_ab_rollout.jpg"
+    }
   },
   {
     "id": "barbell_ab_rollout_on_knees",
@@ -1643,7 +1759,13 @@
     "contraindications": [
       "lower_back",
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Abdominals/Barbell rollout.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/barbell_ab_rollout_on_knees.jpg"
+    }
   },
   {
     "id": "barbell_curl",
@@ -1819,7 +1941,13 @@
     "contraindications": [
       "lower_back",
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Shoulders/Cable Bent Over One Arm Lateral Raise.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/bent_over_low_pulley_side_lateral.jpg"
+    }
   },
   {
     "id": "cable_chest_press",
@@ -1878,7 +2006,13 @@
     ],
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Chest/Cable Upper Chest Crossover.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/cable_crossover.jpg"
+    }
   },
   {
     "id": "cable_deadlifts",
@@ -2108,7 +2242,13 @@
       "assets/exercises/alternate_heel_touchers_0.jpg",
       "assets/exercises/alternate_heel_touchers_1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Abdominals/Alternate heel touches.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/alternate_heel_touchers.jpg"
+    }
   },
   {
     "id": "bench_dips",
@@ -2169,7 +2309,15 @@
       "Finish when your breathing is elevated but you can still talk easily."
     ],
     "frames": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Treadmill walk.mp4",
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Treadmill walk.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/treadmill_warmup_walk.jpg",
+      "men": "assets/posters/men/treadmill_warmup_walk.jpg"
+    }
   },
   {
     "id": "treadmill_incline_walk",
@@ -2222,7 +2370,15 @@
     "frames": [],
     "contraindications": [
       "knee"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Treadmill Running.mp4",
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Treadmill Running.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/treadmill_steady_run.jpg",
+      "men": "assets/posters/men/treadmill_steady_run.jpg"
+    }
   },
   {
     "id": "treadmill_intervals",
@@ -2250,7 +2406,15 @@
     "frames": [],
     "contraindications": [
       "knee"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Running.mp4",
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Running.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/treadmill_intervals.jpg",
+      "men": "assets/posters/men/treadmill_intervals.jpg"
+    }
   },
   {
     "id": "rowing_steady",
@@ -2279,7 +2443,15 @@
     "frames": [],
     "contraindications": [
       "lower_back"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Gym Rowing Machine Normal Speed.mp4",
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Gym Rowing Machine Normal Speed.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/rowing_steady.jpg",
+      "men": "assets/posters/men/rowing_steady.jpg"
+    }
   },
   {
     "id": "rowing_intervals",
@@ -2308,7 +2480,15 @@
     "frames": [],
     "contraindications": [
       "lower_back"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Gym Rowing Machine Fast Speed.mp4",
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Gym Rowing Machine Fast Speed.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/rowing_intervals.jpg",
+      "men": "assets/posters/men/rowing_intervals.jpg"
+    }
   },
   {
     "id": "fedb_bent-knee_hip_raise",
@@ -2335,7 +2515,15 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent-Knee_Hip_Raise/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent-Knee_Hip_Raise/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Abdominals/Flat Knee Raise.mp4",
+      "men": "exercises/men/Abdominals/Flat Knee Raise.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_bent-knee_hip_raise.jpg",
+      "men": "assets/posters/men/fedb_bent-knee_hip_raise.jpg"
+    }
   },
   {
     "id": "fedb_body_tricep_press",
@@ -2494,7 +2682,15 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Butt_Lift_Bridge/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Butt_Lift_Bridge/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Legs/Glute Bridge Bodyweight.mp4",
+      "men": "exercises/men/Legs/Glute Bridge Bodyweight.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_butt_lift_bridge.jpg",
+      "men": "assets/posters/men/fedb_butt_lift_bridge.jpg"
+    }
   },
   {
     "id": "fedb_bench_jump",
@@ -2526,7 +2722,13 @@
     ],
     "contraindications": [
       "knee"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Legs/box jump.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_bench_jump.jpg"
+    }
   },
   {
     "id": "fedb_decline_close-grip_bench_to_skull_crusher",
@@ -2629,7 +2831,13 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Flat_Bench_Leg_Pull-In/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Flat_Bench_Leg_Pull-In/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Abdominals/bench knee tucks.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_flat_bench_leg_pull-in.jpg"
+    }
   },
   {
     "id": "fedb_flat_bench_lying_leg_raise",
@@ -2657,7 +2865,13 @@
     ],
     "contraindications": [
       "lower_back"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Abdominals/lying leg raise.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_flat_bench_lying_leg_raise.jpg"
+    }
   },
   {
     "id": "fedb_incline_bench_pull",
@@ -2719,7 +2933,15 @@
     ],
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Back/Band Pull Up.mp4",
+      "men": "exercises/men/Back/Band Pull Up.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_band_assisted_pull-up.jpg",
+      "men": "assets/posters/men/fedb_band_assisted_pull-up.jpg"
+    }
   },
   {
     "id": "fedb_glute_ham_raise",
@@ -2841,7 +3063,15 @@
     ],
     "contraindications": [
       "lower_back"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Back/Back Extension on Exercise Ball.mp4",
+      "men": "exercises/men/Back/Back extension on exercise ball.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_weighted_ball_hyperextension.jpg",
+      "men": "assets/posters/men/fedb_weighted_ball_hyperextension.jpg"
+    }
   },
   {
     "id": "fedb_barbell_glute_bridge",
@@ -3346,7 +3576,13 @@
     ],
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Chest/Cable low fly.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_low_cable_crossover.jpg"
+    }
   },
   {
     "id": "fedb_single-arm_cable_crossover",
@@ -3434,7 +3670,13 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Seated_Calf_Raise/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Seated_Calf_Raise/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Legs/barbell seated on knee calve raises.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_barbell_seated_calf_raise.jpg"
+    }
   },
   {
     "id": "fedb_calf_press",
@@ -3460,7 +3702,15 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Calf_Press/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Calf_Press/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Legs/Calf raise leg press machine.mp4",
+      "men": "exercises/men/Legs/Calf raise leg press machine.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_calf_press.jpg",
+      "men": "assets/posters/men/fedb_calf_press.jpg"
+    }
   },
   {
     "id": "fedb_calf_raise_on_a_dumbbell",
@@ -3515,7 +3765,13 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Seated_One-Leg_Calf_Raise/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Seated_One-Leg_Calf_Raise/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Legs/Dumbbell Seated One Leg Calf Raise Hammer Grip.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_dumbbell_seated_one-leg_calf_raise.jpg"
+    }
   },
   {
     "id": "fedb_rocking_standing_calf_raise",
@@ -3573,7 +3829,13 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Calf_Raise/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Calf_Raise/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Legs/seated calf machine.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_seated_calf_raise.jpg"
+    }
   },
   {
     "id": "fedb_incline_cable_chest_press",
@@ -3630,7 +3892,15 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Chest_Press/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Chest_Press/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Chest/Chest Press Machine.mp4",
+      "men": "exercises/men/Chest/Chest Press Machine.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_leverage_chest_press.jpg",
+      "men": "assets/posters/men/fedb_leverage_chest_press.jpg"
+    }
   },
   {
     "id": "fedb_leverage_decline_chest_press",
@@ -3657,7 +3927,13 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Decline_Chest_Press/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Decline_Chest_Press/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Chest/machine chest press decline.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_leverage_decline_chest_press.jpg"
+    }
   },
   {
     "id": "fedb_leverage_incline_chest_press",
@@ -3684,7 +3960,13 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Incline_Chest_Press/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Incline_Chest_Press/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Chest/machine chest press incline.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_leverage_incline_chest_press.jpg"
+    }
   },
   {
     "id": "fedb_standing_cable_chest_press",
@@ -3770,7 +4052,13 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Shoulders/bent over rear delt fly dumbbell.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_bent_over_dumbbell_rear_delt_raise_with_head_on_bench.jpg"
+    }
   },
   {
     "id": "fedb_close-grip_dumbbell_press",
@@ -3832,7 +4120,13 @@
     ],
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Chest/Close Grip Push up.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_close-grip_push-up_off_of_a_dumbbell.jpg"
+    }
   },
   {
     "id": "fedb_decline_dumbbell_flyes",
@@ -3931,7 +4225,13 @@
     ],
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Biceps/Dumbbell Alternate Biceps Curl.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_dumbbell_alternate_bicep_curl.jpg"
+    }
   },
   {
     "id": "fedb_close-grip_ez_bar_curl",
@@ -4026,7 +4326,15 @@
     ],
     "contraindications": [
       "lower_back"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Abdominals/AB Wheel All The Way out.mp4",
+      "men": "exercises/men/Abdominals/AB Wheel All The Way out.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_ab_roller.jpg",
+      "men": "assets/posters/men/fedb_ab_roller.jpg"
+    }
   },
   {
     "id": "fedb_wrist_roller",
@@ -4119,7 +4427,15 @@
     ],
     "contraindications": [
       "knee"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Legs/Hack Squat Machine.mp4",
+      "men": "exercises/men/Legs/Hack Squat Machine Squat.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_hack_squat.jpg",
+      "men": "assets/posters/men/fedb_hack_squat.jpg"
+    }
   },
   {
     "id": "fedb_lying_machine_squat",
@@ -4179,7 +4495,15 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Thigh_Abductor/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Thigh_Abductor/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Legs/Seated Hip Abductor Machine.mp4",
+      "men": "exercises/men/Legs/Seated Hip Abductor Machine.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_thigh_abductor.jpg",
+      "men": "assets/posters/men/fedb_thigh_abductor.jpg"
+    }
   },
   {
     "id": "fedb_thigh_adductor",
@@ -4207,7 +4531,15 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Thigh_Adductor/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Thigh_Adductor/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Legs/Seated machine hip adductor.mp4",
+      "men": "exercises/men/Legs/Seated Machine Hip Adductor.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_thigh_adductor.jpg",
+      "men": "assets/posters/men/fedb_thigh_adductor.jpg"
+    }
   },
   {
     "id": "fedb_double_kettlebell_alternating_hang_clean",
@@ -4510,7 +4842,13 @@
     ],
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Back/behind neck lat pull down machine.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_wide-grip_pulldown_behind_the_neck.jpg"
+    }
   },
   {
     "id": "fedb_ball_leg_curl",
@@ -4635,7 +4973,13 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Leg_Curl/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Leg_Curl/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Legs/Seated leg curl machine.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_seated_leg_curl.jpg"
+    }
   },
   {
     "id": "fedb_standing_leg_curl",
@@ -4726,7 +5070,15 @@
     ],
     "contraindications": [
       "knee"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Legs/Seated leg extension single leg.mp4",
+      "men": "exercises/men/Legs/Seated leg extension single leg.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_single-leg_leg_extension.jpg",
+      "men": "assets/posters/men/fedb_single-leg_leg_extension.jpg"
+    }
   },
   {
     "id": "fedb_backward_medicine_ball_throw",
@@ -4982,7 +5334,13 @@
     ],
     "contraindications": [
       "knee"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Legs/box jump.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_box_jump_multiple_response.jpg"
+    }
   },
   {
     "id": "fedb_box_skip",
@@ -5082,7 +5440,13 @@
     ],
     "contraindications": [
       "knee"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Legs/box jump.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_front_box_jump.jpg"
+    }
   },
   {
     "id": "fedb_lateral_box_jump",
@@ -5294,7 +5658,13 @@
     ],
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Biceps/preacher curl ez bar.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_preacher_curl.jpg"
+    }
   },
   {
     "id": "fedb_two-arm_dumbbell_preacher_curl",
@@ -5322,7 +5692,13 @@
     ],
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Biceps/preacher curl dumbbells simultaneous.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_two-arm_dumbbell_preacher_curl.jpg"
+    }
   },
   {
     "id": "fedb_zottman_preacher_curl",
@@ -5353,7 +5729,13 @@
     ],
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Biceps/Dumbbell Zottman Preacher Curl.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_zottman_preacher_curl.jpg"
+    }
   },
   {
     "id": "fedb_heavy_bag_thrust",
@@ -5413,7 +5795,13 @@
     ],
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Shoulders/Band Reverse Fly.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_back_flyes_-_with_bands.jpg"
+    }
   },
   {
     "id": "fedb_box_squat_with_bands",
@@ -5474,7 +5862,13 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Calf_Raises_-_With_Bands/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Calf_Raises_-_With_Bands/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Legs/standing calf raise resistance band.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_calf_raises_-_with_bands.jpg"
+    }
   },
   {
     "id": "fedb_cross_over_-_with_bands",
@@ -5645,7 +6039,13 @@
     ],
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Shoulders/seated shoulder press barbell.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_barbell_shoulder_press.jpg"
+    }
   },
   {
     "id": "fedb_cable_shoulder_press",
@@ -5742,7 +6142,13 @@
     ],
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Shoulders/Dumbbell Seated Shoulder Press.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_dumbbell_shoulder_press.jpg"
+    }
   },
   {
     "id": "fedb_leverage_shoulder_press",
@@ -5770,7 +6176,15 @@
     ],
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Shoulders/Iso Lateral Shoulder Press Both Arm.mp4",
+      "men": "exercises/men/Shoulders/Iso Lateral Shoulder Press Both Arms.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_leverage_shoulder_press.jpg",
+      "men": "assets/posters/men/fedb_leverage_shoulder_press.jpg"
+    }
   },
   {
     "id": "fedb_machine_shoulder_military_press",
@@ -5831,7 +6245,13 @@
     ],
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Chest/smith machine press decline.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_decline_smith_press.jpg"
+    }
   },
   {
     "id": "fedb_smith_incline_shoulder_raise",
@@ -5921,7 +6341,13 @@
     ],
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Chest/smith machine press flat.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_smith_machine_bench_press.jpg"
+    }
   },
   {
     "id": "fedb_smith_machine_bent_over_row",
@@ -6050,7 +6476,13 @@
     ],
     "contraindications": [
       "lower_back"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Powerlifting/Barbell rack pull.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_rack_pulls.jpg"
+    }
   },
   {
     "id": "fedb_t-bar_row_with_handle",
@@ -6081,7 +6513,13 @@
     ],
     "contraindications": [
       "lower_back"
-    ]
+    ],
+    "video": {
+      "men": "exercises/men/Back/Landmine row.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_t-bar_row_with_handle.jpg"
+    }
   },
   {
     "id": "fedb_dip_machine",
@@ -6146,7 +6584,15 @@
     ],
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "video": {
+      "girl": "exercises/girl/Triceps/Tricep Extension Machine.mp4",
+      "men": "exercises/men/Triceps/Tricep Extension Machine.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_machine_triceps_extension.jpg",
+      "men": "assets/posters/men/fedb_machine_triceps_extension.jpg"
+    }
   },
   {
     "id": "fedb_elliptical_trainer",
@@ -6174,7 +6620,15 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Elliptical_Trainer/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Elliptical_Trainer/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Gym Elliptical Machine Sprint Speed.mp4",
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Gym Elliptical Machine Sprint Speed.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_elliptical_trainer.jpg",
+      "men": "assets/posters/men/fedb_elliptical_trainer.jpg"
+    }
   },
   {
     "id": "fedb_stairmaster",
@@ -6230,7 +6684,15 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Step_Mill/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Step_Mill/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Stepmill Machine Steps.mp4",
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Stepmill machine Steps.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_step_mill.jpg",
+      "men": "assets/posters/men/fedb_step_mill.jpg"
+    }
   },
   {
     "id": "fedb_bicycling_stationary",
@@ -6258,7 +6720,13 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bicycling_Stationary/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bicycling_Stationary/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Stationary Exercise Bike.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/fedb_bicycling_stationary.jpg"
+    }
   },
   {
     "id": "fedb_recumbent_bike",
@@ -6313,7 +6781,15 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Battling_Ropes/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Battling_Ropes/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Battle Rope Alternating Arm Waves.mp4",
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Battle Rope Alternating Arm Waves.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_battling_ropes.jpg",
+      "men": "assets/posters/men/fedb_battling_ropes.jpg"
+    }
   },
   {
     "id": "fedb_rope_climb",
@@ -6597,7 +7073,13 @@
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hanging_Pike/0.jpg",
       "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hanging_Pike/1.jpg"
     ],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Abdominals/Hanging Leg Raises.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/fedb_hanging_pike.jpg"
+    }
   },
   {
     "id": "fedb_russian_twist",
@@ -6865,7 +7347,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Abdominals/air bike.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/air_bike_steady.jpg"
+    }
   },
   {
     "id": "ski_erg_intervals",
@@ -6914,7 +7402,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Ski Ergometer Cross Country Ski Basic Pull.mp4",
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Ski Ergometer Cross Country Ski Basic Pull.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/ski_erg_steady.jpg",
+      "men": "assets/posters/men/ski_erg_steady.jpg"
+    }
   },
   {
     "id": "vid_45_degree_bycicle_twisting_crunch",
@@ -7365,7 +7861,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Abdominals/Hanging Leg Raises.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_hanging_straight_leg_hip_raise.jpg"
+    }
   },
   {
     "id": "vid_hanging_straight_leg_raise",
@@ -7388,7 +7890,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Abdominals/Hanging Leg Raises.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_hanging_straight_leg_raise.jpg"
+    }
   },
   {
     "id": "vid_incline_leg_hip_raise",
@@ -7459,7 +7967,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Abdominals/Abdominal Crunches Machine.mp4",
+      "men": "exercises/men/Abdominals/abdominal crunches machine.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_lever_seated_crunch.jpg",
+      "men": "assets/posters/men/vid_lever_seated_crunch.jpg"
+    }
   },
   {
     "id": "vid_lever_seated_leg_raise_crunch",
@@ -7506,7 +8022,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Abdominals/lying leg raise.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_lying_floor_leg_raise.jpg"
+    }
   },
   {
     "id": "vid_lying_straight_leg_raise",
@@ -7530,7 +8052,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Abdominals/Leg raises (straight legs).mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_lying_straight_leg_raise.jpg"
+    }
   },
   {
     "id": "vid_otis_ups",
@@ -7793,7 +8321,13 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "men": "exercises/men/Stretching - Mobility/exercise ball back stretch.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_stretching_spinal_stretch_on_exercise_ball.jpg"
+    }
   },
   {
     "id": "vid_stretching_standing_side_bend_bent_arm",
@@ -7818,7 +8352,13 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "girl": "exercises/girl/Shoulders/Arm Tuck Side Bend.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_stretching_standing_side_bend_bent_arm.jpg"
+    }
   },
   {
     "id": "vid_twisting_crunch",
@@ -7909,7 +8449,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Abdominals/Captains chair leg raise.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_vertical_leg_raise_on_parallel_bars.jpg"
+    }
   },
   {
     "id": "vid_weighted_leg_extension_crunch",
@@ -8028,7 +8574,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Back/band kneeling lat pulldown.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_band_kneeling_one_arm_pulldown.jpg"
+    }
   },
   {
     "id": "vid_band_one_arm_twisting_seated_row",
@@ -8077,7 +8629,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Legs/Resistance Band One Leg Kickback (Bent Position).mp4",
+      "men": "exercises/men/Legs/Resistance Band One Leg Kickback (Bent Position).mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_band_one_leg_kickback_bent_position.jpg",
+      "men": "assets/posters/men/vid_band_one_leg_kickback_bent_position.jpg"
+    }
   },
   {
     "id": "vid_band_pull_through",
@@ -8103,7 +8663,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Legs/Band Pullthrough.mp4",
+      "men": "exercises/men/Legs/Band Pullthrough.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_band_pull_through.jpg",
+      "men": "assets/posters/men/vid_band_pull_through.jpg"
+    }
   },
   {
     "id": "vid_band_seated_row",
@@ -8178,7 +8746,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Back/Barbell bent over row pronated grip.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_barbell_bent_over_row_overgrip.jpg"
+    }
   },
   {
     "id": "vid_barbell_straight_leg_deadlift",
@@ -8242,7 +8816,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Back/Barbell Underhand Bent over Row.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_barbell_underhand_bent_over_row.jpg"
+    }
   },
   {
     "id": "vid_cable_bar_lateral_pulldown_reverse_grip",
@@ -8268,7 +8848,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Back/reverse grip lat pull down.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_cable_bar_lateral_pulldown_reverse_grip.jpg"
+    }
   },
   {
     "id": "vid_cable_bar_lateral_pulldown_wide_shoulder_grip",
@@ -8294,7 +8880,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Back/lat pull down wide grip.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_cable_bar_lateral_pulldown_wide_shoulder_grip.jpg"
+    }
   },
   {
     "id": "vid_cable_one_arm_lateral_pulldown",
@@ -8436,7 +9028,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Back/straight bar cable row normal grip.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_cable_seated_row_normal_grip.jpg"
+    }
   },
   {
     "id": "vid_cable_seated_row_parallel_grip",
@@ -8551,7 +9149,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Back/seated cable row V bar machine.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_cable_straight_back_seated_row_v_grip.jpg"
+    }
   },
   {
     "id": "vid_chin_ups_narrow_parallel_grip",
@@ -8609,7 +9213,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Back/Close-reverse Grip Chin-Up.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_close_grip_chin_up.jpg"
+    }
   },
   {
     "id": "vid_commando_pull_up",
@@ -8742,7 +9352,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Back/Dumbbell Hammer Grip Incline Bench Two Arm Row.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_dumbbell_hammer_grip_incline_bench_row.jpg"
+    }
   },
   {
     "id": "vid_dumbbell_incline_row",
@@ -8866,7 +9482,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Back/Dumbbell Bent-Over Reverse Row.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_dumbbell_reverse_grip_row.jpg"
+    }
   },
   {
     "id": "vid_dumbbell_stiff_leg_deadlift",
@@ -9051,7 +9673,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Back/Hammer Strength Plate Loaded High Row Both Arms.mp4",
+      "men": "exercises/men/Back/Hammer Strength Plate Loaded High Row Both Arms.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_lever_high_row.jpg",
+      "men": "assets/posters/men/vid_lever_high_row.jpg"
+    }
   },
   {
     "id": "vid_lever_reverse_t_bar_row",
@@ -9156,7 +9786,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Back/pull up wide grip.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_pull_up_wide_front_grip.jpg"
+    }
   },
   {
     "id": "vid_reverse_grip_machine_lat_pulldown",
@@ -9182,7 +9818,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Back/reverse grip lat pull down.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_reverse_grip_machine_lat_pulldown.jpg"
+    }
   },
   {
     "id": "vid_reverse_grip_pull_up",
@@ -9234,7 +9876,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Back/Suspension Trainer with Grips High Row.mp4",
+      "men": "exercises/men/Back/Suspension Trainer with Grips High Row.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_ring_high_row.jpg",
+      "men": "assets/posters/men/vid_ring_high_row.jpg"
+    }
   },
   {
     "id": "vid_single_dumbbell_stiff_leg_deadlift",
@@ -9261,7 +9911,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Legs/Dumbbell Stiff Leg Deadlift.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_single_dumbbell_stiff_leg_deadlift.jpg"
+    }
   },
   {
     "id": "vid_smith_deadlift_deadlift",
@@ -9523,7 +10179,13 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "men": "exercises/men/Yoga/Cat Stretch.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_stretching_spine_stretch.jpg"
+    }
   },
   {
     "id": "vid_stretching_spine_stretch_forward",
@@ -9575,7 +10237,13 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "men": "exercises/men/Stretching - Mobility/middle back rotation stretch.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_stretching_standing_back_rotation_stretch.jpg"
+    }
   },
   {
     "id": "vid_stretching_standing_lateral_stretch",
@@ -9732,7 +10400,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Biceps/biceps curl cable wide grip.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_cable_standing_inner_curl.jpg"
+    }
   },
   {
     "id": "vid_dumbbell_alternate_seated_biceps_curl",
@@ -10333,7 +11007,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Legs/Calf raise leg press machine.mp4",
+      "men": "exercises/men/Legs/Calf raise leg press machine.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_sled_45_degree_calf_press.jpg",
+      "men": "assets/posters/men/vid_sled_45_degree_calf_press.jpg"
+    }
   },
   {
     "id": "vid_stretching_calf_stretch_with_rope",
@@ -10393,7 +11075,13 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "men": "exercises/men/Stretching - Mobility/Calf Stretch with Rope.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_stretching_calf_stretch_with_strap.jpg"
+    }
   },
   {
     "id": "vid_stretching_circles_knee_stretch",
@@ -10448,7 +11136,15 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "girl": "exercises/girl/Legs/Ankle Circles.mp4",
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Ankle circles.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_stretching_feet_and_ankles_rotation_stretch.jpg",
+      "men": "assets/posters/men/vid_stretching_feet_and_ankles_rotation_stretch.jpg"
+    }
   },
   {
     "id": "vid_stretching_feet_and_ankles_stretch",
@@ -10554,7 +11250,13 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "men": "exercises/men/Stretching - Mobility/Calves stretch on stairs.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_stretching_stairs_calf_stretch.jpg"
+    }
   },
   {
     "id": "vid_stretching_standing_bench_calf_stretch",
@@ -10643,7 +11345,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Gym Elliptical Machine Normal Speed.mp4",
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Gym Elliptical Machine Normal Speed.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_elliptical.jpg",
+      "men": "assets/posters/men/vid_elliptical.jpg"
+    }
   },
   {
     "id": "vid_jump_rope",
@@ -10874,7 +11584,13 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "men": "exercises/men/Abdominals/Situps.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_stretching_flexion_leg_sit_up.jpg"
+    }
   },
   {
     "id": "vid_stretching_front_toe_touch",
@@ -10899,7 +11615,13 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/standing toe touch.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_stretching_front_toe_touch.jpg"
+    }
   },
   {
     "id": "vid_stretching_plyo_side_lunge_stretch",
@@ -10926,7 +11648,13 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "men": "exercises/men/Stretching - Mobility/plyo side lunge stretch.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_stretching_plyo_side_lunge_stretch.jpg"
+    }
   },
   {
     "id": "vid_stretching_single_leg_stretch_bent_knee",
@@ -11073,7 +11801,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Chest/flat bench cable fly.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_cable_lying_fly_flat_bench_cable_fly.jpg"
+    }
   },
   {
     "id": "vid_cable_standing_fly_crossover_fly",
@@ -11099,7 +11833,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Chest/Cable Standing Up Straight Crossovers.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_cable_standing_fly_crossover_fly.jpg"
+    }
   },
   {
     "id": "vid_chest_dips",
@@ -11430,7 +12170,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Chest/Incline Push-Up (on box).mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_incline_push_ups.jpg"
+    }
   },
   {
     "id": "vid_lever_chest_press",
@@ -11532,7 +12278,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Chest/Chest Press Machine.mp4",
+      "men": "exercises/men/Chest/Chest Press Machine.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_lever_lying_chest_press.jpg",
+      "men": "assets/posters/men/vid_lever_lying_chest_press.jpg"
+    }
   },
   {
     "id": "vid_lever_pec_deck_fly",
@@ -11557,7 +12311,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Chest/pec deck fly machine.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_lever_pec_deck_fly.jpg"
+    }
   },
   {
     "id": "vid_push_ups",
@@ -11652,7 +12412,15 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "girl": "exercises/girl/Stretching - Mobility/Arms Behind Back Chest Stretch.mp4",
+      "men": "exercises/men/Stretching - Mobility/Arms Behind Back Chest Stretch.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_stretching_back_pec_stretch.jpg",
+      "men": "assets/posters/men/vid_stretching_back_pec_stretch.jpg"
+    }
   },
   {
     "id": "vid_stretching_dynamic_chest_stretch",
@@ -11675,7 +12443,15 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "girl": "exercises/girl/Stretching - Mobility/Arms Wide Chest Stretch.mp4",
+      "men": "exercises/men/Stretching - Mobility/Arms Wide Chest Stretch.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_stretching_dynamic_chest_stretch.jpg",
+      "men": "assets/posters/men/vid_stretching_dynamic_chest_stretch.jpg"
+    }
   },
   {
     "id": "vid_stretching_kneeling_back_rotation_stretch",
@@ -11812,7 +12588,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Chest/wide push ups bodyweight.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_wide_grip_push_ups.jpg"
+    }
   },
   {
     "id": "vid_barbell_reverse_wrist_curl_over_grip",
@@ -11835,7 +12617,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Forearms/barbell palm down wrist curl over a bench.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_barbell_reverse_wrist_curl_over_grip.jpg"
+    }
   },
   {
     "id": "vid_barbell_standing_back_wrist_curl",
@@ -11860,7 +12648,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Forearms/Barbell standing back wrist curl.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_barbell_standing_back_wrist_curl.jpg"
+    }
   },
   {
     "id": "vid_dumbbell_behind_back_wrist_curl",
@@ -12069,7 +12863,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Legs/Resistance Band Standing Hip Abduction.mp4",
+      "men": "exercises/men/Legs/Resistance Band Standing Hip Abduction.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_band_hip_abduction.jpg",
+      "men": "assets/posters/men/vid_band_hip_abduction.jpg"
+    }
   },
   {
     "id": "vid_band_hip_adduction",
@@ -12212,7 +13014,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Legs/leg press machine close stance.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_close_feet_leg_press.jpg"
+    }
   },
   {
     "id": "vid_dumbbell_bar_grip_sumo_squat",
@@ -12435,7 +13243,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Legs/Horizontal Leg Press.mp4",
+      "men": "exercises/men/Legs/Horizontal Leg Press.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_lever_horizontal_leg_press.jpg",
+      "men": "assets/posters/men/vid_lever_horizontal_leg_press.jpg"
+    }
   },
   {
     "id": "vid_lever_kneeling_leg_curl",
@@ -12560,7 +13376,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Legs/Multi Hip Glute Extension.mp4",
+      "men": "exercises/men/Legs/Multi Hip Glute Extension.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_lever_standing_hip_extension.jpg",
+      "men": "assets/posters/men/vid_lever_standing_hip_extension.jpg"
+    }
   },
   {
     "id": "vid_lever_standing_rear_kick",
@@ -13097,7 +13921,13 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "men": "exercises/men/Stretching - Mobility/runner stretch.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_stretching_runners_stretch.jpg"
+    }
   },
   {
     "id": "vid_weighted_sissy_squat",
@@ -13120,7 +13950,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Legs/Dumbbell Supported Sissy Squat.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_weighted_sissy_squat.jpg"
+    }
   },
   {
     "id": "vid_ball_sit_up_on_stability_ball",
@@ -13144,7 +13980,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Abdominals/Ball Sit-up.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_ball_sit_up_on_stability_ball.jpg"
+    }
   },
   {
     "id": "vid_bent_knee_lying_twist_on_stability_ball",
@@ -13432,7 +14274,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Legs/Glute Bridge Bodyweight.mp4",
+      "men": "exercises/men/Legs/Glute Bridge Bodyweight.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_hip_raise_bridge.jpg",
+      "men": "assets/posters/men/vid_hip_raise_bridge.jpg"
+    }
   },
   {
     "id": "vid_hundred_pilates",
@@ -13481,7 +14331,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Abdominals/jack knives.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_jack_knife_floor.jpg"
+    }
   },
   {
     "id": "vid_jack_split_crunches",
@@ -13604,7 +14460,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Abdominals/scissors kick.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_lying_scissor_kick_female.jpg"
+    }
   },
   {
     "id": "vid_medicine_ball_sit_up_wall",
@@ -13690,7 +14552,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Chest/Normal Push-up.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_rotate_push_up_female.jpg"
+    }
   },
   {
     "id": "vid_seated_twist_straight_arm",
@@ -13762,7 +14630,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Abdominals/Situps.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_sit_up.jpg"
+    }
   },
   {
     "id": "vid_weighted_lying_twist",
@@ -13810,7 +14684,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Shoulders/bent over rear deltoid fly resistance band.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_band_bent_over_rear_lateral_raise.jpg"
+    }
   },
   {
     "id": "vid_band_one_arm_forward_raise",
@@ -13927,7 +14807,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Shoulders/Barbell seated behind neck military press.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_barbell_seated_behind_head_military_press.jpg"
+    }
   },
   {
     "id": "vid_barbell_upright_row_wide_grip",
@@ -14118,7 +15004,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Shoulders/lateral raises on cable machine.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_cable_one_arm_lateral_raise.jpg"
+    }
   },
   {
     "id": "vid_cable_rear_delt_row_with_rope",
@@ -14169,7 +15061,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Shoulders/Dumbbell Bench Seated Press.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_dumbbell_bench_seated_press.jpg"
+    }
   },
   {
     "id": "vid_dumbbell_front_raise",
@@ -14229,7 +15127,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Shoulders/Dumbbell Incline Hammer Shoulder Press.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_dumbbell_incline_hammer_press.jpg"
+    }
   },
   {
     "id": "vid_dumbbell_incline_rear_lateral_raise",
@@ -14429,7 +15333,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Shoulders/Dumbbell Rear Lateral Raise.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_dumbbell_rear_lateral_raise.jpg"
+    }
   },
   {
     "id": "vid_dumbbell_seated_front_raise",
@@ -14594,7 +15504,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Shoulders/Iso Lateral Shoulder Press Both Arm.mp4",
+      "men": "exercises/men/Shoulders/Iso Lateral Shoulder Press Both Arms.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_lever_military_press.jpg",
+      "men": "assets/posters/men/vid_lever_military_press.jpg"
+    }
   },
   {
     "id": "vid_lever_seated_reverse_fly",
@@ -14618,7 +15536,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Shoulders/Reverse machine fly.mp4",
+      "men": "exercises/men/Shoulders/Reverse Machine Fly.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_lever_seated_reverse_fly.jpg",
+      "men": "assets/posters/men/vid_lever_seated_reverse_fly.jpg"
+    }
   },
   {
     "id": "vid_military_press",
@@ -14675,7 +15601,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Shoulders/smith machine shoulder press.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_smith_seated_shoulder_press.jpg"
+    }
   },
   {
     "id": "vid_stretching_band_warm_up_shoulder_stretch",
@@ -14975,7 +15907,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Triceps/overhead extension resistance band both arms.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_band_overhead_triceps_extension.jpg"
+    }
   },
   {
     "id": "vid_band_side_triceps_pushdown",
@@ -15080,7 +16018,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Triceps/cable overhead extension rope.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_cable_overhead_triceps_extension_rope_attachment.jpg"
+    }
   },
   {
     "id": "vid_cable_pushdown_rope_attachment",
@@ -15126,7 +16070,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Triceps/cable overhead extension rope.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_cable_rope_high_pulley_overhead_triceps_extension.jpg"
+    }
   },
   {
     "id": "vid_cable_standing_one_arm_triceps_extension",
@@ -15175,7 +16125,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Triceps/Cable Pushdown.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_cable_triceps_pushdown.jpg"
+    }
   },
   {
     "id": "vid_close_grip_push_ups",
@@ -15328,7 +16284,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Triceps/Dumbbell One Arm Triceps Extension (on bench).mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_dumbbell_one_arm_triceps_extension.jpg"
+    }
   },
   {
     "id": "vid_dumbbell_pronate_grip_triceps_extension",
@@ -15351,7 +16313,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Triceps/Dumbbell Pronate-grip Triceps Extension.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_dumbbell_pronate_grip_triceps_extension.jpg"
+    }
   },
   {
     "id": "vid_dumbbell_seated_kickback",
@@ -15409,7 +16377,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Triceps/dumbbell overhead extension seated.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_dumbbell_seated_triceps_extension.jpg"
+    }
   },
   {
     "id": "vid_ez_barbell_lying_triceps_extension",
@@ -15433,7 +16407,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Triceps/Barbell lying triceps skull crushers.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_ez_barbell_lying_triceps_extension.jpg"
+    }
   },
   {
     "id": "vid_lever_seated_dips",
@@ -15457,7 +16437,13 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "men": "exercises/men/Triceps/triceps dip machine.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_lever_seated_dips.jpg"
+    }
   },
   {
     "id": "vid_lever_triceps_extension_neutral_grip",
@@ -15480,7 +16466,15 @@
     ],
     "frames": [],
     "imageUrls": [],
-    "contraindications": []
+    "contraindications": [],
+    "video": {
+      "girl": "exercises/girl/Triceps/Tricep Extension Machine.mp4",
+      "men": "exercises/men/Triceps/Tricep Extension Machine.mp4"
+    },
+    "poster": {
+      "girl": "assets/posters/girl/vid_lever_triceps_extension_neutral_grip.jpg",
+      "men": "assets/posters/men/vid_lever_triceps_extension_neutral_grip.jpg"
+    }
   },
   {
     "id": "vid_stretching_kneeling_triceps_extension",
@@ -15505,7 +16499,13 @@
     "frames": [],
     "imageUrls": [],
     "contraindications": [],
-    "isStretch": true
+    "isStretch": true,
+    "video": {
+      "men": "exercises/men/Stretching - Mobility/overhead triceps stretch side angle.mp4"
+    },
+    "poster": {
+      "men": "assets/posters/men/vid_stretching_kneeling_triceps_extension.jpg"
+    }
   },
   {
     "id": "vid_stretching_reverse_dip",

@@ -154,10 +154,22 @@ of them were half-converted — one body licensed, the other not — which is wh
 Full write-up, with the frame-by-frame reasoning for each of the 48:
 `core/CLIP_LICENCE_AUDIT_2026-08-03.md` (+ CSV twin, + `core/subset_verdicts.csv`).
 
-Shipped with it: `relicense_legacy_catalog.py`, `sweep_orphan_posters.py`.
-Legacy catalog 142 → **186 licensed, 0 unlicensed**; 498 poster stills deleted
-(2.9 MB), because a poster is cut from its clip and a still of an unlicensed
-clip is unlicensed footage in the APK.
+Shipped with it: `relicense_legacy_catalog.py`, `sweep_orphan_posters.py`,
+`match_legacy_semantic.py`, `set_scaffold_bucket_public.py`.
+
+Then the operator's four answers, all done the same day:
+
+1. **Bucket off, not deleted.** `allUsers` binding removed; anonymous GET on a
+   clip returns 403; the 677 objects are untouched and `--on` restores it.
+2. **Match everything.** Every remaining exercise re-asked by MEANING, not by
+   filename — 151 recovered. Legacy catalog 142 → 186 → **337 of 511**, and
+   0 unlicensed at every step.
+3. **The header is the clip's poster**, not a free-exercise-db photograph.
+4. Pushed.
+
+498 poster stills were deleted along the way (2.9 MB) because a poster is cut
+from its clip, so a still of an unlicensed clip is unlicensed footage in the
+APK.
 
 ## Not touched, waiting on the operator
 

@@ -31,7 +31,19 @@ result,legacy entries serving unlicensed footage,324,0,
 result,legacy entries hidden by H1,146,325,
 result,poster stills on disk,3256,2758,
 result,APK weight from posters (MB),15.2,12.3,
-result,catalog the user sees,,"1887 vendor + 186 legacy","all licensed, all animation"
-open,public bucket still up,,,"677 unlicensed clips readable by allUsers; installed builds (1.0.0+14) still point at it"
-open,325 hidden legacy exercises,,,"many recoverable - the matcher only ever compared filenames; 268 remain unexamined (82 fuzzy, 186 no-match)"
-open,machine header photograph,,,"equipmentHeroImageProvider still draws imageUrls/frames - public-domain, so a consistency question not a licence one"
+result,catalog the user sees,,"1887 vendor + 337 legacy","all licensed, all animation"
+resolved,public bucket still up,,,"CLOSED same day: allUsers binding removed, anonymous GET now 403. Installed 1.0.0+14 builds lose their old clips until they update"
+resolved,325 hidden legacy exercises,,,"CLOSED same day: all re-matched by meaning, 151 recovered, 174 remain"
+resolved,machine header photograph,,,"CLOSED same day: now the clip poster; a machine with no clip gets no header"
+round2,semantic re-match: matched,,151,"asked the model which candidate IS the exercise, given our title and our steps"
+round2,semantic re-match: no clip in the library,,162,"sleds, chains, harnesses, recumbent bikes, Rocky pull-ups"
+round2,"guard-flagged, judged by hand",90,79 accepted / 9 rejected / 2 overridden,"the guard flags, it no longer rejects - it fired on synonyms like machine and resistance band"
+round2,Row Intervals,Seated Row Machine Rows,Gym Rowing Machine Fast Speed,matched to a strength machine; it is ergometer cardio
+round2,Steady Row,Seated Row Machine Rows,Gym Rowing Machine Normal Speed,same
+result,legacy exercises playing a licensed clip,186,337,
+result,legacy exercises with no clip,325,174,
+result,machine header image,free-exercise-db photograph,the clip's own poster,operator: photo must be the clip preview
+result,public bucket allUsers binding,present,REMOVED,anonymous GET returns HTTP 403; objects untouched; --on restores
+open,174 legacy exercises still have no clip,,,"162 genuinely absent from the library, 12 lost to a model batch that failed twice"
+open,the 677 objects still exist,,,"unreachable, not deleted - deleting is a separate and irreversible decision"
+open,frames and imageUrls still in the catalog,66 and 94 entries,,nothing reads them any more

@@ -134,24 +134,75 @@ exists, only close-grip and narrow-parallel).
 | poster stills on disk | 3,256 | 2,758 |
 | APK weight from posters | 15.2 MB | 12.3 MB |
 
-The catalog the user sees is **1,887 vendor exercises + 186 legacy**, all
-licensed, all animation.
+(Those two figures move again in round two below: 186 → 337 and 325 → 174.)
 
 ---
 
+## Round two — every remaining exercise re-matched, by meaning
+
+`scripts/catalog/match_legacy_semantic.py`. The importer's name matching is what
+put `Archer push up` behind "Push-Up", so this shortlists 30 candidates by name
+and then asks the model which one IS the exercise, given our title AND our own
+instructions — the steps describe the movement, which a filename cannot.
+
+`none` is always an offered answer and the prompt says so twice, because a model
+asked to choose from a list will choose from the list.
+
+The importer's `disqualifying()` guard still runs, but here it **flags rather
+than rejects**. It was written against a heuristic with no idea what an exercise
+was, and against a reasoned answer it produces false alarms — it blocked
+`Calf Press On The Leg Press Machine → Calf raise leg press machine` for adding
+the movement "raise", and `Narrow Stance Leg Press → leg press machine close
+stance` for adding the equipment "machine", when a leg press IS a machine. A
+guard hit means the two judgements disagree, which is where to look at a frame.
+
+| | n |
+|---|---|
+| matched | 151 |
+| no clip in the library is this exercise | 162 |
+| flagged by the guard, judged by hand | 90 → 79 accepted, 9 rejected, 2 overridden |
+
+The 9 I rejected on review: Rocky Pull-Ups (alternates front and behind the
+neck), Stride Jump Crossover, Smith Incline Shoulder **Raise** (matched to a
+press), Rocking Standing Calf Raise, Reverse Band Box Squat and Box Squat with
+Chains (accommodating resistance is absent), Reverse-Grip Pull-Up (the candidate
+is wide grip), Bench Sprint (matched to step-ups), Cable Standing Lift.
+
+Two overrides: "Row Intervals" and "Steady Row" had been matched to a **seated
+row machine**. They are ergometer cardio, and the library has
+`Gym Rowing Machine Fast/Normal Speed`.
+
+Result: **186 → 337 of 511 legacy exercises play a licensed clip.** Per-exercise
+in `core/legacy_match_proposals.csv`.
+
+## The machine header is the clip's poster now
+
+Operator: *"фото должно быть превью ролика"*. `equipmentHeroImageProvider` read
+`imageUrls` then `frames` — photographs from free-exercise-db. Properly
+licensed, so never a legal problem; it was the last place in the app still
+showing a photograph while everything else showed a 3D render. It now reads the
+poster, which is cut from the clip itself, and a machine with no clip gets no
+header rather than a stand-in. 5 tests.
+
+## The scaffold bucket is off
+
+Operator: *"отключаем а не удаляем"*. The `allUsers` binding is removed from
+`traidingbot-b4061-videos-eu`; the 677 objects are untouched. Verified: an
+anonymous GET on a clip returns **HTTP 403**.
+`scripts/catalog/set_scaffold_bucket_public.py --on` restores it in one command
+— which matters for one reason: a build already on a phone (1.0.0+14) still
+holds the old catalog and its clips stopped loading the moment this ran.
+
 ## Still open — your call, not mine
 
-1. **The public bucket is still up.** `traidingbot-b4061-videos-eu`, 677
-   unlicensed clips, `allUsers` can read. Nothing in the new build points at it,
-   but builds already installed (1.0.0+14) do — pulling it breaks their clips.
-   Needs your word; see the proposal in chat.
+1. **174 legacy exercises still have no clip.** 162 because no clip in the
+   purchased library is that exercise (sleds, chains, harnesses, recumbent
+   bikes, Rocky pull-ups), 12 because a model batch failed twice and was
+   skipped rather than guessed at. Re-running the matcher picks the 12 up.
 
-2. **325 hidden legacy exercises.** Many are probably recoverable: the exact
-   and subset passes only ever compared names, and the 13 replacements above
-   prove how badly that reads. A proper pass over the remaining 268 (82 fuzzy,
-   186 no-match) against the vendor's 2,540 clips is its own gate.
+2. **The 677 objects still exist**, just unreachable. Deleting them is a
+   separate decision and is not reversible.
 
-3. **The machine header photograph.** `equipmentHeroImageProvider` still draws
-   `imageUrls.first` then `frames.first` — photographs from free-exercise-db.
-   They are public-domain, so this is not a licence question; it is whether
-   "only animation" covers the machine header too. Not mine to decide.
+3. **`frames` and `imageUrls` are still in the catalog** — 66 and 94 entries.
+   Nothing reads them any more. Removing them is a data cleanup worth doing
+   when something else touches that file.
