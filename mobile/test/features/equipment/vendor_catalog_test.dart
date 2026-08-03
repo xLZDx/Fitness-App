@@ -24,6 +24,11 @@ void main() {
               as List)
           .cast<Map<String, dynamic>>();
   final parsed = rows.map(ExerciseItem.fromJson).toList();
+  final registry =
+      (jsonDecode(File('assets/data/equipment.json').readAsStringSync())
+              as List)
+          .cast<Map<String, dynamic>>();
+  final registryIds = registry.map((e) => e['id'] as String).toSet();
 
   /// Exactly the tags the muscle map draws, the chips filter on and
   /// `filterContraindicated` reads.
@@ -195,6 +200,70 @@ void main() {
       // and poses kept in Sanskrit transliteration.
       expect(english.length, lessThan(ru.length ~/ 20),
           reason: 'too many untranslated titles: ${english.take(5)}');
+    });
+  });
+
+  group('linked to the 52-machine registry', () {
+    // Every vendor exercise carried `equipmentId: null` -- the purchase never
+    // assigned one -- so `exercisesFor(machineId)`, which is what fills a
+    // machine's detail page, returned nothing for any of the 52 pages and
+    // fell back to AI-generated, clip-less text. Operator: *"привязка к
+    // тренажёрам ... иначе скан для вендорских упражнений не работает"*.
+    //
+    // Verified by an independent look at each exercise's own poster --
+    // operator: *"верить никому нельзя все надо проверять"* -- not by trusting
+    // the vendor's metadata sheet or the `equipmentLabel` already derived from
+    // it. core/vendor_equipment_visual_audit.csv has the full trail; the ones
+    // that stayed unresolved are core/vendor_equipment_needs_review.csv.
+    test('most exercises resolve, most machines get at least one', () {
+      final linked = parsed.where((e) => e.equipmentId != null).length;
+      // 58% by name alone; the visual pass reached 1,330/1,887 -- kept as a
+      // floor so a regression is caught without re-pinning an exact count
+      // every time the review list moves it by one or two.
+      expect(linked, greaterThanOrEqualTo(1300));
+
+      final machinesCovered =
+          parsed.map((e) => e.equipmentId).whereType<String>().toSet();
+      // 4 of 52 are a genuine gap in the purchased library, not a pipeline
+      // miss -- confirmed by hand: recumbent_bike (only an upright exercise
+      // bike exists), glute_kickback_machine (only cable/dumbbell/band
+      // variants), t_bar_row, rotary_torso_machine.
+      expect(machinesCovered.length, greaterThanOrEqualTo(48));
+    });
+
+    test('every equipmentId assigned is a real registry machine', () {
+      // The model was given the 52 real names and told to answer with one of
+      // them or "none" -- this is the check that an answer which wasn't one of
+      // those names verbatim never made it into the catalog as a guess.
+      final bad = parsed
+          .where((e) => e.equipmentId != null && !registryIds.contains(e.equipmentId))
+          .map((e) => '${e.id}: ${e.equipmentId}');
+      expect(bad, isEmpty);
+    });
+
+    test('a barbell squat links to the squat rack, not the generic barbell',
+        () {
+      // The registry mixes a generic implement (Barbell) with the specific
+      // station it is normally used at (Squat rack, Weight bench). The first
+      // pass answered "Barbell" for a barbell squat -- true but useless, since
+      // squat_rack is the page a user actually opens after scanning the rack.
+      // This is the fixed prompt's whole point, pinned so it cannot regress.
+      final squat = parsed.firstWhere((e) => e.id == 'ea_barbell_squat_back_pov',
+          orElse: () => parsed.firstWhere((e) => e.title == 'Barbell Squat'));
+      expect(squat.equipmentId, 'squat_rack');
+    });
+
+    test('with no dedicated station, the generic implement is used', () {
+      // A barbell deadlift has no "deadlift platform" in the registry, so it
+      // correctly stays on the generic implement rather than being forced
+      // onto an unrelated station.
+      final deadlift =
+          parsed.where((e) => e.title.toLowerCase().contains('barbell') &&
+              e.title.toLowerCase().contains('deadlift'));
+      expect(deadlift, isNotEmpty);
+      for (final e in deadlift) {
+        expect(e.equipmentId, anyOf(isNull, 'barbell'));
+      }
     });
   });
 }
