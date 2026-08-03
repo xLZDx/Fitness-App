@@ -77,7 +77,7 @@ Operator: mandatory, translate now, hide nothing. Running. Titles read like a
 gym rather than a dictionary (`Скручивания на 3/4`, `Чатуранга на трёх точках
 опоры`).
 
-## H5 — the scanner, rewritten
+## H5 — the scanner, rewritten. DONE (data + flow + screen)
 
 Operator's own framing, which replaced mine:
 
@@ -86,9 +86,60 @@ Operator's own framing, which replaced mine:
   and **save a machine card** so we can add a clip and details later.
 - Record what people photograph and what the AI identified.
 - Where we have no content, point the user at an outside video meanwhile.
+- The card is **visible to the user**, marked "контент готовится" — not a
+  silent bug report for us.
 
 Not "find the nearest match among our 52 machines" — that was my reading and it
 was wrong.
+
+**The card** — `data/machine_card.dart`, 14 tests. One machine is one card (the
+id normalises case and punctuation, Cyrillic survives); `uses` is plain text,
+never exercise ids, because there are no clips for these and inventing entries
+walks back into H1's rule; status defaults to `preparing`.
+
+**The second question** — `data/machine_describer.dart`, 20 tests. Asked only
+when recognition returned nothing, about the same photo, and it offers no list
+to choose from: the classifier's 48-machine list exists so the model cannot
+invent a page we do not have, and here there is no page by definition. The
+model is given an explicit `isGymEquipment: false` and it is believed, or the
+answer to a photo of a dog is a confident description of a rowing machine.
+Failure is quiet — the user has already been told the machine is not in the
+catalog, and a second error where a result used to be helps nobody.
+
+`firebaseCloudAsk` in `gemini_equipment_service.dart` is now shared by both
+questions. Not tidiness: the "thinking disabled" setting is what took a photo
+from 25-31s to 2-5s, and a second copy of that config is a second place for
+that regression to come back.
+
+**The store** — `data/machine_card_repository.dart` (+ Firestore twin), 20
+tests. Merge rule in one place, as `RecognitionDedup` already is, so the two
+backends cannot disagree. Two rules carry weight: a second shot within five
+minutes does not raise the count (the count decides what gets filmed first, and
+re-shooting a blurry frame is one encounter), and a status already decided —
+`inCatalog`, `declined` — survives a new photo instead of putting a shipped
+machine back under «готовится».
+
+Stored at `users/{uid}/machine_cards/{id}`, which the existing
+`match /users/{uid}/{coll}/{document=**}` rule already covers — no rules
+change. A shared world-writable collection would have served us more directly
+and bought nothing: the same numbers come out of a collection-group read with
+the Admin SDK. `photoPath` is not written: it is a path in one device's cache,
+meaningless anywhere else, and the only version worth storing is the image
+itself — which is a decision about the user's pictures leaving their phone, not
+a detail of a write.
+
+**The screen** — `widgets/machine_card_view.dart` + `_PreparingSection` in the
+scanner, 10 flow tests. Photo, name, «контент готовится», what it is, what you
+can do on it, and a YouTube search for it. Kept out of the "мои тренажёры" row
+of chips: those lead to exercises and these do not yet, so mixing them makes a
+chip a coin flip between a workout and a dead end.
+
+1085 tests, 0 failures. `flutter analyze`: 6 issues, all in files this gate did
+not touch.
+
+Not done here, and worth naming: `_attempted` in the scanner is widget state
+that duplicates what the controller already knows. It works; it is the kind of
+duplication that goes wrong later.
 
 ## Not touched, waiting on the operator
 

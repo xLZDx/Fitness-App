@@ -46,6 +46,9 @@ import 'features/ai_coach/generated_exercise_repository.dart';
 import 'features/visual_equipment/data/gemini_equipment_service.dart';
 import 'features/visual_equipment/data/mlkit_visual_equipment_service.dart';
 import 'features/visual_equipment/state/live_equipment_providers.dart';
+import 'features/visual_equipment/data/firestore_machine_cards.dart';
+import 'features/visual_equipment/data/machine_describer.dart';
+import 'features/visual_equipment/state/machine_card_providers.dart';
 import 'features/visual_equipment/state/recognition_history_providers.dart';
 import 'features/visual_equipment/state/visual_equipment_providers.dart';
 import 'features/workouts/data/firestore_scheduled_session_repository.dart';
@@ -193,6 +196,15 @@ Future<void> main() async {
         // machine, newest sighting wins).
         recognitionHistoryRepositoryProvider
             .overrideWith((_) => FirestoreRecognitionHistoryRepository()),
+
+        // A machine the catalog has no page for still gets an answer: a
+        // second question to the model about the same photo, turned into a
+        // card the user sees marked «контент готовится». The same rows tell
+        // us what people actually stand in front of, which is what decides
+        // the order we film missing clips in.
+        machineDescriberProvider.overrideWith((_) => GeminiMachineDescriber()),
+        machineCardRepositoryProvider
+            .overrideWith((_) => FirestoreMachineCardRepository()),
 
         // AI-generated exercises for machines the vendored catalog has
         // nothing for -- cached per (user, machine, language) so a machine

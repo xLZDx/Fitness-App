@@ -1272,5 +1272,19 @@
   "subscriptionPeriodLifetime": "Lifetime",
   "settingsCatalogSources": "Exercise library",
   "settingsIncludeLegacy": "Include the older library",
-  "settingsIncludeLegacyBody": "The purchased library has 1,899 exercises, all with video. The older one adds 365 more that carry Russian text written by hand, injury warnings and links to recognised machines. Turn it off to see only the purchased library."
+  "settingsIncludeLegacyBody": "The purchased library has 1,899 exercises, all with video. The older one adds 365 more that carry Russian text written by hand, injury warnings and links to recognised machines. Turn it off to see only the purchased library.",
+  "machineCardPreparing": "Content being prepared",
+  "machineCardWhatYouCanDo": "What you can do on it",
+  "machineCardWatchElsewhere": "Watch a video about it",
+  "machineCardNotInCatalogYet": "Not in the catalog yet",
+  "machineCardSeenTimes": "{count, plural, one{scanned once} other{scanned {count} times}}",
+  "machineCardRemove": "Remove from my machines",
+  "machineCardSectionTitle": "Being prepared",
+  "@machineCardSeenTimes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

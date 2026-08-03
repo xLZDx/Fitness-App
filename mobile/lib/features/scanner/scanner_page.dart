@@ -14,10 +14,13 @@ import '../../shared/widgets/glass.dart';
 import '../visual_equipment/data/live_recognition.dart';
 import '../visual_equipment/data/recognition_history.dart';
 import '../visual_equipment/data/visual_equipment_match.dart';
+import '../visual_equipment/data/machine_card.dart';
 import '../visual_equipment/state/live_equipment_providers.dart';
+import '../visual_equipment/state/machine_card_providers.dart';
 import '../visual_equipment/state/recognition_history_providers.dart';
 import '../visual_equipment/state/visual_equipment_providers.dart';
 import '../visual_equipment/widgets/live_equipment_preview.dart';
+import '../visual_equipment/widgets/machine_card_view.dart';
 
 /// The Scan tab.
 ///
@@ -261,6 +264,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final matches = ref.watch(visualEquipmentControllerProvider);
+    final card = ref.watch(lastMachineCardProvider);
     final liveOn = ref.watch(liveModeEnabledProvider);
     final liveAsync = ref.watch(liveRecognitionProvider);
     final live = liveAsync.valueOrNull;
@@ -394,11 +398,17 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                   AppLocalizations.of(context).scannerRecognitionFailed(e)),
             ),
             data: (list) => list.isEmpty
-                ? _HintCard(theme: theme, noMatch: _attempted)
+                // Not in the catalog. If the second question came back with
+                // something, that IS the answer -- "не удалось понять" is no
+                // longer true once we can say what the machine is.
+                ? (card != null
+                    ? MachineCardView(card: card)
+                    : _HintCard(theme: theme, noMatch: _attempted))
                 : _Matches(matches: list, onOpen: _openEquipment),
           ),
           const SizedBox(height: 20),
           _HistorySection(onOpen: _openEquipment),
+          const _PreparingSection(),
         ],
       ),
     );
@@ -452,6 +462,103 @@ class _HistorySection extends ConsumerWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+/// "Готовится" — the machines this user scanned that the catalog has no page
+/// for, sitting under "мои тренажёры" rather than in it.
+///
+/// Kept separate on purpose: the machines above lead somewhere (their
+/// exercises), and these do not yet. Mixing them would make a chip a coin
+/// flip between a workout and a dead end.
+class _PreparingSection extends ConsumerWidget {
+  const _PreparingSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final cards = ref.watch(machineCardsProvider).valueOrNull ?? const [];
+    // A card promoted to `inCatalog` has a real page now; it belongs to the
+    // list above, and `declined` is our own bookkeeping, not the user's news.
+    final preparing = cards
+        .where((c) => c.status == MachineCardStatus.preparing)
+        .toList(growable: false);
+    if (preparing.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 20),
+      child: Column(
+        key: const Key('scan-preparing'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            AppLocalizations.of(context).machineCardSectionTitle,
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 8),
+          for (final c in preparing.take(12))
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _PreparingTile(card: c),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One row, expanding into the full explanation. Collapsed by default: the
+/// user opened the Scan tab to scan, not to read the last five machines.
+class _PreparingTile extends ConsumerWidget {
+  const _PreparingTile({required this.card});
+  final MachineCard card;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
+    return GlassCard(
+      key: Key('scan-preparing-${card.id}'),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      child: Theme(
+        // The default divider draws a line through a glass card.
+        data: theme.copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          key: Key('scan-preparing-tile-${card.id}'),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+          childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          title: Text(card.name,
+              style: theme.textTheme.bodyLarge
+                  ?.copyWith(fontWeight: FontWeight.w700)),
+          subtitle: Text(
+            '${l.machineCardNotInCatalogYet} · '
+            '${l.machineCardSeenTimes(card.timesSeen)}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+            ),
+          ),
+          children: [
+            // No photo here: the tile is a list row, and a 160px image per
+            // machine turns the section into a gallery the user did not ask
+            // for.
+            MachineCardView(card: card, showPhoto: false),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton.icon(
+                key: Key('scan-preparing-remove-${card.id}'),
+                onPressed: () => ref
+                    .read(machineCardRepositoryProvider)
+                    .remove(card.id),
+                icon: const Icon(Icons.delete_outline, size: 18),
+                label: Text(l.machineCardRemove),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

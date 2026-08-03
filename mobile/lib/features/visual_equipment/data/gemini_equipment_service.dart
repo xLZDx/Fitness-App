@@ -15,6 +15,42 @@ import 'visual_equipment_service.dart';
 /// Injectable so every piece of this service is testable without Firebase.
 typedef CloudAsk = Future<String?> Function(Uint8List imageBytes, String prompt);
 
+/// Verified live 2026-07-30: gemini-2.5-flash returns 404 'no longer available
+/// to new users' on this project; 3-flash-preview answered the operator's
+/// power-cage photo with {"machine":"squat rack", 0.9}.
+const String kVisionModel = 'gemini-3-flash-preview';
+
+/// The Firebase AI caller every vision path in the app shares.
+///
+/// JSON only, temperature 0, and thinking switched OFF: with the model's
+/// default thinking a single photo took 25-31s, without it 2-5s (verified live
+/// 2026-07-30). Two callers now send a photo — the classifier and the machine
+/// describer — and a second copy of this configuration is a second place for
+/// that 25-second regression to come back.
+///
+/// The model is built on first use and kept, so the second question about the
+/// same photo does not pay the setup again. No deadline is applied here; the
+/// caller owns its own timeout so there is exactly one.
+CloudAsk firebaseCloudAsk({String modelName = kVisionModel}) {
+  GenerativeModel? model;
+  return (Uint8List bytes, String prompt) {
+    model ??= FirebaseAI.googleAI().generativeModel(
+      model: modelName,
+      generationConfig: GenerationConfig(
+        responseMimeType: 'application/json',
+        temperature: 0,
+        thinkingConfig: ThinkingConfig(thinkingBudget: 0),
+      ),
+    );
+    return model!.generateContent([
+      Content.multi([
+        InlineDataPart('image/jpeg', bytes),
+        TextPart(prompt),
+      ]),
+    ]).then((r) => r.text);
+  };
+}
+
 /// Cloud recogniser: Gemini through Firebase AI Logic.
 ///
 /// Why this exists: the on-device model is 10 catalogue-trained classes and
@@ -30,10 +66,7 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
   GeminiVisualEquipmentService({
     Future<EquipmentAliasIndex>? index,
     CloudAsk? ask,
-    // Verified live 2026-07-30: gemini-2.5-flash returns 404 'no longer
-    // available to new users' on this project; 3-flash-preview answered the
-    // operator's power-cage photo with {"machine":"squat rack", 0.9}.
-    this.modelName = 'gemini-3-flash-preview',
+    this.modelName = kVisionModel,
     this.timeout = const Duration(seconds: 20),
   })  : _index = index ?? EquipmentAliasIndex.load(),
         _ask = ask;
@@ -50,29 +83,10 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
   /// spun the spinner forever and never reached the on-device fallback below.
   final Duration timeout;
 
-  GenerativeModel? _model;
+  late final CloudAsk _cloud = _ask ?? firebaseCloudAsk(modelName: modelName);
 
-  Future<String?> _askCloud(Uint8List bytes, String prompt) {
-    final custom = _ask;
-    if (custom != null) return custom(bytes, prompt).timeout(timeout);
-    _model ??= FirebaseAI.googleAI().generativeModel(
-      model: modelName,
-      generationConfig: GenerationConfig(
-        responseMimeType: 'application/json',
-        temperature: 0,
-        thinkingConfig: ThinkingConfig(thinkingBudget: 0),
-      ),
-    );
-    return _model!
-        .generateContent([
-          Content.multi([
-            InlineDataPart('image/jpeg', bytes),
-            TextPart(prompt),
-          ]),
-        ])
-        .timeout(timeout)
-        .then((r) => r.text);
-  }
+  Future<String?> _askCloud(Uint8List bytes, String prompt) =>
+      _cloud(bytes, prompt).timeout(timeout);
 
   @override
   Future<List<VisualMatch>> classifyFile({
@@ -84,7 +98,7 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
     // gym wifi/LTE the upload itself was a real chunk of the reported delay.
     // 1024px keeps the model's answer quality (verified live) while cutting
     // the payload roughly 3-4x versus a full-resolution JPEG.
-    final bytes = await compute(_resizeForCloud, path);
+    final bytes = await compute(resizeForCloud, path);
     final String? text;
     try {
       text = await _askCloud(bytes, buildPrompt());
@@ -195,7 +209,10 @@ ${kCanonicalMachines.join(', ')}''';
 /// to at most 1024px on the long edge, and re-encodes as JPEG. A resize
 /// failure (corrupt file, unsupported format) falls back to the original
 /// bytes rather than throwing — a slightly larger upload beats no upload.
-Uint8List _resizeForCloud(String path) {
+///
+/// Shared with the machine describer: when a photo is not in the catalog it is
+/// sent twice, and the second question must not re-do the resize differently.
+Uint8List resizeForCloud(String path) {
   final bytes = File(path).readAsBytesSync();
   try {
     var decoded = img.decodeImage(bytes);
