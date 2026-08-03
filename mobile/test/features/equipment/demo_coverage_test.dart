@@ -20,18 +20,37 @@ void main() {
   // and a video is the strongest answer to that question there is — leaving it
   // out would report 343 exercises as having no demo while they play one.
   // The `videoUrl` singular is the older per-exercise field and stays.
+  //
+  // 2026-08-03: `frames` and `imageUrls` no longer count as a demonstration
+  // ANYWHERE the user can see, because both are photographs of a man in a gym
+  // and the catalog is meant to look like one thing. They are still counted
+  // HERE, in this one predicate, on purpose: this file's job is to notice an
+  // exercise that ships carrying nothing at all, which is a different defect
+  // from an exercise that ships carrying the wrong kind of thing. The rule the
+  // app actually enforces lives in `clip_only_test.dart`.
   bool hasImagery(Map<String, dynamic> e) =>
       (e['frames'] as List? ?? const []).isNotEmpty ||
       (e['imageUrls'] as List? ?? const []).isNotEmpty ||
       (e['video'] as Map? ?? const {}).isNotEmpty ||
       e['videoUrl'] != null;
 
-  test('at least 95% of exercises have something to show', () {
+  test('at least 95% of exercises carry SOMETHING, even if unshowable', () {
     final withImagery = exercises.where(hasImagery).length;
     final ratio = withImagery / exercises.length;
     expect(ratio, greaterThanOrEqualTo(0.95),
         reason: 'only $withImagery of ${exercises.length} exercises have '
             'a demo, video or stills');
+  });
+
+  test('what the user is actually shown is a clip or nothing', () {
+    // The number that matters now. 365 of 511 play; the other 146 are hidden
+    // rather than papered over with a photograph, and every one of them is a
+    // piece of footage we owe — see core/bundle_import_report.csv.
+    final withClip = exercises
+        .where((e) => (e['video'] as Map? ?? const {}).isNotEmpty)
+        .length;
+    expect(withClip, 365);
+    expect(exercises, hasLength(511));
   });
 
   test('the only exercises without imagery are the hand-authored cardio ones',

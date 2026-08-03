@@ -109,8 +109,20 @@ void main() {
   });
 
   group('allExercisesProvider', () {
-    test('includes cached AI exercises for a real-empty machine, without generating',
-        () async {
+    test('a cached AI exercise is NOT surfaced — it has no footage', () async {
+      // A behaviour change, not a broken test. AI-generated exercises are text:
+      // a title, muscles and steps, with nothing to play. Since 2026-08-03 the
+      // catalog shows a moving demonstration or it shows nothing, so these
+      // never reach a list.
+      //
+      // The cache-not-generate half of this test still matters and is asserted
+      // below — the Train tab must not fan out a Gemini call per empty machine
+      // whether or not the result would be displayed.
+      //
+      // What replaces this for the user is the scan gate: name the machine,
+      // record that we have no content for it, and point at an outside video
+      // until we do. Operator: *"если этого нет в каталоге то помечать что надо
+      // добавить, а клиенту посоветовать ролик на ютюбе"*.
       var calls = 0;
       final genRepo = MockGeneratedExerciseRepository();
       await genRepo.save('elliptical', 'en', const [
@@ -128,7 +140,8 @@ void main() {
       final container =
           _makeContainer(askCallCount: () => calls++, generatedRepo: genRepo);
       final out = await container.read(allExercisesProvider.future);
-      expect(out.map((e) => e.title), contains('Cached AI exercise'));
+      expect(out.map((e) => e.title), isNot(contains('Cached AI exercise')),
+          reason: 'text with no clip must not appear as a demonstrable exercise');
       expect(calls, 0,
           reason: 'the Train tab feed reads the cache, it must never generate');
     });

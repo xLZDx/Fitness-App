@@ -32,6 +32,11 @@ AssetEquipmentRepository _repoWithRack() {
           durationMinutes: 25,
           summary: 'Push pattern',
           steps: [],
+          // Every shipped exercise carries a clip since 2026-08-03 --
+          // `withDemonstration` hides the ones that do not, so a fixture
+          // without one is no longer a realistic catalog row and these
+          // providers correctly return nothing for it.
+          video: {'men': 'https://cdn.example.com/bench.mp4'},
         ),
         ExerciseItem(
           id: 'risky_squat',
@@ -42,6 +47,7 @@ AssetEquipmentRepository _repoWithRack() {
           durationMinutes: 30,
           summary: 'Compound lift',
           steps: [],
+          video: {'men': 'https://cdn.example.com/squat.mp4'},
           contraindications: ['knee'],
         ),
       ],

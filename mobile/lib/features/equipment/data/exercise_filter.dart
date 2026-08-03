@@ -98,8 +98,50 @@ List<ExerciseItem> sortByTierFit(
   return list;
 }
 
+/// Only the exercises the app can demonstrate with a moving picture.
+///
+/// ## Why a photograph is not an acceptable fallback
+///
+/// The catalog used to demonstrate an exercise three ways: a clip, two bundled
+/// frames looped by `ExerciseDemo`, or two network stills shown the same way.
+/// The last two look like a fallback in code and like a different app on
+/// screen — they are photographs of a man in a gym, while every clip is a 3D
+/// render on flat white. Operator, twice: *"я до сих пор вижу старые картинки
+/// место роликов, я просил их всех убрать чтобы было все одинаково"*.
+///
+/// Measured before writing this: of 511 exercises, 365 carry a clip, 94 are
+/// demonstrated by network photographs, 42 by bundled photographs, and 10 by
+/// nothing at all. Both sets of "frames" are photographs — the bundled ones
+/// came from the same free-exercise-db import as the network ones, so calling
+/// them animation was only ever true of the mechanism, never of the content.
+///
+/// That leaves exactly one rule that satisfies "only animation": an exercise
+/// the app cannot play is an exercise the app does not show. 146 entries of the
+/// 511 fall out, which is the honest size of the gap rather than a number
+/// softened by putting a photograph in front of it.
+///
+/// The test mirrors the player's own chain exactly —
+/// `playableVideoFor(body) ?? videoUrl` — rather than `hasVideo`. An entry must
+/// never pass this filter and then fail to produce anything on screen, and it
+/// must never be hidden while the player would happily have played it.
+///
+/// The `videoUrl` half matters even though no shipped row uses it today: it is
+/// the older singular field, the player still honours it, and leaving it out
+/// here made a perfectly playable exercise vanish from every list. Two tests
+/// caught that within a minute of the filter being written.
+List<ExerciseItem> withDemonstration(Iterable<ExerciseItem> exercises) =>
+    exercises
+        .where((e) => e.playableVideoFor(null) != null || e.videoUrl != null)
+        .toList(growable: false);
+
 /// Full pipeline: hide contraindicated exercises, then surface tier-fit ones
 /// first. Profile may be null (returns the input untouched, copied).
+///
+/// Deliberately does NOT apply [withDemonstration]. The two filters answer
+/// different questions and their counts are reported separately —
+/// `RecommendedExercises.hiddenForInjury` means "hidden because of your
+/// injuries", and folding an undemonstrable exercise into that number would
+/// tell the user their knee is why a treadmill walk is missing.
 List<ExerciseItem> recommended(
   Iterable<ExerciseItem> exercises,
   UserProfile? profile,

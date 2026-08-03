@@ -42,6 +42,10 @@ AssetEquipmentRepository _seededRepo() {
           durationMinutes: 30,
           summary: 'Steady aerobic run',
           steps: [],
+          // Since 2026-08-03 a list only shows exercises it can demonstrate
+          // with a clip, so a fixture without one renders an empty page and
+          // every assertion below finds nothing.
+          video: {'men': 'https://cdn.example.com/run.mp4'},
         ),
         ExerciseItem(
           id: 'rack_squat',
@@ -52,6 +56,7 @@ AssetEquipmentRepository _seededRepo() {
           durationMinutes: 25,
           summary: 'Compound lower body',
           steps: [],
+          video: {'men': 'https://cdn.example.com/squat.mp4'},
         ),
         ExerciseItem(
           id: 'pushup',
@@ -62,6 +67,7 @@ AssetEquipmentRepository _seededRepo() {
           durationMinutes: 8,
           summary: 'Body-weight pushing',
           steps: [],
+          video: {'men': 'https://cdn.example.com/pushup.mp4'},
         ),
       ],
     );

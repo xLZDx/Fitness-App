@@ -24,7 +24,6 @@ import '../workouts/widgets/warmup_calculator.dart';
 import 'data/catalog_labels.dart';
 import 'data/equipment_models.dart';
 import 'state/equipment_providers.dart';
-import 'widgets/exercise_demo.dart';
 import 'widgets/muscle_map.dart';
 import 'widgets/exercise_thumb.dart';
 
@@ -129,23 +128,17 @@ class WorkoutPlayerPage extends ConsumerWidget {
             children: [
               _Hero(exercise: item),
               const SizedBox(height: 16),
-              // A real clip wins when the catalog has one; otherwise the
-              // start/end frames loop as the demo -- bundled assets for the
-              // original 66, network stills (same public-domain source) for
-              // everything added in the round-4 catalog expansion. Only when
-              // there is neither do we show the "no demo" card.
+              // A clip or nothing. The two photograph fallbacks that used to sit
+              // here are gone: `frames` and `imageUrls` are both stills of a man
+              // in a gym, and putting either in front of an exercise made the
+              // catalog look like two different apps stitched together.
               //
-              // `playableVideoFor` returns null while the library's host is
-              // unchosen, so the 343 exercises that carry a clip keep showing
-              // whatever they showed before rather than a player that spins
-              // and then fails. The day the host is set, they switch over with
-              // no further change here.
+              // Lists cannot reach this state at all — `withDemonstration`
+              // removes those exercises upstream. This page can still be opened
+              // by deep link or from a logged workout, so the honest card has to
+              // exist here too rather than relying on nobody arriving.
               if (demoVideo != null)
                 _VideoBlock(url: demoVideo, poster: item.posterFor(body))
-              else if (item.frames.isNotEmpty)
-                ExerciseDemo(frames: item.frames)
-              else if (item.imageUrls.isNotEmpty)
-                ExerciseDemo(frames: item.imageUrls)
               else
                 _NoVideoFallback(),
               if (item.muscles.isNotEmpty) ...[

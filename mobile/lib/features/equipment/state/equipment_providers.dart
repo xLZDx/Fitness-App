@@ -125,7 +125,16 @@ final allExercisesProvider = FutureProvider<List<ExerciseItem>>((ref) async {
     final cached = await genRepo.get(eq.id, lang);
     if (cached != null) out.addAll(cached);
   }
-  return List.unmodifiable(out);
+  // One of the two places the clip-only rule is applied — this feed and
+  // [recommendedExercisesProvider] are what every list in the app reads from.
+  //
+  // AI-generated exercises are caught by it too. They are text with no footage,
+  // so under this rule a machine we have nothing real for now shows an empty
+  // page rather than an invented exercise illustrated by nothing. That is the
+  // honest state, and making it useful is the scan gate's job: say what the
+  // machine is, record that we lack content for it, and point the user at an
+  // outside video meanwhile.
+  return List.unmodifiable(withDemonstration(out));
 });
 
 /// A photograph to head the machine's page, or null when nothing real
@@ -171,8 +180,12 @@ final recommendedExercisesProvider =
   final raw = await ref
       .watch(exercisesForEquipmentWithAiFallbackProvider(equipmentId).future);
   final profile = ref.watch(currentProfileProvider).valueOrNull;
-  final items = recommended(raw, profile);
-  final hidden = raw.length - items.length;
+  // Clip-only first, injuries second, and the count is taken AFTER the first.
+  // Measuring it against `raw` would report an exercise we simply cannot
+  // demonstrate as one the user's injuries removed.
+  final shown = withDemonstration(raw);
+  final items = recommended(shown, profile);
+  final hidden = shown.length - items.length;
   return RecommendedExercises(
     items: items,
     hiddenForInjury: hidden < 0 ? 0 : hidden,
