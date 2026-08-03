@@ -135,7 +135,11 @@ final _filteredExercisesProvider =
   }
   if (filter == WorkoutsFilter.atHome) {
     final all = await ref.watch(allExercisesProvider.future);
-    return videoFirst(all.where((e) => e.equipmentId == null).toList());
+    // `!needsEquipment`, not `equipmentId == null`. The purchased library has
+    // no machine ids at all, so the old test promised a no-equipment tab and
+    // filled it with barbell work; the vendor's own equipment column is what
+    // answers this until the mapping exists.
+    return videoFirst(all.where((e) => !e.needsEquipment).toList());
   }
   if (filter == WorkoutsFilter.stretching) {
     final all = await ref.watch(allExercisesProvider.future);

@@ -14,10 +14,27 @@ import 'equipment_repository.dart';
 /// (`exercises.<code>.json`) patched over that base, so a language can never
 /// add, drop or re-tag an exercise.
 class AssetEquipmentRepository implements EquipmentRepository {
-  AssetEquipmentRepository({this.languageCode = 'en'});
+  AssetEquipmentRepository({
+    this.languageCode = 'en',
+    this.includeLegacy = true,
+  });
 
   /// Which translation overlay to apply. `'en'` means "the base, unmodified".
   final String languageCode;
+
+  /// Whether the original 511 exercises are part of the catalog.
+  ///
+  /// Two libraries live side by side. `exercises.json` is the one built before
+  /// the purchase — 511 entries carrying Russian text, injury
+  /// contraindications and links to the 52 machines the scanner knows, of
+  /// which 365 can be demonstrated. `exercises_vendor.json` is the purchased
+  /// library: 1,899 movements, every one with a clip, and no contraindications
+  /// or machine links of its own yet.
+  ///
+  /// The operator asked to be able to drop the first at any moment, so the
+  /// switch exists from the day the second arrives rather than being retrofitted
+  /// once something depends on the mixture.
+  final bool includeLegacy;
 
   List<EquipmentItem>? _equipment;
   List<ExerciseItem>? _exercises;
@@ -25,19 +42,45 @@ class AssetEquipmentRepository implements EquipmentRepository {
   Future<void> _ensureLoaded() async {
     if (_equipment != null && _exercises != null) return;
     final eqJson = await rootBundle.loadString('assets/data/equipment.json');
-    final exJson = await rootBundle.loadString('assets/data/exercises.json');
     final eqBase = (jsonDecode(eqJson) as List)
         .cast<Map<String, dynamic>>()
         .map(EquipmentItem.fromJson)
         .toList(growable: false);
     _equipment = applyEquipmentTranslations(
         eqBase, await _loadOverlay('assets/data/equipment.$languageCode.json'));
-    final base = (jsonDecode(exJson) as List)
+
+    final exercises = <ExerciseItem>[
+      if (includeLegacy)
+        ...await _loadCatalog('exercises'),
+      ...await _loadCatalog('exercises_vendor'),
+    ];
+    _exercises = List<ExerciseItem>.unmodifiable(exercises);
+  }
+
+  /// One catalog file plus its translation overlay.
+  ///
+  /// The vendor list is loaded through exactly the same path as the original,
+  /// including the overlay contract — text only, keyed by id, never able to add
+  /// or re-tag an exercise. Giving it its own loader would have been a second
+  /// place for that contract to be enforced, and therefore a second place for
+  /// it to stop being enforced.
+  Future<List<ExerciseItem>> _loadCatalog(String name) async {
+    late final String raw;
+    try {
+      raw = await rootBundle.loadString('assets/data/$name.json');
+    } catch (e) {
+      // A missing catalog is survivable when the other one is present, and
+      // taking the whole app down for it would be worse than showing half the
+      // library. Logged, never silent.
+      debugPrint('catalog $name.json unusable: $e');
+      return const <ExerciseItem>[];
+    }
+    final base = (jsonDecode(raw) as List)
         .cast<Map<String, dynamic>>()
         .map(ExerciseItem.fromJson)
         .toList(growable: false);
-    _exercises = applyTranslations(
-        base, await _loadOverlay('assets/data/exercises.$languageCode.json'));
+    return applyTranslations(
+        base, await _loadOverlay('assets/data/$name.$languageCode.json'));
   }
 
   /// Loads the translation overlay, or returns empty on any failure.

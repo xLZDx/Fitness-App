@@ -9,6 +9,7 @@ class ExerciseItem {
     required this.id,
     required this.title,
     required this.equipmentId,
+    this.equipmentLabel,
     required this.muscles,
     required this.difficulty,
     required this.durationMinutes,
@@ -38,6 +39,32 @@ class ExerciseItem {
 
   /// `null` means body-weight / "Workout at Home" exercise.
   final String? equipmentId;
+
+  /// What the exercise needs, in the vendor's own words -- `'Dumbbells'`,
+  /// `'Cable Pulley Machine'`, `'None (Bodyweight)'`.
+  ///
+  /// The purchased library names its equipment as free text and knows nothing
+  /// about our 52 machine ids, so [equipmentId] is null for all 1,899 of its
+  /// entries. That made every one of them look like a bodyweight exercise to
+  /// the "at home" filter, which selects on `equipmentId == null` -- a tab that
+  /// promises no equipment and offers barbell squats.
+  ///
+  /// This carries the vendor's answer until the mapping exists, so
+  /// [needsEquipment] can tell a kettlebell swing from a plank today. Mapping
+  /// it onto real machine ids is the scanner's gate.
+  final String? equipmentLabel;
+
+  /// Whether this exercise requires anything beyond the user and the floor.
+  ///
+  /// A mat is not equipment for this purpose: nobody filtering for "at home"
+  /// means to exclude yoga.
+  bool get needsEquipment {
+    if (equipmentId != null) return true;
+    final label = equipmentLabel?.toLowerCase().trim();
+    if (label == null || label.isEmpty) return false;
+    if (label.startsWith('none')) return false;
+    return !label.contains('mat');
+  }
   final List<String> muscles;
   final ExerciseDifficulty difficulty;
   final int durationMinutes;
@@ -146,6 +173,7 @@ class ExerciseItem {
         id: j['id'] as String,
         title: j['title'] as String,
         equipmentId: j['equipmentId'] as String?,
+        equipmentLabel: j['equipmentLabel'] as String?,
         muscles: List<String>.from(j['muscles'] as List? ?? const []),
         difficulty: ExerciseDifficulty.values.firstWhere(
           (d) => d.name == (j['difficulty'] as String? ?? 'beginner'),
@@ -200,6 +228,7 @@ class ExerciseItem {
         id: id,
         title: title,
         equipmentId: equipmentId,
+        equipmentLabel: equipmentLabel,
         muscles: muscles,
         difficulty: difficulty,
         durationMinutes: durationMinutes,
