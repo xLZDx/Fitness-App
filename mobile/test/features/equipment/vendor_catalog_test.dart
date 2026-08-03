@@ -35,8 +35,12 @@ void main() {
 
   group('the vendor catalog', () {
     test('is the whole library and every entry can be played', () {
-      expect(parsed, hasLength(1899));
-      expect(withDemonstration(parsed), hasLength(1899),
+      // 1,899 -> 1,887 when the gender suffix rule learned to read a SPACE
+      // separator: thirteen women's clips stopped being separate men-only
+      // exercises and paired up with their twins, which is what they always
+      // were.
+      expect(parsed, hasLength(1887));
+      expect(withDemonstration(parsed), hasLength(1887),
           reason: 'a vendor entry with no clip has no reason to exist');
     });
 

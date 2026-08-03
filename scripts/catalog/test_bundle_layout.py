@@ -66,6 +66,25 @@ class TestGender:
         assert split_gender("Shemale Press")[1] == "men"
         assert split_gender("Barbell Row")[0] == "Barbell Row"
 
+    @pytest.mark.parametrize(
+        "stem, expected_stem",
+        [
+            ("Jump Rope Basic Jump Female", "Jump Rope Basic Jump"),
+            ("Air Swing Walking Female", "Air Swing Walking"),
+            ("Alternate Leg Raise with Head Up Female", "Alternate Leg Raise with Head Up"),
+        ],
+    )
+    def test_a_space_before_the_suffix_counts_too(self, stem, expected_stem):
+        # Thirteen delivered files write the separator as a space. All thirteen
+        # were filed as men's clips AND kept the word "Female" in the title the
+        # user reads -- a third variation on the same convention, after the
+        # inconsistent casing and the trailing version marker.
+        assert split_gender(stem) == (expected_stem, "girl")
+
+    def test_the_spaced_pair_lines_up_with_its_male_twin(self):
+        assert (split_gender("Jump Rope Basic Jump Female")[0]
+                == split_gender("Jump Rope Basic Jump")[0])
+
 
 class TestWhitespace:
     """297 delivered stems cannot be stored under their own names on Windows."""

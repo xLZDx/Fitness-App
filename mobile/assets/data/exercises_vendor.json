@@ -15,7 +15,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_180_jump_turns.jpg",
       "men": "assets/posters/men/ea_180_jump_turns.jpg"
@@ -614,7 +614,7 @@
       "Focus on the resistance created by your fist and neck muscles rather than the amount of force applied",
       "Breathe normally throughout the exercise, avoiding holding your breath"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_5_sec_fist_against_chin.jpg"
     }
@@ -1289,7 +1289,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_abs_snails.jpg",
       "men": "assets/posters/men/ea_abs_snails.jpg"
@@ -1461,7 +1461,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Agility Ladder",
     "poster": {
       "girl": "assets/posters/girl/ea_agility_ladder_advanced_hop_position.jpg",
       "men": "assets/posters/men/ea_agility_ladder_advanced_hop_position.jpg"
@@ -1483,7 +1483,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Agility Ladder",
     "poster": {
       "girl": "assets/posters/girl/ea_agility_ladder_advanced_single_leg.jpg",
       "men": "assets/posters/men/ea_agility_ladder_advanced_single_leg.jpg"
@@ -1505,7 +1505,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Agility Ladder",
     "poster": {
       "girl": "assets/posters/girl/ea_agility_ladder_advancing_laterally_switching_base.jpg",
       "men": "assets/posters/men/ea_agility_ladder_advancing_laterally_switching_base.jpg"
@@ -1527,7 +1527,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Agility Ladder",
     "poster": {
       "girl": "assets/posters/girl/ea_agility_ladder_in_in_out_out.jpg",
       "men": "assets/posters/men/ea_agility_ladder_in_in_out_out.jpg"
@@ -1549,7 +1549,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Agility Ladder",
     "poster": {
       "girl": "assets/posters/girl/ea_agility_ladder_in_in_out_out_moving_laterally.jpg",
       "men": "assets/posters/men/ea_agility_ladder_in_in_out_out_moving_laterally.jpg"
@@ -1571,7 +1571,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Agility Ladder",
     "poster": {
       "girl": "assets/posters/girl/ea_agility_ladder_in_in_out_out_with_knee_lift.jpg",
       "men": "assets/posters/men/ea_agility_ladder_in_in_out_out_with_knee_lift.jpg"
@@ -1593,7 +1593,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Agility Ladder",
     "poster": {
       "girl": "assets/posters/girl/ea_agility_ladder_lateral_movement_in_in_out.jpg",
       "men": "assets/posters/men/ea_agility_ladder_lateral_movement_in_in_out.jpg"
@@ -1615,7 +1615,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Agility Ladder",
     "poster": {
       "girl": "assets/posters/girl/ea_agility_ladder_lateral_movement_with_double_hop.jpg",
       "men": "assets/posters/men/ea_agility_ladder_lateral_movement_with_double_hop.jpg"
@@ -1637,7 +1637,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Agility Ladder",
     "poster": {
       "girl": "assets/posters/girl/ea_agility_ladder_skipping_1_touch.jpg",
       "men": "assets/posters/men/ea_agility_ladder_skipping_1_touch.jpg"
@@ -1659,7 +1659,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Agility Ladder",
     "poster": {
       "girl": "assets/posters/girl/ea_agility_ladder_skipping_2_touches.jpg",
       "men": "assets/posters/men/ea_agility_ladder_skipping_2_touches.jpg"
@@ -1830,7 +1830,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dip Bars",
     "poster": {
       "girl": "assets/posters/girl/ea_air_swing_running.jpg",
       "men": "assets/posters/men/ea_air_swing_running.jpg"
@@ -1847,33 +1847,15 @@
     "summary": "",
     "steps": [],
     "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Air Swing Side To Side Swing.mp4",
       "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Air Swing Side To Side Swing.mp4"
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dip Bars",
     "poster": {
+      "girl": "assets/posters/girl/ea_air_swing_side_to_side_swing.jpg",
       "men": "assets/posters/men/ea_air_swing_side_to_side_swing.jpg"
-    }
-  },
-  {
-    "id": "ea_air_swing_side_to_side_swing_female",
-    "title": "Air Swing Side to Side Swing Female",
-    "equipmentId": null,
-    "muscles": [],
-    "primaryMuscles": [],
-    "difficulty": "beginner",
-    "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
-    "video": {
-      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Air Swing Side To Side Swing Female.mp4"
-    },
-    "isStretch": false,
-    "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
-    "poster": {
-      "men": "assets/posters/men/ea_air_swing_side_to_side_swing_female.jpg"
     }
   },
   {
@@ -1887,33 +1869,15 @@
     "summary": "",
     "steps": [],
     "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Air Swing Walking.mp4",
       "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Air Swing Walking.mp4"
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dip Bars",
     "poster": {
+      "girl": "assets/posters/girl/ea_air_swing_walking.jpg",
       "men": "assets/posters/men/ea_air_swing_walking.jpg"
-    }
-  },
-  {
-    "id": "ea_air_swing_walking_female",
-    "title": "Air Swing Walking Female",
-    "equipmentId": null,
-    "muscles": [],
-    "primaryMuscles": [],
-    "difficulty": "beginner",
-    "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
-    "video": {
-      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Air Swing Walking Female.mp4"
-    },
-    "isStretch": false,
-    "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
-    "poster": {
-      "men": "assets/posters/men/ea_air_swing_walking_female.jpg"
     }
   },
   {
@@ -2118,7 +2082,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Biceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_alternate_biceps_curl_resistance_band.jpg",
       "men": "assets/posters/men/ea_alternate_biceps_curl_resistance_band.jpg"
@@ -2142,7 +2106,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Biceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_alternate_biceps_curl_standing_dumbbells.jpg",
       "men": "assets/posters/men/ea_alternate_biceps_curl_standing_dumbbells.jpg"
@@ -2440,6 +2404,7 @@
       "Do the same with your other leg, and repeat"
     ],
     "video": {
+      "girl": "exercises/girl/Abdominals/Alternate Leg Raise with Head Up.mp4",
       "men": "exercises/men/Abdominals/Alternate leg raise with head up.mp4"
     },
     "isStretch": false,
@@ -2451,29 +2416,8 @@
     ],
     "equipmentLabel": "None",
     "poster": {
+      "girl": "assets/posters/girl/ea_alternate_leg_raise_with_head_up.jpg",
       "men": "assets/posters/men/ea_alternate_leg_raise_with_head_up.jpg"
-    }
-  },
-  {
-    "id": "ea_alternate_leg_raise_with_head_up_female",
-    "title": "Alternate Leg Raise with Head Up Female",
-    "equipmentId": null,
-    "muscles": [
-      "core"
-    ],
-    "primaryMuscles": [],
-    "difficulty": "beginner",
-    "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
-    "video": {
-      "men": "exercises/men/Abdominals/Alternate Leg Raise with Head Up Female.mp4"
-    },
-    "isStretch": false,
-    "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
-    "poster": {
-      "men": "assets/posters/men/ea_alternate_leg_raise_with_head_up_female.jpg"
     }
   },
   {
@@ -3344,7 +3288,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_ankle_pumps.jpg",
       "men": "assets/posters/men/ea_ankle_pumps.jpg"
@@ -3991,7 +3935,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_arms_behind_back_chest_stretch.jpg",
       "men": "assets/posters/men/ea_arms_behind_back_chest_stretch.jpg"
@@ -4047,7 +3991,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_arms_lateral_raise_and_rotation_up.jpg",
       "men": "assets/posters/men/ea_arms_lateral_raise_and_rotation_up.jpg"
@@ -4103,7 +4047,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_arms_wide_chest_stretch.jpg",
       "men": "assets/posters/men/ea_arms_wide_chest_stretch.jpg"
@@ -4858,7 +4802,7 @@
       "Avoid pulling on your neck with your hands to prevent strain; use your core muscles to lift your body",
       "Keep a steady breathing pattern, exhaling as you lift and inhaling as you lower your body"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "A Partner",
     "poster": {
       "girl": "assets/posters/girl/ea_assisted_sit_up.jpg"
     }
@@ -5552,7 +5496,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Exercise Ball",
     "poster": {
       "girl": "assets/posters/girl/ea_ball_slams.jpg",
       "men": "assets/posters/men/ea_ball_slams.jpg"
@@ -5663,7 +5607,7 @@
       "Exhale as you press the band overhead and inhale as you lower it back down",
       "Perform the exercise slowly and with control to maximize muscle engagement"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_behind_neck_shoulder_press.jpg"
     }
@@ -5699,7 +5643,7 @@
       "Exhale as you press the band upward and inhale as you lower it back down",
       "Perform the exercise slowly and with control to maximize muscle engagement"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Bench",
     "poster": {
       "girl": "assets/posters/girl/ea_band_bench_press.jpg"
     }
@@ -5734,7 +5678,7 @@
       "Exhale as you extend your arm back and inhale as you return to the starting position",
       "Perform the exercise slowly and with control to maximize muscle engagement"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_bent_over_one_arm_kickback.jpg"
     }
@@ -5769,7 +5713,7 @@
       "Exhale as you lift your leg back and inhale as you return to the starting position",
       "Maintain a slight bend in your supporting knee to protect your knee joint and lower back"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_bent_over_hip_extension.jpg"
     }
@@ -6062,7 +6006,7 @@
       "Exhale as you press the band across your body and inhale as you return to the starting position",
       "Focus on using your chest muscles to press the band"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_cross_body_one_arm_chest_press.jpg"
     }
@@ -6097,7 +6041,7 @@
       "Exhale as you curl the band towards your chest and inhale as you lower it back down",
       "Keep your upper arms stationary to isolate the biceps"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_cross_chest_biceps_curl.jpg"
     }
@@ -6172,7 +6116,7 @@
       "Exhale as you lift your upper body and inhale as you lower it back down",
       "Avoid pulling on the band with your arms; focus on using your abs to lift your body"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_decline_sit_up.jpg"
     }
@@ -6209,7 +6153,7 @@
       "Exhale as you pull the band towards your face and inhale as you return to the starting position",
       "Maintain a slight bend in your knees for better balance and support"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_face_pull.jpg"
     }
@@ -6245,7 +6189,7 @@
       "Exhale as you pull the band down and inhale as you return to the starting position",
       "Use a resistance band with appropriate tension to ensure you can perform the exercise with good form"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_fixed_back_underhand_pulldown.jpg"
     }
@@ -6282,7 +6226,7 @@
       "Exhale as you pull the band towards your face and inhale as you return to the starting position",
       "Maintain a slight bend in your knees for better balance and support"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_front_face_pull.jpg"
     }
@@ -6317,7 +6261,7 @@
       "Exhale as you raise the band handles and inhale as you lower them back down",
       "Avoid swinging your arms; use controlled movements"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_front_raise.jpg"
     }
@@ -6353,7 +6297,7 @@
       "Exhale as you bring your hands together and inhale as you return to the starting position",
       "Focus on squeezing your chest muscles as you bring your hands together"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_high_fly.jpg"
     }
@@ -6376,7 +6320,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_hip_adduction.jpg",
       "men": "assets/posters/men/ea_band_hip_adduction.jpg"
@@ -6413,7 +6357,7 @@
       "Breathe steadily, exhaling as you shrug and inhaling as you return to the starting position",
       "Use a controlled motion to ensure proper form and maximize muscle activation"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_horizontal_shrug.jpg",
       "men": "assets/posters/men/ea_band_horizontal_shrug.jpg"
@@ -6449,7 +6393,7 @@
       "Exhale as you curl the band handle towards your shoulder and inhale as you lower it back down",
       "Focus on squeezing your biceps at the top of the movement"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_incline_alternate_hammer_curl.jpg"
     }
@@ -6485,7 +6429,7 @@
       "Exhale as you press the band handles upward and inhale as you lower them back down",
       "Perform the exercise slowly and with control to maximize muscle engagement"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Bench",
     "poster": {
       "girl": "assets/posters/girl/ea_band_incline_bench_press.jpg"
     }
@@ -6520,7 +6464,7 @@
       "Keep your elbows close to your body to isolate the biceps",
       "Focus on squeezing your biceps at the top of the movement"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_incline_biceps_curl.jpg"
     }
@@ -6556,7 +6500,7 @@
       "Exhale as you bring the handles together and inhale as you return to the starting position",
       "Use a resistance band with appropriate tension to ensure you can perform the exercise with good form"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_incline_fly.jpg"
     }
@@ -6591,7 +6535,7 @@
       "Keep your elbows close to your body to isolate the biceps",
       "Focus on squeezing your biceps at the top of the movement"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_incline_hammer_curl.jpg"
     }
@@ -6627,7 +6571,7 @@
       "Exhale as you press the band handles upward and inhale as you lower them back down",
       "Avoid letting your elbows flare out excessively to protect your shoulder joints"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_incline_hammer_press.jpg"
     }
@@ -6663,7 +6607,7 @@
       "Use a resistance band with appropriate tension to ensure you can perform the exercise with good form",
       "Maintain a slight bend in your elbows at the top of the movement"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_incline_palms_back_press.jpg"
     }
@@ -6699,7 +6643,7 @@
       "Focus on squeezing your back muscles at the peak of the movement",
       "Perform each rep with controlled, deliberate movements for maximum benefit"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_incline_row.jpg"
     }
@@ -6734,7 +6678,7 @@
       "Perform the exercise slowly and with control to maximize muscle engagement",
       "Keep your neck in a neutral position by looking at the bench, not forward or down"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_incline_t_raise.jpg"
     }
@@ -6802,7 +6746,7 @@
       "Use a resistance band with appropriate tension to ensure you can perform the exercise with good form",
       "Maintain a slight bend in your elbows to protect your shoulder joints"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_incline_y_raise.jpg"
     }
@@ -6838,7 +6782,7 @@
       "Ensure the resistance band is securely anchored to avoid slipping",
       "Exhale as you crunch down and inhale as you return to the starting position"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_kneeling_crunch.jpg"
     }
@@ -6874,7 +6818,7 @@
       "Perform the exercise slowly and with control to maximize muscle engagement",
       "Focus on squeezing your back muscles at the bottom of the movement"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_kneeling_lat_pulldown.jpg"
     }
@@ -6908,7 +6852,7 @@
       "Exhale as you curl the band handles upward and inhale as you lower them back down",
       "Keep your upper arms stationary to isolate the biceps"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_kneeling_preacher_curl.jpg"
     }
@@ -6944,7 +6888,7 @@
       "Maintain a neutral spine to avoid strain on your lower back",
       "Avoid rotating your hips outward; maintain square hips to the floor"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_kneeling_rear_kick.jpg"
     }
@@ -6981,7 +6925,7 @@
       "Breathe steadily, exhaling as you pull the band and inhaling as you return to the starting position",
       "Focus on squeezing your shoulder blade at the top of the movement to maximize back activation"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_kneeling_single_arm_high_row.jpg",
       "men": "assets/posters/men/ea_band_kneeling_single_arm_high_row.jpg"
@@ -7020,7 +6964,7 @@
       "Adjust your body’s distance from the anchor to maintain consistent tension",
       "Ensure the band or cable has tension at the start of the movement"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_leg_press.jpg",
       "men": "assets/posters/men/ea_band_leg_press.jpg"
@@ -7057,7 +7001,7 @@
       "Perform the exercise slowly and with control to maximize muscle engagement",
       "Avoid rotating your torso; keep your movements focused and controlled"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_low_alternate_chest_press.jpg"
     }
@@ -7092,7 +7036,7 @@
       "Focus on squeezing your chest muscles as you bring your hands together",
       "Use a resistance band with appropriate tension to ensure you can perform the exercise with good form"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_low_chest_fly.jpg"
     }
@@ -7127,7 +7071,7 @@
       "Perform the exercise slowly and with control to maximize muscle engagement",
       "Focus on using your chest muscles to press the band handles"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_low_chest_press.jpg"
     }
@@ -7149,7 +7093,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Triceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_lying_press_down.jpg"
     }
@@ -7185,7 +7129,7 @@
       "Breathe steadily, exhaling as you pull the band and inhaling as you return to the starting position",
       "Keep your elbows close to your body to maximize back engagement and minimize shoulder involvement"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_lying_reverse_grip_row.jpg"
     }
@@ -7207,7 +7151,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_band_pallof_press.jpg"
     }
@@ -7244,7 +7188,7 @@
       "Adjust the band’s tension or your distance from the anchor for an appropriate challenge",
       "Breathe steadily, exhaling as you push the band forward and inhaling as you return to the starting position"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_palloff_press.jpg"
     }
@@ -7279,7 +7223,7 @@
       "Squeeze your biceps at the top of the movement to enhance muscle activation",
       "Use an appropriate resistance band that challenges you without compromising your form"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_prone_incline_curl.jpg"
     }
@@ -7314,7 +7258,7 @@
       "Squeeze your biceps at the top of the movement to enhance muscle activation",
       "Use an appropriate resistance band that challenges you without compromising your form"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_prone_incline_hammer_curl.jpg"
     }
@@ -7351,7 +7295,7 @@
       "Adjust the resistance band to match your strength level. Thicker bands provide more assistance",
       "Avoid using momentum; focus on pulling with your back and arms"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_pull_up.jpg",
       "men": "assets/posters/men/ea_band_pull_up.jpg"
@@ -7391,7 +7335,7 @@
       "Focus on hinging at the hips rather than squatting down",
       "Maintain a slight bend in your knees throughout the exercise"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_pullthrough.jpg",
       "men": "assets/posters/men/ea_band_pullthrough.jpg"
@@ -7429,7 +7373,7 @@
       "Breathe steadily throughout the exercise, exhaling as you push up and inhaling as you lower down",
       "Perform the movement with control to maximize muscle activation and prevent injury"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_push_up.jpg"
     }
@@ -7464,7 +7408,7 @@
       "Ensure the bench is stable and at an appropriate incline angle to effectively target the upper back muscles",
       "Breathe steadily, exhaling as you raise the band and inhaling as you return to the starting position"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_reverse_fly.jpg"
     }
@@ -7499,7 +7443,7 @@
       "Squeeze your biceps at the top of the movement to enhance muscle activation",
       "Use an appropriate resistance band that challenges you without compromising your form"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_reverse_spider_curl.jpg"
     }
@@ -7537,7 +7481,7 @@
       "Exhale as you pull the band handles towards your torso and inhale as you return to the starting position",
       "Use a resistance band with appropriate tension to ensure you can perform the exercise with good form"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Bench",
     "poster": {
       "girl": "assets/posters/girl/ea_band_rotating_hammer_grip_incline_bench_row.jpg"
     }
@@ -7572,7 +7516,7 @@
       "Ensure the band is securely anchored under the bench to prevent slipping",
       "Keep your elbows slightly bent to avoid joint strain and focus on lifting with your shoulders"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_seated_lateral_raise.jpg"
     }
@@ -7608,7 +7552,7 @@
       "Use an appropriate resistance band that challenges you without compromising your form",
       "Ensure the band is securely anchored under the bench to prevent slipping"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_seated_neutral_grip_shoulders_press.jpg"
     }
@@ -7644,7 +7588,7 @@
       "Use an appropriate resistance band that challenges you without compromising your form",
       "Ensure the band is securely anchored under the bench to prevent slipping"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_seated_shoulder_press.jpg"
     }
@@ -7680,7 +7624,7 @@
       "Avoid bending forward or backward; focus on bending directly to the side",
       "Breathe steadily, exhaling as you bend to the side and inhaling as you return to the upright position"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_side_bend.jpg"
     }
@@ -7718,7 +7662,7 @@
       "Breathe steadily, exhaling as you press the band up and inhaling as you return to the starting position",
       "Ensure the band is securely anchored under your foot to prevent slipping"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_single_arm_overhead_press.jpg",
       "men": "assets/posters/men/ea_band_single_arm_overhead_press.jpg"
@@ -7757,7 +7701,7 @@
       "Breathe steadily, exhaling as you pull the band across your body and inhaling as you return to the starting position",
       "Keep your elbow slightly bent throughout the movement to avoid joint strain"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_single_arm_pec_fly.jpg",
       "men": "assets/posters/men/ea_band_single_arm_pec_fly.jpg"
@@ -7797,7 +7741,7 @@
       "Ensure your front knee stays in line with your toes to avoid putting stress on the knee joint",
       "Keep your weight evenly distributed on your front leg during the exercise"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_single_leg_split_squat.jpg"
     }
@@ -7819,7 +7763,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Triceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_band_skullcrusher.jpg"
     }
@@ -7859,7 +7803,7 @@
       "Drive through the heel of your front foot for better glute and quad engagement",
       "Adjust the band tension before starting to ensure proper resistance"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_spanish_split_squat.jpg",
       "men": "assets/posters/men/ea_band_spanish_split_squat.jpg"
@@ -7881,7 +7825,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_squat_row.jpg",
       "men": "assets/posters/men/ea_band_squat_row.jpg"
@@ -7918,7 +7862,7 @@
       "Maintain an upright posture throughout the exercise; avoid leaning forward or backward",
       "Keep your supporting knee slightly bent to maintain balance"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_standing_leg_curl.jpg"
     }
@@ -7954,7 +7898,7 @@
       "Focus on squeezing your shoulder blades together at the top of the movement to maximize rear delt engagement",
       "Adjust the band’s resistance by stepping on it closer to or farther from the anchor point"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_standing_rear_delt_row.jpg"
     }
@@ -7977,7 +7921,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Triceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_triceps_pushdown_single_arm.jpg",
       "men": "assets/posters/men/ea_band_triceps_pushdown_single_arm.jpg"
@@ -8012,7 +7956,7 @@
       "Keep your knees slightly bent to avoid locking them out during the movement",
       "Focus on squeezing your calves at the top of the movement to enhance muscle activation"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_two_legs_calf_raise_band_under_both_legs_version_2.jpg"
     }
@@ -8047,7 +7991,7 @@
       "Ensure the resistance band has appropriate tension to provide an effective stretch without causing discomfort",
       "Perform the stretch slowly and with control to maximize muscle activation and reduce the risk of injury"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_warm_up_shoulder_stretch.jpg"
     }
@@ -8069,7 +8013,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Forearms",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_wrist_curl_single_arm.jpg"
     }
@@ -8104,7 +8048,7 @@
       "Keep your elbows slightly bent to avoid joint strain and focus on lifting with your shoulders",
       "Use an appropriate resistance band that challenges you without compromising your form"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_y_raise.jpg"
     }
@@ -8114,20 +8058,36 @@
     "title": "Banded Feet Elevated Hip Thrusters",
     "equipmentId": null,
     "muscles": [
+      "glutes",
+      "hamstrings",
+      "core",
       "quads"
     ],
-    "primaryMuscles": [],
+    "primaryMuscles": [
+      "glutes",
+      "hamstrings"
+    ],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Lie on your back with your arms by your sides and your heels placed on an elevated surface such as a bench or box. Wrap a resistance band just above your knees to add extra glute activation",
+    "steps": [
+      "Lie on your back with your arms by your sides and your heels placed on an elevated surface such as a bench or box. Wrap a resistance band just above your knees to add extra glute activation",
+      "Bend your knees at approximately 90 degrees and keep your feet hip-width apart. Brace your core and maintain a neutral spine",
+      "Drive through your heels and lift your hips off the ground by contracting your glutes, forming a straight line from your shoulders to your knees at the top",
+      "Pause at the top while pushing your knees slightly outward against the band, then lower your hips back to the ground in a controlled motion. Repeat for the desired number of repetitions"
+    ],
     "video": {
       "girl": "exercises/girl/Legs/Banded feet elevated hip thrusters.mp4",
       "men": "exercises/men/Legs/Banded feet elevated hip thrusters.mp4"
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "tips": [
+      "Ensure the resistance band stays under consistent tension throughout the movement",
+      "Drive through your heels to maximize glute activation",
+      "Do not let your legs cave inward; push them outward against the band"
+    ],
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_banded_feet_elevated_hip_thrusters.jpg",
       "men": "assets/posters/men/ea_banded_feet_elevated_hip_thrusters.jpg"
@@ -8163,7 +8123,7 @@
       "Visualize the bicep contraction to enhance the mind-muscle connection for better results",
       "Ensure your movements are symmetrical to avoid muscle imbalances; focus equally on both arms"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_alternate_biceps_curl.jpg"
     }
@@ -9243,7 +9203,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_coan_deadlift.jpg",
       "men": "assets/posters/men/ea_barbell_coan_deadlift.jpg"
@@ -10090,7 +10050,7 @@
       "Keep your chest up and avoid leaning forward excessively",
       "Focus on engaging your quadriceps and glutes throughout the movement"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_front_squats.jpg",
       "men": "assets/posters/men/ea_barbell_front_squats.jpg"
@@ -10495,7 +10455,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Powerlifting",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_hang_clean.jpg",
       "men": "assets/posters/men/ea_barbell_hang_clean.jpg"
@@ -10557,7 +10517,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_hooklying_bench_press.jpg"
     }
@@ -10579,7 +10539,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_hooklying_bench_press_close_elbows.jpg"
     }
@@ -10818,7 +10778,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_jump_shrug.jpg",
       "men": "assets/posters/men/ea_barbell_jump_shrug.jpg"
@@ -10959,7 +10919,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_landmine_chest_press.jpg",
       "men": "assets/posters/men/ea_barbell_landmine_chest_press.jpg"
@@ -10983,7 +10943,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_landmine_side_bend.jpg",
       "men": "assets/posters/men/ea_barbell_landmine_side_bend.jpg"
@@ -11042,7 +11002,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_larsen_bench_press.jpg",
       "men": "assets/posters/men/ea_barbell_larsen_bench_press.jpg"
@@ -11121,7 +11081,7 @@
       "Engage your core to help stabilize your body and prevent unnecessary movement",
       "Use a controlled motion to lift and lower the barbell, preventing any jerking movements"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "men": "assets/posters/men/ea_barbell_long_landmine_row.jpg"
     }
@@ -11450,7 +11410,7 @@
       "Adjust the weight on the barbell to challenge your muscles without compromising your form",
       "Ensure the landmine setup is secure to prevent slipping or tipping"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_meadows_row.jpg"
     }
@@ -12141,7 +12101,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Powerlifting",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_press_under.jpg",
       "men": "assets/posters/men/ea_barbell_press_under.jpg"
@@ -12502,7 +12462,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_reverse_deadlift.jpg",
       "men": "assets/posters/men/ea_barbell_reverse_deadlift.jpg"
@@ -13149,7 +13109,7 @@
       "Engage your core to stabilize your torso and maintain balance throughout the movement",
       "Breathe steadily, exhaling as you shrug your shoulders upward and inhaling as you lower them back down"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_silverback_shrug.jpg",
       "men": "assets/posters/men/ea_barbell_silverback_shrug.jpg"
@@ -13283,7 +13243,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_situp.jpg",
       "men": "assets/posters/men/ea_barbell_situp.jpg"
@@ -13705,7 +13665,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_spoto_press.jpg",
       "men": "assets/posters/men/ea_barbell_spoto_press.jpg"
@@ -13744,7 +13704,7 @@
       "Maintain a neutral spine by keeping your chest up and eyes forward",
       "Distribute your weight evenly across your feet to ensure balance and stability"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_squat_back_pov.jpg"
     }
@@ -14850,7 +14810,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_zercher_good_morning.jpg"
     }
@@ -14945,7 +14905,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Battle Ropes",
     "poster": {
       "girl": "assets/posters/girl/ea_battle_rope_alternating_arm_waves.jpg",
       "men": "assets/posters/men/ea_battle_rope_alternating_arm_waves.jpg"
@@ -14967,7 +14927,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Battle Ropes",
     "poster": {
       "girl": "assets/posters/girl/ea_battle_rope_double_arm_slams.jpg",
       "men": "assets/posters/men/ea_battle_rope_double_arm_slams.jpg"
@@ -14989,7 +14949,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_bear_crawls.jpg",
       "men": "assets/posters/men/ea_bear_crawls.jpg"
@@ -18207,7 +18167,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "girl": "assets/posters/girl/ea_both_arms_behind_on_wall_biceps_stretch.jpg",
       "men": "assets/posters/men/ea_both_arms_behind_on_wall_biceps_stretch.jpg"
@@ -18340,7 +18300,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_bow_pose.jpg",
       "men": "assets/posters/men/ea_bow_pose.jpg"
@@ -18440,7 +18400,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Sled",
     "poster": {
       "girl": "assets/posters/girl/ea_box_sled_push.jpg",
       "men": "assets/posters/men/ea_box_sled_push.jpg"
@@ -19187,7 +19147,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "girl": "assets/posters/girl/ea_bulgarian_split_squat_stretch.jpg",
       "men": "assets/posters/men/ea_bulgarian_split_squat_stretch.jpg"
@@ -19474,7 +19434,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_cable_30_degree_shrug.jpg",
       "men": "assets/posters/men/ea_cable_30_degree_shrug.jpg"
@@ -19897,7 +19857,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_cable_core_palloff_press.jpg",
       "men": "assets/posters/men/ea_cable_core_palloff_press.jpg"
@@ -19921,7 +19881,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Triceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_cable_cross_pushdown.jpg",
       "men": "assets/posters/men/ea_cable_cross_pushdown.jpg"
@@ -19945,7 +19905,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_cable_face_pull_with_rope.jpg",
       "men": "assets/posters/men/ea_cable_face_pull_with_rope.jpg"
@@ -20123,7 +20083,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_cable_lat_prayer.jpg",
       "men": "assets/posters/men/ea_cable_lat_prayer.jpg"
@@ -20937,7 +20897,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_cable_pull_in_kneeling.jpg",
       "men": "assets/posters/men/ea_cable_pull_in_kneeling.jpg"
@@ -21730,7 +21690,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_cable_silverback_shrug.jpg",
       "men": "assets/posters/men/ea_cable_silverback_shrug.jpg"
@@ -21753,7 +21713,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_cable_single_arm_reverse_fly.jpg"
     }
@@ -21855,7 +21815,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_cable_standing_crunch.jpg",
       "men": "assets/posters/men/ea_cable_standing_crunch.jpg"
@@ -22339,7 +22299,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Biceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_cable_twisting_biceps_curl.jpg",
       "men": "assets/posters/men/ea_cable_twisting_biceps_curl.jpg"
@@ -22621,7 +22581,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Forearms",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_cable_wrist_extension.jpg",
       "men": "assets/posters/men/ea_cable_wrist_extension.jpg"
@@ -22677,7 +22637,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "men": "assets/posters/men/ea_calf_push_stretch_with_hands_against_wall_v_2.jpg"
     }
@@ -22949,7 +22909,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "girl": "assets/posters/girl/ea_calve_stretch_foot_on_wall.jpg",
       "men": "assets/posters/men/ea_calve_stretch_foot_on_wall.jpg"
@@ -22971,7 +22931,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "girl": "assets/posters/girl/ea_calve_stretch_from_wall_to_floor.jpg",
       "men": "assets/posters/men/ea_calve_stretch_from_wall_to_floor.jpg"
@@ -23029,7 +22989,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Plyo Box",
     "poster": {
       "girl": "assets/posters/girl/ea_calves_stretch_on_step.jpg",
       "men": "assets/posters/men/ea_calves_stretch_on_step.jpg"
@@ -23163,7 +23123,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_cat_pose.jpg",
       "men": "assets/posters/men/ea_cat_pose.jpg"
@@ -23355,7 +23315,7 @@
       "Focus on keeping your front knee aligned over your ankle to avoid putting excess strain on your knee joint",
       "Maintain balance by keeping your hands steady and holding the chair"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_chair_back_lunge_right_resistance_band.jpg"
     }
@@ -23569,7 +23529,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_chair_pose.jpg",
       "men": "assets/posters/men/ea_chair_pose.jpg"
@@ -24178,7 +24138,7 @@
       "Focus on engaging your chest muscles throughout the movement",
       "Exhale as you push the handles forward and inhale as you return to the starting position"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_chest_press_machine.jpg",
       "men": "assets/posters/men/ea_chest_press_machine.jpg"
@@ -24354,7 +24314,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_child_pose_arms_extended_left_right.jpg",
       "men": "assets/posters/men/ea_child_pose_arms_extended_left_right.jpg"
@@ -24376,7 +24336,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_child_pose_arms_on_side.jpg",
       "men": "assets/posters/men/ea_child_pose_arms_on_side.jpg"
@@ -24398,7 +24358,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Yoga Block",
     "poster": {
       "girl": "assets/posters/girl/ea_child_pose_elbows_on_block.jpg",
       "men": "assets/posters/men/ea_child_pose_elbows_on_block.jpg"
@@ -24420,7 +24380,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_child_pose_lower_back_stretch.jpg",
       "men": "assets/posters/men/ea_child_pose_lower_back_stretch.jpg"
@@ -25259,7 +25219,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_cobra_stretch.jpg",
       "men": "assets/posters/men/ea_cobra_stretch.jpg"
@@ -25473,7 +25433,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Bench",
     "poster": {
       "girl": "assets/posters/girl/ea_copenhagen_plank.jpg",
       "men": "assets/posters/men/ea_copenhagen_plank.jpg"
@@ -25732,7 +25692,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Sled",
     "poster": {
       "girl": "assets/posters/girl/ea_crawl_with_sled_drag.jpg",
       "men": "assets/posters/men/ea_crawl_with_sled_drag.jpg"
@@ -25754,7 +25714,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_crescent_moon_pose.jpg",
       "men": "assets/posters/men/ea_crescent_moon_pose.jpg"
@@ -25775,7 +25735,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_crescent_moon_pose_quad_stretch.jpg"
     }
@@ -25796,7 +25756,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Yoga Block",
     "poster": {
       "girl": "assets/posters/girl/ea_crescent_moon_pose_quad_stretch_with_block.jpg",
       "men": "assets/posters/men/ea_crescent_moon_pose_quad_stretch_with_block.jpg"
@@ -25854,7 +25814,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_criss_cross_bow_tie_pose.jpg",
       "men": "assets/posters/men/ea_criss_cross_bow_tie_pose.jpg"
@@ -26032,7 +25992,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_cross_body_elbow_pull_shoulder_stretch.jpg",
       "men": "assets/posters/men/ea_cross_body_elbow_pull_shoulder_stretch.jpg"
@@ -26054,7 +26014,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_cross_body_shoulder_stretch.jpg",
       "men": "assets/posters/men/ea_cross_body_shoulder_stretch.jpg"
@@ -26227,7 +26187,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_crow_pose.jpg",
       "men": "assets/posters/men/ea_crow_pose.jpg"
@@ -27893,7 +27853,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_double_kettlebell_sled_push.jpg",
       "men": "assets/posters/men/ea_double_kettlebell_sled_push.jpg"
@@ -27953,7 +27913,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_double_pigeon_pose.jpg",
       "men": "assets/posters/men/ea_double_pigeon_pose.jpg"
@@ -28038,7 +27998,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_downward_dog_toe_to_heel.jpg",
       "men": "assets/posters/men/ea_downward_dog_toe_to_heel.jpg"
@@ -28060,7 +28020,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_downward_dog_with_fingers_facing_feet.jpg",
       "men": "assets/posters/men/ea_downward_dog_with_fingers_facing_feet.jpg"
@@ -28155,7 +28115,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Pull Up Bar",
     "poster": {
       "girl": "assets/posters/girl/ea_dragonfly.jpg",
       "men": "assets/posters/men/ea_dragonfly.jpg"
@@ -28430,7 +28390,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_alternating_arnold_press.jpg",
       "men": "assets/posters/men/ea_dumbbell_alternating_arnold_press.jpg"
@@ -28454,7 +28414,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_alternating_pendlay_row.jpg",
       "men": "assets/posters/men/ea_dumbbell_alternating_pendlay_row.jpg"
@@ -28778,7 +28738,7 @@
       "Breathe in as you lower into the squat and exhale as you push back up to the starting position",
       "Use a controlled, steady pace to maximize muscle engagement and maintain balance"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_bench_squat.jpg"
     }
@@ -29274,7 +29234,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_chest_supported_y_raise.jpg",
       "men": "assets/posters/men/ea_dumbbell_chest_supported_y_raise.jpg"
@@ -29544,7 +29504,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_curl_press_extend.jpg"
     }
@@ -29747,7 +29707,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_decline_close_neutral_grip_press.jpg",
       "men": "assets/posters/men/ea_dumbbell_decline_close_neutral_grip_press.jpg"
@@ -30124,7 +30084,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_elbow_side_plank.jpg",
       "men": "assets/posters/men/ea_dumbbell_elbow_side_plank.jpg"
@@ -30324,7 +30284,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_feet_elevated_figure_four_glute_bridge.jpg",
       "men": "assets/posters/men/ea_dumbbell_feet_elevated_figure_four_glute_bridge.jpg"
@@ -31018,7 +30978,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_goblet_good_morning.jpg",
       "men": "assets/posters/men/ea_dumbbell_goblet_good_morning.jpg"
@@ -31042,7 +31002,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_goblet_reverse_lunge.jpg",
       "men": "assets/posters/men/ea_dumbbell_goblet_reverse_lunge.jpg"
@@ -31248,7 +31208,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_half_kneeling_wood_chopper.jpg",
       "men": "assets/posters/men/ea_dumbbell_half_kneeling_wood_chopper.jpg"
@@ -31450,7 +31410,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_hand_side_plank.jpg",
       "men": "assets/posters/men/ea_dumbbell_hand_side_plank.jpg"
@@ -31514,7 +31474,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_hex_press.jpg"
     }
@@ -32607,7 +32567,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_knee_lawnmower_row.jpg",
       "men": "assets/posters/men/ea_dumbbell_knee_lawnmower_row.jpg"
@@ -32743,7 +32703,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_kneeling_wood_chopper.jpg",
       "men": "assets/posters/men/ea_dumbbell_kneeling_wood_chopper.jpg"
@@ -32802,7 +32762,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_laying_30_degree_shrug.jpg",
       "men": "assets/posters/men/ea_dumbbell_laying_30_degree_shrug.jpg"
@@ -32826,7 +32786,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_laying_silverback_shrug.jpg",
       "men": "assets/posters/men/ea_dumbbell_laying_silverback_shrug.jpg"
@@ -33073,7 +33033,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_lying_on_floor_chest_press.jpg"
     }
@@ -33410,7 +33370,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_offset_squat.jpg",
       "men": "assets/posters/men/ea_dumbbell_offset_squat.jpg"
@@ -34214,7 +34174,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_overhead_side_bend.jpg",
       "men": "assets/posters/men/ea_dumbbell_overhead_side_bend.jpg"
@@ -34274,7 +34234,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_pendlay_row.jpg",
       "men": "assets/posters/men/ea_dumbbell_pendlay_row.jpg"
@@ -34298,7 +34258,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_plank_pullthrough.jpg",
       "men": "assets/posters/men/ea_dumbbell_plank_pullthrough.jpg"
@@ -36007,7 +35967,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Biceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_seated_zottman_curl.jpg",
       "men": "assets/posters/men/ea_dumbbell_seated_zottman_curl.jpg"
@@ -36031,7 +35991,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_shoulder_extension.jpg",
       "men": "assets/posters/men/ea_dumbbell_shoulder_extension.jpg"
@@ -36274,7 +36234,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_side_plank_up_down.jpg",
       "men": "assets/posters/men/ea_dumbbell_side_plank_up_down.jpg"
@@ -36372,7 +36332,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_silverback_shrug.jpg",
       "men": "assets/posters/men/ea_dumbbell_silverback_shrug.jpg"
@@ -36650,7 +36610,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_single_arm_upright_row.jpg",
       "men": "assets/posters/men/ea_dumbbell_single_arm_upright_row.jpg"
@@ -36782,7 +36742,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_single_leg_hip_thrust.jpg",
       "men": "assets/posters/men/ea_dumbbell_single_leg_hip_thrust.jpg"
@@ -36806,7 +36766,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_single_leg_single_arm_deadlift.jpg",
       "men": "assets/posters/men/ea_dumbbell_single_leg_single_arm_deadlift.jpg"
@@ -36979,7 +36939,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Triceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_skullcrusher.jpg",
       "men": "assets/posters/men/ea_dumbbell_skullcrusher.jpg"
@@ -37117,7 +37077,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_staggered_deadlift.jpg",
       "men": "assets/posters/men/ea_dumbbell_staggered_deadlift.jpg"
@@ -37141,7 +37101,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_staggered_glute_bridge.jpg",
       "men": "assets/posters/men/ea_dumbbell_staggered_glute_bridge.jpg"
@@ -37165,7 +37125,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_staggered_hip_thrust.jpg",
       "men": "assets/posters/men/ea_dumbbell_staggered_hip_thrust.jpg"
@@ -37575,7 +37535,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_standing_hip_abduction.jpg",
       "men": "assets/posters/men/ea_dumbbell_standing_hip_abduction.jpg"
@@ -38414,7 +38374,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_suitcase_crunch.jpg",
       "men": "assets/posters/men/ea_dumbbell_suitcase_crunch.jpg"
@@ -38545,7 +38505,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_swing.jpg",
       "men": "assets/posters/men/ea_dumbbell_swing.jpg"
@@ -39121,7 +39081,7 @@
       "Perform the swings in a controlled manner to maximize the stretch and avoid any sudden jerks",
       "Focus on smooth, fluid movements, gradually increasing the range of motion as your muscles warm up"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "men": "assets/posters/men/ea_dynamic_leg_swing.jpg"
     }
@@ -39142,7 +39102,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_eagle_arms_chin_into_chest.jpg",
       "men": "assets/posters/men/ea_eagle_arms_chin_into_chest.jpg"
@@ -39164,7 +39124,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_easy_pose_neck_stretch.jpg",
       "men": "assets/posters/men/ea_easy_pose_neck_stretch.jpg"
@@ -39186,7 +39146,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_easy_seated_twist_pose.jpg",
       "men": "assets/posters/men/ea_easy_seated_twist_pose.jpg"
@@ -39259,7 +39219,7 @@
       "Maintain straight arms and avoid bending your elbows during the stretch",
       "Perform the stretch with both hand positions to maintain muscle balance and flexibility"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_elbow_extension_and_supination_pronation_forearm_stretch.jpg"
     }
@@ -39296,7 +39256,7 @@
       "Breathe deeply and steadily throughout the stretch, focusing on relaxing the muscles",
       "Perform the stretch on both arms to maintain muscle balance and flexibility"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "men": "assets/posters/men/ea_elbow_flexor_stretch.jpg"
     }
@@ -39333,7 +39293,7 @@
       "Keep your movements slow and controlled to maximize muscle engagement and avoid injury",
       "Engage your core throughout the exercise to maintain a straight body line and support your lower back"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Bench",
     "poster": {
       "men": "assets/posters/men/ea_elbow_lift_reverse_push_up.jpg"
     }
@@ -39366,7 +39326,7 @@
       "Ensure your elbows remain under your shoulders to maintain proper form and prevent strain",
       "Move slowly and with control to maximize muscle engagement and prevent injury"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_elbow_push_plank_up.jpg"
     }
@@ -39386,7 +39346,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_elbow_extension.jpg"
     }
@@ -39419,7 +39379,7 @@
       "Avoid rotating your hips; keep them level to increase core stability",
       "Perform the exercise on a non-slip surface to prevent your forearms and hands from slipping"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_elbow_up_and_down_dynamic_plank.jpg"
     }
@@ -39479,7 +39439,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Plyo Box",
     "poster": {
       "girl": "assets/posters/girl/ea_elevated_pike_shoulder_shrug.jpg",
       "men": "assets/posters/men/ea_elevated_pike_shoulder_shrug.jpg"
@@ -39516,7 +39476,7 @@
       "Breathe steadily throughout the exercise, exhaling as you push up and inhaling as you lower down",
       "Avoid flaring your elbows out to the sides; keep them at a 45-degree angle to engage your chest and triceps more effectively"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Yoga Block",
     "poster": {
       "men": "assets/posters/men/ea_elevated_push_up.jpg"
     }
@@ -39550,7 +39510,7 @@
       "Maintain a slight bend in your knees to reduce strain and keep the movement fluid",
       "Ensure the platform or step is stable and secure to prevent slipping or tipping during the exercise"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Plyo Box",
     "poster": {
       "men": "assets/posters/men/ea_elevated_standing_calf_raise.jpg"
     }
@@ -39587,7 +39547,7 @@
       "Ensure your feet are firmly anchored to prevent slipping and maintain balance",
       "Avoid overextending your back at the top of the movement to prevent strain"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Exercise Ball",
     "poster": {
       "men": "assets/posters/men/ea_exercise_ball_back_extension_with_hands_behind_head.jpg"
     }
@@ -39658,7 +39618,7 @@
       "Avoid allowing your lower back to arch; keep your spine in a neutral position",
       "Use a properly inflated exercise ball to ensure stability and control during the movement"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Exercise Ball",
     "poster": {
       "men": "assets/posters/men/ea_exercise_ball_body_saw.jpg"
     }
@@ -39766,7 +39726,7 @@
       "Move slowly and with control to maximize muscle engagement and prevent injury",
       "Focus on steady breathing, exhaling as you curl the ball in and inhaling as you extend your legs"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Exercise Ball",
     "poster": {
       "men": "assets/posters/men/ea_exercise_ball_leg_curl.jpg"
     }
@@ -39949,7 +39909,7 @@
       "Focus on steady breathing, exhaling as you curl the ball in and inhale as you extend your leg",
       "Use a properly inflated exercise ball to provide stability and ease of movement"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Exercise Ball",
     "poster": {
       "men": "assets/posters/men/ea_exercise_ball_one_legged_diagonal_kick_hamstring_curl.jpg"
     }
@@ -40089,7 +40049,7 @@
       "Focus on steady breathing, inhaling as you lower into the squat and exhaling as you push back up",
       "Maintain an upright posture with your back against the ball to avoid leaning forward"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Exercise Ball",
     "poster": {
       "men": "assets/posters/men/ea_exercise_ball_wall_squat.jpg"
     }
@@ -40170,7 +40130,7 @@
       "Focus on deep, steady breathing, inhaling as you extend into the stretch and exhaling as you hold the stretch",
       "Use a yoga block or modify the hand placement if needed for additional support"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_extended_side_angle.jpg"
     }
@@ -40191,7 +40151,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_extended_side_angle_pose.jpg",
       "men": "assets/posters/men/ea_extended_side_angle_pose.jpg"
@@ -40213,7 +40173,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Yoga Block",
     "poster": {
       "girl": "assets/posters/girl/ea_extended_side_angle_pose_with_block.jpg",
       "men": "assets/posters/men/ea_extended_side_angle_pose_with_block.jpg"
@@ -40244,7 +40204,7 @@
       "Perform the stretches in a smooth, fluid motion to enhance flexibility and reduce muscle tension",
       "Avoid overextending your neck; only stretch as far as is comfortable without causing pain or discomfort"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_extension_and_inclination_neck_stretch.jpg"
     }
@@ -40281,7 +40241,7 @@
       "Focus on deep, steady breathing, inhaling as you reach upwards and exhaling as you hold the stretch",
       "Avoid arching your back; instead, focus on lengthening your spine"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_extension_of_arms_in_vertical_stretch.jpg"
     }
@@ -40946,7 +40906,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_flat_knee_raise.jpg",
       "men": "assets/posters/men/ea_flat_knee_raise.jpg"
@@ -41005,7 +40965,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Triceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_floor_tricep_dip.jpg",
       "men": "assets/posters/men/ea_floor_tricep_dip.jpg"
@@ -41063,7 +41023,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Foam Roller",
     "poster": {
       "girl": "assets/posters/girl/ea_foam_roller_back.jpg",
       "men": "assets/posters/men/ea_foam_roller_back.jpg"
@@ -41085,7 +41045,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Foam Roller",
     "poster": {
       "girl": "assets/posters/girl/ea_foam_roller_calves.jpg",
       "men": "assets/posters/men/ea_foam_roller_calves.jpg"
@@ -41107,7 +41067,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Foam Roller",
     "poster": {
       "girl": "assets/posters/girl/ea_foam_roller_lateral_quads.jpg",
       "men": "assets/posters/men/ea_foam_roller_lateral_quads.jpg"
@@ -41129,7 +41089,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Foam Roller",
     "poster": {
       "girl": "assets/posters/girl/ea_foam_roller_quads.jpg",
       "men": "assets/posters/men/ea_foam_roller_quads.jpg"
@@ -41151,7 +41111,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_forearms_pull_with_opposite_hand_stretch.jpg",
       "men": "assets/posters/men/ea_forearms_pull_with_opposite_hand_stretch.jpg"
@@ -41173,7 +41133,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "girl": "assets/posters/girl/ea_forearms_stretch_on_wall.jpg",
       "men": "assets/posters/men/ea_forearms_stretch_on_wall.jpg"
@@ -41195,7 +41155,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "girl": "assets/posters/girl/ea_forearms_stretch_on_wall_fingers_facing_down.jpg",
       "men": "assets/posters/men/ea_forearms_stretch_on_wall_fingers_facing_down.jpg"
@@ -41219,7 +41179,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_frog_jumps.jpg",
       "men": "assets/posters/men/ea_frog_jumps.jpg"
@@ -41241,7 +41201,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Pull Up Bar",
     "poster": {
       "girl": "assets/posters/girl/ea_front_lever_raise.jpg",
       "men": "assets/posters/men/ea_front_lever_raise.jpg"
@@ -41263,7 +41223,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Pull Up Bar",
     "poster": {
       "girl": "assets/posters/girl/ea_front_lever_raise_to_hold.jpg",
       "men": "assets/posters/men/ea_front_lever_raise_to_hold.jpg"
@@ -41500,7 +41460,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_gate_pose_rounding_spine_looking_up.jpg",
       "men": "assets/posters/men/ea_gate_pose_rounding_spine_looking_up.jpg"
@@ -41522,7 +41482,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_gate_pose_variation_arm_extended_on_side.jpg",
       "men": "assets/posters/men/ea_gate_pose_variation_arm_extended_on_side.jpg"
@@ -41546,7 +41506,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_glute_bridge_bodyweight.jpg",
       "men": "assets/posters/men/ea_glute_bridge_bodyweight.jpg"
@@ -41681,7 +41641,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_good_mornings.jpg",
       "men": "assets/posters/men/ea_good_mornings.jpg"
@@ -41814,7 +41774,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_gorilla_walk.jpg",
       "men": "assets/posters/men/ea_gorilla_walk.jpg"
@@ -42158,7 +42118,7 @@
       "Ensure your hands are placed directly under your shoulders in the plank position to maintain proper form and prevent strain",
       "Use a non-slip surface to prevent your feet or hands from slipping during the exercise"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_half_burpees.jpg"
     }
@@ -42179,7 +42139,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_half_lotus.jpg",
       "men": "assets/posters/men/ea_half_lotus.jpg"
@@ -42201,7 +42161,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_half_monkey_pose.jpg",
       "men": "assets/posters/men/ea_half_monkey_pose.jpg"
@@ -42223,7 +42183,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_half_neck_rolls.jpg",
       "men": "assets/posters/men/ea_half_neck_rolls.jpg"
@@ -43045,7 +43005,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_hand_stand_hold.jpg",
       "men": "assets/posters/men/ea_hand_stand_hold.jpg"
@@ -43067,7 +43027,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_hands_clapped_forearms_stretch.jpg",
       "men": "assets/posters/men/ea_hands_clapped_forearms_stretch.jpg"
@@ -43162,7 +43122,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Pull Up Bar",
     "poster": {
       "girl": "assets/posters/girl/ea_hanging_leg_raises.jpg"
     }
@@ -43218,7 +43178,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_happy_baby.jpg",
       "men": "assets/posters/men/ea_happy_baby.jpg"
@@ -43240,7 +43200,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_headstand.jpg",
       "men": "assets/posters/men/ea_headstand.jpg"
@@ -43262,7 +43222,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Sled",
     "poster": {
       "girl": "assets/posters/girl/ea_heavy_bag_sled_drag.jpg",
       "men": "assets/posters/men/ea_heavy_bag_sled_drag.jpg"
@@ -43503,7 +43463,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Smith Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_hip_thrust_in_smith_machine.jpg",
       "men": "assets/posters/men/ea_hip_thrust_in_smith_machine.jpg"
@@ -43527,7 +43487,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Exercise Ball",
     "poster": {
       "girl": "assets/posters/girl/ea_hold_the_world_med_ball.jpg",
       "men": "assets/posters/men/ea_hold_the_world_med_ball.jpg"
@@ -43551,7 +43511,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Exercise Ball",
     "poster": {
       "girl": "assets/posters/girl/ea_hold_the_world_med_ball_chest_press.jpg",
       "men": "assets/posters/men/ea_hold_the_world_med_ball_chest_press.jpg"
@@ -43612,7 +43572,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_horizontal_leg_press.jpg",
       "men": "assets/posters/men/ea_horizontal_leg_press.jpg"
@@ -43636,7 +43596,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_horizontal_leg_press_calf_raise.jpg",
       "men": "assets/posters/men/ea_horizontal_leg_press_calf_raise.jpg"
@@ -43660,7 +43620,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_horizontal_leg_press_calf_raise_single_leg.jpg",
       "men": "assets/posters/men/ea_horizontal_leg_press_calf_raise_single_leg.jpg"
@@ -43684,7 +43644,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_horizontal_leg_press_single_leg.jpg",
       "men": "assets/posters/men/ea_horizontal_leg_press_single_leg.jpg"
@@ -44350,6 +44310,7 @@
       "Repeat the movement for the desired duration or number of repetitions, ensuring a smooth and continuous motion"
     ],
     "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Jump Rope alternating foot.mp4",
       "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Jump Rope alternating foot.mp4"
     },
     "isStretch": false,
@@ -44361,44 +44322,8 @@
     ],
     "equipmentLabel": "Jump rope",
     "poster": {
+      "girl": "assets/posters/girl/ea_jump_rope_alternating_foot.jpg",
       "men": "assets/posters/men/ea_jump_rope_alternating_foot.jpg"
-    }
-  },
-  {
-    "id": "ea_jump_rope_alternating_foot_female",
-    "title": "Jump Rope Alternating Foot Female",
-    "equipmentId": null,
-    "muscles": [
-      "calves",
-      "quads",
-      "hamstrings"
-    ],
-    "primaryMuscles": [
-      "calves",
-      "quads"
-    ],
-    "difficulty": "beginner",
-    "durationMinutes": 10,
-    "summary": "Stand with your feet together, holding a jump rope with the handles in each hand. Position the rope behind you, ready to swing it over your head",
-    "steps": [
-      "Stand with your feet together, holding a jump rope with the handles in each hand. Position the rope behind you, ready to swing it over your head",
-      "Swing the rope over your head and, as it passes under your feet, lift one foot off the floor, quickly followed by the other foot, allowing the rope to pass beneath both feet in succession",
-      "Continue to alternate feet with each jump, lifting one foot after the other, maintaining a steady rhythm and keeping your jumps low and controlled",
-      "Repeat the movement for the desired duration or number of repetitions, ensuring a smooth and continuous motion"
-    ],
-    "video": {
-      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Jump Rope alternating foot female.mp4"
-    },
-    "isStretch": false,
-    "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "tips": [
-      "Focus on quick, controlled movements, keeping your jumps low to minimize impact on your joints",
-      "Use your wrists to swing the rope, rather than your arms, to maintain a smooth and efficient motion",
-      "Wear supportive footwear to protect your feet and ankles during the exercise"
-    ],
-    "equipmentLabel": "Jump rope",
-    "poster": {
-      "men": "assets/posters/men/ea_jump_rope_alternating_foot_female.jpg"
     }
   },
   {
@@ -44424,6 +44349,7 @@
       "Continue jumping at a steady rhythm, maintaining a smooth and continuous motion for the desired duration or number of repetitions"
     ],
     "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Jump Rope basic jump.mp4",
       "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Jump Rope basic jump.mp4"
     },
     "isStretch": false,
@@ -44435,44 +44361,8 @@
     ],
     "equipmentLabel": "Jump rope",
     "poster": {
+      "girl": "assets/posters/girl/ea_jump_rope_basic_jump.jpg",
       "men": "assets/posters/men/ea_jump_rope_basic_jump.jpg"
-    }
-  },
-  {
-    "id": "ea_jump_rope_basic_jump_female",
-    "title": "Jump Rope Basic Jump Female",
-    "equipmentId": null,
-    "muscles": [
-      "calves",
-      "quads",
-      "hamstrings"
-    ],
-    "primaryMuscles": [
-      "calves",
-      "quads"
-    ],
-    "difficulty": "beginner",
-    "durationMinutes": 10,
-    "summary": "Stand with your feet together, holding a jump rope with the handles in each hand. Position the rope behind you, ready to swing it over your head",
-    "steps": [
-      "Stand with your feet together, holding a jump rope with the handles in each hand. Position the rope behind you, ready to swing it over your head",
-      "Swing the rope over your head and, as it passes under your feet, jump with both feet simultaneously, keeping your jumps low to the floor",
-      "Land softly on your forefeet and immediately swing the rope over your head again for the next jump",
-      "Continue jumping at a steady rhythm, maintaining a smooth and continuous motion for the desired duration or number of repetitions"
-    ],
-    "video": {
-      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Jump Rope basic jump female.mp4"
-    },
-    "isStretch": false,
-    "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "tips": [
-      "Focus on quick, controlled movements, keeping your jumps low to minimize impact on your joints",
-      "Use your wrists to swing the rope, rather than your arms, to maintain a smooth and efficient motion",
-      "Wear supportive footwear to protect your feet and ankles during the exercise"
-    ],
-    "equipmentLabel": "Jump rope",
-    "poster": {
-      "men": "assets/posters/men/ea_jump_rope_basic_jump_female.jpg"
     }
   },
   {
@@ -44498,6 +44388,7 @@
       "Continue with the double bounce rhythm, maintaining a smooth and controlled motion for the desired duration or number of repetitions"
     ],
     "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Jump Rope double bounce.mp4",
       "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Jump Rope double bounce.mp4"
     },
     "isStretch": false,
@@ -44509,44 +44400,8 @@
     ],
     "equipmentLabel": "Jump rope",
     "poster": {
+      "girl": "assets/posters/girl/ea_jump_rope_double_bounce.jpg",
       "men": "assets/posters/men/ea_jump_rope_double_bounce.jpg"
-    }
-  },
-  {
-    "id": "ea_jump_rope_double_bounce_female",
-    "title": "Jump Rope Double Bounce Female",
-    "equipmentId": null,
-    "muscles": [
-      "calves",
-      "quads",
-      "hamstrings"
-    ],
-    "primaryMuscles": [
-      "calves",
-      "quads"
-    ],
-    "difficulty": "beginner",
-    "durationMinutes": 10,
-    "summary": "Stand with your feet together, holding a jump rope with the handles in each hand. Position the rope behind you, ready to swing it over your head",
-    "steps": [
-      "Stand with your feet together, holding a jump rope with the handles in each hand. Position the rope behind you, ready to swing it over your head",
-      "Swing the rope over your head and, as it passes under your feet, perform a small jump, landing on your forefeet",
-      "Immediately perform a second smaller bounce while keeping the rope in motion and preparing for the next swing",
-      "Continue with the double bounce rhythm, maintaining a smooth and controlled motion for the desired duration or number of repetitions"
-    ],
-    "video": {
-      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Jump Rope double bounce female.mp4"
-    },
-    "isStretch": false,
-    "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "tips": [
-      "Focus on quick, controlled movements, keeping your jumps low to minimize impact on your joints",
-      "Use your wrists to swing the rope, rather than your arms, to maintain a smooth and efficient motion",
-      "Wear supportive footwear to protect your feet and ankles during the exercise"
-    ],
-    "equipmentLabel": "Jump rope",
-    "poster": {
-      "men": "assets/posters/men/ea_jump_rope_double_bounce_female.jpg"
     }
   },
   {
@@ -44572,6 +44427,7 @@
       "Extend your arms back out to the starting position with control. Repeat the movement for the desired number of repetitions"
     ],
     "video": {
+      "girl": "exercises/girl/Shoulders/Jump Rope face pull.mp4",
       "men": "exercises/men/Shoulders/Jump Rope face pull.mp4"
     },
     "isStretch": false,
@@ -44584,45 +44440,8 @@
     ],
     "equipmentLabel": "Jump rope",
     "poster": {
+      "girl": "assets/posters/girl/ea_jump_rope_face_pull.jpg",
       "men": "assets/posters/men/ea_jump_rope_face_pull.jpg"
-    }
-  },
-  {
-    "id": "ea_jump_rope_face_pull_female",
-    "title": "Jump Rope Face Pull Female",
-    "equipmentId": null,
-    "muscles": [
-      "traps",
-      "shoulders",
-      "biceps"
-    ],
-    "primaryMuscles": [
-      "traps",
-      "shoulders"
-    ],
-    "difficulty": "beginner",
-    "durationMinutes": 10,
-    "summary": "Loop the jump rope over a vertical bar or similar stable structure, ensuring the rope is at about hip height. Stand facing the bar with your feet shoulder-width apart, holding the handles of the jump rope with both hands",
-    "steps": [
-      "Loop the jump rope over a vertical bar or similar stable structure, ensuring the rope is at about hip height. Stand facing the bar with your feet shoulder-width apart, holding the handles of the jump rope with both hands",
-      "Step back slightly to create tension in the rope, keeping your core engaged and your back straight",
-      "Pull the rope towards your face by bending your elbows and bringing your hands towards your ears, engaging your upper back and shoulder muscles",
-      "Extend your arms back out to the starting position with control. Repeat the movement for the desired number of repetitions"
-    ],
-    "video": {
-      "men": "exercises/men/Shoulders/Jump Rope face pull female.mp4"
-    },
-    "isStretch": false,
-    "vendorGroup": "Shoulders",
-    "tips": [
-      "Focus on squeezing your shoulder blades together as you pull the rope towards your face to maximize muscle engagement",
-      "Move slowly  with control and avoid using momentum to prevent injury",
-      "Breathe steadily, exhaling as you pull the rope towards your face and inhaling as you extend your arms back out",
-      "Ensure the vertical bar or structure is stable and can support the tension in the rope to prevent slipping or injury"
-    ],
-    "equipmentLabel": "Jump rope",
-    "poster": {
-      "men": "assets/posters/men/ea_jump_rope_face_pull_female.jpg"
     }
   },
   {
@@ -44648,6 +44467,7 @@
       "Extend your arms back out to the starting position with control. Repeat the movement for the desired number of repetitions"
     ],
     "video": {
+      "girl": "exercises/girl/Back/Jump Rope row.mp4",
       "men": "exercises/men/Back/Jump Rope row.mp4"
     },
     "isStretch": false,
@@ -44659,44 +44479,8 @@
     ],
     "equipmentLabel": "Jump rope",
     "poster": {
+      "girl": "assets/posters/girl/ea_jump_rope_row.jpg",
       "men": "assets/posters/men/ea_jump_rope_row.jpg"
-    }
-  },
-  {
-    "id": "ea_jump_rope_row_female",
-    "title": "Jump Rope Row Female",
-    "equipmentId": null,
-    "muscles": [
-      "traps",
-      "shoulders",
-      "biceps"
-    ],
-    "primaryMuscles": [
-      "traps",
-      "shoulders"
-    ],
-    "difficulty": "beginner",
-    "durationMinutes": 10,
-    "summary": "Loop the jump rope over a vertical bar or similar stable structure, ensuring the rope is at about hip height. Stand facing the bar with your feet shoulder-width apart, holding the handles of the jump rope with both hands",
-    "steps": [
-      "Loop the jump rope over a vertical bar or similar stable structure, ensuring the rope is at about hip height. Stand facing the bar with your feet shoulder-width apart, holding the handles of the jump rope with both hands",
-      "Step back slightly to create tension in the rope, keeping your core engaged and your back straight",
-      "Pull the rope towards your torso by bending your elbows and bringing your hands towards your sides, engaging your upper back and shoulder muscles",
-      "Extend your arms back out to the starting position with control. Repeat the movement for the desired number of repetitions"
-    ],
-    "video": {
-      "men": "exercises/men/Back/Jump Rope row female.mp4"
-    },
-    "isStretch": false,
-    "vendorGroup": "Back",
-    "tips": [
-      "Focus on squeezing your shoulder blades together as you pull the rope towards your torso to maximize muscle engagement",
-      "Ensure the vertical bar or structure is stable and can support the tension in the rope to prevent slipping or injury",
-      "Breathe steadily, exhaling as you pull the rope towards your torso and inhaling as you extend your arms back out"
-    ],
-    "equipmentLabel": "Jump rope",
-    "poster": {
-      "men": "assets/posters/men/ea_jump_rope_row_female.jpg"
     }
   },
   {
@@ -44756,7 +44540,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_jumping_lunge.jpg",
       "men": "assets/posters/men/ea_jumping_lunge.jpg"
@@ -44780,7 +44564,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_jumping_pistol_squat.jpg",
       "men": "assets/posters/men/ea_jumping_pistol_squat.jpg"
@@ -44880,7 +44664,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_calf_raise.jpg",
       "men": "assets/posters/men/ea_kettlebell_calf_raise.jpg"
@@ -44904,7 +44688,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Biceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_concentration_curl.jpg",
       "men": "assets/posters/men/ea_kettlebell_concentration_curl.jpg"
@@ -44928,7 +44712,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Biceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_curl.jpg",
       "men": "assets/posters/men/ea_kettlebell_curl.jpg"
@@ -44952,7 +44736,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Triceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_decline_skull_crusher.jpg",
       "men": "assets/posters/men/ea_kettlebell_decline_skull_crusher.jpg"
@@ -44976,7 +44760,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_front_raise.jpg",
       "men": "assets/posters/men/ea_kettlebell_front_raise.jpg"
@@ -45000,7 +44784,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_glute_bridge.jpg",
       "men": "assets/posters/men/ea_kettlebell_glute_bridge.jpg"
@@ -45024,7 +44808,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Biceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_goblet_curl.jpg",
       "men": "assets/posters/men/ea_kettlebell_goblet_curl.jpg"
@@ -45048,7 +44832,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_gorilla_row.jpg",
       "men": "assets/posters/men/ea_kettlebell_gorilla_row.jpg"
@@ -45107,7 +44891,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_hip_thrusts.jpg",
       "men": "assets/posters/men/ea_kettlebell_hip_thrusts.jpg"
@@ -45131,7 +44915,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_hip_thrusts_with_bench.jpg",
       "men": "assets/posters/men/ea_kettlebell_hip_thrusts_with_bench.jpg"
@@ -45155,7 +44939,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_incline_shrug.jpg",
       "men": "assets/posters/men/ea_kettlebell_incline_shrug.jpg"
@@ -45214,7 +44998,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_lateral_lunge.jpg",
       "men": "assets/posters/men/ea_kettlebell_lateral_lunge.jpg"
@@ -45237,7 +45021,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "men": "assets/posters/men/ea_kettlebell_long_lever_lateral_raise.jpg"
     }
@@ -45260,7 +45044,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Biceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_preacher_curl.jpg",
       "men": "assets/posters/men/ea_kettlebell_preacher_curl.jpg"
@@ -45284,7 +45068,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_pullover.jpg",
       "men": "assets/posters/men/ea_kettlebell_pullover.jpg"
@@ -45308,7 +45092,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_rear_delt_row.jpg",
       "men": "assets/posters/men/ea_kettlebell_rear_delt_row.jpg"
@@ -45332,7 +45116,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_reverse_lunge.jpg",
       "men": "assets/posters/men/ea_kettlebell_reverse_lunge.jpg"
@@ -45356,7 +45140,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_row.jpg",
       "men": "assets/posters/men/ea_kettlebell_row.jpg"
@@ -45380,7 +45164,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_seated_calf_raise.jpg",
       "men": "assets/posters/men/ea_kettlebell_seated_calf_raise.jpg"
@@ -45439,7 +45223,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_shoulder_extension.jpg",
       "men": "assets/posters/men/ea_kettlebell_shoulder_extension.jpg"
@@ -45463,7 +45247,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_shrug.jpg",
       "men": "assets/posters/men/ea_kettlebell_shrug.jpg"
@@ -45487,7 +45271,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_silverback_shrug.jpg",
       "men": "assets/posters/men/ea_kettlebell_silverback_shrug.jpg"
@@ -45511,7 +45295,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_single_arm_chest_fly.jpg",
       "men": "assets/posters/men/ea_kettlebell_single_arm_chest_fly.jpg"
@@ -45574,7 +45358,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Biceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_single_arm_curl.jpg",
       "men": "assets/posters/men/ea_kettlebell_single_arm_curl.jpg"
@@ -45598,7 +45382,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_single_arm_lateral_raise.jpg",
       "men": "assets/posters/men/ea_kettlebell_single_arm_lateral_raise.jpg"
@@ -45622,7 +45406,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_single_arm_rear_delt_fly.jpg",
       "men": "assets/posters/men/ea_kettlebell_single_arm_rear_delt_fly.jpg"
@@ -45646,7 +45430,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_single_arm_row.jpg",
       "men": "assets/posters/men/ea_kettlebell_single_arm_row.jpg"
@@ -45670,7 +45454,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_single_leg_calf_raise.jpg",
       "men": "assets/posters/men/ea_kettlebell_single_leg_calf_raise.jpg"
@@ -45693,7 +45477,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_single_leg_deadlift.jpg"
     }
@@ -45716,7 +45500,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_single_leg_glute_bridge.jpg",
       "men": "assets/posters/men/ea_kettlebell_single_leg_glute_bridge.jpg"
@@ -45779,7 +45563,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_single_leg_hip_thrust.jpg",
       "men": "assets/posters/men/ea_kettlebell_single_leg_hip_thrust.jpg"
@@ -45803,7 +45587,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_single_leg_romanian_deadlifts.jpg",
       "men": "assets/posters/men/ea_kettlebell_single_leg_romanian_deadlifts.jpg"
@@ -45865,7 +45649,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Triceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_skull_crusher.jpg",
       "men": "assets/posters/men/ea_kettlebell_skull_crusher.jpg"
@@ -45887,7 +45671,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_sled_drag.jpg",
       "men": "assets/posters/men/ea_kettlebell_sled_drag.jpg"
@@ -45909,7 +45693,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_snatch.jpg",
       "men": "assets/posters/men/ea_kettlebell_snatch.jpg"
@@ -46009,7 +45793,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_staggered_deadlift.jpg",
       "men": "assets/posters/men/ea_kettlebell_staggered_deadlift.jpg"
@@ -46068,7 +45852,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Triceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_standing_tricep_extension.jpg",
       "men": "assets/posters/men/ea_kettlebell_standing_tricep_extension.jpg"
@@ -46521,7 +46305,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_turkish_get_up.jpg",
       "men": "assets/posters/men/ea_kettlebell_turkish_get_up.jpg"
@@ -46545,7 +46329,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_upright_row.jpg",
       "men": "assets/posters/men/ea_kettlebell_upright_row.jpg"
@@ -46567,7 +46351,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_walkover_pushup.jpg",
       "men": "assets/posters/men/ea_kettlebell_walkover_pushup.jpg"
@@ -46589,7 +46373,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_windmill.jpg",
       "men": "assets/posters/men/ea_kettlebell_windmill.jpg"
@@ -46613,7 +46397,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Forearms",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_wrist_curl.jpg",
       "men": "assets/posters/men/ea_kettlebell_wrist_curl.jpg"
@@ -46637,7 +46421,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Forearms",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_wrist_extension.jpg",
       "men": "assets/posters/men/ea_kettlebell_wrist_extension.jpg"
@@ -46658,7 +46442,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "men": "assets/posters/men/ea_kipping_handstand_push_up.jpg"
     }
@@ -46681,7 +46465,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Pull Up Bar",
     "poster": {
       "girl": "assets/posters/girl/ea_kipping_pull_up.jpg",
       "men": "assets/posters/men/ea_kipping_pull_up.jpg"
@@ -46847,7 +46631,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_kneeling_push_up.jpg",
       "men": "assets/posters/men/ea_kneeling_push_up.jpg"
@@ -46941,7 +46725,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Parallettes",
     "poster": {
       "girl": "assets/posters/girl/ea_l_sit_hold.jpg",
       "men": "assets/posters/men/ea_l_sit_hold.jpg"
@@ -46963,7 +46747,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_alternating_lunge_and_twist.jpg",
       "men": "assets/posters/men/ea_landmine_alternating_lunge_and_twist.jpg"
@@ -46985,7 +46769,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_alternating_lunge_to_chest_press.jpg",
       "men": "assets/posters/men/ea_landmine_alternating_lunge_to_chest_press.jpg"
@@ -47009,7 +46793,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_alternating_single_arm_press.jpg",
       "men": "assets/posters/men/ea_landmine_alternating_single_arm_press.jpg"
@@ -47033,7 +46817,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Biceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_bicep_curl.jpg",
       "men": "assets/posters/men/ea_landmine_bicep_curl.jpg"
@@ -47057,7 +46841,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_calf_raise.jpg",
       "men": "assets/posters/men/ea_landmine_calf_raise.jpg"
@@ -47118,7 +46902,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Biceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_concentration_curl.jpg",
       "men": "assets/posters/men/ea_landmine_concentration_curl.jpg"
@@ -47142,7 +46926,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_curtsy_lunge.jpg",
       "men": "assets/posters/men/ea_landmine_curtsy_lunge.jpg"
@@ -47166,7 +46950,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_glute_kick_back.jpg",
       "men": "assets/posters/men/ea_landmine_glute_kick_back.jpg"
@@ -47190,7 +46974,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_goblet_curtsy_lunge.jpg",
       "men": "assets/posters/men/ea_landmine_goblet_curtsy_lunge.jpg"
@@ -47214,7 +46998,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_goblet_lateral_lunge.jpg",
       "men": "assets/posters/men/ea_landmine_goblet_lateral_lunge.jpg"
@@ -47238,7 +47022,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_hack_squat.jpg",
       "men": "assets/posters/men/ea_landmine_hack_squat.jpg"
@@ -47262,7 +47046,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_half_kneeling_single_arm_overhead_press.jpg",
       "men": "assets/posters/men/ea_landmine_half_kneeling_single_arm_overhead_press.jpg"
@@ -47286,7 +47070,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_hollow_hold.jpg",
       "men": "assets/posters/men/ea_landmine_hollow_hold.jpg"
@@ -47310,7 +47094,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_kneeling_alternating_overhead_press.jpg",
       "men": "assets/posters/men/ea_landmine_kneeling_alternating_overhead_press.jpg"
@@ -47334,7 +47118,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_kneeling_overhead_press.jpg",
       "men": "assets/posters/men/ea_landmine_kneeling_overhead_press.jpg"
@@ -47358,7 +47142,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_kneeling_twist.jpg",
       "men": "assets/posters/men/ea_landmine_kneeling_twist.jpg"
@@ -47382,7 +47166,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_lateral_lunge.jpg",
       "men": "assets/posters/men/ea_landmine_lateral_lunge.jpg"
@@ -47406,7 +47190,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_lateral_raise.jpg",
       "men": "assets/posters/men/ea_landmine_lateral_raise.jpg"
@@ -47430,7 +47214,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_lunge_to_overhead_press.jpg",
       "men": "assets/posters/men/ea_landmine_lunge_to_overhead_press.jpg"
@@ -47454,7 +47238,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Triceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_lying_tricep_extension.jpg",
       "men": "assets/posters/men/ea_landmine_lying_tricep_extension.jpg"
@@ -47478,7 +47262,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_oblique_twist.jpg",
       "men": "assets/posters/men/ea_landmine_oblique_twist.jpg"
@@ -47502,7 +47286,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_overhead_press.jpg",
       "men": "assets/posters/men/ea_landmine_overhead_press.jpg"
@@ -47526,7 +47310,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_romanian_deadlift.jpg",
       "men": "assets/posters/men/ea_landmine_romanian_deadlift.jpg"
@@ -47548,7 +47332,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_rotational_lift_to_press.jpg",
       "men": "assets/posters/men/ea_landmine_rotational_lift_to_press.jpg"
@@ -47610,7 +47394,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_russian_twist.jpg",
       "men": "assets/posters/men/ea_landmine_russian_twist.jpg"
@@ -47634,7 +47418,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_seated_alternating_overhead_press.jpg",
       "men": "assets/posters/men/ea_landmine_seated_alternating_overhead_press.jpg"
@@ -47658,7 +47442,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_seated_overhead_press.jpg",
       "men": "assets/posters/men/ea_landmine_seated_overhead_press.jpg"
@@ -47682,7 +47466,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_seated_single_arm_overhead_press.jpg",
       "men": "assets/posters/men/ea_landmine_seated_single_arm_overhead_press.jpg"
@@ -47706,7 +47490,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_single_arm_push_press.jpg",
       "men": "assets/posters/men/ea_landmine_single_arm_push_press.jpg"
@@ -47730,7 +47514,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_single_arm_staggered_overhead_press.jpg",
       "men": "assets/posters/men/ea_landmine_single_arm_staggered_overhead_press.jpg"
@@ -47754,7 +47538,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Landmine",
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_squat_and_press.jpg",
       "men": "assets/posters/men/ea_landmine_squat_and_press.jpg"
@@ -47889,7 +47673,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_lateral_band_walks.jpg",
       "men": "assets/posters/men/ea_lateral_band_walks.jpg"
@@ -47913,7 +47697,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Plyo Box",
     "poster": {
       "girl": "assets/posters/girl/ea_lateral_box_jump.jpg",
       "men": "assets/posters/men/ea_lateral_box_jump.jpg"
@@ -48056,7 +47840,7 @@
       "Use a controlled swing to lift the weights; avoid excessive momentum",
       "Exhale as you lift the dumbbells and inhale as you lower them"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_lateral_raises_dumbbell_seated_with_swing.jpg"
     }
@@ -48112,7 +47896,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Sled",
     "poster": {
       "girl": "assets/posters/girl/ea_lateral_sled_drag.jpg",
       "men": "assets/posters/men/ea_lateral_sled_drag.jpg"
@@ -48134,7 +47918,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "girl": "assets/posters/girl/ea_lats_stretch_elbow_on_wall.jpg",
       "men": "assets/posters/men/ea_lats_stretch_elbow_on_wall.jpg"
@@ -48156,7 +47940,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "girl": "assets/posters/girl/ea_lats_stretch_on_wall.jpg",
       "men": "assets/posters/men/ea_lats_stretch_on_wall.jpg"
@@ -48180,7 +47964,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_lawnmower_row.jpg",
       "men": "assets/posters/men/ea_lawnmower_row.jpg"
@@ -48204,7 +47988,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_laying_lateral_raise.jpg",
       "men": "assets/posters/men/ea_laying_lateral_raise.jpg"
@@ -48632,7 +48416,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_long_lever_plank.jpg",
       "men": "assets/posters/men/ea_long_lever_plank.jpg"
@@ -48654,7 +48438,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_lord_of_the_dance.jpg",
       "men": "assets/posters/men/ea_lord_of_the_dance.jpg"
@@ -48676,7 +48460,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Plyo Box",
     "poster": {
       "girl": "assets/posters/girl/ea_low_box_lateral_runner.jpg",
       "men": "assets/posters/men/ea_low_box_lateral_runner.jpg"
@@ -48698,7 +48482,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Plyo Box",
     "poster": {
       "girl": "assets/posters/girl/ea_low_box_quick_feet.jpg",
       "men": "assets/posters/men/ea_low_box_quick_feet.jpg"
@@ -48828,7 +48612,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Exercise Ball",
     "poster": {
       "girl": "assets/posters/girl/ea_low_rotational_med_ball_chops_quarter_squat_rotating_med_ball_left_and_ride_across_core.jpg",
       "men": "assets/posters/men/ea_low_rotational_med_ball_chops_quarter_squat_rotating_med_ball_left_and_ride_across_core.jpg"
@@ -48850,7 +48634,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Sled",
     "poster": {
       "girl": "assets/posters/girl/ea_low_sled_push.jpg",
       "men": "assets/posters/men/ea_low_sled_push.jpg"
@@ -49389,7 +49173,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_lying_bent_knee_cross_glutes_stretch.jpg",
       "men": "assets/posters/men/ea_lying_bent_knee_cross_glutes_stretch.jpg"
@@ -49449,7 +49233,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_lying_face_down_quadriceps_stretch.jpg",
       "men": "assets/posters/men/ea_lying_face_down_quadriceps_stretch.jpg"
@@ -49540,7 +49324,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_lying_knee_hugs_lower_back_stretch.jpg",
       "men": "assets/posters/men/ea_lying_knee_hugs_lower_back_stretch.jpg"
@@ -49562,7 +49346,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_lying_knee_pull_glutes_stretch.jpg",
       "men": "assets/posters/men/ea_lying_knee_pull_glutes_stretch.jpg"
@@ -49584,7 +49368,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_lying_knees_to_floor_lower_back_stretch.jpg",
       "men": "assets/posters/men/ea_lying_knees_to_floor_lower_back_stretch.jpg"
@@ -49712,7 +49496,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Bench",
     "poster": {
       "girl": "assets/posters/girl/ea_lying_neck_curls.jpg",
       "men": "assets/posters/men/ea_lying_neck_curls.jpg"
@@ -49734,7 +49518,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_lying_neck_extension.jpg",
       "men": "assets/posters/men/ea_lying_neck_extension.jpg"
@@ -49756,7 +49540,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_lying_on_side_arm_circle_warm_up.jpg",
       "men": "assets/posters/men/ea_lying_on_side_arm_circle_warm_up.jpg"
@@ -49886,7 +49670,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "girl": "assets/posters/girl/ea_lying_single_leg_extended_on_wall_hamstrings_stretch.jpg",
       "men": "assets/posters/men/ea_lying_single_leg_extended_on_wall_hamstrings_stretch.jpg"
@@ -50039,8 +49823,8 @@
     }
   },
   {
-    "id": "ea_major_groups_muscle_body_male",
-    "title": "Major Groups Muscle Body Male",
+    "id": "ea_major_groups_muscle_body",
+    "title": "Major Groups Muscle Body",
     "equipmentId": null,
     "muscles": [],
     "primaryMuscles": [],
@@ -50051,13 +49835,13 @@
       "Stand tall with your back straight, arms by your side, and feet shoulder-width apart"
     ],
     "video": {
-      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/MAJOR GROUPS Muscle body male.mp4"
+      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/MAJOR GROUPS Muscle body.mp4"
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
     "equipmentLabel": "None",
     "poster": {
-      "men": "assets/posters/men/ea_major_groups_muscle_body_male.jpg"
+      "men": "assets/posters/men/ea_major_groups_muscle_body.jpg"
     }
   },
   {
@@ -50078,7 +49862,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Exercise Ball",
     "poster": {
       "girl": "assets/posters/girl/ea_med_ball_front_squat_raise.jpg",
       "men": "assets/posters/men/ea_med_ball_front_squat_raise.jpg"
@@ -50102,7 +49886,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Exercise Ball",
     "poster": {
       "girl": "assets/posters/girl/ea_med_ball_half_kneeling_wood_choppers.jpg",
       "men": "assets/posters/men/ea_med_ball_half_kneeling_wood_choppers.jpg"
@@ -50124,7 +49908,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Exercise Ball",
     "poster": {
       "girl": "assets/posters/girl/ea_med_ball_jumping_jacks.jpg",
       "men": "assets/posters/men/ea_med_ball_jumping_jacks.jpg"
@@ -50146,7 +49930,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "girl": "assets/posters/girl/ea_med_ball_side_wall_slams.jpg",
       "men": "assets/posters/men/ea_med_ball_side_wall_slams.jpg"
@@ -50168,7 +49952,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Exercise Ball",
     "poster": {
       "girl": "assets/posters/girl/ea_med_ball_slam_burpees.jpg",
       "men": "assets/posters/men/ea_med_ball_slam_burpees.jpg"
@@ -50192,7 +49976,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Exercise Ball",
     "poster": {
       "girl": "assets/posters/girl/ea_med_ball_toe_touches.jpg",
       "men": "assets/posters/men/ea_med_ball_toe_touches.jpg"
@@ -50216,7 +50000,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Medicine Ball",
     "poster": {
       "girl": "assets/posters/girl/ea_medicine_ball_chest_throw_with_abs.jpg",
       "men": "assets/posters/men/ea_medicine_ball_chest_throw_with_abs.jpg"
@@ -50240,7 +50024,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Medicine Ball",
     "poster": {
       "girl": "assets/posters/girl/ea_medicine_ball_jumps.jpg",
       "men": "assets/posters/men/ea_medicine_ball_jumps.jpg"
@@ -50264,7 +50048,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Medicine Ball",
     "poster": {
       "girl": "assets/posters/girl/ea_medicine_ball_rotational_throw.jpg",
       "men": "assets/posters/men/ea_medicine_ball_rotational_throw.jpg"
@@ -50434,7 +50218,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_monkey_bar_swings.jpg",
       "men": "assets/posters/men/ea_monkey_bar_swings.jpg"
@@ -50456,7 +50240,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_monkey_pose.jpg",
       "men": "assets/posters/men/ea_monkey_pose.jpg"
@@ -50478,7 +50262,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_mountain_climber_jumps.jpg",
       "men": "assets/posters/men/ea_mountain_climber_jumps.jpg"
@@ -50613,7 +50397,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_multi_hip_adduction.jpg",
       "men": "assets/posters/men/ea_multi_hip_adduction.jpg"
@@ -50676,7 +50460,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_narrow_stance_heels_elevated_dumbbell_goblet_squats.jpg",
       "men": "assets/posters/men/ea_narrow_stance_heels_elevated_dumbbell_goblet_squats.jpg"
@@ -50700,7 +50484,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "A Partner",
     "poster": {
       "girl": "assets/posters/girl/ea_nordic_hamstring_curl_with_partner.jpg",
       "men": "assets/posters/men/ea_nordic_hamstring_curl_with_partner.jpg"
@@ -50737,7 +50521,7 @@
       "Breathe steadily, exhaling as you push up and inhaling as you lower yourself",
       "Keep your head aligned with your spine to avoid straining your neck"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_normal_push_up.jpg"
     }
@@ -50760,7 +50544,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Smith Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_normal_squat_smith_machine.jpg",
       "men": "assets/posters/men/ea_normal_squat_smith_machine.jpg"
@@ -50818,7 +50602,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_one_arm_cow_face_pose_easy.jpg",
       "men": "assets/posters/men/ea_one_arm_cow_face_pose_easy.jpg"
@@ -50842,7 +50626,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_one_arm_push_up.jpg",
       "men": "assets/posters/men/ea_one_arm_push_up.jpg"
@@ -51080,7 +50864,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Exercise Ball",
     "poster": {
       "girl": "assets/posters/girl/ea_overhead_med_ball_throw.jpg",
       "men": "assets/posters/men/ea_overhead_med_ball_throw.jpg"
@@ -51209,7 +50993,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_pec_deck_fly_machine_flies.jpg",
       "men": "assets/posters/men/ea_pec_deck_fly_machine_flies.jpg"
@@ -51231,7 +51015,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_pigeon_glutes_stretch.jpg",
       "men": "assets/posters/men/ea_pigeon_glutes_stretch.jpg"
@@ -51253,7 +51037,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_pigeon_pose.jpg",
       "men": "assets/posters/men/ea_pigeon_pose.jpg"
@@ -51275,7 +51059,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_pike_alternating_opposite_hip_taps.jpg",
       "men": "assets/posters/men/ea_pike_alternating_opposite_hip_taps.jpg"
@@ -51297,7 +51081,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_pike_individual_alternating_arm_reaches.jpg",
       "men": "assets/posters/men/ea_pike_individual_alternating_arm_reaches.jpg"
@@ -51319,7 +51103,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_pike_jacks_feet_kicking_in_and_out.jpg",
       "men": "assets/posters/men/ea_pike_jacks_feet_kicking_in_and_out.jpg"
@@ -51377,7 +51161,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_pike_shoulder_taps.jpg",
       "men": "assets/posters/men/ea_pike_shoulder_taps.jpg"
@@ -51401,7 +51185,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Plyo Box",
     "poster": {
       "girl": "assets/posters/girl/ea_pistol_squat_to_box.jpg",
       "men": "assets/posters/men/ea_pistol_squat_to_box.jpg"
@@ -51459,7 +51243,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_plank_individual_arm_reach.jpg",
       "men": "assets/posters/men/ea_plank_individual_arm_reach.jpg"
@@ -51481,7 +51265,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_plank_iytw.jpg",
       "men": "assets/posters/men/ea_plank_iytw.jpg"
@@ -51653,7 +51437,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_plank_pushup.jpg",
       "men": "assets/posters/men/ea_plank_pushup.jpg"
@@ -51786,7 +51570,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_alternating_deadstop_row.jpg",
       "men": "assets/posters/men/ea_plate_alternating_deadstop_row.jpg"
@@ -51810,7 +51594,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_car_driver.jpg",
       "men": "assets/posters/men/ea_plate_car_driver.jpg"
@@ -51832,7 +51616,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Powerlifting",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_clean.jpg",
       "men": "assets/posters/men/ea_plate_clean.jpg"
@@ -51854,7 +51638,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Powerlifting",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_clean_and_press.jpg",
       "men": "assets/posters/men/ea_plate_clean_and_press.jpg"
@@ -51878,7 +51662,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Biceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_curl_to_overhead_press.jpg",
       "men": "assets/posters/men/ea_plate_curl_to_overhead_press.jpg"
@@ -51902,7 +51686,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Triceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_curl_to_overhead_press_to_tricep_extension.jpg",
       "men": "assets/posters/men/ea_plate_curl_to_overhead_press_to_tricep_extension.jpg"
@@ -51926,7 +51710,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_curtsy_lunge.jpg",
       "men": "assets/posters/men/ea_plate_curtsy_lunge.jpg"
@@ -51950,7 +51734,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_deadlift.jpg",
       "men": "assets/posters/men/ea_plate_deadlift.jpg"
@@ -51974,7 +51758,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_deficit_lunge.jpg",
       "men": "assets/posters/men/ea_plate_deficit_lunge.jpg"
@@ -51998,7 +51782,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_deficit_pushup.jpg",
       "men": "assets/posters/men/ea_plate_deficit_pushup.jpg"
@@ -52022,7 +51806,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_forward_lunge.jpg",
       "men": "assets/posters/men/ea_plate_forward_lunge.jpg"
@@ -52081,7 +51865,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_full_front_raise.jpg",
       "men": "assets/posters/men/ea_plate_full_front_raise.jpg"
@@ -52105,7 +51889,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_glute_bridge_to_chest_press.jpg",
       "men": "assets/posters/men/ea_plate_glute_bridge_to_chest_press.jpg"
@@ -52129,7 +51913,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_glute_bridge_to_pullover.jpg",
       "men": "assets/posters/men/ea_plate_glute_bridge_to_pullover.jpg"
@@ -52153,7 +51937,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_good_morning.jpg",
       "men": "assets/posters/men/ea_plate_good_morning.jpg"
@@ -52177,7 +51961,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_good_morning_anterior.jpg",
       "men": "assets/posters/men/ea_plate_good_morning_anterior.jpg"
@@ -52201,7 +51985,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_halo.jpg",
       "men": "assets/posters/men/ea_plate_halo.jpg"
@@ -52225,7 +52009,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_hollow_hold.jpg",
       "men": "assets/posters/men/ea_plate_hollow_hold.jpg"
@@ -52249,7 +52033,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_internally_rotated_rear_delt_fly.jpg",
       "men": "assets/posters/men/ea_plate_internally_rotated_rear_delt_fly.jpg"
@@ -52273,7 +52057,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_lateral_lunge.jpg",
       "men": "assets/posters/men/ea_plate_lateral_lunge.jpg"
@@ -52297,7 +52081,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_lateral_raise.jpg",
       "men": "assets/posters/men/ea_plate_lateral_raise.jpg"
@@ -52319,7 +52103,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_overhead_carry.jpg",
       "men": "assets/posters/men/ea_plate_overhead_carry.jpg"
@@ -52343,7 +52127,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_overhead_press_to_tricep_extension.jpg",
       "men": "assets/posters/men/ea_plate_overhead_press_to_tricep_extension.jpg"
@@ -52367,7 +52151,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_overhead_shrug.jpg",
       "men": "assets/posters/men/ea_plate_overhead_shrug.jpg"
@@ -52391,7 +52175,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Triceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_overhead_tricep_extension.jpg",
       "men": "assets/posters/men/ea_plate_overhead_tricep_extension.jpg"
@@ -52415,7 +52199,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_overhead_walking_lunge.jpg",
       "men": "assets/posters/men/ea_plate_overhead_walking_lunge.jpg"
@@ -52439,7 +52223,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_pinch_grip_deadlift.jpg",
       "men": "assets/posters/men/ea_plate_pinch_grip_deadlift.jpg"
@@ -52463,7 +52247,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_pinch_grip_row.jpg",
       "men": "assets/posters/men/ea_plate_pinch_grip_row.jpg"
@@ -52487,7 +52271,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_pinch_grip_side_bend.jpg",
       "men": "assets/posters/men/ea_plate_pinch_grip_side_bend.jpg"
@@ -52511,7 +52295,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_press.jpg",
       "men": "assets/posters/men/ea_plate_press.jpg"
@@ -52535,7 +52319,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_reach.jpg",
       "men": "assets/posters/men/ea_plate_reach.jpg"
@@ -52559,7 +52343,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_rear_delt_fly.jpg",
       "men": "assets/posters/men/ea_plate_rear_delt_fly.jpg"
@@ -52583,7 +52367,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_russian_twist.jpg",
       "men": "assets/posters/men/ea_plate_russian_twist.jpg"
@@ -52607,7 +52391,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_single_leg_deadlift.jpg",
       "men": "assets/posters/men/ea_plate_single_leg_deadlift.jpg"
@@ -52631,7 +52415,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_single_leg_pinch_grip_deadlift.jpg",
       "men": "assets/posters/men/ea_plate_single_leg_pinch_grip_deadlift.jpg"
@@ -52655,7 +52439,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_situp.jpg",
       "men": "assets/posters/men/ea_plate_situp.jpg"
@@ -52679,7 +52463,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_squat_hold.jpg",
       "men": "assets/posters/men/ea_plate_squat_hold.jpg"
@@ -52703,7 +52487,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_squat_hold_biceps_curl.jpg",
       "men": "assets/posters/men/ea_plate_squat_hold_biceps_curl.jpg"
@@ -52727,7 +52511,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_squat_hold_reach.jpg",
       "men": "assets/posters/men/ea_plate_squat_hold_reach.jpg"
@@ -52751,7 +52535,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_squat_reach.jpg",
       "men": "assets/posters/men/ea_plate_squat_reach.jpg"
@@ -52775,7 +52559,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_staggered_deadlift.jpg",
       "men": "assets/posters/men/ea_plate_staggered_deadlift.jpg"
@@ -52799,7 +52583,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_staggered_pinch_grip_deadlift.jpg",
       "men": "assets/posters/men/ea_plate_staggered_pinch_grip_deadlift.jpg"
@@ -52823,7 +52607,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_standing_twist.jpg",
       "men": "assets/posters/men/ea_plate_standing_twist.jpg"
@@ -52845,7 +52629,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Powerlifting",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_thruster.jpg",
       "men": "assets/posters/men/ea_plate_thruster.jpg"
@@ -52869,7 +52653,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Weight Plate",
     "poster": {
       "girl": "assets/posters/girl/ea_plate_wood_chopper.jpg",
       "men": "assets/posters/men/ea_plate_wood_chopper.jpg"
@@ -53397,7 +53181,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Sled",
     "poster": {
       "girl": "assets/posters/girl/ea_pull_sled_or_dog_sled_push.jpg",
       "men": "assets/posters/men/ea_pull_sled_or_dog_sled_push.jpg"
@@ -53539,7 +53323,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_puppy_pose.jpg",
       "men": "assets/posters/men/ea_puppy_pose.jpg"
@@ -53563,7 +53347,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_push_pull_chair_over_head_pull.jpg",
       "men": "assets/posters/men/ea_push_pull_chair_over_head_pull.jpg"
@@ -53587,7 +53371,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Chest",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_push_pull_front_handle_push.jpg",
       "men": "assets/posters/men/ea_push_pull_front_handle_push.jpg"
@@ -53723,7 +53507,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_pushup_to_renegade_row.jpg",
       "men": "assets/posters/men/ea_pushup_to_renegade_row.jpg"
@@ -53745,7 +53529,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_pyramid_pose_parsvottanasana.jpg",
       "men": "assets/posters/men/ea_pyramid_pose_parsvottanasana.jpg"
@@ -53767,7 +53551,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Yoga Block",
     "poster": {
       "girl": "assets/posters/girl/ea_pyramid_pose_blocks.jpg",
       "men": "assets/posters/men/ea_pyramid_pose_blocks.jpg"
@@ -53789,7 +53573,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Yoga Block",
     "poster": {
       "girl": "assets/posters/girl/ea_pyramid_pose_calf_blocks.jpg",
       "men": "assets/posters/men/ea_pyramid_pose_calf_blocks.jpg"
@@ -53811,7 +53595,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Bench",
     "poster": {
       "girl": "assets/posters/girl/ea_pyramid_prayer.jpg",
       "men": "assets/posters/men/ea_pyramid_prayer.jpg"
@@ -53971,7 +53755,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Mini Trampoline",
     "poster": {
       "girl": "assets/posters/girl/ea_rebounder_high_knee_runs.jpg",
       "men": "assets/posters/men/ea_rebounder_high_knee_runs.jpg"
@@ -53993,7 +53777,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Mini Trampoline",
     "poster": {
       "girl": "assets/posters/girl/ea_rebounder_in_out_from_ground.jpg",
       "men": "assets/posters/men/ea_rebounder_in_out_from_ground.jpg"
@@ -54015,7 +53799,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Mini Trampoline",
     "poster": {
       "girl": "assets/posters/girl/ea_rebounder_in_out_jacks.jpg",
       "men": "assets/posters/men/ea_rebounder_in_out_jacks.jpg"
@@ -54037,7 +53821,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Mini Trampoline",
     "poster": {
       "girl": "assets/posters/girl/ea_rebounder_knee_jumps.jpg",
       "men": "assets/posters/men/ea_rebounder_knee_jumps.jpg"
@@ -54059,7 +53843,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Mini Trampoline",
     "poster": {
       "girl": "assets/posters/girl/ea_rebounder_knee_pushes.jpg",
       "men": "assets/posters/men/ea_rebounder_knee_pushes.jpg"
@@ -54081,7 +53865,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Mini Trampoline",
     "poster": {
       "girl": "assets/posters/girl/ea_rebounder_light_jumps.jpg",
       "men": "assets/posters/men/ea_rebounder_light_jumps.jpg"
@@ -54103,7 +53887,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_reclining_pigeon_pose.jpg",
       "men": "assets/posters/men/ea_reclining_pigeon_pose.jpg"
@@ -54216,7 +54000,7 @@
       "Lower yourself with control, ensuring your chest almost touches the floor while maintaining proper form",
       "Keep your elbows at a 45-degree angle to your body to maximize chest and triceps engagement and reduce shoulder strain"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_resistance_band_assisted_push_up.jpg",
       "men": "assets/posters/men/ea_resistance_band_assisted_push_up.jpg"
@@ -55738,7 +55522,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_restful_cow_face_pose_legs.jpg",
       "men": "assets/posters/men/ea_restful_cow_face_pose_legs.jpg"
@@ -55870,7 +55654,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Biceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_reverse_curl_barbell.jpg"
     }
@@ -56040,7 +55824,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Abdominals",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_reverse_plank.jpg",
       "men": "assets/posters/men/ea_reverse_plank.jpg"
@@ -56062,7 +55846,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_reverse_prayer.jpg",
       "men": "assets/posters/men/ea_reverse_prayer.jpg"
@@ -56119,7 +55903,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_revolved_head_to_knee.jpg",
       "men": "assets/posters/men/ea_revolved_head_to_knee.jpg"
@@ -56141,7 +55925,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_revolved_side_angle_pose_with_prayer_hands.jpg",
       "men": "assets/posters/men/ea_revolved_side_angle_pose_with_prayer_hands.jpg"
@@ -56163,7 +55947,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_revolved_side_angle_pose_with_prayer_hands_beginner.jpg",
       "men": "assets/posters/men/ea_revolved_side_angle_pose_with_prayer_hands_beginner.jpg"
@@ -56185,7 +55969,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Gymnastic Rings",
     "poster": {
       "girl": "assets/posters/girl/ea_ring_dips.jpg",
       "men": "assets/posters/men/ea_ring_dips.jpg"
@@ -56280,7 +56064,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_runners_lunge.jpg",
       "men": "assets/posters/men/ea_runners_lunge.jpg"
@@ -56417,7 +56201,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Powerlifting",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Sandbag",
     "poster": {
       "girl": "assets/posters/girl/ea_sandbag_cleans.jpg",
       "men": "assets/posters/men/ea_sandbag_cleans.jpg"
@@ -56512,7 +56296,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_scorpion_twist_pose.jpg",
       "men": "assets/posters/men/ea_scorpion_twist_pose.jpg"
@@ -56712,7 +56496,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_seated_dumbbell_neutral_grip_front_raises.jpg",
       "men": "assets/posters/men/ea_seated_dumbbell_neutral_grip_front_raises.jpg"
@@ -56736,7 +56520,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "girl": "assets/posters/girl/ea_seated_dumbbell_neutral_grip_side_raises.jpg",
       "men": "assets/posters/men/ea_seated_dumbbell_neutral_grip_side_raises.jpg"
@@ -56829,7 +56613,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_seated_figure_four_with_twist_glute_stretch.jpg",
       "men": "assets/posters/men/ea_seated_figure_four_with_twist_glute_stretch.jpg"
@@ -57200,7 +56984,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_seated_row_machine_rows.jpg",
       "men": "assets/posters/men/ea_seated_row_machine_rows.jpg"
@@ -57364,7 +57148,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_seated_single_leg_toe_touch_hamstring_stretch.jpg",
       "men": "assets/posters/men/ea_seated_single_leg_toe_touch_hamstring_stretch.jpg"
@@ -57421,7 +57205,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_seated_toe_touch_hamstrings_stretch.jpg",
       "men": "assets/posters/men/ea_seated_toe_touch_hamstrings_stretch.jpg"
@@ -57621,7 +57405,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_side_bend_standing_lats_stretch.jpg",
       "men": "assets/posters/men/ea_side_bend_standing_lats_stretch.jpg"
@@ -57643,7 +57427,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "girl": "assets/posters/girl/ea_side_chest_stretch_on_wall.jpg",
       "men": "assets/posters/men/ea_side_chest_stretch_on_wall.jpg"
@@ -57841,7 +57625,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_side_lying_parsva_savasana_variation.jpg",
       "men": "assets/posters/men/ea_side_lying_parsva_savasana_variation.jpg"
@@ -57915,7 +57699,7 @@
       "Move your hips slowly and with control to maximize muscle engagement and prevent injury",
       "Breathe steadily, exhaling as you lift your hips and inhaling as you lower them"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_side_plank_oblique_crunch.jpg"
     }
@@ -58149,7 +57933,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_single_arm_extended_pull_downwards_biceps_stretch.jpg",
       "men": "assets/posters/men/ea_single_arm_extended_pull_downwards_biceps_stretch.jpg"
@@ -58171,7 +57955,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "girl": "assets/posters/girl/ea_single_arm_on_wall_side_biceps_stretch.jpg",
       "men": "assets/posters/men/ea_single_arm_on_wall_side_biceps_stretch.jpg"
@@ -58229,7 +58013,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "girl": "assets/posters/girl/ea_single_arm_palm_down_on_wall_biceps_stretch.jpg",
       "men": "assets/posters/men/ea_single_arm_palm_down_on_wall_biceps_stretch.jpg"
@@ -58301,7 +58085,7 @@
       "Avoid using momentum or swinging the dumbbell; focus on controlled motion",
       "Exhale as you lift the dumbbell and inhale as you lower it"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_single_dumbbell_biceps_curls.jpg"
     }
@@ -58362,7 +58146,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Kettlebells",
     "poster": {
       "girl": "assets/posters/girl/ea_single_kettlebell_sled_push.jpg",
       "men": "assets/posters/men/ea_single_kettlebell_sled_push.jpg"
@@ -58537,7 +58321,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Bench",
     "poster": {
       "girl": "assets/posters/girl/ea_sissy_squat_bodyweight.jpg",
       "men": "assets/posters/men/ea_sissy_squat_bodyweight.jpg"
@@ -58594,7 +58378,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_skater_hops.jpg",
       "men": "assets/posters/men/ea_skater_hops.jpg"
@@ -59225,7 +59009,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Battle Ropes",
     "poster": {
       "girl": "assets/posters/girl/ea_sled_battle_rope_pull.jpg",
       "men": "assets/posters/men/ea_sled_battle_rope_pull.jpg"
@@ -59247,7 +59031,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Sled",
     "poster": {
       "girl": "assets/posters/girl/ea_sled_drag_and_row.jpg",
       "men": "assets/posters/men/ea_sled_drag_and_row.jpg"
@@ -59345,7 +59129,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Smith Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_smith_machine_narrow_stance_heels_elevated_squats.jpg",
       "men": "assets/posters/men/ea_smith_machine_narrow_stance_heels_elevated_squats.jpg"
@@ -59803,7 +59587,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_standing_cable_hip_flexion.jpg",
       "men": "assets/posters/men/ea_standing_cable_hip_flexion.jpg"
@@ -60509,7 +60293,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Stretching - Mobility",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_standing_straight_leg_hamstring_stretch.jpg",
       "men": "assets/posters/men/ea_standing_straight_leg_hamstring_stretch.jpg"
@@ -60797,7 +60581,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_stepmill_machine_steps.jpg",
       "men": "assets/posters/men/ea_stepmill_machine_steps.jpg"
@@ -60821,7 +60605,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_straight_arm_cable_lat_pull_down.jpg",
       "men": "assets/posters/men/ea_straight_arm_cable_lat_pull_down.jpg"
@@ -61709,6 +61493,7 @@
       "Slowly lower your body back to the starting position with control. Repeat for the desired number of repetitions"
     ],
     "video": {
+      "girl": "exercises/girl/Back/Suspension Trainer with Grips Inverted Row.mp4",
       "men": "exercises/men/Shoulders/Suspension Trainer with Grips Inverted Row.mp4"
     },
     "isStretch": false,
@@ -61720,6 +61505,7 @@
     ],
     "equipmentLabel": "Suspension Trainer",
     "poster": {
+      "girl": "assets/posters/girl/ea_suspension_trainer_with_grips_inverted_row.jpg",
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_inverted_row.jpg"
     }
   },
@@ -61765,46 +61551,6 @@
     }
   },
   {
-    "id": "ea_suspension_trainer_with_grips_inverted_row_female",
-    "title": "Suspension Trainer with Grips Inverted Row Female",
-    "equipmentId": null,
-    "muscles": [
-      "shoulders",
-      "lats",
-      "traps",
-      "biceps",
-      "forearms",
-      "core"
-    ],
-    "primaryMuscles": [
-      "shoulders",
-      "lats"
-    ],
-    "difficulty": "beginner",
-    "durationMinutes": 10,
-    "summary": "Adjust the suspension trainer handles to about waist height. Sit on the floor with your legs straight and feet on a bench in front of you, holding the handles with an overhand grip (palms facing forward)",
-    "steps": [
-      "Adjust the suspension trainer handles to about waist height. Sit on the floor with your legs straight and feet on a bench in front of you, holding the handles with an overhand grip (palms facing forward)",
-      "Lean back, extend your arms, and lift your hips off the floor, keeping your body in a straight line from head to knees parallel to the floor",
-      "Pull your chest towards the handles by bending your elbows and squeezing your shoulder blades together",
-      "Slowly lower your body back to the starting position with control. Repeat for the desired number of repetitions"
-    ],
-    "video": {
-      "men": "exercises/men/Back/Suspension Trainer with Grips Inverted Row female.mp4"
-    },
-    "isStretch": false,
-    "vendorGroup": "Back",
-    "tips": [
-      "Breathe steadily: exhale as you pull your chest towards the handles and inhale as you return to the starting position",
-      "Focus on using your back muscles to pull yourself up, avoiding excessive use of your arms",
-      "Keep your shoulders relaxed and avoid shrugging them towards your ears"
-    ],
-    "equipmentLabel": "Suspension Trainer",
-    "poster": {
-      "men": "assets/posters/men/ea_suspension_trainer_with_grips_inverted_row_female.jpg"
-    }
-  },
-  {
     "id": "ea_suspension_trainer_with_grips_inverted_row_on_floor",
     "title": "Suspension Trainer with Grips Inverted Row on Floor",
     "equipmentId": null,
@@ -61822,7 +61568,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Shoulders",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Suspension Trainer",
     "poster": {
       "girl": "assets/posters/girl/ea_suspension_trainer_with_grips_inverted_row_on_floor.jpg",
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_inverted_row_on_floor.jpg"
@@ -61893,6 +61639,7 @@
       "Repeat for the desired number of repetitions"
     ],
     "video": {
+      "girl": "exercises/girl/Legs/Suspension Trainer with Grips Leg Curl.mp4",
       "men": "exercises/men/Legs/Suspension Trainer with Grips Leg Curl.mp4"
     },
     "isStretch": false,
@@ -61904,45 +61651,8 @@
     ],
     "equipmentLabel": "Suspension Trainer",
     "poster": {
+      "girl": "assets/posters/girl/ea_suspension_trainer_with_grips_leg_curl.jpg",
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_leg_curl.jpg"
-    }
-  },
-  {
-    "id": "ea_suspension_trainer_with_grips_leg_curl_female",
-    "title": "Suspension Trainer with Grips Leg Curl Female",
-    "equipmentId": null,
-    "muscles": [
-      "hamstrings",
-      "glutes",
-      "lower_back",
-      "core"
-    ],
-    "primaryMuscles": [
-      "hamstrings",
-      "glutes"
-    ],
-    "difficulty": "beginner",
-    "durationMinutes": 10,
-    "summary": "Adjust the suspension trainer handles to about knee height. Lie on your back with your heels placed in the handles and your legs extended. Keep your arms on the floor by your sides for support",
-    "steps": [
-      "Adjust the suspension trainer handles to about knee height. Lie on your back with your heels placed in the handles and your legs extended. Keep your arms on the floor by your sides for support",
-      "Engage your legs and lift your hips over the floor by bending your knees and pulling your heels towards your glutes",
-      "Slowly extend your legs back to the starting position with control",
-      "Repeat for the desired number of repetitions"
-    ],
-    "video": {
-      "men": "exercises/men/Legs/Suspension Trainer with Grips Leg Curl female.mp4"
-    },
-    "isStretch": false,
-    "vendorGroup": "Legs",
-    "tips": [
-      "Exhale as you pull your heels towards your glutes and inhale as you extend your legs back",
-      "Focus on using your hamstrings and glutes to perform the curl, avoiding excessive use of your lower back",
-      "Use a mat to provide cushioning and support for your back"
-    ],
-    "equipmentLabel": "Suspension Trainer",
-    "poster": {
-      "men": "assets/posters/men/ea_suspension_trainer_with_grips_leg_curl_female.jpg"
     }
   },
   {
@@ -62557,7 +62267,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Suspension Trainer",
     "poster": {
       "girl": "assets/posters/girl/ea_suspension_trainer_with_grips_wide_grip_inverted_row_on_floor_1.jpg",
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_wide_grip_inverted_row_on_floor_1.jpg"
@@ -62687,7 +62397,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_tennis_forehand_ground_stroke.jpg",
       "men": "assets/posters/men/ea_tennis_forehand_ground_stroke.jpg"
@@ -62709,7 +62419,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Wall",
     "poster": {
       "girl": "assets/posters/girl/ea_the_wall_ball.jpg",
       "men": "assets/posters/men/ea_the_wall_ball.jpg"
@@ -62733,7 +62443,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_theraband_scapula_retraction.jpg",
       "men": "assets/posters/men/ea_theraband_scapula_retraction.jpg"
@@ -62846,6 +62556,7 @@
       "Maintain a steady pace, landing mid-foot with each stride and keeping your breathing steady. Jog for the desired duration or distance"
     ],
     "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Treadmill Jogging.mp4",
       "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Treadmill Jogging.mp4"
     },
     "isStretch": false,
@@ -62857,47 +62568,8 @@
     ],
     "equipmentLabel": "Treadmill",
     "poster": {
+      "girl": "assets/posters/girl/ea_treadmill_jogging.jpg",
       "men": "assets/posters/men/ea_treadmill_jogging.jpg"
-    }
-  },
-  {
-    "id": "ea_treadmill_jogging_female",
-    "title": "Treadmill Jogging Female",
-    "equipmentId": null,
-    "muscles": [
-      "quads",
-      "hamstrings",
-      "glutes",
-      "calves",
-      "core"
-    ],
-    "primaryMuscles": [
-      "quads",
-      "hamstrings",
-      "glutes"
-    ],
-    "difficulty": "beginner",
-    "durationMinutes": 10,
-    "summary": "Stand on the treadmill with your feet on the side rails and attach the safety clip to your clothing. Start the treadmill at a low speed to safely step onto the belt",
-    "steps": [
-      "Stand on the treadmill with your feet on the side rails and attach the safety clip to your clothing. Start the treadmill at a low speed to safely step onto the belt",
-      "Once you are on the moving belt, gradually increase the speed to a comfortable jogging pace, maintaining an upright posture with your core engaged",
-      "Keep your arms bent at a 90-degree angle, swinging them naturally at your sides to match your jogging rhythm",
-      "Maintain a steady pace, landing mid-foot with each stride and keeping your breathing steady. Jog for the desired duration or distance"
-    ],
-    "video": {
-      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Treadmill Jogging Female.mp4"
-    },
-    "isStretch": false,
-    "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "tips": [
-      "Keep your head up and gaze forward, avoiding looking down at your feet",
-      "Use a smooth, natural stride to reduce the impact on your joints",
-      "Ensure the treadmill speed is set at a comfortable level that allows you to maintain good form"
-    ],
-    "equipmentLabel": "Treadmill",
-    "poster": {
-      "men": "assets/posters/men/ea_treadmill_jogging_female.jpg"
     }
   },
   {
@@ -62926,6 +62598,7 @@
       "Maintain a steady pace, landing mid-foot with each stride and keeping your breathing steady. Run for the desired duration or distance"
     ],
     "video": {
+      "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Treadmill Running.mp4",
       "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Treadmill Running.mp4"
     },
     "isStretch": false,
@@ -62937,47 +62610,8 @@
     ],
     "equipmentLabel": "Treadmill",
     "poster": {
+      "girl": "assets/posters/girl/ea_treadmill_running.jpg",
       "men": "assets/posters/men/ea_treadmill_running.jpg"
-    }
-  },
-  {
-    "id": "ea_treadmill_running_female",
-    "title": "Treadmill Running Female",
-    "equipmentId": null,
-    "muscles": [
-      "quads",
-      "hamstrings",
-      "glutes",
-      "calves",
-      "core"
-    ],
-    "primaryMuscles": [
-      "quads",
-      "hamstrings",
-      "glutes"
-    ],
-    "difficulty": "beginner",
-    "durationMinutes": 10,
-    "summary": "Stand on the treadmill with your feet on the side rails and attach the safety clip to your clothing. Start the treadmill at a low speed to safely step onto the belt",
-    "steps": [
-      "Stand on the treadmill with your feet on the side rails and attach the safety clip to your clothing. Start the treadmill at a low speed to safely step onto the belt",
-      "Once you are on the moving belt, gradually increase the speed to a running pace, maintaining an upright posture with your core engaged",
-      "Keep your arms bent at a 90-degree angle, swinging them naturally at your sides to match your running rhythm",
-      "Maintain a steady pace, landing mid-foot with each stride and keeping your breathing steady. Run for the desired duration or distance"
-    ],
-    "video": {
-      "men": "exercises/men/Calisthenics-Cardio-Plyo-Functional/Treadmill Running Female.mp4"
-    },
-    "isStretch": false,
-    "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "tips": [
-      "Keep your head up and gaze forward, avoiding looking down at your feet",
-      "Use a smooth, natural stride to reduce the impact on your joints",
-      "Ensure the treadmill speed is set at a comfortable level that allows you to maintain good form"
-    ],
-    "equipmentLabel": "Treadmill",
-    "poster": {
-      "men": "assets/posters/men/ea_treadmill_running_female.jpg"
     }
   },
   {
@@ -62996,7 +62630,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Treadmill",
     "poster": {
       "girl": "assets/posters/girl/ea_treadmill_walk.jpg",
       "men": "assets/posters/men/ea_treadmill_walk.jpg"
@@ -63095,7 +62729,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Triceps",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_tricep_rope_extension_on_crossover_machine.jpg",
       "men": "assets/posters/men/ea_tricep_rope_extension_on_crossover_machine.jpg"
@@ -63188,7 +62822,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Tyre",
     "poster": {
       "girl": "assets/posters/girl/ea_tyre_flip.jpg",
       "men": "assets/posters/men/ea_tyre_flip.jpg"
@@ -63210,7 +62844,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Tyre",
     "poster": {
       "girl": "assets/posters/girl/ea_tyre_hammering.jpg",
       "men": "assets/posters/men/ea_tyre_hammering.jpg"
@@ -63232,7 +62866,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Plyo Box",
     "poster": {
       "girl": "assets/posters/girl/ea_unilateral_box_jump.jpg",
       "men": "assets/posters/men/ea_unilateral_box_jump.jpg"
@@ -63254,7 +62888,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Plyo Box",
     "poster": {
       "girl": "assets/posters/girl/ea_unilateral_box_jump_bilateral_deceleration.jpg",
       "men": "assets/posters/men/ea_unilateral_box_jump_bilateral_deceleration.jpg"
@@ -63276,7 +62910,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_unilateral_front_plank.jpg",
       "men": "assets/posters/men/ea_unilateral_front_plank.jpg"
@@ -63298,7 +62932,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_unilateral_jumps.jpg",
       "men": "assets/posters/men/ea_unilateral_jumps.jpg"
@@ -63320,7 +62954,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_unilateral_plank.jpg",
       "men": "assets/posters/men/ea_unilateral_plank.jpg"
@@ -63357,7 +62991,7 @@
       "Avoid shrugging your shoulders up towards your ears; keep them relaxed",
       "Do not overextend your arms; the stretch should be gentle and not cause pain"
     ],
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_upper_back_stretch.jpg"
     }
@@ -63918,7 +63552,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Back",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "Bench",
     "poster": {
       "girl": "assets/posters/girl/ea_weighted_back_extensions_on_hyperextension_bench.jpg",
       "men": "assets/posters/men/ea_weighted_back_extensions_on_hyperextension_bench.jpg"
@@ -64086,7 +63720,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_wild_thing_pose.jpg",
       "men": "assets/posters/men/ea_wild_thing_pose.jpg"
@@ -64277,7 +63911,7 @@
     },
     "isStretch": true,
     "vendorGroup": "Yoga",
-    "equipmentLabel": "Unknown",
+    "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "girl": "assets/posters/girl/ea_yoga_flow_sequences_sun_salutations.jpg",
       "men": "assets/posters/men/ea_yoga_flow_sequences_sun_salutations.jpg"

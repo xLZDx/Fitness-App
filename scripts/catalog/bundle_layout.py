@@ -40,7 +40,13 @@ from dataclasses import dataclass, field
 # The marker is kept in the stem so the pair `..._1` / `..._female_1` still
 # resolves to one exercise with two renders rather than colliding with a
 # differently-versioned clip.
-_GENDER = re.compile(r"_(female|male)(?=(?:_\d+)?\s*$)", re.IGNORECASE)
+#
+# The separator is `[_ ]` because thirteen files write it with a SPACE --
+# `Jump Rope Basic Jump Female.mp4`. That is a third door into the same failure:
+# all thirteen were filed as men's clips AND carried the word "Female" in the
+# title the user reads. Three variations on one convention, each found only by
+# looking at the delivered names rather than trusting the documented one.
+_GENDER = re.compile(r"[_ ](female|male)(?=(?:_\d+)?\s*$)", re.IGNORECASE)
 
 # The one pair whose two files are genuinely different machines, not two renders
 # of one exercise. Kept by name so the resolver reports it instead of silently

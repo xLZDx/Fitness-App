@@ -1,0 +1,494 @@
+id,title,resolved,from,evidence
+ea_180_jump_turns,180 Jump Turns,None (Bodyweight),frame,read from the clip's own still
+ea_5_sec_fist_against_chin,5 Sec Fist Against Chin,None (Bodyweight),frame,read from the clip's own still
+ea_abs_snails,Abs Snails,None (Bodyweight),frame,read from the clip's own still
+ea_agility_ladder_advanced_hop_position,Agility Ladder Advanced Hop Position,Agility Ladder,title,agility ladder
+ea_agility_ladder_advanced_single_leg,Agility Ladder Advanced Single-leg,Agility Ladder,title,agility ladder
+ea_agility_ladder_advancing_laterally_switching_base,Agility Ladder Advancing Laterally Switching Base,Agility Ladder,title,agility ladder
+ea_agility_ladder_in_in_out_out,Agility Ladder in in Out Out,Agility Ladder,title,agility ladder
+ea_agility_ladder_in_in_out_out_moving_laterally,Agility Ladder in in Out Out Moving Laterally,Agility Ladder,title,agility ladder
+ea_agility_ladder_in_in_out_out_with_knee_lift,Agility Ladder in in Out Out with Knee Lift,Agility Ladder,title,agility ladder
+ea_agility_ladder_lateral_movement_in_in_out,Agility Ladder Lateral Movement in in Out,Agility Ladder,title,agility ladder
+ea_agility_ladder_lateral_movement_with_double_hop,Agility Ladder Lateral Movement with Double Hop,Agility Ladder,title,agility ladder
+ea_agility_ladder_skipping_1_touch,Agility Ladder Skipping 1 Touch,Agility Ladder,title,agility ladder
+ea_agility_ladder_skipping_2_touches,Agility Ladder Skipping 2 Touches,Agility Ladder,title,agility ladder
+ea_air_swing_running,Air Swing Running,Dip Bars,frame,read from the clip's own still
+ea_air_swing_side_to_side_swing,Air Swing Side to Side Swing,Dip Bars,frame,read from the clip's own still
+ea_air_swing_walking,Air Swing Walking,Dip Bars,frame,read from the clip's own still
+ea_alternate_biceps_curl_resistance_band,Alternate Biceps Curl Resistance Band,Resistance Band,title,resistance band
+ea_alternate_biceps_curl_standing_dumbbells,Alternate Biceps Curl Standing Dumbbells,Dumbbells,title,dumbbell
+ea_ankle_pumps,Ankle Pumps,None (Bodyweight),frame,read from the clip's own still
+ea_arms_behind_back_chest_stretch,Arms Behind Back Chest Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_arms_lateral_raise_and_rotation_up,Arms Lateral Raise and Rotation Up,None (Bodyweight),frame,read from the clip's own still
+ea_arms_wide_chest_stretch,Arms Wide Chest Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_assisted_sit_up,Assisted Sit-up,A Partner,steps,partner
+ea_ball_slams,Ball Slams,Exercise Ball,title,ball
+ea_band_behind_neck_shoulder_press,Band Behind Neck Shoulder Press,Resistance Band,title,band
+ea_band_bench_press,Band Bench Press,Bench,title,bench
+ea_band_bent_over_one_arm_kickback,Band Bent Over One Arm Kickback,Resistance Band,title,band
+ea_band_bent_over_hip_extension,Band Bent-over Hip Extension,Resistance Band,title,band
+ea_band_cross_body_one_arm_chest_press,Band Cross Body One Arm Chest Press,Resistance Band,title,band
+ea_band_cross_chest_biceps_curl,Band Cross Chest Biceps Curl,Resistance Band,title,band
+ea_band_decline_sit_up,Band Decline Sit Up,Resistance Band,title,band
+ea_band_face_pull,Band Face Pull,Resistance Band,title,band
+ea_band_fixed_back_underhand_pulldown,Band Fixed Back Underhand Pulldown,Resistance Band,title,band
+ea_band_front_face_pull,Band Front Face Pull,Resistance Band,title,band
+ea_band_front_raise,Band Front Raise,Resistance Band,title,band
+ea_band_high_fly,Band High Fly,Resistance Band,title,band
+ea_band_hip_adduction,Band Hip Adduction,Resistance Band,title,band
+ea_band_horizontal_shrug,Band Horizontal Shrug,Resistance Band,title,band
+ea_band_incline_alternate_hammer_curl,Band Incline Alternate Hammer Curl,Resistance Band,title,band
+ea_band_incline_bench_press,Band Incline Bench Press,Bench,title,bench
+ea_band_incline_biceps_curl,Band Incline Biceps Curl,Resistance Band,title,band
+ea_band_incline_fly,Band Incline Fly,Resistance Band,title,band
+ea_band_incline_hammer_curl,Band Incline Hammer Curl,Resistance Band,title,band
+ea_band_incline_hammer_press,Band Incline Hammer Press,Resistance Band,title,band
+ea_band_incline_palms_back_press,Band Incline Palms Back Press,Resistance Band,title,band
+ea_band_incline_row,Band Incline Row,Resistance Band,title,band
+ea_band_incline_t_raise,Band Incline T Raise,Resistance Band,title,band
+ea_band_incline_y_raise,Band Incline Y Raise,Resistance Band,title,band
+ea_band_kneeling_crunch,Band Kneeling Crunch,Resistance Band,title,band
+ea_band_kneeling_lat_pulldown,Band Kneeling Lat Pulldown,Resistance Band,title,band
+ea_band_kneeling_preacher_curl,Band Kneeling Preacher Curl,Resistance Band,title,band
+ea_band_kneeling_rear_kick,Band Kneeling Rear Kick,Resistance Band,title,band
+ea_band_kneeling_single_arm_high_row,Band Kneeling Single Arm High Row,Resistance Band,title,band
+ea_band_leg_press,Band Leg Press,Resistance Band,title,band
+ea_band_low_alternate_chest_press,Band Low Alternate Chest Press,Resistance Band,title,band
+ea_band_low_chest_fly,Band Low Chest Fly,Resistance Band,title,band
+ea_band_low_chest_press,Band Low Chest Press,Resistance Band,title,band
+ea_band_lying_press_down,Band Lying Press Down,Resistance Band,title,band
+ea_band_lying_reverse_grip_row,Band Lying Reverse Grip Row,Resistance Band,title,band
+ea_band_pallof_press,Band Pallof Press,Resistance Band,title,band
+ea_band_palloff_press,Band Palloff Press,Resistance Band,title,band
+ea_band_prone_incline_curl,Band Prone Incline Curl,Resistance Band,title,band
+ea_band_prone_incline_hammer_curl,Band Prone Incline Hammer Curl,Resistance Band,title,band
+ea_band_pull_up,Band Pull Up,Resistance Band,title,band
+ea_band_pullthrough,Band Pullthrough,Resistance Band,title,band
+ea_band_push_up,Band Push-up,Resistance Band,title,band
+ea_band_reverse_fly,Band Reverse Fly,Resistance Band,title,band
+ea_band_reverse_spider_curl,Band Reverse Spider Curl,Resistance Band,title,band
+ea_band_rotating_hammer_grip_incline_bench_row,Band Rotating Hammer Grip Incline Bench Row,Bench,title,bench
+ea_band_seated_lateral_raise,Band Seated Lateral Raise,Resistance Band,title,band
+ea_band_seated_neutral_grip_shoulders_press,Band Seated Neutral Grip Shoulders Press,Resistance Band,title,band
+ea_band_seated_shoulder_press,Band Seated Shoulder Press,Resistance Band,title,band
+ea_band_side_bend,Band Side Bend,Resistance Band,title,band
+ea_band_single_arm_overhead_press,Band Single Arm Overhead Press,Resistance Band,title,band
+ea_band_single_arm_pec_fly,Band Single Arm Pec Fly,Resistance Band,title,band
+ea_band_single_leg_split_squat,Band Single Leg Split Squat,Resistance Band,title,band
+ea_band_skullcrusher,Band Skullcrusher,Resistance Band,title,band
+ea_band_spanish_split_squat,Band Spanish Split Squat,Resistance Band,title,band
+ea_band_squat_row,Band Squat Row,Resistance Band,title,band
+ea_band_standing_leg_curl,Band Standing Leg Curl,Resistance Band,title,band
+ea_band_standing_rear_delt_row,Band Standing Rear Delt Row,Resistance Band,title,band
+ea_band_triceps_pushdown_single_arm,Band Triceps Pushdown Single Arm,Resistance Band,title,band
+ea_band_two_legs_calf_raise_band_under_both_legs_version_2,Band Two Legs Calf Raise - (band Under Both Legs) Version 2,Resistance Band,title,band
+ea_band_warm_up_shoulder_stretch,Band Warm Up Shoulder Stretch,Resistance Band,title,band
+ea_band_wrist_curl_single_arm,Band Wrist Curl Single Arm,Resistance Band,title,band
+ea_band_y_raise,Band Y Raise,Resistance Band,title,band
+ea_banded_feet_elevated_hip_thrusters,Banded Feet Elevated Hip Thrusters,Resistance Band,title,band
+ea_barbell_alternate_biceps_curl,Barbell Alternate Biceps Curl,Barbell,title,barbell
+ea_barbell_coan_deadlift,Barbell Coan Deadlift,Barbell,title,barbell
+ea_barbell_front_squats,Barbell Front Squats,Barbell,title,barbell
+ea_barbell_hang_clean,Barbell Hang Clean,Barbell,title,barbell
+ea_barbell_hooklying_bench_press,Barbell Hooklying Bench Press,Barbell,title,barbell
+ea_barbell_hooklying_bench_press_close_elbows,Barbell Hooklying Bench Press Close Elbows,Barbell,title,barbell
+ea_barbell_jump_shrug,Barbell Jump Shrug,Barbell,title,barbell
+ea_barbell_landmine_chest_press,Barbell Landmine Chest Press,Landmine,title,landmine
+ea_barbell_landmine_side_bend,Barbell Landmine Side Bend,Landmine,title,landmine
+ea_barbell_larsen_bench_press,Barbell Larsen Bench Press,Barbell,title,barbell
+ea_barbell_long_landmine_row,Barbell Long Landmine Row,Landmine,title,landmine
+ea_barbell_meadows_row,Barbell Meadows Row,Barbell,title,barbell
+ea_barbell_press_under,Barbell Press Under,Barbell,title,barbell
+ea_barbell_reverse_deadlift,Barbell Reverse Deadlift,Barbell,title,barbell
+ea_barbell_silverback_shrug,Barbell Silverback Shrug,Barbell,title,barbell
+ea_barbell_situp,Barbell Situp,Barbell,title,barbell
+ea_barbell_spoto_press,Barbell Spoto Press,Barbell,title,barbell
+ea_barbell_squat_back_pov,Barbell Squat Back POV,Barbell,title,barbell
+ea_barbell_zercher_good_morning,Barbell Zercher Good Morning,Barbell,title,barbell
+ea_battle_rope_alternating_arm_waves,Battle Rope Alternating Arm Waves,Battle Ropes,title,battle rope
+ea_battle_rope_double_arm_slams,Battle Rope Double Arm Slams,Battle Ropes,title,battle rope
+ea_bear_crawls,Bear Crawls,None (Bodyweight),frame,read from the clip's own still
+ea_both_arms_behind_on_wall_biceps_stretch,Both Arms Behind on Wall Biceps Stretch,Wall,title,wall
+ea_bow_pose,Bow Pose,None (Bodyweight),frame,read from the clip's own still
+ea_box_sled_push,Box Sled Push,Sled,title,sled
+ea_bulgarian_split_squat_stretch,Bulgarian Split Squat Stretch,Wall,frame,read from the clip's own still
+ea_cable_30_degree_shrug,Cable 30 Degree Shrug,Cable Pulley Machine,title,cable
+ea_cable_core_palloff_press,Cable Core Palloff Press,Cable Pulley Machine,title,cable
+ea_cable_cross_pushdown,Cable Cross Pushdown,Cable Pulley Machine,title,cable
+ea_cable_face_pull_with_rope,Cable Face Pull with Rope,Cable Pulley Machine,title,cable
+ea_cable_lat_prayer,Cable Lat Prayer,Cable Pulley Machine,title,cable
+ea_cable_pull_in_kneeling,Cable Pull in Kneeling,Cable Pulley Machine,title,cable
+ea_cable_silverback_shrug,Cable Silverback Shrug,Cable Pulley Machine,title,cable
+ea_cable_single_arm_reverse_fly,Cable Single Arm Reverse Fly,Cable Pulley Machine,title,cable
+ea_cable_standing_crunch,Cable Standing Crunch,Cable Pulley Machine,title,cable
+ea_cable_twisting_biceps_curl,Cable Twisting Biceps Curl,Cable Pulley Machine,title,cable
+ea_cable_wrist_extension,Cable Wrist Extension,Cable Pulley Machine,title,cable
+ea_calf_push_stretch_with_hands_against_wall_v_2,Calf Push Stretch with Hands Against Wall V.2,Wall,title,wall
+ea_calve_stretch_foot_on_wall,Calve Stretch Foot on Wall,Wall,title,wall
+ea_calve_stretch_from_wall_to_floor,Calve Stretch From Wall to Floor,Wall,title,wall
+ea_calves_stretch_on_step,Calves Stretch on Step,Plyo Box,frame,read from the clip's own still
+ea_cat_pose,Cat Pose,None (Bodyweight),frame,read from the clip's own still
+ea_chair_back_lunge_right_resistance_band,Chair Back Lunge Right Resistance Band,Resistance Band,title,resistance band
+ea_chair_pose,Chair Pose,None (Bodyweight),frame,read from the clip's own still
+ea_chest_press_machine,Chest Press Machine,Machine,title,machine
+ea_child_pose_arms_extended_left_right,Child Pose Arms Extended Left Right,None (Bodyweight),frame,read from the clip's own still
+ea_child_pose_arms_on_side,Child Pose Arms on Side,None (Bodyweight),frame,read from the clip's own still
+ea_child_pose_elbows_on_block,Child Pose Elbows on Block,Yoga Block,title,block
+ea_child_pose_lower_back_stretch,Child Pose Lower Back Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_cobra_stretch,Cobra Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_copenhagen_plank,Copenhagen Plank,Bench,frame,read from the clip's own still
+ea_crawl_with_sled_drag,Crawl with Sled Drag,Sled,title,sled
+ea_crescent_moon_pose,Crescent Moon Pose,None (Bodyweight),frame,read from the clip's own still
+ea_crescent_moon_pose_quad_stretch,Crescent Moon Pose Quad Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_crescent_moon_pose_quad_stretch_with_block,Crescent Moon Pose Quad Stretch with Block,Yoga Block,title,block
+ea_criss_cross_bow_tie_pose,Criss Cross Bow Tie Pose,None (Bodyweight),frame,read from the clip's own still
+ea_cross_body_elbow_pull_shoulder_stretch,Cross Body Elbow Pull Shoulder Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_cross_body_shoulder_stretch,Cross Body Shoulder Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_crow_pose,Crow Pose,None (Bodyweight),frame,read from the clip's own still
+ea_double_kettlebell_sled_push,Double Kettlebell Sled Push,Kettlebells,title,kettlebell
+ea_double_pigeon_pose,Double Pigeon Pose,None (Bodyweight),frame,read from the clip's own still
+ea_downward_dog_toe_to_heel,Downward Dog Toe to Heel,None (Bodyweight),frame,read from the clip's own still
+ea_downward_dog_with_fingers_facing_feet,Downward Dog with Fingers Facing Feet,None (Bodyweight),frame,read from the clip's own still
+ea_dragonfly,Dragonfly,Pull Up Bar,frame,read from the clip's own still
+ea_dumbbell_alternating_arnold_press,Dumbbell Alternating Arnold Press,Dumbbells,title,dumbbell
+ea_dumbbell_alternating_pendlay_row,Dumbbell Alternating Pendlay Row,Dumbbells,title,dumbbell
+ea_dumbbell_bench_squat,Dumbbell Bench Squat,Dumbbells,title,dumbbell
+ea_dumbbell_chest_supported_y_raise,Dumbbell Chest Supported Y Raise,Dumbbells,title,dumbbell
+ea_dumbbell_curl_press_extend,Dumbbell Curl Press Extend,Dumbbells,title,dumbbell
+ea_dumbbell_decline_close_neutral_grip_press,Dumbbell Decline Close Neutral Grip Press,Dumbbells,title,dumbbell
+ea_dumbbell_elbow_side_plank,Dumbbell Elbow Side Plank,Dumbbells,title,dumbbell
+ea_dumbbell_feet_elevated_figure_four_glute_bridge,Dumbbell Feet Elevated Figure Four Glute Bridge,Dumbbells,title,dumbbell
+ea_dumbbell_goblet_good_morning,Dumbbell Goblet Good Morning,Dumbbells,title,dumbbell
+ea_dumbbell_goblet_reverse_lunge,Dumbbell Goblet Reverse Lunge,Dumbbells,title,dumbbell
+ea_dumbbell_half_kneeling_wood_chopper,Dumbbell Half Kneeling Wood Chopper,Dumbbells,title,dumbbell
+ea_dumbbell_hand_side_plank,Dumbbell Hand Side Plank,Dumbbells,title,dumbbell
+ea_dumbbell_hex_press,Dumbbell Hex Press,Dumbbells,title,dumbbell
+ea_dumbbell_knee_lawnmower_row,Dumbbell Knee Lawnmower Row,Dumbbells,title,dumbbell
+ea_dumbbell_kneeling_wood_chopper,Dumbbell Kneeling Wood Chopper,Dumbbells,title,dumbbell
+ea_dumbbell_laying_30_degree_shrug,Dumbbell Laying 30 Degree Shrug,Dumbbells,title,dumbbell
+ea_dumbbell_laying_silverback_shrug,Dumbbell Laying Silverback Shrug,Dumbbells,title,dumbbell
+ea_dumbbell_lying_on_floor_chest_press,Dumbbell Lying on Floor Chest Press,Dumbbells,title,dumbbell
+ea_dumbbell_offset_squat,Dumbbell Offset Squat,Dumbbells,title,dumbbell
+ea_dumbbell_overhead_side_bend,Dumbbell Overhead Side Bend,Dumbbells,title,dumbbell
+ea_dumbbell_pendlay_row,Dumbbell Pendlay Row,Dumbbells,title,dumbbell
+ea_dumbbell_plank_pullthrough,Dumbbell Plank Pullthrough,Dumbbells,title,dumbbell
+ea_dumbbell_seated_zottman_curl,Dumbbell Seated Zottman Curl,Dumbbells,title,dumbbell
+ea_dumbbell_shoulder_extension,Dumbbell Shoulder Extension,Dumbbells,title,dumbbell
+ea_dumbbell_side_plank_up_down,Dumbbell Side Plank Up Down,Dumbbells,title,dumbbell
+ea_dumbbell_silverback_shrug,Dumbbell Silverback Shrug,Dumbbells,title,dumbbell
+ea_dumbbell_single_arm_upright_row,Dumbbell Single Arm Upright Row,Dumbbells,title,dumbbell
+ea_dumbbell_single_leg_hip_thrust,Dumbbell Single Leg Hip Thrust,Dumbbells,title,dumbbell
+ea_dumbbell_single_leg_single_arm_deadlift,Dumbbell Single Leg Single Arm Deadlift,Dumbbells,title,dumbbell
+ea_dumbbell_skullcrusher,Dumbbell Skullcrusher,Dumbbells,title,dumbbell
+ea_dumbbell_staggered_deadlift,Dumbbell Staggered Deadlift,Dumbbells,title,dumbbell
+ea_dumbbell_staggered_glute_bridge,Dumbbell Staggered Glute Bridge,Dumbbells,title,dumbbell
+ea_dumbbell_staggered_hip_thrust,Dumbbell Staggered Hip Thrust,Dumbbells,title,dumbbell
+ea_dumbbell_standing_hip_abduction,Dumbbell Standing Hip Abduction,Dumbbells,title,dumbbell
+ea_dumbbell_suitcase_crunch,Dumbbell Suitcase Crunch,Dumbbells,title,dumbbell
+ea_dumbbell_swing,Dumbbell Swing,Dumbbells,title,dumbbell
+ea_dynamic_leg_swing,Dynamic Leg Swing,Wall,steps,wall
+ea_eagle_arms_chin_into_chest,Eagle Arms Chin Into Chest,None (Bodyweight),frame,read from the clip's own still
+ea_easy_pose_neck_stretch,Easy Pose Neck Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_easy_seated_twist_pose,Easy Seated Twist Pose,None (Bodyweight),frame,read from the clip's own still
+ea_elbow_extension_and_supination_pronation_forearm_stretch,Elbow Extension and Supination Pronation Forearm Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_elbow_flexor_stretch,Elbow Flexor Stretch,Wall,steps,wall
+ea_elbow_lift_reverse_push_up,Elbow Lift Reverse Push Up,Bench,frame,read from the clip's own still
+ea_elbow_push_plank_up,Elbow Push Plank Up,None (Bodyweight),frame,read from the clip's own still
+ea_elbow_extension,Elbow-extension,None (Bodyweight),frame,read from the clip's own still
+ea_elbow_up_and_down_dynamic_plank,Elbow-up and Down Dynamic Plank,None (Bodyweight),frame,read from the clip's own still
+ea_elevated_pike_shoulder_shrug,Elevated Pike Shoulder Shrug,Plyo Box,frame,read from the clip's own still
+ea_elevated_push_up,Elevated Push Up,Yoga Block,frame,read from the clip's own still
+ea_elevated_standing_calf_raise,Elevated Standing Calf Raise,Plyo Box,frame,read from the clip's own still
+ea_exercise_ball_back_extension_with_hands_behind_head,Exercise Ball Back Extension with Hands Behind Head,Exercise Ball,title,exercise ball
+ea_exercise_ball_body_saw,Exercise Ball Body Saw,Exercise Ball,title,exercise ball
+ea_exercise_ball_leg_curl,Exercise Ball Leg Curl,Exercise Ball,title,exercise ball
+ea_exercise_ball_one_legged_diagonal_kick_hamstring_curl,Exercise Ball One Legged Diagonal Kick Hamstring Curl,Exercise Ball,title,exercise ball
+ea_exercise_ball_wall_squat,Exercise Ball Wall Squat,Exercise Ball,title,exercise ball
+ea_extended_side_angle,Extended Side Angle,None (Bodyweight),frame,read from the clip's own still
+ea_extended_side_angle_pose,Extended Side Angle Pose,None (Bodyweight),frame,read from the clip's own still
+ea_extended_side_angle_pose_with_block,Extended Side Angle Pose with Block,Yoga Block,title,block
+ea_extension_and_inclination_neck_stretch,Extension and Inclination Neck Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_extension_of_arms_in_vertical_stretch,Extension of Arms in Vertical Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_flat_knee_raise,Flat Knee Raise,None (Bodyweight),frame,read from the clip's own still
+ea_floor_tricep_dip,Floor Tricep Dip,None (Bodyweight),frame,read from the clip's own still
+ea_foam_roller_back,Foam Roller Back,Foam Roller,title,foam roller
+ea_foam_roller_calves,Foam Roller Calves,Foam Roller,title,foam roller
+ea_foam_roller_lateral_quads,Foam Roller Lateral Quads,Foam Roller,title,foam roller
+ea_foam_roller_quads,Foam Roller Quads-,Foam Roller,title,foam roller
+ea_forearms_pull_with_opposite_hand_stretch,Forearms Pull with Opposite Hand Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_forearms_stretch_on_wall,Forearms Stretch on Wall,Wall,title,wall
+ea_forearms_stretch_on_wall_fingers_facing_down,Forearms Stretch on Wall Fingers Facing Down,Wall,title,wall
+ea_frog_jumps,Frog Jumps,None (Bodyweight),frame,read from the clip's own still
+ea_front_lever_raise,Front Lever Raise,Pull Up Bar,frame,read from the clip's own still
+ea_front_lever_raise_to_hold,Front Lever Raise to Hold,Pull Up Bar,frame,read from the clip's own still
+ea_gate_pose_rounding_spine_looking_up,Gate Pose Rounding Spine Looking Up,None (Bodyweight),frame,read from the clip's own still
+ea_gate_pose_variation_arm_extended_on_side,Gate Pose Variation Arm Extended on Side,None (Bodyweight),frame,read from the clip's own still
+ea_glute_bridge_bodyweight,Glute Bridge Bodyweight,None (Bodyweight),frame,read from the clip's own still
+ea_good_mornings,Good Mornings,None (Bodyweight),frame,read from the clip's own still
+ea_gorilla_walk,Gorilla Walk,None (Bodyweight),frame,read from the clip's own still
+ea_half_burpees,Half Burpees,None (Bodyweight),frame,read from the clip's own still
+ea_half_lotus,Half Lotus,None (Bodyweight),frame,read from the clip's own still
+ea_half_monkey_pose,Half Monkey Pose,None (Bodyweight),frame,read from the clip's own still
+ea_half_neck_rolls,Half Neck Rolls,None (Bodyweight),frame,read from the clip's own still
+ea_hand_stand_hold,Hand Stand Hold,None (Bodyweight),frame,read from the clip's own still
+ea_hands_clapped_forearms_stretch,Hands Clapped Forearms Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_hanging_leg_raises,Hanging Leg Raises,Pull Up Bar,frame,read from the clip's own still
+ea_happy_baby,Happy Baby,None (Bodyweight),frame,read from the clip's own still
+ea_headstand,Headstand,None (Bodyweight),frame,read from the clip's own still
+ea_heavy_bag_sled_drag,Heavy Bag Sled Drag,Sled,title,sled
+ea_hip_thrust_in_smith_machine,Hip-thrust in Smith Machine,Smith Machine,title,smith machine
+ea_hold_the_world_med_ball,Hold the World Med Ball,Exercise Ball,title,ball
+ea_hold_the_world_med_ball_chest_press,Hold the World Med Ball Chest Press,Exercise Ball,title,ball
+ea_horizontal_leg_press,Horizontal Leg Press,Machine,frame,read from the clip's own still
+ea_horizontal_leg_press_calf_raise,Horizontal Leg Press Calf Raise,Machine,frame,read from the clip's own still
+ea_horizontal_leg_press_calf_raise_single_leg,Horizontal Leg Press Calf Raise Single Leg,Machine,frame,read from the clip's own still
+ea_horizontal_leg_press_single_leg,Horizontal Leg Press Single Leg,Machine,frame,read from the clip's own still
+ea_jumping_lunge,Jumping Lunge,None (Bodyweight),frame,read from the clip's own still
+ea_jumping_pistol_squat,Jumping Pistol Squat,None (Bodyweight),frame,read from the clip's own still
+ea_kettlebell_calf_raise,Kettlebell Calf Raise,Kettlebells,title,kettlebell
+ea_kettlebell_concentration_curl,Kettlebell Concentration Curl,Kettlebells,title,kettlebell
+ea_kettlebell_curl,Kettlebell Curl,Kettlebells,title,kettlebell
+ea_kettlebell_decline_skull_crusher,Kettlebell Decline Skull Crusher,Kettlebells,title,kettlebell
+ea_kettlebell_front_raise,Kettlebell Front Raise,Kettlebells,title,kettlebell
+ea_kettlebell_glute_bridge,Kettlebell Glute Bridge,Kettlebells,title,kettlebell
+ea_kettlebell_goblet_curl,Kettlebell Goblet Curl,Kettlebells,title,kettlebell
+ea_kettlebell_gorilla_row,Kettlebell Gorilla Row,Kettlebells,title,kettlebell
+ea_kettlebell_hip_thrusts,Kettlebell Hip Thrusts,Kettlebells,title,kettlebell
+ea_kettlebell_hip_thrusts_with_bench,Kettlebell Hip Thrusts with Bench,Kettlebells,title,kettlebell
+ea_kettlebell_incline_shrug,Kettlebell Incline Shrug,Kettlebells,title,kettlebell
+ea_kettlebell_lateral_lunge,Kettlebell Lateral Lunge,Kettlebells,title,kettlebell
+ea_kettlebell_long_lever_lateral_raise,Kettlebell Long Lever Lateral Raise,Kettlebells,title,kettlebell
+ea_kettlebell_preacher_curl,Kettlebell Preacher Curl,Kettlebells,title,kettlebell
+ea_kettlebell_pullover,Kettlebell Pullover,Kettlebells,title,kettlebell
+ea_kettlebell_rear_delt_row,Kettlebell Rear Delt Row,Kettlebells,title,kettlebell
+ea_kettlebell_reverse_lunge,Kettlebell Reverse Lunge,Kettlebells,title,kettlebell
+ea_kettlebell_row,Kettlebell Row,Kettlebells,title,kettlebell
+ea_kettlebell_seated_calf_raise,Kettlebell Seated Calf Raise,Kettlebells,title,kettlebell
+ea_kettlebell_shoulder_extension,Kettlebell Shoulder Extension,Kettlebells,title,kettlebell
+ea_kettlebell_shrug,Kettlebell Shrug,Kettlebells,title,kettlebell
+ea_kettlebell_silverback_shrug,Kettlebell Silverback Shrug,Kettlebells,title,kettlebell
+ea_kettlebell_single_arm_chest_fly,Kettlebell Single Arm Chest Fly,Kettlebells,title,kettlebell
+ea_kettlebell_single_arm_curl,Kettlebell Single Arm Curl,Kettlebells,title,kettlebell
+ea_kettlebell_single_arm_lateral_raise,Kettlebell Single Arm Lateral Raise,Kettlebells,title,kettlebell
+ea_kettlebell_single_arm_rear_delt_fly,Kettlebell Single Arm Rear Delt Fly,Kettlebells,title,kettlebell
+ea_kettlebell_single_arm_row,Kettlebell Single Arm Row,Kettlebells,title,kettlebell
+ea_kettlebell_single_leg_calf_raise,Kettlebell Single Leg Calf Raise,Kettlebells,title,kettlebell
+ea_kettlebell_single_leg_deadlift,Kettlebell Single Leg Deadlift,Kettlebells,title,kettlebell
+ea_kettlebell_single_leg_glute_bridge,Kettlebell Single Leg Glute Bridge,Kettlebells,title,kettlebell
+ea_kettlebell_single_leg_hip_thrust,Kettlebell Single Leg Hip Thrust,Kettlebells,title,kettlebell
+ea_kettlebell_single_leg_romanian_deadlifts,Kettlebell Single Leg Romanian Deadlifts,Kettlebells,title,kettlebell
+ea_kettlebell_skull_crusher,Kettlebell Skull Crusher,Kettlebells,title,kettlebell
+ea_kettlebell_sled_drag,Kettlebell Sled Drag,Kettlebells,title,kettlebell
+ea_kettlebell_snatch,Kettlebell Snatch,Kettlebells,title,kettlebell
+ea_kettlebell_staggered_deadlift,Kettlebell Staggered Deadlift,Kettlebells,title,kettlebell
+ea_kettlebell_standing_tricep_extension,Kettlebell Standing Tricep Extension,Kettlebells,title,kettlebell
+ea_kettlebell_turkish_get_up,Kettlebell Turkish Get Up,Kettlebells,title,kettlebell
+ea_kettlebell_upright_row,Kettlebell Upright Row,Kettlebells,title,kettlebell
+ea_kettlebell_walkover_pushup,Kettlebell Walkover Pushup,Kettlebells,title,kettlebell
+ea_kettlebell_windmill,Kettlebell Windmill,Kettlebells,title,kettlebell
+ea_kettlebell_wrist_curl,Kettlebell Wrist Curl,Kettlebells,title,kettlebell
+ea_kettlebell_wrist_extension,Kettlebell Wrist Extension,Kettlebells,title,kettlebell
+ea_kipping_handstand_push_up,Kipping Handstand Push-up,Wall,frame,read from the clip's own still
+ea_kipping_pull_up,Kipping Pull Up,Pull Up Bar,frame,read from the clip's own still
+ea_kneeling_push_up,Kneeling Push-up,None (Bodyweight),frame,read from the clip's own still
+ea_l_sit_hold,L Sit Hold,Parallettes,frame,read from the clip's own still
+ea_landmine_alternating_lunge_and_twist,Landmine Alternating Lunge and Twist,Landmine,title,landmine
+ea_landmine_alternating_lunge_to_chest_press,Landmine Alternating Lunge to Chest Press,Landmine,title,landmine
+ea_landmine_alternating_single_arm_press,Landmine Alternating Single Arm Press,Landmine,title,landmine
+ea_landmine_bicep_curl,Landmine Bicep Curl,Landmine,title,landmine
+ea_landmine_calf_raise,Landmine Calf Raise,Landmine,title,landmine
+ea_landmine_concentration_curl,Landmine Concentration Curl,Landmine,title,landmine
+ea_landmine_curtsy_lunge,Landmine Curtsy Lunge,Landmine,title,landmine
+ea_landmine_glute_kick_back,Landmine Glute Kick Back,Landmine,title,landmine
+ea_landmine_goblet_curtsy_lunge,Landmine Goblet Curtsy Lunge,Landmine,title,landmine
+ea_landmine_goblet_lateral_lunge,Landmine Goblet Lateral Lunge,Landmine,title,landmine
+ea_landmine_hack_squat,Landmine Hack Squat,Landmine,title,landmine
+ea_landmine_half_kneeling_single_arm_overhead_press,Landmine Half Kneeling Single Arm Overhead Press,Landmine,title,landmine
+ea_landmine_hollow_hold,Landmine Hollow Hold,Landmine,title,landmine
+ea_landmine_kneeling_alternating_overhead_press,Landmine Kneeling Alternating Overhead Press,Landmine,title,landmine
+ea_landmine_kneeling_overhead_press,Landmine Kneeling Overhead Press,Landmine,title,landmine
+ea_landmine_kneeling_twist,Landmine Kneeling Twist,Landmine,title,landmine
+ea_landmine_lateral_lunge,Landmine Lateral Lunge,Landmine,title,landmine
+ea_landmine_lateral_raise,Landmine Lateral Raise,Landmine,title,landmine
+ea_landmine_lunge_to_overhead_press,Landmine Lunge to Overhead Press,Landmine,title,landmine
+ea_landmine_lying_tricep_extension,Landmine Lying Tricep Extension,Landmine,title,landmine
+ea_landmine_oblique_twist,Landmine Oblique Twist,Landmine,title,landmine
+ea_landmine_overhead_press,Landmine Overhead Press,Landmine,title,landmine
+ea_landmine_romanian_deadlift,Landmine Romanian Deadlift,Landmine,title,landmine
+ea_landmine_rotational_lift_to_press,Landmine Rotational Lift to Press,Landmine,title,landmine
+ea_landmine_russian_twist,Landmine Russian Twist,Landmine,title,landmine
+ea_landmine_seated_alternating_overhead_press,Landmine Seated Alternating Overhead Press,Landmine,title,landmine
+ea_landmine_seated_overhead_press,Landmine Seated Overhead Press,Landmine,title,landmine
+ea_landmine_seated_single_arm_overhead_press,Landmine Seated Single Arm Overhead Press,Landmine,title,landmine
+ea_landmine_single_arm_push_press,Landmine Single Arm Push Press,Landmine,title,landmine
+ea_landmine_single_arm_staggered_overhead_press,Landmine Single Arm Staggered Overhead Press,Landmine,title,landmine
+ea_landmine_squat_and_press,Landmine Squat and Press,Landmine,title,landmine
+ea_lateral_band_walks,Lateral Band Walks,Resistance Band,title,band
+ea_lateral_box_jump,Lateral Box Jump,Plyo Box,title,box
+ea_lateral_raises_dumbbell_seated_with_swing,Lateral Raises Dumbbell Seated with Swing,Dumbbells,title,dumbbell
+ea_lateral_sled_drag,Lateral Sled Drag,Sled,title,sled
+ea_lats_stretch_elbow_on_wall,Lats Stretch Elbow on Wall,Wall,title,wall
+ea_lats_stretch_on_wall,Lats Stretch on Wall,Wall,title,wall
+ea_lawnmower_row,Lawnmower Row,Dumbbells,frame,read from the clip's own still
+ea_laying_lateral_raise,Laying Lateral Raise,Dumbbells,frame,read from the clip's own still
+ea_long_lever_plank,Long Lever Plank,None (Bodyweight),frame,read from the clip's own still
+ea_lord_of_the_dance,Lord of the Dance,None (Bodyweight),frame,read from the clip's own still
+ea_low_box_lateral_runner,Low Box Lateral Runner,Plyo Box,title,box
+ea_low_box_quick_feet,Low Box Quick Feet,Plyo Box,title,box
+ea_low_rotational_med_ball_chops_quarter_squat_rotating_med_ball_left_and_ride_across_core,"Low Rotational Med Ball Chops (quarter Squat, Rotating Med Ball Left and Ride Across Core)",Exercise Ball,title,ball
+ea_low_sled_push,Low Sled Push,Sled,title,sled
+ea_lying_bent_knee_cross_glutes_stretch,Lying Bent Knee Cross Glutes Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_lying_face_down_quadriceps_stretch,Lying Face Down Quadriceps Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_lying_knee_hugs_lower_back_stretch,Lying Knee Hugs Lower Back Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_lying_knee_pull_glutes_stretch,Lying Knee Pull Glutes Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_lying_knees_to_floor_lower_back_stretch,Lying Knees to Floor Lower Back Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_lying_neck_curls,Lying Neck Curls,Bench,frame,read from the clip's own still
+ea_lying_neck_extension,Lying Neck Extension,None (Bodyweight),frame,read from the clip's own still
+ea_lying_on_side_arm_circle_warm_up,Lying on Side Arm Circle Warm Up,None (Bodyweight),frame,read from the clip's own still
+ea_lying_single_leg_extended_on_wall_hamstrings_stretch,Lying Single Leg Extended on Wall Hamstrings Stretch,Wall,title,wall
+ea_med_ball_front_squat_raise,Med Ball Front Squat Raise,Exercise Ball,title,ball
+ea_med_ball_half_kneeling_wood_choppers,Med Ball Half Kneeling Wood Choppers,Exercise Ball,title,ball
+ea_med_ball_jumping_jacks,Med Ball Jumping Jacks,Exercise Ball,title,ball
+ea_med_ball_side_wall_slams,Med Ball Side Wall Slams,Wall,title,wall
+ea_med_ball_slam_burpees,Med Ball Slam Burpees,Exercise Ball,title,ball
+ea_med_ball_toe_touches,Med Ball Toe Touches,Exercise Ball,title,ball
+ea_medicine_ball_chest_throw_with_abs,Medicine Ball Chest Throw with Abs,Medicine Ball,title,medicine ball
+ea_medicine_ball_jumps,Medicine Ball Jumps,Medicine Ball,title,medicine ball
+ea_medicine_ball_rotational_throw,Medicine Ball Rotational Throw,Medicine Ball,title,medicine ball
+ea_monkey_bar_swings,Monkey Bar Swings,Barbell,title,bar
+ea_monkey_pose,Monkey Pose,None (Bodyweight),frame,read from the clip's own still
+ea_mountain_climber_jumps,Mountain Climber Jumps,None (Bodyweight),frame,read from the clip's own still
+ea_multi_hip_adduction,Multi Hip Adduction,Machine,frame,read from the clip's own still
+ea_narrow_stance_heels_elevated_dumbbell_goblet_squats,Narrow Stance Heels Elevated Dumbbell Goblet Squats,Dumbbells,title,dumbbell
+ea_nordic_hamstring_curl_with_partner,Nordic Hamstring Curl with Partner,A Partner,title,partner
+ea_normal_push_up,Normal Push-up,None (Bodyweight),frame,read from the clip's own still
+ea_normal_squat_smith_machine,Normal Squat Smith Machine,Smith Machine,title,smith machine
+ea_one_arm_cow_face_pose_easy,One Arm Cow Face Pose - Easy,None (Bodyweight),frame,read from the clip's own still
+ea_one_arm_push_up,One Arm Push Up,None (Bodyweight),frame,read from the clip's own still
+ea_overhead_med_ball_throw,Overhead Med Ball Throw,Exercise Ball,title,ball
+ea_pec_deck_fly_machine_flies,Pec Deck Fly Machine Flies,Machine,title,machine
+ea_pigeon_glutes_stretch,Pigeon Glutes Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_pigeon_pose,Pigeon Pose,None (Bodyweight),frame,read from the clip's own still
+ea_pike_alternating_opposite_hip_taps,Pike Alternating Opposite Hip Taps,None (Bodyweight),frame,read from the clip's own still
+ea_pike_individual_alternating_arm_reaches,Pike Individual Alternating Arm Reaches,None (Bodyweight),frame,read from the clip's own still
+ea_pike_jacks_feet_kicking_in_and_out,Pike Jacks Feet Kicking in and Out,None (Bodyweight),frame,read from the clip's own still
+ea_pike_shoulder_taps,Pike Shoulder Taps,None (Bodyweight),frame,read from the clip's own still
+ea_pistol_squat_to_box,Pistol Squat to Box,Plyo Box,title,box
+ea_plank_individual_arm_reach,Plank Individual Arm Reach,None (Bodyweight),frame,read from the clip's own still
+ea_plank_iytw,Plank IYTW,Dumbbells,frame,read from the clip's own still
+ea_plank_pushup,Plank Pushup,None (Bodyweight),frame,read from the clip's own still
+ea_plate_alternating_deadstop_row,Plate Alternating Deadstop Row,Weight Plate,title,plate
+ea_plate_car_driver,Plate Car Driver,Weight Plate,title,plate
+ea_plate_clean,Plate Clean,Weight Plate,title,plate
+ea_plate_clean_and_press,Plate Clean and Press,Weight Plate,title,plate
+ea_plate_curl_to_overhead_press,Plate Curl to Overhead Press,Weight Plate,title,plate
+ea_plate_curl_to_overhead_press_to_tricep_extension,Plate Curl to Overhead Press to Tricep Extension,Weight Plate,title,plate
+ea_plate_curtsy_lunge,Plate Curtsy Lunge,Weight Plate,title,plate
+ea_plate_deadlift,Plate Deadlift,Weight Plate,title,plate
+ea_plate_deficit_lunge,Plate Deficit Lunge,Weight Plate,title,plate
+ea_plate_deficit_pushup,Plate Deficit Pushup,Weight Plate,title,plate
+ea_plate_forward_lunge,Plate Forward Lunge,Weight Plate,title,plate
+ea_plate_full_front_raise,Plate Full Front Raise,Weight Plate,title,plate
+ea_plate_glute_bridge_to_chest_press,Plate Glute Bridge to Chest Press,Weight Plate,title,plate
+ea_plate_glute_bridge_to_pullover,Plate Glute Bridge to Pullover,Weight Plate,title,plate
+ea_plate_good_morning,Plate Good Morning,Weight Plate,title,plate
+ea_plate_good_morning_anterior,Plate Good Morning Anterior,Weight Plate,title,plate
+ea_plate_halo,Plate Halo,Weight Plate,title,plate
+ea_plate_hollow_hold,Plate Hollow Hold,Weight Plate,title,plate
+ea_plate_internally_rotated_rear_delt_fly,Plate Internally Rotated Rear Delt Fly,Weight Plate,title,plate
+ea_plate_lateral_lunge,Plate Lateral Lunge,Weight Plate,title,plate
+ea_plate_lateral_raise,Plate Lateral Raise,Weight Plate,title,plate
+ea_plate_overhead_carry,Plate Overhead Carry,Weight Plate,title,plate
+ea_plate_overhead_press_to_tricep_extension,Plate Overhead Press to Tricep Extension,Weight Plate,title,plate
+ea_plate_overhead_shrug,Plate Overhead Shrug,Weight Plate,title,plate
+ea_plate_overhead_tricep_extension,Plate Overhead Tricep Extension,Weight Plate,title,plate
+ea_plate_overhead_walking_lunge,Plate Overhead Walking Lunge,Weight Plate,title,plate
+ea_plate_pinch_grip_deadlift,Plate Pinch Grip Deadlift,Weight Plate,title,plate
+ea_plate_pinch_grip_row,Plate Pinch Grip Row,Weight Plate,title,plate
+ea_plate_pinch_grip_side_bend,Plate Pinch Grip Side Bend,Weight Plate,title,plate
+ea_plate_press,Plate Press,Weight Plate,title,plate
+ea_plate_reach,Plate Reach,Weight Plate,title,plate
+ea_plate_rear_delt_fly,Plate Rear Delt Fly,Weight Plate,title,plate
+ea_plate_russian_twist,Plate Russian Twist,Weight Plate,title,plate
+ea_plate_single_leg_deadlift,Plate Single Leg Deadlift,Weight Plate,title,plate
+ea_plate_single_leg_pinch_grip_deadlift,Plate Single Leg Pinch Grip Deadlift,Weight Plate,title,plate
+ea_plate_situp,Plate Situp,Weight Plate,title,plate
+ea_plate_squat_hold,Plate Squat Hold,Weight Plate,title,plate
+ea_plate_squat_hold_biceps_curl,Plate Squat Hold Biceps Curl,Weight Plate,title,plate
+ea_plate_squat_hold_reach,Plate Squat Hold Reach,Weight Plate,title,plate
+ea_plate_squat_reach,Plate Squat Reach,Weight Plate,title,plate
+ea_plate_staggered_deadlift,Plate Staggered Deadlift,Weight Plate,title,plate
+ea_plate_staggered_pinch_grip_deadlift,Plate Staggered Pinch Grip Deadlift,Weight Plate,title,plate
+ea_plate_standing_twist,Plate Standing Twist,Weight Plate,title,plate
+ea_plate_thruster,Plate Thruster,Weight Plate,title,plate
+ea_plate_wood_chopper,Plate Wood Chopper,Weight Plate,title,plate
+ea_pull_sled_or_dog_sled_push,Pull Sled or Dog Sled Push,Sled,title,sled
+ea_puppy_pose,Puppy Pose,None (Bodyweight),frame,read from the clip's own still
+ea_push_pull_chair_over_head_pull,Push Pull Chair Over Head Pull,Machine,frame,read from the clip's own still
+ea_push_pull_front_handle_push,Push Pull Front Handle Push,Machine,frame,read from the clip's own still
+ea_pushup_to_renegade_row,Pushup to Renegade Row,Dumbbells,frame,read from the clip's own still
+ea_pyramid_pose_parsvottanasana,Pyramid Pose - Parsvottanasana,None (Bodyweight),frame,read from the clip's own still
+ea_pyramid_pose_blocks,Pyramid Pose Blocks,Yoga Block,title,block
+ea_pyramid_pose_calf_blocks,Pyramid Pose Calf Blocks,Yoga Block,title,block
+ea_pyramid_prayer,Pyramid Prayer,Bench,frame,read from the clip's own still
+ea_rebounder_high_knee_runs,Rebounder High Knee Runs,Mini Trampoline,title,rebounder
+ea_rebounder_in_out_from_ground,Rebounder in & Out From Ground,Mini Trampoline,title,rebounder
+ea_rebounder_in_out_jacks,Rebounder in & Out Jacks,Mini Trampoline,title,rebounder
+ea_rebounder_knee_jumps,Rebounder Knee Jumps,Mini Trampoline,title,rebounder
+ea_rebounder_knee_pushes,Rebounder Knee Pushes,Mini Trampoline,title,rebounder
+ea_rebounder_light_jumps,Rebounder Light Jumps,Mini Trampoline,title,rebounder
+ea_reclining_pigeon_pose,Reclining Pigeon Pose,None (Bodyweight),frame,read from the clip's own still
+ea_resistance_band_assisted_push_up,Resistance Band Assisted Push-up,Resistance Band,title,resistance band
+ea_restful_cow_face_pose_legs,Restful Cow Face Pose Legs,None (Bodyweight),frame,read from the clip's own still
+ea_reverse_curl_barbell,Reverse Curl Barbell,Barbell,title,barbell
+ea_reverse_plank,Reverse Plank,None (Bodyweight),frame,read from the clip's own still
+ea_reverse_prayer,Reverse Prayer,None (Bodyweight),frame,read from the clip's own still
+ea_revolved_head_to_knee,Revolved Head to Knee,None (Bodyweight),frame,read from the clip's own still
+ea_revolved_side_angle_pose_with_prayer_hands,Revolved Side Angle Pose with Prayer Hands,None (Bodyweight),frame,read from the clip's own still
+ea_revolved_side_angle_pose_with_prayer_hands_beginner,Revolved Side Angle Pose with Prayer Hands Beginner,None (Bodyweight),frame,read from the clip's own still
+ea_ring_dips,Ring Dips,Gymnastic Rings,frame,read from the clip's own still
+ea_runners_lunge,Runners Lunge,None (Bodyweight),frame,read from the clip's own still
+ea_sandbag_cleans,Sandbag Cleans,Sandbag,title,sandbag
+ea_scorpion_twist_pose,Scorpion Twist Pose,None (Bodyweight),frame,read from the clip's own still
+ea_seated_dumbbell_neutral_grip_front_raises,Seated Dumbbell Neutral Grip Front Raises,Dumbbells,title,dumbbell
+ea_seated_dumbbell_neutral_grip_side_raises,Seated Dumbbell Neutral Grip Side Raises,Dumbbells,title,dumbbell
+ea_seated_figure_four_with_twist_glute_stretch,Seated Figure Four with Twist Glute Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_seated_row_machine_rows,Seated Row Machine Rows,Machine,title,machine
+ea_seated_single_leg_toe_touch_hamstring_stretch,Seated Single Leg Toe Touch Hamstring Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_seated_toe_touch_hamstrings_stretch,Seated Toe Touch Hamstrings Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_side_bend_standing_lats_stretch,Side Bend Standing Lats Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_side_chest_stretch_on_wall,Side Chest Stretch on Wall,Wall,title,wall
+ea_side_lying_parsva_savasana_variation,Side Lying Parsva Savasana Variation,None (Bodyweight),frame,read from the clip's own still
+ea_side_plank_oblique_crunch,Side Plank Oblique Crunch,None (Bodyweight),frame,read from the clip's own still
+ea_single_arm_extended_pull_downwards_biceps_stretch,Single Arm Extended Pull Downwards Biceps Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_single_arm_on_wall_side_biceps_stretch,Single Arm on Wall Side Biceps Stretch,Wall,title,wall
+ea_single_arm_palm_down_on_wall_biceps_stretch,Single Arm Palm Down on Wall Biceps Stretch,Wall,title,wall
+ea_single_dumbbell_biceps_curls,Single Dumbbell Biceps Curls,Dumbbells,title,dumbbell
+ea_single_kettlebell_sled_push,Single Kettlebell Sled Push,Kettlebells,title,kettlebell
+ea_sissy_squat_bodyweight,Sissy Squat Bodyweight,Bench,frame,read from the clip's own still
+ea_skater_hops,Skater Hops,None (Bodyweight),frame,read from the clip's own still
+ea_sled_battle_rope_pull,Sled Battle Rope Pull,Battle Ropes,title,battle rope
+ea_sled_drag_and_row,Sled Drag and Row,Sled,title,sled
+ea_smith_machine_narrow_stance_heels_elevated_squats,Smith Machine Narrow Stance Heels Elevated Squats,Smith Machine,title,smith machine
+ea_standing_cable_hip_flexion,Standing Cable Hip Flexion,Cable Pulley Machine,title,cable
+ea_standing_straight_leg_hamstring_stretch,Standing Straight-leg Hamstring Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_stepmill_machine_steps,Stepmill Machine Steps,Machine,title,machine
+ea_straight_arm_cable_lat_pull_down,Straight Arm Cable Lat Pull Down,Cable Pulley Machine,title,cable
+ea_suspension_trainer_with_grips_inverted_row_on_floor,Suspension Trainer with Grips Inverted Row on Floor,Suspension Trainer,title,suspension trainer
+ea_suspension_trainer_with_grips_wide_grip_inverted_row_on_floor_1,Suspension Trainer with Grips Wide Grip Inverted Row on Floor_1,Suspension Trainer,title,suspension trainer
+ea_tennis_forehand_ground_stroke,Tennis Forehand Ground Stroke,None (Bodyweight),frame,read from the clip's own still
+ea_the_wall_ball,The Wall Ball,Wall,title,wall
+ea_theraband_scapula_retraction,Theraband Scapula Retraction,Resistance Band,title,band
+ea_treadmill_walk,Treadmill Walk,Treadmill,title,treadmill
+ea_tricep_rope_extension_on_crossover_machine,Tricep Rope Extension on Crossover Machine,Machine,title,machine
+ea_tyre_flip,Tyre Flip,Tyre,title,tyre
+ea_tyre_hammering,Tyre Hammering,Tyre,title,tyre
+ea_unilateral_box_jump,Unilateral Box Jump,Plyo Box,title,box
+ea_unilateral_box_jump_bilateral_deceleration,Unilateral Box Jump - Bilateral Deceleration,Plyo Box,title,box
+ea_unilateral_front_plank,Unilateral Front Plank,None (Bodyweight),frame,read from the clip's own still
+ea_unilateral_jumps,Unilateral Jumps,None (Bodyweight),frame,read from the clip's own still
+ea_unilateral_plank,Unilateral Plank,None (Bodyweight),frame,read from the clip's own still
+ea_upper_back_stretch,Upper Back Stretch,None (Bodyweight),frame,read from the clip's own still
+ea_weighted_back_extensions_on_hyperextension_bench,Weighted Back Extensions on Hyperextension Bench,Bench,title,bench
+ea_wild_thing_pose,Wild Thing Pose,None (Bodyweight),frame,read from the clip's own still
+ea_yoga_flow_sequences_sun_salutations,Yoga Flow Sequences Sun Salutations,None (Bodyweight),frame,read from the clip's own still

@@ -169,6 +169,26 @@ def main() -> None:
     if OUT.exists():
         done = json.loads(OUT.read_text(encoding="utf-8"))
 
+    # Drop anything the overlay holds that no longer matches the catalog, and
+    # re-ask for it below.
+    #
+    # The overlay outlives the catalog it was made from. When the gender rule
+    # learned to read a space, thirteen exercises changed id and one lost its
+    # Russian entirely; when the equipment pass re-ran, one exercise's steps
+    # changed underneath a translation that still had the old count. Both are
+    # silent — a stale id simply shows English, and a step-count mismatch means
+    # Russian instructions that no longer line up with the movement.
+    by_id = {r["id"]: r for r in rows}
+    stale = [
+        key for key, entry in done.items()
+        if key not in by_id
+        or len(entry.get("steps") or []) != len(by_id[key].get("steps") or [])
+    ]
+    for key in stale:
+        del done[key]
+    if stale:
+        print(f"dropped {len(stale)} translations that no longer fit the catalog")
+
     todo = [r for r in rows if r["id"] not in done]
     if args.limit:
         todo = todo[: args.limit]

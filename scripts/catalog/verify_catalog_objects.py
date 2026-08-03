@@ -26,20 +26,27 @@ from firebase_api import access_token  # noqa: E402
 from upload_video_library import LICENSED_BUCKET, existing  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-CATALOG = ROOT / "mobile" / "assets" / "data" / "exercises.json"
+DATA = ROOT / "mobile" / "assets" / "data"
+
+# BOTH catalogs. Checking only the older one was a real gap: the purchased
+# library is the larger of the two and every one of its entries is an object
+# key, so it is precisely where a missing object would hide.
+CATALOGS = [DATA / "exercises.json", DATA / "exercises_vendor.json"]
 
 
 def main() -> int:
-    catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
-
     promised: dict[str, list[str]] = {}
     public = 0
-    for entry in catalog:
-        for body, ref in (entry.get("video") or {}).items():
-            if ref.startswith("http"):
-                public += 1
-                continue
-            promised.setdefault(ref, []).append(f"{entry['id']}/{body}")
+    for path in CATALOGS:
+        if not path.exists():
+            print(f"no {path.name} — skipped")
+            continue
+        for entry in json.loads(path.read_text(encoding="utf-8")):
+            for body, ref in (entry.get("video") or {}).items():
+                if ref.startswith("http"):
+                    public += 1
+                    continue
+                promised.setdefault(ref, []).append(f"{entry['id']}/{body}")
 
     print(f"catalog promises {len(promised)} licensed objects "
           f"and {public} public urls")
