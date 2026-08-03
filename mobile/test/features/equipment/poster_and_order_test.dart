@@ -73,13 +73,29 @@ void main() {
       // The reason this is affordable at all: 400px stills of a 3D render on
       // flat white. If a future library ships photographs, this fails and the
       // bundling decision gets revisited rather than silently adding 40 MB.
-      final dir = Directory('assets/posters');
-      final total = dir
+      //
+      // The ceiling moved from 8 MB to 20 MB on 2026-08-03, when the purchased
+      // library brought 2,498 more posters and the set went 3.68 -> 15.05 MB.
+      // Deliberate: every one of 1,899 new exercises now shows its first frame
+      // instantly and with no network, for about 11 MB on a 241 MB APK.
+      //
+      // The PER-FILE assertion below is the one that actually guards the
+      // decision. A total alone can be satisfied by shipping fewer, larger
+      // posters, which is the regression that would matter — 4.8 KB each is
+      // what makes the arithmetic work, and a photographic source would be
+      // five times that and fail here while the total still looked fine.
+      final files = Directory('assets/posters')
           .listSync(recursive: true)
           .whereType<File>()
-          .fold<int>(0, (a, f) => a + f.lengthSync());
-      expect(total, lessThan(8 * 1024 * 1024),
+          .toList();
+      final total = files.fold<int>(0, (a, f) => a + f.lengthSync());
+      expect(total, lessThan(20 * 1024 * 1024),
           reason: 'posters grew to ${(total / 1048576).toStringAsFixed(1)} MB');
+
+      final mean = total / files.length;
+      expect(mean, lessThan(8 * 1024),
+          reason: 'mean poster is ${(mean / 1024).toStringAsFixed(1)} KB — '
+              'renders compress to ~5 KB, photographs do not');
     });
   });
 

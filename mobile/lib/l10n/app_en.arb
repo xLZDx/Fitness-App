@@ -1269,5 +1269,8 @@
   "subscriptionPeriodAnnual": "Annual",
   "subscriptionPeriodFamily2": "Family · 2 seats",
   "subscriptionPeriodFamily4": "Family · 4 seats",
-  "subscriptionPeriodLifetime": "Lifetime"
+  "subscriptionPeriodLifetime": "Lifetime",
+  "settingsCatalogSources": "Exercise library",
+  "settingsIncludeLegacy": "Include the older library",
+  "settingsIncludeLegacyBody": "The purchased library has 1,899 exercises, all with video. The older one adds 365 more that carry Russian text written by hand, injury warnings and links to recognised machines. Turn it off to see only the purchased library."
 }

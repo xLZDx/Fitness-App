@@ -19,6 +19,7 @@ class PrefsSettingsRepository implements SettingsRepository {
   static const _languageKey = 'settings.language';
   static const _notificationsKey = 'settings.notifications_enabled';
   static const _tierOverrideKey = 'settings.tier_override';
+  static const _legacyCatalogKey = 'settings.include_legacy_catalog';
 
   static Future<PrefsSettingsRepository> open() async {
     return PrefsSettingsRepository(await SharedPreferences.getInstance());
@@ -60,6 +61,8 @@ class PrefsSettingsRepository implements SettingsRepository {
         TierOverride.values,
         defaults.tierOverride,
       ),
+      includeLegacyCatalog:
+          _prefs.getBool(_legacyCatalogKey) ?? defaults.includeLegacyCatalog,
     );
   }
 
@@ -69,6 +72,7 @@ class PrefsSettingsRepository implements SettingsRepository {
     await _prefs.setString(_languageKey, settings.language.name);
     await _prefs.setBool(_notificationsKey, settings.notificationsEnabled);
     await _prefs.setString(_tierOverrideKey, settings.tierOverride.name);
+    await _prefs.setBool(_legacyCatalogKey, settings.includeLegacyCatalog);
   }
 }
 

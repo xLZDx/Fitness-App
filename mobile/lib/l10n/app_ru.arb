@@ -672,5 +672,8 @@
   "subscriptionPeriodAnnual": "На год",
   "subscriptionPeriodFamily2": "Семейная · 2 места",
   "subscriptionPeriodFamily4": "Семейная · 4 места",
-  "subscriptionPeriodLifetime": "Навсегда"
+  "subscriptionPeriodLifetime": "Навсегда",
+  "settingsCatalogSources": "Библиотека упражнений",
+  "settingsIncludeLegacy": "Показывать старую библиотеку",
+  "settingsIncludeLegacyBody": "В купленной библиотеке 1 899 упражнений, у всех есть видео. Старая добавляет ещё 365 — с русским текстом, написанным вручную, предупреждениями по травмам и привязкой к распознаваемым тренажёрам. Выключите, чтобы видеть только купленную."
 }

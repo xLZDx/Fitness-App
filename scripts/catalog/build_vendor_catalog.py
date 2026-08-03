@@ -273,8 +273,13 @@ def build() -> list[dict]:
         }
         if tips:
             row["tips"] = tips
-        if m.get("equipment"):
-            row["equipmentLabel"] = str(m["equipment"]).strip()
+        # An entry the sheet says nothing about is UNKNOWN, not bodyweight.
+        # 496 of the 1,899 have no equipment column at all, and leaving the
+        # field null made `needsEquipment` read them as needing nothing —
+        # which put them in an "at home" tab that promises exactly that.
+        row["equipmentLabel"] = (
+            str(m["equipment"]).strip() if m.get("equipment") else "Unknown"
+        )
         out.append(row)
 
     out.sort(key=lambda r: r["title"].lower())
