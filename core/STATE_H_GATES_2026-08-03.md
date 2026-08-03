@@ -148,4 +148,6 @@ duplication that goes wrong later.
 - 8.1 MB of bundled photographs are unreachable since H1 but still shipped.
   Deleting them means stripping `frames` from the legacy catalog, which the
   machine header image still reads.
-- Nothing pushed since `f73990a`.
+- H1-H5 are on `origin/master`, head `92675ca` (pushed 2026-08-03 16:12 local
+  (Europe/Chisinau) / 13:12 UTC). SHA-explicit, because the checkout is shared
+  with other agent processes.
