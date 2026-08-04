@@ -33,6 +33,9 @@ import sys
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent))
+import vendor_paths  # noqa: E402
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -136,7 +139,7 @@ def check(drop: Path) -> tuple[list[str], dict]:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument('--drop', default='D:/Downloads/Video')
+    ap.add_argument('--drop', default=str(vendor_paths.DROP_DIR))
     args = ap.parse_args()
 
     drop = Path(args.drop)

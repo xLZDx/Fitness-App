@@ -31,13 +31,21 @@ engineering facts** — skip it for code work.
 - **Android ships first, but every choice must accommodate iOS** — full rule in
   `core/CONVENTIONS.md`. The `HealthService` interface is the Health Connect ↔ HealthKit seam;
   do not bypass it.
-- **Tests:** `mobile/test/` (134 files, 1067 tests) runs on the host — `flutter test`. The catalog
-  build scripts have their own suite: `python -m pytest scripts/catalog/ -q` (48 tests). There IS also
+- **Tests:** `mobile/test/` (1,180 tests) runs on the host — `flutter test`. The catalog
+  build scripts have their own suite: `python -m pytest scripts/catalog/ -q` (74 tests). There IS also
   `mobile/integration_test/app_test.dart`, which drives the real app on a device or emulator and is
   the only thing that can see the native ML Kit bridge and what actually ends up in the APK. It
   needs hardware; `flutter test` does not run it.
 - **Verify loop:** `/fitness-verify` — analyze, test, `scripts/dev/audit_doc_links.ps1`, and a real
   build+install on `Pixel_API_34` for UI changes.
+- **Vendor library lives at `D:\Downloads\Video\New folder`** (operator, 2026-08-04) — the 45 GB
+  `4K UHD 2160P.zip`, `1500+ exercise data.xlsx`, `EXERCISE LIST.xlsx`, plus 1080p/720p/vertical
+  renditions and the illustrations pack. It is NOT under `D:\Downloads\` directly; three catalog
+  scripts pointed there and had been failing, which was mistakenly written up as "the vendor bundle
+  is not present on this machine". Never hard-code it again: `scripts/catalog/vendor_paths.py` is
+  the single definition, overridable with `FITNESS_VENDOR_DIR`. With it correct,
+  `python scripts/catalog/build_vendor_catalog.py` runs end to end here — measured 2026-08-04:
+  1,887 rows generated against 1,887 on disk, no drops.
 
 ## Keeping docs true
 

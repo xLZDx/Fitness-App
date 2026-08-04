@@ -51,11 +51,17 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from bundle_layout import canonical_stem, plan_import, split_gender  # noqa: E402
 from match_vendor_list import norm  # noqa: E402
+import vendor_paths  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "mobile" / "assets" / "data" / "exercises_vendor.json"
-BUNDLE_ZIP = Path("D:/Downloads/4K UHD 2160P.zip")
-VENDOR_META = Path("D:/Downloads/1500+ exercise data.xlsx")
+# Both of these read `D:/Downloads/...` until 2026-08-04, which is one
+# directory short of where the files are. The raise that produced was read --
+# by me, in two commit messages -- as "the vendor bundle is not on this
+# machine", a claim about the machine rather than about a constant. See
+# vendor_paths.
+BUNDLE_ZIP = vendor_paths.BUNDLE_ZIP
+VENDOR_META = vendor_paths.VENDOR_META
 
 # The vendor's twelve folders, mapped to the muscle vocabulary the app already
 # uses for filtering and for the muscle map. Only used when their metadata sheet

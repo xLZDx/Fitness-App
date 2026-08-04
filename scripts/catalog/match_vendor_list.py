@@ -37,14 +37,17 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent))
+import vendor_paths  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[2]
 CATALOG = ROOT / 'mobile' / 'assets' / 'data' / 'exercises.json'
-VENDOR = Path('D:/Downloads/EXERCISE LIST.xlsx')
+VENDOR = vendor_paths.EXERCISE_LIST
 # The richer workbook: names PLUS instructions, tips, muscles and equipment.
 # Only ~1,500 of its 2,579 rows carry that metadata — the vendor says it is
 # still being filled in by hand — so it supplements the name list rather than
 # replacing it.
-VENDOR_META = Path('D:/Downloads/1500+ exercise data.xlsx')
+VENDOR_META = vendor_paths.VENDOR_META
 REPORT_ALL = ROOT / 'core' / 'vendor_coverage_all_511.csv'
 REPORT_GAP = ROOT / 'core' / 'vendor_coverage_gap_168.csv'
 

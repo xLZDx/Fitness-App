@@ -38,10 +38,13 @@ import sys
 import urllib.parse
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent))
+import vendor_paths  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[2]
 CATALOG = ROOT / 'mobile' / 'assets' / 'data' / 'exercises.json'
 POSTERS = ROOT / 'mobile' / 'assets' / 'posters'
-DROP = Path('D:/Downloads/Video')
+DROP = vendor_paths.DROP_DIR
 # Where the licensed library is transcoded to, laid out under the object keys
 # it will be served from.
 BUNDLE = Path('D:/bundle/720')

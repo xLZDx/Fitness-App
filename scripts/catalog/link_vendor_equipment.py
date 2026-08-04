@@ -72,12 +72,16 @@ from pathlib import Path
 import openpyxl
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "ops"))
+sys.path.insert(0, str(Path(__file__).parent))
 from firebase_api import PROJECT, access_token, api  # noqa: E402
+import vendor_paths  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 VENDOR = ROOT / "mobile" / "assets" / "data" / "exercises_vendor.json"
 REGISTRY = ROOT / "mobile" / "assets" / "data" / "equipment.json"
-SHEET = Path("D:/Downloads/Video/New folder/1500+ exercise data.xlsx")
+# Was the only script carrying the current path, and it carried its own copy.
+# Now the one definition, so the next move cannot leave three of four behind.
+SHEET = vendor_paths.VENDOR_META
 AUDIT = ROOT / "core" / "vendor_equipment_visual_audit.csv"
 REVIEW = ROOT / "core" / "vendor_equipment_needs_review.csv"
 

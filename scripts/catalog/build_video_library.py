@@ -40,8 +40,12 @@ from urllib.parse import quote
 from collections import defaultdict
 from pathlib import Path
 
+import sys
+sys.path.insert(0, str(Path(__file__).parent))
+import vendor_paths  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[2]
-VIDEO_ROOT = Path('D:/Downloads/Video')
+VIDEO_ROOT = vendor_paths.DROP_DIR
 CATALOG_DIR = ROOT / 'mobile' / 'assets' / 'data'
 UPSTREAM = Path('D:/Temp/claude/free_exercise_db.json')
 OUT = ROOT / 'data' / 'staging'

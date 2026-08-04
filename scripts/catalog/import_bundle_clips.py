@@ -71,11 +71,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from bundle_layout import canonical_stem, plan_import  # noqa: E402
 from match_vendor_list import norm  # noqa: E402
+import vendor_paths  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 CATALOG = ROOT / "mobile" / "assets" / "data" / "exercises.json"
-BUNDLE_ZIP = Path("D:/Downloads/4K UHD 2160P.zip")
-VENDOR_META = Path("D:/Downloads/1500+ exercise data.xlsx")
+BUNDLE_ZIP = vendor_paths.BUNDLE_ZIP
+VENDOR_META = vendor_paths.VENDOR_META
 REPORT = ROOT / "core" / "bundle_import_report.csv"
 
 # Below this, a fuzzy candidate is not even worth showing.
