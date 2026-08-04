@@ -110,9 +110,10 @@ flutter:
   assets:
     - assets/data/
     - assets/models/
-    # Two demo frames per exercise (start / end position). Looped by
-    # ExerciseDemo instead of shipping video — see scripts/catalog/.
-    - assets/exercises/
+    # `assets/exercises/` (132 files, 8.1 MB of demo photographs) was declared
+    # here until 2026-08-04. It became unreachable when the clip-only rule
+    # landed and only the pre-purchase catalog ever referenced it; both are
+    # now gone, and so is the dead weight in the APK.
     # Anatomical muscle chart, front and back. CC BY 4.0 — credited on the
     # /licences screen, which is a condition of shipping it.
     - assets/anatomy/

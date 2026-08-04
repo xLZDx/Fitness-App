@@ -36,7 +36,7 @@ void main() {
     // Derived from the real catalog, NOT hand-typed. The previous version of
     // this test kept its own literal set and it had already drifted: it omitted
     // `adductors`, so nobody noticed that tag had no shape at all.
-    final raw = await rootBundle.loadString('assets/data/exercises.json');
+    final raw = await rootBundle.loadString('assets/data/exercises_vendor.json');
     catalogTags = <String>{
       for (final e in (jsonDecode(raw) as List).cast<Map<String, dynamic>>())
         ...List<String>.from(e['muscles'] as List? ?? const []),

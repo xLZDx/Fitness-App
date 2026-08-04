@@ -23,11 +23,12 @@ void main() {
   late Map<String, dynamic> ru;
 
   setUpAll(() async {
-    base = (jsonDecode(await rootBundle.loadString('assets/data/exercises.json'))
+    base = (jsonDecode(
+            await rootBundle.loadString('assets/data/exercises_vendor.json'))
             as List)
         .cast<Map<String, dynamic>>();
     ru = (jsonDecode(
-            await rootBundle.loadString('assets/data/exercises.ru.json'))
+            await rootBundle.loadString('assets/data/exercises_vendor.ru.json'))
         as Map)
         .cast<String, dynamic>();
   });
@@ -73,9 +74,18 @@ void main() {
       expect(untranslated, isEmpty);
     });
 
-    test('leaves no English words behind', () {
+    test('leaves no English words behind, beyond the ones a gym really says',
+        () {
       // Catches a half-finished entry, which the Cyrillic check above would
       // pass as long as one word got translated.
+      //
+      // Zero was the right bar for the hand-written pre-purchase overlay. It
+      // is the wrong bar for this one: 77 of 1,887 keep a Latin word on
+      // purpose — brand names the equipment is sold under (Assault AirBike,
+      // BOSU, Landmine, Silverback) and movement names a Russian lifter says
+      // in English anyway (Good Morning, Renegade Row). Translating those
+      // produces something nobody in a gym would recognise. A share, so a
+      // genuinely half-translated rebuild still fails.
       final latinWord = RegExp(r'[a-zA-Z]{4,}');
       final leftovers = <String>[];
       ru.forEach((id, value) {
@@ -86,7 +96,9 @@ void main() {
         ];
         if (strings.any(latinWord.hasMatch)) leftovers.add(id);
       });
-      expect(leftovers, isEmpty);
+      expect(leftovers.length, lessThan(ru.length ~/ 10),
+          reason: '${leftovers.length} entries still read English: '
+              '${leftovers.take(5)}');
     });
   });
 
@@ -106,12 +118,20 @@ void main() {
       expect(broken, isEmpty);
     });
 
-    test('the known blank step is filtered out of the parsed model', () {
-      final raw = base.firstWhere(
-          (e) => e['id'] == 'barbell_squat_to_a_bench')['steps'] as List;
-      expect(raw.where((s) => (s as String).trim().isEmpty), isNotEmpty,
-          reason: 'upstream data still has the blank step this guards');
-      expect(ExerciseItem.parseSteps(raw).any((s) => s.trim().isEmpty), isFalse);
+    test('no shipped entry carries a blank step', () {
+      // This used to point at `barbell_squat_to_a_bench`, one row in the
+      // pre-purchase catalog whose upstream source left an empty string in
+      // the middle of its instructions, and assert that `parseSteps` filtered
+      // it. That row went with its catalog on 2026-08-04 and the purchased
+      // library has no blank step at all — so the assertion flips to the
+      // stronger one, and the filtering behaviour itself stays covered by the
+      // `ExerciseItem.parseSteps` fixtures below.
+      final withBlank = base
+          .where((e) => ((e['steps'] as List?) ?? const [])
+              .any((s) => s is String && s.trim().isEmpty))
+          .map((e) => e['id'] as String)
+          .toList();
+      expect(withBlank, isEmpty);
     });
   });
 
@@ -184,14 +204,40 @@ void main() {
       for (final bad in <Object>[
         'not a map',
         <String, Object>{'title': '', 'steps': ['x']},
-        <String, Object>{'title': 'Ок', 'steps': <String>[]},
-        <String, Object>{'title': 'Ок', 'steps': ['', '   ']},
         <String, Object>{'steps': ['Шаг.']},
       ]) {
         final out =
             AssetEquipmentRepository.applyTranslations([sample()], {'squat': bad});
         expect(out.single.title, 'Barbell Squat', reason: 'for $bad');
         expect(out.single.steps, ['Step one.', 'Step two.'], reason: 'for $bad');
+      }
+    });
+
+    test('a title with no steps is still applied, and keeps the base steps',
+        () {
+      // Regression, 2026-08-04. This case used to be listed among the
+      // malformed ones above: an overlay entry with an empty step list threw
+      // the WHOLE translation away, title included.
+      //
+      // That was invisible while the pre-purchase catalog was the visible
+      // half, because every one of its rows had instructions. The purchased
+      // library ships 403 of 1,887 with a title and no steps, so removing
+      // that catalog left a fifth of the app showing English titles under a
+      // Russian UI — with the correct Russian sitting unused in the overlay.
+      //
+      // Both halves are asserted: the title must land, and steps the overlay
+      // does not have must not be deleted from the base.
+      for (final entry in <Object>[
+        <String, Object>{'title': 'Присед со штангой', 'steps': <String>[]},
+        <String, Object>{'title': 'Присед со штангой', 'steps': ['', '   ']},
+        <String, Object>{'title': 'Присед со штангой'},
+      ]) {
+        final out = AssetEquipmentRepository
+            .applyTranslations([sample()], {'squat': entry});
+        expect(out.single.title, 'Присед со штангой', reason: 'for $entry');
+        expect(out.single.steps, ['Step one.', 'Step two.'],
+            reason: 'an overlay without steps must not delete them: $entry');
+        expect(out.single.summary, sample().summary, reason: 'for $entry');
       }
     });
 
@@ -202,17 +248,23 @@ void main() {
   });
 
   group('repository reads the bundled catalog in the requested language', () {
+    // `leg_press` still, but through a vendor exercise: the pre-purchase row
+    // literally titled "Leg Press" was removed on 2026-08-04.
     test('English by default', () async {
       final repo = AssetEquipmentRepository();
       final all = await repo.exercisesFor('leg_press');
-      expect(all.map((e) => e.title), contains('Leg Press'));
+      expect(all.map((e) => e.title), contains('Horizontal Leg Press'));
     });
 
     test('Russian when asked', () async {
       final repo = AssetEquipmentRepository(languageCode: 'ru');
       final all = await repo.exercisesFor('leg_press');
-      expect(all.map((e) => e.title), contains('Жим ногами'));
-      final legPress = all.firstWhere((e) => e.id == 'leg_press');
+      // A stepless entry: the one the 2026-08-04 overlay fix was about.
+      expect(all.map((e) => e.title), contains('Жим ногами горизонтальный'));
+      // And one with steps, which is where the tags can be disturbed.
+      final legPress =
+          all.firstWhere((e) => e.id == 'ea_leg_press_machine_close_stance');
+      expect(legPress.title, 'Жим ногами в тренажёре с узкой постановкой стоп');
       expect(legPress.summary, legPress.steps.first);
       expect(legPress.primaryMuscles, contains('quads'),
           reason: 'translation must not disturb muscle tags');
@@ -221,7 +273,7 @@ void main() {
     test('falls back to English for a language with no overlay', () async {
       final repo = AssetEquipmentRepository(languageCode: 'de');
       final all = await repo.exercisesFor('leg_press');
-      expect(all.map((e) => e.title), contains('Leg Press'));
+      expect(all.map((e) => e.title), contains('Horizontal Leg Press'));
     });
   });
 

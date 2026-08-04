@@ -22976,7 +22976,7 @@
   {
     "id": "ea_calves_stretch_on_step",
     "title": "Calves Stretch on Step",
-    "equipmentId": null,
+    "equipmentId": "plyo_box",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -30963,7 +30963,7 @@
   {
     "id": "ea_dumbbell_goblet_good_morning",
     "title": "Dumbbell Goblet Good Morning",
-    "equipmentId": null,
+    "equipmentId": "dumbbell",
     "muscles": [
       "back"
     ],
@@ -37086,7 +37086,7 @@
   {
     "id": "ea_dumbbell_staggered_glute_bridge",
     "title": "Dumbbell Staggered Glute Bridge",
-    "equipmentId": null,
+    "equipmentId": "dumbbell",
     "muscles": [
       "quads"
     ],
@@ -46292,7 +46292,7 @@
   {
     "id": "ea_kettlebell_turkish_get_up",
     "title": "Kettlebell Turkish Get Up",
-    "equipmentId": null,
+    "equipmentId": "kettlebell",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",

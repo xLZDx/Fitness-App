@@ -1,0 +1,28 @@
+section,item,value,note
+why,its clips were duplicates,371 of 373 distinct legacy clip refs,pointed at object keys the vendor catalog already uses
+why,its machine links were the only reason to keep it,404 legacy equipmentId vs 0 vendor,replaced by the 2026-08-03/04 linking gates (1383 vendor links across 65 of 69 machines)
+why,the 4 machines it uniquely covered,recumbent_bike=1 / glute_kickback_machine=3 / t_bar_row=4 / rotary_torso_machine=3,checked by hand BEFORE deleting; no vendor clip exists for any of them; those pages are empty now
+bug,AssetEquipmentRepository._translate discarded the whole overlay entry when steps were empty,403 of 1887 affected,title included -- a fifth of the app showed English titles under a Russian UI
+bug,why it was invisible before,every pre-purchase row had instructions,legacy was the visible half so the guard never fired on a stepless entry
+bug,fix,apply the title whenever present; keep base steps when the overlay has none,an overlay that loses its steps must not delete instructions either
+bug,how it was found,a repointed test failed for the right reason,nothing else was checking it
+removed,assets/data/exercises.json,511 entries / 778 KB,
+removed,assets/data/exercises.ru.json,530 KB,
+removed,assets/exercises/,132 photographs / 8.1 MB,unreachable since the clip-only rule; referenced by nothing else
+removed,includeLegacyCatalog,setting + prefs key + controller method + Settings row + 3 l10n strings x2 languages,
+removed,AssetEquipmentRepository.includeLegacy,constructor flag + conditional load,
+removed,legacy_switch_test.dart,8 tests,tested a switch that no longer exists
+removed,demo_coverage_test.dart,4 tests,all about legacy partial imagery; vendor is 100% clipped and vendor_catalog_test asserts it
+removed,video_library_test.dart,13 tests,about the 677-file drop into legacy; clip-key shape covered by vendor_catalog_test
+removed,build_registry.py REASSIGN + NEW_EXERCISES,119 lines,patched a file that no longer exists
+kept,bundled_assets_test.dart,repointed onto posters,the bug class (pubspec dir entries do not recurse) still applies to 2539 poster files in two more non-recursive entries
+kept,bundled_assets_test poster check method,asset manifest not per-file load,2539 rootBundle.load calls blew the 30s timeout; the manifest answers completely without sampling
+added,test that the deleted files are absent from the bundle,2 paths,deleting a file and un-shipping it are not the same thing
+kept,registry_test.dart,12 of 24 tests,kept the registry's own promises; dropped the half about legacy contents
+result,catalogs loaded at runtime,2 -> 1,
+result,exercises shipped,2398 -> 1887,
+result,exercises that play a clip,1887 of 1887,every shipped exercise plays
+result,bundled assets,~40.4 MB -> ~31 MB,~9.4 MB saved
+result,tests,1095 -> 1060,all pass
+result,flutter analyze,6 pre-existing issues,none in a touched file
+not_done,data/staging + the scripts that built the old catalog,untouched,they are the audit trail behind the licence work and cost nothing in the APK

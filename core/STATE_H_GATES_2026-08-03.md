@@ -1,5 +1,11 @@
 # Hybrid catalog gates — state, 2026-08-03
 
+> **Superseded in part, 2026-08-04.** The "hybrid" this file is named after is
+> over: the pre-purchase catalog and the `includeLegacy` switch were removed,
+> and one catalog ships. H3 below (the switch) no longer exists. Everything
+> else here is still the record of how H1-H5 were built.
+> See `core/LEGACY_CATALOG_REMOVED_2026-08-04.md`.
+
 Written mid-run so a fresh session resumes without re-deriving anything. The
 operator's decision: keep our 511 with all their metadata, add the vendor's
 1,899 alongside, make the legacy half switchable off, and show no photographs

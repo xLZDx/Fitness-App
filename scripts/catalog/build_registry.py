@@ -4,19 +4,22 @@
 Expands the equipment catalog from 10 ids to the full registry of machines a
 commercial gym actually contains, adds a Russian overlay for equipment (there
 was none — the detail page showed English descriptions under a Russian UI),
-emits the alias index that recognition resolves free-text machine names
-against, and repairs the exercise->equipment assignments that put ab crunches
-on the treadmill page (operator screenshots, 13:25).
+and emits the alias index that recognition resolves free-text machine names
+against.
 
 Idempotent: rerunning produces the same files.
 
 Outputs (all under mobile/assets/data/):
-  equipment.json          - full registry, existing 10 ids preserved verbatim
+  equipment.json          - full registry, existing ids preserved verbatim
   equipment.ru.json       - {id: {name, description}} overlay
   equipment_aliases.json  - {id: [lowercase aliases, en+ru]}
-  exercises.json          - patched equipmentId reassignments + new cardio
-                            exercises (treadmill / rowing machine)
-  exercises.ru.json       - RU overlay entries for the new exercises
+
+This also used to patch `exercises.json` — a `REASSIGN` table that moved ab
+crunches off the treadmill page, plus six hand-authored cardio exercises.
+That catalog was removed on 2026-08-04 and with it the only thing those
+constants could act on, so they were deleted rather than left to fail on a
+file that is not there. The report at the end now reads the shipped vendor
+catalog instead, which is what the machine pages are actually filled from.
 """
 from __future__ import annotations
 
@@ -366,132 +369,11 @@ m('outdoor_air_walker', 'Outdoor air walker', 'Уличный аэрошагат
   ['air walker', 'outdoor air walker', 'air swing', 'outdoor elliptical',
    'street workout air walker', 'аэрошагатель', 'уличный тренажёр', 'воздушный шагатель'])
 
-# ---------------------------------------------------------------------------
-# Exercise repairs: title -> correct equipmentId (None = bodyweight).
-# The old catalog parked these on 'treadmill' / 'rowing_machine'.
-# ---------------------------------------------------------------------------
-REASSIGN = {
-    'Ab Crunch Machine': 'ab_crunch_machine',
-    'Cable Crunch': 'cable_machine',
-    'Bosu Ball Cable Crunch With Side Bends': 'cable_machine',
-    'Barbell Walking Lunge': 'barbell',
-    'Bodyweight Walking Lunge': None,
-    'Bench Sprint': 'plyo_box',
-    'Narrow Stance Hack Squats': 'hack_squat_machine',
-    'Leverage High Row': 'seated_row_machine',
-    'Leverage Iso Row': 'seated_row_machine',
-    'Lying T-Bar Row': 't_bar_row',
-    'Inverted Row with Straps': 'trx',
-    'Bodyweight Mid Row': None,
-}
-
-# ---------------------------------------------------------------------------
-# New hand-authored cardio exercises (frames: none — no imagery fabricated).
-# ---------------------------------------------------------------------------
-NEW_EXERCISES = [
-    dict(
-        id='treadmill_warmup_walk', equipmentId='treadmill',
-        title='Warm-up Walk', ru_title='Разминочная ходьба',
-        muscles=['quads', 'hamstrings', 'glutes', 'calves'], primary=['quads'],
-        difficulty='beginner', minutes=8, contra=[],
-        steps=[
-            'Step onto the belt and start at an easy walking speed (3-4 km/h).',
-            'Walk tall: shoulders relaxed, eyes forward, arms swinging naturally.',
-            'Raise the speed slightly every couple of minutes until you feel warm.',
-            'Finish when your breathing is elevated but you can still talk easily.'],
-        ru_steps=[
-            'Встаньте на полотно и начните с лёгкой ходьбы (3-4 км/ч).',
-            'Идите с прямой спиной: плечи расслаблены, взгляд вперёд, руки работают естественно.',
-            'Каждые пару минут слегка увеличивайте скорость, пока не почувствуете разогрев.',
-            'Заканчивайте, когда дыхание участилось, но говорить ещё легко.']),
-    dict(
-        id='treadmill_incline_walk', equipmentId='treadmill',
-        title='Incline Walk', ru_title='Ходьба в гору',
-        muscles=['glutes', 'hamstrings', 'quads', 'calves'], primary=['glutes'],
-        difficulty='beginner', minutes=15, contra=[],
-        steps=[
-            'Set a comfortable walking speed, then raise the incline to 6-10%.',
-            'Do not hold the handrails — pumping your arms keeps the load honest.',
-            'Take slightly shorter steps and drive through the heel and glutes.',
-            'Lower the incline gradually for the last two minutes to cool down.'],
-        ru_steps=[
-            'Выставьте комфортную скорость ходьбы, затем поднимите наклон до 6-10%.',
-            'Не держитесь за поручни — работа руками сохраняет честную нагрузку.',
-            'Шагайте чуть короче обычного, проталкиваясь через пятку и ягодичные.',
-            'Последние две минуты плавно снижайте наклон, чтобы остыть.']),
-    dict(
-        id='treadmill_steady_run', equipmentId='treadmill',
-        title='Steady-State Run', ru_title='Бег в ровном темпе',
-        muscles=['quads', 'hamstrings', 'glutes', 'calves', 'core'], primary=['quads'],
-        difficulty='intermediate', minutes=20, contra=['knee'],
-        steps=[
-            'Warm up with 3-4 minutes of brisk walking or light jogging.',
-            'Settle into a pace where you could still speak in short sentences.',
-            'Keep a light, quick step — land under your hips, not out in front.',
-            'Slow to a walk for the final 2-3 minutes instead of stopping abruptly.'],
-        ru_steps=[
-            'Разомнитесь 3-4 минутами быстрой ходьбы или лёгкой трусцы.',
-            'Выйдите на темп, в котором можете говорить короткими фразами.',
-            'Шаг лёгкий и частый — стопа приземляется под тазом, а не впереди.',
-            'Последние 2-3 минуты перейдите на шаг, не останавливайтесь резко.']),
-    dict(
-        id='treadmill_intervals', equipmentId='treadmill',
-        title='Run Intervals', ru_title='Беговые интервалы',
-        muscles=['quads', 'hamstrings', 'glutes', 'calves', 'core'], primary=['quads'],
-        difficulty='intermediate', minutes=12, contra=['knee'],
-        steps=[
-            'Warm up with 4 minutes of easy jogging.',
-            'Run 1 minute noticeably fast — hard, but with controlled form.',
-            'Recover with 1-2 minutes of walking or easy jogging.',
-            'Repeat 5-8 rounds, then cool down with 3 minutes of walking.'],
-        ru_steps=[
-            'Разомнитесь 4 минутами лёгкой трусцы.',
-            'Бегите 1 минуту заметно быстро — тяжело, но с контролем техники.',
-            'Восстановитесь 1-2 минутами ходьбы или лёгкой трусцы.',
-            'Повторите 5-8 кругов и закончите 3 минутами ходьбы.']),
-    dict(
-        id='rowing_steady', equipmentId='rowing_machine',
-        title='Steady Row', ru_title='Гребля в ровном темпе',
-        muscles=['lats', 'back', 'quads', 'hamstrings', 'glutes', 'core'], primary=['lats'],
-        difficulty='beginner', minutes=15, contra=['lower_back'],
-        steps=[
-            'Strap in, sit tall, and grip the handle with straight wrists.',
-            'Drive with the legs first, then lean back slightly and pull to the lower ribs.',
-            'Return in reverse: arms out, hinge forward, then bend the knees.',
-            'Hold a calm rhythm around 20-24 strokes per minute.'],
-        ru_steps=[
-            'Зафиксируйте стопы, сядьте с прямой спиной, возьмите рукоять с прямыми запястьями.',
-            'Сначала толкайтесь ногами, затем слегка отклонитесь и дотяните рукоять к нижним рёбрам.',
-            'Возврат в обратном порядке: руки вперёд, наклон корпуса, потом сгибаются колени.',
-            'Держите спокойный ритм — около 20-24 гребков в минуту.']),
-    dict(
-        id='rowing_intervals', equipmentId='rowing_machine',
-        title='Row Intervals', ru_title='Гребные интервалы',
-        muscles=['lats', 'back', 'quads', 'hamstrings', 'glutes', 'core'], primary=['lats'],
-        difficulty='intermediate', minutes=12, contra=['lower_back'],
-        steps=[
-            'Warm up with 3 minutes of easy rowing.',
-            'Row hard for 1 minute — the split time drops, the form does not.',
-            'Paddle lightly for 1 minute to recover.',
-            'Repeat 5-8 rounds, then cool down with 2 minutes of easy strokes.'],
-        ru_steps=[
-            'Разомнитесь 3 минутами лёгкой гребли.',
-            'Гребите мощно 1 минуту — темп растёт, техника не ломается.',
-            'Восстановитесь 1 минутой очень лёгкой гребли.',
-            'Повторите 5-8 кругов и закончите 2 минутами спокойных гребков.']),
-]
-
-MUSCLE_VOCAB = {'adductors', 'back', 'biceps', 'calves', 'chest', 'core',
-                'forearms', 'glutes', 'hamstrings', 'lats', 'lower_back',
-                'quads', 'shoulders', 'traps', 'triceps'}
-
 
 def main() -> None:
     equipment = json.loads((ROOT / 'equipment.json').read_text('utf-8'))
-    exercises = json.loads((ROOT / 'exercises.json').read_text('utf-8'))
-    ru_overlay = json.loads((ROOT / 'exercises.ru.json').read_text('utf-8'))
 
-    # -- equipment.json: keep the 10 existing entries verbatim, append new --
+    # -- equipment.json: keep the existing entries verbatim, append new --
     existing = {e['id']: e for e in equipment}
     assert set(existing) <= set(M), 'registry must cover every existing id'
     out_equipment = list(equipment)
@@ -522,36 +404,6 @@ def main() -> None:
             seen[a] = mid
         out_aliases[mid] = aliases
 
-    # -- exercises.json: reassign + append new --
-    by_title = {e['title']: e for e in exercises}
-    for title, target in REASSIGN.items():
-        assert title in by_title, f'reassign target missing: {title}'
-        by_title[title]['equipmentId'] = target
-    known_ids = {e['id'] for e in exercises}
-    for spec in NEW_EXERCISES:
-        assert set(spec['muscles']) <= MUSCLE_VOCAB, spec['id']
-        assert spec['equipmentId'] in M, spec['id']
-        entry = {
-            'id': spec['id'],
-            'title': spec['title'],
-            'equipmentId': spec['equipmentId'],
-            'muscles': spec['muscles'],
-            'primaryMuscles': spec['primary'],
-            'difficulty': spec['difficulty'],
-            'durationMinutes': spec['minutes'],
-            'summary': spec['steps'][0],
-            'steps': spec['steps'],
-            'frames': [],
-            'contraindications': spec['contra'],
-        }
-        if spec['id'] in known_ids:  # idempotent rerun
-            exercises = [e for e in exercises if e['id'] != spec['id']]
-        exercises.append(entry)
-        ru_overlay[spec['id']] = {
-            'title': spec['ru_title'],
-            'steps': spec['ru_steps'],
-        }
-
     def dump(path, data):
         path.write_text(
             json.dumps(data, ensure_ascii=False, indent=1) + '\n', 'utf-8')
@@ -559,20 +411,18 @@ def main() -> None:
     dump(ROOT / 'equipment.json', out_equipment)
     dump(ROOT / 'equipment.ru.json', out_ru)
     dump(ROOT / 'equipment_aliases.json', out_aliases)
-    dump(ROOT / 'exercises.json', exercises)
-    dump(ROOT / 'exercises.ru.json', ru_overlay)
 
-    # -- report --
-    per = collections.Counter(e.get('equipmentId') for e in exercises)
+    # -- report: which registry ids the shipped catalog actually reaches --
+    vendor = json.loads((ROOT / 'exercises_vendor.json').read_text('utf-8'))
+    per = collections.Counter(
+        e.get('equipmentId') for e in vendor if e.get('equipmentId'))
+    empty = sorted(r['id'] for r in out_equipment if not per[r['id']])
     print(f'equipment: {len(out_equipment)} ids '
           f'({len(out_equipment) - len(existing)} new)')
     print(f'aliases: {sum(len(v) for v in out_aliases.values())} '
           f'across {len(out_aliases)} ids')
-    print(f"treadmill exercises now: "
-          f"{[e['title'] for e in exercises if e.get('equipmentId') == 'treadmill']}")
-    print(f"rowing exercises now: "
-          f"{[e['title'] for e in exercises if e.get('equipmentId') == 'rowing_machine']}")
-    print(f'exercises total: {len(exercises)}; bodyweight: {per[None]}')
+    print(f'vendor exercises linked: {sum(per.values())} of {len(vendor)}')
+    print(f'machines with no exercise ({len(empty)}): {empty}')
 
 
 if __name__ == '__main__':

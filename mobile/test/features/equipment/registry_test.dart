@@ -7,15 +7,23 @@ import 'package:fitness_app/features/equipment/data/asset_equipment_repository.d
 import 'package:fitness_app/features/equipment/data/equipment_alias_index.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 
-/// The machine registry (defect round 3): 48 machines, ru overlay, alias
-/// index, and the exercise reassignments that took ab crunches off the
-/// treadmill page.
+/// The machine registry (defect round 3): 69 machines, ru overlay, alias
+/// index.
+///
+/// Round 3 built this against `exercises.json`, and roughly half the file was
+/// about that catalog's own contents — the reassignments that took ab crunches
+/// off the treadmill page, the hand-authored cardio entries, the
+/// free-exercise-db import, the photographs a machine card could source. That
+/// catalog was removed on 2026-08-04 and those tests went with it rather than
+/// being rewritten into assertions about a file that no longer exists. What
+/// stays is what the registry itself promises, now measured against the one
+/// catalog that ships.
 void main() {
   final equipment = (jsonDecode(
           File('assets/data/equipment.json').readAsStringSync()) as List)
       .cast<Map<String, dynamic>>();
   final exercises = (jsonDecode(
-          File('assets/data/exercises.json').readAsStringSync()) as List)
+          File('assets/data/exercises_vendor.json').readAsStringSync()) as List)
       .cast<Map<String, dynamic>>();
   final ruEquipment = (jsonDecode(
           File('assets/data/equipment.ru.json').readAsStringSync()) as Map)
@@ -50,41 +58,11 @@ void main() {
       }
     });
 
-    test('treadmill exercises are treadmill exercises', () {
-      // Regression for the operator's screenshot: the treadmill page
-      // recommended Ab Crunch Machine, Barbell Walking Lunge and Cable Crunch.
-      final titles = exercises
-          .where((e) => e['equipmentId'] == 'treadmill')
-          .map((e) => (e['title'] as String).toLowerCase())
-          .toList();
-      expect(titles, isNotEmpty);
-      for (final t in titles) {
-        expect(t, isNot(anyOf(contains('crunch'), contains('lunge'),
-            contains('cable'), contains('barbell'), contains('bench'))));
-        expect(t, anyOf(contains('walk'), contains('run'), contains('interval')),
-            reason: 'a treadmill exercise walks or runs; got "$t"');
-      }
-    });
-
-    test('the rowing machine no longer teaches hack squats', () {
-      final titles = exercises
-          .where((e) => e['equipmentId'] == 'rowing_machine')
-          .map((e) => (e['title'] as String).toLowerCase());
-      for (final t in titles) {
-        expect(t, contains('row'));
-      }
-    });
-
     test('every difficulty is one the app can actually read', () {
       // `ExerciseItem.fromJson` matches the string against the enum and falls
       // back to `beginner` on anything it does not recognise
       // (equipment_models.dart:65-68). That fallback is silent, so a value the
       // enum lacks does not fail loudly -- it mislabels the exercise.
-      //
-      // Three shipped entries carried "expert": One Arm Chin-Up, Hanging Leg
-      // Raise and Hanging Pike, all displayed to beginners as beginner work.
-      // The importer maps levels through LEVEL_MAP; close_empty_machines.py
-      // passed the upstream value straight through, which is how they got in.
       const canonical = {'beginner', 'intermediate', 'advanced'};
       final bad = exercises
           .where((e) => !canonical.contains(e['difficulty']))
@@ -94,12 +72,37 @@ void main() {
           reason: 'these silently render as "beginner" to the user: $bad');
     });
 
-    test('new cardio exercises use the shared muscle vocabulary', () {
-      final vocab = exercises
-          .expand((e) => (e['muscles'] as List? ?? const []).cast<String>())
-          .toSet();
-      // Sanity that the vocabulary itself did not fork.
-      expect(vocab, containsAll(['quads', 'lats', 'glutes', 'core']));
+    test('exactly four machines are empty, and for a reason we know', () {
+      // Round 3 shipped 32 registry ids with zero exercises (operator
+      // screenshot: Elliptical -> "No curated exercises yet") and this test
+      // was written to hold the number at zero. It could, while the
+      // pre-purchase catalog was there to cover the gaps.
+      //
+      // Removing that catalog on 2026-08-04 exposed which machines only it
+      // covered. These four have no vendor clip at all -- confirmed by hand,
+      // not inferred from the null count (core/VENDOR_EQUIPMENT_LINK
+      // _2026-08-03.md): the library's only stationary bike is upright, every
+      // kickback uses a cable or a band, and nothing matches a T-bar row or a
+      // rotary torso machine. They need footage, not a linking pass.
+      //
+      // Named rather than counted, so a FIFTH machine going empty -- which
+      // would be a real regression -- still fails here.
+      const knownEmpty = {
+        'recumbent_bike',
+        'glute_kickback_machine',
+        't_bar_row',
+        'rotary_torso_machine',
+      };
+      final byId = <String, int>{};
+      for (final e in exercises) {
+        final id = e['equipmentId'] as String?;
+        if (id != null) byId[id] = (byId[id] ?? 0) + 1;
+      }
+      final empty =
+          equipmentIds.where((id) => (byId[id] ?? 0) == 0).toSet();
+      expect(empty, equals(knownEmpty),
+          reason: 'machines the user can open and find nothing in: '
+              '${(empty.difference(knownEmpty).toList()..sort())}');
     });
   });
 
@@ -146,177 +149,6 @@ void main() {
     test('unknown text resolves to null, never a guess', () {
       expect(index.resolve('квантовый телепорт'), isNull);
       expect(index.resolve(''), isNull);
-    });
-  });
-
-  group('the implements the video library needed', () {
-    // The 677-file drop shipped 19 exercises with no equipment because the
-    // registry had no id for what they use. Operator picked four of them to
-    // add: "фитбол, скакалки, ролика для пресса и брусьев-паралеток". The
-    // stretching strap and the two machines the source does not identify stay
-    // null, because a plausible-looking wrong machine is worse than none.
-    //
-    // The generic invariants above already cover these — aliases, Russian
-    // name, no empty machine. This pins them by NAME, because deleting an
-    // implement together with its exercises satisfies every generic rule and
-    // silently removes a category the user had.
-    const added = {
-      'stability_ball': 7,
-      'skipping_rope': 1,
-      'ab_wheel': 1,
-      'parallettes': 1,
-    };
-
-    test('each one exists and owns the exercises it was added for', () {
-      final byId = <String, int>{};
-      for (final e in exercises) {
-        final id = e['equipmentId'] as String?;
-        if (id != null) byId[id] = (byId[id] ?? 0) + 1;
-      }
-      added.forEach((id, count) {
-        expect(equipmentIds, contains(id));
-        expect(byId[id], count, reason: '$id lost or gained exercises');
-      });
-    });
-
-    test('what stayed null, stayed null on purpose', () {
-      // Five stretching entries use a strap or a belt, and two "Lever" rows
-      // name a machine the registry does not have. Guessing at those is the
-      // failure this catalog has already been through once.
-      const deliberatelyNull = [
-        'vid_stretching_calf_stretch_with_rope',
-        'vid_stretching_calf_stretch_with_strap',
-        'vid_stretching_hamstring_stretch',
-        'vid_lever_lateral_raise',
-        'vid_lever_shrug',
-      ];
-      final byId = {for (final e in exercises) e['id'] as String: e};
-      for (final id in deliberatelyNull) {
-        expect(byId[id], isNotNull, reason: '$id disappeared');
-        expect(byId[id]!['equipmentId'], isNull,
-            reason: '$id was given a machine it does not use');
-      }
-    });
-  });
-
-  group('Free Exercise DB expansion (round 4, S0)', () {
-    final ruExercises = (jsonDecode(
-            File('assets/data/exercises.ru.json').readAsStringSync()) as Map)
-        .cast<String, dynamic>();
-    final imported = exercises.where((e) => (e['id'] as String).startsWith('fedb_'));
-
-    test('NO machine has zero exercises', () {
-      // Round 3 shipped 32 registry ids with zero curated exercises (operator
-      // screenshot: Elliptical -> "No curated exercises yet"). Round 4 got it
-      // to 11. A1 closed the rest: nine from upstream entries my own category
-      // filter had been dropping, two hand-authored because the source has
-      // nothing for an air bike or a ski erg.
-      //
-      // Exactly zero, not "fewer than N". The previous version of this test
-      // asserted `lessThan(15)`, which is how eleven empty machines stayed
-      // green for a whole round.
-      //
-      // 2026-08-03: the real page merges legacy + vendor
-      // (`AssetEquipmentRepository._ensureLoaded` loads both), so this check
-      // now does too. Checking legacy alone would call the 15 machines this
-      // gate added empty -- they only exist in the vendor pack -- when the
-      // app shows them exercises just fine. The 4 pre-existing ids with zero
-      // vendor coverage (recumbent_bike, glute_kickback_machine, t_bar_row,
-      // rotary_torso_machine) stay covered here through legacy alone, same
-      // as before this gate.
-      final vendorExercises = (jsonDecode(File(
-              'assets/data/exercises_vendor.json')
-          .readAsStringSync()) as List)
-          .cast<Map<String, dynamic>>();
-      final byId = <String, int>{};
-      for (final e in [...exercises, ...vendorExercises]) {
-        final id = e['equipmentId'] as String?;
-        if (id != null) byId[id] = (byId[id] ?? 0) + 1;
-      }
-      final stillEmpty =
-          equipmentIds.where((id) => (byId[id] ?? 0) == 0).toList()..sort();
-      expect(stillEmpty, isEmpty,
-          reason: 'machines the user can open and find nothing in: $stillEmpty');
-    });
-
-    test('every imported exercise has a Russian translation', () {
-      for (final e in imported) {
-        expect(ruExercises, contains(e['id']),
-            reason: '${e['id']} missing from exercises.ru.json');
-        final entry = ruExercises[e['id']] as Map;
-        expect((entry['title'] as String).trim(), isNotEmpty);
-        expect((entry['steps'] as List), isNotEmpty);
-      }
-    });
-
-    test('every imported exercise has non-empty muscles from our vocabulary',
-        () {
-      const vocab = {'adductors', 'back', 'biceps', 'calves', 'chest', 'core',
-          'forearms', 'glutes', 'hamstrings', 'lats', 'lower_back', 'quads',
-          'shoulders', 'traps', 'triceps'};
-      for (final e in imported) {
-        final muscles = (e['muscles'] as List).cast<String>();
-        expect(muscles, isNotEmpty, reason: '${e['id']} has no muscles');
-        expect(vocab, containsAll(muscles),
-            reason: '${e['id']} uses an unmapped muscle name: $muscles');
-      }
-    });
-
-    test('every imported exercise points at a real id or bodyweight', () {
-      for (final e in imported) {
-        final id = e['equipmentId'];
-        if (id != null) expect(equipmentIds, contains(id));
-      }
-    });
-
-    test('images are network URLs from the vendored public-domain source',
-        () {
-      for (final e in imported) {
-        final urls = (e['imageUrls'] as List).cast<String>();
-        expect(urls, isNotEmpty);
-        for (final u in urls) {
-          expect(u, startsWith(
-              'https://raw.githubusercontent.com/yuhonas/free-exercise-db/'));
-        }
-        // frames stays empty for imported entries -- no bundled assets were
-        // added, avoiding the APK-size regression a full bundle would cause.
-        expect(e['frames'], isEmpty);
-      }
-    });
-
-    test('no exact-title duplicate was imported over the existing catalog',
-        () {
-      final titles = exercises.map((e) => (e['title'] as String).toLowerCase());
-      final counts = <String, int>{};
-      for (final t in titles) {
-        counts[t] = (counts[t] ?? 0) + 1;
-      }
-      final dupes = counts.entries.where((e) => e.value > 1).toList();
-      expect(dupes, isEmpty, reason: 'duplicate titles: $dupes');
-    });
-  });
-
-  group('machine hero photos (S5)', () {
-    test('most machines can source a real photo from their own exercises',
-        () {
-      // The machine card's thumbnail comes from the machine's exercises
-      // rather than a stock-photo service -- those are photographs of the
-      // actual machine, already vendored under the catalog's licence.
-      final byEquipment = <String, List<Map<String, dynamic>>>{};
-      for (final e in exercises) {
-        final id = e['equipmentId'] as String?;
-        if (id != null) byEquipment.putIfAbsent(id, () => []).add(e);
-      }
-      var covered = 0;
-      for (final id in equipmentIds) {
-        final has = (byEquipment[id] ?? const []).any((e) =>
-            (e['imageUrls'] as List? ?? const []).isNotEmpty ||
-            (e['frames'] as List? ?? const []).isNotEmpty);
-        if (has) covered++;
-      }
-      expect(covered, greaterThanOrEqualTo(30),
-          reason: 'only $covered of ${equipmentIds.length} machines have a '
-              'photo to show');
     });
   });
 

@@ -49,18 +49,14 @@ void main() {
           reason: 'a vendor entry with no clip has no reason to exist');
     });
 
-    test('ids cannot collide with the catalog we already had', () {
-      final legacy =
-          (jsonDecode(File('assets/data/exercises.json').readAsStringSync())
-                  as List)
-              .cast<Map<String, dynamic>>()
-              .map((e) => e['id'] as String)
-              .toSet();
+    test('ids are unique and consistently prefixed', () {
+      // This used to also assert no collision with `exercises.json`, because
+      // the two catalogs were loaded into one list and a shared id would have
+      // made one exercise silently replace another. That catalog was removed
+      // on 2026-08-04; uniqueness within this one is what is left to protect,
+      // and it is still the property a rebuild can break.
       final vendor = parsed.map((e) => e.id).toSet();
       expect(vendor, hasLength(parsed.length), reason: 'ids are unique');
-      expect(vendor.intersection(legacy), isEmpty,
-          reason: 'the two lists are loaded together; a shared id would make '
-              'one exercise silently replace another');
       expect(vendor.every((id) => id.startsWith('ea_')), isTrue);
     });
 

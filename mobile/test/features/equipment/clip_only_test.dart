@@ -118,7 +118,7 @@ void main() {
 
   group('the shipped catalog', () {
     final rows =
-        (jsonDecode(File('assets/data/exercises.json').readAsStringSync())
+        (jsonDecode(File('assets/data/exercises_vendor.json').readAsStringSync())
                 as List)
             .cast<Map<String, dynamic>>()
             .map(ExerciseItem.fromJson)
@@ -138,28 +138,27 @@ void main() {
       }
     });
 
-    test('the gap is 156 and is not hidden behind a still', () {
-      // A count, so that "we added clips" and "we stopped showing the gap" can
-      // never be confused for one another.
-      //
-      // 365 -> 186 -> 337 on 2026-08-03. The first move was the point rather
-      // than a regression: 324 of those 365 were playing clips from an
-      // unlicensed Drive scaffold, 101 of them on one body only, and removing
-      // them is what "only vendor resources" means. The second was re-matching
-      // every remaining exercise against the purchased library by MEANING
-      // rather than by filename, which recovered 151 of them.
-      // core/CLIP_LICENCE_AUDIT_2026-08-03.md, core/legacy_match_proposals.csv.
-      expect(rows, hasLength(511));
-      expect(withDemonstration(rows), hasLength(355));
+    test('there is no gap left to hide', () {
+      // This used to read "the gap is 156", counting the pre-purchase entries
+      // the clip-only rule had to hide because they were demonstrated by a
+      // photograph or by nothing. 365 -> 186 -> 337 over 2026-08-03 as
+      // unlicensed scaffold clips came out and semantic re-matching put
+      // licensed ones back; the catalog carrying that gap was removed on
+      // 2026-08-04. Every shipped exercise now plays, so the assertion is the
+      // stronger one: nothing is hidden, because there is nothing to hide.
+      expect(rows, hasLength(1887));
+      expect(withDemonstration(rows), hasLength(rows.length));
     });
 
-    test('every dropped entry really had no clip, not merely no poster', () {
+    test('no entry is dropped for want of a usable clip', () {
       final dropped = rows.where((e) => e.playableVideoFor(null) == null);
-      expect(dropped, hasLength(156));
-      for (final e in dropped) {
-        expect(e.video.values.where((u) => !u.contains(ExerciseItem.unresolvedHost)),
+      expect(dropped, isEmpty,
+          reason: 'a vendor entry that cannot be played has no reason to ship');
+      for (final e in rows) {
+        expect(
+            e.video.values.where((u) => u.contains(ExerciseItem.unresolvedHost)),
             isEmpty,
-            reason: '${e.id} was dropped but carries a usable clip');
+            reason: '${e.id} points at an unresolved host');
       }
     });
   });

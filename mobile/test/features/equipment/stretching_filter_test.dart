@@ -15,7 +15,7 @@ void main() {
   late List<ExerciseItem> catalog;
 
   setUpAll(() {
-    catalog = (jsonDecode(File('assets/data/exercises.json').readAsStringSync())
+    catalog = (jsonDecode(File('assets/data/exercises_vendor.json').readAsStringSync())
             as List)
         .map((e) => ExerciseItem.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -33,16 +33,17 @@ void main() {
     expect(WorkoutsFilter.values, contains(WorkoutsFilter.stretching));
   });
 
-  test('yoga and Pilates are inside it, not left out', () {
-    // The three Pilates rows and one older stretch were flagged by
-    // `widen_stretch_flag.py` rather than by a name list in the widget.
+  test('yoga is inside it, not left out', () {
+    // Named ids rather than a count: the chip's whole job is that a user
+    // looking for mobility work finds yoga under it instead of under nothing.
+    // (The Pilates rows this used to name came from the pre-purchase catalog,
+    // removed 2026-08-04; the purchased library has no Pilates of its own.)
     final ids = catalog.where((e) => e.isStretch).map((e) => e.id).toSet();
-    expect(ids, contains('vid_stretching_butterfly_yoga_pose'));
+    expect(ids, contains('ea_butterfly_yoga_pose'));
     expect(ids, containsAll([
-      'vid_corkscrew_pilates',
-      'vid_hundred_pilates',
-      'vid_jackknife_pilates',
-      'all_fours_quad_stretch',
+      'ea_cobra_yoga_pose_hold',
+      'ea_90_to_90_stretch',
+      'ea_abdominal_stretch',
     ]));
   });
 
@@ -52,7 +53,8 @@ void main() {
     // would make the chip useless without breaking anything visibly.
     final share = catalog.where((e) => e.isStretch).length / catalog.length;
     expect(share, lessThan(0.20));
-    expect(catalog.firstWhere((e) => e.id == 'barbell_squat').isStretch, isFalse);
+    expect(catalog.firstWhere((e) => e.id == 'ea_barbell_squat_back_pov').isStretch,
+        isFalse);
   });
 
   test('a translation does not lose it', () {

@@ -83,7 +83,6 @@ class AppSettings {
     this.language = AppLanguage.ru,
     this.notificationsEnabled = true,
     this.tierOverride = TierOverride.off,
-    this.includeLegacyCatalog = true,
   });
 
   final AppThemeMode themeMode;
@@ -96,33 +95,22 @@ class AppSettings {
   /// real call site — it is not a decorative switch.
   final bool notificationsEnabled;
 
-  /// Whether the pre-purchase catalog is part of the library.
-  ///
-  /// Two catalogs ship. `exercises.json` is the older 511 — they carry hand-
-  /// written Russian, injury contraindications and links to the 52 machines the
-  /// scanner recognises, and 365 of them can be demonstrated.
-  /// `exercises_vendor.json` is the purchased library: 1,899 movements, every
-  /// one with a clip, none of that metadata yet.
-  ///
-  /// The operator asked to be able to drop the older half at any moment while
-  /// the two are being reconciled, so this exists from the day the second
-  /// arrived rather than being retrofitted once something depends on the mix.
-  /// Default true: turning it off shrinks what the user can see.
-  final bool includeLegacyCatalog;
+  // `includeLegacyCatalog` lived here from the day the purchased library
+  // arrived until 2026-08-04, so the pre-purchase 511 could be dropped at any
+  // moment while the two were reconciled. They are reconciled: the older
+  // catalog is gone and there is nothing left to switch between.
 
   AppSettings copyWith({
     AppThemeMode? themeMode,
     AppLanguage? language,
     bool? notificationsEnabled,
     TierOverride? tierOverride,
-    bool? includeLegacyCatalog,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
       language: language ?? this.language,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       tierOverride: tierOverride ?? this.tierOverride,
-      includeLegacyCatalog: includeLegacyCatalog ?? this.includeLegacyCatalog,
     );
   }
 
@@ -132,17 +120,14 @@ class AppSettings {
       other.themeMode == themeMode &&
       other.language == language &&
       other.notificationsEnabled == notificationsEnabled &&
-      other.tierOverride == tierOverride &&
-      other.includeLegacyCatalog == includeLegacyCatalog;
+      other.tierOverride == tierOverride;
 
   @override
   int get hashCode =>
-      Object.hash(themeMode, language, notificationsEnabled, tierOverride,
-          includeLegacyCatalog);
+      Object.hash(themeMode, language, notificationsEnabled, tierOverride);
 
   @override
   String toString() => 'AppSettings(theme: ${themeMode.name}, '
       'language: ${language.name}, notifications: $notificationsEnabled, '
-      'tierOverride: ${tierOverride.name}, '
-      'legacyCatalog: $includeLegacyCatalog)';
+      'tierOverride: ${tierOverride.name})';
 }

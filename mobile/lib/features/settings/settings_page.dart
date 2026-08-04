@@ -128,24 +128,6 @@ class SettingsPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          _Section(
-            key: const Key('settings-section-catalog'),
-            title: AppLocalizations.of(context).settingsCatalogSources,
-            child: SwitchListTile(
-              key: const Key('settings-include-legacy'),
-              value: settings.includeLegacyCatalog,
-              onChanged: controller.setIncludeLegacyCatalog,
-              title: Text(AppLocalizations.of(context).settingsIncludeLegacy),
-              subtitle: Text(
-                AppLocalizations.of(context).settingsIncludeLegacyBody,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.62),
-                ),
-              ),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-          const SizedBox(height: 16),
           GlassCard(
             key: const Key('settings-about'),
             onTap: () => context.push('/about'),

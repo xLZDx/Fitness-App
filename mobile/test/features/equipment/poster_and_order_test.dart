@@ -31,7 +31,7 @@ void main() {
     late List<ExerciseItem> catalog;
 
     setUpAll(() {
-      final raw = File('assets/data/exercises.json').readAsStringSync();
+      final raw = File('assets/data/exercises_vendor.json').readAsStringSync();
       catalog = (jsonDecode(raw) as List)
           .map((e) => ExerciseItem.fromJson(e as Map<String, dynamic>))
           .toList();

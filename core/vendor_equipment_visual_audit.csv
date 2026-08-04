@@ -643,7 +643,7 @@ ea_calf_stretch_with_rope,Calf Stretch with Rope,Yoga Mat,resistance band,1.0,Fa
 ea_calve_stretch_foot_on_wall,Calve Stretch Foot on Wall,,wall,1.0,,none,unresolved,
 ea_calve_stretch_from_wall_to_floor,Calve Stretch From Wall to Floor,,wall,1.0,,none,unresolved,
 ea_calves_stretch_on_stairs,Calves Stretch on Stairs,Yoga Mat,stairs,1.0,False,none,DISAGREEMENT,
-ea_calves_stretch_on_step,Calves Stretch on Step,,"step, wall",1.0,,none,unresolved,
+ea_calves_stretch_on_step,Calves Stretch on Step,,"step, wall",1.0,,Plyo box,resolved,"batch 5: the sheet cross-check never ran for this row (name lookup missed it); catalog equipmentLabel had it, confirmed by poster."
 ea_captains_chair_leg_raise,Captains Chair Leg Raise,,Captain's chair,1.0,,Captain's chair,resolved,
 ea_captains_chair_straight_leg_raise,Captains Chair Straight Leg Raise,,Captain's chair,1.0,,Captain's chair,resolved,
 ea_cardio_lunge,Cardio Lunge,,none,1.0,,none,confirmed_no_equipment,
@@ -871,7 +871,7 @@ ea_dumbbell_glute_bridge,Dumbbell Glute Bridge,Dumbbells,Dumbbell,1.0,True,Dumbb
 ea_dumbbell_goblet_2_sec_hold_squat,Dumbbell Goblet 2 Sec Hold Squat,Dumbbells,Dumbbell,1.0,True,Dumbbells,resolved,
 ea_dumbbell_goblet_curtsy_lunge,Dumbbell Goblet Curtsy Lunge,Dumbbells,none,0.9,False,Dumbbells,resolved,"batch 2, promoted on manual review (poster frame hides the held implement; title + sheet agree): "
 ea_dumbbell_goblet_forward_lunge,Dumbbell Goblet Forward Lunge,Dumbbells,Dumbbell,1.0,True,Dumbbells,resolved,
-ea_dumbbell_goblet_good_morning,Dumbbell Goblet Good Morning,,none,0.9,,none,confirmed_no_equipment,
+ea_dumbbell_goblet_good_morning,Dumbbell Goblet Good Morning,,none,0.9,,Dumbbells,resolved,"batch 5: the sheet cross-check never ran for this row (name lookup missed it); catalog equipmentLabel had it, confirmed by poster."
 ea_dumbbell_goblet_reverse_lunge,Dumbbell Goblet Reverse Lunge,,dumbbell,1.0,,Dumbbells,resolved,
 ea_dumbbell_goblet_split_squat,Dumbbell Goblet Split Squat,Dumbbells,none,0.95,False,Dumbbells,resolved,"batch 2, promoted on manual review (poster frame hides the held implement; title + sheet agree): "
 ea_dumbbell_goblet_split_squat_front_foot_elevanted,Dumbbell Goblet Split Squat Front Foot Elevanted,Dumbbells,"Dumbbell, Step platform",1.0,True,Dumbbells,resolved,
@@ -1050,7 +1050,7 @@ ea_dumbbell_split_squat,Dumbbell Split Squat,Dumbbells,Dumbbells,1.0,True,Dumbbe
 ea_dumbbell_squats,Dumbbell Squats,Dumbbells,Dumbbells,1.0,True,Dumbbells,resolved,
 ea_dumbbell_squats_to_shoulder_press,Dumbbell Squats to Shoulder Press,Dumbbells,Dumbbells,1.0,True,Dumbbells,resolved,
 ea_dumbbell_staggered_deadlift,Dumbbell Staggered Deadlift,,dumbbells,1.0,,Dumbbells,resolved,
-ea_dumbbell_staggered_glute_bridge,Dumbbell Staggered Glute Bridge,,none,0.95,,none,confirmed_no_equipment,
+ea_dumbbell_staggered_glute_bridge,Dumbbell Staggered Glute Bridge,,none,0.95,,Dumbbells,resolved,"batch 5: the sheet cross-check never ran for this row (name lookup missed it); catalog equipmentLabel had it, confirmed by poster."
 ea_dumbbell_staggered_hip_thrust,Dumbbell Staggered Hip Thrust,,"Dumbbell, Weight bench",1.0,,Weight bench,resolved,
 ea_dumbbell_standing_alternate_overhead_press,Dumbbell Standing Alternate Overhead Press,Dumbbells,Dumbbells,1.0,True,Dumbbells,resolved,
 ea_dumbbell_standing_alternate_raise,Dumbbell Standing Alternate Raise,Dumbbells,Dumbbells,1.0,True,Dumbbells,resolved,
@@ -1332,7 +1332,7 @@ ea_kettlebell_sumo_squat_version_2,Kettlebell Sumo Squat (version 2),Kettlebells
 ea_kettlebell_swing,Kettlebell Swing,Kettlebells,Kettlebell,1.0,True,Kettlebell,resolved,
 ea_kettlebell_swing_version_2,Kettlebell Swing (version 2),Kettlebells,Kettlebell,1.0,True,Kettlebell,resolved,
 ea_kettlebell_thruster,Kettlebell Thruster,Kettlebells,Kettlebells,1.0,True,Kettlebell,resolved,
-ea_kettlebell_turkish_get_up,Kettlebell Turkish Get Up,,none,0.9,,none,confirmed_no_equipment,
+ea_kettlebell_turkish_get_up,Kettlebell Turkish Get Up,,none,0.9,,Kettlebell,resolved,"batch 5: the sheet cross-check never ran for this row (name lookup missed it); catalog equipmentLabel had it, confirmed by poster."
 ea_kettlebell_upright_row,Kettlebell Upright Row,,Kettlebells,1.0,,Kettlebell,resolved,
 ea_kettlebell_walkover_pushup,Kettlebell Walkover Pushup,,Kettlebell,1.0,,Kettlebell,resolved,
 ea_kettlebell_windmill,Kettlebell Windmill,,Kettlebell,1.0,,Kettlebell,resolved,

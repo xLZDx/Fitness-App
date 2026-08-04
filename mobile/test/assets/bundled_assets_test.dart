@@ -16,12 +16,20 @@ import 'package:flutter_test/flutter_test.dart';
 /// 487 unit and widget tests were green throughout: none of them touched the
 /// bundle. `rootBundle` under `flutter test` resolves through the real asset
 /// manifest, so these assertions fail for exactly the reason the device did.
+///
+/// The catalog and the frames that caused the original bug were removed on
+/// 2026-08-04. The bug CLASS did not go anywhere: `assets/posters/girl/` and
+/// `assets/posters/men/` are two more non-recursive directory entries, and
+/// 2,539 posters are what makes the first frame of every clip instant and
+/// offline. These assertions moved onto them rather than being deleted with
+/// the files that happened to expose the problem first.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('bundled assets', () {
     test('the exercise catalog is packaged and parses', () async {
-      final raw = await rootBundle.loadString('assets/data/exercises.json');
+      final raw =
+          await rootBundle.loadString('assets/data/exercises_vendor.json');
       final items = json.decode(raw) as List<dynamic>;
       expect(items, isNotEmpty);
     });
@@ -31,70 +39,77 @@ void main() {
       expect(json.decode(raw), isA<List<dynamic>>());
     });
 
-    test('no exercise declares exactly one demo frame', () async {
-      // Zero frames is legal: ExerciseDemo renders nothing (the hand-authored
-      // cardio entries ship without imagery rather than with a fabricated
-      // photo). Exactly ONE frame is the defect — it cannot animate but still
-      // renders, showing a static picture that pretends to be a demo.
-      final raw = await rootBundle.loadString('assets/data/exercises.json');
-      final items = (json.decode(raw) as List<dynamic>)
-          .cast<Map<String, dynamic>>();
-
-      final single = <String>[];
-      for (final e in items) {
-        final frames = (e['frames'] as List<dynamic>? ?? const []);
-        if (frames.length == 1) single.add(e['id'] as String);
-      }
-      expect(single, isEmpty,
-          reason: 'a single frame cannot animate — the demo needs start+end');
-    });
-
-    test('every declared demo frame is really in the bundle', () async {
-      final raw = await rootBundle.loadString('assets/data/exercises.json');
-      final items = (json.decode(raw) as List<dynamic>)
-          .cast<Map<String, dynamic>>();
+    test('every declared poster is really in the bundle', () async {
+      // The original bug in one sentence: declared in the catalog, present on
+      // disk, absent from the bundle. Nothing but the bundle itself catches
+      // it, and a poster that is not packaged is a card that shows a spinner
+      // until the network answers — on a screen whose whole point is that it
+      // does not have to.
+      //
+      // Read through the asset MANIFEST rather than loading each file: 2,539
+      // `rootBundle.load` calls blew the 30s test timeout, and the manifest
+      // answers the same question ("is this packaged?") for every one of them
+      // at once instead of sampling and hoping.
+      final raw =
+          await rootBundle.loadString('assets/data/exercises_vendor.json');
+      final items =
+          (json.decode(raw) as List<dynamic>).cast<Map<String, dynamic>>();
 
       final paths = <String>{
         for (final e in items)
-          ...(e['frames'] as List<dynamic>? ?? const []).cast<String>(),
+          ...((e['poster'] as Map<String, dynamic>? ?? const {})
+              .values
+              .cast<String>()),
       };
-      expect(paths, hasLength(132),
+      expect(paths.length, greaterThanOrEqualTo(2500),
           reason: 'guards against the catalog silently shrinking');
 
-      final missing = <String>[];
-      final empty = <String>[];
-      for (final p in paths) {
-        try {
-          final bytes = await rootBundle.load(p);
-          if (bytes.lengthInBytes == 0) empty.add(p);
-        } on FlutterError {
-          missing.add(p);
-        }
-      }
+      final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+      final packaged = manifest.listAssets().toSet();
+      final missing = paths.difference(packaged).toList()..sort();
 
       expect(missing, isEmpty,
-          reason: 'declared in exercises.json but not packaged — this is the '
-              '"Demo unavailable" bug. Check that pubspec covers the '
-              'directory these files actually live in; directory entries do '
-              'not recurse.');
-      expect(empty, isEmpty, reason: 'packaged but zero bytes');
+          reason: '${missing.length} posters are declared in the catalog but '
+              'not packaged. Check that pubspec covers the directory these '
+              'files actually live in; directory entries do not recurse.');
     });
 
-    test('frame paths are flat, not nested in per-exercise folders', () async {
-      final raw = await rootBundle.loadString('assets/data/exercises.json');
-      final items = (json.decode(raw) as List<dynamic>)
-          .cast<Map<String, dynamic>>();
+    test('poster paths are flat, not nested in per-exercise folders', () async {
+      final raw =
+          await rootBundle.loadString('assets/data/exercises_vendor.json');
+      final items =
+          (json.decode(raw) as List<dynamic>).cast<Map<String, dynamic>>();
 
       final nested = <String>[];
       for (final e in items) {
-        for (final p in (e['frames'] as List<dynamic>? ?? const [])) {
-          // assets/exercises/<file> is 3 segments; a 4th means a subdirectory,
-          // which the pubspec entry would not cover.
-          if ((p as String).split('/').length != 3) nested.add(p);
+        for (final p in (e['poster'] as Map<String, dynamic>? ?? const {})
+            .values
+            .cast<String>()) {
+          // assets/posters/<body>/<file> is 4 segments; a 5th means a
+          // subdirectory, which the pubspec entry would not cover.
+          if (p.split('/').length != 4) nested.add(p);
         }
       }
       expect(nested, isEmpty,
-          reason: 'nested frames are excluded from the bundle by pubspec');
+          reason: 'nested posters are excluded from the bundle by pubspec');
+    });
+
+    test('the catalog the app removed is really gone from the bundle',
+        () async {
+      // Deleting the files is not the same as un-shipping them: a stale entry
+      // in the asset manifest, or a copy left in another declared directory,
+      // would keep 1.3 MB of dead JSON in the APK and let a future call site
+      // quietly load a catalog nobody maintains any more.
+      for (final gone in const [
+        'assets/data/exercises.json',
+        'assets/data/exercises.ru.json',
+      ]) {
+        await expectLater(
+          rootBundle.loadString(gone),
+          throwsA(isA<FlutterError>()),
+          reason: '$gone is still packaged',
+        );
+      }
     });
 
     test('the equipment recognition model is packaged', () async {

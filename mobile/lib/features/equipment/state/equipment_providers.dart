@@ -13,21 +13,15 @@ import '../data/equipment_repository.dart';
 import '../data/exercise_filter.dart';
 import '../data/mock_equipment_report_service.dart';
 
-/// The catalog, in the language the user is actually reading, and with or
-/// without the pre-purchase half.
+/// The catalog, in the language the user is actually reading.
 ///
-/// Watches those two settings and nothing else. Watching the whole
-/// `AppSettings` object here would mean a theme switch or a notifications
-/// toggle rebuilds this provider, and with it every derived FutureProvider —
-/// re-reading both bundled catalogs from a settings screen tap.
+/// Watches the language and nothing else. Watching the whole `AppSettings`
+/// object here would mean a theme switch or a notifications toggle rebuilds
+/// this provider, and with it every derived FutureProvider — re-reading the
+/// bundled catalog from a settings screen tap.
 final equipmentRepositoryProvider = Provider<EquipmentRepository>((ref) {
   return AssetEquipmentRepository(
     languageCode: ref.watch(effectiveLanguageCodeProvider),
-    // Watched narrowly, like the language above: this provider is the root of
-    // every derived exercise future, so waking it on an unrelated settings
-    // change would re-read both catalogs from the bundle on a theme toggle.
-    includeLegacy: ref.watch(
-        settingsControllerProvider.select((s) => s.includeLegacyCatalog)),
   );
 });
 

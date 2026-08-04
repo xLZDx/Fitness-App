@@ -39,9 +39,6 @@ class SettingsController extends Notifier<AppSettings> {
   Future<void> setTierOverride(TierOverride override) =>
       _update(state.copyWith(tierOverride: override));
 
-  Future<void> setIncludeLegacyCatalog(bool include) =>
-      _update(state.copyWith(includeLegacyCatalog: include));
-
   Future<void> setNotificationsEnabled(bool enabled) async {
     await _update(state.copyWith(notificationsEnabled: enabled));
     if (enabled) return;

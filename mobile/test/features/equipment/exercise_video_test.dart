@@ -48,23 +48,22 @@ void main() {
       // the defect being guarded is "the field is in the JSON and nowhere
       // else".
       final rows =
-          (jsonDecode(File('assets/data/exercises.json').readAsStringSync())
+          (jsonDecode(File('assets/data/exercises_vendor.json').readAsStringSync())
                   as List)
               .cast<Map<String, dynamic>>();
       final parsed = rows.map(ExerciseItem.fromJson).toList();
 
-      expect(parsed, hasLength(511));
-      // 343 -> 365 with the licensed import of 2026-08-02, then -> 186 on
-      // 2026-08-03 when the unlicensed Drive scaffold was removed from the
-      // catalog. `fromJson` has to
-      // keep reading `video` whatever the values look like, and every one of
-      // the 219 references is now an object key rather than a url — so this
-      // also pins that the parser did not quietly start dropping the ones it
-      // cannot recognise as a link.
-      expect(parsed.where((e) => e.video.isNotEmpty), hasLength(355));
-      // 329 -> 33 two-body entries: the scaffold filmed nearly everything
-      // twice and the purchased pack often films a movement once.
-      expect(parsed.where((e) => e.video.length == 2), hasLength(85));
+      expect(parsed, hasLength(1887));
+      // Every reference is an object key rather than a url, so this also pins
+      // that the parser did not quietly start dropping the ones it cannot
+      // recognise as a link. It used to read 355 of 511 — the pre-purchase
+      // catalog's clipped share, which moved with every licence pass; that
+      // catalog was removed on 2026-08-04 and the number stopped being a
+      // moving target, because a vendor entry that cannot be played does not
+      // ship at all.
+      expect(parsed.where((e) => e.video.isNotEmpty), hasLength(1887));
+      // The purchased pack films most movements on one body and 652 on both.
+      expect(parsed.where((e) => e.video.length == 2), hasLength(652));
       for (final e in parsed.where((e) => e.video.isNotEmpty)) {
         expect(e.video.keys, everyElement(anyOf('girl', 'men')), reason: e.id);
       }
@@ -138,13 +137,13 @@ void main() {
       // because the failure this guards — an exercise that advertises a clip
       // and then refuses to produce one — is identical in both shapes.
       final rows =
-          (jsonDecode(File('assets/data/exercises.json').readAsStringSync())
+          (jsonDecode(File('assets/data/exercises_vendor.json').readAsStringSync())
                   as List)
               .cast<Map<String, dynamic>>()
               .map(ExerciseItem.fromJson)
               .toList();
       final withClips = rows.where((e) => e.video.isNotEmpty);
-      expect(withClips, hasLength(355));
+      expect(withClips, hasLength(1887));
       expect(withClips.where((e) => e.playableVideoFor(null) == null), isEmpty,
           reason: 'an exercise with a clip that refuses to play it');
     });

@@ -8,33 +8,16 @@ import 'equipment_repository.dart';
 
 /// Reads the bundled catalog, optionally translated.
 ///
-/// The English `exercises.json` is the base and the only source of structure:
-/// ids, muscles, contraindications and frames all come from it in every
-/// language. A translation is a text-only overlay keyed by exercise id
-/// (`exercises.<code>.json`) patched over that base, so a language can never
-/// add, drop or re-tag an exercise.
+/// `exercises_vendor.json` is the base and the only source of structure: ids,
+/// muscles, machine links and clips all come from it in every language. A
+/// translation is a text-only overlay keyed by exercise id
+/// (`exercises_vendor.<code>.json`) patched over that base, so a language can
+/// never add, drop or re-tag an exercise.
 class AssetEquipmentRepository implements EquipmentRepository {
-  AssetEquipmentRepository({
-    this.languageCode = 'en',
-    this.includeLegacy = true,
-  });
+  AssetEquipmentRepository({this.languageCode = 'en'});
 
   /// Which translation overlay to apply. `'en'` means "the base, unmodified".
   final String languageCode;
-
-  /// Whether the original 511 exercises are part of the catalog.
-  ///
-  /// Two libraries live side by side. `exercises.json` is the one built before
-  /// the purchase — 511 entries carrying Russian text, injury
-  /// contraindications and links to the 52 machines the scanner knows, of
-  /// which 365 can be demonstrated. `exercises_vendor.json` is the purchased
-  /// library: 1,899 movements, every one with a clip, and no contraindications
-  /// or machine links of its own yet.
-  ///
-  /// The operator asked to be able to drop the first at any moment, so the
-  /// switch exists from the day the second arrives rather than being retrofitted
-  /// once something depends on the mixture.
-  final bool includeLegacy;
 
   List<EquipmentItem>? _equipment;
   List<ExerciseItem>? _exercises;
@@ -49,21 +32,19 @@ class AssetEquipmentRepository implements EquipmentRepository {
     _equipment = applyEquipmentTranslations(
         eqBase, await _loadOverlay('assets/data/equipment.$languageCode.json'));
 
-    final exercises = <ExerciseItem>[
-      if (includeLegacy)
-        ...await _loadCatalog('exercises'),
-      ...await _loadCatalog('exercises_vendor'),
-    ];
-    _exercises = List<ExerciseItem>.unmodifiable(exercises);
+    // One catalog, since 2026-08-04. The pre-purchase `exercises.json` (511
+    // entries, of which 337 could be demonstrated) was removed once its clips
+    // were found to be ~99.5% duplicates of vendor footage and every machine
+    // it linked had vendor exercises of its own.
+    _exercises =
+        List<ExerciseItem>.unmodifiable(await _loadCatalog('exercises_vendor'));
   }
 
   /// One catalog file plus its translation overlay.
   ///
-  /// The vendor list is loaded through exactly the same path as the original,
-  /// including the overlay contract — text only, keyed by id, never able to add
-  /// or re-tag an exercise. Giving it its own loader would have been a second
-  /// place for that contract to be enforced, and therefore a second place for
-  /// it to stop being enforced.
+  /// Still a named-catalog loader rather than an inlined read: the overlay
+  /// contract it enforces — text only, keyed by id, never able to add or
+  /// re-tag an exercise — is the thing worth keeping in one place.
   Future<List<ExerciseItem>> _loadCatalog(String name) async {
     late final String raw;
     try {
@@ -156,8 +137,26 @@ class AssetEquipmentRepository implements EquipmentRepository {
   static ExerciseItem _translate(ExerciseItem item, Object? entry) {
     if (entry is! Map) return item;
     final title = entry['title'];
+    if (title is! String || title.trim().isEmpty) return item;
     final steps = ExerciseItem.parseSteps(entry['steps']);
-    if (title is! String || title.trim().isEmpty || steps.isEmpty) return item;
+    // An overlay with no steps used to discard the whole entry, title and
+    // all. That was safe while the pre-purchase catalog was the visible half
+    // — every one of its rows had instructions. The purchased library ships
+    // 403 of 1,887 with a title and no steps at all, so after that catalog
+    // was removed on 2026-08-04 this guard was silently leaving a fifth of
+    // the app reading English under a Russian UI, with a perfectly good
+    // translation sitting unused in the overlay file.
+    //
+    // Keeping the base steps rather than blanking them is the other half:
+    // an overlay that loses its steps must not be able to delete
+    // instructions the user needs, in any language.
+    if (steps.isEmpty) {
+      return item.withText(
+        title: title,
+        summary: item.summary,
+        steps: item.steps,
+      );
+    }
     return item.withText(
       title: title,
       summary: steps.first,
