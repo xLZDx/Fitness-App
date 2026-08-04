@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/state/auth_providers.dart';
+import '../../workouts/state/session_screening_providers.dart';
 import '../data/mock_profile_repository.dart';
 import '../data/profile_models.dart';
 import '../data/profile_repository.dart';
@@ -40,6 +42,17 @@ class ProfileSubmit extends Notifier<AsyncValue<void>> {
     try {
       final repo = ref.read(profileRepositoryProvider);
       await repo.save(draft.copyWith(completedAt: DateTime.now()));
+      // The injury list may have just changed, and a reminder scheduled
+      // before it fires from the OS with no render pass to screen it. This is
+      // the only save path in the app, so it is the only place that can catch
+      // that. Best-effort: the profile is saved either way, and failing the
+      // submit because a notification could not be cancelled would be worse
+      // than the stale reminder.
+      try {
+        await ref.read(sessionReminderReconcilerProvider).reconcile();
+      } catch (e) {
+        debugPrint('reminder reconcile after profile save failed: $e');
+      }
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);

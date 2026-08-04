@@ -101,6 +101,13 @@
   "equipmentTryScanningADifferentCodeOr": "Try scanning a different code, or browse manually from the Train tab.",
   "equipmentWarmUp": "Warm-up",
   "equipmentWeCouldnTFindThatExercise": "We couldn't find that exercise.",
+  "equipmentHiddenForInjury": "{title} isn't shown for your profile",
+  "@equipmentHiddenForInjury": {
+    "description": "Shown when a deep link or scheduled session points at an exercise that conflicts with an injury the user logged. Deliberately not 'not found' -- it exists, and their own injury list is why it is being withheld.",
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "equipmentHiddenForInjuryHint": "It conflicts with an injury you told us about. You can change your injury list in your profile.",
+  "equipmentScheduledHiddenForInjury": "Conflicts with a logged injury",
   "equipmentWorkout": "Workout",
   "formcheckFormCoach": "Form coach",
   "formcheckFormCoachIsASustainerBenefit": "Form coach is a Sustainer benefit",

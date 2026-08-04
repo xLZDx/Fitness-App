@@ -13,8 +13,7 @@ import '../moments/state/moment_providers.dart';
 import '../moments/widgets/day3_welcome_modal.dart';
 import '../progress/data/progress_stats.dart';
 import '../recovery/widgets/deload_banner.dart';
-import '../workouts/data/scheduled_session.dart';
-import '../workouts/state/scheduled_session_providers.dart';
+import '../workouts/state/session_screening_providers.dart';
 import '../workouts/state/workout_log_providers.dart';
 import 'data/suggestion_builder.dart';
 import 'state/suggestion_providers.dart';
@@ -61,7 +60,12 @@ class _HomePageState extends ConsumerState<HomePage> {
       logs,
       totals: ref.watch(workoutTotalsProvider).valueOrNull,
     );
-    final upcoming = ref.watch(upcomingSessionsProvider);
+    // Screened, not merely filtered by date: a session is a snapshot of what
+    // was safe when it was scheduled, and the user's injuries can have changed
+    // since. Empty while the catalog and profile resolve, which is the same
+    // empty the stream itself starts from.
+    final upcoming = ref.watch(screenedUpcomingSessionsProvider).valueOrNull ??
+        const <ScreenedSession>[];
 
     return FrostedScaffold(
       appBar: GlassAppBar(title: AppLocalizations.of(context).homeHome),
@@ -83,7 +87,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             _SectionHeader(l10n.homeSectionUpcoming),
             const SizedBox(height: 12),
             for (final s in upcoming.skip(1).take(3)) ...[
-              _UpcomingCard(session: s),
+              _UpcomingCard(screened: s),
               const SizedBox(height: 12),
             ],
           ],
@@ -180,7 +184,7 @@ class _GradientTile extends StatelessWidget {
 
 class _TodayCard extends StatelessWidget {
   const _TodayCard({required this.upcoming});
-  final List<ScheduledSession> upcoming;
+  final List<ScreenedSession> upcoming;
 
   @override
   Widget build(BuildContext context) {
@@ -223,17 +227,22 @@ class _TodayCard extends StatelessWidget {
       );
     }
 
-    final next = upcoming.first;
+    final screened = upcoming.first;
+    final next = screened.session;
     return GlassCard(
       onTap: () => GoRouter.of(context).push('/workout/${next.exerciseId}'),
       child: Row(
         children: [
           _GradientTile(
-            icon: Icons.event_available_outlined,
-            gradient: const [
-              AppPalette.auroraViolet,
-              AppPalette.auroraBlue,
-            ],
+            icon: screened.hiddenForInjury
+                ? Icons.report_problem_outlined
+                : Icons.event_available_outlined,
+            gradient: screened.hiddenForInjury
+                ? const [AppPalette.auroraPeach, AppPalette.auroraPink]
+                : const [
+                    AppPalette.auroraViolet,
+                    AppPalette.auroraBlue,
+                  ],
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -248,11 +257,15 @@ class _TodayCard extends StatelessWidget {
                         ?.copyWith(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 2),
                 Text(
-                  AppLocalizations.of(context).notificationsMin(
-                      formatScheduleLabel(l10n, next.scheduledFor),
-                      next.durationMinutes),
+                  screened.hiddenForInjury
+                      ? l10n.equipmentScheduledHiddenForInjury
+                      : AppLocalizations.of(context).notificationsMin(
+                          formatScheduleLabel(l10n, next.scheduledFor),
+                          next.durationMinutes),
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurface.withValues(alpha: 0.60),
+                    color: screened.hiddenForInjury
+                        ? scheme.error
+                        : scheme.onSurface.withValues(alpha: 0.60),
                   ),
                 ),
               ],
@@ -268,11 +281,12 @@ class _TodayCard extends StatelessWidget {
 }
 
 class _UpcomingCard extends StatelessWidget {
-  const _UpcomingCard({required this.session});
-  final ScheduledSession session;
+  const _UpcomingCard({required this.screened});
+  final ScreenedSession screened;
 
   @override
   Widget build(BuildContext context) {
+    final session = screened.session;
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
@@ -308,11 +322,15 @@ class _UpcomingCard extends StatelessWidget {
                         ?.copyWith(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 2),
                 Text(
-                  AppLocalizations.of(context).notificationsMin(
-                      formatScheduleLabel(l10n, session.scheduledFor),
-                      session.durationMinutes),
+                  screened.hiddenForInjury
+                      ? l10n.equipmentScheduledHiddenForInjury
+                      : AppLocalizations.of(context).notificationsMin(
+                          formatScheduleLabel(l10n, session.scheduledFor),
+                          session.durationMinutes),
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurface.withValues(alpha: 0.60),
+                    color: screened.hiddenForInjury
+                        ? scheme.error
+                        : scheme.onSurface.withValues(alpha: 0.60),
                   ),
                 ),
               ],

@@ -77,8 +77,12 @@ class OfflinePrefetchAction extends Notifier<AsyncValue<void>> {
       // session's exercise videoUrl from the equipment catalog. Tests inject
       // [videoUrlsFor] deterministically; the `??` short-circuits so the
       // catalog is only read when no closure is supplied.
+      // The screened catalog, so a week of downloads never contains footage
+      // for an exercise the user is not shown. A named behaviour change: an
+      // injured user's prefetch is now smaller, and the clips it skips are
+      // exactly the ones they could not have opened anyway.
       final resolve = videoUrlsFor ??
-          videoUrlResolverFor(await ref.read(allExercisesProvider.future));
+          videoUrlResolverFor(await ref.read(safeCatalogProvider.future));
       // Collect first, resolve once, then download.
       //
       // A licensed clip's catalog entry is an object key, not a URL, and Dio

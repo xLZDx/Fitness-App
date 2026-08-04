@@ -27,6 +27,23 @@ bool _injuryHits(String injury, String contraindication) {
   return a.contains(b) || b.contains(a);
 }
 
+/// True when [exercise] conflicts with any of [injuries].
+///
+/// The single-item form of [filterContraindicated], and the reason it exists:
+/// a deep link, a scheduled session and a reminder each arrive holding one
+/// exercise id, never a list. Before this, the only way to ask the question
+/// was to build a one-element list and check whether it came back empty —
+/// which is why the three of them each ended up not asking it at all.
+bool isContraindicated(ExerciseItem exercise, Iterable<Injury> injuries) {
+  if (exercise.contraindications.isEmpty) return false;
+  for (final c in exercise.contraindications) {
+    for (final i in injuries) {
+      if (_injuryHits(i.bodyPart, c)) return true;
+    }
+  }
+  return false;
+}
+
 /// Drops any exercise whose [ExerciseItem.contraindications] overlaps the
 /// user's reported injuries. Exercises with no contraindication tags are
 /// always kept.
@@ -35,17 +52,9 @@ List<ExerciseItem> filterContraindicated(
   Iterable<Injury> injuries,
 ) {
   if (injuries.isEmpty) return exercises.toList(growable: false);
-  final injuryTokens = injuries.map((i) => i.bodyPart).toList(growable: false);
+  final list = injuries.toList(growable: false);
   return exercises
-      .where((ex) {
-        if (ex.contraindications.isEmpty) return true;
-        for (final c in ex.contraindications) {
-          for (final i in injuryTokens) {
-            if (_injuryHits(i, c)) return false;
-          }
-        }
-        return true;
-      })
+      .where((ex) => !isContraindicated(ex, list))
       .toList(growable: false);
 }
 
@@ -177,6 +186,29 @@ List<ExerciseItem> withDemonstration(Iterable<ExerciseItem> exercises) =>
         .where((e) => e.playableVideoFor(null) != null || e.videoUrl != null)
         .toList(growable: false);
 
+/// Safety only: contraindicated exercises removed, order left exactly as
+/// given.
+///
+/// Split out of [recommended], which fused this with [sortByTierFit] and gave
+/// callers no way to take one without the other. Everything that needs the
+/// safety guarantee but has its own idea of ordering — the For-you ranker, the
+/// offline prefetch list, a single deep-linked exercise — was therefore
+/// choosing between "ranked twice" and "not screened at all", and more than
+/// one of them chose the second.
+///
+/// A null [profile] returns the input untouched. That is correct for a signed-
+/// out user, who has no injuries to screen against, and catastrophic for a
+/// user whose profile merely has not arrived yet — see
+/// `screeningProfileProvider`, which is why no caller passes a sampled
+/// `.valueOrNull` any more.
+List<ExerciseItem> safeFor(
+  Iterable<ExerciseItem> exercises,
+  UserProfile? profile,
+) {
+  if (profile == null) return exercises.toList(growable: false);
+  return filterContraindicated(exercises, profile.health.injuries);
+}
+
 /// Full pipeline: hide contraindicated exercises, then surface tier-fit ones
 /// first. Profile may be null (returns the input untouched, copied).
 ///
@@ -190,6 +222,5 @@ List<ExerciseItem> recommended(
   UserProfile? profile,
 ) {
   if (profile == null) return exercises.toList(growable: false);
-  final filtered = filterContraindicated(exercises, profile.health.injuries);
-  return sortByTierFit(filtered, profile.level.tier);
+  return sortByTierFit(safeFor(exercises, profile), profile.level.tier);
 }

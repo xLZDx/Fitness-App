@@ -151,4 +151,87 @@ void main() {
       expect(out.map((e) => e.id), ['adv_safe', 'beg_safe']);
     });
   });
+
+  group('safety without ranking', () {
+    // `recommended` fused screening and tier-sorting with no way to take one
+    // without the other, so every caller that had its own idea of order --
+    // the For-you ranker, the offline prefetch list, a single deep-linked
+    // exercise -- was choosing between ranking twice and not screening at
+    // all. More than one of them chose the second.
+    final profile = UserProfile(
+      uid: 'u1',
+      health: const HealthHistory(injuries: [
+        Injury(bodyPart: 'knee', type: 'sprain'),
+      ]),
+      level: const FitnessLevel(tier: FitnessTier.advanced),
+    );
+
+    test('safeFor screens and leaves the order alone', () {
+      final list = [
+        _ex(id: 'adv_safe', difficulty: ExerciseDifficulty.advanced),
+        _ex(id: 'adv_risk',
+            difficulty: ExerciseDifficulty.advanced,
+            contraindications: ['knee']),
+        _ex(id: 'beg_safe', difficulty: ExerciseDifficulty.beginner),
+      ];
+      expect(safeFor(list, profile).map((e) => e.id), ['adv_safe', 'beg_safe']);
+    });
+
+    test('recommended is safeFor plus the ranking, not a second rule', () {
+      final list = [
+        _ex(id: 'beg_safe', difficulty: ExerciseDifficulty.beginner),
+        _ex(id: 'adv_risk',
+            difficulty: ExerciseDifficulty.advanced,
+            contraindications: ['knee']),
+        _ex(id: 'adv_safe', difficulty: ExerciseDifficulty.advanced),
+      ];
+      expect(
+        recommended(list, profile).map((e) => e.id).toSet(),
+        safeFor(list, profile).map((e) => e.id).toSet(),
+      );
+    });
+
+    test('a null profile is left untouched by both', () {
+      final list = [_ex(id: 'a', contraindications: ['knee'])];
+      expect(safeFor(list, null).map((e) => e.id), ['a']);
+      expect(recommended(list, null).map((e) => e.id), ['a']);
+    });
+  });
+
+  group('one exercise at a time', () {
+    // A deep link, a scheduled session and a reminder each arrive holding one
+    // id. Before this the only way to ask was to build a one-element list and
+    // see whether it came back empty, which is why all three ended up not
+    // asking.
+    const injuries = [Injury(bodyPart: 'knee', type: 'sprain')];
+
+    test('a conflicting tag is caught', () {
+      expect(
+        isContraindicated(_ex(id: 'a', contraindications: ['knee']), injuries),
+        isTrue,
+      );
+    });
+
+    test('an untagged exercise is not', () {
+      expect(isContraindicated(_ex(id: 'a'), injuries), isFalse);
+    });
+
+    test('an unrelated tag is not', () {
+      expect(
+        isContraindicated(
+            _ex(id: 'a', contraindications: ['shoulder']), injuries),
+        isFalse,
+      );
+    });
+
+    test('it agrees with the list form, which is built on it', () {
+      final list = [
+        _ex(id: 'risk', contraindications: ['knee']),
+        _ex(id: 'safe'),
+      ];
+      final kept = filterContraindicated(list, injuries).map((e) => e.id);
+      expect(kept,
+          list.where((e) => !isContraindicated(e, injuries)).map((e) => e.id));
+    });
+  });
 }

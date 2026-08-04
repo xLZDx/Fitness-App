@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:fitness_app/features/equipment/data/asset_equipment_repository.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 
@@ -32,10 +33,27 @@ void main() {
         imageUrls: imageUrls,
       );
 
+  // Seeded through the repository rather than by overriding the per-equipment
+  // provider: that provider is private now, because five call sites read past
+  // its "use the recommended feed instead" doc-comment. Overriding the
+  // repository is also the more honest fixture — it exercises the same lookup
+  // the app performs.
   Future<String?> heroFor(List<ExerciseItem> exercises) async {
+    final repo = AssetEquipmentRepository()
+      ..seedForTests(
+        equipment: const [
+          EquipmentItem(
+            id: 'lat_pulldown',
+            name: 'Lat pulldown',
+            manufacturer: 'Any',
+            category: 'strength',
+            description: 'd',
+          ),
+        ],
+        exercises: exercises,
+      );
     final container = ProviderContainer(overrides: [
-      exercisesForEquipmentProvider('lat_pulldown')
-          .overrideWith((ref) async => exercises),
+      equipmentRepositoryProvider.overrideWithValue(repo),
     ]);
     addTearDown(container.dispose);
     return container.read(equipmentHeroImageProvider('lat_pulldown').future);

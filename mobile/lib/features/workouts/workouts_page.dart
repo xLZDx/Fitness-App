@@ -136,10 +136,10 @@ final _filteredExercisesProvider =
     return videoFirst(await ref.watch(rankedForYouProvider.future));
   }
   if (filter == WorkoutsFilter.all) {
-    return videoFirst(await ref.watch(allExercisesProvider.future));
+    return videoFirst(await ref.watch(safeCatalogProvider.future));
   }
   if (filter == WorkoutsFilter.noEquipment) {
-    final all = await ref.watch(allExercisesProvider.future);
+    final all = await ref.watch(safeCatalogProvider.future);
     // `!needsEquipment`, not `equipmentId == null`. The purchased library has
     // no machine ids at all, so the old test promised a no-equipment tab and
     // filled it with barbell work; the vendor's own equipment column is what
@@ -147,19 +147,19 @@ final _filteredExercisesProvider =
     return videoFirst(all.where((e) => !e.needsEquipment).toList());
   }
   if (filter == WorkoutsFilter.stretching) {
-    final all = await ref.watch(allExercisesProvider.future);
+    final all = await ref.watch(safeCatalogProvider.future);
     return videoFirst(all.where((e) => e.isStretch).toList());
   }
 
   final muscles = kFilterMuscles[filter];
   if (muscles != null) {
-    final all = await ref.watch(allExercisesProvider.future);
+    final all = await ref.watch(safeCatalogProvider.future);
     return videoFirst(
         all.where((e) => e.muscles.any(muscles.contains)).toList());
   }
 
   final categories = kFilterCategories[filter]!;
-  final all = await ref.watch(allExercisesProvider.future);
+  final all = await ref.watch(safeCatalogProvider.future);
   final equipment =
       await ref.watch(equipmentRepositoryProvider).listEquipment();
   final wantedIds = {
@@ -404,7 +404,7 @@ class _OfflinePrefetchCard extends ConsumerWidget {
         }
         // Explicit wiring: resolve the catalog, then hand prefetch a real
         // videoUrlsFor closure (shared resolver, same as the provider default).
-        final catalog = await ref.read(allExercisesProvider.future);
+        final catalog = await ref.read(safeCatalogProvider.future);
         await ref
             .read(offlinePrefetchActionProvider.notifier)
             .prefetchNext7Days(videoUrlsFor: videoUrlResolverFor(catalog));

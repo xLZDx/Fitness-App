@@ -53,6 +53,10 @@ ProviderContainer _makeContainer({
     // locales the test runner happens to report.
     effectiveLanguageCodeProvider.overrideWithValue('en'),
     equipmentRepositoryProvider.overrideWithValue(repo as EquipmentRepository),
+    // No signed-in user, so nothing to screen against. Stated rather than
+    // inherited: the safe catalog now waits on auth AND the profile, and a
+    // container that resolved neither would hang instead of failing.
+    screeningProfileProvider.overrideWith((ref) async => null),
     generatedExerciseRepositoryProvider
         .overrideWithValue(generatedRepo ?? MockGeneratedExerciseRepository()),
     aiExerciseGeneratorProvider.overrideWithValue(AiExerciseGenerator(ask: (_) async {
@@ -108,7 +112,7 @@ void main() {
     });
   });
 
-  group('allExercisesProvider', () {
+  group('safeCatalogProvider', () {
     test('a cached AI exercise is NOT surfaced — it has no footage', () async {
       // A behaviour change, not a broken test. AI-generated exercises are text:
       // a title, muscles and steps, with nothing to play. Since 2026-08-03 the
@@ -139,7 +143,7 @@ void main() {
       ]);
       final container =
           _makeContainer(askCallCount: () => calls++, generatedRepo: genRepo);
-      final out = await container.read(allExercisesProvider.future);
+      final out = await container.read(safeCatalogProvider.future);
       expect(out.map((e) => e.title), isNot(contains('Cached AI exercise')),
           reason: 'text with no clip must not appear as a demonstrable exercise');
       expect(calls, 0,
@@ -149,7 +153,7 @@ void main() {
     test('a machine that was never visited stays absent from the feed',
         () async {
       final container = _makeContainer(askCallCount: () => 0);
-      final out = await container.read(allExercisesProvider.future);
+      final out = await container.read(safeCatalogProvider.future);
       expect(out.where((e) => e.equipmentId == 'elliptical'), isEmpty);
     });
   });

@@ -1,9 +1,11 @@
-import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/foundation.dart' show debugPrint, visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/settings/state/settings_providers.dart';
 import '../../ai_coach/ai_exercise_generator.dart';
 import '../../ai_coach/generated_exercise_repository.dart';
+import '../../auth/state/auth_providers.dart';
+import '../../profile/data/profile_models.dart';
 import '../../profile/state/profile_providers.dart';
 import '../data/asset_equipment_repository.dart';
 import '../data/clip_url_resolver.dart';
@@ -39,10 +41,39 @@ final equipmentListProvider = FutureProvider<List<EquipmentItem>>((ref) {
   return repo.listEquipment();
 });
 
+/// The profile every safety decision is made against.
+///
+/// ## Why not `ref.watch(currentProfileProvider).valueOrNull`
+///
+/// That was the shape of every caller in this file, and it collapses two
+/// different facts into the same `null`: "this user has no profile" and "the
+/// profile has not arrived yet". [safeFor] reads null as the first and returns
+/// the catalog unscreened, so during cold start — and again after every sign-in
+/// and every profile refetch — an injured user was served the full catalog for
+/// as long as the read took.
+///
+/// The collapse happened twice over, because `currentProfileProvider` samples
+/// auth the same way (`profile_providers.dart:17-18`): while Firebase is still
+/// restoring the session, `authUserProvider` is `AsyncLoading`, `valueOrNull`
+/// is null, and the profile stream short-circuits to `Stream.value(null)` — a
+/// resolved null, indistinguishable from a signed-out user. Awaiting only the
+/// profile would not have been enough.
+///
+/// So both are awaited. Anything downstream stays [AsyncLoading] until the
+/// answer is real, and the UI renders the spinner it already renders. Waiting
+/// is recoverable; showing an injured user an exercise that hurts them is not.
+final screeningProfileProvider = FutureProvider<UserProfile?>((ref) async {
+  final user = await ref.watch(authUserProvider.future);
+  if (user == null) return null;
+  return ref.watch(currentProfileProvider.future);
+});
+
 /// All exercises that target a specific piece of equipment, looked up by id.
-/// Use [recommendedExercisesProvider] when surfacing them to the user — this
-/// is the raw, unfiltered list (still useful for debug or admin views).
-final exercisesForEquipmentProvider =
+///
+/// Private: the raw, unscreened list. [recommendedExercisesProvider] is the
+/// only thing outside this file that should be surfacing exercises for a
+/// machine.
+final _exercisesForEquipmentProvider =
     FutureProvider.family<List<ExerciseItem>, String>((ref, equipmentId) {
   final repo = ref.watch(equipmentRepositoryProvider);
   return repo.exercisesFor(equipmentId);
@@ -66,9 +97,20 @@ final aiExerciseGeneratorProvider =
 /// thrown Future — [recommendedExercisesProvider]'s `.when()` renders that as
 /// an error card, which is honest: "no exercises" and "couldn't generate any"
 /// are different facts and must not read the same to the user.
+///
+/// Raw and unscreened, like everything else on this side of the boundary. It
+/// is `@visibleForTesting` rather than `_`-private only because the
+/// generate-once-and-cache economics it encodes have no other observable seam:
+/// the public feed applies [withDemonstration], which drops AI text entirely,
+/// so a test asserting through it could no longer tell a cache hit from a
+/// generated miss. A reader in `lib/` raises
+/// `invalid_use_of_visible_for_testing_member` — verified, and a warning
+/// rather than an error, which is why `catalog_boundary_test.dart` fails on
+/// one as well rather than trusting the annotation alone.
+@visibleForTesting
 final exercisesForEquipmentWithAiFallbackProvider =
     FutureProvider.family<List<ExerciseItem>, String>((ref, equipmentId) async {
-  final real = await ref.watch(exercisesForEquipmentProvider(equipmentId).future);
+  final real = await ref.watch(_exercisesForEquipmentProvider(equipmentId).future);
   if (real.isNotEmpty) return real;
 
   final lang = ref.watch(effectiveLanguageCodeProvider);
@@ -109,7 +151,13 @@ final equipmentByIdProvider =
 /// миллион апиай запросов на 1 фото/тренажёр"). A machine's generated
 /// exercises join this feed only after its own detail page has been opened
 /// at least once, which is what actually triggers generation+save.
-final allExercisesProvider = FutureProvider<List<ExerciseItem>>((ref) async {
+///
+/// Private. This is the unscreened catalog, and it was public with a
+/// doc-comment saying "use [recommendedExercisesProvider] when surfacing them
+/// to the user" — which five call sites in `workouts_page.dart` and one in
+/// `offline_video_providers.dart` read straight past. A comment is not a
+/// boundary. [safeCatalogProvider] is the public one now.
+final _allExercisesProvider = FutureProvider<List<ExerciseItem>>((ref) async {
   final repo = ref.watch(equipmentRepositoryProvider);
   final body = await repo.bodyweightExercises();
   final equip = await repo.listEquipment();
@@ -155,7 +203,7 @@ final allExercisesProvider = FutureProvider<List<ExerciseItem>>((ref) async {
 final equipmentHeroImageProvider =
     FutureProvider.family<String?, String>((ref, equipmentId) async {
   final exercises =
-      await ref.watch(exercisesForEquipmentProvider(equipmentId).future);
+      await ref.watch(_exercisesForEquipmentProvider(equipmentId).future);
   for (final e in exercises) {
     final poster = e.posterFor(null);
     if (poster != null) return poster;
@@ -182,7 +230,7 @@ final recommendedExercisesProvider =
     FutureProvider.family<RecommendedExercises, String>((ref, equipmentId) async {
   final raw = await ref
       .watch(exercisesForEquipmentWithAiFallbackProvider(equipmentId).future);
-  final profile = ref.watch(currentProfileProvider).valueOrNull;
+  final profile = await ref.watch(screeningProfileProvider.future);
   // Clip-only first, injuries second, and the count is taken AFTER the first.
   // Measuring it against `raw` would report an exercise we simply cannot
   // demonstrate as one the user's injuries removed.
@@ -195,12 +243,115 @@ final recommendedExercisesProvider =
   );
 });
 
+/// **The public catalog.** Every exercise in the app, screened against the
+/// signed-in user's injuries and otherwise in catalog order.
+///
+/// Order is deliberately left alone: this is the safety boundary, not a
+/// ranking. Callers that want the For-you order read
+/// [forYouExercisesProvider]; callers slicing by muscle or category do their
+/// own slicing on top of a list that is already safe. Fusing the two is what
+/// made the raw feed the path of least resistance in the first place.
+final safeCatalogProvider = FutureProvider<List<ExerciseItem>>((ref) async {
+  final all = await ref.watch(_allExercisesProvider.future);
+  final profile = await ref.watch(screeningProfileProvider.future);
+  return safeFor(all, profile);
+});
+
 /// "For you" feed for the Train tab: every exercise across the catalog,
 /// filtered + tier-sorted for the signed-in user.
 final forYouExercisesProvider = FutureProvider<List<ExerciseItem>>((ref) async {
-  final all = await ref.watch(allExercisesProvider.future);
-  final profile = ref.watch(currentProfileProvider).valueOrNull;
-  return recommended(all, profile);
+  final safe = await ref.watch(safeCatalogProvider.future);
+  final profile = await ref.watch(screeningProfileProvider.future);
+  // Already screened by [safeCatalogProvider]; this only orders it. Running
+  // the safety filter twice would be harmless but would say, in code, that
+  // nobody was sure whether the first one had happened.
+  return sortByTierFit(safe, profile?.level.tier);
+});
+
+/// What a lookup by exercise id found, and whether the user may see it.
+///
+/// Three outcomes, not two. "We have no such exercise" and "we have it and it
+/// conflicts with an injury you told us about" are different facts, and
+/// collapsing them into a bare not-found — which is what a deep link did —
+/// tells a user with a knee injury that the squat they were linked to does not
+/// exist. It does; it is being withheld, and saying so is both more honest and
+/// the only version that lets them act on it.
+class ExerciseResolution {
+  const ExerciseResolution._(this.exercise, this.hiddenForInjury);
+
+  /// Found, and safe to show.
+  const ExerciseResolution.found(ExerciseItem exercise)
+      : this._(exercise, false);
+
+  /// No exercise carries this id.
+  const ExerciseResolution.notFound() : this._(null, false);
+
+  /// Found, but contraindicated by the user's own injury list.
+  const ExerciseResolution.hiddenForInjury(ExerciseItem exercise)
+      : this._(exercise, true);
+
+  /// The exercise, whether or not it may be shown. Null only when nothing
+  /// carries the id.
+  final ExerciseItem? exercise;
+
+  /// True when [exercise] exists but conflicts with a logged injury.
+  final bool hiddenForInjury;
+
+  /// The exercise, or null when it must not be surfaced.
+  ExerciseItem? get visible => hiddenForInjury ? null : exercise;
+}
+
+/// Resolves a single exercise id through the same safety boundary as every
+/// list.
+///
+/// ## Why this had to move here
+///
+/// It used to live in `workout_player_page.dart` as a private provider whose
+/// non-`ai::` branch re-scanned `equipmentRepositoryProvider` directly — so
+/// the deep link `/workout/:id` reached the raw catalog no matter what the
+/// lists did, and privatising the list providers would have closed none of it.
+/// The scheduled-session screening needs exactly the same lookup, which is the
+/// second reason it belongs in one place rather than two.
+final exerciseResolutionProvider =
+    FutureProvider.family<ExerciseResolution, String>((ref, id) async {
+  final profile = await ref.watch(screeningProfileProvider.future);
+
+  ExerciseResolution screen(ExerciseItem? found) {
+    if (found == null) return const ExerciseResolution.notFound();
+    final injuries = profile?.health.injuries ?? const [];
+    return isContraindicated(found, injuries)
+        ? ExerciseResolution.hiddenForInjury(found)
+        : ExerciseResolution.found(found);
+  }
+
+  // AI-generated ids are 'ai::<equipmentId>::<index>' and live only in the
+  // generated-exercise cache, never in the base repo. Screened by the same
+  // rule as everything else: no generator produces a `contraindications` tag
+  // today, so this is a no-op until S3b, and it is the branch that would
+  // otherwise be forgotten when one does.
+  if (id.startsWith('ai::')) {
+    final parts = id.split('::');
+    if (parts.length != 3) return const ExerciseResolution.notFound();
+    final lang = ref.watch(effectiveLanguageCodeProvider);
+    final cached =
+        await ref.watch(generatedExerciseRepositoryProvider).get(parts[1], lang);
+    if (cached == null) return const ExerciseResolution.notFound();
+    for (final e in cached) {
+      if (e.id == id) return screen(e);
+    }
+    return const ExerciseResolution.notFound();
+  }
+
+  final repo = ref.watch(equipmentRepositoryProvider);
+  for (final e in await repo.bodyweightExercises()) {
+    if (e.id == id) return screen(e);
+  }
+  for (final eq in await repo.listEquipment()) {
+    for (final e in await repo.exercisesFor(eq.id)) {
+      if (e.id == id) return screen(e);
+    }
+  }
+  return const ExerciseResolution.notFound();
 });
 
 /// Where a clip reference becomes a playable URL.

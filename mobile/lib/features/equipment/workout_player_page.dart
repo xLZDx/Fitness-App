@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../core/settings/state/settings_providers.dart';
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
@@ -49,40 +48,11 @@ int _restSecondsFor(ExerciseItem item) {
   return isCompound ? 180 : 90;
 }
 
-/// Looks up an exercise from the (preloaded) equipment catalog. Internal
-/// helper so we don't need a separate FutureProvider just for this page.
-final _exerciseByIdProvider =
-    FutureProvider.family<ExerciseItem?, String>((ref, id) async {
-  // AI-generated exercise ids are 'ai::<equipmentId>::<index>' — they live
-  // only in the generated-exercise cache, never in the base repo, so they
-  // need their own lookup path rather than the linear scan below.
-  if (id.startsWith('ai::')) {
-    final parts = id.split('::');
-    if (parts.length != 3) return null;
-    final equipmentId = parts[1];
-    final lang = ref.watch(effectiveLanguageCodeProvider);
-    final cached = await ref
-        .watch(generatedExerciseRepositoryProvider)
-        .get(equipmentId, lang);
-    if (cached == null) return null;
-    for (final e in cached) {
-      if (e.id == id) return e;
-    }
-    return null;
-  }
-
-  final repo = ref.watch(equipmentRepositoryProvider);
-  // Iterate every equipment + bodyweight pool — we only have a few hundred.
-  final all = <ExerciseItem>[
-    ...await repo.bodyweightExercises(),
-    for (final eq in await repo.listEquipment())
-      ...await repo.exercisesFor(eq.id),
-  ];
-  for (final e in all) {
-    if (e.id == id) return e;
-  }
-  return null;
-});
+// The lookup this page used to own moved to `exerciseResolutionProvider` in
+// `state/equipment_providers.dart`. Its scan read `equipmentRepositoryProvider`
+// directly, which meant a deep link to `/workout/:id` never passed the safety
+// filter the lists apply — and privatising the list providers would not have
+// changed that by one line, because this branch never read them.
 
 class WorkoutPlayerPage extends ConsumerWidget {
   const WorkoutPlayerPage({super.key, required this.exerciseId});
@@ -92,7 +62,7 @@ class WorkoutPlayerPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final exercise = ref.watch(_exerciseByIdProvider(exerciseId));
+    final exercise = ref.watch(exerciseResolutionProvider(exerciseId));
 
     return FrostedScaffold(
       appBar: GlassAppBar(title: AppLocalizations.of(context).equipmentWorkout),
@@ -100,7 +70,35 @@ class WorkoutPlayerPage extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(
             child: Text(AppLocalizations.of(context).equipmentCouldNotLoad(e))),
-        data: (item) {
+        data: (resolution) {
+          // Withheld, not missing. Saying "we couldn't find that exercise" to
+          // someone who was linked to it — from their own scheduled session,
+          // or a friend, or a plan — is false, and it hides the one fact they
+          // can act on: it is their own injury list doing this, and they can
+          // change it.
+          if (resolution.hiddenForInjury) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
+              child: GlassCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context).equipmentHiddenForInjury(
+                          resolution.exercise!.title),
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      AppLocalizations.of(context).equipmentHiddenForInjuryHint,
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          final item = resolution.visible;
           if (item == null) {
             return Padding(
               padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
