@@ -29,7 +29,12 @@ enum WorkoutsFilter {
   machines,
   freeWeights,
   cardio,
-  atHome,
+  // Was `atHome` until 2026-08-04. It never filtered on where you are: a
+  // kettlebell swing in your kitchen still needs a kettlebell, and a hamstring
+  // stretch in a commercial gym still needs nothing. It filters on
+  // `!needsEquipment`, and 476 of the 1,887 shipped exercises are that.
+  // Operator: *"создай отдельную группу для 436 и назови «без оборудования»"*.
+  noEquipment,
   // Muscle groups, ordered the way a gym-goer thinks about a split.
   chest,
   back,
@@ -78,8 +83,8 @@ String workoutsFilterLabel(AppLocalizations l, WorkoutsFilter f) {
       return l.workoutsFilterFreeWeights;
     case WorkoutsFilter.cardio:
       return l.workoutsFilterCardio;
-    case WorkoutsFilter.atHome:
-      return l.workoutsFilterAtHome;
+    case WorkoutsFilter.noEquipment:
+      return l.workoutsFilterNoEquipment;
     case WorkoutsFilter.chest:
       return l.workoutsFilterChest;
     case WorkoutsFilter.back:
@@ -133,7 +138,7 @@ final _filteredExercisesProvider =
   if (filter == WorkoutsFilter.all) {
     return videoFirst(await ref.watch(allExercisesProvider.future));
   }
-  if (filter == WorkoutsFilter.atHome) {
+  if (filter == WorkoutsFilter.noEquipment) {
     final all = await ref.watch(allExercisesProvider.future);
     // `!needsEquipment`, not `equipmentId == null`. The purchased library has
     // no machine ids at all, so the old test promised a no-equipment tab and

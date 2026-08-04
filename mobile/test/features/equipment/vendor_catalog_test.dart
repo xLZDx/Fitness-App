@@ -82,15 +82,29 @@ void main() {
       expect(untagged, greaterThan(0));
     });
 
-    test('only genuinely equipment-free exercises read as bodyweight', () {
-      // Every vendor entry has `equipmentId == null` because the library knows
-      // nothing of our 52 machines. The "at home" filter used to select on
-      // exactly that, so it offered barbell squats as bodyweight work.
+    test('«Без оборудования» is a real group, and only what belongs is in it',
+        () {
+      // Every vendor entry used to have `equipmentId == null` because the
+      // library knew nothing of our machines, and the filter selected on
+      // exactly that — so it offered barbell squats as bodyweight work. It
+      // selects on `needsEquipment` now, and 1,383 of these entries carry a
+      // real machine link, which is what makes the group meaningful rather
+      // than "everything we have not got round to".
+      //
+      // Operator, 2026-08-04: *"создай отдельную группу для 436 и назови «без
+      // оборудования»"*. 476, not 436: the 436 was a status count in the
+      // equipment audit, and the group is what the app can actually select —
+      // it also includes the floor stretches whose only listed "equipment" is
+      // a mat. Pinned as a range so re-linking one exercise does not fail
+      // this, but emptying or doubling the group does.
       final noEquipment = parsed.where((e) => !e.needsEquipment).toList();
-      expect(noEquipment, isNotEmpty);
+      expect(noEquipment.length, inInclusiveRange(440, 520));
       expect(noEquipment.length, lessThan(parsed.length ~/ 2),
           reason: 'most of a gym library needs equipment');
       for (final e in noEquipment) {
+        expect(e.equipmentId, isNull,
+            reason: '${e.id} is in the no-equipment group but links to a '
+                'machine');
         final label = e.equipmentLabel?.toLowerCase() ?? '';
         expect(
           label.isEmpty || label.startsWith('none') || label.contains('mat'),
@@ -101,7 +115,7 @@ void main() {
     });
 
     test('a mat does not count as equipment', () {
-      // Nobody filtering for "at home" means to exclude yoga.
+      // Nobody filtering for "no equipment" means to exclude yoga.
       const yoga = ExerciseItem(
         id: 'ea_x', title: 'X', equipmentId: null, muscles: [],
         difficulty: ExerciseDifficulty.beginner, durationMinutes: 10,

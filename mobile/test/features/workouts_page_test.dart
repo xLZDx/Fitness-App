@@ -148,7 +148,7 @@ void main() {
       const special = {
         WorkoutsFilter.forYou,
         WorkoutsFilter.all,
-        WorkoutsFilter.atHome,
+        WorkoutsFilter.noEquipment,
         WorkoutsFilter.stretching,
       };
       for (final f in WorkoutsFilter.values) {
@@ -201,14 +201,18 @@ void main() {
       expect(find.text('Push-ups'), findsNothing);
     });
 
-    testWidgets('At home filter shows only body-weight exercises',
+    testWidgets('No equipment filter shows only body-weight exercises',
         (tester) async {
+      // The chip read "At home" until 2026-08-04, which described a place the
+      // filter never checked: it selects on `!needsEquipment`, so a kettlebell
+      // swing in your kitchen is out and a hamstring stretch in a commercial
+      // gym is in.
       await tester.pumpWidget(_harness(_seededRepo()));
       await tester.pumpAndSettle();
 
-      await tester.scrollUntilVisible(find.text('At home'), 120,
+      await tester.scrollUntilVisible(find.text('No equipment'), 120,
           scrollable: _chipRow);
-      await tester.tap(find.text('At home'));
+      await tester.tap(find.text('No equipment'));
       await tester.pumpAndSettle();
 
       expect(find.text('Push-ups'), findsOneWidget);
