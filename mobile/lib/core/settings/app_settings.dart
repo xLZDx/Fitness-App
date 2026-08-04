@@ -68,9 +68,16 @@ extension AppLanguageX on AppLanguage {
 /// It is deliberately NOT a fake payment record: nothing is written to
 /// Firestore, no Stripe object is invented, and the webhook path is untouched.
 /// It only changes what this device believes about itself, which is exactly as
-/// much power as a test switch should have. The app is personal-use software,
-/// so it ships in release rather than hiding behind `kDebugMode` — a switch
-/// that only works in a build the operator never installs is not a test tool.
+/// much power as a test switch should have.
+///
+/// It used to ship unconditionally, and the argument written here was that "a
+/// switch that only works in a build the operator never installs is not a test
+/// tool". That is still true of `kDebugMode`, and it is why the guard is a
+/// dart-define instead: `kAllowTierOverride` defaults to TRUE, so the operator
+/// keeps the switch in every build they make, and a store build turns it off
+/// with `--dart-define=ALLOW_TIER_OVERRIDE=false`. The guard lives at
+/// `effectiveTierProvider`, not in Settings — hiding the toggle would leave the
+/// read site honouring a value already stored from before.
 enum TierOverride { off, standard, celebrity }
 
 /// User-controlled app preferences, persisted locally.

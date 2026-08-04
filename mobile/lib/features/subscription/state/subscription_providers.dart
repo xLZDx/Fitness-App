@@ -52,8 +52,45 @@ final currentSubscriptionProvider = StreamProvider<Subscription?>((ref) {
 /// Reading it HERE rather than at each gate is what makes it trustworthy: one
 /// place decides the tier, so the override cannot leave half the app thinking
 /// the user paid and the other half thinking they did not.
+/// Whether the tier override is allowed to answer at all.
+///
+/// A dart-define, not `kReleaseMode`. The two differ in the case that matters:
+/// `flutter test` runs in debug, so a `kReleaseMode` guard would be inert in
+/// every test and the five assertions in `tier_override_test.dart` would go on
+/// passing while proving nothing about the shipped build. A define is the same
+/// value in both, and the test command sets it explicitly.
+///
+/// Default true, deliberately. This is personal-use software and the switch
+/// exists because the paid surfaces could not be exercised at all; defaulting
+/// it off would restore that. Store builds pass
+/// `--dart-define=ALLOW_TIER_OVERRIDE=false`.
+const bool kAllowTierOverride =
+    bool.fromEnvironment('ALLOW_TIER_OVERRIDE', defaultValue: true);
+
+/// The same value, reachable from a test.
+///
+/// `bool.fromEnvironment` is resolved by the compiler, so a test cannot flip it
+/// and a guard written against the constant alone is one no test can exercise
+/// -- the five assertions in `tier_override_test.dart` would pass in a build
+/// where the switch works and say nothing about the build where it must not.
+/// Production reads the same constant through this provider and behaves
+/// identically.
+final allowTierOverrideProvider = Provider<bool>((_) => kAllowTierOverride);
+
 final effectiveTierProvider = Provider<SubscriptionTier>((ref) {
-  final override = ref.watch(settingsControllerProvider).tierOverride;
+  // Guarded at the read site rather than in Settings. A UI-only guard hides the
+  // switch and leaves this provider honouring whatever is already in
+  // `AppSettings` -- including a value set before the guard shipped, which
+  // SharedPreferences keeps across an update.
+  //
+  // This alone does not fully close it. Debug and release share
+  // `applicationId` and release is debug-signed (`android/app/build.gradle`),
+  // so a "release" build installs as an UPDATE over a debug one and inherits
+  // its preferences. R0's real signing key is what makes the two different
+  // installs; until then this is a guard, not a boundary.
+  final override = ref.watch(allowTierOverrideProvider)
+      ? ref.watch(settingsControllerProvider).tierOverride
+      : TierOverride.off;
   switch (override) {
     case TierOverride.standard:
       return SubscriptionTier.standard;
