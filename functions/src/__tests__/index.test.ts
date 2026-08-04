@@ -35,8 +35,20 @@ jest.mock("firebase-admin", () => {
     }
     return ref;
   };
+  // Transactions run their body immediately against the same ref registry.
+  // Serialisation is not modelled -- these tests assert what a transaction
+  // writes, not that Firestore retries it, and pretending otherwise would be
+  // a fake with opinions about a database it is not.
+  const runTransaction = jest.fn(async (fn: (tx: any) => Promise<any>) =>
+    fn({
+      get: (ref: any) => ref.get(),
+      set: (ref: any, data: any, opts?: any) => ref.set(data, opts),
+      delete: (ref: any) => ref.delete(),
+    }),
+  );
   const firestoreFn: any = jest.fn(() => ({
     doc: jest.fn((path: string) => getRef(path)),
+    runTransaction,
   }));
   firestoreFn.FieldValue = {
     serverTimestamp: jest.fn(() => "__SERVER_TIMESTAMP__"),
@@ -253,10 +265,18 @@ describe("createCheckoutSession", () => {
     );
 
     expect(res).toEqual({ url: "https://checkout.stripe.test/cs_test_2" });
-    expect(stripeMock.customers.create).toHaveBeenCalledWith({
-      email: "u2@example.com",
-      metadata: { firebaseUid: "u2" },
-    });
+    expect(stripeMock.customers.create).toHaveBeenCalledWith(
+      {
+        email: "u2@example.com",
+        metadata: { firebaseUid: "u2" },
+      },
+      // The second argument is the point: two concurrent calls for one uid
+      // both read no customer and both create one, and a repeated key makes
+      // Stripe return the same customer rather than a second. The loser of
+      // that race used to leave an orphan holding invoices that then vanished
+      // from the user's annual tax receipt.
+      { idempotencyKey: "customer_u2" },
+    );
     expect(subRef.set).toHaveBeenCalledWith(
       { stripeCustomerId: "cus_new_1" },
       { merge: true },

@@ -186,12 +186,34 @@ async function ensureCustomer(
   const existing = snap.data()?.stripeCustomerId as string | undefined;
   if (existing) return existing;
 
-  const customer = await stripe.customers.create({
-    email: email ?? undefined,
-    metadata: { firebaseUid: uid },
+  // Idempotency key rather than a bare create. This is a read-modify-write
+  // called from both `createCheckoutSession` and `bookCoachSession`, so two
+  // concurrent calls for one uid -- an impatient double-tap on Subscribe, or
+  // a checkout racing a booking -- both read no customer and both create one.
+  // Stripe returns the SAME customer for a repeated key rather than a second
+  // one, which is what stops the loser of that race leaving an orphan behind.
+  //
+  // The orphan mattered more than it looks: `generateAnnualReceipt` lists
+  // invoices for the current customer only, so donations billed to the
+  // discarded one silently vanish from the user's tax receipt.
+  const customer = await stripe.customers.create(
+    {
+      email: email ?? undefined,
+      metadata: { firebaseUid: uid },
+    },
+    { idempotencyKey: `customer_${uid}` },
+  );
+
+  // The write is guarded too: whoever commits first owns the field, and the
+  // loser adopts it instead of overwriting. Without this the two racers agree
+  // on the customer (the key above) but still race on the document.
+  return db.runTransaction(async (tx) => {
+    const fresh = await tx.get(ref);
+    const raced = fresh.data()?.stripeCustomerId as string | undefined;
+    if (raced) return raced;
+    tx.set(ref, { stripeCustomerId: customer.id }, { merge: true });
+    return customer.id;
   });
-  await ref.set({ stripeCustomerId: customer.id }, { merge: true });
-  return customer.id;
 }
 
 /* ------------------------------------------------------------------ */
@@ -442,7 +464,31 @@ function tierFromSubscription(s: Stripe.Subscription): string {
   });
 }
 
-async function applySubscription(s: Stripe.Subscription) {
+/**
+ * Writes subscription state, refusing to apply an event older than the one
+ * already written.
+ *
+ * Stripe does not guarantee delivery order, and its retry backoff widens the
+ * window in which two events for one subscription are in flight at once. The
+ * write here is a `set(..., {merge: true})` that overwrites `status`
+ * unconditionally, so out-of-order delivery is not a transient glitch: a
+ * delayed `customer.subscription.updated`(active) landing after
+ * `customer.subscription.deleted`(cancelled) restores premium to a cancelled
+ * account permanently, because nothing ever re-reconciles it.
+ *
+ * `event.created` is Stripe's own ordering clock and is stamped when the
+ * event happened rather than when it was delivered, which is exactly the
+ * distinction that matters. Kept on the document so the comparison survives a
+ * cold start.
+ *
+ * Retries were already safe by accident -- every write is deterministic from
+ * the event body, so a replay rewrites the same fields and there is no
+ * double-grant -- and this makes that property deliberate rather than lucky.
+ */
+async function applySubscription(
+  s: Stripe.Subscription,
+  eventCreated?: number,
+) {
   const uid = s.metadata?.firebaseUid as string | undefined;
   if (!uid) {
     // Every checkout flow stamps `subscription_data.metadata.firebaseUid`,
@@ -469,20 +515,44 @@ async function applySubscription(s: Stripe.Subscription) {
     ? new Date(s.trial_end * 1000).toISOString()
     : null;
 
-  await db.doc(`users/${uid}/subscription/main`).set(
-    {
-      tier,
-      status,
-      period,
-      seatCount,
-      currentPeriodEndsAt: periodEnd,
-      trialEndsAt: trialEnd,
-      stripeCustomerId: s.customer,
-      stripeSubscriptionId: s.id,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    },
-    { merge: true },
-  );
+  const ref = db.doc(`users/${uid}/subscription/main`);
+  const payload = {
+    tier,
+    status,
+    period,
+    seatCount,
+    currentPeriodEndsAt: periodEnd,
+    trialEndsAt: trialEnd,
+    stripeCustomerId: s.customer,
+    stripeSubscriptionId: s.id,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+
+  if (eventCreated === undefined) {
+    // No clock to compare against -- an internal caller rather than the
+    // webhook. Write as before rather than invent an ordering.
+    await ref.set(payload, { merge: true });
+    return;
+  }
+
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const seen = snap.data()?.lastStripeEventCreated as number | undefined;
+    if (seen !== undefined && eventCreated < seen) {
+      logger.info("ignoring out-of-order stripe event", {
+        uid,
+        subscriptionId: s.id,
+        eventCreated,
+        alreadyApplied: seen,
+      });
+      return;
+    }
+    tx.set(
+      ref,
+      { ...payload, lastStripeEventCreated: eventCreated },
+      { merge: true },
+    );
+  });
 }
 
 /**
@@ -521,11 +591,24 @@ async function applyLifetimePayment(pi: Stripe.PaymentIntent) {
 export const stripeWebhook = onRequest(
   {
     ...WEBHOOK,
+    // Every secret `tierFromSubscription` reads must be here. An unbound
+    // secret does not throw -- firebase-functions logs a warning and hands
+    // back "" (params/types.js, runtimeValue) -- and `known()` in tiers.ts
+    // discards falsy ids, so the four that were missing made every annual and
+    // family price match nothing and fall through to "free". The subscriber
+    // paid and was written back as a free user, on purchase and again on
+    // every renewal, with nothing failing anywhere. A test now asserts this
+    // array against what the mapping reads, because the two drifting apart is
+    // the entire bug and no amount of care keeps two lists in step by hand.
     secrets: [
       STRIPE_SECRET_KEY,
       STRIPE_WEBHOOK_SECRET,
       STRIPE_PRICE_STANDARD,
       STRIPE_PRICE_CELEBRITY,
+      STRIPE_PRICE_STANDARD_ANNUAL,
+      STRIPE_PRICE_CELEBRITY_ANNUAL,
+      STRIPE_PRICE_STANDARD_FAMILY2,
+      STRIPE_PRICE_STANDARD_FAMILY4,
     ],
   },
   async (req, res) => {
@@ -557,7 +640,10 @@ export const stripeWebhook = onRequest(
         case "customer.subscription.created":
         case "customer.subscription.updated":
         case "customer.subscription.deleted":
-          await applySubscription(event.data.object as Stripe.Subscription);
+          await applySubscription(
+            event.data.object as Stripe.Subscription,
+            event.created,
+          );
           break;
         case "invoice.paid":
         case "invoice.payment_failed": {
@@ -566,7 +652,7 @@ export const stripeWebhook = onRequest(
           const subId = inv.subscription;
           if (typeof subId === "string") {
             const sub = await stripe.subscriptions.retrieve(subId);
-            await applySubscription(sub);
+            await applySubscription(sub, event.created);
           }
           break;
         }
