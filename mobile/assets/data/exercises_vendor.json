@@ -1817,7 +1817,7 @@
   {
     "id": "ea_air_swing_running",
     "title": "Air Swing Running",
-    "equipmentId": null,
+    "equipmentId": "outdoor_air_walker",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -1839,7 +1839,7 @@
   {
     "id": "ea_air_swing_side_to_side_swing",
     "title": "Air Swing Side to Side Swing",
-    "equipmentId": null,
+    "equipmentId": "outdoor_air_walker",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -1861,7 +1861,7 @@
   {
     "id": "ea_air_swing_walking",
     "title": "Air Swing Walking",
-    "equipmentId": null,
+    "equipmentId": "outdoor_air_walker",
     "muscles": [],
     "primaryMuscles": [],
     "difficulty": "beginner",
@@ -26967,7 +26967,7 @@
   {
     "id": "ea_decline_kneeling_push_up",
     "title": "Decline Kneeling Push Up",
-    "equipmentId": null,
+    "equipmentId": "plyo_box",
     "muscles": [
       "chest",
       "triceps",
@@ -28100,7 +28100,7 @@
   {
     "id": "ea_dragonfly",
     "title": "Dragonfly",
-    "equipmentId": null,
+    "equipmentId": "vertical_pole",
     "muscles": [
       "core"
     ],
@@ -39448,7 +39448,7 @@
   {
     "id": "ea_elevated_push_up",
     "title": "Elevated Push Up",
-    "equipmentId": null,
+    "equipmentId": "parallettes",
     "muscles": [
       "chest",
       "triceps",
@@ -40817,7 +40817,7 @@
   {
     "id": "ea_fixed_bar_stretch",
     "title": "Fixed Bar Stretch",
-    "equipmentId": null,
+    "equipmentId": "vertical_pole",
     "muscles": [
       "shoulders",
       "traps",

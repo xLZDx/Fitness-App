@@ -467,5 +467,19 @@
   "manufacturer": "Any",
   "category": "functional",
   "description": "Large vehicle tyre flipped, dragged or struck with a sledgehammer for full-body strength and conditioning."
+ },
+ {
+  "id": "vertical_pole",
+  "name": "Vertical pole",
+  "manufacturer": "Any",
+  "category": "bodyweight",
+  "description": "Fixed vertical post gripped at floor or chest height for holds, stretches and core work such as the dragonfly."
+ },
+ {
+  "id": "outdoor_air_walker",
+  "name": "Outdoor air walker",
+  "manufacturer": "Any",
+  "category": "cardio",
+  "description": "Outdoor public-park cardio unit with free-swinging handles or pedals for a walking or striding motion."
  }
 ]

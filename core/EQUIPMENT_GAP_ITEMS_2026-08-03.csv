@@ -36,10 +36,10 @@ sandbag,ea_sandbag_cleans,Sandbag Cleans,sandbag,name is self-explanatory,sandba
 gymnastic rings,ea_ring_dips,Ring Dips,suspended gymnastic rings,name is self-explanatory,gymnastic_rings
 tyre,ea_tyre_flip,Tyre Flip,large tyre,name is self-explanatory,tyre
 tyre + sledgehammer,ea_tyre_hammering,Tyre Hammering,tyre and a sledgehammer,name is self-explanatory,tyre
-vertical pole,ea_fixed_bar_stretch,Fixed Bar Stretch,"fixed vertical post, held at chest height while seated/leaning -- verified by poster",not a pull-up bar (that is horizontal, overhead),
-vertical pole,ea_dragonfly,Dragonfly,"same vertical post, gripped at floor level, body held horizontal -- verified by poster",same object as the row above,
-push-up blocks/risers,ea_elevated_push_up,Elevated Push Up,"two rectangular push-up risers under the hands, verified by poster",closest registry relative is parallettes but these are solid blocks, not bars -- judgement call, left as a gap,
-aerobic step platform,ea_decline_kneeling_push_up,Decline Kneeling Push Up,"tiered aerobic step platform under the feet, verified by poster",closest registry relative is plyo_box but this is a stepped platform, not a single box -- judgement call, left as a gap,
-outdoor park equipment,ea_air_swing_running,Air Swing Running,outdoor public-park air-walker unit,out of scope for an indoor commercial-gym registry,
-outdoor park equipment,ea_air_swing_side_to_side_swing,Air Swing Side to Side Swing,outdoor public-park air-walker unit,out of scope,
-outdoor park equipment,ea_air_swing_walking,Air Swing Walking,outdoor public-park air-walker unit,out of scope,
+vertical pole,ea_fixed_bar_stretch,Fixed Bar Stretch,"fixed vertical post, held at chest height while seated/leaning -- verified by poster",not a pull-up bar (that is horizontal, overhead); own id -- distinct enough from anything existing,vertical_pole
+vertical pole,ea_dragonfly,Dragonfly,"same vertical post, gripped at floor level, body held horizontal -- verified by poster",same object as the row above,vertical_pole
+push-up blocks/risers,ea_elevated_push_up,Elevated Push Up,"two rectangular push-up risers under the hands, verified by poster",closest registry relative is parallettes but these are solid blocks, not bars -- decided: alias of parallettes, not a new id,parallettes
+aerobic step platform,ea_decline_kneeling_push_up,Decline Kneeling Push Up,"tiered aerobic step platform under the feet, verified by poster",closest registry relative is plyo_box but this is a stepped platform, not a single box -- decided: alias of plyo_box, not a new id,plyo_box
+outdoor park equipment,ea_air_swing_running,Air Swing Running,outdoor public-park air-walker unit,"real equipment, different context -- own id rather than folded into an indoor machine",outdoor_air_walker
+outdoor park equipment,ea_air_swing_side_to_side_swing,Air Swing Side to Side Swing,outdoor public-park air-walker unit,,outdoor_air_walker
+outdoor park equipment,ea_air_swing_walking,Air Swing Walking,outdoor public-park air-walker unit,,outdoor_air_walker

@@ -226,7 +226,11 @@ m('battle_ropes', 'Battle ropes', 'Канаты', 'functional',
 m('plyo_box', 'Plyo box', 'Плиобокс', 'functional',
   'Sturdy box for jumps, step-ups and elevated work.',
   'Устойчивый бокс для запрыгиваний, зашагиваний и упражнений с опорой.',
-  ['plyo box', 'jump box', 'plyometric box', 'box', 'плиобокс', 'бокс для запрыгиваний', 'тумба'])
+  ['plyo box', 'jump box', 'plyometric box', 'box', 'плиобокс', 'бокс для запрыгиваний', 'тумба',
+   # 2026-08-04: an aerobic step platform is a different shape (tiered, not a
+   # single box) but the same role -- a stable elevated surface. One
+   # exercise (Decline Kneeling Push Up), not worth a separate id for.
+   'aerobic step', 'step platform', 'aerobic stepper', 'степ-платформа', 'аэробный степ'])
 m('punching_bag', 'Punching bag', 'Боксёрская груша', 'functional',
   'Heavy bag for striking work and conditioning.',
   'Тяжёлый мешок для ударной работы и выносливости.',
@@ -256,7 +260,11 @@ m('ab_wheel', 'Ab wheel', 'Ролик для пресса', 'functional', None,
 m('parallettes', 'Parallettes', 'Брусья-паралетки', 'bodyweight', None,
   'Низкие параллельные брусья для отжиманий, уголка и стоек.',
   ['paralettes', 'parallette', 'parallettes', 'push up handles', 'push-up bars',
-   'брусья-паралетки', 'паралетки', 'упоры для отжиманий'])
+   'брусья-паралетки', 'паралетки', 'упоры для отжиманий',
+   # 2026-08-04: solid push-up risers are a different shape (blocks, not
+   # bars) but serve the same role -- elevate the hands for a deeper range.
+   # One exercise (Elevated Push Up), not worth a separate id for.
+   'push-up blocks', 'push-up risers', 'блоки для отжиманий'])
 
 # --- new ids, 2026-08-03 batch 3: the 15 machine types that came out of
 # looking at the poster for every one of the 44 vendor exercises that could
@@ -341,6 +349,22 @@ m('tyre', 'Tyre', 'Покрышка', 'functional',
   'Большая покрышка, которую переворачивают, тащат или бьют кувалдой -- силовая и кондиционная работа на всё тело.',
   ['tyre', 'tire', 'truck tyre', 'tractor tyre', 'sledgehammer',
    'покрышка', 'шина', 'кувалда'])
+
+# --- new ids, 2026-08-04: the last 2 of the 4 groups left open in batch 3.
+# The other 2 (push-up blocks, aerobic step) turned out close enough to an
+# existing id to fold in as aliases instead (see plyo_box / parallettes
+# above) -- these two did not: neither is close to anything already in the
+# registry. ---
+m('vertical_pole', 'Vertical pole', 'Вертикальный столб', 'bodyweight',
+  'Fixed vertical post gripped at floor or chest height for holds, stretches and core work such as the dragonfly.',
+  'Неподвижный вертикальный столб, за который держатся у пола или на уровне груди -- удержания, растяжки и упражнения на корпус вроде dragonfly.',
+  ['vertical pole', 'fixed pole', 'fixed bar', 'pole', 'столб',
+   'вертикальный столб', 'фиксированный столб'])
+m('outdoor_air_walker', 'Outdoor air walker', 'Уличный аэрошагатель', 'cardio',
+  'Outdoor public-park cardio unit with free-swinging handles or pedals for a walking or striding motion.',
+  'Уличный кардиотренажёр на площадке со свободно качающимися рукоятями или педалями -- имитация ходьбы или широкого шага.',
+  ['air walker', 'outdoor air walker', 'air swing', 'outdoor elliptical',
+   'street workout air walker', 'аэрошагатель', 'уличный тренажёр', 'воздушный шагатель'])
 
 # ---------------------------------------------------------------------------
 # Exercise repairs: title -> correct equipmentId (None = bodyweight).

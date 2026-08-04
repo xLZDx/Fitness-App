@@ -53,9 +53,9 @@ ea_air_bike,Air Bike,,none,1.0,,none,confirmed_no_equipment,
 ea_air_bike_crunch,Air Bike Crunch,,none,1.0,,none,confirmed_no_equipment,
 ea_air_bike_version_2,Air Bike (version 2),,none,1.0,,none,confirmed_no_equipment,
 ea_air_punches_march,Air Punches March,,none,1.0,,none,confirmed_no_equipment,
-ea_air_swing_running,Air Swing Running,,Air walker / outdoor elliptical machine,0.9,,none,unresolved,
-ea_air_swing_side_to_side_swing,Air Swing Side to Side Swing,,outdoor air swing machine,0.9,,none,unresolved,
-ea_air_swing_walking,Air Swing Walking,,outdoor air walker machine,0.9,,none,unresolved,
+ea_air_swing_running,Air Swing Running,,Air walker / outdoor elliptical machine,0.9,,Outdoor air walker,resolved,"batch 4, registry expansion (67->69): outdoor equipment, own id rather than folded into an indoor machine"
+ea_air_swing_side_to_side_swing,Air Swing Side to Side Swing,,outdoor air swing machine,0.9,,Outdoor air walker,resolved,"batch 4, registry expansion (67->69)"
+ea_air_swing_walking,Air Swing Walking,,outdoor air walker machine,0.9,,Outdoor air walker,resolved,"batch 4, registry expansion (67->69)"
 ea_air_twisting_crunch,Air Twisting Crunch,,none,1.0,,none,confirmed_no_equipment,
 ea_all_fours_quad_stretch,All Fours Quad Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_alternate_arm_leg_plank,Alternate Arm Leg Plank,,none,1.0,,none,confirmed_no_equipment,
@@ -756,7 +756,7 @@ ea_decline_bench_full_sit_up,Decline Bench Full Sit Up,,decline bench,1.0,,Weigh
 ea_decline_bent_leg_reverse_crunch,Decline Bent Leg Reverse Crunch,,Decline bench,1.0,,Weight bench,resolved,
 ea_decline_chair_push_up_diamond,Decline Chair Push Up Diamond,Chair,Chair,1.0,True,none,unresolved,
 ea_decline_diamond_pike_push_up,Decline Diamond Pike Push-up,,flat bench,1.0,,Weight bench,resolved,
-ea_decline_kneeling_push_up,Decline Kneeling Push Up,,aerobic step bench,1.0,,none,unresolved,
+ea_decline_kneeling_push_up,Decline Kneeling Push Up,,aerobic step bench,1.0,,Plyo box,resolved,"batch 4, registry expansion (67->69): aliased to plyo_box rather than a new id"
 ea_decline_kneeling_push_up_on_box,Decline Kneeling Push Up on Box,,Plyo box,1.0,,Plyo box,resolved,
 ea_decline_levitating_sit_ups_bodyweight,Decline Levitating Sit Ups Bodyweight,,decline bench,1.0,,Weight bench,resolved,
 ea_decline_push_up,Decline Push Up,,weight bench,1.0,,Weight bench,resolved,
@@ -789,7 +789,7 @@ ea_downward_dog_toe_to_heel,Downward Dog Toe to Heel,,none,1.0,,none,confirmed_n
 ea_downward_dog_with_fingers_facing_feet,Downward Dog with Fingers Facing Feet,,none,1.0,,none,confirmed_no_equipment,
 ea_drag_curl_dumbbell,Drag Curl Dumbbell,Dumbbells,Dumbbells,1.0,True,Dumbbells,resolved,
 ea_drag_curl_resistance_band,Drag Curl Resistance Band,Resistance Band,resistance band,1.0,True,Resistance bands,resolved,
-ea_dragonfly,Dragonfly,,vertical pole,0.9,,none,unresolved,
+ea_dragonfly,Dragonfly,,vertical pole,0.9,,Vertical pole,resolved,"batch 4, registry expansion (67->69)"
 ea_dumbbell_ab_crunch,Dumbbell Ab Crunch,Dumbbells,Dumbbell,1.0,True,Dumbbells,resolved,
 ea_dumbbell_alternate_bench_press_high_start,Dumbbell Alternate Bench Press (high Start),Dumbbells,"Dumbbells, Flat Bench",1.0,True,Weight bench,resolved,
 ea_dumbbell_alternate_biceps_curl,Dumbbell Alternate Biceps Curl,Dumbbells,Dumbbells,1.0,True,Dumbbells,resolved,
@@ -1120,7 +1120,7 @@ ea_elbow_push_plank_up,Elbow Push Plank Up,,none,1.0,,none,confirmed_no_equipmen
 ea_elbow_up_and_down_dynamic_plank,Elbow-up and Down Dynamic Plank,,none,1.0,,none,confirmed_no_equipment,
 ea_elbows_back_stretch,Elbows Back Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_elevated_pike_shoulder_shrug,Elevated Pike Shoulder Shrug,,plyo box,1.0,,Plyo box,resolved,
-ea_elevated_push_up,Elevated Push Up,,blocks,1.0,,none,unresolved,
+ea_elevated_push_up,Elevated Push Up,,blocks,1.0,,Parallettes,resolved,"batch 4, registry expansion (67->69): aliased to parallettes rather than a new id"
 ea_elevated_standing_calf_raise,Elevated Standing Calf Raise,,"squat rack, step platform",0.95,,Squat rack,resolved,
 ea_exercise_ball_back_extension_with_hands_behind_head,Exercise Ball Back Extension with Hands Behind Head,,stability ball,1.0,,Stability ball,resolved,
 ea_exercise_ball_back_stretch,Exercise Ball Back Stretch,Exercise Ball,Exercise Ball,1.0,True,Stability ball,resolved,
@@ -1159,7 +1159,7 @@ ea_fast_feet,Fast Feet,,none,1.0,,none,confirmed_no_equipment,
 ea_feet_together_barbell_squats,Feet Together Barbell Squats,Barbell,Barbell,1.0,True,Squat rack,resolved,
 ea_fire_hydrant_bodyweight,Fire Hydrant Bodyweight,,none,1.0,,none,confirmed_no_equipment,
 ea_fire_hydrant_circle_bodyweight,Fire Hydrant Circle Bodyweight,,none,1.0,,none,confirmed_no_equipment,
-ea_fixed_bar_stretch,Fixed Bar Stretch,Fixed Pole Bar,Fixed Pole Bar,1.0,True,none,unresolved,
+ea_fixed_bar_stretch,Fixed Bar Stretch,Fixed Pole Bar,Fixed Pole Bar,1.0,True,Vertical pole,resolved,"batch 4, registry expansion (67->69)"
 ea_flat_bench_cable_fly,Flat Bench Cable Fly,Dual Cable Pulley Machine,"Dual cable pulley machine, flat weight bench",1.0,True,Cable machine,resolved,
 ea_flat_knee_raise,Flat Knee Raise,,none,1.0,,none,confirmed_no_equipment,
 ea_floor_cable_resistance_band_press,Floor Cable Resistance Band Press,Resistance Cable,Resistance band,1.0,True,Resistance bands,resolved,

@@ -1,12 +1,13 @@
-# Equipment registry expansion, 52 -> 67 -- 2026-08-03
+# Equipment registry expansion, 52 -> 69 -- 2026-08-03 / 2026-08-04
 
 Follows directly from `VENDOR_EQUIPMENT_LINK_2026-08-03.md`'s "still open"
 list. Operator: *"я не понимаю что ты пытаешься сматчить вообще... ничего не
 скрывай"* -- the 44 vendor exercises that could not resolve to any of the 52
 machines were never a matching problem. They show real equipment the
-registry never had an id for. This gate gives 15 of them one, fixes a
-real, independently-confirmed recognition bug found while doing it, and
-leaves the other 7 for a deliberate call rather than a rubber stamp.
+registry never had an id for. Batch 3 (2026-08-03) gave 15 of them one and
+fixed a real, independently-confirmed recognition bug found while doing it.
+Batch 4 (2026-08-04) closed the remaining 4 groups -- all 44 are resolved
+now, none dropped or hidden.
 
 CSV twins: `core/EQUIPMENT_GAP_ITEMS_2026-08-03.csv` (all 44, now with a
 `resolved_to` column), `core/vendor_equipment_visual_audit.csv` (full 1,887
@@ -125,7 +126,7 @@ touched). `core/vendor_equipment_visual_audit.csv` and
    `kCanonicalMachines`. This is the test that would have caught the
    original bug on the commit that introduced it.
 
-## Result
+## Result after batch 3
 
 | | before | after |
 |---|---:|---:|
@@ -138,27 +139,48 @@ touched). `core/vendor_equipment_visual_audit.csv` and
 Full suite green after the change (targeted files re-run individually
 first: 59/59, including both new tests).
 
-## Not done here -- 7 exercises, 4 groups, left for a deliberate call
+## Batch 4 (2026-08-04) -- closing the last 7
 
-Still in `core/EQUIPMENT_GAP_ITEMS_2026-08-03.csv` with an empty
-`resolved_to`:
+The 4 groups batch 3 deliberately left open, decided one at a time rather
+than rubber-stamped:
 
-- **vertical pole** (Fixed Bar Stretch, Dragonfly) -- a fixed post at floor
-  level, confirmed by poster to be neither a pull-up bar nor a captain's
-  chair. Real question: is this its own id, or does it belong under an
-  existing bodyweight station.
-- **push-up blocks/risers** (Elevated Push Up) -- closest relative is
-  `parallettes`, but the poster shows solid rectangular blocks, not bars.
-- **aerobic step platform** (Decline Kneeling Push Up) -- closest relative
-  is `plyo_box`, but the poster shows a tiered step platform, not a single
-  box.
-- **outdoor air walker** (3 clips) -- real equipment, wrong context: an
-  outdoor public-park unit, not a commercial indoor machine. Belongs under
-  a location/context concept the registry does not have yet, not folded in
-  as an indoor id.
+- **vertical pole** (Fixed Bar Stretch, Dragonfly) -- own id, `vertical_pole`
+  (category `bodyweight`). Confirmed by poster to be neither a pull-up bar
+  (horizontal, overhead) nor a captain's chair; distinct enough from
+  anything existing to earn its own page rather than be forced onto one.
+- **push-up blocks/risers** (Elevated Push Up) -- NOT a new id. Aliased onto
+  `parallettes`: both exist to elevate the hands for a deeper push-up range,
+  and one exercise did not justify a second entry for the same role.
+- **aerobic step platform** (Decline Kneeling Push Up) -- NOT a new id.
+  Aliased onto `plyo_box` for the same reason -- a stable elevated surface,
+  one exercise.
+- **outdoor air walker** (3 clips) -- own id, `outdoor_air_walker` (category
+  `cardio`). Real equipment in a different context, but adding a
+  location/context field for 3 exercises was over-engineering; a plain
+  `cardio`-category entry costs nothing extra and the app has no concept of
+  "commercial gym only" to violate.
 
-None of these block anything; they were reviewed and intentionally left
-open, not missed.
+`equipment.json` 67 -> **69**. `parallettes` and `plyo_box` gained aliases
+(`push-up blocks`/`push up risers`, `aerobic step`/`step platform`) rather
+than new ids; `kCanonicalMachines` offers those words too so the camera can
+still recognise them by sight, even though they resolve to an existing page.
+
+All 44 rows in `core/EQUIPMENT_GAP_ITEMS_2026-08-03.csv` now carry a
+`resolved_to` value. None were dropped.
+
+### Result after batch 4
+
+| | batch 3 | batch 4 |
+|---|---:|---:|
+| `equipment.json` / `kCanonicalMachines` | 67 | **69** |
+| vendor exercises linked | 1,372 | **1,379** |
+| machines with >=1 vendor exercise | 63/67 | **65/69** |
+| `vendor_equipment_needs_review.csv` | 49 | **42** |
+
+The 4 machines with zero vendor coverage are still exactly the 4 named
+above (`recumbent_bike`, `glute_kickback_machine`, `t_bar_row`,
+`rotary_torso_machine`) -- nothing in this batch touched them; they need new
+licensed footage, not a linking pass.
 
 ## Also intentionally not done
 

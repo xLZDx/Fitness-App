@@ -394,12 +394,17 @@
   "канаты"
  ],
  "plyo_box": [
+  "aerobic step",
+  "aerobic stepper",
   "box",
   "jump box",
   "plyo box",
   "plyometric box",
+  "step platform",
+  "аэробный степ",
   "бокс для запрыгиваний",
   "плиобокс",
+  "степ-платформа",
   "тумба"
  ],
  "punching_bag": [
@@ -451,6 +456,9 @@
   "parallettes",
   "push up handles",
   "push-up bars",
+  "push-up blocks",
+  "push-up risers",
+  "блоки для отжиманий",
   "брусья-паралетки",
   "паралетки",
   "упоры для отжиманий"
@@ -598,5 +606,25 @@
   "кувалда",
   "покрышка",
   "шина"
+ ],
+ "vertical_pole": [
+  "fixed bar",
+  "fixed pole",
+  "pole",
+  "vertical pole",
+  "вертикальный столб",
+  "столб",
+  "фиксированный столб"
+ ],
+ "outdoor_air_walker": [
+  "air swing",
+  "air walker",
+  "outdoor air walker",
+  "outdoor elliptical",
+  "street workout air walker",
+  "аэрошагатель",
+  "воздушный шагатель",
+  "уличный аэрошагатель",
+  "уличный тренажёр"
  ]
 }

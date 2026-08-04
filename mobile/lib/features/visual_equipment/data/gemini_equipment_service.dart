@@ -160,6 +160,12 @@ ${kCanonicalMachines.join(', ')}''';
     'sissy squat machine', 'agility ladder', 'mini trampoline',
     'balance board', 'yoga blocks', 'weighted sled', 'ab mat', 'bosu ball',
     'sliding discs', 'sandbag', 'gymnastic rings', 'tyre',
+    // new, 2026-08-04: the last 2 of the 4 groups left open in batch 3
+    'vertical pole', 'outdoor air walker',
+    // alias-only: these two resolve to parallettes / plyo box respectively
+    // (see build_registry.py) rather than owning a separate id, but the
+    // model still needs the words offered to recognise them by sight
+    'push-up blocks', 'aerobic step',
   ];
 
   /// Parses the model's JSON (tolerating ```json fences) and resolves every
