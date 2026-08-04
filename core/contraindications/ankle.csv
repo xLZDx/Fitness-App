@@ -1,0 +1,230 @@
+id,title,region,rule,matched,primaryMuscles,vendorGroup,already
+ea_180_jump_turns,180 Jump Turns,ankle,ankle_impact,jump,,Calisthenics-Cardio-Plyo-Functional,False
+ea_4_punches_side_squat,4 Punches Side Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Calisthenics-Cardio-Plyo-Functional,False
+ea_agility_ladder_advanced_hop_position,Agility Ladder Advanced Hop Position,ankle,ankle_impact,hop,,Calisthenics-Cardio-Plyo-Functional,False
+ea_agility_ladder_lateral_movement_with_double_hop,Agility Ladder Lateral Movement with Double Hop,ankle,ankle_impact,hop,,Calisthenics-Cardio-Plyo-Functional,False
+ea_air_swing_running,Air Swing Running,ankle,ankle_impact,running,,Calisthenics-Cardio-Plyo-Functional,False
+ea_alternate_heel_touch_side_kick_squat,Alternate Heel Touch Side Kick Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_assault_airbike_sprint_speed,Assault Airbike Sprint Speed,ankle,ankle_impact,sprint,"quads,hamstrings,glutes",Calisthenics-Cardio-Plyo-Functional,False
+ea_assisted_bulgarian_split_squat,Assisted Bulgarian Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_assisted_pistol_squats,Assisted Pistol Squats,ankle,ankle_deep_dorsiflexion,pistol,"quads,glutes",Legs,False
+ea_balance_board_lateral_squat,Balance Board Lateral Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Calisthenics-Cardio-Plyo-Functional,False
+ea_ball_headlock_squat,Ball Headlock Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_band_single_leg_split_squat,Band Single Leg Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_band_spanish_split_squat,Band Spanish Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_band_squat_row,Band Squat Row,ankle,ankle_deep_dorsiflexion,squat,,Calisthenics-Cardio-Plyo-Functional,False
+ea_band_two_legs_calf_raise_band_under_both_legs_version_2,Band Two Legs Calf Raise - (band Under Both Legs) Version 2,ankle,ankle_plantarflexion,calf raise,calves,Legs,False
+ea_barbell_bench_squats,Barbell Bench Squats,ankle,ankle_deep_dorsiflexion,squats,"quads,glutes",Legs,False
+ea_barbell_box_squat,Barbell Box Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_bulgarian_split_squat,Barbell Bulgarian Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_bulgarian_split_squat_left_front_back_view,Barbell Bulgarian Split Squat Left Front-back View,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_bulgarian_split_squat_left_side_view,Barbell Bulgarian Split Squat Left Side View,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_calf_jump,Barbell Calf Jump,ankle,ankle_impact,jump,calves,Legs,False
+ea_barbell_clean_and_jerk_split_squat,Barbell Clean and Jerk Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes,shoulders",Powerlifting,False
+ea_barbell_clean_grip_front_squat,Barbell Clean Grip Front Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_front_bench_squat,Barbell Front Bench Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_front_chest_bench_squat,Barbell Front Chest Bench Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_front_chest_squat,Barbell Front Chest Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_front_squats,Barbell Front Squats,ankle,ankle_deep_dorsiflexion,squats,"quads,glutes",Legs,False
+ea_barbell_full_squat,Barbell Full Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_full_squat_side_pov,Barbell Full Squat Side Pov,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_full_squat_wide,Barbell Full Squat Wide,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_full_squat_back,Barbell Full Squat(back),ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_full_squat_with_rack,Barbell Full Squat(with Rack),ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_full_zercher_squat,Barbell Full Zercher Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_jefferson_split_squat,Barbell Jefferson Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_jefferson_squat,Barbell Jefferson Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_jump_shrug,Barbell Jump Shrug,ankle,ankle_impact,jump,,Calisthenics-Cardio-Plyo-Functional,False
+ea_barbell_jump_squat,Barbell Jump Squat,ankle,ankle_impact,jump,"quads,glutes",Legs,False
+ea_barbell_kneeling_squat,Barbell Kneeling Squat,ankle,ankle_deep_dorsiflexion,squat,"glutes,quads",Legs,False
+ea_barbell_low_bar_squat,Barbell Low Bar Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_narrow_stance_full_squat,Barbell Narrow Stance Full Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_narrow_stance_squat,Barbell Narrow Stance Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_overhead_squat,Barbell Overhead Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes,shoulders",Legs,False
+ea_barbell_quarter_squat,Barbell Quarter Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_side_split_squat,Barbell Side Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_single_leg_split_squat,Barbell Single Leg Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_split_squat,Barbell Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_squat_back_pov,Barbell Squat Back POV,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_squat_to_grass,Barbell Squat to Grass,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_squat_with_2_sec_hold,Barbell Squat with 2 Sec Hold,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_barbell_standing_leg_calf_raises,Barbell Standing Leg Calf Raises,ankle,ankle_plantarflexion,calf raises,calves,Legs,False
+ea_basketball_shot_jump,Basketball Shot Jump,ankle,ankle_impact,jump,"quads,calves",Calisthenics-Cardio-Plyo-Functional,False
+ea_bench_bulgarian_split_squats_left,Bench Bulgarian Split Squats Left,ankle,ankle_deep_dorsiflexion,squats,"quads,glutes",Legs,False
+ea_bench_bulgarian_split_squats_right,Bench Bulgarian Split Squats Right,ankle,ankle_deep_dorsiflexion,squats,"quads,glutes",Legs,False
+ea_bodyweight_calf_raises,Bodyweight Calf Raises,ankle,ankle_plantarflexion,calf raises,calves,Legs,False
+ea_bodyweight_full_squat_with_overhead_front_raise,Bodyweight Full Squat with Overhead Front Raise,ankle,ankle_deep_dorsiflexion,squat,"quads,shoulders,glutes",Calisthenics-Cardio-Plyo-Functional,False
+ea_bodyweight_full_squat_with_overhead_press,Bodyweight Full Squat with Overhead Press,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes,shoulders",Legs,False
+ea_bodyweight_kneeling_sissy_squat,Bodyweight Kneeling Sissy Squat,ankle,ankle_deep_dorsiflexion,sissy,quads,Legs,False
+ea_bodyweight_overhead_squat,Bodyweight Overhead Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,shoulders,glutes",Legs,False
+ea_bodyweight_pulse_squat,Bodyweight Pulse Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_bodyweight_pulse_squat_arms_to_chest,Bodyweight Pulse Squat Arms to Chest,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_bodyweight_squat_to_front_leg,Bodyweight Squat to Front Leg,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes,lower_back",Legs,False
+ea_bodyweight_squat_to_side_leg,Bodyweight Squat to Side Leg,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_bodyweight_squat_to_side_to_front_leg,Bodyweight Squat to Side to Front Leg,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes,lower_back",Legs,False
+ea_bodyweight_squats,Bodyweight Squats,ankle,ankle_deep_dorsiflexion,squats,"quads,glutes",Legs,False
+ea_bodyweight_squats_hold,Bodyweight Squats Hold,ankle,ankle_deep_dorsiflexion,squats,"quads,glutes",Legs,False
+ea_bodyweight_standing_calf_raise,Bodyweight Standing Calf Raise,ankle,ankle_plantarflexion,calf raise,calves,Legs,False
+ea_box_jump,Box Jump,ankle,ankle_impact,box jump,"quads,glutes,hamstrings",Legs,False
+ea_box_jump_squats,Box Jump Squats,ankle,ankle_impact,box jump,"quads,glutes,hamstrings",Legs,False
+ea_bulgarian_split_squat,Bulgarian Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_bulgarian_split_squat_bodyweight_left,Bulgarian Split Squat Bodyweight Left,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_bulgarian_split_squat_bodyweight_right,Bulgarian Split Squat Bodyweight Right,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_bulgarian_split_squat_cable_resistance_band,Bulgarian Split Squat Cable Resistance Band,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_bulgarian_split_squat_left_bodyweight_side_view,Bulgarian Split Squat Left Bodyweight Side View,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_bulgarian_split_squat_right_bodyweight_side_view,Bulgarian Split Squat Right Bodyweight Side View,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_bulgarian_split_squat_stretch,Bulgarian Split Squat Stretch,ankle,ankle_deep_dorsiflexion,squat,,Stretching - Mobility,False
+ea_burpee,Burpee,ankle,ankle_impact,burpee,"quads,glutes,chest,shoulders",Calisthenics-Cardio-Plyo-Functional,False
+ea_burpee_squat,Burpee Squat,ankle,ankle_impact,burpee,"quads,glutes",Legs,False
+ea_cable_goblet_squat,Cable Goblet Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_cable_split_squat,Cable Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_calf_push_stretch_with_hands_against_wall_v_2,Calf Push Stretch with Hands Against Wall V.2,ankle,ankle_plantarflexion,calf,,Stretching - Mobility,False
+ea_calf_raise_clap,Calf Raise Clap,ankle,ankle_plantarflexion,calf raise,calves,Legs,False
+ea_calf_raise_from_deficit_with_chair_supported,Calf Raise From Deficit with Chair Supported,ankle,ankle_plantarflexion,calf raise,calves,Legs,False
+ea_calf_raise_leg_press_machine,Calf Raise Leg Press Machine,ankle,ankle_plantarflexion,calf raise,calves,Legs,False
+ea_calf_raise_on_hack_squat_machine,Calf Raise on Hack Squat Machine,ankle,ankle_plantarflexion,calf raise,calves,Legs,False
+ea_calf_raise_with_wall_support,Calf Raise with Wall Support,ankle,ankle_plantarflexion,calf raise,calves,Legs,False
+ea_calf_stretch_with_hands_against_wall,Calf Stretch with Hands Against Wall,ankle,ankle_plantarflexion,calf,calves,Stretching - Mobility,False
+ea_calf_stretch_with_rope,Calf Stretch with Rope,ankle,ankle_plantarflexion,calf,calves,Stretching - Mobility,False
+ea_calves_stretch_on_stairs,Calves Stretch on Stairs,ankle,ankle_impact,stairs,calves,Stretching - Mobility,False
+ea_chair_bulgarian_split_squats_bodyweight_left,Chair Bulgarian Split Squats Bodyweight Left,ankle,ankle_deep_dorsiflexion,squats,"quads,glutes",Legs,False
+ea_chair_bulgarian_split_squats_bodyweight_right,Chair Bulgarian Split Squats Bodyweight Right,ankle,ankle_deep_dorsiflexion,squats,"quads,glutes",Legs,False
+ea_clap_curtsy_squat,Clap Curtsy Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes,shoulders",Legs,False
+ea_clap_jack,Clap Jack,ankle,ankle_impact,jack,"shoulders,quads,calves",Calisthenics-Cardio-Plyo-Functional,False
+ea_cossack_squat,Cossack Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes,hamstrings",Legs,False
+ea_counterbalanced_skater_squat,Counterbalanced Skater Squat,ankle,ankle_impact,skater,"quads,glutes,hamstrings",Legs,False
+ea_criss_cross_jack,Criss Cross Jack,ankle,ankle_impact,jack,"quads,lower_back,shoulders",Calisthenics-Cardio-Plyo-Functional,False
+ea_criss_cross_jump,Criss Cross Jump,ankle,ankle_impact,jump,"quads,lower_back,shoulders",Calisthenics-Cardio-Plyo-Functional,False
+ea_crouching_heel_back_calf_stretch,Crouching Heel Back Calf Stretch,ankle,ankle_plantarflexion,calf,calves,Stretching - Mobility,False
+ea_curtsy_squat,Curtsy Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_donkey_calf_raise,Donkey Calf Raise,ankle,ankle_plantarflexion,donkey calf,calves,Legs,False
+ea_double_jump_squat,Double Jump Squat,ankle,ankle_impact,jump,"quads,glutes",Legs,False
+ea_downward_dog_sprint,Downward Dog Sprint,ankle,ankle_impact,sprint,,Calisthenics-Cardio-Plyo-Functional,False
+ea_dumbbell_bar_grip_sumo_squat,Dumbbell Bar Grip Sumo Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_dumbbell_bench_squat,Dumbbell Bench Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_dumbbell_bulgarian_box_split_squat,Dumbbell Bulgarian Box Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_dumbbell_bulgarian_split_squat,Dumbbell Bulgarian Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_dumbbell_cossack_squats_version_2,Dumbbell Cossack Squats (version 2),ankle,ankle_deep_dorsiflexion,squats,quads,Legs,False
+ea_dumbbell_frog_jumps,Dumbbell Frog Jumps,ankle,ankle_impact,jumps,"quads,glutes,calves",Legs,False
+ea_dumbbell_front_squat,Dumbbell Front Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_dumbbell_goblet_2_sec_hold_squat,Dumbbell Goblet 2 Sec Hold Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_dumbbell_goblet_split_squat,Dumbbell Goblet Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_dumbbell_goblet_split_squat_front_foot_elevanted,Dumbbell Goblet Split Squat Front Foot Elevanted,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_dumbbell_goblet_squat,Dumbbell Goblet Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_dumbbell_jumping_squat,Dumbbell Jumping Squat,ankle,ankle_impact,jumping,"quads,glutes",Legs,False
+ea_dumbbell_kneeling_squat,Dumbbell Kneeling Squat,ankle,ankle_deep_dorsiflexion,squat,"glutes,quads",Legs,False
+ea_dumbbell_narrow_stance_squats,Dumbbell Narrow Stance Squats,ankle,ankle_deep_dorsiflexion,squats,"quads,glutes",Legs,False
+ea_dumbbell_offset_squat,Dumbbell Offset Squat,ankle,ankle_deep_dorsiflexion,squat,,Legs,False
+ea_dumbbell_press_squat,Dumbbell Press Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,shoulders,glutes",Legs,False
+ea_dumbbell_seated_calf_raise,Dumbbell Seated Calf Raise,ankle,ankle_plantarflexion,calf raise,calves,Legs,False
+ea_dumbbell_seated_one_leg_calf_raise_hammer_grip,Dumbbell Seated One Leg Calf Raise Hammer Grip,ankle,ankle_plantarflexion,calf raise,calves,Legs,False
+ea_dumbbell_side_squat_side_to_side,Dumbbell Side Squat Side to Side,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_dumbbell_single_leg_calf_raise_wall_support,Dumbbell Single Leg Calf Raise Wall Support,ankle,ankle_plantarflexion,calf raise,calves,Legs,False
+ea_dumbbell_single_leg_split_squat,Dumbbell Single Leg Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_dumbbell_single_leg_squat,Dumbbell Single Leg Squat,ankle,ankle_deep_dorsiflexion,squat,quads,Legs,False
+ea_dumbbell_single_leg_squat_with_support_pistol,Dumbbell Single Leg Squat with Support (pistol),ankle,ankle_deep_dorsiflexion,squat,quads,Legs,False
+ea_dumbbell_split_squat,Dumbbell Split Squat,ankle,ankle_deep_dorsiflexion,squat,quads,Legs,False
+ea_dumbbell_squats,Dumbbell Squats,ankle,ankle_deep_dorsiflexion,squats,"quads,glutes",Legs,False
+ea_dumbbell_squats_to_shoulder_press,Dumbbell Squats to Shoulder Press,ankle,ankle_deep_dorsiflexion,squats,"quads,shoulders",Legs,False
+ea_dumbbell_standing_calf_raise,Dumbbell Standing Calf Raise,ankle,ankle_plantarflexion,calf raise,calves,Legs,False
+ea_dumbbell_standing_calf_raise_on_step,Dumbbell Standing Calf Raise on Step,ankle,ankle_plantarflexion,calf raise,calves,Legs,False
+ea_dumbbell_standing_single_leg_calf_raise,Dumbbell Standing Single Leg Calf Raise,ankle,ankle_plantarflexion,calf raise,calves,Legs,False
+ea_dumbbell_sumo_squat_off_benches,Dumbbell Sumo Squat Off Benches,ankle,ankle_deep_dorsiflexion,squat,"glutes,quads",Legs,False
+ea_dumbbell_supported_sissy_squat,Dumbbell Supported Sissy Squat,ankle,ankle_deep_dorsiflexion,sissy,quads,Legs,False
+ea_dumbell_burpee,Dumbell Burpee,ankle,ankle_impact,burpee,"quads,shoulders",Calisthenics-Cardio-Plyo-Functional,False
+ea_elevated_standing_calf_raise,Elevated Standing Calf Raise,ankle,ankle_plantarflexion,calf raise,calves,Legs,False
+ea_exercise_ball_wall_squat,Exercise Ball Wall Squat,ankle,ankle_deep_dorsiflexion,squat,quads,Legs,False
+ea_feet_together_barbell_squats,Feet Together Barbell Squats,ankle,ankle_deep_dorsiflexion,squats,"quads,glutes",Legs,False
+ea_frog_jumps,Frog Jumps,ankle,ankle_impact,jumps,,Legs,False
+ea_front_squats_dumbbell_low,Front Squats Dumbbell Low,ankle,ankle_deep_dorsiflexion,squats,quads,Legs,False
+ea_front_squats_dumbbell_over_shoulders,Front Squats Dumbbell Over Shoulders,ankle,ankle_deep_dorsiflexion,squats,quads,Legs,False
+ea_goblet_kettlebell_squats,Goblet Kettlebell Squats,ankle,ankle_deep_dorsiflexion,squats,quads,Legs,False
+ea_gym_elliptical_machine_sprint_speed,Gym Elliptical Machine Sprint Speed,ankle,ankle_impact,sprint,"quads,hamstrings,glutes",Calisthenics-Cardio-Plyo-Functional,False
+ea_gym_rowing_machine_sprint_speed,Gym Rowing Machine Sprint Speed,ankle,ankle_impact,sprint,"quads,hamstrings,glutes,back",Calisthenics-Cardio-Plyo-Functional,False
+ea_hack_squat_machine_squat,Hack Squat Machine Squat,ankle,ankle_deep_dorsiflexion,squat,quads,Legs,False
+ea_half_burpees,Half Burpees,ankle,ankle_impact,burpees,"quads,glutes",Calisthenics-Cardio-Plyo-Functional,False
+ea_horizontal_leg_press_calf_raise,Horizontal Leg Press Calf Raise,ankle,ankle_plantarflexion,calf raise,,Legs,False
+ea_horizontal_leg_press_calf_raise_single_leg,Horizontal Leg Press Calf Raise Single Leg,ankle,ankle_plantarflexion,calf raise,,Legs,False
+ea_in_and_out_squats,In and Out Squats,ankle,ankle_deep_dorsiflexion,squats,"quads,glutes",Legs,False
+ea_in_and_out_squats_jump_bodyweight,In and Out Squats Jump Bodyweight,ankle,ankle_impact,jump,"quads,glutes",Legs,False
+ea_in_and_out_squats_jump_bodyweight_2,In and Out Squats Jump Bodyweight (2),ankle,ankle_impact,jump,"quads,glutes",Legs,False
+ea_jack_knives,Jack Knives,ankle,ankle_impact,jack,core,Abdominals,False
+ea_jogging,Jogging,ankle,ankle_impact,jogging,"quads,hamstrings,calves",Calisthenics-Cardio-Plyo-Functional,False
+ea_jump_rope_alternating_foot,Jump Rope Alternating Foot,ankle,ankle_impact,jump,"calves,quads",Calisthenics-Cardio-Plyo-Functional,False
+ea_jump_rope_basic_jump,Jump Rope Basic Jump,ankle,ankle_impact,jump,"calves,quads",Calisthenics-Cardio-Plyo-Functional,False
+ea_jump_rope_double_bounce,Jump Rope Double Bounce,ankle,ankle_impact,jump,"calves,quads",Calisthenics-Cardio-Plyo-Functional,False
+ea_jump_rope_face_pull,Jump Rope Face Pull,ankle,ankle_impact,jump,"traps,shoulders",Shoulders,False
+ea_jump_rope_row,Jump Rope Row,ankle,ankle_impact,jump,"traps,shoulders",Back,False
+ea_jumping_jack,Jumping Jack,ankle,ankle_impact,jumping,"calves,quads",Calisthenics-Cardio-Plyo-Functional,False
+ea_jumping_lunge,Jumping Lunge,ankle,ankle_impact,jumping,,Legs,False
+ea_jumping_pistol_squat,Jumping Pistol Squat,ankle,ankle_impact,jumping,,Legs,False
+ea_kettlebell_bulgarian_split_squat_right,Kettlebell Bulgarian Split Squat Right,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_kettlebell_bulgarian_split_squat_right_side_view,Kettlebell Bulgarian Split Squat Right Side View,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_kettlebell_calf_raise,Kettlebell Calf Raise,ankle,ankle_plantarflexion,calf raise,,Legs,False
+ea_kettlebell_seated_calf_raise,Kettlebell Seated Calf Raise,ankle,ankle_plantarflexion,calf raise,,Legs,False
+ea_kettlebell_single_leg_calf_raise,Kettlebell Single Leg Calf Raise,ankle,ankle_plantarflexion,calf raise,,Legs,False
+ea_kettlebell_split_squat,Kettlebell Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_kettlebell_squats,Kettlebell Squats,ankle,ankle_deep_dorsiflexion,squats,"quads,glutes",Legs,False
+ea_kettlebell_suitcase_squat,Kettlebell Suitcase Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_kettlebell_sumo_squat,Kettlebell Sumo Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes,adductors",Legs,False
+ea_kettlebell_sumo_squat_version_2,Kettlebell Sumo Squat (version 2),ankle,ankle_deep_dorsiflexion,squat,"quads,glutes,adductors",Legs,False
+ea_kettlebell_sumo_squat_off_stepbox,Kettlebell Sumo Squat Off Stepbox,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes,adductors",Legs,False
+ea_kneeling_squat_jumps_bodyweight,Kneeling Squat Jumps Bodyweight,ankle,ankle_impact,jumps,"quads,glutes",Legs,False
+ea_landmine_calf_raise,Landmine Calf Raise,ankle,ankle_plantarflexion,calf raise,,Legs,False
+ea_landmine_hack_squat,Landmine Hack Squat,ankle,ankle_deep_dorsiflexion,squat,,Legs,False
+ea_landmine_squat_and_press,Landmine Squat and Press,ankle,ankle_deep_dorsiflexion,squat,,Legs,False
+ea_lateral_box_jump,Lateral Box Jump,ankle,ankle_impact,box jump,,Legs,False
+ea_low_rotational_med_ball_chops_quarter_squat_rotating_med_ball_left_and_ride_across_core,"Low Rotational Med Ball Chops (quarter Squat, Rotating Med Ball Left and Ride Across Core)",ankle,ankle_deep_dorsiflexion,squat,,Calisthenics-Cardio-Plyo-Functional,False
+ea_lunging_straight_leg_calf_stretch,Lunging Straight Leg Calf Stretch,ankle,ankle_plantarflexion,calf,calves,Stretching - Mobility,False
+ea_med_ball_front_squat_raise,Med Ball Front Squat Raise,ankle,ankle_deep_dorsiflexion,squat,,Legs,False
+ea_med_ball_jumping_jacks,Med Ball Jumping Jacks,ankle,ankle_impact,jumping,,Calisthenics-Cardio-Plyo-Functional,False
+ea_med_ball_slam_burpees,Med Ball Slam Burpees,ankle,ankle_impact,burpees,,Calisthenics-Cardio-Plyo-Functional,False
+ea_medicine_ball_jumps,Medicine Ball Jumps,ankle,ankle_impact,jumps,,Legs,False
+ea_mountain_climber_jumps,Mountain Climber Jumps,ankle,ankle_impact,jumps,,Calisthenics-Cardio-Plyo-Functional,False
+ea_narrow_stance_heels_elevated_dumbbell_goblet_squats,Narrow Stance Heels Elevated Dumbbell Goblet Squats,ankle,ankle_deep_dorsiflexion,squats,,Legs,False
+ea_normal_squat_smith_machine,Normal Squat Smith Machine,ankle,ankle_deep_dorsiflexion,squat,,Legs,False
+ea_pike_jacks_feet_kicking_in_and_out,Pike Jacks Feet Kicking in and Out,ankle,ankle_impact,jacks,,Calisthenics-Cardio-Plyo-Functional,False
+ea_pistol_squat_to_box,Pistol Squat to Box,ankle,ankle_deep_dorsiflexion,pistol,,Legs,False
+ea_plank_jack,Plank Jack,ankle,ankle_impact,jack,core,Abdominals,False
+ea_plate_squat_hold,Plate Squat Hold,ankle,ankle_deep_dorsiflexion,squat,,Legs,False
+ea_plate_squat_hold_biceps_curl,Plate Squat Hold Biceps Curl,ankle,ankle_deep_dorsiflexion,squat,,Legs,False
+ea_plate_squat_hold_reach,Plate Squat Hold Reach,ankle,ankle_deep_dorsiflexion,squat,,Legs,False
+ea_plate_squat_reach,Plate Squat Reach,ankle,ankle_deep_dorsiflexion,squat,,Legs,False
+ea_plyo_side_lunge_stretch,Plyo Side Lunge Stretch,ankle,ankle_impact,plyo,"quads,glutes,adductors",Stretching - Mobility,False
+ea_pyramid_pose_calf_blocks,Pyramid Pose Calf Blocks,ankle,ankle_plantarflexion,calf,,Yoga,False
+ea_rebounder_high_knee_runs,Rebounder High Knee Runs,ankle,ankle_impact,runs,,Calisthenics-Cardio-Plyo-Functional,False
+ea_rebounder_in_out_jacks,Rebounder in & Out Jacks,ankle,ankle_impact,jacks,,Calisthenics-Cardio-Plyo-Functional,False
+ea_rebounder_knee_jumps,Rebounder Knee Jumps,ankle,ankle_impact,jumps,,Calisthenics-Cardio-Plyo-Functional,False
+ea_rebounder_light_jumps,Rebounder Light Jumps,ankle,ankle_impact,jumps,,Calisthenics-Cardio-Plyo-Functional,False
+ea_resistance_band_calf_press_sitting_on_chair,Resistance Band Calf Press Sitting on Chair,ankle,ankle_plantarflexion,calf,calves,Legs,False
+ea_resistance_band_squat,Resistance Band Squat,ankle,ankle_deep_dorsiflexion,squat,"glutes,quads",Legs,False
+ea_resistance_band_squat_jump,Resistance Band Squat Jump,ankle,ankle_impact,jump,"glutes,quads",Legs,False
+ea_running,Running,ankle,ankle_impact,running,"quads,hamstrings,calves",Calisthenics-Cardio-Plyo-Functional,False
+ea_seated_calf_machine,Seated Calf Machine,ankle,ankle_plantarflexion,calf,calves,Legs,False
+ea_seated_calf_raises_dumbbell_on_knee,Seated Calf Raises Dumbbell on Knee,ankle,ankle_plantarflexion,calf raises,calves,Legs,False
+ea_seated_calf_stretch,Seated Calf Stretch,ankle,ankle_plantarflexion,calf,calves,Stretching - Mobility,False
+ea_seated_straight_leg_calf_stretch,Seated Straight Leg Calf Stretch,ankle,ankle_plantarflexion,calf,calves,Stretching - Mobility,False
+ea_single_leg_calf_raise_leg_press_machine,Single Leg Calf Raise Leg Press Machine,ankle,ankle_plantarflexion,calf raise,calves,Legs,False
+ea_sissy_squat_bodyweight,Sissy Squat Bodyweight,ankle,ankle_deep_dorsiflexion,sissy,,Legs,False
+ea_skater_hops,Skater Hops,ankle,ankle_impact,skater,,Calisthenics-Cardio-Plyo-Functional,False
+ea_ski_ergometer_cross_country_ski_jump_squat_pull,Ski Ergometer Cross Country Ski Jump Squat Pull,ankle,ankle_impact,jump,"quads,glutes,shoulders,lats",Calisthenics-Cardio-Plyo-Functional,False
+ea_ski_ergometer_cross_country_ski_squat_pull_half_circles,Ski Ergometer Cross Country Ski Squat Pull Half Circles,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes,lats,shoulders",Calisthenics-Cardio-Plyo-Functional,False
+ea_ski_ergometer_cross_country_ski_squat_wide_lat_pull,Ski Ergometer Cross Country Ski Squat Wide Lat Pull,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes,lats,shoulders",Calisthenics-Cardio-Plyo-Functional,False
+ea_smith_machine_bulgarian_split_squat,Smith Machine Bulgarian Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_smith_machine_calf_raise,Smith Machine Calf Raise,ankle,ankle_plantarflexion,calf raise,calves,Legs,False
+ea_smith_machine_narrow_stance_heels_elevated_squats,Smith Machine Narrow Stance Heels Elevated Squats,ankle,ankle_deep_dorsiflexion,squats,,Legs,False
+ea_standing_calf_raise_resistance_band,Standing Calf Raise Resistance Band,ankle,ankle_plantarflexion,calf raise,calves,Legs,False
+ea_standing_calf_raises_smith_machine,Standing Calf Raises Smith Machine,ankle,ankle_plantarflexion,calf raises,calves,Legs,False
+ea_standing_hamstring_calf_stretch_with_resistance_band,Standing Hamstring Calf Stretch with Resistance Band,ankle,ankle_plantarflexion,calf,hamstrings,Stretching - Mobility,False
+ea_star_jump,Star Jump,ankle,ankle_impact,jump,"quads,hamstrings,glutes",Calisthenics-Cardio-Plyo-Functional,False
+ea_sumo_squat_in_between_legs_resistance_band,Sumo Squat in Between Legs Resistance Band,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_sumo_squat_over_shoulder_resistance_band,Sumo Squat Over Shoulder Resistance Band,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_suspension_trainer_with_grips_side_squat,Suspension Trainer with Grips Side Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_suspension_trainer_with_grips_split_squat,Suspension Trainer with Grips Split Squat,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_treadmill_jogging,Treadmill Jogging,ankle,ankle_impact,jogging,"quads,hamstrings,glutes",Calisthenics-Cardio-Plyo-Functional,False
+ea_treadmill_running,Treadmill Running,ankle,ankle_impact,running,"quads,hamstrings,glutes",Calisthenics-Cardio-Plyo-Functional,False
+ea_unilateral_box_jump,Unilateral Box Jump,ankle,ankle_impact,box jump,,Calisthenics-Cardio-Plyo-Functional,False
+ea_unilateral_box_jump_bilateral_deceleration,Unilateral Box Jump - Bilateral Deceleration,ankle,ankle_impact,box jump,,Calisthenics-Cardio-Plyo-Functional,False
+ea_unilateral_jumps,Unilateral Jumps,ankle,ankle_impact,jumps,,Calisthenics-Cardio-Plyo-Functional,False
+ea_wall_squat_bodyweight,Wall Squat Bodyweight,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False
+ea_wall_squat_with_pause_bodyweight,Wall Squat with Pause Bodyweight,ankle,ankle_deep_dorsiflexion,squat,"quads,glutes",Legs,False

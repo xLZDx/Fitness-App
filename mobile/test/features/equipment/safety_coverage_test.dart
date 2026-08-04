@@ -16,7 +16,7 @@ import 'package:fitness_app/features/profile/data/profile_models.dart';
 /// assertions below pin it from both sides, so tagging the very first exercise
 /// turns this file red until the number here is raised to match. That is the
 /// point: the count can never drift from the code again in either direction.
-const int kSafetyCoverageFloor = 1061;
+const int kSafetyCoverageFloor = 1435;
 
 ExerciseItem _ex(String id, {List<String> contraindications = const []}) =>
     ExerciseItem(
@@ -160,9 +160,14 @@ void main() {
       // so the batches are recorded here by name, and adding one turns this
       // red until it is.
       const batched = {
-        InjuryRegion.knee: 362, // S3b-1, 2026-08-05
+        InjuryRegion.knee: 362, // S3b-1
         InjuryRegion.lowerBack: 312, // S3b-2
         InjuryRegion.shoulder: 486, // S3b-2
+        InjuryRegion.hip: 404, // S3b-3
+        InjuryRegion.ankle: 229, // S3b-3
+        InjuryRegion.wrist: 188, // S3b-3
+        InjuryRegion.elbow: 371, // S3b-3
+        InjuryRegion.neck: 117, // S3b-3
       };
       final raw = File('assets/data/exercises_vendor.json').readAsStringSync();
       final catalog = (jsonDecode(raw) as List)

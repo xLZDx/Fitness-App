@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitness_app/core/settings/state/settings_providers.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
+import 'package:fitness_app/features/ai_coach/generated_exercise_repository.dart';
 import 'package:fitness_app/features/equipment/data/asset_equipment_repository.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
@@ -329,6 +330,87 @@ void main() {
     testWidgets('says why, and where to change it', (tester) async {
       await open(tester);
       expect(find.textContaining('injury you told us about'), findsOneWidget);
+    });
+  });
+
+  group('AI-generated exercises', () {
+    // The one class of row no tagging pass can reach. They are generated per
+    // user, per machine, per language, at read time, and the generator emits
+    // no `contraindications` field at all -- so `isContraindicated` returns
+    // false for every one of them however the user is injured.
+    //
+    // While coverage was 0 that was a harmless no-op. S3b made it a hazard:
+    // the app now says lists ARE screened, and these are the rows the claim is
+    // false about. The plan's own answer, taken here: excluded for
+    // injury-aware users until a generation-time tagging pass exists.
+    const generated = ExerciseItem(
+      id: 'ai::rack::0',
+      title: 'Invented movement',
+      equipmentId: 'rack',
+      muscles: ['quads'],
+      difficulty: ExerciseDifficulty.beginner,
+      durationMinutes: 10,
+      summary: 's',
+      steps: ['a'],
+      videoUrl: 'https://example.test/ai.mp4',
+    );
+
+    // The rack has no vendored exercises, so the machine falls through to the
+    // generated cache -- the production path for the 11 cardio ids.
+    Future<ProviderContainer> withGenerated({UserProfile? profile}) async {
+      final repo = AssetEquipmentRepository()
+        ..seedForTests(equipment: const [_rack], exercises: const []);
+      final gen = MockGeneratedExerciseRepository();
+      await gen.save('rack', 'en', const [generated]);
+      final container = ProviderContainer(overrides: [
+        effectiveLanguageCodeProvider.overrideWithValue('en'),
+        equipmentRepositoryProvider.overrideWithValue(repo),
+        generatedExerciseRepositoryProvider.overrideWithValue(gen),
+        screeningProfileProvider.overrideWith((ref) async => profile),
+      ]);
+      addTearDown(container.dispose);
+      return container;
+    }
+
+    test('reach a user with no injuries', () async {
+      // The control. Without it the exclusion below could pass because the
+      // fixture never produced a generated exercise at all.
+      final container = await withGenerated();
+      final result =
+          await container.read(recommendedExercisesProvider('rack').future);
+      expect(result.items.map((e) => e.id), ['ai::rack::0']);
+    });
+
+    test('are not surfaced to a user with an injury', () async {
+      final container = await withGenerated(profile: _injured());
+      final result =
+          await container.read(recommendedExercisesProvider('rack').future);
+      expect(result.items, isEmpty);
+    });
+
+    test('a deep link to one is not found for an injured user', () async {
+      final container = await withGenerated(profile: _injured());
+      final r = await container
+          .read(exerciseResolutionProvider('ai::rack::0').future);
+      expect(r.exercise, isNull);
+    });
+
+    test('a deep link to one still works without injuries', () async {
+      final container = await withGenerated();
+      final r = await container
+          .read(exerciseResolutionProvider('ai::rack::0').future);
+      expect(r.visible?.id, 'ai::rack::0');
+    });
+
+    test('isGenerated names them by id, not by a flag nobody sets', () {
+      expect(isGenerated(generated), isTrue);
+      expect(isGenerated(_safeExercise), isFalse);
+    });
+
+    test('hasInjuries is what gates it', () {
+      expect(hasInjuries(_injured()), isTrue);
+      expect(hasInjuries(null), isFalse);
+      expect(hasInjuries(const UserProfile(uid: 'u')), isFalse);
     });
   });
 }

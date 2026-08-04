@@ -153,14 +153,14 @@ class TestTheShippedCatalog:
         # disagreement is silent by construction.
         counts = tagger.coverage(rows, tagger.load_vocabulary())
         assert counts == {
-            "neck": 0,
+            "neck": 117,
             "shoulder": 486,
-            "elbow": 0,
-            "wrist": 0,
+            "elbow": 371,
+            "wrist": 188,
             "lower_back": 312,
-            "hip": 0,
+            "hip": 404,
             "knee": 362,
-            "ankle": 0,
+            "ankle": 229,
         }
 
     def test_no_injury_hides_most_of_the_catalog(self, rows):
@@ -182,3 +182,14 @@ class TestTheShippedCatalog:
             1 for r in rows if worst & set(r.get("contraindications") or [])
         )
         assert hidden / len(rows) < 0.75, f"{hidden} of {len(rows)} hidden"
+
+    def test_every_injury_at_once_still_leaves_something(self, rows):
+        # The floor of the product. Someone reporting all eight regions sees
+        # 452 exercises -- 76% hidden. Recorded rather than asserted loosely:
+        # the number is high, it is the honest consequence of tagging every
+        # region, and the alternative (tag less) means showing an injured user
+        # something that hurts. If a later pass takes this past 85% the answer
+        # is not to loosen the threshold.
+        hidden = sum(1 for r in rows if r.get("contraindications"))
+        assert hidden / len(rows) < 0.85, f"{hidden} of {len(rows)} hidden"
+        assert len(rows) - hidden > 300, "too little left to train with"

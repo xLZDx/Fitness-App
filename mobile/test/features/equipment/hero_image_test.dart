@@ -54,6 +54,11 @@ void main() {
       );
     final container = ProviderContainer(overrides: [
       equipmentRepositoryProvider.overrideWithValue(repo),
+      // The header is injury-screened now, so the profile has to resolve
+      // before it can answer. Stated rather than inherited: an unresolved
+      // profile leaves it loading forever, which is the correct behaviour and
+      // a confusing test failure.
+      screeningProfileProvider.overrideWith((ref) async => null),
     ]);
     addTearDown(container.dispose);
     return container.read(equipmentHeroImageProvider('lat_pulldown').future);

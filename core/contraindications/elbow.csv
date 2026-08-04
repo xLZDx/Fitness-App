@@ -1,0 +1,372 @@
+id,title,region,rule,matched,primaryMuscles,vendorGroup,already
+ea_ab_wheel_plank,Ab Wheel Plank,elbow,elbow_locked_support,plank,core,Yoga,False
+ea_alternate_arm_leg_plank,Alternate Arm Leg Plank,elbow,elbow_locked_support,plank,"shoulders,glutes",Abdominals,False
+ea_alternate_arm_leg_plank_hold,Alternate Arm Leg Plank Hold,elbow,elbow_locked_support,plank,"shoulders,glutes",Abdominals,False
+ea_alternate_arm_leg_plank_rest_pause,Alternate Arm Leg Plank Rest Pause,elbow,elbow_locked_support,plank,shoulders,Abdominals,False
+ea_alternate_biceps_curl_resistance_band,Alternate Biceps Curl Resistance Band,elbow,elbow_curl_load,curl,,Biceps,False
+ea_alternate_biceps_curl_standing_dumbbells,Alternate Biceps Curl Standing Dumbbells,elbow,elbow_curl_load,curl,,Biceps,False
+ea_alternate_hammer_curl_standing_dumbbells,Alternate Hammer Curl Standing Dumbbells,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_alternate_leg_raise_from_reverse_plank_position,Alternate Leg Raise From Reverse Plank Position,elbow,elbow_locked_support,plank,"lower_back,core,quads",Abdominals,False
+ea_alternate_single_leg_raises_plank,Alternate Single Leg Raises Plank,elbow,elbow_locked_support,plank,glutes,Legs,False
+ea_alternating_biceps_curl_seated_dumbbells,Alternating Biceps Curl Seated Dumbbells,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_alternating_biceps_hammer_curl_resistance_band,Alternating Biceps Hammer Curl Resistance Band,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_alternating_plank_lunge,Alternating Plank Lunge,elbow,elbow_locked_support,plank,"core,quads",Abdominals,False
+ea_archer_pull_up,Archer Pull Up,elbow,elbow_flexion_load,pull up,"lats,biceps",Back,False
+ea_archer_push_up,Archer Push Up,elbow,elbow_locked_support,push up,"chest,triceps",Chest,False
+ea_assisted_chin_up_normal_width_reverse_grip,Assisted Chin Up Normal Width Reverse Grip,elbow,elbow_flexion_load,chin up,lats,Back,False
+ea_assisted_chin_up_reverse_close_grip,Assisted Chin Up Reverse Close Grip,elbow,elbow_flexion_load,chin up,lats,Back,False
+ea_assisted_chin_up_reverse_wide_grip,Assisted Chin Up Reverse Wide Grip,elbow,elbow_flexion_load,chin up,lats,Back,False
+ea_assisted_chin_up_on_a_bench,Assisted Chin-up on a Bench,elbow,elbow_flexion_load,chin up,biceps,Back,False
+ea_assisted_close_grip_underhand_chin_up,Assisted Close Grip Underhand Chin Up,elbow,elbow_flexion_load,chin up,lats,Back,False
+ea_assisted_parallel_close_grip_pull_up,Assisted Parallel Close Grip Pull Up,elbow,elbow_flexion_load,pull up,lats,Back,False
+ea_assisted_pull_up,Assisted Pull Up,elbow,elbow_flexion_load,pull up,lats,Back,False
+ea_assisted_pull_up_close_grip,Assisted Pull Up Close Grip,elbow,elbow_flexion_load,pull up,lats,Back,False
+ea_assisted_pull_up_normal_grip,Assisted Pull Up Normal Grip,elbow,elbow_flexion_load,pull up,lats,Back,False
+ea_assisted_pull_up_wide_grip,Assisted Pull Up Wide Grip,elbow,elbow_flexion_load,pull up,lats,Back,False
+ea_assisted_weighted_push_up,Assisted Weighted Push Up,elbow,elbow_locked_support,push up,chest,Chest,False
+ea_band_assisted_chin_up_from_knee,Band Assisted Chin Up (from Knee),elbow,elbow_flexion_load,chin up,lats,Back,False
+ea_band_bent_over_one_arm_kickback,Band Bent Over One Arm Kickback,elbow,elbow_extension_load,kickback,triceps,Triceps,False
+ea_band_close_grip_row,Band Close Grip Row,elbow,elbow_extension_load,close grip,"shoulders,traps",Shoulders,False
+ea_band_close_grip_biceps_curl,Band Close-grip Biceps Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_band_concentration_curl,Band Concentration Curl,elbow,elbow_curl_load,concentration,biceps,Biceps,False
+ea_band_cross_chest_biceps_curl,Band Cross Chest Biceps Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_band_incline_alternate_hammer_curl,Band Incline Alternate Hammer Curl,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_band_incline_biceps_curl,Band Incline Biceps Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_band_incline_hammer_curl,Band Incline Hammer Curl,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_band_incline_triceps_extension,Band Incline Triceps Extension,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_band_kneeling_preacher_curl,Band Kneeling Preacher Curl,elbow,elbow_curl_load,preacher,biceps,Biceps,False
+ea_band_prone_incline_curl,Band Prone Incline Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_band_prone_incline_hammer_curl,Band Prone Incline Hammer Curl,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_band_pull_up,Band Pull Up,elbow,elbow_flexion_load,pull up,lats,Back,False
+ea_band_push_up,Band Push-up,elbow,elbow_locked_support,push up,chest,Chest,False
+ea_band_reverse_spider_curl,Band Reverse Spider Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_band_triceps_pushdown_single_arm,Band Triceps Pushdown Single Arm,elbow,elbow_extension_load,triceps,,Triceps,False
+ea_band_wrist_curl_single_arm,Band Wrist Curl Single Arm,elbow,elbow_curl_load,curl,,Forearms,False
+ea_barbell_alternate_biceps_curl,Barbell Alternate Biceps Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_barbell_bicep_curl_close_grip,Barbell Bicep Curl Close Grip,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_barbell_bicep_curl_normal_grip,Barbell Bicep Curl Normal Grip,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_barbell_bicep_curl_wide_grip,Barbell Bicep Curl Wide Grip,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_barbell_biceps_curl,Barbell Biceps Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_barbell_close_grip_press,Barbell Close Grip Press,elbow,elbow_extension_load,close grip,triceps,Triceps,False
+ea_barbell_curl,Barbell Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_barbell_drag_biceps_curl,Barbell Drag Biceps Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_barbell_drag_curl,Barbell Drag Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_barbell_lap_curl,Barbell Lap Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_barbell_lying_triceps_extension,Barbell Lying Triceps Extension,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_barbell_lying_triceps_skull_crusher,Barbell Lying Triceps Skull Crusher,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_barbell_lying_triceps_skull_crushers,Barbell Lying Triceps Skull Crushers,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_barbell_palm_down_wrist_curl_over_a_bench,Barbell Palm Down Wrist Curl Over a Bench,elbow,elbow_curl_load,curl,forearms,Forearms,False
+ea_barbell_preacher_curl,Barbell Preacher Curl,elbow,elbow_curl_load,preacher,biceps,Biceps,False
+ea_barbell_pullover_to_triceps_extension,Barbell Pullover to Triceps Extension,elbow,elbow_extension_load,triceps,"chest,back",Chest,False
+ea_barbell_reverse_biceps_curl,Barbell Reverse Biceps Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_barbell_reverse_close_grip_bench_press,Barbell Reverse Close Grip Bench Press,elbow,elbow_extension_load,close grip,"triceps,chest",Chest,False
+ea_barbell_reverse_spider_curl,Barbell Reverse Spider Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_barbell_seated_concentration_biceps_curl,Barbell Seated Concentration Biceps Curl,elbow,elbow_curl_load,concentration,biceps,Biceps,False
+ea_barbell_seated_overhead_triceps_press,Barbell Seated Overhead Triceps Press,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_barbell_single_arm_biceps_curl,Barbell Single Arm Biceps Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_barbell_snatch_deadlift_close_grip,Barbell Snatch Deadlift Close Grip,elbow,elbow_extension_load,close grip,"quads,glutes,lower_back",Back,False
+ea_barbell_standing_back_wrist_curl,Barbell Standing Back Wrist Curl,elbow,elbow_curl_load,curl,forearms,Forearms,False
+ea_barbell_standing_close_grip_curl,Barbell Standing Close Grip Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_barbell_standing_close_grip_military_press,Barbell Standing Close Grip Military Press,elbow,elbow_extension_load,close grip,shoulders,Shoulders,False
+ea_barbell_standing_concentration_curl,Barbell Standing Concentration Curl,elbow,elbow_curl_load,concentration,biceps,Biceps,False
+ea_barbell_standing_overhead_triceps_extension,Barbell Standing Overhead Triceps Extension,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_barbell_standing_wide_grip_biceps_curls,Barbell Standing Wide Grip Biceps Curls,elbow,elbow_curl_load,curls,biceps,Biceps,False
+ea_barbell_wide_grip_biceps_curl,Barbell Wide Grip Biceps Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_barbell_wrist_curl_on_knees,Barbell Wrist Curl on Knees,elbow,elbow_curl_load,curl,forearms,Forearms,False
+ea_barbell_wrist_curl_wide_legs,Barbell Wrist Curl Wide Legs,elbow,elbow_curl_load,curl,forearms,Forearms,False
+ea_bear_crawls,Bear Crawls,elbow,elbow_locked_support,bear crawls,,Calisthenics-Cardio-Plyo-Functional,False
+ea_bench_dip_knees_bent,Bench Dip (knees Bent),elbow,elbow_extension_load,dip,triceps,Triceps,False
+ea_bench_dip_on_floor,Bench Dip on Floor,elbow,elbow_extension_load,dip,triceps,Triceps,False
+ea_bench_pull_ups,Bench Pull-ups,elbow,elbow_flexion_load,pull ups,"back,biceps",Back,False
+ea_bench_reverse_plank_hold,Bench Reverse Plank Hold,elbow,elbow_locked_support,plank,"triceps,shoulders",Yoga,False
+ea_bench_triceps_dip_leg_curls,Bench Triceps Dip Leg Curls,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_bench_triceps_dip_straight_legs,Bench Triceps Dip Straight Legs,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_bicep_curl_low_cable_machine_normal_grip,Bicep Curl Low Cable Machine Normal Grip,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_biceps_curl_cable,Biceps Curl Cable,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_biceps_curl_cable_wide_grip,Biceps Curl Cable Wide Grip,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_biceps_curl_cable_wide_grip_crossover_machine,Biceps Curl Cable Wide Grip Crossover Machine,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_biceps_curl_front_step,Biceps Curl Front Step,elbow,elbow_curl_load,curl,"biceps,quads",Biceps,False
+ea_biceps_curl_resistance_band,Biceps Curl Resistance Band,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_biceps_curl_to_shoulder_press_resistance_band,Biceps Curl to Shoulder Press Resistance Band,elbow,elbow_curl_load,curl,"biceps,shoulders",Biceps,False
+ea_biceps_leg_concentration_curl,Biceps Leg Concentration Curl,elbow,elbow_curl_load,concentration,biceps,Biceps,False
+ea_body_saw_plank,Body Saw Plank,elbow,elbow_locked_support,plank,shoulders,Yoga,False
+ea_bodyweight_kneeling_push_up_row,Bodyweight Kneeling Push-up Row,elbow,elbow_locked_support,push up,"chest,triceps,back",Yoga,False
+ea_bodyweight_kneeling_triceps_extension,Bodyweight Kneeling Triceps Extension,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_bodyweight_overhead_triceps_extension,Bodyweight Overhead Triceps Extension,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_bodyweight_triceps_extension,Bodyweight Triceps Extension,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_cable_alternate_triceps_extension,Cable Alternate Triceps Extension,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_cable_biceps_curl_ez_bar,Cable Biceps Curl (ez-bar),elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_cable_close_grip_curl,Cable Close Grip Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_cable_close_grip_front_lat_pulldown,Cable Close Grip Front Lat Pulldown,elbow,elbow_extension_load,close grip,lats,Back,False
+ea_cable_cross_pushdown,Cable Cross Pushdown,elbow,elbow_extension_load,pushdown,,Triceps,False
+ea_cable_individual_glute_kickbacks,Cable Individual Glute Kickbacks,elbow,elbow_extension_load,kickbacks,"glutes,hamstrings",Legs,False
+ea_cable_lying_triceps_extension,Cable Lying Triceps Extension,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_cable_lying_triceps_extension_low,Cable Lying Triceps Extension (LOW),elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_cable_neutral_grip_kickback,Cable Neutral Grip Kickback,elbow,elbow_extension_load,kickback,triceps,Triceps,False
+ea_cable_one_arm_curl,Cable One Arm Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_cable_one_arm_inner_biceps_curl,Cable One Arm Inner Biceps Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_cable_overhead_curl,Cable Overhead Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_cable_overhead_extension_rope,Cable Overhead Extension Rope,elbow,elbow_extension_load,overhead extension,triceps,Triceps,False
+ea_cable_preacher_curl,Cable Preacher Curl,elbow,elbow_curl_load,preacher,biceps,Biceps,False
+ea_cable_pushdown,Cable Pushdown,elbow,elbow_extension_load,pushdown,triceps,Triceps,False
+ea_cable_pushdown_straight_arm,Cable Pushdown (straight Arm),elbow,elbow_extension_load,pushdown,lats,Back,False
+ea_cable_reverse_curl,Cable Reverse Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_cable_reverse_grip_pushdown,Cable Reverse Grip Pushdown,elbow,elbow_extension_load,pushdown,triceps,Triceps,False
+ea_cable_reverse_grip_triceps_push_down_straight_bar_on_crossover,Cable Reverse Grip Triceps Push Down Straight Bar on Crossover,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_cable_reverse_grip_triceps_pushdown_ez_bar,Cable Reverse Grip Triceps Pushdown (ez-bar),elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_cable_reverse_grip_triceps_pushdown_back_side_pov,Cable Reverse Grip Triceps Pushdown Back Side Pov,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_cable_triceps_overhead_extension_ez_bar,Cable Triceps Overhead Extension (ez Bar),elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_cable_triceps_push_down_elbow_out_v_bar,Cable Triceps Push Down Elbow Out (v Bar),elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_cable_triceps_push_down_ez_bar,Cable Triceps Push Down Ez Bar,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_cable_triceps_push_down_ez_bar_close_grip,Cable Triceps Push Down Ez Bar Close Grip,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_cable_triceps_push_down_ez_bar_wide_grip,Cable Triceps Push Down Ez Bar Wide Grip,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_cable_triceps_push_down_straight_bar,Cable Triceps Push Down Straight Bar,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_cable_triceps_push_down_v_bar,Cable Triceps Push Down V Bar,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_cable_twisting_biceps_curl,Cable Twisting Biceps Curl,elbow,elbow_curl_load,curl,,Biceps,False
+ea_cable_wrist_curl,Cable Wrist Curl,elbow,elbow_curl_load,curl,forearms,Forearms,False
+ea_chair_triceps_dips,Chair Triceps Dips,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_chest_dip,Chest Dip,elbow,elbow_extension_load,dip,chest,Chest,False
+ea_chest_dip_on_dip_station,Chest Dip (on Dip Station),elbow,elbow_extension_load,dip,chest,Chest,False
+ea_chest_dip_machine,Chest Dip Machine,elbow,elbow_extension_load,dip,chest,Chest,False
+ea_chest_dip_on_bench,Chest Dip on Bench,elbow,elbow_extension_load,dip,chest,Chest,False
+ea_chest_dip_weighted,Chest Dip Weighted,elbow,elbow_extension_load,dip,chest,Chest,False
+ea_chest_dip_weighted_slow,Chest Dip Weighted Slow,elbow,elbow_extension_load,dip,chest,Chest,False
+ea_chest_dip_with_pause_bodyweight,Chest Dip with Pause Bodyweight,elbow,elbow_extension_load,dip,chest,Chest,False
+ea_chest_tap_push_up,Chest Tap Push Up,elbow,elbow_locked_support,push up,"chest,shoulders,triceps",Chest,False
+ea_chin_up,Chin Up,elbow,elbow_flexion_load,chin up,"biceps,back",Back,False
+ea_chin_up_reverse_close_grip,Chin Up Reverse Close Grip,elbow,elbow_flexion_load,chin up,"biceps,back",Back,False
+ea_chin_up_reverse_normal_grip,Chin Up Reverse Normal Grip,elbow,elbow_flexion_load,chin up,"biceps,back",Back,False
+ea_chin_up_reverse_wide_grip,Chin Up Reverse Wide Grip,elbow,elbow_flexion_load,chin up,"biceps,back",Back,False
+ea_chin_ups_narrow_parallel_grip,Chin Ups (narrow Parallel Grip),elbow,elbow_flexion_load,chin ups,"biceps,back",Back,False
+ea_chin_up_isometric_and_negative,Chin-up (isometric and Negative),elbow,elbow_flexion_load,chin up,"biceps,back",Back,False
+ea_clap_push_ups,Clap Push Ups,elbow,elbow_locked_support,push ups,"chest,shoulders,triceps",Chest,False
+ea_clock_push_ups,Clock Push Ups,elbow,elbow_locked_support,push ups,"chest,triceps",Chest,False
+ea_close_grip_barbell_bench_press,Close Grip Barbell Bench Press,elbow,elbow_extension_load,close grip,"chest,triceps",Chest,False
+ea_close_grip_push_up,Close Grip Push Up,elbow,elbow_extension_load,close grip,"triceps,chest",Chest,False
+ea_cobra_full_push_up,Cobra Full Push Up,elbow,elbow_locked_support,push up,"chest,shoulders,triceps",Yoga,False
+ea_cobra_push_up,Cobra Push Up,elbow,elbow_locked_support,push up,"chest,shoulders,triceps",Yoga,False
+ea_commando_pull_up,Commando Pull-up,elbow,elbow_flexion_load,pull up,"back,biceps",Back,False
+ea_concentration_curls_dumbbell,Concentration Curls Dumbbell,elbow,elbow_curl_load,concentration,biceps,Biceps,False
+ea_copenhagen_plank,Copenhagen Plank,elbow,elbow_locked_support,plank,,Abdominals,False
+ea_decline_chair_push_up_diamond,Decline Chair Push Up Diamond,elbow,elbow_locked_support,push up,"chest,triceps",Triceps,False
+ea_decline_diamond_pike_push_up,Decline Diamond Pike Push-up,elbow,elbow_locked_support,push up,"shoulders,triceps",Triceps,False
+ea_decline_kneeling_push_up,Decline Kneeling Push Up,elbow,elbow_locked_support,push up,"chest,triceps",Chest,False
+ea_decline_kneeling_push_up_on_box,Decline Kneeling Push Up on Box,elbow,elbow_locked_support,push up,"chest,triceps",Chest,False
+ea_decline_push_up,Decline Push Up,elbow,elbow_locked_support,push up,"chest,triceps",Chest,False
+ea_decline_push_up_against_wall,Decline Push Up Against Wall,elbow,elbow_locked_support,push up,"chest,triceps",Chest,False
+ea_deep_push_up,Deep Push-up,elbow,elbow_locked_support,push up,"chest,shoulders",Chest,False
+ea_diamond_push_up,Diamond Push Up,elbow,elbow_locked_support,push up,"triceps,chest",Triceps,False
+ea_diamond_push_up_on_knees,Diamond Push-up (on Knees),elbow,elbow_locked_support,push up,"triceps,chest",Triceps,False
+ea_dip_leg_raise_on_couch,Dip Leg Raise on Couch,elbow,elbow_extension_load,dip,triceps,Triceps,False
+ea_dip_on_floor_with_chair,Dip on Floor with Chair,elbow,elbow_extension_load,dip,triceps,Triceps,False
+ea_dips_between_chairs,Dips Between Chairs,elbow,elbow_extension_load,dips,"chest,triceps",Triceps,False
+ea_doorway_biceps_curl,Doorway Biceps Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_drag_curl_dumbbell,Drag Curl Dumbbell,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_drag_curl_resistance_band,Drag Curl Resistance Band,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_alternate_biceps_curl,Dumbbell Alternate Biceps Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_alternate_biceps_curl_version_2,Dumbbell Alternate Biceps Curl (version 2),elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_alternate_seated_hammer_curl,Dumbbell Alternate Seated Hammer Curl,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_dumbbell_bicep_curl_to_shoulder_press,Dumbbell Bicep Curl to Shoulder Press,elbow,elbow_curl_load,curl,"biceps,shoulders",Shoulders,False
+ea_dumbbell_biceps_curl_with_overhead_extension_on_stability_ball,Dumbbell Biceps Curl with Overhead Extension on Stability Ball,elbow,elbow_curl_load,curl,"biceps,triceps",Biceps,False
+ea_dumbbell_close_grip_shoulder_press_sit_up,Dumbbell Close Grip Shoulder Press Sit Up,elbow,elbow_extension_load,close grip,shoulders,Shoulders,False
+ea_dumbbell_close_grip_simultaneous_curl,Dumbbell Close-grip Simultaneous Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_cross_body_hammer_curl_version_2,Dumbbell Cross Body Hammer Curl (version 2),elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_dumbbell_curl_press_extend,Dumbbell Curl Press Extend,elbow,elbow_curl_load,curl,,Calisthenics-Cardio-Plyo-Functional,False
+ea_dumbbell_curls,Dumbbell Curls,elbow,elbow_curl_load,curls,biceps,Biceps,False
+ea_dumbbell_curls_alternating,Dumbbell Curls Alternating,elbow,elbow_curl_load,curls,biceps,Biceps,False
+ea_dumbbell_decline_triceps_pull_over_extension,Dumbbell Decline Triceps Pull-over Extension,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_dumbbell_drag_over_shoulder_bicep_curl,Dumbbell Drag Over Shoulder Bicep Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_elbow_side_plank,Dumbbell Elbow Side Plank,elbow,elbow_locked_support,plank,,Abdominals,False
+ea_dumbbell_half_biceps_curl_for_21s,Dumbbell Half Biceps Curl For 21s,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_hammer_curl,Dumbbell Hammer Curl,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_dumbbell_hammer_curl_simultaneous_arms,Dumbbell Hammer Curl Simultaneous Arms,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_dumbbell_hammer_preacher_curl_simultaneous_arms,Dumbbell Hammer Preacher Curl Simultaneous Arms,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_dumbbell_hammer_strict_curl,Dumbbell Hammer Strict Curl,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_dumbbell_hand_side_plank,Dumbbell Hand Side Plank,elbow,elbow_locked_support,plank,,Abdominals,False
+ea_dumbbell_high_curl,Dumbbell High Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_incline_alternate_bicep_curl,Dumbbell Incline Alternate Bicep Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_incline_alternate_curl,Dumbbell Incline Alternate Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_incline_alternate_hammer_curl,Dumbbell Incline Alternate Hammer Curl,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_dumbbell_incline_biceps_simultaneous_curl,Dumbbell Incline Biceps Simultaneous Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_incline_hammer_simultaneous_curl,Dumbbell Incline Hammer Simultaneous Curl,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_dumbbell_incline_simultaneous_curl,Dumbbell Incline Simultaneous Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_incline_svend_close_grip_press,Dumbbell Incline Svend Close Grip Press,elbow,elbow_extension_load,close grip,,Chest,False
+ea_dumbbell_incline_triceps_extension,Dumbbell Incline Triceps Extension,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_dumbbell_kickback,Dumbbell Kickback,elbow,elbow_extension_load,kickback,triceps,Triceps,False
+ea_dumbbell_lying_one_arm_neutral_triceps_extension,Dumbbell Lying One Arm Neutral Triceps Extension,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_dumbbell_lying_supine_curl,Dumbbell Lying Supine Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_lying_triceps_extension,Dumbbell Lying Triceps Extension,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_dumbbell_lying_triceps_extension_on_floor,Dumbbell Lying Triceps Extension on Floor,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_dumbbell_one_arm_hammer_preacher_curl,Dumbbell One Arm Hammer Preacher Curl,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_dumbbell_one_arm_kickback,Dumbbell One Arm Kickback,elbow,elbow_extension_load,kickback,triceps,Triceps,False
+ea_dumbbell_one_arm_reverse_preacher_curl,Dumbbell One Arm Reverse Preacher Curl,elbow,elbow_curl_load,preacher,biceps,Biceps,False
+ea_dumbbell_one_arm_reverse_wrist_curl,Dumbbell One Arm Reverse Wrist Curl,elbow,elbow_curl_load,curl,forearms,Forearms,False
+ea_dumbbell_one_arm_seated_neutral_wrist_curl,Dumbbell One Arm Seated Neutral Wrist Curl,elbow,elbow_curl_load,curl,forearms,Forearms,False
+ea_dumbbell_one_arm_triceps_extension_on_bench,Dumbbell One Arm Triceps Extension (on Bench),elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_dumbbell_one_arm_wrist_curl,Dumbbell One Arm Wrist Curl,elbow,elbow_curl_load,curl,forearms,Forearms,False
+ea_dumbbell_one_arm_zottman_preacher_curl,Dumbbell One Arm Zottman Preacher Curl,elbow,elbow_curl_load,preacher,biceps,Biceps,False
+ea_dumbbell_over_bench_reverse_wrist_curl,Dumbbell Over Bench Reverse Wrist Curl,elbow,elbow_curl_load,curl,forearms,Forearms,False
+ea_dumbbell_over_bench_wrist_curl,Dumbbell Over Bench Wrist Curl,elbow,elbow_curl_load,curl,forearms,Forearms,False
+ea_dumbbell_overhead_extension_seated,Dumbbell Overhead Extension Seated,elbow,elbow_extension_load,overhead extension,triceps,Triceps,False
+ea_dumbbell_overhead_extension_standing,Dumbbell Overhead Extension Standing,elbow,elbow_extension_load,overhead extension,triceps,Triceps,False
+ea_dumbbell_plank_pullthrough,Dumbbell Plank Pullthrough,elbow,elbow_locked_support,plank,,Shoulders,False
+ea_dumbbell_preacher_curl,Dumbbell Preacher Curl,elbow,elbow_curl_load,preacher,biceps,Biceps,False
+ea_dumbbell_preacher_curl_turned_torso,Dumbbell Preacher Curl (turned Torso),elbow,elbow_curl_load,preacher,biceps,Biceps,False
+ea_dumbbell_preacher_curl_over_exercise_ball,Dumbbell Preacher Curl Over Exercise Ball,elbow,elbow_curl_load,preacher,biceps,Biceps,False
+ea_dumbbell_pronate_grip_triceps_extension,Dumbbell Pronate-grip Triceps Extension,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_dumbbell_prone_incline_curl,Dumbbell Prone Incline Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_prone_incline_hammer_curl,Dumbbell Prone Incline Hammer Curl,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_dumbbell_reverse_grip_biceps_curl,Dumbbell Reverse Grip Biceps Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_reverse_spider_curl,Dumbbell Reverse Spider Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_reverse_wrist_curl,Dumbbell Reverse Wrist Curl,elbow,elbow_curl_load,curl,,Forearms,False
+ea_dumbbell_seated_curl,Dumbbell Seated Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_seated_hammer_curl,Dumbbell Seated Hammer Curl,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_dumbbell_seated_kickback,Dumbbell Seated Kickback,elbow,elbow_extension_load,kickback,triceps,Triceps,False
+ea_dumbbell_seated_neutral_wrist_curl,Dumbbell Seated Neutral Wrist Curl,elbow,elbow_curl_load,curl,forearms,Forearms,False
+ea_dumbbell_seated_preacher_curl,Dumbbell Seated Preacher Curl,elbow,elbow_curl_load,preacher,biceps,Biceps,False
+ea_dumbbell_seated_reverse_close_grip_press,Dumbbell Seated Reverse Close Grip Press,elbow,elbow_extension_load,close grip,shoulders,Shoulders,False
+ea_dumbbell_seated_reverse_grip_concentration_curl,Dumbbell Seated Reverse Grip Concentration Curl,elbow,elbow_curl_load,concentration,biceps,Biceps,False
+ea_dumbbell_seated_zottman_curl,Dumbbell Seated Zottman Curl,elbow,elbow_curl_load,curl,,Biceps,False
+ea_dumbbell_side_plank_up_down,Dumbbell Side Plank Up Down,elbow,elbow_locked_support,plank,,Abdominals,False
+ea_dumbbell_side_plank_with_rear_fly,Dumbbell Side Plank with Rear Fly,elbow,elbow_locked_support,plank,"shoulders,traps",Abdominals,False
+ea_dumbbell_simultaneous_biceps_curl,Dumbbell Simultaneous Biceps Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_standing_both_arms_kickback,Dumbbell Standing Both Arms Kickback,elbow,elbow_extension_load,kickback,triceps,Triceps,False
+ea_dumbbell_standing_concentration_curl,Dumbbell Standing Concentration Curl,elbow,elbow_curl_load,concentration,biceps,Biceps,False
+ea_dumbbell_standing_hammer_drag_curl,Dumbbell Standing Hammer Drag Curl,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_dumbbell_standing_one_arm_concentration_curl,Dumbbell Standing One Arm Concentration Curl,elbow,elbow_curl_load,concentration,biceps,Biceps,False
+ea_dumbbell_standing_one_arm_curl_over_incline_bench,Dumbbell Standing One Arm Curl Over Incline Bench,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_standing_preacher_curl,Dumbbell Standing Preacher Curl,elbow,elbow_curl_load,preacher,biceps,Biceps,False
+ea_dumbbell_standing_reverse_curl,Dumbbell Standing Reverse Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_standing_simultaneous_biceps_curl,Dumbbell Standing Simultaneous Biceps Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_standing_triceps_extension,Dumbbell Standing Triceps Extension,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_dumbbell_standing_wide_simultaneous_biceps_curl,Dumbbell Standing Wide Simultaneous Biceps Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_standing_wrist_curl,Dumbbell Standing Wrist Curl,elbow,elbow_curl_load,curl,forearms,Forearms,False
+ea_dumbbell_triceps_kick_back_single_arm,Dumbbell Triceps Kick Back Single Arm,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_dumbbell_waiter_biceps_curl,Dumbbell Waiter Biceps Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_zottman_curl,Dumbbell Zottman Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_dumbbell_zottman_preacher_curl,Dumbbell Zottman Preacher Curl,elbow,elbow_curl_load,preacher,biceps,Biceps,False
+ea_dumbbells_plank_to_alternating_row,Dumbbells Plank to Alternating Row,elbow,elbow_locked_support,plank,"lats,core",Back,False
+ea_dumbbells_triceps_kick_back_both_arms,Dumbbells Triceps Kick Back Both Arms,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_elbow_lift_reverse_push_up,Elbow Lift Reverse Push Up,elbow,elbow_locked_support,push up,traps,Back,False
+ea_elbow_push_plank_up,Elbow Push Plank Up,elbow,elbow_locked_support,plank,,Abdominals,False
+ea_elbow_up_and_down_dynamic_plank,Elbow-up and Down Dynamic Plank,elbow,elbow_locked_support,plank,,Abdominals,False
+ea_elevated_push_up,Elevated Push Up,elbow,elbow_locked_support,push up,chest,Chest,False
+ea_explosive_push_ups,Explosive Push Ups,elbow,elbow_locked_support,push ups,"chest,triceps",Chest,False
+ea_ez_bar_biceps_curl_close_grip,Ez Bar Biceps Curl Close Grip,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_ez_bar_biceps_curl_normal_grip,Ez Bar Biceps Curl Normal Grip,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_ez_bar_biceps_curl_wide_grip,Ez Bar Biceps Curl Wide Grip,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_ez_bar_cable_curl_wide_grip,Ez Bar Cable Curl Wide Grip,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_ez_bar_cable_curl_wide_grip_crossover_machine,Ez Bar Cable Curl Wide Grip Crossover Machine,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_ez_bar_overhead_extensions_standing,Ez Bar Overhead Extensions Standing,elbow,elbow_extension_load,overhead extensions,triceps,Triceps,False
+ea_ez_bar_seated_close_grip_shoulder_press,Ez Bar Seated Close Grip Shoulder Press,elbow,elbow_extension_load,close grip,shoulders,Shoulders,False
+ea_ez_bar_seated_wrist_curl,EZ Bar Seated Wrist Curl,elbow,elbow_curl_load,curl,forearms,Forearms,False
+ea_ez_barbell_close_grip_curl,EZ Barbell Close Grip Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_ez_barbell_curl,EZ Barbell Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_floor_tricep_dip,Floor Tricep Dip,elbow,elbow_extension_load,tricep,,Triceps,False
+ea_full_planche_push_up,Full Planche Push Up,elbow,elbow_locked_support,push up,"shoulders,chest",Chest,False
+ea_hammer_curl_resistance_band_simultaneous,Hammer Curl Resistance Band Simultaneous,elbow,elbow_curl_load,hammer,"biceps,forearms",Biceps,False
+ea_hammer_strength_mts_iso_lateral_biceps_curl_alternate_arm,Hammer Strength MTS Iso-lateral Biceps Curl Alternate Arm,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_hammer_strength_mts_iso_lateral_biceps_curl_arm_alternating,Hammer Strength MTS Iso-lateral Biceps Curl Arm Alternating,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_hammer_strength_mts_iso_lateral_biceps_curl_both_arm,Hammer Strength MTS Iso-lateral Biceps Curl Both Arm,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_hammer_strength_mts_iso_lateral_biceps_curl_single_arm,Hammer Strength MTS Iso-lateral Biceps Curl Single Arm,elbow,elbow_curl_load,hammer,biceps,Biceps,False
+ea_handstand_push_on_chair,Handstand Push on Chair,elbow,elbow_locked_support,handstand,"shoulders,triceps",Shoulders,False
+ea_high_plank,High Plank,elbow,elbow_locked_support,plank,core,Yoga,False
+ea_incline_diamond_push_up_on_bench,Incline Diamond Push Up on Bench,elbow,elbow_locked_support,push up,"triceps,chest",Triceps,False
+ea_incline_dumbbell_curl,Incline Dumbbell Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_incline_push_ups_on_chair,Incline Push Ups on Chair,elbow,elbow_locked_support,push ups,triceps,Triceps,False
+ea_incline_push_up_on_box,Incline Push-up (on Box),elbow,elbow_locked_support,push up,chest,Chest,False
+ea_kettlebell_concentration_curl,Kettlebell Concentration Curl,elbow,elbow_curl_load,concentration,,Biceps,False
+ea_kettlebell_curl,Kettlebell Curl,elbow,elbow_curl_load,curl,,Biceps,False
+ea_kettlebell_decline_skull_crusher,Kettlebell Decline Skull Crusher,elbow,elbow_extension_load,skull,,Triceps,False
+ea_kettlebell_goblet_curl,Kettlebell Goblet Curl,elbow,elbow_curl_load,curl,,Biceps,False
+ea_kettlebell_preacher_curl,Kettlebell Preacher Curl,elbow,elbow_curl_load,preacher,,Biceps,False
+ea_kettlebell_single_arm_curl,Kettlebell Single Arm Curl,elbow,elbow_curl_load,curl,,Biceps,False
+ea_kettlebell_skull_crusher,Kettlebell Skull Crusher,elbow,elbow_extension_load,skull,,Triceps,False
+ea_kettlebell_standing_tricep_extension,Kettlebell Standing Tricep Extension,elbow,elbow_extension_load,tricep,,Triceps,False
+ea_kettlebell_wrist_curl,Kettlebell Wrist Curl,elbow,elbow_curl_load,curl,,Forearms,False
+ea_kipping_handstand_push_up,Kipping Handstand Push-up,elbow,elbow_locked_support,handstand,,Calisthenics-Cardio-Plyo-Functional,False
+ea_kipping_pull_up,Kipping Pull Up,elbow,elbow_flexion_load,pull up,,Back,False
+ea_kneeling_push_up,Kneeling Push-up,elbow,elbow_locked_support,push up,,Chest,False
+ea_landmine_bicep_curl,Landmine Bicep Curl,elbow,elbow_curl_load,curl,,Biceps,False
+ea_landmine_concentration_curl,Landmine Concentration Curl,elbow,elbow_curl_load,concentration,,Biceps,False
+ea_landmine_lying_tricep_extension,Landmine Lying Tricep Extension,elbow,elbow_extension_load,tricep,,Triceps,False
+ea_lat_pull_down_close_grip,Lat Pull Down Close Grip,elbow,elbow_extension_load,close grip,lats,Back,False
+ea_long_lever_plank,Long Lever Plank,elbow,elbow_locked_support,plank,,Abdominals,False
+ea_low_resistance_band_lying_bicep_curl,Low Resistance Band Lying Bicep Curl,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_low_resistance_band_lying_bicep_curl_half_repetition,Low Resistance Band Lying Bicep Curl Half Repetition,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_lying_neck_curls,Lying Neck Curls,elbow,elbow_curl_load,curls,,Calisthenics-Cardio-Plyo-Functional,False
+ea_modified_hindu_push_up,Modified Hindu Push Up,elbow,elbow_locked_support,push up,"chest,shoulders,triceps",Yoga,False
+ea_normal_push_up,Normal Push-up,elbow,elbow_locked_support,push up,chest,Chest,False
+ea_one_arm_push_up,One Arm Push Up,elbow,elbow_locked_support,push up,,Chest,False
+ea_overhand_tricep_stretching_single_arm,Overhand Tricep Stretching Single Arm,elbow,elbow_extension_load,tricep,triceps,Triceps,False
+ea_overhead_extension_resistance_band_both_arms,Overhead Extension Resistance Band Both Arms,elbow,elbow_extension_load,overhead extension,triceps,Triceps,False
+ea_overhead_triceps_stretch_side_angle,Overhead Triceps Stretch Side Angle,elbow,elbow_extension_load,triceps,triceps,Stretching - Mobility,False
+ea_pike_push_up,Pike Push Up,elbow,elbow_locked_support,push up,shoulders,Triceps,False
+ea_plank_cross_knee_drive,Plank Cross Knee Drive,elbow,elbow_locked_support,plank,core,Abdominals,False
+ea_plank_individual_arm_reach,Plank Individual Arm Reach,elbow,elbow_locked_support,plank,,Calisthenics-Cardio-Plyo-Functional,False
+ea_plank_iytw,Plank IYTW,elbow,elbow_locked_support,plank,,Calisthenics-Cardio-Plyo-Functional,False
+ea_plank_jack,Plank Jack,elbow,elbow_locked_support,plank,core,Abdominals,False
+ea_plank_knee_tucks,Plank Knee Tucks,elbow,elbow_locked_support,plank,core,Abdominals,False
+ea_plank_lunges,Plank Lunges,elbow,elbow_locked_support,plank,"core,lower_back,quads",Calisthenics-Cardio-Plyo-Functional,False
+ea_plank_on_elbows,Plank on Elbows,elbow,elbow_locked_support,plank,core,Abdominals,False
+ea_plank_pushup,Plank Pushup,elbow,elbow_locked_support,plank,,Calisthenics-Cardio-Plyo-Functional,False
+ea_plank_reach_through,Plank Reach Through,elbow,elbow_locked_support,plank,core,Abdominals,False
+ea_plank_reverse_fly_with_bottle,Plank Reverse Fly with Bottle,elbow,elbow_locked_support,plank,shoulders,Shoulders,False
+ea_plank_shoulder_taps,Plank Shoulder Taps,elbow,elbow_locked_support,plank,core,Calisthenics-Cardio-Plyo-Functional,False
+ea_plate_curl_to_overhead_press,Plate Curl to Overhead Press,elbow,elbow_curl_load,curl,,Biceps,False
+ea_plate_curl_to_overhead_press_to_tricep_extension,Plate Curl to Overhead Press to Tricep Extension,elbow,elbow_extension_load,tricep,,Triceps,False
+ea_plate_overhead_press_to_tricep_extension,Plate Overhead Press to Tricep Extension,elbow,elbow_extension_load,tricep,,Shoulders,False
+ea_plate_overhead_tricep_extension,Plate Overhead Tricep Extension,elbow,elbow_extension_load,tricep,,Triceps,False
+ea_preacher_curl_dumbbells_simultaneous,Preacher Curl Dumbbells Simultaneous,elbow,elbow_curl_load,preacher,biceps,Biceps,False
+ea_preacher_curl_ez_bar,Preacher Curl Ez Bar,elbow,elbow_curl_load,preacher,biceps,Biceps,False
+ea_preacher_curl_ez_bar_close_grip,Preacher Curl Ez Bar Close Grip,elbow,elbow_curl_load,preacher,biceps,Biceps,False
+ea_preacher_curl_ez_bar_wide_grip,Preacher Curl Ez Bar Wide Grip,elbow,elbow_curl_load,preacher,biceps,Biceps,False
+ea_pull_up_normal_grip,Pull Up Normal Grip,elbow,elbow_flexion_load,pull up,"lats,biceps",Back,False
+ea_pull_up_wide_grip,Pull Up Wide Grip,elbow,elbow_flexion_load,pull up,"lats,biceps",Back,False
+ea_pull_up_wide_grip_front_view,Pull Up Wide Grip Front View,elbow,elbow_flexion_load,pull up,"lats,biceps",Back,False
+ea_push_up_and_rotation,Push Up and Rotation,elbow,elbow_locked_support,push up,"chest,shoulders",Chest,False
+ea_push_up_plus,Push Up Plus,elbow,elbow_locked_support,push up,"chest,shoulders",Chest,False
+ea_push_ups_bodyweight,Push Ups Bodyweight,elbow,elbow_locked_support,push ups,chest,Chest,False
+ea_resistance_band_assisted_push_up,Resistance Band Assisted Push-up,elbow,elbow_locked_support,push up,chest,Chest,False
+ea_resistance_band_bent_leg_kickback_kneeling,Resistance Band Bent Leg Kickback (kneeling),elbow,elbow_extension_load,kickback,glutes,Legs,False
+ea_resistance_band_leg_kickback,Resistance Band Leg Kickback,elbow,elbow_extension_load,kickback,glutes,Legs,False
+ea_resistance_band_one_leg_kickback_bent_position,Resistance Band One Leg Kickback (bent Position),elbow,elbow_extension_load,kickback,glutes,Legs,False
+ea_resistance_band_side_plank_glute_raise,Resistance Band Side Plank Glute Raise,elbow,elbow_locked_support,plank,glutes,Legs,False
+ea_resistance_band_standing_balance_glute_kickback,Resistance Band Standing Balance Glute Kickback,elbow,elbow_extension_load,kickback,glutes,Legs,False
+ea_resistance_band_standing_balance_glute_kickback_version_2,Resistance Band Standing Balance Glute Kickback (version 2),elbow,elbow_extension_load,kickback,glutes,Legs,False
+ea_reverse_curl_barbell,Reverse Curl Barbell,elbow,elbow_curl_load,curl,,Biceps,False
+ea_reverse_plank,Reverse Plank,elbow,elbow_locked_support,plank,,Abdominals,False
+ea_ring_dips,Ring Dips,elbow,elbow_extension_load,dips,,Calisthenics-Cardio-Plyo-Functional,False
+ea_scapula_push_up,Scapula Push Up,elbow,elbow_locked_support,push up,traps,Yoga,False
+ea_side_plank,Side Plank,elbow,elbow_locked_support,plank,core,Abdominals,False
+ea_side_plank_oblique_crunch,Side Plank Oblique Crunch,elbow,elbow_locked_support,plank,core,Abdominals,False
+ea_side_plank_with_hip_lift,Side Plank with Hip Lift,elbow,elbow_locked_support,plank,core,Yoga,False
+ea_side_to_side_push_up,Side to Side Push Up,elbow,elbow_locked_support,push up,"chest,triceps",Chest,False
+ea_single_arm_overhead_extension_resistance_band,Single Arm Overhead Extension Resistance Band,elbow,elbow_extension_load,overhead extension,triceps,Triceps,False
+ea_single_dumbbell_biceps_curls,Single Dumbbell Biceps Curls,elbow,elbow_curl_load,curls,biceps,Biceps,False
+ea_ski_ergometer_cross_country_ski_face_biceps_curl_pull,Ski Ergometer Cross Country Ski Face Biceps Curl Pull,elbow,elbow_curl_load,curl,biceps,Calisthenics-Cardio-Plyo-Functional,False
+ea_ski_ergometer_cross_country_ski_reverse_triceps_extension_pull,Ski Ergometer Cross Country Ski Reverse Triceps Extension Pull,elbow,elbow_extension_load,triceps,triceps,Calisthenics-Cardio-Plyo-Functional,False
+ea_ski_ergometer_cross_country_ski_triceps_extension_pull,Ski Ergometer Cross Country Ski Triceps Extension Pull,elbow,elbow_extension_load,triceps,triceps,Calisthenics-Cardio-Plyo-Functional,False
+ea_spider_curl_barbell,Spider Curl Barbell,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_spider_curl_dumbbells_simultaneous,Spider Curl Dumbbells Simultaneous,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_spider_curl_ez_bar,Spider Curl Ez Bar,elbow,elbow_curl_load,curl,biceps,Biceps,False
+ea_spider_plank,Spider Plank,elbow,elbow_locked_support,plank,core,Abdominals,False
+ea_straight_bar_cable_row_close_grip,Straight Bar Cable Row Close Grip,elbow,elbow_extension_load,close grip,lats,Back,False
+ea_supine_push_up,Supine Push Up,elbow,elbow_locked_support,push up,"traps,shoulders",Back,False
+ea_suspension_trainer_with_grips_chin_up,Suspension Trainer with Grips Chin-up,elbow,elbow_flexion_load,chin up,"biceps,lats",Back,False
+ea_suspension_trainer_with_grips_decline_push_up,Suspension Trainer with Grips Decline Push-up,elbow,elbow_locked_support,push up,chest,Chest,False
+ea_suspension_trainer_with_grips_pull_up,Suspension Trainer with Grips Pull-up,elbow,elbow_flexion_load,pull up,lats,Back,False
+ea_suspension_trainer_with_grips_push_up_to_side_plank,Suspension Trainer with Grips Push-up to Side Plank,elbow,elbow_locked_support,push up,"chest,shoulders,core",Chest,False
+ea_suspension_trainer_with_grips_reverse_push_up,Suspension Trainer with Grips Reverse Push-up,elbow,elbow_locked_support,push up,"chest,triceps",Chest,False
+ea_suspension_trainer_with_grips_triceps_extension,Suspension Trainer with Grips Triceps Extension,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_tricep_cable_kickback_on_crossover_machine,Tricep Cable Kickback on Crossover Machine,elbow,elbow_extension_load,tricep,triceps,Triceps,False
+ea_tricep_extension_machine,Tricep Extension Machine,elbow,elbow_extension_load,tricep,triceps,Triceps,False
+ea_tricep_rope_extension_on_crossover_machine,Tricep Rope Extension on Crossover Machine,elbow,elbow_extension_load,tricep,,Triceps,False
+ea_triceps_dip_machine,Triceps Dip Machine,elbow,elbow_extension_load,triceps,triceps,Triceps,False
+ea_triceps_light_stretch,Triceps Light Stretch,elbow,elbow_extension_load,triceps,triceps,Stretching - Mobility,False
+ea_unilateral_front_plank,Unilateral Front Plank,elbow,elbow_locked_support,plank,,Calisthenics-Cardio-Plyo-Functional,False
+ea_unilateral_plank,Unilateral Plank,elbow,elbow_locked_support,plank,,Calisthenics-Cardio-Plyo-Functional,False
+ea_wide_push_ups_bodyweight,Wide Push Ups Bodyweight,elbow,elbow_locked_support,push ups,chest,Chest,False
+ea_wrist_curl_barbell,Wrist Curl Barbell,elbow,elbow_curl_load,curl,forearms,Forearms,False
+ea_wrist_curl_dumbbell,Wrist Curl Dumbbell,elbow,elbow_curl_load,curl,forearms,Forearms,False
+ea_zotman_curls_resistance_band_simultaneous,Zotman Curls Resistance Band Simultaneous,elbow,elbow_curl_load,curls,biceps,Biceps,False

@@ -202,14 +202,40 @@ final _allExercisesProvider = FutureProvider<List<ExerciseItem>>((ref) async {
 /// that state useful.
 final equipmentHeroImageProvider =
     FutureProvider.family<String?, String>((ref, equipmentId) async {
-  final exercises =
-      await ref.watch(_exercisesForEquipmentProvider(equipmentId).future);
+  // Injury-screened, but NOT clip-filtered. The header sits directly above the
+  // exercise list on the same page, and reading the unscreened feed let the
+  // machine's photo depict the exact movement the list below correctly hides —
+  // a barbell squat pictured to a user whose lower back is why it is not shown.
+  //
+  // Routing through `recommendedExercisesProvider` would have fixed that and
+  // dragged `withDemonstration` in with it, so a machine whose posters all
+  // belong to clipless entries would lose its header for a reason that has
+  // nothing to do with anyone's injuries. `safeFor` is the half that was
+  // actually missing.
+  final profile = await ref.watch(screeningProfileProvider.future);
+  final exercises = safeFor(
+    await ref.watch(_exercisesForEquipmentProvider(equipmentId).future),
+    profile,
+  );
   for (final e in exercises) {
     final poster = e.posterFor(null);
     if (poster != null) return poster;
   }
   return null;
 });
+
+/// True for an exercise that came out of the AI generator rather than the
+/// vendor catalog.
+///
+/// Their ids are `ai::<equipmentId>::<index>` and they are the only rows in
+/// the app that no tagging pass can reach: they are generated per user, per
+/// machine, per language, at read time, and `AiExerciseGenerator` never emits
+/// a `contraindications` field at all.
+bool isGenerated(ExerciseItem exercise) => exercise.id.startsWith('ai::');
+
+/// True when the profile carries anything to screen against.
+bool hasInjuries(UserProfile? profile) =>
+    (profile?.health.injuries ?? const <Injury>[]).isNotEmpty;
 
 /// Result of running the recommendation pipeline for a specific equipment.
 class RecommendedExercises {
@@ -234,7 +260,9 @@ final recommendedExercisesProvider =
   // Clip-only first, injuries second, and the count is taken AFTER the first.
   // Measuring it against `raw` would report an exercise we simply cannot
   // demonstrate as one the user's injuries removed.
-  final shown = withDemonstration(raw);
+  final shown = withDemonstration(
+    hasInjuries(profile) ? raw.where((e) => !isGenerated(e)).toList() : raw,
+  );
   final items = recommended(shown, profile);
   final hidden = shown.length - items.length;
   return RecommendedExercises(
@@ -325,11 +353,16 @@ final exerciseResolutionProvider =
   }
 
   // AI-generated ids are 'ai::<equipmentId>::<index>' and live only in the
-  // generated-exercise cache, never in the base repo. Screened by the same
-  // rule as everything else: no generator produces a `contraindications` tag
-  // today, so this is a no-op until S3b, and it is the branch that would
-  // otherwise be forgotten when one does.
+  // generated-exercise cache, never in the base repo.
+  //
+  // They cannot be screened at all. The generator emits no `contraindications`
+  // field and never will at read time, so `isContraindicated` returns false
+  // for every one of them however the user is injured — which S3b turned from
+  // a harmless no-op into a live hazard, because the app now says lists ARE
+  // screened. The plan's own answer is the one taken here: excluded for
+  // injury-aware users until a generation-time tagging pass exists.
   if (id.startsWith('ai::')) {
+    if (hasInjuries(profile)) return const ExerciseResolution.notFound();
     final parts = id.split('::');
     if (parts.length != 3) return const ExerciseResolution.notFound();
     final lang = ref.watch(effectiveLanguageCodeProvider);

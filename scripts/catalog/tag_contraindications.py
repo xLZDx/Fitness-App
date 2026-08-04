@@ -278,9 +278,16 @@ RULES: dict[str, list[Rule]] = {
              "table top", "tabletop"],
         ),
         Rule(
+            # Bare "grip" is gone. It matched 124 of this rule's 177 rows and
+            # almost none of them were about the wrist: "Normal Grip", "Close
+            # Grip", "Reverse Grip", "Suspension Trainer with Grips" -- a grip
+            # VARIATION, which every barbell movement has. Tagging them made a
+            # wrist injury hide 16.5% of the catalog for no reason a reviewer
+            # could defend.
             "wrist_loaded_grip",
-            ["wrist curl", "reverse curl", "farmer", "grip", "hang",
-             "dead hang", "front rack", "clean", "snatch"],
+            ["wrist curl", "reverse curl", "farmer", "hang", "dead hang",
+             "front rack", "clean", "snatch", "grip strength", "fat grip",
+             "towel grip"],
         ),
         Rule("wrist_forearm_primary", ["curl", "extension", "rotation", "twist"],
              muscles=["forearms"]),
@@ -318,9 +325,13 @@ RULES: dict[str, list[Rule]] = {
              "jackknife"],
         ),
         Rule(
+            # "bridge" and "wheel" removed: 47 of this rule's 50 rows were
+            # glute bridges and ab-wheel rollouts, where the neck rests on the
+            # floor or stays neutral. The yoga poses they were meant to catch
+            # are named explicitly instead.
             "neck_inversion",
             ["headstand", "handstand", "shoulder stand", "plough", "plow",
-             "bridge", "wheel", "candlestick"],
+             "candlestick", "wheel pose", "bridge pose", "backbend"],
         ),
         Rule(
             "neck_trap_load",

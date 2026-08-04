@@ -1,0 +1,405 @@
+id,title,region,rule,matched,primaryMuscles,vendorGroup,already
+ea_4_punches_side_squat,4 Punches Side Squat,hip,hip_deep_flexion,squat,"quads,glutes",Calisthenics-Cardio-Plyo-Functional,False
+ea_4_reverse_lunge_and_4_side_taps,4 Reverse Lunge and 4 Side Taps,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_air_swing_running,Air Swing Running,hip,hip_glute_dominant,swing,,Calisthenics-Cardio-Plyo-Functional,False
+ea_air_swing_side_to_side_swing,Air Swing Side to Side Swing,hip,hip_glute_dominant,swing,,Calisthenics-Cardio-Plyo-Functional,False
+ea_air_swing_walking,Air Swing Walking,hip,hip_glute_dominant,swing,,Calisthenics-Cardio-Plyo-Functional,False
+ea_alternate_heel_touch_side_kick_squat,Alternate Heel Touch Side Kick Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_alternate_single_leg_raises_plank,Alternate Single Leg Raises Plank,hip,hip_glute_dominant,raises,glutes,Legs,False
+ea_alternate_sprinter_lunge,Alternate Sprinter Lunge,hip,hip_deep_flexion,lunge,"quads,glutes,hamstrings",Yoga,False
+ea_alternating_lunge_with_rotation,Alternating Lunge with Rotation,hip,hip_deep_flexion,lunge,"quads,glutes,hamstrings",Yoga,False
+ea_alternating_plank_lunge,Alternating Plank Lunge,hip,hip_deep_flexion,lunge,"core,quads",Abdominals,False
+ea_arms_lateral_raise_and_rotation_up,Arms Lateral Raise and Rotation Up,hip,hip_glute_dominant,raise,,Calisthenics-Cardio-Plyo-Functional,False
+ea_assisted_bulgarian_split_squat,Assisted Bulgarian Split Squat,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_assisted_pistol_squats,Assisted Pistol Squats,hip,hip_deep_flexion,pistol,"quads,glutes",Legs,False
+ea_back_and_forward_leg_swings,Back and Forward Leg Swings,hip,hip_glute_dominant,swings,"lower_back,glutes",Legs,False
+ea_balance_board_lateral_squat,Balance Board Lateral Squat,hip,hip_deep_flexion,squat,"quads,glutes",Calisthenics-Cardio-Plyo-Functional,False
+ea_ball_headlock_squat,Ball Headlock Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_band_bent_over_hip_extension,Band Bent-over Hip Extension,hip,hip_extension_load,hip extension,glutes,Legs,False
+ea_band_cross_abduction,Band Cross Abduction,hip,hip_abduction,abduction,glutes,Legs,False
+ea_band_deadlift,Band Deadlift,hip,hip_extension_load,deadlift,"quads,lower_back",Legs,False
+ea_band_hip_adduction,Band Hip Adduction,hip,hip_abduction,adduction,,Legs,False
+ea_band_kneeling_rear_kick,Band Kneeling Rear Kick,hip,hip_glute_dominant,kick,glutes,Legs,False
+ea_band_leg_press,Band Leg Press,hip,hip_deep_flexion,leg press,quads,Legs,False
+ea_band_single_leg_split_squat,Band Single Leg Split Squat,hip,hip_deep_flexion,split squat,"quads,glutes",Legs,False
+ea_band_spanish_split_squat,Band Spanish Split Squat,hip,hip_deep_flexion,split squat,"quads,glutes",Legs,False
+ea_band_squat_row,Band Squat Row,hip,hip_deep_flexion,squat,,Calisthenics-Cardio-Plyo-Functional,False
+ea_barbell_bench_lateral_step_up,Barbell Bench Lateral Step-up,hip,hip_deep_flexion,step up,"quads,glutes",Legs,False
+ea_barbell_bench_squats,Barbell Bench Squats,hip,hip_deep_flexion,squats,"quads,glutes",Legs,False
+ea_barbell_box_squat,Barbell Box Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_bulgarian_split_squat,Barbell Bulgarian Split Squat,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_barbell_bulgarian_split_squat_left_front_back_view,Barbell Bulgarian Split Squat Left Front-back View,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_barbell_bulgarian_split_squat_left_side_view,Barbell Bulgarian Split Squat Left Side View,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_barbell_clean_and_jerk_split_squat,Barbell Clean and Jerk Split Squat,hip,hip_deep_flexion,split squat,"quads,glutes,shoulders",Powerlifting,False
+ea_barbell_clean_deadlift,Barbell Clean Deadlift,hip,hip_extension_load,deadlift,"quads,glutes,hamstrings",Powerlifting,False
+ea_barbell_clean_grip_front_squat,Barbell Clean Grip Front Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_coan_deadlift,Barbell Coan Deadlift,hip,hip_extension_load,deadlift,,Back,False
+ea_barbell_curtsy_lunges,Barbell Curtsy Lunges,hip,hip_deep_flexion,lunges,"glutes,quads",Legs,False
+ea_barbell_deadlift,Barbell Deadlift,hip,hip_extension_load,deadlift,"glutes,quads,hamstrings",Powerlifting,False
+ea_barbell_deadlift_front_pov,Barbell Deadlift (front POV),hip,hip_extension_load,deadlift,"glutes,quads,hamstrings",Powerlifting,False
+ea_barbell_deadlift_side_pov,Barbell Deadlift (side POV),hip,hip_extension_load,deadlift,"glutes,quads,hamstrings",Powerlifting,False
+ea_barbell_deadlift_360_degrees,Barbell Deadlift 360 Degrees,hip,hip_extension_load,deadlift,"glutes,quads,hamstrings",Back,False
+ea_barbell_deadlift_high_pull,Barbell Deadlift High Pull,hip,hip_extension_load,deadlift,"quads,glutes,adductors,shoulders",Back,False
+ea_barbell_feet_elevated_figure_four_glute_bridge,Barbell Feet Elevated Figure Four Glute Bridge,hip,hip_extension_load,glute bridge,glutes,Legs,False
+ea_barbell_feet_elevated_glute_bridge,Barbell Feet Elevated Glute Bridge,hip,hip_extension_load,glute bridge,glutes,Legs,False
+ea_barbell_feet_elevated_single_leg_glute_bridge,Barbell Feet Elevated Single Leg Glute Bridge,hip,hip_extension_load,glute bridge,glutes,Legs,False
+ea_barbell_feet_elevated_staggered_glute_bridge,Barbell Feet Elevated Staggered Glute Bridge,hip,hip_extension_load,glute bridge,glutes,Legs,False
+ea_barbell_front_bench_squat,Barbell Front Bench Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_front_chest_bench_squat,Barbell Front Chest Bench Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_front_chest_lunges,Barbell Front Chest Lunges,hip,hip_deep_flexion,lunges,"quads,glutes",Legs,False
+ea_barbell_front_chest_squat,Barbell Front Chest Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_front_lunges_with_small_pause,Barbell Front Lunges with Small Pause,hip,hip_deep_flexion,lunges,"quads,glutes",Legs,False
+ea_barbell_front_rack_lunge,Barbell Front Rack Lunge,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_barbell_front_squats,Barbell Front Squats,hip,hip_deep_flexion,squats,"quads,glutes",Legs,False
+ea_barbell_full_squat,Barbell Full Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_full_squat_side_pov,Barbell Full Squat Side Pov,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_full_squat_wide,Barbell Full Squat Wide,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_full_squat_back,Barbell Full Squat(back),hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_full_squat_with_rack,Barbell Full Squat(with Rack),hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_full_zercher_squat,Barbell Full Zercher Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_glute_bridge,Barbell Glute Bridge,hip,hip_extension_load,glute bridge,glutes,Legs,False
+ea_barbell_glute_bridge_hands_on_bar,Barbell Glute Bridge (hands on Bar),hip,hip_extension_load,glute bridge,glutes,Legs,False
+ea_barbell_good_morning,Barbell Good Morning,hip,hip_extension_load,good morning,lower_back,Back,False
+ea_barbell_hip_thrust,Barbell Hip Thrust,hip,hip_extension_load,hip thrust,glutes,Legs,False
+ea_barbell_incline_shoulders_press_inside_squat_cage,Barbell Incline Shoulders Press (inside Squat Cage),hip,hip_deep_flexion,squat,shoulders,Shoulders,False
+ea_barbell_jefferson_split_squat,Barbell Jefferson Split Squat,hip,hip_deep_flexion,split squat,"quads,glutes",Legs,False
+ea_barbell_jefferson_squat,Barbell Jefferson Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_jump_squat,Barbell Jump Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_kas_glute_bridge,Barbell KAS Glute Bridge,hip,hip_extension_load,glute bridge,glutes,Legs,False
+ea_barbell_kneeling_squat,Barbell Kneeling Squat,hip,hip_deep_flexion,squat,"glutes,quads",Legs,False
+ea_barbell_lateral_lunges,Barbell Lateral Lunges,hip,hip_deep_flexion,lunges,"glutes,quads,adductors",Legs,False
+ea_barbell_low_bar_squat,Barbell Low Bar Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_lunges,Barbell Lunges,hip,hip_deep_flexion,lunges,"quads,glutes",Legs,False
+ea_barbell_lunges_on_the_spot,Barbell Lunges on the Spot,hip,hip_deep_flexion,lunges,"quads,glutes",Legs,False
+ea_barbell_narrow_stance_full_squat,Barbell Narrow Stance Full Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_narrow_stance_squat,Barbell Narrow Stance Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_one_arm_single_deadlift,Barbell One Arm Single Deadlift,hip,hip_extension_load,deadlift,"hamstrings,glutes,lower_back",Back,False
+ea_barbell_one_leg_hip_thrust,Barbell One Leg Hip Thrust,hip,hip_extension_load,hip thrust,glutes,Legs,False
+ea_barbell_overhead_lunges,Barbell Overhead Lunges,hip,hip_deep_flexion,lunges,"quads,glutes,shoulders",Legs,False
+ea_barbell_overhead_squat,Barbell Overhead Squat,hip,hip_deep_flexion,squat,"quads,glutes,shoulders",Legs,False
+ea_barbell_pause_lunge,Barbell Pause Lunge,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_barbell_quarter_squat,Barbell Quarter Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_rear_lunge_on_box,Barbell Rear Lunge on Box,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_barbell_rear_lunges,Barbell Rear Lunges,hip,hip_deep_flexion,lunges,"quads,glutes",Legs,False
+ea_barbell_reverse_deadlift,Barbell Reverse Deadlift,hip,hip_extension_load,deadlift,,Back,False
+ea_barbell_seated_good_morning,Barbell Seated Good Morning,hip,hip_extension_load,good morning,lower_back,Back,False
+ea_barbell_side_split_squat,Barbell Side Split Squat,hip,hip_deep_flexion,split squat,"quads,glutes",Legs,False
+ea_barbell_side_step_up,Barbell Side Step Up,hip,hip_deep_flexion,step up,"quads,glutes",Legs,False
+ea_barbell_single_leg_deadlift,Barbell Single Leg Deadlift,hip,hip_extension_load,deadlift,"hamstrings,glutes",Back,False
+ea_barbell_single_leg_split_squat,Barbell Single Leg Split Squat,hip,hip_deep_flexion,split squat,"quads,glutes",Legs,False
+ea_barbell_snatch_deadlift_close_grip,Barbell Snatch Deadlift Close Grip,hip,hip_extension_load,deadlift,"quads,glutes,lower_back",Back,False
+ea_barbell_snatch_deadlift_wide_grip,Barbell Snatch Deadlift Wide Grip,hip,hip_extension_load,deadlift,"quads,glutes,lower_back",Back,False
+ea_barbell_split_squat,Barbell Split Squat,hip,hip_deep_flexion,split squat,"quads,glutes",Legs,False
+ea_barbell_squat_back_pov,Barbell Squat Back POV,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_squat_to_grass,Barbell Squat to Grass,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_squat_with_2_sec_hold,Barbell Squat with 2 Sec Hold,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_barbell_staggered_deadlift,Barbell Staggered Deadlift,hip,hip_extension_load,deadlift,"hamstrings,glutes",Legs,False
+ea_barbell_step_up_balance_on_box,Barbell Step Up Balance on Box,hip,hip_deep_flexion,step up,"quads,glutes",Legs,False
+ea_barbell_step_up_on_bench,Barbell Step Up on Bench,hip,hip_deep_flexion,step up,"quads,glutes",Legs,False
+ea_barbell_stiff_leg_deadlift,Barbell Stiff Leg Deadlift,hip,hip_extension_load,deadlift,"hamstrings,glutes",Legs,False
+ea_barbell_straight_leg_deadlift,Barbell Straight Leg Deadlift,hip,hip_extension_load,deadlift,"hamstrings,glutes",Legs,False
+ea_barbell_sumo_deadlift,Barbell Sumo Deadlift,hip,hip_deep_flexion,sumo,"glutes,hamstrings,quads",Back,False
+ea_barbell_sumo_romanian_deadlift,Barbell Sumo Romanian Deadlift,hip,hip_deep_flexion,sumo,"hamstrings,glutes",Legs,False
+ea_barbell_zercher_good_morning,Barbell Zercher Good Morning,hip,hip_extension_load,good morning,,Back,False
+ea_bench_alternating_step_ups,Bench Alternating Step Ups,hip,hip_deep_flexion,step ups,"quads,glutes",Legs,False
+ea_bench_bulgarian_split_squats_left,Bench Bulgarian Split Squats Left,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_bench_bulgarian_split_squats_right,Bench Bulgarian Split Squats Right,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_bent_knee_back_to_side_kick,Bent Knee Back to Side Kick,hip,hip_glute_dominant,kick,"glutes,lower_back",Legs,False
+ea_bent_leg_side_kick_kneeling,Bent Leg Side Kick (kneeling),hip,hip_glute_dominant,kick,glutes,Legs,False
+ea_bodyweight_feet_elevated_figure_four_glute_bridge,Bodyweight Feet Elevated Figure Four Glute Bridge,hip,hip_extension_load,glute bridge,,Legs,False
+ea_bodyweight_feet_elevated_staggered_glute_bridge,Bodyweight Feet Elevated Staggered Glute Bridge,hip,hip_extension_load,glute bridge,,Legs,False
+ea_bodyweight_forward_lunge,Bodyweight Forward Lunge,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_bodyweight_full_squat_with_overhead_front_raise,Bodyweight Full Squat with Overhead Front Raise,hip,hip_deep_flexion,squat,"quads,shoulders,glutes",Calisthenics-Cardio-Plyo-Functional,False
+ea_bodyweight_full_squat_with_overhead_press,Bodyweight Full Squat with Overhead Press,hip,hip_deep_flexion,squat,"quads,glutes,shoulders",Legs,False
+ea_bodyweight_hip_thrust,Bodyweight Hip Thrust,hip,hip_extension_load,hip thrust,glutes,Legs,False
+ea_bodyweight_kneeling_sissy_squat,Bodyweight Kneeling Sissy Squat,hip,hip_deep_flexion,squat,quads,Legs,False
+ea_bodyweight_overhead_squat,Bodyweight Overhead Squat,hip,hip_deep_flexion,squat,"quads,shoulders,glutes",Legs,False
+ea_bodyweight_pulse_forward_lunge,Bodyweight Pulse Forward Lunge,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_bodyweight_pulse_squat,Bodyweight Pulse Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_bodyweight_pulse_squat_arms_to_chest,Bodyweight Pulse Squat Arms to Chest,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_bodyweight_rear_lunge,Bodyweight Rear Lunge,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_bodyweight_rear_lunge_front_raise,Bodyweight Rear Lunge Front Raise,hip,hip_deep_flexion,lunge,"quads,shoulders,glutes",Legs,False
+ea_bodyweight_single_leg_deadlift,Bodyweight Single Leg Deadlift,hip,hip_extension_load,deadlift,"hamstrings,glutes",Legs,False
+ea_bodyweight_squat_to_front_leg,Bodyweight Squat to Front Leg,hip,hip_deep_flexion,squat,"quads,glutes,lower_back",Legs,False
+ea_bodyweight_squat_to_side_leg,Bodyweight Squat to Side Leg,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_bodyweight_squat_to_side_to_front_leg,Bodyweight Squat to Side to Front Leg,hip,hip_deep_flexion,squat,"quads,glutes,lower_back",Legs,False
+ea_bodyweight_squats,Bodyweight Squats,hip,hip_deep_flexion,squats,"quads,glutes",Legs,False
+ea_bodyweight_squats_hold,Bodyweight Squats Hold,hip,hip_deep_flexion,squats,"quads,glutes",Legs,False
+ea_bodyweight_step_up_on_step_box,Bodyweight Step-up on Step Box,hip,hip_deep_flexion,step up,"quads,glutes",Legs,False
+ea_box_jump_squats,Box Jump Squats,hip,hip_deep_flexion,squats,"quads,glutes,hamstrings",Legs,False
+ea_bridge_mountain_climber_cross_body,Bridge - Mountain Climber (cross Body),hip,hip_extension_load,bridge,core,Abdominals,False
+ea_bridge_hip_abduction,Bridge Hip Abduction,hip,hip_extension_load,bridge,glutes,Yoga,False
+ea_bridge_pose_setu_bandhasana,Bridge Pose Setu Bandhasana,hip,hip_extension_load,bridge,"glutes,hamstrings",Yoga,False
+ea_bridge_with_alternating_leg_raise,Bridge with Alternating Leg Raise,hip,hip_extension_load,bridge,"glutes,hamstrings",Yoga,False
+ea_bulgarian_split_squat,Bulgarian Split Squat,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_bulgarian_split_squat_bodyweight_left,Bulgarian Split Squat Bodyweight Left,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_bulgarian_split_squat_bodyweight_right,Bulgarian Split Squat Bodyweight Right,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_bulgarian_split_squat_cable_resistance_band,Bulgarian Split Squat Cable Resistance Band,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_bulgarian_split_squat_left_bodyweight_side_view,Bulgarian Split Squat Left Bodyweight Side View,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_bulgarian_split_squat_right_bodyweight_side_view,Bulgarian Split Squat Right Bodyweight Side View,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_bulgarian_split_squat_stretch,Bulgarian Split Squat Stretch,hip,hip_deep_flexion,bulgarian,,Stretching - Mobility,False
+ea_burpee_squat,Burpee Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_butterfly_yoga_flaps,Butterfly Yoga Flaps,hip,hip_open_stretch,butterfly,adductors,Stretching - Mobility,False
+ea_butterfly_yoga_pose,Butterfly Yoga Pose,hip,hip_open_stretch,butterfly,adductors,Yoga,False
+ea_cable_goblet_squat,Cable Goblet Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_cable_individual_glute_kickbacks,Cable Individual Glute Kickbacks,hip,hip_glute_kickback,kickbacks,"glutes,hamstrings",Legs,False
+ea_cable_single_leg_deadlift,Cable Single Leg Deadlift,hip,hip_extension_load,deadlift,"hamstrings,glutes",Legs,False
+ea_cable_split_squat,Cable Split Squat,hip,hip_deep_flexion,split squat,"quads,glutes",Legs,False
+ea_calf_raise_leg_press_machine,Calf Raise Leg Press Machine,hip,hip_deep_flexion,leg press,calves,Legs,False
+ea_calf_raise_on_hack_squat_machine,Calf Raise on Hack Squat Machine,hip,hip_deep_flexion,squat,calves,Legs,False
+ea_cardio_lunge,Cardio Lunge,hip,hip_deep_flexion,lunge,"quads,glutes",Calisthenics-Cardio-Plyo-Functional,False
+ea_celebratory_hip_thrust,Celebratory Hip Thrust,hip,hip_extension_load,hip thrust,"glutes,quads",Calisthenics-Cardio-Plyo-Functional,False
+ea_chair_back_lunge_left_resistance_band,Chair Back Lunge Left Resistance Band,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_chair_back_lunge_right_resistance_band,Chair Back Lunge Right Resistance Band,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_chair_bulgarian_split_squats_bodyweight_left,Chair Bulgarian Split Squats Bodyweight Left,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_chair_bulgarian_split_squats_bodyweight_right,Chair Bulgarian Split Squats Bodyweight Right,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_chair_elevated_single_leg_glute_bridge,Chair Elevated Single Leg Glute Bridge,hip,hip_extension_load,glute bridge,"glutes,hamstrings",Legs,False
+ea_chair_feet_elevated_glute_bridge,Chair Feet Elevated Glute Bridge,hip,hip_extension_load,glute bridge,"glutes,hamstrings",Legs,False
+ea_chair_frog_feet_elevated_glute_bridge_bodyweight,Chair Frog Feet Elevated Glute Bridge Bodyweight,hip,hip_extension_load,glute bridge,"glutes,adductors",Legs,False
+ea_clamshell,Clamshell,hip,hip_abduction,clamshell,glutes,Legs,False
+ea_clap_curtsy_squat,Clap Curtsy Squat,hip,hip_deep_flexion,squat,"quads,glutes,shoulders",Legs,False
+ea_cossack_squat,Cossack Squat,hip,hip_deep_flexion,squat,"quads,glutes,hamstrings",Legs,False
+ea_counterbalanced_skater_squat,Counterbalanced Skater Squat,hip,hip_deep_flexion,squat,"quads,glutes,hamstrings",Legs,False
+ea_crunch_frog_on_floor,Crunch Frog on Floor,hip,hip_open_stretch,frog,core,Abdominals,False
+ea_curtsy_lunge_bodyweight,Curtsy Lunge Bodyweight,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_curtsy_lunge_slide_with_towel,Curtsy Lunge Slide with Towel,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_curtsy_lunges_resistance_band,Curtsy Lunges Resistance Band,hip,hip_deep_flexion,lunges,glutes,Legs,False
+ea_curtsy_squat,Curtsy Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_diagonal_lunge,Diagonal Lunge,hip,hip_deep_flexion,lunge,"glutes,quads",Legs,False
+ea_donkey_kicks_bodyweight,Donkey Kicks Bodyweight,hip,hip_glute_kickback,donkey kicks,glutes,Legs,False
+ea_double_jump_squat,Double Jump Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_double_pigeon_pose,Double Pigeon Pose,hip,hip_open_stretch,pigeon,,Yoga,False
+ea_dumbbell_bar_grip_sumo_squat,Dumbbell Bar Grip Sumo Squat,hip,hip_deep_flexion,sumo,"quads,glutes",Legs,False
+ea_dumbbell_bench_squat,Dumbbell Bench Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_dumbbell_bulgarian_box_split_squat,Dumbbell Bulgarian Box Split Squat,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_dumbbell_bulgarian_split_squat,Dumbbell Bulgarian Split Squat,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_dumbbell_close_legs_deadlift,Dumbbell Close Legs Deadlift,hip,hip_extension_load,deadlift,"hamstrings,glutes",Legs,False
+ea_dumbbell_cossack_squats_version_2,Dumbbell Cossack Squats (version 2),hip,hip_deep_flexion,squats,quads,Legs,False
+ea_dumbbell_curtsy_lunge,Dumbbell Curtsy Lunge,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_dumbbell_feet_elevated_figure_four_glute_bridge,Dumbbell Feet Elevated Figure Four Glute Bridge,hip,hip_extension_load,glute bridge,,Legs,False
+ea_dumbbell_feet_elevated_glute_bridge,Dumbbell Feet Elevated Glute Bridge,hip,hip_extension_load,glute bridge,"glutes,hamstrings",Legs,False
+ea_dumbbell_feet_elevated_single_leg_glute_bridge,Dumbbell Feet Elevated Single Leg Glute Bridge,hip,hip_extension_load,glute bridge,"glutes,hamstrings",Legs,False
+ea_dumbbell_feet_elevated_staggered_glute_bridge,Dumbbell Feet Elevated Staggered Glute Bridge,hip,hip_extension_load,glute bridge,"glutes,hamstrings",Legs,False
+ea_dumbbell_figure_four_glute_bridge,Dumbbell Figure Four Glute Bridge,hip,hip_extension_load,glute bridge,"glutes,hamstrings",Legs,False
+ea_dumbbell_figure_four_hip_thrust,Dumbbell Figure Four Hip Thrust,hip,hip_extension_load,hip thrust,"glutes,hamstrings",Legs,False
+ea_dumbbell_frog_jumps,Dumbbell Frog Jumps,hip,hip_open_stretch,frog,"quads,glutes,calves",Legs,False
+ea_dumbbell_front_rack_lunge,Dumbbell Front Rack Lunge,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_dumbbell_front_squat,Dumbbell Front Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_dumbbell_glute_bridge,Dumbbell Glute Bridge,hip,hip_extension_load,glute bridge,"glutes,hamstrings",Legs,False
+ea_dumbbell_goblet_2_sec_hold_squat,Dumbbell Goblet 2 Sec Hold Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_dumbbell_goblet_curtsy_lunge,Dumbbell Goblet Curtsy Lunge,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_dumbbell_goblet_forward_lunge,Dumbbell Goblet Forward Lunge,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_dumbbell_goblet_good_morning,Dumbbell Goblet Good Morning,hip,hip_extension_load,good morning,,Back,False
+ea_dumbbell_goblet_reverse_lunge,Dumbbell Goblet Reverse Lunge,hip,hip_deep_flexion,lunge,,Legs,False
+ea_dumbbell_goblet_split_squat,Dumbbell Goblet Split Squat,hip,hip_deep_flexion,split squat,"quads,glutes",Legs,False
+ea_dumbbell_goblet_split_squat_front_foot_elevanted,Dumbbell Goblet Split Squat Front Foot Elevanted,hip,hip_deep_flexion,split squat,"quads,glutes",Legs,False
+ea_dumbbell_goblet_squat,Dumbbell Goblet Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_dumbbell_hip_thrust,Dumbbell Hip Thrust,hip,hip_extension_load,hip thrust,glutes,Legs,False
+ea_dumbbell_hip_thrust_version_2,Dumbbell Hip Thrust (version 2),hip,hip_extension_load,hip thrust,glutes,Legs,False
+ea_dumbbell_jumping_squat,Dumbbell Jumping Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_dumbbell_kneeling_squat,Dumbbell Kneeling Squat,hip,hip_deep_flexion,squat,"glutes,quads",Legs,False
+ea_dumbbell_lunge_alternating_on_the_spot,Dumbbell Lunge Alternating on the Spot,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_dumbbell_lunge_pulse,Dumbbell Lunge Pulse,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_dumbbell_lunge_to_overhead_press,Dumbbell Lunge to Overhead Press,hip,hip_deep_flexion,lunge,"quads,glutes,shoulders",Legs,False
+ea_dumbbell_narrow_stance_squats,Dumbbell Narrow Stance Squats,hip,hip_deep_flexion,squats,"quads,glutes",Legs,False
+ea_dumbbell_offset_squat,Dumbbell Offset Squat,hip,hip_deep_flexion,squat,,Legs,False
+ea_dumbbell_overhead_lunge,Dumbbell Overhead Lunge,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_dumbbell_press_squat,Dumbbell Press Squat,hip,hip_deep_flexion,squat,"quads,shoulders,glutes",Legs,False
+ea_dumbbell_pullover_hip_extension_on_exercise_ball,Dumbbell Pullover Hip Extension on Exercise Ball,hip,hip_extension_load,hip extension,"chest,lats,glutes,hamstrings",Calisthenics-Cardio-Plyo-Functional,False
+ea_dumbbell_rear_lunge,Dumbbell Rear Lunge,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_dumbbell_rear_lunge_from_step,Dumbbell Rear Lunge From Step,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_dumbbell_reverse_lunge_on_the_spot,Dumbbell Reverse Lunge on the Spot,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_dumbbell_reverse_lunges_pulses,Dumbbell Reverse Lunges Pulses,hip,hip_deep_flexion,lunges,"quads,glutes",Legs,False
+ea_dumbbell_romanian_deadlift,Dumbbell Romanian Deadlift,hip,hip_extension_load,romanian,"hamstrings,glutes",Back,False
+ea_dumbbell_side_lunge_alternating,Dumbbell Side Lunge Alternating,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_dumbbell_side_lunge_left_n_right,Dumbbell Side Lunge Left N Right,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_dumbbell_side_lunge_single_leg,Dumbbell Side Lunge Single Leg,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_dumbbell_side_lying_one_hand_raise,Dumbbell Side Lying One Hand Raise,hip,hip_abduction,side lying,shoulders,Shoulders,False
+ea_dumbbell_side_squat_side_to_side,Dumbbell Side Squat Side to Side,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_dumbbell_single_arm_overhead_lunge,Dumbbell Single Arm Overhead Lunge,hip,hip_deep_flexion,lunge,"quads,shoulders,glutes",Legs,False
+ea_dumbbell_single_leg_deadlift,Dumbbell Single Leg Deadlift,hip,hip_extension_load,deadlift,"hamstrings,glutes",Legs,False
+ea_dumbbell_single_leg_glute_bridge,Dumbbell Single Leg Glute Bridge,hip,hip_extension_load,glute bridge,"glutes,hamstrings",Yoga,False
+ea_dumbbell_single_leg_hip_thrust,Dumbbell Single Leg Hip Thrust,hip,hip_extension_load,hip thrust,,Legs,False
+ea_dumbbell_single_leg_single_arm_deadlift,Dumbbell Single Leg Single Arm Deadlift,hip,hip_extension_load,deadlift,,Legs,False
+ea_dumbbell_single_leg_split_squat,Dumbbell Single Leg Split Squat,hip,hip_deep_flexion,split squat,"quads,glutes",Legs,False
+ea_dumbbell_single_leg_squat,Dumbbell Single Leg Squat,hip,hip_deep_flexion,squat,quads,Legs,False
+ea_dumbbell_single_leg_squat_with_support_pistol,Dumbbell Single Leg Squat with Support (pistol),hip,hip_deep_flexion,squat,quads,Legs,False
+ea_dumbbell_single_leg_step_up,Dumbbell Single Leg Step-up,hip,hip_deep_flexion,step up,"quads,glutes",Legs,False
+ea_dumbbell_split_squat,Dumbbell Split Squat,hip,hip_deep_flexion,split squat,quads,Legs,False
+ea_dumbbell_squats,Dumbbell Squats,hip,hip_deep_flexion,squats,"quads,glutes",Legs,False
+ea_dumbbell_squats_to_shoulder_press,Dumbbell Squats to Shoulder Press,hip,hip_deep_flexion,squats,"quads,shoulders",Legs,False
+ea_dumbbell_staggered_deadlift,Dumbbell Staggered Deadlift,hip,hip_extension_load,deadlift,,Legs,False
+ea_dumbbell_staggered_glute_bridge,Dumbbell Staggered Glute Bridge,hip,hip_extension_load,glute bridge,,Legs,False
+ea_dumbbell_staggered_hip_thrust,Dumbbell Staggered Hip Thrust,hip,hip_extension_load,hip thrust,,Legs,False
+ea_dumbbell_standing_hip_abduction,Dumbbell Standing Hip Abduction,hip,hip_abduction,abduction,,Legs,False
+ea_dumbbell_static_lunge,Dumbbell Static Lunge,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_dumbbell_step_up_on_bench,Dumbbell Step Up on Bench,hip,hip_deep_flexion,step up,"quads,glutes",Legs,False
+ea_dumbbell_step_up_with_knee_raise,Dumbbell Step-up with Knee Raise,hip,hip_deep_flexion,step up,"quads,glutes",Legs,False
+ea_dumbbell_stiff_leg_deadlift,Dumbbell Stiff Leg Deadlift,hip,hip_extension_load,deadlift,"hamstrings,glutes",Legs,False
+ea_dumbbell_straight_leg_deadlift,Dumbbell Straight Leg Deadlift,hip,hip_extension_load,deadlift,"hamstrings,glutes",Legs,False
+ea_dumbbell_sumo_squat_off_benches,Dumbbell Sumo Squat Off Benches,hip,hip_deep_flexion,sumo,"glutes,quads",Legs,False
+ea_dumbbell_supported_sissy_squat,Dumbbell Supported Sissy Squat,hip,hip_deep_flexion,squat,quads,Legs,False
+ea_dumbbell_swing,Dumbbell Swing,hip,hip_glute_dominant,swing,,Calisthenics-Cardio-Plyo-Functional,False
+ea_exercise_ball_one_legged_diagonal_kick_hamstring_curl,Exercise Ball One Legged Diagonal Kick Hamstring Curl,hip,hip_glute_dominant,kick,"hamstrings,glutes",Legs,False
+ea_exercise_ball_wall_squat,Exercise Ball Wall Squat,hip,hip_deep_flexion,squat,quads,Legs,False
+ea_feet_together_barbell_squats,Feet Together Barbell Squats,hip,hip_deep_flexion,squats,"quads,glutes",Legs,False
+ea_fire_hydrant_bodyweight,Fire Hydrant Bodyweight,hip,hip_abduction,fire hydrant,glutes,Legs,False
+ea_fire_hydrant_circle_bodyweight,Fire Hydrant Circle Bodyweight,hip,hip_abduction,fire hydrant,glutes,Legs,False
+ea_frog_jumps,Frog Jumps,hip,hip_open_stretch,frog,,Legs,False
+ea_front_lever_raise,Front Lever Raise,hip,hip_glute_dominant,raise,,Calisthenics-Cardio-Plyo-Functional,False
+ea_front_lever_raise_to_hold,Front Lever Raise to Hold,hip,hip_glute_dominant,raise,,Calisthenics-Cardio-Plyo-Functional,False
+ea_front_squats_dumbbell_low,Front Squats Dumbbell Low,hip,hip_deep_flexion,squats,quads,Legs,False
+ea_front_squats_dumbbell_over_shoulders,Front Squats Dumbbell Over Shoulders,hip,hip_deep_flexion,squats,quads,Legs,False
+ea_glute_bridge_bodyweight,Glute Bridge Bodyweight,hip,hip_extension_load,glute bridge,,Legs,False
+ea_glute_bridge_with_abduction_bodyweight,Glute Bridge with Abduction Bodyweight,hip,hip_extension_load,glute bridge,glutes,Legs,False
+ea_goblet_kettlebell_squats,Goblet Kettlebell Squats,hip,hip_deep_flexion,squats,quads,Legs,False
+ea_good_morning_resistance_band,Good Morning Resistance Band,hip,hip_extension_load,good morning,"hamstrings,glutes",Back,False
+ea_good_mornings,Good Mornings,hip,hip_extension_load,good mornings,,Legs,False
+ea_good_mornings_barbell,Good Mornings Barbell,hip,hip_extension_load,good mornings,"lower_back,hamstrings",Back,False
+ea_good_mornings_dumbbells,Good Mornings Dumbbells,hip,hip_extension_load,good mornings,"lower_back,hamstrings",Back,False
+ea_good_mornings_kettlebell,Good Mornings Kettlebell,hip,hip_extension_load,good mornings,"lower_back,hamstrings",Back,False
+ea_hack_squat_machine_squat,Hack Squat Machine Squat,hip,hip_deep_flexion,squat,quads,Legs,False
+ea_happy_baby,Happy Baby,hip,hip_open_stretch,happy baby,,Yoga,False
+ea_hip_thrust_in_smith_machine,Hip-thrust in Smith Machine,hip,hip_extension_load,hip thrust,,Legs,False
+ea_horizontal_leg_press,Horizontal Leg Press,hip,hip_deep_flexion,leg press,,Legs,False
+ea_horizontal_leg_press_calf_raise,Horizontal Leg Press Calf Raise,hip,hip_deep_flexion,leg press,,Legs,False
+ea_horizontal_leg_press_calf_raise_single_leg,Horizontal Leg Press Calf Raise Single Leg,hip,hip_deep_flexion,leg press,,Legs,False
+ea_horizontal_leg_press_single_leg,Horizontal Leg Press Single Leg,hip,hip_deep_flexion,leg press,,Legs,False
+ea_in_and_out_squats,In and Out Squats,hip,hip_deep_flexion,squats,"quads,glutes",Legs,False
+ea_in_and_out_squats_jump_bodyweight,In and Out Squats Jump Bodyweight,hip,hip_deep_flexion,squats,"quads,glutes",Legs,False
+ea_in_and_out_squats_jump_bodyweight_2,In and Out Squats Jump Bodyweight (2),hip,hip_deep_flexion,squats,"quads,glutes",Legs,False
+ea_jumping_lunge,Jumping Lunge,hip,hip_deep_flexion,lunge,,Legs,False
+ea_jumping_pistol_squat,Jumping Pistol Squat,hip,hip_deep_flexion,pistol,,Legs,False
+ea_kettlebell_bulgarian_split_squat_right,Kettlebell Bulgarian Split Squat Right,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_kettlebell_bulgarian_split_squat_right_side_view,Kettlebell Bulgarian Split Squat Right Side View,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_kettlebell_glute_bridge,Kettlebell Glute Bridge,hip,hip_extension_load,glute bridge,,Legs,False
+ea_kettlebell_hip_thrusts,Kettlebell Hip Thrusts,hip,hip_extension_load,hip thrusts,,Legs,False
+ea_kettlebell_hip_thrusts_with_bench,Kettlebell Hip Thrusts with Bench,hip,hip_extension_load,hip thrusts,,Legs,False
+ea_kettlebell_lateral_lunge,Kettlebell Lateral Lunge,hip,hip_deep_flexion,lunge,,Legs,False
+ea_kettlebell_reverse_lunge,Kettlebell Reverse Lunge,hip,hip_deep_flexion,lunge,,Legs,False
+ea_kettlebell_single_leg_deadlift,Kettlebell Single Leg Deadlift,hip,hip_extension_load,deadlift,,Legs,False
+ea_kettlebell_single_leg_glute_bridge,Kettlebell Single Leg Glute Bridge,hip,hip_extension_load,glute bridge,,Legs,False
+ea_kettlebell_single_leg_glute_bridge_pullover,Kettlebell Single Leg Glute Bridge Pullover,hip,hip_extension_load,glute bridge,"glutes,chest",Calisthenics-Cardio-Plyo-Functional,False
+ea_kettlebell_single_leg_hip_thrust,Kettlebell Single Leg Hip Thrust,hip,hip_extension_load,hip thrust,,Legs,False
+ea_kettlebell_single_leg_romanian_deadlifts,Kettlebell Single Leg Romanian Deadlifts,hip,hip_extension_load,romanian,,Legs,False
+ea_kettlebell_split_squat,Kettlebell Split Squat,hip,hip_deep_flexion,split squat,"quads,glutes",Legs,False
+ea_kettlebell_squats,Kettlebell Squats,hip,hip_deep_flexion,squats,"quads,glutes",Legs,False
+ea_kettlebell_staggered_deadlift,Kettlebell Staggered Deadlift,hip,hip_extension_load,deadlift,,Legs,False
+ea_kettlebell_step_up,Kettlebell Step-up,hip,hip_deep_flexion,step up,"quads,glutes",Legs,False
+ea_kettlebell_suitcase_squat,Kettlebell Suitcase Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_kettlebell_sumo_deadlift,Kettlebell Sumo Deadlift,hip,hip_deep_flexion,sumo,"quads,glutes,adductors",Back,False
+ea_kettlebell_sumo_deadlift_with_high_pull,Kettlebell Sumo Deadlift with High Pull,hip,hip_deep_flexion,sumo,"quads,glutes,adductors,shoulders",Back,False
+ea_kettlebell_sumo_squat,Kettlebell Sumo Squat,hip,hip_deep_flexion,sumo,"quads,glutes,adductors",Legs,False
+ea_kettlebell_sumo_squat_version_2,Kettlebell Sumo Squat (version 2),hip,hip_deep_flexion,sumo,"quads,glutes,adductors",Legs,False
+ea_kettlebell_sumo_squat_off_stepbox,Kettlebell Sumo Squat Off Stepbox,hip,hip_deep_flexion,sumo,"quads,glutes,adductors",Legs,False
+ea_kettlebell_swing,Kettlebell Swing,hip,hip_glute_dominant,swing,"glutes,hamstrings",Calisthenics-Cardio-Plyo-Functional,False
+ea_kettlebell_swing_version_2,Kettlebell Swing (version 2),hip,hip_glute_dominant,swing,"glutes,hamstrings",Calisthenics-Cardio-Plyo-Functional,False
+ea_kneeling_squat_jumps_bodyweight,Kneeling Squat Jumps Bodyweight,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_landmine_alternating_lunge_and_twist,Landmine Alternating Lunge and Twist,hip,hip_deep_flexion,lunge,,Calisthenics-Cardio-Plyo-Functional,False
+ea_landmine_alternating_lunge_to_chest_press,Landmine Alternating Lunge to Chest Press,hip,hip_deep_flexion,lunge,,Calisthenics-Cardio-Plyo-Functional,False
+ea_landmine_curtsy_lunge,Landmine Curtsy Lunge,hip,hip_deep_flexion,lunge,,Legs,False
+ea_landmine_goblet_curtsy_lunge,Landmine Goblet Curtsy Lunge,hip,hip_deep_flexion,lunge,,Legs,False
+ea_landmine_goblet_lateral_lunge,Landmine Goblet Lateral Lunge,hip,hip_deep_flexion,lunge,,Legs,False
+ea_landmine_hack_squat,Landmine Hack Squat,hip,hip_deep_flexion,squat,,Legs,False
+ea_landmine_lateral_lunge,Landmine Lateral Lunge,hip,hip_deep_flexion,lunge,,Legs,False
+ea_landmine_lunge_to_overhead_press,Landmine Lunge to Overhead Press,hip,hip_deep_flexion,lunge,,Legs,False
+ea_landmine_romanian_deadlift,Landmine Romanian Deadlift,hip,hip_extension_load,romanian,,Back,False
+ea_landmine_squat_and_press,Landmine Squat and Press,hip,hip_deep_flexion,squat,,Legs,False
+ea_leg_press_machine_close_stance,Leg Press Machine Close Stance,hip,hip_deep_flexion,leg press,quads,Legs,False
+ea_leg_press_machine_normal_stance,Leg Press Machine Normal Stance,hip,hip_deep_flexion,leg press,quads,Legs,False
+ea_leg_press_wide_high_stance,Leg Press Wide High Stance,hip,hip_deep_flexion,leg press,quads,Legs,False
+ea_leg_press_wide_high_stance_behind_view,Leg Press Wide High Stance Behind View,hip,hip_deep_flexion,leg press,quads,Legs,False
+ea_low_rotational_med_ball_chops_quarter_squat_rotating_med_ball_left_and_ride_across_core,"Low Rotational Med Ball Chops (quarter Squat, Rotating Med Ball Left and Ride Across Core)",hip,hip_deep_flexion,squat,,Calisthenics-Cardio-Plyo-Functional,False
+ea_lunge_front_kick,Lunge Front Kick,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_lunge_pulses_bodyweight,Lunge Pulses Bodyweight,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_lunge_reverse_with_resistance_band,Lunge Reverse with Resistance Band,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_lunge_rotation_left_and_right_bodyweight,Lunge Rotation Left and Right Bodyweight,hip,hip_deep_flexion,lunge,"quads,glutes,core",Legs,False
+ea_lunge_to_knee_drive_left_bodyweight,Lunge to Knee Drive Left Bodyweight,hip,hip_deep_flexion,lunge,"quads,glutes,lower_back",Legs,False
+ea_lunge_to_knee_drive_right_bodyweight,Lunge to Knee Drive Right Bodyweight,hip,hip_deep_flexion,lunge,"quads,glutes,lower_back",Legs,False
+ea_lunges_alternate_leg_with_pause_bodyweight,Lunges Alternate Leg with Pause Bodyweight,hip,hip_deep_flexion,lunges,"quads,glutes",Legs,False
+ea_lunges_same_leg_side_view_bodyweight,Lunges Same Leg Side View Bodyweight,hip,hip_deep_flexion,lunges,"quads,glutes",Legs,False
+ea_med_ball_front_squat_raise,Med Ball Front Squat Raise,hip,hip_deep_flexion,squat,,Legs,False
+ea_monkey_bar_swings,Monkey Bar Swings,hip,hip_glute_dominant,swings,,Calisthenics-Cardio-Plyo-Functional,False
+ea_multi_hip_abduction,Multi Hip Abduction,hip,hip_abduction,abduction,glutes,Legs,False
+ea_multi_hip_adduction,Multi Hip Adduction,hip,hip_abduction,adduction,,Legs,False
+ea_narrow_stance_heels_elevated_dumbbell_goblet_squats,Narrow Stance Heels Elevated Dumbbell Goblet Squats,hip,hip_deep_flexion,squats,,Legs,False
+ea_normal_squat_smith_machine,Normal Squat Smith Machine,hip,hip_deep_flexion,squat,,Legs,False
+ea_pigeon_glutes_stretch,Pigeon Glutes Stretch,hip,hip_open_stretch,pigeon,,Yoga,False
+ea_pigeon_pose,Pigeon Pose,hip,hip_open_stretch,pigeon,,Yoga,False
+ea_pistol_squat_to_box,Pistol Squat to Box,hip,hip_deep_flexion,pistol,,Legs,False
+ea_plank_lunges,Plank Lunges,hip,hip_deep_flexion,lunges,"core,lower_back,quads",Calisthenics-Cardio-Plyo-Functional,False
+ea_plate_curtsy_lunge,Plate Curtsy Lunge,hip,hip_deep_flexion,lunge,,Legs,False
+ea_plate_deadlift,Plate Deadlift,hip,hip_extension_load,deadlift,,Legs,False
+ea_plate_deficit_lunge,Plate Deficit Lunge,hip,hip_deep_flexion,lunge,,Legs,False
+ea_plate_forward_lunge,Plate Forward Lunge,hip,hip_deep_flexion,lunge,,Legs,False
+ea_plate_glute_bridge_to_chest_press,Plate Glute Bridge to Chest Press,hip,hip_extension_load,glute bridge,,Chest,False
+ea_plate_glute_bridge_to_pullover,Plate Glute Bridge to Pullover,hip,hip_extension_load,glute bridge,,Back,False
+ea_plate_good_morning,Plate Good Morning,hip,hip_extension_load,good morning,,Back,False
+ea_plate_good_morning_anterior,Plate Good Morning Anterior,hip,hip_extension_load,good morning,,Legs,False
+ea_plate_lateral_lunge,Plate Lateral Lunge,hip,hip_deep_flexion,lunge,,Legs,False
+ea_plate_overhead_walking_lunge,Plate Overhead Walking Lunge,hip,hip_deep_flexion,lunge,,Legs,False
+ea_plate_pinch_grip_deadlift,Plate Pinch Grip Deadlift,hip,hip_extension_load,deadlift,,Back,False
+ea_plate_single_leg_deadlift,Plate Single Leg Deadlift,hip,hip_extension_load,deadlift,,Legs,False
+ea_plate_single_leg_pinch_grip_deadlift,Plate Single Leg Pinch Grip Deadlift,hip,hip_extension_load,deadlift,,Legs,False
+ea_plate_squat_hold,Plate Squat Hold,hip,hip_deep_flexion,squat,,Legs,False
+ea_plate_squat_hold_biceps_curl,Plate Squat Hold Biceps Curl,hip,hip_deep_flexion,squat,,Legs,False
+ea_plate_squat_hold_reach,Plate Squat Hold Reach,hip,hip_deep_flexion,squat,,Legs,False
+ea_plate_squat_reach,Plate Squat Reach,hip,hip_deep_flexion,squat,,Legs,False
+ea_plate_staggered_deadlift,Plate Staggered Deadlift,hip,hip_extension_load,deadlift,,Legs,False
+ea_plate_staggered_pinch_grip_deadlift,Plate Staggered Pinch Grip Deadlift,hip,hip_extension_load,deadlift,,Legs,False
+ea_plyo_side_lunge_stretch,Plyo Side Lunge Stretch,hip,hip_deep_flexion,lunge,"quads,glutes,adductors",Stretching - Mobility,False
+ea_reclining_pigeon_pose,Reclining Pigeon Pose,hip,hip_open_stretch,pigeon,,Yoga,False
+ea_resistance_band_bent_leg_kickback_kneeling,Resistance Band Bent Leg Kickback (kneeling),hip,hip_glute_kickback,kickback,glutes,Legs,False
+ea_resistance_band_glute_bridge,Resistance Band Glute Bridge,hip,hip_extension_load,glute bridge,glutes,Yoga,False
+ea_resistance_band_glute_bridge_abduction,Resistance Band Glute Bridge Abduction,hip,hip_extension_load,glute bridge,glutes,Yoga,False
+ea_resistance_band_glute_bridge_version2,Resistance Band Glute Bridge_version2,hip,hip_extension_load,glute bridge,glutes,Yoga,False
+ea_resistance_band_hip_thrust_version_2,Resistance Band Hip Thrust (version 2),hip,hip_extension_load,hip thrust,glutes,Legs,False
+ea_resistance_band_hip_thrusts_on_knees,Resistance Band Hip Thrusts on Knees,hip,hip_extension_load,hip thrusts,glutes,Legs,False
+ea_resistance_band_leg_kickback,Resistance Band Leg Kickback,hip,hip_glute_kickback,kickback,glutes,Legs,False
+ea_resistance_band_lying_abduction,Resistance Band Lying Abduction,hip,hip_abduction,abduction,,Legs,False
+ea_resistance_band_lying_bent_knee_hip_abduction,Resistance Band Lying Bent Knee Hip Abduction,hip,hip_abduction,abduction,,Legs,False
+ea_resistance_band_lying_hyperextension_abduction,Resistance Band Lying Hyperextension Abduction,hip,hip_abduction,abduction,glutes,Back,False
+ea_resistance_band_one_leg_glute_bridge,Resistance Band One Leg Glute Bridge,hip,hip_extension_load,glute bridge,glutes,Legs,False
+ea_resistance_band_one_leg_kickback_bent_position,Resistance Band One Leg Kickback (bent Position),hip,hip_glute_kickback,kickback,glutes,Legs,False
+ea_resistance_band_seated_bent_knee_abduction,Resistance Band Seated Bent Knee Abduction,hip,hip_abduction,abduction,,Legs,False
+ea_resistance_band_seated_hip_abduction,Resistance Band Seated Hip Abduction,hip,hip_abduction,abduction,,Legs,False
+ea_resistance_band_shoulder_adduction,Resistance Band Shoulder Adduction,hip,hip_abduction,adduction,"shoulders,chest",Calisthenics-Cardio-Plyo-Functional,False
+ea_resistance_band_side_plank_glute_raise,Resistance Band Side Plank Glute Raise,hip,hip_glute_dominant,raise,glutes,Legs,False
+ea_resistance_band_squat,Resistance Band Squat,hip,hip_deep_flexion,squat,"glutes,quads",Legs,False
+ea_resistance_band_squat_jump,Resistance Band Squat Jump,hip,hip_deep_flexion,squat,"glutes,quads",Legs,False
+ea_resistance_band_standing_balance_glute_kickback,Resistance Band Standing Balance Glute Kickback,hip,hip_glute_kickback,kickback,glutes,Legs,False
+ea_resistance_band_standing_balance_glute_kickback_version_2,Resistance Band Standing Balance Glute Kickback (version 2),hip,hip_glute_kickback,kickback,glutes,Legs,False
+ea_resistance_band_standing_balance_hip_abduction,Resistance Band Standing Balance Hip Abduction,hip,hip_abduction,abduction,,Legs,False
+ea_resistance_band_standing_hip_abduction,Resistance Band Standing Hip Abduction,hip,hip_abduction,abduction,,Legs,False
+ea_reverse_lunge_left_resistance_band,Reverse Lunge Left Resistance Band,hip,hip_deep_flexion,lunge,"quads,glutes",Legs,False
+ea_romanian_deadlift_barbell,Romanian Deadlift Barbell,hip,hip_extension_load,romanian,"hamstrings,glutes",Back,False
+ea_runners_lunge,Runners Lunge,hip,hip_deep_flexion,lunge,,Yoga,False
+ea_seated_figure_four_with_twist_glute_stretch,Seated Figure Four with Twist Glute Stretch,hip,hip_open_stretch,figure four,,Stretching - Mobility,False
+ea_shoulder_abduction,Shoulder Abduction,hip,hip_abduction,abduction,shoulders,Shoulders,False
+ea_side_lunges_bodyweight,Side Lunges Bodyweight,hip,hip_deep_flexion,lunges,"quads,glutes",Legs,False
+ea_side_lying_floor_stretch,Side Lying Floor Stretch,hip,hip_abduction,side lying,lats,Stretching - Mobility,False
+ea_side_lying_leg_lift_left,Side Lying Leg Lift Left,hip,hip_abduction,side lying,glutes,Legs,False
+ea_side_lying_leg_lift_right,Side Lying Leg Lift Right,hip,hip_abduction,side lying,glutes,Legs,False
+ea_side_lying_parsva_savasana_variation,Side Lying Parsva Savasana Variation,hip,hip_abduction,side lying,,Yoga,False
+ea_single_kettlebell_deadlift,Single Kettlebell Deadlift,hip,hip_extension_load,deadlift,"glutes,hamstrings,quads",Back,False
+ea_single_leg_calf_raise_leg_press_machine,Single Leg Calf Raise Leg Press Machine,hip,hip_deep_flexion,leg press,calves,Legs,False
+ea_single_leg_incline_45_degree_leg_press_machine,Single Leg Incline 45 Degree Leg Press Machine,hip,hip_deep_flexion,leg press,"quads,glutes",Legs,False
+ea_single_leg_romanian_deadlift_dumbbell,Single Leg Romanian Deadlift Dumbbell,hip,hip_extension_load,romanian,"hamstrings,glutes",Legs,False
+ea_single_leg_romanian_deadlifts_right_cable_resistance_band,Single Leg Romanian Deadlifts Right Cable Resistance Band,hip,hip_extension_load,romanian,"hamstrings,glutes",Legs,False
+ea_sissy_squat_bodyweight,Sissy Squat Bodyweight,hip,hip_deep_flexion,squat,,Legs,False
+ea_ski_ergometer_cross_country_ski_jump_squat_pull,Ski Ergometer Cross Country Ski Jump Squat Pull,hip,hip_deep_flexion,squat,"quads,glutes,shoulders,lats",Calisthenics-Cardio-Plyo-Functional,False
+ea_ski_ergometer_cross_country_ski_reverse_lunge_pull,Ski Ergometer Cross Country Ski Reverse Lunge Pull,hip,hip_deep_flexion,lunge,"lats,shoulders,quads,glutes",Calisthenics-Cardio-Plyo-Functional,False
+ea_ski_ergometer_cross_country_ski_squat_pull_half_circles,Ski Ergometer Cross Country Ski Squat Pull Half Circles,hip,hip_deep_flexion,squat,"quads,glutes,lats,shoulders",Calisthenics-Cardio-Plyo-Functional,False
+ea_ski_ergometer_cross_country_ski_squat_wide_lat_pull,Ski Ergometer Cross Country Ski Squat Wide Lat Pull,hip,hip_deep_flexion,squat,"quads,glutes,lats,shoulders",Calisthenics-Cardio-Plyo-Functional,False
+ea_smith_machine_bulgarian_split_squat,Smith Machine Bulgarian Split Squat,hip,hip_deep_flexion,bulgarian,"quads,glutes",Legs,False
+ea_smith_machine_narrow_stance_heels_elevated_squats,Smith Machine Narrow Stance Heels Elevated Squats,hip,hip_deep_flexion,squats,,Legs,False
+ea_standing_side_leg_raises,Standing Side Leg Raises,hip,hip_glute_dominant,raises,glutes,Legs,False
+ea_step_up_on_chair_bodyweight,Step Up on Chair Bodyweight,hip,hip_deep_flexion,step up,"quads,glutes",Legs,False
+ea_sumo_squat_in_between_legs_resistance_band,Sumo Squat in Between Legs Resistance Band,hip,hip_deep_flexion,sumo,"quads,glutes",Legs,False
+ea_sumo_squat_over_shoulder_resistance_band,Sumo Squat Over Shoulder Resistance Band,hip,hip_deep_flexion,sumo,"quads,glutes",Legs,False
+ea_suspension_trainer_with_grips_hip_bridge,Suspension Trainer with Grips Hip Bridge,hip,hip_extension_load,bridge,glutes,Legs,False
+ea_suspension_trainer_with_grips_side_squat,Suspension Trainer with Grips Side Squat,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_suspension_trainer_with_grips_split_squat,Suspension Trainer with Grips Split Squat,hip,hip_deep_flexion,split squat,"quads,glutes",Legs,False
+ea_trap_bar_deadlift,Trap Bar Deadlift,hip,hip_extension_load,deadlift,"lower_back,glutes,quads",Back,False
+ea_wall_squat_bodyweight,Wall Squat Bodyweight,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
+ea_wall_squat_with_pause_bodyweight,Wall Squat with Pause Bodyweight,hip,hip_deep_flexion,squat,"quads,glutes",Legs,False
