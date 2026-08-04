@@ -16,7 +16,13 @@ class ProgressPage extends ConsumerWidget {
     final theme = Theme.of(context);
     final logsAsync = ref.watch(workoutLogsProvider);
     final logs = logsAsync.valueOrNull ?? const <WorkoutLogEntry>[];
-    final stats = deriveProgress(logs);
+    // `logs` is the recent window, not the history. The all-time count and the
+    // streak record come from `workoutTotalsProvider`; without it a long-time
+    // user would watch their totals shrink to the window size.
+    final stats = deriveProgress(
+      logs,
+      totals: ref.watch(workoutTotalsProvider).valueOrNull,
+    );
 
     return FrostedScaffold(
       appBar: GlassAppBar(title: AppLocalizations.of(context).progressProgress),

@@ -1,4 +1,5 @@
 import '../../workouts/data/workout_log.dart';
+import '../../workouts/data/workout_log_totals.dart';
 
 /// Aggregated progress numbers derived from a [WorkoutLogEntry] history.
 /// All math lives here so the page widget stays a thin renderer and the
@@ -45,11 +46,37 @@ DateTime _weekStart(DateTime t) {
   return d.subtract(Duration(days: d.weekday - 1));
 }
 
+/// Progress numbers for a history [logs], newest first.
+///
+/// [logs] is the recent window the listener carries, not the full history —
+/// see `kWorkoutHistoryWindow`. Everything derived from recent activity
+/// (this week, the 8-week chart, the current streak) is answered from it
+/// correctly, because none of those reach further back than the window does.
+///
+/// [totals] supplies the two that are genuinely all-time. Passing null keeps
+/// the old behaviour of deriving them from [logs], which is right for a caller
+/// that really does hold everything — a test, or a user whose history fits
+/// inside the window — and wrong for anyone else, which is why the production
+/// call sites pass it.
 ProgressStats deriveProgress(
   List<WorkoutLogEntry> logs, {
   DateTime? now,
+  WorkoutLogTotals? totals,
 }) {
-  if (logs.isEmpty) return ProgressStats.empty;
+  if (logs.isEmpty) {
+    // Not necessarily an empty history: a signed-in user whose window has not
+    // arrived yet still has a total, and showing 0 where their real count
+    // belongs is the flicker this branch exists to avoid.
+    return totals == null
+        ? ProgressStats.empty
+        : ProgressStats(
+            total: totals.total,
+            thisWeek: 0,
+            currentStreakDays: 0,
+            longestStreakDays: totals.longestStreakDays,
+            last8Weeks: const [0, 0, 0, 0, 0, 0, 0, 0],
+          );
+  }
   final today = _dayOf(now ?? DateTime.now());
 
   // Unique workout days (any number of workouts on the same day → one day).
@@ -101,11 +128,18 @@ ProgressStats deriveProgress(
     buckets[7 - weeksAgo]++;
   }
 
+  final record = totals?.longestStreakDays ?? 0;
+
   return ProgressStats(
-    total: logs.length,
+    // All-time when we have it. `logs.length` is the window size for anyone
+    // whose history outgrew it, and rendering that as "workouts" would tell a
+    // three-year customer they had done 200.
+    total: totals?.total ?? logs.length,
     thisWeek: thisWeek,
     currentStreakDays: current,
-    longestStreakDays: longest,
+    // The record beats the window: a streak set before the window begins is
+    // still the record, and `longest` here can only see what is visible now.
+    longestStreakDays: longest > record ? longest : record,
     last8Weeks: List.unmodifiable(buckets),
   );
 }

@@ -19,11 +19,22 @@ class MockScheduledSessionRepository implements ScheduledSessionRepository {
     );
   }
 
+  /// The same shape the Firestore listener produces: the latest-dated
+  /// [kScheduledSessionWindow] sessions, handed back in ascending order.
+  ///
+  /// The truncation is on the mock too, deliberately. A double that returns
+  /// everything while production returns a window is a double that hides the
+  /// only bug windowing can introduce.
   List<ScheduledSession> _sorted(String uid) {
     final list = _store[uid] ?? const [];
     final sorted = [...list]
       ..sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
-    return List.unmodifiable(sorted);
+    if (sorted.length <= kScheduledSessionWindow) {
+      return List.unmodifiable(sorted);
+    }
+    return List.unmodifiable(
+      sorted.sublist(sorted.length - kScheduledSessionWindow),
+    );
   }
 
   @override

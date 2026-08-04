@@ -26,11 +26,30 @@ class FirestoreScheduledSessionRepository
 
   @override
   Stream<List<ScheduledSession>> watch(String uid) {
+    // Descending then reversed, rather than ascending with a limit.
+    //
+    // Ascending was the worst possible order for this collection: completed
+    // sessions are never deleted, so the oldest rows are the most numerous and
+    // the least wanted -- every consumer looks forward, `filterUpcoming` at 14
+    // days and the offline prefetch at 7 -- and an unbounded ascending
+    // listener re-read all of them on every cold start before reaching
+    // anything anyone would render.
+    //
+    // A `where` on `scheduledFor` would have been the obvious fix and is the
+    // riskier one: the field is stored as an ISO 8601 string
+    // (`ScheduledSession.toJson`), so a range filter compares text. That is
+    // correct only while every writer produces the same format -- a local
+    // DateTime and a UTC one stringify to different lengths and sort
+    // differently. Taking the highest N and reversing needs no such
+    // assumption, and leaves the stream's ascending contract untouched.
     return _col(uid)
-        .orderBy('scheduledFor')
+        .orderBy('scheduledFor', descending: true)
+        .limit(kScheduledSessionWindow)
         .snapshots()
         .map((snap) {
-      final list = snap.docs.map(_fromDoc).toList(growable: false);
+      final list = snap.docs.map(_fromDoc).toList().reversed.toList(
+            growable: false,
+          );
       _cache[uid] = list;
       return list;
     });
@@ -52,12 +71,19 @@ class FirestoreScheduledSessionRepository
 
   @override
   Future<void> clear(String uid) async {
-    final batch = _db.batch();
-    final snap = await _col(uid).get();
-    for (final d in snap.docs) {
-      batch.delete(d.reference);
+    // Chunked at 400 for the same reason as the workout log: a single batch
+    // rejects above 500 operations, so the unchunked version failed for
+    // exactly the user with enough history to want it gone.
+    while (true) {
+      final snap = await _col(uid).limit(400).get();
+      if (snap.docs.isEmpty) break;
+      final batch = _db.batch();
+      for (final d in snap.docs) {
+        batch.delete(d.reference);
+      }
+      await batch.commit();
+      if (snap.docs.length < 400) break;
     }
-    await batch.commit();
     _cache.remove(uid);
   }
 }

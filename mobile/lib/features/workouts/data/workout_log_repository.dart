@@ -1,13 +1,39 @@
 import 'workout_log.dart';
+import 'workout_log_totals.dart';
+
+/// How many of the newest entries the history listener carries.
+///
+/// Four sessions a week for a year is about 200, and every consumer of the
+/// stream wants far less than that: the progress chart shows 8 weeks, the
+/// personalisation model looks at 7 days, and Home renders the most recent
+/// few. The number is generous on purpose — the point is to stop the cost of
+/// a cold start scaling with account age, not to trim it to the minimum.
+///
+/// The two figures a window genuinely cannot serve live in [WorkoutLogTotals].
+const int kWorkoutHistoryWindow = 200;
 
 /// Persistence interface for completed-workout logs. The default
 /// implementation is in-memory ([MockWorkoutLogRepository]); production
 /// uses [FirestoreWorkoutLogRepository] writing under
 /// `users/{uid}/workout_logs/{id}`.
 abstract class WorkoutLogRepository {
-  /// Streams the user's full workout history, newest first. Emits an empty
-  /// list when there are no logs.
+  /// Streams the user's most recent [kWorkoutHistoryWindow] workouts, newest
+  /// first. Emits an empty list when there are no logs.
+  ///
+  /// Windowed rather than complete: this listener attaches on the landing
+  /// screen, so an unbounded version re-downloaded the user's entire history
+  /// on every cold start. For anything all-time, see [totals].
   Stream<List<WorkoutLogEntry>> watch(String uid);
+
+  /// The all-time count and streak record — the numbers [watch] cannot answer
+  /// once it is windowed. See [WorkoutLogTotals] for why they are separate.
+  Future<WorkoutLogTotals> totals(String uid);
+
+  /// Raises the stored streak record to [days] if it beats what is there.
+  ///
+  /// Never lowers it. The record is set while the days that make it are still
+  /// inside the window, and once written it outlives them.
+  Future<void> recordStreak(String uid, int days);
 
   /// Synchronous read of the most recent watch() emission. Returns the
   /// empty list if the user's history hasn't been observed yet.

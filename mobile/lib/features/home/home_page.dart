@@ -56,7 +56,11 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final logs = ref.watch(workoutLogsProvider).valueOrNull ?? const [];
-    final stats = deriveProgress(logs);
+    // See the note in progress_page: `logs` is a window, the totals are not.
+    final stats = deriveProgress(
+      logs,
+      totals: ref.watch(workoutTotalsProvider).valueOrNull,
+    );
     final upcoming = ref.watch(upcomingSessionsProvider);
 
     return FrostedScaffold(
