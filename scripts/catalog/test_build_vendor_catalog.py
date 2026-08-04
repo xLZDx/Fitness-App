@@ -222,3 +222,99 @@ class TestAgainstTheRealCatalog:
         on_disk = json.loads(SHIPPED.read_text(encoding="utf-8"))
         assert sum(1 for r in on_disk if r.get("poster")) > 0
         assert sum(1 for r in on_disk if r.get("equipmentId")) > 0
+
+
+class TestTheSafetyVocabulary:
+    """S3a: which `contraindications` tags are legal, answered mechanically.
+
+    A tag outside the vocabulary is worse than a missing one. `isContraindicated`
+    compares it against `InjuryRegion.tag` exactly, so a typo screens for nobody
+    -- and the row still counts as covered in every number the builder prints,
+    including the ratchet the tagging batches are graded on.
+    """
+
+    def test_the_vocabulary_is_the_eight_regions(self):
+        vocabulary = build_vendor_catalog.load_vocabulary()
+        assert vocabulary == {
+            "neck",
+            "shoulder",
+            "elbow",
+            "wrist",
+            "lower_back",
+            "hip",
+            "knee",
+            "ankle",
+        }
+
+    def test_a_legal_tag_is_accepted(self):
+        rows = [generated("ea_a", contraindications=["knee"])]
+        assert build_vendor_catalog.invalid_tags(
+            rows, build_vendor_catalog.load_vocabulary()
+        ) == []
+
+    def test_a_typo_is_caught_with_its_row(self):
+        rows = [generated("ea_a", contraindications=["kneee"])]
+        assert build_vendor_catalog.invalid_tags(
+            rows, build_vendor_catalog.load_vocabulary()
+        ) == [("ea_a", "kneee")]
+
+    def test_the_unnormalised_form_is_caught_too(self):
+        # "lower back" and "lower_back" are the same region to a human and two
+        # different strings to a set membership test. Only the region's own tag
+        # may be written.
+        rows = [generated("ea_a", contraindications=["lower back"])]
+        assert build_vendor_catalog.invalid_tags(
+            rows, build_vendor_catalog.load_vocabulary()
+        ) == [("ea_a", "lower back")]
+
+    def test_rows_without_tags_are_not_offenders(self):
+        rows = [generated("ea_a"), generated("ea_b", contraindications=[])]
+        assert build_vendor_catalog.invalid_tags(
+            rows, build_vendor_catalog.load_vocabulary()
+        ) == []
+
+    def test_the_shipped_catalog_is_clean(self):
+        on_disk = json.loads(SHIPPED.read_text(encoding="utf-8"))
+        assert build_vendor_catalog.invalid_tags(
+            on_disk, build_vendor_catalog.load_vocabulary()
+        ) == []
+
+
+class TestTheWriteRefusesBadTags(TestTheWritePath):
+    """The guard, not just the detector.
+
+    Inherits the stubbed-`build()` harness above for the same reason it exists:
+    the vendor bundle is absent on this machine, so `main()` cannot otherwise be
+    exercised end to end.
+    """
+
+    def test_a_bad_tag_blocks_the_write(self, catalog, monkeypatch):
+        with pytest.raises(SystemExit) as exit_info:
+            self._run(
+                monkeypatch,
+                [generated("ea_a", contraindications=["kneee"])],
+                ["--write"],
+            )
+        assert "match no InjuryRegion" in str(exit_info.value)
+        assert not catalog.exists(), "nothing may be written when a tag is bad"
+
+    def test_allow_drop_does_not_also_wave_through_a_bad_tag(
+        self, catalog, monkeypatch
+    ):
+        # Two different guards. Dropping rows can be legitimate -- a shrunken
+        # bundle -- so it is overridable; a tag matching no region never is, and
+        # sharing one flag would have made the override reach both.
+        with pytest.raises(SystemExit):
+            self._run(
+                monkeypatch,
+                [generated("ea_a", contraindications=["kneee"])],
+                ["--write", "--allow-drop"],
+            )
+        assert not catalog.exists()
+
+    def test_a_good_tag_writes_normally(self, catalog, monkeypatch):
+        self._run(
+            monkeypatch, [generated("ea_a", contraindications=["knee"])], ["--write"]
+        )
+        row = json.loads(catalog.read_text(encoding="utf-8"))[0]
+        assert row["contraindications"] == ["knee"]

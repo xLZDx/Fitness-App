@@ -1,0 +1,28 @@
+{
+  "_comment": [
+    "The safety-tag vocabulary. An exercise's `contraindications` entries must",
+    "be drawn from `tags` below and nothing else.",
+    "",
+    "SOURCE OF TRUTH is the Dart enum, not this file:",
+    "  mobile/lib/features/profile/data/profile_models.dart :: InjuryRegion",
+    "This is its projection, so the Python catalog builder can validate a",
+    "tagging batch without a Dart toolchain. The two are held together by",
+    "`vocabulary_test.dart`, which fails if either side changes alone -- the",
+    "same invariant-over-two-lists trick the Stripe webhook needed after four",
+    "price secrets silently went unbound.",
+    "",
+    "To add a region: add it to InjuryRegion, add its tag here, and expect the",
+    "coverage floor test to stay put -- a new region does not tag anything by",
+    "itself."
+  ],
+  "tags": [
+    "neck",
+    "shoulder",
+    "elbow",
+    "wrist",
+    "lower_back",
+    "hip",
+    "knee",
+    "ankle"
+  ]
+}

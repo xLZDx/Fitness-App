@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../profile/data/profile_models.dart';
 import '../data/equipment_models.dart';
 import '../data/exercise_filter.dart';
 import 'equipment_providers.dart';
@@ -24,10 +25,17 @@ import 'equipment_providers.dart';
 /// Every claim about injury filtering now reads this. One measurement with one
 /// meaning, rather than eight surfaces each deciding for themselves.
 class CatalogSafetyCoverage {
-  const CatalogSafetyCoverage({required this.tagged, required this.total});
+  const CatalogSafetyCoverage({
+    required this.tagged,
+    required this.total,
+    this.byRegion = const {},
+  });
 
   final int tagged;
   final int total;
+
+  /// How many exercises carry each region's tag.
+  final Map<InjuryRegion, int> byRegion;
 
   /// Nothing may claim to have screened an exercise below this.
   ///
@@ -36,6 +44,20 @@ class CatalogSafetyCoverage {
   /// still filters honestly for the injuries those tags name — it just filters
   /// less than a user might assume, which is what the disclosure says.
   bool get filteringCanFire => tagged > 0;
+
+  /// True when every one of [regions] has at least one tagged exercise.
+  ///
+  /// The per-user form of [filteringCanFire], and the one that matters from
+  /// S3b's first batch onward. A batch of 50 tagged knees makes
+  /// `filteringCanFire` true for everybody — including a user whose only
+  /// injury is a shoulder, whose coverage is still zero. Disarming the
+  /// disclosure for them would put the app straight back to the claim S0a
+  /// removed, and it would be a harder version of it: the claim would now be
+  /// true for most users, which is exactly the shape nobody re-checks.
+  bool coversAllOf(Iterable<InjuryRegion> regions) {
+    if (regions.isEmpty) return false;
+    return regions.every((r) => (byRegion[r] ?? 0) > 0);
+  }
 
   double get fraction => total == 0 ? 0 : tagged / total;
 
@@ -71,18 +93,42 @@ final catalogSafetyCoverageProvider =
   return CatalogSafetyCoverage(
     tagged: coverage.tagged,
     total: coverage.total,
+    byRegion: safetyCoverageByRegion(unique.values),
   );
 });
 
-/// True when a surface is allowed to say an exercise list was screened.
+/// True when a surface is allowed to say **this user's** exercise list was
+/// screened.
+///
+/// Evaluated against the regions they actually reported, not against the
+/// catalog as a whole. The global form was correct while coverage was zero and
+/// becomes a lie the moment tagging starts unevenly, which it will: S3b tags in
+/// batches, and the first batch cannot cover eight regions at once.
+///
+/// A user whose injuries are still unmapped free text falls back to the global
+/// question, because there is no region to ask about yet — and until S1b runs,
+/// that is every existing user. The fallback is the old behaviour, so this
+/// cannot regress anyone; it can only stop the claim being made too early.
 ///
 /// Defaults to false while loading and on error. Silence is recoverable; a
 /// safety claim shown to an injured user because a future had not resolved
 /// yet is not.
 final injuryFilteringIsRealProvider = Provider<bool>((ref) {
-  return ref
-          .watch(catalogSafetyCoverageProvider)
-          .valueOrNull
-          ?.filteringCanFire ??
-      false;
+  final coverage = ref.watch(catalogSafetyCoverageProvider).valueOrNull;
+  if (coverage == null) return false;
+
+  // `hasValue`, not `.valueOrNull`. A null profile means "signed out, nothing
+  // to screen against"; an unresolved one means "we do not know yet", and
+  // sampling collapses the two — which is the same bug S2 removed from the
+  // catalog providers, and it would land here as a claim rather than as an
+  // unscreened list. A test caught it doing exactly that.
+  final profileAsync = ref.watch(screeningProfileProvider);
+  if (!profileAsync.hasValue) return false;
+
+  final regions = <InjuryRegion>{
+    for (final injury in profileAsync.value?.health.injuries ?? const <Injury>[])
+      if (injury.region != null) injury.region!,
+  };
+  if (regions.isEmpty) return coverage.filteringCanFire;
+  return coverage.coversAllOf(regions);
 });

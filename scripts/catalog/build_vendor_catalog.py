@@ -298,6 +298,37 @@ def build() -> list[dict]:
     return out
 
 
+VOCAB = Path(__file__).with_name("injury_regions.json")
+
+
+def load_vocabulary() -> set[str]:
+    """The legal `contraindications` tags.
+
+    Projected from `InjuryRegion` in `profile_models.dart`, which is the source
+    of truth; `vocabulary_test.dart` fails if the two drift. Read here rather
+    than restated, because a second hand-written list of the same eight strings
+    is how four Stripe price secrets went silently unbound earlier in this
+    remediation.
+    """
+    raw = json.loads(VOCAB.read_text(encoding="utf-8"))
+    return set(raw["tags"])
+
+
+def invalid_tags(rows: list[dict], vocabulary: set[str]) -> list[tuple[str, str]]:
+    """Every (id, tag) pair whose tag matches no region.
+
+    A tag outside the vocabulary is worse than a missing one: `isContraindicated`
+    compares it against `InjuryRegion.tag` exactly, so a typo screens nobody --
+    and screens them silently, with the row looking tagged in every count.
+    """
+    return [
+        (row["id"], tag)
+        for row in rows
+        for tag in row.get("contraindications") or []
+        if tag not in vocabulary
+    ]
+
+
 def load_existing() -> list[dict]:
     if not OUT.exists():
         return []
@@ -384,6 +415,24 @@ def main() -> None:
     # coverage number the six above never reported. It stood at 0 of 1,887
     # while the app told users their injuries were being filtered for.
     print(f"  with safety tags {sum(1 for r in rows if r.get('contraindications'))}")
+    # Per region, not just a total. A batch that tags 200 knees and no
+    # shoulders raises the floor exactly as much as a balanced one, so the
+    # total alone cannot say which injuries the catalog can actually screen
+    # for -- and "screened for your injuries" is only true per injury.
+    vocabulary = load_vocabulary()
+    per_region = collections.Counter(
+        tag for r in rows for tag in r.get("contraindications") or []
+    )
+    print("  by region        " + (
+        ", ".join(f"{tag} {per_region.get(tag, 0)}" for tag in sorted(vocabulary))
+    ))
+    bad = invalid_tags(rows, vocabulary)
+    if bad:
+        print(f"\n{len(bad)} tags match no region and screen for nobody:")
+        for exercise_id, tag in bad[:10]:
+            print(f"    {exercise_id}: {tag}")
+        if len(bad) > 10:
+            print(f"    ... and {len(bad) - 10} more")
     groups = collections.Counter(r["vendorGroup"] for r in rows)
     print(f"  groups           {dict(sorted(groups.items()))}")
 
@@ -400,6 +449,17 @@ def main() -> None:
                 "\nrefusing to write: this would delete the rows listed above "
                 "and every curated field on them. Re-run with --allow-drop if "
                 "the removal is what you meant."
+            )
+        if bad:
+            # No --allow flag for this one, deliberately. Dropping rows can be
+            # legitimate (a shrunken bundle), so that guard is overridable; a
+            # tag outside the vocabulary is never what anyone meant, and the
+            # override would only ever be used to get past a typo.
+            sys.exit(
+                "\nrefusing to write: the tags listed above match no "
+                "InjuryRegion, so they would screen for nobody while counting "
+                "as coverage. Fix the tags, or add the region to InjuryRegion "
+                "and to injury_regions.json together."
             )
         OUT.write_text(
             json.dumps(rows, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"

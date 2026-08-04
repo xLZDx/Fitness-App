@@ -113,4 +113,58 @@ void main() {
               'entire catalog, because no exercise carries a tag to match');
     });
   });
+
+  group('safetyCoverageByRegion', () {
+    // The total answers "can the filter fire at all", which was the right
+    // question while the answer was zero and becomes the wrong one with S3b's
+    // first batch: 50 tagged knees make `tagged > 0` true for a user whose only
+    // injury is a shoulder, whose coverage is still nothing.
+    test('counts each region separately', () {
+      final out = safetyCoverageByRegion([
+        _ex('a', contraindications: ['knee']),
+        _ex('b', contraindications: ['knee', 'shoulder']),
+        _ex('c'),
+      ]);
+      expect(out[InjuryRegion.knee], 2);
+      expect(out[InjuryRegion.shoulder], 1);
+      expect(out[InjuryRegion.ankle], 0);
+    });
+
+    test('every region is present, including the uncovered ones', () {
+      // Absent-means-zero would work until a caller used `[]` on a map that
+      // had never seen the region, and a null there reads as "unknown" rather
+      // than "none".
+      final out = safetyCoverageByRegion([_ex('a', contraindications: ['knee'])]);
+      expect(out.keys.toSet(), InjuryRegion.values.toSet());
+    });
+
+    test('normalises the tag the same way the filter does', () {
+      final out =
+          safetyCoverageByRegion([_ex('a', contraindications: ['Lower Back'])]);
+      expect(out[InjuryRegion.lowerBack], 1);
+    });
+
+    test('a tag matching no region is counted for none of them', () {
+      // It is not silently attributed to the nearest one. The builder refuses
+      // to write such a tag at all; this is what the app does if one arrives
+      // anyway.
+      final out =
+          safetyCoverageByRegion([_ex('a', contraindications: ['kneee'])]);
+      expect(out.values.every((n) => n == 0), isTrue);
+    });
+
+    test('the shipped catalog covers no region yet', () {
+      // Pinned so S3b's first batch turns this red and has to say which
+      // regions it covered, rather than only how many rows it touched.
+      final raw = File('assets/data/exercises_vendor.json').readAsStringSync();
+      final catalog = (jsonDecode(raw) as List)
+          .map((e) => ExerciseItem.fromJson(e as Map<String, dynamic>))
+          .toList();
+      final byRegion = safetyCoverageByRegion(catalog);
+      expect(byRegion.values.where((n) => n > 0), isEmpty,
+          reason: 'a region became covered: raise kSafetyCoverageFloor and '
+              'record which regions the batch covered, because "screened for '
+              'your injuries" is only ever true per injury');
+    });
+  });
 }

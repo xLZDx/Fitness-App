@@ -110,6 +110,33 @@ SafetyCoverage safetyCoverage(Iterable<ExerciseItem> exercises) {
   return (tagged: tagged, total: total);
 }
 
+/// How many exercises carry each region's tag.
+///
+/// ## Why the total is not enough
+///
+/// [safetyCoverage] answers "can the filter fire at all", which was the right
+/// question while the answer was zero. It becomes the wrong one the moment
+/// S3b's first batch lands: 50 tagged knees make `tagged > 0` true for
+/// everybody, including a user whose only injury is a shoulder and for whom
+/// coverage is still 0 of 1,887. The honesty banner would disarm and the app
+/// would resume telling them their injuries were screened for.
+///
+/// A claim about screening is only ever true per injury, so this is the shape
+/// the claim has to be evaluated against.
+Map<InjuryRegion, int> safetyCoverageByRegion(
+  Iterable<ExerciseItem> exercises,
+) {
+  final counts = {for (final r in InjuryRegion.values) r: 0};
+  final byTag = {for (final r in InjuryRegion.values) r.tag: r};
+  for (final e in exercises) {
+    for (final raw in e.contraindications) {
+      final region = byTag[_normaliseTag(raw)];
+      if (region != null) counts[region] = counts[region]! + 1;
+    }
+  }
+  return counts;
+}
+
 extension SafetyCoverageFraction on SafetyCoverage {
   /// Share of the catalog that carries a tag, 0.0 to 1.0.
   ///
