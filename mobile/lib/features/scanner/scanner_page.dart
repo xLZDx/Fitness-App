@@ -164,6 +164,34 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   }
 
   /// Every confident identification is remembered, whatever found it.
+  /// The last live reading actually written, per machine.
+  ///
+  /// The repository dedups by *value* — it merges a new sighting into the
+  /// existing row rather than adding one — so it collapses rows and not
+  /// writes. Every settled frame still cost a `get()` plus a `set()` on the
+  /// same document, and `RecognitionSmoother` reports settled on every frame
+  /// once its window fills, not once per sighting. That is a read-modify-write
+  /// at labeler frame rate against one document, past Firestore's sustained
+  /// limit of one write per second, with two in-flight frames able to read the
+  /// same stale row and the later `set` discarding the higher confidence the
+  /// merge exists to keep.
+  ///
+  /// Gating the write here rather than the value there is what actually stops
+  /// it: nothing is sent at all inside the window.
+  final Map<String, DateTime> _lastLiveWrite = {};
+
+  /// Matches the repository's own dedup window, so the gate cannot suppress a
+  /// sighting the repository would have treated as new.
+  static const _liveWriteInterval = Duration(minutes: 5);
+
+  /// True if a live reading for [equipmentId] is worth a write right now.
+  bool _shouldWriteLive(String equipmentId, DateTime now) {
+    final last = _lastLiveWrite[equipmentId];
+    if (last != null && now.difference(last) < _liveWriteInterval) return false;
+    _lastLiveWrite[equipmentId] = now;
+    return true;
+  }
+
   void _remember(
       String equipmentId, double confidence, RecognitionSource source) {
     // Fire-and-forget by design — a failed history write must never block
@@ -269,14 +297,19 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     final liveAsync = ref.watch(liveRecognitionProvider);
     final live = liveAsync.valueOrNull;
     final session = ref.watch(scanCameraSessionProvider);
-    // Record settled live readings. The repository's 5-minute dedup keeps a
-    // camera held on one machine from writing a row per frame.
+    // Record settled live readings, at most one write per machine per window.
+    //
+    // The old comment here said the repository's dedup kept a camera held on
+    // one machine from writing a row per frame. True about rows, false about
+    // writes: the dedup merges values, it never says "skip this one", so a
+    // held camera produced a get+set per settled frame on a single document.
     ref.listen<AsyncValue<LiveRecognition?>>(liveRecognitionProvider,
         (prev, next) {
       final r = next.valueOrNull;
       // Tentative readings are feedback for the user, not evidence — only a
       // settled vote is worth remembering.
       if (r == null || !r.settled) return;
+      if (!_shouldWriteLive(r.equipmentId, DateTime.now())) return;
       _remember(r.equipmentId, r.confidence, RecognitionSource.live);
     });
     return FrostedScaffold(

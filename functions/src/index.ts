@@ -1075,15 +1075,34 @@ export const reportEquipment = onCall(
           reportedAt,
           reportId,
         };
+        // Bounded, because the endpoint belongs to a gym and not to us. A
+        // chain whose Slack or custom receiver accepts the connection and
+        // never answers would otherwise hold this instance until the
+        // platform's 60-second default kills it -- with the user watching a
+        // spinner the whole time, since this is a callable they are waiting
+        // on, and with the instance unavailable to anyone else reporting a
+        // fault. One dark endpoint at a busy chain is enough to make
+        // reporting fail for every other gym.
         await fetch(webhookUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(3000),
         });
       }
     } catch (err) {
-      logger.warn("equipment report webhook failed", { err, gymId });
-      // We swallow the error — the Firestore write succeeded.
+      // Still swallowed, and the ordering is what makes that right: the
+      // report is already durably written, so the gym's admin console has it
+      // whether or not the webhook landed.
+      //
+      // Now identifiable, though. The warning named only the gym, so a
+      // recurring failure could not be tied back to the report it belonged to.
+      logger.warn("equipment report webhook failed", {
+        err,
+        gymId,
+        equipmentId,
+        reportId,
+      });
     }
 
     return { reportId };

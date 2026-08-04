@@ -1,0 +1,210 @@
+[
+ {
+  "id": "vid_band_standing_calf_raise",
+  "title": "Band Standing Calf Raise",
+  "mergeInto": "fedb_calf_raises_-_with_bands",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Band%20Standing%20Calf%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Band%20Standing%20Calf%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_barbell_clean_and_press",
+  "title": "Barbell Clean And Press",
+  "mergeInto": "vid_barbell_clean_and_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Barbell%20Clean%20And%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Barbell%20Clean%20And%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_donkey_calf_raise",
+  "title": "Donkey Calf Raise",
+  "mergeInto": "vid_donkey_calf_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Donkey%20Calf%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Donkey%20Calf%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_front_squat",
+  "title": "Dumbbell Front Squat",
+  "mergeInto": "vid_dumbbell_front_squat",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Dumbbell%20Front%20Squat.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Dumbbell%20Front%20Squat.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_seated_calf_raise",
+  "title": "Dumbbell Seated Calf Raise",
+  "mergeInto": "fedb_calf_raise_on_a_dumbbell",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Dumbbell%20Seated%20Calf%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Dumbbell%20Seated%20Calf%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_single_leg_calf_raise",
+  "title": "Dumbbell Single Leg Calf Raise",
+  "mergeInto": "vid_dumbbell_single_leg_calf_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Dumbbell%20Single%20Leg%20Calf%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Dumbbell%20Single%20Leg%20Calf%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_standing_calf_raise",
+  "title": "Dumbbell Standing Calf Raise",
+  "mergeInto": "vid_dumbbell_standing_calf_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Dumbbell%20Standing%20Calf%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Dumbbell%20Standing%20Calf%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_seated_calf_raise",
+  "title": "Lever Seated Calf Raise",
+  "mergeInto": "fedb_seated_calf_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Lever%20Seated%20Calf%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Lever%20Seated%20Calf%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_standing_calf_raise",
+  "title": "Lever Standing Calf Raise",
+  "mergeInto": "fedb_rocking_standing_calf_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Lever%20Standing%20Calf%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Lever%20Standing%20Calf%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_sled_45_degree_calf_press",
+  "title": "Sled 45 Degree Calf Press",
+  "mergeInto": "vid_sled_45_degree_calf_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Sled%2045%20Degree%20Calf%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Sled%2045%20Degree%20Calf%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_smith_calf_raise",
+  "title": "Smith Calf Raise",
+  "mergeInto": "fedb_smith_machine_calf_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Smith%20Calf%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Smith%20Calf%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_calf_stretch_with_rope",
+  "title": "Stretching - Calf Stretch with Rope",
+  "mergeInto": "vid_stretching_calf_stretch_with_rope",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Calf%20Stretch%20with%20Rope.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Calf%20Stretch%20with%20Rope.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_calf_stretch_with_strap",
+  "title": "Stretching - Calf Stretch with Strap",
+  "mergeInto": "vid_stretching_calf_stretch_with_strap",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Calf%20Stretch%20with%20Strap.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Calf%20Stretch%20with%20Strap.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_circles_knee_stretch",
+  "title": "Knee Circles",
+  "equipmentId": null,
+  "muscles": [
+   "calves",
+   "quads"
+  ],
+  "primaryMuscles": [
+   "quads"
+  ],
+  "group": "calves",
+  "isStretch": true,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Stand with your feet together, bend the knees slightly and rest your hands on top of them.",
+  "steps": [
+   "Stand with your feet together, bend the knees slightly and rest your hands on top of them.",
+   "Keep both feet flat on the floor and your back straight. This is the starting position.",
+   "Draw slow circles with the knees, letting the knees and ankles travel through their full comfortable range.",
+   "Complete 10 circles in one direction, then 10 in the other."
+  ],
+  "ru": {
+   "title": "Круговые движения коленями",
+   "steps": [
+    "Встаньте, соединив стопы, слегка согните колени и положите на них ладони.",
+    "Обе стопы плотно стоят на полу, спина прямая. Это исходное положение.",
+    "Медленно описывайте коленями круги, проходя весь комфортный объём движения в коленях и голеностопах.",
+    "Сделайте 10 кругов в одну сторону и 10 в другую."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Circles%20Knee%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Circles%20Knee%20Stretch.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_stretching_feet_and_ankles_rotation_stretch",
+  "title": "Stretching - Feet and Ankles Rotation Stretch",
+  "mergeInto": "vid_stretching_feet_and_ankles_rotation_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Feet%20and%20Ankles%20Rotation%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Feet%20and%20Ankles%20Rotation%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_feet_and_ankles_stretch",
+  "title": "Stretching - Feet and Ankles Stretch",
+  "mergeInto": "vid_stretching_feet_and_ankles_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Feet%20and%20Ankles%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Feet%20and%20Ankles%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_peroneals_stretch",
+  "title": "Stretching - Peroneals Stretch",
+  "mergeInto": "vid_stretching_peroneals_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Peroneals%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Peroneals%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_seated_calf_stretch",
+  "title": "Stretching - Seated Calf Stretch",
+  "mergeInto": "vid_stretching_seated_calf_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Seated%20Calf%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Seated%20Calf%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_stairs_calf_stretch",
+  "title": "Stretching - Stairs Calf Stretch",
+  "mergeInto": "vid_stretching_stairs_calf_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Stairs%20Calf%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Stairs%20Calf%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_standing_bench_calf_stretch",
+  "title": "Stretching - Standing Bench Calf Stretch",
+  "mergeInto": "vid_stretching_standing_bench_calf_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Calves/Stretching%20-%20Standing%20Bench%20Calf%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/calves/Stretching%20-%20Standing%20Bench%20Calf%20Stretch.mp4"
+  }
+ }
+]

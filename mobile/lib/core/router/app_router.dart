@@ -1,5 +1,6 @@
 import 'dart:async';
 
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -135,23 +136,58 @@ class _MultiSourceListenable extends ChangeNotifier {
 /// keeps emitting through sign-in/sign-out cycles. Used by the router's
 /// refresh listenable so `/onboarding` redirects fire when the profile
 /// is created or completed.
-Stream<dynamic> _profileWatchOf(
+@visibleForTesting
+Stream<dynamic> profileWatchOf(
   dynamic authRepo,
   ProfileRepository profileRepo,
-) async* {
-  Stream<dynamic> currentProfileStream = const Stream.empty();
-  StreamSubscription<dynamic>? sub;
-  await for (final user in authRepo.authStateChanges()) {
-    await sub?.cancel();
-    if (user == null) {
-      yield null;
-      currentProfileStream = const Stream.empty();
-      continue;
-    }
-    currentProfileStream = profileRepo.watch(user.uid);
-    sub = currentProfileStream.listen((p) {});
-    yield* currentProfileStream;
+) {
+  // Forwarded into a controller rather than delegated with `yield*`.
+  //
+  // The `yield*` version parked here forever. A Firestore snapshot stream
+  // never completes, so delegating to it meant the `await for` over
+  // `authStateChanges()` never received another event: after the first
+  // sign-in, no later auth change was ever processed and the previous
+  // account's profile subscription was never cancelled. Sign out and in as
+  // someone else and the router kept watching the old uid — a listener that
+  // then fails the security rules and retries, while the new user's profile
+  // was never watched at all, so `/onboarding` redirects stopped firing for
+  // them.
+  //
+  // It also subscribed twice to the same stream, once for `sub` and once for
+  // the delegation. That part cost nothing — `cloud_firestore` builds its
+  // snapshot stream on a broadcast controller whose `onListen` fires only on
+  // the transition from no subscribers to one, so both Dart subscriptions
+  // shared a single native listener. Worth writing down because it looks like
+  // a doubled read and is not.
+  late StreamController<dynamic> out;
+  StreamSubscription<dynamic>? authSub;
+  StreamSubscription<dynamic>? profileSub;
+
+  Future<void> stopWatchingProfile() async {
+    await profileSub?.cancel();
+    profileSub = null;
   }
+
+  out = StreamController<dynamic>.broadcast(
+    onListen: () {
+      authSub = authRepo.authStateChanges().listen((dynamic user) async {
+        await stopWatchingProfile();
+        if (user == null) {
+          out.add(null);
+          return;
+        }
+        profileSub = profileRepo.watch(user.uid as String).listen(
+              out.add,
+              onError: out.addError,
+            );
+      });
+    },
+    onCancel: () async {
+      await authSub?.cancel();
+      await stopWatchingProfile();
+    },
+  );
+  return out.stream;
 }
 
 /// The application router. Reads auth state via Riverpod and redirects
@@ -162,7 +198,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final authListenable = _StreamListenable(authRepo.authStateChanges());
   final profileListenable = _MultiSourceListenable([
     authRepo.authStateChanges(),
-    _profileWatchOf(authRepo, profileRepo),
+    profileWatchOf(authRepo, profileRepo),
   ]);
   ref.onDispose(authListenable.dispose);
   ref.onDispose(profileListenable.dispose);

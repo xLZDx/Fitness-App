@@ -1,0 +1,113 @@
+WHAT THIS FILE IS
+
+Every row of the 359-exercise video drop that could not be answered
+honestly. Two kinds of gap, kept apart because they cost different
+things: the first kind does not ship at all, the second ships with
+correct instructions but no machine attached.
+
+Nothing here was guessed. A wrong instruction or a plausible-looking
+wrong machine is worse than a missing row, because the user cannot
+tell it is wrong.
+
+
+A. NOT SHIPPED -- the filename does not identify the movement (6)
+
+  vid_bench_pull_ups
+      title : Bench Pull-ups
+      reason: "Bench Pull-ups" is either an inverted row with the feet on a bench or a bench-assisted pull-up; the name does not say which
+
+  vid_old_school_reverse_extensions
+      title : Old School Reverse Extensions
+      reason: filed under triceps but "reverse extension" names a different movement in every source; implement unstated
+
+  vid_stretching_slopes_towards_stretch
+      title : Stretching - Slopes Towards Stretch
+      reason: "Slopes Towards Stretch" is a machine translation of something; it does not name a movement in any stretching vocabulary and the folder does not narrow it down
+
+  vid_walk_wave_machine
+      title : Walk Wave Machine
+      reason: name does not identify the machine; the same clip is filed under both genders, so the drop gives no second view to read it from
+
+  vid_weighted_standing_curl
+      title : Weighted Standing Curl
+      reason: forearm folder, implement unstated -- a standing wrist curl already ships twice here with a barbell and with dumbbells
+
+  vid_weighted_standing_curl_weights_or_lever
+      title : Weighted Standing Curl (weights or lever)
+      reason: the name itself says "weights or lever", i.e. the source did not know which was demonstrated
+
+
+B. NOT SHIPPED -- the same video file under a second name (10)
+
+  Proven by md5 over all 677 files in the drop, not by the name.
+
+  vid_45_degree_bycicle_twisting_crunch_1
+      byte-identical to: vid_45_degree_bycicle_twisting_crunch
+
+  vid_cardio_exercises
+      byte-identical to: vid_running
+
+  vid_cardio_exercises_machine
+      byte-identical to: vid_elliptical
+
+  vid_cardio_exercises_machines
+      byte-identical to: vid_elliptical
+
+  vid_dumbbell_decline_fly_45_degree_1
+      byte-identical to: vid_dumbbell_decline_fly_45_degree
+
+  vid_lever_seated_crunch_1
+      byte-identical to: vid_lever_seated_crunch
+
+  vid_smith_deadlift_deadlift_1
+      byte-identical to: vid_smith_deadlift_deadlift
+
+  vid_stretching_bridge_pose_setu_bandhasana_1
+      byte-identical to: vid_stretching_bridge_pose_setu_bandhasana
+
+  vid_stretching_middle_back_stretch_1
+      byte-identical to: vid_stretching_middle_back_stretch
+
+  vid_stretching_standing_lateral_stretch_1
+      byte-identical to: vid_stretching_standing_lateral_stretch
+
+
+C. SHIPPED, equipmentId left null -- no id exists for the implement (19)
+
+  These have full instructions in both languages. They are listed
+  because adding the implement to equipment.json is the fix, not
+  editing the exercise.
+
+  vid_ball_sit_up_on_stability_ball                        needs: stability ball
+  vid_bent_knee_lying_twist_on_stability_ball              needs: stability ball
+  vid_crunch_legs_on_stability_ball                        needs: stability ball
+  vid_deep_push_ups                                        needs: parallettes / push-up handles
+  vid_jump_rope                                            needs: skipping rope
+  vid_lever_lateral_raise                                  needs: lateral raise machine
+  vid_lever_shrug                                          needs: shrug machine
+  vid_lying_hip_lift_on_stability_ball                     needs: stability ball
+  vid_side_bend_on_stability_ball                          needs: stability ball
+  vid_sit_up_on_exercise_ball                              needs: stability ball
+  vid_stretching_calf_stretch_with_rope                    needs: stretching rope
+  vid_stretching_calf_stretch_with_strap                   needs: stretching strap
+  vid_stretching_hamstring_stretch                         needs: stretching belt / strap
+  vid_stretching_hip_flexor_and_quad_stretch               needs: stretching belt / strap
+  vid_stretching_peroneals_stretch                         needs: stretching belt / strap
+  vid_stretching_spinal_stretch_on_exercise_ball           needs: stability ball
+  vid_stretching_standing_wheel_rollout                    needs: ab wheel
+  vid_weighted_leg_extension_crunch                        needs: a weight the source does not name
+  vid_weighted_lying_twist                                 needs: a weight the source does not name
+
+
+D. DATA-QUALITY NOTE, shipped as-is
+
+  girl/Back/Cable Bar Lateral Pulldown (reverse-grip).mp4 and
+  girl/Back/Cable Straight Back Seated High Row (reverse-grip).mp4 are
+  byte-identical, so one of the two girl clips is mislabelled at source.
+  The men clips for the same two names are different from each other, so
+  both exercises are real and both ship; only one girl demo is wrong and
+  there is no way to tell which.
+
+  girl/Abs/Hanging Leg Hip Raise.mp4 and
+  girl/Abs/Hanging Straight Leg Hip Raise.mp4 are likewise identical.
+

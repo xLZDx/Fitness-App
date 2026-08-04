@@ -1,0 +1,1042 @@
+[
+ {
+  "id": "vid_45_degree_hyperextension",
+  "title": "45 Degree Hyperextension",
+  "mergeInto": "vid_45_degree_hyperextension",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/45%20Degree%20Hyperextension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/45%20Degree%20Hyperextension.mp4"
+  }
+ },
+ {
+  "id": "vid_band_assisted_pull_up",
+  "title": "Band Assisted Pull-up",
+  "mergeInto": "fedb_band_assisted_pull-up",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Band%20Assisted%20Pull-up.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Band%20Assisted%20Pull-up.mp4"
+  }
+ },
+ {
+  "id": "vid_band_bent_over_row",
+  "title": "Band Bent-over Row",
+  "mergeInto": "vid_band_bent_over_row",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Band%20Bent-over%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Band%20Bent-over%20Row.mp4"
+  }
+ },
+ {
+  "id": "vid_band_kneeling_one_arm_pulldown",
+  "title": "Band Kneeling One Arm Pulldown",
+  "mergeInto": "vid_band_kneeling_one_arm_pulldown",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Band%20Kneeling%20One%20Arm%20Pulldown.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Band%20Kneeling%20One%20Arm%20Pulldown.mp4"
+  }
+ },
+ {
+  "id": "vid_band_one_arm_twisting_seated_row",
+  "title": "Band One Arm Twisting Seated Row",
+  "mergeInto": "vid_band_one_arm_twisting_seated_row",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Band%20One%20Arm%20Twisting%20Seated%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Band%20One%20Arm%20Twisting%20Seated%20Row.mp4"
+  }
+ },
+ {
+  "id": "vid_band_one_leg_kickback_bent_position",
+  "title": "Band One Leg Kickback Bent Position",
+  "mergeInto": "vid_band_one_leg_kickback_bent_position",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Band%20One%20Leg%20Kickback%20Bent%20Position.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Band%20One%20Leg%20Kickback%20Bent%20Position.mp4"
+  }
+ },
+ {
+  "id": "vid_band_pull_through",
+  "title": "Band Pull Through",
+  "mergeInto": "vid_band_pull_through",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Band%20Pull%20Through.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Band%20Pull%20Through.mp4"
+  }
+ },
+ {
+  "id": "vid_band_seated_row",
+  "title": "Band Seated Row",
+  "mergeInto": "vid_band_seated_row",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Band%20Seated%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Band%20Seated%20Row.mp4"
+  }
+ },
+ {
+  "id": "vid_band_straight_back_seated_row",
+  "title": "Band Straight Back Seated Row",
+  "mergeInto": "vid_band_straight_back_seated_row",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Band%20Straight%20Back%20Seated%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Band%20Straight%20Back%20Seated%20Row.mp4"
+  }
+ },
+ {
+  "id": "vid_barbell_bent_over_row_overgrip",
+  "title": "Barbell Bent-Over Row - Overhand Grip",
+  "equipmentId": "barbell",
+  "muscles": [
+   "back",
+   "lats",
+   "biceps"
+  ],
+  "primaryMuscles": [
+   "back"
+  ],
+  "group": "back",
+  "isStretch": false,
+  "difficulty": "intermediate",
+  "durationMinutes": 8,
+  "summary": "Holding a barbell with a pronated grip (palms facing down), bend your knees slightly and bring your torso forward, by bending at the waist, while keeping the back straight until it is almost parallel to the floor. Tip: Make sure that you keep the head up. The barbell should hang directly in front of you as your arms hang perpendicular to the floor and your torso. This is your starting position.",
+  "steps": [
+   "Holding a barbell with a pronated grip (palms facing down), bend your knees slightly and bring your torso forward, by bending at the waist, while keeping the back straight until it is almost parallel to the floor. Tip: Make sure that you keep the head up. The barbell should hang directly in front of you as your arms hang perpendicular to the floor and your torso. This is your starting position.",
+   "Now, while keeping the torso stationary, breathe out and lift the barbell to you. Keep the elbows close to the body and only use the forearms to hold the weight. At the top contracted position, squeeze the back muscles and hold for a brief pause.",
+   "Then inhale and slowly lower the barbell back to the starting position.",
+   "Repeat for the recommended amount of repetitions."
+  ],
+  "ru": {
+   "title": "Тяга штанги в наклоне прямым хватом",
+   "steps": [
+    "Возьмите штангу прямым хватом (ладони вниз), слегка согните колени и наклоните корпус вперёд от тазобедренных суставов, сохраняя спину прямой, почти до параллели с полом. Подсказка: голову держите поднятой. Штанга висит прямо перед вами, руки перпендикулярны полу и корпусу. Это исходное положение.",
+    "Не двигая корпусом, на выдохе подтяните штангу к себе. Локти держите близко к телу, а предплечьями только удерживайте вес. В верхней точке сожмите мышцы спины и на мгновение задержитесь.",
+    "На вдохе медленно опустите штангу обратно в исходное положение.",
+    "Выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Barbell%20Bent-over%20Row%20Overgrip.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Barbell%20Bent-over%20Row%20Overgrip.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_barbell_straight_leg_deadlift",
+  "title": "Barbell Straight Leg Deadlift",
+  "mergeInto": "vid_barbell_straight_leg_deadlift",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Barbell%20Straight%20Leg%20Deadlift.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Barbell%20Straight%20Leg%20Deadlift.mp4"
+  }
+ },
+ {
+  "id": "vid_barbell_underhand_bent_over_row",
+  "title": "Barbell Underhand Bent-over Row",
+  "mergeInto": "vid_barbell_underhand_bent_over_row",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Barbell%20Underhand%20Bent-over%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Barbell%20Underhand%20Bent-over%20Row.mp4"
+  }
+ },
+ {
+  "id": "vid_bench_pull_ups",
+  "title": "Bench Pull-ups",
+  "drop": "\"Bench Pull-ups\" is either an inverted row with the feet on a bench or a bench-assisted pull-up; the name does not say which",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Bench%20Pull-ups.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Bench%20Pull-ups.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_bar_lateral_pulldown_reverse_grip",
+  "title": "Cable Lat Pulldown - Reverse Grip",
+  "equipmentId": "cable_machine",
+  "muscles": [
+   "back",
+   "lats",
+   "biceps"
+  ],
+  "primaryMuscles": [
+   "lats"
+  ],
+  "group": "back",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Sit at a pulldown station with the thigh pads set snug and take the bar with an underhand grip at shoulder width.",
+  "steps": [
+   "Sit at a pulldown station with the thigh pads set snug and take the bar with an underhand grip at shoulder width.",
+   "Sit tall, lean the torso back about 20 degrees and lift the chest. This is the starting position.",
+   "Pull the bar to the top of your chest as you breathe out, driving the elbows down and back and squeezing the shoulder blades together.",
+   "Let the bar rise slowly until the arms are straight and the lats are stretched as you breathe in, without letting the shoulders shrug up.",
+   "Repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Тяга верхнего блока обратным хватом",
+   "steps": [
+    "Сядьте в тренажёр для тяги верхнего блока, плотно отрегулировав валики над бёдрами, и возьмите рукоять обратным хватом на ширине плеч.",
+    "Сядьте ровно, отклоните корпус назад примерно на 20 градусов и приподнимите грудь. Это исходное положение.",
+    "На выдохе притяните рукоять к верху груди, направляя локти вниз и назад и сводя лопатки.",
+    "На вдохе медленно позвольте рукояти подняться до полного выпрямления рук и растяжения широчайших, не поднимая плечи к ушам.",
+    "Выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Bar%20Lateral%20Pulldown%20%28reverse-grip%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Bar%20Lateral%20Pulldown%20%28reverse-grip%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_cable_bar_lateral_pulldown_wide_shoulder_grip",
+  "title": "Cable Lat Pulldown - Wide Grip",
+  "equipmentId": "cable_machine",
+  "muscles": [
+   "back",
+   "lats",
+   "biceps"
+  ],
+  "primaryMuscles": [
+   "lats"
+  ],
+  "group": "back",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Sit at a pulldown station with the thigh pads snug and take the wide bar with an overhand grip well outside shoulder width.",
+  "steps": [
+   "Sit at a pulldown station with the thigh pads snug and take the wide bar with an overhand grip well outside shoulder width.",
+   "Sit tall with a slight backward lean and the chest lifted. This is the starting position.",
+   "Pull the bar down to the top of your chest as you breathe out, leading with the elbows and squeezing the lats at the bottom.",
+   "Let the bar rise slowly to full arm extension as you breathe in, keeping the torso still.",
+   "Repeat for the prescribed amount of repetitions, never pulling the bar behind your neck."
+  ],
+  "ru": {
+   "title": "Тяга верхнего блока широким хватом",
+   "steps": [
+    "Сядьте в тренажёр для тяги верхнего блока, плотно отрегулировав валики над бёдрами, и возьмите широкую рукоять прямым хватом заметно шире плеч.",
+    "Сядьте ровно, слегка отклонив корпус назад и приподняв грудь. Это исходное положение.",
+    "На выдохе притяните рукоять к верху груди, ведя движение локтями и сжимая широчайшие в нижней точке.",
+    "На вдохе медленно позвольте рукояти подняться до полного выпрямления рук, не двигая корпусом.",
+    "Выполните рекомендованное количество повторений и никогда не тяните рукоять за голову."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Bar%20Lateral%20Pulldown%20%28wide%20shoulder%20grip%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Bar%20Lateral%20Pulldown%20%28wide%20shoulder%20grip%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_cable_close_grip_front_lat_pulldown",
+  "title": "Cable Close Grip Front Lat Pulldown",
+  "mergeInto": "close_grip_front_lat_pulldown",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Close%20Grip%20Front%20Lat%20Pulldown.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Close%20Grip%20Front%20Lat%20Pulldown.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_one_arm_lateral_pulldown",
+  "title": "Cable One Arm Lateral Pulldown",
+  "mergeInto": "vid_cable_one_arm_lateral_pulldown",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20One%20Arm%20Lateral%20Pulldown.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20One%20Arm%20Lateral%20Pulldown.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_one_arm_twisting_seated_row",
+  "title": "Cable One Arm Twisting Seated Row",
+  "mergeInto": "vid_cable_one_arm_twisting_seated_row",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20One%20Arm%20Twisting%20Seated%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20One%20Arm%20Twisting%20Seated%20Row.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_pulldown",
+  "title": "Cable Pulldown - Close Underhand Grip",
+  "equipmentId": "cable_machine",
+  "muscles": [
+   "back",
+   "lats",
+   "biceps"
+  ],
+  "primaryMuscles": [
+   "lats"
+  ],
+  "group": "back",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Sit down on a pull-down machine with a wide bar attached to the top pulley. Adjust the knee pad of the machine to fit your height. These pads will prevent your body from being raised by the resistance attached to the bar.",
+  "steps": [
+   "Sit down on a pull-down machine with a wide bar attached to the top pulley. Adjust the knee pad of the machine to fit your height. These pads will prevent your body from being raised by the resistance attached to the bar.",
+   "Grab the pull-down bar with the palms facing your torso (a supinated grip). Make sure that the hands are placed closer than the shoulder width.",
+   "As you have both arms extended in front of you holding the bar at the chosen grip width, bring your torso back around 30 degrees or so while creating a curvature on your lower back and sticking your chest out. This is your starting position.",
+   "As you breathe out, pull the bar down until it touches your upper chest by drawing the shoulders and the upper arms down and back. Tip: Concentrate on squeezing the back muscles once you reach the fully contracted position and keep the elbows close to your body. The upper torso should remain stationary as your bring the bar to you and only the arms should move. The forearms should do no other work other than hold the bar.",
+   "After a second on the contracted position, while breathing in, slowly bring the bar back to the starting position when your arms are fully extended and the lats are fully stretched.",
+   "Repeat this motion for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Тяга верхнего блока узким обратным хватом",
+   "steps": [
+    "Сядьте в тренажёр для тяги верхнего блока с широкой рукоятью на верхнем блоке. Отрегулируйте валики под свой рост: они не дадут телу подниматься вслед за весом.",
+    "Возьмитесь за рукоять ладонями к себе (обратный хват). Кисти поставьте уже ширины плеч.",
+    "Удерживая рукоять на прямых руках выбранным хватом, отклоните корпус назад примерно на 30 градусов, прогнув поясницу и развернув грудь. Это исходное положение.",
+    "На выдохе тяните рукоять вниз, пока она не коснётся верха груди, опуская и отводя назад плечи и локти. Подсказка: в полностью сокращённом положении сосредоточьтесь на сжатии мышц спины и держите локти близко к корпусу. Корпус остаётся неподвижным, двигаются только руки, а предплечья лишь удерживают рукоять.",
+    "После секунды в сокращении на вдохе медленно верните рукоять в исходное положение, пока руки полностью не выпрямятся, а широчайшие не растянутся.",
+    "Выполните нужное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Pulldown.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Pulldown.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_cable_seated_high_row_v_bar",
+  "title": "Cable Seated High Row (V-bar)",
+  "mergeInto": "vid_cable_seated_high_row_v_bar",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Seated%20High%20Row%20%28V-bar%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Seated%20High%20Row%20%28V-bar%29.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_seated_row_normal_grip",
+  "title": "Cable Seated Row (normal grip)",
+  "mergeInto": "vid_cable_seated_row_normal_grip",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Seated%20Row%20%28normal%20grip%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Seated%20Row%20%28normal%20grip%29.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_seated_row_parallel_grip",
+  "title": "Cable Seated Row - Parallel Grip",
+  "equipmentId": "cable_machine",
+  "muscles": [
+   "back",
+   "lats",
+   "biceps"
+  ],
+  "primaryMuscles": [
+   "back"
+  ],
+  "group": "back",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Sit at a low pulley row station with a close parallel handle attached and place your feet on the platform, knees slightly bent.",
+  "steps": [
+   "Sit at a low pulley row station with a close parallel handle attached and place your feet on the platform, knees slightly bent.",
+   "Take the handle so the palms face each other and sit up with the arms straight. This is the starting position.",
+   "Pull the handle into your navel as you breathe out, keeping the elbows brushing your sides — the neutral grip keeps the shoulders in their strongest position.",
+   "Let the handle travel forward slowly as you breathe in until the shoulder blades open, without rounding the lower back.",
+   "Repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Тяга нижнего блока параллельным хватом",
+   "steps": [
+    "Сядьте в тренажёр для тяги нижнего блока с узкой параллельной рукоятью и поставьте стопы на платформу, слегка согнув колени.",
+    "Возьмитесь за рукоять так, чтобы ладони смотрели друг на друга, и выпрямитесь; руки прямые. Это исходное положение.",
+    "На выдохе подтяните рукоять к пупку, ведя локти вплотную к бокам: нейтральный хват удерживает плечевые суставы в самом сильном положении.",
+    "На вдохе медленно отпустите рукоять вперёд, позволяя лопаткам разойтись, но не скругляя поясницу.",
+    "Выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Seated%20Row%20%28parallel%20grip%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Seated%20Row%20%28parallel%20grip%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_cable_seated_row_wide_grip",
+  "title": "Cable Seated Row - Wide Grip",
+  "equipmentId": "cable_machine",
+  "muscles": [
+   "back",
+   "lats",
+   "shoulders"
+  ],
+  "primaryMuscles": [
+   "back"
+  ],
+  "group": "back",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Sit at a low pulley row station with a long straight bar attached, feet on the platform and knees slightly bent.",
+  "steps": [
+   "Sit at a low pulley row station with a long straight bar attached, feet on the platform and knees slightly bent.",
+   "Take the bar with an overhand grip well outside shoulder width and sit up with the arms straight. This is the starting position.",
+   "Pull the bar into your upper abdomen with the elbows flared out to the sides as you breathe out, squeezing the mid-back and the rear shoulders.",
+   "Let the bar travel forward slowly as you breathe in until the arms are straight again.",
+   "Repeat for the prescribed amount of repetitions; the wide grip shifts the work from the lats onto the middle of the back."
+  ],
+  "ru": {
+   "title": "Тяга нижнего блока широким хватом",
+   "steps": [
+    "Сядьте в тренажёр для тяги нижнего блока с длинной прямой рукоятью, поставив стопы на платформу и слегка согнув колени.",
+    "Возьмитесь за рукоять прямым хватом заметно шире плеч и выпрямитесь; руки прямые. Это исходное положение.",
+    "На выдохе подтяните рукоять к верху живота, разводя локти в стороны, и сожмите середину спины и задние дельты.",
+    "На вдохе медленно отпустите рукоять вперёд до полного выпрямления рук.",
+    "Выполните рекомендованное количество повторений: широкий хват смещает нагрузку с широчайших на середину спины."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Seated%20Row%20%28wide-grip%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Seated%20Row%20%28wide-grip%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_cable_straight_arm_pulldown",
+  "title": "Cable Straight Arm Pulldown",
+  "mergeInto": "straight_arm_pulldown",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Straight%20Arm%20Pulldown.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Straight%20Arm%20Pulldown.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_straight_back_seated_high_row_reverse_grip",
+  "title": "Cable Straight Back Seated High Row (reverse-grip)",
+  "mergeInto": "vid_cable_straight_back_seated_high_row_reverse_grip",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Straight%20Back%20Seated%20High%20Row%20%28reverse-grip%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Straight%20Back%20Seated%20High%20Row%20%28reverse-grip%29.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_straight_back_seated_row_v_grip",
+  "title": "Cable Straight Back Seated Row (V-grip)",
+  "mergeInto": "vid_cable_straight_back_seated_row_v_grip",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cable%20Straight%20Back%20Seated%20Row%20%28V-grip%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cable%20Straight%20Back%20Seated%20Row%20%28V-grip%29.mp4"
+  }
+ },
+ {
+  "id": "vid_cambered_bar_lying_row",
+  "title": "Cambered Bar Lying Row",
+  "mergeInto": "lying_t_bar_row",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Cambered%20Bar%20Lying%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Cambered%20Bar%20Lying%20Row.mp4"
+  }
+ },
+ {
+  "id": "vid_chin_ups_narrow_parallel_grip",
+  "title": "Chin-Up - Narrow Parallel Grip",
+  "equipmentId": "pullup_bar",
+  "muscles": [
+   "back",
+   "lats",
+   "biceps"
+  ],
+  "primaryMuscles": [
+   "lats"
+  ],
+  "group": "back",
+  "isStretch": false,
+  "difficulty": "intermediate",
+  "durationMinutes": 6,
+  "summary": "Hang from parallel handles or a narrow neutral-grip bar with the palms facing each other and the arms straight.",
+  "steps": [
+   "Hang from parallel handles or a narrow neutral-grip bar with the palms facing each other and the arms straight.",
+   "Pull the shoulders down away from your ears and brace the core. This is the starting position.",
+   "Pull yourself up until your chest is close to the handles, breathing out and keeping the elbows travelling straight down rather than flaring.",
+   "Lower yourself slowly to a full hang as you breathe in.",
+   "Repeat for the prescribed amount of repetitions; the neutral grip is usually the kindest on the elbows and shoulders."
+  ],
+  "ru": {
+   "title": "Подтягивания узким параллельным хватом",
+   "steps": [
+    "Повисните на параллельных рукоятях или на узкой нейтральной перекладине: ладони обращены друг к другу, руки прямые.",
+    "Опустите плечи, отдаляя их от ушей, и напрягите живот. Это исходное положение.",
+    "На выдохе подтянитесь, пока грудь не окажется близко к рукоятям; локти идут строго вниз, а не в стороны.",
+    "На вдохе медленно опуститесь в полный вис.",
+    "Выполните рекомендованное количество повторений: нейтральный хват обычно наиболее щадящий для локтей и плеч."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Chin-ups%20%28narrow%20parallel%20grip%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Chin-ups%20%28narrow%20parallel%20grip%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_chin_ups_pull_ups",
+  "title": "Chin-ups  Pull-Ups",
+  "mergeInto": "fedb_chin-up",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Chin-ups%20%20Pull-Ups.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Chin-ups%20%20Pull-Ups.mp4"
+  }
+ },
+ {
+  "id": "vid_close_grip_chin_up",
+  "title": "Close Grip Chin-up",
+  "mergeInto": "vid_close_grip_chin_up",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Close%20Grip%20Chin-up.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Close%20Grip%20Chin-up.mp4"
+  }
+ },
+ {
+  "id": "vid_commando_pull_up",
+  "title": "Commando Pull-up",
+  "mergeInto": "vid_commando_pull_up",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Commando%20Pull-up.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Commando%20Pull-up.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_bent_over_row",
+  "title": "Dumbbell Bent-over Row",
+  "mergeInto": "vid_dumbbell_bent_over_row",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Dumbbell%20Bent-over%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Dumbbell%20Bent-over%20Row.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_deadlift",
+  "title": "Dumbbell Deadlift",
+  "mergeInto": "vid_dumbbell_deadlift",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Dumbbell%20Deadlift.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Dumbbell%20Deadlift.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_hammer_grip_incline_bench_row",
+  "title": "Dumbbell Hammer Grip Incline Bench Row",
+  "mergeInto": "vid_dumbbell_hammer_grip_incline_bench_row",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Dumbbell%20Hammer%20Grip%20Incline%20Bench%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Dumbbell%20Hammer%20Grip%20Incline%20Bench%20Row.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_incline_row",
+  "title": "Dumbbell Incline Row",
+  "mergeInto": "vid_dumbbell_incline_row",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Dumbbell%20Incline%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Dumbbell%20Incline%20Row.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_lying_rear_delt_row",
+  "title": "Dumbbell Lying Rear Delt Row",
+  "mergeInto": "vid_dumbbell_lying_rear_delt_row",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Dumbbell%20Lying%20Rear%20Delt%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Dumbbell%20Lying%20Rear%20Delt%20Row.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_palm_rotational_bent_over_row",
+  "title": "Dumbbell Palm Rotational Bent Over Row",
+  "mergeInto": "vid_dumbbell_palm_rotational_bent_over_row",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Dumbbell%20Palm%20Rotational%20Bent%20Over%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Dumbbell%20Palm%20Rotational%20Bent%20Over%20Row.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_reverse_grip_row",
+  "title": "Dumbbell Reverse Grip Row",
+  "mergeInto": "vid_dumbbell_reverse_grip_row",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Dumbbell%20Reverse%20Grip%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Dumbbell%20Reverse%20Grip%20Row.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_stiff_leg_deadlift",
+  "title": "Dumbbell Stiff Leg Deadlift",
+  "mergeInto": "vid_dumbbell_stiff_leg_deadlift",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Dumbbell%20Stiff%20Leg%20Deadlift.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Dumbbell%20Stiff%20Leg%20Deadlift.mp4"
+  }
+ },
+ {
+  "id": "vid_hammer_grip_pull_up",
+  "title": "Hammer Grip Pull-up",
+  "mergeInto": "vid_hammer_grip_pull_up",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Hammer%20Grip%20Pull-up.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Hammer%20Grip%20Pull-up.mp4"
+  }
+ },
+ {
+  "id": "vid_inverted_row_between_chairs",
+  "title": "Inverted Row Between Chairs",
+  "mergeInto": "vid_inverted_row_between_chairs",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Inverted%20Row%20Between%20Chairs.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Inverted%20Row%20Between%20Chairs.mp4"
+  }
+ },
+ {
+  "id": "vid_inverted_row_with_straps",
+  "title": "Inverted Row With Straps",
+  "mergeInto": "inverted_row_with_straps",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Inverted%20Row%20With%20Straps.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Inverted%20Row%20With%20Straps.mp4"
+  }
+ },
+ {
+  "id": "vid_kettlebell_deadlift",
+  "title": "Kettlebell Deadlift",
+  "mergeInto": "vid_kettlebell_deadlift",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Kettlebell%20Deadlift.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Kettlebell%20Deadlift.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_back_extension",
+  "title": "Machine Back Extension",
+  "equipmentId": "back_extension",
+  "muscles": [
+   "lower_back",
+   "glutes"
+  ],
+  "primaryMuscles": [
+   "lower_back"
+  ],
+  "group": "back",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Set the seat and the roller of the back extension machine so the pad sits across your upper back and your feet reach the platform.",
+  "steps": [
+   "Set the seat and the roller of the back extension machine so the pad sits across your upper back and your feet reach the platform.",
+   "Sit tall with the belt fastened if the machine has one, and cross the arms over your chest. This is the starting position.",
+   "Push back against the pad by extending the hips and the lower back until the torso is roughly in line with the thighs, breathing out.",
+   "Return slowly to the upright position as you breathe in, without letting the weight pull you into a rounded back.",
+   "Repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Разгибание спины в тренажёре",
+   "steps": [
+    "Отрегулируйте сиденье и упор тренажёра так, чтобы подушка легла на верх спины, а стопы доставали до платформы.",
+    "Сядьте ровно, застегните ремень, если он есть, и скрестите руки на груди. Это исходное положение.",
+    "На выдохе отклонитесь назад, продавливая упор за счёт разгибания таза и поясницы, пока корпус не окажется примерно на одной линии с бёдрами.",
+    "На вдохе медленно вернитесь в вертикальное положение, не позволяя весу скруглить спину.",
+    "Выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Lever%20Back%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Lever%20Back%20Extension.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_lever_high_row",
+  "title": "Machine High Row",
+  "equipmentId": "seated_row_machine",
+  "muscles": [
+   "back",
+   "lats",
+   "biceps"
+  ],
+  "primaryMuscles": [
+   "lats"
+  ],
+  "group": "back",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Set the chest pad of the high row machine so the handles start just above shoulder height when you sit down.",
+  "steps": [
+   "Set the chest pad of the high row machine so the handles start just above shoulder height when you sit down.",
+   "Take a handle in each hand with the arms straight and the chest pressed into the pad. This is the starting position.",
+   "Pull the handles down and back toward your ribs as you breathe out, driving with the elbows and squeezing the lats.",
+   "Let the handles travel back up and forward slowly as you breathe in until the shoulder blades open.",
+   "Repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Верхняя тяга в тренажёре",
+   "steps": [
+    "Отрегулируйте упор для груди так, чтобы в положении сидя рукояти начинались чуть выше уровня плеч.",
+    "Возьмитесь за рукояти обеими руками; руки прямые, грудь прижата к упору. Это исходное положение.",
+    "На выдохе притяните рукояти вниз и назад к рёбрам, ведя движение локтями и сжимая широчайшие мышцы.",
+    "На вдохе медленно позвольте рукоятям уйти вверх и вперёд, пока лопатки не разойдутся.",
+    "Выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Lever%20High%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Lever%20High%20Row.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_lever_reverse_hyperextension",
+  "title": "Lever Reverse Hyperextension",
+  "mergeInto": "fedb_reverse_hyperextension",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Lever%20Reverse%20Hyperextension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Lever%20Reverse%20Hyperextension.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_reverse_t_bar_row",
+  "title": "Machine Reverse-Grip T-Bar Row",
+  "equipmentId": "t_bar_row",
+  "muscles": [
+   "back",
+   "lats",
+   "biceps"
+  ],
+  "primaryMuscles": [
+   "back"
+  ],
+  "group": "back",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 8,
+  "summary": "Load the T-bar row, stand on the platform and lie your chest against the support pad with the feet flat.",
+  "steps": [
+   "Load the T-bar row, stand on the platform and lie your chest against the support pad with the feet flat.",
+   "Take the handles with an underhand grip and let the arms hang straight down. This is the starting position.",
+   "Pull the bar up into your abdomen as you breathe out, keeping the elbows tucked close to your sides and the chest on the pad.",
+   "Lower the bar slowly back to arm's length as you breathe in.",
+   "Repeat for the prescribed amount of repetitions; the underhand grip brings the lower lats into the pull."
+  ],
+  "ru": {
+   "title": "Т-тяга в тренажёре обратным хватом",
+   "steps": [
+    "Нагрузите тренажёр, встаньте на платформу и лягте грудью на упор, поставив стопы ровно.",
+    "Возьмитесь за рукояти обратным хватом и позвольте рукам свободно свисать вниз. Это исходное положение.",
+    "На выдохе подтяните гриф к животу, прижимая локти к бокам и не отрывая грудь от упора.",
+    "На вдохе медленно опустите гриф на прямые руки.",
+    "Выполните рекомендованное количество повторений: обратный хват сильнее включает нижнюю часть широчайших мышц."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Lever%20Reverse%20T-Bar%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Lever%20Reverse%20T-Bar%20Row.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_lever_t_bar_row",
+  "title": "Machine T-Bar Row",
+  "equipmentId": "t_bar_row",
+  "muscles": [
+   "back",
+   "lats",
+   "biceps"
+  ],
+  "primaryMuscles": [
+   "back"
+  ],
+  "group": "back",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 8,
+  "summary": "Load up the T-bar Row Machine with the desired weight and adjust the leg height so that your upper chest is at the top of the pad. Tip: In some machines all you can do is stand on the appropriate step that allows you to be at a height that has the upper chest at the top of the pad.",
+  "steps": [
+   "Load up the T-bar Row Machine with the desired weight and adjust the leg height so that your upper chest is at the top of the pad. Tip: In some machines all you can do is stand on the appropriate step that allows you to be at a height that has the upper chest at the top of the pad.",
+   "Lay face down on the pad and grab the handles. You can either use a palms down, palms up, or palms in position depending on what part of your back you want to emphasize.",
+   "Lift the bar off the rack and extend your arms in front of you. This will be your starting position.",
+   "As you exhale slowly pull the weight up and squeeze your back at the top of the movement. Tip: Keep the upper arms as close to the torso as possible throughout the movement in order to better engage the back muscles. Also, do not lift your body off of the pad at any time and refrain from using the biceps to lift the weight.",
+   "After a second contraction at the top of the movement, as you inhale, slowly go back down to the starting position.",
+   "Repeat for the recommended amount of repetitions."
+  ],
+  "ru": {
+   "title": "Т-тяга в тренажёре с упором в грудь",
+   "steps": [
+    "Нагрузите тренажёр нужным весом и отрегулируйте высоту так, чтобы верх груди оказался у верхнего края упора. Подсказка: в некоторых тренажёрах регулировки нет — тогда встаньте на подходящую ступень, чтобы верх груди был на уровне края подушки.",
+    "Лягте грудью на упор и возьмитесь за рукояти. Хват может быть сверху, снизу или нейтральным — в зависимости от того, какую часть спины вы хотите нагрузить сильнее.",
+    "Снимите гриф со стоек и выпрямите руки перед собой. Это исходное положение.",
+    "На выдохе медленно поднимите вес и в верхней точке сожмите мышцы спины. Подсказка: держите плечи как можно ближе к корпусу, чтобы лучше включить мышцы спины. Не отрывайте тело от упора и не тяните вес бицепсами.",
+    "После секундной паузы в верхней точке на вдохе медленно опустите вес в исходное положение.",
+    "Выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Lever%20T-bar%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Lever%20T-bar%20Row.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_pull_up_shoulder_grip",
+  "title": "Pull-up (shoulder grip)",
+  "mergeInto": "fedb_scapular_pull-up",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Pull-up%20%28shoulder%20grip%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Pull-up%20%28shoulder%20grip%29.mp4"
+  }
+ },
+ {
+  "id": "vid_pull_up_wide_back_grip",
+  "title": "Pull-Up - Wide Grip Behind the Neck",
+  "equipmentId": "pullup_bar",
+  "muscles": [
+   "back",
+   "lats",
+   "biceps"
+  ],
+  "primaryMuscles": [
+   "lats"
+  ],
+  "group": "back",
+  "isStretch": false,
+  "difficulty": "advanced",
+  "durationMinutes": 6,
+  "summary": "Hang from a pull-up bar with an overhand grip set well outside shoulder width, arms straight.",
+  "steps": [
+   "Hang from a pull-up bar with an overhand grip set well outside shoulder width, arms straight.",
+   "Pull the shoulder blades down and keep the torso vertical, chin tucked slightly. This is the starting position.",
+   "Pull yourself up so the bar passes behind your head and stop when it is level with the base of your neck, breathing out.",
+   "Lower yourself slowly to a full hang as you breathe in.",
+   "Repeat for the prescribed amount of repetitions, and use the front version instead if the shoulders feel pinched at the top -- behind-the-neck pulling asks for a lot of shoulder rotation."
+  ],
+  "ru": {
+   "title": "Подтягивания широким хватом за голову",
+   "steps": [
+    "Повисните на перекладине прямым хватом заметно шире плеч; руки прямые.",
+    "Опустите лопатки, держите корпус вертикально, подбородок слегка подобран. Это исходное положение.",
+    "На выдохе подтянитесь так, чтобы перекладина прошла за голову, и остановитесь, когда она окажется на уровне основания шеи.",
+    "На вдохе медленно опуститесь в полный вис.",
+    "Выполните рекомендованное количество повторений; если в верхней точке в плечах появляется защемление, выбирайте вариант к груди — подтягивания за голову требуют большой подвижности плечевых суставов."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Pull-up%20%28wide%20back%20grip%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Pull-up%20%28wide%20back%20grip%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_pull_up_wide_front_grip",
+  "title": "Pull-Up - Wide Grip to the Chest",
+  "equipmentId": "pullup_bar",
+  "muscles": [
+   "back",
+   "lats",
+   "biceps"
+  ],
+  "primaryMuscles": [
+   "lats"
+  ],
+  "group": "back",
+  "isStretch": false,
+  "difficulty": "intermediate",
+  "durationMinutes": 6,
+  "summary": "Hang from a pull-up bar with an overhand grip set well outside shoulder width, arms straight and ankles crossed.",
+  "steps": [
+   "Hang from a pull-up bar with an overhand grip set well outside shoulder width, arms straight and ankles crossed.",
+   "Pull the shoulder blades down away from your ears and brace the core. This is the starting position.",
+   "Pull yourself up by driving the elbows down and back until your upper chest is close to the bar, breathing out and keeping the chest lifted.",
+   "Lower yourself slowly to a full hang as you breathe in, resisting all the way.",
+   "Repeat for the prescribed amount of repetitions; the wide grip puts most of the work on the lats."
+  ],
+  "ru": {
+   "title": "Подтягивания широким хватом к груди",
+   "steps": [
+    "Повисните на перекладине прямым хватом заметно шире плеч: руки прямые, лодыжки скрещены.",
+    "Опустите лопатки, отдаляя плечи от ушей, и напрягите живот. Это исходное положение.",
+    "На выдохе подтянитесь, направляя локти вниз и назад, пока верх груди не окажется близко к перекладине; грудь держите развёрнутой.",
+    "На вдохе медленно опуститесь в полный вис, сопротивляясь на всём пути.",
+    "Выполните рекомендованное количество повторений: широкий хват переносит основную работу на широчайшие мышцы."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Pull-up%20%28wide%20front%20grip%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Pull-up%20%28wide%20front%20grip%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_reverse_grip_machine_lat_pulldown",
+  "title": "Reverse Grip Machine Lat Pulldown",
+  "mergeInto": "vid_reverse_grip_machine_lat_pulldown",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Reverse%20Grip%20Machine%20Lat%20Pulldown.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Reverse%20Grip%20Machine%20Lat%20Pulldown.mp4"
+  }
+ },
+ {
+  "id": "vid_reverse_grip_pull_up",
+  "title": "Reverse Grip Pull-up",
+  "mergeInto": "vid_reverse_grip_pull_up",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Reverse%20Grip%20Pull-up.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Reverse%20Grip%20Pull-up.mp4"
+  }
+ },
+ {
+  "id": "vid_ring_high_row",
+  "title": "Ring High Row",
+  "mergeInto": "vid_ring_high_row",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Ring%20High%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Ring%20High%20Row.mp4"
+  }
+ },
+ {
+  "id": "vid_single_dumbbell_stiff_leg_deadlift",
+  "title": "Single Dumbbell Stiff Leg Deadlift",
+  "mergeInto": "vid_single_dumbbell_stiff_leg_deadlift",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Single%20Dumbbell%20Stiff%20Leg%20Deadlift.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Single%20Dumbbell%20Stiff%20Leg%20Deadlift.mp4"
+  }
+ },
+ {
+  "id": "vid_smith_deadlift_deadlift",
+  "title": "Smith Deadlift - Deadlift",
+  "mergeInto": "vid_smith_deadlift_deadlift",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Smith%20Deadlift%20-%20Deadlift.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Smith%20Deadlift%20-%20Deadlift.mp4"
+  }
+ },
+ {
+  "id": "vid_smith_deadlift_deadlift_1",
+  "title": "Smith Deadlift - Deadlift (1)",
+  "drop": "duplicate clip of vid_smith_deadlift_deadlift",
+  "video": {
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Smith%20Deadlift%20-%20Deadlift%20%281%29.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_dynamic_back_stretch",
+  "title": "Stretching - Dynamic Back Stretch",
+  "mergeInto": "vid_stretching_dynamic_back_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Dynamic%20Back%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Dynamic%20Back%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_elbows_back_stretch",
+  "title": "Stretching - Elbows Back Stretch",
+  "mergeInto": "vid_stretching_elbows_back_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Elbows%20Back%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Elbows%20Back%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_kneeling_lat_stretch",
+  "title": "Stretching - Kneeling Lat Stretch",
+  "mergeInto": "vid_stretching_kneeling_lat_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Kneeling%20Lat%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Kneeling%20Lat%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_middle_back_stretch",
+  "title": "Stretching - Middle Back Stretch",
+  "mergeInto": "vid_stretching_middle_back_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Middle%20Back%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Middle%20Back%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_middle_back_stretch_1",
+  "title": "Stretching - Middle Back Stretch (1)",
+  "drop": "duplicate clip of vid_stretching_middle_back_stretch",
+  "video": {
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Middle%20Back%20Stretch%20%281%29.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_seated_lower_back_stretch",
+  "title": "Stretching - Seated Lower Back Stretch",
+  "mergeInto": "vid_stretching_seated_lower_back_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Seated%20Lower%20Back%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Seated%20Lower%20Back%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_seated_wide_angle_pose_sequence",
+  "title": "Stretching - Seated Wide Angle Pose Sequence",
+  "mergeInto": "vid_stretching_seated_wide_angle_pose_sequence",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Seated%20Wide%20Angle%20Pose%20Sequence.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Seated%20Wide%20Angle%20Pose%20Sequence.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_sitting_bent_over_back_stretch",
+  "title": "Stretching - Sitting Bent Over Back Stretch",
+  "mergeInto": "vid_stretching_sitting_bent_over_back_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Sitting%20Bent%20Over%20Back%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Sitting%20Bent%20Over%20Back%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_slopes_towards_stretch",
+  "title": "Stretching - Slopes Towards Stretch",
+  "drop": "\"Slopes Towards Stretch\" is a machine translation of something; it does not name a movement in any stretching vocabulary and the folder does not narrow it down",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Slopes%20Towards%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Slopes%20Towards%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_spine_stretch",
+  "title": "Stretching - Spine Stretch",
+  "mergeInto": "vid_stretching_spine_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Spine%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Spine%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_spine_stretch_forward",
+  "title": "Stretching - Spine Stretch Forward",
+  "mergeInto": "vid_stretching_spine_stretch_forward",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Spine%20Stretch%20Forward.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Spine%20Stretch%20Forward.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_standing_back_rotation_stretch",
+  "title": "Stretching - Standing Back Rotation Stretch",
+  "mergeInto": "vid_stretching_standing_back_rotation_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Standing%20Back%20Rotation%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Standing%20Back%20Rotation%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_standing_lateral_stretch",
+  "title": "Stretching - Standing Lateral Stretch",
+  "mergeInto": "vid_stretching_standing_lateral_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Back/Stretching%20-%20Standing%20Lateral%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Standing%20Lateral%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_standing_lateral_stretch_1",
+  "title": "Stretching - Standing Lateral Stretch (1)",
+  "drop": "duplicate clip of vid_stretching_standing_lateral_stretch",
+  "video": {
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/back/Stretching%20-%20Standing%20Lateral%20Stretch%20%281%29.mp4"
+  }
+ }
+]

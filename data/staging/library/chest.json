@@ -1,0 +1,440 @@
+[
+ {
+  "id": "vid_band_high_fly",
+  "title": "Band High Fly",
+  "mergeInto": "vid_band_high_fly",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Band%20High%20Fly.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Band%20High%20Fly.mp4"
+  }
+ },
+ {
+  "id": "vid_barbell_bench_press",
+  "title": "Barbell Bench Press",
+  "mergeInto": "barbell_guillotine_bench_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Barbell%20Bench%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Barbell%20Bench%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_barbell_decline_bench_press",
+  "title": "Barbell Decline Bench Press",
+  "mergeInto": "fedb_decline_barbell_bench_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Barbell%20Decline%20Bench%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Barbell%20Decline%20Bench%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_barbell_incline_bench_press",
+  "title": "Barbell Incline Bench Press",
+  "mergeInto": "barbell_incline_bench_press_medium_grip",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Barbell%20Incline%20Bench%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Barbell%20Incline%20Bench%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_lying_fly_flat_bench_cable_fly",
+  "title": "Cable Lying Fly, Flat Bench Cable Fly",
+  "mergeInto": "vid_cable_lying_fly_flat_bench_cable_fly",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Cable%20Lying%20Fly%2C%20Flat%20Bench%20Cable%20Fly.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Cable%20Lying%20Fly%2C%20Flat%20Bench%20Cable%20Fly.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_standing_fly_crossover_fly",
+  "title": "Cable Standing Fly, Crossover fly",
+  "mergeInto": "vid_cable_standing_fly_crossover_fly",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Cable%20Standing%20Fly%2C%20Crossover%20fly.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Cable%20Standing%20Fly%2C%20Crossover%20fly.mp4"
+  }
+ },
+ {
+  "id": "vid_chest_dips",
+  "title": "Chest Dips",
+  "mergeInto": "vid_chest_dips",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Chest%20Dips.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Chest%20Dips.mp4"
+  }
+ },
+ {
+  "id": "vid_decline_dumbbell_bench_press_45_degree",
+  "title": "Decline Dumbbell Bench Press (45 degree)",
+  "mergeInto": "fedb_decline_dumbbell_bench_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Decline%20Dumbbell%20Bench%20Press%20%2845%20degree%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Decline%20Dumbbell%20Bench%20Press%20%2845%20degree%29.mp4"
+  }
+ },
+ {
+  "id": "vid_deep_push_ups",
+  "title": "Deep Push-Up",
+  "equipmentId": null,
+  "muscles": [
+   "chest",
+   "shoulders",
+   "triceps"
+  ],
+  "primaryMuscles": [
+   "chest"
+  ],
+  "group": "chest",
+  "isStretch": false,
+  "difficulty": "intermediate",
+  "durationMinutes": 6,
+  "summary": "Place two low parallettes, or a pair of dumbbells set on their ends, at shoulder width and take a push-up position gripping them.",
+  "steps": [
+   "Place two low parallettes, or a pair of dumbbells set on their ends, at shoulder width and take a push-up position gripping them.",
+   "Brace the core and the glutes so the body forms a straight line from the heels to the head. This is the starting position.",
+   "Bend the elbows and lower your chest between the handles as you breathe in, going deeper than the floor would allow until the chest stretches.",
+   "Press back up to straight arms as you breathe out, and repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Глубокие отжимания на упорах",
+   "steps": [
+    "Поставьте на ширине плеч два невысоких упора для отжиманий или пару гантелей на торцы и примите упор лёжа, взявшись за них.",
+    "Напрягите живот и ягодицы, чтобы тело вытянулось в прямую линию от пяток до головы. Это исходное положение.",
+    "На вдохе согните локти и опустите грудь между упорами глубже, чем позволяет пол, до ощущения растяжения в грудных мышцах.",
+    "На выдохе выжмите себя вверх до полного выпрямления рук и выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Deep%20Push-ups.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Deep%20Push-ups.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_dumbbell_bench_press",
+  "title": "Dumbbell Bench Press",
+  "mergeInto": "fedb_dumbbell_bench_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Dumbbell%20Bench%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Dumbbell%20Bench%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_decline_fly_45_degree",
+  "title": "Dumbbell Decline Fly (45 degree)",
+  "mergeInto": "vid_dumbbell_decline_fly_45_degree",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Dumbbell%20Decline%20Fly%20%2845%20degree%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Dumbbell%20Decline%20Fly%20%2845%20degree%29.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_decline_fly_45_degree_1",
+  "title": "Dumbbell Decline Fly (45 degree) (1)",
+  "drop": "duplicate clip of vid_dumbbell_decline_fly_45_degree",
+  "video": {
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Dumbbell%20Decline%20Fly%20%2845%20degree%29%20%281%29.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_fly",
+  "title": "Dumbbell Fly",
+  "mergeInto": "vid_dumbbell_fly",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Dumbbell%20Fly.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Dumbbell%20Fly.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_fly_on_exercise_ball",
+  "title": "Dumbbell Fly On Exercise Ball",
+  "mergeInto": "vid_dumbbell_fly_on_exercise_ball",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Dumbbell%20Fly%20On%20Exercise%20Ball.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Dumbbell%20Fly%20On%20Exercise%20Ball.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_incline_bench_press",
+  "title": "Dumbbell Incline Bench Press",
+  "mergeInto": "vid_dumbbell_incline_bench_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Dumbbell%20Incline%20Bench%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Dumbbell%20Incline%20Bench%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_incline_fly",
+  "title": "Dumbbell Incline Fly",
+  "mergeInto": "vid_dumbbell_incline_fly",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Dumbbell%20Incline%20Fly.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Dumbbell%20Incline%20Fly.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_incline_fly_on_exercise_ball",
+  "title": "Dumbbell Incline Fly On Exercise Ball",
+  "mergeInto": "vid_dumbbell_incline_fly_on_exercise_ball",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Dumbbell%20Incline%20Fly%20On%20Exercise%20Ball.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Dumbbell%20Incline%20Fly%20On%20Exercise%20Ball.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_lying_hammer_press",
+  "title": "Dumbbell Lying Hammer Press",
+  "mergeInto": "vid_dumbbell_lying_hammer_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Dumbbell%20Lying%20Hammer%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Dumbbell%20Lying%20Hammer%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_incline_push_ups",
+  "title": "Incline Push-Up",
+  "equipmentId": "adjustable_bench",
+  "muscles": [
+   "chest",
+   "shoulders",
+   "triceps"
+  ],
+  "primaryMuscles": [
+   "chest"
+  ],
+  "group": "chest",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Place your hands on the edge of a bench slightly wider than shoulder width and walk your feet back until the body is straight.",
+  "steps": [
+   "Place your hands on the edge of a bench slightly wider than shoulder width and walk your feet back until the body is straight.",
+   "Brace the core and the glutes so there is a straight line from the heels to the head. This is the starting position.",
+   "Bend the elbows and lower your chest toward the bench as you breathe in, keeping the elbows at about 45 degrees from your ribs.",
+   "Press back up to straight arms as you breathe out, and repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Отжимания от скамьи",
+   "steps": [
+    "Поставьте ладони на край скамьи чуть шире плеч и отшагните стопами назад, вытянув тело в прямую линию.",
+    "Напрягите живот и ягодицы, чтобы линия от пяток до головы оставалась прямой. Это исходное положение.",
+    "На вдохе согните локти и опустите грудь к скамье, удерживая локти примерно под 45 градусов к рёбрам.",
+    "На выдохе выжмите себя вверх до полного выпрямления рук и выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Incline%20Push-Ups.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Incline%20Push-Ups.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_lever_chest_press",
+  "title": "Machine Chest Press",
+  "equipmentId": "chest_press_machine",
+  "muscles": [
+   "chest",
+   "shoulders",
+   "triceps"
+  ],
+  "primaryMuscles": [
+   "chest"
+  ],
+  "group": "chest",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Set the seat so the handles sit level with the middle of your chest, then sit with your back flat against the pad.",
+  "steps": [
+   "Set the seat so the handles sit level with the middle of your chest, then sit with your back flat against the pad.",
+   "Take a handle in each hand with an overhand grip and keep the shoulder blades pulled back. This is the starting position.",
+   "Press the handles forward until the arms are straight without locking the elbows, breathing out and keeping the back on the pad.",
+   "Let the handles come back slowly until your hands are level with your chest, breathing in and feeling the stretch.",
+   "Repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Жим от груди в тренажёре",
+   "steps": [
+    "Отрегулируйте сиденье так, чтобы рукояти были на уровне середины груди, и сядьте, прижав спину к спинке.",
+    "Возьмитесь за рукояти прямым хватом и сведите лопатки. Это исходное положение.",
+    "На выдохе выжмите рукояти вперёд до почти полного выпрямления рук, не блокируя локти и не отрывая спину от спинки.",
+    "На вдохе медленно позвольте рукоятям вернуться, пока кисти не окажутся на уровне груди, чувствуя растяжение.",
+    "Выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Lever%20Chest%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Lever%20Chest%20Press.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_lever_incline_hammer_chest_press",
+  "title": "Machine Incline Chest Press",
+  "equipmentId": "chest_press_machine",
+  "muscles": [
+   "chest",
+   "shoulders",
+   "triceps"
+  ],
+  "primaryMuscles": [
+   "chest"
+  ],
+  "group": "chest",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Set the seat of an incline press machine so the handles line up with the top of your chest, and sit back against the pad.",
+  "steps": [
+   "Set the seat of an incline press machine so the handles line up with the top of your chest, and sit back against the pad.",
+   "Take the handles with a neutral or overhand grip, feet flat and shoulder blades pulled back. This is the starting position.",
+   "Press the handles up and forward until the arms are almost straight as you breathe out, keeping the wrists in line with the forearms.",
+   "Lower the handles slowly back to the top of your chest as you breathe in.",
+   "Repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Жим в наклонном тренажёре для груди",
+   "steps": [
+    "Отрегулируйте сиденье наклонного тренажёра так, чтобы рукояти совпали с верхом груди, и сядьте, прижав спину к спинке.",
+    "Возьмитесь за рукояти нейтральным или прямым хватом; стопы стоят на полу, лопатки сведены. Это исходное положение.",
+    "На выдохе выжмите рукояти вверх и вперёд почти до полного выпрямления рук, удерживая запястья на одной линии с предплечьями.",
+    "На вдохе медленно опустите рукояти обратно к верху груди.",
+    "Выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Lever%20Incline%20Hammer%20Chest%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Lever%20Incline%20Hammer%20Chest%20Press.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_lever_lying_chest_press",
+  "title": "Lever Lying Chest Press",
+  "mergeInto": "vid_lever_lying_chest_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Lever%20Lying%20Chest%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Lever%20Lying%20Chest%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_pec_deck_fly",
+  "title": "Lever Pec Deck Fly",
+  "mergeInto": "vid_lever_pec_deck_fly",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Lever%20Pec%20Deck%20Fly.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Lever%20Pec%20Deck%20Fly.mp4"
+  }
+ },
+ {
+  "id": "vid_push_ups",
+  "title": "Push-Up",
+  "equipmentId": null,
+  "muscles": [
+   "chest",
+   "shoulders",
+   "triceps"
+  ],
+  "primaryMuscles": [
+   "chest"
+  ],
+  "group": "chest",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Take a face-down position on the floor with the hands slightly wider than shoulder width and level with your chest.",
+  "steps": [
+   "Take a face-down position on the floor with the hands slightly wider than shoulder width and level with your chest.",
+   "Push up onto straight arms and the balls of your feet, bracing the core and the glutes so the body forms a straight line. This is the starting position.",
+   "Bend the elbows and lower your chest toward the floor as you breathe in, keeping the elbows at about 45 degrees from your ribs.",
+   "Press back up to straight arms as you breathe out, keeping the hips level with the shoulders.",
+   "Repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Отжимания от пола",
+   "steps": [
+    "Лягте лицом вниз и поставьте ладони чуть шире плеч на уровне груди.",
+    "Выжмите себя вверх на прямые руки и подушечки стоп, напрягая живот и ягодицы, чтобы тело вытянулось в прямую линию. Это исходное положение.",
+    "На вдохе согните локти и опустите грудь к полу, удерживая локти примерно под 45 градусов к рёбрам.",
+    "На выдохе выжмите себя вверх до прямых рук, сохраняя таз на одной линии с плечами.",
+    "Выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Push-ups.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Push-ups.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_stretching_above_head_chest_stretch",
+  "title": "Stretching - Above Head Chest Stretch",
+  "mergeInto": "vid_stretching_above_head_chest_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Stretching%20-%20Above%20Head%20Chest%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Stretching%20-%20Above%20Head%20Chest%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_back_pec_stretch",
+  "title": "Stretching - Back Pec Stretch",
+  "mergeInto": "vid_stretching_back_pec_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Stretching%20-%20Back%20Pec%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Stretching%20-%20Back%20Pec%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_dynamic_chest_stretch",
+  "title": "Stretching - Dynamic Chest Stretch",
+  "mergeInto": "vid_stretching_dynamic_chest_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Stretching%20-%20Dynamic%20Chest%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Stretching%20-%20Dynamic%20Chest%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_kneeling_back_rotation_stretch",
+  "title": "Stretching - Kneeling Back Rotation Stretch",
+  "mergeInto": "vid_stretching_kneeling_back_rotation_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Stretching%20-%20Kneeling%20Back%20Rotation%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Stretching%20-%20Kneeling%20Back%20Rotation%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_standing_reach_up_back_rotation_stretch",
+  "title": "Stretching - Standing Reach Up Back Rotation Stretch",
+  "mergeInto": "vid_stretching_standing_reach_up_back_rotation_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Stretching%20-%20Standing%20Reach%20Up%20Back%20Rotation%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Stretching%20-%20Standing%20Reach%20Up%20Back%20Rotation%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_standing_wheel_rollout",
+  "title": "Stretching - Standing Wheel Rollout",
+  "mergeInto": "vid_stretching_standing_wheel_rollout",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Stretching%20-%20Standing%20Wheel%20Rollout.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Stretching%20-%20Standing%20Wheel%20Rollout.mp4"
+  }
+ },
+ {
+  "id": "vid_triceps_dips",
+  "title": "Triceps Dips",
+  "mergeInto": "vid_triceps_dips",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Triceps%20Dips.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Triceps%20Dips.mp4"
+  }
+ },
+ {
+  "id": "vid_wide_grip_push_ups",
+  "title": "Wide Grip Push-ups",
+  "mergeInto": "vid_wide_grip_push_ups",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Chest/Wide%20Grip%20Push-ups.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/chest/Wide%20Grip%20Push-ups.mp4"
+  }
+ }
+]

@@ -1,0 +1,475 @@
+[
+ {
+  "id": "vid_ball_sit_up_on_stability_ball",
+  "title": "Sit-Up on a Stability Ball",
+  "equipmentId": null,
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "group": "mix",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Sit on a stability ball and walk the feet forward until the ball supports your lower back, knees bent to a right angle and feet flat.",
+  "steps": [
+   "Sit on a stability ball and walk the feet forward until the ball supports your lower back, knees bent to a right angle and feet flat.",
+   "Place your hands lightly behind your head with the elbows wide. This is the starting position.",
+   "Curl the torso up off the ball as you breathe out, lifting the ribs toward the hips.",
+   "Lower back over the ball slowly as you breathe in, letting the abdominals lengthen at the bottom.",
+   "Repeat for the prescribed amount of repetitions, keeping the ball still throughout."
+  ],
+  "ru": {
+   "title": "Подъёмы корпуса на фитболе",
+   "steps": [
+    "Сядьте на фитбол и прошагайте стопами вперёд, пока мяч не окажется под поясницей; колени согнуты под прямым углом, стопы стоят на полу.",
+    "Положите ладони за голову без нажима, локти разведены. Это исходное положение.",
+    "На выдохе поднимите корпус с мяча, направляя рёбра к тазу.",
+    "На вдохе медленно опуститесь назад через мяч, позволяя мышцам живота удлиниться в нижней точке.",
+    "Выполните рекомендованное количество повторений, удерживая мяч неподвижным."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Ball%20Sit-up%20%28on%20stability%20ball%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_bent_knee_lying_twist_on_stability_ball",
+  "title": "Bent Knee Lying Twist on a Stability Ball",
+  "equipmentId": null,
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "group": "mix",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Lie on your back with the arms out to the sides in a T and rest both calves on a stability ball, knees bent to a right angle.",
+  "steps": [
+   "Lie on your back with the arms out to the sides in a T and rest both calves on a stability ball, knees bent to a right angle.",
+   "Press both shoulder blades into the floor and squeeze the ball lightly between your shins. This is the starting position.",
+   "Roll the ball and the knees together to one side as far as you can go without a shoulder leaving the floor, breathing out.",
+   "Bring them back to the middle using the side of your waist as you breathe in, then repeat to the other side.",
+   "Keep alternating for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Скручивания лёжа с фитболом под ногами",
+   "steps": [
+    "Лягте на спину, разведите руки в стороны буквой «Т» и положите обе голени на фитбол; колени согнуты под прямым углом.",
+    "Прижмите обе лопатки к полу и слегка сожмите мяч голенями. Это исходное положение.",
+    "На выдохе уведите мяч вместе с коленями в одну сторону настолько, насколько это возможно, не отрывая плечи от пола.",
+    "На вдохе вернитесь в середину усилием боковых мышц живота, затем повторите в другую сторону.",
+    "Чередуйте стороны нужное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Bent%20knee%20Lying%20%20twist%20%28On%20Stability%20Ball%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_chest_lift_with_rotation",
+  "title": "Chest Lift with Rotation",
+  "mergeInto": "vid_chest_lift_with_rotation",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Chest%20Lift%20with%20Rotation.mp4"
+  }
+ },
+ {
+  "id": "vid_corkscrew_pilates",
+  "title": "Corkscrew Pilates",
+  "mergeInto": "vid_corkscrew_pilates",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Corkscrew%20Pilates.mp4"
+  }
+ },
+ {
+  "id": "vid_crunch_floor_female",
+  "title": "Crunch Floor (female)",
+  "mergeInto": "vid_crunch_floor_female",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Crunch%20Floor%20%28female%29.mp4"
+  }
+ },
+ {
+  "id": "vid_crunch_leg_raise",
+  "title": "Crunch with Leg Raise",
+  "equipmentId": null,
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "group": "mix",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Lie on your back with the hands lightly behind your head and the knees bent, feet off the floor.",
+  "steps": [
+   "Lie on your back with the hands lightly behind your head and the knees bent, feet off the floor.",
+   "Press the lower back down and curl the head and shoulders up slightly. This is the starting position.",
+   "Crunch the ribs toward the hips while at the same time drawing the knees toward the chest, so both ends of the body meet.",
+   "Extend the legs away and lower the shoulders slightly as you breathe in, without letting the feet touch the floor.",
+   "Repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Скручивания с подъёмом ног",
+   "steps": [
+    "Лягте на спину, положите ладони за голову без нажима, колени согнуты, стопы оторваны от пола.",
+    "Прижмите поясницу и слегка приподнимите голову и плечи. Это исходное положение.",
+    "Скрутите рёбра к тазу, одновременно подтягивая колени к груди, чтобы верх и низ тела шли навстречу друг другу.",
+    "На вдохе вытяните ноги вперёд и слегка опустите плечи, не касаясь стопами пола.",
+    "Выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Crunch%20%28leg%20raise%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_crunch_legs_on_stability_ball",
+  "title": "Crunch with Legs on a Stability Ball",
+  "equipmentId": null,
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "group": "mix",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Lie on your back with both calves resting on a stability ball, knees bent to a right angle and hands lightly behind your head.",
+  "steps": [
+   "Lie on your back with both calves resting on a stability ball, knees bent to a right angle and hands lightly behind your head.",
+   "Press the lower back into the floor and keep the ball still. This is the starting position.",
+   "Curl the head, shoulders and upper back off the floor as you breathe out, and hold the squeeze for a second.",
+   "Lower back down slowly as you breathe in, and repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Скручивания с ногами на фитболе",
+   "steps": [
+    "Лягте на спину, положив обе голени на фитбол; колени согнуты под прямым углом, ладони — за головой без нажима.",
+    "Прижмите поясницу к полу и удерживайте мяч неподвижным. Это исходное положение.",
+    "На выдохе оторвите от пола голову, плечи и верх спины и задержитесь в сокращении на секунду.",
+    "На вдохе медленно опуститесь и выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Crunch%20%28legs%20on%20stability%20ball%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_crunch_straight_leg_up",
+  "title": "Crunch with Straight Leg Up",
+  "equipmentId": null,
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "group": "mix",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Lie on your back with one leg bent and that foot on the floor, and the other leg extended straight up toward the ceiling.",
+  "steps": [
+   "Lie on your back with one leg bent and that foot on the floor, and the other leg extended straight up toward the ceiling.",
+   "Reach both hands toward the raised foot and press the lower back down. This is the starting position.",
+   "Curl the head and shoulders off the floor as you breathe out, reaching the fingers toward the raised toes.",
+   "Lower slowly as you breathe in without letting the raised leg drift, and repeat for the prescribed amount of repetitions before changing legs."
+  ],
+  "ru": {
+   "title": "Скручивания с поднятой прямой ногой",
+   "steps": [
+    "Лягте на спину: одна нога согнута, стопа стоит на полу, вторая выпрямлена и поднята к потолку.",
+    "Вытяните обе руки к поднятой стопе и прижмите поясницу к полу. Это исходное положение.",
+    "На выдохе оторвите голову и плечи от пола, тянясь пальцами к носку поднятой ноги.",
+    "На вдохе медленно опуститесь, не позволяя поднятой ноге уходить в сторону, и выполните рекомендованное количество повторений, затем смените ногу."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Crunch%20%28straight%20leg%20up%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_front_plank_female",
+  "title": "Front Plank (female)",
+  "mergeInto": "vid_front_plank_female",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Front%20Plank%20%28female%29.mp4"
+  }
+ },
+ {
+  "id": "vid_hip_raise_bridge",
+  "title": "Hip Raise Bridge",
+  "mergeInto": "vid_hip_raise_bridge",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Hip%20Raise%20Bridge.mp4"
+  }
+ },
+ {
+  "id": "vid_hundred_pilates",
+  "title": "Hundred Pilates",
+  "mergeInto": "vid_hundred_pilates",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Hundred%20Pilates.mp4"
+  }
+ },
+ {
+  "id": "vid_jack_knife_floor",
+  "title": "Floor Jackknife",
+  "equipmentId": null,
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "group": "mix",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Lie flat on your back with the arms extended overhead and the legs straight.",
+  "steps": [
+   "Lie flat on your back with the arms extended overhead and the legs straight.",
+   "Press the lower back into the floor and lift the heels and the hands a few centimetres off the mat. This is the starting position.",
+   "Draw both knees toward your chest while curling the torso up and reaching the hands past the knees, breathing out.",
+   "Extend the arms and legs back out to the long position as you breathe in, without letting the heels or hands touch down.",
+   "Repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Складка с подтягиванием коленей",
+   "steps": [
+    "Лягте на спину, вытяните руки за головой, ноги выпрямлены.",
+    "Прижмите поясницу к полу и приподнимите пятки и кисти на несколько сантиметров над ковриком. Это исходное положение.",
+    "На выдохе подтяните оба колена к груди, одновременно скручивая корпус и вынося руки за колени.",
+    "На вдохе снова вытяните руки и ноги, не касаясь пола пятками и кистями.",
+    "Выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Jack%20knife%20Floor.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_jack_split_crunches",
+  "title": "Split Jackknife Crunch",
+  "equipmentId": null,
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "group": "mix",
+  "isStretch": false,
+  "difficulty": "intermediate",
+  "durationMinutes": 6,
+  "summary": "Lie flat on your back with the legs straight and the arms extended overhead on the floor.",
+  "steps": [
+   "Lie flat on your back with the legs straight and the arms extended overhead on the floor.",
+   "Press the lower back down and lift both heels slightly off the mat. This is the starting position.",
+   "Lift one straight leg while curling the torso up and reaching both hands toward that foot, breathing out.",
+   "Lower back to the flat position as you breathe in, then repeat with the other leg.",
+   "Keep alternating legs for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Складка к одной ноге попеременно",
+   "steps": [
+    "Лягте на спину, ноги выпрямлены, руки вытянуты за головой на полу.",
+    "Прижмите поясницу и слегка приподнимите обе пятки над ковриком. Это исходное положение.",
+    "На выдохе поднимите одну прямую ногу, одновременно скручивая корпус и тянясь обеими руками к её стопе.",
+    "На вдохе вернитесь в вытянутое положение, затем повторите с другой ногой.",
+    "Чередуйте ноги нужное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Jack%20Split%20Crunches.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_jackknife_pilates",
+  "title": "JackKnife Pilates",
+  "mergeInto": "vid_jackknife_pilates",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/JackKnife%20Pilates.mp4"
+  }
+ },
+ {
+  "id": "vid_leg_curl_on_stability_ball",
+  "title": "Leg Curl (on stability ball)",
+  "mergeInto": "fedb_ball_leg_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Leg%20Curl%20%28on%20stability%20ball%29.mp4"
+  }
+ },
+ {
+  "id": "vid_leg_raise_hip_lift",
+  "title": "Leg Raise Hip Lift",
+  "mergeInto": "vid_leg_raise_hip_lift",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Leg%20Raise%20Hip%20Lift.mp4"
+  }
+ },
+ {
+  "id": "vid_lying_hip_lift_on_stability_ball",
+  "title": "Lying Hip Lift (on stability ball)",
+  "mergeInto": "vid_lying_hip_lift_on_stability_ball",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Lying%20Hip%20Lift%20%28on%20stability%20ball%29.mp4"
+  }
+ },
+ {
+  "id": "vid_lying_scissor_kick_female",
+  "title": "Lying Scissor Kick (female)",
+  "mergeInto": "vid_lying_scissor_kick_female",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Lying%20Scissor%20Kick%20%28female%29.mp4"
+  }
+ },
+ {
+  "id": "vid_medicine_ball_sit_up_wall",
+  "title": "Medicine Ball Sit-up (wall)",
+  "mergeInto": "vid_medicine_ball_sit_up_wall",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Medicine%20Ball%20Sit-up%20%28wall%29.mp4"
+  }
+ },
+ {
+  "id": "vid_reverse_crunch_female",
+  "title": "Reverse Crunch (female)",
+  "mergeInto": "vid_reverse_crunch_female",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Reverse%20Crunch%20%28female%29.mp4"
+  }
+ },
+ {
+  "id": "vid_rotate_push_up_female",
+  "title": "Rotate Push up (female)",
+  "mergeInto": "vid_push_ups",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Rotate%20Push%20up%20%28female%29.mp4"
+  }
+ },
+ {
+  "id": "vid_russian_twist_on_stability_ball_arms_straight",
+  "title": "Russian Twist (on stability ball arms straight)",
+  "mergeInto": "fedb_russian_twist",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Russian%20Twist%20%28on%20stability%20ball%20arms%20straight%29.mp4"
+  }
+ },
+ {
+  "id": "vid_seated_twist_on_stability_ball",
+  "title": "Seated Twist (on stability ball)",
+  "mergeInto": "fedb_seated_barbell_twist",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Seated%20Twist%20%28on%20stability%20ball%29.mp4"
+  }
+ },
+ {
+  "id": "vid_seated_twist_straight_arm",
+  "title": "Seated Twist - Straight Arm",
+  "equipmentId": null,
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "group": "mix",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Sit tall on a mat with the knees bent and the feet flat, or with the legs crossed if that is more comfortable.",
+  "steps": [
+   "Sit tall on a mat with the knees bent and the feet flat, or with the legs crossed if that is more comfortable.",
+   "Reach both arms straight forward at shoulder height with the palms facing each other. This is the starting position.",
+   "Rotate the torso to one side, keeping the arms straight and level and the hips facing forward, and pause for a moment at the end.",
+   "Return through the middle and rotate to the other side, moving from the ribs rather than throwing the arms.",
+   "Keep alternating for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Повороты корпуса сидя с вытянутыми руками",
+   "steps": [
+    "Сядьте на коврик с прямой спиной: колени согнуты, стопы на полу, либо ноги скрещены, если так удобнее.",
+    "Вытяните обе руки прямо перед собой на уровне плеч ладонями друг к другу. Это исходное положение.",
+    "Разверните корпус в одну сторону, удерживая руки прямыми и на одном уровне, а таз — направленным вперёд, и на мгновение задержитесь.",
+    "Вернитесь через середину и разверните корпус в другую сторону, поворачиваясь от рёбер, а не забрасывая руки.",
+    "Чередуйте стороны нужное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Seated%20Twist%20%28straight%20arm%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_side_bend_on_stability_ball",
+  "title": "Side Bend on a Stability Ball",
+  "equipmentId": null,
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "group": "mix",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Lie sideways over a stability ball so the ball supports the side of your hip and ribs, legs stacked and braced against a wall or spread for balance.",
+  "steps": [
+   "Lie sideways over a stability ball so the ball supports the side of your hip and ribs, legs stacked and braced against a wall or spread for balance.",
+   "Place the hands lightly behind your head with the elbows wide. This is the starting position.",
+   "Bend sideways over the ball as you breathe in, letting the top side of the waist lengthen.",
+   "Lift the torso up sideways until it is in line with your legs as you breathe out, and hold the squeeze for a second.",
+   "Repeat for the prescribed amount of repetitions, then turn over and work the other side."
+  ],
+  "ru": {
+   "title": "Боковые наклоны на фитболе",
+   "steps": [
+    "Лягте боком на фитбол так, чтобы он поддерживал бок таза и рёбра; ноги одна на другой, упритесь ими в стену или расставьте для устойчивости.",
+    "Положите ладони за голову без нажима, локти разведены. Это исходное положение.",
+    "На вдохе наклонитесь вбок через мяч, позволяя верхней стороне талии удлиниться.",
+    "На выдохе поднимите корпус вбок до одной линии с ногами и задержитесь в сокращении на секунду.",
+    "Выполните рекомендованное количество повторений, затем перевернитесь и проработайте другую сторону."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Side%20Bend%20%28on%20stability%20ball%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_sit_up",
+  "title": "Sit Up",
+  "mergeInto": "vid_sit_ups",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Sit%20Up.mp4"
+  }
+ },
+ {
+  "id": "vid_weighted_lying_twist",
+  "title": "Weighted Lying Twist",
+  "mergeInto": "vid_weighted_lying_twist",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Weighted%20Lying%20Twist.mp4"
+  }
+ }
+]

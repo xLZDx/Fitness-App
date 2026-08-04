@@ -1,0 +1,121 @@
+[
+ {
+  "id": "vid_barbell_rear_delt_raise",
+  "title": "Barbell Rear Delt Raise",
+  "mergeInto": "fedb_barbell_rear_delt_row",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Trapezius/Barbell%20Rear%20Delt%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Trapezius/Barbell%20Rear%20Delt%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_barbell_shrug",
+  "title": "Barbell Shrug",
+  "mergeInto": "vid_barbell_shrug",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Trapezius/Barbell%20Shrug.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Trapezius/Barbell%20Shrug.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_incline_shrug",
+  "title": "Dumbbell Incline Shrug",
+  "mergeInto": "vid_dumbbell_incline_shrug",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Trapezius/Dumbbell%20Incline%20Shrug.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Trapezius/Dumbbell%20Incline%20Shrug.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_shrug",
+  "title": "Dumbbell Shrug",
+  "mergeInto": "vid_dumbbell_shrug",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Trapezius/Dumbbell%20Shrug.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Trapezius/Dumbbell%20Shrug.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_shrug",
+  "title": "Machine Shrug",
+  "equipmentId": null,
+  "muscles": [
+   "traps",
+   "forearms"
+  ],
+  "primaryMuscles": [
+   "traps"
+  ],
+  "group": "trapezius",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Load the shrug machine and take the handles at your sides with your arms straight, standing or seated tall with your chest up.",
+  "steps": [
+   "Load the shrug machine and take the handles at your sides with your arms straight, standing or seated tall with your chest up.",
+   "Let the weight pull your shoulders down until the trapezius is stretched. This is the starting position.",
+   "Drive your shoulders straight up toward your ears as you breathe out, keeping the arms straight and the chin level, and hold the top for a second.",
+   "Lower under control as you breathe in, and repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Шраги в тренажёре",
+   "steps": [
+    "Установите вес, возьмитесь за рукояти по бокам на прямых руках; встаньте или сядьте ровно, грудь развёрнута.",
+    "Позвольте весу опустить плечи вниз до растяжения трапеций. Это исходное положение.",
+    "На выдохе поднимите плечи строго вверх, к ушам, не сгибая руки и не опуская подбородок, и задержитесь на секунду.",
+    "На вдохе подконтрольно опустите плечи и выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Trapezius/Lever%20Shrug.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Trapezius/Lever%20Shrug.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_scapula_dips",
+  "title": "Scapular Dip",
+  "equipmentId": "dip_station",
+  "muscles": [
+   "traps",
+   "shoulders"
+  ],
+  "primaryMuscles": [
+   "traps"
+  ],
+  "group": "trapezius",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Support yourself on parallel bars with your arms locked straight and let your shoulders rise toward your ears.",
+  "steps": [
+   "Support yourself on parallel bars with your arms locked straight and let your shoulders rise toward your ears.",
+   "Keep the elbows straight for the whole set — the movement happens at the shoulder blades only. This is the starting position.",
+   "Pull the shoulder blades down and together so your body rises a few centimetres without the arms bending, and hold for a second.",
+   "Let the shoulders travel back up toward your ears under control, and repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Лопаточные отжимания на брусьях",
+   "steps": [
+    "Займите упор на брусьях: руки выпрямлены и зафиксированы, плечи подняты к ушам.",
+    "Локти остаются прямыми весь подход — работают только лопатки. Это исходное положение.",
+    "Опустите и сведите лопатки так, чтобы корпус поднялся на несколько сантиметров без сгибания рук, и задержитесь на секунду.",
+    "Подконтрольно позвольте плечам подняться обратно к ушам и выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Trapezius/Scapula%20Dips.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Trapezius/Scapula%20Dips.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_stretching_neck_side_stretch",
+  "title": "Stretching - Neck Side Stretch",
+  "mergeInto": "vid_stretching_neck_side_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Trapezius/Stretching%20-%20Neck%20Side%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Trapezius/Stretching%20-%20Neck%20Side%20Stretch.mp4"
+  }
+ }
+]

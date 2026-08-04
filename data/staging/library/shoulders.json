@@ -1,0 +1,456 @@
+[
+ {
+  "id": "vid_band_bent_over_rear_lateral_raise",
+  "title": "Band Bent-over Rear Lateral Raise",
+  "mergeInto": "vid_band_bent_over_rear_lateral_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Band%20Bent-over%20Rear%20Lateral%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Band%20Bent-over%20Rear%20Lateral%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_band_one_arm_forward_raise",
+  "title": "Band One Arm Forward Raise",
+  "mergeInto": "vid_band_one_arm_forward_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Band%20One%20Arm%20Forward%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Band%20One%20Arm%20Forward%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_band_standing_rear_delt_row",
+  "title": "Band Standing Rear Delt Row",
+  "mergeInto": "vid_band_standing_rear_delt_row",
+  "video": {
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Band%20Standing%20Rear%20Delt%20Row.mp4"
+  }
+ },
+ {
+  "id": "vid_barbell_front_raise",
+  "title": "Barbell Front Raise",
+  "mergeInto": "vid_barbell_front_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Barbell%20Front%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Barbell%20Front%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_barbell_seated_behind_head_military_press",
+  "title": "Barbell Seated Behind Head Military Press",
+  "mergeInto": "vid_barbell_seated_behind_head_military_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Barbell%20Seated%20Behind%20Head%20Military%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Barbell%20Seated%20Behind%20Head%20Military%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_barbell_upright_row_wide_grip",
+  "title": "Barbell Upright Row (wide-grip)",
+  "mergeInto": "vid_barbell_upright_row_wide_grip",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Barbell%20Upright%20Row%20%28wide-grip%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Barbell%20Upright%20Row%20%28wide-grip%29.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_crossover_reverse_fly",
+  "title": "Cable Crossover Reverse Fly",
+  "mergeInto": "vid_cable_crossover_reverse_fly",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Cable%20Crossover%20Reverse%20Fly.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Cable%20Crossover%20Reverse%20Fly.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_front_raise",
+  "title": "Cable Front Raise",
+  "mergeInto": "vid_cable_front_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Cable%20Front%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Cable%20Front%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_lateral_raise",
+  "title": "Cable Lateral Raise",
+  "mergeInto": "vid_cable_lateral_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Cable%20Lateral%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Cable%20Lateral%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_one_arm_forward_raise",
+  "title": "Cable One Arm Forward Raise",
+  "mergeInto": "vid_cable_one_arm_forward_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Cable%20One%20Arm%20Forward%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Cable%20One%20Arm%20Forward%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_one_arm_lateral_raise",
+  "title": "Cable One Arm Lateral Raise",
+  "mergeInto": "vid_cable_one_arm_lateral_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Cable%20One%20Arm%20Lateral%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Cable%20One%20Arm%20Lateral%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_rear_delt_row_with_rope",
+  "title": "Cable Rear Delt Row (with rope)",
+  "mergeInto": "vid_cable_rear_delt_row_with_rope",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Cable%20Rear%20Delt%20Row%20%28with%20rope%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Cable%20Rear%20Delt%20Row%20%28with%20rope%29.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_alternate_shoulder_press",
+  "title": "Dumbbell Alternate Shoulder Press",
+  "mergeInto": "fedb_dumbbell_shoulder_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Alternate%20Shoulder%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Alternate%20Shoulder%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_arnold_press",
+  "title": "Dumbbell Arnold Press",
+  "mergeInto": "arnold_dumbbell_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Arnold%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Arnold%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_bench_seated_press",
+  "title": "Dumbbell Seated Press with Back Support",
+  "equipmentId": "dumbbell",
+  "muscles": [
+   "shoulders",
+   "triceps"
+  ],
+  "primaryMuscles": [
+   "shoulders"
+  ],
+  "group": "shoulders",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 8,
+  "summary": "Set a bench upright and sit back against it with a dumbbell resting on each thigh, feet flat on the floor.",
+  "steps": [
+   "Set a bench upright and sit back against it with a dumbbell resting on each thigh, feet flat on the floor.",
+   "Use your thighs to bring the dumbbells up to shoulder height and turn the palms to face forward, elbows under the wrists. This is the starting position.",
+   "Press both dumbbells straight overhead as you breathe out until the arms are almost straight, without letting them clash at the top.",
+   "Lower them slowly back to shoulder height as you breathe in, keeping the back against the pad so the lower back does not arch.",
+   "Repeat for the prescribed amount of repetitions, then bring the dumbbells down onto your thighs before standing."
+  ],
+  "ru": {
+   "title": "Жим гантелей сидя с опорой на спинку",
+   "steps": [
+    "Поставьте скамью вертикально и сядьте, прижав спину к спинке; гантели лежат на бёдрах, стопы на полу.",
+    "Помогая себе бёдрами, поднимите гантели на уровень плеч и разверните ладони вперёд; локти под запястьями. Это исходное положение.",
+    "На выдохе выжмите обе гантели над головой почти до полного выпрямления рук, не сталкивая их в верхней точке.",
+    "На вдохе медленно опустите их на уровень плеч, не отрывая спину от спинки, чтобы поясница не прогибалась.",
+    "Выполните рекомендованное количество повторений, затем опустите гантели на бёдра и только потом вставайте."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Bench%20Seated%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Bench%20Seated%20Press.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_dumbbell_front_raise",
+  "title": "Dumbbell Front Raise",
+  "mergeInto": "vid_dumbbell_front_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Front%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Front%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_incline_hammer_press",
+  "title": "Dumbbell Incline Hammer Press",
+  "mergeInto": "vid_dumbbell_incline_hammer_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Incline%20Hammer%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Incline%20Hammer%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_incline_rear_lateral_raise",
+  "title": "Dumbbell Incline Rear Lateral Raise",
+  "mergeInto": "vid_dumbbell_incline_rear_lateral_raise",
+  "video": {
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Incline%20Rear%20Lateral%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_iron_cross",
+  "title": "Dumbbell Iron Cross",
+  "mergeInto": "vid_dumbbell_iron_cross",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Iron%20Cross.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Iron%20Cross.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_lateral_raise",
+  "title": "Dumbbell Lateral Raise",
+  "mergeInto": "vid_dumbbell_lateral_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Lateral%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Lateral%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_one_arm_lateral_raise",
+  "title": "Dumbbell One Arm Lateral Raise",
+  "mergeInto": "vid_dumbbell_one_arm_lateral_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20One%20Arm%20Lateral%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20One%20Arm%20Lateral%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_rear_delt_row",
+  "title": "Dumbbell Rear Delt Row",
+  "mergeInto": "vid_dumbbell_rear_delt_row",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Rear%20Delt%20Row.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Rear%20Delt%20Row.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_rear_lateral_raise",
+  "title": "Dumbbell Bent-Over Rear Lateral Raise",
+  "equipmentId": "dumbbell",
+  "muscles": [
+   "shoulders",
+   "back"
+  ],
+  "primaryMuscles": [
+   "shoulders"
+  ],
+  "group": "shoulders",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Stand holding a dumbbell in each hand and hinge forward from the hips until your torso is close to parallel with the floor, knees slightly bent.",
+  "steps": [
+   "Stand holding a dumbbell in each hand and hinge forward from the hips until your torso is close to parallel with the floor, knees slightly bent.",
+   "Let the dumbbells hang under your chest with the palms facing each other and the elbows slightly bent. This is the starting position.",
+   "Raise both arms out to the sides until the elbows are level with your shoulders as you breathe out, keeping the back flat.",
+   "Lower the dumbbells slowly back under your chest as you breathe in, and repeat for the prescribed amount of repetitions without using the lower back to swing."
+  ],
+  "ru": {
+   "title": "Разведение гантелей в наклоне",
+   "steps": [
+    "Возьмите по гантели в каждую руку и наклонитесь вперёд от тазобедренных суставов почти до параллели корпуса с полом, слегка согнув колени.",
+    "Гантели свободно свисают под грудью ладонями друг к другу, локти слегка согнуты. Это исходное положение.",
+    "На выдохе разведите руки в стороны, пока локти не окажутся на уровне плеч, сохраняя спину прямой.",
+    "На вдохе медленно опустите гантели обратно под грудь и выполните рекомендованное количество повторений, не помогая себе поясницей."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Rear%20Lateral%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Rear%20Lateral%20Raise.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_dumbbell_seated_front_raise",
+  "title": "Dumbbell Seated Front Raise",
+  "mergeInto": "vid_dumbbell_seated_front_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Seated%20Front%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Seated%20Front%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_seated_lateral_raise",
+  "title": "Dumbbell Seated Lateral Raise",
+  "mergeInto": "vid_dumbbell_seated_lateral_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Dumbbell%20Seated%20Lateral%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Seated%20Lateral%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_upright_row",
+  "title": "Dumbbell Upright Row",
+  "mergeInto": "vid_dumbbell_upright_row",
+  "video": {
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Dumbbell%20Upright%20Row.mp4"
+  }
+ },
+ {
+  "id": "vid_ez_barbell_anti_gravity_press",
+  "title": "EZ Barbell Anti Gravity Press",
+  "mergeInto": "anti_gravity_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/EZ%20Barbell%20Anti%20Gravity%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/EZ%20Barbell%20Anti%20Gravity%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_lateral_raise",
+  "title": "Machine Lateral Raise",
+  "equipmentId": null,
+  "muscles": [
+   "shoulders"
+  ],
+  "primaryMuscles": [
+   "shoulders"
+  ],
+  "group": "shoulders",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Set the seat of the lateral raise machine so the pads sit against the outside of your upper arms just above the elbows.",
+  "steps": [
+   "Set the seat of the lateral raise machine so the pads sit against the outside of your upper arms just above the elbows.",
+   "Sit with your back against the pad, take the handles and keep the arms bent at your sides. This is the starting position.",
+   "Push the pads out and up with the upper arms until the elbows reach shoulder height as you breathe out, and hold for a second.",
+   "Lower the pads slowly back to your sides as you breathe in, and repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Разведение рук в стороны в тренажёре",
+   "steps": [
+    "Отрегулируйте сиденье тренажёра так, чтобы упоры легли на внешнюю поверхность плеч чуть выше локтей.",
+    "Сядьте, прижав спину к спинке, возьмитесь за рукояти; руки согнуты и прижаты к бокам. Это исходное положение.",
+    "На выдохе разведите упоры вверх и в стороны усилием плеч, пока локти не окажутся на уровне плечевых суставов, и задержитесь на секунду.",
+    "На вдохе медленно верните упоры к бокам и выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Lever%20Lateral%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Lever%20Lateral%20Raise.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_lever_military_press",
+  "title": "Machine Shoulder Press",
+  "equipmentId": "shoulder_press_machine",
+  "muscles": [
+   "shoulders",
+   "triceps"
+  ],
+  "primaryMuscles": [
+   "shoulders"
+  ],
+  "group": "shoulders",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Set the seat so the handles start level with the tops of your shoulders and sit with your back flat against the pad.",
+  "steps": [
+   "Set the seat so the handles start level with the tops of your shoulders and sit with your back flat against the pad.",
+   "Take a handle in each hand with an overhand grip and keep the feet flat on the floor. This is the starting position.",
+   "Press the handles overhead until the arms are almost straight as you breathe out, without locking the elbows or arching the lower back.",
+   "Lower the handles slowly back to shoulder height as you breathe in, and repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Жим над головой в тренажёре",
+   "steps": [
+    "Отрегулируйте сиденье так, чтобы рукояти начинались на уровне верха плеч, и сядьте, прижав спину к спинке.",
+    "Возьмитесь за рукояти прямым хватом, стопы стоят на полу. Это исходное положение.",
+    "На выдохе выжмите рукояти над головой почти до полного выпрямления рук, не блокируя локти и не прогибая поясницу.",
+    "На вдохе медленно опустите рукояти на уровень плеч и выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Lever%20Military%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Lever%20Military%20Press.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_lever_seated_reverse_fly",
+  "title": "Lever Seated Reverse Fly",
+  "mergeInto": "vid_lever_seated_reverse_fly",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Lever%20Seated%20Reverse%20Fly.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Lever%20Seated%20Reverse%20Fly.mp4"
+  }
+ },
+ {
+  "id": "vid_military_press",
+  "title": "Military Press",
+  "mergeInto": "vid_military_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Military%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Military%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_smith_seated_shoulder_press",
+  "title": "Smith Seated Shoulder Press",
+  "mergeInto": "vid_smith_seated_shoulder_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Smith%20Seated%20Shoulder%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Smith%20Seated%20Shoulder%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_band_warm_up_shoulder_stretch",
+  "title": "Stretching - Band Warm-up Shoulder Stretch",
+  "mergeInto": "vid_stretching_band_warm_up_shoulder_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Stretching%20-%20Band%20Warm-up%20Shoulder%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Stretching%20-%20Band%20Warm-up%20Shoulder%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_rear_deltoid_stretch",
+  "title": "Stretching - Rear Deltoid Stretch",
+  "mergeInto": "vid_stretching_rear_deltoid_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Stretching%20-%20Rear%20Deltoid%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Stretching%20-%20Rear%20Deltoid%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_seated_shoulder_flexor_depresor_retractor",
+  "title": "Seated Shoulder Flexor and Retractor Stretch",
+  "equipmentId": null,
+  "muscles": [
+   "shoulders",
+   "chest",
+   "back"
+  ],
+  "primaryMuscles": [
+   "shoulders"
+  ],
+  "group": "shoulders",
+  "isStretch": true,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Sit on the floor with the knees bent and place your hands on the floor behind you, fingers pointing away.",
+  "steps": [
+   "Sit on the floor with the knees bent and place your hands on the floor behind you, fingers pointing away.",
+   "Sit tall and let the arms take some of your weight. This is the starting position.",
+   "Slide the hands further back and lift the chest so the shoulders draw down and the shoulder blades pull together.",
+   "Hold for 20 to 30 seconds, breathing steadily, then walk the hands back in to release."
+  ],
+  "ru": {
+   "title": "Растяжка передней поверхности плеч сидя",
+   "steps": [
+    "Сядьте на пол, согнув колени, и поставьте ладони на пол за спиной пальцами назад.",
+    "Сядьте ровно, перенеся часть веса на руки. Это исходное положение.",
+    "Отодвиньте ладони дальше назад и приподнимите грудь так, чтобы плечи опустились, а лопатки сошлись.",
+    "Удерживайте 20–30 секунд, дыша ровно, затем подвиньте ладони обратно и расслабьтесь."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Shoulders/Stretching%20-%20Seated%20Shoulder%20Flexor%20Depresor%20Retractor.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Shoulders/Stretching%20-%20Seated%20Shoulder%20Flexor%20Depresor%20Retractor.mp4"
+  },
+  "mergeInto": null
+ }
+]

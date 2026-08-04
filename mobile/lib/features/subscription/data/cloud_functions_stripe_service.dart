@@ -38,27 +38,57 @@ class CloudFunctionsStripeService implements StripeCheckoutService {
     }
   }
 
-  /// Force-refresh the user's ID token before any backend call. Anonymous
-  /// Firebase tokens last only an hour and the SDK's auto-refresh can lag
-  /// when the user has been bouncing between the app and an external
-  /// browser (e.g. Stripe Checkout). A stale token surfaces from
-  /// `cloud_functions` as `firebase_functions/unauthenticated`, which is
-  /// exactly what we hit before adding this guard.
-  Future<void> _refreshToken() async {
+  /// Ensures a usable ID token before any backend call.
+  ///
+  /// The original problem is real: a user bouncing out to Stripe Checkout in
+  /// an external browser and back can return with a token the SDK has not
+  /// caught up on, and `cloud_functions` surfaces that as
+  /// `firebase_functions/unauthenticated`.
+  ///
+  /// The original fix was `getIdToken(true)` on every call, which bypasses the
+  /// SDK's cache unconditionally. That turned every subscribe, trial, portal
+  /// and report tap into two round trips against two different Google
+  /// services, one of them a shared token endpoint — on the conversion path,
+  /// and concentrated at exactly the moments a promotion sends everyone
+  /// through it at once. It also failed the button when the cached token was
+  /// still good for another fifty minutes and only the refresh call happened
+  /// to fail.
+  ///
+  /// The cached token is used first now, and [refreshAndRetry] handles the
+  /// case the force-refresh existed for: the stale-token error is not guessed
+  /// at, it is waited for and then answered.
+  Future<void> _requireUser({bool force = false}) async {
     final user = _auth.currentUser;
     if (user == null) {
       throw StripeCheckoutException('Not signed in.');
     }
-    await user.getIdToken(true);
+    await user.getIdToken(force);
+  }
+
+  /// Runs [call], and retries it once with a forced token refresh if it fails
+  /// the way a stale token fails.
+  ///
+  /// One retry, on one error code. Anything broader would be a client that
+  /// retries into a backend already under load, which is the failure mode the
+  /// absence of any retry in this app currently makes impossible.
+  Future<T> _withFreshToken<T>(Future<T> Function() call) async {
+    try {
+      await _requireUser();
+      return await call();
+    } on FirebaseFunctionsException catch (e) {
+      if (e.code != 'unauthenticated') rethrow;
+      await _requireUser(force: true);
+      return await call();
+    }
   }
 
   @override
   Future<void> startFreeTrial(SubscriptionTier tier) async {
-    await _refreshToken();
-    final callable = _functions.httpsCallable('startFreeTrial');
     try {
-      await callable.call<Map<String, dynamic>>({
-        'tier': _tierParam(tier),
+      await _withFreshToken(() async {
+        await _functions
+            .httpsCallable('startFreeTrial')
+            .call<Map<String, dynamic>>({'tier': _tierParam(tier)});
       });
     } on Exception catch (e) {
       throw StripeCheckoutException('Could not start trial: $e');
@@ -71,13 +101,15 @@ class CloudFunctionsStripeService implements StripeCheckoutService {
     SubscriptionPeriod period = SubscriptionPeriod.monthly,
     String? languageCode,
   }) async {
-    await _refreshToken();
-    final callable = _functions.httpsCallable('createCheckoutSession');
-    final result = await callable.call<Map<String, dynamic>>({
-      'tier': _tierParam(tier),
-      'period': period.name,
-      if (languageCode != null) 'locale': languageCode,
-    });
+    final result = await _withFreshToken(
+      () => _functions
+          .httpsCallable('createCheckoutSession')
+          .call<Map<String, dynamic>>({
+        'tier': _tierParam(tier),
+        'period': period.name,
+        if (languageCode != null) 'locale': languageCode,
+      }),
+    );
     final url = result.data['url'] as String?;
     if (url == null || url.isEmpty) {
       throw StripeCheckoutException('Backend returned no checkout URL.');
@@ -92,9 +124,11 @@ class CloudFunctionsStripeService implements StripeCheckoutService {
 
   @override
   Future<void> openCustomerPortal() async {
-    await _refreshToken();
-    final callable = _functions.httpsCallable('createPortalSession');
-    final result = await callable.call<Map<String, dynamic>>();
+    final result = await _withFreshToken(
+      () => _functions
+          .httpsCallable('createPortalSession')
+          .call<Map<String, dynamic>>(),
+    );
     final url = result.data['url'] as String?;
     if (url == null || url.isEmpty) {
       throw StripeCheckoutException('Backend returned no portal URL.');

@@ -1,0 +1,220 @@
+[
+ {
+  "id": "vid_barbell_curl",
+  "title": "Barbell Curl",
+  "mergeInto": "barbell_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Barbell%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Barbell%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_barbell_drag_curl",
+  "title": "Barbell Drag Curl",
+  "mergeInto": "vid_barbell_drag_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Barbell%20Drag%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Barbell%20Drag%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_barbell_prone_incline_curl",
+  "title": "Barbell Prone Incline Curl",
+  "mergeInto": "vid_barbell_prone_incline_curl",
+  "video": {
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Barbell%20Prone%20Incline%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_one_arm_curl",
+  "title": "Cable One Arm Curl",
+  "mergeInto": "vid_cable_one_arm_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Cable%20One%20Arm%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Cable%20One%20Arm%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_standing_inner_curl",
+  "title": "Cable Standing Inner Curl",
+  "mergeInto": "vid_cable_standing_inner_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Cable%20Standing%20Inner%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Cable%20Standing%20Inner%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_alternate_biceps_curl",
+  "title": "Dumbbell Alternate Biceps Curl",
+  "mergeInto": "fedb_dumbbell_alternate_bicep_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Alternate%20Biceps%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Alternate%20Biceps%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_alternate_seated_biceps_curl",
+  "title": "Dumbbell Seated Alternating Curl",
+  "equipmentId": "dumbbell",
+  "muscles": [
+   "biceps",
+   "forearms"
+  ],
+  "primaryMuscles": [
+   "biceps"
+  ],
+  "group": "biceps",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Sit on the end of a bench with the feet flat on the floor and a dumbbell hanging at arm's length in each hand, palms facing your thighs.",
+  "steps": [
+   "Sit on the end of a bench with the feet flat on the floor and a dumbbell hanging at arm's length in each hand, palms facing your thighs.",
+   "Sit tall with the elbows close to your sides. This is the starting position.",
+   "Curl one dumbbell up, rotating the palm to face your shoulder as it rises, and squeeze the biceps for a second at the top as you breathe out.",
+   "Lower it slowly back to your thigh as you breathe in, rotating the palm back in, then repeat with the other arm.",
+   "Keep alternating until you have completed the prescribed amount of repetitions with each arm; sitting stops the hips from helping the weight up."
+  ],
+  "ru": {
+   "title": "Попеременные сгибания рук с гантелями сидя",
+   "steps": [
+    "Сядьте на край скамьи, поставив стопы на пол; гантели висят на прямых руках, ладони обращены к бёдрам.",
+    "Сядьте ровно, локти прижаты к бокам. Это исходное положение.",
+    "На выдохе поднимите одну гантель, разворачивая ладонь к плечу по ходу движения, и задержитесь в сокращении на секунду.",
+    "На вдохе медленно опустите её к бедру, возвращая ладонь внутрь, затем повторите другой рукой.",
+    "Чередуйте руки, пока не выполните рекомендованное количество повторений каждой: положение сидя не даёт помогать себе тазом."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Alternate%20Seated%20Biceps%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Alternate%20Seated%20Biceps%20Curl.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_dumbbell_biceps_curl",
+  "title": "Dumbbell Biceps Curl",
+  "mergeInto": "vid_dumbbell_biceps_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Biceps%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Biceps%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_concentration_curl",
+  "title": "Dumbbell Concentration Curl",
+  "mergeInto": "vid_dumbbell_concentration_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Concentration%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Concentration%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_cross_body_hammer_curl",
+  "title": "Dumbbell Cross Body Hammer Curl",
+  "mergeInto": "vid_dumbbell_cross_body_hammer_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Cross%20Body%20Hammer%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Cross%20Body%20Hammer%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_incline_biceps_curl",
+  "title": "Dumbbell Incline Biceps Curl",
+  "mergeInto": "vid_dumbbell_incline_biceps_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Incline%20Biceps%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Incline%20Biceps%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_incline_curl",
+  "title": "Dumbbell Incline Curl",
+  "mergeInto": "alternate_incline_dumbbell_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Incline%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Incline%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_incline_hammer_curl",
+  "title": "Dumbbell Incline Hammer Curl",
+  "mergeInto": "vid_dumbbell_incline_hammer_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Incline%20Hammer%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Incline%20Hammer%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_one_arm_zottman_preacher_curl",
+  "title": "Dumbbell One Arm Zottman Preacher Curl",
+  "mergeInto": "fedb_one_arm_dumbbell_preacher_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20One%20Arm%20Zottman%20Preacher%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20One%20Arm%20Zottman%20Preacher%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_preacher_curl_over_exercise_ball",
+  "title": "Dumbbell Preacher Curl Over Exercise Ball",
+  "mergeInto": "vid_dumbbell_preacher_curl_over_exercise_ball",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Preacher%20Curl%20Over%20Exercise%20Ball.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Preacher%20Curl%20Over%20Exercise%20Ball.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_prone_incline_curl",
+  "title": "Dumbbell Prone Incline Curl",
+  "mergeInto": "vid_dumbbell_prone_incline_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Prone%20Incline%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Prone%20Incline%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_seated_preacher_curl",
+  "title": "Dumbbell Seated Preacher Curl",
+  "mergeInto": "vid_dumbbell_seated_preacher_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Dumbbell%20Seated%20Preacher%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Dumbbell%20Seated%20Preacher%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_ez_barbell_biceps_curl",
+  "title": "EZ Barbell Biceps Curl",
+  "mergeInto": "vid_ez_barbell_biceps_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/EZ%20Barbell%20Biceps%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/EZ%20Barbell%20Biceps%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_preacher_curl",
+  "title": "Lever Preacher Curl",
+  "mergeInto": "fedb_preacher_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Lever%20Preacher%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Lever%20Preacher%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_lying_supine_dumbbell_curl",
+  "title": "Lying Supine Dumbbell Curl",
+  "mergeInto": "vid_lying_supine_dumbbell_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Lying%20Supine%20Dumbbell%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Lying%20Supine%20Dumbbell%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_butterfly_yoga_pose",
+  "title": "Stretching - Butterfly Yoga Pose",
+  "mergeInto": "vid_stretching_butterfly_yoga_pose",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Biceps/Stretching%20-%20Butterfly%20Yoga%20Pose.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/biceps/Stretching%20-%20Butterfly%20Yoga%20Pose.mp4"
+  }
+ }
+]

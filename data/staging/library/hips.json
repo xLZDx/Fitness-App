@@ -1,0 +1,591 @@
+[
+ {
+  "id": "vid_band_bent_over_hip_extension",
+  "title": "Band Bent Over Hip Extension",
+  "mergeInto": "vid_band_bent_over_hip_extension",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Band%20Bent%20Over%20Hip%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Band%20Bent%20Over%20Hip%20Extension.mp4"
+  }
+ },
+ {
+  "id": "vid_band_hip_abduction",
+  "title": "Band Hip Abduction",
+  "mergeInto": "vid_band_hip_abduction",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Band%20Hip%20Abduction.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Band%20Hip%20Abduction.mp4"
+  }
+ },
+ {
+  "id": "vid_band_hip_adduction",
+  "title": "Band Hip Adduction",
+  "mergeInto": "vid_band_hip_adduction",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Band%20Hip%20Adduction.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Band%20Hip%20Adduction.mp4"
+  }
+ },
+ {
+  "id": "vid_band_leg_curl",
+  "title": "Band Leg Curl",
+  "mergeInto": "vid_band_leg_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Band%20Leg%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Band%20Leg%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_band_seated_leg_extension",
+  "title": "Band Seated Leg Extension",
+  "mergeInto": "vid_band_seated_leg_extension",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Band%20Seated%20Leg%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Band%20Seated%20Leg%20Extension.mp4"
+  }
+ },
+ {
+  "id": "vid_band_standing_hip_extension",
+  "title": "Band Standing Hip Extension",
+  "mergeInto": "fedb_hip_extension_with_bands",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Band%20Standing%20Hip%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Band%20Standing%20Hip%20Extension.mp4"
+  }
+ },
+ {
+  "id": "vid_band_standing_leg_curl",
+  "title": "Band Standing Leg Curl",
+  "mergeInto": "fedb_standing_leg_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Band%20Standing%20Leg%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Band%20Standing%20Leg%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_barbell_front_chest_squat",
+  "title": "Barbell Front Chest Squat",
+  "mergeInto": "vid_barbell_front_chest_squat",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Barbell%20Front%20Chest%20Squat.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Barbell%20Front%20Chest%20Squat.mp4"
+  }
+ },
+ {
+  "id": "vid_barbell_lunge",
+  "title": "Barbell Lunge",
+  "mergeInto": "fedb_barbell_lunge",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Barbell%20Lunge.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Barbell%20Lunge.mp4"
+  }
+ },
+ {
+  "id": "vid_classic_barbell_squat",
+  "title": "Classic Barbell Squat",
+  "mergeInto": "barbell_squat",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Classic%20Barbell%20Squat.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Classic%20Barbell%20Squat.mp4"
+  }
+ },
+ {
+  "id": "vid_close_feet_leg_press",
+  "title": "Close Feet Leg Press",
+  "mergeInto": "vid_close_feet_leg_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Close%20Feet%20Leg%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Close%20Feet%20Leg%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_bar_grip_sumo_squat",
+  "title": "Dumbbell Bar Grip Sumo Squat",
+  "mergeInto": "vid_dumbbell_bar_grip_sumo_squat",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Dumbbell%20Bar%20Grip%20Sumo%20Squat.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Dumbbell%20Bar%20Grip%20Sumo%20Squat.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_goblet_squat",
+  "title": "Dumbbell Goblet Squat",
+  "mergeInto": "vid_dumbbell_goblet_squat",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Dumbbell%20Goblet%20Squat.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Dumbbell%20Goblet%20Squat.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_lunge",
+  "title": "Dumbbell Lunge",
+  "mergeInto": "vid_dumbbell_lunge",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Dumbbell%20Lunge.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Dumbbell%20Lunge.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_lying_femoral",
+  "title": "Dumbbell Lying Leg Curl",
+  "equipmentId": "dumbbell",
+  "muscles": [
+   "hamstrings"
+  ],
+  "primaryMuscles": [
+   "hamstrings"
+  ],
+  "group": "hips",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Lie face down on a flat bench with the hips at its edge and ask a partner to place a dumbbell between your feet, or grip it with the soles.",
+  "steps": [
+   "Lie face down on a flat bench with the hips at its edge and ask a partner to place a dumbbell between your feet, or grip it with the soles.",
+   "Squeeze the dumbbell between the feet and straighten the legs. This is the starting position.",
+   "Bend the knees to curl the dumbbell toward your glutes as you breathe out, keeping the hips pressed into the bench.",
+   "Lower the legs slowly back to straight as you breathe in, and repeat for the prescribed amount of repetitions with a light dumbbell you can hold securely."
+  ],
+  "ru": {
+   "title": "Сгибание ног с гантелью лёжа",
+   "steps": [
+    "Лягте лицом вниз на горизонтальную скамью так, чтобы таз был у её края, и попросите напарника вложить гантель между стоп либо зажмите её подошвами сами.",
+    "Крепко сожмите гантель стопами и выпрямите ноги. Это исходное положение.",
+    "На выдохе согните колени, поднимая гантель к ягодицам и не отрывая таз от скамьи.",
+    "На вдохе медленно опустите ноги до полного выпрямления и выполните рекомендованное количество повторений с лёгкой гантелью, которую вы уверенно удерживаете."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Dumbbell%20Lying%20Femoral.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Dumbbell%20Lying%20Femoral.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_dumbbell_single_leg_squat",
+  "title": "Dumbbell Single Leg Squat",
+  "mergeInto": "vid_dumbbell_single_leg_squat",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Dumbbell%20Single%20Leg%20Squat.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Dumbbell%20Single%20Leg%20Squat.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_squat",
+  "title": "Dumbbell Squat",
+  "mergeInto": "vid_dumbbell_squat",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Dumbbell%20Squat.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Dumbbell%20Squat.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_horizontal_leg_press",
+  "title": "Lever Horizontal Leg Press",
+  "mergeInto": "vid_lever_horizontal_leg_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Horizontal%20Leg%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Horizontal%20Leg%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_kneeling_leg_curl",
+  "title": "Lever Kneeling Leg Curl",
+  "mergeInto": "vid_lever_kneeling_leg_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Kneeling%20Leg%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Kneeling%20Leg%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_leg_extension",
+  "title": "Lever Leg Extension",
+  "mergeInto": "fedb_leg_extensions",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Leg%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Leg%20Extension.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_lying_leg_curl",
+  "title": "Lever Lying Leg Curl",
+  "mergeInto": "fedb_lying_leg_curls",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Lying%20Leg%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Lying%20Leg%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_seated_hip_abduction",
+  "title": "Lever Seated Hip Abduction",
+  "mergeInto": "vid_lever_seated_hip_abduction",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Seated%20Hip%20Abduction.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Seated%20Hip%20Abduction.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_seated_hip_adduction",
+  "title": "Lever Seated Hip Adduction",
+  "mergeInto": "vid_lever_seated_hip_adduction",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Seated%20Hip%20Adduction.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Seated%20Hip%20Adduction.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_seated_leg_curl",
+  "title": "Lever Seated Leg Curl",
+  "mergeInto": "fedb_seated_leg_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Seated%20Leg%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Seated%20Leg%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_standing_hip_extension",
+  "title": "Lever Standing Hip Extension",
+  "mergeInto": "vid_lever_standing_hip_extension",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Standing%20Hip%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Standing%20Hip%20Extension.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_standing_rear_kick",
+  "title": "Lever Standing Rear Kick",
+  "mergeInto": "vid_lever_standing_rear_kick",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Lever%20Standing%20Rear%20Kick.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Lever%20Standing%20Rear%20Kick.mp4"
+  }
+ },
+ {
+  "id": "vid_rear_decline_bridge",
+  "title": "Rear Decline Bridge",
+  "mergeInto": "vid_rear_decline_bridge",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Rear%20Decline%20Bridge.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Rear%20Decline%20Bridge.mp4"
+  }
+ },
+ {
+  "id": "vid_sled_45_degree_leg_wide_press",
+  "title": "Sled 45 Degree Leg Wide Press",
+  "mergeInto": "vid_sled_45_degree_leg_wide_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Sled%2045%20Degree%20Leg%20Wide%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Sled%2045%20Degree%20Leg%20Wide%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_sled_hack_squat",
+  "title": "Sled Hack Squat",
+  "mergeInto": "fedb_hack_squat",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Sled%20Hack%20Squat.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Sled%20Hack%20Squat.mp4"
+  }
+ },
+ {
+  "id": "vid_smith_chair_squat",
+  "title": "Smith Chair Squat",
+  "mergeInto": "vid_smith_chair_squat",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Smith%20Chair%20Squat.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Smith%20Chair%20Squat.mp4"
+  }
+ },
+ {
+  "id": "vid_smith_leg_press",
+  "title": "Smith Leg Press",
+  "mergeInto": "leg_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Smith%20Leg%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Smith%20Leg%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_squat",
+  "title": "Squat",
+  "mergeInto": "fedb_bodyweight_squat",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Squat.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Squat.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_adductor_stretch",
+  "title": "Stretching - Adductor stretch",
+  "mergeInto": "vid_stretching_adductor_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Adductor%20stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Adductor%20stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_all_fours_squad_stretch",
+  "title": "All-Fours Quad Stretch",
+  "equipmentId": null,
+  "muscles": [
+   "quads"
+  ],
+  "primaryMuscles": [
+   "quads"
+  ],
+  "group": "hips",
+  "isStretch": true,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Kneel on all fours with the hands under the shoulders and the knees under the hips.",
+  "steps": [
+   "Kneel on all fours with the hands under the shoulders and the knees under the hips.",
+   "Shift your weight onto one arm and the opposite knee. This is the starting position.",
+   "Reach back with the free hand, take the ankle of the free leg and draw the heel toward your glutes, keeping the hips level and the lower back flat.",
+   "Hold for 20 to 30 seconds, then release and change sides."
+  ],
+  "ru": {
+   "title": "Растяжка квадрицепса стоя на четвереньках",
+   "steps": [
+    "Встаньте на четвереньки: ладони под плечами, колени под тазом.",
+    "Перенесите вес на одну руку и противоположное колено. Это исходное положение.",
+    "Свободной рукой возьмитесь за лодыжку свободной ноги и притяните пятку к ягодице, удерживая таз ровно, а поясницу — без прогиба.",
+    "Удерживайте 20–30 секунд, затем отпустите и смените сторону."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20All%20Fours%20Squad%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20All%20Fours%20Squad%20Stretch.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_stretching_boat_stretch",
+  "title": "Stretching - Boat Stretch",
+  "mergeInto": "vid_stretching_boat_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Boat%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Boat%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_ceiling_look_stretch",
+  "title": "Stretching - Ceiling Look Stretch",
+  "mergeInto": "vid_stretching_ceiling_look_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Ceiling%20Look%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Ceiling%20Look%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_crossover_kneeling_hip_flexor_stretch",
+  "title": "Stretching - Crossover Kneeling Hip Flexor Stretch",
+  "mergeInto": "vid_stretching_crossover_kneeling_hip_flexor_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Crossover%20Kneeling%20Hip%20Flexor%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Crossover%20Kneeling%20Hip%20Flexor%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_hamstring_stretch",
+  "title": "Stretching - Hamstring Stretch",
+  "mergeInto": "vid_stretching_hamstring_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Hamstring%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Hamstring%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_hip_circles_stretch",
+  "title": "Hip Circles",
+  "equipmentId": null,
+  "muscles": [
+   "glutes",
+   "core"
+  ],
+  "primaryMuscles": [
+   "glutes"
+  ],
+  "group": "hips",
+  "isStretch": true,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Stand with the feet shoulder width apart and place your hands on your hips.",
+  "steps": [
+   "Stand with the feet shoulder width apart and place your hands on your hips.",
+   "Keep the feet flat and the knees soft. This is the starting position.",
+   "Circle the hips slowly and widely, letting the pelvis travel forward, to the side, back and around through its full range.",
+   "Complete 10 circles in one direction, then 10 in the other."
+  ],
+  "ru": {
+   "title": "Круговые движения тазом",
+   "steps": [
+    "Встаньте, стопы на ширине плеч, ладони положите на пояс.",
+    "Стопы плотно стоят на полу, колени мягкие. Это исходное положение.",
+    "Медленно и широко описывайте тазом круги, проводя его вперёд, в сторону, назад и по всей доступной амплитуде.",
+    "Сделайте 10 кругов в одну сторону и 10 в другую."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Hip%20Circles%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Hip%20Circles%20Stretch.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_stretching_hip_extension_stretch",
+  "title": "Stretching - Hip Extension Stretch",
+  "mergeInto": "vid_stretching_hip_extension_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Hip%20Extension%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Hip%20Extension%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_hip_flexor_and_quad_stretch",
+  "title": "Stretching - Hip Flexor and Quad Stretch",
+  "mergeInto": "vid_stretching_hip_flexor_and_quad_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Hip%20Flexor%20and%20Quad%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Hip%20Flexor%20and%20Quad%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_hip_flexor_stretch_rear_foot_elevated",
+  "title": "Stretching - Hip Flexor Stretch Rear foot elevated",
+  "mergeInto": "vid_stretching_hip_flexor_stretch_rear_foot_elevated",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Hip%20Flexor%20Stretch%20Rear%20foot%20elevated.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Hip%20Flexor%20Stretch%20Rear%20foot%20elevated.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_knee_raise",
+  "title": "Standing Knee Raise",
+  "equipmentId": null,
+  "muscles": [
+   "glutes",
+   "core"
+  ],
+  "primaryMuscles": [
+   "glutes"
+  ],
+  "group": "hips",
+  "isStretch": true,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Stand tall with the feet hip width apart, holding a wall or a rack if you need the balance.",
+  "steps": [
+   "Stand tall with the feet hip width apart, holding a wall or a rack if you need the balance.",
+   "Shift your weight onto one leg and keep that knee soft. This is the starting position.",
+   "Draw the other knee up toward your chest and hold it there with both hands, keeping the standing leg straight and the torso upright.",
+   "Hold for 15 to 20 seconds, then lower the leg and change sides."
+  ],
+  "ru": {
+   "title": "Подтягивание колена к груди стоя",
+   "steps": [
+    "Встаньте прямо, стопы на ширине таза; при необходимости придерживайтесь за стену или стойку.",
+    "Перенесите вес на одну ногу, оставив её колено мягким. Это исходное положение.",
+    "Подтяните второе колено к груди и удерживайте его обеими руками, сохраняя опорную ногу прямой, а корпус — вертикальным.",
+    "Удерживайте 15–20 секунд, затем опустите ногу и смените сторону."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Knee%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Knee%20Raise.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_stretching_quadriceps_lying_stretch",
+  "title": "Stretching - Quadriceps lying stretch",
+  "mergeInto": "vid_stretching_quadriceps_lying_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Quadriceps%20lying%20stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Quadriceps%20lying%20stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_quadriceps_stretch",
+  "title": "Standing Quadriceps Stretch",
+  "equipmentId": null,
+  "muscles": [
+   "quads"
+  ],
+  "primaryMuscles": [
+   "quads"
+  ],
+  "group": "hips",
+  "isStretch": true,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Stand tall with the feet together, holding a wall or a rack with one hand for balance.",
+  "steps": [
+   "Stand tall with the feet together, holding a wall or a rack with one hand for balance.",
+   "Shift your weight onto one leg. This is the starting position.",
+   "Bend the other knee, take that ankle behind you with the free hand and draw the heel toward your glutes, keeping the knees side by side and the pelvis tucked.",
+   "Hold for 20 to 30 seconds, then release and change legs."
+  ],
+  "ru": {
+   "title": "Растяжка квадрицепса стоя",
+   "steps": [
+    "Встаньте прямо, стопы вместе; одной рукой держитесь за стену или стойку для равновесия.",
+    "Перенесите вес на одну ногу. Это исходное положение.",
+    "Согните вторую ногу, возьмитесь свободной рукой за лодыжку сзади и притяните пятку к ягодице, удерживая колени рядом и подкрутив таз.",
+    "Удерживайте 20–30 секунд, затем отпустите и смените ногу."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Quadriceps%20stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Quadriceps%20stretch.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_stretching_runners_stretch",
+  "title": "Runner's Stretch",
+  "equipmentId": null,
+  "muscles": [
+   "hamstrings",
+   "calves",
+   "quads"
+  ],
+  "primaryMuscles": [
+   "hamstrings"
+  ],
+  "group": "hips",
+  "isStretch": true,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Step one foot well forward into a long lunge and place both hands on the floor either side of that foot.",
+  "steps": [
+   "Step one foot well forward into a long lunge and place both hands on the floor either side of that foot.",
+   "Keep the back leg straight with the heel pressing back. This is the starting position.",
+   "Sink the hips down and forward to stretch the front of the rear hip, then push the hips back and straighten the front leg to move the stretch into its hamstring.",
+   "Alternate between the two positions for 20 to 30 seconds, then change legs."
+  ],
+  "ru": {
+   "title": "Растяжка бегуна",
+   "steps": [
+    "Сделайте длинный выпад вперёд одной ногой и поставьте обе ладони на пол по сторонам от передней стопы.",
+    "Задняя нога остаётся прямой, пятка тянется назад. Это исходное положение.",
+    "Опустите таз вниз и вперёд, растягивая переднюю поверхность заднего бедра, затем отведите таз назад и выпрямите переднюю ногу, переводя растяжение на её заднюю поверхность.",
+    "Чередуйте два положения 20–30 секунд, затем смените ногу."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Stretching%20-%20Runners%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Stretching%20-%20Runners%20Stretch.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_weighted_sissy_squat",
+  "title": "Weighted Sissy Squat",
+  "mergeInto": "vid_weighted_sissy_squat",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Hips/Weighted%20Sissy%20Squat.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Hips/Weighted%20Sissy%20Squat.mp4"
+  }
+ }
+]

@@ -35,6 +35,28 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Public donor wall — one document per donor who opted in.
+    //
+    // This block was missing, which meant the collection was default-denied
+    // and `CloudDonorWallRepository` got permission-denied on every read for
+    // every user. Its own comment says "public read, no client write"; the
+    // read half was never granted. Broken at one user, not at a thousand.
+    //
+    // Read is open rather than `request.auth != null`: `/donors` is a public
+    // route in the app router, reachable signed-out, and a wall of people who
+    // chose to be listed publicly is the one collection here with nothing to
+    // protect. Writes stay server-only — `optInDonorWall` verifies an active
+    // subscription before adding anyone, and a client that could write here
+    // could list itself as a donor without paying.
+    //
+    // Worth knowing when this goes live: it is the only shared-collection
+    // listener in the app, so every opt-in fans out to every attached client.
+    // The client keeps its `.limit(500)` for that reason.
+    match /donor_wall/{donorId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Equipment-failure reports (TX.7). Same server-only pattern as
     // subscriptions: the `reportEquipment` Cloud Function is the only
     // writer, and clients have no read access (reports surface to gym

@@ -1,0 +1,81 @@
+[
+ {
+  "id": "vid_barbell_reverse_wrist_curl_over_grip",
+  "title": "Barbell Reverse Wrist Curl (over-grip)",
+  "mergeInto": "vid_barbell_reverse_wrist_curl_over_grip",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Forearms/Barbell%20Reverse%20Wrist%20Curl%20%28over-grip%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Forearms/Barbell%20Reverse%20Wrist%20Curl%20%28over-grip%29.mp4"
+  }
+ },
+ {
+  "id": "vid_barbell_standing_back_wrist_curl",
+  "title": "Barbell Standing Back Wrist Curl",
+  "mergeInto": "vid_barbell_standing_back_wrist_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Forearms/Barbell%20Standing%20Back%20Wrist%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Forearms/Barbell%20Standing%20Back%20Wrist%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_behind_back_wrist_curl",
+  "title": "Dumbbell Behind Back Wrist Curl",
+  "mergeInto": "vid_dumbbell_behind_back_wrist_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Forearms/Dumbbell%20Behind%20Back%20Wrist%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Forearms/Dumbbell%20Behind%20Back%20Wrist%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_over_bench_wrist_curl",
+  "title": "Dumbbell Over Bench Wrist Curl",
+  "mergeInto": "vid_dumbbell_over_bench_wrist_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Forearms/Dumbbell%20Over%20Bench%20Wrist%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Forearms/Dumbbell%20Over%20Bench%20Wrist%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_seated_neutral_wrist_curl",
+  "title": "Dumbbell Seated Neutral Wrist Curl",
+  "mergeInto": "vid_dumbbell_seated_neutral_wrist_curl",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Forearms/Dumbbell%20Seated%20Neutral%20Wrist%20Curl.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Forearms/Dumbbell%20Seated%20Neutral%20Wrist%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_side_wrist_pull_stretch",
+  "title": "Stretching - Side Wrist Pull Stretch",
+  "mergeInto": "vid_stretching_side_wrist_pull_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Forearms/Stretching%20-%20Side%20Wrist%20Pull%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Forearms/Stretching%20-%20Side%20Wrist%20Pull%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_wrist_circles",
+  "title": "Stretching - Wrist Circles",
+  "mergeInto": "vid_stretching_wrist_circles",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Forearms/Stretching%20-%20Wrist%20Circles.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Forearms/Stretching%20-%20Wrist%20Circles.mp4"
+  }
+ },
+ {
+  "id": "vid_weighted_standing_curl",
+  "title": "Weighted Standing Curl",
+  "drop": "forearm folder, implement unstated -- a standing wrist curl already ships twice here with a barbell and with dumbbells",
+  "video": {
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Forearms/Weighted%20Standing%20Curl.mp4"
+  }
+ },
+ {
+  "id": "vid_weighted_standing_curl_weights_or_lever",
+  "title": "Weighted Standing Curl (weights or lever)",
+  "drop": "the name itself says \"weights or lever\", i.e. the source did not know which was demonstrated",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Forearms/Weighted%20Standing%20Curl%20%28weights%20or%20lever%29.mp4"
+  }
+ }
+]

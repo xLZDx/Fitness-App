@@ -27,11 +27,27 @@ class CloudFunctionsEquipmentReportService implements EquipmentReportService {
     if (user == null) {
       throw EquipmentReportException('Not signed in.');
     }
-    await user.getIdToken(true);
+    // The cached token, not a forced refresh. `getIdToken(true)` on every
+    // call cost a second round trip against a shared Google token endpoint
+    // for a token that was usually still valid for the best part of an hour,
+    // and made this button fail whenever that extra call did. The stale-token
+    // case is answered where it actually shows up, below.
+    await user.getIdToken();
 
     final callable = _functions.httpsCallable('reportEquipment');
     try {
       await callable.call<Map<String, dynamic>>(report.toJson());
+    } on FirebaseFunctionsException catch (e) {
+      if (e.code != 'unauthenticated') {
+        throw EquipmentReportException('Could not submit report: $e');
+      }
+      // One retry, on the one error a stale token produces.
+      try {
+        await user.getIdToken(true);
+        await callable.call<Map<String, dynamic>>(report.toJson());
+      } on Exception catch (e) {
+        throw EquipmentReportException('Could not submit report: $e');
+      }
     } on Exception catch (e) {
       throw EquipmentReportException('Could not submit report: $e');
     }

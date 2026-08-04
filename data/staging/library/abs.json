@@ -1,0 +1,565 @@
+[
+ {
+  "id": "vid_45_degree_bycicle_twisting_crunch",
+  "title": "45 Degree Bycicle Twisting Crunch",
+  "mergeInto": "vid_45_degree_bycicle_twisting_crunch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/45%20Degree%20Bycicle%20Twisting%20Crunch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/45%20Degree%20Bycicle%20Twisting%20Crunch.mp4"
+  }
+ },
+ {
+  "id": "vid_45_degree_bycicle_twisting_crunch_1",
+  "title": "45 Degree Bycicle Twisting Crunch (1)",
+  "drop": "duplicate clip of vid_45_degree_bycicle_twisting_crunch",
+  "video": {
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/45%20Degree%20Bycicle%20Twisting%20Crunch%20%281%29.mp4"
+  }
+ },
+ {
+  "id": "vid_45_degree_side_bend",
+  "title": "45 Degree Side Bend",
+  "mergeInto": "vid_45_degree_side_bend",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/45%20Degree%20Side%20Bend.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/45%20Degree%20Side%20Bend.mp4"
+  }
+ },
+ {
+  "id": "vid_air_twisting_crunch",
+  "title": "Air Twisting Crunch",
+  "mergeInto": "vid_air_twisting_crunch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Air%20Twisting%20Crunch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Air%20Twisting%20Crunch.mp4"
+  }
+ },
+ {
+  "id": "vid_band_decline_sit_ups",
+  "title": "Band Decline Sit-ups",
+  "mergeInto": "vid_band_decline_sit_ups",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Band%20Decline%20Sit-ups.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Band%20Decline%20Sit-ups.mp4"
+  }
+ },
+ {
+  "id": "vid_band_side_bend",
+  "title": "Band Side Bend",
+  "mergeInto": "vid_band_side_bend",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Band%20Side%20Bend.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Band%20Side%20Bend.mp4"
+  }
+ },
+ {
+  "id": "vid_band_standing_crunch",
+  "title": "Band Standing Crunch",
+  "mergeInto": "vid_band_standing_crunch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Band%20Standing%20Crunch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Band%20Standing%20Crunch.mp4"
+  }
+ },
+ {
+  "id": "vid_band_standing_lift",
+  "title": "Band Standing Lift",
+  "mergeInto": "vid_band_standing_lift",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Band%20Standing%20Lift.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Band%20Standing%20Lift.mp4"
+  }
+ },
+ {
+  "id": "vid_band_twist",
+  "title": "Band Twist",
+  "mergeInto": "vid_band_twist",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Band%20Twist.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Band%20Twist.mp4"
+  }
+ },
+ {
+  "id": "vid_band_twist_up_down",
+  "title": "Band Twist - Up and Down",
+  "equipmentId": "resistance_bands",
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "group": "abs",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Anchor a resistance band high on one side and stand side-on to it, holding the free end in both hands above the near shoulder with the arms straight.",
+  "steps": [
+   "Anchor a resistance band high on one side and stand side-on to it, holding the free end in both hands above the near shoulder with the arms straight.",
+   "Step out until the band is under tension and set the feet shoulder width apart. This is the starting position.",
+   "Pull the hands down and diagonally across your body toward the opposite hip as you breathe out, turning the ribs and pivoting the back foot.",
+   "Reverse the path slowly back up above the shoulder as you breathe in, keeping the arms straight throughout.",
+   "Repeat for the prescribed amount of repetitions, then change sides."
+  ],
+  "ru": {
+   "title": "Диагональная тяга ленты сверху вниз",
+   "steps": [
+    "Закрепите ленту высоко с одной стороны и встаньте к ней боком, удерживая свободный конец обеими руками над ближним плечом на прямых руках.",
+    "Отойдите так, чтобы лента натянулась; стопы на ширине плеч. Это исходное положение.",
+    "На выдохе потяните руки вниз по диагонали через корпус к противоположному бедру, разворачивая рёбра и проворачивая заднюю стопу.",
+    "На вдохе медленно вернитесь по той же траектории вверх над плечом, не сгибая руки.",
+    "Выполните рекомендованное количество повторений, затем смените сторону."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Band%20Twist%20%28Up-down%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Band%20Twist%20%28Up-down%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_bench_leg_raise",
+  "title": "Bench Leg Raise",
+  "mergeInto": "fedb_flat_bench_lying_leg_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Bench%20Leg%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Bench%20Leg%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_bent_knee_lying_twist",
+  "title": "Bent Knee Lying Twist",
+  "mergeInto": "vid_bent_knee_lying_twist",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Bent%20Knee%20Lying%20Twist.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Bent%20Knee%20Lying%20Twist.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_kneeling_crunch",
+  "title": "Cable Kneeling Crunch",
+  "mergeInto": "cable_crunch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Cable%20Kneeling%20Crunch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Cable%20Kneeling%20Crunch.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_standing_crunch",
+  "title": "Cable Standing Crunch",
+  "mergeInto": "vid_cable_standing_crunch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Cable%20Standing%20Crunch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Cable%20Standing%20Crunch.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_standing_lift",
+  "title": "Cable Standing Lift",
+  "mergeInto": "vid_cable_standing_lift",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Cable%20Standing%20Lift.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Cable%20Standing%20Lift.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_twist_up_down",
+  "title": "Cable Twist (up-down)",
+  "mergeInto": "fedb_cable_russian_twists",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Cable%20Twist%20%28up-down%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Cable%20Twist%20%28up-down%29.mp4"
+  }
+ },
+ {
+  "id": "vid_crunch_on_bench",
+  "title": "Crunch on a Bench",
+  "equipmentId": "adjustable_bench",
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "group": "abs",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Lie on a flat bench with your knees bent and your heels resting on the end of it, hands lightly behind your head.",
+  "steps": [
+   "Lie on a flat bench with your knees bent and your heels resting on the end of it, hands lightly behind your head.",
+   "Press the lower back into the bench and keep the chin off the chest. This is the starting position.",
+   "Curl the head, shoulders and upper back up off the bench as you breathe out, and hold the squeeze for a second.",
+   "Lower back down slowly as you breathe in, stopping just before the shoulders touch, and repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Скручивания на скамье",
+   "steps": [
+    "Лягте на горизонтальную скамью, согнув колени и поставив пятки на её край; ладони лежат за головой без нажима.",
+    "Прижмите поясницу к скамье и не прижимайте подбородок к груди. Это исходное положение.",
+    "На выдохе оторвите от скамьи голову, плечи и верх спины и задержитесь в сокращении на секунду.",
+    "На вдохе медленно опуститесь, остановившись прямо перед касанием лопатками, и выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Crunch%20%28on%20bench%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Crunch%20%28on%20bench%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_dumbbell_side_bend",
+  "title": "Dumbbell Side Bend",
+  "mergeInto": "vid_dumbbell_side_bend",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Dumbbell%20Side%20Bend.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Dumbbell%20Side%20Bend.mp4"
+  }
+ },
+ {
+  "id": "vid_hanging_straight_leg_hip_raise",
+  "title": "Hanging Straight Leg Hip Raise",
+  "mergeInto": "vid_hanging_straight_leg_hip_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Hanging%20Straight%20Leg%20Hip%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_hanging_straight_leg_raise",
+  "title": "Hanging Straight Leg Raise",
+  "mergeInto": "vid_hanging_straight_leg_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Hanging%20Straight%20Leg%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Hanging%20Straight%20Leg%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_incline_leg_hip_raise",
+  "title": "Incline Leg Hip Raise",
+  "mergeInto": "vid_incline_leg_hip_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Incline%20Leg%20Hip%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Incline%20Leg%20Hip%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_landmine_180",
+  "title": "Landmine 180",
+  "mergeInto": "vid_landmine_180",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Landmine%20180.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Landmine%20180.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_seated_crunch",
+  "title": "Machine Seated Crunch",
+  "equipmentId": "ab_crunch_machine",
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "group": "abs",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Set the seat so the chest pad sits against your upper chest and hook your feet under the rollers.",
+  "steps": [
+   "Set the seat so the chest pad sits against your upper chest and hook your feet under the rollers.",
+   "Take the handles above your shoulders and sit tall with the weight already lifted off the stack. This is the starting position.",
+   "Curl your ribs down toward your hips as you breathe out, rounding the upper back rather than pulling with the arms.",
+   "Return slowly to the upright position as you breathe in, keeping tension on the abdominals, and repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Скручивания в тренажёре сидя",
+   "steps": [
+    "Отрегулируйте сиденье так, чтобы упор ложился на верх груди, и заведите стопы под валики.",
+    "Возьмитесь за рукояти над плечами и сядьте ровно, сняв вес со стопки. Это исходное положение.",
+    "На выдохе скрутитесь, опуская рёбра к тазу и округляя верх спины, а не подтягивая себя руками.",
+    "На вдохе медленно вернитесь в вертикальное положение, сохраняя напряжение в мышцах живота, и выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Lever%20Seated%20Crunch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Lever%20Seated%20Crunch.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_lever_seated_crunch_1",
+  "title": "Lever Seated Crunch (1)",
+  "drop": "duplicate clip of vid_lever_seated_crunch",
+  "video": {
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Lever%20Seated%20Crunch%20%281%29.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_seated_leg_raise_crunch",
+  "title": "Lever Seated Leg Raise Crunch",
+  "mergeInto": "vid_lever_seated_leg_raise_crunch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Lever%20Seated%20Leg%20Raise%20Crunch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Lever%20Seated%20Leg%20Raise%20Crunch.mp4"
+  }
+ },
+ {
+  "id": "vid_lying_floor_leg_raise",
+  "title": "Lying Floor Leg Raise",
+  "mergeInto": "vid_lying_floor_leg_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Lying%20Floor%20Leg%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Lying%20Floor%20Leg%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_lying_straight_leg_raise",
+  "title": "Lying Straight Leg Raise",
+  "mergeInto": "vid_lying_straight_leg_raise",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Lying%20Straight%20Leg%20Raise.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Lying%20Straight%20Leg%20Raise.mp4"
+  }
+ },
+ {
+  "id": "vid_otis_ups",
+  "title": "Otis-Up",
+  "equipmentId": "weight_plates",
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "group": "abs",
+  "isStretch": false,
+  "difficulty": "intermediate",
+  "durationMinutes": 6,
+  "summary": "Lie on your back with the knees bent and the feet anchored, holding a weight plate against your chest with both hands.",
+  "steps": [
+   "Lie on your back with the knees bent and the feet anchored, holding a weight plate against your chest with both hands.",
+   "Press the lower back into the floor. This is the starting position.",
+   "Sit all the way up as you breathe out, and as you reach the top press the plate straight overhead.",
+   "Bring the plate back to your chest, then lower the torso to the floor slowly as you breathe in.",
+   "Repeat for the prescribed amount of repetitions, keeping the plate close to the body so the lower back is not pulled forward."
+  ],
+  "ru": {
+   "title": "Подъёмы корпуса с блином над головой",
+   "steps": [
+    "Лягте на спину, согните колени и зафиксируйте стопы, удерживая блин двумя руками у груди.",
+    "Прижмите поясницу к полу. Это исходное положение.",
+    "На выдохе полностью поднимите корпус, а в верхней точке выжмите блин прямо над головой.",
+    "Верните блин к груди и на вдохе медленно опустите корпус на пол.",
+    "Выполните рекомендованное количество повторений, удерживая блин близко к телу, чтобы он не тянул поясницу вперёд."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Otis-ups.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Otis-ups.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_side_bridge_side_plank",
+  "title": "Side Bridge - Side Plank",
+  "mergeInto": "vid_side_bridge_side_plank",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Side%20Bridge%20-%20Side%20Plank.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Side%20Bridge%20-%20Side%20Plank.mp4"
+  }
+ },
+ {
+  "id": "vid_sit_up_on_exercise_ball",
+  "title": "Sit-up On Exercise Ball",
+  "mergeInto": "vid_sit_up_on_exercise_ball",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Sit-up%20On%20Exercise%20Ball.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Sit-up%20On%20Exercise%20Ball.mp4"
+  }
+ },
+ {
+  "id": "vid_sit_ups",
+  "title": "Sit-Up",
+  "equipmentId": null,
+  "muscles": [
+   "core"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "group": "abs",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Lie on your back with the knees bent, the feet flat on the floor and the arms crossed over your chest.",
+  "steps": [
+   "Lie on your back with the knees bent, the feet flat on the floor and the arms crossed over your chest.",
+   "Press the lower back down and keep the chin a fist's width from your chest. This is the starting position.",
+   "Curl the torso all the way up until your chest is close to your thighs as you breathe out, leading with the ribs rather than the head.",
+   "Lower back to the floor slowly as you breathe in, one vertebra at a time.",
+   "Repeat for the prescribed amount of repetitions, anchoring the feet only if you cannot keep them down."
+  ],
+  "ru": {
+   "title": "Подъёмы корпуса",
+   "steps": [
+    "Лягте на спину, согните колени, поставьте стопы на пол и скрестите руки на груди.",
+    "Прижмите поясницу к полу, между подбородком и грудью оставьте расстояние в кулак. Это исходное положение.",
+    "На выдохе полностью поднимите корпус, пока грудь не окажется близко к бёдрам, ведя движение рёбрами, а не головой.",
+    "На вдохе медленно опуститесь на пол позвонок за позвонком.",
+    "Выполните рекомендованное количество повторений; фиксируйте стопы только в том случае, если иначе они отрываются от пола."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Sit-ups.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Sit-ups.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_spell_caster",
+  "title": "Spell Caster",
+  "mergeInto": "vid_spell_caster",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Spell%20Caster.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Spell%20Caster.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_chin_to_chest_stretch",
+  "title": "Stretching - Chin-to-chest Stretch",
+  "mergeInto": "vid_stretching_chin_to_chest_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Stretching%20-%20Chin-to-chest%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Stretching%20-%20Chin-to-chest%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_iron_cross_stretch",
+  "title": "Stretching - Iron Cross Stretch",
+  "mergeInto": "vid_stretching_iron_cross_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Stretching%20-%20Iron%20Cross%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Stretching%20-%20Iron%20Cross%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_seated_twist_straight_arm",
+  "title": "Seated Twist Stretch - Straight Arm",
+  "equipmentId": null,
+  "muscles": [
+   "core",
+   "lower_back"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "group": "abs",
+  "isStretch": true,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Sit tall on the floor with both legs straight in front of you and the spine lengthened.",
+  "steps": [
+   "Sit tall on the floor with both legs straight in front of you and the spine lengthened.",
+   "Reach both arms straight forward at shoulder height, palms facing down. This is the starting position.",
+   "Rotate the torso to one side, keeping the arms straight and level and the hips facing forward, until the waist stretches.",
+   "Return to the middle and repeat to the other side, alternating for 8 to 10 turns each way."
+  ],
+  "ru": {
+   "title": "Повороты корпуса сидя с прямыми руками",
+   "steps": [
+    "Сядьте на пол с прямой спиной, вытянув обе ноги перед собой и удлинив позвоночник.",
+    "Вытяните обе руки прямо перед собой на уровне плеч ладонями вниз. Это исходное положение.",
+    "Разверните корпус в одну сторону, удерживая руки прямыми и на одном уровне, а таз — направленным вперёд, пока не растянется талия.",
+    "Вернитесь в середину и повторите в другую сторону, чередуя по 8–10 разворотов в каждую."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Stretching%20-%20Seated%20Twist%20%28straight%20arm%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Stretching%20-%20Seated%20Twist%20%28straight%20arm%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_stretching_spinal_stretch_on_exercise_ball",
+  "title": "Stretching - Spinal Stretch On Exercise Ball",
+  "mergeInto": "vid_stretching_spinal_stretch_on_exercise_ball",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Stretching%20-%20Spinal%20Stretch%20On%20Exercise%20Ball.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Stretching%20-%20Spinal%20Stretch%20On%20Exercise%20Ball.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_standing_side_bend_bent_arm",
+  "title": "Standing Side Bend - Bent Arm",
+  "equipmentId": null,
+  "muscles": [
+   "core",
+   "lats"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "group": "abs",
+  "isStretch": true,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Stand tall with the feet hip width apart and the knees soft.",
+  "steps": [
+   "Stand tall with the feet hip width apart and the knees soft.",
+   "Raise one arm overhead and bend the elbow so the hand rests behind your head. This is the starting position.",
+   "Bend sideways away from the raised arm, keeping both hips level and the torso in one plane, until that side of the ribs stretches.",
+   "Hold for 20 to 30 seconds, then come back upright and repeat on the other side."
+  ],
+  "ru": {
+   "title": "Боковой наклон стоя с согнутой рукой",
+   "steps": [
+    "Встаньте прямо, стопы на ширине таза, колени мягкие.",
+    "Поднимите одну руку над головой и согните локоть так, чтобы ладонь легла на затылок. Это исходное положение.",
+    "Наклонитесь в сторону от поднятой руки, удерживая таз ровно, а корпус — в одной плоскости, пока не растянется бок.",
+    "Удерживайте 20–30 секунд, затем выпрямитесь и повторите в другую сторону."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Stretching%20-%20Standing%20Side%20Bend%20%28bent%20arm%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Stretching%20-%20Standing%20Side%20Bend%20%28bent%20arm%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_twisting_crunch",
+  "title": "Twisting Crunch",
+  "mergeInto": "vid_twisting_crunch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Twisting%20Crunch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Twisting%20Crunch.mp4"
+  }
+ },
+ {
+  "id": "vid_v_up",
+  "title": "V-up",
+  "mergeInto": "vid_v_up",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/V-up.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/V-up.mp4"
+  }
+ },
+ {
+  "id": "vid_vertical_leg_raise_on_parallel_bars",
+  "title": "Vertical Leg Raise (on parallel bars)",
+  "mergeInto": "vid_vertical_leg_raise_on_parallel_bars",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Abs/Vertical%20Leg%20Raise%20%28on%20parallel%20bars%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Vertical%20Leg%20Raise%20%28on%20parallel%20bars%29.mp4"
+  }
+ },
+ {
+  "id": "vid_weighted_leg_extension_crunch",
+  "title": "Weighted Leg Extension Crunch",
+  "mergeInto": "vid_weighted_leg_extension_crunch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/mix/Weighted%20Leg%20Extension%20Crunch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/abs/Weighted%20Leg%20Extension%20Crunch.mp4"
+  }
+ }
+]

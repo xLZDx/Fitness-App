@@ -1,0 +1,394 @@
+[
+ {
+  "id": "vid_band_overhead_triceps_extension",
+  "title": "Band Overhead Triceps Extension",
+  "mergeInto": "vid_band_overhead_triceps_extension",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Band%20Overhead%20Triceps%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Band%20Overhead%20Triceps%20Extension.mp4"
+  }
+ },
+ {
+  "id": "vid_band_side_triceps_pushdown",
+  "title": "Band Side Triceps Pushdown",
+  "mergeInto": "vid_band_side_triceps_pushdown",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Band%20Side%20Triceps%20Pushdown.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Band%20Side%20Triceps%20Pushdown.mp4"
+  }
+ },
+ {
+  "id": "vid_band_triceps_pushdown",
+  "title": "Band Triceps Pushdown",
+  "mergeInto": "vid_band_triceps_pushdown",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Band%20Triceps%20Pushdown.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Band%20Triceps%20Pushdown.mp4"
+  }
+ },
+ {
+  "id": "vid_barbell_close_grip_bench_press",
+  "title": "Barbell Close Grip Bench Press",
+  "mergeInto": "fedb_close-grip_barbell_bench_press",
+  "video": {
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Barbell%20Close%20Grip%20Bench%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_bench_dips",
+  "title": "Bench Dips",
+  "mergeInto": "bench_dips",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Bench%20Dips.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Bench%20Dips.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_lying_triceps_extension",
+  "title": "Cable Lying Triceps Extension",
+  "mergeInto": "vid_cable_lying_triceps_extension",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Cable%20Lying%20Triceps%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Cable%20Lying%20Triceps%20Extension.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_overhead_triceps_extension_rope_attachment",
+  "title": "Cable Overhead Triceps Extension (rope attachment)",
+  "mergeInto": "vid_cable_overhead_triceps_extension_rope_attachment",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Cable%20Overhead%20Triceps%20Extension%20%28rope%20attachment%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Cable%20Overhead%20Triceps%20Extension%20%28rope%20attachment%29.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_pushdown_rope_attachment",
+  "title": "Cable Pushdown (rope attachment)",
+  "mergeInto": "vid_cable_pushdown_rope_attachment",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Cable%20Pushdown%20%28rope%20attachment%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Cable%20Pushdown%20%28rope%20attachment%29.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_rope_high_pulley_overhead_triceps_extension",
+  "title": "Cable Rope High Pulley Overhead Triceps Extension",
+  "mergeInto": "vid_cable_rope_high_pulley_overhead_triceps_extension",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Cable%20Rope%20High%20Pulley%20Overhead%20Triceps%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Cable%20Rope%20High%20Pulley%20Overhead%20Triceps%20Extension.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_standing_one_arm_triceps_extension",
+  "title": "Cable Standing One Arm Triceps Extension",
+  "mergeInto": "vid_cable_standing_one_arm_triceps_extension",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Cable%20Standing%20One%20Arm%20Triceps%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Cable%20Standing%20One%20Arm%20Triceps%20Extension.mp4"
+  }
+ },
+ {
+  "id": "vid_cable_triceps_pushdown",
+  "title": "Cable Triceps Pushdown",
+  "mergeInto": "vid_cable_triceps_pushdown",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Cable%20Triceps%20Pushdown.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Cable%20Triceps%20Pushdown.mp4"
+  }
+ },
+ {
+  "id": "vid_close_grip_push_ups",
+  "title": "Close Grip Push-ups",
+  "mergeInto": "vid_close_grip_push_ups",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Close%20Grip%20Push-ups.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Close%20Grip%20Push-ups.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_close_grip_press",
+  "title": "Dumbbell Close Grip Press",
+  "mergeInto": "fedb_close-grip_dumbbell_press",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20Close%20Grip%20Press.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20Close%20Grip%20Press.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_incline_triceps_extension",
+  "title": "Dumbbell Incline Triceps Extension",
+  "mergeInto": "fedb_decline_dumbbell_triceps_extension",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20Incline%20Triceps%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20Incline%20Triceps%20Extension.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_kickback",
+  "title": "Dumbbell Kickback",
+  "mergeInto": "vid_dumbbell_kickback",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20Kickback.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20Kickback.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_lying_alternate_extension",
+  "title": "Dumbbell Lying Alternating Triceps Extension",
+  "equipmentId": "dumbbell",
+  "muscles": [
+   "triceps"
+  ],
+  "primaryMuscles": [
+   "triceps"
+  ],
+  "group": "triceps",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Lie on a flat bench holding a dumbbell in each hand directly above your shoulders, arms straight and palms facing each other.",
+  "steps": [
+   "Lie on a flat bench holding a dumbbell in each hand directly above your shoulders, arms straight and palms facing each other.",
+   "Tuck the elbows in so the upper arms stay vertical for the whole set. This is the starting position.",
+   "Keeping one arm locked out, bend the other elbow and lower that dumbbell toward your ear as you breathe in.",
+   "Extend it back to straight as you breathe out, then repeat with the other arm.",
+   "Keep alternating until you have completed the prescribed amount of repetitions with each arm."
+  ],
+  "ru": {
+   "title": "Поочерёдные разгибания рук с гантелями лёжа",
+   "steps": [
+    "Лягте на горизонтальную скамью, удерживая по гантели в каждой руке прямо над плечами: руки выпрямлены, ладони обращены друг к другу.",
+    "Прижмите локти внутрь так, чтобы плечи оставались вертикальными весь подход. Это исходное положение.",
+    "Оставив одну руку выпрямленной, на вдохе согните другой локоть и опустите гантель к уху.",
+    "На выдохе разогните руку обратно, затем повторите движение другой рукой.",
+    "Чередуйте руки, пока не выполните рекомендованное количество повторений каждой."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20Lying%20Alternate%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20Lying%20Alternate%20Extension.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_dumbbell_lying_triceps_extension",
+  "title": "Dumbbell Lying Triceps Extension",
+  "mergeInto": "vid_dumbbell_lying_triceps_extension",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20Lying%20Triceps%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20Lying%20Triceps%20Extension.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_one_arm_triceps_extension",
+  "title": "Dumbbell One Arm Triceps Extension",
+  "mergeInto": "vid_dumbbell_one_arm_triceps_extension",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20One%20Arm%20Triceps%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20One%20Arm%20Triceps%20Extension.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_pronate_grip_triceps_extension",
+  "title": "Dumbbell Pronate-grip Triceps Extension",
+  "mergeInto": "vid_dumbbell_pronate_grip_triceps_extension",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20Pronate-grip%20Triceps%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20Pronate-grip%20Triceps%20Extension.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_seated_kickback",
+  "title": "Dumbbell Seated Kickback",
+  "mergeInto": "vid_dumbbell_seated_kickback",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20Seated%20Kickback.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20Seated%20Kickback.mp4"
+  }
+ },
+ {
+  "id": "vid_dumbbell_seated_triceps_extension",
+  "title": "Dumbbell Seated Triceps Extension",
+  "mergeInto": "vid_dumbbell_seated_triceps_extension",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Dumbbell%20Seated%20Triceps%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Dumbbell%20Seated%20Triceps%20Extension.mp4"
+  }
+ },
+ {
+  "id": "vid_ez_barbell_lying_triceps_extension",
+  "title": "EZ Barbell Lying Triceps Extension",
+  "mergeInto": "vid_ez_barbell_lying_triceps_extension",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/EZ%20Barbell%20Lying%20Triceps%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/EZ%20Barbell%20Lying%20Triceps%20Extension.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_seated_dips",
+  "title": "Machine Seated Dip",
+  "equipmentId": "tricep_extension_machine",
+  "muscles": [
+   "triceps",
+   "chest"
+  ],
+  "primaryMuscles": [
+   "triceps"
+  ],
+  "group": "triceps",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Set the seat height so the handles sit level with the sides of your chest, then sit down with your back against the pad.",
+  "steps": [
+   "Set the seat height so the handles sit level with the sides of your chest, then sit down with your back against the pad.",
+   "Take a handle in each hand with a neutral grip, elbows bent and tucked against your ribs. This is the starting position.",
+   "Press the handles down until the arms are straight beside your hips as you breathe out, and hold for a second.",
+   "Let the handles rise back slowly to chest height as you breathe in, keeping the shoulders down and the back on the pad, and repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Отжимания в тренажёре сидя",
+   "steps": [
+    "Отрегулируйте высоту сиденья так, чтобы рукояти оказались на уровне боков грудной клетки, и сядьте, прижав спину к спинке.",
+    "Возьмитесь за рукояти нейтральным хватом; локти согнуты и прижаты к рёбрам. Это исходное положение.",
+    "На выдохе выжмите рукояти вниз до полного выпрямления рук вдоль бёдер и задержитесь на секунду.",
+    "На вдохе медленно позвольте рукоятям вернуться на уровень груди, не поднимая плечи и не отрывая спину от спинки, и выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Lever%20Seated%20Dips.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Lever%20Seated%20Dips.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_lever_triceps_extension",
+  "title": "Lever Triceps Extension",
+  "mergeInto": "fedb_machine_triceps_extension",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Lever%20Triceps%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Lever%20Triceps%20Extension.mp4"
+  }
+ },
+ {
+  "id": "vid_lever_triceps_extension_neutral_grip",
+  "title": "Machine Triceps Extension - Neutral Grip",
+  "equipmentId": "tricep_extension_machine",
+  "muscles": [
+   "triceps"
+  ],
+  "primaryMuscles": [
+   "triceps"
+  ],
+  "group": "triceps",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Set the seat so your elbows rest on the pad level with your shoulders, and sit with your chest against the support.",
+  "steps": [
+   "Set the seat so your elbows rest on the pad level with your shoulders, and sit with your chest against the support.",
+   "Take the parallel handles so your palms face each other and bend the elbows to bring the hands toward your head. This is the starting position.",
+   "Extend the elbows until the arms are straight as you breathe out; the neutral grip keeps the wrists in line with the forearms.",
+   "Bend the elbows slowly back to the stretched position as you breathe in, and repeat for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Разгибания рук в тренажёре нейтральным хватом",
+   "steps": [
+    "Отрегулируйте сиденье так, чтобы локти лежали на упоре на уровне плеч, и сядьте, прижав грудь к опоре.",
+    "Возьмитесь за параллельные рукояти ладонями друг к другу и согните локти, приблизив кисти к голове. Это исходное положение.",
+    "На выдохе разогните локти до полного выпрямления рук; нейтральный хват удерживает запястья на одной линии с предплечьями.",
+    "На вдохе медленно согните локти обратно в растянутое положение и выполните рекомендованное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Lever%20Triceps%20Extension%20%28neutral%20grip%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Lever%20Triceps%20Extension%20%28neutral%20grip%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_old_school_reverse_extensions",
+  "title": "Old School Reverse Extensions",
+  "drop": "filed under triceps but \"reverse extension\" names a different movement in every source; implement unstated",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Old%20School%20Reverse%20Extensions.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Old%20School%20Reverse%20Extensions.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_kneeling_triceps_extension",
+  "title": "Kneeling Triceps Stretch",
+  "equipmentId": null,
+  "muscles": [
+   "triceps",
+   "shoulders"
+  ],
+  "primaryMuscles": [
+   "triceps"
+  ],
+  "group": "triceps",
+  "isStretch": true,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Kneel on a mat and sit back onto your heels with the spine tall and the shoulders relaxed.",
+  "steps": [
+   "Kneel on a mat and sit back onto your heels with the spine tall and the shoulders relaxed.",
+   "Raise one arm overhead and bend the elbow so that hand drops down between your shoulder blades. This is the starting position.",
+   "Take the raised elbow with the other hand and draw it gently back and toward the midline until the triceps stretches.",
+   "Hold for 20 to 30 seconds without forcing the shoulder, then release and change arms."
+  ],
+  "ru": {
+   "title": "Растяжка трицепса стоя на коленях",
+   "steps": [
+    "Встаньте на колени на коврик и сядьте на пятки, вытянув позвоночник вверх и расслабив плечи.",
+    "Поднимите одну руку над головой и согните локоть так, чтобы кисть опустилась между лопаток. Это исходное положение.",
+    "Возьмитесь другой рукой за поднятый локоть и мягко потяните его назад и к средней линии, пока трицепс не растянется.",
+    "Удерживайте 20–30 секунд, не продавливая плечевой сустав, затем отпустите и смените руку."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Stretching%20-%20Kneeling%20Triceps%20Extension.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Stretching%20-%20Kneeling%20Triceps%20Extension.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_stretching_reverse_dip",
+  "title": "Reverse Dip Stretch",
+  "equipmentId": "adjustable_bench",
+  "muscles": [
+   "triceps",
+   "chest",
+   "shoulders"
+  ],
+  "primaryMuscles": [
+   "triceps"
+  ],
+  "group": "triceps",
+  "isStretch": true,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Sit on the edge of a bench and place your hands on the edge either side of your hips, fingers pointing forward.",
+  "steps": [
+   "Sit on the edge of a bench and place your hands on the edge either side of your hips, fingers pointing forward.",
+   "Walk the feet out and slide your hips off the bench so your weight rests on your hands and heels. This is the starting position.",
+   "Lower your hips slowly toward the floor until you feel a stretch across the front of the shoulders and the triceps.",
+   "Hold for 15 to 20 seconds, breathing steadily, then press back up and sit down to release."
+  ],
+  "ru": {
+   "title": "Растяжка трицепса и плеч в обратном упоре",
+   "steps": [
+    "Сядьте на край скамьи и поставьте ладони на край по сторонам от таза, пальцы направлены вперёд.",
+    "Отшагните стопами вперёд и сместите таз со скамьи так, чтобы вес пришёлся на ладони и пятки. Это исходное положение.",
+    "Медленно опускайте таз к полу, пока не почувствуете растяжение по передней поверхности плеч и в трицепсах.",
+    "Удерживайте 15–20 секунд, дыша ровно, затем выжмите себя вверх и сядьте обратно."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Triceps/Stretching%20-%20Reverse%20Dip.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/Triceps/Stretching%20-%20Reverse%20Dip.mp4"
+  },
+  "mergeInto": null
+ }
+]

@@ -1,0 +1,38 @@
+{
+ "passed_at_utc": "2026-07-31T20:43:38+00:00",
+ "drop": "D:\\Downloads\\Video",
+ "advertised_urls": 653,
+ "files_on_disk": 677,
+ "orphans": [
+  "girl/Abs/Weighted Leg Extension Crunch.mp4",
+  "girl/Back/Bench Pull-ups.mp4",
+  "girl/Back/Stretching - Slopes Towards Stretch.mp4",
+  "girl/Calves/Barbell Clean And Press.mp4",
+  "girl/Calves/Dumbbell Front Squat.mp4",
+  "girl/Cardio/Cardio Exercises Machine.mp4",
+  "girl/Cardio/Cardio Exercises.mp4",
+  "girl/Cardio/Walk Wave Machine.mp4",
+  "girl/Forearms/Weighted Standing Curl (weights or lever).mp4",
+  "girl/Triceps/Old School Reverse Extensions.mp4",
+  "men/Forearms/Weighted Standing Curl.mp4",
+  "men/Triceps/Old School Reverse Extensions.mp4",
+  "men/abs/45 Degree Bycicle Twisting Crunch (1).mp4",
+  "men/abs/Lever Seated Crunch (1).mp4",
+  "men/back/Bench Pull-ups.mp4",
+  "men/back/Smith Deadlift - Deadlift (1).mp4",
+  "men/back/Stretching - Middle Back Stretch (1).mp4",
+  "men/back/Stretching - Slopes Towards Stretch.mp4",
+  "men/back/Stretching - Standing Lateral Stretch (1).mp4",
+  "men/cardio/Cardio Exercises Machines.mp4",
+  "men/cardio/Cardio Exercises.mp4",
+  "men/cardio/Stretching - Bridge Pose Setu Bandhasana (1).mp4",
+  "men/cardio/Walk Wave Machine.mp4",
+  "men/chest/Dumbbell Decline Fly (45 degree) (1).mp4"
+ ],
+ "duplicate_groups": 16,
+ "wasted_by_duplicates_mb": 14.3,
+ "name_collisions_with_different_content": [
+  "girl/Weighted Leg Extension Crunch.mp4 in ['Abs', 'mix']"
+ ],
+ "total_gb": 0.686
+}

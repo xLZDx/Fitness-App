@@ -1,0 +1,299 @@
+[
+ {
+  "id": "vid_battling_ropes",
+  "title": "Battling Ropes",
+  "mergeInto": "fedb_battling_ropes",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Battling%20Ropes.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Battling%20Ropes.mp4"
+  }
+ },
+ {
+  "id": "vid_burpee",
+  "title": "Burpee",
+  "mergeInto": "vid_burpee",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Burpee.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Burpee.mp4"
+  }
+ },
+ {
+  "id": "vid_cardio_exercises",
+  "title": "Cardio Exercises",
+  "drop": "duplicate clip of vid_running",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Cardio%20Exercises.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Cardio%20Exercises.mp4"
+  }
+ },
+ {
+  "id": "vid_cardio_exercises_machine",
+  "title": "Cardio Exercises Machine",
+  "drop": "duplicate clip of vid_elliptical",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Cardio%20Exercises%20Machine.mp4"
+  }
+ },
+ {
+  "id": "vid_cardio_exercises_machines",
+  "title": "Cardio Exercises Machines",
+  "drop": "duplicate clip of vid_elliptical",
+  "video": {
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Cardio%20Exercises%20Machines.mp4"
+  }
+ },
+ {
+  "id": "vid_elliptical",
+  "title": "Elliptical Trainer Workout",
+  "equipmentId": "elliptical",
+  "muscles": [
+   "quads",
+   "glutes",
+   "hamstrings",
+   "calves"
+  ],
+  "primaryMuscles": [
+   "quads"
+  ],
+  "group": "cardio",
+  "isStretch": false,
+  "difficulty": "beginner",
+  "durationMinutes": 15,
+  "summary": "Step onto the elliptical, set your feet flat in the middle of the pedals and take hold of the moving handles.",
+  "steps": [
+   "Step onto the elliptical, set your feet flat in the middle of the pedals and take hold of the moving handles.",
+   "Stand tall with the chest up and the core braced, then start the stride and pick a resistance you can hold for the whole session.",
+   "Push and pull through the handles in time with the legs, keeping the heels down and the movement smooth rather than bouncing.",
+   "Hold a steady pace for the planned time, or alternate one minute hard with two minutes easy for intervals.",
+   "Ease the resistance down for the last two minutes to cool off, and step off only once the pedals have stopped."
+  ],
+  "ru": {
+   "title": "Занятие на эллиптическом тренажёре",
+   "steps": [
+    "Встаньте на эллиптический тренажёр, поставьте стопы плотно в середину педалей и возьмитесь за подвижные рукояти.",
+    "Держите корпус прямо, грудь развёрнутой, живот подтянутым; начните движение и подберите сопротивление, которое сможете удерживать всё занятие.",
+    "Толкайте и тяните рукояти в такт ногам, не отрывая пятки и двигаясь плавно, без подпрыгиваний.",
+    "Держите ровный темп запланированное время или чередуйте минуту интенсивной работы с двумя минутами лёгкой.",
+    "За две минуты до конца снизьте сопротивление, чтобы восстановиться, и сходите с тренажёра только после остановки педалей."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Elliptical.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Elliptical.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_jump_rope",
+  "title": "Jump Rope",
+  "mergeInto": "vid_jump_rope",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Jump%20Rope.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Jump%20Rope.mp4"
+  }
+ },
+ {
+  "id": "vid_jump_step_up",
+  "title": "Jump Step-up",
+  "mergeInto": "vid_jump_step_up",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Jump%20Step-up.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Jump%20Step-up.mp4"
+  }
+ },
+ {
+  "id": "vid_jumping_jack",
+  "title": "Jumping Jack",
+  "mergeInto": "vid_jumping_jack",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Jumping%20Jack.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Jumping%20Jack.mp4"
+  }
+ },
+ {
+  "id": "vid_running",
+  "title": "Running",
+  "mergeInto": "vid_running",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Running.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Running.mp4"
+  }
+ },
+ {
+  "id": "vid_stationary_bike",
+  "title": "Stationary Bike",
+  "mergeInto": "vid_stationary_bike",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Stationary%20Bike.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Stationary%20Bike.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_bridge_pose_setu_bandhasana",
+  "title": "Bridge Pose",
+  "equipmentId": null,
+  "muscles": [
+   "glutes",
+   "lower_back",
+   "hamstrings"
+  ],
+  "primaryMuscles": [
+   "glutes"
+  ],
+  "group": "cardio",
+  "isStretch": true,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Lie on your back with the knees bent, the feet flat on the floor hip width apart and the heels close to your glutes.",
+  "steps": [
+   "Lie on your back with the knees bent, the feet flat on the floor hip width apart and the heels close to your glutes.",
+   "Rest the arms alongside the body with the palms down and press the shoulders gently into the mat. This is the starting position.",
+   "Press through the heels and lift the hips until the body forms a straight line from the shoulders to the knees, keeping the chin off the chest.",
+   "Hold for 20 to 30 seconds, breathing steadily, then lower the spine to the floor one vertebra at a time."
+  ],
+  "ru": {
+   "title": "Поза моста",
+   "steps": [
+    "Лягте на спину, согните колени и поставьте стопы на пол на ширине таза, пятки ближе к ягодицам.",
+    "Руки лежат вдоль тела ладонями вниз, плечи мягко прижаты к коврику. Это исходное положение.",
+    "Оттолкнитесь пятками и поднимите таз так, чтобы тело вытянулось в прямую линию от плеч до коленей; подбородок не прижимайте к груди.",
+    "Удерживайте 20–30 секунд, дыша ровно, затем опускайте позвоночник на пол позвонок за позвонком."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Stretching%20-%20Bridge%20Pose%20Setu%20Bandhasana.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Stretching%20-%20Bridge%20Pose%20Setu%20Bandhasana.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_stretching_bridge_pose_setu_bandhasana_1",
+  "title": "Stretching - Bridge Pose Setu Bandhasana (1)",
+  "drop": "duplicate clip of vid_stretching_bridge_pose_setu_bandhasana",
+  "video": {
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Stretching%20-%20Bridge%20Pose%20Setu%20Bandhasana%20%281%29.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_flexion_leg_sit_up",
+  "title": "Stretching - Flexion Leg Sit-up",
+  "mergeInto": "vid_stretching_flexion_leg_sit_up",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Stretching%20-%20Flexion%20Leg%20Sit-up.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Stretching%20-%20Flexion%20Leg%20Sit-up.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_front_toe_touch",
+  "title": "Stretching - Front Toe Touch",
+  "mergeInto": "vid_stretching_front_toe_touch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Stretching%20-%20Front%20Toe%20Touch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Stretching%20-%20Front%20Toe%20Touch.mp4"
+  }
+ },
+ {
+  "id": "vid_stretching_plyo_side_lunge_stretch",
+  "title": "Plyometric Side Lunge Stretch",
+  "equipmentId": null,
+  "muscles": [
+   "adductors",
+   "quads",
+   "glutes"
+  ],
+  "primaryMuscles": [
+   "adductors"
+  ],
+  "group": "cardio",
+  "isStretch": true,
+  "difficulty": "intermediate",
+  "durationMinutes": 6,
+  "summary": "Stand with the feet wide apart and the toes pointing forward, hands together in front of your chest.",
+  "steps": [
+   "Stand with the feet wide apart and the toes pointing forward, hands together in front of your chest.",
+   "Shift your weight onto one leg, bending that knee and pushing the hips back while the other leg stays straight.",
+   "Feel the stretch along the inner thigh of the straight leg and hold the bottom position for a moment.",
+   "Push off the bent leg and spring across to the other side, landing softly in the mirror-image position.",
+   "Keep alternating sides for the prescribed amount of repetitions."
+  ],
+  "ru": {
+   "title": "Боковые выпады в прыжке",
+   "steps": [
+    "Встаньте, широко расставив стопы, носки смотрят вперёд, ладони соединены перед грудью.",
+    "Перенесите вес на одну ногу, сгибая её колено и отводя таз назад; вторая нога остаётся прямой.",
+    "Почувствуйте растяжение по внутренней поверхности бедра прямой ноги и задержитесь в нижней точке на мгновение.",
+    "Оттолкнитесь согнутой ногой и перенеситесь на другую сторону, мягко приземлившись в зеркальное положение.",
+    "Продолжайте чередовать стороны нужное количество повторений."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Stretching%20-%20Plyo%20Side%20Lunge%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Stretching%20-%20Plyo%20Side%20Lunge%20Stretch.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_stretching_single_leg_stretch_bent_knee",
+  "title": "Single Leg Stretch - Bent Knee",
+  "equipmentId": null,
+  "muscles": [
+   "core",
+   "glutes"
+  ],
+  "primaryMuscles": [
+   "core"
+  ],
+  "group": "cardio",
+  "isStretch": true,
+  "difficulty": "beginner",
+  "durationMinutes": 6,
+  "summary": "Lie on your back, curl the head and shoulders off the mat and draw one knee in toward your chest.",
+  "steps": [
+   "Lie on your back, curl the head and shoulders off the mat and draw one knee in toward your chest.",
+   "Hold the bent knee with both hands and extend the other leg out at about 45 degrees, keeping the lower back pressed down. This is the starting position.",
+   "Switch legs in a controlled scissor, drawing the other knee in and extending the first leg out as you breathe out.",
+   "Keep alternating for the prescribed amount of repetitions, then lower the head and both feet to the mat."
+  ],
+  "ru": {
+   "title": "Поочерёдное подтягивание колена лёжа",
+   "steps": [
+    "Лягте на спину, оторвите голову и плечи от коврика и подтяните одно колено к груди.",
+    "Обхватите согнутое колено обеими руками, вторую ногу вытяните вперёд под углом около 45 градусов, прижимая поясницу к полу. Это исходное положение.",
+    "Подконтрольно смените ноги «ножницами»: на выдохе подтяните другое колено и вытяните первую ногу.",
+    "Продолжайте чередовать ноги нужное количество повторений, затем опустите голову и обе стопы на коврик."
+   ]
+  },
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Stretching%20-%20Single%20Leg%20Stretch%20%28bent%20knee%29.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Stretching%20-%20Single%20Leg%20Stretch%20%28bent%20knee%29.mp4"
+  },
+  "mergeInto": null
+ },
+ {
+  "id": "vid_stretching_single_straight_leg_stretch",
+  "title": "Stretching - Single Straight Leg Stretch",
+  "mergeInto": "vid_stretching_single_straight_leg_stretch",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Stretching%20-%20Single%20Straight%20Leg%20Stretch.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Stretching%20-%20Single%20Straight%20Leg%20Stretch.mp4"
+  }
+ },
+ {
+  "id": "vid_treadmill_running",
+  "title": "Treadmill Running",
+  "mergeInto": "vid_treadmill_running",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Treadmill%20Running.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Treadmill%20Running.mp4"
+  }
+ },
+ {
+  "id": "vid_walk_wave_machine",
+  "title": "Walk Wave Machine",
+  "drop": "name does not identify the machine; the same clip is filed under both genders, so the drop gives no second view to read it from",
+  "video": {
+   "girl": "https://VIDEO_HOST_PLACEHOLDER/exercises/girl/Cardio/Walk%20Wave%20Machine.mp4",
+   "men": "https://VIDEO_HOST_PLACEHOLDER/exercises/men/cardio/Walk%20Wave%20Machine.mp4"
+  }
+ }
+]
