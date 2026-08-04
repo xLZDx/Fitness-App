@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
@@ -108,13 +109,10 @@ class LoginPage extends ConsumerWidget {
                 ),
               ),
               const Spacer(),
-              Text(
-                AppLocalizations.of(context).authByContinuingYouAgreeToOur,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: scheme.onSurface.withValues(alpha: 0.60),
-                ),
-              ),
+              // Was a Text() naming "Terms and Privacy Policy" with no route
+              // either word led to -- the exact shape S0a spent two gates
+              // removing from the injury filter. Both are now real links.
+              _TermsAndPrivacyLine(theme: theme, scheme: scheme),
             ],
           ),
         ),
@@ -194,6 +192,61 @@ class _GradientButton extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _TermsAndPrivacyLine extends StatelessWidget {
+  const _TermsAndPrivacyLine({required this.theme, required this.scheme});
+  final ThemeData theme;
+  final ColorScheme scheme;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final linkStyle = theme.textTheme.bodySmall?.copyWith(
+      color: scheme.primary,
+      decoration: TextDecoration.underline,
+    );
+    final plainStyle = theme.textTheme.bodySmall?.copyWith(
+      color: scheme.onSurface.withValues(alpha: 0.60),
+    );
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(l10n.authByContinuingYouAgree, style: plainStyle),
+          // `Semantics(button: true, link: true)`, matching GlassCard's own
+          // fix for the same gap elsewhere in the app (`glass.dart`): a bare
+          // `GestureDetector` gives a ripple-free tap target with no
+          // announcement at all, which is a strange thing to ship on the one
+          // screen whose whole job is informed consent.
+          Semantics(
+            button: true,
+            link: true,
+            label: l10n.legalTermsOfService,
+            child: GestureDetector(
+              key: const Key('login-terms-link'),
+              onTap: () => context.push('/terms'),
+              child: Text(l10n.legalTermsOfService, style: linkStyle),
+            ),
+          ),
+          Text(l10n.authAnd, style: plainStyle),
+          Semantics(
+            button: true,
+            link: true,
+            label: l10n.legalPrivacyPolicy,
+            child: GestureDetector(
+              key: const Key('login-privacy-link'),
+              onTap: () => context.push('/privacy'),
+              child: Text(l10n.legalPrivacyPolicy, style: linkStyle),
+            ),
+          ),
+          Text('.', style: plainStyle),
+        ],
       ),
     );
   }

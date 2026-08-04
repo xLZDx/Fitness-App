@@ -1364,5 +1364,10 @@
   "workoutsLogYourSet": "Log your set",
   "workoutsWeightKg": "Weight (kg)",
   "workoutsReps": "Reps",
-  "workoutsLeaveBlankIfNoLoad": "Leave blank for body-weight or mobility work — an empty field is honest, a zero is not."
+  "workoutsLeaveBlankIfNoLoad": "Leave blank for body-weight or mobility work — an empty field is honest, a zero is not.",
+  "legalTermsOfService": "Terms of Service",
+  "legalPrivacyPolicy": "Privacy Policy",
+  "legalPlaceholderNotice": "This is placeholder text pending the operator's legal review. It is not the real Terms/Privacy Policy yet.",
+  "authByContinuingYouAgree": "By continuing you agree to our",
+  "authAnd": "and"
 }

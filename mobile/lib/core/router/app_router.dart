@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/about/about_page.dart';
+import '../../features/legal/privacy_page.dart';
+import '../../features/legal/terms_page.dart';
 import '../../features/licences/licences_page.dart';
 import '../../features/ai_planner/ai_planner_page.dart';
 import '../../features/auth/data/auth_user.dart';
@@ -41,7 +43,7 @@ final _shellKey = GlobalKey<NavigatorState>();
 
 // /licences is public: an attribution surface that requires a login is not a
 // usable attribution surface.
-const _publicPaths = {'/splash', '/login', '/about', '/donors', '/licences'};
+const _publicPaths = {'/splash', '/login', '/about', '/donors', '/licences', '/terms', '/privacy'};
 
 /// Pure redirect resolution. Exposed for tests so the routing logic can be
 /// validated without spinning up the full widget tree.
@@ -61,10 +63,19 @@ String? resolveRedirect({
   // from the camera.
   final isEquipmentOrWorkout = location.startsWith('/equipment/') ||
       location.startsWith('/workout/');
+  // A public path is public regardless of sign-in state, and this exclusion
+  // is what makes that actually true rather than true-until-signed-in. Before
+  // this, `/terms`/`/privacy`/`/about`/`/donors`/`/licences` were all listed
+  // as public in `_publicPaths` but a signed-in, not-yet-onboarded user who
+  // deep-linked to any of them was silently bounced to `/onboarding` anyway —
+  // caught reviewing L0a, where it directly contradicted this file's own
+  // "linked from Settings and login" claim for the new legal routes, and
+  // equally true of the four routes that were already public.
   if (isSignedIn &&
       !isOnboarded &&
       location != '/onboarding' &&
-      !isEquipmentOrWorkout) {
+      !isEquipmentOrWorkout &&
+      !isPublic) {
     return '/onboarding';
   }
   if (isSignedIn && isOnboarded && location == '/onboarding') {
@@ -253,6 +264,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/licences',
         pageBuilder: (_, __) => _fadeThrough(const LicencesPage()),
+      ),
+      GoRoute(
+        path: '/terms',
+        pageBuilder: (_, __) => _fadeThrough(const TermsPage()),
+      ),
+      GoRoute(
+        path: '/privacy',
+        pageBuilder: (_, __) => _fadeThrough(const PrivacyPage()),
       ),
       GoRoute(
         // Gated, and deliberately outside the shell: it is reached from

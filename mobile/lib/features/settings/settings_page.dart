@@ -144,6 +144,39 @@ class SettingsPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
+          GlassCard(
+            key: const Key('settings-terms'),
+            onTap: () => context.push('/terms'),
+            child: Row(
+              children: [
+                Icon(Icons.gavel_outlined, color: theme.colorScheme.primary),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(AppLocalizations.of(context).legalTermsOfService,
+                      style: theme.textTheme.titleMedium),
+                ),
+                const Icon(Icons.chevron_right),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          GlassCard(
+            key: const Key('settings-privacy'),
+            onTap: () => context.push('/privacy'),
+            child: Row(
+              children: [
+                Icon(Icons.privacy_tip_outlined,
+                    color: theme.colorScheme.primary),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(AppLocalizations.of(context).legalPrivacyPolicy,
+                      style: theme.textTheme.titleMedium),
+                ),
+                const Icon(Icons.chevron_right),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
           // Not optional decoration: the bundled content ships under licences
           // that require visible attribution. See core/licences/.
           GlassCard(

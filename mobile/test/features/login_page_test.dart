@@ -19,7 +19,13 @@ void main() {
       expect(find.text('Welcome'), findsOneWidget);
       expect(find.text('Continue'), findsOneWidget);
       expect(find.text('Continue with Google'), findsOneWidget);
-      expect(find.textContaining('Terms and Privacy Policy'), findsOneWidget);
+      // Was `find.textContaining('Terms and Privacy Policy')`, which asserted
+      // the old shape: one sentence naming two documents that led nowhere.
+      // L0a split it into two real links (see legal_pages_test.dart for the
+      // navigation coverage); the words survive as two separate Text widgets,
+      // which is why the joined phrase no longer appears as one string.
+      expect(find.text('Terms of Service'), findsOneWidget);
+      expect(find.text('Privacy Policy'), findsOneWidget);
     });
 
     testWidgets('Continue triggers anonymous sign-in', (tester) async {

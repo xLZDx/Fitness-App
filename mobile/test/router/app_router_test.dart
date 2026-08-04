@@ -106,6 +106,21 @@ void main() {
         '/home',
       );
     });
+
+    test('a public page reaches a signed-in, not-yet-onboarded user', () {
+      // Found reviewing L0a: /terms, /about, /donors and /licences are all
+      // listed in _publicPaths, but before this the onboarding gate ignored
+      // that list entirely and bounced every one of them to /onboarding
+      // anyway -- directly contradicting the claim that a public page is
+      // reachable regardless of sign-in state.
+      for (final p in ['/terms', '/privacy', '/about', '/donors', '/licences']) {
+        expect(
+          resolveRedirect(isSignedIn: true, isOnboarded: false, location: p),
+          isNull,
+          reason: '$p is public and must not force onboarding first',
+        );
+      }
+    });
   });
 
   group('appRouter integration', () {
