@@ -154,12 +154,12 @@ class TestTheShippedCatalog:
         counts = tagger.coverage(rows, tagger.load_vocabulary())
         assert counts == {
             "neck": 0,
-            "shoulder": 0,
+            "shoulder": 486,
             "elbow": 0,
             "wrist": 0,
-            "lower_back": 0,
+            "lower_back": 312,
             "hip": 0,
-            "knee": 353,
+            "knee": 362,
             "ankle": 0,
         }
 
@@ -169,3 +169,16 @@ class TestTheShippedCatalog:
         counts = tagger.coverage(rows, tagger.load_vocabulary())
         for region, hidden in counts.items():
             assert hidden / len(rows) < 0.45, f"{region} hides {hidden}"
+
+    def test_three_injuries_at_once_still_leave_a_usable_catalog(self, rows):
+        # Regions compose by union, so the interesting number is not any one
+        # of them. Knee + shoulder + lower back -- a plausible list for an
+        # older lifter -- currently hides 56% and leaves 826 exercises. If a
+        # later batch pushes that past 75% the product has stopped being
+        # useful to exactly the people it is for, and that is a decision to
+        # make deliberately rather than to discover.
+        worst = {"knee", "shoulder", "lower_back"}
+        hidden = sum(
+            1 for r in rows if worst & set(r.get("contraindications") or [])
+        )
+        assert hidden / len(rows) < 0.75, f"{hidden} of {len(rows)} hidden"

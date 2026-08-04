@@ -6,7 +6,7 @@ ea_4_reverse_lunge_and_4_side_taps,4 Reverse Lunge and 4 Side Taps,knee,knee_loa
 ea_45_degrees_step_out,45 Degrees Step Out,knee,knee_quad_dominant,step,"quads,glutes",Legs,True
 ea_agility_ladder_advanced_hop_position,Agility Ladder Advanced Hop Position,knee,knee_impact,hop,,Calisthenics-Cardio-Plyo-Functional,True
 ea_agility_ladder_lateral_movement_with_double_hop,Agility Ladder Lateral Movement with Double Hop,knee,knee_impact,hop,,Calisthenics-Cardio-Plyo-Functional,True
-ea_air_swing_running,Air Swing Running,knee,knee_impact,running,,Calisthenics-Cardio-Plyo-Functional,False
+ea_air_swing_running,Air Swing Running,knee,knee_impact,running,,Calisthenics-Cardio-Plyo-Functional,True
 ea_alternate_heel_touch_side_kick_squat,Alternate Heel Touch Side Kick Squat,knee,knee_loaded_flexion,squat,"quads,glutes",Legs,True
 ea_alternate_sprinter_lunge,Alternate Sprinter Lunge,knee,knee_loaded_flexion,lunge,"quads,glutes,hamstrings",Yoga,True
 ea_alternating_lunge_with_rotation,Alternating Lunge with Rotation,knee,knee_loaded_flexion,lunge,"quads,glutes,hamstrings",Yoga,True
@@ -67,6 +67,7 @@ ea_barbell_narrow_stance_squat,Barbell Narrow Stance Squat,knee,knee_loaded_flex
 ea_barbell_overhead_lunges,Barbell Overhead Lunges,knee,knee_loaded_flexion,lunges,"quads,glutes,shoulders",Legs,True
 ea_barbell_overhead_squat,Barbell Overhead Squat,knee,knee_loaded_flexion,squat,"quads,glutes,shoulders",Legs,True
 ea_barbell_pause_lunge,Barbell Pause Lunge,knee,knee_loaded_flexion,lunge,"quads,glutes",Legs,True
+ea_barbell_press_under,Barbell Press Under,knee,knee_quad_dominant,press,,Powerlifting,False
 ea_barbell_quarter_squat,Barbell Quarter Squat,knee,knee_loaded_flexion,squat,"quads,glutes",Legs,True
 ea_barbell_rear_lunge_on_box,Barbell Rear Lunge on Box,knee,knee_loaded_flexion,lunge,"quads,glutes",Legs,True
 ea_barbell_rear_lunges,Barbell Rear Lunges,knee,knee_loaded_flexion,lunges,"quads,glutes",Legs,True
@@ -124,7 +125,8 @@ ea_cable_split_squat,Cable Split Squat,knee,knee_loaded_flexion,split squat,"qua
 ea_cable_standing_leg_extension,Cable Standing Leg Extension,knee,knee_isolation,leg extension,quads,Legs,True
 ea_calf_raise_leg_press_machine,Calf Raise Leg Press Machine,knee,knee_loaded_flexion,leg press,calves,Legs,True
 ea_calf_raise_on_hack_squat_machine,Calf Raise on Hack Squat Machine,knee,knee_loaded_flexion,hack,calves,Legs,True
-ea_calves_stretch_on_stairs,Calves Stretch on Stairs,knee,knee_impact,stairs,calves,Stretching - Mobility,False
+ea_calves_stretch_on_stairs,Calves Stretch on Stairs,knee,knee_impact,stairs,calves,Stretching - Mobility,True
+ea_calves_stretch_on_step,Calves Stretch on Step,knee,knee_quad_dominant,step,,Stretching - Mobility,False
 ea_cardio_lunge,Cardio Lunge,knee,knee_loaded_flexion,lunge,"quads,glutes",Calisthenics-Cardio-Plyo-Functional,True
 ea_chair_back_lunge_left_resistance_band,Chair Back Lunge Left Resistance Band,knee,knee_loaded_flexion,lunge,"quads,glutes",Legs,True
 ea_chair_back_lunge_right_resistance_band,Chair Back Lunge Right Resistance Band,knee,knee_loaded_flexion,lunge,"quads,glutes",Legs,True
@@ -152,6 +154,7 @@ ea_dumbbell_bench_squat,Dumbbell Bench Squat,knee,knee_loaded_flexion,squat,"qua
 ea_dumbbell_bulgarian_box_split_squat,Dumbbell Bulgarian Box Split Squat,knee,knee_loaded_flexion,bulgarian,"quads,glutes",Legs,True
 ea_dumbbell_bulgarian_split_squat,Dumbbell Bulgarian Split Squat,knee,knee_loaded_flexion,bulgarian,"quads,glutes",Legs,True
 ea_dumbbell_cossack_squats_version_2,Dumbbell Cossack Squats (version 2),knee,knee_loaded_flexion,squats,quads,Legs,True
+ea_dumbbell_curl_press_extend,Dumbbell Curl Press Extend,knee,knee_quad_dominant,press,,Calisthenics-Cardio-Plyo-Functional,False
 ea_dumbbell_curtsy_lunge,Dumbbell Curtsy Lunge,knee,knee_loaded_flexion,lunge,"quads,glutes",Legs,True
 ea_dumbbell_frog_jumps,Dumbbell Frog Jumps,knee,knee_impact,jumps,"quads,glutes,calves",Legs,True
 ea_dumbbell_front_rack_lunge,Dumbbell Front Rack Lunge,knee,knee_loaded_flexion,lunge,"quads,glutes",Legs,True
@@ -200,8 +203,10 @@ ea_dumbbell_step_up_with_knee_raise,Dumbbell Step-up with Knee Raise,knee,knee_l
 ea_dumbbell_sumo_squat_off_benches,Dumbbell Sumo Squat Off Benches,knee,knee_loaded_flexion,squat,"glutes,quads",Legs,True
 ea_dumbbell_supported_sissy_squat,Dumbbell Supported Sissy Squat,knee,knee_loaded_flexion,sissy,quads,Legs,True
 ea_dumbell_burpee,Dumbell Burpee,knee,knee_impact,burpee,"quads,shoulders",Calisthenics-Cardio-Plyo-Functional,True
+ea_elbow_extension,Elbow-extension,knee,knee_quad_dominant,extension,,Calisthenics-Cardio-Plyo-Functional,False
 ea_exercise_ball_leg_curl,Exercise Ball Leg Curl,knee,knee_isolation,leg curl,"hamstrings,glutes",Legs,True
 ea_exercise_ball_wall_squat,Exercise Ball Wall Squat,knee,knee_loaded_flexion,squat,quads,Legs,True
+ea_extension_and_inclination_neck_stretch,Extension and Inclination Neck Stretch,knee,knee_quad_dominant,extension,,Stretching - Mobility,False
 ea_feet_together_barbell_squats,Feet Together Barbell Squats,knee,knee_loaded_flexion,squats,"quads,glutes",Legs,True
 ea_frog_jumps,Frog Jumps,knee,knee_impact,jumps,,Legs,True
 ea_front_squats_dumbbell_low,Front Squats Dumbbell Low,knee,knee_loaded_flexion,squats,quads,Legs,True
@@ -225,7 +230,7 @@ ea_in_and_out_squats,In and Out Squats,knee,knee_loaded_flexion,squats,"quads,gl
 ea_in_and_out_squats_jump_bodyweight,In and Out Squats Jump Bodyweight,knee,knee_loaded_flexion,squats,"quads,glutes",Legs,True
 ea_in_and_out_squats_jump_bodyweight_2,In and Out Squats Jump Bodyweight (2),knee,knee_loaded_flexion,squats,"quads,glutes",Legs,True
 ea_jack_knives,Jack Knives,knee,knee_impact,jack,core,Abdominals,True
-ea_jogging,Jogging,knee,knee_impact,jogging,"quads,hamstrings,calves",Calisthenics-Cardio-Plyo-Functional,False
+ea_jogging,Jogging,knee,knee_impact,jogging,"quads,hamstrings,calves",Calisthenics-Cardio-Plyo-Functional,True
 ea_jump_rope_alternating_foot,Jump Rope Alternating Foot,knee,knee_impact,jump,"calves,quads",Calisthenics-Cardio-Plyo-Functional,True
 ea_jump_rope_basic_jump,Jump Rope Basic Jump,knee,knee_impact,jump,"calves,quads",Calisthenics-Cardio-Plyo-Functional,True
 ea_jump_rope_double_bounce,Jump Rope Double Bounce,knee,knee_impact,jump,"calves,quads",Calisthenics-Cardio-Plyo-Functional,True
@@ -266,6 +271,7 @@ ea_landmine_kneeling_overhead_press,Landmine Kneeling Overhead Press,knee,knee_k
 ea_landmine_kneeling_twist,Landmine Kneeling Twist,knee,knee_kneeling,kneeling,,Abdominals,True
 ea_landmine_lateral_lunge,Landmine Lateral Lunge,knee,knee_loaded_flexion,lunge,,Legs,True
 ea_landmine_lunge_to_overhead_press,Landmine Lunge to Overhead Press,knee,knee_loaded_flexion,lunge,,Legs,True
+ea_landmine_rotational_lift_to_press,Landmine Rotational Lift to Press,knee,knee_quad_dominant,press,,Calisthenics-Cardio-Plyo-Functional,False
 ea_landmine_squat_and_press,Landmine Squat and Press,knee,knee_loaded_flexion,squat,,Legs,True
 ea_lateral_box_jump,Lateral Box Jump,knee,knee_impact,box jump,,Legs,True
 ea_leg_press_machine_close_stance,Leg Press Machine Close Stance,knee,knee_loaded_flexion,leg press,quads,Legs,True
@@ -283,6 +289,7 @@ ea_lunge_to_knee_drive_right_bodyweight,Lunge to Knee Drive Right Bodyweight,kne
 ea_lunges_alternate_leg_with_pause_bodyweight,Lunges Alternate Leg with Pause Bodyweight,knee,knee_loaded_flexion,lunges,"quads,glutes",Legs,True
 ea_lunges_same_leg_side_view_bodyweight,Lunges Same Leg Side View Bodyweight,knee,knee_loaded_flexion,lunges,"quads,glutes",Legs,True
 ea_lying_leg_curl_machine,Lying Leg Curl Machine,knee,knee_isolation,leg curl,hamstrings,Legs,True
+ea_lying_neck_extension,Lying Neck Extension,knee,knee_quad_dominant,extension,,Calisthenics-Cardio-Plyo-Functional,False
 ea_med_ball_front_squat_raise,Med Ball Front Squat Raise,knee,knee_loaded_flexion,squat,,Legs,True
 ea_med_ball_half_kneeling_wood_choppers,Med Ball Half Kneeling Wood Choppers,knee,knee_kneeling,kneeling,,Abdominals,True
 ea_med_ball_jumping_jacks,Med Ball Jumping Jacks,knee,knee_impact,jumping,,Calisthenics-Cardio-Plyo-Functional,True
@@ -296,6 +303,7 @@ ea_pike_jacks_feet_kicking_in_and_out,Pike Jacks Feet Kicking in and Out,knee,kn
 ea_pistol_squat_to_box,Pistol Squat to Box,knee,knee_loaded_flexion,pistol,,Legs,True
 ea_plank_jack,Plank Jack,knee,knee_impact,jack,core,Abdominals,True
 ea_plank_lunges,Plank Lunges,knee,knee_loaded_flexion,lunges,"core,lower_back,quads",Calisthenics-Cardio-Plyo-Functional,True
+ea_plate_clean_and_press,Plate Clean and Press,knee,knee_quad_dominant,press,,Powerlifting,False
 ea_plate_curtsy_lunge,Plate Curtsy Lunge,knee,knee_loaded_flexion,lunge,,Legs,True
 ea_plate_deficit_lunge,Plate Deficit Lunge,knee,knee_loaded_flexion,lunge,,Legs,True
 ea_plate_forward_lunge,Plate Forward Lunge,knee,knee_loaded_flexion,lunge,,Legs,True
@@ -306,7 +314,7 @@ ea_plate_squat_hold_biceps_curl,Plate Squat Hold Biceps Curl,knee,knee_loaded_fl
 ea_plate_squat_hold_reach,Plate Squat Hold Reach,knee,knee_loaded_flexion,squat,,Legs,True
 ea_plate_squat_reach,Plate Squat Reach,knee,knee_loaded_flexion,squat,,Legs,True
 ea_plyo_side_lunge_stretch,Plyo Side Lunge Stretch,knee,knee_loaded_flexion,lunge,"quads,glutes,adductors",Stretching - Mobility,True
-ea_rebounder_high_knee_runs,Rebounder High Knee Runs,knee,knee_impact,runs,,Calisthenics-Cardio-Plyo-Functional,False
+ea_rebounder_high_knee_runs,Rebounder High Knee Runs,knee,knee_impact,runs,,Calisthenics-Cardio-Plyo-Functional,True
 ea_rebounder_in_out_jacks,Rebounder in & Out Jacks,knee,knee_impact,jacks,,Calisthenics-Cardio-Plyo-Functional,True
 ea_rebounder_knee_jumps,Rebounder Knee Jumps,knee,knee_impact,jumps,,Calisthenics-Cardio-Plyo-Functional,True
 ea_rebounder_light_jumps,Rebounder Light Jumps,knee,knee_impact,jumps,,Calisthenics-Cardio-Plyo-Functional,True
@@ -319,7 +327,7 @@ ea_resistance_band_squat,Resistance Band Squat,knee,knee_loaded_flexion,squat,"g
 ea_resistance_band_squat_jump,Resistance Band Squat Jump,knee,knee_loaded_flexion,squat,"glutes,quads",Legs,True
 ea_reverse_lunge_left_resistance_band,Reverse Lunge Left Resistance Band,knee,knee_loaded_flexion,lunge,"quads,glutes",Legs,True
 ea_runners_lunge,Runners Lunge,knee,knee_loaded_flexion,lunge,,Yoga,True
-ea_running,Running,knee,knee_impact,running,"quads,hamstrings,calves",Calisthenics-Cardio-Plyo-Functional,False
+ea_running,Running,knee,knee_impact,running,"quads,hamstrings,calves",Calisthenics-Cardio-Plyo-Functional,True
 ea_seated_leg_curl_machine,Seated Leg Curl Machine,knee,knee_isolation,leg curl,hamstrings,Legs,True
 ea_seated_leg_extension_single_leg,Seated Leg Extension Single Leg,knee,knee_isolation,leg extension,quads,Legs,True
 ea_seated_leg_extension_alternate_legs,Seated Leg Extension_alternate Legs,knee,knee_isolation,leg extension,quads,Legs,True
@@ -338,14 +346,15 @@ ea_smith_machine_bulgarian_split_squat,Smith Machine Bulgarian Split Squat,knee,
 ea_smith_machine_narrow_stance_heels_elevated_squats,Smith Machine Narrow Stance Heels Elevated Squats,knee,knee_loaded_flexion,squats,,Legs,True
 ea_star_jump,Star Jump,knee,knee_impact,jump,"quads,hamstrings,glutes",Calisthenics-Cardio-Plyo-Functional,True
 ea_step_up_on_chair_bodyweight,Step Up on Chair Bodyweight,knee,knee_loaded_flexion,step up,"quads,glutes",Legs,True
+ea_stepmill_machine_steps,Stepmill Machine Steps,knee,knee_quad_dominant,steps,,Calisthenics-Cardio-Plyo-Functional,False
 ea_sumo_squat_in_between_legs_resistance_band,Sumo Squat in Between Legs Resistance Band,knee,knee_loaded_flexion,squat,"quads,glutes",Legs,True
 ea_sumo_squat_over_shoulder_resistance_band,Sumo Squat Over Shoulder Resistance Band,knee,knee_loaded_flexion,squat,"quads,glutes",Legs,True
 ea_suspension_trainer_with_grips_leg_curl,Suspension Trainer with Grips Leg Curl,knee,knee_isolation,leg curl,"hamstrings,glutes",Legs,True
 ea_suspension_trainer_with_grips_side_squat,Suspension Trainer with Grips Side Squat,knee,knee_loaded_flexion,squat,"quads,glutes",Legs,True
 ea_suspension_trainer_with_grips_split_squat,Suspension Trainer with Grips Split Squat,knee,knee_loaded_flexion,split squat,"quads,glutes",Legs,True
 ea_suspension_trainer_with_grips_straight_hip_leg_curl,Suspension Trainer with Grips Straight Hip Leg Curl,knee,knee_isolation,leg curl,"hamstrings,glutes",Legs,True
-ea_treadmill_jogging,Treadmill Jogging,knee,knee_impact,jogging,"quads,hamstrings,glutes",Calisthenics-Cardio-Plyo-Functional,False
-ea_treadmill_running,Treadmill Running,knee,knee_impact,running,"quads,hamstrings,glutes",Calisthenics-Cardio-Plyo-Functional,False
+ea_treadmill_jogging,Treadmill Jogging,knee,knee_impact,jogging,"quads,hamstrings,glutes",Calisthenics-Cardio-Plyo-Functional,True
+ea_treadmill_running,Treadmill Running,knee,knee_impact,running,"quads,hamstrings,glutes",Calisthenics-Cardio-Plyo-Functional,True
 ea_unilateral_box_jump,Unilateral Box Jump,knee,knee_impact,box jump,,Calisthenics-Cardio-Plyo-Functional,True
 ea_unilateral_box_jump_bilateral_deceleration,Unilateral Box Jump - Bilateral Deceleration,knee,knee_impact,box jump,,Calisthenics-Cardio-Plyo-Functional,True
 ea_unilateral_jumps,Unilateral Jumps,knee,knee_impact,jumps,,Calisthenics-Cardio-Plyo-Functional,True

@@ -99,10 +99,33 @@ class Rule:
             r"\b(" + "|".join(normalise(w) for w in words) + r")(s|es)?\b"
         )
 
+    def known(self, row: dict) -> set[str]:
+        """The muscles we know about, or every muscle when we know none.
+
+        The vendor's sheet is ~79% filled: 451 of 1,887 rows carry no
+        `primaryMuscles` at all and 182 carry neither list. A muscle gate reads
+        those as "does not intersect" and silently refuses to fire, so a
+        muscle-gated rule could never tag any of them -- under-tagging, which
+        is the direction of error that hurts someone.
+
+        Unknown is not the same as excluded. When the vendor tells us nothing,
+        the gate stands down and the word match decides alone; `muscles` is
+        used as the fallback before giving up entirely, because a secondary
+        list is still evidence. Caught by a spot-check of the shoulder batch:
+        "Cable Face Pull with Rope" and "Kettlebell Rear Delt Row" match
+        `shoulder_abduction`'s words exactly and were being dropped for having
+        no muscle metadata.
+        """
+        primary = set(row.get("primaryMuscles") or [])
+        if primary:
+            return primary
+        secondary = set(row.get("muscles") or [])
+        if secondary:
+            return secondary
+        return set(self.muscles)
+
     def match(self, row: dict) -> str | None:
-        if self.muscles and not self.muscles.intersection(
-            row.get("primaryMuscles") or []
-        ):
+        if self.muscles and not self.muscles.intersection(self.known(row)):
             return None
         for field in self.fields:
             value = row.get(field)
@@ -178,8 +201,12 @@ RULES: dict[str, list[Rule]] = {
         ),
         Rule(
             "shoulder_abduction",
+            # "external rotation" and "internal rotation" are deliberately
+            # absent: rotator-cuff work is what a shoulder injury is usually
+            # prescribed, and hiding it would take away the one thing that
+            # helps.
             ["lateral raise", "front raise", "upright row", "raise", "fly",
-             "flye", "reverse fly", "rear delt"],
+             "flye", "reverse fly", "rear delt", "face pull"],
             muscles=["shoulders", "traps", "chest"],
         ),
         Rule(
