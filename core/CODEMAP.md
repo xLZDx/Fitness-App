@@ -68,7 +68,7 @@ rest are pushed full-screen.
 | Feature | Files | Lines | What it does |
 |---|---:|---:|---|
 | `workouts` | 22 | 3,385 | Workout browsing + logging. `lib/features/workouts/data/offline/` handles prefetch; `widgets/` holds the plate, rest and warm-up calculators plus `set_timer_card.dart`. The timed set lives in `data/set_session.dart` (pure, clock-free) driven by `state/set_timer_providers.dart` (owns the only clock) with `data/cue_player.dart` for the three synthesised sounds |
-| `equipment` | 18 | 3,449 | Equipment detail + workout player. `data/exercise_filter.dart` is the injury-aware filter that gates exercises; `widgets/exercise_thumb.dart` is the one tile every list renders an exercise as (bundled poster, gradient fallback) |
+| `equipment` | 18 | 3,630 | Equipment detail + workout player. `data/exercise_filter.dart` holds the injury filter — which currently gates **nothing**: `safetyCoverage()` in the same file measures 0 of 1,887 exercises carrying a contraindication tag, so `filterContraindicated` removes no row on any surface. `widgets/exercise_thumb.dart` is the one tile every list renders an exercise as (bundled poster, gradient fallback) |
 | `subscription` | 10 | 1,834 | Tiers, paywall, Stripe checkout. `subscription_page.dart` is the biggest file in the repo. `effectiveTierProvider` is the single point that decides the tier — including the Settings test-access override |
 | `onboarding` | 10 | 1,209 | Multi-step intake incl. the injury questionnaire. `lib/features/onboarding/steps/` = one file per step |
 | `profile` | 6 | 1,024 | Profile + settings. `lib/features/profile/data/firestore_profile_repository.dart` is the Firestore boundary |

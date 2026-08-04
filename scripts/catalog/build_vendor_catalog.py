@@ -30,9 +30,13 @@ values that say so rather than a confident-looking guess: every entry is
 `beginner`/10 minutes until something real replaces them. Nothing in the app
 treats those as facts about the exercise -- difficulty only feeds tier sorting.
 
+`--write` merges into the file rather than replacing it -- see `merge_rows`
+for why that is not a refinement but a bug fix.
+
 Usage:
     python scripts/catalog/build_vendor_catalog.py            # measure
     python scripts/catalog/build_vendor_catalog.py --write
+    python scripts/catalog/build_vendor_catalog.py --write --allow-drop
 """
 from __future__ import annotations
 
@@ -81,6 +85,14 @@ GROUP_MUSCLES = {
 }
 
 STRETCH_GROUPS = {"Stretching - Mobility", "Yoga"}
+
+# Fields this script emits but does not own. `build()` produces `equipmentId`
+# as null so every row has the same shape, but the value belongs to the
+# equipment-linking pass (`link_vendor_equipment.py:302`), and
+# `contraindications` will belong to the tagging pass. Writing our own empty
+# value over theirs is exactly the data loss `merge_rows` exists to stop, so on
+# merge the file's value wins for these keys even though we do produce them.
+CURATED = {"equipmentId", "contraindications"}
 
 # The app understands exactly fifteen muscle tags — the vocabulary already in
 # `exercises.json`, read by the muscle map, the muscle chips and the injury
@@ -286,23 +298,109 @@ def build() -> list[dict]:
     return out
 
 
+def load_existing() -> list[dict]:
+    if not OUT.exists():
+        return []
+    return json.loads(OUT.read_text(encoding="utf-8"))
+
+
+def merge_rows(
+    generated: list[dict], existing: list[dict]
+) -> tuple[list[dict], list[str]]:
+    """Fold what we just generated into what is already on disk, keyed by `id`.
+
+    The first version of this script wrote `generated` straight over the file,
+    and that is a data-loss bug rather than a stylistic one. Measured on the
+    shipped catalog the day this was written: 1,887 rows carry a `poster` map
+    written by `make_vendor_posters.py`, 1,384 carry an `equipmentId` written
+    by `link_vendor_equipment.py`, and this generator produces neither -- it
+    emits no `poster` key at all and a null `equipmentId`. So a rebuild for an
+    unrelated reason, one new clip in the bundle, threw away both, and nothing
+    anywhere would have gone red.
+
+    That is the same shape as the incident this whole remediation answers:
+    a catalog swap deleted the only 144 contraindication-tagged exercises in
+    the product and every test stayed green. Tagging 1,887 exercises by hand
+    while `--write` still behaved this way would have queued up the identical
+    loss on a much larger pile of work.
+
+    Three rules, in the order of who wins a key:
+
+    * one the file has and we never produce  -> the file's  (`poster`)
+    * one in CURATED                         -> the file's  (`equipmentId`)
+    * anything else                          -> ours        (`title`, `video`)
+
+    A row on disk keeps a field we have stopped producing (`tips`, when the
+    vendor sheet loses a row). Stale text is a far smaller harm than deleted
+    curated work, which is the trade this whole function is making.
+
+    Returns the merged rows plus the ids that are on disk and no longer
+    generated; the caller decides whether losing those is acceptable.
+    """
+    by_id = {r["id"]: r for r in existing}
+    merged: list[dict] = []
+    for row in generated:
+        old = by_id.get(row["id"])
+        if old is None:
+            merged.append(row)
+            continue
+        combined = dict(row)
+        for key, value in old.items():
+            if key not in combined or key in CURATED:
+                combined[key] = value
+        merged.append(combined)
+
+    generated_ids = {r["id"] for r in generated}
+    return merged, [r["id"] for r in existing if r["id"] not in generated_ids]
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--write", action="store_true")
+    ap.add_argument(
+        "--allow-drop",
+        action="store_true",
+        help="permit --write to remove rows that are on disk but no longer "
+        "generated. Without it a missing or partial bundle deletes them, "
+        "along with every curated field they carry.",
+    )
     args = ap.parse_args()
 
-    rows = build()
-    print(f"vendor exercises   {len(rows)}")
+    existing = load_existing()
+    rows, dropped = merge_rows(build(), existing)
+
+    # Counted on the merged rows, not on `build()`'s output: this is what the
+    # file will contain, and the two differ by exactly the curated fields.
+    print(f"vendor exercises   {len(rows)}  (on disk now: {len(existing)})")
     print(f"  both bodies      {sum(1 for r in rows if len(r['video']) == 2)}")
     print(f"  with steps       {sum(1 for r in rows if r['steps'])}")
     print(f"  with tips        {sum(1 for r in rows if r.get('tips'))}")
     print(f"  with muscles     {sum(1 for r in rows if r['muscles'])}")
     print(f"  stretch/mobility {sum(1 for r in rows if r['isStretch'])}")
     print(f"  with equipment   {sum(1 for r in rows if r.get('equipmentLabel'))}")
+    print(f"  with posters     {sum(1 for r in rows if r.get('poster'))}")
+    print(f"  linked to a gym  {sum(1 for r in rows if r.get('equipmentId'))}")
+    # `contraindications` is what `filterContraindicated` reads, and the one
+    # coverage number the six above never reported. It stood at 0 of 1,887
+    # while the app told users their injuries were being filtered for.
+    print(f"  with safety tags {sum(1 for r in rows if r.get('contraindications'))}")
     groups = collections.Counter(r["vendorGroup"] for r in rows)
     print(f"  groups           {dict(sorted(groups.items()))}")
 
+    if dropped:
+        print(f"\n{len(dropped)} rows are on disk but no longer generated:")
+        for exercise_id in dropped[:10]:
+            print(f"    {exercise_id}")
+        if len(dropped) > 10:
+            print(f"    ... and {len(dropped) - 10} more")
+
     if args.write:
+        if dropped and not args.allow_drop:
+            sys.exit(
+                "\nrefusing to write: this would delete the rows listed above "
+                "and every curated field on them. Re-run with --allow-drop if "
+                "the removal is what you meant."
+            )
         OUT.write_text(
             json.dumps(rows, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
         )

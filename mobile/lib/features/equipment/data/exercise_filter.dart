@@ -49,6 +49,49 @@ List<ExerciseItem> filterContraindicated(
       .toList(growable: false);
 }
 
+/// How many exercises in [exercises] carry the tags [filterContraindicated]
+/// reads, out of how many there are.
+///
+/// ## Why a filter needs a coverage number at all
+///
+/// [filterContraindicated] keeps any exercise with no tags — see
+/// `if (ex.contraindications.isEmpty) return true;` above. For one untagged
+/// row among many that is the only safe default. When *every* row is untagged
+/// the same line makes the filter a total no-op: it runs on every surface,
+/// removes nothing, and reports a truthful zero for the wrong reason.
+///
+/// Measured on the shipped catalog the day this was written: 0 of 1,887
+/// exercises carry a single tag, while eight places in the product told the
+/// user their injuries were being filtered for. Nothing in the code could have
+/// reported that, because a filter that cannot fire is not a bug in the
+/// filter. This is the number that reports it.
+///
+/// Read today by the coverage-floor test in
+/// `test/features/equipment/safety_coverage_test.dart`. The honesty banner and
+/// the tagging work's ratchet are meant to read the same function rather than
+/// each counting "covered" slightly differently — neither exists yet.
+typedef SafetyCoverage = ({int tagged, int total});
+
+SafetyCoverage safetyCoverage(Iterable<ExerciseItem> exercises) {
+  var tagged = 0;
+  var total = 0;
+  for (final e in exercises) {
+    total++;
+    if (e.contraindications.isNotEmpty) tagged++;
+  }
+  return (tagged: tagged, total: total);
+}
+
+extension SafetyCoverageFraction on SafetyCoverage {
+  /// Share of the catalog that carries a tag, 0.0 to 1.0.
+  ///
+  /// An empty catalog is 0.0 — uncovered, not vacuously complete. The other
+  /// choice reads as 100% and would quietly disarm every caller asking "is
+  /// coverage below the floor?" at the one moment it matters most: when the
+  /// catalog failed to load at all.
+  double get fraction => total == 0 ? 0 : tagged / total;
+}
+
 int _difficultyRank(ExerciseDifficulty d) {
   switch (d) {
     case ExerciseDifficulty.beginner:
