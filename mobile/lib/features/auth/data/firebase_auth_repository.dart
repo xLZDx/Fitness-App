@@ -43,7 +43,19 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Stream<AuthUser?> authStateChanges() =>
-      _auth.authStateChanges().map(_toDomain);
+      // `_auth.userChanges()`, not `_auth.authStateChanges()`. Verified
+      // against the pinned firebase_auth 6.4.0 source: authStateChanges()'s
+      // own doc comment says only "sign-in or sign-out", while userChanges()
+      // says "a superset of authStateChanges() ... such as when credentials
+      // are linked". Every reactive surface in the app -- the router, the
+      // profile, `authUserProvider` itself -- is built on THIS stream, so
+      // with the plain authStateChanges() a guest who successfully linked to
+      // Google (L0d) kept seeing themselves as the stale pre-link anonymous
+      // user for the rest of the session, until an unrelated sign-in/out
+      // happened to refresh it. userChanges() is documented as a strict
+      // superset, so this changes nothing about the existing sign-in/sign-out
+      // behaviour -- it only adds the events that were missing.
+      _auth.userChanges().map(_toDomain);
 
   @override
   AuthUser? get currentUser => _toDomain(_auth.currentUser);
@@ -101,6 +113,64 @@ class FirebaseAuthRepository implements AuthRepository {
             'registered for this build and the OAuth client id.');
       }
       final cred = fb.GoogleAuthProvider.credential(idToken: idToken);
+
+      // Link, not sign in, when the current session is a guest (L0d).
+      //
+      // `signInWithCredential` unconditionally mints a NEW Firebase user, so
+      // a guest tapping "Continue with Google" got a fresh uid every time —
+      // the anonymous account, and every Firestore document under it
+      // (profile, injuries, workout history, schedule), was silently
+      // orphaned. Nothing deletes an anonymous Firebase user on its own;
+      // that data was not lost so much as unreachable forever, because an
+      // anonymous account has no credential to sign back into.
+      //
+      // `linkWithCredential` on the anonymous user keeps the SAME uid and
+      // attaches the Google identity to it, so every already-written
+      // Firestore document is still that uid's data with no migration of any
+      // kind — this is the one gate in the round that gets to avoid S1b's
+      // whole problem by construction rather than by writing a migration.
+      final anonymous = _auth.currentUser;
+      if (anonymous != null && anonymous.isAnonymous) {
+        try {
+          final result = await anonymous.linkWithCredential(cred);
+          return _toDomain(result.user)!;
+        } on fb.FirebaseAuthException catch (e) {
+          // 'credential-already-in-use': the Google account is already the
+          // real identity behind a DIFFERENT Firebase user -- most often
+          // this device's guest data is not the user's first time signing in
+          // with this Google account. Firebase's own doc for this code
+          // (user.dart:147-158 in the pinned firebase_auth 6.4.0 source)
+          // names `signInWithCredential(credential)` as the direct recovery,
+          // which is exactly the fallback below.
+          //
+          // 'email-already-in-use' is handled the same way here, but the
+          // package's own doc for THAT code (user.dart:160-167) describes a
+          // different, two-step recovery: sign into the email's existing
+          // provider first, then link the Google credential to that session
+          // -- not a same-credential retry. It fires when the Google
+          // credential's email is already claimed by a DIFFERENT provider on
+          // this project, which this app cannot produce today: the only
+          // providers wired up anywhere in `lib/` are anonymous and Google
+          // (grepped for signInWithEmailAndPassword / EmailAuthProvider --
+          // zero results), so there is no second real-identity provider for
+          // an email to collide with. Reusing the same fallback here is an
+          // accepted, currently-unreachable gap rather than a verified
+          // correct recovery -- building the actual two-step flow would mean
+          // adding an email/password provider this app does not otherwise
+          // have any use for, which is a materially bigger feature than this
+          // gate.
+          //
+          // Either way, both codes are the same shape of failure for the
+          // user: linking did not succeed, sign-in falls back to their real
+          // account, and this device's guest data stays orphaned but intact
+          // -- not silently lost, just unreachable by this flow.
+          if (e.code != 'credential-already-in-use' &&
+              e.code != 'email-already-in-use') {
+            rethrow;
+          }
+        }
+      }
+
       final result = await _auth.signInWithCredential(cred);
       return _toDomain(result.user)!;
     } on gsi.GoogleSignInException catch (e, st) {

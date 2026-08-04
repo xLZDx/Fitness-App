@@ -9,8 +9,10 @@ import 'auth_user.dart';
 /// the UI's loading states are exercised the same way they will be against
 /// the real backend.
 class MockAuthRepository implements AuthRepository {
-  MockAuthRepository({Duration latency = const Duration(milliseconds: 250)})
-      : _latency = latency {
+  MockAuthRepository({
+    Duration latency = const Duration(milliseconds: 250),
+    this.simulateGoogleAccountCollision = false,
+  }) : _latency = latency {
     _controller.add(_current);
   }
 
@@ -18,6 +20,14 @@ class MockAuthRepository implements AuthRepository {
   final _controller = StreamController<AuthUser?>.broadcast();
   final _rng = Random();
   AuthUser? _current;
+
+  /// Test seam for the `credential-already-in-use` branch in
+  /// `FirebaseAuthRepository.signInWithGoogle` -- there is no real
+  /// FirebaseAuthException to throw from a mock, so a test that needs to
+  /// exercise "this Google account already belongs to someone else" sets
+  /// this instead. Defaults to false: the ordinary path is linking, not
+  /// colliding.
+  final bool simulateGoogleAccountCollision;
 
   @override
   Stream<AuthUser?> authStateChanges() {
@@ -51,6 +61,29 @@ class MockAuthRepository implements AuthRepository {
   @override
   Future<AuthUser> signInWithGoogle() async {
     await Future<void>.delayed(_latency);
+
+    // Mirrors FirebaseAuthRepository's link-not-replace fix (L0d): a guest
+    // keeps the same uid when they add a Google identity, so any data a test
+    // wrote under the guest uid is still readable afterward. A second mock
+    // with its own fresh-uid behaviour here is exactly the kind of drift
+    // that let this bug ship for real in the first place -- the mock and the
+    // real repository must do the same thing, or the mock stops proving
+    // anything about the app it is standing in for.
+    final guest = _current;
+    if (guest != null &&
+        guest.provider == AuthProvider.anonymous &&
+        !simulateGoogleAccountCollision) {
+      final linked = AuthUser(
+        uid: guest.uid,
+        displayName: 'Demo Athlete',
+        email: 'demo.athlete@example.com',
+        provider: AuthProvider.google,
+      );
+      _current = linked;
+      _controller.add(linked);
+      return linked;
+    }
+
     final user = AuthUser(
       uid: _newUid(),
       displayName: 'Demo Athlete',
