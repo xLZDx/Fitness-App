@@ -377,6 +377,195 @@ The draft's single ~2-day estimate covered only the first of these four:
 - **L0d — Guest→Google identity migration.** Own UID-orphan risk, shares
   nothing with the other three.
 
+### N-gates — Load readiness for 1000 concurrent users (added 2026-08-04, second review round)
+
+Operator asked whether 1000 concurrent users would be hard to serve. A
+5-agent round (`architect`, `performance-optimizer`, `code-architect`,
+`silent-failure-hunter`, `flutter-reviewer`) says **no re-architecture is
+needed**, and converged on why: the two decisions that would have forced one
+were already avoided. Video bytes never pass through Cloud Functions
+(`video_urls.ts:20-26` argues the case and is right), and `firestore.rules`
+contains no `get()`/`exists()` — document-lookup rules bill an extra read per
+access and are the usual cause of a rules-layer collapse. Every Firestore
+path is per-user by construction; a full trace found **no shared counter,
+aggregate or leaderboard anywhere**, so there is no single-document
+write-contention ceiling to hit.
+
+The finding that reframes the question: **nothing in this system crosses a
+quota at 1000 concurrent. The breaking variable is user tenure, not
+concurrency.** Cold-start read volume grows with how old an account is, and
+two unbounded listeners carry ~99% of it. A 1000-user launch is safe; a
+1000-user base a year later is what costs money.
+
+#### N0 — Scaling ceilings on the 12 functions (~2h) — do first
+
+There are 12 entrypoints (`index.ts:180,236,342,502,598,654,679,792,840,928`
+plus `video_urls.ts:82,115`), and grep for
+`maxInstances|minInstances|concurrency|memory` across `functions/src` returns
+**zero matches**. Everything runs on platform defaults.
+
+1. `maxInstances` on all 12. Unset means the platform default applies
+   uniformly, so any one function can consume the whole regional pool —
+   including starving `stripeWebhook`, the one function whose failure loses
+   money. Give `clipUrl` headroom, cap the rare ones low.
+2. `minInstances: 1` on `clipUrl`/`clipUrls`. Cold start sits directly in
+   front of the video's first frame: `workout_player_page.dart:333-343`
+   awaits `resolve()` before constructing the controller.
+3. Move `clipUrl`/`clipUrls` off the Stripe-importing entrypoint, or
+   lazy-require Stripe inside the handlers. `index.ts:48` imports the Stripe
+   SDK and `:51` calls `admin.initializeApp()`; both load on every cold start
+   of the hottest function, which never uses either.
+
+Concurrency needs no change: `functions/node_modules/firebase-functions/lib/
+v2/options.d.ts:67` gives "80 when CPU >= 1", and `:76` gives CPU defaulting
+to 1 at ≤2GB RAM. 100 instances × 80 = 8,000 in flight. Instance capacity is
+not the constraint at 1000.
+
+#### N1 — Memoize the clip signature (~half day)
+
+`clipUrl` is one to two orders of magnitude hotter than every other function
+combined, and it is now on **every** clip play: `asset_equipment_repository.dart`
+loads only `exercises_vendor.json` since the legacy catalog was deleted, all
+1,887 entries carry private object paths, so `isDirect()`
+(`clip_url_resolver.dart:76`) is always false and the passthrough branch is
+dead code.
+
+Each call is an external IAM `signBlob` round trip — traced through
+`@google-cloud/storage/.../signer.js:229` into
+`google-auth-library/.../googleauth.js:794-807` — with nothing memoized. The
+load-bearing point: **a signed URL is not user-specific.** The V4 signature
+covers bucket + object + expiry and nothing about the caller, so 1000 users
+watching the same squat clip generate 1000 identical-in-substance signatures.
+
+Fix: module-scope `Map<objectPath, {url, expiresAt}>` with expiry rounded to
+a bucket boundary so entries are shareable. At concurrency 80, one instance
+then collapses up to 80 concurrent requests for a popular clip into one
+`signBlob`. Roughly 20 lines, reversible, highest leverage in the repo.
+
+Steady state does not need this — ~333 signatures/min at 1000 concurrent is
+far under quota. Burst does: 1000 users opening a clip inside one second, or
+a wave of premium prefetches at ~70 refs each, is where it turns into errors.
+And the failure is silent — `clip_url_resolver.dart:106-110,120-122` return
+`{}` and the poster stays up, so clips stop playing with no client-side
+signal at all. Count the failures as part of this gate.
+
+#### N2 — Bound the two cold-start listeners (~1 day)
+
+`firestore_workout_log_repository.dart:30-32` (`orderBy('completedAt',
+descending: true).snapshots()`) and
+`firestore_scheduled_session_repository.dart:29-31`
+(`orderBy('scheduledFor').snapshots()`) carry no `limit` and no `where`. Both
+attach on the landing screen, so every cold start re-reads the user's entire
+history. They are ~99% of this app's Firestore read volume; everything else
+is single documents or is self-bounding.
+
+`scheduled_sessions` is the worse of the two: it sorts **ascending**, so it
+returns oldest-first while every consumer wants the future —
+`filterUpcoming` keeps 14 days (`scheduled_session_providers.dart:43-58`),
+prefetch keeps 7 (`offline_video_providers.dart:91`). Completed sessions are
+never deleted.
+
+**Do not simply add `.limit()`.** `progress_stats.dart:105,84` needs
+all-time `total` and `longestStreakDays`; a naive limit corrupts them
+silently, which is the same class of bug as everything else in this plan.
+The gate is: a limited recent window for the listener, plus a denormalised
+aggregate document for the all-time numbers. Ship the composite index with
+it — `firestore.indexes.json` is `"indexes": []` today, which is correct
+while every query is single-field `orderBy`, and adding a `where` on a
+different field than the `orderBy` fails in production without one.
+
+Also here, same first-paint path: `equipment_providers.dart:119-127` awaits
+`genRepo.get(eq.id, lang)` **one machine at a time** for every machine with
+no bundled exercises. A missing document still bills a read. Batch it or
+defer it past first paint.
+
+#### N3 — Webhook ordering + customer idempotency (~half day) — merge into C0
+
+C0 already carries the under-bound secrets. Three agents independently
+re-derived that finding this round and added the mechanism: an unbound secret
+does not throw, it returns `""` with a `logger.warn`
+(`functions/node_modules/firebase-functions/lib/params/types.js:272-278`),
+and `tiers.ts:30` filters falsy ids — so the price silently matches nothing
+and `tierFromSubscription` returns `free`. `applySubscription` re-runs on
+`invoice.paid` (`index.ts:545-554`), so it re-writes `free` on **every
+renewal**, not only at purchase. There is no `describe("stripeWebhook")` in
+`functions/src/__tests__/index.test.ts`, and `functions/jest.setup.js:11-15`
+sets all nine price secrets in `process.env`, so no existing test can observe
+a missing binding. The test this gate needs is the invariant itself: every
+secret `tierFromSubscription` reads must appear in the function's `secrets:`
+array.
+
+Two additions to C0 from this round:
+
+1. **Ordering guard.** Grep for `event.created|event.id|processed_events`
+   across `functions/src` returns nothing. Retries are survivable by accident
+   — every handler is a deterministic `set(..., {merge: true})`, so a replay
+   rewrites the same fields and there is no double-grant — but **order is
+   not**. `applySubscription` (`index.ts:453`) overwrites `status`
+   unconditionally, and Stripe does not guarantee delivery order. A delayed
+   `updated`(active) landing after `deleted`(cancelled) restores premium to a
+   cancelled user permanently; nothing re-reconciles. Fix: store
+   `lastStripeEventCreated` on the doc, skip older events, inside a
+   transaction.
+2. **`ensureCustomer` race.** `index.ts:156-172` is read-modify-write with no
+   transaction, called from both `createCheckoutSession:280` and
+   `bookCoachSession:876`. Two concurrent calls create two Stripe customers
+   for one uid; the second write wins and the first is orphaned while
+   possibly holding a live subscription. `generateAnnualReceipt:694-752`
+   lists invoices for the current customer only, so donations billed to the
+   orphan vanish from the tax receipt. Fix: `{ idempotencyKey: uid }` on
+   `customers.create` — one argument — plus a transaction.
+
+There are **zero `runTransaction` calls in the entire repo**, Dart or TS.
+
+#### N4 — Small, cheap, and not really about load
+
+- **`donor_wall` has no rule.** `firestore.rules` matches `users/`,
+  `equipment/`, `exercises/`, `gyms/`, `equipment_reports/` and nothing else,
+  so `cloud_donor_wall_repository.dart:27-31,39-46` hits default-deny for
+  every user. The file's own comment at `:9` says "public read". It is broken
+  at one user, not at a thousand. Note when fixing: it is the only
+  shared-collection listener in the app, so keep the existing `.limit(500)`
+  and consider `.list()` over `.watch()` — a donor wall needs no liveness.
+- **`reportEquipment` blocks on an untimed outbound fetch** (`index.ts:981`,
+  no `AbortSignal`). A gym whose webhook endpoint hangs holds the instance
+  until the platform timeout while the user watches a spinner. One argument:
+  `signal: AbortSignal.timeout(3000)`.
+- **`getIdToken(true)` on every callable**
+  (`cloud_functions_stripe_service.dart:47-53`) forces a token refresh per
+  call, doubling round trips on the conversion path. Force-refresh belongs on
+  retry after `unauthenticated`, not on every tap.
+- **Live-scan write rate.** `firestore_recognition_history.dart:105-118`
+  does `get()` then `set()` on every settled frame, all onto one document —
+  Firestore's sustained single-document limit is 1 write/second. Mitigated by
+  live mode defaulting off (`live_equipment_providers.dart:35`). Gate the
+  write on the 5-minute window rather than merging values.
+- **`_profileWatchOf` never advances past its first sign-in.**
+  `app_router.dart:151-153` does `sub = stream.listen(...)` and then
+  `yield* stream`; `yield*` on a stream that never completes parks the
+  `await for` at `:144` forever, so no later auth event is processed and the
+  old-uid subscription is never cancelled. Correctness bug on account switch.
+  **Not** a read multiplier — see the correction note in the audit trail.
+
+#### What needs no work at all
+
+Stated explicitly so no effort is spent here: the bundled catalog and posters
+(browsing all 1,887 exercises costs zero backend), `firestore.rules` having
+no document lookups, per-user sharding with no write contention, the entire
+`clip_url_resolver.dart` design (13-minute cache against a 15-minute TTL,
+in-flight de-duplication, chunking at the backend's cap of 60), `clipUrls`
+per-object failure isolation, the absence of any client-side retry (so
+client-driven retry storms are structurally impossible), `authStateChanges()`
+rather than `idTokenChanges()`, value equality on `AuthUser`, and the empty
+`firestore.indexes.json` while all queries stay single-field.
+
+#### Order
+
+N0 → N1 are independent of the safety chain and of C0; N2 touches
+`features/workouts/` and `equipment_providers.dart`, which S2 also touches,
+so N2 should not run in parallel with S2. N3 merges into C0. N4 items are
+each independent and individually tiny.
+
 ### R0 — Release hygiene (~1 day, signing key is its own second-GO item)
 
 Real signing config (irreversible once a real key signs a published listing
@@ -477,6 +666,68 @@ re-screen and can notify a now-contraindicated exercise indefinitely
 (planner); C0's guard was anchored to the wrong file (flutter-reviewer); S0's
 copy-removal is coupled to an undecided business-model question, not a code
 task (planner).
+
+---
+
+## Second round — load readiness, 2026-08-04
+
+**Question:** can this serve 1000 concurrent users, and what must change now?
+**Tier:** T3, 5 agents, 1 round. Roster resolved from
+`~/.claude/agent_routing.json` against the project's stack profile
+(`dart-flutter`, `typescript`, `firebase`, `web-frontend`): `architect`,
+`performance-optimizer`, `code-architect`, `silent-failure-hunter`,
+`flutter-reviewer`. `database-reviewer` excluded by the profile's own
+`excluded_examples` (it is a PostgreSQL lens; Firestore is not covered by
+it). `security-reviewer` not run — group S, opt-in only, and not requested;
+recommended for the signed-URL and Stripe surfaces when wanted. The table
+names a `fitness-flutter-reviewer` override that does not exist in
+`~/.claude/agents/`; used `flutter-reviewer`.
+
+**Answer:** no re-architecture. Gates N0-N4 above are the work.
+
+### Cross-check of load-bearing claims (Empiricism over Poetry)
+
+Every claim below was re-read at its cited line before being written into a
+gate. Two of the operator-facing facts in the brief were **mine and wrong**,
+and both were caught by the agents rather than by me:
+
+| Claim | Verdict |
+|---|---|
+| "13 function entrypoints" (mine) | **Wrong — 12.** I counted pattern occurrences, not `export const` declarations. |
+| "no `.limit()` on any of the 9 queries" (mine) | **Wrong.** Both donor-wall queries carry `.limit(500)` (`cloud_donor_wall_repository.dart:30,42`); my grep excluded the `.collection(` line while the limit sits a line below. Four per-user listeners are genuinely unbounded. |
+| Under-bound webhook secrets → `free` | **Confirmed exact**, both sides read (`index.ts:504-509` binds 4, `:411-424` reads 6) plus the silent-`""` mechanism at `params/types.js:272-278`. |
+| `donor_wall` default-denied | **Confirmed** — no `match` block exists in the 47-line rules file. |
+| Signature is per-object, not per-user, and unmemoized | **Confirmed** by reading the installed `signer.js`/`googleauth.js` call chain. |
+| `workout_logs` / `scheduled_sessions` unbounded | **Confirmed exact**, including that sessions sort ascending while consumers want the future. |
+
+**Disagreement between agents, resolved against the source.**
+`code-architect` argued that at the default 256 MiB an instance gets under
+1 vCPU, so Cloud Run pins concurrency to 1 and one slow webhook event
+occupies a whole instance. `architect` said 80. The vendored type docs settle
+it: `firebase-functions/lib/v2/options.d.ts:67` — "default concurrency (80
+when CPU >= 1, 1 otherwise)" — and `:76` — CPU "defaults to 1 for functions
+with <= 2GB RAM". **`architect` is right.** The webhook ordering problem in
+N3 stands on its own; the concurrency-1 amplifier that was offered as its
+severity multiplier does not exist and is not repeated in the gate.
+
+**Corrected, not adopted as stated.** `flutter-reviewer` filed a BLOCKER
+claiming `app_router.dart:138-155` costs "2× profile reads per device" at
+1000 users. The control-flow half is real and is in N4. The read-multiplier
+half is **wrong**: `cloud_firestore_platform_interface-7.2.0/lib/src/
+method_channel/method_channel_document_reference.dart:121` builds the
+snapshot stream on a `StreamController.broadcast(onListen: ...)`, and a
+broadcast controller fires `onListen` only on the transition from zero
+subscribers to one. The second Dart subscription therefore shares the single
+native listener and bills nothing extra. Filed as a correctness bug on
+account switch, not as a scale finding.
+
+**Also worth recording:** `performance-optimizer` and `code-architect`
+independently reached the same top-line conclusion by different routes —
+that no quota in this system is crossed by 1000 concurrent users, and that
+what grows is per-account history. That agreement, arrived at separately, is
+the strongest single piece of evidence in this round.
+
+---
 
 **Disagreement surfaced and resolved:** `architect` initially read S2's
 fix as needing to hide `equipmentRepositoryProvider` itself;
