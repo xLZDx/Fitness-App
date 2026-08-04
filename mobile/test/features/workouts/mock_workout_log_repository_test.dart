@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/features/workouts/data/mock_workout_log_repository.dart';
 import 'package:fitness_app/features/workouts/data/workout_log.dart';
+import 'package:fitness_app/features/workouts/data/workout_log_repository.dart'
+    show kWorkoutHistoryWindow;
 
 WorkoutLogEntry _e(String id, DateTime when, {String exId = 'pushup'}) {
   return WorkoutLogEntry(
@@ -89,6 +91,25 @@ void main() {
       // Initial empty + after save 1 + after save 2.
       expect(received, hasLength(greaterThanOrEqualTo(3)));
       expect(received.last.map((e) => e.id), ['log_2', 'log_1']);
+    });
+
+    group('exportAll', () {
+      // L0c. `watch()` and `cached()` both cap at kWorkoutHistoryWindow (N2);
+      // exportAll is the one caller that must not be truncated to match them
+      // -- an export that silently drops a user's own rows is worse than no
+      // export, because it looks complete.
+      test('returns more than the window when there is more than the window',
+          () async {
+        for (var i = 0; i < kWorkoutHistoryWindow + 5; i++) {
+          await repo.save('u', _e('log_$i', DateTime.utc(2026, 1, 1 + i)));
+        }
+        final all = await repo.exportAll('u');
+        expect(all, hasLength(kWorkoutHistoryWindow + 5));
+      });
+
+      test('an unknown uid exports empty, not an error', () async {
+        expect(await repo.exportAll('nobody'), isEmpty);
+      });
     });
   });
 }

@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/settings/app_settings.dart';
 import '../../core/settings/state/settings_providers.dart';
 import '../../shared/widgets/glass.dart';
+import '../data_export/data_export_providers.dart';
 
 /// Device preferences. Every control here changes real behaviour:
 /// theme drives `MaterialApp.themeMode`, language drives its `locale`, and the
@@ -23,6 +24,15 @@ class SettingsPage extends ConsumerWidget {
     final theme = Theme.of(context);
     final settings = ref.watch(settingsControllerProvider);
     final controller = ref.read(settingsControllerProvider.notifier);
+    final exportState = ref.watch(dataExportActionProvider);
+
+    ref.listen<AsyncValue<void>>(dataExportActionProvider, (prev, next) {
+      next.whenOrNull(error: (e, _) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).catalogError(e))),
+        );
+      });
+    });
 
     return FrostedScaffold(
       appBar: GlassAppBar(title: AppLocalizations.of(context).profileSettings),
@@ -173,6 +183,36 @@ class SettingsPage extends ConsumerWidget {
                       style: theme.textTheme.titleMedium),
                 ),
                 const Icon(Icons.chevron_right),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // L0c. Structured, textual data only -- profile (incl. injuries),
+          // full workout + schedule history, progress-photo metadata. NOT
+          // the photos themselves: their AES key never leaves this device,
+          // and decrypting one into a shareable file would change that.
+          GlassCard(
+            key: const Key('settings-export-data'),
+            onTap: exportState.isLoading
+                ? null
+                : () => ref.read(dataExportActionProvider.notifier).export(),
+            child: Row(
+              children: [
+                if (exportState.isLoading)
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2.4),
+                  )
+                else
+                  Icon(Icons.download_outlined,
+                      color: theme.colorScheme.primary),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(AppLocalizations.of(context).settingsExportData,
+                      style: theme.textTheme.titleMedium),
+                ),
+                if (!exportState.isLoading) const Icon(Icons.chevron_right),
               ],
             ),
           ),

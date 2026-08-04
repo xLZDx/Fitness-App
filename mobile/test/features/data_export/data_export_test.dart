@@ -1,0 +1,180 @@
+import 'dart:convert';
+
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:fitness_app/features/data_export/data_export.dart';
+import 'package:fitness_app/features/profile/data/profile_models.dart';
+import 'package:fitness_app/features/progress_photos/data/progress_photo.dart';
+import 'package:fitness_app/features/workouts/data/scheduled_session.dart';
+import 'package:fitness_app/features/workouts/data/workout_log.dart';
+
+/// L0c's pure core: assembling everything the app has stored about one user
+/// into a JSON shape, with no platform dependency to fake.
+///
+/// The behaviour under test is what makes this an export rather than a
+/// convenience toy: every field actually stored ends up in it (through
+/// `UserProfile.toJson`, the same serializer Firestore writes with), and the
+/// one thing that must NOT be in it -- the encrypted photo bytes -- stays out
+/// even when a caller hands in photo metadata that carries plausible-looking
+/// internal fields.
+
+UserProfile _profile() => const UserProfile(
+      uid: 'u1',
+      personal: PersonalInfo(age: 30, heightCm: 180),
+      health: HealthHistory(injuries: [
+        Injury(bodyPart: 'left knee', type: 'sprain', region: InjuryRegion.knee),
+      ]),
+    );
+
+WorkoutLogEntry _log(String id) => WorkoutLogEntry(
+      id: id,
+      exerciseId: 'squat',
+      exerciseTitle: 'Squat',
+      completedAt: DateTime(2026, 1, 1),
+      durationMinutes: 30,
+      weightKg: 60,
+      repsCompleted: 8,
+    );
+
+ScheduledSession _session(String id) => ScheduledSession(
+      id: id,
+      exerciseId: 'squat',
+      exerciseTitle: 'Squat',
+      scheduledFor: DateTime(2026, 1, 2),
+      durationMinutes: 30,
+    );
+
+ProgressPhoto _photo(String id) => ProgressPhoto(
+      id: id,
+      takenAt: DateTime(2026, 1, 3),
+      storagePath: 'users/u1/photos/$id.enc',
+      keyFingerprint: 'fp_real',
+      weightKg: 82.5,
+      note: 'after week 4',
+    );
+
+void main() {
+  group('buildExport', () {
+    test('carries the profile through the same serializer Firestore uses',
+        () {
+      final out = buildExport(
+        profile: _profile(),
+        workoutLogs: const [],
+        scheduledSessions: const [],
+        progressPhotos: const [],
+      );
+      // Not a re-derivation -- literally the same map UserProfile.toJson()
+      // produces, plus the uid. Two implementations of this shape drifting
+      // is exactly the bug S1a fixed once already for Injury alone.
+      expect(out['profile'], {..._profile().toJson(), 'uid': 'u1'});
+    });
+
+    test('every workout log and every session is included, unwindowed', () {
+      final logs = List.generate(5, (i) => _log('log_$i'));
+      final sessions = List.generate(5, (i) => _session('sess_$i'));
+      final out = buildExport(
+        profile: _profile(),
+        workoutLogs: logs,
+        scheduledSessions: sessions,
+        progressPhotos: const [],
+      );
+      expect(out['workoutLogs'], hasLength(5));
+      expect(out['scheduledSessions'], hasLength(5));
+    });
+
+    test('a photo carries its metadata but never its storage path or key',
+        () {
+      // The whole reason this function exists rather than just calling
+      // toJson() on everything: a naive `.toJson()` sweep would have
+      // included storagePath and keyFingerprint, and packaging either into a
+      // shareable file is a materially different promise than the app makes
+      // today -- the AES key never otherwise leaves the device.
+      final out = buildExport(
+        profile: _profile(),
+        workoutLogs: const [],
+        scheduledSessions: const [],
+        progressPhotos: [_photo('p1')],
+      );
+      final photo = (out['progressPhotos'] as List).single as Map;
+      expect(photo['id'], 'p1');
+      expect(photo['weightKg'], 82.5);
+      expect(photo['note'], 'after week 4');
+      expect(photo.containsKey('storagePath'), isFalse);
+      expect(photo.containsKey('keyFingerprint'), isFalse);
+    });
+
+    test('marks itself complete by default', () {
+      final out = buildExport(
+        profile: _profile(),
+        workoutLogs: const [],
+        scheduledSessions: const [],
+        progressPhotos: const [],
+      );
+      expect(out['progressPhotosIncomplete'], isFalse);
+    });
+
+    test('an incomplete photo read is marked, not read as "you have none"',
+        () {
+      // The finding this closes: a stalled read that falls back to an empty
+      // list must not look identical to a user who genuinely has zero
+      // photos. Someone auditing a GDPR export has no other way to tell.
+      final out = buildExport(
+        profile: _profile(),
+        workoutLogs: const [],
+        scheduledSessions: const [],
+        progressPhotos: const [],
+        progressPhotosIncomplete: true,
+      );
+      expect(out['progressPhotosIncomplete'], isTrue);
+      expect(
+        (out['notes'] as List).join(' '),
+        contains('may be incomplete'),
+      );
+    });
+
+    test('says plainly that photo image data is not included', () {
+      final out = buildExport(
+        profile: _profile(),
+        workoutLogs: const [],
+        scheduledSessions: const [],
+        progressPhotos: const [],
+      );
+      expect((out['notes'] as List).join(' '), contains('not included'));
+    });
+
+    test('carries a format version, for a reader written before the next '
+        'field is added', () {
+      final out = buildExport(
+        profile: _profile(),
+        workoutLogs: const [],
+        scheduledSessions: const [],
+        progressPhotos: const [],
+      );
+      expect(out['exportFormatVersion'], 1);
+    });
+  });
+
+  group('buildExportJson', () {
+    test('is valid, round-trippable JSON', () {
+      final json = buildExportJson(
+        profile: _profile(),
+        workoutLogs: [_log('a')],
+        scheduledSessions: [_session('b')],
+        progressPhotos: [_photo('c')],
+      );
+      final decoded = jsonDecode(json) as Map<String, dynamic>;
+      expect(decoded['profile']['uid'], 'u1');
+      expect((decoded['workoutLogs'] as List), hasLength(1));
+    });
+
+    test('is indented, for a user who opens it in a text app', () {
+      final json = buildExportJson(
+        profile: _profile(),
+        workoutLogs: const [],
+        scheduledSessions: const [],
+        progressPhotos: const [],
+      );
+      expect(json, contains('\n  '));
+    });
+  });
+}

@@ -25,6 +25,7 @@ import 'features/auth/data/firebase_auth_repository.dart';
 import 'features/auth/state/auth_providers.dart';
 import 'features/donor_wall/data/cloud_donor_wall_repository.dart';
 import 'features/donor_wall/state/donor_wall_providers.dart';
+import 'features/data_export/data_export_sink.dart';
 import 'features/equipment/data/cloud_functions_equipment_report_service.dart';
 import 'features/equipment/state/equipment_providers.dart';
 import 'features/form_check/data/cue_text.dart';
@@ -228,6 +229,11 @@ Future<void> main() async {
         // Wear OS — phone-side bridge to the watch APK.
         wearSyncServiceProvider
             .overrideWith((_) => MethodChannelWearSyncService()),
+
+        // Data export (L0c) — writes a temp file and opens the OS share
+        // sheet. Mock by default so widget tests never touch the
+        // share_plus/path_provider platform channels.
+        dataExportSinkProvider.overrideWith((_) => ShareDataExportSink()),
 
         // Nurture moments + notifications.
         momentRepositoryProvider.overrideWithValue(momentRepo),

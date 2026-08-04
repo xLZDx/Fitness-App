@@ -64,6 +64,15 @@ class FirestoreWorkoutLogRepository implements WorkoutLogRepository {
   }
 
   @override
+  Future<List<WorkoutLogEntry>> exportAll(String uid) async {
+    // No `.limit()`, deliberately — see the interface doc. A user's export
+    // is the one caller allowed to pay for the full collection.
+    final snap =
+        await _col(uid).orderBy('completedAt', descending: true).get();
+    return snap.docs.map(_fromDoc).toList(growable: false);
+  }
+
+  @override
   Future<WorkoutLogTotals> totals(String uid) async {
     // Counted server-side. `count()` bills one read per 1,000 documents and
     // never transfers them, so this stays one cheap call for a user with a

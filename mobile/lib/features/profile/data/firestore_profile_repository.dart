@@ -18,65 +18,6 @@ class FirestoreProfileRepository implements ProfileRepository {
   DocumentReference<Map<String, dynamic>> _doc(String uid) =>
       _db.collection('users').doc(uid).collection('profile').doc('main');
 
-  Map<String, dynamic> _toMap(UserProfile p) => {
-        'completedAt': p.completedAt?.toIso8601String(),
-        'personal': {
-          'age': p.personal.age,
-          'gender': p.personal.gender?.name,
-          'heightCm': p.personal.heightCm,
-          'weightCurrentKg': p.personal.weightCurrentKg,
-          'weightTargetKg': p.personal.weightTargetKg,
-          'activityLevel': p.personal.activityLevel?.name,
-        },
-        'health': {
-          'conditions': p.health.conditions,
-          'allergies': p.health.allergies,
-          'medications': p.health.medications,
-          // Through Injury.toJson, not a second hand-inlined copy of the same
-          // shape. The copy that used to be here did not know about `region`,
-          // `note` or `confirmed`, which is exactly how a second serializer
-          // fails: silently, on the fields added after it was written.
-          'injuries': p.health.injuries.map((i) => i.toJson()).toList(),
-          'physicalLimitations': p.health.physicalLimitations,
-          'recentSurgeries': p.health.recentSurgeries,
-          'bloodPressure': p.health.bloodPressure?.name,
-          'otherConcerns': p.health.otherConcerns,
-        },
-        'goals': {
-          'weightLoss': p.goals.weightLoss,
-          'muscleGain': p.goals.muscleGain,
-          'endurance': p.goals.endurance,
-          'strength': p.goals.strength,
-          'flexibility': p.goals.flexibility,
-          'generalFitness': p.goals.generalFitness,
-          'specificSport': p.goals.specificSport,
-        },
-        'level': {
-          'frequencyPerWeek': p.level.frequencyPerWeek,
-          'currentExercises': p.level.currentExercises,
-          'tier': p.level.tier?.name,
-          'basics': p.level.basics?.name,
-        },
-        'lifestyle': {
-          'diet': p.lifestyle.diet.map((d) => d.name).toList(),
-          'smoking': p.lifestyle.smoking?.name,
-          'alcohol': p.lifestyle.alcohol?.name,
-          'sleepHoursPerNight': p.lifestyle.sleepHoursPerNight,
-          'stressLevel': p.lifestyle.stressLevel,
-          'occupation': p.lifestyle.occupation?.name,
-        },
-        'equipment': {
-          'hasGymAccess': p.equipment.hasGymAccess,
-          'homeEquipment': p.equipment.homeEquipment,
-        },
-        'motivation': {
-          'motivation': p.motivation.motivation,
-          'environments':
-              p.motivation.environments.map((e) => e.name).toList(),
-          'preferredDuration': p.motivation.preferredDuration?.name,
-        },
-      };
-
   T? _enumByName<T extends Enum>(List<T> values, dynamic name) {
     if (name is! String) return null;
     for (final v in values) {
@@ -201,7 +142,12 @@ class FirestoreProfileRepository implements ProfileRepository {
 
   @override
   Future<void> save(UserProfile profile) async {
-    await _doc(profile.uid).set(_toMap(profile), SetOptions(merge: true));
+    // profile.toJson() -- the single serializer, per the same reasoning that
+    // already applies to Injury.toJson(). This used to be a private inline
+    // map (`_toMap`) and that shape's only copy; the data-export feature
+    // (L0c) needed the same JSON with no Firestore connection to build it
+    // from, which is what moved it onto the model.
+    await _doc(profile.uid).set(profile.toJson(), SetOptions(merge: true));
     _cache[profile.uid] = profile;
   }
 

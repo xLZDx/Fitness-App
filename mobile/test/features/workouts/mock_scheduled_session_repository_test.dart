@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/features/workouts/data/mock_scheduled_session_repository.dart';
 import 'package:fitness_app/features/workouts/data/scheduled_session.dart';
+import 'package:fitness_app/features/workouts/data/scheduled_session_repository.dart'
+    show kScheduledSessionWindow;
 
 ScheduledSession _s(String id, DateTime when, {String exId = 'pushup'}) {
   return ScheduledSession(
@@ -65,6 +67,27 @@ void main() {
       await repo.save('u', _s('s_2', DateTime.utc(2026, 5, 2)));
       await repo.clear('u');
       expect(await repo.watch('u').first, isEmpty);
+    });
+
+    group('exportAll', () {
+      // L0c. `watch()`/`cached()` cap at kScheduledSessionWindow (N2), by
+      // design named `_sorted` despite being the windowed view. exportAll
+      // must read the true, unwindowed store.
+      test('returns more than the window when there is more than the window',
+          () async {
+        for (var i = 0; i < kScheduledSessionWindow + 5; i++) {
+          await repo.save('u', _s('s_$i', DateTime.utc(2026, 1, 1 + i)));
+        }
+        final all = await repo.exportAll('u');
+        expect(all, hasLength(kScheduledSessionWindow + 5));
+      });
+
+      test('sorted ascending by scheduledFor, same as watch', () async {
+        await repo.save('u', _s('later', DateTime.utc(2026, 5, 10)));
+        await repo.save('u', _s('earlier', DateTime.utc(2026, 5, 1)));
+        final all = await repo.exportAll('u');
+        expect(all.map((s) => s.id), ['earlier', 'later']);
+      });
     });
   });
 }

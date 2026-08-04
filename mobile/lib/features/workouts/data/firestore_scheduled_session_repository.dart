@@ -70,6 +70,13 @@ class FirestoreScheduledSessionRepository
   }
 
   @override
+  Future<List<ScheduledSession>> exportAll(String uid) async {
+    final snap =
+        await _col(uid).orderBy('scheduledFor', descending: false).get();
+    return snap.docs.map(_fromDoc).toList(growable: false);
+  }
+
+  @override
   Future<void> clear(String uid) async {
     // Chunked at 400 for the same reason as the workout log: a single batch
     // rejects above 500 operations, so the unchunked version failed for

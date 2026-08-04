@@ -28,4 +28,9 @@ abstract class ScheduledSessionRepository {
 
   /// Wipes the entire schedule.
   Future<void> clear(String uid);
+
+  /// Every scheduled session, unwindowed. For data export (L0c) only. See
+  /// [WorkoutLogRepository.exportAll] for why [watch]'s
+  /// [kScheduledSessionWindow] cap must not be reused here.
+  Future<List<ScheduledSession>> exportAll(String uid);
 }

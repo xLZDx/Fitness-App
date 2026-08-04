@@ -97,6 +97,13 @@ class MockWorkoutLogRepository implements WorkoutLogRepository {
   }
 
   @override
+  Future<List<WorkoutLogEntry>> exportAll(String uid) async {
+    // The unwindowed sort, not `_window(uid)` — this is the one caller that
+    // must NOT be truncated to match the live listener.
+    return _sorted(uid);
+  }
+
+  @override
   Future<void> clear(String uid) async {
     await Future<void>.delayed(_latency);
     _store.remove(uid);

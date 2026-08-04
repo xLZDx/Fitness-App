@@ -85,6 +85,17 @@ class MockScheduledSessionRepository implements ScheduledSessionRepository {
     _ctrl(uid).add(const []);
   }
 
+  @override
+  Future<List<ScheduledSession>> exportAll(String uid) async {
+    // Sorted, but NOT `_sorted(uid)` -- that name is the windowed view
+    // despite what it says, truncated to kScheduledSessionWindow to mirror
+    // the Firestore listener. Export is the one caller that must not be.
+    final list = _store[uid] ?? const [];
+    final all = [...list]
+      ..sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
+    return List.unmodifiable(all);
+  }
+
   void dispose() {
     for (final c in _ctrls.values) {
       c.close();

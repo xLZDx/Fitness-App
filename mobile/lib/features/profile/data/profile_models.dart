@@ -475,6 +475,64 @@ class UserProfile {
 
   bool get hasCompletedOnboarding => completedAt != null;
 
+  /// The single serializer. Moved out of `FirestoreProfileRepository._toMap`
+  /// so the data-export feature (L0c) reads the same shape the repository
+  /// writes, instead of a third hand-inlined copy of it — the exact drift
+  /// `Injury`'s own serializer already fixed once, for the same reason.
+  Map<String, dynamic> toJson() => {
+        'completedAt': completedAt?.toIso8601String(),
+        'personal': {
+          'age': personal.age,
+          'gender': personal.gender?.name,
+          'heightCm': personal.heightCm,
+          'weightCurrentKg': personal.weightCurrentKg,
+          'weightTargetKg': personal.weightTargetKg,
+          'activityLevel': personal.activityLevel?.name,
+        },
+        'health': {
+          'conditions': health.conditions,
+          'allergies': health.allergies,
+          'medications': health.medications,
+          'injuries': health.injuries.map((i) => i.toJson()).toList(),
+          'physicalLimitations': health.physicalLimitations,
+          'recentSurgeries': health.recentSurgeries,
+          'bloodPressure': health.bloodPressure?.name,
+          'otherConcerns': health.otherConcerns,
+        },
+        'goals': {
+          'weightLoss': goals.weightLoss,
+          'muscleGain': goals.muscleGain,
+          'endurance': goals.endurance,
+          'strength': goals.strength,
+          'flexibility': goals.flexibility,
+          'generalFitness': goals.generalFitness,
+          'specificSport': goals.specificSport,
+        },
+        'level': {
+          'frequencyPerWeek': level.frequencyPerWeek,
+          'currentExercises': level.currentExercises,
+          'tier': level.tier?.name,
+          'basics': level.basics?.name,
+        },
+        'lifestyle': {
+          'diet': lifestyle.diet.map((d) => d.name).toList(),
+          'smoking': lifestyle.smoking?.name,
+          'alcohol': lifestyle.alcohol?.name,
+          'sleepHoursPerNight': lifestyle.sleepHoursPerNight,
+          'stressLevel': lifestyle.stressLevel,
+          'occupation': lifestyle.occupation?.name,
+        },
+        'equipment': {
+          'hasGymAccess': equipment.hasGymAccess,
+          'homeEquipment': equipment.homeEquipment,
+        },
+        'motivation': {
+          'motivation': motivation.motivation,
+          'environments': motivation.environments.map((e) => e.name).toList(),
+          'preferredDuration': motivation.preferredDuration?.name,
+        },
+      };
+
   UserProfile copyWith({
     PersonalInfo? personal,
     HealthHistory? health,

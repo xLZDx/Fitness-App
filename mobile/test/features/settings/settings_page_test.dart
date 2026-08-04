@@ -10,6 +10,9 @@ import 'package:fitness_app/core/settings/app_settings.dart';
 import 'package:fitness_app/core/settings/settings_repository.dart';
 import 'package:fitness_app/core/settings/state/settings_providers.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/features/auth/data/auth_user.dart';
+import 'package:fitness_app/features/auth/state/auth_providers.dart';
+import 'package:fitness_app/features/data_export/data_export_sink.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/profile/profile_page.dart';
 import 'package:fitness_app/features/profile/state/profile_providers.dart';
@@ -28,7 +31,7 @@ Future<void> _largeSurface(WidgetTester tester) async {
 /// Mirrors how `lib/main.dart` wires settings into the app: theme mode and
 /// locale are read from the live settings, so a tap on this page has to change
 /// the surrounding MaterialApp, not just a provider value.
-Widget _buildApp(InMemorySettingsRepository repo) {
+Widget _buildApp(InMemorySettingsRepository repo, {List<Override> extra = const []}) {
   final router = GoRouter(
     initialLocation: '/settings',
     routes: [
@@ -40,7 +43,7 @@ Widget _buildApp(InMemorySettingsRepository repo) {
     ],
   );
   return ProviderScope(
-    overrides: [settingsRepositoryProvider.overrideWithValue(repo)],
+    overrides: [settingsRepositoryProvider.overrideWithValue(repo), ...extra],
     child: Consumer(
       builder: (context, ref, _) {
         final settings = ref.watch(settingsControllerProvider);
@@ -158,6 +161,45 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('about-stub'), findsOneWidget);
+    });
+
+    group('Export your data (L0c)', () {
+      const testUser = AuthUser(uid: 'u1', displayName: 'U');
+
+      testWidgets('tapping it reaches the export sink', (tester) async {
+        final sink = MockDataExportSink();
+        await _largeSurface(tester);
+        await tester.pumpWidget(_buildApp(
+          InMemorySettingsRepository(),
+          extra: [
+            authUserProvider.overrideWith((ref) => Stream.value(testUser)),
+            dataExportSinkProvider.overrideWithValue(sink),
+          ],
+        ));
+        await tester.pump();
+
+        await tester.tap(find.byKey(const Key('settings-export-data')));
+        await tester.pumpAndSettle();
+
+        expect(sink.delivered, hasLength(1));
+      });
+
+      testWidgets('shows an error rather than failing silently when signed out',
+          (tester) async {
+        await _largeSurface(tester);
+        await tester.pumpWidget(_buildApp(
+          InMemorySettingsRepository(),
+          extra: [
+            authUserProvider.overrideWith((ref) => Stream.value(null)),
+          ],
+        ));
+        await tester.pump();
+
+        await tester.tap(find.byKey(const Key('settings-export-data')));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(SnackBar), findsOneWidget);
+      });
     });
   });
 

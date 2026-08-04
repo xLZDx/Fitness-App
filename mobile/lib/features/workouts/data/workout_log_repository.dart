@@ -48,4 +48,14 @@ abstract class WorkoutLogRepository {
   /// Wipes the user's entire history. Used for "reset progress" flows
   /// (Phase 5 GDPR work).
   Future<void> clear(String uid);
+
+  /// Every logged workout, unwindowed. For data export (L0c) only.
+  ///
+  /// [watch] caps at [kWorkoutHistoryWindow] on purpose — that is the fix N2
+  /// shipped for cold-start cost, and reusing it here would silently cap a
+  /// user's own export at 200 entries with no indication anything was left
+  /// out. An export that quietly drops rows is worse than no export: it
+  /// gives false confidence that "I have my data" when part of it is
+  /// missing.
+  Future<List<WorkoutLogEntry>> exportAll(String uid);
 }
