@@ -1360,5 +1360,9 @@
         "type": "int"
       }
     }
-  }
+  },
+  "workoutsLogYourSet": "Log your set",
+  "workoutsWeightKg": "Weight (kg)",
+  "workoutsReps": "Reps",
+  "workoutsLeaveBlankIfNoLoad": "Leave blank for body-weight or mobility work — an empty field is honest, a zero is not."
 }

@@ -17,6 +17,7 @@ import '../workouts/state/workout_log_providers.dart';
 import '../workouts/widgets/difficulty_rating_sheet.dart';
 import '../workouts/widgets/plate_calculator.dart';
 import '../workouts/widgets/rest_timer.dart';
+import '../workouts/widgets/set_capture_sheet.dart';
 import '../home/home_page.dart' show formatScheduleLabel;
 import '../workouts/widgets/set_timer_card.dart';
 import '../workouts/widgets/warmup_calculator.dart';
@@ -30,6 +31,26 @@ import 'widgets/exercise_thumb.dart';
 /// page — clears on rebuild via a StateProvider.autoDispose so navigating
 /// away resets it.
 final _restTimerVisibleProvider = StateProvider.autoDispose<bool>((_) => false);
+
+/// The log this visit has already written, if any.
+///
+/// `entry.id` was minted fresh on every tap
+/// (`'${DateTime.now().microsecondsSinceEpoch}_...'`) and nothing deduplicated,
+/// so a double-tap wrote two rows. That was harmless while every row was a
+/// timestamp and a title; the moment weight and reps are captured it is not.
+/// `suggestNextWeight` reads the last three sessions for this exercise
+/// (`progression.dart`), so one set logged twice counts as two — and the rules
+/// that fire on "three sessions in a row" fire a session early, suggesting a
+/// heavier bar off a repeat tap.
+///
+/// The existing `loading` flag only blocks CONCURRENT taps. This blocks the
+/// sequential one, and gives the edit path its identity for free: the second
+/// tap reuses the id, and `save()` is `doc(id).set(...)` — an upsert.
+///
+/// `autoDispose` scopes it to the visit. Coming back to the same exercise
+/// tomorrow is a new set and must write a new row.
+final _loggedEntryProvider =
+    StateProvider.autoDispose.family<WorkoutLogEntry?, String>((_, __) => null);
 
 /// Compound lifts get a longer rest window than accessories. Read off
 /// muscle tags so we don't have to maintain a parallel list.
@@ -627,12 +648,34 @@ class _MarkCompleteButton extends ConsumerWidget {
     final loading = action.isLoading;
 
     Future<void> onTap() async {
-      final entry = WorkoutLogEntry(
-        id: '${DateTime.now().microsecondsSinceEpoch}_${exercise.id}',
-        exerciseId: exercise.id,
+      final already = ref.read(_loggedEntryProvider(exercise.id));
+
+      // Asked BEFORE the write, so the first row that reaches Firestore
+      // already carries the numbers. Writing an empty row and filling it in
+      // afterwards would leave the progression engine reading a set with no
+      // load for as long as the sheet is open, and a dismissed sheet would
+      // leave it that way for good.
+      final captured = await SetCaptureSheet.show(
+        context,
         exerciseTitle: exercise.title,
-        completedAt: DateTime.now(),
-        durationMinutes: exercise.durationMinutes,
+        initialWeightKg: already?.weightKg,
+        initialReps: already?.repsCompleted,
+      );
+      if (!context.mounted) return;
+
+      // Same id on a repeat tap, so `save()` -- `doc(id).set(...)` -- updates
+      // the row instead of adding a second one for the same set.
+      final entry = (already ??
+              WorkoutLogEntry(
+                id: '${DateTime.now().microsecondsSinceEpoch}_${exercise.id}',
+                exerciseId: exercise.id,
+                exerciseTitle: exercise.title,
+                completedAt: DateTime.now(),
+                durationMinutes: exercise.durationMinutes,
+              ))
+          .copyWith(
+        weightKg: captured?.weightKg ?? already?.weightKg,
+        repsCompleted: captured?.reps ?? already?.repsCompleted,
       );
       await ref.read(logWorkoutActionProvider.notifier).log(entry);
       if (!context.mounted) return;
@@ -656,6 +699,7 @@ class _MarkCompleteButton extends ConsumerWidget {
         ),
       );
       ref.read(_restTimerVisibleProvider.notifier).state = true;
+      ref.read(_loggedEntryProvider(exercise.id).notifier).state = entry;
 
       // Ask for a 1-tap perceived-effort rating. Skipping is fine — the
       // rating is optional, and Freeletics' AI Coach reads a similar
@@ -667,9 +711,9 @@ class _MarkCompleteButton extends ConsumerWidget {
         exerciseTitle: exercise.title,
       );
       if (rating != null) {
-        await ref
-            .read(logWorkoutActionProvider.notifier)
-            .log(entry.copyWith(difficulty: rating));
+        final rated = entry.copyWith(difficulty: rating);
+        await ref.read(logWorkoutActionProvider.notifier).log(rated);
+        ref.read(_loggedEntryProvider(exercise.id).notifier).state = rated;
       }
     }
 

@@ -727,5 +727,9 @@
   "profileInjuriesSubtitle": "По ним мы отбираем ваши упражнения",
   "safetyFilterRulesOnly": "Отобрано правилами, а не врачом.",
   "safetyFilterRulesOnlyDetail": "Мы скрываем упражнения, нагружающие зону, которую вы указали как травмированную, — по названию движения и рабочим мышцам. Физиотерапевт список ещё не проверял. Прежде чем нагружать травмированную зону, посоветуйтесь со специалистом.",
-  "profileInjuriesNeedArea": "{count, plural, one{{count} травме нужна зона} few{{count} травмам нужна зона} other{{count} травмам нужна зона}}"
+  "profileInjuriesNeedArea": "{count, plural, one{{count} травме нужна зона} few{{count} травмам нужна зона} other{{count} травмам нужна зона}}",
+  "workoutsLogYourSet": "Запишите подход",
+  "workoutsWeightKg": "Вес (кг)",
+  "workoutsReps": "Повторения",
+  "workoutsLeaveBlankIfNoLoad": "Оставьте пустым для работы с весом тела или мобильности — пустое поле честно, ноль нет."
 }
