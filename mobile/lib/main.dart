@@ -213,6 +213,15 @@ Future<void> main() async {
             .overrideWith((_) => FirestoreGeneratedExerciseRepository()),
 
         // Marketplace — Stripe Connect via Cloud Functions.
+        //
+        // `coachListingRepositoryProvider` is deliberately NOT overridden
+        // here yet (M0). It stays `MockCoachListingRepository`, and
+        // `marketplaceListingsAreDemoProvider` checks that binding to show
+        // the demo banner and disable booking taps. When a real listing
+        // repository is wired, override it in the SAME change as this one —
+        // wiring only one of the two would leave the demo banner claiming
+        // "booking is disabled" while a real backend call is reachable, or
+        // real listings tappable against a service that still 404s.
         coachMarketplaceServiceProvider
             .overrideWith((_) => CloudCoachMarketplaceService()),
 

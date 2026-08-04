@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../shared/widgets/demo_data_banner.dart';
 import '../../shared/widgets/glass.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
@@ -25,6 +26,7 @@ class TeamFeedPage extends ConsumerWidget {
     final tier = ref.watch(effectiveTierProvider);
     final isPremium = tier == SubscriptionTier.celebrityTrainer;
     final feedAsync = ref.watch(teamFeedProvider(teamId));
+    final isDemo = ref.watch(teamFeedIsDemoProvider);
 
     return FrostedScaffold(
       appBar:
@@ -32,6 +34,10 @@ class TeamFeedPage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
+          DemoDataBanner(
+            isDemo: isDemo,
+            message: AppLocalizations.of(context).communityDemoFeed,
+          ),
           if (!isPremium) ...[
             _LockedHero(),
             const SizedBox(height: 16),

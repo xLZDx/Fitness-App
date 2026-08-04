@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../shared/widgets/demo_data_banner.dart';
 import '../../shared/widgets/glass.dart';
 import 'data/coach_listing.dart';
 import 'state/marketplace_providers.dart';
@@ -17,11 +18,16 @@ class MarketplacePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final listAsync = ref.watch(coachListingsProvider);
+    final isDemo = ref.watch(marketplaceListingsAreDemoProvider);
     return FrostedScaffold(
       appBar: GlassAppBar(title: AppLocalizations.of(context).marketplaceCoaches),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
+          DemoDataBanner(
+            isDemo: isDemo,
+            message: AppLocalizations.of(context).marketplaceDemoListings,
+          ),
           GlassCard(
             child: Text(
               AppLocalizations.of(context).marketplaceVettedCoachesWhoRun11,
@@ -36,7 +42,7 @@ class MarketplacePage extends ConsumerWidget {
             data: (list) => Column(
               children: [
                 for (final c in list) ...[
-                  _CoachCard(coach: c),
+                  _CoachCard(coach: c, bookingDisabled: isDemo),
                   const SizedBox(height: 12),
                 ],
               ],
@@ -49,15 +55,23 @@ class MarketplacePage extends ConsumerWidget {
 }
 
 class _CoachCard extends ConsumerWidget {
-  const _CoachCard({required this.coach});
+  const _CoachCard({required this.coach, required this.bookingDisabled});
   final CoachListing coach;
+
+  /// True while the list is demo data. `GlassCard`'s own `onTap != null`
+  /// check is what marks a card as tappable to a screen reader
+  /// (`Semantics(button:)` in `glass.dart`), so `onTap: null` here is not
+  /// cosmetic — it is what makes "booking is disabled" in the banner above
+  /// actually true, instead of a card that still looks and announces as
+  /// tappable and only fails two round trips later inside `_bookSheet`.
+  final bool bookingDisabled;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     return GlassCard(
       padding: const EdgeInsets.all(16),
-      onTap: () => _bookSheet(context, ref),
+      onTap: bookingDisabled ? null : () => _bookSheet(context, ref),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -41,6 +41,22 @@ final progressPhotosRepositoryProvider =
   return MockProgressPhotosRepository();
 });
 
+/// True while [progressPhotosRepositoryProvider] is still the mock.
+///
+/// The mock's whole list lives in one instance's `List<ProgressPhoto>`.
+/// Capturing a photo mid-session works -- `capture()` appends and invalidates
+/// the stream provider, so the new photo renders -- but nothing survives an
+/// app restart or a process kill, and the page said nothing about that. A
+/// user who captured a "before" photo, closed the app, and came back to find
+/// it gone would reasonably read that as data loss rather than as an
+/// unfinished feature. Same self-removing shape as the marketplace flag: the
+/// day `main.dart` binds a Storage-backed repository, this goes false and
+/// the banner is gone.
+final progressPhotosAreDemoProvider = Provider<bool>((ref) {
+  return ref.watch(progressPhotosRepositoryProvider)
+      is MockProgressPhotosRepository;
+});
+
 final progressPhotosProvider =
     StreamProvider<List<ProgressPhoto>>((ref) {
   return ref.watch(progressPhotosRepositoryProvider).watch();

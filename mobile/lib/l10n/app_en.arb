@@ -1369,5 +1369,8 @@
   "legalPrivacyPolicy": "Privacy Policy",
   "legalPlaceholderNotice": "This is placeholder text pending the operator's legal review. It is not the real Terms/Privacy Policy yet.",
   "authByContinuingYouAgree": "By continuing you agree to our",
-  "authAnd": "and"
+  "authAnd": "and",
+  "marketplaceDemoListings": "These are sample listings, not real coaches. Booking is disabled until real coaches are onboarded.",
+  "progressphotosDemoNotSaved": "Demo mode: photos captured now are not saved to your account and will be lost when the app restarts.",
+  "communityDemoFeed": "Demo feed: posts here are not saved and will be lost when the app restarts."
 }
