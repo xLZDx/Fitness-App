@@ -6,7 +6,7 @@ read, edit, or run anything belonging to another project this session.
 
 ## Where things stand
 
-Git: `HEAD = 77d7c99`, pushed, tree clean (three pre-existing untracked dirs
+Git: `HEAD = 9d9a049`, pushed, tree clean (three pre-existing untracked dirs
 — `data/preflight/`, `data/staging/library/`, `data/staging/video_library.json`
 — are not yours, leave them alone).
 
@@ -27,26 +27,68 @@ carrying the only 144 tagged exercises was deleted the day before, in
 `0c4bf24`), and a full review audit trail with every BLOCKER cited to
 `file:line`.
 
-## Gate progress
+## Gate progress (updated 2026-08-05)
 
-**I0 — DONE**, `77d7c99`, pushed. `--write` merges by `id` instead of
-overwriting; `CURATED = {equipmentId, contraindications}` and any key the
-generator does not produce are the file's; a write that would drop rows is
-refused without `--allow-drop`; `safetyCoverage()` lives in
-`exercise_filter.dart`; the floor test is pinned from both sides at 0 in
-`test/features/equipment/safety_coverage_test.dart`.
+Every gate below is committed AND pushed. Working tree clean at `9d9a049`.
 
-One thing that gate found which the plan did not know: the destructive write
-was not a future risk to tagging, it was live damage waiting on the next
-rebuild. 1,887 rows carry a `poster` the generator never emits and 1,384
-carry an `equipmentId` it emits as null — the second of those shipped the
-day before, in `d16e649`.
+| Gate | Commit | What landed |
+|---|---|---|
+| I0 | `77d7c99` | merge-by-id write path; `safetyCoverage()`; coverage floor test |
+| docs | `bc7a669` | plan + resume committed; corrected I0's false "audit exit 0" claim |
+| docs | `bc55851` | N0-N4 load-readiness gates appended to the plan |
+| N0 | `491267e` | scaling ceilings on all 12 functions; Stripe lazy-loaded |
+| N1 | `1f9874b` | clip signature memoised + in-flight dedup |
+| N2 | `8382e6d` | windowed the two cold-start listeners; count() + streak high-water mark |
+| N3 | `685f2ac` | 4 unbound price secrets; webhook event ordering; ensureCustomer race |
+| N4 | `af3384e` | donor_wall rule, fetch timeout, token refresh, scan write, router stream |
+| S0a | `f9b8943` | removed 8 always-false injury-screening claims; honesty banner |
+| S2 | `23553c4` | catalog boundary made real; deep link screened; cold-start race closed |
+| docs | `fb2a1d8` | retro plan blocks for the first ten commits |
+| S1a | `cc07ece` | InjuryRegion enum, /injuries edit screen, one serializer |
+| S3a | `cf83e3b` | vocabulary projection + per-region ratchet |
+| fix | `6376c79` | vendor paths were mis-pathed, not missing -- builder runs again |
+| S3b-1 | `5a55d7f` | knee tagged; three-state disclosure |
+| S3b-2 | `d484797` | shoulder + lower_back tagged |
+| S3b-3 | `8b5a0ba` | hip, ankle, wrist, elbow, neck; AI exercises excluded for injured users |
+| S1b | `64493ee` | backfill NOT run -- S1a's shape removed the need; nudge instead |
+| C0 | `9d9a049` | tier override guarded at the read site |
 
-Untested and stated as such: the generator cannot run end to end on this
-machine (`D:/Downloads/4K UHD 2160P.zip` and the `.xlsx` are absent), so
-`main()` is covered by stubbing `build()`, never by a live `--write`.
+**Safety chain is complete.** Catalog coverage: 1,435 of 1,887 rows tagged
+across all 8 regions. All eight injuries at once hides 76%, leaving 452.
 
-**Everything else — not started.** No other gate has an implementation GO.
+## What remains, in order
+
+1. **W0** — logging loop. Capture sheet + idempotency in ONE commit (a
+   double-tap after weight capture ships double-counts in `suggestNextWeight`).
+2. **L0a** — Terms/Privacy routes. Independent, no dependency.
+3. **M0** — label or hide the mocks (progress photos, marketplace, community).
+   Shares files with S0b.
+4. **L0c** — data export. **L0d** — guest to Google migration.
+5. **L0b** — account deletion. **Destructive: needs its own second GO.**
+   Must reach Auth, subscription doc, workout logs, scheduled sessions, AND
+   cancel the Stripe subscription; needs `firestore.rules` changes.
+6. **R0** — release hygiene. **Signing key needs its own second GO** — a real
+   key signing a published listing is irreversible.
+7. **S0b** — blocked on the operator's nonprofit/tax-deductible business
+   decision. Not a code question.
+
+## Standing facts a fresh session will otherwise re-derive
+
+- Vendor library lives in the `New folder` directory under `D:/Downloads/Video`,
+  reached via `scripts/catalog/vendor_paths.py` (`FITNESS_VENDOR_DIR`
+  overrides). It is NOT directly under `D:/Downloads`.
+- Baselines: `flutter test` 1206 · `pytest scripts/catalog/` 98 ·
+  `flutter analyze` 6 issues, all pre-existing · `audit_doc_links.ps1` 40
+  broken, pre-existing since before this work.
+- `kSafetyTagsClinicallyReviewed = false`. No clinician has reviewed the eight
+  CSV twins in `core/contraindications/`. The weaker disclosure shows because
+  of it.
+- **Nothing is deployed.** Firestore rules and Cloud Functions in production
+  are still pre-session, including the donor-wall denial (N4) and — until a
+  redeploy binds the secrets — the tier mapping fixed in N3.
+- Commit format is mandatory: see the volume-level `CLAUDE.md`, section
+  "Every Commit Carries Its Plan". Retro blocks for the first ten commits are
+  in `core/COMMIT_PLANS_2026-08-04.md`.
 
 ## What to do first
 
