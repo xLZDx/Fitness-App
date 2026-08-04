@@ -38,6 +38,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import { getStorage } from "firebase-admin/storage";
+import { VIDEO_BATCH, VIDEO_HOT } from "./scaling";
 
 /** Where the licensed library lives. Private — no `allUsers` binding. */
 export const LICENSED_BUCKET = "traidingbot-b4061-videos-private";
@@ -79,7 +80,7 @@ function assertSafeObject(raw: unknown): string {
  * whole library in a loop, which is the "public storage folder" the licence
  * prohibits, just spelled differently.
  */
-export const clipUrl = onCall({ region: "us-central1" }, async (request) => {
+export const clipUrl = onCall(VIDEO_HOT, async (request) => {
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "Sign in to watch clips.");
   }
@@ -112,7 +113,7 @@ export const clipUrl = onCall({ region: "us-central1" }, async (request) => {
  * Capped at 60. The cap is not politeness — an uncapped list turns one call
  * into an unbounded number of signing operations, and signing goes through IAM.
  */
-export const clipUrls = onCall({ region: "us-central1" }, async (request) => {
+export const clipUrls = onCall(VIDEO_BATCH, async (request) => {
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "Sign in to watch clips.");
   }

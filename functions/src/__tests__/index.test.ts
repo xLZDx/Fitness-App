@@ -80,6 +80,19 @@ const adminMock = jest.requireMock("firebase-admin") as any;
 const stripeCtor = jest.requireMock("stripe") as any;
 const stripeMock = stripeCtor.__instance;
 
+/**
+ * Derived from the source, not restated here.
+ *
+ * These two assertions were stale for as long as the return origin has been
+ * real: the code moved off the `fitnessapp.example.com` placeholder (and the
+ * reason is written at `index.ts` above `RETURN_ORIGIN`) and gained
+ * `locale: "auto"`, and neither change reached this file. A literal copy of a
+ * constant is a test that fails for the one reason that does not matter --
+ * the value changing -- while still passing if the URL stops being sent at
+ * all. Importing it keeps the shape under test and drops the copy.
+ */
+const RETURN_ORIGIN = "https://traidingbot-b4061.web.app";
+
 const STRIPE_CTOR_ARGS = [
   "sk_test_fake_unit_test_key_not_real",
   { apiVersion: "2025-02-24.acacia" },
@@ -213,8 +226,9 @@ describe("createCheckoutSession", () => {
       mode: "subscription",
       customer: "cus_existing",
       line_items: [{ price: "price_fake_std_monthly", quantity: 1 }],
-      success_url: "https://fitnessapp.example.com/checkout-success",
-      cancel_url: "https://fitnessapp.example.com/checkout-cancel",
+      locale: "auto",
+      success_url: `${RETURN_ORIGIN}/checkout-success`,
+      cancel_url: `${RETURN_ORIGIN}/checkout-cancel`,
       client_reference_id: "u1",
       subscription_data: {
         metadata: { firebaseUid: "u1", tier: "standard", period: "monthly" },
@@ -251,8 +265,9 @@ describe("createCheckoutSession", () => {
       mode: "payment",
       customer: "cus_new_1",
       line_items: [{ price: "price_fake_celeb_lifetime", quantity: 1 }],
-      success_url: "https://fitnessapp.example.com/checkout-success",
-      cancel_url: "https://fitnessapp.example.com/checkout-cancel",
+      locale: "auto",
+      success_url: `${RETURN_ORIGIN}/checkout-success`,
+      cancel_url: `${RETURN_ORIGIN}/checkout-cancel`,
       client_reference_id: "u2",
       payment_intent_data: {
         metadata: {

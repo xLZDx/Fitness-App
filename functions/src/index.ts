@@ -45,8 +45,9 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onRequest } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import * as logger from "firebase-functions/logger";
-import Stripe from "stripe";
+import type Stripe from "stripe";
 import { tierForPriceId } from "./tiers";
+import { INTERACTIVE, RARE, WEBHOOK } from "./scaling";
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -68,6 +69,28 @@ const STRIPE_PRICE_STANDARD_FAMILY4 =
   defineSecret("STRIPE_PRICE_STANDARD_FAMILY4");
 const STRIPE_PRICE_CELEBRITY_LIFETIME =
   defineSecret("STRIPE_PRICE_CELEBRITY_LIFETIME");
+
+/**
+ * The Stripe client, loaded on first use rather than on module load.
+ *
+ * `clipUrl` and `clipUrls` are re-exported from the bottom of this file, so
+ * every cold start of the app's hottest function loads this module. A
+ * top-level `import Stripe` meant it also parsed the Stripe SDK it never
+ * calls, in front of a video's first frame. The type import above is erased
+ * at compile time; this dynamic `import()` compiles to a lazy `require`
+ * under `"module": "commonjs"` (tsconfig.json:3), so the SDK now loads only
+ * inside the handlers that actually bill someone.
+ *
+ * One constructor instead of the six identical ones this replaced -- the
+ * apiVersion was repeated at each call site and had to be kept in step by
+ * hand.
+ */
+async function stripeClient(): Promise<Stripe> {
+  const { default: StripeCtor } = await import("stripe");
+  return new StripeCtor(STRIPE_SECRET_KEY.value(), {
+    apiVersion: "2025-02-24.acacia",
+  });
+}
 
 type Tier = "standard" | "celebrityTrainer";
 type Period =
@@ -178,7 +201,7 @@ async function ensureCustomer(
 const TRIAL_DAYS = 14;
 
 export const startFreeTrial = onCall(
-  { region: "us-central1" },
+  RARE,
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -235,6 +258,7 @@ export const startFreeTrial = onCall(
 
 export const createCheckoutSession = onCall(
   {
+    ...INTERACTIVE,
     secrets: [
       STRIPE_SECRET_KEY,
       STRIPE_PRICE_STANDARD,
@@ -245,7 +269,6 @@ export const createCheckoutSession = onCall(
       STRIPE_PRICE_STANDARD_FAMILY4,
       STRIPE_PRICE_CELEBRITY_LIFETIME,
     ],
-    region: "us-central1",
   },
   async (request) => {
     const auth = request.auth;
@@ -274,9 +297,7 @@ export const createCheckoutSession = onCall(
       );
     }
 
-    const stripe = new Stripe(STRIPE_SECRET_KEY.value(), {
-      apiVersion: "2025-02-24.acacia",
-    });
+    const stripe = await stripeClient();
     const customerId = await ensureCustomer(
       stripe,
       auth.uid,
@@ -340,7 +361,7 @@ export const createCheckoutSession = onCall(
 /* ------------------------------------------------------------------ */
 
 export const createPortalSession = onCall(
-  { secrets: [STRIPE_SECRET_KEY], region: "us-central1" },
+  { ...INTERACTIVE, secrets: [STRIPE_SECRET_KEY] },
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -357,9 +378,7 @@ export const createPortalSession = onCall(
       );
     }
 
-    const stripe = new Stripe(STRIPE_SECRET_KEY.value(), {
-      apiVersion: "2025-02-24.acacia",
-    });
+    const stripe = await stripeClient();
     const portal = await stripe.billingPortal.sessions.create({
       customer: customerId,
       return_url: "https://fitnessapp.example.com/portal-return",
@@ -501,13 +520,13 @@ async function applyLifetimePayment(pi: Stripe.PaymentIntent) {
 
 export const stripeWebhook = onRequest(
   {
+    ...WEBHOOK,
     secrets: [
       STRIPE_SECRET_KEY,
       STRIPE_WEBHOOK_SECRET,
       STRIPE_PRICE_STANDARD,
       STRIPE_PRICE_CELEBRITY,
     ],
-    region: "us-central1",
   },
   async (req, res) => {
     const sig = req.headers["stripe-signature"];
@@ -516,9 +535,7 @@ export const stripeWebhook = onRequest(
       return;
     }
 
-    const stripe = new Stripe(STRIPE_SECRET_KEY.value(), {
-      apiVersion: "2025-02-24.acacia",
-    });
+    const stripe = await stripeClient();
 
     let event: Stripe.Event;
     try {
@@ -596,7 +613,7 @@ export const stripeWebhook = onRequest(
  * a donation badge.
  */
 export const optInDonorWall = onCall(
-  { region: "us-central1" },
+  RARE,
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -652,7 +669,7 @@ export const optInDonorWall = onCall(
 
 /** Removes the caller from the donor wall. */
 export const optOutDonorWall = onCall(
-  { region: "us-central1" },
+  RARE,
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -678,8 +695,8 @@ export const optOutDonorWall = onCall(
  */
 export const generateAnnualReceipt = onCall(
   {
+    ...RARE,
     secrets: [STRIPE_SECRET_KEY],
-    region: "us-central1",
   },
   async (request) => {
     const auth = request.auth;
@@ -711,9 +728,7 @@ export const generateAnnualReceipt = onCall(
       };
     }
 
-    const stripe = new Stripe(STRIPE_SECRET_KEY.value(), {
-      apiVersion: "2025-02-24.acacia",
-    });
+    const stripe = await stripeClient();
 
     const start = Math.floor(Date.UTC(year, 0, 1) / 1000);
     const end = Math.floor(Date.UTC(year + 1, 0, 1) / 1000);
@@ -790,15 +805,13 @@ export const generateAnnualReceipt = onCall(
  * `bookCoachSession`); the Connect account is just the payout target.
  */
 export const startCoachOnboarding = onCall(
-  { secrets: [STRIPE_SECRET_KEY], region: "us-central1" },
+  { ...RARE, secrets: [STRIPE_SECRET_KEY] },
   async (request) => {
     const auth = request.auth;
     if (!auth) {
       throw new HttpsError("unauthenticated", "Sign in first.");
     }
-    const stripe = new Stripe(STRIPE_SECRET_KEY.value(), {
-      apiVersion: "2025-02-24.acacia",
-    });
+    const stripe = await stripeClient();
     const ref = db.doc(`coach_listings/${auth.uid}`);
     const snap = await ref.get();
     let accountId =
@@ -838,7 +851,7 @@ export const startCoachOnboarding = onCall(
  * webhook can mark the booking confirmed once the charge succeeds.
  */
 export const bookCoachSession = onCall(
-  { secrets: [STRIPE_SECRET_KEY], region: "us-central1" },
+  { ...INTERACTIVE, secrets: [STRIPE_SECRET_KEY] },
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -870,9 +883,7 @@ export const bookCoachSession = onCall(
     }
     const platformFeeCents = Math.round(priceCents * 0.15);
 
-    const stripe = new Stripe(STRIPE_SECRET_KEY.value(), {
-      apiVersion: "2025-02-24.acacia",
-    });
+    const stripe = await stripeClient();
     const customerId = await ensureCustomer(
       stripe,
       auth.uid,
@@ -926,7 +937,7 @@ export const bookCoachSession = onCall(
  * admin console can pick the report up later.
  */
 export const reportEquipment = onCall(
-  { region: "us-central1" },
+  INTERACTIVE,
   async (request) => {
     const auth = request.auth;
     if (!auth) {
