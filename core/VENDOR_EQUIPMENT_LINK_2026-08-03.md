@@ -175,11 +175,37 @@ pass: `Pyramid Pose Calf Blocks` is the same yoga block as the other four
 block rows, not a separate prop; and `Chest Dip Machine` / `Triceps Dip
 Machine` are the same real machine type shot twice, not two.
 
-## Still open
+## Closed, 2026-08-04 — the review list is empty
 
-86 rows in `core/vendor_equipment_needs_review.csv` (was 90 before batch 2):
-84 where nothing in the registry matches what the clip shows, 2 where a link
-was deliberately withheld (the wrist-curl rejection, the sissy-squat genuine
-gap). None of these block the next gate — batch 2's breakdown above shows
-most of the 84 are either non-equipment props or real gear that would need a
-new registry entry to link, not a matching miss.
+`core/vendor_equipment_needs_review.csv` went 90 → 86 → 49 → 42 → 40 → **0**.
+Every one of the 1,887 has an answer, in exactly three statuses:
+
+| status | count | what it means |
+|---|---:|---|
+| `resolved` | **1,384** | linked to one of the 69 registry machines |
+| `confirmed_no_equipment` | **461** | needs nothing but the floor |
+| `no_equipment_prop` | **42** | needs a wall, a chair, a couch, a doorway, a partner — furniture and architecture, not gym equipment |
+
+461 + 42 = **503**, which is exactly the size of the «Без оборудования» group
+the app selects at runtime. The audit and the shipped catalog agree, which is
+the cross-check worth having: they are computed by completely different code.
+
+Three clean-ups got it there, each of them fixing a label that was wrong
+rather than a fact that was unknown:
+
+1. **4 exercises the sheet cross-check never reached.** The pipeline matched
+   spreadsheet rows to catalog titles by canonicalised name and missed 393 of
+   them, so for those the "compare vision against the sheet" step silently did
+   not run — it degraded to vision-only without saying so. 372 linked anyway;
+   4 did not, because the render does not draw a held implement. The catalog's
+   own `equipmentLabel` had the answer all along.
+2. **The wrist curl.** Rejected in batch 1 because vision said "Barbell" and
+   the poster shows dumbbells — rejecting the wrong answer was right, but it
+   then sat unresolved for three batches on the strength of what it *isn't*,
+   while title, sheet and poster all agreed on what it *is*.
+3. **40 props and 30 stale rows.** The props were `unresolved` because a wall
+   does not resolve to a machine, which is true and not a question. The 30
+   were labelled `DISAGREEMENT` only because the vendor sheet puts "Yoga Mat"
+   on nearly every floor stretch as a filler value; that was identified as
+   noise in batch 2 and excluded from the review list, but the status field
+   was never corrected.

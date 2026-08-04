@@ -175,7 +175,7 @@ All 44 rows in `core/EQUIPMENT_GAP_ITEMS_2026-08-03.csv` now carry a
 | `equipment.json` / `kCanonicalMachines` | 67 | **69** |
 | vendor exercises linked | 1,372 | **1,379** |
 | machines with >=1 vendor exercise | 63/67 | **65/69** |
-| `vendor_equipment_needs_review.csv` | 49 | **42** |
+| `vendor_equipment_needs_review.csv` | 49 | **0** (closed 2026-08-04) |
 
 The 4 machines with zero vendor coverage are still exactly the 4 named
 above (`recumbent_bike`, `glute_kickback_machine`, `t_bar_row`,

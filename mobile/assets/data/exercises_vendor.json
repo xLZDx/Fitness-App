@@ -37962,7 +37962,7 @@
   {
     "id": "ea_dumbbell_standing_wrist_curl",
     "title": "Dumbbell Standing Wrist Curl",
-    "equipmentId": null,
+    "equipmentId": "dumbbell",
     "muscles": [
       "forearms"
     ],

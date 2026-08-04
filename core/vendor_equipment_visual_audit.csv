@@ -112,7 +112,7 @@ ea_arm_swing_side_to_side,Arm Swing Side to Side,,none,1.0,,none,confirmed_no_eq
 ea_arm_tuck_side_bend,Arm Tuck Side Bend,,none,1.0,,none,confirmed_no_equipment,
 ea_armless_prayer_stretch,Armless Prayer Stretch,,bench,0.9,,Bench (flat / adjustable),resolved,
 ea_arms_behind_back_chest_stretch,Arms Behind Back Chest Stretch,,none,1.0,,none,confirmed_no_equipment,
-ea_arms_behind_back_shoulder_flexor_stretch,Arms Behind Back Shoulder Flexor Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_arms_behind_back_shoulder_flexor_stretch,Arms Behind Back Shoulder Flexor Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_arms_lateral_raise_and_rotation_up,Arms Lateral Raise and Rotation Up,,none,1.0,,none,confirmed_no_equipment,
 ea_arms_up_and_down,Arms Up and Down,,none,1.0,,none,confirmed_no_equipment,
 ea_arms_wide_chest_stretch,Arms Wide Chest Stretch,,none,1.0,,none,confirmed_no_equipment,
@@ -155,7 +155,7 @@ ea_balance_board_version_2,Balance Board (version 2),Balance Board,Balance Board
 ea_ball_headlock_squat,Ball Headlock Squat,Exercise Ball,Exercise ball,1.0,True,Stability ball,resolved,
 ea_ball_sit_up,Ball Sit-up,Exercise Ball,Exercise Ball,1.0,True,Stability ball,resolved,
 ea_ball_slams,Ball Slams,,medicine ball,1.0,,Medicine ball,resolved,
-ea_balloon_drill,Balloon Drill,Balloon,Balloon,1.0,True,none,unresolved,
+ea_balloon_drill,Balloon Drill,Balloon,Balloon,1.0,True,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_band_assisted_chin_up_from_knee,Band Assisted Chin Up (from Knee),"Pull Up Bar, Resistance Band","Pull up bar, resistance band",1.0,True,Pull-up bar,resolved,
 ea_band_behind_neck_shoulder_press,Band Behind Neck Shoulder Press,,resistance band,1.0,,Resistance bands,resolved,
 ea_band_bench_press,Band Bench Press,,"weight bench, resistance band",1.0,,Weight bench,resolved,
@@ -431,7 +431,7 @@ ea_bench_pull_ups,Bench Pull-ups,Pull Up Bar,"Pull-up bar, Weight bench",1.0,Tru
 ea_bench_reverse_plank_hold,Bench Reverse Plank Hold,,Weight bench,1.0,,Weight bench,resolved,
 ea_bench_triceps_dip_leg_curls,Bench Triceps Dip Leg Curls,,Weight bench,1.0,,Weight bench,resolved,
 ea_bench_triceps_dip_straight_legs,Bench Triceps Dip Straight Legs,,weight bench,1.0,,Weight bench,resolved,
-ea_bent_arm_chest_stretch,Bent Arm Chest Stretch,,wall,1.0,,none,unresolved,
+ea_bent_arm_chest_stretch,Bent Arm Chest Stretch,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_bent_knee_back_to_side_kick,Bent Knee Back to Side Kick,,none,1.0,,none,confirmed_no_equipment,
 ea_bent_knee_lying_twist,Bent Knee Lying Twist,,none,1.0,,none,confirmed_no_equipment,
 ea_bent_knee_lying_twist_on_stability_ball,Bent Knee Lying Twist (on Stability Ball),Exercise Ball,Stability ball,1.0,True,Stability ball,resolved,
@@ -492,7 +492,7 @@ ea_bodyweight_squat_to_side_leg,Bodyweight Squat to Side Leg,,none,1.0,,none,con
 ea_bodyweight_squat_to_side_to_front_leg,Bodyweight Squat to Side to Front Leg,,none,1.0,,none,confirmed_no_equipment,
 ea_bodyweight_squats,Bodyweight Squats,,none,1.0,,none,confirmed_no_equipment,
 ea_bodyweight_squats_hold,Bodyweight Squats Hold,,none,1.0,,none,confirmed_no_equipment,
-ea_bodyweight_standing_around_world_wall_supported,Bodyweight Standing Around World Wall Supported,,wall,1.0,,none,unresolved,
+ea_bodyweight_standing_around_world_wall_supported,Bodyweight Standing Around World Wall Supported,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_bodyweight_standing_back_stretch,Bodyweight Standing Back Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_bodyweight_standing_calf_raise,Bodyweight Standing Calf Raise,,none,1.0,,none,confirmed_no_equipment,
 ea_bodyweight_standing_fly,Bodyweight Standing Fly,,none,1.0,,none,confirmed_no_equipment,
@@ -505,7 +505,7 @@ ea_bodyweight_svend_press,Bodyweight Svend Press,,none,1.0,,none,confirmed_no_eq
 ea_bodyweight_triceps_extension,Bodyweight Triceps Extension,,none,1.0,,none,confirmed_no_equipment,
 ea_bodyweight_windmill,Bodyweight Windmill,,none,1.0,,none,confirmed_no_equipment,
 ea_bodyweight_windmill_cut,Bodyweight Windmill Cut,,none,1.0,,none,confirmed_no_equipment,
-ea_both_arms_behind_on_wall_biceps_stretch,Both Arms Behind on Wall Biceps Stretch,,wall,1.0,,none,unresolved,
+ea_both_arms_behind_on_wall_biceps_stretch,Both Arms Behind on Wall Biceps Stretch,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_bottoms_up_half_rep,Bottoms-up Half Rep,,none,1.0,,none,confirmed_no_equipment,
 ea_bouncing_circle_draw,Bouncing Circle Draw,,none,1.0,,none,confirmed_no_equipment,
 ea_bouncing_inner_thigh_tap,Bouncing Inner Thigh Tap,,none,1.0,,none,confirmed_no_equipment,
@@ -532,7 +532,7 @@ ea_bulgarian_split_squat_bodyweight_right,Bulgarian Split Squat Bodyweight Right
 ea_bulgarian_split_squat_cable_resistance_band,Bulgarian Split Squat Cable Resistance Band,Resistance Band,"Resistance band, weight bench",1.0,True,Resistance bands,resolved,
 ea_bulgarian_split_squat_left_bodyweight_side_view,Bulgarian Split Squat Left Bodyweight Side View,,Plyo box,1.0,,Plyo box,resolved,
 ea_bulgarian_split_squat_right_bodyweight_side_view,Bulgarian Split Squat Right Bodyweight Side View,,plyo box,1.0,,Plyo box,resolved,
-ea_bulgarian_split_squat_stretch,Bulgarian Split Squat Stretch,,wall,1.0,,none,unresolved,
+ea_bulgarian_split_squat_stretch,Bulgarian Split Squat Stretch,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_burpee,Burpee,,none,1.0,,none,confirmed_no_equipment,
 ea_burpee_squat,Burpee Squat,,none,1.0,,none,confirmed_no_equipment,
 ea_butt_kick_with_row,Butt Kick with Row,,none,1.0,,none,confirmed_no_equipment,
@@ -632,34 +632,34 @@ ea_cable_upright_row_with_straight_bar,Cable Upright Row with Straight Bar,,cabl
 ea_cable_wrist_curl,Cable Wrist Curl,Cable Pulley Machine,"Cable pulley machine, weight bench",1.0,True,Cable machine,resolved,
 ea_cable_wrist_extension,Cable Wrist Extension,,cable machine,1.0,,Cable machine,resolved,
 ea_cable_y_raise,Cable Y Raise,,cable machine,1.0,,Cable machine,resolved,
-ea_calf_push_stretch_with_hands_against_wall_v_2,Calf Push Stretch with Hands Against Wall V.2,,wall,1.0,,none,unresolved,
+ea_calf_push_stretch_with_hands_against_wall_v_2,Calf Push Stretch with Hands Against Wall V.2,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_calf_raise_clap,Calf Raise Clap,,none,1.0,,none,confirmed_no_equipment,
-ea_calf_raise_from_deficit_with_chair_supported,Calf Raise From Deficit with Chair Supported,,"chair, step platform",1.0,,none,unresolved,
+ea_calf_raise_from_deficit_with_chair_supported,Calf Raise From Deficit with Chair Supported,,"chair, step platform",1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_calf_raise_leg_press_machine,Calf Raise Leg Press Machine,,"Leg press machine, weight plates",1.0,,Leg press,resolved,
 ea_calf_raise_on_hack_squat_machine,Calf Raise on Hack Squat Machine,,Hack squat machine,1.0,,Hack squat machine,resolved,
-ea_calf_raise_with_wall_support,Calf Raise with Wall Support,,wall,1.0,,none,unresolved,
-ea_calf_stretch_with_hands_against_wall,Calf Stretch with Hands Against Wall,Yoga Mat,Wall,1.0,False,none,DISAGREEMENT,
+ea_calf_raise_with_wall_support,Calf Raise with Wall Support,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
+ea_calf_stretch_with_hands_against_wall,Calf Stretch with Hands Against Wall,Yoga Mat,Wall,1.0,False,none,no_equipment_prop,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is only a wall."
 ea_calf_stretch_with_rope,Calf Stretch with Rope,Yoga Mat,resistance band,1.0,False,Resistance bands,resolved,"batch 2, promoted on manual review (poster frame hides the held implement; title + sheet agree): "
-ea_calve_stretch_foot_on_wall,Calve Stretch Foot on Wall,,wall,1.0,,none,unresolved,
-ea_calve_stretch_from_wall_to_floor,Calve Stretch From Wall to Floor,,wall,1.0,,none,unresolved,
-ea_calves_stretch_on_stairs,Calves Stretch on Stairs,Yoga Mat,stairs,1.0,False,none,DISAGREEMENT,
+ea_calve_stretch_foot_on_wall,Calve Stretch Foot on Wall,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
+ea_calve_stretch_from_wall_to_floor,Calve Stretch From Wall to Floor,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
+ea_calves_stretch_on_stairs,Calves Stretch on Stairs,Yoga Mat,stairs,1.0,False,none,no_equipment_prop,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is only a stairs."
 ea_calves_stretch_on_step,Calves Stretch on Step,,"step, wall",1.0,,Plyo box,resolved,"batch 5: the sheet cross-check never ran for this row (name lookup missed it); catalog equipmentLabel had it, confirmed by poster."
 ea_captains_chair_leg_raise,Captains Chair Leg Raise,,Captain's chair,1.0,,Captain's chair,resolved,
 ea_captains_chair_straight_leg_raise,Captains Chair Straight Leg Raise,,Captain's chair,1.0,,Captain's chair,resolved,
 ea_cardio_lunge,Cardio Lunge,,none,1.0,,none,confirmed_no_equipment,
 ea_cat_pose,Cat Pose,,none,1.0,,none,confirmed_no_equipment,
-ea_cat_stretch,Cat Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
-ea_ceiling_look_stretch,Ceiling Look Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_cat_stretch,Cat Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
+ea_ceiling_look_stretch,Ceiling Look Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_celebratory_hip_thrust,Celebratory Hip Thrust,,none,1.0,,none,confirmed_no_equipment,
 ea_chair_back_lunge_left_resistance_band,Chair Back Lunge Left Resistance Band,Resistance Band,"chair, resistance band",1.0,True,Resistance bands,resolved,
 ea_chair_back_lunge_right_resistance_band,Chair Back Lunge Right Resistance Band,,"chair, resistance band, ankle strap",1.0,,Resistance bands,resolved,
-ea_chair_bulgarian_split_squats_bodyweight_left,Chair Bulgarian Split Squats Bodyweight Left,,chair,1.0,,none,unresolved,
-ea_chair_bulgarian_split_squats_bodyweight_right,Chair Bulgarian Split Squats Bodyweight Right,,chair,1.0,,none,unresolved,
-ea_chair_elevated_single_leg_glute_bridge,Chair Elevated Single Leg Glute Bridge,chair,chair,1.0,True,none,unresolved,
-ea_chair_feet_elevated_glute_bridge,Chair Feet Elevated Glute Bridge,chair,chair,1.0,True,none,unresolved,
-ea_chair_frog_feet_elevated_glute_bridge_bodyweight,Chair Frog Feet Elevated Glute Bridge Bodyweight,chair,chair,1.0,True,none,unresolved,
+ea_chair_bulgarian_split_squats_bodyweight_left,Chair Bulgarian Split Squats Bodyweight Left,,chair,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
+ea_chair_bulgarian_split_squats_bodyweight_right,Chair Bulgarian Split Squats Bodyweight Right,,chair,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
+ea_chair_elevated_single_leg_glute_bridge,Chair Elevated Single Leg Glute Bridge,chair,chair,1.0,True,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
+ea_chair_feet_elevated_glute_bridge,Chair Feet Elevated Glute Bridge,chair,chair,1.0,True,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
+ea_chair_frog_feet_elevated_glute_bridge_bodyweight,Chair Frog Feet Elevated Glute Bridge Bodyweight,chair,chair,1.0,True,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_chair_pose,Chair Pose,,none,1.0,,none,confirmed_no_equipment,
-ea_chair_triceps_dips,Chair Triceps Dips,Chair,Chair,1.0,True,none,unresolved,
+ea_chair_triceps_dips,Chair Triceps Dips,Chair,Chair,1.0,True,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_chest_bench_press_correct_stance,Chest Bench Press Correct Stance,,"Barbell, Weight plates, Weight bench",1.0,,Weight bench,resolved,
 ea_chest_dip,Chest Dip,Chair,Power tower / Dip station,1.0,False,Dip station,resolved,promoted on manual review: 
 ea_chest_dip_machine,Chest Dip Machine,Seated Dip Machine,Seated Dip Machine,1.0,True,Seated dip machine,resolved,"batch 3, registry expansion (52->67): "
@@ -692,19 +692,19 @@ ea_chin_up_reverse_normal_grip,Chin Up Reverse Normal Grip,Pull Up Bar,Pull up b
 ea_chin_up_reverse_wide_grip,Chin Up Reverse Wide Grip,Pull Up Bar,Pull Up Bar,1.0,True,Pull-up bar,resolved,
 ea_chin_ups_narrow_parallel_grip,Chin Ups (narrow Parallel Grip),Pull Up Bar,Pull-up bar with parallel grip handles,1.0,True,Pull-up bar,resolved,
 ea_circle_elbow_arm,Circle Elbow Arm,,none,1.0,,none,confirmed_no_equipment,
-ea_circles_knee_stretch,Circles Knee Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_circles_knee_stretch,Circles Knee Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_clamshell,Clamshell,,none,1.0,,none,confirmed_no_equipment,
 ea_clap_curtsy_squat,Clap Curtsy Squat,,none,1.0,,none,confirmed_no_equipment,
 ea_clap_jack,Clap Jack,,none,1.0,,none,confirmed_no_equipment,
 ea_clap_push_ups,Clap Push Ups,,none,1.0,,none,confirmed_no_equipment,
-ea_climber_a_padded_stool_supported,Climber a Padded Stool Supported,,padded stool,0.9,,none,unresolved,
+ea_climber_a_padded_stool_supported,Climber a Padded Stool Supported,,padded stool,0.9,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_clock_push_ups,Clock Push Ups,,none,1.0,,none,confirmed_no_equipment,
 ea_close_grip_barbell_bench_press,Close Grip Barbell Bench Press,Barbell,"Barbell, Weight bench",1.0,True,Weight bench,resolved,
 ea_close_grip_push_up,Close Grip Push Up,,none,1.0,,none,confirmed_no_equipment,
 ea_cluster,Cluster,Barbell,barbell,1.0,True,Barbell,resolved,
 ea_cobra_full_push_up,Cobra Full Push Up,,none,1.0,,none,confirmed_no_equipment,
 ea_cobra_push_up,Cobra Push Up,,none,1.0,,none,confirmed_no_equipment,
-ea_cobra_side_ab_stretch,Cobra Side Ab Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_cobra_side_ab_stretch,Cobra Side Ab Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_cobra_stretch,Cobra Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_cobra_yoga_pose_hold,Cobra Yoga Pose Hold,,none,1.0,,none,confirmed_no_equipment,
 ea_cocoons,Cocoons,,none,1.0,,none,confirmed_no_equipment,
@@ -713,7 +713,7 @@ ea_concentration_curls_dumbbell,Concentration Curls Dumbbell,Dumbbells,"Dumbbell
 ea_control_balance,Control Balance,,none,1.0,,none,confirmed_no_equipment,
 ea_copenhagen_plank,Copenhagen Plank,,Weight bench,1.0,,Weight bench,resolved,
 ea_corner_touch,Corner Touch,,none,1.0,,none,confirmed_no_equipment,
-ea_corner_wall_chest_stretch,Corner Wall Chest Stretch,,wall,1.0,,none,unresolved,
+ea_corner_wall_chest_stretch,Corner Wall Chest Stretch,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_cossack_squat,Cossack Squat,,none,1.0,,none,confirmed_no_equipment,
 ea_counterbalanced_skater_squat,Counterbalanced Skater Squat,,none,1.0,,none,confirmed_no_equipment,
 ea_crab_pose,Crab Pose,,none,1.0,,none,confirmed_no_equipment,
@@ -730,10 +730,10 @@ ea_criss_cross_jump,Criss Cross Jump,,none,1.0,,none,confirmed_no_equipment,
 ea_criss_cross_leg_raises,Criss Cross Leg Raises,,none,1.0,,none,confirmed_no_equipment,
 ea_cross_body_elbow_pull_shoulder_stretch,Cross Body Elbow Pull Shoulder Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_cross_body_shoulder_stretch,Cross Body Shoulder Stretch,,none,1.0,,none,confirmed_no_equipment,
-ea_cross_over_shoulder_stretch,Cross Over Shoulder Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_cross_over_shoulder_stretch,Cross Over Shoulder Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_crossed_arms_front_leg_kick,Crossed Arms Front Leg Kick,,none,1.0,,none,confirmed_no_equipment,
-ea_crossover_kneeling_hip_flexor_stretch,Crossover Kneeling Hip Flexor Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
-ea_crouching_heel_back_calf_stretch,Crouching Heel Back Calf Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_crossover_kneeling_hip_flexor_stretch,Crossover Kneeling Hip Flexor Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
+ea_crouching_heel_back_calf_stretch,Crouching Heel Back Calf Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_crow_pose,Crow Pose,,none,1.0,,none,confirmed_no_equipment,
 ea_crunch_arms_straight,Crunch (arms Straight),,none,1.0,,none,confirmed_no_equipment,
 ea_crunch_floor,Crunch Floor,,none,1.0,,none,confirmed_no_equipment,
@@ -754,13 +754,13 @@ ea_dead_bug_extended_arms,Dead Bug Extended Arms,,none,1.0,,none,confirmed_no_eq
 ea_dead_hang_stretch,Dead Hang Stretch,Yoga Mat,"Squat rack, Pull-up bar",1.0,False,Squat rack,resolved,promoted on manual review: 
 ea_decline_bench_full_sit_up,Decline Bench Full Sit Up,,decline bench,1.0,,Weight bench,resolved,
 ea_decline_bent_leg_reverse_crunch,Decline Bent Leg Reverse Crunch,,Decline bench,1.0,,Weight bench,resolved,
-ea_decline_chair_push_up_diamond,Decline Chair Push Up Diamond,Chair,Chair,1.0,True,none,unresolved,
+ea_decline_chair_push_up_diamond,Decline Chair Push Up Diamond,Chair,Chair,1.0,True,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_decline_diamond_pike_push_up,Decline Diamond Pike Push-up,,flat bench,1.0,,Weight bench,resolved,
 ea_decline_kneeling_push_up,Decline Kneeling Push Up,,aerobic step bench,1.0,,Plyo box,resolved,"batch 4, registry expansion (67->69): aliased to plyo_box rather than a new id"
 ea_decline_kneeling_push_up_on_box,Decline Kneeling Push Up on Box,,Plyo box,1.0,,Plyo box,resolved,
 ea_decline_levitating_sit_ups_bodyweight,Decline Levitating Sit Ups Bodyweight,,decline bench,1.0,,Weight bench,resolved,
 ea_decline_push_up,Decline Push Up,,weight bench,1.0,,Weight bench,resolved,
-ea_decline_push_up_against_wall,Decline Push Up Against Wall,,wall,1.0,,none,unresolved,
+ea_decline_push_up_against_wall,Decline Push Up Against Wall,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_decline_shoulder_tap,Decline Shoulder Tap,,bench,1.0,,Weight bench,resolved,
 ea_decline_sit_up,Decline Sit Up,,Decline bench,1.0,,Weight bench,resolved,
 ea_decline_sit_ups_dumbbells,Decline Sit Ups Dumbbells,Dumbbells,"Dumbbells, Decline Bench",1.0,True,Weight bench,resolved,
@@ -773,12 +773,12 @@ ea_diagonal_opens,Diagonal Opens,,none,1.0,,none,confirmed_no_equipment,
 ea_diagonal_punch,Diagonal Punch,,none,1.0,,none,confirmed_no_equipment,
 ea_diamond_push_up,Diamond Push Up,,none,1.0,,none,confirmed_no_equipment,
 ea_diamond_push_up_on_knees,Diamond Push-up (on Knees),,none,1.0,,none,confirmed_no_equipment,
-ea_dip_leg_raise_on_couch,Dip Leg Raise on Couch,Couch,couch,1.0,True,none,unresolved,
-ea_dip_on_floor_with_chair,Dip on Floor with Chair,Chair,Chair,1.0,True,none,unresolved,
-ea_dips_between_chairs,Dips Between Chairs,Chair,Chair,1.0,True,none,unresolved,
+ea_dip_leg_raise_on_couch,Dip Leg Raise on Couch,Couch,couch,1.0,True,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
+ea_dip_on_floor_with_chair,Dip on Floor with Chair,Chair,Chair,1.0,True,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
+ea_dips_between_chairs,Dips Between Chairs,Chair,Chair,1.0,True,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_donkey_calf_raise,Donkey Calf Raise,,"bench, aerobic step",1.0,,Bench (flat / adjustable),resolved,
 ea_donkey_kicks_bodyweight,Donkey Kicks Bodyweight,,none,1.0,,none,confirmed_no_equipment,
-ea_doorway_biceps_curl,Doorway Biceps Curl,,doorway,1.0,,none,unresolved,
+ea_doorway_biceps_curl,Doorway Biceps Curl,,doorway,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_double_jump_squat,Double Jump Squat,,none,1.0,,none,confirmed_no_equipment,
 ea_double_kettlebell_sled_push,Double Kettlebell Sled Push,,Kettlebells,1.0,,Kettlebell,resolved,
 ea_double_knee_drive,Double Knee Drive,,none,1.0,,none,confirmed_no_equipment,
@@ -1076,7 +1076,7 @@ ea_dumbbell_standing_single_arm_cross_raise,Dumbbell Standing Single Arm Cross R
 ea_dumbbell_standing_single_leg_calf_raise,Dumbbell Standing Single Leg Calf Raise,Dumbbells,Dumbbells,1.0,True,Dumbbells,resolved,
 ea_dumbbell_standing_triceps_extension,Dumbbell Standing Triceps Extension,Dumbbells,Dumbbell,1.0,True,Dumbbells,resolved,
 ea_dumbbell_standing_wide_simultaneous_biceps_curl,Dumbbell Standing Wide Simultaneous Biceps Curl,Dumbbells,Dumbbells,1.0,True,Dumbbells,resolved,
-ea_dumbbell_standing_wrist_curl,Dumbbell Standing Wrist Curl,Dumbbells,Barbell,1.0,False,none,DISAGREEMENT,"REJECTED on manual review: poster clearly shows dumbbells, not a barbell"
+ea_dumbbell_standing_wrist_curl,Dumbbell Standing Wrist Curl,Dumbbells,Barbell,1.0,False,Dumbbells,resolved,"batch 6: vision's 'Barbell' stays rejected -- the poster shows dumbbells -- but the right answer was never in doubt (title + sheet + poster all agree), so it is linked rather than left unresolved on the strength of what it isn't"
 ea_dumbbell_starfish_crunch_alternating,Dumbbell Starfish Crunch Alternating,Dumbbells,Dumbbells,1.0,True,Dumbbells,resolved,
 ea_dumbbell_static_lunge,Dumbbell Static Lunge,Dumbbells,Dumbbells,1.0,True,Dumbbells,resolved,
 ea_dumbbell_step_up_on_bench,Dumbbell Step Up on Bench,Dumbbells,"Dumbbells, Weight bench",1.0,True,Weight bench,resolved,
@@ -1114,7 +1114,7 @@ ea_easy_seated_twist_pose,Easy Seated Twist Pose,,none,1.0,,none,confirmed_no_eq
 ea_elbow_back_stretch,Elbow Back Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_elbow_extension,Elbow-extension,,none,1.0,,none,confirmed_no_equipment,
 ea_elbow_extension_and_supination_pronation_forearm_stretch,Elbow Extension and Supination Pronation Forearm Stretch,,none,1.0,,none,confirmed_no_equipment,
-ea_elbow_flexor_stretch,Elbow Flexor Stretch,,wall,1.0,,none,unresolved,
+ea_elbow_flexor_stretch,Elbow Flexor Stretch,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_elbow_lift_reverse_push_up,Elbow Lift Reverse Push Up,,two weight benches,1.0,,Weight bench,resolved,
 ea_elbow_push_plank_up,Elbow Push Plank Up,,none,1.0,,none,confirmed_no_equipment,
 ea_elbow_up_and_down_dynamic_plank,Elbow-up and Down Dynamic Plank,,none,1.0,,none,confirmed_no_equipment,
@@ -1170,8 +1170,8 @@ ea_foam_roller_calves,Foam Roller Calves,,Foam roller,1.0,,Foam roller,resolved,
 ea_foam_roller_lateral_quads,Foam Roller Lateral Quads,,foam roller,1.0,,Foam roller,resolved,
 ea_foam_roller_quads,Foam Roller Quads-,,foam roller,1.0,,Foam roller,resolved,
 ea_forearms_pull_with_opposite_hand_stretch,Forearms Pull with Opposite Hand Stretch,,none,1.0,,none,confirmed_no_equipment,
-ea_forearms_stretch_on_wall,Forearms Stretch on Wall,,wall,1.0,,none,unresolved,
-ea_forearms_stretch_on_wall_fingers_facing_down,Forearms Stretch on Wall Fingers Facing Down,,wall,1.0,,none,unresolved,
+ea_forearms_stretch_on_wall,Forearms Stretch on Wall,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
+ea_forearms_stretch_on_wall_fingers_facing_down,Forearms Stretch on Wall Fingers Facing Down,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_frog_jumps,Frog Jumps,,none,1.0,,none,confirmed_no_equipment,
 ea_front_lever_raise,Front Lever Raise,,Squat rack with pull-up bar,1.0,,Squat rack,resolved,
 ea_front_lever_raise_to_hold,Front Lever Raise to Hold,,Squat rack with pull-up bar,1.0,,Squat rack,resolved,
@@ -1223,11 +1223,11 @@ ea_hammer_strength_plate_loaded_combination_iso_lateral_chest_chest_press_single
 ea_hammer_strength_plate_loaded_high_row_alternate_arms,Hammer Strength Plate Loaded High Row Alternate Arms,Hammer Strength Plate Loaded High Row Machine,Hammer Strength Plate Loaded High Row Machine,1.0,True,Seated row machine,resolved,
 ea_hammer_strength_plate_loaded_high_row_both_arms,Hammer Strength Plate Loaded High Row Both Arms,Hammer Strength Plate Loaded High Row Machine,Hammer Strength Plate Loaded High Row Machine,1.0,True,Seated row machine,resolved,
 ea_hammer_strength_plate_loaded_high_row_single_arm,Hammer Strength Plate Loaded High Row Single Arm,Hammer Strength Plate Loaded High Row Machine,Hammer Strength Plate Loaded High Row Machine,1.0,True,Seated row machine,resolved,
-ea_hamstring_lying_curl_up_stretch,Hamstring Lying Curl Up Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
-ea_hamstring_lying_straight_leg_stretch,Hamstring Lying Straight Leg Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_hamstring_lying_curl_up_stretch,Hamstring Lying Curl Up Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
+ea_hamstring_lying_straight_leg_stretch,Hamstring Lying Straight Leg Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_hand_stand_hold,Hand Stand Hold,,none,1.0,,none,confirmed_no_equipment,
 ea_hands_clapped_forearms_stretch,Hands Clapped Forearms Stretch,,none,1.0,,none,confirmed_no_equipment,
-ea_handstand_push_on_chair,Handstand Push on Chair,,chair,1.0,,none,unresolved,
+ea_handstand_push_on_chair,Handstand Push on Chair,,chair,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_hanging_knee_raises,Hanging Knee Raises,,Pull-up bar,1.0,,Pull-up bar,resolved,
 ea_hanging_leg_raises,Hanging Leg Raises,,Squat rack with pull-up bar,1.0,,Squat rack,resolved,
 ea_hanging_oblique_crunches,Hanging Oblique Crunches,,pull-up bar,1.0,,Pull-up bar,resolved,
@@ -1256,7 +1256,7 @@ ea_incline_diamond_push_up_on_bench,Incline Diamond Push Up on Bench,,Weight ben
 ea_incline_dumbbell_curl,Incline Dumbbell Curl,Dumbbells,"Dumbbells, adjustable weight bench",1.0,True,Weight bench,resolved,
 ea_incline_lateral_raises_dumbbell,Incline Lateral Raises Dumbbell,Dumbbells,"Dumbbells, Incline Bench",1.0,True,Weight bench,resolved,
 ea_incline_push_up_on_box,Incline Push-up (on Box),Box,box,1.0,True,Plyo box,resolved,
-ea_incline_push_ups_on_chair,Incline Push Ups on Chair,Chair,Chair,1.0,True,none,unresolved,
+ea_incline_push_ups_on_chair,Incline Push Ups on Chair,Chair,Chair,1.0,True,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_intermediate_hip_flexor_and_quad_stretch,Intermediate Hip Flexor and Quad Stretch,Yoga Mat,Resistance bands,1.0,False,Resistance bands,resolved,promoted on manual review: 
 ea_inverted_rows_on_smith_machine,Inverted Rows on Smith Machine,Smith Machine,Smith Machine,1.0,True,Smith machine,resolved,
 ea_iron_cross_stretch,Iron Cross Stretch,,none,1.0,,none,confirmed_no_equipment,
@@ -1338,15 +1338,15 @@ ea_kettlebell_walkover_pushup,Kettlebell Walkover Pushup,,Kettlebell,1.0,,Kettle
 ea_kettlebell_windmill,Kettlebell Windmill,,Kettlebell,1.0,,Kettlebell,resolved,
 ea_kettlebell_wrist_curl,Kettlebell Wrist Curl,,Kettlebell,1.0,,Kettlebell,resolved,
 ea_kettlebell_wrist_extension,Kettlebell Wrist Extension,,Kettlebell,1.0,,Kettlebell,resolved,
-ea_kipping_handstand_push_up,Kipping Handstand Push-up,,wall,1.0,,none,unresolved,
+ea_kipping_handstand_push_up,Kipping Handstand Push-up,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_kipping_pull_up,Kipping Pull Up,,Squat rack with pull-up bar,1.0,,Squat rack,resolved,
-ea_knee_to_chest_stretch,Knee to Chest Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
-ea_kneeling_hip_flexor_stretch,Kneeling Hip Flexor Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_knee_to_chest_stretch,Knee to Chest Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
+ea_kneeling_hip_flexor_stretch,Kneeling Hip Flexor Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_kneeling_lat_floor_stretch,Kneeling Lat Floor Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_kneeling_leg_curl_machine,Kneeling Leg Curl Machine,Kneeling leg curl machine,Kneeling leg curl machine,1.0,True,Leg curl machine,resolved,
 ea_kneeling_push_up,Kneeling Push-up,,none,1.0,,none,confirmed_no_equipment,
 ea_kneeling_squat_jumps_bodyweight,Kneeling Squat Jumps Bodyweight,,none,1.0,,none,confirmed_no_equipment,
-ea_kneeling_wrist_flexor_stretch,Kneeling Wrist Flexor Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_kneeling_wrist_flexor_stretch,Kneeling Wrist Flexor Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_l_sit_hold,L Sit Hold,,parallettes,1.0,,Parallettes,resolved,
 ea_landmine_alternating_lunge_and_twist,Landmine Alternating Lunge and Twist,,"landmine, barbell, weight plates",1.0,,Barbell,resolved,
 ea_landmine_alternating_lunge_to_chest_press,Landmine Alternating Lunge to Chest Press,,"Barbell, Weight plates, Landmine attachment",1.0,,Barbell,resolved,
@@ -1392,8 +1392,8 @@ ea_lateral_raises_dumbbell,Lateral Raises Dumbbell,Dumbbells,Dumbbells,1.0,True,
 ea_lateral_raises_dumbbell_seated_with_swing,Lateral Raises Dumbbell Seated with Swing,,"Dumbbells, Weight bench",1.0,,Weight bench,resolved,
 ea_lateral_raises_on_cable_machine,Lateral Raises on Cable Machine,,cable machine,1.0,,Cable machine,resolved,
 ea_lateral_sled_drag,Lateral Sled Drag,,weighted sled,1.0,,Weighted sled,resolved,"batch 3, registry expansion (52->67): "
-ea_lats_stretch_elbow_on_wall,Lats Stretch Elbow on Wall,,wall,1.0,,none,unresolved,
-ea_lats_stretch_on_wall,Lats Stretch on Wall,,wall,1.0,,none,unresolved,
+ea_lats_stretch_elbow_on_wall,Lats Stretch Elbow on Wall,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
+ea_lats_stretch_on_wall,Lats Stretch on Wall,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_lawnmower_row,Lawnmower Row,,"Dumbbell, Bench",1.0,,Dumbbells,resolved,
 ea_laying_lateral_raise,Laying Lateral Raise,,"Dumbbell, Weight bench",1.0,,Weight bench,resolved,
 ea_leaning_dumbbell_lateral_raise,Leaning Dumbbell Lateral Raise,Dumbbells,"Dumbbell, Squat rack",1.0,True,Squat rack,resolved,
@@ -1424,7 +1424,7 @@ ea_lunge_to_knee_drive_left_bodyweight,Lunge to Knee Drive Left Bodyweight,,none
 ea_lunge_to_knee_drive_right_bodyweight,Lunge to Knee Drive Right Bodyweight,,none,1.0,,none,confirmed_no_equipment,
 ea_lunges_alternate_leg_with_pause_bodyweight,Lunges Alternate Leg with Pause Bodyweight,,none,1.0,,none,confirmed_no_equipment,
 ea_lunges_same_leg_side_view_bodyweight,Lunges Same Leg Side View Bodyweight,,none,1.0,,none,confirmed_no_equipment,
-ea_lunging_straight_leg_calf_stretch,Lunging Straight Leg Calf Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_lunging_straight_leg_calf_stretch,Lunging Straight Leg Calf Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_lying_abs_resistance_band,Lying Abs Resistance Band,Resistance Band,Resistance Band,1.0,True,Resistance bands,resolved,
 ea_lying_back_extension,Lying Back Extension,,none,1.0,,none,confirmed_no_equipment,
 ea_lying_bench_external_shoulder_rotation,Lying Bench External Shoulder Rotation,,Weight bench,1.0,,Weight bench,resolved,
@@ -1432,8 +1432,8 @@ ea_lying_bench_internal_rotation_stretch,Lying Bench Internal Rotation Stretch,,
 ea_lying_bent_knee_cross_glutes_stretch,Lying Bent Knee Cross Glutes Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_lying_crossover_stretch,Lying Crossover Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_lying_face_down_quadriceps_stretch,Lying Face Down Quadriceps Stretch,,none,1.0,,none,confirmed_no_equipment,
-ea_lying_glute_stretch,Lying Glute Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
-ea_lying_hip_flexor_stretch,Lying Hip Flexor Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_lying_glute_stretch,Lying Glute Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
+ea_lying_hip_flexor_stretch,Lying Hip Flexor Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_lying_knee_hugs_lower_back_stretch,Lying Knee Hugs Lower Back Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_lying_knee_pull_glutes_stretch,Lying Knee Pull Glutes Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_lying_knees_to_floor_lower_back_stretch,Lying Knees to Floor Lower Back Stretch,,none,1.0,,none,confirmed_no_equipment,
@@ -1443,11 +1443,11 @@ ea_lying_leg_raise,Lying Leg Raise,,none,1.0,,none,confirmed_no_equipment,
 ea_lying_neck_curls,Lying Neck Curls,,Weight bench,1.0,,Weight bench,resolved,
 ea_lying_neck_extension,Lying Neck Extension,,none,1.0,,none,confirmed_no_equipment,
 ea_lying_on_side_arm_circle_warm_up,Lying on Side Arm Circle Warm Up,,none,1.0,,none,confirmed_no_equipment,
-ea_lying_prone_abdominal_stretch,Lying (prone) Abdominal Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_lying_prone_abdominal_stretch,Lying (prone) Abdominal Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_lying_pull_over_with_resistance_band_cable,Lying Pull Over with Resistance Band Cable,Resistance Band,resistance band,1.0,True,Resistance bands,resolved,
-ea_lying_quadriceps_stretch,Lying Quadriceps Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
-ea_lying_side_quadriceps_stretch,Lying Side Quadriceps Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
-ea_lying_single_leg_extended_on_wall_hamstrings_stretch,Lying Single Leg Extended on Wall Hamstrings Stretch,,wall,1.0,,none,unresolved,
+ea_lying_quadriceps_stretch,Lying Quadriceps Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
+ea_lying_side_quadriceps_stretch,Lying Side Quadriceps Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
+ea_lying_single_leg_extended_on_wall_hamstrings_stretch,Lying Single Leg Extended on Wall Hamstrings Stretch,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_machine_chest_press_decline,Machine Chest Press Decline,Chest Press Machine,Chest Press Machine,1.0,True,Chest press machine,resolved,
 ea_machine_chest_press_incline,Machine Chest Press Incline,Chest Press Machine,Incline chest press machine,1.0,True,Chest press machine,resolved,
 ea_machine_fly,Machine Fly,Dual Pec Fly Machine,Pec Fly Machine,1.0,True,Pec deck / fly machine,resolved,
@@ -1509,7 +1509,7 @@ ea_plank_lunges,Plank Lunges,,none,1.0,,none,confirmed_no_equipment,
 ea_plank_on_elbows,Plank on Elbows,,none,1.0,,none,confirmed_no_equipment,
 ea_plank_pushup,Plank Pushup,,none,1.0,,none,confirmed_no_equipment,
 ea_plank_reach_through,Plank Reach Through,,none,1.0,,none,confirmed_no_equipment,
-ea_plank_reverse_fly_with_bottle,Plank Reverse Fly with Bottle,,water bottle,1.0,,none,unresolved,
+ea_plank_reverse_fly_with_bottle,Plank Reverse Fly with Bottle,,water bottle,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_plank_shoulder_taps,Plank Shoulder Taps,,none,1.0,,none,confirmed_no_equipment,
 ea_plate_alternating_deadstop_row,Plate Alternating Deadstop Row,,Weight plates,1.0,,Weight plates,resolved,
 ea_plate_car_driver,Plate Car Driver,,weight plate,1.0,,Weight plates,resolved,
@@ -1562,7 +1562,7 @@ ea_preacher_curl_dumbbells_simultaneous,Preacher Curl Dumbbells Simultaneous,Dum
 ea_preacher_curl_ez_bar,Preacher Curl Ez Bar,Ez Bar,"EZ curl bar, preacher curl bench, weight plates",1.0,True,Preacher curl bench,resolved,
 ea_preacher_curl_ez_bar_close_grip,Preacher Curl Ez Bar Close Grip,Ez Bar,"EZ curl bar, preacher curl bench, weight plates",1.0,True,Preacher curl bench,resolved,
 ea_preacher_curl_ez_bar_wide_grip,Preacher Curl Ez Bar Wide Grip,Ez Bar,"EZ curl bar, weight plates, preacher curl bench",1.0,True,Preacher curl bench,resolved,
-ea_pretzel_stretch,Pretzel Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_pretzel_stretch,Pretzel Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_prone_bench_row_barbell_pronate_grip,Prone Bench Row Barbell Pronate Grip,Barbell,"Barbell, Weight bench",1.0,True,Weight bench,resolved,
 ea_prone_bench_row_barbell_reverse_grip,Prone Bench Row Barbell Reverse Grip,Barbell,"Barbell, Weight bench, Weight plates",1.0,True,Weight bench,resolved,
 ea_prone_bench_row_dumbbells,Prone Bench Row Dumbbells,Dumbbells,"Dumbbells, Adjustable Weight Bench",1.0,True,Weight bench,resolved,
@@ -1587,9 +1587,9 @@ ea_pyramid_pose_calf_blocks,Pyramid Pose Calf Blocks,,calf blocks,1.0,,Yoga bloc
 ea_pyramid_pose_parsvottanasana,Pyramid Pose - Parsvottanasana,,none,1.0,,none,confirmed_no_equipment,
 ea_pyramid_prayer,Pyramid Prayer,,weight bench,1.0,,Weight bench,resolved,
 ea_raised_leg_crunch,Raised Leg Crunch,,none,1.0,,none,confirmed_no_equipment,
-ea_reaching_up_shoulder_stretch,Reaching Up Shoulder Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_reaching_up_shoulder_stretch,Reaching Up Shoulder Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_rear_deltoid_fly_cable_resistance_band,Rear Deltoid Fly Cable Resistance Band,Resistance Band,Resistance Band,1.0,True,Resistance bands,resolved,
-ea_rear_deltoid_stretch,Rear Deltoid Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_rear_deltoid_stretch,Rear Deltoid Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_rebounder_high_knee_runs,Rebounder High Knee Runs,,mini trampoline (rebounder),1.0,,Mini trampoline,resolved,"batch 3, registry expansion (52->67): "
 ea_rebounder_in_out_from_ground,Rebounder in & Out From Ground,,mini trampoline (rebounder),1.0,,Mini trampoline,resolved,"batch 3, registry expansion (52->67): "
 ea_rebounder_in_out_jacks,Rebounder in & Out Jacks,,mini trampoline (rebounder),1.0,,Mini trampoline,resolved,"batch 3, registry expansion (52->67): "
@@ -1657,7 +1657,7 @@ ea_revolved_side_angle_pose_with_prayer_hands,Revolved Side Angle Pose with Pray
 ea_revolved_side_angle_pose_with_prayer_hands_beginner,Revolved Side Angle Pose with Prayer Hands Beginner,,none,1.0,,none,confirmed_no_equipment,
 ea_ring_dips,Ring Dips,,Gymnastic rings,1.0,,Gymnastic rings,resolved,"batch 3, registry expansion (52->67): "
 ea_romanian_deadlift_barbell,Romanian Deadlift Barbell,,"barbell, weight plates",1.0,,Barbell,resolved,
-ea_runner_stretch,Runner Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_runner_stretch,Runner Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_runners_lunge,Runners Lunge,,none,1.0,,none,confirmed_no_equipment,
 ea_running,Running,,none,1.0,,none,confirmed_no_equipment,
 ea_russian_twist,Russian Twist,,none,1.0,,none,confirmed_no_equipment,
@@ -1669,8 +1669,8 @@ ea_scorpion_twist_pose,Scorpion Twist Pose,,none,1.0,,none,confirmed_no_equipmen
 ea_seated_cable_row_v_bar_machine,Seated Cable Row V Bar Machine,Cable Row Machine,Seated cable row machine,1.0,True,Seated row machine,resolved,
 ea_seated_calf_machine,Seated Calf Machine,,Seated calf raise machine,1.0,,Calf raise machine,resolved,
 ea_seated_calf_raises_dumbbell_on_knee,Seated Calf Raises Dumbbell on Knee,Dumbbells,"Dumbbell, Weight bench, Weight plate",1.0,True,Weight bench,resolved,
-ea_seated_calf_stretch,Seated Calf Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
-ea_seated_cross_leg_glute_stretch,Seated Cross Leg Glute Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_seated_calf_stretch,Seated Calf Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
+ea_seated_cross_leg_glute_stretch,Seated Cross Leg Glute Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_seated_dumbbell_neutral_grip_front_raises,Seated Dumbbell Neutral Grip Front Raises,,"Dumbbells, Weight bench",1.0,,Weight bench,resolved,
 ea_seated_dumbbell_neutral_grip_side_raises,Seated Dumbbell Neutral Grip Side Raises,,"Dumbbells, Weight bench",1.0,,Weight bench,resolved,
 ea_seated_dumbbell_one_arm_shoulder_press,Seated Dumbbell One Arm Shoulder Press,Dumbbells,"Dumbbell, Weight bench",1.0,True,Weight bench,resolved,
@@ -1687,12 +1687,12 @@ ea_seated_machine_hip_adductor,Seated Machine Hip Adductor,,Seated hip adductor 
 ea_seated_normal_grip_row_machine,Seated Normal Grip Row Machine,Cable Row Machine,Cable Row Machine,1.0,True,Seated row machine,resolved,
 ea_seated_resistance_band_cable_rows,Seated Resistance Band - Cable Rows,Resistance Band,resistance band,1.0,True,Resistance bands,resolved,
 ea_seated_row_machine_rows,Seated Row Machine Rows,,Seated row machine,1.0,,Seated row machine,resolved,
-ea_seated_shoulder_flexor_depressor_retractor_stretch,Seated Shoulder Flexor Depressor Retractor Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_seated_shoulder_flexor_depressor_retractor_stretch,Seated Shoulder Flexor Depressor Retractor Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_seated_shoulder_press_barbell,Seated Shoulder Press Barbell,Barbell,"Barbell, Weight bench",1.0,True,Weight bench,resolved,
 ea_seated_side_stretch,Seated Side Stretch,,Weight bench,1.0,,Weight bench,resolved,
-ea_seated_single_leg_hamstring_stretch,Seated Single Leg Hamstring Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_seated_single_leg_hamstring_stretch,Seated Single Leg Hamstring Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_seated_single_leg_toe_touch_hamstring_stretch,Seated Single Leg Toe Touch Hamstring Stretch,,none,1.0,,none,confirmed_no_equipment,
-ea_seated_straight_leg_calf_stretch,Seated Straight Leg Calf Stretch,Yoga Mat,none,1.0,False,none,DISAGREEMENT,
+ea_seated_straight_leg_calf_stretch,Seated Straight Leg Calf Stretch,Yoga Mat,none,1.0,False,none,confirmed_no_equipment,"the sheet says ""Yoga Mat"" on nearly every floor stretch as a filler value, which is not an equipment claim; vision looked and there is nothing."
 ea_seated_toe_touch_hamstrings_stretch,Seated Toe Touch Hamstrings Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_seated_v_up,Seated V Up,,none,1.0,,none,confirmed_no_equipment,
 ea_shadow_boxing,Shadow Boxing,,none,1.0,,none,confirmed_no_equipment,
@@ -1700,7 +1700,7 @@ ea_shoulder_abduction,Shoulder Abduction,,none,1.0,,none,confirmed_no_equipment,
 ea_shoulder_circle,Shoulder Circle,,none,1.0,,none,confirmed_no_equipment,
 ea_shoulder_extension,Shoulder Extension,,none,1.0,,none,confirmed_no_equipment,
 ea_side_bend_standing_lats_stretch,Side Bend Standing Lats Stretch,,none,1.0,,none,confirmed_no_equipment,
-ea_side_chest_stretch_on_wall,Side Chest Stretch on Wall,,wall,1.0,,none,unresolved,
+ea_side_chest_stretch_on_wall,Side Chest Stretch on Wall,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_side_lateral_raise_resistance_band,Side Lateral Raise Resistance Band,Resistance Band,resistance band,1.0,True,Resistance bands,resolved,
 ea_side_lunges_bodyweight,Side Lunges Bodyweight,,none,1.0,,none,confirmed_no_equipment,
 ea_side_lying_floor_stretch,Side Lying Floor Stretch,,none,1.0,,none,confirmed_no_equipment,
@@ -1716,9 +1716,9 @@ ea_side_wrist_pull_stretch,Side Wrist Pull Stretch,,none,1.0,,none,confirmed_no_
 ea_single_arm_cable_row_left,Single Arm Cable Row Left,Cable Pulley Machine,Cable Pulley Machine,1.0,True,Cable machine,resolved,
 ea_single_arm_cable_row_right,Single Arm Cable Row Right,Cable Pulley Machine,Cable pulley machine,1.0,True,Cable machine,resolved,
 ea_single_arm_extended_pull_downwards_biceps_stretch,Single Arm Extended Pull Downwards Biceps Stretch,,none,1.0,,none,confirmed_no_equipment,
-ea_single_arm_on_wall_side_biceps_stretch,Single Arm on Wall Side Biceps Stretch,,wall,1.0,,none,unresolved,
+ea_single_arm_on_wall_side_biceps_stretch,Single Arm on Wall Side Biceps Stretch,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_single_arm_overhead_extension_resistance_band,Single Arm Overhead Extension Resistance Band,Resistance Band,resistance band,1.0,True,Resistance bands,resolved,
-ea_single_arm_palm_down_on_wall_biceps_stretch,Single Arm Palm Down on Wall Biceps Stretch,,wall,1.0,,none,unresolved,
+ea_single_arm_palm_down_on_wall_biceps_stretch,Single Arm Palm Down on Wall Biceps Stretch,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_single_arm_standing_low_cable_row,Single Arm Standing Low Cable Row,Cable Pulley Machine,Cable pulley machine,1.0,True,Cable machine,resolved,
 ea_single_dumbbell_biceps_curls,Single Dumbbell Biceps Curls,,dumbbell,1.0,,Dumbbells,resolved,
 ea_single_kettlebell_deadlift,Single Kettlebell Deadlift,Kettlebells,Kettlebell,1.0,True,Kettlebell,resolved,
@@ -1774,7 +1774,7 @@ ea_standing_lat_cable_pull_over,Standing Lat Cable Pull Over,Cable Pulley Machin
 ea_standing_lateral_stretch,Standing Lateral Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_standing_leg_elevated_hamstring_stretch,Standing Leg Elevated Hamstring Stretch,Bench,Adjustable weight bench,1.0,True,Bench (flat / adjustable),resolved,
 ea_standing_oblique_crunch,Standing Oblique Crunch,,none,1.0,,none,confirmed_no_equipment,
-ea_standing_one_arm_chest_stretch,Standing One Arm Chest Stretch,,wall,1.0,,none,unresolved,
+ea_standing_one_arm_chest_stretch,Standing One Arm Chest Stretch,,wall,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_standing_overhand_shoulder_stretch,Standing Overhand Shoulder Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_standing_quadriceps_stretch,Standing Quadriceps Stretch,,none,1.0,,none,confirmed_no_equipment,
 ea_standing_quadriceps_stretch_side_angle,Standing Quadriceps Stretch Side Angle,,none,1.0,,none,confirmed_no_equipment,
@@ -1789,7 +1789,7 @@ ea_standing_y_raise,Standing Y Raise,,none,1.0,,none,confirmed_no_equipment,
 ea_star_crunches,Star Crunches,,none,1.0,,none,confirmed_no_equipment,
 ea_star_jump,Star Jump,,none,1.0,,none,confirmed_no_equipment,
 ea_stationary_exercise_bike,Stationary Exercise Bike,Stationary Exercise Bike,Stationary Exercise Bike,1.0,True,Exercise bike,resolved,
-ea_step_up_on_chair_bodyweight,Step Up on Chair Bodyweight,,chair,1.0,,none,unresolved,
+ea_step_up_on_chair_bodyweight,Step Up on Chair Bodyweight,,chair,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_stepmill_machine_steps,Stepmill Machine Steps,,stepmill machine,1.0,,Stair climber,resolved,
 ea_straight_arm_cable_lat_pull_down,Straight Arm Cable Lat Pull Down,,cable machine with straight bar attachment,1.0,,Cable machine,resolved,
 ea_straight_bar_cable_pull_down,Straight Bar Cable Pull Down,Lat Pull Down Machine (Cable),Lat pull down machine with straight bar attachment,1.0,True,Lat pulldown,resolved,
@@ -1838,7 +1838,7 @@ ea_suspension_trainer_with_grips_wide_grip_inverted_row_on_floor_1,Suspension Tr
 ea_svend_press_decline_bench,Svend Press Decline Bench,Weight Plate,"Weight plate, decline bench",1.0,True,Weight bench,resolved,
 ea_svend_press_flat_bench,Svend Press Flat Bench,Weight Plate,"Weight plate, flat bench",1.0,True,Weight bench,resolved,
 ea_svend_press_incline_bench,Svend Press Incline Bench,Weight Plate,"Weight plate, adjustable bench",1.0,True,Weight bench,resolved,
-ea_tennis_forehand_ground_stroke,Tennis Forehand Ground Stroke,,tennis racket,1.0,,none,unresolved,
+ea_tennis_forehand_ground_stroke,Tennis Forehand Ground Stroke,,tennis racket,1.0,,none,no_equipment_prop,"furniture/architecture, not gym equipment: in the «Без оборудования» group, not on a machine page."
 ea_the_wall_ball,The Wall Ball,,"medicine ball, wall",1.0,,Medicine ball,resolved,
 ea_theraband_scapula_retraction,Theraband Scapula Retraction,,resistance band,1.0,,Resistance bands,resolved,
 ea_trap_bar_deadlift,Trap Bar Deadlift,Trap Bar,"Trap Bar, Weight plates",1.0,True,Weight plates,resolved,

@@ -54,15 +54,42 @@ class ExerciseItem {
   /// it onto real machine ids is the scanner's gate.
   final String? equipmentLabel;
 
+  /// Furniture, architecture and other people: present in the room, absent
+  /// from any gym's inventory.
+  ///
+  /// The vendor's metadata lists these in the same column as a barbell, which
+  /// is accurate about what the clip shows and wrong about what the user has
+  /// to own. An exercise that needs only a wall belongs with the ones that
+  /// need nothing — operator, 2026-08-04, on the 28 rows still outside the
+  /// group: *"перенести все в группу «Без оборудования»"*.
+  ///
+  /// Exact labels rather than substrings, and only values this library
+  /// actually uses. A substring rule here is the one that quietly grows until
+  /// "chair" starts matching "Chair-Supported Barbell Row".
+  static const _furnitureNotEquipment = {
+    'wall',
+    'chair',
+    'couch',
+    'doorway',
+    'stairs',
+    'a partner',
+    'balloon',
+    'water bottle',
+    'tennis racket',
+    'padded stool',
+    'towel',
+  };
+
   /// Whether this exercise requires anything beyond the user and the floor.
   ///
-  /// A mat is not equipment for this purpose: nobody filtering for "at home"
-  /// means to exclude yoga.
+  /// A mat is not equipment for this purpose: nobody filtering for
+  /// "no equipment" means to exclude yoga.
   bool get needsEquipment {
     if (equipmentId != null) return true;
     final label = equipmentLabel?.toLowerCase().trim();
     if (label == null || label.isEmpty) return false;
     if (label.startsWith('none')) return false;
+    if (_furnitureNotEquipment.contains(label)) return false;
     return !label.contains('mat');
   }
   final List<String> muscles;

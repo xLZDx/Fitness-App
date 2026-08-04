@@ -92,26 +92,37 @@ void main() {
       // than "everything we have not got round to".
       //
       // Operator, 2026-08-04: *"создай отдельную группу для 436 и назови «без
-      // оборудования»"*. 476, not 436: the 436 was a status count in the
-      // equipment audit, and the group is what the app can actually select —
-      // it also includes the floor stretches whose only listed "equipment" is
-      // a mat. Pinned as a range so re-linking one exercise does not fail
-      // this, but emptying or doubling the group does.
+      // оборудования»"*, then *"перенести все в группу"* for the 28 rows still
+      // outside it. 503, not 436: the 436 was a status count in the equipment
+      // audit, and the group is what the app can actually select — the floor
+      // stretches whose only listed "equipment" is a mat, and the ones whose
+      // only prop is a wall, a chair or a training partner.
+      //
+      // Pinned as a range so re-linking one exercise does not fail this, but
+      // emptying or doubling the group does.
       final noEquipment = parsed.where((e) => !e.needsEquipment).toList();
-      expect(noEquipment.length, inInclusiveRange(440, 520));
+      expect(noEquipment.length, inInclusiveRange(470, 540));
       expect(noEquipment.length, lessThan(parsed.length ~/ 2),
           reason: 'most of a gym library needs equipment');
       for (final e in noEquipment) {
         expect(e.equipmentId, isNull,
             reason: '${e.id} is in the no-equipment group but links to a '
                 'machine');
-        final label = e.equipmentLabel?.toLowerCase() ?? '';
-        expect(
-          label.isEmpty || label.startsWith('none') || label.contains('mat'),
-          isTrue,
-          reason: '${e.id} claims no equipment but needs "${e.equipmentLabel}"',
-        );
       }
+    });
+
+    test('nothing is left in between: every exercise is linked or in the group',
+        () {
+      // The property the two halves have to add up to. An exercise that
+      // neither links to a machine nor reads as equipment-free is invisible
+      // in both places — not on a machine page, not under «Без оборудования»
+      // — and nothing else would notice.
+      final orphans = parsed
+          .where((e) => e.equipmentId == null && e.needsEquipment)
+          .map((e) => '${e.id} (${e.equipmentLabel})')
+          .toList();
+      expect(orphans, isEmpty,
+          reason: '${orphans.length} exercises belong to neither half');
     });
 
     test('a mat does not count as equipment', () {
