@@ -154,8 +154,8 @@ nonprofit/tax-deductible framing at all is the operator's business-model call
 (there is a nonprofit plan on record) — this sub-gate is blocked on that
 decision, not on code, and should run together with M0 once decided.
 
-Also folds in the audit's `features/injury_coach/` finding: `contraindicationsAdded`
-(`injury_protocol.dart:44`, populated at `injury_protocol_repository.dart:52,92`)
+Also folds in the audit's `injury_coach` feature finding: `contraindicationsAdded`
+(declared in `injury_protocol`, populated by its repository)
 is a third, dead injury vocabulary — declared and assigned, read nowhere,
 with shipped user-facing strings (`app_en.arb:134-135`). One-line call inside
 this gate: fold its 4 tags into S1's vocabulary, or delete the feature.
@@ -268,7 +268,13 @@ single existing user's stored data.
    (rib, jaw, groin — none of the 8 regions) is indistinguishable on every
    future load from one nobody has looked at yet, and re-confirmation prompts
    forever.
-6. Fold in or delete the dead `injury_protocol.dart` vocabulary per S0b.
+6. Fold in or delete the dead `injury_protocol` vocabulary per S0b.
+   **Resolved 2026-08-04 in S1a: deleted.** Its four tags
+   (`heavy_axial_load`, `spinal_flexion`, `overhead_press`, `overhead_pull`)
+   are movement patterns, not body regions, so they do not fold into an
+   eight-region enum; the feature had zero readers outside its own test.
+   Path forms above de-linked in the same commit because the files no longer
+   exist -- the sentences are otherwise unchanged.
 
 ### S3a — Vocabulary + ratchet (small, mostly absorbed into I0)
 

@@ -63,4 +63,44 @@ class ProfileSubmit extends Notifier<AsyncValue<void>> {
     final repo = ref.read(profileRepositoryProvider);
     await repo.save(draft);
   }
+
+  /// Saves an edited injury list. The only save path outside onboarding.
+  ///
+  /// Before this, `ProfileRepository.save()` had exactly two call sites, both
+  /// inside `features/onboarding/`, and the one affordance meant to reach them
+  /// — "Edit your answers" (`profile_page.dart`) — routes to `/onboarding`,
+  /// which `app_router.dart` bounces straight back to `/home` for anyone who
+  /// has onboarded. There was no way to change a stored injury at all, which
+  /// made the structured region below undeliverable to every existing user.
+  ///
+  /// It reconciles reminders afterwards for the same reason `submit` does: a
+  /// newly-added injury can contraindicate a session whose notification is
+  /// already armed in the OS, and this is now the path that can actually
+  /// happen.
+  Future<void> saveInjuries(List<Injury> injuries) async {
+    state = const AsyncValue.loading();
+    try {
+      final user = ref.read(authUserProvider).valueOrNull;
+      if (user == null) {
+        throw StateError('Cannot edit injuries while signed out');
+      }
+      final repo = ref.read(profileRepositoryProvider);
+      final current = ref.read(currentProfileProvider).valueOrNull ??
+          await repo.load(user.uid) ??
+          UserProfile.empty(user.uid);
+      await repo.save(
+        current.copyWith(
+          health: current.health.copyWith(injuries: injuries),
+        ),
+      );
+      try {
+        await ref.read(sessionReminderReconcilerProvider).reconcile();
+      } catch (e) {
+        debugPrint('reminder reconcile after injury edit failed: $e');
+      }
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
 }

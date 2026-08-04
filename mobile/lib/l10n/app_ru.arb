@@ -89,7 +89,11 @@
   "equipmentWeCouldnTFindThatExercise": "Не удалось найти это упражнение.",
   "equipmentHiddenForInjury": "«{title}» не показывается для вашего профиля",
   "@equipmentHiddenForInjury": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "equipmentHiddenForInjuryHint": "Упражнение противопоказано при травме, которую вы указали. Список травм можно изменить в профиле.",
   "equipmentScheduledHiddenForInjury": "Противоречит указанной травме",
@@ -123,8 +127,6 @@
   "homeToday0700": "Сегодня 07:00",
   "homeTodaySAdaptivePlan": "Адаптивный план на сегодня",
   "homeWorkouts": "Тренировки",
-  "injurycoachLowBackStrainAcuteWeeks1": "Растяжение поясницы — острая фаза (недели 1–3)",
-  "injurycoachShoulderImpingementMildWeeks14": "Импинджмент плеча — лёгкий (недели 1–4)",
   "marketplaceCoaches": "Тренеры",
   "marketplaceVettedCoachesWhoRun11": "Проверенные тренеры, которые проводят индивидуальные занятия дистанционно. Мы удерживаем 15% на нужды организации, остальное получает тренер.",
   "momentsGotIt": "Понятно",
@@ -688,5 +690,39 @@
   "machineCardSectionTitle": "Готовится",
   "safetyFilterNotYetScreened": "Мы ещё не проверили эти упражнения на совместимость с вашими травмами.",
   "safetyFilterNotYetScreenedDetail": "Фильтр по травмам уже работает, но библиотека упражнений пока не размечена, поэтому ничего не отсеивается. Прежде чем пробовать движение, затрагивающее травмированную область, посоветуйтесь со специалистом.",
-  "safetyFilterCoverage": "{tagged, plural, =0{Ни одно упражнение пока не размечено для проверки по травмам.} one{Для проверки по травмам размечено {tagged} упражнение из {total}.} few{Для проверки по травмам размечено {tagged} упражнения из {total}.} other{Для проверки по травмам размечено {tagged} упражнений из {total}.}}"
+  "safetyFilterCoverage": "{tagged, plural, =0{Ни одно упражнение пока не размечено для проверки по травмам.} one{Для проверки по травмам размечено {tagged} упражнение из {total}.} few{Для проверки по травмам размечено {tagged} упражнения из {total}.} other{Для проверки по травмам размечено {tagged} упражнений из {total}.}}",
+  "injuriesTitle": "Травмы",
+  "injuriesWhatThisDoes": "Именно по ним мы отбираем упражнения. Укажите зону для каждой травмы, чтобы фильтр знал, что искать.",
+  "injuriesNeedAnArea": "{count, plural, one{{count} травме ещё нужна зона.} few{{count} травмам ещё нужна зона.} other{{count} травмам ещё нужна зона.}}",
+  "@injuriesNeedAnArea": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "injuriesNoneListed": "Вы не указали ни одной травмы.",
+  "injuriesAdd": "Добавить травму",
+  "injuriesSave": "Сохранить",
+  "injuriesSaved": "Сохранено",
+  "injuriesRemove": "Удалить",
+  "injuriesBodyPart": "Часть тела",
+  "injuriesBodyPartHint": "Правое колено",
+  "injuriesType": "Что случилось",
+  "injuriesTypeHint": "Разрыв мениска",
+  "injuriesArea": "Какую зону отбирать?",
+  "injuriesAreaNotListed": "Ничего из этого",
+  "injuriesNotScreenedForThis": "Записано, но в фильтрации не участвует — нет подходящего тега у упражнений.",
+  "injuriesNote": "Что-то ещё",
+  "injuriesNoteHint": "В фильтрации не участвует",
+  "injuryRegionNeck": "Шея",
+  "injuryRegionShoulder": "Плечо",
+  "injuryRegionElbow": "Локоть",
+  "injuryRegionWrist": "Запястье",
+  "injuryRegionLowerBack": "Поясница",
+  "injuryRegionHip": "Бедро",
+  "injuryRegionKnee": "Колено",
+  "injuryRegionAnkle": "Голеностоп",
+  "profileInjuries": "Травмы",
+  "profileInjuriesSubtitle": "По ним мы отбираем ваши упражнения"
 }

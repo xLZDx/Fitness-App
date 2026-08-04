@@ -104,7 +104,11 @@
   "equipmentHiddenForInjury": "{title} isn't shown for your profile",
   "@equipmentHiddenForInjury": {
     "description": "Shown when a deep link or scheduled session points at an exercise that conflicts with an injury the user logged. Deliberately not 'not found' -- it exists, and their own injury list is why it is being withheld.",
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "equipmentHiddenForInjuryHint": "It conflicts with an injury you told us about. You can change your injury list in your profile.",
   "equipmentScheduledHiddenForInjury": "Conflicts with a logged injury",
@@ -138,8 +142,6 @@
   "homeToday0700": "Today 07:00",
   "homeTodaySAdaptivePlan": "Today's adaptive plan",
   "homeWorkouts": "Workouts",
-  "injurycoachLowBackStrainAcuteWeeks1": "Low-back strain — acute (weeks 1–3)",
-  "injurycoachShoulderImpingementMildWeeks14": "Shoulder impingement — mild (weeks 1–4)",
   "marketplaceCoaches": "Coaches",
   "marketplaceVettedCoachesWhoRun11": "Vetted coaches who run 1:1 sessions remotely. We take a 15% platform fee that funds the nonprofit; the rest goes to the coach.",
   "momentsGotIt": "Got it",
@@ -1310,5 +1312,39 @@
         "type": "int"
       }
     }
-  }
+  },
+  "injuriesTitle": "Injuries",
+  "injuriesWhatThisDoes": "These are what we screen exercises against. Pick the area for each one so the filter knows what to look for.",
+  "injuriesNeedAnArea": "{count, plural, =1{1 injury still needs an area.} other{{count} injuries still need an area.}}",
+  "@injuriesNeedAnArea": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "injuriesNoneListed": "You haven't listed any injuries.",
+  "injuriesAdd": "Add an injury",
+  "injuriesSave": "Save",
+  "injuriesSaved": "Saved",
+  "injuriesRemove": "Remove",
+  "injuriesBodyPart": "Body part",
+  "injuriesBodyPartHint": "Right knee",
+  "injuriesType": "What happened",
+  "injuriesTypeHint": "Meniscus tear",
+  "injuriesArea": "Which area should we screen?",
+  "injuriesAreaNotListed": "None of these",
+  "injuriesNotScreenedForThis": "Recorded, but not used for filtering — no exercise tag describes it.",
+  "injuriesNote": "Anything else",
+  "injuriesNoteHint": "Not used for filtering",
+  "injuryRegionNeck": "Neck",
+  "injuryRegionShoulder": "Shoulder",
+  "injuryRegionElbow": "Elbow",
+  "injuryRegionWrist": "Wrist",
+  "injuryRegionLowerBack": "Lower back",
+  "injuryRegionHip": "Hip",
+  "injuryRegionKnee": "Knee",
+  "injuryRegionAnkle": "Ankle",
+  "profileInjuries": "Injuries",
+  "profileInjuriesSubtitle": "What we screen your exercises against"
 }

@@ -38,10 +38,29 @@ bool isContraindicated(ExerciseItem exercise, Iterable<Injury> injuries) {
   if (exercise.contraindications.isEmpty) return false;
   for (final c in exercise.contraindications) {
     for (final i in injuries) {
-      if (_injuryHits(i.bodyPart, c)) return true;
+      if (_injuryMatches(i, c)) return true;
     }
   }
   return false;
+}
+
+/// Exact on a mapped region, substring on legacy free text.
+///
+/// A mapped [Injury.region] and an exercise tag are drawn from the same closed
+/// vocabulary (`InjuryRegion.tag`, and the tags S3b writes), so comparing them
+/// exactly is not a restriction — it is what makes the vocabulary worth
+/// having. Substring matching cannot say no: it hits "back" against
+/// "lower_back", which is usually right, and "hip" against "ship", which is
+/// not, and it gets more expensive to reason about as the catalog gets tagged.
+///
+/// Unmapped injuries keep the old substring behaviour, because that is all
+/// free text supports and every stored injury is free text until S1b migrates
+/// it. Neither path ever reads [Injury.note] — text the user wanted recorded
+/// is not text the app may screen on.
+bool _injuryMatches(Injury injury, String contraindication) {
+  final region = injury.region;
+  if (region != null) return _normaliseTag(contraindication) == region.tag;
+  return _injuryHits(injury.bodyPart, contraindication);
 }
 
 /// Drops any exercise whose [ExerciseItem.contraindications] overlaps the

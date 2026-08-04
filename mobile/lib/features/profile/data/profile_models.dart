@@ -38,25 +38,166 @@ enum WorkoutEnvironment {
 
 enum WorkoutDuration { under15, m15to30, m30to45, m45to60, over60 }
 
+/// The closed set of body regions an exercise can be screened against.
+///
+/// ## Why a closed set at all
+///
+/// `bodyPart` was free text, typed into one comma-and-colon-delimited field
+/// (`step_health.dart:64-82`), so the same knee arrived as "knee", "Knee
+/// (right)", "левое колено" and "kneee". `_injuryHits` compensated with
+/// symmetric substring matching, which is a guess that gets more expensive as
+/// the catalog gets tagged: it will happily match "back" against "lower_back"
+/// and, given the wrong pair, "hip" against "ship".
+///
+/// The tag vocabulary S3b is about to write onto 1,887 exercises has to be
+/// finite and has to be the same on both sides. This is that vocabulary, named
+/// once, on the side that already exists.
+///
+/// Eight regions, from the plan. Not a taxonomy of every injury a person can
+/// have — a taxonomy of what an exercise tag can usefully say. Anything that
+/// does not fit stays as [Injury.note] and is never matched, which is honest:
+/// a rib injury that silently matched "core" would be worse than one the app
+/// admits it cannot screen for.
+enum InjuryRegion {
+  neck,
+  shoulder,
+  elbow,
+  wrist,
+  lowerBack,
+  hip,
+  knee,
+  ankle,
+}
+
+extension InjuryRegionTag on InjuryRegion {
+  /// The token an exercise's `contraindications` entry must carry to conflict
+  /// with this region. `lowerBack` -> `lower_back`, matching what
+  /// `_normaliseTag` produces from "lower back".
+  String get tag {
+    switch (this) {
+      case InjuryRegion.lowerBack:
+        return 'lower_back';
+      case InjuryRegion.neck:
+        return 'neck';
+      case InjuryRegion.shoulder:
+        return 'shoulder';
+      case InjuryRegion.elbow:
+        return 'elbow';
+      case InjuryRegion.wrist:
+        return 'wrist';
+      case InjuryRegion.hip:
+        return 'hip';
+      case InjuryRegion.knee:
+        return 'knee';
+      case InjuryRegion.ankle:
+        return 'ankle';
+    }
+  }
+}
+
 class Injury {
-  const Injury({required this.bodyPart, required this.type});
+  const Injury({
+    required this.bodyPart,
+    required this.type,
+    this.region,
+    this.note,
+    this.confirmed = false,
+  });
+
+  /// What the user originally typed. Never overwritten — S1b migrates stored
+  /// data by *adding* [region] beside this, not by replacing it, so a mapping
+  /// that turns out wrong can still be undone from the original words.
   final String bodyPart;
+
   final String type;
 
-  Map<String, dynamic> toJson() => {'bodyPart': bodyPart, 'type': type};
+  /// The screened region, or null when nothing has mapped it yet.
+  final InjuryRegion? region;
 
-  static Injury fromJson(Map<String, dynamic> j) => Injury(
-        bodyPart: j['bodyPart'] as String,
-        type: j['type'] as String,
+  /// Free text the user wants recorded. **Never matched against anything.**
+  /// It exists so "rib, hurts on rotation" has somewhere to live that does not
+  /// pretend to be screenable.
+  final String? note;
+
+  /// True only once the user has explicitly said no region fits.
+  ///
+  /// Without this, an injury that structurally cannot map — rib, jaw, groin,
+  /// none of the eight — is indistinguishable on every future load from one
+  /// nobody has looked at yet, so the app would ask about it forever.
+  /// `region == null && !confirmed` is the only state that means "still needs
+  /// a human".
+  final bool confirmed;
+
+  /// True when this injury has been resolved one way or the other.
+  bool get isResolved => region != null || confirmed;
+
+  Injury copyWith({
+    String? bodyPart,
+    String? type,
+    InjuryRegion? region,
+    String? note,
+    bool? confirmed,
+    bool clearRegion = false,
+  }) =>
+      Injury(
+        bodyPart: bodyPart ?? this.bodyPart,
+        type: type ?? this.type,
+        region: clearRegion ? null : (region ?? this.region),
+        note: note ?? this.note,
+        confirmed: confirmed ?? this.confirmed,
       );
+
+  /// The single (de)serializer.
+  ///
+  /// These used to be dead code with zero production callers, while
+  /// `firestore_profile_repository.dart` carried a second, hand-inlined
+  /// implementation that cast `e['bodyPart']` straight into a required
+  /// `String`. Two implementations of one shape drift, and the drift only
+  /// surfaces on a document written by the other one. The repository calls
+  /// these now.
+  Map<String, dynamic> toJson() => {
+        'bodyPart': bodyPart,
+        'type': type,
+        if (region != null) 'region': region!.name,
+        if (note != null) 'note': note,
+        if (confirmed) 'confirmed': true,
+      };
+
+  /// Reads both shapes without a version field.
+  ///
+  /// The old shape simply has no `region`/`confirmed` keys, so absence *is*
+  /// the discriminator — the same structural-migration trick `completedAt`
+  /// already uses in the repository (`if (raw is String) ... if (raw is
+  /// Timestamp) ...`). A version number would have to be written by a
+  /// migration that has not run, on documents that already exist.
+  static Injury fromJson(Map<String, dynamic> j) => Injury(
+        bodyPart: j['bodyPart'] as String? ?? '',
+        type: j['type'] as String? ?? '',
+        region: _regionByName(j['region']),
+        note: j['note'] as String?,
+        confirmed: j['confirmed'] == true,
+      );
+
+  static InjuryRegion? _regionByName(dynamic name) {
+    if (name is! String) return null;
+    for (final r in InjuryRegion.values) {
+      if (r.name == name) return r;
+    }
+    return null;
+  }
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Injury && other.bodyPart == bodyPart && other.type == type;
+      other is Injury &&
+          other.bodyPart == bodyPart &&
+          other.type == type &&
+          other.region == region &&
+          other.note == note &&
+          other.confirmed == confirmed;
 
   @override
-  int get hashCode => Object.hash(bodyPart, type);
+  int get hashCode => Object.hash(bodyPart, type, region, note, confirmed);
 }
 
 class PersonalInfo {

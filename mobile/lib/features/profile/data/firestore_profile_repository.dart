@@ -32,9 +32,11 @@ class FirestoreProfileRepository implements ProfileRepository {
           'conditions': p.health.conditions,
           'allergies': p.health.allergies,
           'medications': p.health.medications,
-          'injuries': p.health.injuries
-              .map((i) => {'bodyPart': i.bodyPart, 'type': i.type})
-              .toList(),
+          // Through Injury.toJson, not a second hand-inlined copy of the same
+          // shape. The copy that used to be here did not know about `region`,
+          // `note` or `confirmed`, which is exactly how a second serializer
+          // fails: silently, on the fields added after it was written.
+          'injuries': p.health.injuries.map((i) => i.toJson()).toList(),
           'physicalLimitations': p.health.physicalLimitations,
           'recentSurgeries': p.health.recentSurgeries,
           'bloodPressure': p.health.bloodPressure?.name,
@@ -110,9 +112,12 @@ class FirestoreProfileRepository implements ProfileRepository {
         conditions: List<String>.from(health['conditions'] ?? const []),
         allergies: List<String>.from(health['allergies'] ?? const []),
         medications: List<String>.from(health['medications'] ?? const []),
+        // Same single implementation on the way back, and it no longer casts
+        // straight into required Strings: a document written before this field
+        // existed, or by a hand-edit, used to throw here rather than degrade.
         injuries: ((health['injuries'] as List?) ?? const [])
-            .map((e) =>
-                Injury(bodyPart: e['bodyPart'], type: e['type']))
+            .whereType<Map>()
+            .map((e) => Injury.fromJson(Map<String, dynamic>.from(e)))
             .toList(),
         physicalLimitations:
             List<String>.from(health['physicalLimitations'] ?? const []),

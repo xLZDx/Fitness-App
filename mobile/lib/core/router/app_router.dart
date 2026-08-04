@@ -25,6 +25,7 @@ import '../../features/onboarding/onboarding_page.dart';
 import '../../features/progress_photos/progress_photos_page.dart';
 import '../../features/social_feed/social_feed_page.dart';
 import '../../features/profile/data/profile_repository.dart';
+import '../../features/profile/injuries_page.dart';
 import '../../features/profile/profile_page.dart';
 import '../../features/profile/state/profile_providers.dart';
 import '../../features/progress/progress_page.dart';
@@ -252,6 +253,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/licences',
         pageBuilder: (_, __) => _fadeThrough(const LicencesPage()),
+      ),
+      GoRoute(
+        // Gated, and deliberately outside the shell: it is reached from
+        // Profile and returns there, so the nav bar stays out of a form's way.
+        path: '/injuries',
+        pageBuilder: (_, __) => _fadeThrough(const InjuriesPage()),
       ),
       GoRoute(
         path: '/settings',

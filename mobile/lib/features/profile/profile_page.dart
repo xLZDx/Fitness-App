@@ -94,6 +94,19 @@ class ProfilePage extends ConsumerWidget {
                 _divider(context),
                 _profileTile(
                   context,
+                  icon: Icons.healing_outlined,
+                  gradient: AppPalette.tileGradients[2],
+                  title: l10n.profileInjuries,
+                  subtitle: l10n.profileInjuriesSubtitle,
+                  // Its own route rather than a fix to the questionnaire tile
+                  // above: that one routes to /onboarding, which
+                  // resolveRedirect bounces straight back to /home for anyone
+                  // who has onboarded, so it can reach no save at all.
+                  onTap: () => context.push('/injuries'),
+                ),
+                _divider(context),
+                _profileTile(
+                  context,
                   icon: Icons.photo_library_outlined,
                   gradient: AppPalette.tileGradients[0],
                   title: AppLocalizations.of(context).profileProgressPhotos,
