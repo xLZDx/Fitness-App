@@ -243,5 +243,75 @@ void main() {
       expect(c.read(injuryFilteringIsRealProvider), isFalse,
           reason: 'silence is recoverable; a false safety claim is not');
     });
+
+    test('a mapped covered injury plus an unmapped uncovered one claims nothing',
+        () async {
+      // The mixed case, which the first version silently dropped: it collected
+      // `injury.region` and skipped everything else, so a covered knee carried
+      // the claim while an untriaged shoulder rode along unscreened. Until S1b
+      // runs most users have at least one unmapped injury, so this was the
+      // common case, not the edge.
+      final c = container(
+        profile: const UserProfile(
+          uid: 'u1',
+          health: HealthHistory(injuries: [
+            Injury(bodyPart: 'knee', type: 'x', region: InjuryRegion.knee),
+            Injury(bodyPart: 'shoulder', type: 'y'),
+          ]),
+        ),
+      );
+      await c.read(catalogSafetyCoverageProvider.future);
+      await c.read(screeningProfileProvider.future);
+      expect(c.read(injuryFilteringIsRealProvider), isFalse);
+    });
+
+    test('an injury no rule can name claims nothing, permanently', () async {
+      // A rib. Nothing in the vocabulary describes it, so nothing screened for
+      // it, so the app may not say the list was screened. The disclosure stays
+      // until the user maps it or the vocabulary learns the word.
+      final c = container(
+        profile: const UserProfile(
+          uid: 'u1',
+          health: HealthHistory(
+            injuries: [Injury(bodyPart: 'rib', type: 'bruise', confirmed: true)],
+          ),
+        ),
+      );
+      await c.read(catalogSafetyCoverageProvider.future);
+      await c.read(screeningProfileProvider.future);
+      expect(c.read(injuryFilteringIsRealProvider), isFalse);
+    });
+  });
+
+  group('the level the app claims', () {
+    // The mapping itself, which the widget tests never reach because they
+    // override this provider's output. An inverted branch here would ship a
+    // false "clinically reviewed" and pass the whole suite green.
+    test('no coverage means no claim', () {
+      final c = ProviderContainer(overrides: [
+        injuryFilteringIsRealProvider.overrideWithValue(false),
+      ]);
+      addTearDown(c.dispose);
+      expect(c.read(safetyScreeningLevelProvider), SafetyScreeningLevel.none);
+    });
+
+    test('coverage without a clinician is rulesOnly, not clinical', () {
+      final c = ProviderContainer(overrides: [
+        injuryFilteringIsRealProvider.overrideWithValue(true),
+      ]);
+      addTearDown(c.dispose);
+      expect(
+        c.read(safetyScreeningLevelProvider),
+        kSafetyTagsClinicallyReviewed
+            ? SafetyScreeningLevel.clinical
+            : SafetyScreeningLevel.rulesOnly,
+      );
+    });
+
+    test('the review flag is still false', () {
+      expect(kSafetyTagsClinicallyReviewed, isFalse,
+          reason: 'flip it only when a clinician has signed off on '
+              'core/contraindications/*.csv');
+    });
   });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../profile/data/injury_regions.dart';
 import '../../profile/data/profile_models.dart';
 import '../data/equipment_models.dart';
 import '../data/exercise_filter.dart';
@@ -97,6 +98,42 @@ final catalogSafetyCoverageProvider =
   );
 });
 
+/// Whether the safety tags have been reviewed by someone qualified.
+///
+/// False, and it says so on screen. The tags S3b writes come from
+/// `tag_contraindications.py` — deterministic rules over the vendor's own
+/// movement names and primary muscles, with the matching rule recorded per row
+/// in `core/contraindications/*.csv`. That is a real screen and it is not a
+/// clinical one, and the difference is exactly the kind of thing a product
+/// stops mentioning once the mechanism works.
+///
+/// Flip this when a clinician has signed off on the tag set, and the weaker
+/// disclosure disappears on its own — the same self-removing shape as S0a's
+/// banner, for the same reason: nobody should have to remember to delete it.
+const bool kSafetyTagsClinicallyReviewed = false;
+
+/// How much the app may honestly claim about a user's exercise list.
+enum SafetyScreeningLevel {
+  /// No tags cover this user's regions. Say nothing was screened.
+  none,
+
+  /// Screened by rules, not by a clinician.
+  rulesOnly,
+
+  /// Screened, and the tag set has been reviewed.
+  clinical,
+}
+
+/// The claim the app is entitled to make for the signed-in user.
+final safetyScreeningLevelProvider = Provider<SafetyScreeningLevel>((ref) {
+  if (!ref.watch(injuryFilteringIsRealProvider)) {
+    return SafetyScreeningLevel.none;
+  }
+  return kSafetyTagsClinicallyReviewed
+      ? SafetyScreeningLevel.clinical
+      : SafetyScreeningLevel.rulesOnly;
+});
+
 /// True when a surface is allowed to say **this user's** exercise list was
 /// screened.
 ///
@@ -125,10 +162,23 @@ final injuryFilteringIsRealProvider = Provider<bool>((ref) {
   final profileAsync = ref.watch(screeningProfileProvider);
   if (!profileAsync.hasValue) return false;
 
-  final regions = <InjuryRegion>{
-    for (final injury in profileAsync.value?.health.injuries ?? const <Injury>[])
-      if (injury.region != null) injury.region!,
-  };
-  if (regions.isEmpty) return coverage.filteringCanFire;
+  final injuries = profileAsync.value?.health.injuries ?? const <Injury>[];
+  if (injuries.isEmpty) return coverage.filteringCanFire;
+
+  // Every injury, not only the mapped ones. Collecting `injury.region` and
+  // skipping the rest silently dropped the unmapped ones from the question, so
+  // a user with a mapped knee (covered) and an untriaged shoulder (not) was
+  // told their whole list had been screened. Until S1b runs, most users have
+  // at least one unmapped injury, which made that the common case rather than
+  // the edge one.
+  final regions = <InjuryRegion>{};
+  for (final injury in injuries) {
+    final region = injury.region ?? suggestRegion(injury.bodyPart);
+    // Nothing names it — a rib, a jaw, or a word no rule recognises. We cannot
+    // have screened for it, so we cannot say the list was screened. The user
+    // sees the disclosure until they map it or we learn the word.
+    if (region == null) return false;
+    regions.add(region);
+  }
   return coverage.coversAllOf(regions);
 });

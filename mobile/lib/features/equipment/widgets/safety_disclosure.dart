@@ -35,12 +35,24 @@ class SafetyDisclosure extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (ref.watch(injuryFilteringIsRealProvider)) {
+    final level = ref.watch(safetyScreeningLevelProvider);
+    if (level == SafetyScreeningLevel.clinical) {
       return const SizedBox.shrink();
     }
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final colour = theme.colorScheme.tertiary;
+
+    // Two different truths, and the weaker one is not a softened version of
+    // the stronger. "Nothing was screened" and "screened by rules, not by a
+    // clinician" describe different products, and collapsing the second into
+    // silence is how the first claim came back last time.
+    final headline = level == SafetyScreeningLevel.none
+        ? l10n.safetyFilterNotYetScreened
+        : l10n.safetyFilterRulesOnly;
+    final detail = level == SafetyScreeningLevel.none
+        ? l10n.safetyFilterNotYetScreenedDetail
+        : l10n.safetyFilterRulesOnlyDetail;
 
     return Semantics(
       liveRegion: true,
@@ -63,7 +75,7 @@ class SafetyDisclosure extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    l10n.safetyFilterNotYetScreened,
+                    headline,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -71,7 +83,7 @@ class SafetyDisclosure extends ConsumerWidget {
                   if (!compact) ...[
                     const SizedBox(height: 4),
                     Text(
-                      l10n.safetyFilterNotYetScreenedDetail,
+                      detail,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface
                             .withValues(alpha: 0.75),

@@ -18,10 +18,10 @@ import 'package:fitness_app/features/equipment/widgets/safety_disclosure.dart';
 /// contraindication coverage to 0 of 1,887 and every "filtered for your
 /// injuries" claim in the app stayed on screen, because a filter that cannot
 /// fire is not a bug in the filter and nothing in the code could notice.
-Widget _host(Widget child, {required bool filteringIsReal}) {
+Widget _host(Widget child, {required SafetyScreeningLevel level}) {
   return ProviderScope(
     overrides: [
-      injuryFilteringIsRealProvider.overrideWithValue(filteringIsReal),
+      safetyScreeningLevelProvider.overrideWithValue(level),
     ],
     child: MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -35,7 +35,7 @@ void main() {
   group('SafetyDisclosure', () {
     testWidgets('shows while the catalog cannot be screened', (tester) async {
       await tester.pumpWidget(
-        _host(const SafetyDisclosure(), filteringIsReal: false),
+        _host(const SafetyDisclosure(), level: SafetyScreeningLevel.none),
       );
       await tester.pumpAndSettle();
       expect(
@@ -47,20 +47,55 @@ void main() {
     testWidgets('says what to do instead, not only what is missing',
         (tester) async {
       await tester.pumpWidget(
-        _host(const SafetyDisclosure(), filteringIsReal: false),
+        _host(const SafetyDisclosure(), level: SafetyScreeningLevel.none),
       );
       await tester.pumpAndSettle();
       expect(find.textContaining('Check with a professional'), findsOneWidget);
     });
 
-    testWidgets('disappears on its own once tagging lands', (tester) async {
-      // Not a permanent disclaimer, and nobody has to remember to delete it:
-      // it reads the catalog's real coverage.
+    testWidgets('does NOT disappear merely because tagging landed',
+        (tester) async {
+      // This test used to assert the opposite, and the promise it encoded was
+      // wrong. S3b's tags are deterministic rules over movement names and
+      // primary muscles -- a real screen, and not a clinical one. Letting the
+      // banner vanish at the first tagged exercise would put the app back to
+      // claiming its lists were checked for you, sourced differently.
       await tester.pumpWidget(
-        _host(const SafetyDisclosure(), filteringIsReal: true),
+        _host(const SafetyDisclosure(), level: SafetyScreeningLevel.rulesOnly),
+      );
+      await tester.pumpAndSettle();
+      expect(find.textContaining('not by a clinician'), findsOneWidget);
+    });
+
+    testWidgets('says something weaker rather than something softer',
+        (tester) async {
+      // "Nothing was screened" and "screened by rules" describe different
+      // products. The second is not a gentler wording of the first.
+      await tester.pumpWidget(
+        _host(const SafetyDisclosure(), level: SafetyScreeningLevel.rulesOnly),
+      );
+      await tester.pumpAndSettle();
+      expect(find.textContaining('not screened these exercises'), findsNothing);
+      expect(find.textContaining('hide exercises that load an area'),
+          findsOneWidget);
+    });
+
+    testWidgets('disappears once a clinician has reviewed the tags',
+        (tester) async {
+      // Still self-removing, just at the honest threshold:
+      // kSafetyTagsClinicallyReviewed, not "any tag exists".
+      await tester.pumpWidget(
+        _host(const SafetyDisclosure(), level: SafetyScreeningLevel.clinical),
       );
       await tester.pumpAndSettle();
       expect(find.byType(Text), findsNothing);
+    });
+
+    test('the review flag is still false, and the app says so', () {
+      expect(kSafetyTagsClinicallyReviewed, isFalse,
+          reason: 'flip this only when a clinician has actually signed off on '
+              'core/contraindications/*.csv; the weaker banner then removes '
+              'itself');
     });
 
     testWidgets('announces itself rather than waiting to be found',
@@ -69,7 +104,7 @@ void main() {
       // a per-item badge implies the un-badged rows were checked and cleared.
       // A live region is announced when it appears and stays put.
       await tester.pumpWidget(
-        _host(const SafetyDisclosure(), filteringIsReal: false),
+        _host(const SafetyDisclosure(), level: SafetyScreeningLevel.none),
       );
       await tester.pumpAndSettle();
       final node = tester.getSemantics(
@@ -83,7 +118,7 @@ void main() {
 
     testWidgets('compact drops the detail but never the claim', (tester) async {
       await tester.pumpWidget(
-        _host(const SafetyDisclosure(compact: true), filteringIsReal: false),
+        _host(const SafetyDisclosure(compact: true), level: SafetyScreeningLevel.none),
       );
       await tester.pumpAndSettle();
       expect(find.textContaining('not screened these exercises'),

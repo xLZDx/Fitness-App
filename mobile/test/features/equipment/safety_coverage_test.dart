@@ -16,7 +16,7 @@ import 'package:fitness_app/features/profile/data/profile_models.dart';
 /// assertions below pin it from both sides, so tagging the very first exercise
 /// turns this file red until the number here is raised to match. That is the
 /// point: the count can never drift from the code again in either direction.
-const int kSafetyCoverageFloor = 0;
+const int kSafetyCoverageFloor = 353;
 
 ExerciseItem _ex(String id, {List<String> contraindications = const []}) =>
     ExerciseItem(
@@ -153,18 +153,27 @@ void main() {
       expect(out.values.every((n) => n == 0), isTrue);
     });
 
-    test('the shipped catalog covers no region yet', () {
-      // Pinned so S3b's first batch turns this red and has to say which
-      // regions it covered, rather than only how many rows it touched.
+    test('the shipped catalog covers exactly the regions batched so far', () {
+      // The ratchet, per region rather than per row. A batch that tags 200
+      // knees and no shoulders raises the total exactly as much as a balanced
+      // one, and "screened for your injuries" is only ever true per injury --
+      // so the batches are recorded here by name, and adding one turns this
+      // red until it is.
+      const batched = {
+        InjuryRegion.knee: 353, // S3b-1, 2026-08-05
+      };
       final raw = File('assets/data/exercises_vendor.json').readAsStringSync();
       final catalog = (jsonDecode(raw) as List)
           .map((e) => ExerciseItem.fromJson(e as Map<String, dynamic>))
           .toList();
       final byRegion = safetyCoverageByRegion(catalog);
-      expect(byRegion.values.where((n) => n > 0), isEmpty,
-          reason: 'a region became covered: raise kSafetyCoverageFloor and '
-              'record which regions the batch covered, because "screened for '
-              'your injuries" is only ever true per injury');
+      for (final region in InjuryRegion.values) {
+        expect(byRegion[region], batched[region] ?? 0,
+            reason: '${region.name} coverage moved. If a batch shipped, add it '
+                'to `batched` above and to kSafetyCoverageFloor in the same '
+                'commit; if it did not, tags have been lost, which is the '
+                'exact failure 0c4bf24 shipped.');
+      }
     });
   });
 }

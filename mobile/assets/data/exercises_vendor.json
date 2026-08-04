@@ -19,7 +19,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_180_jump_turns.jpg",
       "men": "assets/posters/men/ea_180_jump_turns.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_3_leg_chatarunga_pose",
@@ -214,7 +217,10 @@
     "equipmentLabel": "None",
     "poster": {
       "girl": "assets/posters/girl/ea_4_corners_side_step.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_4_punches_side_squat",
@@ -252,7 +258,10 @@
     "equipmentLabel": "None",
     "poster": {
       "girl": "assets/posters/girl/ea_4_punches_side_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_4_reverse_lunge_and_4_side_taps",
@@ -290,7 +299,10 @@
     "equipmentLabel": "None",
     "poster": {
       "girl": "assets/posters/girl/ea_4_reverse_lunge_and_4_side_taps.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_45_degree_bicycle_twist_knee_to_elbow",
@@ -587,7 +599,10 @@
     "equipmentLabel": "None",
     "poster": {
       "girl": "assets/posters/girl/ea_45_degrees_step_out.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_5_sec_fist_against_chin",
@@ -1465,7 +1480,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_agility_ladder_advanced_hop_position.jpg",
       "men": "assets/posters/men/ea_agility_ladder_advanced_hop_position.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_agility_ladder_advanced_single_leg",
@@ -1619,7 +1637,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_agility_ladder_lateral_movement_with_double_hop.jpg",
       "men": "assets/posters/men/ea_agility_ladder_lateral_movement_with_double_hop.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_agility_ladder_skipping_1_touch",
@@ -1834,7 +1855,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_air_swing_running.jpg",
       "men": "assets/posters/men/ea_air_swing_running.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_air_swing_side_to_side_swing",
@@ -2222,7 +2246,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_alternate_heel_touch_side_kick_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_alternate_heel_touches",
@@ -2617,7 +2644,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_alternate_sprinter_lunge.jpg",
       "men": "assets/posters/men/ea_alternate_sprinter_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_alternate_superman",
@@ -2970,7 +3000,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_alternating_lunge_with_rotation.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_alternating_oblique_sit_ups",
@@ -3047,7 +3080,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_alternating_plank_lunge.jpg",
       "men": "assets/posters/men/ea_alternating_plank_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_alternating_step_out",
@@ -3086,7 +3122,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_alternating_step_out.jpg",
       "men": "assets/posters/men/ea_alternating_step_out.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_alternating_superman",
@@ -3412,7 +3451,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_archer_step_back.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_archer_stepback",
@@ -4289,7 +4331,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_assault_airbike_sprint_speed.jpg",
       "men": "assets/posters/men/ea_assault_airbike_sprint_speed.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_assisted_bulgarian_split_squat",
@@ -4329,7 +4374,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_assisted_bulgarian_split_squat.jpg",
       "men": "assets/posters/men/ea_assisted_bulgarian_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_assisted_chin_up_normal_width_reverse_grip",
@@ -4589,7 +4637,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_assisted_pistol_squats.jpg",
       "men": "assets/posters/men/ea_assisted_pistol_squats.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_assisted_pull_up",
@@ -5402,7 +5453,10 @@
     "equipmentLabel": "Balance Board",
     "poster": {
       "men": "assets/posters/men/ea_balance_board_lateral_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_ball_headlock_squat",
@@ -5443,7 +5497,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_ball_headlock_squat.jpg",
       "men": "assets/posters/men/ea_ball_headlock_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_ball_sit_up",
@@ -6785,7 +6842,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_kneeling_crunch.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_band_kneeling_lat_pulldown",
@@ -6821,7 +6881,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_kneeling_lat_pulldown.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_band_kneeling_preacher_curl",
@@ -6855,7 +6918,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_kneeling_preacher_curl.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_band_kneeling_rear_kick",
@@ -6891,7 +6957,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_kneeling_rear_kick.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_band_kneeling_single_arm_high_row",
@@ -6929,7 +6998,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_band_kneeling_single_arm_high_row.jpg",
       "men": "assets/posters/men/ea_band_kneeling_single_arm_high_row.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_band_leg_press",
@@ -6968,7 +7040,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_band_leg_press.jpg",
       "men": "assets/posters/men/ea_band_leg_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_band_low_alternate_chest_press",
@@ -7744,7 +7819,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_single_leg_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_band_skullcrusher",
@@ -7807,7 +7885,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_band_spanish_split_squat.jpg",
       "men": "assets/posters/men/ea_band_spanish_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_band_squat_row",
@@ -7829,7 +7910,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_band_squat_row.jpg",
       "men": "assets/posters/men/ea_band_squat_row.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_band_standing_leg_curl",
@@ -7865,7 +7949,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_standing_leg_curl.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_band_standing_rear_delt_row",
@@ -8303,7 +8390,10 @@
     "equipmentLabel": "Bench",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_bench_lateral_step_up.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_bench_press",
@@ -8452,7 +8542,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_bench_squats.jpg",
       "men": "assets/posters/men/ea_barbell_bench_squats.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_bent_over_reverse_raise_skier",
@@ -8744,7 +8837,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_box_squat.jpg",
       "men": "assets/posters/men/ea_barbell_box_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_bulgarian_split_squat",
@@ -8784,7 +8880,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_bulgarian_split_squat.jpg",
       "men": "assets/posters/men/ea_barbell_bulgarian_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_bulgarian_split_squat_left_front_back_view",
@@ -8822,7 +8921,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_bulgarian_split_squat_left_front_back_view.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_bulgarian_split_squat_left_side_view",
@@ -8860,7 +8962,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_bulgarian_split_squat_left_side_view.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_calf_jump",
@@ -8899,7 +9004,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_calf_jump.jpg",
       "men": "assets/posters/men/ea_barbell_calf_jump.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_clean_and_jerk",
@@ -8982,7 +9090,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_clean_and_jerk_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_clean_and_press",
@@ -9024,7 +9135,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_clean_and_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_clean_deadlift",
@@ -9105,7 +9219,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_clean_grip_front_squat.jpg",
       "men": "assets/posters/men/ea_barbell_clean_grip_front_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_clean_pull",
@@ -9281,7 +9398,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_curtsy_lunges.jpg",
       "men": "assets/posters/men/ea_barbell_curtsy_lunges.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_deadlift",
@@ -9826,7 +9946,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_front_bench_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_front_chest_bench_squat",
@@ -9863,7 +9986,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_front_chest_bench_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_front_chest_lunges",
@@ -9900,7 +10026,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_front_chest_lunges.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_front_chest_squat",
@@ -9939,7 +10068,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_front_chest_squat.jpg",
       "men": "assets/posters/men/ea_barbell_front_chest_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_front_lunges_with_small_pause",
@@ -9976,7 +10108,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_front_lunges_with_small_pause.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_front_rack_lunge",
@@ -10013,7 +10148,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_front_rack_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_front_squats",
@@ -10054,7 +10192,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_front_squats.jpg",
       "men": "assets/posters/men/ea_barbell_front_squats.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_full_clean",
@@ -10136,7 +10277,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_full_squat.jpg",
       "men": "assets/posters/men/ea_barbell_full_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_full_squat_side_pov",
@@ -10175,7 +10319,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_full_squat_side_pov.jpg",
       "men": "assets/posters/men/ea_barbell_full_squat_side_pov.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_full_squat_wide",
@@ -10212,7 +10359,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_full_squat_wide.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_full_squat_back",
@@ -10249,7 +10399,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_full_squat_back.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_full_squat_with_rack",
@@ -10286,7 +10439,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_full_squat_with_rack.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_full_zercher_squat",
@@ -10327,7 +10483,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_full_zercher_squat.jpg",
       "men": "assets/posters/men/ea_barbell_full_zercher_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_glute_bridge",
@@ -10614,7 +10773,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_incline_shoulders_press_inside_squat_cage.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_inclined_bench_press",
@@ -10685,7 +10847,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_jefferson_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_jefferson_squat",
@@ -10724,7 +10889,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_jefferson_squat.jpg",
       "men": "assets/posters/men/ea_barbell_jefferson_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_jm_bench_press",
@@ -10782,7 +10950,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_jump_shrug.jpg",
       "men": "assets/posters/men/ea_barbell_jump_shrug.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_jump_squat",
@@ -10822,7 +10993,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_jump_squat.jpg",
       "men": "assets/posters/men/ea_barbell_jump_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_kas_glute_bridge",
@@ -10899,7 +11073,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_kneeling_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_landmine_chest_press",
@@ -11047,7 +11224,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_lateral_lunges.jpg",
       "men": "assets/posters/men/ea_barbell_lateral_lunges.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_long_landmine_row",
@@ -11123,7 +11303,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_low_bar_squat.jpg",
       "men": "assets/posters/men/ea_barbell_low_bar_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_lunges",
@@ -11162,7 +11345,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_lunges.jpg",
       "men": "assets/posters/men/ea_barbell_lunges.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_lunges_on_the_spot",
@@ -11199,7 +11385,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_lunges_on_the_spot.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_lying_extension",
@@ -11499,7 +11688,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_narrow_stance_full_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_narrow_stance_squat",
@@ -11535,7 +11727,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_narrow_stance_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_one_arm_single_deadlift",
@@ -11652,7 +11847,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_overhead_lunges.jpg",
       "men": "assets/posters/men/ea_barbell_overhead_lunges.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_overhead_shrug",
@@ -11729,7 +11927,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_overhead_squat.jpg",
       "men": "assets/posters/men/ea_barbell_overhead_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_palm_down_wrist_curl_over_a_bench",
@@ -11837,7 +12038,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_pause_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_pendlay_row",
@@ -12218,7 +12422,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_quarter_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_rack_pull",
@@ -12332,7 +12539,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_rear_lunge_on_box.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_rear_lunges",
@@ -12370,7 +12580,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_rear_lunges.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_reverse_biceps_curl",
@@ -13037,7 +13250,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_side_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_side_step_up",
@@ -13076,7 +13292,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_side_step_up.jpg",
       "men": "assets/posters/men/ea_barbell_side_step_up.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_silverback_shrug",
@@ -13223,7 +13442,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_single_leg_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_situp",
@@ -13645,7 +13867,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_spoto_press",
@@ -13707,7 +13932,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_squat_back_pov.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_squat_to_grass",
@@ -13744,7 +13972,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_squat_to_grass.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_squat_with_2_sec_hold",
@@ -13781,7 +14012,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_squat_with_2_sec_hold.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_staggered_deadlift",
@@ -14248,7 +14482,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_step_up_balance_on_box.jpg",
       "men": "assets/posters/men/ea_barbell_step_up_balance_on_box.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_step_up_on_bench",
@@ -14287,7 +14524,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_step_up_on_bench.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_barbell_stiff_leg_deadlift",
@@ -14887,7 +15127,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_basketball_shot_jump.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_battle_rope_alternating_arm_waves",
@@ -15063,7 +15306,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_bench_alternating_step_ups.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bench_bulgarian_split_squats_left",
@@ -15101,7 +15347,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_bench_bulgarian_split_squats_left.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bench_bulgarian_split_squats_right",
@@ -15139,7 +15388,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_bench_bulgarian_split_squats_right.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bench_decline_ab_sit_ups",
@@ -15392,7 +15644,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_bench_triceps_dip_leg_curls.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bench_triceps_dip_straight_legs",
@@ -15609,7 +15864,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_bent_leg_side_kick_kneeling.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bent_over_barbell_row",
@@ -16006,7 +16264,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_biceps_curl_front_step.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_biceps_curl_resistance_band",
@@ -16727,7 +16988,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_forward_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_front_slam",
@@ -16803,7 +17067,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_full_squat_with_overhead_front_raise.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_full_squat_with_overhead_press",
@@ -16843,7 +17110,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_full_squat_with_overhead_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_hip_thrust",
@@ -16989,7 +17259,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_kneeling_hold_to_stand.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_kneeling_push_up_row",
@@ -17028,7 +17301,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_kneeling_push_up_row.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_kneeling_sissy_squat",
@@ -17065,7 +17341,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_bodyweight_kneeling_sissy_squat.jpg",
       "men": "assets/posters/men/ea_bodyweight_kneeling_sissy_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_kneeling_triceps_extension",
@@ -17101,7 +17380,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_kneeling_triceps_extension.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_lying_leg_curl",
@@ -17136,7 +17418,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_lying_leg_curl.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_muscle_up",
@@ -17216,7 +17501,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_overhead_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_overhead_triceps_extension",
@@ -17289,7 +17577,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_pulse_forward_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_pulse_squat",
@@ -17327,7 +17618,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_pulse_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_pulse_squat_arms_to_chest",
@@ -17365,7 +17659,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_pulse_squat_arms_to_chest.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_rear_lunge",
@@ -17403,7 +17700,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_rear_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_rear_lunge_front_raise",
@@ -17443,7 +17743,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_rear_lunge_front_raise.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_single_leg_deadlift",
@@ -17521,7 +17824,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_squat_to_front_leg.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_squat_to_side_leg",
@@ -17559,7 +17865,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_squat_to_side_leg.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_squat_to_side_to_front_leg",
@@ -17599,7 +17908,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_squat_to_side_to_front_leg.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_squats",
@@ -17637,7 +17949,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_squats.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_squats_hold",
@@ -17675,7 +17990,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_squats_hold.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_standing_around_world_wall_supported",
@@ -18001,7 +18319,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_step_up_on_step_box.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bodyweight_svend_press",
@@ -18343,7 +18664,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_box_jump.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_box_jump_squats",
@@ -18382,7 +18706,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_box_jump_squats.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_box_sled_push",
@@ -18938,7 +19265,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_bulgarian_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bulgarian_split_squat_bodyweight_left",
@@ -18976,7 +19306,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_bulgarian_split_squat_bodyweight_left.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bulgarian_split_squat_bodyweight_right",
@@ -19014,7 +19347,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_bulgarian_split_squat_bodyweight_right.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bulgarian_split_squat_cable_resistance_band",
@@ -19053,7 +19389,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_bulgarian_split_squat_cable_resistance_band.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bulgarian_split_squat_left_bodyweight_side_view",
@@ -19091,7 +19430,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_bulgarian_split_squat_left_bodyweight_side_view.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bulgarian_split_squat_right_bodyweight_side_view",
@@ -19129,7 +19471,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_bulgarian_split_squat_right_bodyweight_side_view.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_bulgarian_split_squat_stretch",
@@ -19151,7 +19496,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_bulgarian_split_squat_stretch.jpg",
       "men": "assets/posters/men/ea_bulgarian_split_squat_stretch.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_burpee",
@@ -19195,7 +19543,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_burpee.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_burpee_squat",
@@ -19233,7 +19584,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_burpee_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_butt_kick_with_row",
@@ -19508,7 +19862,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_cable_assisted_inverse_leg_curl.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_cable_bar_lateral_pulldown",
@@ -19985,7 +20342,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_cable_goblet_squat.jpg",
       "men": "assets/posters/men/ea_cable_goblet_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_cable_hamstring_curl",
@@ -20901,7 +21261,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_cable_pull_in_kneeling.jpg",
       "men": "assets/posters/men/ea_cable_pull_in_kneeling.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_cable_pull_through",
@@ -21795,7 +22158,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_cable_split_squat.jpg",
       "men": "assets/posters/men/ea_cable_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_cable_standing_crunch",
@@ -21854,7 +22220,10 @@
     "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_cable_standing_leg_extension.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_cable_standing_up_straight_crossovers",
@@ -22749,7 +23118,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_calf_raise_leg_press_machine.jpg",
       "men": "assets/posters/men/ea_calf_raise_leg_press_machine.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_calf_raise_on_hack_squat_machine",
@@ -22787,7 +23159,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_calf_raise_on_hack_squat_machine.jpg",
       "men": "assets/posters/men/ea_calf_raise_on_hack_squat_machine.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_calf_raise_with_wall_support",
@@ -22971,7 +23346,10 @@
     "equipmentLabel": "Yoga Mat",
     "poster": {
       "men": "assets/posters/men/ea_calves_stretch_on_stairs.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_calves_stretch_on_step",
@@ -23105,7 +23483,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_cardio_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_cat_pose",
@@ -23280,7 +23661,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_chair_back_lunge_left_resistance_band.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_chair_back_lunge_right_resistance_band",
@@ -23318,7 +23702,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_chair_back_lunge_right_resistance_band.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_chair_bulgarian_split_squats_bodyweight_left",
@@ -23357,7 +23744,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_chair_bulgarian_split_squats_bodyweight_left.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_chair_bulgarian_split_squats_bodyweight_right",
@@ -23396,7 +23786,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_chair_bulgarian_split_squats_bodyweight_right.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_chair_elevated_single_leg_glute_bridge",
@@ -23926,7 +24319,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_chest_fly_side_step.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_chest_lift_with_rotation",
@@ -24810,7 +25206,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_clap_curtsy_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_clap_jack",
@@ -24850,7 +25249,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_clap_jack.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_clap_push_ups",
@@ -25554,7 +25956,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_cossack_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_counterbalanced_skater_squat",
@@ -25594,7 +25999,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_counterbalanced_skater_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_crab_pose",
@@ -25896,7 +26304,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_criss_cross_jack.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_criss_cross_jump",
@@ -25936,7 +26347,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_criss_cross_jump.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_criss_cross_leg_raises",
@@ -26131,7 +26545,10 @@
     "equipmentLabel": "Yoga Mat",
     "poster": {
       "men": "assets/posters/men/ea_crossover_kneeling_hip_flexor_stretch.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_crouching_heel_back_calf_stretch",
@@ -26592,7 +27009,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_curtsy_lunge_bodyweight.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_curtsy_lunge_slide_with_towel",
@@ -26630,7 +27050,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_curtsy_lunge_slide_with_towel.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_curtsy_lunges_resistance_band",
@@ -26666,7 +27089,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_curtsy_lunges_resistance_band.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_curtsy_squat",
@@ -26703,7 +27129,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_curtsy_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dead_bug",
@@ -26999,7 +27428,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_decline_kneeling_push_up.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_decline_kneeling_push_up_on_box",
@@ -27036,7 +27468,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_decline_kneeling_push_up_on_box.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_decline_levitating_sit_ups_bodyweight",
@@ -27437,7 +27872,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_diagonal_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_diagonal_opens",
@@ -27835,7 +28273,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_double_jump_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_double_kettlebell_sled_push",
@@ -27980,7 +28421,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_downward_dog_sprint.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_downward_dog_toe_to_heel",
@@ -28634,7 +29078,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_bar_grip_sumo_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_bench_press",
@@ -28741,7 +29188,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_bench_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_bent_arm_lateral_raise",
@@ -28997,7 +29447,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_bulgarian_box_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_bulgarian_split_squat",
@@ -29035,7 +29488,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_bulgarian_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_chest_press_decline",
@@ -29381,7 +29837,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_cossack_squats_version_2.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_cross_body_hammer_curl_version_2",
@@ -29615,7 +30074,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_curtsy_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_decline_alternate_bench_press",
@@ -30660,7 +31122,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_frog_jumps.jpg",
       "men": "assets/posters/men/ea_dumbbell_frog_jumps.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_front_rack_lunge",
@@ -30698,7 +31163,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_front_rack_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_front_raise",
@@ -30806,7 +31274,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_front_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_glute_bridge",
@@ -30880,7 +31351,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_goblet_2_sec_hold_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_goblet_curtsy_lunge",
@@ -30918,7 +31392,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_goblet_curtsy_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_goblet_forward_lunge",
@@ -30958,7 +31435,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_goblet_forward_lunge.jpg",
       "men": "assets/posters/men/ea_dumbbell_goblet_forward_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_goblet_good_morning",
@@ -31006,7 +31486,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_goblet_reverse_lunge.jpg",
       "men": "assets/posters/men/ea_dumbbell_goblet_reverse_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_goblet_split_squat",
@@ -31043,7 +31526,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_goblet_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_goblet_split_squat_front_foot_elevanted",
@@ -31080,7 +31566,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_goblet_split_squat_front_foot_elevanted.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_goblet_squat",
@@ -31118,7 +31607,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_goblet_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_half_biceps_curl_for_21s",
@@ -31188,7 +31680,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_half_kneeling_military_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_half_kneeling_wood_chopper",
@@ -31212,7 +31707,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_half_kneeling_wood_chopper.jpg",
       "men": "assets/posters/men/ea_dumbbell_half_kneeling_wood_chopper.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_hammer_curl",
@@ -32512,7 +33010,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_jumping_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_kickback",
@@ -32607,7 +33108,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_kneeling_arnold_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_kneeling_hold_to_stand_clean_grip",
@@ -32645,7 +33149,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_kneeling_hold_to_stand_clean_grip.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_kneeling_squat",
@@ -32683,7 +33190,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_kneeling_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_kneeling_wood_chopper",
@@ -32707,7 +33217,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_kneeling_wood_chopper.jpg",
       "men": "assets/posters/men/ea_dumbbell_kneeling_wood_chopper.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_lateral_to_front_raise",
@@ -32902,7 +33415,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_lunge_alternating_on_the_spot.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_lunge_pulse",
@@ -32940,7 +33456,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_lunge_pulse.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_lunge_to_overhead_press",
@@ -32981,7 +33500,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_lunge_to_overhead_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_lying_external_shoulder_rotation",
@@ -33350,7 +33872,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_narrow_stance_squats.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_offset_squat",
@@ -33374,7 +33899,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_offset_squat.jpg",
       "men": "assets/posters/men/ea_dumbbell_offset_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_one_arm_floor_fly",
@@ -34154,7 +34682,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_overhead_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_overhead_side_bend",
@@ -34408,7 +34939,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_press_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_pronate_grip_triceps_extension",
@@ -34707,7 +35241,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_push_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_rdl_stretch_isometric",
@@ -34888,7 +35425,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_rear_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_rear_lunge_from_step",
@@ -34926,7 +35466,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_rear_lunge_from_step.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_renegade_row",
@@ -35072,7 +35615,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_reverse_lunge_on_the_spot.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_reverse_lunges_pulses",
@@ -35110,7 +35656,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_reverse_lunges_pulses.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_reverse_spider_curl",
@@ -36103,7 +36652,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_side_lunge_alternating.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_side_lunge_left_n_right",
@@ -36141,7 +36693,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_side_lunge_left_n_right.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_side_lunge_single_leg",
@@ -36179,7 +36734,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_side_lunge_single_leg.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_side_lying_one_hand_raise",
@@ -36312,7 +36870,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_side_squat_side_to_side.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_silverback_shrug",
@@ -36517,7 +37078,10 @@
     "equipmentLabel": "Kettlebells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_single_arm_overhead_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_single_arm_starfish_crunch",
@@ -36808,7 +37372,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_single_leg_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_single_leg_squat",
@@ -36844,7 +37411,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_single_leg_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_single_leg_squat_with_support_pistol",
@@ -36881,7 +37451,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_single_leg_squat_with_support_pistol.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_single_leg_step_up",
@@ -36919,7 +37492,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_single_leg_step_up.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_skullcrusher",
@@ -36980,7 +37556,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_squats",
@@ -37018,7 +37597,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_squats.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_squats_to_shoulder_press",
@@ -37057,7 +37639,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_squats_to_shoulder_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_staggered_deadlift",
@@ -38066,7 +38651,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_static_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_step_up_on_bench",
@@ -38104,7 +38692,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_step_up_on_bench.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_step_up_with_knee_raise",
@@ -38142,7 +38733,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_step_up_with_knee_raise.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_stiff_leg_deadlift",
@@ -38415,7 +39009,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_sumo_squat_off_benches.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_supported_sissy_squat",
@@ -38451,7 +39048,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_supported_sissy_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dumbbell_svend_press",
@@ -39046,7 +39646,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbell_burpee.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_dynamic_leg_swing",
@@ -39729,7 +40332,10 @@
     "equipmentLabel": "Exercise Ball",
     "poster": {
       "men": "assets/posters/men/ea_exercise_ball_leg_curl.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_exercise_ball_lower_back_dynamic_stretch",
@@ -40052,7 +40658,10 @@
     "equipmentLabel": "Exercise Ball",
     "poster": {
       "men": "assets/posters/men/ea_exercise_ball_wall_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_explosive_push_ups",
@@ -40742,7 +41351,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_feet_together_barbell_squats.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_fire_hydrant_bodyweight",
@@ -41183,7 +41795,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_frog_jumps.jpg",
       "men": "assets/posters/men/ea_frog_jumps.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_front_lever_raise",
@@ -41367,7 +41982,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_front_squats_dumbbell_low.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_front_squats_dumbbell_over_shoulders",
@@ -41403,7 +42021,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_front_squats_dumbbell_over_shoulders.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_full_planche_push_up",
@@ -41583,7 +42204,10 @@
     "equipmentLabel": "Kettlebells",
     "poster": {
       "men": "assets/posters/men/ea_goblet_kettlebell_squats.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_good_morning_resistance_band",
@@ -41910,7 +42534,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_gym_elliptical_machine_sprint_speed.jpg",
       "men": "assets/posters/men/ea_gym_elliptical_machine_sprint_speed.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_gym_rowing_machine_fast_speed",
@@ -42045,7 +42672,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_gym_rowing_machine_sprint_speed.jpg",
       "men": "assets/posters/men/ea_gym_rowing_machine_sprint_speed.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_hack_squat_machine_squat",
@@ -42083,7 +42713,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_hack_squat_machine_squat.jpg",
       "men": "assets/posters/men/ea_hack_squat_machine_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_half_burpees",
@@ -42121,7 +42754,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_half_burpees.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_half_lotus",
@@ -42258,7 +42894,10 @@
     "equipmentLabel": "Hammer Strength Iso-Lateral Leg Curl Machine",
     "poster": {
       "girl": "assets/posters/girl/ea_hammer_strength_iso_lateral_leg_curl_alternating_legs.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_hammer_strength_iso_lateral_leg_curl_alternate_legs",
@@ -42293,7 +42932,10 @@
     "equipmentLabel": "Hammer Strength Iso-Lateral Leg Curl Machine",
     "poster": {
       "men": "assets/posters/men/ea_hammer_strength_iso_lateral_leg_curl_alternate_legs.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_hammer_strength_iso_lateral_leg_curl_both_leg",
@@ -42330,7 +42972,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_hammer_strength_iso_lateral_leg_curl_both_leg.jpg",
       "men": "assets/posters/men/ea_hammer_strength_iso_lateral_leg_curl_both_leg.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_hammer_strength_iso_lateral_leg_curl_single_leg",
@@ -42367,7 +43012,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_hammer_strength_iso_lateral_leg_curl_single_leg.jpg",
       "men": "assets/posters/men/ea_hammer_strength_iso_lateral_leg_curl_single_leg.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_hammer_strength_mts_iso_lateral_biceps_curl_alternate_arm",
@@ -43297,7 +43945,10 @@
     "equipmentLabel": "Cable Machine",
     "poster": {
       "men": "assets/posters/men/ea_high_cable_kneeling_crunch.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_high_knee_twist",
@@ -43443,7 +44094,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_high_resistance_band_kneeling_crunch.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_hip_thrust_in_smith_machine",
@@ -43576,7 +44230,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_horizontal_leg_press.jpg",
       "men": "assets/posters/men/ea_horizontal_leg_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_horizontal_leg_press_calf_raise",
@@ -43600,7 +44257,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_horizontal_leg_press_calf_raise.jpg",
       "men": "assets/posters/men/ea_horizontal_leg_press_calf_raise.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_horizontal_leg_press_calf_raise_single_leg",
@@ -43624,7 +44284,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_horizontal_leg_press_calf_raise_single_leg.jpg",
       "men": "assets/posters/men/ea_horizontal_leg_press_calf_raise_single_leg.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_horizontal_leg_press_single_leg",
@@ -43648,7 +44311,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_horizontal_leg_press_single_leg.jpg",
       "men": "assets/posters/men/ea_horizontal_leg_press_single_leg.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_in_and_out_squats",
@@ -43688,7 +44354,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_in_and_out_squats.jpg",
       "men": "assets/posters/men/ea_in_and_out_squats.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_in_and_out_squats_jump_bodyweight",
@@ -43726,7 +44395,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_in_and_out_squats_jump_bodyweight.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_in_and_out_squats_jump_bodyweight_2",
@@ -43764,7 +44436,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_in_and_out_squats_jump_bodyweight_2.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_incline_bench_cable_fly",
@@ -44242,7 +44917,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_jack_knives.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_jogging",
@@ -44285,7 +44963,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_jogging.jpg",
       "men": "assets/posters/men/ea_jogging.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_jump_rope_alternating_foot",
@@ -44324,7 +45005,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_jump_rope_alternating_foot.jpg",
       "men": "assets/posters/men/ea_jump_rope_alternating_foot.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_jump_rope_basic_jump",
@@ -44363,7 +45047,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_jump_rope_basic_jump.jpg",
       "men": "assets/posters/men/ea_jump_rope_basic_jump.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_jump_rope_double_bounce",
@@ -44402,7 +45089,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_jump_rope_double_bounce.jpg",
       "men": "assets/posters/men/ea_jump_rope_double_bounce.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_jump_rope_face_pull",
@@ -44442,7 +45132,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_jump_rope_face_pull.jpg",
       "men": "assets/posters/men/ea_jump_rope_face_pull.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_jump_rope_row",
@@ -44481,7 +45174,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_jump_rope_row.jpg",
       "men": "assets/posters/men/ea_jump_rope_row.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_jumping_jack",
@@ -44520,7 +45216,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_jumping_jack.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_jumping_lunge",
@@ -44544,7 +45243,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_jumping_lunge.jpg",
       "men": "assets/posters/men/ea_jumping_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_jumping_pistol_squat",
@@ -44568,7 +45270,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_jumping_pistol_squat.jpg",
       "men": "assets/posters/men/ea_jumping_pistol_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kettlebell_bulgarian_split_squat_right",
@@ -44606,7 +45311,10 @@
     "equipmentLabel": "Kettlebells",
     "poster": {
       "men": "assets/posters/men/ea_kettlebell_bulgarian_split_squat_right.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kettlebell_bulgarian_split_squat_right_side_view",
@@ -44644,7 +45352,10 @@
     "equipmentLabel": "Kettlebells",
     "poster": {
       "men": "assets/posters/men/ea_kettlebell_bulgarian_split_squat_right_side_view.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kettlebell_calf_raise",
@@ -44871,7 +45582,10 @@
     "equipmentLabel": "Kettlebells",
     "poster": {
       "men": "assets/posters/men/ea_kettlebell_half_kneeling_shoulder_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kettlebell_hip_thrusts",
@@ -44978,7 +45692,10 @@
     "equipmentLabel": "Kettlebells",
     "poster": {
       "men": "assets/posters/men/ea_kettlebell_kneeling_one_arm_shoulder_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kettlebell_lateral_lunge",
@@ -45002,7 +45719,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_lateral_lunge.jpg",
       "men": "assets/posters/men/ea_kettlebell_lateral_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kettlebell_long_lever_lateral_raise",
@@ -45120,7 +45840,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_reverse_lunge.jpg",
       "men": "assets/posters/men/ea_kettlebell_reverse_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kettlebell_row",
@@ -45338,7 +46061,10 @@
     "equipmentLabel": "Kettlebells",
     "poster": {
       "men": "assets/posters/men/ea_kettlebell_single_arm_clean_and_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kettlebell_single_arm_curl",
@@ -45735,7 +46461,10 @@
     "equipmentLabel": "Kettlebells",
     "poster": {
       "men": "assets/posters/men/ea_kettlebell_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kettlebell_squats",
@@ -45773,7 +46502,10 @@
     "equipmentLabel": "Kettlebells",
     "poster": {
       "men": "assets/posters/men/ea_kettlebell_squats.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kettlebell_staggered_deadlift",
@@ -45896,7 +46628,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_step_up.jpg",
       "men": "assets/posters/men/ea_kettlebell_step_up.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kettlebell_strict_press",
@@ -45969,7 +46704,10 @@
     "equipmentLabel": "Kettlebells",
     "poster": {
       "men": "assets/posters/men/ea_kettlebell_suitcase_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kettlebell_sumo_deadlift",
@@ -46092,7 +46830,10 @@
     "equipmentLabel": "Kettlebells",
     "poster": {
       "men": "assets/posters/men/ea_kettlebell_sumo_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kettlebell_sumo_squat_version_2",
@@ -46132,7 +46873,10 @@
     "equipmentLabel": "Kettlebells",
     "poster": {
       "men": "assets/posters/men/ea_kettlebell_sumo_squat_version_2.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kettlebell_sumo_squat_off_stepbox",
@@ -46172,7 +46916,10 @@
     "equipmentLabel": "Kettlebells",
     "poster": {
       "men": "assets/posters/men/ea_kettlebell_sumo_squat_off_stepbox.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kettlebell_swing",
@@ -46541,7 +47288,10 @@
     "equipmentLabel": "Yoga Mat",
     "poster": {
       "men": "assets/posters/men/ea_kneeling_hip_flexor_stretch.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kneeling_lat_floor_stretch",
@@ -46576,7 +47326,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_kneeling_lat_floor_stretch.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kneeling_leg_curl_machine",
@@ -46611,7 +47364,10 @@
     "equipmentLabel": "Kneeling leg curl machine",
     "poster": {
       "men": "assets/posters/men/ea_kneeling_leg_curl_machine.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kneeling_push_up",
@@ -46635,7 +47391,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_kneeling_push_up.jpg",
       "men": "assets/posters/men/ea_kneeling_push_up.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kneeling_squat_jumps_bodyweight",
@@ -46673,7 +47432,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_kneeling_squat_jumps_bodyweight.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_kneeling_wrist_flexor_stretch",
@@ -46705,7 +47467,10 @@
     "equipmentLabel": "Yoga Mat",
     "poster": {
       "men": "assets/posters/men/ea_kneeling_wrist_flexor_stretch.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_l_sit_hold",
@@ -46751,7 +47516,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_alternating_lunge_and_twist.jpg",
       "men": "assets/posters/men/ea_landmine_alternating_lunge_and_twist.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_landmine_alternating_lunge_to_chest_press",
@@ -46773,7 +47541,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_alternating_lunge_to_chest_press.jpg",
       "men": "assets/posters/men/ea_landmine_alternating_lunge_to_chest_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_landmine_alternating_single_arm_press",
@@ -46930,7 +47701,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_curtsy_lunge.jpg",
       "men": "assets/posters/men/ea_landmine_curtsy_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_landmine_glute_kick_back",
@@ -46978,7 +47752,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_goblet_curtsy_lunge.jpg",
       "men": "assets/posters/men/ea_landmine_goblet_curtsy_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_landmine_goblet_lateral_lunge",
@@ -47002,7 +47779,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_goblet_lateral_lunge.jpg",
       "men": "assets/posters/men/ea_landmine_goblet_lateral_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_landmine_hack_squat",
@@ -47026,7 +47806,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_hack_squat.jpg",
       "men": "assets/posters/men/ea_landmine_hack_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_landmine_half_kneeling_single_arm_overhead_press",
@@ -47050,7 +47833,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_half_kneeling_single_arm_overhead_press.jpg",
       "men": "assets/posters/men/ea_landmine_half_kneeling_single_arm_overhead_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_landmine_hollow_hold",
@@ -47098,7 +47884,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_kneeling_alternating_overhead_press.jpg",
       "men": "assets/posters/men/ea_landmine_kneeling_alternating_overhead_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_landmine_kneeling_overhead_press",
@@ -47122,7 +47911,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_kneeling_overhead_press.jpg",
       "men": "assets/posters/men/ea_landmine_kneeling_overhead_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_landmine_kneeling_twist",
@@ -47146,7 +47938,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_kneeling_twist.jpg",
       "men": "assets/posters/men/ea_landmine_kneeling_twist.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_landmine_lateral_lunge",
@@ -47170,7 +47965,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_lateral_lunge.jpg",
       "men": "assets/posters/men/ea_landmine_lateral_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_landmine_lateral_raise",
@@ -47218,7 +48016,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_lunge_to_overhead_press.jpg",
       "men": "assets/posters/men/ea_landmine_lunge_to_overhead_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_landmine_lying_tricep_extension",
@@ -47542,7 +48343,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_squat_and_press.jpg",
       "men": "assets/posters/men/ea_landmine_squat_and_press.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_lat_pull_down_close_grip",
@@ -47701,7 +48505,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_lateral_box_jump.jpg",
       "men": "assets/posters/men/ea_lateral_box_jump.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_lateral_raise_bodyweight",
@@ -48137,7 +48944,10 @@
     "equipmentLabel": "Leg Press Machine",
     "poster": {
       "men": "assets/posters/men/ea_leg_press_machine_close_stance.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_leg_press_machine_normal_stance",
@@ -48176,7 +48986,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_leg_press_machine_normal_stance.jpg",
       "men": "assets/posters/men/ea_leg_press_machine_normal_stance.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_leg_press_wide_high_stance",
@@ -48213,7 +49026,10 @@
     "equipmentLabel": "Leg Press Machine",
     "poster": {
       "men": "assets/posters/men/ea_leg_press_wide_high_stance.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_leg_press_wide_high_stance_behind_view",
@@ -48250,7 +49066,10 @@
     "equipmentLabel": "Leg Press Machine",
     "poster": {
       "men": "assets/posters/men/ea_leg_press_wide_high_stance_behind_view.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_leg_raises_straight_legs",
@@ -48361,7 +49180,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_lever_leg_extension.jpg",
       "men": "assets/posters/men/ea_lever_leg_extension.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_long_arm_crunches",
@@ -48616,7 +49438,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_low_rotational_med_ball_chops_quarter_squat_rotating_med_ball_left_and_ride_across_core.jpg",
       "men": "assets/posters/men/ea_low_rotational_med_ball_chops_quarter_squat_rotating_med_ball_left_and_ride_across_core.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_low_sled_push",
@@ -48676,7 +49501,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_lunge_front_kick.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_lunge_pulses_bodyweight",
@@ -48713,7 +49541,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_lunge_pulses_bodyweight.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_lunge_reverse_with_resistance_band",
@@ -48752,7 +49583,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_lunge_reverse_with_resistance_band.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_lunge_rotation_left_and_right_bodyweight",
@@ -48792,7 +49626,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_lunge_rotation_left_and_right_bodyweight.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_lunge_to_knee_drive_left_bodyweight",
@@ -48831,7 +49668,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_lunge_to_knee_drive_left_bodyweight.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_lunge_to_knee_drive_right_bodyweight",
@@ -48870,7 +49710,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_lunge_to_knee_drive_right_bodyweight.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_lunges_alternate_leg_with_pause_bodyweight",
@@ -48908,7 +49751,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_lunges_alternate_leg_with_pause_bodyweight.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_lunges_same_leg_side_view_bodyweight",
@@ -48946,7 +49792,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_lunges_same_leg_side_view_bodyweight.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_lunging_straight_leg_calf_stretch",
@@ -49442,7 +50291,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_lying_leg_curl_machine.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_lying_leg_raise",
@@ -49866,7 +50718,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_med_ball_front_squat_raise.jpg",
       "men": "assets/posters/men/ea_med_ball_front_squat_raise.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_med_ball_half_kneeling_wood_choppers",
@@ -49890,7 +50745,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_med_ball_half_kneeling_wood_choppers.jpg",
       "men": "assets/posters/men/ea_med_ball_half_kneeling_wood_choppers.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_med_ball_jumping_jacks",
@@ -49912,7 +50770,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_med_ball_jumping_jacks.jpg",
       "men": "assets/posters/men/ea_med_ball_jumping_jacks.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_med_ball_side_wall_slams",
@@ -49956,7 +50817,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_med_ball_slam_burpees.jpg",
       "men": "assets/posters/men/ea_med_ball_slam_burpees.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_med_ball_toe_touches",
@@ -50028,7 +50892,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_medicine_ball_jumps.jpg",
       "men": "assets/posters/men/ea_medicine_ball_jumps.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_medicine_ball_rotational_throw",
@@ -50266,7 +51133,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_mountain_climber_jumps.jpg",
       "men": "assets/posters/men/ea_mountain_climber_jumps.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_mountain_climbers",
@@ -50339,7 +51209,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_mts_iso_lateral_kneeling_leg_curl.jpg",
       "men": "assets/posters/men/ea_mts_iso_lateral_kneeling_leg_curl.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_multi_hip_abduction",
@@ -50464,7 +51337,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_narrow_stance_heels_elevated_dumbbell_goblet_squats.jpg",
       "men": "assets/posters/men/ea_narrow_stance_heels_elevated_dumbbell_goblet_squats.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_nordic_hamstring_curl_with_partner",
@@ -50548,7 +51424,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_normal_squat_smith_machine.jpg",
       "men": "assets/posters/men/ea_normal_squat_smith_machine.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_oblique_crunch",
@@ -51107,7 +51986,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_pike_jacks_feet_kicking_in_and_out.jpg",
       "men": "assets/posters/men/ea_pike_jacks_feet_kicking_in_and_out.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_pike_push_up",
@@ -51189,7 +52071,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_pistol_squat_to_box.jpg",
       "men": "assets/posters/men/ea_pistol_squat_to_box.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_plank_cross_knee_drive",
@@ -51306,7 +52191,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_plank_jack.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_plank_knee_tucks",
@@ -51383,7 +52271,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_plank_lunges.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_plank_on_elbows",
@@ -51714,7 +52605,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_curtsy_lunge.jpg",
       "men": "assets/posters/men/ea_plate_curtsy_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_plate_deadlift",
@@ -51762,7 +52656,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_deficit_lunge.jpg",
       "men": "assets/posters/men/ea_plate_deficit_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_plate_deficit_pushup",
@@ -51810,7 +52707,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_forward_lunge.jpg",
       "men": "assets/posters/men/ea_plate_forward_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_plate_front_raise",
@@ -52061,7 +52961,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_lateral_lunge.jpg",
       "men": "assets/posters/men/ea_plate_lateral_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_plate_lateral_raise",
@@ -52203,7 +53106,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_overhead_walking_lunge.jpg",
       "men": "assets/posters/men/ea_plate_overhead_walking_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_plate_pinch_grip_deadlift",
@@ -52467,7 +53373,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_squat_hold.jpg",
       "men": "assets/posters/men/ea_plate_squat_hold.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_plate_squat_hold_biceps_curl",
@@ -52491,7 +53400,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_squat_hold_biceps_curl.jpg",
       "men": "assets/posters/men/ea_plate_squat_hold_biceps_curl.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_plate_squat_hold_reach",
@@ -52515,7 +53427,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_squat_hold_reach.jpg",
       "men": "assets/posters/men/ea_plate_squat_hold_reach.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_plate_squat_reach",
@@ -52539,7 +53454,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_squat_reach.jpg",
       "men": "assets/posters/men/ea_plate_squat_reach.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_plate_staggered_deadlift",
@@ -52697,7 +53615,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_plyo_side_lunge_stretch.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_preacher_curl_dumbbells_simultaneous",
@@ -53759,7 +54680,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_rebounder_high_knee_runs.jpg",
       "men": "assets/posters/men/ea_rebounder_high_knee_runs.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_rebounder_in_out_from_ground",
@@ -53803,7 +54727,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_rebounder_in_out_jacks.jpg",
       "men": "assets/posters/men/ea_rebounder_in_out_jacks.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_rebounder_knee_jumps",
@@ -53825,7 +54752,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_rebounder_knee_jumps.jpg",
       "men": "assets/posters/men/ea_rebounder_knee_jumps.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_rebounder_knee_pushes",
@@ -53869,7 +54799,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_rebounder_light_jumps.jpg",
       "men": "assets/posters/men/ea_rebounder_light_jumps.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_reclining_pigeon_pose",
@@ -54043,7 +54976,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_resistance_band_bent_leg_kickback_kneeling.jpg",
       "men": "assets/posters/men/ea_resistance_band_bent_leg_kickback_kneeling.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_resistance_band_calf_press_sitting_on_chair",
@@ -54457,7 +55393,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_resistance_band_kneeling_cross_body_single_straight_arm_supinated_pulldown.jpg",
       "men": "assets/posters/men/ea_resistance_band_kneeling_cross_body_single_straight_arm_supinated_pulldown.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_resistance_band_kneeling_leg_half_circle",
@@ -54493,7 +55432,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_resistance_band_kneeling_leg_half_circle.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_resistance_band_kneeling_leg_half_circle_on_bench",
@@ -54531,7 +55473,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_resistance_band_kneeling_leg_half_circle_on_bench.jpg",
       "men": "assets/posters/men/ea_resistance_band_kneeling_leg_half_circle_on_bench.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_resistance_band_leg_curl",
@@ -54569,7 +55514,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_resistance_band_leg_curl.jpg",
       "men": "assets/posters/men/ea_resistance_band_leg_curl.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_resistance_band_leg_kickback",
@@ -55126,7 +56074,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_resistance_band_squat.jpg",
       "men": "assets/posters/men/ea_resistance_band_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_resistance_band_squat_jump",
@@ -55167,7 +56118,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_resistance_band_squat_jump.jpg",
       "men": "assets/posters/men/ea_resistance_band_squat_jump.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_resistance_band_standing_balance_glute_kickback",
@@ -55767,7 +56721,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_reverse_lunge_left_resistance_band.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_reverse_machine_fly",
@@ -56068,7 +57025,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_runners_lunge.jpg",
       "men": "assets/posters/men/ea_runners_lunge.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_running",
@@ -56111,7 +57071,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_running.jpg",
       "men": "assets/posters/men/ea_running.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_russian_twist",
@@ -56760,7 +57723,10 @@
     "equipmentLabel": "Seated leg curl machine",
     "poster": {
       "men": "assets/posters/men/ea_seated_leg_curl_machine.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_seated_leg_extension_single_leg",
@@ -56797,7 +57763,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_seated_leg_extension_single_leg.jpg",
       "men": "assets/posters/men/ea_seated_leg_extension_single_leg.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_seated_leg_extension_alternate_legs",
@@ -56834,7 +57803,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_seated_leg_extension_alternate_legs.jpg",
       "men": "assets/posters/men/ea_seated_leg_extension_alternate_legs.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_seated_leg_extension_both_legs",
@@ -56871,7 +57843,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_seated_leg_extension_both_legs.jpg",
       "men": "assets/posters/men/ea_seated_leg_extension_both_legs.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_seated_machine_hip_adductor",
@@ -57503,7 +58478,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_side_lunges_bodyweight.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_side_lying_floor_stretch",
@@ -58186,7 +59164,10 @@
     "equipmentLabel": "Leg press machine",
     "poster": {
       "men": "assets/posters/men/ea_single_leg_calf_raise_leg_press_machine.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_single_leg_incline_45_degree_leg_press_machine",
@@ -58225,7 +59206,10 @@
     "equipmentLabel": "Leg press machine",
     "poster": {
       "men": "assets/posters/men/ea_single_leg_incline_45_degree_leg_press_machine.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_single_leg_romanian_deadlift_dumbbell",
@@ -58325,7 +59309,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_sissy_squat_bodyweight.jpg",
       "men": "assets/posters/men/ea_sissy_squat_bodyweight.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_situps",
@@ -58382,7 +59369,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_skater_hops.jpg",
       "men": "assets/posters/men/ea_skater_hops.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_ski_ergometer_cross_country_ski_alternating_arm_pull",
@@ -58619,7 +59609,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_ski_ergometer_cross_country_ski_jump_squat_pull.jpg",
       "men": "assets/posters/men/ea_ski_ergometer_cross_country_ski_jump_squat_pull.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_ski_ergometer_cross_country_ski_kneeling_reverse_fly_pull",
@@ -58658,7 +59651,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_ski_ergometer_cross_country_ski_kneeling_reverse_fly_pull.jpg",
       "men": "assets/posters/men/ea_ski_ergometer_cross_country_ski_kneeling_reverse_fly_pull.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_ski_ergometer_cross_country_ski_pullover_pull",
@@ -58784,7 +59780,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_ski_ergometer_cross_country_ski_reverse_lunge_pull.jpg",
       "men": "assets/posters/men/ea_ski_ergometer_cross_country_ski_reverse_lunge_pull.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_ski_ergometer_cross_country_ski_reverse_triceps_extension_pull",
@@ -58867,7 +59866,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_ski_ergometer_cross_country_ski_squat_pull_half_circles.jpg",
       "men": "assets/posters/men/ea_ski_ergometer_cross_country_ski_squat_pull_half_circles.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_ski_ergometer_cross_country_ski_squat_wide_lat_pull",
@@ -58913,7 +59915,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_ski_ergometer_cross_country_ski_squat_wide_lat_pull.jpg",
       "men": "assets/posters/men/ea_ski_ergometer_cross_country_ski_squat_wide_lat_pull.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_ski_ergometer_cross_country_ski_triceps_extension_pull",
@@ -59073,7 +60078,10 @@
     "equipmentLabel": "Smith Machine",
     "poster": {
       "men": "assets/posters/men/ea_smith_machine_bulgarian_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_smith_machine_calf_raise",
@@ -59133,7 +60141,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_smith_machine_narrow_stance_heels_elevated_squats.jpg",
       "men": "assets/posters/men/ea_smith_machine_narrow_stance_heels_elevated_squats.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_smith_machine_press_decline",
@@ -60485,7 +61496,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_star_jump.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_stationary_exercise_bike",
@@ -60563,7 +61577,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_step_up_on_chair_bodyweight.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_stepmill_machine_steps",
@@ -60762,7 +61779,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_sumo_squat_in_between_legs_resistance_band.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_sumo_squat_over_shoulder_resistance_band",
@@ -60801,7 +61821,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_sumo_squat_over_shoulder_resistance_band.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_superman",
@@ -61653,7 +62676,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_suspension_trainer_with_grips_leg_curl.jpg",
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_leg_curl.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_suspension_trainer_with_grips_mountain_climber",
@@ -62014,7 +63040,10 @@
     "equipmentLabel": "Suspension Trainer",
     "poster": {
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_side_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_suspension_trainer_with_grips_single_arm_rear_delt_row",
@@ -62131,7 +63160,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_suspension_trainer_with_grips_split_squat.jpg",
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_split_squat.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_suspension_trainer_with_grips_straight_hip_leg_curl",
@@ -62172,7 +63204,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_suspension_trainer_with_grips_straight_hip_leg_curl.jpg",
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_straight_hip_leg_curl.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_suspension_trainer_with_grips_supine_crunch",
@@ -62570,7 +63605,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_treadmill_jogging.jpg",
       "men": "assets/posters/men/ea_treadmill_jogging.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_treadmill_running",
@@ -62612,7 +63650,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_treadmill_running.jpg",
       "men": "assets/posters/men/ea_treadmill_running.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_treadmill_walk",
@@ -62870,7 +63911,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_unilateral_box_jump.jpg",
       "men": "assets/posters/men/ea_unilateral_box_jump.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_unilateral_box_jump_bilateral_deceleration",
@@ -62892,7 +63936,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_unilateral_box_jump_bilateral_deceleration.jpg",
       "men": "assets/posters/men/ea_unilateral_box_jump_bilateral_deceleration.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_unilateral_front_plank",
@@ -62936,7 +63983,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_unilateral_jumps.jpg",
       "men": "assets/posters/men/ea_unilateral_jumps.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_unilateral_plank",
@@ -63455,7 +64505,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_wall_sit_bodyweight.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_wall_squat_bodyweight",
@@ -63493,7 +64546,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_wall_squat_bodyweight.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_wall_squat_with_pause_bodyweight",
@@ -63532,7 +64588,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_wall_squat_with_pause_bodyweight.jpg"
-    }
+    },
+    "contraindications": [
+      "knee"
+    ]
   },
   {
     "id": "ea_weighted_back_extensions_on_hyperextension_bench",
