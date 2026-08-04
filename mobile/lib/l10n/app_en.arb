@@ -1351,5 +1351,14 @@
   "@safetyFilterRulesOnly": {
     "description": "Shown once the catalog carries safety tags for the user's regions but before any clinician has reviewed the tag set. Replaces the stronger 'nothing was screened' banner rather than removing it."
   },
-  "safetyFilterRulesOnlyDetail": "We hide exercises that load an area you told us is injured, matched from the movement and the muscles it works. No physiotherapist has reviewed the list yet. Check with a professional before training an injured area."
+  "safetyFilterRulesOnlyDetail": "We hide exercises that load an area you told us is injured, matched from the movement and the muscles it works. No physiotherapist has reviewed the list yet. Check with a professional before training an injured area.",
+  "profileInjuriesNeedArea": "{count, plural, =1{1 injury needs an area} other{{count} injuries need an area}}",
+  "@profileInjuriesNeedArea": {
+    "description": "Profile tile subtitle when stored injuries cannot be screened until the user picks a region.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

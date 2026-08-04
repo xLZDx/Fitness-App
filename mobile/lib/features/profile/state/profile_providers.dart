@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/state/auth_providers.dart';
 import '../../workouts/state/session_screening_providers.dart';
+import '../data/injury_regions.dart';
 import '../data/mock_profile_repository.dart';
 import '../data/profile_models.dart';
 import '../data/profile_repository.dart';
@@ -21,6 +22,42 @@ final currentProfileProvider = StreamProvider<UserProfile?>((ref) {
   if (user == null) return Stream.value(null);
   final repo = ref.watch(profileRepositoryProvider);
   return repo.watch(user.uid);
+});
+
+/// How many of the user's stored injuries still need an area chosen.
+///
+/// ## Why this is what S1b turned out to be
+///
+/// The plan scoped S1b as a one-way backfill of stored health data: read every
+/// user's free-text injuries, map them to regions, write them back. It also
+/// said, correctly, that this was the riskiest step in the whole remediation —
+/// the only one that mutates already-stored medical data.
+///
+/// S1a's shape removed the need for it. `region` is additive and `bodyPart` is
+/// never overwritten, `Injury.fromJson` reads the old shape by field absence,
+/// and both the screening filter and the honesty gate fall back to
+/// `suggestRegion` on unmapped text at read time. An untouched account is
+/// already screened and already told the truth about it. A migration would
+/// therefore mutate health records to produce a result the app already
+/// computes — strictly more risk for no behaviour change.
+///
+/// What is genuinely missing is the nudge: an injury nothing can name is
+/// screened by nothing, and only the user can resolve it. So this counts them
+/// and the profile tile says so. Silent inference was rejected in S1a for the
+/// same reason it is rejected here — a safety decision nobody saw.
+final unresolvedInjuryCountProvider = Provider<int>((ref) {
+  final profile = ref.watch(currentProfileProvider).valueOrNull;
+  if (profile == null) return 0;
+  return unresolvedInjuries(
+    // Proposals are not resolutions, but an injury a rule CAN name is one the
+    // user only has to confirm, not puzzle over. Counting it as unresolved
+    // would nag about something the screen pre-answers.
+    profile.health.injuries
+        .map((i) => i.region == null && !i.confirmed
+            ? i.copyWith(region: suggestRegion(i.bodyPart))
+            : i)
+        .toList(),
+  ).length;
 });
 
 /// True when the signed-in user has completed onboarding. Used by the router.

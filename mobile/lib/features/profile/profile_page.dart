@@ -24,6 +24,7 @@ class ProfilePage extends ConsumerWidget {
     final onboarded = profile?.hasCompletedOnboarding ?? false;
     final sub = ref.watch(currentSubscriptionProvider).valueOrNull;
     final tier = ref.watch(effectiveTierProvider);
+    final unresolved = ref.watch(unresolvedInjuryCountProvider);
 
     final displayName = user?.displayName ?? l10n.profileGuest;
     final subtitle = onboarded
@@ -97,7 +98,12 @@ class ProfilePage extends ConsumerWidget {
                   icon: Icons.healing_outlined,
                   gradient: AppPalette.tileGradients[2],
                   title: l10n.profileInjuries,
-                  subtitle: l10n.profileInjuriesSubtitle,
+                  // Says the number when there is one. A tile that reads the
+                  // same whether or not something needs attention is a tile
+                  // nobody opens.
+                  subtitle: unresolved > 0
+                      ? l10n.profileInjuriesNeedArea(unresolved)
+                      : l10n.profileInjuriesSubtitle,
                   // Its own route rather than a fix to the questionnaire tile
                   // above: that one routes to /onboarding, which
                   // resolveRedirect bounces straight back to /home for anyone
