@@ -127,12 +127,19 @@ List<WorkoutSuggestion> buildSuggestions({
       score += 1;
       reason ??= 'Fits the session length you prefer';
     }
-    if (profile?.health.injuries.isNotEmpty ?? false) {
-      // `candidates` is post-filter, so being here already means it cleared
-      // the injury list. Worth saying — it is the reason a lot of exercises
-      // are absent.
-      reason ??= 'Safe with the injuries you listed';
-    }
+    // Removed: `reason ??= 'Safe with the injuries you listed'`.
+    //
+    // The comment justifying it was true about the code and false about the
+    // world. `candidates` is indeed post-filter, so an exercise reaching here
+    // has passed `filterContraindicated` -- but passing a filter that keeps
+    // every untagged exercise, in a catalog where nothing is tagged, means it
+    // passed a check that examined nothing. "Safe with the injuries you
+    // listed" was the strongest claim in the product and the least supported.
+    //
+    // Nothing replaces it here. A suggestion card is the wrong place for a
+    // disclosure -- see SafetyDisclosure, which sits on the surfaces that
+    // list exercises -- and the remaining reasons are all things the app can
+    // actually verify.
 
     // Earlier candidates fit the user's tier better (recommended() sorted
     // them), so use position as the tie-breaker instead of leaving ties to

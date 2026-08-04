@@ -11,6 +11,7 @@ import '../../shared/widgets/smooth_scroll_list.dart';
 import '../workouts/widgets/plate_calculator.dart';
 import '../workouts/widgets/warmup_calculator.dart';
 import 'data/equipment_models.dart';
+import 'widgets/safety_disclosure.dart';
 import 'state/equipment_providers.dart';
 import 'widgets/equipment_report_sheet.dart';
 import 'widgets/exercise_thumb.dart';
@@ -155,7 +156,13 @@ class EquipmentDetailPage extends ConsumerWidget {
                 ],
                 data: (rec) {
                   if (rec.items.isEmpty) {
+                    // `hiddenForInjury > 0` is the only thing that may blame
+                    // an injury here. It was reachable through a branch that
+                    // could not fire -- with no exercise tagged, nothing is
+                    // ever hidden -- so the empty list always meant the other
+                    // thing and never said so.
                     return [
+                      const SafetyDisclosure(compact: true),
                       GlassCard(
                         child: Text(
                           rec.hiddenForInjury > 0
@@ -166,7 +173,7 @@ class EquipmentDetailPage extends ConsumerWidget {
                       ),
                     ];
                   }
-                  final widgets = <Widget>[];
+                  final widgets = <Widget>[const SafetyDisclosure()];
                   if (rec.hiddenForInjury > 0) {
                     widgets.add(_FilteredHint(count: rec.hiddenForInjury));
                     widgets.add(const SizedBox(height: 12));

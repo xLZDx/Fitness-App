@@ -196,7 +196,11 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
           const _OfflinePrefetchCard(),
           const SizedBox(height: 16),
           SizedBox(
-            height: 44,
+            // 48, not 44. The row is the app's main navigation between
+            // exercise lists and 44dp is under every platform's minimum
+            // target; the extra four pixels are the difference between a chip
+            // a shaky hand can hit and one it cannot.
+            height: 48,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: EdgeInsets.zero,
@@ -206,33 +210,42 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
               itemBuilder: (context, i) {
                 final filter = WorkoutsFilter.values[i];
                 final selected = filter == _selected;
-                return GestureDetector(
-                  onTap: () => setState(() => _selected = filter),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 280),
-                    curve: Curves.easeOutCubic,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(22),
-                      gradient: selected
-                          ? LinearGradient(
-                              colors: AppPalette.tileGradients[i % 5])
-                          : null,
-                      color: selected
-                          ? null
-                          : Colors.white.withValues(alpha: 0.32),
-                    ),
-                    child: Center(
-                      child: Text(
-                        workoutsFilterLabel(
-                            AppLocalizations.of(context), filter),
-                        style: TextStyle(
-                          fontWeight:
-                              selected ? FontWeight.w700 : FontWeight.w600,
-                          color: selected
-                              ? Colors.white
-                              : theme.colorScheme.onSurface,
+                return Semantics(
+                  // A GestureDetector announces nothing, so the whole filter
+                  // row read to a screen reader as a list of words with no
+                  // indication that any of them was tappable or which one was
+                  // active. `selected` is what makes the current filter
+                  // audible at all.
+                  button: true,
+                  selected: selected,
+                  child: GestureDetector(
+                    onTap: () => setState(() => _selected = filter),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 280),
+                      curve: Curves.easeOutCubic,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 8),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(22),
+                        gradient: selected
+                            ? LinearGradient(
+                                colors: AppPalette.tileGradients[i % 5])
+                            : null,
+                        color: selected
+                            ? null
+                            : Colors.white.withValues(alpha: 0.32),
+                      ),
+                      child: Center(
+                        child: Text(
+                          workoutsFilterLabel(
+                              AppLocalizations.of(context), filter),
+                          style: TextStyle(
+                            fontWeight:
+                                selected ? FontWeight.w700 : FontWeight.w600,
+                            color: selected
+                                ? Colors.white
+                                : theme.colorScheme.onSurface,
+                          ),
                         ),
                       ),
                     ),

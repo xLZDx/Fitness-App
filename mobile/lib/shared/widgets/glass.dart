@@ -100,10 +100,18 @@ class GlassCard extends StatelessWidget {
       ),
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(borderRadius),
-          child: Padding(padding: padding, child: child),
+        // `InkWell` gives a ripple and no semantics, so every tappable card in
+        // the app announced itself to a screen reader as plain content. One
+        // shared widget, so one flag fixes all of them; and `button` is
+        // conditional because a GlassCard without `onTap` is genuinely not a
+        // button and claiming otherwise is the opposite error.
+        child: Semantics(
+          button: onTap != null,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(borderRadius),
+            child: Padding(padding: padding, child: child),
+          ),
         ),
       ),
     );

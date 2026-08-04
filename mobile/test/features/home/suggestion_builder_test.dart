@@ -238,7 +238,16 @@ void main() {
           reason: 'the section must not reshuffle on every rebuild');
     });
 
-    test('mentions injury filtering when the user reported an injury', () {
+    test('never claims an exercise is safe for a reported injury', () {
+      // This test previously asserted the opposite, and asserting it is how
+      // the claim survived. `buildSuggestions` said "Safe with the injuries
+      // you listed" for any exercise that reached it, on the reasoning that
+      // the list is post-filter -- true of the code, false of the world.
+      // `filterContraindicated` keeps every untagged exercise, and no
+      // exercise in the shipped catalog is tagged, so the claim rested on a
+      // check that examined nothing.
+      //
+      // A reason must be something the app can verify. This one could not be.
       final out = buildSuggestions(
         candidates: [ex('safe', primary: ['chest'])],
         profile: profileWith(
@@ -247,7 +256,10 @@ void main() {
         recentLogs: const [],
         now: now,
       );
-      expect(out.first.reason, contains('injuries you listed'));
+      expect(out.first.reason, isNot(contains('injuries you listed')));
+      expect(out.first.reason, isNot(contains('Safe with')));
+      expect(out.first.reason, isNotEmpty,
+          reason: 'the card still needs a reason -- the honest ones remain');
     });
 
     test('works with no profile at all', () {
