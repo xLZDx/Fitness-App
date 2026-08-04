@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:flutter/foundation.dart' show protected;
+import 'package:flutter/foundation.dart' show debugPrint, protected;
 
 /// Turns a catalog clip reference into a URL a player can open.
 ///
@@ -39,6 +39,17 @@ abstract class ClipUrlResolver {
   /// Resolves many at once — one round trip instead of forty. Missing entries
   /// are simply absent from the result.
   Future<Map<String, String>> resolveAll(Iterable<String> references);
+
+  /// How many backend calls have failed since the app started.
+  ///
+  /// Keeping the poster up on a signing failure is the right thing to show a
+  /// user and the wrong thing to leave as the *only* record. A partial outage
+  /// — signing broken for some clips, or for some users — is indistinguishable
+  /// from nobody having opened the video tab, because the failure path returns
+  /// an empty map and says nothing. This is the number that tells them apart,
+  /// and at 1,000 concurrent users it is the difference between noticing a
+  /// degradation and hearing about it from a review.
+  int get failureCount;
 }
 
 /// Calls the backend, and remembers what it got.
@@ -61,10 +72,17 @@ class FunctionsClipUrlResolver implements ClipUrlResolver {
   FirebaseFunctions get _functions =>
       _injected ?? FirebaseFunctions.instanceFor(region: 'us-central1');
 
-  /// Signed URLs live 15 minutes on the server. Cached for 13, so a URL handed
-  /// to a player always has at least two minutes of life left in it — a clip
+  /// A URL arrives with at least 15 minutes of life. Cached for 13, so one
+  /// handed to a player always has at least two minutes left in it — a clip
   /// that starts playing and then 403s part-way through would be a far more
   /// confusing failure than one that never starts.
+  ///
+  /// "At least 15" rather than "exactly 15" since the backend began reusing
+  /// one signature for everyone who asks inside a five-minute window: it mints
+  /// for twenty and stops handing an entry out once fifteen remain, precisely
+  /// so this margin is unaffected. See `functions/src/video_urls.ts`,
+  /// REUSE_MINUTES. The 13 here is the number that must never exceed the
+  /// backend's guarantee.
   static const _cacheFor = Duration(minutes: 13);
 
   final Map<String, ({String url, DateTime until})> _cache = {};
@@ -72,6 +90,17 @@ class FunctionsClipUrlResolver implements ClipUrlResolver {
   /// In-flight requests, so a list that shows the same exercise twice does not
   /// ask the backend twice.
   final Map<String, Future<String?>> _pending = {};
+
+  int _failures = 0;
+
+  @override
+  int get failureCount => _failures;
+
+  /// One place the swallow is recorded, so both call sites cannot drift.
+  void _noteFailure(String what, Object error) {
+    _failures++;
+    debugPrint('clip url failed ($what) [$_failures this session]: $error');
+  }
 
   static bool isDirect(String reference) => reference.startsWith('http');
 
@@ -103,9 +132,12 @@ class FunctionsClipUrlResolver implements ClipUrlResolver {
             .call<Map<String, dynamic>>({'object': objects.single});
         final url = result.data['url'] as String?;
         return (url == null || url.isEmpty) ? {} : {objects.single: url};
-      } catch (_) {
-        // Swallowed deliberately — see [ClipUrlResolver.resolve]. The backend
-        // logs the reason; the phone's job is to keep the poster up.
+      } catch (e) {
+        // Still swallowed — see [ClipUrlResolver.resolve]. The phone's job is
+        // to keep the poster up. But it is counted and named now: the backend
+        // log knows the reason and the phone did not even know it happened,
+        // which is how a signing outage looked exactly like nobody watching.
+        _noteFailure(objects.single, e);
         return {};
       }
     }
@@ -117,7 +149,8 @@ class FunctionsClipUrlResolver implements ClipUrlResolver {
       return {
         for (final e in urls.entries) e.key as String: e.value as String,
       };
-    } catch (_) {
+    } catch (e) {
+      _noteFailure('${objects.length} clips', e);
       return {};
     }
   }
@@ -185,11 +218,20 @@ class PassthroughClipUrlResolver implements ClipUrlResolver {
 
   final List<String> asked = [];
 
+  int _failures = 0;
+
+  @override
+  int get failureCount => _failures;
+
   @override
   Future<String?> resolve(String reference) async {
     asked.add(reference);
     if (FunctionsClipUrlResolver.isDirect(reference)) return reference;
-    return fail ? null : 'https://signed.example/$reference?sig=test';
+    if (fail) {
+      _failures++;
+      return null;
+    }
+    return 'https://signed.example/$reference?sig=test';
   }
 
   @override

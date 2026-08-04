@@ -151,16 +151,52 @@ void main() {
       expect(r.batches.single, ['exercises/men/L/b.mp4']);
     });
 
-    test('the cache window is shorter than the URL lifetime', () {
-      // Server signs for 15 minutes, the client caches for 13. A clip that
-      // starts playing and then 403s halfway through would be a far more
-      // confusing failure than one that never starts, so the client must
-      // always hand out a URL with life left in it.
-      const serverTtl = Duration(minutes: 15);
+    test('the cache window is shorter than the guaranteed URL lifetime', () {
+      // The backend guarantees at least 15 minutes of life on every URL it
+      // hands out; the client caches for 13. A clip that starts playing and
+      // then 403s halfway through would be a far more confusing failure than
+      // one that never starts.
+      //
+      // The guarantee used to be the mint: sign for 15, hand it over, done.
+      // Since the backend began reusing one signature for every caller inside
+      // a five-minute window it mints for 20 and stops serving an entry once
+      // 15 remain (`functions/src/video_urls.ts`, REUSE_MINUTES), which is
+      // exactly what keeps this margin untouched. If that guarantee is ever
+      // lowered, this is the number it must not fall below.
+      const guaranteedLife = Duration(minutes: 15);
       const clientTtl = Duration(minutes: 13);
-      expect(clientTtl, lessThan(serverTtl));
-      expect(serverTtl - clientTtl, greaterThanOrEqualTo(
-          const Duration(minutes: 2)));
+      expect(clientTtl, lessThan(guaranteedLife));
+      expect(guaranteedLife - clientTtl,
+          greaterThanOrEqualTo(const Duration(minutes: 2)));
+    });
+  });
+
+  group('a signing failure is swallowed, but no longer silent', () {
+    test('a resolver that has not failed reports zero', () {
+      final clock = DateTime(2026, 8, 4, 12);
+      expect(_FakeBackend(now: () => clock).failureCount, 0);
+    });
+
+    test('each failed reference is counted', () async {
+      // The gap this closes: the failure path returns an empty map and the
+      // poster stays up, which is right for the user and left the app unable
+      // to tell "signing is broken" from "nobody opened a video".
+      final r = PassthroughClipUrlResolver(fail: true);
+      await r.resolve('exercises/men/L/a.mp4');
+      await r.resolve('exercises/men/L/b.mp4');
+      expect(r.failureCount, 2);
+    });
+
+    test('a passthrough url is not a failure', () async {
+      final r = PassthroughClipUrlResolver(fail: true);
+      expect(await r.resolve('https://public/clip.mp4'), isNotNull);
+      expect(r.failureCount, 0);
+    });
+
+    test('resolve still returns null and keeps the poster up', () async {
+      final r = PassthroughClipUrlResolver(fail: true);
+      expect(await r.resolve('exercises/men/L/a.mp4'), isNull);
+      expect(r.failureCount, 1);
     });
   });
 }
