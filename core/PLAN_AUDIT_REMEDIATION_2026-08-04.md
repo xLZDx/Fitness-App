@@ -793,3 +793,54 @@ endpoint проекта бота удалён. Рассинхрон закрыт
 сначала снять рассинхрон дешёвым способом, миграцию сделать осознанно с
 тестами. Обновление мажорной версии SDK трогает все вызовы Stripe в
 проекте, а не только эти два поля.
+
+---
+
+### F0·6 — App Check enforcement: включено 2026-08-05, НО без живой проверки
+
+`firebaseml.googleapis.com` (именно под этим именем App Check знает Firebase
+AI Logic — `firebasevertexai`, `generativelanguage` и `aiplatform` он
+отдельными сервисами не считает, запрос по ним возвращает `BadRequest`)
+переведён в `ENFORCED`. Это закрывает MAJOR-находку security-reviewer:
+анонимный вход + прямые клиентские вызовы Gemini
+(`gemini_equipment_service.dart:37`) позволяли жечь платную квоту, имея
+только публичный конфиг из APK.
+
+`firestore` и `identitytoolkit` осознанно оставлены `UNENFORCED` — сначала
+наблюдать метрики, и это не тот вектор, где утекают деньги.
+
+**Что НЕ проверено, и почему это важно.**
+
+Debug-токен (`local dev (F0.6, created via API)`) зарегистрирован через API
+и прописан в `mobile/.env`, но живьём не подтверждён. Попытка проверки на
+эмуляторе `Pixel_API_34` провалилась по причине, не связанной с кодом: весь
+HTTPS из эмулятора не проходит валидацию —
+`CertPathValidatorException: Trust anchor for certification path not found`
+в logcat по Crashlytics, FirebaseSessions и X509Util. Прокси в эмуляторе не
+настроен (`settings get global http_proxy` -> `null`), сеть жива
+(ping 8.8.8.8 — 0% потерь), то есть HTTPS перехватывает что-то на уровне
+машины. Записей App Check от PID приложения нет вовсе — он до сети не дошёл.
+
+Следствие: **неизвестно, принимается ли debug-токен**. Если нет — при
+разработке распознавание тренажёров будет отвечать отказом, и выглядеть это
+будет как «Gemini сломался».
+
+**Первое, что нужно сделать при следующем запуске на реальном устройстве:**
+
+1. `flutter run --dart-define=APP_CHECK_DEBUG_TOKEN=<значение из mobile/.env>`
+2. Открыть Скан, навести на тренажёр, убедиться, что распознавание отвечает.
+3. Если отказ — откат одной командой, enforcement обратим:
+   `PATCH https://firebaseappcheck.googleapis.com/v1/projects/fitness-app-korostelev/services/firebaseml.googleapis.com?updateMask=enforcementMode`
+   с телом `{"enforcementMode":"UNENFORCED"}`.
+
+**Перед публикацией в Play** в App Check нужно добавить вторым отпечатком
+SHA-256 ключа Play App Signing (Play Console -> Setup -> App signing), не
+заменяя нынешний upload-ключ
+`77:DA:5E:...:B7`. Google переподписывает APK своим ключом, и без этого
+шага App Check начнёт отвергать запросы настоящих пользователей.
+
+**Остаётся открытым:** рейт-лимитов на Gemini для собственного
+залогиненного пользователя нет (`grep -rniE "ratelimit|quota|throttle"
+functions/src/` — единственное совпадение это комментарий про IAM-квоту в
+`scaling.ts:76`). Enforcement закрывает чужих, но один легитимный аккаунт
+по-прежнему может гонять распознавание без предела.
