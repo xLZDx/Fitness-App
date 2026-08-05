@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show AssetManifest, rootBundle;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -168,8 +168,24 @@ Future<void> main() async {
     }
   }
 
+  /// Taps a bottom-nav tab by its visible label.
+  ///
+  /// Reports what IS on screen when the label is not, because the bare
+  /// framework message — `Found 0 widgets with text "..."` — is the same
+  /// whether the tab was renamed, the app never booted, or navigation landed
+  /// somewhere else entirely. Two of this file's four stale failures were the
+  /// first of those and read like the second.
   Future<void> tapTab(WidgetTester tester, String label) async {
-    await tester.tap(find.text(label));
+    final tab = find.text(label);
+    if (tab.evaluate().isEmpty) {
+      final visible = tester
+          .widgetList<Text>(find.byType(Text))
+          .map((w) => w.data ?? '')
+          .where((s) => s.trim().isNotEmpty)
+          .toList();
+      fail('no tab labelled "$label". On screen now: $visible');
+    }
+    await tester.tap(tab);
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 250));
     }
@@ -207,7 +223,11 @@ Future<void> main() async {
   testWidgets('every tab opens without an error widget', (tester) async {
     await boot(tester);
 
-    for (final tab in ['Распознавание', 'Тренировка', 'Прогресс', 'Профиль']) {
+    // Labels come from `navScan` and friends in `app_ru.arb`. The scan tab was
+    // "Распознавание" when this was written and is "Скан" now — a rename that
+    // took this test and the one below down together, and looked like a boot
+    // failure in the log.
+    for (final tab in ['Скан', 'Тренировка', 'Прогресс', 'Профиль']) {
       await tapTab(tester, tab);
       expect(find.byType(ErrorWidget), findsNothing, reason: 'on $tab');
       expect(tester.takeException(), isNull, reason: 'on $tab');
@@ -219,7 +239,7 @@ Future<void> main() async {
   // delivers YUV_420_888 and ML Kit only accepts NV21/YV12.
   testWidgets('live recognition starts without a format error', (tester) async {
     await boot(tester);
-    await tapTab(tester, 'Распознавание');
+    await tapTab(tester, 'Скан');
 
     await tester.tap(find.byType(Switch).first);
     // Give the camera and the labeler real time to run frames.
@@ -235,33 +255,57 @@ Future<void> main() async {
 
   // Device proof for the asset fix. Every exercise rendered "Demo unavailable"
   // because a pubspec directory entry does not recurse into subdirectories, so
-  // none of the 132 frames were packaged.
+  // none of the frames were packaged.
   //
   // Asserted against the bundle rather than by tapping through the UI: here
   // `rootBundle` reads the REAL installed APK, which is the thing that was
   // broken. Navigating by "tap the first InkWell" was both fragile and a weaker
   // claim.
-  testWidgets('every declared demo frame is inside the installed APK',
+  //
+  // What it guards moved. The 132 demo photographs in `assets/exercises/` and
+  // the `exercises.json` that referenced them were both deleted on 2026-08-04
+  // when the clip-only rule landed, so this asserted on an asset that no longer
+  // exists and failed for the most misleading possible reason: the removal was
+  // deliberate. The bug class did NOT go away — `assets/posters/girl/` and
+  // `assets/posters/men/` are two separate pubspec entries precisely because
+  // one entry would not recurse — so the test now points at the posters.
+  testWidgets('every poster the catalog names is inside the installed APK',
       (tester) async {
-    final raw = await rootBundle.loadString('assets/data/exercises.json');
+    final raw = await rootBundle.loadString('assets/data/exercises_vendor.json');
     final items =
         (json.decode(raw) as List<dynamic>).cast<Map<String, dynamic>>();
     final paths = <String>{
       for (final e in items)
-        ...(e['frames'] as List<dynamic>? ?? const []).cast<String>(),
+        ...((e['poster'] as Map<String, dynamic>?) ?? const {})
+            .values
+            .whereType<String>(),
     };
-    expect(paths, hasLength(132));
+    // Not a magic number to keep in sync by hand: what matters is that the
+    // catalog names posters at all. A catalog that lost the field would
+    // otherwise make an empty loop below pass.
+    expect(paths.length, greaterThan(2000),
+        reason: 'the catalog stopped naming posters');
 
-    final missing = <String>[];
-    for (final path in paths) {
-      try {
-        final bytes = await rootBundle.load(path);
-        if (bytes.lengthInBytes == 0) missing.add('$path (empty)');
-      } catch (_) {
-        missing.add(path);
-      }
+    // The manifest, not 2,539 individual loads. It is generated from what was
+    // actually bundled, so an unrecursed directory shows up here as absence —
+    // the exact failure — and it costs one read instead of one per file.
+    final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+    final packaged = manifest.listAssets().toSet();
+    final missing = paths.difference(packaged).toList()..sort();
+    expect(missing, isEmpty, reason: 'named by the catalog, absent from the APK');
+
+    // The manifest can only prove declaration. Load a spread of real files to
+    // prove bytes arrived too — both bodies, because they are separate entries
+    // and a broken one would be invisible in a same-directory sample.
+    final sample = [
+      ...paths.where((p) => p.contains('/girl/')).take(10),
+      ...paths.where((p) => p.contains('/men/')).take(10),
+    ];
+    expect(sample, hasLength(20), reason: 'both bodies must be represented');
+    for (final path in sample) {
+      final bytes = await rootBundle.load(path);
+      expect(bytes.lengthInBytes, greaterThan(0), reason: '$path is empty');
     }
-    expect(missing, isEmpty, reason: 'not packaged in the APK on the device');
   });
 
   testWidgets('the recognition model is inside the installed APK',
@@ -276,6 +320,13 @@ Future<void> main() async {
   testWidgets('the muscle map paints on a real device', (tester) async {
     await tester.pumpWidget(MaterialApp(
       theme: AppTheme.light(),
+      // The widget gained a legend, and `AppLocalizations.of(context)` returns
+      // null when no delegate is installed — so this threw a null-check error
+      // inside build and read as "Skia cannot paint the map", which is what the
+      // test claims to be about. A bare MaterialApp is not the app.
+      locale: const Locale('ru'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: const Scaffold(
         body: Center(
           child: SizedBox(
