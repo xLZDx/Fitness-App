@@ -1,5 +1,7 @@
 import 'package:cloud_functions/cloud_functions.dart';
 
+import '../../../core/firebase/functions_region.dart';
+
 /// Bridge to the marketplace Cloud Functions
 /// (`startCoachOnboarding`, `bookCoachSession`).
 ///
@@ -48,7 +50,7 @@ class MockCoachMarketplaceService implements CoachMarketplaceService {
 class CloudCoachMarketplaceService implements CoachMarketplaceService {
   CloudCoachMarketplaceService({FirebaseFunctions? functions})
       : _functions = functions ??
-            FirebaseFunctions.instanceFor(region: 'us-central1');
+            functionsForRegion;
   final FirebaseFunctions _functions;
 
   @override

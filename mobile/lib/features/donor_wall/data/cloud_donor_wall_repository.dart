@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+
+import '../../../core/firebase/functions_region.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'donor_wall_entry.dart';
@@ -15,7 +17,7 @@ class CloudDonorWallRepository implements DonorWallRepository {
     FirebaseAuth? auth,
   })  : _db = firestore ?? FirebaseFirestore.instance,
         _functions =
-            functions ?? FirebaseFunctions.instanceFor(region: 'us-central1'),
+            functions ?? functionsForRegion,
         _auth = auth ?? FirebaseAuth.instance;
 
   final FirebaseFirestore _db;

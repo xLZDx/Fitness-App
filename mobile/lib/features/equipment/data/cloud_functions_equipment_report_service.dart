@@ -1,4 +1,6 @@
 import 'package:cloud_functions/cloud_functions.dart';
+
+import '../../../core/firebase/functions_region.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'equipment_report.dart';
@@ -15,7 +17,7 @@ class CloudFunctionsEquipmentReportService implements EquipmentReportService {
     FirebaseFunctions? functions,
     FirebaseAuth? auth,
   })  : _functions = functions ??
-            FirebaseFunctions.instanceFor(region: 'us-central1'),
+            functionsForRegion,
         _auth = auth ?? FirebaseAuth.instance;
 
   final FirebaseFunctions _functions;

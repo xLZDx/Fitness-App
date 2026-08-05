@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:cloud_functions/cloud_functions.dart';
+
+import '../../../core/firebase/functions_region.dart';
 import 'package:flutter/foundation.dart' show debugPrint, protected;
 
 /// Turns a catalog clip reference into a URL a player can open.
@@ -70,7 +72,7 @@ class FunctionsClipUrlResolver implements ClipUrlResolver {
   /// construction made the provider unusable in any test, and made a subclass
   /// that overrides the network call drag Firebase in anyway.
   FirebaseFunctions get _functions =>
-      _injected ?? FirebaseFunctions.instanceFor(region: 'us-central1');
+      _injected ?? functionsForRegion;
 
   /// A URL arrives with at least 15 minutes of life. Cached for 13, so one
   /// handed to a player always has at least two minutes left in it — a clip

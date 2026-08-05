@@ -1,4 +1,6 @@
 import 'package:cloud_functions/cloud_functions.dart';
+
+import '../../../core/firebase/functions_region.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -15,7 +17,7 @@ class CloudFunctionsStripeService implements StripeCheckoutService {
     FirebaseAuth? auth,
     Future<bool> Function(Uri uri)? launcher,
   })  : _functions =
-            functions ?? FirebaseFunctions.instanceFor(region: 'us-central1'),
+            functions ?? functionsForRegion,
         _auth = auth ?? FirebaseAuth.instance,
         _launcher = launcher ??
             ((uri) =>

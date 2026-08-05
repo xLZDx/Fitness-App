@@ -52,20 +52,54 @@ type Capped<T> = T & { maxInstances: number };
 /** One region for everything. The video bucket is EU; see the note in
  * `video_urls.ts` — signing is unaffected by the mismatch, the object fetch
  * is not, and that is a CDN question rather than a region question. */
-const REGION = "us-central1";
+/**
+ * Same continent as the database, deliberately.
+ *
+ * Firestore for this project lives in `eur3` (Europe multi-region), and
+ * `europe-west1` is one of the regions eur3 spans — so a function's reads and
+ * writes stay local instead of crossing the Atlantic twice per document. The
+ * previous value was `us-central1`, which paired a European database with
+ * North-American compute; `stripeWebhook` touches several documents per call,
+ * so that was a few hundred milliseconds per webhook for nothing.
+ *
+ * Changed during the F0 project split, while the new project had no deployed
+ * functions and no Stripe endpoint yet. Region is baked into every function
+ * URL, so doing this later would have meant recreating the webhook endpoint
+ * and a window where payments landed nowhere.
+ */
+const REGION = "europe-west1";
 
 /**
  * `clipUrl` — every clip play, on every screen, for every user.
  *
- * `minInstances: 1` because a cold start here is not a slow API call, it is a
- * black rectangle: `workout_player_page.dart:333-343` awaits the signature
- * before it constructs the video controller. One warm instance is the
- * cheapest thing in this file and it removes the app's most visible latency.
+ * `minInstances: 0`, and it should stay there. Do not "restore" it to 1.
+ *
+ * This carried `minInstances: 1` justified by a cold start being "a black
+ * rectangle rather than a slow response". That justification was already
+ * false when it was written: `workout_player_page.dart:160` passes
+ * `item.posterFor(body)` into the player, and `:413` paints that bundled
+ * asset immediately, with the video fading in over it once ready (`:295-297`
+ * says so outright). There is no black rectangle — there is a poster, cut
+ * from the clip itself, shipped in the APK precisely so the first frame costs
+ * no network at all. `_bootstrap()` also checks the offline cache before it
+ * reaches for a signed URL, so a planned session frequently never calls this
+ * function twice for the same clip.
+ *
+ * So a warm instance billed around the clock was buying nothing: it paid
+ * continuously to hide latency that 3.6 MB of bundled posters already hides,
+ * for users who work through a dozen exercises of their own plan rather than
+ * browsing hundreds. Firebase's refusal to deploy this without `--force` was
+ * the correct instinct about a cost with no matching benefit.
+ *
+ * If video start ever does feel slow, measure before buying a warm instance:
+ * the signature is a couple of kilobytes, while the clip itself is megabytes
+ * out of a EU bucket — a CDN in front of the bucket is the lever that
+ * actually moves, and `minInstances` is not.
  */
 export const VIDEO_HOT: Capped<CallableOptions> = {
   region: REGION,
   maxInstances: 30,
-  minInstances: 1,
+  minInstances: 0,
 };
 
 /**

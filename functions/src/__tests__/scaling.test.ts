@@ -82,18 +82,34 @@ describe("scaling ceilings", () => {
   });
 
   test.each(Object.keys(ENTRYPOINTS))("%s deploys to one region", (name) => {
-    expect(endpointOf(ENTRYPOINTS[name]).region).toEqual(["us-central1"]);
+    // europe-west1 is inside eur3, where this project's Firestore lives, so
+    // a function's reads stay on the same continent as the data. The value
+    // is asserted literally on purpose: the client has to name the same
+    // region (`kFunctionsRegion` in mobile/lib/core/firebase/
+    // functions_region.dart), and a silent drift between the two surfaces as
+    // NOT_FOUND on every callable at runtime rather than at build time.
+    expect(endpointOf(ENTRYPOINTS[name]).region).toEqual(["europe-west1"]);
   });
 
-  test("clipUrl keeps an instance warm; nothing else pays to", () => {
-    // Cold start on this one function is a black rectangle rather than a slow
-    // response — the player awaits the signature before it builds the video
-    // controller. Everywhere else a cold start is invisible, and idle billing
-    // for it would be waste.
-    expect(endpointOf(clipUrl).minInstances).toBe(1);
-    for (const [name, fn] of Object.entries(ENTRYPOINTS)) {
-      if (name === "clipUrl") continue;
-      expect(endpointOf(fn).minInstances).not.toBe(1);
+  test("no function pays for an idle warm instance", () => {
+    // Not a temporary state: `clipUrl` used to keep one warm on the grounds
+    // that a cold start showed "a black rectangle", but the player has always
+    // painted a bundled poster first (workout_player_page.dart:160, :413) and
+    // fades the video in over it. The warm instance billed 24/7 to hide
+    // latency that shipping 3.6 MB of posters already hides. See VIDEO_HOT.
+    //
+    // If this test ever fails because someone set minInstances back to 1,
+    // read that comment before changing the expectation: the cost is
+    // continuous and the benefit was measured to be nil.
+    // Normalised through `typeof === "number"` rather than `?? 0`, which is
+    // wrong here and quietly so: a function that never sets minInstances gets
+    // firebase-functions' ResetValue sentinel, which is an OBJECT that merely
+    // serialises to null. `??` only substitutes real null/undefined, so the
+    // sentinel sails through it and the assertion compares an object to 0.
+    // Anything non-numeric means "no explicit warm floor", i.e. zero.
+    for (const fn of Object.values(ENTRYPOINTS)) {
+      const min = endpointOf(fn).minInstances;
+      expect(typeof min === "number" ? min : 0).toBe(0);
     }
   });
 
