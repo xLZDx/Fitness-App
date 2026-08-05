@@ -379,7 +379,7 @@ describe("generateAnnualReceipt", () => {
           created: 1735689600, // 2025-01-01T00:00:00Z
           currency: "usd",
           number: "INV-001",
-          lines: { data: [{ description: "Standard plan donation" }] },
+          lines: { data: [{ description: "Standard plan" }] },
         },
         {
           id: "in_2",
@@ -402,9 +402,9 @@ describe("generateAnnualReceipt", () => {
       currency: "USD",
       totalCents: 1500,
       invoiceCount: 2,
-      donorName: "Ivan Tester",
-      donorUid: "u1",
-      orgName: "Fitness App (501(c)(3) pending)",
+      payerName: "Ivan Tester",
+      payerUid: "u1",
+      issuedBy: "Fitness App",
     });
     expect(res.items).toEqual([
       {
@@ -412,14 +412,14 @@ describe("generateAnnualReceipt", () => {
         amountCents: 999,
         currency: "usd",
         number: "INV-001",
-        description: "Standard plan donation",
+        description: "Standard plan",
       },
       {
         created: "2025-06-15T00:00:00.000Z",
         amountCents: 501,
         currency: "usd",
         number: null,
-        description: "Recurring donation",
+        description: "Subscription",
       },
     ]);
 
@@ -496,15 +496,77 @@ describe("generateAnnualReceipt", () => {
       totalCents: 0,
       invoiceCount: 0,
       items: [],
-      donorName: "u1@example.com",
-      donorUid: "u1",
-      orgName: "Fitness App (501(c)(3) pending)",
-      notice: "No donations were recorded under your account in this year.",
+      payerName: "u1@example.com",
+      payerUid: "u1",
+      issuedBy: "Fitness App",
+      notice: "No payments were recorded under your account in this year.",
     });
     expect(stripeCtor).not.toHaveBeenCalled();
     expect(stripeMock.invoices.list).not.toHaveBeenCalled();
     // Current behavior: the zero-receipt path does NOT persist a copy.
     expect(adminMock.__getRef(RECEIPT_PATH).set).not.toHaveBeenCalled();
+  });
+
+  test("claims no charitable status, on either path", async () => {
+    // The regression this replaces was not a bug in the arithmetic. Until
+    // P0 this function returned `orgName: "Fitness App (501(c)(3) pending)"`
+    // and a notice promising that "prior-year donations made under our
+    // fiscal sponsor are retroactively deductible" -- on a document a user
+    // could hand to a tax authority -- and persisted it to
+    // `users/{uid}/receipts/{year}`. There is no 501(c)(3), no pending
+    // application and no fiscal sponsor. S0b removed the same framing from
+    // every Flutter surface and never grepped the backend, which is exactly
+    // why the assertion belongs here rather than in a doc comment.
+    //
+    // Asserted over the serialised payload rather than field by field: the
+    // failure mode was a claim living in a field nobody thought to check, so
+    // naming the fields would rebuild the original blind spot.
+    //
+    // `notice` is excluded from the scan and pinned separately, because the
+    // corrective sentence has to USE the forbidden words to negate them
+    // ("not charitable donations", "not tax-deductible"). A pattern scan
+    // cannot tell an assertion from its denial; two assertions can.
+    const forbidden = [/501\(c\)/i, /deductib/i, /donation/i, /donor/i,
+      /fiscal sponsor/i, /charit/i];
+    const withoutNotice = (r: Record<string, unknown>) => {
+      const {notice: _drop, ...rest} = r;
+      return rest;
+    };
+
+    primeDoc(SUB_PATH, undefined);
+    const zero = await generateAnnualReceipt.run(
+      req({ year: 2025 }, { uid: "u1", token: {} }),
+    );
+
+    primeDoc(SUB_PATH, { stripeCustomerId: "cus_1" });
+    stripeMock.invoices.list.mockResolvedValue({
+      data: [{
+        id: "in_1", amount_paid: 999, created: 1735689600,
+        currency: "usd", number: "INV-001", lines: { data: [] },
+      }],
+      has_more: false,
+    });
+    const paid = await generateAnnualReceipt.run(
+      req({ year: 2025 }, { uid: "u1", token: {} }),
+    );
+
+    for (const payload of [zero, paid]) {
+      const text = JSON.stringify(withoutNotice(payload));
+      for (const pattern of forbidden) {
+        expect(text).not.toMatch(pattern);
+      }
+    }
+
+    // The notices, pinned exactly. The paid one states the correction the
+    // published Terms state ("These payments are not tax-deductible
+    // donations"); the zero one simply has nothing to correct.
+    expect(paid.notice).toBe(
+      "Keep this summary for your records. These are subscription payments, " +
+      "not charitable donations, and they are not tax-deductible.",
+    );
+    expect(zero.notice).toBe(
+      "No payments were recorded under your account in this year.",
+    );
   });
 
   test("unauthenticated request throws unauthenticated", async () => {

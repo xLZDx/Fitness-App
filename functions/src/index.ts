@@ -11,8 +11,8 @@
  *                                         users/{uid}/subscription/main.
  *   - optInDonorWall         (callable) — adds active donor to public wall.
  *   - optOutDonorWall        (callable) — removes caller from wall.
- *   - generateAnnualReceipt  (callable) — tax-deductible donation receipt
- *                                         for the requested year.
+ *   - generateAnnualReceipt  (callable) — annual summary of subscription
+ *                                         payments for the requested year.
  *   - startCoachOnboarding   (callable) — Stripe Connect Express
  *                                         onboarding link for marketplace.
  *   - bookCoachSession       (callable) — PaymentIntent + 15% platform
@@ -786,13 +786,32 @@ export const optOutDonorWall = onCall(
 /* ------------------------------------------------------------------ */
 
 /**
- * Returns a tax-deductible receipt for the calling user for the given
- * year. The receipt is a JSON document the app can render or email; we
- * intentionally don't attach a PDF here (lower attack surface, easier
- * to localise client-side).
+ * Returns an annual summary of the caller's subscription payments. A JSON
+ * document the app can render or email; deliberately not a PDF (lower attack
+ * surface, easier to localise client-side).
  *
  * The amount is derived from Stripe invoices marked `paid` between
  * Jan 1 and Dec 31 of the requested year. No client field accepted.
+ *
+ * ## Why this stopped calling itself a donation receipt (P0, 2026-08-05)
+ *
+ * It used to return `orgName: "Fitness App (501(c)(3) pending)"` and a notice
+ * promising that "prior-year donations made under our fiscal sponsor are
+ * retroactively deductible", and it persisted both to
+ * `users/{uid}/receipts/{year}`.
+ *
+ * None of it was true: there is no 501(c)(3), no application pending, and no
+ * fiscal sponsor. S0b removed that framing from every Flutter surface but
+ * never grepped this file, so the backend kept asserting it — on a *receipt*,
+ * the one document a user might hand to a tax authority, and in a shape that
+ * outlived the response by being written to Firestore.
+ *
+ * The published Terms now say the opposite in as many words ("These payments
+ * are not tax-deductible donations"), which is what made the contradiction
+ * load-bearing rather than merely embarrassing. `donorName`/`donorUid` went
+ * with it: this endpoint has no client callers, so nothing depended on the old
+ * field names, and leaving "donor" in a payload the Terms call a subscription
+ * would have re-created the same drift one level down.
  */
 export const generateAnnualReceipt = onCall(
   {
@@ -812,20 +831,20 @@ export const generateAnnualReceipt = onCall(
     const subSnap = await db.doc(`users/${auth.uid}/subscription/main`).get();
     const customerId = subSnap.data()?.stripeCustomerId as string | undefined;
     if (!customerId) {
-      // Trial-only / never-donated user — return a zero receipt rather
-      // than 4xx so the client can show "no donations recorded" instead
-      // of an error.
+      // Trial-only / never-paid user — return a zero summary rather than
+      // 4xx so the client can show "no payments recorded" instead of an
+      // error.
       return {
         year,
         currency: "USD",
         totalCents: 0,
         invoiceCount: 0,
         items: [],
-        donorName: auth.token?.name ?? auth.token?.email ?? "Anonymous",
-        donorUid: auth.uid,
-        orgName: "Fitness App (501(c)(3) pending)",
+        payerName: auth.token?.name ?? auth.token?.email ?? "Anonymous",
+        payerUid: auth.uid,
+        issuedBy: "Fitness App",
         notice:
-          "No donations were recorded under your account in this year.",
+          "No payments were recorded under your account in this year.",
       };
     }
 
@@ -860,7 +879,7 @@ export const generateAnnualReceipt = onCall(
           amountCents: amt,
           currency: inv.currency ?? "usd",
           number: inv.number ?? null,
-          description: inv.lines?.data?.[0]?.description ?? "Recurring donation",
+          description: inv.lines?.data?.[0]?.description ?? "Subscription",
         });
       }
       if (!page.has_more || page.data.length === 0) break;
@@ -873,15 +892,15 @@ export const generateAnnualReceipt = onCall(
       totalCents,
       invoiceCount: items.length,
       items,
-      donorName: auth.token?.name ?? auth.token?.email ?? "Anonymous",
-      donorUid: auth.uid,
-      orgName: "Fitness App (501(c)(3) pending)",
+      payerName: auth.token?.name ?? auth.token?.email ?? "Anonymous",
+      payerUid: auth.uid,
+      issuedBy: "Fitness App",
       generatedAt: new Date().toISOString(),
       notice: totalCents > 0
-        ? "Keep this receipt for your records. " +
-          "501(c)(3) status pending — once approved, prior-year donations " +
-          "made under our fiscal sponsor are retroactively deductible."
-        : "No donations were recorded under your account in this year.",
+        ? "Keep this summary for your records. These are subscription " +
+          "payments, not charitable donations, and they are not " +
+          "tax-deductible."
+        : "No payments were recorded under your account in this year.",
     };
 
     // Persist a copy so the year-end batch job has a known address.

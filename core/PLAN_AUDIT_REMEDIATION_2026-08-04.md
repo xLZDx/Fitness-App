@@ -905,3 +905,27 @@ app is submitted to any app store**». Google требует публичный 
 3. **SHA-256 ключа Play App Signing** — появится только после первой загрузки.
 4. Контакт, юрисдикция (Молдова), возраст 16+ — решения оператора,
    опубликованные как факты; подтвердить.
+
+### P0·1 — доделка S0b в бэкенде (2026-08-05)
+
+Пункт 1 списка «что осталось непокрытым» закрыт. `generateAnnualReceipt`
+больше не утверждает благотворительный статус: `orgName` -> `issuedBy:
+"Fitness App"`, `donorName`/`donorUid` -> `payerName`/`payerUid`, notice на
+платном пути теперь прямо говорит обратное — «These are subscription
+payments, not charitable donations, and they are not tax-deductible», слово в
+слово с опубликованными Условиями. Фолбэк описания позиции инвойса
+«Recurring donation» -> «Subscription».
+
+Регресс закреплён тестом `claims no charitable status, on either path`
+(`functions/src/__tests__/index.test.ts:510`): сканирует весь
+сериализованный ответ на `501(c)`, `deductib`, `donation`, `donor`,
+`fiscal sponsor`, `charit` — по payload целиком, а не по отдельным полям,
+потому что исходная ошибка жила ровно в поле, которое никто не проверял.
+Поле `notice` исключено из скана и пиню́тся точным текстом: корректирующая
+фраза обязана использовать эти слова в отрицании, а сканер отрицание от
+утверждения отличить не может.
+
+`npx tsc --noEmit` чисто, `npx jest` — 97 passed (было 96). Задеплоено
+точечно: `firebase deploy --only functions:generateAnnualReceipt` ->
+`generateAnnualReceipt(europe-west1)` Successful update. Остальные функции
+намеренно не переразвёрнуты — в них открыт гейт F1 (Stripe Basil).
