@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/state/auth_providers.dart';
 import '../../workouts/state/session_screening_providers.dart';
 import '../data/injury_regions.dart';
+import '../data/local_sensitive_store.dart';
 import '../data/mock_profile_repository.dart';
 import '../data/profile_models.dart';
 import '../data/profile_repository.dart';
@@ -15,6 +16,16 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   ref.onDispose(repo.dispose);
   return repo;
 });
+
+/// Where the device-only half of the profile lives (H1a).
+///
+/// A provider rather than a value `main.dart` keeps to itself, because restore
+/// (H2b) has to write into the same store the repository reads from. Two
+/// instances would restore a backup into a store nobody consults -- the import
+/// would report success and change nothing, which is the failure mode this
+/// indirection exists to make impossible.
+final localSensitiveStoreProvider =
+    Provider<LocalSensitiveStore>((_) => InMemorySensitiveStore());
 
 /// The current user's profile (or null if signed out / not yet created).
 final currentProfileProvider = StreamProvider<UserProfile?>((ref) {

@@ -25,6 +25,7 @@ import '../../features/form_check/form_check_page.dart';
 import '../../features/home/home_page.dart';
 import '../../features/marketplace/marketplace_page.dart';
 import '../../features/onboarding/onboarding_page.dart';
+import '../../features/data_export/backup_page.dart';
 import '../../features/progress_photos/progress_photos_page.dart';
 import '../../features/social_feed/social_feed_page.dart';
 import '../../features/profile/data/profile_repository.dart';
@@ -305,6 +306,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/photos',
         pageBuilder: (_, __) => _fadeThrough(const ProgressPhotosPage()),
+      ),
+      GoRoute(
+        path: '/backup',
+        pageBuilder: (_, __) => _fadeThrough(const BackupPage()),
       ),
       GoRoute(
         path: '/community',

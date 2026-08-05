@@ -222,6 +222,10 @@ Future<void> main() async {
         // leaves the device -- see DeviceHealthProfileRepository. Nothing on
         // the server read it, so holding it there bought GDPR Article 9
         // exposure and a Play "Health info" declaration for nothing.
+        //
+        // The store is overridden as well as passed in, so that restore (H2b)
+        // writes into the same instance this repository reads from.
+        localSensitiveStoreProvider.overrideWithValue(sensitiveStore),
         profileRepositoryProvider.overrideWith(
           (_) => DeviceHealthProfileRepository(
             FirestoreProfileRepository(),

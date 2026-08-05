@@ -220,6 +220,30 @@ class SettingsPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
+          // H2b. Separate from the export above, and deliberately so: that one
+          // is the GDPR copy -- everything, plain, readable, no secret needed.
+          // This one is the transfer, and carries only the health block,
+          // because that is the only half a reinstall cannot bring back.
+          // Encrypting the export instead would have made a data-portability
+          // file unreadable without a passphrase, which is the opposite of
+          // portable.
+          GlassCard(
+            key: const Key('settings-backup-transfer'),
+            onTap: () => GoRouter.of(context).push('/backup'),
+            child: Row(
+              children: [
+                Icon(Icons.lock_outline, color: theme.colorScheme.primary),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                      AppLocalizations.of(context).settingsBackupTransfer,
+                      style: theme.textTheme.titleMedium),
+                ),
+                const Icon(Icons.chevron_right),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
           // Not optional decoration: the bundled content ships under licences
           // that require visible attribution. See core/licences/.
           GlassCard(

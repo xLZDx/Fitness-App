@@ -4,6 +4,22 @@
   "@appTitle": {
     "description": "Brand name. Not translated."
   },
+  "backupCreateButton": "Create and share",
+  "backupCreateTitle": "Create a backup",
+  "backupNotABackupFile": "This is not a backup file from this app.",
+  "backupPassphraseLabel": "Passphrase",
+  "backupPassphraseWarning": "Choose a passphrase you will not forget. Without it the backup cannot be opened, by you or by us.",
+  "backupPasteLabel": "Backup text",
+  "backupRestoreButton": "Restore",
+  "backupRestoreDone": "Restored. Your health answers are back on this phone.",
+  "backupRestoreHint": "Paste the backup text below, or open the file you saved and copy it in.",
+  "backupRestoreTitle": "Restore",
+  "backupSomethingWentWrong": "That did not work. Check the text and try again.",
+  "backupTitle": "Backup and transfer",
+  "backupWhatItCarriesBody": "Your health questionnaire, and nothing else. It stays on this phone, so it is the only part a reinstall or a new phone cannot bring back on its own — workouts, schedule and the rest return when you sign in.",
+  "backupWhatItCarriesTitle": "What this carries",
+  "backupWrongPassphrase": "That passphrase does not open this backup.",
+  "settingsBackupTransfer": "Backup and transfer",
   "splashTagline": "Scan. Train. Progress.",
   "@splashTagline": {
     "description": "Three-word product promise under the logo on the splash screen."
