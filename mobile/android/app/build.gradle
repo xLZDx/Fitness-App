@@ -6,6 +6,64 @@ plugins {
     id "kotlin-android"
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
+    // R0. Uploads native (non-Dart) crash symbols + mapping files on every
+    // release build; the Dart-side reporting is wired in main.dart.
+    id "com.google.firebase.crashlytics"
+}
+
+// R0 — real release signing, with the debug fallback this file shipped with
+// preserved rather than removed.
+//
+// WHY THIS FILE DOES NOT CONTAIN A KEY
+//
+// A signing key is not a config value: once a real one signs a listing
+// published to Google Play, Play permanently binds that listing to it —
+// there is no "rotate the key" undo, the same class of one-way action as a
+// live data migration (see the operator's own framing for this gate). The
+// operator generates their own key with `keytool`, outside this repo, and
+// keeps it somewhere `git` never sees:
+//
+//   keytool -genkey -v -keystore <path>/upload-keystore.jks \
+//     -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+//
+// Then create android/key.properties (already in android/.gitignore
+// alongside every *.jks/*.keystore) from android/key.properties.example,
+// filling in the real values.
+//
+// WHY THE BUILD STILL WORKS WITHOUT ONE
+//
+// `flutter run --release` and every other Windows dev workflow this project
+// has used all session must keep working today, with no key.properties on
+// disk anywhere. Falling back to debug signing when the file is absent —
+// exactly the prior behaviour of this file — is what makes that true; the
+// alternative (failing the build outright) would have blocked every
+// non-Play use of a release build.
+def keystorePropertiesFile = rootProject.file("key.properties")
+def keystoreProperties = new Properties()
+def hasRealSigningConfig = keystorePropertiesFile.exists()
+if (hasRealSigningConfig) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+    // Fail loud and specific here rather than letting a typo'd/missing
+    // field reach `signingConfigs` below as a silent null -- that would
+    // surface later as an opaque NPE deep in Android's own signing task
+    // instead of at the one place that actually knows which key is
+    // missing (silent-failure-hunter + flutter-reviewer finding, R0).
+    ['keyAlias', 'keyPassword', 'storeFile', 'storePassword'].each { key ->
+        assert keystoreProperties[key] :
+            "android/key.properties is missing '${key}' -- see android/key.properties.example"
+    }
+} else if (gradle.startParameter.taskNames.any { it.contains('Release') || it.contains('Bundle') }) {
+    // Gated to release-shaped tasks only (assembleRelease, bundleRelease,
+    // ...) -- every plain `flutter run` / `flutter run --release` dev build
+    // hits this branch too per "WHY THE BUILD STILL WORKS WITHOUT ONE"
+    // above, and warning on every single one of those would be exactly the
+    // noise the operator's "clean banner" standard exists to filter out,
+    // defeating the point of a warning meant to stand out on the one build
+    // that actually matters (silent-failure-hunter finding, R0).
+    logger.warn(
+        "R0: android/key.properties not found at ${keystorePropertiesFile} " +
+        "-- this build will be DEBUG-SIGNED, not suitable for Play Store upload."
+    )
 }
 
 android {
@@ -40,11 +98,31 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (hasRealSigningConfig) {
+            release {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.debug
+            // Real signing when key.properties exists (see the comment
+            // above `keystorePropertiesFile`); the original debug-signed
+            // fallback otherwise, so this build never breaks for lack of a
+            // key nobody has generated yet. C0's tier-override guard
+            // documented exactly why this distinction matters: debug and
+            // release currently share `applicationId`, so a debug-signed
+            // "release" installs as an UPDATE over a debug install and
+            // inherits its SharedPreferences — this is the change that
+            // finally makes the two different installs.
+            signingConfig = hasRealSigningConfig
+                ? signingConfigs.release
+                : signingConfigs.debug
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }

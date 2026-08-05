@@ -1,6 +1,10 @@
 import 'dart:async';
+import 'dart:ui';
 
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -68,6 +72,84 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // R0 -- Crashlytics. Both handlers wired immediately after Firebase
+  // itself is up, before any of the bootstrap work below (asset copy,
+  // prefs open, notification init) runs -- a crash during THAT bootstrap
+  // is exactly the kind of early, hard-to-repro failure this exists to
+  // catch. `recordFlutterFatalError` covers framework-level errors (widget
+  // build/layout/paint); `PlatformDispatcher.instance.onError` covers
+  // everything outside the Flutter framework's own error zone (async gaps,
+  // platform channel callbacks) -- Flutter's own crash-reporting guidance
+  // wires both because neither alone is a superset of the other.
+  //
+  // Disabled in debug builds on purpose: an ordinary `flutter run` session
+  // hitting a hot-reload edge case would otherwise report as a production
+  // crash, which is exactly the kind of noise the operator's "clean
+  // banner" standard exists to keep out of a signal that real users'
+  // crashes need to stand out against.
+  //
+  // The collection toggle is wrapped on its own, separately from installing
+  // the handlers below: two independent reviewers (flutter-reviewer,
+  // silent-failure-hunter) converged on the same defect from different
+  // angles -- if this specific call throws (traced live in the installed
+  // package source: any native-side failure reaches Dart as a rethrown
+  // `PlatformException`, never swallowed) and the handlers were installed
+  // only after it in an unguarded sequence, `main()` would abort before
+  // `runApp()` ever ran, and before the two lines whose entire purpose is
+  // to catch exactly that kind of failure ever executed. Installing the
+  // handlers unconditionally, right after, closes that gap: a failed
+  // collection toggle degrades to "crash reporting is off", not "the app
+  // never boots".
+  try {
+    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
+      !kDebugMode,
+    );
+  } catch (e) {
+    debugPrint('R0: Crashlytics collection toggle failed, continuing: $e');
+  }
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  PlatformDispatcher.instance.onError = (error, stack) {
+    // Debug-only console echo: `setCrashlyticsCollectionEnabled(false)`
+    // above means a `flutter run` session reports nothing to the Firebase
+    // Console by design -- without this, an uncaught error during local
+    // dev/QA could produce no output anywhere at all.
+    if (kDebugMode) debugPrint('Uncaught error: $error\n$stack');
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
+  // R0 -- App Check, monitor-before-enforce by design, not cold
+  // enforcement. `activate()` starts attaching a verification token to
+  // every Firestore/Functions/Storage request this client makes from this
+  // moment on -- that's what populates the App Check metrics tab in the
+  // Firebase Console (Play Integrity on Android, Device Check on Apple;
+  // both are this package's own current, non-deprecated defaults, not
+  // chosen here).
+  //
+  // Turning ENFORCEMENT on per product -- Firestore, every callable in
+  // functions/src/index.ts including deleteAccount, Storage -- is a
+  // separate, later, deliberate step the operator takes only after that
+  // console tab shows real traffic passing verification. Flipping it on
+  // cold, day one, with no observed baseline, risks locking out genuine
+  // users on any provider mismatch (a fresh install before Play Integrity
+  // attestation has warmed up, a rooted device, an emulator used for real
+  // testing) -- indistinguishable at that point from an actual attacker.
+  // No Cloud Function in this change sets `enforceAppCheck: true`.
+  //
+  // Wrapped for the same reason as the Crashlytics toggle above, and for
+  // this call the risk is concrete rather than hypothetical: Play Integrity
+  // needs Google Play Services (absent on plain AOSP emulator images) and
+  // App Check has no debug provider configured here, so `activate()`
+  // throwing on exactly the images used for routine dev/QA testing is a
+  // realistic, not edge-case, outcome. Monitoring is explicitly the
+  // non-critical half of this gate -- losing it must never cost boot.
+  try {
+    await FirebaseAppCheck.instance.activate();
+  } catch (e, st) {
+    debugPrint('R0: App Check activate() failed, continuing without it: $e');
+    FirebaseCrashlytics.instance.recordError(e, st, fatal: false);
+  }
 
   // Warm up notifications + request permissions once on launch. We keep a
   // single instance and inject it into Riverpod so reminders are de-duped

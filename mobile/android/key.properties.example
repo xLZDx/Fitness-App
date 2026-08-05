@@ -1,0 +1,24 @@
+# R0 -- template only. This file has no real values and is safe to commit;
+# `key.properties` (the real file, gitignored) is what app/build.gradle
+# actually reads.
+#
+# 1. Generate a real upload keystore yourself, outside this repo:
+#
+#      keytool -genkey -v -keystore <path-outside-the-repo>/upload-keystore.jks \
+#        -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+#
+#    keytool will ask for a keystore password and a key password -- pick two
+#    strong values and keep them somewhere durable (a password manager, not
+#    this file). There is no "reset" for a lost key: Google Play permanently
+#    binds a published listing to whichever key first signs it.
+#
+# 2. Copy this file to android/key.properties (same directory) and fill in
+#    the four values below with what you just generated.
+#
+# 3. Never commit android/key.properties or the .jks/.keystore file itself --
+#    both are already excluded in android/.gitignore.
+
+storePassword=REPLACE_WITH_YOUR_KEYSTORE_PASSWORD
+keyPassword=REPLACE_WITH_YOUR_KEY_PASSWORD
+keyAlias=upload
+storeFile=REPLACE_WITH_ABSOLUTE_PATH_TO_YOUR_UPLOAD_KEYSTORE.jks
