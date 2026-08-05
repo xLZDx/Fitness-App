@@ -103,7 +103,15 @@ const stripeMock = stripeCtor.__instance;
  * the value changing -- while still passing if the URL stops being sent at
  * all. Importing it keeps the shape under test and drops the copy.
  */
-const RETURN_ORIGIN = "https://traidingbot-b4061.web.app";
+// F0·1: derived the same way production derives it, from the deploying
+// project, instead of copying the literal. The comment above predicted
+// exactly this failure -- the copy broke the moment the value stopped being
+// hardcoded, while still not testing anything about the URL's shape. Written
+// against `GCLOUD_PROJECT` (set to `demo-fitness-unit-tests` in
+// jest.setup.js:17) so the assertion now says "checkout returns to THIS
+// project's hosting site", which is the contract that actually matters and
+// the one a project split would break.
+const RETURN_ORIGIN = `https://${process.env.GCLOUD_PROJECT}.web.app`;
 
 const STRIPE_CTOR_ARGS = [
   "sk_test_fake_unit_test_key_not_real",

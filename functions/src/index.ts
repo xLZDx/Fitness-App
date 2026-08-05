@@ -150,8 +150,23 @@ function isOneTime(period: Period): boolean {
  * `https://fitnessapp.example.com`, which is a placeholder domain and does not
  * resolve — so a successful payment ended on a browser error page. The pages
  * live in `public/` and ship with `firebase deploy --only hosting`.
+ *
+ * F0·1: derived from the project the function is actually deployed into,
+ * rather than hardcoded. `GCLOUD_PROJECT` is set by the Cloud Functions
+ * runtime itself, so a deploy into a different Firebase project returns the
+ * browser to THAT project's hosting site with no code change. The hardcoded
+ * value was `traidingbot-b4061` — the trading bot's project, which this app
+ * currently shares; that string surviving a project split would have sent
+ * paying users to the wrong product's domain after checkout.
+ *
+ * The fallback keeps local/emulator runs working, where the runtime var is
+ * unset. It is deliberately the current project: an empty or example.com
+ * fallback would reintroduce the dead-return-page bug this comment opens
+ * with, and silently.
  */
-const RETURN_ORIGIN = "https://traidingbot-b4061.web.app";
+const RETURN_ORIGIN = `https://${
+  process.env.GCLOUD_PROJECT ?? "traidingbot-b4061"
+}.web.app`;
 
 /**
  * The locale Stripe should render checkout in.

@@ -40,8 +40,22 @@ import * as logger from "firebase-functions/logger";
 import { getStorage } from "firebase-admin/storage";
 import { VIDEO_BATCH, VIDEO_HOT } from "./scaling";
 
-/** Where the licensed library lives. Private — no `allUsers` binding. */
-export const LICENSED_BUCKET = "traidingbot-b4061-videos-private";
+/**
+ * Where the licensed library lives. Private — no `allUsers` binding.
+ *
+ * F0·1: named after the deploying project rather than hardcoded, so a
+ * project split does not silently point signed URLs at the old project's
+ * bucket. `GCLOUD_PROJECT` is injected by the Cloud Functions runtime; the
+ * fallback is the current project so local/emulator runs keep resolving.
+ *
+ * The `-videos-private` suffix is the convention this bucket already
+ * follows, so the new project's bucket must be created with the same
+ * suffix for this to resolve — that is a step in the F0·4 data move, not
+ * something this expression can guarantee on its own.
+ */
+export const LICENSED_BUCKET = `${
+  process.env.GCLOUD_PROJECT ?? "traidingbot-b4061"
+}-videos-private`;
 
 /**
  * How long a link lives.
