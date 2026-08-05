@@ -64,6 +64,55 @@ def test_split_squats_are_lunges_not_squats(vocab, title):
 
 
 @pytest.mark.parametrize("title", [
+    # Not in the sagittal plane -- a side-on camera sees these edge-on.
+    "4 Punches Side Squat",
+    "Balance Board Lateral Squat",
+    "Curtsy Squat",
+    "Cossack Squat",
+    "Counterbalanced Skater Squat",
+    # Not bilateral; the target draws two legs together.
+    "Dumbbell Single Leg Squat",
+    "Jumping Pistol Squat",
+    "Bodyweight Kneeling Sissy Squat",
+    # Not upright.
+    "Barbell Kneeling Squat",
+    # Isometric: RepCounter needs a full lap of the phase ladder, and a hold
+    # never leaves the bottom.
+    "Plate Squat Hold",
+    "Wall Squat Bodyweight",
+    # Two movements in one.
+    "Band Squat Row",
+    "Landmine Squat and Press",
+    "Burpee Squat",
+    "Bodyweight Squat to Side Leg",
+    # The word is in the equipment's name, not the movement's.
+    "Barbell Incline Shoulders Press (inside Squat Cage)",
+])
+def test_only_the_bilateral_sagittal_squat_is_tagged(vocab, title):
+    """`squat` is the ONE pattern the coach supports, so a false positive here
+    reaches a user immediately -- with a target that scores their correct rep
+    badly, which is exactly the lesson `formCoachSupports` exists to prevent.
+
+    Found by listing all 69 rows the first rule tagged and reading them, not by
+    reasoning about the regex.
+    """
+    assert tag(vocab, title) is None
+
+
+@pytest.mark.parametrize("title", [
+    # A depth cue, not a second movement.
+    "Barbell Squat to Grass",
+    # A paused rep still completes a lap.
+    "Barbell Squat with 2 Sec Hold",
+    "Barbell Full Squat(with Rack)",
+    "Dumbbell Goblet Squat",
+    "Barbell Low Bar Squat",
+])
+def test_the_pruning_did_not_take_real_squats_with_it(vocab, title):
+    assert tag(vocab, title) == "squat"
+
+
+@pytest.mark.parametrize("title", [
     "Dumbbell Lunge to Overhead Press",
     "Biceps Curl to Shoulder Press Resistance Band",
     "Alternating Plank Lunge",

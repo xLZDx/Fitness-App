@@ -269,8 +269,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_4_reverse_lunge_and_4_side_taps",
@@ -2358,8 +2357,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_alternate_heel_touches",
@@ -5741,8 +5739,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_ball_headlock_squat",
@@ -8397,8 +8394,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_band_standing_leg_curl",
@@ -11524,8 +11520,7 @@
       "hip",
       "knee",
       "shoulder"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_barbell_inclined_bench_press",
@@ -11649,8 +11644,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_barbell_jm_bench_press",
@@ -11849,8 +11843,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_barbell_landmine_chest_press",
@@ -18353,8 +18346,7 @@
       "hip",
       "knee",
       "shoulder"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_bodyweight_full_squat_with_overhead_press",
@@ -18400,7 +18392,8 @@
       "hip",
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_bodyweight_hip_thrust",
@@ -18646,8 +18639,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_bodyweight_kneeling_triceps_extension",
@@ -19161,8 +19153,7 @@
       "hip",
       "knee",
       "lower_back"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_bodyweight_squat_to_side_leg",
@@ -19205,8 +19196,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_bodyweight_squat_to_side_to_front_leg",
@@ -19252,8 +19242,7 @@
       "hip",
       "knee",
       "lower_back"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_bodyweight_squats",
@@ -21013,8 +21002,7 @@
       "hip",
       "knee",
       "wrist"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_butt_kick_with_row",
@@ -27023,8 +27011,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_clap_jack",
@@ -27836,8 +27823,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_counterbalanced_skater_squat",
@@ -27882,8 +27868,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_crab_pose",
@@ -29097,8 +29082,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_dead_bug",
@@ -35697,8 +35681,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_dumbbell_kneeling_wood_chopper",
@@ -37609,8 +37592,7 @@
       "hip",
       "knee",
       "shoulder"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_dumbbell_pronate_grip_triceps_extension",
@@ -39698,8 +39680,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_dumbbell_silverback_shrug",
@@ -40299,8 +40280,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_dumbbell_single_leg_squat_with_support_pistol",
@@ -40342,8 +40322,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_dumbbell_single_leg_step_up",
@@ -42092,8 +42071,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_dumbbell_svend_press",
@@ -48732,8 +48710,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_kettlebell_bulgarian_split_squat_right",
@@ -51116,8 +51093,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_kneeling_wrist_flexor_stretch",
@@ -52109,8 +52085,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_lat_pull_down_close_grip",
@@ -56070,8 +56045,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_plank_cross_knee_drive",
@@ -57536,8 +57510,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_plate_squat_hold_biceps_curl",
@@ -57566,7 +57539,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_plate_squat_hold_reach",
@@ -57595,8 +57569,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_plate_squat_reach",
@@ -57625,8 +57598,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_plate_staggered_deadlift",
@@ -69363,8 +69335,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_wall_squat_with_pause_bodyweight",
@@ -69408,8 +69379,7 @@
       "ankle",
       "hip",
       "knee"
-    ],
-    "poseTargetId": "squat"
+    ]
   },
   {
     "id": "ea_weighted_back_extensions_on_hyperextension_bench",

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -16,7 +17,9 @@ import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/data/auth_repository.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
+import 'package:fitness_app/features/data_export/backup_envelope.dart';
 import 'package:fitness_app/features/equipment/widgets/muscle_map.dart';
+import 'package:fitness_app/features/form_check/state/form_check_providers.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/profile/data/profile_repository.dart';
 import 'package:fitness_app/features/profile/state/profile_providers.dart';
@@ -323,4 +326,68 @@ Future<void> main() async {
     final ctx = tester.element(find.byType(AuroraBackground).first);
     expect(Theme.of(ctx).brightness, Brightness.dark);
   });
+
+  /// H2b, on a device.
+  ///
+  /// The unit tests call `encryptBackup` directly. This one goes through the
+  /// notifier, which hands the work to `compute` — a real background isolate,
+  /// on real ARM/x86 silicon, at the shipped 210,000 PBKDF2 rounds. None of
+  /// that exists in `flutter test`: the isolate, the cost, and whether a
+  /// second of work blocks the frame are device facts.
+  testWidgets('the transfer backup seals and opens on the device',
+      (tester) async {
+    await boot(tester);
+
+    final sealed = await compute(
+      _sealForTest,
+      (payload: '{"kind":"sensitive-profile","version":1,"data":{}}',
+       passphrase: 'a phrase i will remember'),
+    );
+    expect(sealed, isNot(contains('sensitive-profile')));
+    final opened = await compute(
+      _openForTest,
+      (envelope: sealed, passphrase: 'a phrase i will remember'),
+    );
+    expect(opened, contains('sensitive-profile'));
+  });
+
+  /// T1, on a device, against the catalog inside the installed APK.
+  ///
+  /// The tags are written by a Python pass into an asset. Whether that asset
+  /// is the one the APK actually carries is exactly the class of bug this file
+  /// exists for — `Image.asset` resolving through the built manifest rather
+  /// than the filesystem took two features down before.
+  testWidgets('the shipped catalog carries usable pose tags', (tester) async {
+    await boot(tester);
+
+    final raw = await rootBundle.loadString('assets/data/exercises_vendor.json');
+    final rows = (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
+    final tags = <String>{
+      for (final r in rows)
+        if (r['poseTargetId'] != null) r['poseTargetId'] as String,
+    };
+
+    expect(tags, isNotEmpty, reason: 'the tagging pass never reached the APK');
+    // Exactly one pattern may offer the coach today, and it must be the one
+    // with authored targets AND a rep signal.
+    final offered = tags.where(formCoachSupports).toList();
+    expect(offered, ['squat']);
+
+    final squats = rows.where((r) => r['poseTargetId'] == 'squat').toList();
+    expect(squats.length, greaterThan(20));
+    // The pruning that followed reading all 69 first-pass rows: side, curtsy,
+    // pistol, kneeling, holds and two-movement combinations are gone.
+    final titles = squats.map((r) => (r['title'] as String).toLowerCase());
+    for (final bad in const [
+      'side squat', 'curtsy', 'pistol', 'kneeling', 'squat hold', 'wall squat',
+    ]) {
+      expect(titles.where((t) => t.contains(bad)), isEmpty, reason: bad);
+    }
+  });
 }
+
+String _sealForTest(({String payload, String passphrase}) a) =>
+    encryptBackup(plaintext: a.payload, passphrase: a.passphrase);
+
+String _openForTest(({String envelope, String passphrase}) a) =>
+    decryptBackup(envelopeJson: a.envelope, passphrase: a.passphrase);
