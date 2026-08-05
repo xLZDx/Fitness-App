@@ -141,7 +141,14 @@ here as deliberate "No" answers:
 1. **Firebase AI Logic retention** — the ephemeral tick above depends on it.
 2. **Play App Signing SHA-256** — cannot be added to App Check until the first
    bundle upload creates the key; the upload key is registered already.
-3. Both legal documents name a Chisinau, Moldova operator, a public contact
-   address, a minimum age of 16 and Moldovan governing law. Those are the
-   operator's decisions, stated as facts in a published document — confirm each
-   is what the operator intends.
+~~3. Both legal documents name a Chisinau, Moldova operator, a public contact
+address, a minimum age of 16 and Moldovan governing law.~~ **Confirmed by the
+operator, 2026-08-05.** All four are intended and are published as written:
+independent developer in Chisinau, Moldova; contact `korostelevivan@gmail.com`;
+account minimum age 16; governing law of the Republic of Moldova.
+
+Recorded here rather than left to memory because these are the only claims in
+the published documents that no file in this repo can verify. Every other
+sentence is checkable against code — a future reader can re-derive it. These
+four are checkable only against what the operator said, so this line is the
+evidence.
