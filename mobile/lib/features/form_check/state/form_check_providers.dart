@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../profile/data/profile_models.dart';
@@ -243,12 +244,23 @@ final poseGateConfigProvider =
 final poseGateVerdictProvider =
     StateProvider<PoseGateVerdict>((_) => PoseGateVerdict.ok);
 
+/// Whether developer diagnostics may paint over the camera and be measured.
+///
+/// Defaults to [kDebugMode], so a release build is false. A provider rather
+/// than a bare `if (kDebugMode)` at each site for one reason: a test runs in
+/// debug, so a bare constant would make "the release screen shows no debug
+/// copy" untestable — the assertion would be checking the debug build.
+/// Overriding this to false is how a test reproduces the release screen.
+final poseDebugOverlayProvider = Provider<bool>((_) => kDebugMode);
+
 /// What the coordinates actually measured this session.
 ///
 /// Read-only: nothing in the scoring path consults it. It exists because every
 /// threshold in the gate, the rep counter and the classifiers was picked against
 /// an assumed range, and this is the first thing in the app that reports the
 /// real one. See `pose_unit_probe.dart`.
+///
+/// Stays empty in a release build — see [poseDebugOverlayProvider].
 final poseUnitReportProvider =
     StateProvider<PoseUnitReport>((_) => PoseUnitReport.empty);
 
@@ -280,9 +292,13 @@ class FormFeedbackController extends Notifier<FormFeedback?> {
       ref.read(latestPoseFrameProvider.notifier).state = frame;
     }
     // Before the gate, on purpose: a frame the gate rejects is exactly the
-    // frame whose coordinates are most worth knowing about.
-    _probe.observe(frame);
-    ref.read(poseUnitReportProvider.notifier).state = _probe.report;
+    // frame whose coordinates are most worth knowing about. Gated with the
+    // rendering rather than left running, so a release build pays nothing for a
+    // measurement it will never display.
+    if (ref.read(poseDebugOverlayProvider)) {
+      _probe.observe(frame);
+      ref.read(poseUnitReportProvider.notifier).state = _probe.report;
+    }
 
     final classifiers = ref.read(activeClassifiersProvider);
     final result = evaluateGated(

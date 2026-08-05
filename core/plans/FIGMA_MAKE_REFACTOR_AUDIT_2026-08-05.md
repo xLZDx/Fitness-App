@@ -231,6 +231,17 @@ i.e. 807 frames, with landmark coordinates far outside the normalised `0..1` ran
 is a coordinate-projection defect, and it explains overlay misalignment (§18.10). The
 design spec quotes the string verbatim as a defect (`tech-coach-module.md:307`).
 
+**CLOSED 2026-08-06 (gate F4).** The line is now behind `poseDebugOverlayProvider`,
+which defaults to `kDebugMode`; the probe no longer even measures in release.
+`test/features/form_check/debug_overlay_release_test.dart` is the test the master
+prompt §18.5 asks for by name, with a positive control on each half so neither
+assertion can pass by the page failing to build.
+
+The *measurement* it produced is a separate, still-open defect: those extents are
+outside the contract `pose_coordinate_space.dart` declares (`y ∈ [0,1]`,
+`x ∈ [0, aspectRatio]`), which is why the instrument was kept rather than deleted.
+Tracked under §18.10 overlay work, not under F4.
+
 ### 7.6 The app makes a cryptographic promise it does not keep
 
 `app_en.arb:194`: *"Photos are encrypted on your device with a key that never leaves the

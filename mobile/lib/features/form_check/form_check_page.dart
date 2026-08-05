@@ -332,12 +332,19 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
             ),
             const SizedBox(height: 16),
           ],
-          // The coordinate diagnostic. Deliberately on screen in a release
-          // build rather than behind `kDebugMode`: the measurement it exists to
-          // produce can only be taken on the operator's own phone, in the gym,
-          // with a real body in frame — a value that never leaves a debug build
-          // is a value nobody ever reads. It disappears once V0c has the number.
-          if (!ref.watch(poseUnitReportProvider).isEmpty) ...[
+          // The coordinate diagnostic, now behind a debug flag.
+          //
+          // It shipped in release on purpose: the measurement could only be
+          // taken on a real phone, in a gym, with a real body in frame, and a
+          // value that never leaves a debug build is a value nobody reads. That
+          // argument expired the moment the number arrived —
+          // `pose[pixels] n=807 x -0.466..1.968 (bound 0.667) y -2.173..3.015`,
+          // recorded in the R0 audit §7.5. What it measured is still an open
+          // defect (those extents are outside the contract
+          // `pose_coordinate_space.dart` declares), so the instrument stays;
+          // only its exposure to users goes.
+          if (ref.watch(poseDebugOverlayProvider) &&
+              !ref.watch(poseUnitReportProvider).isEmpty) ...[
             Text(
               ref.watch(poseUnitReportProvider).summary,
               key: const Key('form-check-unit-probe'),
