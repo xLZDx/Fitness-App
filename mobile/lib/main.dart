@@ -159,7 +159,21 @@ Future<void> main() async {
   try {
     await FirebaseAppCheck.instance.activate(
       providerAndroid: kDebugMode
-          ? const AndroidDebugProvider()
+          // Token passed in rather than auto-generated. Left to itself the
+          // SDK mints a fresh secret on every fresh install and prints it to
+          // logcat, and each one has to be pasted into the console by hand
+          // before that install can talk to anything. One token, registered
+          // once via the App Check API, is reused by every debug build on
+          // every machine.
+          //
+          // Supplied at run time, never committed:
+          //   flutter run --dart-define=APP_CHECK_DEBUG_TOKEN=<value>
+          // Empty by default, and an empty string makes the SDK fall back to
+          // generating its own — so a developer who has not been given the
+          // token still gets a working (if manual) path rather than a crash.
+          ? const AndroidDebugProvider(
+              debugToken: String.fromEnvironment('APP_CHECK_DEBUG_TOKEN'),
+            )
           : const AndroidPlayIntegrityProvider(),
     );
   } catch (e, st) {

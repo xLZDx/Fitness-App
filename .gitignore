@@ -82,3 +82,9 @@ data/gym_photos_*/
 # Python bytecode from the catalog build scripts.
 __pycache__/
 *.pyc
+
+# F0.6 — App Check debug token, passed via --dart-define at run time.
+# Never committed: it is the secret that lets a build bypass Play Integrity.
+.env
+.env.*
+!.env.example
