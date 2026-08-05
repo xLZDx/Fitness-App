@@ -44,7 +44,7 @@ mobile/ios/Runner/GeneratedPluginRegistrant.*
 mobile/android/.gradle/
 mobile/android/captures/
 mobile/android/local.properties
-mobile/android/key.properties
+mobile/android/key.properties*
 mobile/android/app/release/
 mobile/android/app/debug/
 mobile/android/.idea/

@@ -8,6 +8,12 @@ GeneratedPluginRegistrant.java
 
 # Remember to never publicly share your keystore.
 # See https://flutter.dev/to/reference-keystore
-key.properties
+#
+# The trailing * is load-bearing, not tidiness: an exact-match `key.properties`
+# leaves `key.properties.bak` / `.old` / `.orig` untracked-but-visible, and a
+# file holding live signing passwords is exactly the file someone backs up
+# before editing. That happened during R0 — a `.bak` made while fixing the
+# storeFile path showed up in `git status` and had to be caught by eye.
+key.properties*
 **/*.keystore
 **/*.jks
