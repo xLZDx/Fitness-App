@@ -170,9 +170,14 @@ protection authority. Write to the address above and it will be acted on.
 
 ## Children
 
-This app is not intended for anyone under 16, and data is not knowingly \
-collected from anyone under that age. If you believe a child has an account \
-here, write and it will be deleted.
+An account of your own requires you to be at least 16, and data is not \
+knowingly collected from anyone younger. If you believe a younger child has an \
+account here, write and it will be deleted.
+
+The exercises themselves carry no age restriction. A parent or guardian \
+training a younger child from their own account is the intended way to do \
+that -- the limit is on the account, which holds health answers and a payment \
+method, not on who may exercise.
 
 ## Changes to this policy
 
@@ -291,9 +296,14 @@ Stripe хранит собственные платёжные записи ст�
 
 ## Дети
 
-Приложение не предназначено для лиц младше 16 лет, и данные о них осознанно \
-не собираются. Если вы считаете, что учётную запись здесь завёл ребёнок, \
-напишите -- она будет удалена.
+Собственный аккаунт можно завести с 16 лет; данные тех, кто младше, осознанно \
+не собираются. Если вы считаете, что учётную запись здесь завёл ребёнок \
+младше, напишите -- она будет удалена.
+
+Сами упражнения возрастных ограничений не имеют. Родитель или опекун, \
+тренирующий ребёнка младше со своего аккаунта, -- это предусмотренный \
+сценарий: ограничение стоит на аккаунте, в котором лежат ответы о здоровье и \
+привязана оплата, а не на том, кому можно заниматься.
 
 ## Изменения этой политики
 
@@ -333,7 +343,12 @@ arrangement.
 
 ## Age
 
-You must be at least 16 years old to use the app.
+You need to be at least 16 to have an account of your own.
+
+That is a limit on the account, not on the exercises. The account holds health \
+answers and a payment method, which is what the age rule is about; nothing in \
+the catalogue is age-restricted, and a parent or guardian is free to train a \
+younger child using their own account.
 
 ## Your account
 
@@ -436,7 +451,12 @@ Fitness App делает и поддерживает один независим
 
 ## Возраст
 
-Пользоваться приложением можно с 16 лет.
+Собственный аккаунт можно завести с 16 лет.
+
+Это ограничение на аккаунт, а не на упражнения. В аккаунте лежат ответы о \
+здоровье и привязана оплата -- именно поэтому есть возрастное правило; в \
+каталоге нет ничего с возрастным ограничением, и родитель или опекун вправе \
+тренировать ребёнка младше со своего аккаунта.
 
 ## Ваша учётная запись
 

@@ -131,7 +131,7 @@ here as deliberate "No" answers:
 |---|---|
 | Privacy policy URL | <https://fitness-app-korostelev.web.app/privacy> |
 | Terms of service (not required by Play, linked in-app and public) | <https://fitness-app-korostelev.web.app/terms> |
-| Target age group | 16+ — matches the age stated in both documents |
+| Target age group | **16+**, and no younger group. Declaring any group that includes children pulls the app into Play's Families Policy — *"Any apps that have at least one target audience age group that includes children must comply with Google Play's Families Policy Requirements"* — which requires parental consent for exactly the sensitive data this app's core feature collects. Both documents state 16, and both say plainly that the limit is on the account, not on who may exercise. |
 | Health apps declaration | Expect one. The app collects health data and gives exercise guidance; the Terms state plainly that it is not medical advice and that the catalog was not physiotherapist-reviewed. |
 
 ---
