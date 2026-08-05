@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — Fitness App</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 20px 72px;
+    font: 16px/1.65 -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+    color: #F1ECFF;
+    background: linear-gradient(160deg, #16072E 0%, #050214 55%, #0B1233 100%);
+    background-attachment: fixed;
+  }
+  main { max-width: 720px; margin: 0 auto; }
+  .head {
+    display: flex; flex-wrap: wrap; gap: 12px;
+    align-items: baseline; justify-content: space-between;
+    padding-bottom: 18px; margin-bottom: 26px;
+    border-bottom: 1px solid rgba(255,255,255,.12);
+  }
+  h1 { margin: 0; font-size: 27px; letter-spacing: -.02em; }
+  h2 {
+    margin: 34px 0 10px; font-size: 18px; letter-spacing: -.01em;
+    color: #C2F562;
+  }
+  p, li { color: rgba(241,236,255,.78); }
+  p { margin: 0 0 14px; }
+  ul { margin: 0 0 14px; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  strong { color: #F1ECFF; }
+  .stamp { font-size: 13px; color: rgba(241,236,255,.42); }
+  .switch { display: flex; gap: 6px; }
+  .switch button {
+    font: inherit; font-size: 13px; cursor: pointer;
+    padding: 5px 12px; border-radius: 999px;
+    color: rgba(241,236,255,.62);
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.10);
+  }
+  .switch button[aria-pressed="true"] {
+    color: #050214; background: #C2F562; border-color: transparent;
+  }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+  <main>
+    <div class="head">
+      <h1 data-t data-en="Privacy Policy" data-ru="Политика конфиденциальности">Privacy Policy</h1>
+      <div class="switch" role="group" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true">English</button>
+        <button type="button" data-lang="ru" aria-pressed="false">Русский</button>
+      </div>
+    </div>
+    <p class="stamp" data-t
+       data-en="Last updated 5 August 2026" data-ru="Обновлено 5 августа 2026">Last updated 5 August 2026</p>
+
+    <section data-body="en">
+      <h2>Who is responsible</h2>
+      <p>Fitness App is built and run by one independent developer, based in Chisinau, Moldova. There is no company and no nonprofit behind it. Questions about this policy or about your data: korostelevivan@gmail.com.</p>
+      <h2>The short version</h2>
+      <ul><li>Your health answers are used to filter exercises away from your injuries. They are never sold, and they are never sent to an AI model.</li><li>Photos you take of gym machines are sent to Google&#x27;s Gemini to be recognised. Other people may be in shot.</li><li>Everything is stored in Google Cloud data centres in the European Union.</li><li>You can export all of it, and you can delete all of it permanently, from inside the app.</li></ul>
+      <h2>What is collected</h2>
+      <p><strong>Your account.</strong> You can sign in anonymously or with Google. An anonymous account carries no name and no email address. If you sign in with Google, the app receives the name, email address and profile picture on that Google account.</p>
+      <p><strong>Health and fitness answers.</strong> The onboarding questionnaire asks for age, gender, height, current and target weight, and activity level; medical conditions, allergies, medications, injuries, physical limitations, recent surgeries, blood pressure, and anything else you choose to type in; smoking, alcohol, sleep, stress, diet, and how active your work is; and your goals, training experience and equipment access.</p>
+      <p>Under the GDPR and most comparable laws, much of that is health data -- a special category with extra protection. It is asked for one purpose: to keep movements that conflict with an injury or condition out of your plan, and to size that plan to you. Every field can be left blank, and the app still works.</p>
+      <p><strong>What you do in the app.</strong> Completed workouts with sets and weights, statistics, scheduled sessions, machines you have scanned, notes on those machines, and exercises the AI generated for you.</p>
+      <p><strong>Payments.</strong> Card details go to Stripe and never reach this app&#x27;s servers. What is stored here is your subscription tier and status, plus the Stripe customer and subscription identifiers needed to manage it.</p>
+      <p><strong>Camera and photos.</strong> To identify a gym machine, the photo is resized and sent to Google&#x27;s Gemini model. If that call fails, a smaller model running on your phone is used instead. The photo itself is not kept afterwards -- what is kept is which machine was identified. A gym is a shared space, so be aware that other people may be in the frame.</p>
+      <p>Progress photos are different: they stay on your phone. There is no server-side storage for them at all.</p>
+      <p><strong>Crash reports.</strong> When the app crashes, Firebase Crashlytics receives the device model, the OS version and the stack trace. It is switched off in development builds.</p>
+      <h2>What is not done</h2>
+      <ul><li>Your data is not sold, and never has been.</li><li>Health answers are never sent to any AI model. The in-app coach receives only the name of the machine you asked about and your language -- nothing else.</li><li>There is no advertising, no advertising identifier is collected, and no third-party analytics or attribution SDK is built into the app.</li></ul>
+      <h2>Where it is stored, and who else touches it</h2>
+      <p>Data lives in Google Cloud&#x27;s eur3 multi-region, inside the European Union, and the server code that reads it runs in europe-west1. Firestore security rules restrict every document under your account to you alone.</p>
+      <p>Two processors are involved, and no others: Google (Firebase Authentication, Firestore, Crashlytics, App Check, and the Gemini model) and Stripe (payments).</p>
+      <h2>The supporter wall is public, and only by your own request</h2>
+      <p>If you opt in, a display name you choose (up to 60 characters) and an optional message (up to 200 characters) become readable by anyone. Leave the name blank and the entry shows as anonymous. Opting out removes it. Nothing else about you is ever published.</p>
+      <h2>How long it is kept</h2>
+      <p>Your data is kept while your account exists, and goes when you delete it. There is no separate retention timer and no archive copy kept afterwards.</p>
+      <p>Stripe keeps its own payment records for as long as its own legal obligations require. Those are outside this app&#x27;s control and cannot be deleted from here.</p>
+      <h2>Your rights</h2>
+      <p><strong>Export</strong> -- Settings, then &quot;Export your data&quot;. You get everything, in a machine-readable file.</p>
+      <p><strong>Deletion</strong> -- Settings, then &quot;Delete account&quot;. This cancels any active subscription, erases every document under your account, and then deletes the account itself. It is irreversible: afterwards there is nothing left to restore, including for us.</p>
+      <p>If you are in the EU, the UK, or anywhere with comparable law, you can also object to processing, ask for a correction, and complain to your data protection authority. Write to the address above and it will be acted on.</p>
+      <h2>Children</h2>
+      <p>This app is not intended for anyone under 16, and data is not knowingly collected from anyone under that age. If you believe a child has an account here, write and it will be deleted.</p>
+      <h2>Changes to this policy</h2>
+      <p>The date at the top is the version. There is no in-app notification when this text changes -- if that matters to you, this page is where to check.</p>
+    </section>
+    <section data-body="ru" hidden>
+      <h2>Кто отвечает за приложение</h2>
+      <p>Fitness App делает и поддерживает один независимый разработчик, Кишинёв, Молдова. За приложением нет ни компании, ни некоммерческой организации. Вопросы по этой политике и по вашим данным: korostelevivan@gmail.com.</p>
+      <h2>Коротко</h2>
+      <ul><li>Ответы о здоровье нужны, чтобы убирать из плана упражнения, которые конфликтуют с вашими травмами. Их не продают и не отправляют в ИИ-модель.</li><li>Фотографии тренажёров, которые вы делаете, отправляются в Google Gemini для распознавания. В кадр могут попасть посторонние люди.</li><li>Все данные хранятся в дата-центрах Google Cloud на территории Европейского союза.</li><li>Всё это можно выгрузить и можно безвозвратно удалить прямо из приложения.</li></ul>
+      <h2>Какие данные собираются</h2>
+      <p><strong>Учётная запись.</strong> Войти можно анонимно или через Google. У анонимной учётной записи нет ни имени, ни адреса почты. При входе через Google приложение получает имя, адрес почты и фотографию профиля этой учётной записи Google.</p>
+      <p><strong>Ответы о здоровье и физической форме.</strong> Анкета при первом запуске спрашивает возраст, пол, рост, текущий и целевой вес, уровень активности; заболевания, аллергии, лекарства, травмы, физические ограничения, недавние операции, давление и всё, что вы допишете сами; курение, алкоголь, сон, уровень стресса, питание и насколько подвижная у вас работа; а также цели, опыт тренировок и доступное оборудование.</p>
+      <p>По GDPR и большинству сопоставимых законов значительная часть этого -- данные о здоровье, особая категория с усиленной защитой. Они запрашиваются ради одного: убирать из вашего плана движения, которые конфликтуют с травмой или заболеванием, и подбирать нагрузку под вас. Любое поле можно оставить пустым, приложение продолжит работать.</p>
+      <p><strong>Что вы делаете в приложении.</strong> Завершённые тренировки с подходами и весами, статистика, запланированные занятия, отсканированные тренажёры, заметки по ним и упражнения, сгенерированные ИИ.</p>
+      <p><strong>Платежи.</strong> Данные карты уходят в Stripe и никогда не попадают на серверы этого приложения. Здесь хранятся уровень и статус подписки, а также идентификаторы клиента и подписки Stripe, нужные для управления ею.</p>
+      <p><strong>Камера и фотографии.</strong> Чтобы определить тренажёр, фотография уменьшается и отправляется в модель Google Gemini. Если этот вызов не удался, используется меньшая модель на самом телефоне. Сама фотография потом не хранится -- сохраняется только то, какой тренажёр был определён. Зал -- общее пространство, помните, что в кадр могут попасть посторонние.</p>
+      <p>С фотографиями прогресса иначе: они остаются на телефоне. Серверного хранилища для них нет вообще.</p>
+      <p><strong>Отчёты о сбоях.</strong> При падении приложения Firebase Crashlytics получает модель устройства, версию ОС и трассировку стека. В отладочных сборках это отключено.</p>
+      <h2>Чего не происходит</h2>
+      <ul><li>Ваши данные не продаются и никогда не продавались.</li><li>Ответы о здоровье не отправляются ни в какую ИИ-модель. Встроенный советчик получает только название тренажёра, о котором вы спросили, и язык -- больше ничего.</li><li>В приложении нет рекламы, не собирается рекламный идентификатор и не встроено ни одного стороннего SDK аналитики или атрибуции.</li></ul>
+      <h2>Где данные хранятся и кто ещё их касается</h2>
+      <p>Данные лежат в мультирегионе Google Cloud eur3, на территории Европейского союза, а серверный код, который их читает, работает в europe-west1. Правила безопасности Firestore ограничивают доступ к каждому документу вашей учётной записи только вами.</p>
+      <p>Задействованы два обработчика и никакие другие: Google (Firebase Authentication, Firestore, Crashlytics, App Check и модель Gemini) и Stripe (платежи).</p>
+      <h2>Стена поддержки публична -- и только по вашей просьбе</h2>
+      <p>Если вы согласились её показывать, выбранное вами отображаемое имя (до 60 символов) и необязательное сообщение (до 200 символов) становятся доступны всем. Оставьте имя пустым -- запись будет анонимной. Отказ убирает её. Ничего другого о вас не публикуется никогда.</p>
+      <h2>Сколько данные хранятся</h2>
+      <p>Данные хранятся, пока существует ваша учётная запись, и исчезают, когда вы её удаляете. Отдельного таймера хранения нет, архивной копии после удаления не остаётся.</p>
+      <p>Stripe хранит собственные платёжные записи столько, сколько требуют его собственные обязательства. Это вне контроля приложения и отсюда не удаляется.</p>
+      <h2>Ваши права</h2>
+      <p><strong>Выгрузка</strong> -- «Настройки», затем «Выгрузить мои данные». Вы получаете всё, в машиночитаемом файле.</p>
+      <p><strong>Удаление</strong> -- «Настройки», затем «Удалить аккаунт». Это отменяет активную подписку, стирает все документы вашей учётной записи, а затем удаляет саму запись. Действие необратимо: после него восстанавливать нечего, в том числе и нам.</p>
+      <p>Если вы в ЕС, Великобритании или там, где действует сопоставимый закон, вы также вправе возразить против обработки, потребовать исправления и подать жалобу в свой надзорный орган по защите данных. Напишите по адресу выше -- обращение будет отработано.</p>
+      <h2>Дети</h2>
+      <p>Приложение не предназначено для лиц младше 16 лет, и данные о них осознанно не собираются. Если вы считаете, что учётную запись здесь завёл ребёнок, напишите -- она будет удалена.</p>
+      <h2>Изменения этой политики</h2>
+      <p>Дата вверху -- это версия. Уведомления в приложении об изменении этого текста нет; если это важно, проверять нужно на этой странице.</p>
+    </section>
+  </main>
+<script>
+  // No framework, no fetch: both languages ship in the document, so switching
+  // is a `hidden` toggle that also works with JS disabled for whichever
+  // language rendered server-side (English).
+  (function () {
+    var buttons = document.querySelectorAll('.switch button');
+    function apply(lang) {
+      document.documentElement.lang = lang;
+      document.querySelectorAll('[data-body]').forEach(function (s) {
+        s.hidden = s.getAttribute('data-body') !== lang;
+      });
+      document.querySelectorAll('[data-t]').forEach(function (el) {
+        el.textContent = el.getAttribute('data-' + lang);
+      });
+      buttons.forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
+      });
+      try { localStorage.setItem('legal-lang', lang); } catch (e) {}
+    }
+    buttons.forEach(function (b) {
+      b.addEventListener('click', function () { apply(b.dataset.lang); });
+    });
+    var saved = null;
+    try { saved = localStorage.getItem('legal-lang'); } catch (e) {}
+    apply(saved || ((navigator.language || 'en').slice(0, 2) === 'ru' ? 'ru' : 'en'));
+  })();
+</script>
+</body>
+</html>

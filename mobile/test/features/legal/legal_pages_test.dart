@@ -17,6 +17,12 @@ import 'package:fitness_app/features/legal/terms_page.dart';
 /// pointing anywhere — the same shape of claim S0a spent two gates removing
 /// from the injury filter: a sentence asserting something the product does
 /// not actually provide.
+///
+/// P0 finished the job: the bodies are real documents now, generated from
+/// `scripts/legal/legal_text.py` into both the .arb files and the two public
+/// URLs Google Play requires. This file's assertions moved with them — from
+/// "the placeholder flag is still true" to statements about the rendered text,
+/// because the flag was only ever a proxy for what the text says.
 
 Widget _host(Widget child) => MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -32,6 +38,17 @@ void main() {
     });
   });
 
+  /// Reads every `Text`/`Text.rich` on screen back as one string, so an
+  /// assertion can be made about the document rather than about a widget tree
+  /// whose shape is an implementation detail of [LegalBody].
+  String renderedText(WidgetTester tester) {
+    final buffer = StringBuffer();
+    for (final w in tester.widgetList<Text>(find.byType(Text))) {
+      buffer.writeln(w.data ?? w.textSpan?.toPlainText() ?? '');
+    }
+    return buffer.toString();
+  }
+
   group('TermsPage', () {
     testWidgets('renders under MaterialApp', (tester) async {
       await tester.pumpWidget(_host(const TermsPage()));
@@ -39,18 +56,34 @@ void main() {
       expect(find.byType(TermsPage), findsOneWidget);
     });
 
-    testWidgets('shows the placeholder notice while the flag is true',
-        (tester) async {
-      // Hardcoded to `findsOneWidget`, not
-      // `kIsPlaceholderContent ? findsOneWidget : findsNothing` -- that form
-      // asserts the render against the same flag the widget's own `if` reads,
-      // so it passes unconditionally regardless of whether the gate actually
-      // works. The 'release readiness' group below is what pins the flag's
-      // value; this one is what pins the widget to it.
+    testWidgets('renders the real document, not a stub', (tester) async {
       await tester.pumpWidget(_host(const TermsPage()));
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('terms-placeholder-notice')),
-          findsOneWidget);
+      final text = renderedText(tester);
+      expect(find.byKey(const Key('terms-last-updated')), findsOneWidget);
+      // Headings prove `LegalBody` actually parsed the `## ` markup rather
+      // than dumping one undifferentiated blob.
+      expect(text, contains('What this app is, and what it is not'));
+      expect(text, contains('Subscriptions and payment'));
+      expect(text.length, greaterThan(2000));
+    });
+
+    testWidgets('states the two claims S0b removed, in their corrected form',
+        (tester) async {
+      // These are the regression this file exists for now. Both sentences are
+      // corrections of claims the app used to make and could not support: the
+      // catalog was never physiotherapist-reviewed (`app_en.arb:267` had
+      // already been fixed to say so while `:1353` still claimed otherwise),
+      // and there is no 501(c)(3) and no fiscal sponsor, so a subscription was
+      // never a tax-deductible donation. A future edit that softens either one
+      // back toward the marketing version fails here rather than reaching a
+      // store listing.
+      await tester.pumpWidget(_host(const TermsPage()));
+      await tester.pumpAndSettle();
+      final text = renderedText(tester);
+      expect(text, contains('has not been reviewed by a physiotherapist'));
+      expect(text, contains('not tax-deductible donations'));
+      expect(text, contains('no nonprofit status'));
     });
   });
 
@@ -61,31 +94,48 @@ void main() {
       expect(find.byType(PrivacyPage), findsOneWidget);
     });
 
-    testWidgets('shows the placeholder notice while the flag is true',
-        (tester) async {
-      // See TermsPage's identical test above for why this is hardcoded rather
-      // than re-checking the same flag the widget itself reads.
+    testWidgets('renders the real document, not a stub', (tester) async {
       await tester.pumpWidget(_host(const PrivacyPage()));
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('privacy-placeholder-notice')),
-          findsOneWidget);
+      final text = renderedText(tester);
+      expect(find.byKey(const Key('privacy-last-updated')), findsOneWidget);
+      expect(text, contains('What is collected'));
+      expect(text, contains('Your rights'));
+      expect(text.length, greaterThan(2000));
+    });
+
+    testWidgets('discloses the disclosures that cost something to make',
+        (tester) async {
+      // A privacy policy is easy to write favourably. These three lines are
+      // the ones a template would have omitted or buried, and each is a fact
+      // about this code: the scanner really does upload the frame
+      // (`gemini_equipment_service.dart:37-48`), the supporter wall really is
+      // world-readable (`firestore.rules:55`), and deletion really is
+      // unrecoverable (`index.ts:1169-1207`). Asserting them here means the
+      // policy cannot quietly lose them.
+      await tester.pumpWidget(_host(const PrivacyPage()));
+      await tester.pumpAndSettle();
+      final text = renderedText(tester);
+      expect(text, contains("sent to Google's Gemini"));
+      expect(text, contains('Other people may be in shot'));
+      expect(text, contains('It is irreversible'));
     });
   });
 
   group('release readiness', () {
-    // Not a warning that fires forever and gets ignored — a single assertion
-    // that names the two flags a real release must have flipped. This is
-    // meant to start failing the moment someone flips a flag without also
-    // replacing the body, catching a stale "reviewed" claim on real text that
-    // never happened.
-    test('both content flags agree: this build is not release-ready legally',
-        () {
-      expect(TermsPage.kIsPlaceholderContent, isTrue,
-          reason: 'placeholder legal text must not ship to a store listing '
-              'or to anyone but the operator');
-      expect(PrivacyPage.kIsPlaceholderContent, isTrue,
-          reason: 'placeholder legal text must not ship to a store listing '
-              'or to anyone but the operator');
+    // Replaces a pair of `kIsPlaceholderContent` assertions. Those pinned a
+    // boolean; this pins the artifact the boolean was standing in for, which
+    // is what a stale flag could always have lied about.
+    testWidgets('neither document still says it is a placeholder',
+        (tester) async {
+      for (final page in <Widget>[const TermsPage(), const PrivacyPage()]) {
+        await tester.pumpWidget(_host(page));
+        await tester.pumpAndSettle();
+        final text = renderedText(tester).toLowerCase();
+        expect(text, isNot(contains('placeholder')),
+            reason: 'placeholder legal text must not ship to a store listing');
+        expect(text, isNot(contains('pending the operator')));
+      }
     });
   });
 
