@@ -49,25 +49,16 @@ class FirestoreProfileRepository implements ProfileRepository {
         activityLevel:
             _enumByName(ActivityLevel.values, personal['activityLevel']),
       ),
-      health: HealthHistory(
-        conditions: List<String>.from(health['conditions'] ?? const []),
-        allergies: List<String>.from(health['allergies'] ?? const []),
-        medications: List<String>.from(health['medications'] ?? const []),
-        // Same single implementation on the way back, and it no longer casts
-        // straight into required Strings: a document written before this field
-        // existed, or by a hand-edit, used to throw here rather than degrade.
-        injuries: ((health['injuries'] as List?) ?? const [])
-            .whereType<Map>()
-            .map((e) => Injury.fromJson(Map<String, dynamic>.from(e)))
-            .toList(),
-        physicalLimitations:
-            List<String>.from(health['physicalLimitations'] ?? const []),
-        recentSurgeries:
-            List<String>.from(health['recentSurgeries'] ?? const []),
-        bloodPressure:
-            _enumByName(BloodPressure.values, health['bloodPressure']),
-        otherConcerns: health['otherConcerns'] as String?,
-      ),
+      // One reader for this block, on the model. The inlined copy that used to
+      // live here was the second implementation of a shape that also had a map
+      // literal in `UserProfile.toJson` -- the drift `Injury.fromJson` was
+      // extracted to stop, repeated one level up. The local store that keeps
+      // this block off the server needs the same reader, which is what forced
+      // the issue.
+      //
+      // Documents written before H1a still carry a populated `health` here,
+      // and are still parsed. H1b is what empties them.
+      health: HealthHistory.fromJson(Map<String, dynamic>.from(health)),
       goals: FitnessGoals(
         weightLoss: goals['weightLoss'] ?? false,
         muscleGain: goals['muscleGain'] ?? false,

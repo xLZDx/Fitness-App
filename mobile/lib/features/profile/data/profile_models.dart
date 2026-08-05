@@ -244,6 +244,19 @@ class PersonalInfo {
       );
 }
 
+/// Resolves an enum value from its `name`, or null for anything else.
+///
+/// Generic where [Injury._regionByName] is not, because that one predates it
+/// and is reachable only from `Injury`. New readers use this; the older one is
+/// left alone rather than churned inside an unrelated gate.
+T? _enumByNameOrNull<T extends Enum>(List<T> values, dynamic name) {
+  if (name is! String) return null;
+  for (final v in values) {
+    if (v.name == name) return v;
+  }
+  return null;
+}
+
 class HealthHistory {
   const HealthHistory({
     this.conditions = const [],
@@ -266,6 +279,53 @@ class HealthHistory {
   final String? otherConcerns;
 
   static const empty = HealthHistory();
+
+  /// The single (de)serializer for this block, for the same reason
+  /// [Injury.toJson] is: the shape had two implementations — the map literal
+  /// inside [UserProfile.toJson] and the hand-inlined reader in
+  /// `FirestoreProfileRepository._fromMap` — and two implementations of one
+  /// shape drift. Both call these now, and so does the local store that keeps
+  /// this block off the server.
+  Map<String, dynamic> toJson() => {
+        'conditions': conditions,
+        'allergies': allergies,
+        'medications': medications,
+        'injuries': injuries.map((i) => i.toJson()).toList(),
+        'physicalLimitations': physicalLimitations,
+        'recentSurgeries': recentSurgeries,
+        'bloodPressure': bloodPressure?.name,
+        'otherConcerns': otherConcerns,
+      };
+
+  /// Tolerant by design: a document written before a field existed, or by
+  /// hand, must degrade to the empty value rather than throw. The reader this
+  /// replaces used to cast straight into required Strings and did throw.
+  static HealthHistory fromJson(Map<String, dynamic> j) => HealthHistory(
+        conditions: List<String>.from(j['conditions'] ?? const []),
+        allergies: List<String>.from(j['allergies'] ?? const []),
+        medications: List<String>.from(j['medications'] ?? const []),
+        injuries: ((j['injuries'] as List?) ?? const [])
+            .whereType<Map>()
+            .map((e) => Injury.fromJson(Map<String, dynamic>.from(e)))
+            .toList(),
+        physicalLimitations:
+            List<String>.from(j['physicalLimitations'] ?? const []),
+        recentSurgeries: List<String>.from(j['recentSurgeries'] ?? const []),
+        bloodPressure: _enumByNameOrNull(BloodPressure.values, j['bloodPressure']),
+        otherConcerns: j['otherConcerns'] as String?,
+      );
+
+  /// True when nothing was ever answered. Used to decide whether a locally
+  /// stored block should win over whatever the server still holds.
+  bool get isEmpty =>
+      conditions.isEmpty &&
+      allergies.isEmpty &&
+      medications.isEmpty &&
+      injuries.isEmpty &&
+      physicalLimitations.isEmpty &&
+      recentSurgeries.isEmpty &&
+      bloodPressure == null &&
+      (otherConcerns == null || otherConcerns!.isEmpty);
 
   HealthHistory copyWith({
     List<String>? conditions,
@@ -489,16 +549,7 @@ class UserProfile {
           'weightTargetKg': personal.weightTargetKg,
           'activityLevel': personal.activityLevel?.name,
         },
-        'health': {
-          'conditions': health.conditions,
-          'allergies': health.allergies,
-          'medications': health.medications,
-          'injuries': health.injuries.map((i) => i.toJson()).toList(),
-          'physicalLimitations': health.physicalLimitations,
-          'recentSurgeries': health.recentSurgeries,
-          'bloodPressure': health.bloodPressure?.name,
-          'otherConcerns': health.otherConcerns,
-        },
+        'health': health.toJson(),
         'goals': {
           'weightLoss': goals.weightLoss,
           'muscleGain': goals.muscleGain,

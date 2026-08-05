@@ -42,7 +42,9 @@ import 'features/marketplace/data/coach_marketplace_service.dart';
 import 'features/marketplace/state/marketplace_providers.dart';
 import 'features/moments/data/prefs_moment_repository.dart';
 import 'features/moments/state/moment_providers.dart';
+import 'features/profile/data/device_health_profile_repository.dart';
 import 'features/profile/data/firestore_profile_repository.dart';
+import 'features/profile/data/local_sensitive_store.dart';
 import 'features/profile/state/profile_providers.dart';
 import 'features/subscription/data/cloud_functions_stripe_service.dart';
 import 'features/subscription/data/firestore_subscription_repository.dart';
@@ -191,6 +193,12 @@ Future<void> main() async {
   // the first cold-start launch counts.
   final momentRepo = await PrefsMomentRepository.open();
 
+  // H1a. The device-only half of the profile -- health history, plus smoking
+  // and alcohol. Opened here rather than lazily because the repository that
+  // wraps Firestore needs it at construction, and the profile is watched from
+  // the first authenticated frame.
+  final sensitiveStore = await PrefsSensitiveStore.open();
+
   // Settings must be resolved BEFORE the first frame: theme and locale are
   // read during the initial build, and loading them asynchronously would
   // flash the wrong theme and the wrong language before settling.
@@ -210,8 +218,16 @@ Future<void> main() async {
       overrides: [
         // Auth + profile + subscriptions
         authRepositoryProvider.overrideWith((_) => FirebaseAuthRepository()),
-        profileRepositoryProvider
-            .overrideWith((_) => FirestoreProfileRepository()),
+        // Firestore for everything except the health block, which never
+        // leaves the device -- see DeviceHealthProfileRepository. Nothing on
+        // the server read it, so holding it there bought GDPR Article 9
+        // exposure and a Play "Health info" declaration for nothing.
+        profileRepositoryProvider.overrideWith(
+          (_) => DeviceHealthProfileRepository(
+            FirestoreProfileRepository(),
+            sensitiveStore,
+          ),
+        ),
         subscriptionRepositoryProvider
             .overrideWith((_) => FirestoreSubscriptionRepository()),
         stripeCheckoutServiceProvider
