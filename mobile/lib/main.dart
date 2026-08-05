@@ -139,13 +139,29 @@ Future<void> main() async {
   //
   // Wrapped for the same reason as the Crashlytics toggle above, and for
   // this call the risk is concrete rather than hypothetical: Play Integrity
-  // needs Google Play Services (absent on plain AOSP emulator images) and
-  // App Check has no debug provider configured here, so `activate()`
-  // throwing on exactly the images used for routine dev/QA testing is a
-  // realistic, not edge-case, outcome. Monitoring is explicitly the
-  // non-critical half of this gate -- losing it must never cost boot.
+  // needs Google Play Services (absent on plain AOSP emulator images), so
+  // `activate()` throwing on exactly the images used for routine dev/QA
+  // testing is a realistic, not edge-case, outcome. Monitoring is explicitly
+  // the non-critical half of this gate -- losing it must never cost boot.
+  //
+  // F0·6: debug builds attest through the debug provider instead of Play
+  // Integrity. This is not convenience — it is what makes enforcement
+  // possible at all. Play Integrity only attests builds distributed through
+  // Google Play, so once enforcement is on, a locally-built debug APK is
+  // indistinguishable from an attacker and every Gemini call from it is
+  // refused. The debug provider prints a token on first run; registering
+  // that token in the console (App Check -> Apps -> Manage debug tokens)
+  // is what keeps development working after enforcement.
+  //
+  // Release builds are untouched by this branch and keep Play Integrity,
+  // which is the whole point: the exemption cannot ship to users, because
+  // `kDebugMode` is compiled out of a release build entirely.
   try {
-    await FirebaseAppCheck.instance.activate();
+    await FirebaseAppCheck.instance.activate(
+      providerAndroid: kDebugMode
+          ? const AndroidDebugProvider()
+          : const AndroidPlayIntegrityProvider(),
+    );
   } catch (e, st) {
     debugPrint('R0: App Check activate() failed, continuing without it: $e');
     FirebaseCrashlytics.instance.recordError(e, st, fatal: false);
