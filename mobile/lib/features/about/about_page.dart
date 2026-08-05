@@ -5,9 +5,14 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 
-/// "About / Mission" page. Explains the nonprofit framing in plain
-/// language, lists the principles that bind the org, and offers two
-/// CTAs: support recurring (-> /subscription) or learn more (donor wall).
+/// "About / Mission" page. States the mission in plain language, lists
+/// the principles the product holds itself to, and offers two CTAs:
+/// support recurring (-> /subscription) or learn more (supporter wall).
+///
+/// S0b: the organisational claims this page used to make (nonprofit,
+/// fiscal sponsorship, 501(c)(3) pending, audited financials) are gone —
+/// none of them were true. The mission statement and the spend breakdown
+/// stay, because neither depends on a legal status the product lacks.
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
 

@@ -18,13 +18,13 @@ void main() {
       expect(back, original);
     });
 
-    test('falls back to "Anonymous donor" on empty name', () {
+    test('falls back to "Anonymous supporter" on empty name', () {
       final back = DonorWallEntry.fromJson('u1', const {
         'displayName': '   ',
         'tier': 'supporter',
         'since': '2026-05-01T00:00:00.000Z',
       });
-      expect(back.displayName, 'Anonymous donor');
+      expect(back.displayName, 'Anonymous supporter');
     });
   });
 

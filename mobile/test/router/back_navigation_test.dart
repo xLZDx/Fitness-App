@@ -130,8 +130,8 @@ void main() {
 
       // Tap the real (converted) call site in about_page.dart, which now
       // pushes /donors instead of replacing the stack with it.
-      await tester.scrollUntilVisible(find.text('See our donor wall'), 200);
-      await tester.tap(find.text('See our donor wall'));
+      await tester.scrollUntilVisible(find.text('See our supporter wall'), 200);
+      await tester.tap(find.text('See our supporter wall'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 600));
       expect(find.byType(DonorWallPage), findsOneWidget);

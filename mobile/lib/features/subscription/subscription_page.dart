@@ -12,8 +12,12 @@ import 'state/subscription_providers.dart';
 /// "Support the mission" page (formerly Subscription).
 ///
 /// The Stripe billing model is unchanged — three tiers, monthly recurring,
-/// 14-day trial. The copy reframes those tiers as **recurring donations**
-/// to the nonprofit so the language matches the 501(c)(3) framing.
+/// 14-day trial.
+///
+/// S0b removed the donation/nonprofit framing this copy used to carry.
+/// There is no 501(c)(3) and no fiscal sponsorship, so calling a paid
+/// subscription a "tax-deductible recurring donation" was a claim the
+/// buyer could act on and be wrong about. These are subscriptions.
 ///
 /// Display labels per tier (model name → display label):
 ///   - free               → "Member"
@@ -133,7 +137,6 @@ class SubscriptionPage extends ConsumerWidget {
                 l10n.subFeatureLongProgress,
                 l10n.subFeatureSchedule,
                 l10n.subFeatureForYou,
-                l10n.subFeatureTaxDeductible,
               ],
               currentTier: tier,
               highlight: true,
@@ -954,7 +957,7 @@ class _PlanCardForPeriod extends ConsumerWidget {
     if (t == SubscriptionTier.standard) {
       switch (p) {
         case SubscriptionPeriod.monthly:
-          return l10n.subPriceMonthTaxDeductible(r'$9.99');
+          return l10n.subPriceMonth(r'$9.99');
         case SubscriptionPeriod.annual:
           return l10n.subPriceYearEffective(r'$59.99', r'$5');
         case SubscriptionPeriod.family2:
@@ -967,7 +970,7 @@ class _PlanCardForPeriod extends ConsumerWidget {
     }
     switch (p) {
       case SubscriptionPeriod.monthly:
-        return l10n.subPriceMonthTaxDeductible(r'$19.99');
+        return l10n.subPriceMonth(r'$19.99');
       case SubscriptionPeriod.annual:
         return l10n.subPriceYearEffective(r'$119.99', r'$9.99');
       case SubscriptionPeriod.lifetime:

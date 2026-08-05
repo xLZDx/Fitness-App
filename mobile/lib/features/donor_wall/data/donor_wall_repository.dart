@@ -75,7 +75,7 @@ class MockDonorWallRepository implements DonorWallRepository {
     _entries.add(DonorWallEntry(
       uid: uid,
       displayName: displayName.trim().isEmpty
-          ? 'Anonymous donor'
+          ? 'Anonymous supporter'
           : displayName.trim(),
       tier: 'supporter',
       since: DateTime.now(),
@@ -111,7 +111,7 @@ class MockDonorWallRepository implements DonorWallRepository {
         ),
         DonorWallEntry(
           uid: 'seed_3',
-          displayName: 'Anonymous donor',
+          displayName: 'Anonymous supporter',
           tier: 'champion',
           since: DateTime.now().subtract(const Duration(days: 5)),
           isLifetime: true,

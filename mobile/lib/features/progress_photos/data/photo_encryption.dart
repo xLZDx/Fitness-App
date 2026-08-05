@@ -13,7 +13,9 @@ import 'package:crypto/crypto.dart' as crypto;
 /// crypto guarantee. The threat model is "casual server-side reader / a
 /// well-intentioned engineer pulling the bucket"; not state-level
 /// adversaries. Document this on the upload screen — important because
-/// we promise *no data resale* in the nonprofit pitch.
+/// the About page promises *no data resale* (`aboutNoDataResaleEver`),
+/// and that promise outlives S0b: it was never tied to the nonprofit
+/// claim S0b removed, and it still has to hold.
 class PhotoEnvelope {
   const PhotoEnvelope({
     required this.cipherText,

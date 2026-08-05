@@ -35,7 +35,7 @@ class DonorWallEntry {
       displayName:
           (j['displayName'] as String?)?.trim().isNotEmpty == true
               ? j['displayName'] as String
-              : 'Anonymous donor',
+              : 'Anonymous supporter',
       tier: (j['tier'] as String?) ?? 'supporter',
       since: DateTime.tryParse(j['since'] as String? ?? '') ??
           DateTime.now(),

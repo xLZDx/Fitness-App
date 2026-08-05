@@ -1,6 +1,10 @@
-/// Curated, celebrity-led video plan. Each plan has a coach (in-kind
-/// donor — see NONPROFIT_PLAN.md), a 4–8-week structure, and a list of
-/// per-day workouts. Premium-tier feature.
+/// Curated, celebrity-led video plan. Each plan has a coach (contributing
+/// in kind), a 4–8-week structure, and a list of per-day workouts.
+/// Premium-tier feature.
+///
+/// The pointer to `NONPROFIT_PLAN.md` that used to sit here is gone: no
+/// such file exists anywhere in the repo, and S0b established there is no
+/// nonprofit for it to describe.
 class CelebrityPlan {
   const CelebrityPlan({
     required this.id,
