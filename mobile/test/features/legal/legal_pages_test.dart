@@ -120,6 +120,26 @@ void main() {
       expect(text, contains('Other people may be in shot'));
       expect(text, contains('It is irreversible'));
     });
+
+    /// H1c. The policy now makes a positive claim -- the health answers stay on
+    /// the device -- and a claim is only worth making while the code behind it
+    /// holds. `device_health_profile_repository_test.dart` is what proves the
+    /// behaviour; this is what stops the sentence being quietly dropped or
+    /// softened while that behaviour is still in place.
+    ///
+    /// It also pins the two consequences, which a favourable rewrite would be
+    /// tempted to lose: a reinstall does not bring the answers back, and a
+    /// forgotten backup passphrase is unrecoverable.
+    testWidgets('states where the health answers live, and what that costs',
+        (tester) async {
+      await tester.pumpWidget(_host(const PrivacyPage()));
+      await tester.pumpAndSettle();
+      final text = renderedText(tester);
+      expect(text, contains('stay on your phone'));
+      expect(text, contains('is not sent to this app'));
+      expect(text, contains('do not come back on their own'));
+      expect(text, contains('cannot be recovered by anyone'));
+    });
   });
 
   group('release readiness', () {

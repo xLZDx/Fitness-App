@@ -52,8 +52,35 @@ services"* (firebase.google.com/docs/android/play-data-disclosure).
 
 | Data type | Collected | Optional? | Purposes | Evidence |
 |---|---|---|---|---|
-| Health info | Yes | **Optional** — every field is nullable and the app runs on a partly-filled profile | App functionality (screening exercises against injuries and conditions), Personalization | `profile_models.dart:247-266` — conditions, allergies, medications, injuries, physical limitations, recent surgeries, blood pressure, free-text concerns |
+| Health info | **No** — changed 2026-08-06, see below | — | — | `sensitive_profile.dart` defines what never leaves the device; `device_health_profile_repository.dart` performs the split and `main.dart` binds it |
 | Fitness info | Yes | Optional | App functionality, Personalization | `profile_models.dart:203-218` (age, gender, height, current/target weight, activity level); workout logs at `firestore_workout_log_repository.dart:18` |
+
+**Health info was "Yes" until 2026-08-06 and is now "No".** The questionnaire
+still asks the same questions; what changed is where the answers go. Conditions,
+allergies, medications, injuries, physical limitations, recent surgeries, blood
+pressure, free-text concerns, plus the smoking and alcohol answers, are stored
+on the device and are never written to Firestore. Nothing on the server ever
+read them — no Cloud Function touches `users/{uid}/profile/main` at all — so
+they were being held without being used.
+
+Two things had to both be true before this answer could change, and both are:
+
+1. The app stopped writing them (H1a) and moves any already-stored block down to
+   the device on the next read (H1b, `_resolve` in
+   `device_health_profile_repository.dart`).
+2. The documents already written were cleared. Measured 2026-08-06:
+   `fitness-app-korostelev` held 0 profile documents; the pre-move project
+   `traidingbot-b4061` held 14, every one carrying the block. After
+   `scripts/ops/strip_health_from_profiles.py --project legacy-shared --apply`,
+   a read-only query returns **14 documents, 0 still carrying health fields**.
+
+If a future change writes any of those fields to a server, this row goes back to
+"Yes" in the same commit. A Data safety form that says "No" while a field is
+being collected is a removal, not a warning.
+
+Height and weight deliberately stayed on the server. They are Fitness info in
+Play's taxonomy, not Health info, so moving them would remove no row from this
+form and would cost the profile summary its device-to-device sync.
 
 Do **not** tick "Advertising or marketing" or "Analytics" for these. Neither is
 true, and health data ticked for advertising is the fastest way to a manual
@@ -132,12 +159,22 @@ here as deliberate "No" answers:
 | Privacy policy URL | <https://fitness-app-korostelev.web.app/privacy> |
 | Terms of service (not required by Play, linked in-app and public) | <https://fitness-app-korostelev.web.app/terms> |
 | Target age group | **16+**, and no younger group. Declaring any group that includes children pulls the app into Play's Families Policy — *"Any apps that have at least one target audience age group that includes children must comply with Google Play's Families Policy Requirements"* — which requires parental consent for exactly the sensitive data this app's core feature collects. Both documents state 16, and both say plainly that the limit is on the account, not on who may exercise. |
-| Health apps declaration | Expect one. The app collects health data and gives exercise guidance; the Terms state plainly that it is not medical advice and that the catalog was not physiotherapist-reviewed. |
+| Health apps declaration | Expect one. The app **asks** health questions and gives exercise guidance, even though it no longer stores the answers on a server — the declaration is about what the app does, not only about what it transmits. The Terms state plainly that it is not medical advice and that the catalog was not physiotherapist-reviewed. |
 
 ---
 
 ## 5. What is still unresolved
 
+0. **Advertising is coming, and this form will change when it does.** The
+   operator intends a promotions section carrying offers from gyms, trainers
+   and shops (stated 2026-08-05). First-party promotions need no advertising
+   identifier and no third-party SDK, so nothing here changes today — but the
+   Privacy Policy's old sentence "there is no advertising" was removed on
+   2026-08-06 rather than left to break. One hard constraint applies from the
+   first line of that feature: **health answers must never target a promotion.**
+   Play forbids it and GDPR Art. 9 covers it. The device-only split above now
+   enforces that structurally rather than by policy — the promotions layer
+   cannot reach data that is not on the server.
 1. **Firebase AI Logic retention** — the ephemeral tick above depends on it.
 2. **Play App Signing SHA-256** — cannot be added to App Check until the first
    bundle upload creates the key; the upload key is registered already.

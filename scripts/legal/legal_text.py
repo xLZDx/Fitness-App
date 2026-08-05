@@ -18,6 +18,18 @@ is the generator.
 Nothing in this text is aspirational or boilerplate. The claims map to:
 
   - health fields collected .......... profile_models.dart:203-266
+  - health answers stay on device .... sensitive_profile.dart (what counts),
+                                       device_health_profile_repository.dart
+                                       (the split), main.dart binds it;
+                                       H1b cleared the 14 documents already
+                                       written, verified by a read-only query
+                                       returning 0 still carrying the block
+  - passphrase backup exists ......... backup_envelope.dart, backup_page.dart,
+                                       route /backup off settings_page.dart
+  - Android backup is the user's ..... no allowBackup/dataExtractionRules in
+                                       AndroidManifest.xml, so the platform
+                                       default applies; encrypted since
+                                       Android 9 with a lock-screen-derived key
   - anonymous / Google sign-in ....... firebase_auth_repository.dart:64, :104
   - health data never sent to AI ..... ai_coach_service.dart:33-40 (machine
                                        name + language are the whole prompt)
@@ -26,8 +38,22 @@ Nothing in this text is aspirational or boilerplate. The claims map to:
   - progress photos stay local ....... progress_photos_providers.dart:13 is a
                                        Mock; index.ts:1163 confirms there is
                                        nothing in Cloud Storage to delete
-  - no ads / no analytics SDK ........ pubspec.yaml has crashlytics + firebase_ai
-                                       and no admob / analytics / attribution
+  - no ad id / no analytics SDK ...... pubspec.yaml has crashlytics + firebase_ai
+                                       and no admob / analytics / attribution.
+                                       The old wording also promised "there is
+                                       no advertising", which was dropped
+                                       deliberately: the operator intends a
+                                       promotions section carrying offers from
+                                       gyms, trainers and shops, and a promise
+                                       due to break is worse than one never
+                                       made. What remains is narrower and
+                                       stays true -- first-party promotions
+                                       need no advertising identifier and no
+                                       third-party SDK.
+                                       Health data must never target them:
+                                       Play forbids it and GDPR Art. 9 covers
+                                       it, which the device-only split above
+                                       now enforces structurally.
   - EU storage ....................... Firestore eur3, functions europe-west1
   - supporter wall limits ............ index.ts:741-756 (60 / 200 chars)
   - deletion is irreversible ......... index.ts:1169-1207
@@ -49,15 +75,15 @@ Anything richer would need a Markdown dependency on both sides to render two
 static documents, which is not a trade worth making.
 """
 
-LAST_UPDATED = "2026-08-05"
+LAST_UPDATED = "2026-08-06"
 
 #: The whole sentence per language, not a date plus a translated label. A
 #: `"Last updated {date}"` placeholder would need `@`-metadata in both .arb
 #: files and would still render an ISO date to a reader — one key each says
 #: the same thing in the form each language actually writes it.
 STAMP = {
-    "en": "Last updated 5 August 2026",
-    "ru": "Обновлено 5 августа 2026",
+    "en": "Last updated 6 August 2026",
+    "ru": "Обновлено 6 августа 2026",
 }
 
 # --------------------------------------------------------------------------
@@ -100,6 +126,21 @@ special category with extra protection. It is asked for one purpose: to keep \
 movements that conflict with an injury or condition out of your plan, and to \
 size that plan to you. Every field can be left blank, and the app still works.
 
+**The health answers stay on your phone.** The medical part of that \
+questionnaire -- conditions, allergies, medications, injuries, physical \
+limitations, recent surgeries, blood pressure, your own notes, and your \
+smoking and alcohol answers -- is stored on your device and is not sent to \
+this app's servers. Nothing on the server ever read it, so there was no reason \
+to hold it there.
+
+Two things follow from that, and both are yours to weigh. If you reinstall the \
+app or move to another phone, those answers do not come back on their own; \
+Settings has a passphrase-protected backup that carries them, and a forgotten \
+passphrase cannot be recovered by anyone, us included. And if you have \
+Android's own backup switched on, your device's data -- this included -- is \
+copied to your personal Google account and encrypted with a key derived from \
+your screen lock. That copy is yours, not ours, and we cannot read it.
+
 **What you do in the app.** Completed workouts with sets and weights, \
 statistics, scheduled sessions, machines you have scanned, notes on those \
 machines, and exercises the AI generated for you.
@@ -126,8 +167,8 @@ development builds.
 - Your data is not sold, and never has been.
 - Health answers are never sent to any AI model. The in-app coach receives \
 only the name of the machine you asked about and your language -- nothing else.
-- There is no advertising, no advertising identifier is collected, and no \
-third-party analytics or attribution SDK is built into the app.
+- No advertising identifier is collected, and no third-party analytics or \
+attribution SDK is built into the app.
 
 ## Where it is stored, and who else touches it
 
@@ -222,6 +263,21 @@ Fitness App делает и поддерживает один независим
 заболеванием, и подбирать нагрузку под вас. Любое поле можно оставить пустым, \
 приложение продолжит работать.
 
+**Ответы о здоровье остаются на вашем телефоне.** Медицинская часть анкеты -- \
+заболевания, аллергии, лекарства, травмы, физические ограничения, недавние \
+операции, давление, ваши собственные заметки, а также ответы про курение и \
+алкоголь -- хранится на устройстве и не отправляется на серверы этого \
+приложения. На сервере это никто и никогда не читал, поэтому держать их там \
+было незачем.
+
+Отсюда два следствия, и оба вам стоит взвесить. При переустановке приложения \
+или переходе на другой телефон эти ответы сами не вернутся; в настройках есть \
+резервная копия под парольной фразой, которая их переносит, и забытую фразу не \
+восстановит никто, включая нас. А если у вас включена собственная резервная \
+копия Android, данные устройства -- в том числе эти -- копируются в ваш личный \
+аккаунт Google и шифруются ключом, производным от кода блокировки экрана. Эта \
+копия ваша, а не наша, и прочитать её мы не можем.
+
 **Что вы делаете в приложении.** Завершённые тренировки с подходами и весами, \
 статистика, запланированные занятия, отсканированные тренажёры, заметки по \
 ним и упражнения, сгенерированные ИИ.
@@ -249,8 +305,8 @@ Fitness App делает и поддерживает один независим
 - Ответы о здоровье не отправляются ни в какую ИИ-модель. Встроенный \
 советчик получает только название тренажёра, о котором вы спросили, и язык -- \
 больше ничего.
-- В приложении нет рекламы, не собирается рекламный идентификатор и не \
-встроено ни одного стороннего SDK аналитики или атрибуции.
+- Рекламный идентификатор не собирается, и в приложении не встроено ни одного \
+стороннего SDK аналитики или атрибуции.
 
 ## Где данные хранятся и кто ещё их касается
 
