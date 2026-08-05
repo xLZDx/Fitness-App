@@ -742,3 +742,54 @@ fix as needing to hide `equipmentRepositoryProvider` itself;
 Resolution adopted: keep `equipmentRepositoryProvider` public, enforce
 privacy on the derived exercise-list providers instead, and enumerate the
 verified-safe consumers explicitly in the gate rather than omitting them.
+
+---
+
+### F1 — Миграция Stripe API на Basil (открыт, до публикации)
+
+Найдено 2026-08-05 при переезде на собственный Firebase-проект, когда
+операторский вопрос «а зачем разные api_version?» заставил проверить
+расхождение вместо того, чтобы его воспроизвести.
+
+**Что не так.** Код написан под `2025-02-24.acacia` (SDK `stripe 17.7.0`),
+а оба webhook endpoint — и старый, и созданный при переезде — были
+настроены на `2026-04-22.dahlia`. Между этими версиями лежит релиз
+`2025-03-31.basil`, удаливший два поля, которые код читает:
+
+| Место | Поле | Замена в basil+ |
+|---|---|---|
+| `functions/src/index.ts:667` | `inv.subscription` | `invoice.parent.subscription_details.subscription` (проверив `parent.type === "subscription_details"`) |
+| `functions/src/index.ts:526-527` | `s.current_period_end` | периоды переехали на уровень элементов подписки |
+
+Источник: changelog Stripe `2025-03-31.basil`, «Invoicing resources now
+specify how they were generated» — `subscription` помечен Removed на
+объекте Invoice; и «Adds subscription item-level billing periods and
+removes subscription-level periods».
+
+**Почему это не выстрелило.** Ни через один endpoint не прошло ни одного
+платежа — в аккаунте нет ни одного объекта Invoice. При первом реальном
+платеже `invoice.paid` пришёл бы, `inv.subscription` оказался бы
+`undefined`, подписка не нашлась бы, и плательщик остался бы `free` — без
+единой ошибки в логах. Тот же молчаливый класс отказа, что описан в
+комментарии над `stripeWebhook` (`index.ts:606`) как уже случавшийся.
+
+**Что сделано сейчас (временная мера, не решение).** Endpoint пересоздан с
+`api_version: 2025-02-24.acacia`, чтобы совпадать с SDK и кодом; старый
+endpoint проекта бота удалён. Рассинхрон закрыт, но проект остаётся на
+поколении API, которое Stripe уже считает предыдущим.
+
+**Что осталось сделать в этом гейте.**
+
+1. Поднять SDK до `stripe@18.x` (требование Stripe для basil).
+2. Переписать оба чтения на новую структуру, с проверкой `parent.type`.
+3. Обновить `STRIPE_CTOR_ARGS` в `__tests__/index.test.ts` и фикстуры
+   событий — сейчас они закрепляют acacia-структуру и пройдут мимо ошибки.
+4. Пересоздать endpoint с актуальной версией.
+5. Прогнать через Stripe test mode реальную подписку и убедиться, что
+   tier записывается — юнит-теста здесь недостаточно, он не ловит
+   расхождение версий по построению.
+
+**Почему отдельным гейтом, а не сразу.** Решение оператора 2026-08-05:
+сначала снять рассинхрон дешёвым способом, миграцию сделать осознанно с
+тестами. Обновление мажорной версии SDK трогает все вызовы Stripe в
+проекте, а не только эти два поля.
