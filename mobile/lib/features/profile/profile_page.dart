@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import '../auth/state/auth_providers.dart';
+import '../progress_photos/state/progress_photos_providers.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
 import 'data/profile_models.dart';
@@ -116,8 +117,16 @@ class ProfilePage extends ConsumerWidget {
                   icon: Icons.photo_library_outlined,
                   gradient: AppPalette.tileGradients[0],
                   title: AppLocalizations.of(context).profileProgressPhotos,
-                  subtitle: AppLocalizations.of(context)
-                      .profileEndToEndEncryptedOnYour,
+                  // The encryption subtitle is a claim, so it is gated on the
+                  // same flag the photos page uses: while the mock repository
+                  // is bound there is nothing encrypted to describe, and this
+                  // tile is read before the page is even opened. The fallback
+                  // says what the feature does, which is true either way.
+                  subtitle: ref.watch(progressPhotosAreDemoProvider)
+                      ? AppLocalizations.of(context)
+                          .progressphotosCompareSideBySideOverWeeks
+                      : AppLocalizations.of(context)
+                          .profileEndToEndEncryptedOnYour,
                   onTap: () => context.push('/photos'),
                 ),
                 _divider(context),

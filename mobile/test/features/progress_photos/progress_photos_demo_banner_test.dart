@@ -47,4 +47,33 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('not saved to your account'), findsNothing);
   });
+
+  /// The page promised "Photos are encrypted on your device with a key that
+  /// never leaves the phone" unconditionally, while the only repository bound
+  /// was the mock: no bytes, no key, no cipher call. `AesPhotoCipher` is real
+  /// and correct, and has no caller.
+  ///
+  /// The promise is not deleted, because it is the promise the feature is
+  /// being built to keep. It is gated on the same flag as the banner above, so
+  /// that binding a real repository is the single act that makes it reappear —
+  /// no second edit, and no way to ship the storage layer while the claim
+  /// stays switched off.
+  testWidgets('the encryption promise is withheld while the mock is bound',
+      (tester) async {
+    await tester.pumpWidget(_host());
+    await tester.pumpAndSettle();
+    expect(find.textContaining('encrypted'), findsNothing);
+  });
+
+  testWidgets('the encryption promise returns with a real repository',
+      (tester) async {
+    await tester.pumpWidget(_host(overrides: [
+      progressPhotosRepositoryProvider.overrideWithValue(_NeverPersists()),
+    ]));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('encrypted on your device'),
+      findsOneWidget,
+    );
+  });
 }

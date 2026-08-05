@@ -53,4 +53,28 @@ void main() {
     // The crash used to surface as the red error widget instead of the card.
     expect(find.byType(ErrorWidget), findsNothing);
   });
+
+  /// The progress-photos tile read "End-to-end encrypted, on your device" —
+  /// a claim made on the profile screen, before the feature is even opened,
+  /// while the only bound repository was an in-memory mock that stores no
+  /// bytes and holds no key. The subtitle is gated on the same flag the
+  /// photos page uses; the fallback describes what the feature does, which is
+  /// true in either state.
+  testWidgets('the photos tile withholds the encryption claim in demo mode',
+      (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          locale: kTestLocale,
+          localizationsDelegates: kTestLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ProfilePage(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.textContaining('encrypted'), findsNothing);
+    expect(find.textContaining('Compare side-by-side'), findsOneWidget);
+  });
 }

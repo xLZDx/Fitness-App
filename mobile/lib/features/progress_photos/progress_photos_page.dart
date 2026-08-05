@@ -12,10 +12,24 @@ import 'data/progress_photo.dart';
 import 'state/progress_photos_providers.dart';
 import 'package:intl/intl.dart';
 
-/// Progress photos page. End-to-end encrypted; the device key never
-/// leaves SharedPreferences. Free users see the empty-state copy +
-/// upgrade CTA (we don't gate the safety-critical features but trend
-/// photos are paid-tier only).
+/// Progress photos page. Free users see the empty-state copy + upgrade CTA
+/// (we don't gate the safety-critical features but trend photos are
+/// paid-tier only).
+///
+/// This comment used to open with "End-to-end encrypted; the device key never
+/// leaves SharedPreferences", and every word of that was wrong in a way worth
+/// recording. No photo is encrypted, because no photo exists: the only
+/// repository is [MockProgressPhotosRepository], which fabricates records and
+/// touches no bytes. There is no device key. And had there been one,
+/// SharedPreferences would have been the wrong home for it — it is a plain
+/// XML file on Android, readable by anything with the app's uid, which is
+/// exactly what a key must not be.
+///
+/// [AesPhotoCipher] is real AES-256-GCM and is correct; it simply has no
+/// caller. Until one exists, every encryption claim on this page is gated on
+/// [progressPhotosAreDemoProvider] — the same self-removing flag the demo
+/// banner uses. Bind a real repository and the promises reappear on their own,
+/// because by then they will be true.
 class ProgressPhotosPage extends ConsumerWidget {
   const ProgressPhotosPage({super.key});
 
@@ -36,8 +50,10 @@ class ProgressPhotosPage extends ConsumerWidget {
             isDemo: isDemo,
             message: AppLocalizations.of(context).progressphotosDemoNotSaved,
           ),
-          _PrivacyStrip(),
-          const SizedBox(height: 16),
+          if (!isDemo) ...[
+            _PrivacyStrip(),
+            const SizedBox(height: 16),
+          ],
           if (!isPaid) ...[
             _UpgradeCard(),
             const SizedBox(height: 16),
@@ -68,6 +84,8 @@ class ProgressPhotosPage extends ConsumerWidget {
   }
 }
 
+/// The encryption promise. Rendered only when a real repository is bound —
+/// see the gate at the call site, and the library comment for why.
 class _PrivacyStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
