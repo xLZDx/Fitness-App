@@ -21,6 +21,8 @@ class _RecordingRepository implements ProfileRepository {
   UserProfile? saved;
   UserProfile? stored;
   int deletes = 0;
+  int saveCount = 0;
+  bool failSaves = false;
 
   @override
   Stream<UserProfile?> watch(String uid) => Stream.value(stored);
@@ -33,6 +35,8 @@ class _RecordingRepository implements ProfileRepository {
 
   @override
   Future<void> save(UserProfile profile) async {
+    if (failSaves) throw StateError('offline');
+    saveCount++;
     saved = profile;
     stored = profile;
   }
@@ -127,11 +131,11 @@ void main() {
       expect(back.lifestyle.smoking, SmokingHabit.regular);
     });
 
-    /// The migration (H1b) has not run yet for anyone who onboarded before
-    /// this class existed: their health block is still in Firestore and the
-    /// local store is empty. If the merge blanked it, their contraindication
-    /// filter would silently start reporting no injuries -- the one wrong
-    /// answer a safety filter must never give.
+    /// Anyone who onboarded before this class existed has their health block
+    /// in Firestore and an empty local store. Whatever the plumbing does with
+    /// it, the answer handed back must still contain their injuries: a
+    /// contraindication filter that silently starts reporting none is the one
+    /// wrong answer it must never give.
     test('a profile still carrying health on the server keeps it', () async {
       final inner = _RecordingRepository()..stored = _withHealth('u1');
       final repo = DeviceHealthProfileRepository(inner, InMemorySensitiveStore());
@@ -140,6 +144,59 @@ void main() {
 
       expect(back.health.injuries.single.bodyPart, 'knee');
       expect(back.lifestyle.smoking, SmokingHabit.regular);
+    });
+
+    /// H1b, the client half: reading a pre-split profile moves the block down
+    /// and clears it upstream. Asserted on `inner.stored`, because "we stopped
+    /// writing it" and "it is no longer there" are different claims and only
+    /// the second one lets H1c say the data is gone.
+    test('reading a pre-split profile clears it on the server', () async {
+      final inner = _RecordingRepository()..stored = _withHealth('u1');
+      final store = InMemorySensitiveStore();
+      final repo = DeviceHealthProfileRepository(inner, store);
+
+      final back = (await repo.load('u1'))!;
+
+      // The user loses nothing.
+      expect(back.health.medications, ['ramipril']);
+      expect(back.lifestyle.smoking, SmokingHabit.regular);
+      // The server keeps nothing.
+      expect(inner.stored!.health.medications, isEmpty);
+      expect(inner.stored!.health.injuries, isEmpty);
+      expect(inner.stored!.lifestyle.smoking, isNull);
+      // And the device has it.
+      expect((await store.read('u1')).health.medications, ['ramipril']);
+    });
+
+    test('migration runs once, not on every stream emission', () async {
+      final inner = _RecordingRepository()..stored = _withHealth('u1');
+      final repo = DeviceHealthProfileRepository(inner, InMemorySensitiveStore());
+
+      await repo.load('u1');
+      final savesAfterFirst = inner.saveCount;
+      await repo.load('u1');
+      await repo.load('u1');
+
+      expect(savesAfterFirst, 1);
+      expect(inner.saveCount, 1);
+    });
+
+    /// A failed migration -- offline, or a rules rejection -- must not take
+    /// down every screen watching the profile over a housekeeping write, and
+    /// must not mark the account done.
+    test('a failed migration leaves the profile readable and retryable',
+        () async {
+      final inner = _RecordingRepository()
+        ..stored = _withHealth('u1')
+        ..failSaves = true;
+      final repo = DeviceHealthProfileRepository(inner, InMemorySensitiveStore());
+
+      final back = (await repo.load('u1'))!;
+      expect(back.health.medications, ['ramipril']);
+
+      inner.failSaves = false;
+      await repo.load('u1');
+      expect(inner.stored!.health.medications, isEmpty);
     });
 
     test('the local copy wins when both exist', () async {

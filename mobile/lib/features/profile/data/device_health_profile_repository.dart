@@ -37,12 +37,19 @@ class DeviceHealthProfileRepository implements ProfileRepository {
   /// store is not. Populated by every path that reads or writes.
   final Map<String, SensitiveProfile> _cache = {};
 
+  /// Uids whose one-way move off the server has been attempted this session.
+  ///
+  /// Set BEFORE the write, not after: [watch] is a stream, and the write it
+  /// performs makes the inner stream emit again. Marking afterwards would let
+  /// the second emission start a second migration while the first is still in
+  /// flight.
+  final Set<String> _migrated = {};
+
   @override
   Stream<UserProfile?> watch(String uid) =>
       _inner.watch(uid).asyncMap((p) async {
         if (p == null) return null;
-        final s = await _read(uid);
-        return mergeSensitive(p, s);
+        return _resolve(uid, p);
       });
 
   /// Synchronous, so it answers from the mirror. Before the first async read
@@ -61,7 +68,51 @@ class DeviceHealthProfileRepository implements ProfileRepository {
   Future<UserProfile?> load(String uid) async {
     final p = await _inner.load(uid);
     if (p == null) return null;
-    return mergeSensitive(p, await _read(uid));
+    return _resolve(uid, p);
+  }
+
+  /// H1b — moves a pre-split profile's health block down to the device and
+  /// clears it upstream, then answers from the device like any other read.
+  ///
+  /// Runs on the user's next read rather than as a bulk admin job, because
+  /// that is where the data already flows and it needs no elevated
+  /// credentials. Its blind spot is exact and worth naming: an account whose
+  /// owner never opens the app again is never migrated by this path, so the
+  /// server keeps their health block indefinitely. That is what
+  /// `scripts/ops/strip_health_from_profiles.py` is for, and why H1c cannot
+  /// claim the data is gone until that script has run.
+  Future<UserProfile> _resolve(String uid, UserProfile server) async {
+    final local = await _read(uid);
+    final onServer = extractSensitive(server);
+
+    // The trigger is "the server still carries it", NOT "the device does not
+    // have it yet". Those come apart precisely in the case worth surviving:
+    // the local write lands, the upstream clear fails offline, and the device
+    // now holds a copy. Keying off the local store would then read as "already
+    // migrated" forever, and the block would sit in Firestore for good --
+    // silently, since every screen would look correct.
+    if (onServer.isEmpty || _migrated.contains(uid)) {
+      return mergeSensitive(server, local);
+    }
+
+    _migrated.add(uid);
+    // A device copy outranks the server's: it is what the user has been
+    // editing since the split.
+    final keep = local.isEmpty ? onServer : local;
+    try {
+      if (local.isEmpty) {
+        await _store.write(uid, onServer);
+        _cache[uid] = onServer;
+      }
+      await _inner.save(stripSensitive(server));
+    } catch (_) {
+      // Offline, or a rules rejection. The user must keep seeing their own
+      // injuries either way, so this returns what it already has and lets a
+      // later read try again. Rethrowing would take down every screen watching
+      // the profile over a housekeeping write.
+      _migrated.remove(uid);
+    }
+    return mergeSensitive(server, keep);
   }
 
   /// Writes the two halves to two places.
