@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../ai_coach/ai_coach_context.dart';
 import '../ai_coach/ai_coach_sheet.dart';
 import '../../shared/widgets/glass.dart';
 import 'data/catalog_labels.dart';
@@ -112,8 +113,12 @@ class EquipmentDetailPage extends ConsumerWidget {
               // but this is where the user can SEE an AI working for them.
               GlassCard(
                 key: const Key('equipment-ai-coach'),
-                onTap: () =>
-                    AiCoachSheet.show(context, machineName: item.name),
+                onTap: () => AiCoachSheet.show(
+                  context,
+                  source: AiCoachSource.equipment,
+                  subjectId: item.id,
+                  subjectName: item.name,
+                ),
                 child: Row(
                   children: [
                     const Icon(Icons.auto_awesome),

@@ -1,6 +1,8 @@
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'ai_coach_context.dart';
+
 /// Signature of "send a prompt, get text back" — injectable for tests.
 typedef CoachAsk = Future<String?> Function(String prompt);
 
@@ -28,23 +30,12 @@ class AiCoachService {
   }
 
   /// Returns advice text, or throws with the underlying reason.
-  Future<String> advise({
-    required String machineName,
-    required String languageCode,
-  }) async {
-    final language = languageCode == 'ru' ? 'Russian' : 'English';
-    final text = await _askCloud('''
-You are a concise, safety-first gym coach. The user is standing at:
-"$machineName".
-
-In $language, give:
-1. Correct setup and technique (3-5 short bullet points).
-2. The 2-3 most common mistakes and how to avoid them.
-3. A sensible beginner volume (sets x reps or minutes).
-
-Plain text with simple dashes for bullets — no markdown headers, no tables.
-Under 180 words. Do not invent machine features it does not have. End with
-one line reminding to stop on sharp pain.''');
+  ///
+  /// The prompt itself lives in `ai_coach_context.dart` as a pure function, so
+  /// it can be asserted on without a network call. This method is only the
+  /// transport plus the empty-answer guard.
+  Future<String> advise(AiCoachContext context) async {
+    final text = await _askCloud(buildCoachPrompt(context));
     final out = text?.trim() ?? '';
     if (out.isEmpty) {
       throw Exception('the coach returned an empty answer');
@@ -55,11 +46,11 @@ one line reminding to stop on sharp pain.''');
 
 final aiCoachServiceProvider = Provider<AiCoachService>((_) => AiCoachService());
 
-/// Advice for one machine name, fetched once per (machine, language) pair.
-final aiCoachAdviceProvider = FutureProvider.autoDispose
-    .family<String, ({String machine, String language})>((ref, args) {
-  return ref.watch(aiCoachServiceProvider).advise(
-        machineName: args.machine,
-        languageCode: args.language,
-      );
+/// Advice for one subject, fetched once per distinct [AiCoachContext].
+///
+/// Keyed on the context — which carries a stable id — rather than on a display
+/// name, so two catalog rows sharing a label no longer share an answer.
+final aiCoachAdviceProvider =
+    FutureProvider.autoDispose.family<String, AiCoachContext>((ref, context) {
+  return ref.watch(aiCoachServiceProvider).advise(context);
 });

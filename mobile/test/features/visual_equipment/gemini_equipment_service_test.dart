@@ -5,7 +5,6 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 
-import 'package:fitness_app/features/ai_coach/ai_coach_service.dart';
 import 'package:fitness_app/features/equipment/data/equipment_alias_index.dart';
 import 'package:fitness_app/features/visual_equipment/data/gemini_equipment_service.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_match.dart';
@@ -255,24 +254,9 @@ void main() {
     });
   });
 
-  group('AiCoachService', () {
-    test('asks in the interface language about the exact machine', () async {
-      String? seen;
-      final svc = AiCoachService(ask: (p) async {
-        seen = p;
-        return '  Совет.  ';
-      });
-      final out =
-          await svc.advise(machineName: 'Гакк-машина', languageCode: 'ru');
-      expect(out, 'Совет.');
-      expect(seen, contains('Гакк-машина'));
-      expect(seen, contains('Russian'));
-    });
-
-    test('an empty answer throws instead of rendering a blank sheet', () {
-      final svc = AiCoachService(ask: (_) async => '   ');
-      expect(() => svc.advise(machineName: 'x', languageCode: 'en'),
-          throwsException);
-    });
-  });
+  // The `AiCoachService` group that used to live here moved to
+  // `test/features/ai_coach/ai_coach_context_test.dart` in gate F2, where the
+  // rest of that feature's coverage now sits. It was only ever here because
+  // both services talk to the same model; nothing else in this file is about
+  // coaching.
 }
