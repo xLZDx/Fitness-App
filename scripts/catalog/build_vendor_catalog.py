@@ -98,7 +98,12 @@ STRETCH_GROUPS = {"Stretching - Mobility", "Yoga"}
 # `contraindications` will belong to the tagging pass. Writing our own empty
 # value over theirs is exactly the data loss `merge_rows` exists to stop, so on
 # merge the file's value wins for these keys even though we do produce them.
-CURATED = {"equipmentId", "contraindications"}
+#
+# `poseTargetId` joined them for the same reason and with a sharper edge: this
+# script never emits it at all, so without the entry below a rebuild would drop
+# all 570 tags silently -- the exercises would simply stop offering the Form
+# Coach, with nothing failing and nothing logged.
+CURATED = {"equipmentId", "contraindications", "poseTargetId"}
 
 # The app understands exactly fifteen muscle tags — the vocabulary already in
 # `exercises.json`, read by the muscle map, the muscle chips and the injury

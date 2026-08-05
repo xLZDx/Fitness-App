@@ -17,6 +17,61 @@ import '../data/voice_coach.dart';
 /// What the user says they are doing. Rules are chosen from this.
 enum FormExercise { squat, pushup, deadlift }
 
+/// Catalog pattern id -> the movement this coach knows, or null.
+///
+/// The catalog tags 570 exercises across eight patterns
+/// (`scripts/catalog/tag_pose_targets.py`). This map is the far smaller set
+/// the coach has actually been taught, and the gap between the two numbers is
+/// the honest state of the feature, not an oversight.
+const Map<String, FormExercise> kPosePatternToExercise = {
+  'squat': FormExercise.squat,
+};
+
+/// Whether the Form Coach can judge [poseTargetId] well enough to offer it.
+///
+/// Stricter than "has an entry above", and the difference is the point.
+/// `pushup` has both targets authored and still fails this, because the rep
+/// counter's only signal is hip-versus-knee height — which, as
+/// `pushupBottomTarget`'s own comment records, does not track a push-up at
+/// all. Offering a coach that draws a silhouette and then counts nothing
+/// teaches the user the feature is broken, and that lesson is expensive to
+/// undo.
+///
+/// `deadlift` fails for a plainer reason: `poseTargetProvider` returns null
+/// for it, so there is no shape to stand in.
+///
+/// Adding a pattern here is the last step of authoring it, after the targets
+/// and the rep signal exist — never the first.
+bool formCoachSupports(String? poseTargetId) {
+  if (poseTargetId == null) return false;
+  final e = kPosePatternToExercise[poseTargetId];
+  if (e == null) return false;
+  return poseTargetsFor(e) != null && countsRepsFor(e);
+}
+
+/// The two ends of [e]'s movement, or null when nothing is authored.
+///
+/// A plain function rather than only a provider, so the support gate above can
+/// be decided -- and tested -- without a ProviderContainer. `poseDemoProvider`
+/// reads it, which keeps one answer instead of two.
+(PoseTarget, PoseTarget)? poseTargetsFor(FormExercise e) => switch (e) {
+      FormExercise.squat => (squatTopTarget, squatBottomTarget),
+      FormExercise.pushup => (pushupTopTarget, pushupBottomTarget),
+      FormExercise.deadlift => null,
+    };
+
+/// Whether a rep of [e] can actually be counted.
+///
+/// Only the squat, and it is not an omission. `RepCounter`'s default extractor
+/// is `squatDepthSignal` -- mean hip y minus mean knee y -- and there is no
+/// second one. For a push-up that quantity barely moves, which
+/// `pushupBottomTarget`'s own comment states outright; for a deadlift it moves
+/// but means something else.
+///
+/// Kept separate from [poseTargetsFor] because the push-up is exactly the case
+/// where the two disagree: shapes authored, reps uncountable.
+bool countsRepsFor(FormExercise e) => e == FormExercise.squat;
+
 /// How broad to draw the outline, from whatever the intake collected.
 ///
 /// Operator: *"бери рост вес из анкеты чтобы понять рост человека, так как
@@ -85,13 +140,8 @@ final poseTargetProvider = Provider<PoseTarget?>((ref) {
 /// правильно надо делать"*. A single outline says where to arrive; it does not
 /// say how — and for a squat the how is the whole difference between the shape
 /// that scores and the shape that does not.
-final poseDemoProvider = Provider<(PoseTarget, PoseTarget)?>((ref) {
-  return switch (ref.watch(selectedExerciseProvider)) {
-    FormExercise.squat => (squatTopTarget, squatBottomTarget),
-    FormExercise.pushup => (pushupTopTarget, pushupBottomTarget),
-    FormExercise.deadlift => null,
-  };
-});
+final poseDemoProvider = Provider<(PoseTarget, PoseTarget)?>(
+    (ref) => poseTargetsFor(ref.watch(selectedExerciseProvider)));
 
 /// The most recent frame the detector produced, or null before the first one.
 ///

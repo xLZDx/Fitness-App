@@ -19,6 +19,7 @@
   "backupWhatItCarriesBody": "Your health questionnaire, and nothing else. It stays on this phone, so it is the only part a reinstall or a new phone cannot bring back on its own — workouts, schedule and the rest return when you sign in.",
   "backupWhatItCarriesTitle": "What this carries",
   "backupWrongPassphrase": "That passphrase does not open this backup.",
+  "formcheckLiveCameraAnalysis": "Live camera analysis of your movement",
   "settingsBackupTransfer": "Backup and transfer",
   "splashTagline": "Scan. Train. Progress.",
   "@splashTagline": {

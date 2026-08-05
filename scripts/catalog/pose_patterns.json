@@ -1,0 +1,75 @@
+{
+  "_comment": [
+    "The movement patterns the Form Coach can judge, and the rules that map a",
+    "catalog row onto one. Projected into the catalog as `poseTargetId`.",
+    "",
+    "A pattern is NOT an exercise. A back squat, a front squat, a goblet squat",
+    "and an air squat are one silhouette seen from the side, so they share one",
+    "hand-authored target. That is why the authoring cost is paid per pattern",
+    "and the coverage is counted per exercise.",
+    "",
+    "`excludeWhen` is the same list for every pattern on purpose: what makes a",
+    "movement unjudgeable by one side-on camera is the same in each case --",
+    "a machine or bench that hides the hip line, or a seated/lying position in",
+    "which the shoulder-hip-knee chain means nothing. BlazePose has no spinal",
+    "landmark at any configuration, which is what already forced two rules to",
+    "be silenced (see form_classifier.dart); nothing here can recover it."
+  ],
+  "patterns": [
+    {
+      "id": "squat",
+      "label": "Squat",
+      "matchTitle": "\\bsquat\\b",
+      "_notTitleWhy": [
+        "A split squat and a Bulgarian split squat carry the word 'squat' and",
+        "are the split-stance silhouette, not the bilateral one. Without this",
+        "they matched two patterns and the ambiguity rule dropped all 40 of",
+        "them -- correct behaviour applied to a question that was never",
+        "ambiguous. Handled here, per pattern, rather than by a global",
+        "precedence order: 'Alternating Plank Lunge' really is ambiguous",
+        "between plank and lunge, and a precedence rule would have silently",
+        "resolved that one too."
+      ],
+      "notTitle": "split squat|bulgarian"
+    },
+    {
+      "id": "hinge",
+      "label": "Hip hinge",
+      "matchTitle": "deadlift|romanian|good morning|hip thrust|glute bridge|kettlebell swing|\\bswing\\b"
+    },
+    {
+      "id": "lunge",
+      "label": "Lunge and split stance",
+      "matchTitle": "\\blunge|split squat|step[- ]?up|bulgarian"
+    },
+    {
+      "id": "pushup",
+      "label": "Push-up and plank",
+      "matchTitle": "push[- ]?up|\\bplank\\b"
+    },
+    {
+      "id": "overhead_press",
+      "label": "Standing overhead press",
+      "matchTitle": "overhead press|shoulder press|military press|push press"
+    },
+    {
+      "id": "curl",
+      "label": "Standing curl",
+      "matchTitle": "\\bcurl\\b"
+    },
+    {
+      "id": "situp",
+      "label": "Sit-up and crunch",
+      "matchTitle": "sit[- ]?up|crunch|\\bv[- ]?up\\b|hollow"
+    },
+    {
+      "id": "calf_raise",
+      "label": "Calf raise",
+      "matchTitle": "calf raise"
+    }
+  ],
+  "excludeWhen": {
+    "title": "seated|lying|\\bbench\\b|machine|smith|cable|lat pull|leg press|leg extension|leg curl|pec deck|hack squat|assisted|sled|ergometer",
+    "equipmentLabel": "Machine|Bench|Cable|Smith|Ergometer|Assisted|Exercise Ball|Suspension"
+  }
+}

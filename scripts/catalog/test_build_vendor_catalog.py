@@ -82,8 +82,20 @@ class TestCuratedFields:
         merged, _ = merge_rows([generated("ea_plank")], [on_disk])
         assert merged[0]["contraindications"] == ["lower_back"]
 
-    def test_curated_names_both_fields(self):
-        assert CURATED == {"equipmentId", "contraindications"}
+    def test_pose_target_ids_survive(self):
+        # `poseTargetId` is written by `tag_pose_targets.py` and never by this
+        # script, so a rebuild without it in CURATED drops all 570 tags in
+        # silence: the exercises simply stop offering the Form Coach, nothing
+        # fails, nothing is logged.
+        on_disk = generated("ea_air_squat", poseTargetId="squat")
+        merged, _ = merge_rows([generated("ea_air_squat")], [on_disk])
+        assert merged[0]["poseTargetId"] == "squat"
+
+    def test_curated_names_every_field(self):
+        # A guard, and it earned its keep: adding `poseTargetId` to CURATED
+        # failed here first, which is what this line is for. Update it
+        # deliberately, never to make a run go green.
+        assert CURATED == {"equipmentId", "contraindications", "poseTargetId"}
 
 
 class TestGeneratedFieldsStillWin:

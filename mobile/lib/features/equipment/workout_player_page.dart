@@ -7,6 +7,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
+import '../form_check/state/form_check_providers.dart';
 import '../workouts/data/progression.dart';
 import '../workouts/data/scheduled_session.dart';
 import '../workouts/data/workout_log.dart';
@@ -184,6 +185,20 @@ class WorkoutPlayerPage extends ConsumerWidget {
               ],
               const SizedBox(height: 16),
               _StepsCard(exercise: item),
+              // Right under the technique steps, which is where the design
+              // puts it and where it belongs: you have just read how the
+              // movement should look, and this offers to watch you do it.
+              //
+              // Shown ONLY where the coach can actually judge the movement --
+              // `formCoachSupports`, not merely `poseTargetId != null`. 570
+              // catalog rows carry a pattern tag; one pattern has authored
+              // targets AND a rep signal. Offering the other seven would teach
+              // users the feature is broken, and that lesson is expensive to
+              // undo.
+              if (formCoachSupports(item.poseTargetId)) ...[
+                const SizedBox(height: 16),
+                _FormCoachCard(),
+              ],
               if (item.contraindications.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 _CautionCard(item: item),
@@ -571,6 +586,51 @@ class _NoVideoFallback extends StatelessWidget {
               label: Text(AppLocalizations.of(context).catalogContributeAVideo),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Entry into the Form Coach from an exercise the coach understands.
+class _FormCoachCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    return GlassCard(
+      key: const Key('exercise-form-coach'),
+      onTap: () => GoRouter.of(context).push('/form-check'),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              gradient: const LinearGradient(colors: [
+                AppPalette.auroraPeach,
+                AppPalette.auroraPink,
+              ]),
+            ),
+            child: const Icon(Icons.center_focus_strong_outlined,
+                color: Colors.white),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.formcheckFormCoach,
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 2),
+                Text(l10n.formcheckLiveCameraAnalysis,
+                    style: theme.textTheme.bodySmall),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right),
         ],
       ),
     );

@@ -23,7 +23,24 @@ class ExerciseItem {
     this.primaryMuscles = const [],
     this.contraindications = const [],
     this.isStretch = false,
+    this.poseTargetId,
   });
+
+  /// Which movement pattern the Form Coach could judge, or null.
+  ///
+  /// Written by `scripts/catalog/tag_pose_targets.py`: 570 of 1,887 rows, in
+  /// eight patterns. A back squat, a goblet squat and an air squat share one
+  /// id, because from the side they are one silhouette and `poseMatchScore`
+  /// removes position and size before comparing -- what distinguishes them is
+  /// the load, which is not in the signal at all.
+  ///
+  /// **A tag is not a promise.** It says the movement belongs to a pattern,
+  /// not that the coach can score it: whether a pattern has hand-authored
+  /// joint coordinates is a fact about `pose_target.dart`, and that is what
+  /// `formCoachSupports` checks before anything is offered to the user. The
+  /// two are separate so that authoring one pattern's targets lights up its
+  /// hundred-odd exercises at once, with no catalog work.
+  final String? poseTargetId;
 
   /// Stretching, mobility and Pilates work.
   ///
@@ -225,6 +242,7 @@ class ExerciseItem {
         contraindications:
             List<String>.from(j['contraindications'] as List? ?? const []),
         isStretch: j['isStretch'] as bool? ?? false,
+        poseTargetId: j['poseTargetId'] as String?,
       );
 
   /// Reads a `steps` list, dropping entries that are blank or whitespace.
@@ -269,6 +287,7 @@ class ExerciseItem {
         primaryMuscles: primaryMuscles,
         contraindications: contraindications,
         isStretch: isStretch,
+        poseTargetId: poseTargetId,
       );
 }
 

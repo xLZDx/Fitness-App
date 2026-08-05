@@ -1,0 +1,571 @@
+id,title,poseTargetId,reason
+ea_3_4_sit_up,3-4 Sit-up,situp,title match
+ea_4_punches_side_squat,4 Punches Side Squat,squat,title match
+ea_4_reverse_lunge_and_4_side_taps,4 Reverse Lunge and 4 Side Taps,lunge,title match
+ea_ab_mat_sit_up,Ab Mat Sit-up,situp,title match
+ea_ab_wheel_plank,Ab Wheel Plank,pushup,title match
+ea_abdominal_crunches,Abdominal Crunches,situp,title match
+ea_abdominal_crunches_with_hold,Abdominal Crunches with Hold,situp,title match
+ea_air_bike_crunch,Air Bike Crunch,situp,title match
+ea_air_swing_running,Air Swing Running,hinge,title match
+ea_air_swing_side_to_side_swing,Air Swing Side to Side Swing,hinge,title match
+ea_air_swing_walking,Air Swing Walking,hinge,title match
+ea_air_twisting_crunch,Air Twisting Crunch,situp,title match
+ea_alternate_arm_leg_plank,Alternate Arm Leg Plank,pushup,title match
+ea_alternate_arm_leg_plank_hold,Alternate Arm Leg Plank Hold,pushup,title match
+ea_alternate_arm_leg_plank_rest_pause,Alternate Arm Leg Plank Rest Pause,pushup,title match
+ea_alternate_biceps_curl_resistance_band,Alternate Biceps Curl Resistance Band,curl,title match
+ea_alternate_biceps_curl_standing_dumbbells,Alternate Biceps Curl Standing Dumbbells,curl,title match
+ea_alternate_hammer_curl_standing_dumbbells,Alternate Hammer Curl Standing Dumbbells,curl,title match
+ea_alternate_heel_touch_side_kick_squat,Alternate Heel Touch Side Kick Squat,squat,title match
+ea_alternate_leg_raise_from_reverse_plank_position,Alternate Leg Raise From Reverse Plank Position,pushup,title match
+ea_alternate_oblique_crunch,Alternate Oblique Crunch,situp,title match
+ea_alternate_single_leg_raises_plank,Alternate Single Leg Raises Plank,pushup,title match
+ea_alternate_sprinter_lunge,Alternate Sprinter Lunge,lunge,title match
+ea_alternating_biceps_hammer_curl_resistance_band,Alternating Biceps Hammer Curl Resistance Band,curl,title match
+ea_alternating_hamstring_curl,Alternating Hamstring Curl,curl,title match
+ea_alternating_hamstring_curl_with_punch,Alternating Hamstring Curl with Punch,curl,title match
+ea_alternating_lunge_with_rotation,Alternating Lunge with Rotation,lunge,title match
+ea_alternating_oblique_sit_ups,Alternating Oblique Sit-ups,situp,title match
+ea_archer_push_up,Archer Push Up,pushup,title match
+ea_arm_swing_side_to_side,Arm Swing Side to Side,hinge,title match
+ea_balance_board_lateral_squat,Balance Board Lateral Squat,squat,title match
+ea_band_behind_neck_shoulder_press,Band Behind Neck Shoulder Press,overhead_press,title match
+ea_band_bicycle_crunch,Band Bicycle Crunch,situp,title match
+ea_band_close_grip_biceps_curl,Band Close-grip Biceps Curl,curl,title match
+ea_band_concentration_curl,Band Concentration Curl,curl,title match
+ea_band_cross_chest_biceps_curl,Band Cross Chest Biceps Curl,curl,title match
+ea_band_deadlift,Band Deadlift,hinge,title match
+ea_band_decline_sit_up,Band Decline Sit Up,situp,title match
+ea_band_incline_alternate_hammer_curl,Band Incline Alternate Hammer Curl,curl,title match
+ea_band_incline_biceps_curl,Band Incline Biceps Curl,curl,title match
+ea_band_incline_hammer_curl,Band Incline Hammer Curl,curl,title match
+ea_band_kneeling_crunch,Band Kneeling Crunch,situp,title match
+ea_band_kneeling_preacher_curl,Band Kneeling Preacher Curl,curl,title match
+ea_band_prone_incline_curl,Band Prone Incline Curl,curl,title match
+ea_band_prone_incline_hammer_curl,Band Prone Incline Hammer Curl,curl,title match
+ea_band_push_up,Band Push-up,pushup,title match
+ea_band_reverse_spider_curl,Band Reverse Spider Curl,curl,title match
+ea_band_single_arm_overhead_press,Band Single Arm Overhead Press,overhead_press,title match
+ea_band_single_leg_split_squat,Band Single Leg Split Squat,lunge,title match
+ea_band_spanish_split_squat,Band Spanish Split Squat,lunge,title match
+ea_band_squat_row,Band Squat Row,squat,title match
+ea_band_two_legs_calf_raise_band_under_both_legs_version_2,Band Two Legs Calf Raise - (band Under Both Legs) Version 2,calf_raise,title match
+ea_band_wrist_curl_single_arm,Band Wrist Curl Single Arm,curl,title match
+ea_banded_feet_elevated_hip_thrusters,Banded Feet Elevated Hip Thrusters,hinge,title match
+ea_barbell_alternate_biceps_curl,Barbell Alternate Biceps Curl,curl,title match
+ea_barbell_behind_neck_push_press,Barbell Behind Neck Push Press,overhead_press,title match
+ea_barbell_behind_the_back_push_press_single_arm_balance,Barbell Behind the Back Push Press Single Arm Balance,overhead_press,title match
+ea_barbell_bicep_curl_close_grip,Barbell Bicep Curl Close Grip,curl,title match
+ea_barbell_bicep_curl_normal_grip,Barbell Bicep Curl Normal Grip,curl,title match
+ea_barbell_bicep_curl_wide_grip,Barbell Bicep Curl Wide Grip,curl,title match
+ea_barbell_biceps_curl,Barbell Biceps Curl,curl,title match
+ea_barbell_box_squat,Barbell Box Squat,squat,title match
+ea_barbell_bulgarian_split_squat,Barbell Bulgarian Split Squat,lunge,title match
+ea_barbell_bulgarian_split_squat_left_front_back_view,Barbell Bulgarian Split Squat Left Front-back View,lunge,title match
+ea_barbell_bulgarian_split_squat_left_side_view,Barbell Bulgarian Split Squat Left Side View,lunge,title match
+ea_barbell_clean_and_jerk_split_squat,Barbell Clean and Jerk Split Squat,lunge,title match
+ea_barbell_clean_deadlift,Barbell Clean Deadlift,hinge,title match
+ea_barbell_clean_grip_front_squat,Barbell Clean Grip Front Squat,squat,title match
+ea_barbell_coan_deadlift,Barbell Coan Deadlift,hinge,title match
+ea_barbell_curl,Barbell Curl,curl,title match
+ea_barbell_curtsy_lunges,Barbell Curtsy Lunges,lunge,title match
+ea_barbell_deadlift,Barbell Deadlift,hinge,title match
+ea_barbell_deadlift_front_pov,Barbell Deadlift (front POV),hinge,title match
+ea_barbell_deadlift_side_pov,Barbell Deadlift (side POV),hinge,title match
+ea_barbell_deadlift_360_degrees,Barbell Deadlift 360 Degrees,hinge,title match
+ea_barbell_deadlift_high_pull,Barbell Deadlift High Pull,hinge,title match
+ea_barbell_drag_biceps_curl,Barbell Drag Biceps Curl,curl,title match
+ea_barbell_drag_curl,Barbell Drag Curl,curl,title match
+ea_barbell_feet_elevated_figure_four_glute_bridge,Barbell Feet Elevated Figure Four Glute Bridge,hinge,title match
+ea_barbell_feet_elevated_glute_bridge,Barbell Feet Elevated Glute Bridge,hinge,title match
+ea_barbell_feet_elevated_single_leg_glute_bridge,Barbell Feet Elevated Single Leg Glute Bridge,hinge,title match
+ea_barbell_feet_elevated_staggered_glute_bridge,Barbell Feet Elevated Staggered Glute Bridge,hinge,title match
+ea_barbell_front_chest_lunges,Barbell Front Chest Lunges,lunge,title match
+ea_barbell_front_chest_squat,Barbell Front Chest Squat,squat,title match
+ea_barbell_front_lunges_with_small_pause,Barbell Front Lunges with Small Pause,lunge,title match
+ea_barbell_front_rack_lunge,Barbell Front Rack Lunge,lunge,title match
+ea_barbell_full_squat,Barbell Full Squat,squat,title match
+ea_barbell_full_squat_side_pov,Barbell Full Squat Side Pov,squat,title match
+ea_barbell_full_squat_wide,Barbell Full Squat Wide,squat,title match
+ea_barbell_full_squat_back,Barbell Full Squat(back),squat,title match
+ea_barbell_full_squat_with_rack,Barbell Full Squat(with Rack),squat,title match
+ea_barbell_full_zercher_squat,Barbell Full Zercher Squat,squat,title match
+ea_barbell_glute_bridge,Barbell Glute Bridge,hinge,title match
+ea_barbell_glute_bridge_hands_on_bar,Barbell Glute Bridge (hands on Bar),hinge,title match
+ea_barbell_good_morning,Barbell Good Morning,hinge,title match
+ea_barbell_hip_thrust,Barbell Hip Thrust,hinge,title match
+ea_barbell_incline_shoulders_press_inside_squat_cage,Barbell Incline Shoulders Press (inside Squat Cage),squat,title match
+ea_barbell_jefferson_split_squat,Barbell Jefferson Split Squat,lunge,title match
+ea_barbell_jefferson_squat,Barbell Jefferson Squat,squat,title match
+ea_barbell_jump_squat,Barbell Jump Squat,squat,title match
+ea_barbell_kas_glute_bridge,Barbell KAS Glute Bridge,hinge,title match
+ea_barbell_kneeling_squat,Barbell Kneeling Squat,squat,title match
+ea_barbell_lap_curl,Barbell Lap Curl,curl,title match
+ea_barbell_lateral_lunges,Barbell Lateral Lunges,lunge,title match
+ea_barbell_low_bar_squat,Barbell Low Bar Squat,squat,title match
+ea_barbell_lunges,Barbell Lunges,lunge,title match
+ea_barbell_lunges_on_the_spot,Barbell Lunges on the Spot,lunge,title match
+ea_barbell_narrow_stance_full_squat,Barbell Narrow Stance Full Squat,squat,title match
+ea_barbell_narrow_stance_squat,Barbell Narrow Stance Squat,squat,title match
+ea_barbell_one_arm_single_deadlift,Barbell One Arm Single Deadlift,hinge,title match
+ea_barbell_one_leg_hip_thrust,Barbell One Leg Hip Thrust,hinge,title match
+ea_barbell_overhead_lunges,Barbell Overhead Lunges,lunge,title match
+ea_barbell_overhead_squat,Barbell Overhead Squat,squat,title match
+ea_barbell_pause_lunge,Barbell Pause Lunge,lunge,title match
+ea_barbell_preacher_curl,Barbell Preacher Curl,curl,title match
+ea_barbell_quarter_squat,Barbell Quarter Squat,squat,title match
+ea_barbell_rear_lunge_on_box,Barbell Rear Lunge on Box,lunge,title match
+ea_barbell_rear_lunges,Barbell Rear Lunges,lunge,title match
+ea_barbell_reverse_biceps_curl,Barbell Reverse Biceps Curl,curl,title match
+ea_barbell_reverse_deadlift,Barbell Reverse Deadlift,hinge,title match
+ea_barbell_reverse_spider_curl,Barbell Reverse Spider Curl,curl,title match
+ea_barbell_side_split_squat,Barbell Side Split Squat,lunge,title match
+ea_barbell_side_step_up,Barbell Side Step Up,lunge,title match
+ea_barbell_single_arm_biceps_curl,Barbell Single Arm Biceps Curl,curl,title match
+ea_barbell_single_leg_deadlift,Barbell Single Leg Deadlift,hinge,title match
+ea_barbell_single_leg_split_squat,Barbell Single Leg Split Squat,lunge,title match
+ea_barbell_situp,Barbell Situp,situp,title match
+ea_barbell_snatch_deadlift_close_grip,Barbell Snatch Deadlift Close Grip,hinge,title match
+ea_barbell_snatch_deadlift_wide_grip,Barbell Snatch Deadlift Wide Grip,hinge,title match
+ea_barbell_split_squat,Barbell Split Squat,lunge,title match
+ea_barbell_squat_back_pov,Barbell Squat Back POV,squat,title match
+ea_barbell_squat_to_grass,Barbell Squat to Grass,squat,title match
+ea_barbell_squat_with_2_sec_hold,Barbell Squat with 2 Sec Hold,squat,title match
+ea_barbell_staggered_deadlift,Barbell Staggered Deadlift,hinge,title match
+ea_barbell_standing_back_wrist_curl,Barbell Standing Back Wrist Curl,curl,title match
+ea_barbell_standing_close_grip_curl,Barbell Standing Close Grip Curl,curl,title match
+ea_barbell_standing_close_grip_military_press,Barbell Standing Close Grip Military Press,overhead_press,title match
+ea_barbell_standing_concentration_curl,Barbell Standing Concentration Curl,curl,title match
+ea_barbell_standing_leg_calf_raises,Barbell Standing Leg Calf Raises,calf_raise,title match
+ea_barbell_standing_military_press,Barbell Standing Military Press,overhead_press,title match
+ea_barbell_standing_shoulder_press,Barbell Standing Shoulder Press,overhead_press,title match
+ea_barbell_standing_wide_grip_military_press,Barbell Standing Wide Grip Military Press,overhead_press,title match
+ea_barbell_step_up_balance_on_box,Barbell Step Up Balance on Box,lunge,title match
+ea_barbell_stiff_leg_deadlift,Barbell Stiff Leg Deadlift,hinge,title match
+ea_barbell_straight_leg_deadlift,Barbell Straight Leg Deadlift,hinge,title match
+ea_barbell_sumo_deadlift,Barbell Sumo Deadlift,hinge,title match
+ea_barbell_sumo_romanian_deadlift,Barbell Sumo Romanian Deadlift,hinge,title match
+ea_barbell_wide_grip_biceps_curl,Barbell Wide Grip Biceps Curl,curl,title match
+ea_barbell_wrist_curl_on_knees,Barbell Wrist Curl on Knees,curl,title match
+ea_barbell_wrist_curl_wide_legs,Barbell Wrist Curl Wide Legs,curl,title match
+ea_barbell_zercher_good_morning,Barbell Zercher Good Morning,hinge,title match
+ea_biceps_curl_front_step,Biceps Curl Front Step,curl,title match
+ea_biceps_curl_resistance_band,Biceps Curl Resistance Band,curl,title match
+ea_biceps_leg_concentration_curl,Biceps Leg Concentration Curl,curl,title match
+ea_bicycle_twisting_crunch,Bicycle Twisting Crunch,situp,title match
+ea_bicycles_crunches,Bicycles Crunches,situp,title match
+ea_body_saw_plank,Body Saw Plank,pushup,title match
+ea_bodyweight_calf_raises,Bodyweight Calf Raises,calf_raise,title match
+ea_bodyweight_feet_elevated_figure_four_glute_bridge,Bodyweight Feet Elevated Figure Four Glute Bridge,hinge,title match
+ea_bodyweight_feet_elevated_staggered_glute_bridge,Bodyweight Feet Elevated Staggered Glute Bridge,hinge,title match
+ea_bodyweight_forward_lunge,Bodyweight Forward Lunge,lunge,title match
+ea_bodyweight_full_squat_with_overhead_front_raise,Bodyweight Full Squat with Overhead Front Raise,squat,title match
+ea_bodyweight_kneeling_push_up_row,Bodyweight Kneeling Push-up Row,pushup,title match
+ea_bodyweight_kneeling_sissy_squat,Bodyweight Kneeling Sissy Squat,squat,title match
+ea_bodyweight_overhead_squat,Bodyweight Overhead Squat,squat,title match
+ea_bodyweight_pulse_forward_lunge,Bodyweight Pulse Forward Lunge,lunge,title match
+ea_bodyweight_pulse_squat,Bodyweight Pulse Squat,squat,title match
+ea_bodyweight_pulse_squat_arms_to_chest,Bodyweight Pulse Squat Arms to Chest,squat,title match
+ea_bodyweight_rear_lunge,Bodyweight Rear Lunge,lunge,title match
+ea_bodyweight_rear_lunge_front_raise,Bodyweight Rear Lunge Front Raise,lunge,title match
+ea_bodyweight_single_leg_deadlift,Bodyweight Single Leg Deadlift,hinge,title match
+ea_bodyweight_squat_to_front_leg,Bodyweight Squat to Front Leg,squat,title match
+ea_bodyweight_squat_to_side_leg,Bodyweight Squat to Side Leg,squat,title match
+ea_bodyweight_squat_to_side_to_front_leg,Bodyweight Squat to Side to Front Leg,squat,title match
+ea_bodyweight_standing_calf_raise,Bodyweight Standing Calf Raise,calf_raise,title match
+ea_bodyweight_standing_military_press,Bodyweight Standing Military Press,overhead_press,title match
+ea_bodyweight_standing_military_press_wall_supported,Bodyweight Standing Military Press Wall Supported,overhead_press,title match
+ea_bodyweight_step_up_on_step_box,Bodyweight Step-up on Step Box,lunge,title match
+ea_brazilian_crunches,Brazilian Crunches,situp,title match
+ea_bulgarian_split_squat,Bulgarian Split Squat,lunge,title match
+ea_bulgarian_split_squat_bodyweight_left,Bulgarian Split Squat Bodyweight Left,lunge,title match
+ea_bulgarian_split_squat_bodyweight_right,Bulgarian Split Squat Bodyweight Right,lunge,title match
+ea_bulgarian_split_squat_left_bodyweight_side_view,Bulgarian Split Squat Left Bodyweight Side View,lunge,title match
+ea_bulgarian_split_squat_right_bodyweight_side_view,Bulgarian Split Squat Right Bodyweight Side View,lunge,title match
+ea_bulgarian_split_squat_stretch,Bulgarian Split Squat Stretch,lunge,title match
+ea_burpee_squat,Burpee Squat,squat,title match
+ea_calf_raise_clap,Calf Raise Clap,calf_raise,title match
+ea_calf_raise_from_deficit_with_chair_supported,Calf Raise From Deficit with Chair Supported,calf_raise,title match
+ea_calf_raise_with_wall_support,Calf Raise with Wall Support,calf_raise,title match
+ea_cardio_lunge,Cardio Lunge,lunge,title match
+ea_celebratory_hip_thrust,Celebratory Hip Thrust,hinge,title match
+ea_chair_back_lunge_left_resistance_band,Chair Back Lunge Left Resistance Band,lunge,title match
+ea_chair_back_lunge_right_resistance_band,Chair Back Lunge Right Resistance Band,lunge,title match
+ea_chair_bulgarian_split_squats_bodyweight_left,Chair Bulgarian Split Squats Bodyweight Left,lunge,title match
+ea_chair_bulgarian_split_squats_bodyweight_right,Chair Bulgarian Split Squats Bodyweight Right,lunge,title match
+ea_chair_elevated_single_leg_glute_bridge,Chair Elevated Single Leg Glute Bridge,hinge,title match
+ea_chair_feet_elevated_glute_bridge,Chair Feet Elevated Glute Bridge,hinge,title match
+ea_chair_frog_feet_elevated_glute_bridge_bodyweight,Chair Frog Feet Elevated Glute Bridge Bodyweight,hinge,title match
+ea_chest_tap_push_up,Chest Tap Push Up,pushup,title match
+ea_clap_curtsy_squat,Clap Curtsy Squat,squat,title match
+ea_clap_push_ups,Clap Push Ups,pushup,title match
+ea_clock_push_ups,Clock Push Ups,pushup,title match
+ea_close_grip_push_up,Close Grip Push Up,pushup,title match
+ea_cobra_full_push_up,Cobra Full Push Up,pushup,title match
+ea_cobra_push_up,Cobra Push Up,pushup,title match
+ea_cossack_squat,Cossack Squat,squat,title match
+ea_counterbalanced_skater_squat,Counterbalanced Skater Squat,squat,title match
+ea_crunch_arms_straight,Crunch (arms Straight),situp,title match
+ea_crunch_hands_overhead,Crunch (hands Overhead),situp,title match
+ea_crunch_legs_on_stability_ball,Crunch (legs on Stability Ball),situp,title match
+ea_crunch_on_bosu_ball,Crunch (on Bosu Ball),situp,title match
+ea_crunch_on_stability_ball,Crunch (on Stability Ball),situp,title match
+ea_crunch_straight_leg_up,Crunch (straight Leg Up),situp,title match
+ea_crunch_floor,Crunch Floor,situp,title match
+ea_crunch_frog_on_floor,Crunch Frog on Floor,situp,title match
+ea_crunch_leg_raise,Crunch Leg Raise,situp,title match
+ea_crunch_with_medicine_ball,Crunch with Medicine Ball,situp,title match
+ea_curtsy_lunge_bodyweight,Curtsy Lunge Bodyweight,lunge,title match
+ea_curtsy_lunge_slide_with_towel,Curtsy Lunge Slide with Towel,lunge,title match
+ea_curtsy_lunges_resistance_band,Curtsy Lunges Resistance Band,lunge,title match
+ea_curtsy_squat,Curtsy Squat,squat,title match
+ea_decline_bent_leg_reverse_crunch,Decline Bent Leg Reverse Crunch,situp,title match
+ea_decline_chair_push_up_diamond,Decline Chair Push Up Diamond,pushup,title match
+ea_decline_diamond_pike_push_up,Decline Diamond Pike Push-up,pushup,title match
+ea_decline_kneeling_push_up,Decline Kneeling Push Up,pushup,title match
+ea_decline_kneeling_push_up_on_box,Decline Kneeling Push Up on Box,pushup,title match
+ea_decline_levitating_sit_ups_bodyweight,Decline Levitating Sit Ups Bodyweight,situp,title match
+ea_decline_push_up,Decline Push Up,pushup,title match
+ea_decline_push_up_against_wall,Decline Push Up Against Wall,pushup,title match
+ea_decline_sit_up,Decline Sit Up,situp,title match
+ea_decline_sit_ups_dumbbells,Decline Sit Ups Dumbbells,situp,title match
+ea_deep_push_up,Deep Push-up,pushup,title match
+ea_diagonal_lunge,Diagonal Lunge,lunge,title match
+ea_diamond_push_up,Diamond Push Up,pushup,title match
+ea_diamond_push_up_on_knees,Diamond Push-up (on Knees),pushup,title match
+ea_donkey_calf_raise,Donkey Calf Raise,calf_raise,title match
+ea_doorway_biceps_curl,Doorway Biceps Curl,curl,title match
+ea_double_jump_squat,Double Jump Squat,squat,title match
+ea_drag_curl_dumbbell,Drag Curl Dumbbell,curl,title match
+ea_drag_curl_resistance_band,Drag Curl Resistance Band,curl,title match
+ea_dumbbell_ab_crunch,Dumbbell Ab Crunch,situp,title match
+ea_dumbbell_alternate_biceps_curl,Dumbbell Alternate Biceps Curl,curl,title match
+ea_dumbbell_alternate_biceps_curl_version_2,Dumbbell Alternate Biceps Curl (version 2),curl,title match
+ea_dumbbell_alternate_shoulder_press,Dumbbell Alternate Shoulder Press,overhead_press,title match
+ea_dumbbell_bar_grip_sumo_squat,Dumbbell Bar Grip Sumo Squat,squat,title match
+ea_dumbbell_biceps_curl_with_overhead_extension_on_stability_ball,Dumbbell Biceps Curl with Overhead Extension on Stability Ball,curl,title match
+ea_dumbbell_bulgarian_box_split_squat,Dumbbell Bulgarian Box Split Squat,lunge,title match
+ea_dumbbell_bulgarian_split_squat,Dumbbell Bulgarian Split Squat,lunge,title match
+ea_dumbbell_close_legs_deadlift,Dumbbell Close Legs Deadlift,hinge,title match
+ea_dumbbell_close_grip_simultaneous_curl,Dumbbell Close-grip Simultaneous Curl,curl,title match
+ea_dumbbell_cross_body_hammer_curl_version_2,Dumbbell Cross Body Hammer Curl (version 2),curl,title match
+ea_dumbbell_crunch_hold_with_legs_off,Dumbbell Crunch Hold with Legs Off,situp,title match
+ea_dumbbell_curl_press_extend,Dumbbell Curl Press Extend,curl,title match
+ea_dumbbell_curtsy_lunge,Dumbbell Curtsy Lunge,lunge,title match
+ea_dumbbell_decline_overhead_sit_up,Dumbbell Decline Overhead Sit-up,situp,title match
+ea_dumbbell_decline_sit_up,Dumbbell Decline Sit-up,situp,title match
+ea_dumbbell_drag_over_shoulder_bicep_curl,Dumbbell Drag Over Shoulder Bicep Curl,curl,title match
+ea_dumbbell_elbow_side_plank,Dumbbell Elbow Side Plank,pushup,title match
+ea_dumbbell_feet_elevated_figure_four_glute_bridge,Dumbbell Feet Elevated Figure Four Glute Bridge,hinge,title match
+ea_dumbbell_feet_elevated_glute_bridge,Dumbbell Feet Elevated Glute Bridge,hinge,title match
+ea_dumbbell_feet_elevated_single_leg_glute_bridge,Dumbbell Feet Elevated Single Leg Glute Bridge,hinge,title match
+ea_dumbbell_feet_elevated_staggered_glute_bridge,Dumbbell Feet Elevated Staggered Glute Bridge,hinge,title match
+ea_dumbbell_figure_four_glute_bridge,Dumbbell Figure Four Glute Bridge,hinge,title match
+ea_dumbbell_front_rack_lunge,Dumbbell Front Rack Lunge,lunge,title match
+ea_dumbbell_front_squat,Dumbbell Front Squat,squat,title match
+ea_dumbbell_glute_bridge,Dumbbell Glute Bridge,hinge,title match
+ea_dumbbell_goblet_2_sec_hold_squat,Dumbbell Goblet 2 Sec Hold Squat,squat,title match
+ea_dumbbell_goblet_curtsy_lunge,Dumbbell Goblet Curtsy Lunge,lunge,title match
+ea_dumbbell_goblet_forward_lunge,Dumbbell Goblet Forward Lunge,lunge,title match
+ea_dumbbell_goblet_good_morning,Dumbbell Goblet Good Morning,hinge,title match
+ea_dumbbell_goblet_reverse_lunge,Dumbbell Goblet Reverse Lunge,lunge,title match
+ea_dumbbell_goblet_split_squat,Dumbbell Goblet Split Squat,lunge,title match
+ea_dumbbell_goblet_split_squat_front_foot_elevanted,Dumbbell Goblet Split Squat Front Foot Elevanted,lunge,title match
+ea_dumbbell_goblet_squat,Dumbbell Goblet Squat,squat,title match
+ea_dumbbell_half_biceps_curl_for_21s,Dumbbell Half Biceps Curl For 21s,curl,title match
+ea_dumbbell_half_kneeling_military_press,Dumbbell Half Kneeling Military Press,overhead_press,title match
+ea_dumbbell_hammer_curl,Dumbbell Hammer Curl,curl,title match
+ea_dumbbell_hammer_curl_simultaneous_arms,Dumbbell Hammer Curl Simultaneous Arms,curl,title match
+ea_dumbbell_hammer_preacher_curl_simultaneous_arms,Dumbbell Hammer Preacher Curl Simultaneous Arms,curl,title match
+ea_dumbbell_hammer_strict_curl,Dumbbell Hammer Strict Curl,curl,title match
+ea_dumbbell_hand_side_plank,Dumbbell Hand Side Plank,pushup,title match
+ea_dumbbell_high_curl,Dumbbell High Curl,curl,title match
+ea_dumbbell_hip_thrust,Dumbbell Hip Thrust,hinge,title match
+ea_dumbbell_hip_thrust_version_2,Dumbbell Hip Thrust (version 2),hinge,title match
+ea_dumbbell_incline_alternate_bicep_curl,Dumbbell Incline Alternate Bicep Curl,curl,title match
+ea_dumbbell_incline_alternate_curl,Dumbbell Incline Alternate Curl,curl,title match
+ea_dumbbell_incline_alternate_hammer_curl,Dumbbell Incline Alternate Hammer Curl,curl,title match
+ea_dumbbell_incline_biceps_simultaneous_curl,Dumbbell Incline Biceps Simultaneous Curl,curl,title match
+ea_dumbbell_incline_hammer_shoulder_press,Dumbbell Incline Hammer Shoulder Press,overhead_press,title match
+ea_dumbbell_incline_hammer_simultaneous_curl,Dumbbell Incline Hammer Simultaneous Curl,curl,title match
+ea_dumbbell_incline_simultaneous_curl,Dumbbell Incline Simultaneous Curl,curl,title match
+ea_dumbbell_jumping_squat,Dumbbell Jumping Squat,squat,title match
+ea_dumbbell_kneeling_squat,Dumbbell Kneeling Squat,squat,title match
+ea_dumbbell_lunge_alternating_on_the_spot,Dumbbell Lunge Alternating on the Spot,lunge,title match
+ea_dumbbell_lunge_pulse,Dumbbell Lunge Pulse,lunge,title match
+ea_dumbbell_offset_squat,Dumbbell Offset Squat,squat,title match
+ea_dumbbell_one_arm_hammer_preacher_curl,Dumbbell One Arm Hammer Preacher Curl,curl,title match
+ea_dumbbell_one_arm_reverse_preacher_curl,Dumbbell One Arm Reverse Preacher Curl,curl,title match
+ea_dumbbell_one_arm_reverse_wrist_curl,Dumbbell One Arm Reverse Wrist Curl,curl,title match
+ea_dumbbell_one_arm_shoulder_press_version_2,Dumbbell One Arm Shoulder Press (version 2),overhead_press,title match
+ea_dumbbell_one_arm_wrist_curl,Dumbbell One Arm Wrist Curl,curl,title match
+ea_dumbbell_one_arm_zottman_preacher_curl,Dumbbell One Arm Zottman Preacher Curl,curl,title match
+ea_dumbbell_overhead_lunge,Dumbbell Overhead Lunge,lunge,title match
+ea_dumbbell_overhead_sit_up,Dumbbell Overhead Sit-up,situp,title match
+ea_dumbbell_plank_pullthrough,Dumbbell Plank Pullthrough,pushup,title match
+ea_dumbbell_preacher_curl,Dumbbell Preacher Curl,curl,title match
+ea_dumbbell_preacher_curl_turned_torso,Dumbbell Preacher Curl (turned Torso),curl,title match
+ea_dumbbell_preacher_curl_over_exercise_ball,Dumbbell Preacher Curl Over Exercise Ball,curl,title match
+ea_dumbbell_press_squat,Dumbbell Press Squat,squat,title match
+ea_dumbbell_prone_incline_curl,Dumbbell Prone Incline Curl,curl,title match
+ea_dumbbell_prone_incline_hammer_curl,Dumbbell Prone Incline Hammer Curl,curl,title match
+ea_dumbbell_push_press,Dumbbell Push Press,overhead_press,title match
+ea_dumbbell_rear_lunge,Dumbbell Rear Lunge,lunge,title match
+ea_dumbbell_rear_lunge_from_step,Dumbbell Rear Lunge From Step,lunge,title match
+ea_dumbbell_reverse_grip_biceps_curl,Dumbbell Reverse Grip Biceps Curl,curl,title match
+ea_dumbbell_reverse_lunge_on_the_spot,Dumbbell Reverse Lunge on the Spot,lunge,title match
+ea_dumbbell_reverse_lunges_pulses,Dumbbell Reverse Lunges Pulses,lunge,title match
+ea_dumbbell_reverse_spider_curl,Dumbbell Reverse Spider Curl,curl,title match
+ea_dumbbell_reverse_wrist_curl,Dumbbell Reverse Wrist Curl,curl,title match
+ea_dumbbell_romanian_deadlift,Dumbbell Romanian Deadlift,hinge,title match
+ea_dumbbell_side_lunge_alternating,Dumbbell Side Lunge Alternating,lunge,title match
+ea_dumbbell_side_lunge_left_n_right,Dumbbell Side Lunge Left N Right,lunge,title match
+ea_dumbbell_side_lunge_single_leg,Dumbbell Side Lunge Single Leg,lunge,title match
+ea_dumbbell_side_plank_up_down,Dumbbell Side Plank Up Down,pushup,title match
+ea_dumbbell_side_plank_with_rear_fly,Dumbbell Side Plank with Rear Fly,pushup,title match
+ea_dumbbell_side_squat_side_to_side,Dumbbell Side Squat Side to Side,squat,title match
+ea_dumbbell_simultaneous_biceps_curl,Dumbbell Simultaneous Biceps Curl,curl,title match
+ea_dumbbell_single_arm_overhead_lunge,Dumbbell Single Arm Overhead Lunge,lunge,title match
+ea_dumbbell_single_arm_starfish_crunch,Dumbbell Single Arm Starfish Crunch,situp,title match
+ea_dumbbell_single_leg_calf_raise_wall_support,Dumbbell Single Leg Calf Raise Wall Support,calf_raise,title match
+ea_dumbbell_single_leg_deadlift,Dumbbell Single Leg Deadlift,hinge,title match
+ea_dumbbell_single_leg_glute_bridge,Dumbbell Single Leg Glute Bridge,hinge,title match
+ea_dumbbell_single_leg_hip_thrust,Dumbbell Single Leg Hip Thrust,hinge,title match
+ea_dumbbell_single_leg_single_arm_deadlift,Dumbbell Single Leg Single Arm Deadlift,hinge,title match
+ea_dumbbell_single_leg_split_squat,Dumbbell Single Leg Split Squat,lunge,title match
+ea_dumbbell_single_leg_squat,Dumbbell Single Leg Squat,squat,title match
+ea_dumbbell_single_leg_squat_with_support_pistol,Dumbbell Single Leg Squat with Support (pistol),squat,title match
+ea_dumbbell_single_leg_step_up,Dumbbell Single Leg Step-up,lunge,title match
+ea_dumbbell_split_squat,Dumbbell Split Squat,lunge,title match
+ea_dumbbell_squats_to_shoulder_press,Dumbbell Squats to Shoulder Press,overhead_press,title match
+ea_dumbbell_staggered_deadlift,Dumbbell Staggered Deadlift,hinge,title match
+ea_dumbbell_staggered_glute_bridge,Dumbbell Staggered Glute Bridge,hinge,title match
+ea_dumbbell_staggered_hip_thrust,Dumbbell Staggered Hip Thrust,hinge,title match
+ea_dumbbell_standing_alternate_overhead_press,Dumbbell Standing Alternate Overhead Press,overhead_press,title match
+ea_dumbbell_standing_calf_raise,Dumbbell Standing Calf Raise,calf_raise,title match
+ea_dumbbell_standing_calf_raise_on_step,Dumbbell Standing Calf Raise on Step,calf_raise,title match
+ea_dumbbell_standing_concentration_curl,Dumbbell Standing Concentration Curl,curl,title match
+ea_dumbbell_standing_curl_arnold_press,Dumbbell Standing Curl Arnold Press,curl,title match
+ea_dumbbell_standing_hammer_drag_curl,Dumbbell Standing Hammer Drag Curl,curl,title match
+ea_dumbbell_standing_one_arm_concentration_curl,Dumbbell Standing One Arm Concentration Curl,curl,title match
+ea_dumbbell_standing_overhead_press,Dumbbell Standing Overhead Press,overhead_press,title match
+ea_dumbbell_standing_preacher_curl,Dumbbell Standing Preacher Curl,curl,title match
+ea_dumbbell_standing_reverse_curl,Dumbbell Standing Reverse Curl,curl,title match
+ea_dumbbell_standing_simultaneous_biceps_curl,Dumbbell Standing Simultaneous Biceps Curl,curl,title match
+ea_dumbbell_standing_single_leg_calf_raise,Dumbbell Standing Single Leg Calf Raise,calf_raise,title match
+ea_dumbbell_standing_wide_simultaneous_biceps_curl,Dumbbell Standing Wide Simultaneous Biceps Curl,curl,title match
+ea_dumbbell_standing_wrist_curl,Dumbbell Standing Wrist Curl,curl,title match
+ea_dumbbell_starfish_crunch_alternating,Dumbbell Starfish Crunch Alternating,situp,title match
+ea_dumbbell_static_lunge,Dumbbell Static Lunge,lunge,title match
+ea_dumbbell_step_up_with_knee_raise,Dumbbell Step-up with Knee Raise,lunge,title match
+ea_dumbbell_stiff_leg_deadlift,Dumbbell Stiff Leg Deadlift,hinge,title match
+ea_dumbbell_straight_arm_crunch,Dumbbell Straight Arm Crunch,situp,title match
+ea_dumbbell_straight_arm_twisting_sit_up,Dumbbell Straight Arm Twisting Sit-up,situp,title match
+ea_dumbbell_straight_leg_deadlift,Dumbbell Straight Leg Deadlift,hinge,title match
+ea_dumbbell_suitcase_crunch,Dumbbell Suitcase Crunch,situp,title match
+ea_dumbbell_sumo_squat_off_benches,Dumbbell Sumo Squat Off Benches,squat,title match
+ea_dumbbell_supported_sissy_squat,Dumbbell Supported Sissy Squat,squat,title match
+ea_dumbbell_swing,Dumbbell Swing,hinge,title match
+ea_dumbbell_v_up,Dumbbell V-up,situp,title match
+ea_dumbbell_waiter_biceps_curl,Dumbbell Waiter Biceps Curl,curl,title match
+ea_dumbbell_zottman_curl,Dumbbell Zottman Curl,curl,title match
+ea_dumbbell_zottman_preacher_curl,Dumbbell Zottman Preacher Curl,curl,title match
+ea_dumbbells_plank_to_alternating_row,Dumbbells Plank to Alternating Row,pushup,title match
+ea_dynamic_leg_swing,Dynamic Leg Swing,hinge,title match
+ea_elbow_push_plank_up,Elbow Push Plank Up,pushup,title match
+ea_elbow_up_and_down_dynamic_plank,Elbow-up and Down Dynamic Plank,pushup,title match
+ea_elevated_push_up,Elevated Push Up,pushup,title match
+ea_elevated_standing_calf_raise,Elevated Standing Calf Raise,calf_raise,title match
+ea_exercise_ball_sit_ups,Exercise Ball Sit Ups,situp,title match
+ea_explosive_push_ups,Explosive Push Ups,pushup,title match
+ea_ez_bar_biceps_curl_close_grip,Ez Bar Biceps Curl Close Grip,curl,title match
+ea_ez_bar_biceps_curl_normal_grip,Ez Bar Biceps Curl Normal Grip,curl,title match
+ea_ez_bar_biceps_curl_wide_grip,Ez Bar Biceps Curl Wide Grip,curl,title match
+ea_ez_barbell_close_grip_curl,EZ Barbell Close Grip Curl,curl,title match
+ea_ez_barbell_curl,EZ Barbell Curl,curl,title match
+ea_full_planche_push_up,Full Planche Push Up,pushup,title match
+ea_glute_bridge_bodyweight,Glute Bridge Bodyweight,hinge,title match
+ea_glute_bridge_with_abduction_bodyweight,Glute Bridge with Abduction Bodyweight,hinge,title match
+ea_good_morning_resistance_band,Good Morning Resistance Band,hinge,title match
+ea_good_mornings,Good Mornings,hinge,title match
+ea_good_mornings_barbell,Good Mornings Barbell,hinge,title match
+ea_good_mornings_dumbbells,Good Mornings Dumbbells,hinge,title match
+ea_good_mornings_kettlebell,Good Mornings Kettlebell,hinge,title match
+ea_hammer_curl_resistance_band_simultaneous,Hammer Curl Resistance Band Simultaneous,curl,title match
+ea_hanging_oblique_crunches,Hanging Oblique Crunches,situp,title match
+ea_high_plank,High Plank,pushup,title match
+ea_high_resistance_band_kneeling_crunch,High Resistance Band Kneeling Crunch,situp,title match
+ea_hollow_hold,Hollow Hold,situp,title match
+ea_incline_dumbbell_curl,Incline Dumbbell Curl,curl,title match
+ea_incline_push_ups_on_chair,Incline Push Ups on Chair,pushup,title match
+ea_incline_push_up_on_box,Incline Push-up (on Box),pushup,title match
+ea_jumping_lunge,Jumping Lunge,lunge,title match
+ea_jumping_pistol_squat,Jumping Pistol Squat,squat,title match
+ea_kettlebell_bulgarian_split_squat_right,Kettlebell Bulgarian Split Squat Right,lunge,title match
+ea_kettlebell_bulgarian_split_squat_right_side_view,Kettlebell Bulgarian Split Squat Right Side View,lunge,title match
+ea_kettlebell_calf_raise,Kettlebell Calf Raise,calf_raise,title match
+ea_kettlebell_concentration_curl,Kettlebell Concentration Curl,curl,title match
+ea_kettlebell_curl,Kettlebell Curl,curl,title match
+ea_kettlebell_glute_bridge,Kettlebell Glute Bridge,hinge,title match
+ea_kettlebell_goblet_curl,Kettlebell Goblet Curl,curl,title match
+ea_kettlebell_half_kneeling_shoulder_press,Kettlebell Half Kneeling Shoulder Press,overhead_press,title match
+ea_kettlebell_hip_thrusts,Kettlebell Hip Thrusts,hinge,title match
+ea_kettlebell_kneeling_one_arm_shoulder_press,Kettlebell Kneeling One Arm Shoulder Press,overhead_press,title match
+ea_kettlebell_lateral_lunge,Kettlebell Lateral Lunge,lunge,title match
+ea_kettlebell_preacher_curl,Kettlebell Preacher Curl,curl,title match
+ea_kettlebell_reverse_lunge,Kettlebell Reverse Lunge,lunge,title match
+ea_kettlebell_single_arm_curl,Kettlebell Single Arm Curl,curl,title match
+ea_kettlebell_single_leg_calf_raise,Kettlebell Single Leg Calf Raise,calf_raise,title match
+ea_kettlebell_single_leg_deadlift,Kettlebell Single Leg Deadlift,hinge,title match
+ea_kettlebell_single_leg_glute_bridge,Kettlebell Single Leg Glute Bridge,hinge,title match
+ea_kettlebell_single_leg_glute_bridge_pullover,Kettlebell Single Leg Glute Bridge Pullover,hinge,title match
+ea_kettlebell_single_leg_hip_thrust,Kettlebell Single Leg Hip Thrust,hinge,title match
+ea_kettlebell_single_leg_romanian_deadlifts,Kettlebell Single Leg Romanian Deadlifts,hinge,title match
+ea_kettlebell_situp_press,Kettlebell Situp Press,situp,title match
+ea_kettlebell_split_squat,Kettlebell Split Squat,lunge,title match
+ea_kettlebell_staggered_deadlift,Kettlebell Staggered Deadlift,hinge,title match
+ea_kettlebell_standing_bottoms_up_one_arm_shoulder_press,Kettlebell Standing Bottoms-up One Arm Shoulder Press,overhead_press,title match
+ea_kettlebell_step_up,Kettlebell Step-up,lunge,title match
+ea_kettlebell_suitcase_squat,Kettlebell Suitcase Squat,squat,title match
+ea_kettlebell_sumo_deadlift,Kettlebell Sumo Deadlift,hinge,title match
+ea_kettlebell_sumo_deadlift_with_high_pull,Kettlebell Sumo Deadlift with High Pull,hinge,title match
+ea_kettlebell_sumo_squat,Kettlebell Sumo Squat,squat,title match
+ea_kettlebell_sumo_squat_version_2,Kettlebell Sumo Squat (version 2),squat,title match
+ea_kettlebell_sumo_squat_off_stepbox,Kettlebell Sumo Squat Off Stepbox,squat,title match
+ea_kettlebell_swing,Kettlebell Swing,hinge,title match
+ea_kettlebell_swing_version_2,Kettlebell Swing (version 2),hinge,title match
+ea_kettlebell_walkover_pushup,Kettlebell Walkover Pushup,pushup,title match
+ea_kettlebell_wrist_curl,Kettlebell Wrist Curl,curl,title match
+ea_kipping_handstand_push_up,Kipping Handstand Push-up,pushup,title match
+ea_kneeling_push_up,Kneeling Push-up,pushup,title match
+ea_kneeling_squat_jumps_bodyweight,Kneeling Squat Jumps Bodyweight,squat,title match
+ea_landmine_alternating_lunge_and_twist,Landmine Alternating Lunge and Twist,lunge,title match
+ea_landmine_alternating_lunge_to_chest_press,Landmine Alternating Lunge to Chest Press,lunge,title match
+ea_landmine_bicep_curl,Landmine Bicep Curl,curl,title match
+ea_landmine_calf_raise,Landmine Calf Raise,calf_raise,title match
+ea_landmine_concentration_curl,Landmine Concentration Curl,curl,title match
+ea_landmine_curtsy_lunge,Landmine Curtsy Lunge,lunge,title match
+ea_landmine_goblet_curtsy_lunge,Landmine Goblet Curtsy Lunge,lunge,title match
+ea_landmine_goblet_lateral_lunge,Landmine Goblet Lateral Lunge,lunge,title match
+ea_landmine_half_kneeling_single_arm_overhead_press,Landmine Half Kneeling Single Arm Overhead Press,overhead_press,title match
+ea_landmine_hollow_hold,Landmine Hollow Hold,situp,title match
+ea_landmine_kneeling_alternating_overhead_press,Landmine Kneeling Alternating Overhead Press,overhead_press,title match
+ea_landmine_kneeling_overhead_press,Landmine Kneeling Overhead Press,overhead_press,title match
+ea_landmine_lateral_lunge,Landmine Lateral Lunge,lunge,title match
+ea_landmine_overhead_press,Landmine Overhead Press,overhead_press,title match
+ea_landmine_romanian_deadlift,Landmine Romanian Deadlift,hinge,title match
+ea_landmine_single_arm_push_press,Landmine Single Arm Push Press,overhead_press,title match
+ea_landmine_single_arm_staggered_overhead_press,Landmine Single Arm Staggered Overhead Press,overhead_press,title match
+ea_landmine_squat_and_press,Landmine Squat and Press,squat,title match
+ea_long_arm_crunches,Long Arm Crunches,situp,title match
+ea_long_lever_plank,Long Lever Plank,pushup,title match
+ea_lunge_front_kick,Lunge Front Kick,lunge,title match
+ea_lunge_pulses_bodyweight,Lunge Pulses Bodyweight,lunge,title match
+ea_lunge_reverse_with_resistance_band,Lunge Reverse with Resistance Band,lunge,title match
+ea_lunge_rotation_left_and_right_bodyweight,Lunge Rotation Left and Right Bodyweight,lunge,title match
+ea_lunge_to_knee_drive_left_bodyweight,Lunge to Knee Drive Left Bodyweight,lunge,title match
+ea_lunge_to_knee_drive_right_bodyweight,Lunge to Knee Drive Right Bodyweight,lunge,title match
+ea_lunges_alternate_leg_with_pause_bodyweight,Lunges Alternate Leg with Pause Bodyweight,lunge,title match
+ea_lunges_same_leg_side_view_bodyweight,Lunges Same Leg Side View Bodyweight,lunge,title match
+ea_middle_crunches,Middle Crunches,situp,title match
+ea_military_press_bodyweight,Military Press Bodyweight,overhead_press,title match
+ea_modified_hindu_push_up,Modified Hindu Push Up,pushup,title match
+ea_nordic_hamstring_curl_with_partner,Nordic Hamstring Curl with Partner,curl,title match
+ea_normal_push_up,Normal Push-up,pushup,title match
+ea_oblique_crunch,Oblique Crunch,situp,title match
+ea_one_arm_push_up,One Arm Push Up,pushup,title match
+ea_over_head_weight_sit_up,Over Head Weight Sit Up,situp,title match
+ea_over_weight_ab_crunch,Over Weight Ab Crunch,situp,title match
+ea_pike_push_up,Pike Push Up,pushup,title match
+ea_pistol_squat_to_box,Pistol Squat to Box,squat,title match
+ea_plank_cross_knee_drive,Plank Cross Knee Drive,pushup,title match
+ea_plank_individual_arm_reach,Plank Individual Arm Reach,pushup,title match
+ea_plank_iytw,Plank IYTW,pushup,title match
+ea_plank_jack,Plank Jack,pushup,title match
+ea_plank_knee_tucks,Plank Knee Tucks,pushup,title match
+ea_plank_on_elbows,Plank on Elbows,pushup,title match
+ea_plank_pushup,Plank Pushup,pushup,title match
+ea_plank_reach_through,Plank Reach Through,pushup,title match
+ea_plank_reverse_fly_with_bottle,Plank Reverse Fly with Bottle,pushup,title match
+ea_plank_shoulder_taps,Plank Shoulder Taps,pushup,title match
+ea_plate_curtsy_lunge,Plate Curtsy Lunge,lunge,title match
+ea_plate_deadlift,Plate Deadlift,hinge,title match
+ea_plate_deficit_lunge,Plate Deficit Lunge,lunge,title match
+ea_plate_deficit_pushup,Plate Deficit Pushup,pushup,title match
+ea_plate_forward_lunge,Plate Forward Lunge,lunge,title match
+ea_plate_glute_bridge_to_chest_press,Plate Glute Bridge to Chest Press,hinge,title match
+ea_plate_glute_bridge_to_pullover,Plate Glute Bridge to Pullover,hinge,title match
+ea_plate_good_morning,Plate Good Morning,hinge,title match
+ea_plate_good_morning_anterior,Plate Good Morning Anterior,hinge,title match
+ea_plate_hollow_hold,Plate Hollow Hold,situp,title match
+ea_plate_lateral_lunge,Plate Lateral Lunge,lunge,title match
+ea_plate_overhead_press_to_tricep_extension,Plate Overhead Press to Tricep Extension,overhead_press,title match
+ea_plate_overhead_walking_lunge,Plate Overhead Walking Lunge,lunge,title match
+ea_plate_pinch_grip_deadlift,Plate Pinch Grip Deadlift,hinge,title match
+ea_plate_single_leg_deadlift,Plate Single Leg Deadlift,hinge,title match
+ea_plate_single_leg_pinch_grip_deadlift,Plate Single Leg Pinch Grip Deadlift,hinge,title match
+ea_plate_situp,Plate Situp,situp,title match
+ea_plate_squat_hold,Plate Squat Hold,squat,title match
+ea_plate_squat_hold_reach,Plate Squat Hold Reach,squat,title match
+ea_plate_squat_reach,Plate Squat Reach,squat,title match
+ea_plate_staggered_deadlift,Plate Staggered Deadlift,hinge,title match
+ea_plate_staggered_pinch_grip_deadlift,Plate Staggered Pinch Grip Deadlift,hinge,title match
+ea_plyo_side_lunge_stretch,Plyo Side Lunge Stretch,lunge,title match
+ea_preacher_curl_dumbbells_simultaneous,Preacher Curl Dumbbells Simultaneous,curl,title match
+ea_preacher_curl_ez_bar,Preacher Curl Ez Bar,curl,title match
+ea_preacher_curl_ez_bar_close_grip,Preacher Curl Ez Bar Close Grip,curl,title match
+ea_preacher_curl_ez_bar_wide_grip,Preacher Curl Ez Bar Wide Grip,curl,title match
+ea_push_up_and_rotation,Push Up and Rotation,pushup,title match
+ea_push_up_plus,Push Up Plus,pushup,title match
+ea_push_ups_bodyweight,Push Ups Bodyweight,pushup,title match
+ea_pushup_to_renegade_row,Pushup to Renegade Row,pushup,title match
+ea_raised_leg_crunch,Raised Leg Crunch,situp,title match
+ea_resistance_band_glute_bridge,Resistance Band Glute Bridge,hinge,title match
+ea_resistance_band_glute_bridge_abduction,Resistance Band Glute Bridge Abduction,hinge,title match
+ea_resistance_band_glute_bridge_version2,Resistance Band Glute Bridge_version2,hinge,title match
+ea_resistance_band_hip_thrust_version_2,Resistance Band Hip Thrust (version 2),hinge,title match
+ea_resistance_band_hip_thrusts_on_knees,Resistance Band Hip Thrusts on Knees,hinge,title match
+ea_resistance_band_one_leg_glute_bridge,Resistance Band One Leg Glute Bridge,hinge,title match
+ea_resistance_band_side_plank_glute_raise,Resistance Band Side Plank Glute Raise,pushup,title match
+ea_resistance_band_squat,Resistance Band Squat,squat,title match
+ea_resistance_band_squat_jump,Resistance Band Squat Jump,squat,title match
+ea_reverse_crunch,Reverse Crunch,situp,title match
+ea_reverse_crunch_with_kick_out,Reverse Crunch with Kick Out,situp,title match
+ea_reverse_curl_barbell,Reverse Curl Barbell,curl,title match
+ea_reverse_lunge_left_resistance_band,Reverse Lunge Left Resistance Band,lunge,title match
+ea_reverse_plank,Reverse Plank,pushup,title match
+ea_romanian_deadlift_barbell,Romanian Deadlift Barbell,hinge,title match
+ea_runners_lunge,Runners Lunge,lunge,title match
+ea_scapula_push_up,Scapula Push Up,pushup,title match
+ea_side_lunges_bodyweight,Side Lunges Bodyweight,lunge,title match
+ea_side_plank,Side Plank,pushup,title match
+ea_side_plank_with_hip_lift,Side Plank with Hip Lift,pushup,title match
+ea_side_to_side_push_up,Side to Side Push Up,pushup,title match
+ea_single_kettlebell_deadlift,Single Kettlebell Deadlift,hinge,title match
+ea_single_leg_romanian_deadlift_dumbbell,Single Leg Romanian Deadlift Dumbbell,hinge,title match
+ea_situps,Situps,situp,title match
+ea_spider_curl_barbell,Spider Curl Barbell,curl,title match
+ea_spider_curl_dumbbells_simultaneous,Spider Curl Dumbbells Simultaneous,curl,title match
+ea_spider_curl_ez_bar,Spider Curl Ez Bar,curl,title match
+ea_spider_plank,Spider Plank,pushup,title match
+ea_standing_calf_raise_resistance_band,Standing Calf Raise Resistance Band,calf_raise,title match
+ea_standing_dumbbell_alternate_shoulder_press,Standing Dumbbell Alternate Shoulder Press,overhead_press,title match
+ea_standing_oblique_crunch,Standing Oblique Crunch,situp,title match
+ea_standing_shoulder_press_dumbbell,Standing Shoulder Press Dumbbell,overhead_press,title match
+ea_star_crunches,Star Crunches,situp,title match
+ea_step_up_on_chair_bodyweight,Step Up on Chair Bodyweight,lunge,title match
+ea_sumo_squat_in_between_legs_resistance_band,Sumo Squat in Between Legs Resistance Band,squat,title match
+ea_sumo_squat_over_shoulder_resistance_band,Sumo Squat Over Shoulder Resistance Band,squat,title match
+ea_supine_push_up,Supine Push Up,pushup,title match
+ea_trap_bar_deadlift,Trap Bar Deadlift,hinge,title match
+ea_unilateral_front_plank,Unilateral Front Plank,pushup,title match
+ea_unilateral_plank,Unilateral Plank,pushup,title match
+ea_v_crunches,V Crunches,situp,title match
+ea_v_up,V Up,situp,title match
+ea_wall_squat_bodyweight,Wall Squat Bodyweight,squat,title match
+ea_wall_squat_with_pause_bodyweight,Wall Squat with Pause Bodyweight,squat,title match
+ea_weighted_standing_shoulder_press_with_plate,Weighted Standing Shoulder Press with Plate,overhead_press,title match
+ea_wide_push_ups_bodyweight,Wide Push Ups Bodyweight,pushup,title match
+ea_wrist_curl_barbell,Wrist Curl Barbell,curl,title match
+ea_wrist_curl_dumbbell,Wrist Curl Dumbbell,curl,title match

@@ -142,7 +142,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_4_corners_curtsy",
@@ -268,7 +269,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_4_reverse_lunge_and_4_side_taps",
@@ -310,7 +312,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_45_degree_bicycle_twist_knee_to_elbow",
@@ -791,7 +794,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_ab_tuck",
@@ -982,7 +986,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_ab_wheel_pulses",
@@ -1134,7 +1139,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_abdominal_crunches_machine",
@@ -1214,7 +1220,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_abdominal_stretch",
@@ -1839,7 +1846,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_air_punches_march",
@@ -1911,7 +1919,8 @@
       "hip",
       "knee",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_air_swing_side_to_side_swing",
@@ -1937,7 +1946,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_air_swing_walking",
@@ -1963,7 +1973,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_air_twisting_crunch",
@@ -2005,7 +2016,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_all_fours_quad_stretch",
@@ -2083,7 +2095,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_alternate_arm_leg_plank_hold",
@@ -2124,7 +2137,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_alternate_arm_leg_plank_rest_pause",
@@ -2163,7 +2177,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_alternate_biceps_curl_resistance_band",
@@ -2190,7 +2205,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_alternate_biceps_curl_standing_dumbbells",
@@ -2217,7 +2233,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_alternate_front_kick_in_place",
@@ -2298,7 +2315,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_alternate_heel_touch_side_kick_squat",
@@ -2340,7 +2358,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_alternate_heel_touches",
@@ -2506,7 +2525,8 @@
       "elbow",
       "lower_back",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_alternate_leg_raise_with_head_up",
@@ -2635,7 +2655,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_alternate_punching",
@@ -2719,7 +2740,8 @@
       "elbow",
       "hip",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_alternate_sprinter_lunge",
@@ -2765,7 +2787,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_alternate_superman",
@@ -2928,7 +2951,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_alternating_hamstring_curl",
@@ -2964,7 +2988,8 @@
     "equipmentLabel": "none",
     "poster": {
       "men": "assets/posters/men/ea_alternating_hamstring_curl.jpg"
-    }
+    },
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_alternating_hamstring_curl_with_punch",
@@ -3008,7 +3033,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_alternating_hamstring_curl_with_punch.jpg",
       "men": "assets/posters/men/ea_alternating_hamstring_curl_with_punch.jpg"
-    }
+    },
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_alternating_leg_downward_dog",
@@ -3140,7 +3166,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_alternating_oblique_sit_ups",
@@ -3181,7 +3208,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_alternating_plank_lunge",
@@ -3568,7 +3596,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_archer_step_back",
@@ -4051,7 +4080,8 @@
     },
     "contraindications": [
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_arm_tuck_side_bend",
@@ -5711,7 +5741,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_ball_headlock_squat",
@@ -5936,7 +5967,8 @@
     "contraindications": [
       "neck",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_band_bench_press",
@@ -6138,7 +6170,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_band_chest_fly",
@@ -6256,7 +6289,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_band_concentration_curl",
@@ -6293,7 +6327,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_band_cross_abduction",
@@ -6409,7 +6444,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_band_deadlift",
@@ -6452,7 +6488,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_band_decline_sit_up",
@@ -6492,7 +6529,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_band_face_pull",
@@ -6794,7 +6832,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_band_incline_bench_press",
@@ -6871,7 +6910,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_band_incline_fly",
@@ -6948,7 +6988,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_band_incline_hammer_press",
@@ -7215,7 +7256,8 @@
       "knee",
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_band_kneeling_lat_pulldown",
@@ -7293,7 +7335,8 @@
     "contraindications": [
       "elbow",
       "knee"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_band_kneeling_rear_kick",
@@ -7696,7 +7739,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_band_prone_incline_hammer_curl",
@@ -7734,7 +7778,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_band_pull_up",
@@ -7858,7 +7903,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_band_reverse_fly",
@@ -7934,7 +7980,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_band_rotating_hammer_grip_incline_bench_row",
@@ -8166,7 +8213,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_band_single_arm_pec_fly",
@@ -8252,7 +8300,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_band_skullcrusher",
@@ -8320,7 +8369,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_band_squat_row",
@@ -8347,7 +8397,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_band_standing_leg_curl",
@@ -8489,7 +8540,8 @@
     },
     "contraindications": [
       "ankle"
-    ]
+    ],
+    "poseTargetId": "calf_raise"
   },
   {
     "id": "ea_band_warm_up_shoulder_stretch",
@@ -8550,7 +8602,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_band_y_raise",
@@ -8628,7 +8681,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_banded_feet_elevated_hip_thrusters.jpg",
       "men": "assets/posters/men/ea_banded_feet_elevated_hip_thrusters.jpg"
-    }
+    },
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_alternate_biceps_curl",
@@ -8666,7 +8720,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_back_wide_shrug",
@@ -8781,7 +8836,8 @@
     "contraindications": [
       "neck",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_barbell_behind_the_back_push_press_single_arm_balance",
@@ -8820,7 +8876,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_barbell_bench_lateral_step_up",
@@ -9185,7 +9242,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_bicep_curl_normal_grip",
@@ -9223,7 +9281,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_bicep_curl_wide_grip",
@@ -9261,7 +9320,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_biceps_curl",
@@ -9299,7 +9359,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_box_squat",
@@ -9344,7 +9405,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_bulgarian_split_squat",
@@ -9389,7 +9451,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_bulgarian_split_squat_left_front_back_view",
@@ -9432,7 +9495,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_bulgarian_split_squat_left_side_view",
@@ -9475,7 +9539,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_calf_jump",
@@ -9614,7 +9679,8 @@
       "lower_back",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_clean_and_press",
@@ -9709,7 +9775,8 @@
       "hip",
       "lower_back",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_clean_grip_front_squat",
@@ -9755,7 +9822,8 @@
       "knee",
       "lower_back",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_clean_pull",
@@ -9869,7 +9937,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_curl",
@@ -9907,7 +9976,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_curtsy_lunges",
@@ -9950,7 +10020,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_deadlift",
@@ -9994,7 +10065,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_deadlift_front_pov",
@@ -10038,7 +10110,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_deadlift_side_pov",
@@ -10082,7 +10155,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_deadlift_360_degrees",
@@ -10126,7 +10200,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_deadlift_high_pull",
@@ -10175,7 +10250,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_decline_shrug",
@@ -10252,7 +10328,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_drag_curl",
@@ -10290,7 +10367,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_feet_elevated_figure_four_glute_bridge",
@@ -10333,7 +10411,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_feet_elevated_glute_bridge",
@@ -10376,7 +10455,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_feet_elevated_single_leg_glute_bridge",
@@ -10419,7 +10499,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_feet_elevated_staggered_glute_bridge",
@@ -10462,7 +10543,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_floor_chest_press",
@@ -10628,7 +10710,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_front_chest_squat",
@@ -10672,7 +10755,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_front_lunges_with_small_pause",
@@ -10713,7 +10797,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_front_rack_lunge",
@@ -10755,7 +10840,8 @@
       "hip",
       "knee",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_front_squats",
@@ -10893,7 +10979,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_full_squat_side_pov",
@@ -10937,7 +11024,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_full_squat_wide",
@@ -10979,7 +11067,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_full_squat_back",
@@ -11021,7 +11110,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_full_squat_with_rack",
@@ -11063,7 +11153,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_full_zercher_squat",
@@ -11110,7 +11201,8 @@
       "hip",
       "knee",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_glute_bridge",
@@ -11150,7 +11242,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_glute_bridge_hands_on_bar",
@@ -11190,7 +11283,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_good_morning",
@@ -11230,7 +11324,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_hang_clean",
@@ -11298,7 +11393,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_hooklying_bench_press",
@@ -11428,7 +11524,8 @@
       "hip",
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_inclined_bench_press",
@@ -11507,7 +11604,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_jefferson_squat",
@@ -11551,7 +11649,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_jm_bench_press",
@@ -11663,7 +11762,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_kas_glute_bridge",
@@ -11705,7 +11805,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_kneeling_squat",
@@ -11748,7 +11849,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_landmine_chest_press",
@@ -11837,7 +11939,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_larsen_bench_press",
@@ -11909,7 +12012,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_long_landmine_row",
@@ -11990,7 +12094,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_lunges",
@@ -12033,7 +12138,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_lunges_on_the_spot",
@@ -12074,7 +12180,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_lying_extension",
@@ -12392,7 +12499,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_narrow_stance_squat",
@@ -12433,7 +12541,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_one_arm_single_deadlift",
@@ -12477,7 +12586,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_one_leg_hip_thrust",
@@ -12516,7 +12626,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_overhead_lunges",
@@ -12562,7 +12673,8 @@
       "hip",
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_overhead_shrug",
@@ -12651,7 +12763,8 @@
       "knee",
       "lower_back",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_palm_down_wrist_curl_over_a_bench",
@@ -12770,7 +12883,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_pendlay_row",
@@ -13038,7 +13152,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_press_under",
@@ -13189,7 +13304,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_rack_pull",
@@ -13313,7 +13429,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_rear_lunges",
@@ -13355,7 +13472,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_reverse_biceps_curl",
@@ -13393,7 +13511,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_reverse_close_grip_bench_press",
@@ -13462,7 +13581,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_reverse_grip_bench_press",
@@ -13580,7 +13700,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_rollout",
@@ -14072,7 +14193,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_side_step_up",
@@ -14115,7 +14237,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_silverback_shrug",
@@ -14194,7 +14317,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_single_leg_deadlift",
@@ -14235,7 +14359,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_single_leg_split_squat",
@@ -14278,7 +14403,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_situp",
@@ -14302,7 +14428,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_barbell_situp.jpg",
       "men": "assets/posters/men/ea_barbell_situp.jpg"
-    }
+    },
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_barbell_smith_chest_press",
@@ -14479,7 +14606,8 @@
       "lower_back",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_snatch_deadlift_wide_grip",
@@ -14525,7 +14653,8 @@
       "lower_back",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_snatch_from_blocks",
@@ -14748,7 +14877,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_spoto_press",
@@ -14819,7 +14949,8 @@
       "hip",
       "knee",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_squat_to_grass",
@@ -14862,7 +14993,8 @@
       "hip",
       "knee",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_squat_with_2_sec_hold",
@@ -14905,7 +15037,8 @@
       "hip",
       "knee",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_barbell_staggered_deadlift",
@@ -14948,7 +15081,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_standing_back_wrist_curl",
@@ -14986,7 +15120,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_standing_close_grip_curl",
@@ -15025,7 +15160,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_standing_close_grip_military_press",
@@ -15063,7 +15199,8 @@
     "contraindications": [
       "elbow",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_barbell_standing_concentration_curl",
@@ -15101,7 +15238,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_standing_leg_calf_raises",
@@ -15139,7 +15277,8 @@
     },
     "contraindications": [
       "ankle"
-    ]
+    ],
+    "poseTargetId": "calf_raise"
   },
   {
     "id": "ea_barbell_standing_military_press",
@@ -15178,7 +15317,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_barbell_standing_overhead_triceps_extension",
@@ -15256,7 +15396,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_barbell_standing_twist",
@@ -15369,7 +15510,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_barbell_step_up_balance_on_box",
@@ -15413,7 +15555,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_barbell_step_up_on_bench",
@@ -15497,7 +15640,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_straight_leg_deadlift",
@@ -15538,7 +15682,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_sumo_deadlift",
@@ -15581,7 +15726,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_sumo_romanian_deadlift",
@@ -15622,7 +15768,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_barbell_thruster",
@@ -15776,7 +15923,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_wide_grip_upright_row",
@@ -15892,7 +16040,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_wrist_curl_wide_legs",
@@ -15930,7 +16079,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_barbell_wrist_extension_on_knees",
@@ -16033,7 +16183,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_basic_toe_touch",
@@ -17335,7 +17486,8 @@
     "contraindications": [
       "elbow",
       "knee"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_biceps_curl_resistance_band",
@@ -17373,7 +17525,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_biceps_curl_to_shoulder_press_resistance_band",
@@ -17453,7 +17606,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_biceps_stretch_behind_the_back",
@@ -17569,7 +17723,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_bicycles",
@@ -17648,7 +17803,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_bird_dog",
@@ -17810,7 +17966,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_body_slide",
@@ -17990,7 +18147,8 @@
     },
     "contraindications": [
       "ankle"
-    ]
+    ],
+    "poseTargetId": "calf_raise"
   },
   {
     "id": "ea_bodyweight_feet_elevated_figure_four_glute_bridge",
@@ -18029,7 +18187,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_bodyweight_feet_elevated_staggered_glute_bridge",
@@ -18068,7 +18227,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_bodyweight_forward_lunge",
@@ -18110,7 +18270,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_bodyweight_front_slam",
@@ -18192,7 +18353,8 @@
       "hip",
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_bodyweight_full_squat_with_overhead_press",
@@ -18441,7 +18603,8 @@
       "knee",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_bodyweight_kneeling_sissy_squat",
@@ -18483,7 +18646,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_bodyweight_kneeling_triceps_extension",
@@ -18648,7 +18812,8 @@
       "knee",
       "lower_back",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_bodyweight_overhead_triceps_extension",
@@ -18729,7 +18894,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_bodyweight_pulse_squat",
@@ -18772,7 +18938,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_bodyweight_pulse_squat_arms_to_chest",
@@ -18815,7 +18982,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_bodyweight_rear_lunge",
@@ -18857,7 +19025,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_bodyweight_rear_lunge_front_raise",
@@ -18902,7 +19071,8 @@
       "hip",
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_bodyweight_single_leg_deadlift",
@@ -18944,7 +19114,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_bodyweight_squat_to_front_leg",
@@ -18990,7 +19161,8 @@
       "hip",
       "knee",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_bodyweight_squat_to_side_leg",
@@ -19033,7 +19205,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_bodyweight_squat_to_side_to_front_leg",
@@ -19079,7 +19252,8 @@
       "hip",
       "knee",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_bodyweight_squats",
@@ -19278,7 +19452,8 @@
     },
     "contraindications": [
       "ankle"
-    ]
+    ],
+    "poseTargetId": "calf_raise"
   },
   {
     "id": "ea_bodyweight_standing_fly",
@@ -19357,7 +19532,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_bodyweight_standing_military_press_wall_supported",
@@ -19395,7 +19571,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_bodyweight_standing_shrug",
@@ -19517,7 +19694,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_bodyweight_svend_press",
@@ -20209,7 +20387,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_bridge_mountain_climber_cross_body",
@@ -20492,7 +20671,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_bulgarian_split_squat_bodyweight_left",
@@ -20535,7 +20715,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_bulgarian_split_squat_bodyweight_right",
@@ -20578,7 +20759,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_bulgarian_split_squat_cable_resistance_band",
@@ -20665,7 +20847,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_bulgarian_split_squat_right_bodyweight_side_view",
@@ -20708,7 +20891,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_bulgarian_split_squat_stretch",
@@ -20735,7 +20919,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_burpee",
@@ -20828,7 +21013,8 @@
       "hip",
       "knee",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_butt_kick_with_row",
@@ -24516,7 +24702,8 @@
     },
     "contraindications": [
       "ankle"
-    ]
+    ],
+    "poseTargetId": "calf_raise"
   },
   {
     "id": "ea_calf_raise_from_deficit_with_chair_supported",
@@ -24554,7 +24741,8 @@
     },
     "contraindications": [
       "ankle"
-    ]
+    ],
+    "poseTargetId": "calf_raise"
   },
   {
     "id": "ea_calf_raise_leg_press_machine",
@@ -24678,7 +24866,8 @@
     },
     "contraindications": [
       "ankle"
-    ]
+    ],
+    "poseTargetId": "calf_raise"
   },
   {
     "id": "ea_calf_stretch_with_hands_against_wall",
@@ -24978,7 +25167,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_cat_pose",
@@ -25124,7 +25314,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_chair_back_lunge_left_resistance_band",
@@ -25166,7 +25357,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_chair_back_lunge_right_resistance_band",
@@ -25208,7 +25400,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_chair_bulgarian_split_squats_bodyweight_left",
@@ -25252,7 +25445,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_chair_bulgarian_split_squats_bodyweight_right",
@@ -25296,7 +25490,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_chair_elevated_single_leg_glute_bridge",
@@ -25337,7 +25532,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_chair_feet_elevated_glute_bridge",
@@ -25378,7 +25574,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_chair_frog_feet_elevated_glute_bridge_bodyweight",
@@ -25420,7 +25617,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_chair_pose",
@@ -26275,7 +26473,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_child_pose_arms_extended_left_right",
@@ -26824,7 +27023,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_clap_jack",
@@ -26913,7 +27113,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_climber_a_padded_stool_supported",
@@ -26992,7 +27193,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_close_grip_barbell_bench_press",
@@ -27075,7 +27277,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_cluster",
@@ -27162,7 +27365,8 @@
       "lower_back",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_cobra_push_up",
@@ -27208,7 +27412,8 @@
       "lower_back",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_cobra_side_ab_stretch",
@@ -27631,7 +27836,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_counterbalanced_skater_squat",
@@ -27676,7 +27882,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_crab_pose",
@@ -28346,7 +28553,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_crunch_hands_overhead",
@@ -28388,7 +28596,8 @@
       "lower_back",
       "neck",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_crunch_legs_on_stability_ball",
@@ -28427,7 +28636,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_crunch_on_bosu_ball",
@@ -28468,7 +28678,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_crunch_on_stability_ball",
@@ -28508,7 +28719,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_crunch_straight_leg_up",
@@ -28549,7 +28761,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_crunch_floor",
@@ -28590,7 +28803,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_crunch_frog_on_floor",
@@ -28631,7 +28845,8 @@
       "hip",
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_crunch_leg_raise",
@@ -28671,7 +28886,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_crunch_with_medicine_ball",
@@ -28712,7 +28928,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_curtsy_lunge_bodyweight",
@@ -28753,7 +28970,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_curtsy_lunge_slide_with_towel",
@@ -28795,7 +29013,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_curtsy_lunges_resistance_band",
@@ -28835,7 +29054,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_curtsy_squat",
@@ -28877,7 +29097,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_dead_bug",
@@ -29071,7 +29292,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_decline_chair_push_up_diamond",
@@ -29115,7 +29337,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_decline_diamond_pike_push_up",
@@ -29158,7 +29381,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_decline_kneeling_push_up",
@@ -29201,7 +29425,8 @@
       "knee",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_decline_kneeling_push_up_on_box",
@@ -29244,7 +29469,8 @@
       "knee",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_decline_levitating_sit_ups_bodyweight",
@@ -29283,7 +29509,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_decline_push_up",
@@ -29325,7 +29552,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_decline_push_up_against_wall",
@@ -29368,7 +29596,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_decline_shoulder_tap",
@@ -29444,7 +29673,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_decline_sit_ups_dumbbells",
@@ -29484,7 +29714,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_deep_push_up",
@@ -29526,7 +29757,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_diagonal_chop_cable",
@@ -29676,7 +29908,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_diagonal_opens",
@@ -29791,7 +30024,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_diamond_push_up_on_knees",
@@ -29833,7 +30067,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_dip_leg_raise_on_couch",
@@ -29995,7 +30230,8 @@
     },
     "contraindications": [
       "ankle"
-    ]
+    ],
+    "poseTargetId": "calf_raise"
   },
   {
     "id": "ea_donkey_kicks_bodyweight",
@@ -30071,7 +30307,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_double_jump_squat",
@@ -30113,7 +30350,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_double_kettlebell_sled_push",
@@ -30360,7 +30598,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_drag_curl_resistance_band",
@@ -30399,7 +30638,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dragonfly",
@@ -30464,7 +30704,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_dumbbell_alternate_bench_press_high_start",
@@ -30541,7 +30782,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_alternate_biceps_curl_version_2",
@@ -30579,7 +30821,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_alternate_seated_hammer_curl",
@@ -30657,7 +30900,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_dumbbell_alternate_side_press",
@@ -30980,7 +31224,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_dumbbell_bench_press",
@@ -31337,7 +31582,8 @@
     "contraindications": [
       "elbow",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_bulgarian_box_split_squat",
@@ -31380,7 +31626,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_bulgarian_split_squat",
@@ -31423,7 +31670,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_chest_press_decline",
@@ -31724,7 +31972,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_close_grip_simultaneous_curl",
@@ -31762,7 +32011,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_cossack_squats_version_2",
@@ -31840,7 +32090,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_crunch_hold_with_legs_off",
@@ -31880,7 +32131,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_dumbbell_cuban_press_version_2",
@@ -31944,7 +32196,8 @@
       "knee",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_curls",
@@ -32062,7 +32315,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_decline_alternate_bench_press",
@@ -32324,7 +32578,8 @@
       "lower_back",
       "neck",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_dumbbell_decline_shrug",
@@ -32402,7 +32657,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_dumbbell_decline_triceps_pull_over_extension",
@@ -32551,7 +32807,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_elbow_side_plank",
@@ -32579,7 +32836,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_dumbbell_external_rotatio",
@@ -32790,7 +33048,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_feet_elevated_glute_bridge",
@@ -32832,7 +33091,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_feet_elevated_single_leg_glute_bridge",
@@ -32874,7 +33134,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_feet_elevated_staggered_glute_bridge",
@@ -32916,7 +33177,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_figure_four_glute_bridge",
@@ -32958,7 +33220,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_figure_four_hip_thrust",
@@ -33237,7 +33500,8 @@
       "hip",
       "knee",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_front_raise",
@@ -33357,7 +33621,8 @@
       "hip",
       "knee",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_dumbbell_glute_bridge",
@@ -33397,7 +33662,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_goblet_2_sec_hold_squat",
@@ -33439,7 +33705,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_dumbbell_goblet_curtsy_lunge",
@@ -33481,7 +33748,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_goblet_forward_lunge",
@@ -33525,7 +33793,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_goblet_good_morning",
@@ -33553,7 +33822,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_goblet_reverse_lunge",
@@ -33581,7 +33851,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_goblet_split_squat",
@@ -33623,7 +33894,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_goblet_split_squat_front_foot_elevanted",
@@ -33665,7 +33937,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_goblet_squat",
@@ -33708,7 +33981,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_dumbbell_half_biceps_curl_for_21s",
@@ -33746,7 +34020,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_half_kneeling_military_press",
@@ -33785,7 +34060,8 @@
     "contraindications": [
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_dumbbell_half_kneeling_wood_chopper",
@@ -33850,7 +34126,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_hammer_curl_simultaneous_arms",
@@ -33888,7 +34165,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_hammer_grip_incline_bench_two_arm_row",
@@ -33964,7 +34242,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_hammer_strict_curl",
@@ -34002,7 +34281,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_hand_side_plank",
@@ -34030,7 +34310,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_dumbbell_hang_power_clean",
@@ -34138,7 +34419,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_hip_thrust",
@@ -34177,7 +34459,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_hip_thrust_version_2",
@@ -34216,7 +34499,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_incline_alternate_bicep_curl",
@@ -34254,7 +34538,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_incline_alternate_curl",
@@ -34292,7 +34577,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_incline_alternate_hammer_curl",
@@ -34330,7 +34616,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_incline_alternate_press",
@@ -34444,7 +34731,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_incline_breeding",
@@ -34625,7 +34913,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_dumbbell_incline_hammer_simultaneous_curl",
@@ -34663,7 +34952,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_incline_lying_front_raise",
@@ -34957,7 +35247,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_incline_squeeze_press",
@@ -35217,7 +35508,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_dumbbell_kickback",
@@ -35405,7 +35697,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_dumbbell_kneeling_wood_chopper",
@@ -35645,7 +35938,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_lunge_pulse",
@@ -35687,7 +35981,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_lunge_to_overhead_press",
@@ -36163,7 +36458,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_dumbbell_one_arm_floor_fly",
@@ -36315,7 +36611,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_one_arm_kickback",
@@ -36467,7 +36764,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_one_arm_reverse_wrist_curl",
@@ -36506,7 +36804,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_one_arm_row_rack_support",
@@ -36619,7 +36918,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_dumbbell_one_arm_snatch",
@@ -36780,7 +37080,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_one_arm_zottman_preacher_curl",
@@ -36818,7 +37119,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_over_bench_reverse_wrist_curl",
@@ -37017,7 +37319,8 @@
       "hip",
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_overhead_side_bend",
@@ -37085,7 +37388,8 @@
       "lower_back",
       "neck",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_dumbbell_pendlay_row",
@@ -37140,7 +37444,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_dumbbell_preacher_curl",
@@ -37178,7 +37483,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_preacher_curl_turned_torso",
@@ -37216,7 +37522,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_preacher_curl_over_exercise_ball",
@@ -37254,7 +37561,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_press_squat",
@@ -37301,7 +37609,8 @@
       "hip",
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_dumbbell_pronate_grip_triceps_extension",
@@ -37377,7 +37686,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_prone_incline_hammer_curl",
@@ -37415,7 +37725,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_pullover",
@@ -37626,7 +37937,8 @@
     "contraindications": [
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_dumbbell_rdl_stretch_isometric",
@@ -37824,7 +38136,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_rear_lunge_from_step",
@@ -37866,7 +38179,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_renegade_row",
@@ -37980,7 +38294,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_reverse_lunge_on_the_spot",
@@ -38022,7 +38337,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_reverse_lunges_pulses",
@@ -38064,7 +38380,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_reverse_spider_curl",
@@ -38103,7 +38420,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_reverse_wrist_curl",
@@ -38139,7 +38457,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_romanian_deadlift",
@@ -38181,7 +38500,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_russian_twist_with_legs_floor_off",
@@ -39138,7 +39458,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_side_lunge_left_n_right",
@@ -39180,7 +39501,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_side_lunge_single_leg",
@@ -39222,7 +39544,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_side_lying_one_hand_raise",
@@ -39289,7 +39612,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_dumbbell_side_plank_with_rear_fly",
@@ -39331,7 +39655,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_dumbbell_side_squat_side_to_side",
@@ -39373,7 +39698,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_dumbbell_silverback_shrug",
@@ -39439,7 +39765,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_single_arm_floor_press",
@@ -39599,7 +39926,8 @@
       "hip",
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_single_arm_starfish_crunch",
@@ -39640,7 +39968,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_dumbbell_single_arm_underhand_front_raise",
@@ -39744,7 +40073,8 @@
     },
     "contraindications": [
       "ankle"
-    ]
+    ],
+    "poseTargetId": "calf_raise"
   },
   {
     "id": "ea_dumbbell_single_leg_deadlift",
@@ -39785,7 +40115,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_single_leg_glute_bridge",
@@ -39825,7 +40156,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_single_leg_hip_thrust",
@@ -39852,7 +40184,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_single_leg_single_arm_deadlift",
@@ -39880,7 +40213,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_single_leg_split_squat",
@@ -39923,7 +40257,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_single_leg_squat",
@@ -39964,7 +40299,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_dumbbell_single_leg_squat_with_support_pistol",
@@ -40006,7 +40342,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_dumbbell_single_leg_step_up",
@@ -40048,7 +40385,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_skullcrusher",
@@ -40114,7 +40452,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_squats",
@@ -40202,7 +40541,8 @@
       "hip",
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_dumbbell_staggered_deadlift",
@@ -40230,7 +40570,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_staggered_glute_bridge",
@@ -40257,7 +40598,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_staggered_hip_thrust",
@@ -40284,7 +40626,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_standing_alternate_overhead_press",
@@ -40322,7 +40665,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_dumbbell_standing_alternate_raise",
@@ -40514,7 +40858,8 @@
     },
     "contraindications": [
       "ankle"
-    ]
+    ],
+    "poseTargetId": "calf_raise"
   },
   {
     "id": "ea_dumbbell_standing_calf_raise_on_step",
@@ -40551,7 +40896,8 @@
     },
     "contraindications": [
       "ankle"
-    ]
+    ],
+    "poseTargetId": "calf_raise"
   },
   {
     "id": "ea_dumbbell_standing_concentration_curl",
@@ -40589,7 +40935,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_standing_curl_arnold_press",
@@ -40628,7 +40975,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_standing_front_raise_above_head",
@@ -40703,7 +41051,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_standing_hip_abduction",
@@ -40768,7 +41117,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_standing_one_arm_curl_over_incline_bench",
@@ -40879,7 +41229,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_dumbbell_standing_palms_in_press",
@@ -40955,7 +41306,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_standing_reverse_curl",
@@ -40994,7 +41346,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_standing_simultaneous_biceps_curl",
@@ -41032,7 +41385,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_standing_single_arm_cross_raise",
@@ -41106,7 +41460,8 @@
     },
     "contraindications": [
       "ankle"
-    ]
+    ],
+    "poseTargetId": "calf_raise"
   },
   {
     "id": "ea_dumbbell_standing_triceps_extension",
@@ -41182,7 +41537,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_standing_wrist_curl",
@@ -41220,7 +41576,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_starfish_crunch_alternating",
@@ -41261,7 +41618,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_dumbbell_static_lunge",
@@ -41303,7 +41661,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_step_up_on_bench",
@@ -41387,7 +41746,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_dumbbell_stiff_leg_deadlift",
@@ -41428,7 +41788,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_straight_arm_crunch",
@@ -41466,7 +41827,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_dumbbell_straight_arm_twisting_sit_up",
@@ -41504,7 +41866,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_dumbbell_straight_leg_deadlift",
@@ -41545,7 +41908,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_straight_leg_russian_twist",
@@ -41643,7 +42007,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_dumbbell_sumo_squat_off_benches",
@@ -41685,7 +42050,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_dumbbell_supported_sissy_squat",
@@ -41726,7 +42092,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_dumbbell_svend_press",
@@ -41791,7 +42158,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_dumbbell_tate_press",
@@ -41975,7 +42343,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_dumbbell_w_press",
@@ -42052,7 +42421,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_zottman_curl",
@@ -42090,7 +42460,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbell_zottman_preacher_curl",
@@ -42128,7 +42499,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_dumbbells_bent_over_row",
@@ -42251,7 +42623,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_dumbbells_single_arm_row",
@@ -42409,7 +42782,8 @@
     },
     "contraindications": [
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_eagle_arms_chin_into_chest",
@@ -42671,7 +43045,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_elbow_extension",
@@ -42732,7 +43107,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_elbows_back_stretch",
@@ -42839,7 +43215,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_elevated_standing_calf_raise",
@@ -42876,7 +43253,8 @@
     },
     "contraindications": [
       "ankle"
-    ]
+    ],
+    "poseTargetId": "calf_raise"
   },
   {
     "id": "ea_exercise_ball_back_extension_with_hands_behind_head",
@@ -43403,7 +43781,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_exercise_ball_wall_squat",
@@ -43488,7 +43867,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_extended_side_angle",
@@ -43688,7 +44068,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_ez_bar_biceps_curl_normal_grip",
@@ -43726,7 +44107,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_ez_bar_biceps_curl_wide_grip",
@@ -43764,7 +44146,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_ez_bar_cable_curl_wide_grip",
@@ -44071,7 +44454,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_ez_barbell_curl",
@@ -44109,7 +44493,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_fast_feet",
@@ -44946,7 +45331,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_gate_pose_rounding_spine_looking_up",
@@ -45017,7 +45403,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_glute_bridge_with_abduction_bodyweight",
@@ -45057,7 +45444,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_goblet_kettlebell_squats",
@@ -45140,7 +45528,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_good_mornings",
@@ -45168,7 +45557,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_good_mornings_barbell",
@@ -45209,7 +45599,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_good_mornings_dumbbells",
@@ -45250,7 +45641,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_good_mornings_kettlebell",
@@ -45291,7 +45683,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_gorilla_walk",
@@ -45783,7 +46176,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_hammer_strength_iso_lateral_leg_curl_alternating_legs",
@@ -46778,7 +47172,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_happy_baby",
@@ -47043,7 +47438,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_high_resistance_band_kneeling_crunch",
@@ -47084,7 +47480,8 @@
       "knee",
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_hip_thrust_in_smith_machine",
@@ -47199,7 +47596,8 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_hollow_hold.jpg"
-    }
+    },
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_horizontal_leg_press",
@@ -47564,7 +47962,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_incline_lateral_raises_dumbbell",
@@ -47644,7 +48043,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_incline_push_up_on_box",
@@ -47686,7 +48086,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_intermediate_hip_flexor_and_quad_stretch",
@@ -48301,7 +48702,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_jumping_pistol_squat",
@@ -48330,7 +48732,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_kettlebell_bulgarian_split_squat_right",
@@ -48373,7 +48776,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_kettlebell_bulgarian_split_squat_right_side_view",
@@ -48416,7 +48820,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_kettlebell_calf_raise",
@@ -48443,7 +48848,8 @@
     },
     "contraindications": [
       "ankle"
-    ]
+    ],
+    "poseTargetId": "calf_raise"
   },
   {
     "id": "ea_kettlebell_concentration_curl",
@@ -48470,7 +48876,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_kettlebell_curl",
@@ -48497,7 +48904,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_kettlebell_decline_skull_crusher",
@@ -48578,7 +48986,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_kettlebell_goblet_curl",
@@ -48605,7 +49014,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_kettlebell_gorilla_row",
@@ -48668,7 +49078,8 @@
     "contraindications": [
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_kettlebell_hip_thrusts",
@@ -48695,7 +49106,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_kettlebell_hip_thrusts_with_bench",
@@ -48789,7 +49201,8 @@
     "contraindications": [
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_kettlebell_lateral_lunge",
@@ -48817,7 +49230,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_kettlebell_long_lever_lateral_raise",
@@ -48869,7 +49283,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_kettlebell_pullover",
@@ -48951,7 +49366,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_kettlebell_row",
@@ -49219,7 +49635,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_kettlebell_single_arm_lateral_raise",
@@ -49324,7 +49741,8 @@
     },
     "contraindications": [
       "ankle"
-    ]
+    ],
+    "poseTargetId": "calf_raise"
   },
   {
     "id": "ea_kettlebell_single_leg_deadlift",
@@ -49350,7 +49768,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_kettlebell_single_leg_glute_bridge",
@@ -49377,7 +49796,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_kettlebell_single_leg_glute_bridge_pullover",
@@ -49420,7 +49840,8 @@
     "contraindications": [
       "hip",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_kettlebell_single_leg_hip_thrust",
@@ -49447,7 +49868,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_kettlebell_single_leg_romanian_deadlifts",
@@ -49475,7 +49897,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_kettlebell_situp_press",
@@ -49516,7 +49939,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_kettlebell_skull_crusher",
@@ -49635,7 +50059,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_kettlebell_squats",
@@ -49706,7 +50131,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_kettlebell_standing_bottoms_up_one_arm_shoulder_press",
@@ -49744,7 +50170,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_kettlebell_standing_tricep_extension",
@@ -49815,7 +50242,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_kettlebell_strict_press",
@@ -49896,7 +50324,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_kettlebell_sumo_deadlift",
@@ -49940,7 +50369,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_kettlebell_sumo_deadlift_with_high_pull",
@@ -49987,7 +50417,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_kettlebell_sumo_squat",
@@ -50032,7 +50463,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_kettlebell_sumo_squat_version_2",
@@ -50077,7 +50509,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_kettlebell_sumo_squat_off_stepbox",
@@ -50122,7 +50555,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_kettlebell_swing",
@@ -50164,7 +50598,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_kettlebell_swing_version_2",
@@ -50206,7 +50641,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_kettlebell_thruster",
@@ -50317,7 +50753,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_walkover_pushup.jpg",
       "men": "assets/posters/men/ea_kettlebell_walkover_pushup.jpg"
-    }
+    },
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_kettlebell_windmill",
@@ -50367,7 +50804,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_kettlebell_wrist_extension",
@@ -50420,7 +50858,8 @@
       "neck",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_kipping_pull_up",
@@ -50633,7 +51072,8 @@
       "knee",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_kneeling_squat_jumps_bodyweight",
@@ -50676,7 +51116,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_kneeling_wrist_flexor_stretch",
@@ -50762,7 +51203,8 @@
       "hip",
       "knee",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_landmine_alternating_lunge_to_chest_press",
@@ -50789,7 +51231,8 @@
       "hip",
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_landmine_alternating_single_arm_press",
@@ -50843,7 +51286,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_landmine_calf_raise",
@@ -50870,7 +51314,8 @@
     },
     "contraindications": [
       "ankle"
-    ]
+    ],
+    "poseTargetId": "calf_raise"
   },
   {
     "id": "ea_landmine_chest_press",
@@ -50937,7 +51382,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_landmine_curtsy_lunge",
@@ -50965,7 +51411,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_landmine_glute_kick_back",
@@ -51017,7 +51464,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_landmine_goblet_lateral_lunge",
@@ -51045,7 +51493,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_landmine_hack_squat",
@@ -51102,7 +51551,8 @@
     "contraindications": [
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_landmine_hollow_hold",
@@ -51126,7 +51576,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_landmine_hollow_hold.jpg",
       "men": "assets/posters/men/ea_landmine_hollow_hold.jpg"
-    }
+    },
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_landmine_kneeling_alternating_overhead_press",
@@ -51154,7 +51605,8 @@
     "contraindications": [
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_landmine_kneeling_overhead_press",
@@ -51182,7 +51634,8 @@
     "contraindications": [
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_landmine_kneeling_twist",
@@ -51237,7 +51690,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_landmine_lateral_raise",
@@ -51371,7 +51825,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_landmine_romanian_deadlift",
@@ -51399,7 +51854,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_landmine_rotational_lift_to_press",
@@ -51595,7 +52051,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_landmine_single_arm_staggered_overhead_press",
@@ -51622,7 +52079,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_landmine_squat_and_press",
@@ -51651,7 +52109,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_lat_pull_down_close_grip",
@@ -52563,7 +53022,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_long_lever_plank",
@@ -52591,7 +53051,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_lord_of_the_dance",
@@ -52865,7 +53326,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_lunge_pulses_bodyweight",
@@ -52906,7 +53368,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_lunge_reverse_with_resistance_band",
@@ -52949,7 +53412,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_lunge_rotation_left_and_right_bodyweight",
@@ -52993,7 +53457,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_lunge_to_knee_drive_left_bodyweight",
@@ -53037,7 +53502,8 @@
       "hip",
       "knee",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_lunge_to_knee_drive_right_bodyweight",
@@ -53081,7 +53547,8 @@
       "hip",
       "knee",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_lunges_alternate_leg_with_pause_bodyweight",
@@ -53123,7 +53590,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_lunges_same_leg_side_view_bodyweight",
@@ -53165,7 +53633,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_lunging_straight_leg_calf_stretch",
@@ -54412,7 +54881,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_military_press_bodyweight",
@@ -54450,7 +54920,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_modified_hindu_push_up",
@@ -54496,7 +54967,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_monkey_bar_swings",
@@ -54810,7 +55282,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_nordic_hamstring_curl_with_partner.jpg",
       "men": "assets/posters/men/ea_nordic_hamstring_curl_with_partner.jpg"
-    }
+    },
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_normal_push_up",
@@ -54851,7 +55324,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_normal_squat_smith_machine",
@@ -54920,7 +55394,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_one_arm_cow_face_pose_easy",
@@ -54971,7 +55446,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_one_arm_reverse_dumbbell_fly",
@@ -55051,7 +55527,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_over_weight_ab_crunch",
@@ -55092,7 +55569,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_overhand_clap",
@@ -55537,7 +56015,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_pike_shoulder_taps",
@@ -55591,7 +56070,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_plank_cross_knee_drive",
@@ -55631,7 +56111,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_plank_individual_arm_reach",
@@ -55657,7 +56138,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_plank_iytw",
@@ -55683,7 +56165,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_plank_jack",
@@ -55726,7 +56209,8 @@
       "elbow",
       "knee",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_plank_knee_tucks",
@@ -55767,7 +56251,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_plank_lunges",
@@ -55854,7 +56339,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_plank_pushup",
@@ -55880,7 +56366,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_plank_reach_through",
@@ -55921,7 +56408,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_plank_reverse_fly_with_bottle",
@@ -55962,7 +56450,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_plank_shoulder_taps",
@@ -56002,7 +56491,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_plate_alternating_deadstop_row",
@@ -56188,7 +56678,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_plate_deadlift",
@@ -56216,7 +56707,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_plate_deficit_lunge",
@@ -56244,7 +56736,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_plate_deficit_pushup",
@@ -56268,7 +56761,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_deficit_pushup.jpg",
       "men": "assets/posters/men/ea_plate_deficit_pushup.jpg"
-    }
+    },
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_plate_forward_lunge",
@@ -56296,7 +56790,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_plate_front_raise",
@@ -56389,7 +56884,8 @@
     "contraindications": [
       "hip",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_plate_glute_bridge_to_pullover",
@@ -56417,7 +56913,8 @@
     "contraindications": [
       "hip",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_plate_good_morning",
@@ -56445,7 +56942,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_plate_good_morning_anterior",
@@ -56473,7 +56971,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_plate_halo",
@@ -56521,7 +57020,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_hollow_hold.jpg",
       "men": "assets/posters/men/ea_plate_hollow_hold.jpg"
-    }
+    },
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_plate_internally_rotated_rear_delt_fly",
@@ -56576,7 +57076,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_plate_lateral_raise",
@@ -56656,7 +57157,8 @@
     "contraindications": [
       "elbow",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_plate_overhead_shrug",
@@ -56742,7 +57244,8 @@
       "hip",
       "knee",
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_plate_pinch_grip_deadlift",
@@ -56770,7 +57273,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_plate_pinch_grip_row",
@@ -56948,7 +57452,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_plate_single_leg_pinch_grip_deadlift",
@@ -56976,7 +57481,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_plate_situp",
@@ -57000,7 +57506,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_situp.jpg",
       "men": "assets/posters/men/ea_plate_situp.jpg"
-    }
+    },
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_plate_squat_hold",
@@ -57029,7 +57536,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_plate_squat_hold_biceps_curl",
@@ -57087,7 +57595,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_plate_squat_reach",
@@ -57116,7 +57625,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_plate_staggered_deadlift",
@@ -57144,7 +57654,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_plate_staggered_pinch_grip_deadlift",
@@ -57172,7 +57683,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_plate_standing_twist",
@@ -57287,7 +57799,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_preacher_curl_dumbbells_simultaneous",
@@ -57325,7 +57838,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_preacher_curl_ez_bar",
@@ -57363,7 +57877,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_preacher_curl_ez_bar_close_grip",
@@ -57401,7 +57916,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_preacher_curl_ez_bar_wide_grip",
@@ -57439,7 +57955,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_pretzel_stretch",
@@ -58042,7 +58559,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_push_up_plus",
@@ -58086,7 +58604,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_push_ups_bodyweight",
@@ -58127,7 +58646,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_pushup_to_renegade_row",
@@ -58149,7 +58669,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_pushup_to_renegade_row.jpg",
       "men": "assets/posters/men/ea_pushup_to_renegade_row.jpg"
-    }
+    },
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_pyramid_pose_parsvottanasana",
@@ -58280,7 +58801,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_reaching_up_shoulder_stretch",
@@ -58962,7 +59484,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_resistance_band_glute_bridge_abduction",
@@ -59003,7 +59526,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_resistance_band_glute_bridge_version2",
@@ -59044,7 +59568,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_resistance_band_hip_thrust_version_2",
@@ -59085,7 +59610,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_resistance_band_hip_thrusts_on_knees",
@@ -59126,7 +59652,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_resistance_band_kneeling_cross_body_single_straight_arm_supinated_pulldown",
@@ -59567,7 +60094,8 @@
     },
     "contraindications": [
       "hip"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_resistance_band_one_leg_kickback_bent_position",
@@ -59847,7 +60375,8 @@
       "elbow",
       "hip",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_resistance_band_squat",
@@ -59892,7 +60421,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_resistance_band_squat_jump",
@@ -59938,7 +60468,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_resistance_band_standing_balance_glute_kickback",
@@ -60389,7 +60920,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_reverse_crunch_with_kick_out",
@@ -60428,7 +60960,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_reverse_curl_barbell",
@@ -60454,7 +60987,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_reverse_grip_lat_pull_down",
@@ -60568,7 +61102,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_reverse_machine_fly",
@@ -60636,7 +61171,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_reverse_prayer",
@@ -60828,7 +61364,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_runner_stretch",
@@ -60889,7 +61426,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_running",
@@ -61074,7 +61612,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_scissors_kick",
@@ -62406,7 +62945,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_side_lying_floor_stretch",
@@ -62585,7 +63125,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_side_plank_oblique_crunch",
@@ -62667,7 +63208,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_side_to_side_punch",
@@ -62745,7 +63287,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_side_wrist_pull_stretch",
@@ -63073,7 +63616,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_single_kettlebell_sled_push",
@@ -63222,7 +63766,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_single_leg_romanian_deadlifts_right_cable_resistance_band",
@@ -63327,7 +63872,8 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_situps.jpg"
-    }
+    },
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_skater_hops",
@@ -64352,7 +64898,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_spider_curl_dumbbells_simultaneous",
@@ -64390,7 +64937,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_spider_curl_ez_bar",
@@ -64428,7 +64976,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_spider_plank",
@@ -64469,7 +65018,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_standing_ab_wheel_rollout",
@@ -64720,7 +65270,8 @@
     },
     "contraindications": [
       "ankle"
-    ]
+    ],
+    "poseTargetId": "calf_raise"
   },
   {
     "id": "ea_standing_calf_raises_smith_machine",
@@ -64798,7 +65349,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_standing_front_raise_dumbbell",
@@ -65062,7 +65614,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_standing_one_arm_chest_stretch",
@@ -65280,7 +65833,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_standing_side_leg_raises",
@@ -65532,7 +66086,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_star_jump",
@@ -65659,7 +66214,8 @@
     "contraindications": [
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "lunge"
   },
   {
     "id": "ea_stepmill_machine_steps",
@@ -65869,7 +66425,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_sumo_squat_over_shoulder_resistance_band",
@@ -65913,7 +66470,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_superman",
@@ -66122,7 +66680,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_suspension_trainer_with_grips_abdominal_fallout",
@@ -67715,7 +68274,8 @@
     "contraindications": [
       "hip",
       "lower_back"
-    ]
+    ],
+    "poseTargetId": "hinge"
   },
   {
     "id": "ea_trap_bar_shrug",
@@ -68180,7 +68740,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_unilateral_jumps",
@@ -68232,7 +68793,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_upper_back_stretch",
@@ -68542,7 +69104,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_v_up",
@@ -68582,7 +69145,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "poseTargetId": "situp"
   },
   {
     "id": "ea_walking",
@@ -68799,7 +69363,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_wall_squat_with_pause_bodyweight",
@@ -68843,7 +69408,8 @@
       "ankle",
       "hip",
       "knee"
-    ]
+    ],
+    "poseTargetId": "squat"
   },
   {
     "id": "ea_weighted_back_extensions_on_hyperextension_bench",
@@ -68908,7 +69474,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "poseTargetId": "overhead_press"
   },
   {
     "id": "ea_wheels_to_heaven",
@@ -69024,7 +69591,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "pushup"
   },
   {
     "id": "ea_wild_thing_pose",
@@ -69120,7 +69688,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_wrist_curl_dumbbell",
@@ -69159,7 +69728,8 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ]
+    ],
+    "poseTargetId": "curl"
   },
   {
     "id": "ea_wrist_extension_barbell",
