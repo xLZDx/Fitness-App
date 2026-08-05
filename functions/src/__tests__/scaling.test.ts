@@ -50,6 +50,7 @@ const ENTRYPOINTS: Record<string, unknown> = {
   startCoachOnboarding: index.startCoachOnboarding,
   bookCoachSession: index.bookCoachSession,
   reportEquipment: index.reportEquipment,
+  deleteAccount: index.deleteAccount,
 };
 
 describe("scaling ceilings", () => {

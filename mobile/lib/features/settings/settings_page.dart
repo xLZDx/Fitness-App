@@ -264,6 +264,44 @@ class SettingsPage extends ConsumerWidget {
               ],
             ),
           ),
+          const SizedBox(height: 24),
+          // L0b. Visually separated from every tile above it -- error colour
+          // throughout, not just the icon -- because this is the one action
+          // on this page that is not reversible by tapping it again.
+          GlassCard(
+            key: const Key('settings-delete-account'),
+            onTap: () => context.push('/delete-account'),
+            child: Row(
+              children: [
+                Icon(Icons.delete_forever_outlined,
+                    color: theme.colorScheme.error),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppLocalizations.of(context).settingsDeleteAccount,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: theme.colorScheme.error,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        AppLocalizations.of(context)
+                            .settingsDeleteAccountSubtitle,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.60),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: theme.colorScheme.error),
+              ],
+            ),
+          ),
         ],
       ),
     );

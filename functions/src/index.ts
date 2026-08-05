@@ -1109,6 +1109,172 @@ export const reportEquipment = onCall(
   },
 );
 
+/* ------------------------------------------------------------------ */
+/* deleteAccount                                                      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * L0b — irreversible by design, and ordered so that a failure partway
+ * through never leaves the account both billed AND unreachable.
+ *
+ * A client-only version of this was rejected. Two things it structurally
+ * cannot do: cancel the Stripe subscription (no secret key on the client,
+ * ever), and delete `users/{uid}/subscription/main` (`firestore.rules`'s
+ * `coll != 'subscription'` carve-out denies client writes to it by design --
+ * the exact thing that would leave a stale subscription record billing
+ * someone with no in-app way left to manage it). Both require the Admin SDK,
+ * so the whole flow is one server call rather than a client-driven sequence
+ * racing a server-driven Stripe step.
+ *
+ * ORDER, and why it is this order:
+ *   1. Cancel Stripe first. Reversible in principle (the operator can
+ *      resurrect a cancelled subscription from the Stripe dashboard if this
+ *      call is ever made in error); nothing else here is.
+ *   2. Delete Firestore data. `recursiveDelete` is safe to re-run --
+ *      "the provided reference is deleted regardless of whether all deletes
+ *      succeeded" (`@google-cloud/firestore` `recursiveDelete` doc) -- so a
+ *      partial failure here can be retried without re-running step 1.
+ *   3. Delete the Auth user LAST. This is the one truly irreversible step:
+ *      once gone, the uid can never sign back in, by anyone, including this
+ *      function on a retry. Doing it last means every earlier failure mode
+ *      still leaves an account someone could get back into and try again.
+ *
+ * `firestore.rules` needs no change for this. The plan flagged one, written
+ * against a client-driven deletion flow; the Admin SDK this function runs
+ * under bypasses Firestore rules entirely, so there is nothing for a rule to
+ * grant or deny here. Recorded rather than silently dropped, because the
+ * plan named it explicitly.
+ *
+ * NOT covered: progress-photo storage. `ProgressPhotosRepository` has no
+ * real backend yet (M0) -- there is nothing in Cloud Storage to delete until
+ * one exists, and this function has nothing to call. Whoever builds that
+ * backend has to add its cleanup here in the same change, not as a follow-up
+ * that is easy to forget once this function already looks complete.
+ */
+export const deleteAccount = onCall(
+  { ...RARE, secrets: [STRIPE_SECRET_KEY] },
+  async (request) => {
+    const auth = request.auth;
+    if (!auth) {
+      throw new HttpsError("unauthenticated", "Sign in first.");
+    }
+    const uid = auth.uid;
+
+    // Step 1 — cancel Stripe, if there is anything left to cancel.
+    //
+    // Idempotent by construction: retrieve the subscription's OWN status
+    // first and only call `cancel()` if it is not already in a terminal
+    // state. Three independent reviewers converged on the same failure this
+    // avoids -- a client retry (a dropped response after the server already
+    // finished, or the client's own token-refresh-and-retry on
+    // 'unauthenticated') would otherwise hit an "already canceled" error
+    // from Stripe and report "your account has not been deleted" for an
+    // account that, in fact, already was. Checking status first sidesteps
+    // matching a specific Stripe error code, which is not something to
+    // guess without a live fixture to verify it against.
+    //
+    // A failure that DOES throw here still aborts the whole call: proceeding
+    // to delete data or the account while Stripe keeps billing is the exact
+    // harm this function exists to prevent.
+    const subSnap = await db.doc(`users/${uid}/subscription/main`).get();
+    const subscriptionId = subSnap.data()?.stripeSubscriptionId as
+      | string
+      | undefined;
+    if (subscriptionId) {
+      try {
+        const stripe = await stripeClient();
+        const current = await stripe.subscriptions.retrieve(subscriptionId);
+        if (current.status !== "canceled") {
+          // Immediate cancellation, not `cancel_at_period_end` — the
+          // account is being deleted now, not at the end of a billing
+          // period nobody will be signed in to see.
+          await stripe.subscriptions.cancel(subscriptionId);
+        }
+      } catch (err) {
+        logger.error("account deletion: failed to cancel subscription", {
+          uid,
+          subscriptionId,
+          err,
+        });
+        throw new HttpsError(
+          "internal",
+          "Could not cancel your subscription. Your account has not been " +
+            "deleted. Please try again or contact support.",
+        );
+      }
+    }
+
+    // Step 2 — delete every document under this uid, plus the two other
+    // top-level collections a user can be written into elsewhere in this
+    // file: `donor_wall/{uid}` (optInDonorWall) and `coach_listings/{uid}`
+    // (startCoachOnboarding). Both are keyed by uid but live outside
+    // `users/{uid}`, so the original single recursiveDelete silently missed
+    // both -- a deleted donor's name stayed permanently public
+    // (`donor_wall` is publicly readable), and a deleted coach stayed
+    // bookable against a uid that could never fulfil the session.
+    //
+    // `recursiveDelete` is already idempotent: deleting a reference with
+    // nothing under it (the common case for the two extra collections, and
+    // for a retried call against `users/{uid}`) just completes.
+    try {
+      await Promise.all([
+        db.recursiveDelete(db.collection("users").doc(uid)),
+        db.recursiveDelete(db.collection("donor_wall").doc(uid)),
+        db.recursiveDelete(db.collection("coach_listings").doc(uid)),
+      ]);
+    } catch (err) {
+      logger.error("account deletion: failed to delete Firestore data", {
+        uid,
+        err,
+      });
+      throw new HttpsError(
+        "internal",
+        "Your subscription was cancelled, but some of your data could not " +
+          "be deleted. Please try again — this step is safe to repeat.",
+      );
+    }
+
+    // Step 3 — delete the Auth user. Last, and irreversible: once this
+    // succeeds there is no retry path left, by design.
+    //
+    // `auth/user-not-found` is treated as success, not failure -- the same
+    // idempotency reasoning as step 1. It is exactly what a retry against an
+    // already-completed deletion looks like: the uid genuinely no longer
+    // exists, which is this step's own goal already met.
+    try {
+      await admin.auth().deleteUser(uid);
+    } catch (err) {
+      if ((err as { code?: string }).code !== "auth/user-not-found") {
+        logger.error("account deletion: failed to delete the Auth user", {
+          uid,
+          err,
+        });
+        throw new HttpsError(
+          "internal",
+          "Your data was deleted, but signing out could not be completed. " +
+            "Please contact support to finish closing your account.",
+        );
+      }
+    }
+
+    // KNOWN, UNCLOSED GAP: a Firebase ID token minted just before this call
+    // remains cryptographically valid for up to ~1 hour after the Auth user
+    // is deleted above. `onCall`'s built-in token verification
+    // (`firebase-functions` -> `verifyIdToken`, no `checkRevoked`) does not
+    // re-check that the uid still exists, so a client still holding that
+    // token could keep invoking OTHER authenticated callables in this file
+    // as this now-deleted uid until the token expires on its own. This is a
+    // platform-level property of every `onCall` function in this codebase,
+    // not something introduced by or fixable inside this one function --
+    // closing it project-wide would mean passing `checkRevoked: true`
+    // through every callable's auth verification, which `onCall` does not
+    // expose as a per-function option. Recorded here rather than silently
+    // shipped as if "irreversible" meant "immediate everywhere."
+    logger.info("account deleted", { uid });
+    return { success: true };
+  },
+);
+
 // Signed, expiring URLs for the licensed clip library. Kept in its own module
 // because it is the one part of this file that exists to satisfy a contract
 // rather than a feature request — see the header of video_urls.ts.

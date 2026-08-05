@@ -1,0 +1,291 @@
+/**
+ * L0b — the entrypoint whose failure mode is either "still billed with no
+ * way back in" or "signed out of an account nobody deleted". Ordered so
+ * neither can happen: cancel Stripe, then delete Firestore data, then
+ * delete the Auth user last, and a failure at any step throws before the
+ * next one runs.
+ *
+ * Own admin mock rather than reusing index.test.ts's: this function is the
+ * only one that calls `db.collection().doc()`, `db.recursiveDelete()` and
+ * `admin.auth().deleteUser()`, none of which the shared mock models.
+ */
+
+const refs = new Map<string, any>();
+const getRef = (path: string): any => {
+  let ref = refs.get(path);
+  if (!ref) {
+    let stored: any = undefined;
+    ref = {
+      path,
+      get: jest.fn(async () => ({
+        exists: stored !== undefined,
+        data: () => stored,
+      })),
+      set: jest.fn(async (data: any) => {
+        stored = data;
+      }),
+      __setStored: (v: any) => {
+        stored = v;
+      },
+    };
+    refs.set(path, ref);
+  }
+  return ref;
+};
+
+const recursiveDelete = jest.fn(async (_ref?: any) => undefined);
+const deleteUser = jest.fn(async () => undefined);
+
+jest.mock("firebase-admin", () => {
+  const firestoreFn: any = jest.fn(() => ({
+    doc: jest.fn((path: string) => getRef(path)),
+    collection: jest.fn((name: string) => ({
+      doc: jest.fn((id: string) => getRef(`${name}/${id}`)),
+    })),
+    recursiveDelete,
+  }));
+  return {
+    initializeApp: jest.fn(),
+    firestore: firestoreFn,
+    auth: jest.fn(() => ({ deleteUser })),
+    __getRef: getRef,
+    __reset: () => refs.clear(),
+  };
+});
+
+const cancel = jest.fn();
+const retrieve = jest.fn();
+jest.mock("stripe", () => {
+  const instance = { subscriptions: { cancel, retrieve } };
+  const ctor: any = jest.fn(() => instance);
+  ctor.__instance = instance;
+  return ctor;
+});
+
+jest.mock("firebase-functions/logger", () => ({
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+}));
+
+import { HttpsError } from "firebase-functions/v2/https";
+import { deleteAccount } from "../index";
+
+function req(auth?: { uid: string }, data: unknown = {}): any {
+  return { data, auth, rawRequest: {} };
+}
+
+async function expectHttpsError(
+  p: Promise<unknown>,
+  code: string,
+): Promise<HttpsError> {
+  const err = await p.then(
+    () => {
+      throw new Error(`expected HttpsError("${code}") but the call resolved`);
+    },
+    (e: unknown) => e,
+  );
+  expect(err).toBeInstanceOf(HttpsError);
+  expect((err as HttpsError).code).toBe(code);
+  return err as HttpsError;
+}
+
+beforeEach(() => {
+  refs.clear();
+  recursiveDelete.mockReset().mockResolvedValue(undefined);
+  deleteUser.mockReset().mockResolvedValue(undefined);
+  cancel.mockReset().mockResolvedValue(undefined);
+  // Not-yet-canceled by default -- most tests exercise the ordinary path
+  // where cancel() is actually expected to run. The idempotency tests below
+  // override this per-case.
+  retrieve.mockReset().mockResolvedValue({ status: "active" });
+});
+
+describe("deleteAccount", () => {
+  test("rejects when signed out", async () => {
+    await expectHttpsError(deleteAccount.run(req(undefined)), "unauthenticated");
+    expect(recursiveDelete).not.toHaveBeenCalled();
+    expect(deleteUser).not.toHaveBeenCalled();
+  });
+
+  test("happy path with a subscription: cancels, deletes data, deletes the user",
+    async () => {
+      const ref = getRef("users/u1/subscription/main");
+      ref.__setStored({ stripeSubscriptionId: "sub_123" });
+
+      const res = await deleteAccount.run(req({ uid: "u1" }));
+
+      expect(res).toEqual({ success: true });
+      expect(retrieve).toHaveBeenCalledWith("sub_123");
+      expect(cancel).toHaveBeenCalledWith("sub_123");
+      // Three collections: users/{uid}, donor_wall/{uid}, coach_listings/{uid}.
+      expect(recursiveDelete).toHaveBeenCalledTimes(3);
+      expect(deleteUser).toHaveBeenCalledWith("u1");
+    });
+
+  test("deletes donor_wall and coach_listings too, not only users/{uid}",
+    async () => {
+      // Both are separate top-level collections keyed by uid
+      // (optInDonorWall, startCoachOnboarding) -- missed entirely by the
+      // first version of this function, which only reached users/{uid}.
+      const targeted: string[] = [];
+      recursiveDelete.mockImplementation(async (ref: any) => {
+        targeted.push(ref.path);
+      });
+
+      await deleteAccount.run(req({ uid: "u1" }));
+
+      expect(targeted.sort()).toEqual([
+        "coach_listings/u1",
+        "donor_wall/u1",
+        "users/u1",
+      ]);
+    });
+
+  test("no subscription on file: skips Stripe, still deletes everything else",
+    async () => {
+      // No __setStored -- the doc read resolves `exists: false`.
+      const res = await deleteAccount.run(req({ uid: "u1" }));
+
+      expect(res).toEqual({ success: true });
+      expect(retrieve).not.toHaveBeenCalled();
+      expect(cancel).not.toHaveBeenCalled();
+      expect(recursiveDelete).toHaveBeenCalledTimes(3);
+      expect(deleteUser).toHaveBeenCalledWith("u1");
+    });
+
+  describe("idempotency: a retried call converges instead of erroring", () => {
+    // Three independent reviewers converged on the same gap: a client retry
+    // (a dropped response after the server already finished, or the
+    // client's own token-refresh-and-retry on 'unauthenticated') must not
+    // report "your account has not been deleted" for an account that, in
+    // fact, already was.
+
+    test("an already-canceled subscription is not re-cancelled, and is not an error",
+      async () => {
+        getRef("users/u1/subscription/main").__setStored({
+          stripeSubscriptionId: "sub_123",
+        });
+        retrieve.mockResolvedValue({ status: "canceled" });
+
+        const res = await deleteAccount.run(req({ uid: "u1" }));
+
+        expect(res).toEqual({ success: true });
+        expect(retrieve).toHaveBeenCalledWith("sub_123");
+        expect(cancel).not.toHaveBeenCalled();
+      });
+
+    test("deleting an already-deleted Auth user is treated as success",
+      async () => {
+        const err: any = new Error("There is no user record...");
+        err.code = "auth/user-not-found";
+        deleteUser.mockRejectedValue(err);
+
+        const res = await deleteAccount.run(req({ uid: "u1" }));
+
+        expect(res).toEqual({ success: true });
+      });
+
+    test("a genuinely different Auth error still fails loudly, not silently",
+      async () => {
+        // The idempotency fix must not become a blanket swallow -- only the
+        // one code that means "already done" is forgiven.
+        const err: any = new Error("internal auth backend error");
+        err.code = "auth/internal-error";
+        deleteUser.mockRejectedValue(err);
+
+        await expectHttpsError(
+          deleteAccount.run(req({ uid: "u1" })),
+          "internal",
+        );
+      });
+  });
+
+  test("ORDER: Stripe is cancelled before Firestore data is touched, "
+    + "which is deleted before the Auth user is",
+    async () => {
+      const order: string[] = [];
+      cancel.mockImplementation(async () => {
+        order.push("cancel");
+      });
+      // recursiveDelete runs three times in parallel (users, donor_wall,
+      // coach_listings) -- what matters for ordering is that all three
+      // land as a group between "cancel" and "deleteUser", not their
+      // relative order against each other.
+      recursiveDelete.mockImplementation(async () => {
+        order.push("recursiveDelete");
+      });
+      deleteUser.mockImplementation(async () => {
+        order.push("deleteUser");
+      });
+      getRef("users/u1/subscription/main").__setStored({
+        stripeSubscriptionId: "sub_123",
+      });
+
+      await deleteAccount.run(req({ uid: "u1" }));
+
+      expect(order).toEqual([
+        "cancel",
+        "recursiveDelete",
+        "recursiveDelete",
+        "recursiveDelete",
+        "deleteUser",
+      ]);
+    });
+
+  test(
+    "a failed cancellation stops the call before any data is deleted",
+    async () => {
+      getRef("users/u1/subscription/main").__setStored({
+        stripeSubscriptionId: "sub_123",
+      });
+      cancel.mockRejectedValue(new Error("stripe is down"));
+
+      await expectHttpsError(deleteAccount.run(req({ uid: "u1" })), "internal");
+
+      // The whole reason cancellation runs first: a failure here must never
+      // be followed by deleting the account anyway.
+      expect(recursiveDelete).not.toHaveBeenCalled();
+      expect(deleteUser).not.toHaveBeenCalled();
+    },
+  );
+
+  test(
+    "a failed Firestore delete stops the call before the Auth user is touched",
+    async () => {
+      recursiveDelete.mockRejectedValue(new Error("bulkwriter failed"));
+
+      await expectHttpsError(deleteAccount.run(req({ uid: "u1" })), "internal");
+
+      // Stripe was already cancelled (there was nothing to cancel here, so
+      // this asserts the NEXT step didn't run, not that the first one was
+      // skipped) -- the account must stay reachable for a retry, which means
+      // the Auth user must still exist.
+      expect(deleteUser).not.toHaveBeenCalled();
+    },
+  );
+
+  test("a failed Auth deletion still reports the real failure, not a false success",
+    async () => {
+      deleteUser.mockRejectedValue(new Error("auth backend down"));
+
+      await expectHttpsError(deleteAccount.run(req({ uid: "u1" })), "internal");
+    });
+
+  test("a spoofed uid in the request body is ignored -- only request.auth.uid counts",
+    async () => {
+      // The plan's own worry is "deleting someone else's account". Closed
+      // structurally: the handler never reads `request.data` for a uid at
+      // all, only `request.auth.uid`, which `onCall` derives from the
+      // caller's own verified ID token and a client cannot forge. This
+      // proves it rather than asserting the absence of a code path -- a
+      // `data.uid` that pointed at a different account and got used anyway
+      // would show up here as `deleteUser` being called with "attacker",
+      // not "u1".
+      await deleteAccount.run(req({ uid: "u1" }, { uid: "attacker" }));
+
+      expect(deleteUser).toHaveBeenCalledWith("u1");
+      expect(deleteUser).not.toHaveBeenCalledWith("attacker");
+    });
+});

@@ -740,5 +740,16 @@
   "marketplaceDemoListings": "Это демонстрационные объявления, не настоящие тренеры. Бронирование отключено, пока не подключены настоящие тренеры.",
   "progressphotosDemoNotSaved": "Демо-режим: сделанные сейчас фото не сохраняются в вашем аккаунте и будут потеряны при перезапуске приложения.",
   "communityDemoFeed": "Демо-лента: записи здесь не сохраняются и будут потеряны при перезапуске приложения.",
-  "settingsExportData": "Экспортировать мои данные"
+  "settingsExportData": "Экспортировать мои данные",
+  "accountdeletionTitle": "Удаление аккаунта",
+  "accountdeletionCannotBeUndone": "Это необратимо",
+  "accountdeletionConsequenceSubscription": "Активная подписка отменяется немедленно.",
+  "accountdeletionConsequenceHealthData": "Ваш профиль и список травм удаляются безвозвратно.",
+  "accountdeletionConsequenceHistory": "Вся история тренировок и расписание удаляются безвозвратно.",
+  "accountdeletionConsequenceNoRecovery": "Восстановить аккаунт или данные после этого невозможно.",
+  "accountdeletionTypeToConfirm": "Введите {word} для подтверждения",
+  "accountdeletionDeleteMyAccount": "Удалить мой аккаунт",
+  "accountdeletionFailed": "Не удалось удалить аккаунт: {error}",
+  "settingsDeleteAccount": "Удалить аккаунт",
+  "settingsDeleteAccountSubtitle": "Безвозвратно удалить данные и отменить подписку"
 }

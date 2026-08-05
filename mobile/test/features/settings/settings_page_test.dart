@@ -40,6 +40,10 @@ Widget _buildApp(InMemorySettingsRepository repo, {List<Override> extra = const 
         path: '/about',
         builder: (_, __) => const Scaffold(body: Text('about-stub')),
       ),
+      GoRoute(
+        path: '/delete-account',
+        builder: (_, __) => const Scaffold(body: Text('delete-account-stub')),
+      ),
     ],
   );
   return ProviderScope(
@@ -200,6 +204,22 @@ void main() {
 
         expect(find.byType(SnackBar), findsOneWidget);
       });
+    });
+
+    testWidgets('Delete account opens its own confirmation page',
+        (tester) async {
+      // Regression shape of "the profile Settings tile navigates to
+      // /settings" above: a tile that renders but whose onTap does nothing
+      // is a dead end, and this is the one tile on the page where that would
+      // be worst -- it reads as "I deleted my account" when nothing happened.
+      await _largeSurface(tester);
+      await tester.pumpWidget(_buildApp(InMemorySettingsRepository()));
+      await tester.pump();
+
+      await tester.tap(find.byKey(const Key('settings-delete-account')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('delete-account-stub'), findsOneWidget);
     });
   });
 

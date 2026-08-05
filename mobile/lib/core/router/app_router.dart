@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/about/about_page.dart';
+import '../../features/account_deletion/account_deletion_page.dart';
 import '../../features/legal/privacy_page.dart';
 import '../../features/legal/terms_page.dart';
 import '../../features/licences/licences_page.dart';
@@ -282,6 +283,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         pageBuilder: (_, __) => _fadeThrough(const SettingsPage()),
+      ),
+      GoRoute(
+        // L0b. Reached from Settings, outside the shell for the same reason
+        // /injuries is: it is a form-like flow, not a tab.
+        path: '/delete-account',
+        pageBuilder: (_, __) => _fadeThrough(const AccountDeletionPage()),
       ),
       GoRoute(
         path: '/donors',

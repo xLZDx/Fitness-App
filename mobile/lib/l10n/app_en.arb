@@ -1373,5 +1373,30 @@
   "marketplaceDemoListings": "These are sample listings, not real coaches. Booking is disabled until real coaches are onboarded.",
   "progressphotosDemoNotSaved": "Demo mode: photos captured now are not saved to your account and will be lost when the app restarts.",
   "communityDemoFeed": "Demo feed: posts here are not saved and will be lost when the app restarts.",
-  "settingsExportData": "Export your data"
+  "settingsExportData": "Export your data",
+  "accountdeletionTitle": "Delete account",
+  "accountdeletionCannotBeUndone": "This cannot be undone",
+  "accountdeletionConsequenceSubscription": "Any active subscription is cancelled immediately.",
+  "accountdeletionConsequenceHealthData": "Your profile and injury list are permanently erased.",
+  "accountdeletionConsequenceHistory": "Your entire workout history and schedule are permanently erased.",
+  "accountdeletionConsequenceNoRecovery": "There is no way to recover this account or its data afterward.",
+  "accountdeletionTypeToConfirm": "Type {word} to confirm",
+  "@accountdeletionTypeToConfirm": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "accountdeletionDeleteMyAccount": "Delete my account",
+  "accountdeletionFailed": "Could not delete your account: {error}",
+  "@accountdeletionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsDeleteAccount": "Delete account",
+  "settingsDeleteAccountSubtitle": "Permanently erase your data and cancel any subscription"
 }

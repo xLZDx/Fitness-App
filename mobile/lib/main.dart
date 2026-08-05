@@ -25,6 +25,8 @@ import 'features/auth/data/firebase_auth_repository.dart';
 import 'features/auth/state/auth_providers.dart';
 import 'features/donor_wall/data/cloud_donor_wall_repository.dart';
 import 'features/donor_wall/state/donor_wall_providers.dart';
+import 'features/account_deletion/data/cloud_functions_account_deletion_service.dart';
+import 'features/account_deletion/state/account_deletion_providers.dart';
 import 'features/data_export/data_export_sink.dart';
 import 'features/equipment/data/cloud_functions_equipment_report_service.dart';
 import 'features/equipment/state/equipment_providers.dart';
@@ -234,6 +236,10 @@ Future<void> main() async {
         // sheet. Mock by default so widget tests never touch the
         // share_plus/path_provider platform channels.
         dataExportSinkProvider.overrideWith((_) => ShareDataExportSink()),
+
+        // Account deletion (L0b) — calls the deleteAccount Cloud Function.
+        accountDeletionServiceProvider
+            .overrideWith((_) => CloudFunctionsAccountDeletionService()),
 
         // Nurture moments + notifications.
         momentRepositoryProvider.overrideWithValue(momentRepo),
