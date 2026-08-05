@@ -1,8 +1,17 @@
-/// A user-controlled progress photo. Stored client-encrypted in Firebase
-/// Storage; the encryption key never leaves the device. The metadata
-/// document at `users/{uid}/progress_photos/{id}` keeps the storage path,
-/// timestamp, and a *non-secret* fingerprint of the key so we can warn
-/// the user before they wipe the device key.
+/// A user-controlled progress photo.
+///
+/// This comment described a system that does not exist: client-encrypted
+/// blobs in Firebase Storage, a metadata document at
+/// `users/{uid}/progress_photos/{id}`, a device key to warn about before a
+/// wipe. Nothing writes to Cloud Storage, that collection is not in
+/// `firestore.rules`, and there is no key. The only repository bound is
+/// `MockProgressPhotosRepository`, which fills [storagePath] with
+/// `mock://n.bin` and [keyFingerprint] with `mockfp`.
+///
+/// Both fields are kept because they are the right shape for the storage
+/// layer R7 will build -- an object key and a key-rotation marker -- and
+/// changing the model later would churn every reader. Read them as a plan,
+/// not as a description.
 class ProgressPhoto {
   const ProgressPhoto({
     required this.id,

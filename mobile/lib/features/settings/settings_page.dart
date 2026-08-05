@@ -189,8 +189,11 @@ class SettingsPage extends ConsumerWidget {
           const SizedBox(height: 16),
           // L0c. Structured, textual data only -- profile (incl. injuries),
           // full workout + schedule history, progress-photo metadata. NOT
-          // the photos themselves: their AES key never leaves this device,
-          // and decrypting one into a shareable file would change that.
+          // the photos themselves, because there are none: the only bound
+          // repository is the in-memory mock, so there are no bytes to
+          // package and no key to reason about. When R7 lands a real store,
+          // whether to decrypt into a shareable file becomes a genuine
+          // question; today it is not one.
           GlassCard(
             key: const Key('settings-export-data'),
             onTap: exportState.isLoading

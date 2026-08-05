@@ -43,9 +43,14 @@ Map<String, dynamic> buildExport({
   // own completeness by omission.
   bool progressPhotosIncomplete = false,
 }) {
+  // One sentence, not two. The second used to read "The encryption key never
+  // leaves this device", which was written into a file the user downloads and
+  // keeps -- the most durable copy of the claim anywhere in the product, and
+  // there is no key: `AesPhotoCipher` has no caller and the only repository
+  // bound is the in-memory mock. Whoever adds photo bytes here in R7 restores
+  // a sentence about the key at the same time, when it is true.
   final notes = <String>[
-    'Progress photo image data is not included in this export. '
-        'The encryption key never leaves this device.',
+    'Progress photo image data is not included in this export.',
   ];
   if (progressPhotosIncomplete) {
     notes.add(

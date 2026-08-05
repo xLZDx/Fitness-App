@@ -142,6 +142,28 @@ void main() {
       expect((out['notes'] as List).join(' '), contains('not included'));
     });
 
+    /// The note used to continue "The encryption key never leaves this
+    /// device." That sentence was written into a file the user downloads and
+    /// keeps -- the most durable copy of the claim in the whole product --
+    /// while `AesPhotoCipher` had no caller and the only bound repository was
+    /// the in-memory mock. Nothing is encrypted and there is no key.
+    ///
+    /// Asserted as the absence of a word rather than as the exact note text,
+    /// so that R7 restoring a key sentence has to come past this test on
+    /// purpose.
+    test('claims nothing about a key while nothing is encrypted', () {
+      final out = buildExport(
+        profile: _profile(),
+        workoutLogs: const [],
+        scheduledSessions: const [],
+        progressPhotos: const [],
+        progressPhotosIncomplete: true,
+      );
+      final notes = (out['notes'] as List).join(' ').toLowerCase();
+      expect(notes, isNot(contains('key')));
+      expect(notes, isNot(contains('encrypt')));
+    });
+
     test('carries a format version, for a reader written before the next '
         'field is added', () {
       final out = buildExport(
