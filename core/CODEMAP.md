@@ -15,7 +15,7 @@ IDs like `MK.6` / `TX.3`). Unmarked ones are derived from the route + entry file
 | Understand app startup, DI, Firebase init | `lib/main.dart` |
 | Find which page a URL renders | `lib/core/router/app_router.dart` (296 lines, all routes) |
 | Find a feature's code | the feature table below, then `lib/features/<name>/` |
-| Change global look/colour | `lib/core/theme/app_theme.dart`, `lib/core/theme/app_palette.dart` |
+| Change global look/colour | `lib/core/theme/app_semantic_colors.dart` (semantic tokens — start here), `lib/core/theme/app_theme.dart`, `lib/core/theme/app_palette.dart` (raw brand values) |
 | Change bottom nav / shell chrome | `lib/shared/widgets/main_shell.dart`, `lib/shared/widgets/glass_nav_bar.dart` |
 | Touch health / wearable sync | `lib/core/health/`, `lib/core/wear/` |
 | Add or modify a Cloud Function | `functions/src/index.ts` (Stripe bridge) |
@@ -120,7 +120,7 @@ quoted here.
 | Path | Role |
 |---|---|
 | `lib/core/router/app_router.dart` | All routes + `MainShell` wiring (296 lines) |
-| `lib/core/theme/` | `app_theme.dart`, `app_palette.dart` — global theme + colours |
+| `lib/core/theme/` | `app_semantic_colors.dart` — 20 semantic colour roles as a `ThemeExtension`, light and dark authored separately, every value carrying its measured WCAG ratio; reached as `context.colors`. `app_theme.dart` installs it. `app_palette.dart` holds the raw brand values it is built from. Feature code still holds 339 hardcoded colour references; migrating them is a separate gate |
 | `lib/core/health/` | Health Connect / HealthKit abstraction. `health_service.dart` is the interface, `platform_health_service.dart` the impl — **this is the iOS-portability seam** |
 | `lib/core/wear/` | Wear OS phone-side sync (`wear_sync_service.dart`) |
 | `lib/core/notifications/` | Notification service + a mock impl for tests |

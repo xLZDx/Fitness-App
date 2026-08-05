@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'app_palette.dart';
+import 'app_semantic_colors.dart';
 
 class AppTheme {
   static ThemeData light() => _build(Brightness.light);
@@ -9,6 +10,7 @@ class AppTheme {
 
   static ThemeData _build(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
+    final tokens = isDark ? AppSemanticColors.dark : AppSemanticColors.light;
     final scheme = ColorScheme.fromSeed(
       seedColor: AppPalette.auroraViolet,
       brightness: brightness,
@@ -25,6 +27,16 @@ class AppTheme {
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
+      // The semantic layer. Installed alongside `colorScheme` rather than
+      // replacing it: Material's own widgets read the scheme, and taking it
+      // away would restyle every stock control in the app in a gate that is
+      // supposed to change nothing on screen.
+      //
+      // Nothing outside `lib/core/theme/` reads this yet — the migration of
+      // the 339 hardcoded colour references is its own gate, precisely so the
+      // diff that introduces the tokens and the diff that changes what a
+      // screen looks like are never the same diff.
+      extensions: <ThemeExtension<dynamic>>[tokens],
       scaffoldBackgroundColor: Colors.transparent,
       canvasColor: Colors.transparent,
       textTheme: textTheme.copyWith(
