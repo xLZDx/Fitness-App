@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "traidingbot-b4061"
+    "default": "fitness-app-korostelev",
+    "legacy-shared": "traidingbot-b4061"
   }
 }

@@ -156,16 +156,16 @@ function isOneTime(period: Period): boolean {
  * runtime itself, so a deploy into a different Firebase project returns the
  * browser to THAT project's hosting site with no code change. The hardcoded
  * value was `traidingbot-b4061` — the trading bot's project, which this app
- * currently shares; that string surviving a project split would have sent
- * paying users to the wrong product's domain after checkout.
+ * used to share; that string surviving the split would have sent paying
+ * users to the wrong product's domain after checkout.
  *
- * The fallback keeps local/emulator runs working, where the runtime var is
- * unset. It is deliberately the current project: an empty or example.com
- * fallback would reintroduce the dead-return-page bug this comment opens
- * with, and silently.
+ * F0·3 moved the fallback to this app's own project. The fallback only
+ * applies locally/in the emulator, where the runtime var is unset — but
+ * leaving the bot's id there would have meant a local misconfiguration
+ * silently pointing at another product.
  */
 const RETURN_ORIGIN = `https://${
-  process.env.GCLOUD_PROJECT ?? "traidingbot-b4061"
+  process.env.GCLOUD_PROJECT ?? "fitness-app-korostelev"
 }.web.app`;
 
 /**

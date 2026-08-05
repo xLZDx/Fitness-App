@@ -53,10 +53,10 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBMdNj4Ek9c93jR97s6WbwuBr-fAuVqw1s',
-    appId: '1:1007678328591:android:b233f4da6ef50fbe30b87a',
-    messagingSenderId: '1007678328591',
-    projectId: 'traidingbot-b4061',
-    storageBucket: 'traidingbot-b4061.firebasestorage.app',
+    apiKey: 'AIzaSyBXkY4vNu4qpCJUqQKSd1SPdQh_CIY2mT8',
+    appId: '1:988522745882:android:682db78304b13de2c201a3',
+    messagingSenderId: '988522745882',
+    projectId: 'fitness-app-korostelev',
+    storageBucket: 'fitness-app-korostelev.firebasestorage.app',
   );
 }

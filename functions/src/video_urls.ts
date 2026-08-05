@@ -54,7 +54,7 @@ import { VIDEO_BATCH, VIDEO_HOT } from "./scaling";
  * something this expression can guarantee on its own.
  */
 export const LICENSED_BUCKET = `${
-  process.env.GCLOUD_PROJECT ?? "traidingbot-b4061"
+  process.env.GCLOUD_PROJECT ?? "fitness-app-korostelev"
 }-videos-private`;
 
 /**
