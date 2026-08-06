@@ -1,0 +1,149 @@
+# Session handoff — Fitness App (paste this whole file as the prompt)
+
+You are picking up mid-stream on `D:\test 2\Fitness App`. Read this file fully before touching
+anything. The big investigation from earlier in this file is **RESOLVED** — read "What was found
+and fixed" below, then go straight to "What to do next" at the bottom.
+
+## Where things actually are (verified, not from memory — re-verify yourself before acting)
+
+```
+git log --oneline -1        -> 08fed0f (feat(workouts): F3.3a -- backfill script, not yet run)
+git status --short          -> clean except this handoff file itself
+```
+
+10 code commits this session, **none pushed** — standing push-GO was given at session start ("push
+after each gate closes, not after every commit"), but no gate has fully closed yet (F3 is
+mid-flight — see below). Do not push without a fresh, specific push-GO; re-read the operator's
+exact wording when it comes, per the stale-GO rule.
+
+## The gate-sequence correction (read this before assuming "G2/G3/G4" means anything)
+
+Early this session the operator said continue "G2 -- Base components and common states, G3 --
+Navigation shell, G4 -- Onboarding core." That G0-G25 list **exists only in chat/commit messages,
+never in a `core/*.md` plan file**. The actual persisted, most-recent plan in this repo is
+`core/plans/FIGMA_MAKE_REFACTOR_AUDIT_2026-08-05.md` ("R0", committed 2026-08-06), whose §10
+defines a **different** sequence -- F1-F5 (foundation) then R1-R9 (features) -- and whose §14 delta
+table says explicitly "the gate sequence in §10 stands." `git log` confirms F1(step1)/F2/F4/
+F5(-equivalent)/R1 were already committed under THAT plan's own labels, mostly predating this
+session. The operator confirmed: F1-F5/R1-R9 is the real plan; G-naming was informal. **Do not
+resume "G2.2 states" work under the old G-numbering without re-reading that audit file's §10
+first.**
+
+Done per the audit's own labels: F1 step1 (tokens, `0e63469`), F2 (`11598cf`), F4 (`2dff097`),
+F5-equivalent (`7a878da` etc.), R1 (`17e1fcc`). **Not done: R2-R9 entirely.** F3 was the last
+foundation piece and is mid-flight now (see below).
+
+## G2.1 (buttons) — DONE, kept, separate from the F/R sequence
+
+`AppPrimaryButton`/`AppSecondaryButton`/`AppTertiaryButton`/`AppIconButton` consolidation. 4
+commits: `bcce6d6`, `6eea5c1`, `fa3deea`, `98c7085`. Found and fixed real a11y defects along the
+way. Not pushed. **Finished — do not redo.** G2.2/G2.3/G2.4+ were never started; not next by
+default.
+
+## F3 — WorkoutSession entity + backfill (mid-flight)
+
+Full plan + review trail: `core/plans/PLAN_F3_WORKOUT_SESSION_2026-08-06.md`.
+
+- **F3.1** (`16dcd37`) — models, repo interface, mock, tests. Done.
+- **F3.2** (`90ae270`) — `FirestoreWorkoutSessionRepository`, providers, wired in `main.dart`. Done.
+  Nothing reads `workoutSessionsProvider` yet — deliberate.
+- **F3.3a script** (`08fed0f`) — `functions/scripts/backfill_workout_sessions.mjs`. Dry-run by
+  default, `--uid=`/`--all`, `--write` required for real writes, idempotent. **Operator gave an
+  explicit separate GO for F3.3 and F3.4 already — that GO stands.**
+- **F3.3 real execution — still not run**, but the reason changed: it's no longer blocked, it is
+  just correctly waiting for real `workout_logs` data to exist (see next section — there wasn't
+  any until an hour ago, and still isn't any *workout* data, only profile data).
+
+## What was found and fixed: production Firebase Auth was never enabled (RESOLVED)
+
+While chasing "why is production Firestore completely empty" for F3.3, discovered and fixed a
+much bigger, previously-unknown bug, end-to-end verified live on `emulator-5556`:
+
+**Root cause**: Firebase Authentication had never been enabled for the `fitness-app-korostelev`
+project at all — not "wrong provider configured," not "App Check blocking it" (checked and ruled
+out via the App Check Management API: `firestore.googleapis.com` and `identitytoolkit.googleapis.com`
+were both `UNENFORCED` the whole time) — literally no Auth configuration existed
+(`admin.auth().listUsers()` returned `auth/configuration-not-found`; `GET .../admin/v2/projects/
+{id}/config` returned 404). Every sign-in attempt — Google, anonymous, all of them — failed
+immediately, and **failed silently**: `AuthAction.signInAnonymously()`'s `catch (e, st) { state =
+AsyncValue.error(e, st); }` sets Riverpod state but nothing in the UI ever displays it, so the
+button just stopped spinning with zero visible error. With no signed-in uid ever established,
+every write path's `if (user == null) throw` fired on every attempt, so nothing — not the
+questionnaire, not a workout, nothing — ever reached Firestore, for as long as the project has
+existed.
+
+**Fixed**: the operator enabled Authentication in the Firebase Console (Anonymous + Google
+providers, plus the Android debug SHA-1 fingerprint for Google Sign-In). Verified via the Identity
+Toolkit Admin API: `signIn.anonymous.enabled: true`, `defaultSupportedIdpConfigs` shows
+`google.com` `enabled: true` with a real client id/secret.
+
+**Verified live, fully end-to-end**: relaunched the app fresh on `emulator-5556`, signed in
+anonymously (worked — real uid `av1qYi2vvZXNum21mEo82Vlub5A3` created, confirmed via
+`admin.auth().listUsers()`), walked the full 7-step onboarding questionnaire by hand via `adb
+shell input tap` + screenshots, reached the Home screen. Confirmed via Admin SDK that
+`users/{uid}/profile/main` now exists in Firestore — real data, really persisted. This is the
+proof that the fix works, not just that sign-in succeeds.
+
+**Not yet fixed, and worth its own small gate**: the silent-failure UX bug this whole investigation
+started from. `AuthAction.signInAnonymously`/`signInWithGoogle` (`auth_providers.dart`) catch
+errors into `AsyncValue.error` but no widget in `login_page.dart` watches that state to show
+anything — a real user hitting ANY future auth failure (network drop, provider misconfigured
+again, whatever) gets the exact same silent "button stops spinning, nothing happens" experience
+that made this bug invisible for as long as it was. Small, well-scoped fix; not done this session.
+
+**Tooling note for next time**: checking/fixing Firebase project-level config (App Check
+enforcement status, Identity Toolkit config) is possible via direct REST calls using the same
+Admin SDK service-account access token (`app.options.credential.getAccessToken()` +
+`fetch(...Authorization: Bearer ...)`), no separate tooling needed. Reads worked freely. A
+first-time write (`PATCH .../config` to enable a sign-in provider) was blocked twice by the local
+auto-mode classifier even with an explicit operator "делай" in chat — conversational GO does not
+override that classifier; it needs an actual Bash permission-rule change in Claude Code settings
+if the operator wants that class of action scriptable in the future. Given that, the actual fix
+was done by the operator directly in the Firebase Console, not by Claude.
+
+## Test artifacts left on the device
+
+`emulator-5556` currently has the app installed, fresh, with one real anonymous test account
+signed in and onboarding completed (uid `av1qYi2vvZXNum21mEo82Vlub5A3`). No workout has been
+logged on it yet. Fine to reuse for further live testing (e.g., to generate real `workout_logs`
+data before running F3.3, or to test F3.4 later) or to leave alone — it's a throwaway dev/test
+account, not a real user.
+
+Service account key used throughout, still valid:
+`D:\secrets\fitness-app\fitness-app-korostelev-firebase-adminsdk-fbsvc-e880f2bd54.json`. Contents
+never read by Claude, only used via `GOOGLE_APPLICATION_CREDENTIALS=<path> node ...` inline per
+command (env vars don't persist between this harness's Bash tool calls, so always set it inline in
+the same command, not via a separate `export` first).
+
+## What to do next
+
+1. **Optional but cheap**: log at least one real workout on the test account above (or a fresh
+   one) so F3.3's backfill has non-trivial data to actually exercise, rather than running once
+   against 0 logs. Not required — the script is already verified correct on its own merits.
+2. **F3.3 real execution** — GO already given, nothing new to ask for:
+   ```
+   cd functions
+   GOOGLE_APPLICATION_CREDENTIALS="D:/secrets/fitness-app/fitness-app-korostelev-firebase-adminsdk-fbsvc-e880f2bd54.json" node scripts/backfill_workout_sessions.mjs --uid=av1qYi2vvZXNum21mEo82Vlub5A3
+   ```
+   (dry run first, review output, then add `--write`, verify in Firestore, then `--all` dry run,
+   then `--all --write`).
+3. After F3.3 completes: wire the single-collection history read convergence (F3.3a's second
+   half — check whether anything currently reads `workoutLogsProvider` for "history" UI and needs
+   repointing), then F3.3b (totals/streak on the single collection — open product question in the
+   plan doc: does one multi-exercise session count as 1 workout or N), then F3.4 (repoint the
+   single-exercise completion write path to `WorkoutSessionRepository`).
+4. **Separately, propose to the operator**: a small gate to fix the silent-auth-failure UX bug
+   found above (show a real error/snackbar on sign-in failure) — not blocking F3, but a real
+   defect worth its own tiny commit.
+5. Only after F3 is fully closed does resuming R2 (Scanner) or general component work
+   (chips/cards) become the next reasonable step, per the audit's §10 order.
+
+## Standing rules still in force from this session
+
+- security-reviewer stays opt-in only, never auto-spawn.
+- Every commit body: itemized plan, `Зачем`/`Почему так` per decision, `Что осталось непокрытым`,
+  `Проверки`, todo list.
+- Push needs its own separate, explicit `push`/`GO` — an implementation GO never covers it.
+- Never read/print secret file *contents* into the conversation — file paths and existence checks
+  are fine, contents are not. Env vars for credentials: always set inline in the same command, they
+  do not persist across this harness's separate tool calls.
