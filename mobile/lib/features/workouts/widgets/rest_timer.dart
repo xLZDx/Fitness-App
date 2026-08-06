@@ -2,200 +2,192 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/glass.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../state/rest_timer_providers.dart';
 
-/// Pure logic separated from the widget so the countdown is unit-testable
-/// without flutter_test. Holds a remaining-seconds value + an optional
-/// notion of "auto-started", and ticks at 1Hz.
-class RestTimerController extends ChangeNotifier {
-  RestTimerController({this.totalSeconds = 90})
-      : _remaining = totalSeconds,
-        _running = false;
-
-  final int totalSeconds;
-  int _remaining;
-  bool _running;
-  Timer? _timer;
-
-  int get remaining => _remaining;
-  bool get isRunning => _running;
-  double get progress =>
-      totalSeconds == 0 ? 0 : 1 - (_remaining / totalSeconds);
-
-  void start() {
-    if (_running) return;
-    _running = true;
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
-    notifyListeners();
-  }
-
-  void pause() {
-    _timer?.cancel();
-    _timer = null;
-    _running = false;
-    notifyListeners();
-  }
-
-  void reset() {
-    _timer?.cancel();
-    _timer = null;
-    _running = false;
-    _remaining = totalSeconds;
-    notifyListeners();
-  }
-
-  void _tick() {
-    if (_remaining > 0) _remaining--;
-    if (_remaining == 0) {
-      _timer?.cancel();
-      _timer = null;
-      _running = false;
-    }
-    notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-}
-
-/// Glass-card rest timer. Triggers a haptic pulse at 0s. Designed to be
-/// surfaced just below the "Mark complete" button after a set is logged.
+/// Glass-card rest timer.
 ///
-/// Default of 90s matches the rest most commercial gyms recommend for
-/// hypertrophy work; compound lifts (barbell squat / deadlift / bench /
-/// OHP) take 180s — passed via [seconds] from the calling page.
-class RestTimer extends StatefulWidget {
-  const RestTimer({
-    super.key,
-    this.seconds = 90,
-    this.autoStart = true,
-    this.onComplete,
-  });
+/// Holds no countdown of its own. The rest lives in [restTimerProvider] as a
+/// deadline, and this widget renders it and owns a 1 Hz repaint — see that
+/// file for why the two were separated.
+///
+/// The repaint timer is the only clock here, and it is honestly a repaint
+/// timer: if it fires late, or twice, or not at all while the app is
+/// backgrounded, the displayed number is still correct the moment a frame is
+/// drawn, because it is computed from the deadline rather than accumulated.
+class RestTimer extends ConsumerStatefulWidget {
+  const RestTimer({super.key, this.onFinished});
 
-  final int seconds;
-  final bool autoStart;
-  final VoidCallback? onComplete;
+  /// Fired once when the rest ends, either way. The outcome distinguishes the
+  /// two, because a skip should not be reported as a completed rest.
+  final void Function(RestOutcome outcome)? onFinished;
 
   @override
-  State<RestTimer> createState() => _RestTimerState();
+  ConsumerState<RestTimer> createState() => _RestTimerState();
 }
 
-class _RestTimerState extends State<RestTimer> {
-  late final RestTimerController _ctrl =
-      RestTimerController(totalSeconds: widget.seconds);
-  bool _firedComplete = false;
+class _RestTimerState extends ConsumerState<RestTimer> {
+  Timer? _repaint;
+  RestOutcome? _announced;
 
   @override
   void initState() {
     super.initState();
-    _ctrl.addListener(_onTick);
-    if (widget.autoStart) _ctrl.start();
-  }
-
-  void _onTick() {
-    setState(() {});
-    if (_ctrl.remaining == 0 && !_firedComplete) {
-      _firedComplete = true;
-      HapticFeedback.heavyImpact();
-      widget.onComplete?.call();
-    }
+    _repaint = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      // Asking the controller rather than deciding here: the widget can be
+      // repainted for a dozen reasons and only the state knows whether the
+      // deadline actually passed.
+      ref.read(restTimerProvider.notifier).completeIfElapsed();
+      setState(() {});
+    });
   }
 
   @override
   void dispose() {
-    _ctrl
-      ..removeListener(_onTick)
-      ..dispose();
+    _repaint?.cancel();
     super.dispose();
   }
 
-  String _format(int s) {
-    final m = (s ~/ 60).toString();
-    final ss = (s % 60).toString().padLeft(2, '0');
-    return '$m:$ss';
+  String _format(Duration d) {
+    final m = d.inMinutes;
+    final s = (d.inSeconds % 60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
+  void _announce(RestOutcome outcome) {
+    if (_announced == outcome) return;
+    _announced = outcome;
+    // Only an elapsed rest buzzes. Confirming a button press with a haptic is
+    // noise, and the user who pressed Skip is already looking at the phone.
+    if (outcome == RestOutcome.elapsed) HapticFeedback.heavyImpact();
+    widget.onFinished?.call(outcome);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final done = _ctrl.remaining == 0;
+    final l = AppLocalizations.of(context);
+    final rest = ref.watch(restTimerProvider);
+    final now = ref.read(restClockProvider)();
+
+    final outcome = rest.outcome;
+    if (outcome != null) {
+      // After the frame: firing a haptic and a callback from inside build would
+      // mutate state during a build.
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _announce(outcome));
+    } else {
+      _announced = null;
+    }
+
+    final remaining = rest.remaining(now);
+    final done = rest.isFinished;
+
     return GlassCard(
+      key: const Key('rest-timer'),
       padding: const EdgeInsets.all(16),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 56,
-            height: 56,
-            child: Stack(
-              alignment: Alignment.center,
+          Row(
+            children: [
+              SizedBox(
+                width: 56,
+                height: 56,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      value: rest.progress(now),
+                      strokeWidth: 4,
+                      backgroundColor: scheme.onSurface.withValues(alpha: 0.10),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        done ? AppPalette.auroraLime : AppPalette.auroraBlue,
+                      ),
+                    ),
+                    Text(
+                      _format(remaining),
+                      key: const Key('rest-timer.remaining'),
+                      style: theme.textTheme.labelLarge
+                          ?.copyWith(fontWeight: FontWeight.w800),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      switch (outcome) {
+                        RestOutcome.elapsed => l.restTimerDone,
+                        RestOutcome.skipped => l.restTimerSkipped,
+                        null => l.restTimerTitle,
+                      },
+                      style: theme.textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      done ? l.restTimerDoneHint : l.restTimerHint,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurface.withValues(alpha: 0.65),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (!done)
+                IconButton(
+                  key: const Key('rest-timer.pause'),
+                  tooltip: rest.isPaused ? l.restTimerResume : l.workoutsPause,
+                  icon: Icon(rest.isPaused
+                      ? Icons.play_arrow_rounded
+                      : Icons.pause_rounded),
+                  onPressed: () {
+                    final c = ref.read(restTimerProvider.notifier);
+                    rest.isPaused ? c.resume() : c.pause();
+                  },
+                ),
+            ],
+          ),
+          if (!done) ...[
+            const SizedBox(height: 8),
+            Row(
               children: [
-                CircularProgressIndicator(
-                  value: _ctrl.progress.clamp(0.0, 1.0),
-                  strokeWidth: 4,
-                  backgroundColor:
-                      scheme.onSurface.withValues(alpha: 0.10),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    done
-                        ? AppPalette.auroraLime
-                        : AppPalette.auroraBlue,
+                Expanded(
+                  child: OutlinedButton.icon(
+                    key: const Key('rest-timer.add'),
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: Text(l.restTimerAddTime),
+                    // Both controls are full-width halves rather than icons:
+                    // §25 asks for 44-48 logical pixels, and these are pressed
+                    // mid-set by someone who is out of breath.
+                    onPressed: () => ref
+                        .read(restTimerProvider.notifier)
+                        .addTime(const Duration(seconds: 30)),
                   ),
                 ),
-                Text(
-                  _format(_ctrl.remaining),
-                  style: theme.textTheme.labelLarge
-                      ?.copyWith(fontWeight: FontWeight.w800),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: FilledButton.icon(
+                    key: const Key('rest-timer.skip'),
+                    icon: const Icon(Icons.skip_next_rounded, size: 18),
+                    label: Text(l.restTimerSkip),
+                    onPressed: () =>
+                        ref.read(restTimerProvider.notifier).skip(),
+                  ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  done ? 'Rest complete — next set' : 'Rest timer',
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  done
-                      ? 'Tap to reset for the next round.'
-                      : 'Auto-stops your phone — focus on the next set.',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurface.withValues(alpha: 0.65),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            tooltip: _ctrl.isRunning
-                ? AppLocalizations.of(context).workoutsPause
-                : (done ? AppLocalizations.of(context).workoutsReset : AppLocalizations.of(context).commonStart),
-            icon: Icon(_ctrl.isRunning
-                ? Icons.pause_rounded
-                : (done ? Icons.refresh_rounded : Icons.play_arrow_rounded)),
-            onPressed: () {
-              if (done) {
-                _firedComplete = false;
-                _ctrl.reset();
-                _ctrl.start();
-              } else if (_ctrl.isRunning) {
-                _ctrl.pause();
-              } else {
-                _ctrl.start();
-              }
-            },
-          ),
+          ],
         ],
       ),
     );

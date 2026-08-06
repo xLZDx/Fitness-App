@@ -17,6 +17,7 @@ import '../workouts/state/scheduled_session_providers.dart';
 import '../workouts/state/workout_log_providers.dart';
 import '../workouts/widgets/difficulty_rating_sheet.dart';
 import '../workouts/widgets/plate_calculator.dart';
+import '../workouts/state/rest_timer_providers.dart';
 import '../workouts/widgets/rest_timer.dart';
 import '../workouts/widgets/set_capture_sheet.dart';
 import '../home/home_page.dart' show formatScheduleLabel;
@@ -214,10 +215,10 @@ class WorkoutPlayerPage extends ConsumerWidget {
               _ToolsRow(),
               if (ref.watch(_restTimerVisibleProvider)) ...[
                 const SizedBox(height: 12),
-                RestTimer(
-                  seconds: _restSecondsFor(item),
-                  onComplete: () {},
-                ),
+                // The duration is set where the set is logged, not here: the
+                // card renders whatever rest is in progress, and a widget that
+                // took a duration would restart one on every rebuild.
+                const RestTimer(),
               ],
               const SizedBox(height: 20),
               _MarkCompleteButton(exercise: item),
@@ -758,7 +759,14 @@ class _MarkCompleteButton extends ConsumerWidget {
           behavior: SnackBarBehavior.floating,
         ),
       );
+      // Strictly after the await above and after the error check, which is the
+      // ordering §17 asks for: Complete Set -> Persist Set -> Rest Timer. A
+      // rest that started optimistically would count down over a set that
+      // never got written.
       ref.read(_restTimerVisibleProvider.notifier).state = true;
+      ref
+          .read(restTimerProvider.notifier)
+          .start(Duration(seconds: _restSecondsFor(exercise)));
       ref.read(_loggedEntryProvider(exercise.id).notifier).state = entry;
 
       // Ask for a 1-tap perceived-effort rating. Skipping is fine — the
