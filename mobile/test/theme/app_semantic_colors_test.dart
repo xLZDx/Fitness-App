@@ -331,17 +331,20 @@ void main() {
 
   test('the hardcoded whites that survived G1.2b stay accounted for', () {
     // A tripwire, not a proof. G1.2b replaced 69 `Colors.white` uses that sat
-    // on brand artwork; 46 remain, and each was left deliberately:
+    // on brand artwork; 43 remain, and each was left deliberately:
     //
     //   * a scrim foreground — white on `Colors.black @0.30..0.65`, which is
     //     correct and is the majority of `form_check_page.dart`'s fifteen;
     //   * a translucent white used as a SURFACE (`color:` / `fillColor:` at
     //     alpha 0.18–0.55), which is a surface-token question, not a
-    //     foreground one, and belongs to G1.2c;
+    //     foreground one;
     //   * `exercise_thumb.dart`'s white bed under a poster, which exists so
-    //     the letterboxing on a clip rendered on flat white stays invisible;
-    //   * a `FilledButton` foreground, which should follow the button's own
-    //     scheme colour and is a G2 component question.
+    //     the letterboxing on a clip rendered on flat white stays invisible.
+    //
+    // The fourth category is gone: three spinners inside buttons were painted
+    // white regardless of the button's own foreground — one of them directly
+    // contradicting a `foregroundColor: onError` two lines above it — and now
+    // read that foreground instead.
     //
     // If this number moves, one of those categories grew — or a foreground
     // white came back onto a gradient. Read the diff before repinning it.
@@ -358,7 +361,7 @@ void main() {
       if (n > 0) whites[f.path.replaceAll(r'\', '/')] = n;
     }
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 46, reason: 'per file: $whites');
+    expect(total, 43, reason: 'per file: $whites');
   });
 
   group('lerp', () {

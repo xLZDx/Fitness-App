@@ -89,14 +89,16 @@ class DeloadBanner extends ConsumerWidget {
                               .read(deloadActionProvider.notifier)
                               .acceptNext7Days(),
                       icon: action.isLoading
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 14,
                               height: 14,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(
-                                        Colors.white),
+                                // Same as the health card: the button's own
+                                // foreground, not a white that only coincided
+                                // with it.
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Theme.of(context).colorScheme.onPrimary),
                               ),
                             )
                           : const Icon(Icons.check_rounded, size: 18),

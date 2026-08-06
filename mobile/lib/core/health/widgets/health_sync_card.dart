@@ -129,13 +129,16 @@ class _AskCard extends StatelessWidget {
             child: FilledButton.icon(
               onPressed: isLoading ? null : onAsk,
               icon: isLoading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 14,
                       height: 14,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
+                        // A FilledButton's foreground is `onPrimary`. White was
+                        // right only for as long as `onPrimary` happened to be
+                        // white, and nothing tied the two together.
                         valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white),
+                            Theme.of(context).colorScheme.onPrimary),
                       ),
                     )
                   : const Icon(Icons.sync_rounded, size: 18),

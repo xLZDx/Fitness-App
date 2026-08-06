@@ -113,11 +113,14 @@ class _AccountDeletionPageState extends ConsumerState<AccountDeletionPage> {
             ),
             onPressed: !_confirmed || loading ? null : _delete,
             child: loading
-                ? const SizedBox(
+                ? SizedBox(
                     width: 20,
                     height: 20,
+                    // The button two lines up declares its own foreground; a
+                    // hardcoded white here contradicted it, and would have gone
+                    // on contradicting it after any restyle.
                     child: CircularProgressIndicator(
-                        strokeWidth: 2.4, color: Colors.white),
+                        strokeWidth: 2.4, color: theme.colorScheme.onError),
                   )
                 : Text(l10n.accountdeletionDeleteMyAccount),
           ),
