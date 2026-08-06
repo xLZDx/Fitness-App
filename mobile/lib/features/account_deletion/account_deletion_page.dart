@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../shared/widgets/glass.dart';
 import '../onboarding/widgets/inputs.dart';
 import 'state/account_deletion_providers.dart';
+import '../../shared/widgets/app_buttons.dart';
 
 const String kAccountDeletionConfirmWord = 'DELETE';
 
@@ -105,24 +106,12 @@ class _AccountDeletionPageState extends ConsumerState<AccountDeletionPage> {
             hint: kAccountDeletionConfirmWord,
           ),
           const SizedBox(height: 20),
-          FilledButton(
+          AppPrimaryButton(
             key: const Key('account-deletion-confirm-button'),
-            style: FilledButton.styleFrom(
-              backgroundColor: theme.colorScheme.error,
-              foregroundColor: theme.colorScheme.onError,
-            ),
-            onPressed: !_confirmed || loading ? null : _delete,
-            child: loading
-                ? SizedBox(
-                    width: 20,
-                    height: 20,
-                    // The button two lines up declares its own foreground; a
-                    // hardcoded white here contradicted it, and would have gone
-                    // on contradicting it after any restyle.
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2.4, color: theme.colorScheme.onError),
-                  )
-                : Text(l10n.accountdeletionDeleteMyAccount),
+            tone: AppButtonTone.destructive,
+            loading: loading,
+            onPressed: !_confirmed ? null : _delete,
+            label: l10n.accountdeletionDeleteMyAccount,
           ),
         ],
       ),

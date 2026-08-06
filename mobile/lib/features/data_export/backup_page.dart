@@ -6,6 +6,7 @@ import '../../shared/widgets/glass.dart';
 import 'backup_envelope.dart';
 import 'backup_providers.dart';
 import 'backup_transfer.dart';
+import '../../shared/widgets/app_buttons.dart';
 
 /// H2b — create a transfer backup, or restore one.
 ///
@@ -133,20 +134,20 @@ class _BackupPageState extends ConsumerState<BackupPage> {
                   onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: 12),
-                FilledButton.icon(
+                AppPrimaryButton(
                   key: const Key('backup-create-button'),
-                  onPressed: createState.isLoading || _createPass.text.isEmpty
+                  // The spinner used to be a bare `CircularProgressIndicator`,
+                  // which takes `colorScheme.primary` — the same colour this
+                  // button paints its background. Pressing "back up" gave no
+                  // visible feedback at all while it worked.
+                  loading: createState.isLoading,
+                  onPressed: _createPass.text.isEmpty
                       ? null
                       : () => ref
                           .read(backupCreateActionProvider.notifier)
                           .create(_createPass.text),
-                  icon: createState.isLoading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2.4))
-                      : const Icon(Icons.lock_outline),
-                  label: Text(l10n.backupCreateButton),
+                  icon: Icons.lock_outline,
+                  label: l10n.backupCreateButton,
                 ),
                 if (createState.hasError) ...[
                   const SizedBox(height: 10),
@@ -200,20 +201,15 @@ class _BackupPageState extends ConsumerState<BackupPage> {
                   onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: 12),
-                FilledButton.icon(
+                AppPrimaryButton(
                   key: const Key('backup-restore-button'),
-                  onPressed: restoreState.isLoading ||
-                          _restoreBody.text.trim().isEmpty ||
+                  loading: restoreState.isLoading,
+                  onPressed: _restoreBody.text.trim().isEmpty ||
                           _restorePass.text.isEmpty
                       ? null
                       : _restore,
-                  icon: restoreState.isLoading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2.4))
-                      : const Icon(Icons.restore),
-                  label: Text(l10n.backupRestoreButton),
+                  icon: Icons.restore,
+                  label: l10n.backupRestoreButton,
                 ),
                 if (restoreState.hasError) ...[
                   const SizedBox(height: 10),

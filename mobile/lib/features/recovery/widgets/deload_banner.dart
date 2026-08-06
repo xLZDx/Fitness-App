@@ -9,6 +9,7 @@ import '../../../shared/widgets/glass.dart';
 import '../../subscription/data/subscription_models.dart';
 import '../../subscription/state/subscription_providers.dart';
 import '../state/recovery_providers.dart';
+import '../../../shared/widgets/app_buttons.dart';
 
 /// Banner shown above the Today card when [detectDeload] flags the user
 /// as needing recovery. Gated to Standard tier and above — the free
@@ -82,32 +83,15 @@ class DeloadBanner extends ConsumerWidget {
               children: [
                 if (isPremium) ...[
                   Expanded(
-                    child: FilledButton.icon(
-                      onPressed: action.isLoading
-                          ? null
-                          : () => ref
-                              .read(deloadActionProvider.notifier)
-                              .acceptNext7Days(),
-                      icon: action.isLoading
-                          ? SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                // Same as the health card: the button's own
-                                // foreground, not a white that only coincided
-                                // with it.
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    Theme.of(context).colorScheme.onPrimary),
-                              ),
-                            )
-                          : const Icon(Icons.check_rounded, size: 18),
-                      label: Text(
-                        action.isLoading
-                            ? AppLocalizations.of(context).recoveryApplying
-                            : 'Accept deload (50% volume × 7d)',
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                    child: AppPrimaryButton(
+                      loading: action.isLoading,
+                      onPressed: () => ref
+                          .read(deloadActionProvider.notifier)
+                          .acceptNext7Days(),
+                      icon: Icons.check_rounded,
+                      label: action.isLoading
+                          ? AppLocalizations.of(context).recoveryApplying
+                          : 'Accept deload (50% volume × 7d)',
                     ),
                   ),
                 ] else ...[

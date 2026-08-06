@@ -7,6 +7,7 @@ import '../../theme/app_palette.dart';
 import '../../theme/app_semantic_colors.dart';
 import '../health_models.dart';
 import '../state/health_providers.dart';
+import '../../../shared/widgets/app_buttons.dart';
 
 /// Today's steps + activity-ring percent + sleep score.
 /// Renders three states:
@@ -126,25 +127,13 @@ class _AskCard extends StatelessWidget {
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: isLoading ? null : onAsk,
-              icon: isLoading
-                  ? SizedBox(
-                      width: 14,
-                      height: 14,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        // A FilledButton's foreground is `onPrimary`. White was
-                        // right only for as long as `onPrimary` happened to be
-                        // white, and nothing tied the two together.
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            Theme.of(context).colorScheme.onPrimary),
-                      ),
-                    )
-                  : const Icon(Icons.sync_rounded, size: 18),
-              label: Text(isLoading
+            child: AppPrimaryButton(
+              loading: isLoading,
+              onPressed: onAsk,
+              icon: Icons.sync_rounded,
+              label: isLoading
                   ? AppLocalizations.of(context).healthAsking
-                  : AppLocalizations.of(context).healthConnectHealth),
+                  : AppLocalizations.of(context).healthConnectHealth,
             ),
           ),
           if (errorText != null) ...[

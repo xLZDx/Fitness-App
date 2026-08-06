@@ -11,6 +11,7 @@ import 'package:fitness_app/features/auth/data/auth_repository.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/shared/widgets/app_buttons.dart';
 
 /// L0b — the confirmation surface for the one action in this app that is
 /// genuinely irreversible: it cancels a real subscription and permanently
@@ -85,7 +86,11 @@ void main() {
     await tester.pumpWidget(_host(MockAccountDeletionService()));
     await tester.pumpAndSettle();
 
-    FilledButton button() => tester.widget<FilledButton>(
+    // `AppPrimaryButton`, not the `FilledButton` it renders: the key is on the
+    // component, and asking about the component's own `onPressed` is the
+    // contract that matters — the inner button is an implementation detail
+    // that also gets nulled by `loading`, which this test is not about.
+    AppPrimaryButton button() => tester.widget<AppPrimaryButton>(
           find.byKey(const Key('account-deletion-confirm-button')),
         );
     expect(button().onPressed, isNull);

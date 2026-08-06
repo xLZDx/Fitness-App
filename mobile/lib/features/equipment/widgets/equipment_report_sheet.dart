@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../../core/theme/app_palette.dart';
-import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/glass.dart';
 import '../../auth/state/auth_providers.dart';
 import '../data/equipment_report.dart';
 import '../state/equipment_providers.dart';
+import '../../../core/theme/app_semantic_colors.dart';
+import '../../../shared/widgets/app_buttons.dart';
 
 /// Modal bottom sheet for reporting broken / degraded equipment. Two-tap
 /// flow: pick a fault category + optional note → submit. Returns to the
@@ -160,27 +160,12 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
             SizedBox(
               width: double.infinity,
               height: 48,
-              child: FilledButton(
-                onPressed: _submitting ? null : _submit,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppPalette.auroraPeach,
-                  foregroundColor: AppSemanticColors.onGradientInk,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                child: _submitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.4,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                              AppSemanticColors.onGradientInk),
-                        ),
-                      )
-                    : Text(AppLocalizations.of(context)
-                        .equipmentSendToMaintenance),
+              child: AppPrimaryButton(
+                tone: AppButtonTone.brand,
+                size: AppButtonSize.compact,
+                loading: _submitting,
+                onPressed: _submit,
+                label: AppLocalizations.of(context).equipmentSendToMaintenance,
               ),
             ),
             const SizedBox(height: 8),

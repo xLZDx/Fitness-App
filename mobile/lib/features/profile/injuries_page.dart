@@ -9,6 +9,7 @@ import 'data/injury_regions.dart';
 import 'data/profile_models.dart';
 import 'state/profile_providers.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../shared/widgets/app_buttons.dart';
 
 /// The screen that makes a stored injury editable.
 ///
@@ -144,15 +145,11 @@ class _InjuriesPageState extends ConsumerState<InjuriesPage> {
                 label: Text(l10n.injuriesAdd),
               ),
               const SizedBox(height: 20),
-              FilledButton(
-                onPressed: !_dirty || saving ? null : () => _save(draft),
-                child: saving
-                    ? const SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(l10n.injuriesSave),
+              AppPrimaryButton(
+                // Same invisible-spinner shape as backup and video upload.
+                loading: saving,
+                onPressed: !_dirty ? null : () => _save(draft),
+                label: l10n.injuriesSave,
               ),
             ],
           );

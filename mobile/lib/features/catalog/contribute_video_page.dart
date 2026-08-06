@@ -5,6 +5,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../shared/widgets/glass.dart';
 import '../auth/state/auth_providers.dart';
 import 'state/catalog_providers.dart';
+import '../../shared/widgets/app_buttons.dart';
 
 /// Page where any user can submit a video URL for an exercise. The
 /// moderation queue (`/admin/catalog`) approves or rejects it.
@@ -137,15 +138,13 @@ class _ContributeVideoPageState extends ConsumerState<ContributeVideoPage> {
             ),
           ],
           const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: _submitting ? null : _submit,
-            icon: _submitting
-                ? const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(Icons.upload_outlined),
-            label: Text(_submitting ? 'Submitting…' : 'Submit for review'),
+          AppPrimaryButton(
+            // Was a bare spinner, i.e. `colorScheme.primary` on a background
+            // painted `colorScheme.primary` - invisible while submitting.
+            loading: _submitting,
+            onPressed: _submit,
+            icon: Icons.upload_outlined,
+            label: _submitting ? 'Submitting…' : 'Submit for review',
           ),
         ],
       ),
