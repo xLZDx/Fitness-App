@@ -92,12 +92,19 @@ shell input tap` + screenshots, reached the Home screen. Confirmed via Admin SDK
 `users/{uid}/profile/main` now exists in Firestore — real data, really persisted. This is the
 proof that the fix works, not just that sign-in succeeds.
 
-**Not yet fixed, and worth its own small gate**: the silent-failure UX bug this whole investigation
-started from. `AuthAction.signInAnonymously`/`signInWithGoogle` (`auth_providers.dart`) catch
-errors into `AsyncValue.error` but no widget in `login_page.dart` watches that state to show
-anything — a real user hitting ANY future auth failure (network drop, provider misconfigured
-again, whatever) gets the exact same silent "button stops spinning, nothing happens" experience
-that made this bug invisible for as long as it was. Small, well-scoped fix; not done this session.
+**CORRECTED, later this same session**: the paragraph above (originally claiming a silent-failure
+UX bug in `login_page.dart`) was wrong. Re-verified directly against the file before starting
+that "fix": `login_page.dart:22-31` already has `ref.listen<AsyncValue<void>>(authActionProvider,
+...)` showing a `ScaffoldMessenger` snackbar on error. `git log -S "ref.listen" --
+mobile/lib/features/auth/login_page.dart` confirms this listener existed since the very first
+auth-layer commit (`3ec4251`, Phase 1A) — it did not silently disappear and get re-added; it was
+never missing. No other call site reaches `signInAnonymously()`/`signInWithGoogle()` bypassing
+this listener (grepped the whole `mobile/lib` tree). **No code change was made — there was no bug
+to fix.** Whatever produced the "silent" symptom during the original live investigation (Auth not
+enabled at all) was something else — plausibly the error never reaching a caught exception in a
+form `AsyncValue.error` could carry cleanly at the time, or a misread of the live behavior — not
+this listener being absent. Leaving both paragraphs in the doc (not deleting the original) as a
+record of the correction itself, per the operator's "never silently route around a mistake" rule.
 
 **Tooling note for next time**: checking/fixing Firebase project-level config (App Check
 enforcement status, Identity Toolkit config) is possible via direct REST calls using the same
@@ -130,10 +137,11 @@ operator GO "ГО на все автономно" — see `PLAN_F3_WORKOUT_SESSI
 sections for the full detail, including a CRITICAL gap a `silent-failure-hunter` Act-gate review
 caught and why F3.4 got pulled into the same commit as the read convergence).
 
-1. **The silent-auth-failure UX bug** (found earlier this session, not yet fixed): show a real
-   error/snackbar on sign-in failure in `login_page.dart` — see the section above.
-2. Only now does resuming R2 (Scanner) or general component work (chips/cards) become the next
-   reasonable step, per the audit's §10 order.
+1. ~~The silent-auth-failure UX bug~~ — corrected later this session: it does not exist,
+   `login_page.dart` already shows a snackbar on sign-in error. See the correction note above.
+   Nothing to do here.
+2. Resuming R2 (Scanner) or general component work (chips/cards) is the next reasonable step,
+   per the audit's §10 order.
 
 ## F3.3 backfill — DONE this session (2026-08-06, later)
 
