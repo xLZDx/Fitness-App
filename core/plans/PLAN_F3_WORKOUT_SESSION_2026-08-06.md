@@ -125,6 +125,16 @@ explicit GO, separate from F3.1/F3.2's GO.**
   purged/exported during a transition window or left as inert historical data.
 - Split per architect review: **F3.3a** the backfill job + single-collection history
   read; **F3.3b** totals + streak against the now-single collection.
+- **Script**: `functions/scripts/backfill_workout_sessions.mjs`. Dry-run by default;
+  `--uid=<uid>` for one account, `--all` (explicit) for every account; `--write` to
+  actually write (omitted = dry run, zero writes). Idempotent (`legacy_${logId}` as
+  the session id). Verified 2026-08-06: script logic runs correctly up to the
+  Firestore call; this dev environment has no Application Default Credentials
+  configured (`GOOGLE_APPLICATION_CREDENTIALS` unset, no `gcloud` ADC), so the actual
+  backfill has **not run** — needs a service-account key or equivalent supplied by the
+  operator before F3.3a can execute for real. The single-collection history read
+  convergence (the other half of F3.3a) is correctly NOT wired yet either — reads must
+  not repoint to `workout_sessions` before it holds real backfilled data.
 
 ### F3.4 — explicitly OUT of this gate
 
