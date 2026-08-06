@@ -1,37 +1,39 @@
 /// The one authoritative rest-timer state.
 ///
-/// ## What was wrong
+/// ## What was wrong, twice
 ///
-/// The controller was constructed inside `_RestTimerState`
-/// (`rest_timer.dart:90`), so it was born and died with the widget. Scrolling
-/// the card out of a lazy list, opening the form coach, or backing out to the
-/// workout list all destroyed the rest that was in progress — and returning
-/// started a fresh one from full. Master prompt §17 asks for "exactly one
-/// authoritative timer state"; there was one per mount.
+/// **First**, the controller was constructed inside `_RestTimerState`, so it
+/// was born and died with the widget. Scrolling the card out of a lazy list,
+/// opening the form coach, or backing out to the workout list all destroyed the
+/// rest in progress, and returning started a fresh one from full.
 ///
-/// It also counted ticks. `Timer.periodic(1s)` decremented an integer, which
-/// is only the same as measuring time while the process is scheduled at 1 Hz.
-/// Android does not promise that: a backgrounded app has its timers coalesced
-/// and throttled, so a 90-second rest could report 70 seconds remaining after
-/// 90 real ones. The user's phone is in their pocket for the entire duration
-/// of the thing being measured, which is the worst possible case for that
-/// design.
+/// **Second** — and this one was introduced by the fix for the first, then
+/// found by two independent reviewers on the same day — moving the state into a
+/// provider was not enough while *finishing* still required an observer. The
+/// only thing that could mark a rest elapsed was a ticker inside the mounted
+/// card. Leaving the page mid-rest, which is what a person waiting out 90 to
+/// 180 seconds actually does, cancelled that ticker and left the rest running
+/// against a deadline in the past forever.
 ///
-/// ## What replaces it
+/// ## The rule that fixes both
 ///
-/// A deadline. [RestTimerState.endsAt] is a wall-clock instant, and
-/// [RestTimerState.remaining] is a pure function of it and `now`. Backgrounding
-/// cannot make a deadline wrong, so foreground restoration needs no code at
-/// all — the value is simply recomputed. Everything here is derivable, so the
-/// whole state machine is testable with an injected clock and no timers.
+/// **Nothing about a rest is stored that can be derived from the clock.**
+/// [RestTimerState.endsAt] is a wall-clock instant; [RestTimerState.remaining]
+/// and [RestTimerState.outcomeAt] are pure functions of it and `now`. An
+/// unobserved rest still ends, because ending is not an event anything has to
+/// witness — it is a comparison.
+///
+/// The one exception is a skip, and it is not an exception to the rule: a skip
+/// cannot be derived from the clock because it is a decision, and it can only
+/// be made while the card is on screen, because the button is on the card.
 ///
 /// ## Where the clock went
 ///
 /// Nowhere. This file contains no `Timer`. The 1 Hz repaint belongs to the
-/// widget, because that is what it is for — a deadline does not need to be
-/// woken up to still be true. That is also why "no duplicate clocks" stopped
-/// being a hazard rather than becoming a test: two mounted widgets would repaint
-/// twice and still read one deadline.
+/// widget, because that is all it is — a deadline does not need to be woken up
+/// to still be true. Two mounted cards would repaint twice and read one
+/// deadline; that is why duplicate clocks stopped being a hazard rather than
+/// becoming a test.
 library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -56,7 +58,7 @@ class RestTimerState {
     this.total = Duration.zero,
     this.endsAt,
     this.pausedRemaining,
-    this.outcome,
+    this.skipped = false,
   });
 
   /// The empty state: no rest in progress.
@@ -72,21 +74,32 @@ class RestTimerState {
   /// What was left at the moment of pausing. Null unless paused.
   final Duration? pausedRemaining;
 
-  /// Set once, when the rest finishes. Kept afterwards so the card can say
-  /// what happened rather than silently reverting to idle.
-  final RestOutcome? outcome;
+  /// Whether the user cut it short. The only part of the outcome that is
+  /// stored rather than derived — see the library doc.
+  final bool skipped;
 
-  bool get isIdle => endsAt == null && pausedRemaining == null;
+  bool get isIdle => endsAt == null && pausedRemaining == null && !skipped;
   bool get isPaused => pausedRemaining != null;
-  bool get isFinished => outcome != null;
 
-  /// Running means counting down right now — not merely "started".
-  bool get isRunning => endsAt != null && outcome == null;
+  /// How this rest ended at [now], or null if it has not.
+  ///
+  /// Derived, so no observer has to be alive for it to become true.
+  RestOutcome? outcomeAt(DateTime now) {
+    if (skipped) return RestOutcome.skipped;
+    final end = endsAt;
+    if (end == null) return null;
+    return now.isBefore(end) ? null : RestOutcome.elapsed;
+  }
+
+  bool isFinishedAt(DateTime now) => outcomeAt(now) != null;
+
+  /// Counting down right now — not merely "started".
+  bool isRunningAt(DateTime now) => endsAt != null && !isFinishedAt(now);
 
   /// Time left at [now]. Never negative: a deadline that passed while the app
-  /// was backgrounded is over, not overdue by two minutes.
+  /// was in a pocket is over, not overdue by two minutes.
   Duration remaining(DateTime now) {
-    if (outcome != null) return Duration.zero;
+    if (skipped) return Duration.zero;
     final paused = pausedRemaining;
     if (paused != null) return paused;
     final end = endsAt;
@@ -106,22 +119,21 @@ class RestTimerState {
     Duration? total,
     DateTime? endsAt,
     Duration? pausedRemaining,
-    RestOutcome? outcome,
+    bool? skipped,
     bool clearEndsAt = false,
     bool clearPaused = false,
-    bool clearOutcome = false,
   }) =>
       RestTimerState(
         total: total ?? this.total,
-        // Explicit clear flags rather than `?? this.x`: every one of these
-        // fields legitimately becomes null, and `??` cannot express that. The
-        // pause path in particular has to clear the deadline while setting the
-        // remainder, and a copyWith that could not would have silently kept a
-        // stale deadline that later fired.
+        // Explicit clear flags rather than `?? this.x`: both of these fields
+        // legitimately become null, and `??` cannot express that. The pause
+        // path has to clear the deadline while setting the remainder, and a
+        // copyWith that could not would silently keep a stale deadline that
+        // later reported the rest as elapsed.
         endsAt: clearEndsAt ? null : (endsAt ?? this.endsAt),
         pausedRemaining:
             clearPaused ? null : (pausedRemaining ?? this.pausedRemaining),
-        outcome: clearOutcome ? null : (outcome ?? this.outcome),
+        skipped: skipped ?? this.skipped,
       );
 }
 
@@ -134,7 +146,7 @@ class RestTimerController extends Notifier<RestTimerState> {
 
   /// Begins a rest of [duration], replacing anything in progress.
   ///
-  /// Idempotent per set is the caller's job, not this method's: "Complete Set"
+  /// Idempotence per set is the caller's job, not this method's: "Complete Set"
   /// is what happens once, and a second press of it genuinely should restart
   /// the rest rather than be swallowed.
   void start(Duration duration) {
@@ -142,9 +154,10 @@ class RestTimerController extends Notifier<RestTimerState> {
   }
 
   void pause() {
-    if (!isRunningAt(_now)) return;
+    final now = _now;
+    if (!state.isRunningAt(now)) return;
     state = state.copyWith(
-      pausedRemaining: state.remaining(_now),
+      pausedRemaining: state.remaining(now),
       clearEndsAt: true,
     );
   }
@@ -163,7 +176,8 @@ class RestTimerController extends Notifier<RestTimerState> {
   /// Also grows [RestTimerState.total], so the ring reads 60% rather than
   /// pinning at 100% with a minute still to go.
   void addTime(Duration extra) {
-    if (state.isIdle || state.isFinished) return;
+    final now = _now;
+    if (state.isIdle || state.isFinishedAt(now)) return;
     final paused = state.pausedRemaining;
     if (paused != null) {
       state = state.copyWith(
@@ -180,33 +194,30 @@ class RestTimerController extends Notifier<RestTimerState> {
 
   /// Ends the rest now, by the user's choice.
   void skip() {
-    if (state.isIdle || state.isFinished) return;
-    state = state.copyWith(
-      outcome: RestOutcome.skipped,
-      clearEndsAt: true,
-      clearPaused: true,
-    );
+    final now = _now;
+    if (state.isIdle || state.isFinishedAt(now)) return;
+    state = state.copyWith(skipped: true, clearEndsAt: true, clearPaused: true);
   }
 
-  /// Records that the deadline passed. Called by the UI's ticker, which is the
-  /// only thing that observes the moment it happens.
+  /// Back to nothing.
   ///
-  /// Guarded rather than trusting: a repaint can arrive early, and marking a
-  /// rest complete a second before it is would fire the haptic and hand the
-  /// user back to the bar.
-  void completeIfElapsed() {
-    if (!state.isRunning) return;
-    if (state.remaining(_now) > Duration.zero) return;
-    state = state.copyWith(outcome: RestOutcome.elapsed, clearEndsAt: true);
-  }
-
-  /// Back to nothing — used when the set is left behind, not when it ends.
+  /// Called when the user acknowledges a finished rest, so the card can leave
+  /// the screen without waiting for the next set to be logged.
   void clear() => state = RestTimerState.idle;
-
-  bool isRunningAt(DateTime now) =>
-      state.isRunning && state.remaining(now) > Duration.zero;
 }
 
 final restTimerProvider =
     NotifierProvider<RestTimerController, RestTimerState>(
         RestTimerController.new);
+
+/// Whether the rest card belongs on screen.
+///
+/// Derived from the rest itself rather than from a page-local flag. The flag
+/// version (`_restTimerVisibleProvider`, a `StateProvider.autoDispose` in
+/// `workout_player_page.dart`) was the second half of the same defect the
+/// library doc describes: it reset to `false` when the page was popped, so a
+/// rest that survived navigation — as designed — had no way back onto the
+/// screen. The user saw the timer vanish with no indication it was ever there.
+final restTimerVisibleProvider = Provider<bool>((ref) {
+  return !ref.watch(restTimerProvider).isIdle;
+});

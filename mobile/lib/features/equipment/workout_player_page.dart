@@ -29,10 +29,13 @@ import 'state/equipment_providers.dart';
 import 'widgets/muscle_map.dart';
 import 'widgets/exercise_thumb.dart';
 
-/// Shows the rest timer after a successful "Mark complete". Local to this
-/// page — clears on rebuild via a StateProvider.autoDispose so navigating
-/// away resets it.
-final _restTimerVisibleProvider = StateProvider.autoDispose<bool>((_) => false);
+// The rest card's visibility used to be a page-local
+// `StateProvider.autoDispose<bool>` here. It was the second half of a defect
+// two reviewers found independently: the rest itself survives navigation by
+// design, but the flag reset when the page was popped, so a rest in progress
+// had no way back onto the screen and simply vanished. Visibility is now
+// derived from the rest — `restTimerVisibleProvider`, next to the state it
+// describes.
 
 /// The log this visit has already written, if any.
 ///
@@ -213,7 +216,7 @@ class WorkoutPlayerPage extends ConsumerWidget {
               SetTimerCard(exercise: item),
               const SizedBox(height: 12),
               _ToolsRow(),
-              if (ref.watch(_restTimerVisibleProvider)) ...[
+              if (ref.watch(restTimerVisibleProvider)) ...[
                 const SizedBox(height: 12),
                 // The duration is set where the set is logged, not here: the
                 // card renders whatever rest is in progress, and a widget that
@@ -763,7 +766,6 @@ class _MarkCompleteButton extends ConsumerWidget {
       // ordering §17 asks for: Complete Set -> Persist Set -> Rest Timer. A
       // rest that started optimistically would count down over a set that
       // never got written.
-      ref.read(_restTimerVisibleProvider.notifier).state = true;
       ref
           .read(restTimerProvider.notifier)
           .start(Duration(seconds: _restSecondsFor(exercise)));

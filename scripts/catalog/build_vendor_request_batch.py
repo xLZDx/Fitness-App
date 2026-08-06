@@ -51,6 +51,8 @@ from __future__ import annotations
 import argparse
 import collections
 import csv
+import datetime
+import re
 import sys
 from pathlib import Path
 
@@ -91,7 +93,7 @@ def file_name(reference: str) -> str:
     side view.mp4`. The directories are our layout; only the last part is
     something they can search their Dropbox for.
     """
-    return reference.rsplit("/", 1)[-1]
+    return re.split(r"[\\/]", reference)[-1]
 
 
 def build(rows: list[dict], group: str) -> list[dict]:
@@ -125,9 +127,44 @@ def ambiguous_titles(batch: list[dict]) -> list[str]:
     return sorted(t for t, n in seen.items() if n > 1)
 
 
-def cover_note(group: str, batch: list[dict], date: str) -> str:
+def version_counts(batch: list[dict]) -> str:
+    """The one place the Female/Male split is phrased.
+
+    It used to be computed twice -- once for the console, once for the note --
+    which is how a console line and an external deliverable end up disagreeing
+    about the same batch after one of them is edited.
+    """
     counts = collections.Counter(r["Missing Version"] for r in batch)
-    missing = ", ".join(f"{n} {k.lower()}" for k, n in sorted(counts.items()))
+    return ", ".join(f"{n} {k.lower()}" for k, n in sorted(counts.items()))
+
+
+def cover_note(group: str, batch: list[dict], date: str,
+               clashes: list[str]) -> str:
+    """The letter that goes to the vendor.
+
+    Takes [clashes] rather than assuming there are none. The first version
+    asserted "no two exercise names collide inside this batch" unconditionally
+    while `main` printed a WARNING to a console nobody would keep -- so a future
+    group with duplicate titles would have shipped a false claim to a third
+    party, with the script exiting 0 and printing "wrote".
+    """
+    missing = version_counts(batch)
+    if clashes:
+        listed = "".join(f"    - {t}\n" for t in clashes)
+        notes_para = (
+            f"* `Variation Notes` is blank, but {len(clashes)} exercise names\n"
+            "  appear more than once in this batch and we could not tell the\n"
+            "  variants apart from the name alone:\n"
+            f"{listed}"
+            "  Please treat those rows as ambiguous."
+        )
+    else:
+        notes_para = (
+            "* `Variation Notes` is blank because no two exercise names collide"
+            " inside this\n  batch -- the camera angle and the side are already"
+            " part of the name, so there\n  was nothing a note would"
+            " disambiguate. It is left in place for your team to\n  use."
+        )
     return f"""# Missing clip request -- {group}
 
 {len(batch)} exercises, {missing}.
@@ -141,10 +178,7 @@ reference-link column.
 
 Two things worth stating plainly:
 
-* `Variation Notes` is blank because no two exercise names collide inside this
-  batch -- the camera angle and the side are already part of the name, so there
-  was nothing a note would disambiguate. It is left in place for your team to
-  use.
+{notes_para}
 * `Reference Video URL` is blank because we host no public demonstration of
   these movements. Where a name is unclear, the existing file name in column
   three points at the version we do have.
@@ -187,9 +221,20 @@ def main() -> int:
     ap.add_argument("--group", help="muscle group to export, e.g. Legs")
     ap.add_argument("--write", action="store_true", help="write the files")
     ap.add_argument("--list-groups", action="store_true")
-    ap.add_argument("--date", default="2026-08-06", help="stamp for the file name")
+    # Computed, not a literal. A frozen default meant a Shoulders run next
+    # month would stamp itself 2026-08-06 in both the filename and the letter.
+    ap.add_argument("--date", default=datetime.date.today().isoformat(),
+                    help="stamp for the file name (default: today)")
     args = ap.parse_args()
 
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", args.date):
+        # It is concatenated into an output path.
+        print(f"--date must be YYYY-MM-DD, got {args.date!r}", file=sys.stderr)
+        return 1
+
+    if not GAPS.exists():
+        print(f"source not found: {GAPS}", file=sys.stderr)
+        return 1
     rows = load_gaps()
     if args.list_groups:
         for name, n in groups(rows).most_common():
@@ -209,10 +254,7 @@ def main() -> int:
     clashes = ambiguous_titles(batch)
 
     print(f"{args.group}: {len(batch)} rows")
-    for version, n in collections.Counter(
-        r["Missing Version"] for r in batch
-    ).most_common():
-        print(f"  missing {version.lower()}: {n}")
+    print(f"  missing {version_counts(batch)}")
     if clashes:
         print(
             f"  WARNING: {len(clashes)} duplicated exercise names -- "
@@ -239,7 +281,7 @@ def main() -> int:
         w.writerows(batch)
     write_xlsx(stem.with_suffix(".xlsx"), batch)
     (stem.with_suffix(".md")).write_text(
-        cover_note(args.group, batch, args.date), encoding="utf-8"
+        cover_note(args.group, batch, args.date, clashes), encoding="utf-8"
     )
     print(f"\nwrote {stem}.xlsx, {stem}.csv, {stem}.md")
     return 0

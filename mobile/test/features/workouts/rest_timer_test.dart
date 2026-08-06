@@ -92,15 +92,22 @@ void main() {
       expect(left.isNegative, isFalse);
     });
 
-    test('coming back marks it complete on the next observation', () {
+    test('it is over on return without anything having observed it', () {
+      // The defect two reviewers found independently. Marking a rest elapsed
+      // used to require a ticker inside the mounted card, so leaving the page
+      // mid-rest — which is what waiting out three minutes looks like —
+      // cancelled the only thing in the app that could finish it, and the rest
+      // stayed running against a deadline in the past forever.
+      //
+      // Nothing is called between starting and asserting here. That is the
+      // test: ending is a comparison, not an event.
       final h = _harness();
       h.ctrl.start(const Duration(seconds: 30));
       h.clock.advance(const Duration(minutes: 1));
 
-      // What the widget's repaint does on the first frame after resume.
-      h.ctrl.completeIfElapsed();
-
-      expect(h.c.read(restTimerProvider).outcome, RestOutcome.elapsed);
+      expect(h.c.read(restTimerProvider).outcomeAt(h.clock.now),
+          RestOutcome.elapsed);
+      expect(h.c.read(restTimerProvider).isRunningAt(h.clock.now), isFalse);
     });
   });
 
@@ -111,30 +118,46 @@ void main() {
       final h = _harness();
       h.ctrl.start(const Duration(seconds: 30));
       h.clock.advance(const Duration(seconds: 29));
-      h.ctrl.completeIfElapsed();
-
-      expect(h.c.read(restTimerProvider).outcome, isNull);
-      expect(h.c.read(restTimerProvider).isRunning, isTrue);
+      
+      expect(h.c.read(restTimerProvider).outcomeAt(h.clock.now), isNull);
+      expect(h.c.read(restTimerProvider).isRunningAt(h.clock.now), isTrue);
     });
 
-    test('completing twice does not change the outcome', () {
+    test('the outcome does not flicker once the deadline is behind us', () {
+      // Derived state has to be stable, not merely correct once: the card asks
+      // for it on every repaint, and a value that changed under a still clock
+      // would re-announce and re-buzz.
       final h = _harness();
       h.ctrl.start(const Duration(seconds: 5));
       h.clock.advance(const Duration(seconds: 5));
-      h.ctrl.completeIfElapsed();
-      h.ctrl.completeIfElapsed();
+      final s = h.c.read(restTimerProvider);
 
-      expect(h.c.read(restTimerProvider).outcome, RestOutcome.elapsed);
+      expect(s.outcomeAt(h.clock.now), RestOutcome.elapsed);
+      expect(s.outcomeAt(h.clock.now), RestOutcome.elapsed);
+      h.clock.advance(const Duration(hours: 2));
+      expect(s.outcomeAt(h.clock.now), RestOutcome.elapsed);
+    });
+
+    test('the deadline instant itself counts as over, not as one tick left',
+        () {
+      // `isBefore` rather than `isAfter`: at exactly the deadline the rest is
+      // finished. The opposite choice leaves a one-frame state where remaining
+      // is 0:00 and the card still offers Skip and +30.
+      final h = _harness();
+      h.ctrl.start(const Duration(seconds: 30));
+      h.clock.advance(const Duration(seconds: 30));
+
+      expect(h.c.read(restTimerProvider).outcomeAt(h.clock.now),
+          RestOutcome.elapsed);
     });
 
     test('an elapsed rest reports zero remaining', () {
       final h = _harness();
       h.ctrl.start(const Duration(seconds: 5));
       h.clock.advance(const Duration(seconds: 5));
-      h.ctrl.completeIfElapsed();
-
+      
       expect(h.c.read(restTimerProvider).remaining(h.clock.now), Duration.zero);
-      expect(h.c.read(restTimerProvider).isRunning, isFalse);
+      expect(h.c.read(restTimerProvider).isRunningAt(h.clock.now), isFalse);
     });
   });
 
@@ -145,7 +168,7 @@ void main() {
       h.clock.advance(const Duration(seconds: 10));
       h.ctrl.skip();
 
-      expect(h.c.read(restTimerProvider).outcome, RestOutcome.skipped);
+      expect(h.c.read(restTimerProvider).outcomeAt(h.clock.now), RestOutcome.skipped);
       expect(h.c.read(restTimerProvider).remaining(h.clock.now), Duration.zero);
     });
 
@@ -157,15 +180,14 @@ void main() {
       h.ctrl.start(const Duration(seconds: 90));
       h.ctrl.skip();
       h.clock.advance(const Duration(minutes: 5));
-      h.ctrl.completeIfElapsed();
-
-      expect(h.c.read(restTimerProvider).outcome, RestOutcome.skipped);
+      
+      expect(h.c.read(restTimerProvider).outcomeAt(h.clock.now), RestOutcome.skipped);
     });
 
     test('skipping nothing does nothing', () {
       final h = _harness();
       h.ctrl.skip();
-      expect(h.c.read(restTimerProvider).outcome, isNull);
+      expect(h.c.read(restTimerProvider).outcomeAt(h.clock.now), isNull);
       expect(h.c.read(restTimerProvider).isIdle, isTrue);
     });
   });
@@ -219,7 +241,7 @@ void main() {
 
       expect(h.c.read(restTimerProvider).remaining(h.clock.now),
           const Duration(seconds: 60));
-      expect(h.c.read(restTimerProvider).isRunning, isFalse);
+      expect(h.c.read(restTimerProvider).isRunningAt(h.clock.now), isFalse);
       expect(h.c.read(restTimerProvider).isPaused, isTrue);
     });
 
@@ -294,7 +316,26 @@ void main() {
       expect(h.c.read(restTimerProvider).remaining(h.clock.now),
           const Duration(seconds: 60));
       expect(h.c.read(restTimerProvider).total, const Duration(seconds: 60));
-      expect(h.c.read(restTimerProvider).outcome, isNull);
+      expect(h.c.read(restTimerProvider).outcomeAt(h.clock.now), isNull);
+    });
+
+    test('the card is visible exactly while a rest exists', () {
+      // The second half of the same defect. Visibility used to be a page-local
+      // `StateProvider.autoDispose<bool>`, which reset when the page was
+      // popped — so a rest that correctly survived navigation had no way back
+      // onto the screen, and vanished with nothing on screen to say so.
+      final h = _harness();
+      expect(h.c.read(restTimerVisibleProvider), isFalse);
+
+      h.ctrl.start(const Duration(seconds: 90));
+      expect(h.c.read(restTimerVisibleProvider), isTrue);
+
+      // Still visible after it ends: the card is how the user learns it ended.
+      h.clock.advance(const Duration(minutes: 5));
+      expect(h.c.read(restTimerVisibleProvider), isTrue);
+
+      h.ctrl.clear();
+      expect(h.c.read(restTimerVisibleProvider), isFalse);
     });
 
     test('clear returns it to idle', () {
@@ -302,7 +343,7 @@ void main() {
       h.ctrl.start(const Duration(seconds: 90));
       h.ctrl.clear();
       expect(h.c.read(restTimerProvider).isIdle, isTrue);
-      expect(h.c.read(restTimerProvider).outcome, isNull);
+      expect(h.c.read(restTimerProvider).outcomeAt(h.clock.now), isNull);
     });
   });
 }

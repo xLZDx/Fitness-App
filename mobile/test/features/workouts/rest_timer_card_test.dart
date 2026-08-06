@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,6 +17,29 @@ import 'package:fitness_app/features/workouts/widgets/rest_timer.dart';
 class _Clock {
   DateTime now = DateTime.utc(2026, 8, 6, 12);
   DateTime call() => now;
+  void advance(Duration d) => now = now.add(d);
+}
+
+/// Records the haptics the card asks for.
+///
+/// `HapticFeedback` goes out over `SystemChannels.platform`, which in a widget
+/// test has no handler at all — the call silently succeeds and leaves no trace.
+/// Without intercepting it, "an elapsed rest buzzes and a skipped one does not"
+/// is unassertable.
+List<String> _captureHaptics(WidgetTester t) {
+  final seen = <String>[];
+  t.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+    SystemChannels.platform,
+    (call) async {
+      if (call.method == 'HapticFeedback.vibrate') {
+        seen.add(call.arguments as String);
+      }
+      return null;
+    },
+  );
+  addTearDown(() => t.binding.defaultBinaryMessenger
+      .setMockMethodCallHandler(SystemChannels.platform, null));
+  return seen;
 }
 
 Widget _app(ProviderContainer c, {Locale locale = const Locale('en')}) =>
@@ -56,7 +80,8 @@ void main() {
     await t.tap(find.byKey(const Key('rest-timer.skip')));
     await t.pump();
 
-    expect(h.c.read(restTimerProvider).outcome, RestOutcome.skipped);
+    expect(h.c.read(restTimerProvider).outcomeAt(h.clock.now),
+        RestOutcome.skipped);
     // The controls go away with the rest: a Skip button on a finished rest is
     // an invitation to press something that does nothing.
     expect(find.byKey(const Key('rest-timer.skip')), findsNothing);
@@ -152,6 +177,95 @@ void main() {
       await t.pump();
 
       expect(find.text('Отдых пропущен'), findsOneWidget);
+    });
+  });
+
+  group('a rest that simply runs out', () {
+    // The most common real case, and it was untested: every finished-state test
+    // reached "done" by pressing Skip, so the elapsed branch of the switch, the
+    // ring colour and the haptic were never exercised. Found by the test-coverage
+    // review, and it was right — the widget's own `Timer.periodic` never fired in
+    // any test either, because every pump was `t.pump()` with no duration.
+
+    testWidgets('the card finishes itself when the deadline passes', (t) async {
+      final h = _harness();
+      h.c.read(restTimerProvider.notifier).start(const Duration(seconds: 60));
+      await t.pumpWidget(_app(h.c));
+      expect(find.byKey(const Key('rest-timer.skip')), findsOneWidget);
+
+      // The injected clock and the test binding's clock are separate: pumping a
+      // duration fires the widget's ticker, advancing this one is what makes the
+      // deadline actually past.
+      h.clock.advance(const Duration(seconds: 61));
+      await t.pump(const Duration(seconds: 1));
+
+      expect(find.text('Rest complete'), findsOneWidget);
+      expect(find.byKey(const Key('rest-timer.skip')), findsNothing);
+      expect(find.byKey(const Key('rest-timer.add')), findsNothing);
+      expect(find.byKey(const Key('rest-timer.pause')), findsNothing);
+      expect(find.text('0:00'), findsOneWidget);
+    });
+
+    testWidgets('an elapsed rest buzzes and a skipped one does not', (t) async {
+      final haptics = _captureHaptics(t);
+      final h = _harness();
+      h.c.read(restTimerProvider.notifier).start(const Duration(seconds: 60));
+      await t.pumpWidget(_app(h.c));
+      expect(haptics, isEmpty);
+
+      h.clock.advance(const Duration(seconds: 61));
+      await t.pump(const Duration(seconds: 1));
+      await t.pump();
+
+      expect(haptics, ['HapticFeedbackType.heavyImpact']);
+
+      // And a skip on a fresh rest stays silent.
+      haptics.clear();
+      h.c.read(restTimerProvider.notifier).start(const Duration(seconds: 60));
+      await t.pump();
+      await t.tap(find.byKey(const Key('rest-timer.skip')));
+      await t.pump();
+      await t.pump();
+
+      expect(haptics, isEmpty);
+    });
+
+    testWidgets('it does not announce twice while it sits there', (t) async {
+      final outcomes = <RestOutcome>[];
+      final h = _harness();
+      h.c.read(restTimerProvider.notifier).start(const Duration(seconds: 60));
+      await t.pumpWidget(UncontrolledProviderScope(
+        container: h.c,
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: RestTimer(onFinished: outcomes.add)),
+        ),
+      ));
+
+      h.clock.advance(const Duration(seconds: 61));
+      // Five more ticks after it is already over.
+      for (var i = 0; i < 5; i++) {
+        await t.pump(const Duration(seconds: 1));
+      }
+
+      expect(outcomes, [RestOutcome.elapsed]);
+    });
+
+    testWidgets('a rest that ended while the card was away shows as ended',
+        (t) async {
+      // The reviewers' BLOCKER, at the widget layer: the card is mounted for
+      // the first time only AFTER the deadline has already passed. Nothing
+      // observed the transition, and it still has to read as finished on the
+      // very first frame — not for one second as a running timer at 0:00.
+      final h = _harness();
+      h.c.read(restTimerProvider.notifier).start(const Duration(seconds: 30));
+      h.clock.advance(const Duration(minutes: 4));
+
+      await t.pumpWidget(_app(h.c));
+
+      expect(find.text('Rest complete'), findsOneWidget);
+      expect(find.byKey(const Key('rest-timer.skip')), findsNothing);
     });
   });
 }

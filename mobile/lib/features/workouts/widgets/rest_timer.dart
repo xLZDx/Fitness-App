@@ -37,14 +37,17 @@ class _RestTimerState extends ConsumerState<RestTimer> {
   @override
   void initState() {
     super.initState();
-    _repaint = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted) return;
-      // Asking the controller rather than deciding here: the widget can be
-      // repainted for a dozen reasons and only the state knows whether the
-      // deadline actually passed.
-      ref.read(restTimerProvider.notifier).completeIfElapsed();
-      setState(() {});
-    });
+    // Repaint only. It does not decide anything and nothing waits on it: the
+    // rest ends by the clock passing the deadline, whether or not this widget
+    // is alive to see it. An earlier version called a `completeIfElapsed()`
+    // into the controller from here, which made this ticker the only thing in
+    // the app that could finish a rest — and popping the page cancelled it.
+    _repaint = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) {
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   @override
@@ -76,7 +79,7 @@ class _RestTimerState extends ConsumerState<RestTimer> {
     final rest = ref.watch(restTimerProvider);
     final now = ref.read(restClockProvider)();
 
-    final outcome = rest.outcome;
+    final outcome = rest.outcomeAt(now);
     if (outcome != null) {
       // After the frame: firing a haptic and a callback from inside build would
       // mutate state during a build.
@@ -87,7 +90,7 @@ class _RestTimerState extends ConsumerState<RestTimer> {
     }
 
     final remaining = rest.remaining(now);
-    final done = rest.isFinished;
+    final done = outcome != null;
 
     return GlassCard(
       key: const Key('rest-timer'),
