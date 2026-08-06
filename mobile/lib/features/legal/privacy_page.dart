@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../shared/widgets/glass.dart';
 import 'legal_body.dart';
 import 'terms_page.dart' show TermsPage;
+import '../../core/theme/app_semantic_colors.dart';
 
 /// Privacy Policy. Same history as [TermsPage] — see its doc comment for how
 /// both pages went from an openly-flagged placeholder to real text.
@@ -42,7 +43,7 @@ class PrivacyPage extends StatelessWidget {
             l10n.legalLastUpdated,
             key: const Key('privacy-last-updated'),
             style: (theme.textTheme.bodySmall ?? const TextStyle()).copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+              color: theme.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 16),

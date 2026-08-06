@@ -73,7 +73,7 @@ class SetTimerCard extends ConsumerWidget {
                 : l10n.timerSetOf(
                     timer.setNumber == 0 ? 1 : timer.setNumber, plan.sets),
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.60),
+              color: theme.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 14),
@@ -124,7 +124,7 @@ class SetTimerCard extends ConsumerWidget {
                         letterSpacing: 2,
                         fontWeight: FontWeight.w900,
                         color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                            theme.colors.textSecondary,
                       ),
                     ),
                   ],

@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitness_app/features/progress_photos/data/progress_photo.dart';
 import 'package:fitness_app/features/progress_photos/progress_photos_page.dart';
 import 'package:fitness_app/features/progress_photos/state/progress_photos_providers.dart';
+import 'package:fitness_app/core/theme/app_theme.dart';
 
 /// M0: photos captured through the mock repository live in one instance's
 /// in-memory list and vanish on restart, with nothing on the page saying so.
@@ -24,7 +25,8 @@ class _NeverPersists implements ProgressPhotosRepository {
 
 Widget _host({List<Override> overrides = const []}) => ProviderScope(
       overrides: overrides,
-      child: const MaterialApp(
+      child: MaterialApp(
+        theme: AppTheme.dark(),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: ProgressPhotosPage(),

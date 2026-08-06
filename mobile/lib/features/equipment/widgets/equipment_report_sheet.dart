@@ -116,7 +116,7 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
             const SizedBox(height: 4),
             Text(widget.equipmentName,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: scheme.onSurface.withValues(alpha: 0.65),
+                  color: theme.colors.textSecondary,
                 )),
             const SizedBox(height: 18),
             Wrap(
@@ -187,7 +187,7 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
             Text(
               AppLocalizations.of(context).equipmentReportsAreForwardedToTheGym,
               style: theme.textTheme.labelSmall?.copyWith(
-                color: scheme.onSurface.withValues(alpha: 0.55),
+                color: theme.colors.textSecondary,
               ),
             ),
           ],

@@ -86,7 +86,6 @@ class _PlateCalculatorState extends State<PlateCalculator> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     final load = solvePlateLoad(targetKg: _target, barKg: _bar);
 
     return GlassCard(
@@ -176,7 +175,7 @@ class _PlateCalculatorState extends State<PlateCalculator> {
           Text(
             AppLocalizations.of(context).workoutsPlatesAssumed25201510,
             style: theme.textTheme.labelSmall?.copyWith(
-              color: scheme.onSurface.withValues(alpha: 0.55),
+              color: theme.colors.textSecondary,
             ),
           ),
         ],
@@ -199,7 +198,7 @@ class _Row extends StatelessWidget {
           width: 110,
           child: Text(label,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                color: theme.colors.textSecondary,
               )),
         ),
         Expanded(child: child),

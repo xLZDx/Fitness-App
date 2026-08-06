@@ -20,7 +20,6 @@ class ProfilePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     final user = ref.watch(authUserProvider).valueOrNull;
     final profile = ref.watch(currentProfileProvider).valueOrNull;
     final onboarded = profile?.hasCompletedOnboarding ?? false;
@@ -66,7 +65,7 @@ class ProfilePage extends ConsumerWidget {
                       Text(
                         subtitle,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: scheme.onSurface.withValues(alpha: 0.65),
+                          color: theme.colors.textSecondary,
                         ),
                       ),
                     ],
@@ -242,15 +241,14 @@ class ProfilePage extends ConsumerWidget {
                   Text(
                     subtitle,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color:
-                          theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                      color: theme.colors.textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
             Icon(Icons.chevron_right_rounded,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.45)),
+                color: theme.colors.textSecondary),
           ],
         ),
       ),
@@ -360,7 +358,7 @@ class _ProfileSummary extends StatelessWidget {
             child: Text(
               label,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.60),
+                color: theme.colors.textSecondary,
               ),
             ),
           ),

@@ -8,6 +8,7 @@ import '../onboarding/widgets/inputs.dart';
 import 'data/injury_regions.dart';
 import 'data/profile_models.dart';
 import 'state/profile_providers.dart';
+import '../../core/theme/app_semantic_colors.dart';
 
 /// The screen that makes a stored injury editable.
 ///
@@ -260,7 +261,7 @@ class _InjuryCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(l10n.injuriesNotScreenedForThis,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.70),
+                  color: theme.colors.textSecondary,
                 )),
           ],
           FieldLabel(l10n.injuriesNote),

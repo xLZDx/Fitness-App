@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/settings/state/settings_providers.dart';
 import 'ai_coach_context.dart';
 import 'ai_coach_service.dart';
+import '../../core/theme/app_semantic_colors.dart';
 
 /// Bottom sheet with one round of machine-specific coaching advice.
 ///
@@ -130,7 +131,7 @@ class AiCoachSheet extends ConsumerWidget {
               Text(
                 AppLocalizations.of(context).aiCoachDisclaimer,
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                  color: theme.colors.textSecondary,
                 ),
               ),
             ],

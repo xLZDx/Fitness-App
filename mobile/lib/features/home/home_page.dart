@@ -158,7 +158,7 @@ class _SectionHeader extends StatelessWidget {
     return Text(
       label,
       style: theme.textTheme.titleLarge?.copyWith(
-        color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
+        color: theme.colors.textSecondary,
       ),
     );
   }
@@ -217,7 +217,7 @@ class _TodayCard extends StatelessWidget {
                   Text(
                     AppLocalizations.of(context).homePickAPlanOrScanA,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurface.withValues(alpha: 0.60),
+                      color: theme.colors.textSecondary,
                     ),
                   ),
                 ],
@@ -266,15 +266,14 @@ class _TodayCard extends StatelessWidget {
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: screened.hiddenForInjury
                         ? scheme.error
-                        : scheme.onSurface.withValues(alpha: 0.60),
+                        : theme.colors.textSecondary,
                   ),
                 ),
               ],
             ),
           ),
           const SizedBox(width: 8),
-          Icon(Icons.chevron_right_rounded,
-              color: scheme.onSurface.withValues(alpha: 0.55)),
+          Icon(Icons.chevron_right_rounded, color: theme.colors.textSecondary),
         ],
       ),
     );
@@ -331,7 +330,7 @@ class _UpcomingCard extends StatelessWidget {
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: screened.hiddenForInjury
                         ? scheme.error
-                        : scheme.onSurface.withValues(alpha: 0.60),
+                        : theme.colors.textSecondary,
                   ),
                 ),
               ],
@@ -377,7 +376,6 @@ class _SuggestionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     return GlassCard(
       key: Key('suggestion-${s.exerciseId}'),
       padding: const EdgeInsets.all(14),
@@ -412,7 +410,7 @@ class _SuggestionCard extends StatelessWidget {
                       AppLocalizations.of(context)
                           .equipmentMin(s.durationMinutes),
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: scheme.onSurface.withValues(alpha: 0.55),
+                        color: theme.colors.textSecondary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -424,7 +422,7 @@ class _SuggestionCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurface.withValues(alpha: 0.60),
+                    color: theme.colors.textSecondary,
                   ),
                 ),
               ],
@@ -464,7 +462,7 @@ class _SuggestionsMessage extends StatelessWidget {
       child: Text(
         text,
         style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+          color: theme.colors.textSecondary,
         ),
       ),
     );
@@ -496,7 +494,7 @@ class _HeroCard extends StatelessWidget {
                 style: theme.textTheme.labelMedium?.copyWith(
                   letterSpacing: 1.4,
                   fontWeight: FontWeight.w700,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                  color: theme.colors.textSecondary,
                 ),
               ),
             ],
@@ -511,7 +509,7 @@ class _HeroCard extends StatelessWidget {
           Text(
             AppLocalizations.of(context).homeScanAMachineOrPickA,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+              color: theme.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 14),
@@ -588,7 +586,7 @@ class _StatCard extends StatelessWidget {
           Text(
             label,
             style: theme.textTheme.labelMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+              color: theme.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 2),
@@ -644,14 +642,13 @@ class _AiPlanCard extends StatelessWidget {
                   AppLocalizations.of(context)
                       .homeBuiltFromYourIntakeRatingsAnd,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                    color: theme.colors.textSecondary,
                   ),
                 ),
               ],
             ),
           ),
-          Icon(Icons.chevron_right_rounded,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.55)),
+          Icon(Icons.chevron_right_rounded, color: theme.colors.textSecondary),
         ],
       ),
     );

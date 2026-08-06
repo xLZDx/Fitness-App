@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/shared/widgets/glass_nav_bar.dart';
+import 'package:fitness_app/core/theme/app_theme.dart';
 
 const _items = [
   GlassNavItem(
@@ -26,6 +27,7 @@ const _items = [
 
 Widget _harness(int selectedIndex, ValueChanged<int> onSelect) {
   return MaterialApp(
+    theme: AppTheme.dark(),
     home: Scaffold(
       body: SizedBox(width: 320, height: 100),
       bottomNavigationBar: GlassNavBar(

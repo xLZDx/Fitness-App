@@ -332,3 +332,15 @@ extension AppSemanticColorsX on BuildContext {
   AppSemanticColors get colors =>
       Theme.of(this).extension<AppSemanticColors>()!;
 }
+
+/// The same tokens, reached from a `ThemeData` that is already in hand.
+///
+/// Feature code overwhelmingly opens with `final theme = Theme.of(context)`
+/// and then reads `theme.colorScheme.…`; 124 of the 128 `onSurface` uses did.
+/// Without this those call sites would have to reach back through `context`
+/// for a second `Theme.of` lookup they already performed — or be rewritten to
+/// carry a `BuildContext` into helper methods that currently take a
+/// `ThemeData` and have no need of one.
+extension AppSemanticColorsThemeX on ThemeData {
+  AppSemanticColors get colors => extension<AppSemanticColors>()!;
+}

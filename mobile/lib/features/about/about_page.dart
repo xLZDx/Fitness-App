@@ -90,7 +90,7 @@ class AboutPage extends StatelessWidget {
                   AppLocalizations.of(context).aboutWeReANonprofitFitnessOrg,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color:
-                        theme.colorScheme.onSurface.withValues(alpha: 0.75),
+                        theme.colors.textSecondary,
                     height: 1.5,
                   ),
                 ),
@@ -129,8 +129,7 @@ class AboutPage extends StatelessWidget {
                   child: Text(
                     AppLocalizations.of(context).aboutApproximateYear1ConservativeBudgetAudited,
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurface
-                          .withValues(alpha: 0.55),
+                      color: theme.colors.textSecondary,
                     ),
                   ),
                 ),
@@ -188,7 +187,6 @@ class _PrincipleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     return GlassCard(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -220,7 +218,7 @@ class _PrincipleCard extends StatelessWidget {
                 Text(
                   p.body,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurface.withValues(alpha: 0.70),
+                    color: theme.colors.textSecondary,
                     height: 1.4,
                   ),
                 ),
@@ -256,7 +254,7 @@ class _FundBar extends StatelessWidget {
               child: Text(
                 line.label,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: scheme.onSurface.withValues(alpha: 0.75),
+                  color: theme.colors.textSecondary,
                 ),
               ),
             ),

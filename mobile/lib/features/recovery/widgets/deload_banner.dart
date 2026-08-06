@@ -67,7 +67,7 @@ class DeloadBanner extends ConsumerWidget {
                                 "lighter week."
                             : verdict.reasons.first,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurface.withValues(alpha: 0.70),
+                          color: theme.colors.textSecondary,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,

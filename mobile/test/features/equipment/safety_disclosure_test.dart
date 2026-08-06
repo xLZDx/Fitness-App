@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/features/equipment/state/safety_coverage_providers.dart';
 import 'package:fitness_app/features/equipment/widgets/safety_disclosure.dart';
+import 'package:fitness_app/core/theme/app_theme.dart';
 
 /// Nothing may claim to have screened exercises against a user's injuries
 /// while the catalog carries no tags to screen with.
@@ -24,6 +25,7 @@ Widget _host(Widget child, {required SafetyScreeningLevel level}) {
       safetyScreeningLevelProvider.overrideWithValue(level),
     ],
     child: MaterialApp(
+      theme: AppTheme.dark(),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(body: child),

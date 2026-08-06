@@ -59,8 +59,7 @@ class EquipmentDetailPage extends ConsumerWidget {
                             ' · '
                             '${CatalogLabels.category(AppLocalizations.of(context), item.category)}',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface
-                                  .withValues(alpha: 0.65),
+                              color: theme.colors.textSecondary,
                             ),
                           ),
                         ],
@@ -136,8 +135,7 @@ class EquipmentDetailPage extends ConsumerWidget {
                           Text(
                             AppLocalizations.of(context).aiCoachButtonHint,
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface
-                                  .withValues(alpha: 0.65),
+                              color: theme.colors.textSecondary,
                             ),
                           ),
                         ],
@@ -151,7 +149,7 @@ class EquipmentDetailPage extends ConsumerWidget {
               Text(
                 AppLocalizations.of(context).equipmentRecommendedExercises,
                 style: theme.textTheme.titleLarge?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
+                  color: theme.colors.textSecondary,
                 ),
               ),
               const SizedBox(height: 12),
@@ -312,8 +310,7 @@ class _ExerciseCard extends StatelessWidget {
                     Text(
                       AppLocalizations.of(context).equipmentMin(exercise.durationMinutes),
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurface
-                            .withValues(alpha: 0.55),
+                        color: theme.colors.textSecondary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -325,7 +322,7 @@ class _ExerciseCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.60),
+                    color: theme.colors.textSecondary,
                   ),
                 ),
               ],
@@ -367,7 +364,7 @@ class _FilteredHint extends StatelessWidget {
                   ? 'Filtered out 1 exercise that conflicts with your injuries.'
                   : 'Filtered out $count exercises that conflict with your injuries.',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+                color: theme.colors.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -468,7 +465,7 @@ class _NotFound extends StatelessWidget {
               AppLocalizations.of(context).equipmentTryScanningADifferentCodeOr,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                color: theme.colors.textSecondary,
               ),
             ),
           ],

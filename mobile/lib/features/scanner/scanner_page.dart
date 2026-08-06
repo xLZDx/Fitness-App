@@ -570,7 +570,7 @@ class _PreparingTile extends ConsumerWidget {
             '${l.machineCardNotInCatalogYet} · '
             '${l.machineCardSeenTimes(card.timesSeen)}',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+              color: theme.colors.textSecondary,
             ),
           ),
           children: [
@@ -625,7 +625,7 @@ class _HintCard extends StatelessWidget {
                 ? l.scannerTryFillingTheFrameWithOne
                 : l.scannerWeIdentifyTheEquipmentOnDevice,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+              color: theme.colors.textSecondary,
             ),
           ),
         ],
@@ -696,7 +696,7 @@ class _LiveCard extends StatelessWidget {
                     AppLocalizations.of(context).scannerKeepAiming,
                     style: theme.textTheme.labelSmall?.copyWith(
                       color:
-                          theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                          theme.colors.textSecondary,
                     ),
                   ),
                 ],
@@ -727,7 +727,7 @@ class _LiveCard extends StatelessWidget {
                       (r.confidence * 100).toStringAsFixed(0),
                       (r.agreement * 100).toStringAsFixed(0)),
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                    color: theme.colors.textSecondary,
                   ),
                 ),
               ],
@@ -786,8 +786,7 @@ class _Matches extends StatelessWidget {
                         AppLocalizations.of(context).scannerConfidence(
                             (m.confidence * 100).toStringAsFixed(0)),
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.65),
+                          color: theme.colors.textSecondary,
                         ),
                       ),
                     ],
@@ -881,7 +880,7 @@ class _ScanPrivacyStrip extends StatelessWidget {
               AppLocalizations.of(context).scannerCloudDisclosure,
               key: const Key('scan-privacy-strip'),
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+                color: theme.colors.textSecondary,
               ),
             ),
           ),

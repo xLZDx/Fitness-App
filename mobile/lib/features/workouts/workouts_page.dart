@@ -344,7 +344,6 @@ class _ExerciseCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     // Same body the detail page will demonstrate on, so the thumbnail and the
     // clip behind it are not two different people.
     final body = ExerciseItem.bodyForGender(
@@ -377,7 +376,7 @@ class _ExerciseCard extends ConsumerWidget {
                       AppLocalizations.of(context)
                           .equipmentMin(exercise.durationMinutes),
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: scheme.onSurface.withValues(alpha: 0.55),
+                        color: theme.colors.textSecondary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -395,7 +394,7 @@ class _ExerciseCard extends ConsumerWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurface.withValues(alpha: 0.60),
+                    color: theme.colors.textSecondary,
                   ),
                 ),
               ],
@@ -416,7 +415,6 @@ class _OfflinePrefetchCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     final tier = ref.watch(effectiveTierProvider);
     final isPremium = tier != SubscriptionTier.free;
     final action = ref.watch(offlinePrefetchActionProvider);
@@ -474,7 +472,7 @@ class _OfflinePrefetchCard extends ConsumerWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurface.withValues(alpha: 0.65),
+                    color: theme.colors.textSecondary,
                   ),
                 ),
               ],
@@ -489,7 +487,7 @@ class _OfflinePrefetchCard extends ConsumerWidget {
           else
             Icon(
               isPremium ? Icons.cloud_download_outlined : Icons.lock_outline,
-              color: scheme.onSurface.withValues(alpha: 0.6),
+              color: theme.colors.textSecondary,
             ),
         ],
       ),
@@ -582,8 +580,7 @@ class _QuickTool extends StatelessWidget {
                     overflow: TextOverflow.ellipsis),
                 Text(subtitle,
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color:
-                          theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                      color: theme.colors.textSecondary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis),

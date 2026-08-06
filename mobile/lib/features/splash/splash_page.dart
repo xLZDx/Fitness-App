@@ -67,10 +67,7 @@ class _SplashPageState extends State<SplashPage>
                   l10n.splashTagline,
                   style:
                       Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.65),
+                            color: context.colors.textSecondary,
                           ),
                 ),
               ],

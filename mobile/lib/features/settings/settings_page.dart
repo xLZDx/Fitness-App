@@ -7,6 +7,7 @@ import '../../core/settings/app_settings.dart';
 import '../../core/settings/state/settings_providers.dart';
 import '../../shared/widgets/glass.dart';
 import '../data_export/data_export_providers.dart';
+import '../../core/theme/app_semantic_colors.dart';
 
 /// Device preferences. Every control here changes real behaviour:
 /// theme drives `MaterialApp.themeMode`, language drives its `locale`, and the
@@ -117,8 +118,7 @@ class SettingsPage extends ConsumerWidget {
                   child: Text(
                     AppLocalizations.of(context).settingsTestAccessBody,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color:
-                          theme.colorScheme.onSurface.withValues(alpha: 0.62),
+                      color: theme.colors.textSecondary,
                     ),
                   ),
                 ),
@@ -318,8 +318,7 @@ class SettingsPage extends ConsumerWidget {
                         AppLocalizations.of(context)
                             .settingsDeleteAccountSubtitle,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.60),
+                          color: theme.colors.textSecondary,
                         ),
                       ),
                     ],

@@ -187,6 +187,7 @@ void main() {
       final router = buildShellRouter();
       addTearDown(router.dispose);
       await tester.pumpWidget(MaterialApp.router(
+        theme: AppTheme.dark(),
         locale: kTestLocale,
         localizationsDelegates: kTestLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -213,6 +214,7 @@ void main() {
       final router = buildShellRouter();
       addTearDown(router.dispose);
       await tester.pumpWidget(MaterialApp.router(
+        theme: AppTheme.dark(),
         locale: kTestLocale,
         localizationsDelegates: kTestLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -233,6 +235,7 @@ void main() {
       final router = buildShellRouter();
       addTearDown(router.dispose);
       await tester.pumpWidget(MaterialApp.router(
+        theme: AppTheme.dark(),
         locale: kTestLocale,
         localizationsDelegates: kTestLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,

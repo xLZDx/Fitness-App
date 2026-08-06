@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitness_app/features/workouts/data/progression.dart';
 import 'package:fitness_app/features/workouts/data/workout_log.dart';
 import 'package:fitness_app/features/workouts/widgets/set_capture_sheet.dart';
+import 'package:fitness_app/core/theme/app_theme.dart';
 
 /// Capturing what was actually lifted, and the double-tap that capture makes
 /// dangerous.
@@ -15,6 +16,7 @@ import 'package:fitness_app/features/workouts/widgets/set_capture_sheet.dart';
 /// unreachable in production. Every logged set was a timestamp and a title.
 
 Widget _host(Widget child) => MaterialApp(
+  theme: AppTheme.dark(),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(body: child),

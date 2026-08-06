@@ -367,7 +367,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
             child: Text(
               AppLocalizations.of(context).formcheckFormCoachRunsOnDeviceUsing,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.70),
+                color: theme.colors.textSecondary,
               ),
             ),
           ),
@@ -653,7 +653,7 @@ class _SetSummaryCard extends StatelessWidget {
           '${AppLocalizations.of(context).formcheckNoRepsYetStandTallTo}',
           key: const Key('form_check.summary_empty'),
           style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.70),
+            color: theme.colors.textSecondary,
           ),
         ),
       );
@@ -701,7 +701,7 @@ class _SetSummaryCard extends StatelessWidget {
               AppLocalizations.of(context)
                   .formcheckFlagged(offenders.join(', ')),
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.70),
+                color: theme.colors.textSecondary,
               ),
             ),
           ],
@@ -999,15 +999,13 @@ class _CompleteProfileCard extends ConsumerWidget {
                   Text(
                     l10n.formcheckMissingAnswers(names),
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color:
-                          theme.colorScheme.onSurface.withValues(alpha: 0.68),
+                      color: theme.colors.textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+            Icon(Icons.chevron_right, color: theme.colors.textSecondary),
           ],
         ),
       ),

@@ -62,7 +62,7 @@ class StepTitle extends StatelessWidget {
                 Text(
                   subtitle!,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                    color: theme.colors.textSecondary,
                   ),
                 ),
               ],
@@ -87,7 +87,7 @@ class FieldLabel extends StatelessWidget {
         label,
         style: theme.textTheme.titleSmall?.copyWith(
           fontWeight: FontWeight.w700,
-          color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
+          color: theme.colors.textSecondary,
         ),
       ),
     );

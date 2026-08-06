@@ -73,7 +73,7 @@ class ProgressPage extends ConsumerWidget {
           Text(
             AppLocalizations.of(context).progressLast8Weeks,
             style: theme.textTheme.titleLarge?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
+              color: theme.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 8),
@@ -87,8 +87,7 @@ class ProgressPage extends ConsumerWidget {
                         AppLocalizations.of(context)
                             .progressLogAWorkoutToSeeYour,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.65),
+                          color: theme.colors.textSecondary,
                         ),
                       ),
                     )
@@ -99,7 +98,7 @@ class ProgressPage extends ConsumerWidget {
           Text(
             AppLocalizations.of(context).progressRecentActivity,
             style: theme.textTheme.titleLarge?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
+              color: theme.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 8),
@@ -109,7 +108,7 @@ class ProgressPage extends ConsumerWidget {
                 AppLocalizations.of(context)
                     .progressTapMarkCompleteOnAnyWorkout,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                  color: theme.colors.textSecondary,
                 ),
               ),
             )
@@ -155,7 +154,7 @@ class _StatCard extends StatelessWidget {
           Text(
             label,
             style: theme.textTheme.labelMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+              color: theme.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 2),
@@ -219,8 +218,7 @@ class _BarChart extends StatelessWidget {
                   Text(
                     '${values[i]}',
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color:
-                          theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                      color: theme.colors.textSecondary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -241,7 +239,6 @@ class _RecentLogCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     return GlassCard(
       padding: const EdgeInsets.all(14),
       child: Row(
@@ -276,7 +273,7 @@ class _RecentLogCard extends StatelessWidget {
                   AppLocalizations.of(context).notificationsMin(
                       _formatDate(l10n, log.completedAt), log.durationMinutes),
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurface.withValues(alpha: 0.60),
+                    color: theme.colors.textSecondary,
                   ),
                 ),
               ],

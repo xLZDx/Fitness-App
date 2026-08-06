@@ -88,8 +88,7 @@ class AiPlannerPage extends ConsumerWidget {
                                     AppLocalizations.of(context).aiplannerMinIntensity(plan.estimatedMinutes, (plan.intensityFactor * 100).round()),
                                     style:
                                         theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.colorScheme.onSurface
-                                          .withValues(alpha: 0.65),
+                                      color: theme.colors.textSecondary,
                                     ),
                                   ),
                                 ],
@@ -126,8 +125,7 @@ class AiPlannerPage extends ConsumerWidget {
                                       ex.muscles.take(2).join(', ')),
                                   style: theme.textTheme.labelSmall
                                       ?.copyWith(
-                                    color: theme.colorScheme.onSurface
-                                        .withValues(alpha: 0.65),
+                                    color: theme.colors.textSecondary,
                                   ),
                                 ),
                               ],

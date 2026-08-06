@@ -10,6 +10,7 @@ import 'package:fitness_app/features/account_deletion/state/account_deletion_pro
 import 'package:fitness_app/features/auth/data/auth_repository.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
+import 'package:fitness_app/core/theme/app_theme.dart';
 
 /// L0b — the confirmation surface for the one action in this app that is
 /// genuinely irreversible: it cancels a real subscription and permanently
@@ -58,6 +59,7 @@ Widget _host(
       if (authRepo != null) authRepositoryProvider.overrideWithValue(authRepo),
     ],
     child: MaterialApp.router(
+      theme: AppTheme.dark(),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,

@@ -59,7 +59,7 @@ class DonorWallPage extends ConsumerWidget {
                         AppLocalizations.of(context)
                             .donorwallAnyoneCanBrowseThisListDonors,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurface.withValues(alpha: 0.65),
+                          color: theme.colors.textSecondary,
                         ),
                       ),
                     ],
@@ -111,7 +111,7 @@ class _DonorList extends StatelessWidget {
         child: Text(
           AppLocalizations.of(context).donorwallBeTheFirstToOptIn,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.70),
+            color: theme.colors.textSecondary,
           ),
         ),
       );
@@ -166,7 +166,6 @@ class _DonorTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     return GlassCard(
       padding: const EdgeInsets.all(14),
       child: Row(
@@ -219,7 +218,7 @@ class _DonorTile extends StatelessWidget {
                     '"${entry.message!}"',
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontStyle: FontStyle.italic,
-                      color: scheme.onSurface.withValues(alpha: 0.70),
+                      color: theme.colors.textSecondary,
                     ),
                   ),
                 ],

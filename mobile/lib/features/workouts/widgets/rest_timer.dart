@@ -8,6 +8,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/glass.dart';
 import '../state/rest_timer_providers.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 
 /// Glass-card rest timer.
 ///
@@ -141,7 +142,7 @@ class _RestTimerState extends ConsumerState<RestTimer> {
                     Text(
                       done ? l.restTimerDoneHint : l.restTimerHint,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurface.withValues(alpha: 0.65),
+                        color: theme.colors.textSecondary,
                       ),
                     ),
                   ],

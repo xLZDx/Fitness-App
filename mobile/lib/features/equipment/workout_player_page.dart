@@ -658,7 +658,7 @@ class _StepsCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(exercise.summary,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                color: theme.colors.textSecondary,
               )),
           const SizedBox(height: 10),
           for (var i = 0; i < exercise.steps.length; i++)
@@ -1008,7 +1008,6 @@ class _SuggestedWeightChip extends ConsumerWidget {
     if (suggestion == null) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     final colors = suggestion.isDecrease
         ? const [AppPalette.auroraPeach, AppPalette.auroraPink]
         : const [AppPalette.auroraTeal, AppPalette.auroraLime];
@@ -1043,7 +1042,7 @@ class _SuggestedWeightChip extends ConsumerWidget {
                     Text(
                       AppLocalizations.of(context).equipmentSuggested,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurface.withValues(alpha: 0.65),
+                        color: theme.colors.textSecondary,
                       ),
                     ),
                     Text(
@@ -1059,7 +1058,7 @@ class _SuggestedWeightChip extends ConsumerWidget {
                 Text(
                   suggestion.reason,
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: scheme.onSurface.withValues(alpha: 0.60),
+                    color: theme.colors.textSecondary,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -1109,7 +1108,7 @@ class _CautionCard extends StatelessWidget {
                       .map((c) => c.replaceAll('_', ' '))
                       .join(', '),
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                    color: theme.colors.textSecondary,
                   ),
                 ),
               ],

@@ -7,6 +7,7 @@ import 'package:fitness_app/features/community/data/team_feed.dart';
 import 'package:fitness_app/features/community/data/team_feed_repository.dart';
 import 'package:fitness_app/features/community/state/team_feed_providers.dart';
 import 'package:fitness_app/features/community/team_feed_page.dart';
+import 'package:fitness_app/core/theme/app_theme.dart';
 
 /// M0: posts through the mock repository live in one instance's in-memory
 /// map, keyed by team, and vanish on restart. A Celebrity-tier subscriber
@@ -48,6 +49,7 @@ class _NeverPersists implements TeamFeedRepository {
 Widget _host({List<Override> overrides = const []}) => ProviderScope(
       overrides: overrides,
       child: MaterialApp(
+        theme: AppTheme.dark(),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const TeamFeedPage(teamId: 'team_1'),

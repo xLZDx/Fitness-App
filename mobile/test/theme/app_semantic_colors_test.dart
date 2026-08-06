@@ -292,6 +292,43 @@ void main() {
     });
   });
 
+  test('textSecondary beats the alphas G1.2c replaced, where it had to', () {
+    // The sweep collapsed six alphas of `onSurface` into one token, so the
+    // question it has to answer is not "is the token legible" — the group above
+    // asserts that — but "did any site get WORSE, and did the failing ones get
+    // better".
+    //
+    // Both answers come from the card surface, not the page background: this
+    // text sits on cards, and measuring it against the page was what made an
+    // earlier reading of this change look like a regression.
+    for (final entry in {
+      'dark': AppSemanticColors.dark,
+      'light': AppSemanticColors.light,
+    }.entries) {
+      final t = entry.value;
+      final card = flatten(t.surfacePrimary, t.backgroundPrimary);
+      final token = contrast(t.textSecondary, card);
+
+      // 0.55 was 19 of the 111 sites, and it failed on BOTH themes once
+      // composited onto a card — 4.15 dark, 4.08 light. That is what this gate
+      // set out to fix.
+      final worst =
+          contrast(flatten(t.textPrimary.withValues(alpha: 0.55), card), card);
+      expect(worst, lessThan(4.5), reason: '${entry.key}: 0.55 was failing');
+      expect(token, greaterThanOrEqualTo(4.5),
+          reason: '${entry.key}: and the token is not');
+
+      // The other end: 0.85 was MORE contrasty than the token, so those sites
+      // lose some. Passing is the bar, and they still clear it — but if a
+      // future token edit drops textSecondary below AA on a card, these are the
+      // ninety-odd sites that would go with it.
+      final best =
+          contrast(flatten(t.textPrimary.withValues(alpha: 0.85), card), card);
+      expect(best, greaterThan(token),
+          reason: '${entry.key}: 0.85 really was the brighter end');
+    }
+  });
+
   test('the hardcoded whites that survived G1.2b stay accounted for', () {
     // A tripwire, not a proof. G1.2b replaced 69 `Colors.white` uses that sat
     // on brand artwork; 46 remain, and each was left deliberately:

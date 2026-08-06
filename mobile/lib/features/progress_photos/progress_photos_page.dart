@@ -103,7 +103,7 @@ class _PrivacyStrip extends StatelessWidget {
               AppLocalizations.of(context).progressphotosPhotosAreEncryptedOnYourDevice,
               style: theme.textTheme.bodySmall?.copyWith(
                 color:
-                    theme.colorScheme.onSurface.withValues(alpha: 0.75),
+                    theme.colors.textSecondary,
               ),
             ),
           ),

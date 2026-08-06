@@ -93,10 +93,7 @@ class GlassNavBar extends StatelessWidget {
                                     : FontWeight.w500,
                                 color: selected
                                     ? AppSemanticColors.onGradientInk
-                                    : Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.75),
+                                    : context.colors.textSecondary,
                               ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -111,10 +108,7 @@ class GlassNavBar extends StatelessWidget {
                                       size: 24,
                                       color: selected
                                           ? AppSemanticColors.onGradientInk
-                                          : Theme.of(context)
-                                              .colorScheme
-                                              .onSurface
-                                              .withValues(alpha: 0.75),
+                                          : context.colors.textSecondary,
                                     ),
                                   ),
                                   const SizedBox(height: 4),

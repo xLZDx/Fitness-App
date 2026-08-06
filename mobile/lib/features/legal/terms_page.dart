@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../shared/widgets/glass.dart';
 import 'legal_body.dart';
+import '../../core/theme/app_semantic_colors.dart';
 
 /// Terms of Service.
 ///
@@ -49,7 +50,7 @@ class TermsPage extends StatelessWidget {
             l10n.legalLastUpdated,
             key: const Key('terms-last-updated'),
             style: (theme.textTheme.bodySmall ?? const TextStyle()).copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+              color: theme.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 16),

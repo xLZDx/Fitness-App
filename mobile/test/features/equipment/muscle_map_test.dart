@@ -10,6 +10,8 @@ import '../../helpers/test_app.dart';
 
 import 'package:fitness_app/features/equipment/data/anatomy_map.dart';
 import 'package:fitness_app/features/equipment/widgets/muscle_map.dart';
+import 'package:fitness_app/core/theme/app_palette.dart';
+import 'package:fitness_app/core/theme/app_semantic_colors.dart';
 
 /// Guards the anatomical chart.
 ///
@@ -19,6 +21,7 @@ import 'package:fitness_app/features/equipment/widgets/muscle_map.dart';
 /// references must exist in the shipped SVG, and every muscle tag the catalog
 /// can emit must be either drawable or explicitly declared undrawable.
 void main() {
+
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late String frontSvg;
@@ -203,7 +206,39 @@ void main() {
       await tester.pumpAndSettle();
     }
 
+    /// The tokens, not `AppTheme` — the one widget test that has to make this
+    /// substitution, and it is the `runAsync` above that forces it.
+    ///
+    /// `AppTheme` resolves Inter through Google Fonts. Every other widget test
+    /// runs entirely in fake async, where that lookup's future never completes
+    /// and so never fails. This file runs the REAL loop so the SVG artwork can
+    /// load, which also lets the font lookup finish — and with no network it
+    /// finishes by throwing, several times, some of it after the test body has
+    /// returned where `takeException` cannot reach it. Consuming those would
+    /// have meant giving up the `takeException(), isNull` assertions below,
+    /// which are the point of the file.
+    ///
+    /// Only the letterforms are lost: the widget reads its colours from the
+    /// extension installed here, which is what G1.2c routed it through.
+    ///
+    /// The underlying fact is worth a gate of its own: the shipped app fetches
+    /// Inter over the network at runtime, so a cold start with no connection
+    /// gets the platform font. Bundling it as an asset would fix that and this
+    /// substitution at once.
     Widget wrap(Widget child) => MaterialApp(
+          theme: ThemeData(
+            brightness: Brightness.dark,
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: AppPalette.auroraViolet,
+              brightness: Brightness.dark,
+              surface: AppSemanticColors.dark.backgroundPrimary,
+              onSurface: AppSemanticColors.dark.textPrimary,
+            ),
+            extensions: const <ThemeExtension<dynamic>>[
+              AppSemanticColors.dark
+            ],
+          ),
           locale: kTestLocale,
           localizationsDelegates: kTestLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,

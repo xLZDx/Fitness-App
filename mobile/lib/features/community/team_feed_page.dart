@@ -84,7 +84,6 @@ class _LockedHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     return GlassCard(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -120,7 +119,7 @@ class _LockedHero extends StatelessWidget {
             AppLocalizations.of(context)
                 .communityCoachesPostWeeklyWorkoutsMotivationNotes,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: scheme.onSurface.withValues(alpha: 0.75),
+              color: theme.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 14),
@@ -147,7 +146,6 @@ class _PostCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     return GlassCard(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
       child: Column(
@@ -177,7 +175,7 @@ class _PostCard extends ConsumerWidget {
                     Text(
                       _ago(l10n, post.createdAt),
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: scheme.onSurface.withValues(alpha: 0.55),
+                        color: theme.colors.textSecondary,
                       ),
                     ),
                   ],

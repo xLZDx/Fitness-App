@@ -95,7 +95,7 @@ class SubscriptionPage extends ConsumerWidget {
             Text(
               AppLocalizations.of(context).subscriptionChooseAWayToSupport,
               style: theme.textTheme.titleLarge?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
+                color: theme.colors.textSecondary,
               ),
             ),
             const SizedBox(height: 4),
@@ -103,7 +103,7 @@ class SubscriptionPage extends ConsumerWidget {
               AppLocalizations.of(context)
                   .subscriptionEveryLevelKeepsTheAppFree,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                color: theme.colors.textSecondary,
               ),
             ),
             const SizedBox(height: 12),
@@ -184,21 +184,20 @@ class _MissionStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     return GlassCard(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(Icons.volunteer_activism_outlined,
-              color: scheme.onSurface.withValues(alpha: 0.85), size: 22),
+              color: theme.colors.textSecondary, size: 22),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               AppLocalizations.of(context)
                   .subscriptionWeReANonprofitSubscriptionsAre,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: scheme.onSurface.withValues(alpha: 0.75),
+                color: theme.colors.textSecondary,
               ),
             ),
           ),
@@ -348,7 +347,6 @@ class _UpgradeFromTrialCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     return GlassCard(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
       onTap: isLoading ? null : onUpgrade,
@@ -386,7 +384,7 @@ class _UpgradeFromTrialCard extends StatelessWidget {
                       AppLocalizations.of(context)
                           .subscriptionTrialFeaturesStayOnPastThe,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurface.withValues(alpha: 0.65),
+                        color: theme.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -439,7 +437,6 @@ class _ManagePlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     return GlassCard(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
       onTap: isLoading ? null : onTap,
@@ -477,7 +474,7 @@ class _ManagePlanCard extends StatelessWidget {
                       AppLocalizations.of(context)
                           .subscriptionOpensTheSecureStripeDonorPortal,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurface.withValues(alpha: 0.65),
+                        color: theme.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -559,7 +556,6 @@ class _StatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     final expiry = _expiryLabel(l10n);
     return GlassCard(
       padding: const EdgeInsets.all(20),
@@ -608,7 +604,7 @@ class _StatusCard extends StatelessWidget {
                       _statusLabel(
                           l10n, sub?.status ?? SubscriptionStatus.none),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurface.withValues(alpha: 0.65),
+                        color: theme.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -719,7 +715,7 @@ class _PlanCard extends StatelessWidget {
                             child: Text(
                               AppLocalizations.of(context).subscriptionPopular,
                               style: TextStyle(
-                                color: scheme.onSurface.withValues(alpha: 0.75),
+                                color: theme.colors.textSecondary,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 0.6,
@@ -731,7 +727,7 @@ class _PlanCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(price,
                         style: theme.textTheme.titleSmall?.copyWith(
-                          color: scheme.onSurface.withValues(alpha: 0.75),
+                          color: theme.colors.textSecondary,
                           fontWeight: FontWeight.w600,
                         )),
                   ],
@@ -742,7 +738,7 @@ class _PlanCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(tagline,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: scheme.onSurface.withValues(alpha: 0.70),
+                color: theme.colors.textSecondary,
               )),
           const SizedBox(height: 14),
           for (final f in features)
@@ -877,7 +873,7 @@ class _PeriodPill extends StatelessWidget {
             fontWeight: FontWeight.w700,
             color: isActive
                 ? theme.colorScheme.onSurface
-                : theme.colorScheme.onSurface.withValues(alpha: 0.78),
+                : theme.colors.textSecondary,
           ),
         ),
       ),
@@ -926,7 +922,7 @@ class _PlanCardForPeriod extends ConsumerWidget {
               .subscriptionIsNotAvailableOn(
                   title, period.label(AppLocalizations.of(context))),
           style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+            color: theme.colors.textSecondary,
           ),
         ),
       );

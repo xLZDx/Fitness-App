@@ -9,6 +9,7 @@ import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/data/mock_auth_repository.dart';
 import 'package:fitness_app/features/auth/login_page.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
+import 'package:fitness_app/core/theme/app_theme.dart';
 
 void main() {
   group('LoginPage', () {
@@ -83,7 +84,8 @@ Widget _app({AuthRepository? repo}) {
       if (repo != null)
         authRepositoryProvider.overrideWith((ref) => repo),
     ],
-    child: const MaterialApp(
+    child: MaterialApp(
+      theme: AppTheme.dark(),
       locale: kTestLocale,
       localizationsDelegates: kTestLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

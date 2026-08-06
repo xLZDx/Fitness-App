@@ -30,7 +30,6 @@ class Day3WelcomeModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     return GlassCard(
       floating: true,
       padding: const EdgeInsets.all(20),
@@ -61,7 +60,7 @@ class Day3WelcomeModal extends StatelessWidget {
           Text(
             AppLocalizations.of(context).momentsWeReANonprofitAndThe,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: scheme.onSurface.withValues(alpha: 0.75),
+              color: theme.colors.textSecondary,
               height: 1.45,
             ),
           ),

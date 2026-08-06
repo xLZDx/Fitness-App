@@ -82,7 +82,7 @@ class LoginPage extends ConsumerWidget {
                       AppLocalizations.of(context).authSignInToScanEquipmentTrack,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyLarge?.copyWith(
-                        color: scheme.onSurface.withValues(alpha: 0.70),
+                        color: theme.colors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -211,7 +211,7 @@ class _TermsAndPrivacyLine extends StatelessWidget {
       decoration: TextDecoration.underline,
     );
     final plainStyle = theme.textTheme.bodySmall?.copyWith(
-      color: scheme.onSurface.withValues(alpha: 0.60),
+      color: theme.colors.textSecondary,
     );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),

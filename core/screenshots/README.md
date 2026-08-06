@@ -32,3 +32,29 @@ looks like.
 `GlassNavBar` is deliberately absent: it lays itself out against the shell's
 constraints and overflows in this harness, identically before and after, so it
 would have shown the harness rather than the change.
+
+## `g12c_{dark,light}_{before,after}.png`
+
+Gate **G1.2c** — six alphas of `colorScheme.onSurface` collapsed into
+`textSecondary`. Same harness, same commands; `before` is the G1.2b commit.
+
+This one is subtle to the eye and must be read by measurement, not by
+impression: 10,483 pixels differ, all of them caption glyphs. On the **light**
+theme the two visible captions go from **4.02:1 → 4.96:1** and **3.92:1 →
+4.89:1** — both were under the 4.5:1 AA bar and are now over it. On dark they
+go 5.53 → 7.82 and 5.66 → 8.00, which were already passing.
+
+Measure it rather than squinting:
+
+```python
+from PIL import Image
+a = Image.open('g12c_light_before.png').convert('RGB')
+b = Image.open('g12c_light_after.png').convert('RGB')
+# rows that differ, then the darkest glyph pixel in each band vs its own
+# most-common background colour
+```
+
+A caution learned here: taking the darkest changed pixel of the WHOLE image
+before and after compares two different glyphs on two different backgrounds,
+and reported this change as a regression when it is not one. Band by band, each
+against its own background, or the number is meaningless.

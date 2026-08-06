@@ -11,6 +11,7 @@ import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/profile/data/profile_repository.dart';
 import 'package:fitness_app/features/profile/injuries_page.dart';
 import 'package:fitness_app/features/profile/state/profile_providers.dart';
+import 'package:fitness_app/core/theme/app_theme.dart';
 
 /// The screen that makes a stored injury editable, and the reason it had to
 /// exist at all.
@@ -77,7 +78,8 @@ void main() {
         authUserProvider.overrideWith((ref) => Stream.value(_user)),
         profileRepositoryProvider.overrideWithValue(repo),
       ],
-      child: const MaterialApp(
+      child: MaterialApp(
+        theme: AppTheme.dark(),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: InjuriesPage(),

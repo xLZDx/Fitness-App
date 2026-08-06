@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../data/anatomy_map.dart';
 import '../data/catalog_labels.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 
 /// Which muscles a movement loads, and how hard.
 enum MuscleLoad { none, secondary, primary }
@@ -202,7 +203,7 @@ class _MuscleMapState extends State<MuscleMap> {
             AppLocalizations.of(context)
                 .muscleMapAlsoWorked(_nameFor(context, unmapped)),
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: scheme.onSurface.withValues(alpha: 0.65),
+                  color: context.colors.textSecondary,
                 ),
             textAlign: TextAlign.center,
           ),
@@ -286,7 +287,7 @@ class _Caption extends StatelessWidget {
       text,
       textAlign: TextAlign.center,
       style: theme.textTheme.labelSmall?.copyWith(
-        color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+        color: theme.colors.textSecondary,
       ),
     );
   }

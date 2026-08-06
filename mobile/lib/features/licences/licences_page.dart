@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/licences/asset_licences.dart';
 import '../../shared/widgets/glass.dart';
+import '../../core/theme/app_semantic_colors.dart';
 
 /// Credits for the third-party content the app bundles.
 ///
@@ -55,7 +56,7 @@ class _AttributionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final muted = theme.colorScheme.onSurface.withValues(alpha: 0.70);
+    final muted = theme.colors.textSecondary;
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

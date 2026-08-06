@@ -32,7 +32,6 @@ class DifficultyRatingSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
       child: GlassCard(
@@ -49,7 +48,7 @@ class DifficultyRatingSheet extends StatelessWidget {
             Text(
               exerciseTitle,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: scheme.onSurface.withValues(alpha: 0.65),
+                color: theme.colors.textSecondary,
               ),
             ),
             const SizedBox(height: 18),
@@ -94,7 +93,7 @@ class DifficultyRatingSheet extends StatelessWidget {
               AppLocalizations.of(context)
                   .workoutsYourRatingTunesFutureWorkoutsBoth,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: scheme.onSurface.withValues(alpha: 0.65),
+                color: theme.colors.textSecondary,
               ),
             ),
           ],

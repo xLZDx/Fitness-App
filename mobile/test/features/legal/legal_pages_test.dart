@@ -8,6 +8,7 @@ import 'package:fitness_app/core/router/app_router.dart';
 import 'package:fitness_app/features/auth/login_page.dart';
 import 'package:fitness_app/features/legal/privacy_page.dart';
 import 'package:fitness_app/features/legal/terms_page.dart';
+import 'package:fitness_app/core/theme/app_theme.dart';
 
 /// L0a: Terms and Privacy are real, reachable routes rather than a sentence
 /// naming two documents that link nowhere.
@@ -25,6 +26,7 @@ import 'package:fitness_app/features/legal/terms_page.dart';
 /// because the flag was only ever a proxy for what the text says.
 
 Widget _host(Widget child) => MaterialApp(
+  theme: AppTheme.dark(),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(body: child),
@@ -175,6 +177,7 @@ void main() {
       );
       await tester.pumpWidget(ProviderScope(
         child: MaterialApp.router(
+          theme: AppTheme.dark(),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           routerConfig: router,

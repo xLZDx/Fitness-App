@@ -8,6 +8,7 @@ import '../../helpers/test_app.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/profile/profile_page.dart';
 import 'package:fitness_app/features/profile/state/profile_providers.dart';
+import 'package:fitness_app/core/theme/app_theme.dart';
 
 void main() {
   // Regression: _ProfileSummary held the profile as `dynamic`, and enum
@@ -30,7 +31,8 @@ void main() {
         overrides: [
           currentProfileProvider.overrideWith((ref) => Stream.value(profile)),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          theme: AppTheme.dark(),
           locale: kTestLocale,
           localizationsDelegates: kTestLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
@@ -63,12 +65,13 @@ void main() {
   testWidgets('the photos tile withholds the encryption claim in demo mode',
       (tester) async {
     await tester.pumpWidget(
-      const ProviderScope(
+      ProviderScope(
         child: MaterialApp(
+          theme: AppTheme.dark(),
           locale: kTestLocale,
           localizationsDelegates: kTestLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: ProfilePage(),
+          home: const ProfilePage(),
         ),
       ),
     );

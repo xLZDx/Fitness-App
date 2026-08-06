@@ -55,7 +55,6 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     final ramp = rampForWorkingWeight(_working);
 
     return GlassCard(
@@ -79,7 +78,7 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
                 width: 130,
                 child: Text(AppLocalizations.of(context).workoutsWorkingWeight,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: scheme.onSurface.withValues(alpha: 0.7),
+                      color: theme.colors.textSecondary,
                     )),
               ),
               Expanded(
@@ -189,7 +188,7 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
             AppLocalizations.of(context)
                 .workoutsRampsPrimeYourNervousSystemWithout,
             style: theme.textTheme.labelSmall?.copyWith(
-              color: scheme.onSurface.withValues(alpha: 0.55),
+              color: theme.colors.textSecondary,
             ),
           ),
         ],

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../shared/widgets/glass.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 
 /// What the user actually lifted. Null fields mean "declined to say".
 typedef SetCapture = ({double? weightKg, int? reps});
@@ -123,7 +124,7 @@ class _SetCaptureSheetState extends State<SetCaptureSheet> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                  color: theme.colors.textSecondary,
                 )),
             const SizedBox(height: 16),
             Row(
@@ -160,7 +161,7 @@ class _SetCaptureSheetState extends State<SetCaptureSheet> {
             const SizedBox(height: 8),
             Text(l10n.workoutsLeaveBlankIfNoLoad,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.60),
+                  color: theme.colors.textSecondary,
                 )),
             const SizedBox(height: 16),
             Row(
@@ -172,10 +173,20 @@ class _SetCaptureSheetState extends State<SetCaptureSheet> {
                   onPressed: () => Navigator.of(context).pop(),
                   child: Text(l10n.commonSkip),
                 ),
-                const Spacer(),
-                FilledButton(
-                  onPressed: _submit,
-                  child: Text(l10n.commonSave),
+                const SizedBox(width: 12),
+                // `Expanded`, and no `Spacer`, because `AppTheme` gives every
+                // FilledButton `minimumSize: Size.fromHeight(54)` — and
+                // `Size.fromHeight` is `Size(double.infinity, 54)`. A Row hands
+                // unbounded width to its non-flex children, so the button
+                // resolved to an infinite width and threw "BoxConstraints
+                // forces an infinite width" the moment this sheet opened.
+                // Expanded is what bounds it; the button filling the rest of
+                // the row is the ordinary shape for a sheet's primary action.
+                Expanded(
+                  child: FilledButton(
+                    onPressed: _submit,
+                    child: Text(l10n.commonSave),
+                  ),
                 ),
               ],
             ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../state/safety_coverage_providers.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 
 /// Says plainly that the exercise list has not been screened against the
 /// user's injuries.
@@ -85,8 +86,7 @@ class SafetyDisclosure extends ConsumerWidget {
                     Text(
                       detail,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface
-                            .withValues(alpha: 0.75),
+                        color: theme.colors.textSecondary,
                       ),
                     ),
                   ],

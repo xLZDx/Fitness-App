@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/features/workouts/state/rest_timer_providers.dart';
 import 'package:fitness_app/features/workouts/widgets/rest_timer.dart';
+import 'package:fitness_app/core/theme/app_theme.dart';
 
 /// The card, as opposed to the state machine next door.
 ///
@@ -46,6 +47,7 @@ Widget _app(ProviderContainer c, {Locale locale = const Locale('en')}) =>
     UncontrolledProviderScope(
       container: c,
       child: MaterialApp(
+        theme: AppTheme.dark(),
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -124,6 +126,7 @@ void main() {
     await t.pumpWidget(UncontrolledProviderScope(
       container: h.c,
       child: MaterialApp(
+        theme: AppTheme.dark(),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: RestTimer(onFinished: outcomes.add)),
@@ -237,6 +240,7 @@ void main() {
       await t.pumpWidget(UncontrolledProviderScope(
         container: h.c,
         child: MaterialApp(
+          theme: AppTheme.dark(),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(body: RestTimer(onFinished: outcomes.add)),
