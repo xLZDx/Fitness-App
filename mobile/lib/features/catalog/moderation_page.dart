@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import '../auth/state/auth_providers.dart';
 import 'data/community_video.dart';
@@ -83,7 +84,7 @@ class _SubmissionCard extends ConsumerWidget {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
+                child: AppSecondaryButton(
                   onPressed: () async {
                     final me = ref.read(authUserProvider).valueOrNull;
                     if (me == null) return;
@@ -94,13 +95,13 @@ class _SubmissionCard extends ConsumerWidget {
                             reason: 'Not approved');
                     ref.invalidate(pendingSubmissionsProvider);
                   },
-                  icon: const Icon(Icons.close_rounded, size: 18),
-                  label: Text(AppLocalizations.of(context).catalogReject),
+                  icon: Icons.close_rounded,
+                  label: AppLocalizations.of(context).catalogReject,
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: FilledButton.icon(
+                child: AppPrimaryButton(
                   onPressed: () async {
                     final me = ref.read(authUserProvider).valueOrNull;
                     if (me == null) return;
@@ -110,8 +111,8 @@ class _SubmissionCard extends ConsumerWidget {
                     ref.invalidate(pendingSubmissionsProvider);
                     ref.invalidate(approvedSubmissionsProvider);
                   },
-                  icon: const Icon(Icons.check_rounded, size: 18),
-                  label: Text(AppLocalizations.of(context).catalogApprove),
+                  icon: Icons.check_rounded,
+                  label: AppLocalizations.of(context).catalogApprove,
                 ),
               ),
             ],

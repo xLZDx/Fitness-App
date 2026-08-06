@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../form_check/state/form_check_providers.dart';
@@ -584,11 +585,11 @@ class _NoVideoFallback extends StatelessWidget {
           // the catalog is the moment to ask them to fill it.
           Align(
             alignment: Alignment.centerLeft,
-            child: TextButton.icon(
+            child: AppTertiaryButton(
               key: const Key('workout.contribute_video'),
               onPressed: () => context.push('/contribute'),
-              icon: const Icon(Icons.add_link, size: 18),
-              label: Text(AppLocalizations.of(context).catalogContributeAVideo),
+              icon: Icons.add_link,
+              label: AppLocalizations.of(context).catalogContributeAVideo,
             ),
           ),
         ],

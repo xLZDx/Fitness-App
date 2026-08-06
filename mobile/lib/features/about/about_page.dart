@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 
 /// "About / Mission" page. States the mission in plain language, lists
@@ -140,27 +141,24 @@ class AboutPage extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: FilledButton.icon(
+                child: AppPrimaryButton(
                   onPressed: () =>
                       GoRouter.of(context).push('/subscription'),
-                  icon: const Icon(Icons.favorite_outline),
-                  label: Text(AppLocalizations.of(context).aboutSupportTheMission),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
+                  icon: Icons.favorite_outline,
+                  label: AppLocalizations.of(context).aboutSupportTheMission,
+                  // Was its own radius-14 override; `compact` is the closest
+                  // named shape rather than a bespoke one kept for one site.
+                  size: AppButtonSize.compact,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
           Center(
-            child: TextButton.icon(
+            child: AppTertiaryButton(
               onPressed: () => GoRouter.of(context).push('/donors'),
-              icon: const Icon(Icons.people_alt_outlined, size: 18),
-              label: Text(AppLocalizations.of(context).aboutSeeOurDonorWall),
+              icon: Icons.people_alt_outlined,
+              label: AppLocalizations.of(context).aboutSeeOurDonorWall,
             ),
           ),
         ],

@@ -5,6 +5,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/demo_data_banner.dart';
 import '../../shared/widgets/glass.dart';
 import '../subscription/data/subscription_models.dart';
@@ -73,11 +74,11 @@ class ProgressPhotosPage extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           if (isPaid)
-            FilledButton.icon(
+            AppPrimaryButton(
               onPressed: () =>
                   ref.read(progressPhotosControllerProvider.notifier).capture(),
-              icon: const Icon(Icons.photo_camera_outlined),
-              label: Text(AppLocalizations.of(context).progressphotosTakeANewPhoto),
+              icon: Icons.photo_camera_outlined,
+              label: AppLocalizations.of(context).progressphotosTakeANewPhoto,
             ),
         ],
       ),

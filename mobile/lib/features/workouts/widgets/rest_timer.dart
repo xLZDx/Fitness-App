@@ -168,10 +168,10 @@ class _RestTimerState extends ConsumerState<RestTimer> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: AppSecondaryButton(
                     key: const Key('rest-timer.add'),
-                    icon: const Icon(Icons.add_rounded, size: 18),
-                    label: Text(l.restTimerAddTime),
+                    icon: Icons.add_rounded,
+                    label: l.restTimerAddTime,
                     // Both controls are full-width halves rather than icons:
                     // §25 asks for 44-48 logical pixels, and these are pressed
                     // mid-set by someone who is out of breath.
@@ -182,10 +182,10 @@ class _RestTimerState extends ConsumerState<RestTimer> {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: FilledButton.icon(
+                  child: AppPrimaryButton(
                     key: const Key('rest-timer.skip'),
-                    icon: const Icon(Icons.skip_next_rounded, size: 18),
-                    label: Text(l.restTimerSkip),
+                    icon: Icons.skip_next_rounded,
+                    label: l.restTimerSkip,
                     onPressed: () =>
                         ref.read(restTimerProvider.notifier).skip(),
                   ),

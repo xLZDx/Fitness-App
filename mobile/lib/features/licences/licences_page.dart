@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/licences/asset_licences.dart';
+import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import '../../core/theme/app_semantic_colors.dart';
 
@@ -33,15 +34,15 @@ class LicencesPage extends StatelessWidget {
             const SizedBox(height: 12),
           ],
           const SizedBox(height: 4),
-          OutlinedButton.icon(
+          AppSecondaryButton(
             key: const Key('licences-open-package-licences'),
             onPressed: () => showLicensePage(
               context: context,
               applicationName: 'Fitness App',
               applicationLegalese: l.licencesLegalese,
             ),
-            icon: const Icon(Icons.list_alt_outlined),
-            label: Text(l.licencesOpenPackageLicences),
+            icon: Icons.list_alt_outlined,
+            label: l.licencesOpenPackageLicences,
           ),
         ],
       ),

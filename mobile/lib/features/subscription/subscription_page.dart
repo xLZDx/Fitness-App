@@ -212,11 +212,11 @@ class _LearnMoreLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: TextButton.icon(
+      child: AppTertiaryButton(
         onPressed: () => GoRouter.of(context).push('/about'),
-        icon: const Icon(Icons.info_outline_rounded, size: 18),
-        label: Text(
-            AppLocalizations.of(context).subscriptionLearnHowDonationsAreUsed),
+        icon: Icons.info_outline_rounded,
+        label:
+            AppLocalizations.of(context).subscriptionLearnHowDonationsAreUsed,
       ),
     );
   }

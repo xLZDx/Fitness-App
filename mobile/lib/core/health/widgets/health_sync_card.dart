@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/glass.dart';
 import '../../theme/app_palette.dart';
 import '../../theme/app_semantic_colors.dart';
 import '../health_models.dart';
 import '../state/health_providers.dart';
-import '../../../shared/widgets/app_buttons.dart';
 
 /// Today's steps + activity-ring percent + sleep score.
 /// Renders three states:
@@ -181,11 +181,11 @@ class _SetupCard extends StatelessWidget {
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
-            child: FilledButton.icon(
+            child: AppPrimaryButton(
               key: const Key('health-setup-open'),
               onPressed: onOpen,
-              icon: const Icon(Icons.download_outlined, size: 18),
-              label: Text(AppLocalizations.of(context).healthGetHealthConnect),
+              icon: Icons.download_outlined,
+              label: AppLocalizations.of(context).healthGetHealthConnect,
             ),
           ),
         ],

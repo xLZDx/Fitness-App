@@ -135,14 +135,14 @@ class _InjuriesPageState extends ConsumerState<InjuriesPage> {
                   const SizedBox(height: 12),
                 ],
               const SizedBox(height: 4),
-              OutlinedButton.icon(
+              AppSecondaryButton(
                 onPressed: () => setState(() {
                   draft.add(const Injury(bodyPart: '', type: ''));
                   _rowIds.add(_nextRowId++);
                   _dirty = true;
                 }),
-                icon: const Icon(Icons.add),
-                label: Text(l10n.injuriesAdd),
+                icon: Icons.add,
+                label: l10n.injuriesAdd,
               ),
               const SizedBox(height: 20),
               AppPrimaryButton(

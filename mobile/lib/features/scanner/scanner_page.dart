@@ -11,6 +11,7 @@ import '../../core/camera/centre_crop.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../equipment/state/equipment_providers.dart';
+import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import '../visual_equipment/data/live_recognition.dart';
 import '../visual_equipment/data/recognition_history.dart';
@@ -381,12 +382,11 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
           Row(
             children: [
               Expanded(
-                child: FilledButton.icon(
+                child: AppPrimaryButton(
                   key: const Key('scan-recognise-camera'),
                   onPressed: _recogniseWithCamera,
-                  icon: const Icon(Icons.photo_camera_outlined),
-                  label: Text(
-                      AppLocalizations.of(context).scannerRecogniseMachine),
+                  icon: Icons.photo_camera_outlined,
+                  label: AppLocalizations.of(context).scannerRecogniseMachine,
                 ),
               ),
               const SizedBox(width: 8),
@@ -581,13 +581,13 @@ class _PreparingTile extends ConsumerWidget {
             const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
-              child: TextButton.icon(
+              child: AppTertiaryButton(
                 key: Key('scan-preparing-remove-${card.id}'),
                 onPressed: () => ref
                     .read(machineCardRepositoryProvider)
                     .remove(card.id),
-                icon: const Icon(Icons.delete_outline, size: 18),
-                label: Text(l.machineCardRemove),
+                icon: Icons.delete_outline,
+                label: l.machineCardRemove,
               ),
             ),
           ],

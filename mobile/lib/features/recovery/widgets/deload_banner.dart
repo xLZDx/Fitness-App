@@ -96,14 +96,12 @@ class DeloadBanner extends ConsumerWidget {
                   ),
                 ] else ...[
                   Expanded(
-                    child: OutlinedButton.icon(
+                    child: AppSecondaryButton(
                       onPressed: () =>
                           GoRouter.of(context).push('/subscription'),
-                      icon: const Icon(Icons.lock_outline, size: 16),
-                      label: Text(
-                        AppLocalizations.of(context).recoveryBecomeASupporterToUnlock,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      icon: Icons.lock_outline,
+                      label: AppLocalizations.of(context)
+                          .recoveryBecomeASupporterToUnlock,
                     ),
                   ),
                 ],

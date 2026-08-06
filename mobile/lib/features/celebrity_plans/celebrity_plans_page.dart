@@ -5,6 +5,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
@@ -48,10 +49,11 @@ class CelebrityPlansPage extends ConsumerWidget {
           ),
           if (!isPremium) ...[
             const SizedBox(height: 12),
-            FilledButton.icon(
+            AppPrimaryButton(
               onPressed: () => GoRouter.of(context).push('/subscription'),
-              icon: const Icon(Icons.lock_open_outlined),
-              label: Text(AppLocalizations.of(context).celebrityplansBecomeASustainerToUnlock),
+              icon: Icons.lock_open_outlined,
+              label: AppLocalizations.of(context)
+                  .celebrityplansBecomeASustainerToUnlock,
             ),
           ],
         ],

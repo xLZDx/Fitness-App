@@ -5,6 +5,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import 'data/donor_wall_entry.dart';
 import 'state/donor_wall_providers.dart';
@@ -86,10 +87,10 @@ class DonorWallPage extends ConsumerWidget {
           ),
           const SizedBox(height: 20),
           Center(
-            child: TextButton.icon(
+            child: AppTertiaryButton(
               onPressed: () => GoRouter.of(context).push('/subscription'),
-              icon: const Icon(Icons.favorite_outline, size: 18),
-              label: Text(AppLocalizations.of(context).donorwallBecomeADonor),
+              icon: Icons.favorite_outline,
+              label: AppLocalizations.of(context).donorwallBecomeADonor,
             ),
           ),
         ],

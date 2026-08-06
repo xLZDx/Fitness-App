@@ -5,6 +5,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../shared/widgets/app_buttons.dart';
 import '../ai_coach/ai_coach_context.dart';
 import '../ai_coach/ai_coach_sheet.dart';
 import '../../shared/widgets/glass.dart';
@@ -82,10 +83,10 @@ class EquipmentDetailPage extends ConsumerWidget {
                     const SizedBox(height: 12),
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: TextButton.icon(
-                        icon: const Icon(Icons.report_gmailerrorred_outlined,
-                            size: 18),
-                        label: Text(AppLocalizations.of(context).equipmentReportBrokenEquipment),
+                      child: AppTertiaryButton(
+                        icon: Icons.report_gmailerrorred_outlined,
+                        label: AppLocalizations.of(context)
+                            .equipmentReportBrokenEquipment,
                         onPressed: () async {
                           final sent = await EquipmentReportSheet.show(
                             context,

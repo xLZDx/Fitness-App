@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/glass.dart';
 import '../data/machine_card.dart';
 
@@ -114,11 +115,11 @@ class MachineCardView extends StatelessWidget {
           const SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton.icon(
+            child: AppSecondaryButton(
               key: const Key('machine-card-watch'),
               onPressed: _watch,
-              icon: const Icon(Icons.play_circle_outline),
-              label: Text(l.machineCardWatchElsewhere),
+              icon: Icons.play_circle_outline,
+              label: l.machineCardWatchElsewhere,
             ),
           ),
         ],

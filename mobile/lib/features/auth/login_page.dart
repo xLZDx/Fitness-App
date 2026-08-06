@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import 'state/auth_providers.dart';
 
@@ -97,14 +98,18 @@ class LoginPage extends ConsumerWidget {
                       loading: isLoading,
                     ),
                     const SizedBox(height: 12),
-                    OutlinedButton.icon(
+                    AppSecondaryButton(
                       onPressed: isLoading
                           ? null
                           : () => ref
                               .read(authActionProvider.notifier)
                               .signInWithGoogle(),
-                      icon: const Icon(Icons.g_mobiledata, size: 30),
-                      label: Text(AppLocalizations.of(context).authContinueWithGoogle),
+                      // Was 30 -- the component fixes every icon at 18, same
+                      // as the other eighteen call sites in this gate. Not a
+                      // brand mark (Material's `g_mobiledata` glyph, not
+                      // Google's actual "G"), so nothing to protect here.
+                      icon: Icons.g_mobiledata,
+                      label: AppLocalizations.of(context).authContinueWithGoogle,
                     ),
                   ],
                 ),
