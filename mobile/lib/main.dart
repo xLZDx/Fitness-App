@@ -62,10 +62,12 @@ import 'features/visual_equipment/state/recognition_history_providers.dart';
 import 'features/visual_equipment/state/visual_equipment_providers.dart';
 import 'features/workouts/data/firestore_scheduled_session_repository.dart';
 import 'features/workouts/data/firestore_workout_log_repository.dart';
+import 'features/workouts/data/firestore_workout_session_repository.dart';
 import 'features/workouts/data/offline_video_cache.dart';
 import 'features/workouts/state/offline_video_providers.dart';
 import 'features/workouts/state/scheduled_session_providers.dart';
 import 'features/workouts/state/workout_log_providers.dart';
+import 'features/workouts/state/workout_session_providers.dart';
 import 'firebase_options.dart';
 import 'shared/widgets/aurora_background.dart';
 
@@ -240,6 +242,12 @@ Future<void> main() async {
         // Workouts
         workoutLogRepositoryProvider
             .overrideWith((_) => FirestoreWorkoutLogRepository()),
+        // F3.2 -- infrastructure only, nothing reads workoutSessionsProvider
+        // yet. Overridden here so F3.3's backfill and F3.4's write-path
+        // repoint land against the real collection without a second wiring
+        // step.
+        workoutSessionRepositoryProvider
+            .overrideWith((_) => FirestoreWorkoutSessionRepository()),
         scheduledSessionRepositoryProvider
             .overrideWith((_) => FirestoreScheduledSessionRepository()),
         offlineVideoCacheProvider
