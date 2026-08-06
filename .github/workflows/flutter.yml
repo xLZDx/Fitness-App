@@ -4,6 +4,12 @@ on:
   push:
     branches: [master, main]
   pull_request:
+  # Daily, so the device job runs even in a week with no pull request. 04:00
+  # UTC / 07:00 Europe/Chisinau -- a failure is waiting in the morning rather
+  # than arriving mid-session.
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -71,3 +77,76 @@ jobs:
 
       - run: npm ci
       - run: npm run build --if-present
+
+  integration:
+    name: integration (emulator)
+    # NOT on every push. It costs 10-15 minutes against roughly 4 for the host
+    # job, and it catches a class of defect that appears about once a month --
+    # so it guards the branch boundary and a nightly, not each commit.
+    #
+    # Free: GitHub Actions bills nothing for standard runners on a public
+    # repository, and this is one (verified 2026-08-06: the API reports
+    # `private=false`). A LARGER runner would be billed even here, which is why
+    # this stays on `ubuntu-latest`.
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # The emulator needs nested virtualisation. GitHub's Linux runners expose
+      # /dev/kvm but not to the runner user, so without this the emulator falls
+      # back to software rendering and times out rather than failing loudly.
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.1'
+          channel: stable
+          cache: true
+
+      - name: flutter pub get
+        working-directory: mobile
+        run: flutter pub get
+
+      # Gradle is the slow half of this job, and it is the half that caches
+      # well. Keyed on the build files so a plugin bump invalidates it.
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('mobile/android/**/*.gradle*', 'mobile/pubspec.lock') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      # API 34 because that is the level the suite is actually known to pass on
+      # -- `Pixel_API_34`, the operator's local AVD, measured 10/10 on
+      # 2026-08-06. minSdk is 26, so a lower level would also run, but it would
+      # be a level nothing has ever verified.
+      - name: Run integration tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          ram-size: 4096M
+          disable-animations: true
+          emulator-options: >-
+            -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio
+            -no-boot-anim -camera-back emulated -camera-front emulated
+          working-directory: mobile
+          script: flutter test integration_test/app_test.dart --reporter=expanded
