@@ -5,9 +5,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/glass.dart';
 import '../../../core/theme/app_semantic_colors.dart';
+import '../data/set_capture.dart';
 
-/// What the user actually lifted. Null fields mean "declined to say".
-typedef SetCapture = ({double? weightKg, int? reps});
+export '../data/set_capture.dart';
 
 /// Modal sheet shown when "Mark complete" is tapped, before the log is
 /// written.
