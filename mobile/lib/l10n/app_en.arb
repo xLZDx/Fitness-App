@@ -1425,5 +1425,6 @@
   "restTimerSkip": "Skip",
   "restTimerAddTime": "+30 s",
   "restTimerAddTimeHint": "Add 30 seconds",
-  "restTimerResume": "Resume"
+  "restTimerResume": "Resume",
+  "workoutsFilterFormCoach": "Form Coach"
 }

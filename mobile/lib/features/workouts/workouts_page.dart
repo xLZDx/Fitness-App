@@ -9,6 +9,7 @@ import '../../shared/widgets/smooth_scroll_list.dart';
 import '../equipment/data/catalog_labels.dart';
 import '../equipment/data/equipment_models.dart';
 import '../equipment/state/equipment_providers.dart';
+import '../form_check/state/form_check_providers.dart';
 import '../personalisation/state/personalisation_providers.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
@@ -25,6 +26,15 @@ import '../profile/state/profile_providers.dart';
 /// зависимости от тренажеров и группы мышц").
 enum WorkoutsFilter {
   forYou,
+  // The exercises the Form Coach can actually judge. Operator: *"сделать
+  // отдельную группу с разными упражнениями которые может контролировать аи
+  // тренер"*.
+  //
+  // Second in the row on purpose — it is the feature the app is built around,
+  // and a capability nobody can find is a capability nobody has. It is also
+  // the smallest group by a wide margin, and that is the honest number rather
+  // than a defect: see the resolver.
+  formCoach,
   // Equipment type.
   machines,
   freeWeights,
@@ -77,6 +87,8 @@ String workoutsFilterLabel(AppLocalizations l, WorkoutsFilter f) {
   switch (f) {
     case WorkoutsFilter.forYou:
       return l.workoutsFilterForYou;
+    case WorkoutsFilter.formCoach:
+      return l.workoutsFilterFormCoach;
     case WorkoutsFilter.machines:
       return l.workoutsFilterMachines;
     case WorkoutsFilter.freeWeights:
@@ -145,6 +157,19 @@ final _filteredExercisesProvider =
     // filled it with barbell work; the vendor's own equipment column is what
     // answers this until the mapping exists.
     return videoFirst(all.where((e) => !e.needsEquipment).toList());
+  }
+  if (filter == WorkoutsFilter.formCoach) {
+    final all = await ref.watch(safeCatalogProvider.future);
+    // `formCoachSupports`, not `poseTargetId != null`. The catalog tags 540
+    // rows across eight movement patterns; the coach has been taught one of
+    // them, so 37 of those 540 can actually be judged. Filtering on the tag
+    // would fill a chip named after a feature with 503 exercises that do not
+    // have it — the same dishonesty `formCoachSupports` was written to keep
+    // off the exercise page, one screen earlier.
+    //
+    // The number grows by authoring pose targets, not by editing this line.
+    return videoFirst(
+        all.where((e) => formCoachSupports(e.poseTargetId)).toList());
   }
   if (filter == WorkoutsFilter.stretching) {
     final all = await ref.watch(safeCatalogProvider.future);

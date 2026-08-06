@@ -109,6 +109,25 @@ final Finder _chipRow = find.byWidgetPredicate(
   (w) => w is Scrollable && w.axisDirection == AxisDirection.right,
 );
 
+/// Brings a chip into the viewport and taps it.
+///
+/// `scrollUntilVisible` alone is not enough and the difference cost four
+/// failures when this row gained one chip: it stops as soon as the finder
+/// matches, and a horizontal `ListView` builds a little beyond the edge, so the
+/// chip is in the tree at an offset outside the 800pt test window. The tap then
+/// lands nowhere with a warning rather than an error. `ensureVisible` is the
+/// one that guarantees the widget is actually on screen.
+Future<void> _tapChip(WidgetTester tester, String label) async {
+  final chip = find.text(label);
+  if (chip.evaluate().isEmpty) {
+    await tester.scrollUntilVisible(chip, 120, scrollable: _chipRow);
+  }
+  await tester.ensureVisible(chip);
+  await tester.pumpAndSettle();
+  await tester.tap(chip);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   group('WorkoutsPage (live catalog)', () {
     testWidgets('renders equipment-type AND muscle-group filter chips',
@@ -150,6 +169,11 @@ void main() {
         WorkoutsFilter.all,
         WorkoutsFilter.noEquipment,
         WorkoutsFilter.stretching,
+        // Its own arm for the same reason as `stretching`: it is neither a
+        // muscle group nor an equipment type. It filters on
+        // `formCoachSupports`, which is a fact about the app rather than about
+        // the catalog.
+        WorkoutsFilter.formCoach,
       };
       for (final f in WorkoutsFilter.values) {
         final covered = special.contains(f) ||
@@ -180,8 +204,7 @@ void main() {
       await tester.pumpWidget(_harness(_seededRepo()));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Cardio'));
-      await tester.pumpAndSettle();
+      await _tapChip(tester, 'Cardio');
 
       expect(find.text('Easy run'), findsOneWidget);
       expect(find.text('Back squat'), findsNothing);
@@ -193,8 +216,7 @@ void main() {
       await tester.pumpWidget(_harness(_seededRepo()));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Machines'));
-      await tester.pumpAndSettle();
+      await _tapChip(tester, 'Machines');
 
       expect(find.text('Back squat'), findsOneWidget);
       expect(find.text('Easy run'), findsNothing);
@@ -210,10 +232,7 @@ void main() {
       await tester.pumpWidget(_harness(_seededRepo()));
       await tester.pumpAndSettle();
 
-      await tester.scrollUntilVisible(find.text('No equipment'), 120,
-          scrollable: _chipRow);
-      await tester.tap(find.text('No equipment'));
-      await tester.pumpAndSettle();
+      await _tapChip(tester, 'No equipment');
 
       expect(find.text('Push-ups'), findsOneWidget);
       expect(find.text('Easy run'), findsNothing);
@@ -227,10 +246,7 @@ void main() {
 
       // 'Chest' must find the body-weight push-up, proving the muscle chips
       // slice on tags rather than on which machine the exercise belongs to.
-      await tester.scrollUntilVisible(find.text('Chest'), 120,
-          scrollable: _chipRow);
-      await tester.tap(find.text('Chest'));
-      await tester.pumpAndSettle();
+      await _tapChip(tester, 'Chest');
 
       expect(find.text('Push-ups'), findsOneWidget);
       expect(find.text('Easy run'), findsNothing);

@@ -778,5 +778,6 @@
   "restTimerSkip": "Пропустить",
   "restTimerAddTime": "+30 с",
   "restTimerAddTimeHint": "Добавить 30 секунд",
-  "restTimerResume": "Продолжить"
+  "restTimerResume": "Продолжить",
+  "workoutsFilterFormCoach": "Тренер по технике"
 }
