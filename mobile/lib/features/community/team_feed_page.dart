@@ -5,6 +5,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/demo_data_banner.dart';
 import '../../shared/widgets/glass.dart';
 import '../subscription/data/subscription_models.dart';
@@ -125,10 +126,9 @@ class _LockedHero extends StatelessWidget {
           const SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
-            child: FilledButton(
+            child: AppPrimaryButton(
               onPressed: () => GoRouter.of(context).push('/subscription'),
-              child:
-                  Text(AppLocalizations.of(context).communityBecomeASustainer),
+              label: AppLocalizations.of(context).communityBecomeASustainer,
             ),
           ),
         ],

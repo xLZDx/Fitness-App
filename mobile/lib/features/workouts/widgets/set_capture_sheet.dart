@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/glass.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 
@@ -166,12 +167,12 @@ class _SetCaptureSheetState extends State<SetCaptureSheet> {
             const SizedBox(height: 16),
             Row(
               children: [
-                TextButton(
+                AppTertiaryButton(
                   // Distinct from submitting two blanks: pop(null) means the
                   // caller keeps whatever is already stored, which is what an
                   // edit that changed its mind should do.
                   onPressed: () => Navigator.of(context).pop(),
-                  child: Text(l10n.commonSkip),
+                  label: l10n.commonSkip,
                 ),
                 const SizedBox(width: 12),
                 // `Expanded`, and no `Spacer`, because `AppTheme` gives every
@@ -183,9 +184,9 @@ class _SetCaptureSheetState extends State<SetCaptureSheet> {
                 // Expanded is what bounds it; the button filling the rest of
                 // the row is the ordinary shape for a sheet's primary action.
                 Expanded(
-                  child: FilledButton(
+                  child: AppPrimaryButton(
                     onPressed: _submit,
-                    child: Text(l10n.commonSave),
+                    label: l10n.commonSave,
                   ),
                 ),
               ],

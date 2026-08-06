@@ -561,10 +561,10 @@ class _StartFailure extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 12),
-          TextButton(
+          AppTertiaryButton(
             key: const Key('form-check-retry'),
             onPressed: onRetry,
-            child: Text(l10n.formcheckTryAgain),
+            label: l10n.formcheckTryAgain,
           ),
         ],
       ),
@@ -682,9 +682,9 @@ class _SetSummaryCard extends StatelessWidget {
                       ?.copyWith(fontWeight: FontWeight.w800),
                 ),
               ),
-              TextButton(
+              AppTertiaryButton(
                 onPressed: onReset,
-                child: Text(AppLocalizations.of(context).formcheckResetSet),
+                label: AppLocalizations.of(context).formcheckResetSet,
               ),
             ],
           ),

@@ -5,6 +5,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import '../profile/state/profile_providers.dart';
 import 'state/questionnaire_notifier.dart';
@@ -144,10 +145,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                 children: [
                   if (_index > 0)
                     Expanded(
-                      child: OutlinedButton(
+                      child: AppSecondaryButton(
                         onPressed: isSubmitting ? null : _back,
-                        child:
-                            Text(AppLocalizations.of(context).onboardingBack),
+                        label: AppLocalizations.of(context).onboardingBack,
                       ),
                     ),
                   if (_index > 0) const SizedBox(width: 12),

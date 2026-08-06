@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
+import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/glass.dart';
 
 /// Day-3 nurture modal. Shown once on the user's third launch, at least
@@ -68,44 +69,33 @@ class Day3WelcomeModal extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
+                child: AppSecondaryButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: Text(AppLocalizations.of(context).momentsMaybeLater),
+                  size: AppButtonSize.compact,
+                  label: AppLocalizations.of(context).momentsMaybeLater,
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: FilledButton(
+                child: AppPrimaryButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                     GoRouter.of(context).push('/subscription');
                   },
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: Text(
-                      AppLocalizations.of(context).momentsSeeWaysToSupport),
+                  size: AppButtonSize.compact,
+                  label: AppLocalizations.of(context).momentsSeeWaysToSupport,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
           Center(
-            child: TextButton(
+            child: AppTertiaryButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 GoRouter.of(context).push('/about');
               },
-              child: Text(AppLocalizations.of(context).momentsReadOurMission),
+              label: AppLocalizations.of(context).momentsReadOurMission,
             ),
           ),
         ],

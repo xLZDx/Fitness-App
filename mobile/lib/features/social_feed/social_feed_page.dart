@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import '../auth/state/auth_providers.dart';
 import 'data/social_post.dart';
@@ -77,7 +78,7 @@ class SocialFeedPage extends ConsumerWidget {
                         AppLocalizations.of(context).socialfeedShareSomething),
               ),
               const SizedBox(height: 12),
-              FilledButton(
+              AppPrimaryButton(
                 onPressed: () async {
                   final me = ref.read(authUserProvider).valueOrNull;
                   if (me == null) return;
@@ -92,7 +93,7 @@ class SocialFeedPage extends ConsumerWidget {
                       );
                   if (sheet.mounted) Navigator.of(sheet).pop();
                 },
-                child: Text(AppLocalizations.of(context).socialfeedPost),
+                label: AppLocalizations.of(context).socialfeedPost,
               ),
             ],
           ),

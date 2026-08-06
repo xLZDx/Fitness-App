@@ -758,30 +758,23 @@ class _PlanCard extends StatelessWidget {
             children: [
               if (onStartTrial != null) ...[
                 Expanded(
-                  child: OutlinedButton(
+                  child: AppSecondaryButton(
                     onPressed: isLoading ? null : onStartTrial,
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    child: Text(
-                        AppLocalizations.of(context).subscription14DayTrial),
+                    size: AppButtonSize.compact,
+                    label:
+                        AppLocalizations.of(context).subscription14DayTrial,
                   ),
                 ),
                 const SizedBox(width: 8),
               ],
               Expanded(
-                child: FilledButton(
+                child: AppPrimaryButton(
                   onPressed: (isLoading || isCurrent) ? null : onChoose,
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: Text(isCurrent ? 'Current' : cta),
+                  size: AppButtonSize.compact,
+                  // 'Current' is a pre-existing hardcoded literal, not from
+                  // this gate -- untouched, noted rather than silently fixed
+                  // (out of scope for a button-component migration).
+                  label: isCurrent ? 'Current' : cta,
                 ),
               ),
             ],

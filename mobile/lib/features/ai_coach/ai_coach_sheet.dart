@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/settings/state/settings_providers.dart';
+import '../../shared/widgets/app_buttons.dart';
 import 'ai_coach_context.dart';
 import 'ai_coach_service.dart';
 import '../../core/theme/app_semantic_colors.dart';
@@ -114,11 +115,10 @@ class AiCoachSheet extends ConsumerWidget {
                             ?.copyWith(color: theme.colorScheme.error),
                       ),
                       const SizedBox(height: 8),
-                      TextButton(
+                      AppTertiaryButton(
                         onPressed: () =>
                             ref.invalidate(aiCoachAdviceProvider(request)),
-                        child:
-                            Text(AppLocalizations.of(context).aiCoachRetry),
+                        label: AppLocalizations.of(context).aiCoachRetry,
                       ),
                     ],
                   ),

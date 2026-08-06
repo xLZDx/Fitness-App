@@ -398,10 +398,21 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
               // Expanded.
               SizedBox(
                 width: 56,
-                child: OutlinedButton(
-                  key: const Key('scan-recognise-gallery'),
-                  onPressed: _recogniseFromGallery,
-                  child: const Icon(Icons.photo_library_outlined),
+                // Not `AppIconButton`: that wraps `IconButton`, which drops
+                // the visible outline this control has always had, sitting
+                // next to a filled CTA. Not `AppSecondaryButton` either: it
+                // requires a label and this is deliberately icon-only. Same
+                // defect class as the twelve `IconButton`s in G2.1b-i,
+                // caught late because it isn't built from `IconButton` --
+                // `Tooltip` is the same fix `IconButton.tooltip` applies
+                // internally, applied by hand.
+                child: Tooltip(
+                  message: AppLocalizations.of(context).scannerPickFromGallery,
+                  child: OutlinedButton(
+                    key: const Key('scan-recognise-gallery'),
+                    onPressed: _recogniseFromGallery,
+                    child: const Icon(Icons.photo_library_outlined),
+                  ),
                 ),
               ),
             ],
