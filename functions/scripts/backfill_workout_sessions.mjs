@@ -146,9 +146,28 @@ async function backfillUser(userId) {
   return { userId, logs: docs.length, written, skipped };
 }
 
+/** `users/{uid}` is never written directly -- only its subcollections are
+ * (profile/main, workout_logs/*, etc.) -- so it never appears in
+ * `db.collection("users").get()`; that query always returns zero docs, even
+ * with real data underneath. Every uid that has anything to backfill has a
+ * workout_logs doc by definition, so deriving the list from there is both
+ * the fix and the correct scope for this script. */
 async function listAllUids() {
-  const snap = await db.collection("users").get();
-  return snap.docs.map((d) => d.id);
+  const snap = await db.collectionGroup("workout_logs").get();
+  const uids = new Set();
+  for (const doc of snap.docs) {
+    // Guards against a future, unrelated collection also named
+    // "workout_logs" at some other nesting depth -- collectionGroup matches
+    // by name only, not by full path. `parent` is the workout_logs
+    // collection, `parent.parent` should be the users/{uid} doc.
+    const userDoc = doc.ref.parent.parent;
+    if (!userDoc || userDoc.parent.id !== "users") {
+      console.warn(`  skip unexpected path (not users/{uid}/workout_logs): ${doc.ref.path}`);
+      continue;
+    }
+    uids.add(userDoc.id);
+  }
+  return [...uids];
 }
 
 async function main() {

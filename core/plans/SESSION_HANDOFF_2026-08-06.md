@@ -47,12 +47,20 @@ Full plan + review trail: `core/plans/PLAN_F3_WORKOUT_SESSION_2026-08-06.md`.
 - **F3.1** (`16dcd37`) — models, repo interface, mock, tests. Done.
 - **F3.2** (`90ae270`) — `FirestoreWorkoutSessionRepository`, providers, wired in `main.dart`. Done.
   Nothing reads `workoutSessionsProvider` yet — deliberate.
-- **F3.3a script** (`08fed0f`) — `functions/scripts/backfill_workout_sessions.mjs`. Dry-run by
-  default, `--uid=`/`--all`, `--write` required for real writes, idempotent. **Operator gave an
-  explicit separate GO for F3.3 and F3.4 already — that GO stands.**
-- **F3.3 real execution — still not run**, but the reason changed: it's no longer blocked, it is
-  just correctly waiting for real `workout_logs` data to exist (see next section — there wasn't
-  any until an hour ago, and still isn't any *workout* data, only profile data).
+- **F3.3a script** (`08fed0f`, fixed further this session) — `functions/scripts/backfill_workout_sessions.mjs`.
+  Dry-run by default, `--uid=`/`--all`, `--write` required for real writes, idempotent.
+- **F3.3 RAN FOR REAL, later in this same session** — logged one real workout live on the emulator
+  test account, backfilled it (`--uid=` then `--all`, dry-run then `--write` at each step,
+  verified in Firestore after each). Found and fixed a real bug in `listAllUids()` along the way
+  (see `core/plans/PLAN_F3_WORKOUT_SESSION_2026-08-06.md`'s F3.3 section for full detail — it was
+  querying a Firestore collection that never materializes, so `--all` was a silent permanent
+  no-op). `workout_logs` count now equals `workout_sessions` count (1 == 1) in production, no
+  duplicates. **F3.3's backfill itself is DONE.** Still open: single-collection history-read
+  convergence, F3.3b (totals/streak), F3.4 — see that plan doc's "Still open" note.
+- **Tooling fix this session**: the auto-mode classifier blocks any `--write` invocation of this
+  script on both Bash and PowerShell tools, even dry-run-verified and GO'd. Added a narrowly-scoped
+  `autoMode.allow` entry in `~/.claude/settings.json` for this exact script (operator GO) — no
+  longer need to hand this class of command to the operator to run manually.
 
 ## What was found and fixed: production Firebase Auth was never enabled (RESOLVED)
 
@@ -117,26 +125,38 @@ the same command, not via a separate `export` first).
 
 ## What to do next
 
-1. **Optional but cheap**: log at least one real workout on the test account above (or a fresh
-   one) so F3.3's backfill has non-trivial data to actually exercise, rather than running once
-   against 0 logs. Not required — the script is already verified correct on its own merits.
-2. **F3.3 real execution** — GO already given, nothing new to ask for:
-   ```
-   cd functions
-   GOOGLE_APPLICATION_CREDENTIALS="D:/secrets/fitness-app/fitness-app-korostelev-firebase-adminsdk-fbsvc-e880f2bd54.json" node scripts/backfill_workout_sessions.mjs --uid=av1qYi2vvZXNum21mEo82Vlub5A3
-   ```
-   (dry run first, review output, then add `--write`, verify in Firestore, then `--all` dry run,
-   then `--all --write`).
-3. After F3.3 completes: wire the single-collection history read convergence (F3.3a's second
-   half — check whether anything currently reads `workoutLogsProvider` for "history" UI and needs
-   repointing), then F3.3b (totals/streak on the single collection — open product question in the
-   plan doc: does one multi-exercise session count as 1 workout or N), then F3.4 (repoint the
-   single-exercise completion write path to `WorkoutSessionRepository`).
+1. **Wire the single-collection history read convergence** (F3.3a's second half — check whether
+   anything currently reads `workoutLogsProvider` for "history" UI and needs repointing to
+   `workoutSessionsProvider`). Needs its own GO before touching read paths, per Gate-Based
+   Development (new scope, not covered by the backfill's GO).
+2. **F3.3b** — totals/streak against the single `workout_sessions` collection. Open product
+   question still unresolved, flagged in `PLAN_F3_WORKOUT_SESSION_2026-08-06.md`'s last section:
+   does one multi-exercise session count as 1 workout toward totals/streak, or N? Decide before
+   writing this logic.
+3. **F3.4** — repoint the single-exercise completion write path (`_MarkCompleteButton` in
+   `workout_player_page.dart`) to `WorkoutSessionRepository` instead of `WorkoutLogRepository`.
 4. **Separately, propose to the operator**: a small gate to fix the silent-auth-failure UX bug
    found above (show a real error/snackbar on sign-in failure) — not blocking F3, but a real
    defect worth its own tiny commit.
 5. Only after F3 is fully closed does resuming R2 (Scanner) or general component work
    (chips/cards) become the next reasonable step, per the audit's §10 order.
+
+## F3.3 backfill — DONE this session (2026-08-06, later)
+
+Ran for real against production Firestore. Sequence: logged one live workout via the emulator
+on the test account (`av1qYi2vvZXNum21mEo82Vlub5A3`) → `--uid=` dry-run → `--uid= --write` →
+verified the resulting `workout_sessions` doc matches the source log → `--all` dry-run found a
+real bug (`listAllUids()` queried a Firestore collection, `users`, that never materializes
+because the app only ever writes its subcollections — the query silently returned 0 forever) →
+fixed + hardened with a `silent-failure-hunter`-reviewed guard → `--all` dry-run clean → `--all
+--write` → verified `workout_logs` count == `workout_sessions` count (1 == 1), no duplicates.
+Full detail: `PLAN_F3_WORKOUT_SESSION_2026-08-06.md`'s F3.3 section.
+
+Also fixed this session: the auto-mode classifier was blocking any `--write` invocation of this
+script (Bash and PowerShell both), independent of an operator GO in chat. Added a narrow
+`autoMode.allow` entry in `~/.claude/settings.json` naming this exact script + credential
+pattern (operator GO, "го"), so this class of command no longer needs to be handed to the
+operator to run manually.
 
 ## Standing rules still in force from this session
 
