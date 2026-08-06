@@ -6,7 +6,7 @@ import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import '../workouts/data/workout_log.dart';
-import '../workouts/state/workout_log_providers.dart';
+import '../workouts/state/workout_session_providers.dart';
 import 'data/progress_stats.dart';
 
 class ProgressPage extends ConsumerWidget {
@@ -15,14 +15,15 @@ class ProgressPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final logsAsync = ref.watch(workoutLogsProvider);
-    final logs = logsAsync.valueOrNull ?? const <WorkoutLogEntry>[];
+    // F3.3 read-convergence: sourced from workout_sessions (via the
+    // WorkoutLogEntry adapter view), not the legacy workout_logs stream.
+    final logs = ref.watch(workoutSessionHistoryProvider);
     // `logs` is the recent window, not the history. The all-time count and the
-    // streak record come from `workoutTotalsProvider`; without it a long-time
-    // user would watch their totals shrink to the window size.
+    // streak record come from `workoutSessionTotalsProvider`; without it a
+    // long-time user would watch their totals shrink to the window size.
     final stats = deriveProgress(
       logs,
-      totals: ref.watch(workoutTotalsProvider).valueOrNull,
+      totals: ref.watch(workoutSessionTotalsProvider).valueOrNull,
     );
 
     return FrostedScaffold(

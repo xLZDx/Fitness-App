@@ -5,8 +5,10 @@ import '../profile/data/profile_models.dart';
 import '../profile/state/profile_providers.dart';
 import '../progress_photos/data/progress_photo.dart';
 import '../progress_photos/state/progress_photos_providers.dart';
+import '../workouts/data/workout_session.dart'
+    show WorkoutSessionLogView, WorkoutSessionStatus;
 import '../workouts/state/scheduled_session_providers.dart';
-import '../workouts/state/workout_log_providers.dart';
+import '../workouts/state/workout_session_providers.dart';
 import 'data_export.dart';
 import 'data_export_sink.dart';
 
@@ -46,10 +48,27 @@ class DataExportAction extends Notifier<AsyncValue<void>> {
       // its own `onTap` while loading, so a user in that state has no error,
       // no retry, and no way to back out except leaving the screen.
       const readTimeout = Duration(seconds: 30);
-      final workoutLogs = await ref
-          .read(workoutLogRepositoryProvider)
-          .exportAll(user.uid)
-          .timeout(readTimeout);
+      // F3.3 read-convergence: workout_sessions is the superset of
+      // workout_logs after the backfill, and the only collection new
+      // completions write to after F3.4 -- reading workout_logs here would
+      // silently start missing every workout logged after that point.
+      // Mapped through the same WorkoutLogEntry adapter view every other
+      // consumer uses, so the exported JSON shape is unchanged. Filtered to
+      // completed sessions first -- exportAll() is deliberately unwindowed
+      // and unfiltered (every session, any status), but asLogEntryView()
+      // synthesizes completedAt = startedAt for a session with none; without
+      // this filter a pending/abandoned session would export as an ordinary
+      // finished workout with a fabricated completion time. Same filter
+      // workoutSessionHistoryProvider applies for every other consumer.
+      final workoutLogs = (await ref
+              .read(workoutSessionRepositoryProvider)
+              .exportAll(user.uid)
+              .timeout(readTimeout))
+          .where((s) =>
+              s.status == WorkoutSessionStatus.completed &&
+              s.completedAt != null)
+          .map((s) => s.asLogEntryView())
+          .toList();
       final scheduledSessions = await ref
           .read(scheduledSessionRepositoryProvider)
           .exportAll(user.uid)

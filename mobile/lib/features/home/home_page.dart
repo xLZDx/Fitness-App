@@ -15,7 +15,7 @@ import '../moments/widgets/day3_welcome_modal.dart';
 import '../progress/data/progress_stats.dart';
 import '../recovery/widgets/deload_banner.dart';
 import '../workouts/state/session_screening_providers.dart';
-import '../workouts/state/workout_log_providers.dart';
+import '../workouts/state/workout_session_providers.dart';
 import 'data/suggestion_builder.dart';
 import 'state/suggestion_providers.dart';
 import '../equipment/widgets/exercise_thumb.dart';
@@ -55,11 +55,12 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final logs = ref.watch(workoutLogsProvider).valueOrNull ?? const [];
+    // F3.3 read-convergence: sourced from workout_sessions, see progress_page.
+    final logs = ref.watch(workoutSessionHistoryProvider);
     // See the note in progress_page: `logs` is a window, the totals are not.
     final stats = deriveProgress(
       logs,
-      totals: ref.watch(workoutTotalsProvider).valueOrNull,
+      totals: ref.watch(workoutSessionTotalsProvider).valueOrNull,
     );
     // Screened, not merely filtered by date: a session is a snapshot of what
     // was safe when it was scheduled, and the user's injuries can have changed

@@ -3,14 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/state/auth_providers.dart';
 import '../../workouts/data/scheduled_session.dart';
 import '../../workouts/state/scheduled_session_providers.dart';
-import '../../workouts/state/workout_log_providers.dart';
+import '../../workouts/state/workout_session_providers.dart';
 import '../data/deload_detector.dart';
 
 /// Live deload verdict computed from logs + scheduled sessions in the
 /// last 14 days. HRV inputs are omitted until C1 (Health Connect)
 /// surfaces them.
 final deloadVerdictProvider = Provider<DeloadVerdict>((ref) {
-  final logs = ref.watch(workoutLogsProvider).valueOrNull ?? const [];
+  // F3.3 read-convergence: sourced from workout_sessions, see progress_page.
+  final logs = ref.watch(workoutSessionHistoryProvider);
   final sessions =
       ref.watch(scheduledSessionsProvider).valueOrNull ?? const [];
   final cutoff = DateTime.now().subtract(const Duration(days: 14));

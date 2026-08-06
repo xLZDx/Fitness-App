@@ -2,14 +2,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../equipment/data/equipment_models.dart';
 import '../../equipment/state/equipment_providers.dart';
-import '../../workouts/state/workout_log_providers.dart';
+import '../../workouts/state/workout_session_providers.dart';
 import '../data/fitness_model.dart';
 import '../data/for_you_ranker.dart';
 
 /// Live FitnessProfile derived from the user's logs + the catalog's
 /// muscle map. Recomputed when either dependency changes.
 final fitnessProfileProvider = FutureProvider<FitnessProfile>((ref) async {
-  final logs = ref.watch(workoutLogsProvider).valueOrNull ?? const [];
+  // F3.3 read-convergence: sourced from workout_sessions, see progress_page.
+  final logs = ref.watch(workoutSessionHistoryProvider);
   final repo = ref.watch(equipmentRepositoryProvider);
   final allEquipment = await repo.listEquipment();
   final exercises = <ExerciseItem>[
@@ -41,7 +42,7 @@ final rankedForYouProvider = FutureProvider<List<ExerciseItem>>((ref) async {
   // Cold start: no logs, no model, nothing to personalise from. The filtered
   // order is the honest answer, not a made-up one.
   if (profile == null) return candidates;
-  final logs = ref.watch(workoutLogsProvider).valueOrNull ?? const [];
+  final logs = ref.watch(workoutSessionHistoryProvider);
   final recent = logs
       .where((l) => DateTime.now().difference(l.completedAt).inDays < 7)
       .map((l) => l.exerciseId)

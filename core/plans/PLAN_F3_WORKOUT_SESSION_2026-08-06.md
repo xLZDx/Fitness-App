@@ -5,10 +5,16 @@ what changed and why. Gate sequence context: `core/plans/FIGMA_MAKE_REFACTOR_AUD
 §10, §12 risk #1. This gate is the audit's F3, unblocking R4 (Home) and R5 (Workout
 Summary), both of which need a multi-exercise session concept that does not exist today.
 
-**Status 2026-08-06: F3.1, F3.2, and F3.3's backfill are DONE and verified live against
-production Firestore (`16dcd37`, `90ae270`, `08fed0f` + this session's fix). F3.3's
-single-collection history-read convergence, F3.3b (totals/streak), and F3.4 are NOT
-done — see "F3.3 — real execution" below for the exact state.**
+**Status 2026-08-06 (later same day): F3 is DONE end to end.** F3.1, F3.2, F3.3
+(document backfill + streak-record backfill + single-collection history-read
+convergence), and F3.4 (write-path repoint) all landed and are verified live against
+production Firestore. `workout_logs` is now permanently read-only historical data;
+every read surface (Progress, Home, Suggestions, Recovery, Personalisation, GDPR
+export) and the one write path (`_MarkCompleteButton`) all go through
+`workout_sessions`. Open product question below (1 workout vs N per session) is
+answered for the CURRENT scope: every session is still single-exercise, so it is
+trivially 1 == 1 — the real N-case question stays open for whichever future gate
+(R3+) builds actual multi-exercise logging.
 
 ## What exists today (verified against the repo, not assumed)
 
@@ -152,21 +158,56 @@ explicit GO, separate from F3.1/F3.2's GO.**
   `~/.claude/settings.json` naming this exact script + credential pattern (operator
   GO). Bash-tool inline `VAR=value cmd` syntax also silently fails in PowerShell
   (different shell) — use `$env:VAR="value"; cmd` there instead.
-- **Still open**: the single-collection history-read convergence (the other half of
-  F3.3a — whether anything currently reads `workoutLogsProvider` for "history" UI and
-  needs repointing to `workoutSessionsProvider`) is NOT wired yet. Then F3.3b
-  (totals/streak against the single collection) and F3.4 (repoint the single-exercise
-  completion write path). See "What to do next" in
-  `core/plans/SESSION_HANDOFF_2026-08-06.md`.
+- **Read convergence + F3.3b + F3.4 all landed later the same session**, bundled into
+  ONE commit rather than shipped separately — a `silent-failure-hunter` Act-gate review
+  of the read-only version of this diff found a CRITICAL gap: repointing the six read
+  surfaces (Progress, Home, Suggestions, Recovery, Personalisation, GDPR export) to
+  `workout_sessions` while the write path (`_MarkCompleteButton`) still wrote only to
+  `workout_logs` would have made every workout completed after that point invisible to
+  all of them, silently, with zero error. F3.4 was pulled forward into the same atomic
+  change specifically to close that window — there is no commit in history where reads
+  and writes point at different collections.
+  - `workoutSessionHistoryProvider` (`workout_session_providers.dart`): derives
+    `List<WorkoutLogEntry>` from `workoutSessionsProvider`, filtered to
+    `status == completed && completedAt != null`, mapped through a new
+    `WorkoutSessionLogView.asLogEntryView()` extension (`workout_session.dart`) so the
+    five existing pure functions (`deriveProgress`, `buildSuggestions`, `detectDeload`,
+    `buildProfile`, `suggestNextWeight`) stay unchanged, typed against `WorkoutLogEntry`
+    as before — only their data source moved.
+  - `logSessionActionProvider`/`LogSessionAction` (`workout_session_providers.dart`):
+    mirrors `logWorkoutActionProvider`/`LogWorkoutAction`'s streak-write timing exactly,
+    now the only write path new completions use.
+  - GDPR export (`data_export_providers.dart`) also converged, filtered the same way —
+    a `silent-failure-hunter` finding caught that `exportAll()` is deliberately
+    unfiltered by status, so the completed-only filter has to be applied at each call
+    site that uses `asLogEntryView()`, not assumed.
+  - `functions/scripts/backfill_workout_sessions.mjs` gained a second backfill step,
+    `backfillStreakRecord()`: the original document backfill never touched the
+    *separate* streak-record document each repository keeps (`stats/workouts` for logs,
+    `stats/workout_sessions` for sessions) — without this, switching the totals read
+    would have silently reset every existing user's `longestStreakDays` to 0. Confirmed
+    live: the test account's real streak (`1`) was 0 in the new doc before this step,
+    correctly `1` after.
+- `workout_log_providers.dart` (`workoutLogsProvider`, `workoutTotalsProvider`,
+  `logWorkoutActionProvider`) is now dead code — no widget or provider references it
+  anymore (confirmed by grep) — but left in place rather than deleted: `workout_logs`
+  itself stays as intentional read-only historical data per this plan, and deleting the
+  dead providers would also mean retiring their own dedicated tests
+  (`workout_log_providers_test.dart`, `history_window_test.dart`), a separate cleanup
+  task not requested here.
 
-### F3.4 — explicitly OUT of this gate
+### F3.4 — write-path repoint (DONE, bundled into the F3.3 commit above)
 
-How the workout player itself starts WRITING multi-exercise sessions (today it
-completes exactly one exercise at a time) is a product/UX question, not a data-layer
-one. Deferred to whichever feature gate actually builds multi-exercise logging (R3
-Exercise/Player split, or directly in R4/R5). Until then, single-exercise completions
-can write directly into `WorkoutSession`-shaped single-exercise sessions (same shape
-the backfill produces), so F3.4 is a UX change, not a schema change.
+`_MarkCompleteButton` (`mobile/lib/features/equipment/workout_player_page.dart`) now
+builds and saves a `WorkoutSession` (one `WorkoutSessionExercise`, at most one
+`SetCapture` in its `sets` list — same shape the backfill produces, per the original
+framing below) via `logSessionActionProvider`, instead of a `WorkoutLogEntry` via
+`logWorkoutActionProvider`. `_SuggestedWeightChip` in the same file also repointed to
+`workoutSessionHistoryProvider`. Real multi-exercise session WRITING (multiple
+exercises accumulated into one `WorkoutSession` before completion) is still deferred to
+whichever feature gate actually builds that UX (R3 Exercise/Player split, or directly
+in R4/R5) — this gate only moved WHERE a single-exercise completion is persisted, not
+WHAT can be persisted.
 
 ## Review trail
 

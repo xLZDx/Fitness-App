@@ -1,5 +1,5 @@
 import 'set_capture.dart';
-import 'workout_log.dart' show DifficultyRating;
+import 'workout_log.dart' show DifficultyRating, WorkoutLogEntry;
 
 /// F3.1 — see `core/plans/PLAN_F3_WORKOUT_SESSION_2026-08-06.md`.
 ///
@@ -240,4 +240,40 @@ class WorkoutSession {
   @override
   int get hashCode => Object.hash(id, title, Object.hashAll(exercises),
       startedAt, completedAt, status, durationMinutes, notes);
+}
+
+/// F3.3 read-convergence adapter: lets every existing consumer that reads
+/// workout history stay typed against [WorkoutLogEntry] -- `progress_stats`,
+/// `suggestion_builder`, `progression`, `deload_detector`, `fitness_model`,
+/// and the GDPR data export -- while the actual data source moves to
+/// [WorkoutSession]. Rewriting those five pure functions to accept
+/// [WorkoutSession] directly was the alternative; this adapter was chosen
+/// because it is additive to already-reviewed code instead of touching it.
+///
+/// Valid only because every session today holds exactly one exercise and at
+/// most one set -- the same constraint F3.4 keeps until a future gate (R3+)
+/// builds real multi-exercise logging (see the plan doc). A session with >1
+/// exercise, or an exercise with >1 set, loses information through this
+/// view (only the first exercise and the last set survive) -- silently
+/// correct today, silently lossy the day that constraint stops holding.
+/// Whoever builds multi-exercise sessions must replace this adapter's call
+/// sites with real [WorkoutSession]-typed reads, not widen it.
+extension WorkoutSessionLogView on WorkoutSession {
+  WorkoutLogEntry asLogEntryView() {
+    final exercise = exercises.isNotEmpty
+        ? exercises.first
+        : const WorkoutSessionExercise(exerciseId: '', exerciseTitle: '');
+    final set = exercise.sets.isNotEmpty ? exercise.sets.last : null;
+    return WorkoutLogEntry(
+      id: id,
+      exerciseId: exercise.exerciseId,
+      exerciseTitle: exercise.exerciseTitle,
+      completedAt: completedAt ?? startedAt,
+      durationMinutes: durationMinutes ?? 0,
+      notes: notes,
+      weightKg: set?.weightKg,
+      repsCompleted: set?.reps,
+      difficulty: exercise.difficulty,
+    );
+  }
 }

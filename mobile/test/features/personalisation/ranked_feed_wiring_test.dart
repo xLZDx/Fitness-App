@@ -6,7 +6,7 @@ import 'package:fitness_app/features/equipment/data/equipment_repository.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/personalisation/state/personalisation_providers.dart';
 import 'package:fitness_app/features/workouts/data/workout_log.dart';
-import 'package:fitness_app/features/workouts/state/workout_log_providers.dart';
+import 'package:fitness_app/features/workouts/state/workout_session_providers.dart';
 
 /// The personalisation layer has to actually reach a screen.
 ///
@@ -84,7 +84,11 @@ ProviderContainer _container(List<WorkoutLogEntry> logs) {
   final c = ProviderContainer(overrides: [
     forYouExercisesProvider.overrideWith((_) async => _catalog),
     equipmentRepositoryProvider.overrideWithValue(_FakeRepo()),
-    workoutLogsProvider.overrideWith((_) => Stream.value(logs)),
+    // F3.3 read-convergence: personalisation_providers.dart now reads
+    // workoutSessionHistoryProvider (derived from workout_sessions), not
+    // workoutLogsProvider -- override the same List<WorkoutLogEntry> shape
+    // one level down the new pipeline instead of faking a session stream.
+    workoutSessionHistoryProvider.overrideWith((_) => logs),
   ]);
   addTearDown(c.dispose);
   return c;
@@ -95,8 +99,6 @@ void main() {
     // Cold start. Inventing an order from nothing would be a guess dressed as
     // personalisation.
     final c = _container(const []);
-    // The log stream has to deliver before the model is built from it.
-    await c.read(workoutLogsProvider.future);
     await c.read(fitnessProfileProvider.future);
     final feed = await c.read(rankedForYouProvider.future);
     expect(feed.map((e) => e.id), _catalog.map((e) => e.id));
@@ -109,8 +111,6 @@ void main() {
       log('chest_a', daysAgo: 3),
       log('chest_a', daysAgo: 4),
     ]);
-    // The log stream has to deliver before the model is built from it.
-    await c.read(workoutLogsProvider.future);
     await c.read(fitnessProfileProvider.future);
     final feed = await c.read(rankedForYouProvider.future);
 
@@ -125,7 +125,6 @@ void main() {
     // for the wrong reason: both were the catalog order.
     Future<List<String>> feedFor(List<WorkoutLogEntry> logs) async {
       final c = _container(logs);
-      await c.read(workoutLogsProvider.future);
       await c.read(fitnessProfileProvider.future);
       return (await c.read(rankedForYouProvider.future))
           .map((e) => e.id)
@@ -139,8 +138,6 @@ void main() {
 
   test('the ranked feed is the same set, only reordered', () async {
     final c = _container([log('legs_a')]);
-    // The log stream has to deliver before the model is built from it.
-    await c.read(workoutLogsProvider.future);
     await c.read(fitnessProfileProvider.future);
     final feed = await c.read(rankedForYouProvider.future);
     expect(feed.map((e) => e.id).toSet(), _catalog.map((e) => e.id).toSet());

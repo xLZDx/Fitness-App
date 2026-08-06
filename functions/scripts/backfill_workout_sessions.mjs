@@ -3,7 +3,9 @@
  * F3.3 -- one-time, non-destructive backfill: copies every existing
  * WorkoutLogEntry (users/{uid}/workout_logs/{id}) into a corresponding
  * one-exercise WorkoutSession (users/{uid}/workout_sessions/{id}), so app
- * reads can converge to a single collection going forward.
+ * reads can converge to a single collection going forward. Also backfills
+ * (F3.3b) each user's longestStreakDays record from stats/workouts into the
+ * separate stats/workout_sessions document the new totals provider reads.
  *
  * `users/{uid}/workout_logs` is NEVER written or deleted by this script --
  * read-only throughout. Rollback if anything looks wrong: delete
@@ -146,6 +148,47 @@ async function backfillUser(userId) {
   return { userId, logs: docs.length, written, skipped };
 }
 
+/** F3.3b: the document backfill above only copies workout_logs docs into
+ * workout_sessions docs -- it never touches the SEPARATE streak-record
+ * document each repository keeps (`stats/workouts` for logs, `stats/
+ * workout_sessions` for sessions -- see FirestoreWorkoutSessionRepository's
+ * own doc comment for why it's a separate doc, not a field on the profile).
+ * Without this step, switching the app's totals read from
+ * `workoutTotalsProvider` to `workoutSessionTotalsProvider` would silently
+ * reset every existing user's longestStreakDays to 0, even though their
+ * session COUNT would already be correct (a live server-side count() over
+ * the backfilled collection).
+ *
+ * Same read-then-write-max pattern as the Dart repos' own recordStreak() --
+ * never lowers an existing record, so re-running this after the app has
+ * already written a higher streak directly to workout_sessions is safe. */
+async function backfillStreakRecord(userId) {
+  const oldDoc = await db
+    .collection("users")
+    .doc(userId)
+    .collection("stats")
+    .doc("workouts")
+    .get();
+  const oldStreak = oldDoc.data()?.longestStreakDays;
+  if (!oldStreak || oldStreak <= 0) return { userId, migrated: false };
+
+  if (write) {
+    const newRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("stats")
+      .doc("workout_sessions");
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(newRef);
+      const current = snap.data()?.longestStreakDays ?? 0;
+      if (oldStreak > current) {
+        tx.set(newRef, { longestStreakDays: oldStreak }, { merge: true });
+      }
+    });
+  }
+  return { userId, migrated: true, value: oldStreak };
+}
+
 /** `users/{uid}` is never written directly -- only its subcollections are
  * (profile/main, workout_logs/*, etc.) -- so it never appears in
  * `db.collection("users").get()`; that query always returns zero docs, even
@@ -176,6 +219,7 @@ async function main() {
   console.log(`users to process: ${uids.length}`);
 
   const results = [];
+  const streakResults = [];
   for (const u of uids) {
     const r = await backfillUser(u);
     results.push(r);
@@ -185,11 +229,20 @@ async function main() {
           `${r.written} sessions${r.skipped ? `, skipped ${r.skipped}` : ""}`,
       );
     }
+
+    const sr = await backfillStreakRecord(u);
+    streakResults.push(sr);
+    if (sr.migrated) {
+      console.log(
+        `${u}: streak record ${sr.value}d -> ${write ? "written" : "would write"} to stats/workout_sessions`,
+      );
+    }
   }
 
   const totalLogs = results.reduce((s, r) => s + r.logs, 0);
   const totalWritten = results.reduce((s, r) => s + r.written, 0);
   const totalSkipped = results.reduce((s, r) => s + r.skipped, 0);
+  const totalStreaksMigrated = streakResults.filter((r) => r.migrated).length;
   console.log("---SUMMARY---");
   console.log(
     JSON.stringify(
@@ -200,6 +253,7 @@ async function main() {
         totalLogs,
         totalWritten,
         totalSkipped,
+        streaksMigrated: totalStreaksMigrated,
       },
       null,
       2,

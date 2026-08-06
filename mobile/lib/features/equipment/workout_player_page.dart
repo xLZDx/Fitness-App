@@ -12,11 +12,11 @@ import '../../shared/widgets/smooth_scroll_list.dart';
 import '../form_check/state/form_check_providers.dart';
 import '../workouts/data/progression.dart';
 import '../workouts/data/scheduled_session.dart';
-import '../workouts/data/workout_log.dart';
+import '../workouts/data/workout_session.dart';
 import '../profile/state/profile_providers.dart';
 import '../workouts/state/offline_video_providers.dart';
 import '../workouts/state/scheduled_session_providers.dart';
-import '../workouts/state/workout_log_providers.dart';
+import '../workouts/state/workout_session_providers.dart';
 import '../workouts/widgets/difficulty_rating_sheet.dart';
 import '../workouts/widgets/plate_calculator.dart';
 import '../workouts/state/rest_timer_providers.dart';
@@ -57,7 +57,7 @@ import 'widgets/exercise_thumb.dart';
 /// `autoDispose` scopes it to the visit. Coming back to the same exercise
 /// tomorrow is a new set and must write a new row.
 final _loggedEntryProvider =
-    StateProvider.autoDispose.family<WorkoutLogEntry?, String>((_, __) => null);
+    StateProvider.autoDispose.family<WorkoutSession?, String>((_, __) => null);
 
 /// Compound lifts get a longer rest window than accessories. Read off
 /// muscle tags so we don't have to maintain a parallel list.
@@ -709,12 +709,16 @@ class _MarkCompleteButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final action = ref.watch(logWorkoutActionProvider);
+    final action = ref.watch(logSessionActionProvider);
     final theme = Theme.of(context);
     final loading = action.isLoading;
 
     Future<void> onTap() async {
       final already = ref.read(_loggedEntryProvider(exercise.id));
+      final alreadySet =
+          already != null && already.exercises.first.sets.isNotEmpty
+              ? already.exercises.first.sets.last
+              : null;
 
       // Asked BEFORE the write, so the first row that reaches Firestore
       // already carries the numbers. Writing an empty row and filling it in
@@ -724,28 +728,46 @@ class _MarkCompleteButton extends ConsumerWidget {
       final captured = await SetCaptureSheet.show(
         context,
         exerciseTitle: exercise.title,
-        initialWeightKg: already?.weightKg,
-        initialReps: already?.repsCompleted,
+        initialWeightKg: alreadySet?.weightKg,
+        initialReps: alreadySet?.reps,
       );
       if (!context.mounted) return;
+
+      // F3.4: one exercise, at most one set per session -- same shape the
+      // F3.3 backfill produces (see backfill_workout_sessions.mjs's own
+      // toSession()) and the one asLogEntryView() assumes throughout. A
+      // repeat tap overwrites this one set rather than appending a second,
+      // same behavior as the old WorkoutLogEntry.copyWith did.
+      final weightKg = captured?.weightKg ?? alreadySet?.weightKg;
+      final reps = captured?.reps ?? alreadySet?.reps;
+      final sets = (weightKg != null || reps != null)
+          ? [(weightKg: weightKg, reps: reps)]
+          : const <SetCapture>[];
+      final exerciseEntry = (already?.exercises.first ??
+              WorkoutSessionExercise(
+                exerciseId: exercise.id,
+                exerciseTitle: exercise.title,
+              ))
+          .copyWith(sets: sets);
 
       // Same id on a repeat tap, so `save()` -- `doc(id).set(...)` -- updates
       // the row instead of adding a second one for the same set.
       final entry = (already ??
-              WorkoutLogEntry(
+              WorkoutSession(
                 id: '${DateTime.now().microsecondsSinceEpoch}_${exercise.id}',
-                exerciseId: exercise.id,
-                exerciseTitle: exercise.title,
-                completedAt: DateTime.now(),
-                durationMinutes: exercise.durationMinutes,
+                title: exercise.title,
+                exercises: const [],
+                startedAt: DateTime.now(),
               ))
           .copyWith(
-        weightKg: captured?.weightKg ?? already?.weightKg,
-        repsCompleted: captured?.reps ?? already?.repsCompleted,
+        exercises: [exerciseEntry],
+        completedAt: DateTime.now(),
+        status: WorkoutSessionStatus.completed,
+        durationMinutes: exercise.durationMinutes,
       );
-      await ref.read(logWorkoutActionProvider.notifier).log(entry);
+      await ref.read(logSessionActionProvider.notifier).log(entry);
       if (!context.mounted) return;
-      final newState = ref.read(logWorkoutActionProvider);
+      final newState = ref.read(logSessionActionProvider);
       if (newState.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -783,8 +805,10 @@ class _MarkCompleteButton extends ConsumerWidget {
         exerciseTitle: exercise.title,
       );
       if (rating != null) {
-        final rated = entry.copyWith(difficulty: rating);
-        await ref.read(logWorkoutActionProvider.notifier).log(rated);
+        final rated = entry.copyWith(
+          exercises: [entry.exercises.first.copyWith(difficulty: rating)],
+        );
+        await ref.read(logSessionActionProvider.notifier).log(rated);
         ref.read(_loggedEntryProvider(exercise.id).notifier).state = rated;
       }
     }
@@ -1002,8 +1026,9 @@ class _SuggestedWeightChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final logsAsync = ref.watch(workoutLogsProvider);
-    final logs = logsAsync.valueOrNull ?? const <WorkoutLogEntry>[];
+    // F3.4: sourced from workout_sessions, the only collection new
+    // completions now write to -- see progress_page.dart's convergence note.
+    final logs = ref.watch(workoutSessionHistoryProvider);
     final history = logs.where((l) => l.exerciseId == exerciseId).toList();
     final suggestion = suggestNextWeight(historyForExercise: history);
     if (suggestion == null) return const SizedBox.shrink();

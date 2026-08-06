@@ -16,11 +16,11 @@ import 'package:fitness_app/features/progress_photos/data/progress_photo.dart';
 import 'package:fitness_app/features/progress_photos/state/progress_photos_providers.dart';
 import 'package:fitness_app/features/workouts/data/scheduled_session.dart';
 import 'package:fitness_app/features/workouts/data/scheduled_session_repository.dart';
-import 'package:fitness_app/features/workouts/data/workout_log.dart';
-import 'package:fitness_app/features/workouts/data/workout_log_repository.dart';
 import 'package:fitness_app/features/workouts/data/workout_log_totals.dart';
+import 'package:fitness_app/features/workouts/data/workout_session.dart';
+import 'package:fitness_app/features/workouts/data/workout_session_repository.dart';
 import 'package:fitness_app/features/workouts/state/scheduled_session_providers.dart';
-import 'package:fitness_app/features/workouts/state/workout_log_providers.dart';
+import 'package:fitness_app/features/workouts/state/workout_session_providers.dart';
 
 /// The controller that turns "signed in as u1" into a delivered file.
 ///
@@ -44,27 +44,27 @@ class _FakeProfileRepo implements ProfileRepository {
   Future<void> delete(String uid) async {}
 }
 
-class _FakeWorkoutLogRepo implements WorkoutLogRepository {
-  final List<WorkoutLogEntry> all;
+class _FakeWorkoutSessionRepo implements WorkoutSessionRepository {
+  final List<WorkoutSession> all;
   final Duration exportDelay;
-  const _FakeWorkoutLogRepo(this.all, {this.exportDelay = Duration.zero});
+  const _FakeWorkoutSessionRepo(this.all, {this.exportDelay = Duration.zero});
   @override
-  Stream<List<WorkoutLogEntry>> watch(String uid) => Stream.value(const []);
+  Stream<List<WorkoutSession>> watch(String uid) => Stream.value(const []);
   @override
-  List<WorkoutLogEntry> cached(String uid) => const [];
+  List<WorkoutSession> cached(String uid) => const [];
   @override
   Future<WorkoutLogTotals> totals(String uid) async =>
       const WorkoutLogTotals(total: 0, longestStreakDays: 0);
   @override
   Future<void> recordStreak(String uid, int days) async {}
   @override
-  Future<void> save(String uid, WorkoutLogEntry entry) async {}
+  Future<void> save(String uid, WorkoutSession session) async {}
   @override
-  Future<void> delete(String uid, String entryId) async {}
+  Future<void> delete(String uid, String sessionId) async {}
   @override
   Future<void> clear(String uid) async {}
   @override
-  Future<List<WorkoutLogEntry>> exportAll(String uid) async {
+  Future<List<WorkoutSession>> exportAll(String uid) async {
     if (exportDelay > Duration.zero) await Future<void>.delayed(exportDelay);
     return all;
   }
@@ -87,11 +87,15 @@ class _FakeScheduledSessionRepo implements ScheduledSessionRepository {
   Future<List<ScheduledSession>> exportAll(String uid) async => all;
 }
 
-WorkoutLogEntry _log(String id) => WorkoutLogEntry(
+WorkoutSession _session(String id) => WorkoutSession(
       id: id,
-      exerciseId: 'squat',
-      exerciseTitle: 'Squat',
+      title: 'Squat',
+      exercises: const [
+        WorkoutSessionExercise(exerciseId: 'squat', exerciseTitle: 'Squat'),
+      ],
+      startedAt: DateTime(2026, 1, 1),
       completedAt: DateTime(2026, 1, 1),
+      status: WorkoutSessionStatus.completed,
       durationMinutes: 30,
     );
 
@@ -105,8 +109,9 @@ void main() {
     final c = ProviderContainer(overrides: [
       authUserProvider.overrideWith((ref) => Stream.value(_user)),
       profileRepositoryProvider.overrideWithValue(const _FakeProfileRepo()),
-      workoutLogRepositoryProvider.overrideWithValue(
-        _FakeWorkoutLogRepo(List.generate(logCount, (i) => _log('log_$i'))),
+      workoutSessionRepositoryProvider.overrideWithValue(
+        _FakeWorkoutSessionRepo(
+            List.generate(logCount, (i) => _session('log_$i'))),
       ),
       scheduledSessionRepositoryProvider
           .overrideWithValue(const _FakeScheduledSessionRepo([])),
@@ -184,8 +189,8 @@ void main() {
       final c = ProviderContainer(overrides: [
         authUserProvider.overrideWith((ref) => Stream.value(_user)),
         profileRepositoryProvider.overrideWithValue(const _FakeProfileRepo()),
-        workoutLogRepositoryProvider
-            .overrideWithValue(const _FakeWorkoutLogRepo([])),
+        workoutSessionRepositoryProvider
+            .overrideWithValue(const _FakeWorkoutSessionRepo([])),
         scheduledSessionRepositoryProvider
             .overrideWithValue(const _FakeScheduledSessionRepo([])),
         progressPhotosRepositoryProvider
@@ -215,8 +220,9 @@ void main() {
       final c = ProviderContainer(overrides: [
         authUserProvider.overrideWith((ref) => Stream.value(_user)),
         profileRepositoryProvider.overrideWithValue(const _FakeProfileRepo()),
-        workoutLogRepositoryProvider.overrideWithValue(
-          const _FakeWorkoutLogRepo([], exportDelay: Duration(minutes: 5)),
+        workoutSessionRepositoryProvider.overrideWithValue(
+          const _FakeWorkoutSessionRepo([],
+              exportDelay: Duration(minutes: 5)),
         ),
         scheduledSessionRepositoryProvider
             .overrideWithValue(const _FakeScheduledSessionRepo([])),

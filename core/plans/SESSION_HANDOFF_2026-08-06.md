@@ -125,21 +125,15 @@ the same command, not via a separate `export` first).
 
 ## What to do next
 
-1. **Wire the single-collection history read convergence** (F3.3a's second half — check whether
-   anything currently reads `workoutLogsProvider` for "history" UI and needs repointing to
-   `workoutSessionsProvider`). Needs its own GO before touching read paths, per Gate-Based
-   Development (new scope, not covered by the backfill's GO).
-2. **F3.3b** — totals/streak against the single `workout_sessions` collection. Open product
-   question still unresolved, flagged in `PLAN_F3_WORKOUT_SESSION_2026-08-06.md`'s last section:
-   does one multi-exercise session count as 1 workout toward totals/streak, or N? Decide before
-   writing this logic.
-3. **F3.4** — repoint the single-exercise completion write path (`_MarkCompleteButton` in
-   `workout_player_page.dart`) to `WorkoutSessionRepository` instead of `WorkoutLogRepository`.
-4. **Separately, propose to the operator**: a small gate to fix the silent-auth-failure UX bug
-   found above (show a real error/snackbar on sign-in failure) — not blocking F3, but a real
-   defect worth its own tiny commit.
-5. Only after F3 is fully closed does resuming R2 (Scanner) or general component work
-   (chips/cards) become the next reasonable step, per the audit's §10 order.
+**F3 is fully closed** (read convergence + F3.3b + F3.4 all landed later this same session,
+operator GO "ГО на все автономно" — see `PLAN_F3_WORKOUT_SESSION_2026-08-06.md`'s F3.3/F3.4
+sections for the full detail, including a CRITICAL gap a `silent-failure-hunter` Act-gate review
+caught and why F3.4 got pulled into the same commit as the read convergence).
+
+1. **The silent-auth-failure UX bug** (found earlier this session, not yet fixed): show a real
+   error/snackbar on sign-in failure in `login_page.dart` — see the section above.
+2. Only now does resuming R2 (Scanner) or general component work (chips/cards) become the next
+   reasonable step, per the audit's §10 order.
 
 ## F3.3 backfill — DONE this session (2026-08-06, later)
 
