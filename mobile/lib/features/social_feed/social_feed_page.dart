@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import '../auth/state/auth_providers.dart';
 import 'data/social_post.dart';
@@ -121,7 +122,7 @@ class _PostCard extends ConsumerWidget {
                 child: Text(
                   post.authorDisplay.isEmpty ? '?' : post.authorDisplay[0],
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppSemanticColors.onGradientInk,
                     fontWeight: FontWeight.w800,
                   ),
                 ),

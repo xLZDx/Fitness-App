@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../ai_coach/ai_coach_context.dart';
 import '../ai_coach/ai_coach_sheet.dart';
 import '../../shared/widgets/glass.dart';
@@ -224,7 +225,7 @@ class _EquipmentThumb extends ConsumerWidget {
           AppPalette.auroraBlue,
         ]),
       ),
-      child: const Icon(Icons.fitness_center, color: Colors.white, size: 30),
+      child: const Icon(Icons.fitness_center, color: AppSemanticColors.onGradientInk, size: 30),
     );
     if (hero == null) return placeholder;
     return ClipRRect(
@@ -357,7 +358,7 @@ class _FilteredHint extends StatelessWidget {
               ]),
             ),
             child: const Icon(Icons.health_and_safety_outlined,
-                color: Colors.white, size: 20),
+                color: AppSemanticColors.onGradientInk, size: 20),
           ),
           const SizedBox(width: 10),
           Expanded(

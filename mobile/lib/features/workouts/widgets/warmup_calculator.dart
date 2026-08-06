@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/glass.dart';
 
 /// Pure ramp calculator. Returns 4 warm-up sets at 40 / 60 / 75 / 90% of
@@ -147,7 +148,7 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
                     child: Text(
                       '${i + 1}',
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppSemanticColors.onGradientInk,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -164,7 +165,7 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
                                   : ramp[i].kg,
                               ramp[i].reps),
                           style: theme.textTheme.titleMedium?.copyWith(
-                            color: Colors.white,
+                            color: AppSemanticColors.onGradientInk,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -172,7 +173,7 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
                           AppLocalizations.of(context)
                               .workoutsOfWorkingWeight(ramp[i].percent),
                           style: theme.textTheme.labelSmall?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.80),
+                            color: AppSemanticColors.onGradientInk,
                           ),
                         ),
                       ],

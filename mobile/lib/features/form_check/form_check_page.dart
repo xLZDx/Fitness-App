@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import 'data/cue_text.dart';
 import 'data/form_classifier.dart';
@@ -981,7 +982,8 @@ class _CompleteProfileCard extends ConsumerWidget {
                   AppPalette.auroraBlue,
                 ]),
               ),
-              child: const Icon(Icons.straighten_rounded, color: Colors.white),
+              child: const Icon(Icons.straighten_rounded,
+                  color: AppSemanticColors.onGradientInk),
             ),
             const SizedBox(width: 12),
             Expanded(

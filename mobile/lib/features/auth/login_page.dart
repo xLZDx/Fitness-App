@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import 'state/auth_providers.dart';
 
@@ -66,7 +67,7 @@ class LoginPage extends ConsumerWidget {
                         child: const Icon(
                           Icons.fitness_center,
                           size: 40,
-                          color: Colors.white,
+                          color: AppSemanticColors.onGradientInk,
                         ),
                       ),
                     ),
@@ -174,21 +175,21 @@ class _GradientButton extends StatelessWidget {
                 height: 18,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation(Colors.white),
+                  valueColor: AlwaysStoppedAnimation(AppSemanticColors.onGradientInk),
                 ),
               )
             else
               Text(
                 label,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppSemanticColors.onGradientInk,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             if (!loading) ...[
               const SizedBox(width: 8),
-              Icon(icon, color: Colors.white, size: 20),
+              Icon(icon, color: AppSemanticColors.onGradientInk, size: 20),
             ],
           ],
         ),

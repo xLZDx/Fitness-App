@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/camera/camera_session.dart';
 import '../../core/camera/centre_crop.dart';
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../equipment/state/equipment_providers.dart';
 import '../../shared/widgets/glass.dart';
 import '../visual_equipment/data/live_recognition.dart';
@@ -828,7 +829,7 @@ class _CameraUnavailable extends StatelessWidget {
                 ]),
               ),
               child: const Icon(Icons.camera_alt_outlined,
-                  color: Colors.white, size: 36),
+                  color: AppSemanticColors.onGradientInk, size: 36),
             ),
             const SizedBox(height: 14),
             Text(

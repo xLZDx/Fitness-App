@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import '../profile/state/profile_providers.dart';
 import 'state/questionnaire_notifier.dart';
@@ -178,8 +179,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                                   height: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    valueColor:
-                                        AlwaysStoppedAnimation(Colors.white),
+                                    valueColor: AlwaysStoppedAnimation(
+                                        AppSemanticColors.onGradientInk),
                                   ),
                                 )
                               : Text(
@@ -187,7 +188,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                                       ? AppLocalizations.of(context).commonDone
                                       : AppLocalizations.of(context).commonNext,
                                   style: theme.textTheme.titleMedium?.copyWith(
-                                    color: Colors.white,
+                                    color: AppSemanticColors.onGradientInk,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),

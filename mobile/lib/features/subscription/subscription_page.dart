@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import 'data/subscription_models.dart';
 import 'state/subscription_providers.dart';
@@ -367,7 +368,7 @@ class _UpgradeFromTrialCard extends StatelessWidget {
                   ]),
                 ),
                 child: const Icon(Icons.workspace_premium_outlined,
-                    color: Colors.white, size: 22),
+                    color: AppSemanticColors.onGradientInk, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -410,14 +411,14 @@ class _UpgradeFromTrialCard extends StatelessWidget {
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2.4,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: AlwaysStoppedAnimation<Color>(AppSemanticColors.onGradientInk),
                       ),
                     )
                   : Text(
                       AppLocalizations.of(context)
                           .subscriptionContinueWithStripe,
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppSemanticColors.onGradientInk,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -458,7 +459,7 @@ class _ManagePlanCard extends StatelessWidget {
                   ]),
                 ),
                 child: const Icon(Icons.sync_alt_rounded,
-                    color: Colors.white, size: 22),
+                    color: AppSemanticColors.onGradientInk, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -501,13 +502,13 @@ class _ManagePlanCard extends StatelessWidget {
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2.4,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: AlwaysStoppedAnimation<Color>(AppSemanticColors.onGradientInk),
                       ),
                     )
                   : Text(
                       AppLocalizations.of(context).subscriptionOpenDonorPortal,
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppSemanticColors.onGradientInk,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -589,7 +590,7 @@ class _StatusCard extends StatelessWidget {
                               ],
                   ),
                 ),
-                child: const Icon(Icons.favorite_outline, color: Colors.white),
+                child: const Icon(Icons.favorite_outline, color: AppSemanticColors.onGradientInk),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -701,7 +702,7 @@ class _PlanCard extends StatelessWidget {
                             child: Text(
                               AppLocalizations.of(context).subscriptionCurrent,
                               style: TextStyle(
-                                color: Colors.white,
+                                color: AppSemanticColors.onGradientInk,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w800,
                               ),

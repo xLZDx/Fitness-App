@@ -5,6 +5,7 @@ import 'package:video_player/video_player.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../form_check/state/form_check_providers.dart';
@@ -565,7 +566,7 @@ class _NoVideoFallback extends StatelessWidget {
                   ]),
                 ),
                 child: const Icon(Icons.menu_book_outlined,
-                    color: Colors.white, size: 24),
+                    color: AppSemanticColors.onGradientInk, size: 24),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -618,7 +619,7 @@ class _FormCoachCard extends StatelessWidget {
               ]),
             ),
             child: const Icon(Icons.center_focus_strong_outlined,
-                color: Colors.white),
+                color: AppSemanticColors.onGradientInk),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -680,7 +681,7 @@ class _StepsCard extends StatelessWidget {
                       child: Text(
                         '${i + 1}',
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppSemanticColors.onGradientInk,
                           fontWeight: FontWeight.w700,
                           fontSize: 12,
                         ),
@@ -808,12 +809,12 @@ class _MarkCompleteButton extends ConsumerWidget {
                 height: 18,
                 child: CircularProgressIndicator(
                   strokeWidth: 2.4,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppSemanticColors.onGradientInk),
                 ),
               ),
               const SizedBox(width: 10),
             ] else ...[
-              const Icon(Icons.check_rounded, color: Colors.white),
+              const Icon(Icons.check_rounded, color: AppSemanticColors.onGradientInk),
               const SizedBox(width: 8),
             ],
             Text(
@@ -821,7 +822,7 @@ class _MarkCompleteButton extends ConsumerWidget {
                   ? AppLocalizations.of(context).equipmentSaving
                   : AppLocalizations.of(context).equipmentMarkComplete,
               style: theme.textTheme.titleMedium?.copyWith(
-                color: Colors.white,
+                color: AppSemanticColors.onGradientInk,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -1026,7 +1027,7 @@ class _SuggestedWeightChip extends ConsumerWidget {
               suggestion.isDecrease
                   ? Icons.south_rounded
                   : Icons.north_east_rounded,
-              color: Colors.white,
+              color: AppSemanticColors.onGradientInk,
               size: 20,
             ),
           ),
@@ -1092,7 +1093,7 @@ class _CautionCard extends StatelessWidget {
                 AppPalette.auroraPink,
               ]),
             ),
-            child: const Icon(Icons.warning_amber_rounded, color: Colors.white),
+            child: const Icon(Icons.warning_amber_rounded, color: AppSemanticColors.onGradientInk),
           ),
           const SizedBox(width: 10),
           Expanded(

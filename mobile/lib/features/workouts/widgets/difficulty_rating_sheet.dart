@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/glass.dart';
 import '../data/workout_log.dart';
 
@@ -135,7 +136,7 @@ class _RatingPill extends StatelessWidget {
               Text(
                 label,
                 style: theme.textTheme.titleSmall?.copyWith(
-                  color: Colors.white,
+                  color: AppSemanticColors.onGradientInk,
                   fontWeight: FontWeight.w800,
                 ),
               ),

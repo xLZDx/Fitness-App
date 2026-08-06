@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../shared/widgets/glass.dart';
 import '../../theme/app_palette.dart';
+import '../../theme/app_semantic_colors.dart';
 import '../health_models.dart';
 import '../state/health_providers.dart';
 
@@ -98,7 +99,7 @@ class _AskCard extends StatelessWidget {
                   ]),
                 ),
                 child: const Icon(Icons.monitor_heart_outlined,
-                    color: Colors.white, size: 20),
+                    color: AppSemanticColors.onGradientInk, size: 20),
               ),
               const SizedBox(width: 10),
               Expanded(

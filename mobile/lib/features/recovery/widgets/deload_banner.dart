@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/glass.dart';
 import '../../subscription/data/subscription_models.dart';
 import '../../subscription/state/subscription_providers.dart';
@@ -47,7 +48,7 @@ class DeloadBanner extends ConsumerWidget {
                     ]),
                   ),
                   child: const Icon(Icons.bedtime_outlined,
-                      color: Colors.white, size: 20),
+                      color: AppSemanticColors.onGradientInk, size: 20),
                 ),
                 const SizedBox(width: 10),
                 Expanded(

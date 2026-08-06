@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/glass.dart';
 
 /// Day-3 nurture modal. Shown once on the user's third launch, at least
@@ -48,7 +49,7 @@ class Day3WelcomeModal extends StatelessWidget {
               ]),
             ),
             child: const Icon(Icons.favorite_outline,
-                color: Colors.white, size: 30),
+                color: AppSemanticColors.onGradientInk, size: 30),
           ),
           const SizedBox(height: 14),
           Text(

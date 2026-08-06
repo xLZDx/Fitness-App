@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../data/equipment_models.dart';
 
 /// An exercise, as a square you can recognise.
@@ -88,7 +89,7 @@ class _Fallback extends StatelessWidget {
         gradient: LinearGradient(colors: gradient),
       ),
       child: Icon(Icons.fitness_center_rounded,
-          color: Colors.white, size: size * 0.5),
+          color: AppSemanticColors.onGradientInk, size: size * 0.5),
     );
   }
 }

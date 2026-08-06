@@ -119,6 +119,38 @@ void main() {
         }
       });
 
+      test('onGradient clears AA on every aurora hue too', () {
+        // The tile stops are not the whole of the artwork. G1.2b measured the
+        // gradients actually painted in feature code and found 79 of 81
+        // resolvable stops failing with white — because every aurora hue does,
+        // not because the tile list does. A token that only cleared the ten
+        // tile stops would have left the other 69 call sites unfixed.
+        for (final hue in const {
+          'auroraPink': AppPalette.auroraPink,
+          'auroraViolet': AppPalette.auroraViolet,
+          'auroraBlue': AppPalette.auroraBlue,
+          'auroraTeal': AppPalette.auroraTeal,
+          'auroraLime': AppPalette.auroraLime,
+          'auroraPeach': AppPalette.auroraPeach,
+        }.entries) {
+          expect(contrast(t.onGradient, hue.value), greaterThanOrEqualTo(4.5),
+              reason: 'onGradient on ${hue.key}');
+        }
+      });
+
+      test('the ink cannot be made translucent and stay legible', () {
+        // Three call sites carried `Colors.white.withValues(alpha: 0.80..0.85)`
+        // for secondary text. Reproducing that hierarchy with a translucent ink
+        // does not work: on the violet stop it is already under the bar at 0.90.
+        // Those lines went to full opacity and now lean on size and weight.
+        Color atAlpha(double a, Color bg) =>
+            Color.alphaBlend(t.onGradient.withValues(alpha: a), bg);
+        const violet = Color(0xFF8A5BFF);
+        expect(contrast(atAlpha(1.0, violet), violet),
+            greaterThanOrEqualTo(4.5));
+        expect(contrast(atAlpha(0.90, violet), violet), lessThan(4.5));
+      });
+
       test('white would NOT clear AA on those stops', () {
         // The negative control. Without it, the assertion above says nothing
         // about whether the token was needed.
@@ -219,6 +251,17 @@ void main() {
       }
     });
 
+    test('both configurations are defined from onGradientInk', () {
+      // The const exists so ~50 `const Icon(...)` call sites stay const. That
+      // is only safe while it IS the token — if a future edit gives the two
+      // themes different inks, this is the assertion that has to be deleted
+      // first, and the deleter is the person who will find the const.
+      expect(AppSemanticColors.dark.onGradient,
+          same(AppSemanticColors.onGradientInk));
+      expect(AppSemanticColors.light.onGradient,
+          same(AppSemanticColors.onGradientInk));
+    });
+
     test('the palette no longer carries semantic values', () {
       // A guard against re-introducing the duplicate. `AppPalette` is for raw
       // brand values with no semantic role; the moment a "surface" or
@@ -247,6 +290,38 @@ void main() {
       t.takeException();
       expect(seen.textPrimary, AppSemanticColors.dark.textPrimary);
     });
+  });
+
+  test('the hardcoded whites that survived G1.2b stay accounted for', () {
+    // A tripwire, not a proof. G1.2b replaced 69 `Colors.white` uses that sat
+    // on brand artwork; 46 remain, and each was left deliberately:
+    //
+    //   * a scrim foreground — white on `Colors.black @0.30..0.65`, which is
+    //     correct and is the majority of `form_check_page.dart`'s fifteen;
+    //   * a translucent white used as a SURFACE (`color:` / `fillColor:` at
+    //     alpha 0.18–0.55), which is a surface-token question, not a
+    //     foreground one, and belongs to G1.2c;
+    //   * `exercise_thumb.dart`'s white bed under a poster, which exists so
+    //     the letterboxing on a clip rendered on flat white stays invisible;
+    //   * a `FilledButton` foreground, which should follow the button's own
+    //     scheme colour and is a G2 component question.
+    //
+    // If this number moves, one of those categories grew — or a foreground
+    // white came back onto a gradient. Read the diff before repinning it.
+    final whites = <String, int>{};
+    for (final f in Directory('lib').listSync(recursive: true)) {
+      if (f is! File || !f.path.endsWith('.dart')) continue;
+      final n = f
+          .readAsLinesSync()
+          .where((l) => !l.trimLeft().startsWith('//'))
+          .fold<int>(
+              0,
+              (a, l) =>
+                  a + RegExp(r'Colors\.white[0-9]*').allMatches(l).length);
+      if (n > 0) whites[f.path.replaceAll(r'\', '/')] = n;
+    }
+    final total = whites.values.fold<int>(0, (a, b) => a + b);
+    expect(total, 46, reason: 'per file: $whites');
   });
 
   group('lerp', () {

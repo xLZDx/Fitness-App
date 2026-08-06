@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../equipment/data/catalog_labels.dart';
@@ -268,7 +269,7 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
                             fontWeight:
                                 selected ? FontWeight.w700 : FontWeight.w600,
                             color: selected
-                                ? Colors.white
+                                ? AppSemanticColors.onGradientInk
                                 : theme.colorScheme.onSurface,
                           ),
                         ),
@@ -447,7 +448,7 @@ class _OfflinePrefetchCard extends ConsumerWidget {
               ]),
             ),
             child: const Icon(Icons.download_for_offline_outlined,
-                color: Colors.white),
+                color: AppSemanticColors.onGradientInk),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -567,7 +568,7 @@ class _QuickTool extends StatelessWidget {
               borderRadius: BorderRadius.circular(11),
               gradient: LinearGradient(colors: gradient),
             ),
-            child: Icon(icon, color: Colors.white, size: 20),
+            child: Icon(icon, color: AppSemanticColors.onGradientInk, size: 20),
           ),
           const SizedBox(width: 10),
           Expanded(

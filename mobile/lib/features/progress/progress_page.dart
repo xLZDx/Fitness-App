@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import '../workouts/data/workout_log.dart';
 import '../workouts/state/workout_log_providers.dart';
@@ -255,8 +256,8 @@ class _RecentLogCard extends StatelessWidget {
                     AppPalette.tileGradients.length],
               ),
             ),
-            child:
-                const Icon(Icons.check_rounded, color: Colors.white, size: 22),
+            child: const Icon(Icons.check_rounded,
+                color: AppSemanticColors.onGradientInk, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import 'state/ai_planner_providers.dart';
 import '../equipment/widgets/exercise_thumb.dart';
@@ -72,7 +73,7 @@ class AiPlannerPage extends ConsumerWidget {
                                 ]),
                               ),
                               child: const Icon(Icons.auto_awesome,
-                                  color: Colors.white),
+                                  color: AppSemanticColors.onGradientInk),
                             ),
                             const SizedBox(width: 12),
                             Expanded(

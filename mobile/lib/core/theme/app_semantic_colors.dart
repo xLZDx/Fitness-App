@@ -128,14 +128,31 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   /// worst case).
   final Color onAccent;
 
-  /// Content placed on an `AppPalette.tileGradients` tile.
+  /// Content placed on brand artwork — an `AppPalette.tileGradients` tile, an
+  /// aurora gradient, or a solid aurora hue.
   ///
-  /// Separate from [onAccent] because the gradients are the **same in both
-  /// themes** — they are brand artwork, not a theme surface — so what sits on
-  /// them cannot flip. Ink scores 4.44–11.57 across the ten stops and white
-  /// scores 1.27–2.56, i.e. white fails on every one of them. The 109
-  /// `Colors.white` uses in feature code are that failure.
+  /// Separate from [onAccent] because the artwork is the **same in both
+  /// themes** — it is not a theme surface — so what sits on it cannot flip.
+  ///
+  /// Measured against all six aurora hues and all ten tile stops: ink scores
+  /// 4.71 at worst, white scores 1.27–4.18 and so fails the 4.5:1 text bar on
+  /// every single one, and the 3:1 non-text bar on thirteen of the sixteen.
+  /// The `Colors.white` uses sitting on that artwork in feature code are that
+  /// failure.
   final Color onGradient;
+
+  /// The value of [onGradient], as a compile-time constant.
+  ///
+  /// Call sites want `const Icon(..., color: ...)`. Reading the token through
+  /// `context.colors` would de-const roughly fifty widgets to express a value
+  /// that, by the paragraph above, is the same in every theme — paying a
+  /// rebuild cost for a choice that cannot vary.
+  ///
+  /// This is not a second source of truth: both configurations below are
+  /// defined FROM it, and a test asserts they still are. The day the artwork
+  /// stops being theme-invariant, that test is what has to be deleted first,
+  /// and this constant is what the deleter will find.
+  static const onGradientInk = Color(0xFF0B0918);
 
   /// Dark 12.77:1, light 5.20:1.
   final Color success;
@@ -185,7 +202,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     accentPrimary: Color(0xFF8A5BFF),
     accentSecondary: Color(0xFFFF6FB5),
     onAccent: Color(0xFF0B0918),
-    onGradient: Color(0xFF0B0918),
+    onGradient: onGradientInk,
     success: Color(0xFF2BE5C2),
     warning: Color(0xFFFFB37C),
     danger: Color(0xFFFF5A6E),
@@ -213,7 +230,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     accentPrimary: Color(0xFF5A25D0),
     accentSecondary: Color(0xFFC21E6E),
     onAccent: Color(0xFFFFFFFF),
-    onGradient: Color(0xFF0B0918),
+    onGradient: onGradientInk,
     success: Color(0xFF0B6B58),
     warning: Color(0xFF9A4A05),
     danger: Color(0xFFC0243C),

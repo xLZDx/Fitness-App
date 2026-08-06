@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 
 /// "About / Mission" page. States the mission in plain language, lists
@@ -76,7 +77,7 @@ class AboutPage extends StatelessWidget {
                     ]),
                   ),
                   child: const Icon(Icons.fitness_center,
-                      color: Colors.white, size: 30),
+                      color: AppSemanticColors.onGradientInk, size: 30),
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -203,7 +204,7 @@ class _PrincipleCard extends StatelessWidget {
                 AppPalette.auroraBlue,
               ]),
             ),
-            child: Icon(p.icon, color: Colors.white, size: 20),
+            child: Icon(p.icon, color: AppSemanticColors.onGradientInk, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(

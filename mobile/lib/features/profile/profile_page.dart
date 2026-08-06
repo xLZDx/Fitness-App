@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import '../auth/state/auth_providers.dart';
 import '../progress_photos/state/progress_photos_providers.dart';
@@ -52,8 +53,8 @@ class ProfilePage extends ConsumerWidget {
                       AppPalette.auroraPeach,
                     ]),
                   ),
-                  child:
-                      const Icon(Icons.person, color: Colors.white, size: 36),
+                  child: const Icon(Icons.person,
+                      color: AppSemanticColors.onGradientInk, size: 36),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -228,7 +229,8 @@ class ProfilePage extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(14),
                 gradient: LinearGradient(colors: gradient),
               ),
-              child: Icon(icon, color: Colors.white, size: 22),
+              child:
+                  Icon(icon, color: AppSemanticColors.onGradientInk, size: 22),
             ),
             const SizedBox(width: 14),
             Expanded(

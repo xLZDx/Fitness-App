@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
@@ -117,7 +118,7 @@ class _PlanCard extends StatelessWidget {
                   ]),
                 ),
                 child: const Icon(Icons.star_rounded,
-                    color: Colors.white),
+                    color: AppSemanticColors.onGradientInk),
               ),
               const SizedBox(width: 12),
               Expanded(

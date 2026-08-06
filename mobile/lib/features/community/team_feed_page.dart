@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/demo_data_banner.dart';
 import '../../shared/widgets/glass.dart';
 import '../subscription/data/subscription_models.dart';
@@ -101,7 +102,8 @@ class _LockedHero extends StatelessWidget {
                     AppPalette.auroraPink,
                   ]),
                 ),
-                child: const Icon(Icons.lock_outline, color: Colors.white),
+                child: const Icon(Icons.lock_outline,
+                    color: AppSemanticColors.onGradientInk),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -159,7 +161,7 @@ class _PostCard extends ConsumerWidget {
                 child: Text(
                   post.authorName.isEmpty ? '?' : post.authorName[0],
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppSemanticColors.onGradientInk,
                     fontWeight: FontWeight.w800,
                   ),
                 ),

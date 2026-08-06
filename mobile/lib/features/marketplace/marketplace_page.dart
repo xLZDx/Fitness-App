@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/demo_data_banner.dart';
 import '../../shared/widgets/glass.dart';
 import 'data/coach_listing.dart';
@@ -85,7 +86,7 @@ class _CoachCard extends ConsumerWidget {
                       ? '?'
                       : coach.displayName[0],
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppSemanticColors.onGradientInk,
                     fontWeight: FontWeight.w800,
                   ),
                 ),

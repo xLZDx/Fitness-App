@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import 'data/donor_wall_entry.dart';
 import 'state/donor_wall_providers.dart';
@@ -40,7 +41,7 @@ class DonorWallPage extends ConsumerWidget {
                     ]),
                   ),
                   child: const Icon(Icons.celebration_outlined,
-                      color: Colors.white),
+                      color: AppSemanticColors.onGradientInk),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -177,7 +178,8 @@ class _DonorTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(13),
               gradient: LinearGradient(colors: _gradient),
             ),
-            child: Icon(_icon, color: Colors.white, size: 22),
+            child:
+                Icon(_icon, color: AppSemanticColors.onGradientInk, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(

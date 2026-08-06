@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/glass.dart';
 
 /// Pure plate-loading solver. Greedy from the largest available plate down;
@@ -139,7 +140,7 @@ class _PlateCalculatorState extends State<PlateCalculator> {
                 Text(
                   AppLocalizations.of(context).workoutsPerSide,
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.85),
+                    color: AppSemanticColors.onGradientInk,
                     letterSpacing: 0.6,
                     fontWeight: FontWeight.w700,
                   ),
@@ -154,7 +155,7 @@ class _PlateCalculatorState extends State<PlateCalculator> {
                               : '${p}kg')
                           .join(' + '),
                   style: theme.textTheme.headlineSmall?.copyWith(
-                    color: Colors.white,
+                    color: AppSemanticColors.onGradientInk,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -165,7 +166,7 @@ class _PlateCalculatorState extends State<PlateCalculator> {
                       : 'Loaded total: ${load.totalLoaded.toStringAsFixed(2)} kg '
                           '(${load.residualKg.toStringAsFixed(2)} kg short)',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.85),
+                    color: AppSemanticColors.onGradientInk,
                   ),
                 ),
               ],

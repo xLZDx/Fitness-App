@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/demo_data_banner.dart';
 import '../../shared/widgets/glass.dart';
 import '../subscription/data/subscription_models.dart';
@@ -187,7 +188,7 @@ class _PhotoTile extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            const Center(child: Icon(Icons.image, color: Colors.white, size: 30)),
+            const Center(child: Icon(Icons.image, color: AppSemanticColors.onGradientInk, size: 30)),
             Positioned(
               left: 6,
               right: 6,
@@ -196,7 +197,7 @@ class _PhotoTile extends StatelessWidget {
                 _date(context, photo.takenAt),
                 textAlign: TextAlign.center,
                 style: theme.textTheme.labelSmall
-                    ?.copyWith(color: Colors.white, fontWeight: FontWeight.w700),
+                    ?.copyWith(color: AppSemanticColors.onGradientInk, fontWeight: FontWeight.w700),
               ),
             ),
           ],

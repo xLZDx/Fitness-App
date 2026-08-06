@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/glass.dart';
 import '../../equipment/data/equipment_models.dart';
 import '../data/set_session.dart';
@@ -256,11 +257,11 @@ class _Primary extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: Colors.white, size: 22),
+            Icon(icon, color: AppSemanticColors.onGradientInk, size: 22),
             const SizedBox(width: 8),
             Text(label,
                 style: theme.textTheme.titleMedium?.copyWith(
-                    color: Colors.white, fontWeight: FontWeight.w800)),
+                    color: AppSemanticColors.onGradientInk, fontWeight: FontWeight.w800)),
           ],
         ),
       ),

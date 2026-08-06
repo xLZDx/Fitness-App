@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 
 class SplashPage extends StatefulWidget {
@@ -102,7 +103,7 @@ class _LogoOrb extends StatelessWidget {
           ),
         ],
       ),
-      child: const Icon(Icons.fitness_center, size: 60, color: Colors.white),
+      child: const Icon(Icons.fitness_center, size: 60, color: AppSemanticColors.onGradientInk),
     );
   }
 }

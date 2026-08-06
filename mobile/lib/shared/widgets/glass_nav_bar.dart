@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../core/theme/app_semantic_colors.dart';
 
 class GlassNavBar extends StatelessWidget {
   const GlassNavBar({
@@ -91,7 +92,7 @@ class GlassNavBar extends StatelessWidget {
                                     ? FontWeight.w700
                                     : FontWeight.w500,
                                 color: selected
-                                    ? Colors.white
+                                    ? AppSemanticColors.onGradientInk
                                     : Theme.of(context)
                                         .colorScheme
                                         .onSurface
@@ -109,7 +110,7 @@ class GlassNavBar extends StatelessWidget {
                                       key: ValueKey(selected),
                                       size: 24,
                                       color: selected
-                                          ? Colors.white
+                                          ? AppSemanticColors.onGradientInk
                                           : Theme.of(context)
                                               .colorScheme
                                               .onSurface

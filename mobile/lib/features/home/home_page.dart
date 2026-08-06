@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/health/widgets/health_sync_card.dart';
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../moments/data/moment.dart';
@@ -177,7 +178,7 @@ class _GradientTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(13),
         gradient: LinearGradient(colors: gradient),
       ),
-      child: Icon(icon, color: Colors.white),
+      child: Icon(icon, color: AppSemanticColors.onGradientInk),
     );
   }
 }
@@ -306,8 +307,8 @@ class _UpcomingCard extends StatelessWidget {
                         AppPalette.tileGradients.length],
               ),
             ),
-            child:
-                const Icon(Icons.event_outlined, color: Colors.white, size: 22),
+            child: const Icon(Icons.event_outlined,
+                color: AppSemanticColors.onGradientInk, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -535,12 +536,13 @@ class _HeroCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.qr_code_scanner_rounded, color: Colors.white),
+                  Icon(Icons.qr_code_scanner_rounded,
+                      color: AppSemanticColors.onGradientInk),
                   SizedBox(width: 10),
                   Text(
                     AppLocalizations.of(context).homeScanEquipment,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppSemanticColors.onGradientInk,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -624,7 +626,8 @@ class _AiPlanCard extends StatelessWidget {
                 AppPalette.auroraBlue,
               ]),
             ),
-            child: const Icon(Icons.auto_awesome, color: Colors.white),
+            child: const Icon(Icons.auto_awesome,
+                color: AppSemanticColors.onGradientInk),
           ),
           const SizedBox(width: 12),
           Expanded(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 
 /// Section title rendered above each step's body. Optional [icon] and
 /// [iconGradient] render a small gradient tile to the left.
@@ -43,7 +44,7 @@ class StepTitle extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(icon, color: Colors.white, size: 22),
+            child: Icon(icon, color: AppSemanticColors.onGradientInk, size: 22),
           ),
           const SizedBox(width: 12),
         ],
@@ -202,7 +203,9 @@ class _ChoicePill extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? Colors.white : theme.colorScheme.onSurface,
+            color: selected
+                ? AppSemanticColors.onGradientInk
+                : theme.colorScheme.onSurface,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
             fontSize: 14,
           ),

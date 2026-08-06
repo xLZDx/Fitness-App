@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/glass.dart';
 import '../../auth/state/auth_providers.dart';
 import '../data/equipment_report.dart';
@@ -163,7 +164,7 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
                 onPressed: _submitting ? null : _submit,
                 style: FilledButton.styleFrom(
                   backgroundColor: AppPalette.auroraPeach,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppSemanticColors.onGradientInk,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -174,8 +175,8 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.4,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              AppSemanticColors.onGradientInk),
                         ),
                       )
                     : Text(AppLocalizations.of(context)
