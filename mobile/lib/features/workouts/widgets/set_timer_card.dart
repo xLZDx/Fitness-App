@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
+import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/glass.dart';
 import '../../equipment/data/equipment_models.dart';
 import '../data/set_session.dart';
@@ -203,11 +204,11 @@ class _MuteButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final muted = ref.watch(setCuesMutedProvider);
-    return IconButton(
+    return AppIconButton(
       key: const Key('workout.set_timer.mute'),
-      visualDensity: VisualDensity.compact,
+      size: AppButtonSize.compact,
       tooltip: AppLocalizations.of(context).timerSounds,
-      icon: Icon(muted ? Icons.volume_off_rounded : Icons.volume_up_rounded),
+      icon: muted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
       onPressed: () =>
           ref.read(setCuesMutedProvider.notifier).state = !muted,
     );
@@ -218,11 +219,11 @@ class _VoiceButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final on = ref.watch(setVoiceEnabledProvider);
-    return IconButton(
+    return AppIconButton(
       key: const Key('workout.set_timer.voice'),
-      visualDensity: VisualDensity.compact,
+      size: AppButtonSize.compact,
       tooltip: AppLocalizations.of(context).timerVoice,
-      icon: Icon(on ? Icons.record_voice_over_rounded : Icons.voice_over_off),
+      icon: on ? Icons.record_voice_over_rounded : Icons.voice_over_off,
       onPressed: () =>
           ref.read(setVoiceEnabledProvider.notifier).state = !on,
     );

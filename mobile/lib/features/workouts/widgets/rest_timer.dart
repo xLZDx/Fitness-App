@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
+import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/glass.dart';
 import '../state/rest_timer_providers.dart';
 import '../../../core/theme/app_semantic_colors.dart';
@@ -149,12 +150,12 @@ class _RestTimerState extends ConsumerState<RestTimer> {
                 ),
               ),
               if (!done)
-                IconButton(
+                AppIconButton(
                   key: const Key('rest-timer.pause'),
                   tooltip: rest.isPaused ? l.restTimerResume : l.workoutsPause,
-                  icon: Icon(rest.isPaused
+                  icon: rest.isPaused
                       ? Icons.play_arrow_rounded
-                      : Icons.pause_rounded),
+                      : Icons.pause_rounded,
                   onPressed: () {
                     final c = ref.read(restTimerProvider.notifier);
                     rest.isPaused ? c.resume() : c.pause();

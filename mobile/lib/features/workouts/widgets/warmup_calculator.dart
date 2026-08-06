@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
+import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/glass.dart';
 
 /// Pure ramp calculator. Returns 4 warm-up sets at 40 / 60 / 75 / 90% of
@@ -91,10 +92,10 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
                   ),
                   child: Row(
                     children: [
-                      IconButton(
-                        visualDensity: VisualDensity.compact,
-                        iconSize: 18,
-                        icon: const Icon(Icons.remove_rounded),
+                      AppIconButton(
+                        size: AppButtonSize.compact,
+                        tooltip: AppLocalizations.of(context).commonDecrease,
+                        icon: Icons.remove_rounded,
                         onPressed: () => setState(
                             () => _working = (_working - 2.5).clamp(0, 999)),
                       ),
@@ -111,10 +112,10 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
                           ),
                         ),
                       ),
-                      IconButton(
-                        visualDensity: VisualDensity.compact,
-                        iconSize: 18,
-                        icon: const Icon(Icons.add_rounded),
+                      AppIconButton(
+                        size: AppButtonSize.compact,
+                        tooltip: AppLocalizations.of(context).commonIncrease,
+                        icon: Icons.add_rounded,
                         onPressed: () => setState(() => _working += 2.5),
                       ),
                     ],

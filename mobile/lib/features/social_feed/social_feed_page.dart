@@ -140,12 +140,8 @@ class _PostCard extends ConsumerWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: Icon(
-                  post.likedByMe ? Icons.favorite : Icons.favorite_outline,
-                  color: post.likedByMe ? AppPalette.auroraPink : null,
-                ),
+              _LikeButton(
+                likedByMe: post.likedByMe,
                 onPressed: () async {
                   final me = ref.read(authUserProvider).valueOrNull;
                   if (me == null) return;
@@ -170,5 +166,35 @@ class _PostCard extends ConsumerWidget {
     if (d.inMinutes < 60) return '${d.inMinutes}m';
     if (d.inHours < 24) return '${d.inHours}h';
     return '${d.inDays}d';
+  }
+}
+
+/// Not [AppIconButton]: liking is a toggled *state* colour (auroraPink once
+/// liked), not one of [AppButtonTone]'s semantic categories (normal /
+/// destructive / brand). Stretching `destructive` to mean "this happens to
+/// also render reddish" would be the wrong fix — it would say "this is an
+/// irreversible action" about a button that toggles freely. This mirrors
+/// [AppIconButton]'s `compact` geometry (`VisualDensity.compact` + 18px
+/// glyph) by hand rather than invent a tone the rest of the app has no other
+/// use for.
+class _LikeButton extends StatelessWidget {
+  const _LikeButton({required this.likedByMe, required this.onPressed});
+
+  final bool likedByMe;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return IconButton(
+      visualDensity: VisualDensity.compact,
+      iconSize: 18,
+      tooltip: likedByMe ? l10n.socialfeedUnlike : l10n.socialfeedLike,
+      icon: Icon(
+        likedByMe ? Icons.favorite : Icons.favorite_outline,
+        color: likedByMe ? AppPalette.auroraPink : null,
+      ),
+      onPressed: onPressed,
+    );
   }
 }

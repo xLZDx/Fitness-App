@@ -211,9 +211,9 @@ class _InjuryCard extends StatelessWidget {
                     style: theme.textTheme.titleSmall
                         ?.copyWith(fontWeight: FontWeight.w700)),
               ),
-              IconButton(
+              AppIconButton(
                 onPressed: onRemove,
-                icon: const Icon(Icons.delete_outline),
+                icon: Icons.delete_outline,
                 tooltip: l10n.injuriesRemove,
               ),
             ],

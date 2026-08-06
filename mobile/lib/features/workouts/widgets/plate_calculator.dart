@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
+import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/glass.dart';
 
 /// Pure plate-loading solver. Greedy from the largest available plate down;
@@ -231,10 +232,10 @@ class _StepperPill extends StatelessWidget {
       ),
       child: Row(
         children: [
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            iconSize: 18,
-            icon: const Icon(Icons.remove_rounded),
+          AppIconButton(
+            size: AppButtonSize.compact,
+            tooltip: AppLocalizations.of(context).commonDecrease,
+            icon: Icons.remove_rounded,
             onPressed: () => onChanged(value - step),
           ),
           Expanded(
@@ -248,10 +249,10 @@ class _StepperPill extends StatelessWidget {
               ),
             ),
           ),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            iconSize: 18,
-            icon: const Icon(Icons.add_rounded),
+          AppIconButton(
+            size: AppButtonSize.compact,
+            tooltip: AppLocalizations.of(context).commonIncrease,
+            icon: Icons.add_rounded,
             onPressed: () => onChanged(value + step),
           ),
         ],

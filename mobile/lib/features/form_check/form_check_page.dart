@@ -9,6 +9,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import 'data/cue_text.dart';
 import 'data/form_classifier.dart';
@@ -204,10 +205,10 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
       appBar: GlassAppBar(
         title: AppLocalizations.of(context).formcheckFormCoach,
         actions: [
-          IconButton(
-            icon: Icon(ref.watch(showSkeletonProvider)
+          AppIconButton(
+            icon: ref.watch(showSkeletonProvider)
                 ? Icons.accessibility_new
-                : Icons.accessibility_outlined),
+                : Icons.accessibility_outlined,
             tooltip: AppLocalizations.of(context).formcheckShowSkeleton,
             onPressed: () {
               final on = !ref.read(showSkeletonProvider);
@@ -217,8 +218,8 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
               if (!on) ref.read(latestPoseFrameProvider.notifier).state = null;
             },
           ),
-          IconButton(
-            icon: Icon(muted ? Icons.volume_off : Icons.volume_up),
+          AppIconButton(
+            icon: muted ? Icons.volume_off : Icons.volume_up,
             tooltip: muted
                 ? AppLocalizations.of(context).formcheckUnmuteCues
                 : AppLocalizations.of(context).formcheckMuteCues,

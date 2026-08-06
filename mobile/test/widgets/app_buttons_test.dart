@@ -266,5 +266,59 @@ void main() {
       expect(find.byIcon(Icons.close), findsNothing);
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
+
+    testWidgets('regular tints nothing -- the theme colours the icon',
+        (t) async {
+      // The default IconButton has no `color:` override, so a null here
+      // (rather than a hardcoded onSurface) is what lets a disabled/pressed
+      // theme state come through untouched.
+      await pump(
+          t,
+          const AppIconButton(
+              icon: Icons.close, tooltip: 'Close', onPressed: null));
+      final btn = t.widget<IconButton>(find.byType(IconButton));
+      expect(btn.color, isNull);
+    });
+
+    testWidgets('destructive paints the scheme error colour', (t) async {
+      // The subscription page's copy-error button: one of twelve IconButton
+      // call sites, the only one that coloured its icon at all.
+      await pump(
+          t,
+          const AppIconButton(
+              icon: Icons.copy_rounded,
+              tooltip: 'Copy error',
+              tone: AppButtonTone.destructive,
+              onPressed: null));
+      final btn = t.widget<IconButton>(find.byType(IconButton));
+      expect(btn.color, AppTheme.dark().colorScheme.error);
+    });
+
+    testWidgets('compact tightens the touch target AND shrinks the glyph',
+        (t) async {
+      // The shape seven of the twelve call sites already used by hand
+      // (VisualDensity.compact + an 18px icon) for controls sitting inline
+      // next to text, rather than alone in an app bar.
+      await pump(
+          t,
+          const AppIconButton(
+              icon: Icons.add_rounded,
+              tooltip: 'Increase',
+              size: AppButtonSize.compact,
+              onPressed: null));
+      final btn = t.widget<IconButton>(find.byType(IconButton));
+      expect(btn.visualDensity, VisualDensity.compact);
+      expect(btn.iconSize, 18);
+    });
+
+    testWidgets('regular leaves both to the theme default', (t) async {
+      await pump(
+          t,
+          const AppIconButton(
+              icon: Icons.add_rounded, tooltip: 'Increase', onPressed: null));
+      final btn = t.widget<IconButton>(find.byType(IconButton));
+      expect(btn.visualDensity, isNull);
+      expect(btn.iconSize, isNull);
+    });
   });
 }

@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import 'data/subscription_models.dart';
 import 'state/subscription_providers.dart';
@@ -268,12 +269,11 @@ class _ErrorCard extends StatelessWidget {
                   ),
                 ),
               ),
-              IconButton(
+              AppIconButton(
                 tooltip: AppLocalizations.of(context).subscriptionCopyError,
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                icon: Icon(Icons.copy_rounded, size: 18, color: scheme.error),
+                tone: AppButtonTone.destructive,
+                size: AppButtonSize.compact,
+                icon: Icons.copy_rounded,
                 onPressed: () async {
                   await Clipboard.setData(
                       ClipboardData(text: _composePayload()));

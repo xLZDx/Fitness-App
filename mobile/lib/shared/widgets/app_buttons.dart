@@ -165,8 +165,18 @@ class AppTertiaryButton extends StatelessWidget {
 /// Icon-only, and therefore the one that cannot skip its label.
 ///
 /// [tooltip] is required rather than optional: an icon-only control with no
-/// accessible name is invisible to a screen reader, and twelve of the app's
-/// `IconButton`s were exactly that.
+/// accessible name is invisible to a screen reader. Of the app's 12
+/// `IconButton` call sites, five had no [tooltip] at all — a like toggle and
+/// two weight steppers, each duplicated once. `AppIconButton` cannot repeat
+/// that; there is no way to construct one without a string to announce.
+///
+/// [size] reuses [AppButtonSize]'s vocabulary, but a bare icon button has no
+/// label to make room for, so it means something narrower here: [regular] is
+/// `IconButton`'s own default footprint; [compact] tightens the touch target
+/// (`VisualDensity.compact`) AND shrinks the glyph to 18 — the shape seven of
+/// the twelve call sites already used, un-migrated, for inline controls sitting
+/// next to text (a like count, a stepper's numeric readout) rather than
+/// standing alone in an app bar.
 class AppIconButton extends StatelessWidget {
   const AppIconButton({
     super.key,
@@ -174,21 +184,36 @@ class AppIconButton extends StatelessWidget {
     required this.tooltip,
     required this.onPressed,
     this.loading = false,
+    this.tone = AppButtonTone.normal,
+    this.size = AppButtonSize.regular,
   });
 
   final IconData icon;
   final String tooltip;
   final VoidCallback? onPressed;
   final bool loading;
+  final AppButtonTone tone;
+  final AppButtonSize size;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    // `brand` has no icon-only call site today; onSurface is the correct
+    // fallback rather than adding a third colour nothing asks for.
+    final colour = switch (tone) {
+      AppButtonTone.normal => scheme.onSurface,
+      AppButtonTone.destructive => scheme.error,
+      AppButtonTone.brand => scheme.onSurface,
+    };
+    final compact = size == AppButtonSize.compact;
     return IconButton(
       onPressed: loading ? null : onPressed,
       tooltip: tooltip,
+      visualDensity: compact ? VisualDensity.compact : null,
+      iconSize: compact ? 18 : null,
+      color: tone == AppButtonTone.normal ? null : colour,
       icon: loading
-          ? _Spinner(colour: scheme.onSurface, diameter: 18)
+          ? _Spinner(colour: colour, diameter: compact ? 14 : 18)
           : Icon(icon),
     );
   }
