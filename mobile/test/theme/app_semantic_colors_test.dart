@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -191,6 +192,46 @@ void main() {
       t.takeException();
       expect(dark.extension<AppSemanticColors>(), AppSemanticColors.dark);
       expect(light.extension<AppSemanticColors>(), AppSemanticColors.light);
+    });
+
+    testWidgets('the ColorScheme agrees with the tokens', (t) async {
+      // They used to be two independent sets of the same four hex values —
+      // `AppPalette.darkSurface` and `AppSemanticColors.dark.backgroundPrimary`
+      // were both 0xFF050214, both fed this same ThemeData, and nothing linked
+      // them. Editing one would have left Material's own widgets painting a
+      // different background from every widget reading the token, with no
+      // failure anywhere. §4 rule 2.
+      for (final entry in {
+        AppTheme.dark(): AppSemanticColors.dark,
+        AppTheme.light(): AppSemanticColors.light,
+      }.entries) {
+        final scheme = entry.key.colorScheme;
+        final tokens = entry.value;
+        t.takeException();
+        expect(scheme.surface, tokens.backgroundPrimary);
+        expect(scheme.onSurface, tokens.textPrimary);
+        // `colorScheme.error` is the one a stock Material widget reaches for.
+        // Left seed-derived it was a different red from the measured `danger`,
+        // so the same meaning painted two colours depending on which widget
+        // drew it.
+        expect(scheme.error, tokens.danger);
+        expect(scheme.outline, tokens.outline);
+      }
+    });
+
+    test('the palette no longer carries semantic values', () {
+      // A guard against re-introducing the duplicate. `AppPalette` is for raw
+      // brand values with no semantic role; the moment a "surface" or
+      // "onSurface" reappears there, the two sources can drift again.
+      final src = File('lib/core/theme/app_palette.dart').readAsStringSync();
+      for (final gone in const [
+        'lightSurface =',
+        'darkSurface =',
+        'lightOnSurface =',
+        'darkOnSurface =',
+      ]) {
+        expect(src, isNot(contains(gone)), reason: gone);
+      }
     });
 
     testWidgets('context.colors resolves through the real theme', (t) async {

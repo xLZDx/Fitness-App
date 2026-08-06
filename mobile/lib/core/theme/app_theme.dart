@@ -11,11 +11,26 @@ class AppTheme {
   static ThemeData _build(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
     final tokens = isDark ? AppSemanticColors.dark : AppSemanticColors.light;
+    // Surface and onSurface come FROM the tokens rather than from a second set
+    // of constants that happened to hold the same four hex values.
+    //
+    // They did, byte for byte, and nothing linked them: `AppPalette.darkSurface`
+    // and `AppSemanticColors.dark.backgroundPrimary` were both `0xFF050214`,
+    // both fed the same `ThemeData`, and an edit to either would have left
+    // `ColorScheme.surface` and the token disagreeing with nothing to notice.
+    // Master prompt §4 rule 2 — do not duplicate a source of truth. Found by
+    // the architecture review, 2026-08-06.
     final scheme = ColorScheme.fromSeed(
       seedColor: AppPalette.auroraViolet,
       brightness: brightness,
-      surface: isDark ? AppPalette.darkSurface : AppPalette.lightSurface,
-      onSurface: isDark ? AppPalette.darkOnSurface : AppPalette.lightOnSurface,
+      surface: tokens.backgroundPrimary,
+      onSurface: tokens.textPrimary,
+      // Material's seed-derived error tone is a different red from the one that
+      // was measured against these backgrounds (dark 6.77:1, light 4.76:1). A
+      // widget reading `colorScheme.error` and one reading `colors.danger`
+      // would otherwise paint two different reds for the same meaning.
+      error: tokens.danger,
+      outline: tokens.outline,
     );
 
     final textTheme = GoogleFonts.interTextTheme().apply(

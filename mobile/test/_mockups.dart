@@ -9,6 +9,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart' show FontLoader;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fitness_app/core/theme/app_palette.dart';
+import 'package:fitness_app/core/theme/app_semantic_colors.dart';
 import 'package:fitness_app/shared/widgets/glass.dart';
 
 const out =
@@ -896,8 +897,12 @@ Future<void> shoot(WidgetTester tester, String name, Widget screen,
   // Google Fonts the moment it is called, and a test has no network. Colours
   // here are the shipped ones; the letterforms in these PNGs are the
   // platform's, so judge the layout and the colour, not the typeface.
-  final onSurface =
-      dark ? AppPalette.darkOnSurface : AppPalette.lightOnSurface;
+  // Reads the tokens, which is where these four values live now. `AppPalette`
+  // used to carry byte-identical copies of them and no longer does — a mockup
+  // painted from a second source of truth would drift from the app it claims
+  // to preview.
+  final tokens = dark ? AppSemanticColors.dark : AppSemanticColors.light;
+  final onSurface = tokens.textPrimary;
   final theme = ThemeData(
     brightness: brightness,
     colorScheme: ColorScheme.fromSeed(
@@ -905,8 +910,9 @@ Future<void> shoot(WidgetTester tester, String name, Widget screen,
       brightness: brightness,
     ).copyWith(
       onSurface: onSurface,
-      surface: dark ? AppPalette.darkSurface : AppPalette.lightSurface,
+      surface: tokens.backgroundPrimary,
     ),
+    extensions: <ThemeExtension<dynamic>>[tokens],
     useMaterial3: true,
     fontFamily: 'MockSans',
     fontFamilyFallback: const ['MockSansBold'],

@@ -16,9 +16,15 @@ class AppPalette {
     [Color(0xFF8A5BFF), Color(0xFFFF6FB5)],
   ];
 
-  static const lightSurface = Color(0xFFEDE3F8);
-  static const darkSurface = Color(0xFF050214);
-
-  static const lightOnSurface = Color(0xFF131027);
-  static const darkOnSurface = Color(0xFFF1ECFF);
+  // `lightSurface` / `darkSurface` / `lightOnSurface` / `darkOnSurface` used to
+  // live here. They were byte-identical duplicates of
+  // `AppSemanticColors.{light,dark}.backgroundPrimary` and `.textPrimary`, with
+  // no link between the two — and both fed the same `ThemeData`, so editing one
+  // would have left them silently disagreeing. Deleted rather than made to
+  // reference the tokens, because a constant whose only job is to forward
+  // another constant is one more place to look.
+  //
+  // What belongs in THIS file: raw brand values with no semantic role — the
+  // aurora hues and the tile gradients above. What a colour MEANS lives in
+  // `app_semantic_colors.dart`.
 }
