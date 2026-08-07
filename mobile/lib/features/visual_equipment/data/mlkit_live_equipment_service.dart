@@ -11,6 +11,8 @@ import 'package:path_provider/path_provider.dart';
 import '../../../core/camera/camera_session.dart';
 import 'live_equipment_service.dart';
 import 'live_recognition.dart';
+import 'machine_text_anchor.dart';
+import 'mlkit_text_recogniser.dart';
 import 'visual_equipment_match.dart';
 import 'visual_equipment_service.dart' show VisualEquipmentException;
 
@@ -28,11 +30,36 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
     required this.session,
     this.modelAssetPath = 'assets/models/equipment_v1.tflite',
     RecognitionSmoother? smoother,
+    this.textRecogniser,
+    this.catalogue = const {},
+    this.ocrEveryNthFrame = 8,
   }) : _smoother = smoother ?? RecognitionSmoother();
 
   final CameraSession session;
   final String modelAssetPath;
   final RecognitionSmoother _smoother;
+
+  /// B5b, live. Null keeps the old behaviour exactly: classifier only.
+  ///
+  /// Measured on the operator's 30 gym photos: the machine's printed name
+  /// identifies 18 of the 18 gradeable frames, the classifier 5. In live mode
+  /// that gap matters more, not less — the user is standing in front of the
+  /// machine with the shroud in view.
+  final MachineTextRecogniser? textRecogniser;
+
+  /// `equipmentId -> display name`. Passed in so the anchor cannot name a
+  /// machine the catalogue has no page for.
+  final Map<String, String> catalogue;
+
+  /// OCR is a SECOND ML Kit call per frame, on a path that already drops
+  /// frames to keep up (`_busy`). Running it on every frame would roughly
+  /// double the cost of live mode for no gain: a decal does not move, so
+  /// reading it eight times a second buys nothing over reading it once.
+  ///
+  /// 8 at the labeler's real cadence is well under a second to first read.
+  final int ocrEveryNthFrame;
+
+  int _frameCount = 0;
 
   /// Same map as the photo path: model label -> catalog equipmentId.
   static const _kLabelMap = <String, String>{
@@ -111,10 +138,66 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
         );
   }
 
+  /// Reads the machine's printed name off a live frame.
+  ///
+  /// Returns a settled [LiveRecognition] ONLY when the reading names exactly
+  /// one machine; null for everything else — no recogniser configured, not an
+  /// OCR frame this tick, no text, text that named nothing we know, and text
+  /// that named several machines. Every one of those falls through to the
+  /// classifier, which is the point: the anchor adds answers, it never removes
+  /// them.
+  ///
+  /// Its own try/catch, deliberately swallowing. A text-recognition fault must
+  /// not reach the caller's `PlatformException` handler, which detaches live
+  /// mode outright — that handler is for a broken LABELER, where every
+  /// subsequent frame would fail too. OCR is additive; losing it should cost
+  /// the anchor, not the feature.
+  Future<LiveRecognition?> _anchorFromFrame(InputImage input) async {
+    final recogniser = textRecogniser;
+    if (recogniser == null || catalogue.isEmpty) return null;
+    // Counted per frame, not per OCR attempt, so the cadence is in frames the
+    // camera actually delivered.
+    if (_frameCount++ % ocrEveryNthFrame != 0) return null;
+    try {
+      final text = await recogniser.readFrame(input);
+      if (text.trim().isEmpty) return null;
+      final hits = matchMachineText(text, catalogue: catalogue);
+      // Exactly one, or nothing. Several candidates means the text could not
+      // decide, and resolving that by taking the first is the defect the photo
+      // path returns null to avoid.
+      if (hits.length != 1) return null;
+      final hit = hits.single;
+      return LiveRecognition(
+        equipmentId: hit.equipmentId,
+        confidence: hit.confidence,
+        // 1.0 rather than a vote share: nothing was voted on. Reporting a
+        // fraction of a window that never ran would be a number we invented.
+        agreement: 1,
+        settled: true,
+      );
+    } catch (e) {
+      debugPrint('live text anchor failed, continuing without it: $e');
+      return null;
+    }
+  }
+
   Future<void> _onFrame(InputImage input) async {
     if (_busy || !_running) return;
     _busy = true;
     try {
+      // B5b — the printed name, tried first and only every Nth frame.
+      //
+      // A hit here is emitted as SETTLED immediately and bypasses the
+      // smoother. The smoother exists because a 62%-top-1 classifier flickers
+      // between candidates frame to frame; a name printed on the shroud does
+      // not flicker, and making the user wait six frames for a vote on
+      // something already read in full would be latency for its own sake.
+      final anchored = await _anchorFromFrame(input);
+      if (anchored != null) {
+        if (!_ctrl.isClosed) _ctrl.add(anchored);
+        return;
+      }
+
       final labels = await _labeler!.processImage(input);
       VisualMatch? top;
       for (final l in labels) {

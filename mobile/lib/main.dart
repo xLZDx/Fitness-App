@@ -434,6 +434,20 @@ Future<void> main() async {
         liveEquipmentServiceProvider.overrideWith((ref) {
           final svc = MlKitLiveEquipmentService(
             session: ref.watch(scanCameraSessionProvider),
+            // B5b, live. Reads the machine's printed name off the viewfinder
+            // every 8th frame and answers immediately when it names exactly
+            // one machine. This is where the anchor is worth the most: the
+            // user is standing in front of the shroud with the camera on it.
+            //
+            // Both are null/empty until the catalogue loads, and the service
+            // treats that as "no anchor" and runs the classifier alone — the
+            // same standing-down it does everywhere else.
+            textRecogniser: ref.watch(machineTextRecogniserProvider),
+            catalogue: {
+              for (final e in ref.watch(equipmentListProvider).valueOrNull ??
+                  const [])
+                e.id: e.name,
+            },
           );
           ref.onDispose(svc.dispose);
           return svc;

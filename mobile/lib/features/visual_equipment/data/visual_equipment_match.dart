@@ -3,16 +3,39 @@
 /// When the user takes a photo of a machine, an on-device classifier
 /// returns the top-K candidate equipmentIds. We persist the user's
 /// pick + (optional) ground-truth label so we can retrain.
+/// Where a match came from. Not decoration: it decides what the UI is allowed
+/// to SAY about the match.
+///
+/// [labelHint] is filled by both sources and means different things in each.
+/// From the classifier it is a raw model label (`treadmill`, `bench`); from the
+/// text anchor it is a phrase read off the machine (`abduction adduction`).
+/// Rendering the first as "read on the machine" would be a straight lie, and
+/// nothing in the value itself distinguishes them — hence this field.
+enum MatchSource {
+  /// A model's guess from the image. `labelHint` is its internal label.
+  classifier,
+
+  /// Read from text printed on the machine. `labelHint` is that text, and is
+  /// worth showing: an identification the user can check beats one they have
+  /// to trust.
+  printedText,
+}
+
 class VisualMatch {
   const VisualMatch({
     required this.equipmentId,
     required this.confidence,
     this.labelHint,
+    this.source = MatchSource.classifier,
   });
 
   final String equipmentId;
   final double confidence;
   final String? labelHint;
+
+  /// Defaults to [MatchSource.classifier] so every existing call site keeps
+  /// its current meaning, and only the anchor has to opt in.
+  final MatchSource source;
 }
 
 /// Pure score post-processor. Drops candidates below [minConfidence], sorts

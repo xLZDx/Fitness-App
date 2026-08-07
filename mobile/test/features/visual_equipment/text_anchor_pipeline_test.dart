@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_mlkit_commons/google_mlkit_commons.dart' show InputImage;
 
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
@@ -39,6 +40,10 @@ class _RecordingClassifier implements VisualEquipmentService {
 class _BrokenRecogniser implements MachineTextRecogniser {
   @override
   Future<String> readText(String path) async => throw Exception('no OCR model');
+
+  @override
+  Future<String> readFrame(InputImage input) async =>
+      throw Exception('no OCR model');
 
   @override
   Future<void> dispose() async {}

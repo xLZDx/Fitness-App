@@ -17,7 +17,10 @@ import 'package:fitness_app/features/visual_equipment/data/live_equipment_servic
 import 'package:fitness_app/features/visual_equipment/data/recognition_history.dart';
 import 'package:fitness_app/features/visual_equipment/data/scan_outcome.dart';
 import 'package:fitness_app/features/visual_equipment/state/recognition_history_providers.dart';
+import 'package:fitness_app/features/equipment/data/equipment_models.dart';
+import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/visual_equipment/data/live_recognition.dart';
+import 'package:fitness_app/features/visual_equipment/data/mlkit_text_recogniser.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_match.dart';
 import 'package:fitness_app/features/visual_equipment/state/live_equipment_providers.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_service.dart';
@@ -454,6 +457,70 @@ void main() {
       expect(find.text('leg press'), findsOneWidget);
       expect(find.text('80% confidence'), findsOneWidget);
       expect(find.text('treadmill'), findsOneWidget);
+      // The classifier fills labelHint too, with its own internal label. That
+      // must never be captioned as something read off the machine.
+      expect(find.textContaining('Read on the machine'), findsNothing);
+    });
+
+    testWidgets('a match read off the machine says so, and shows the phrase',
+        (tester) async {
+      // B5b. The whole value of the text anchor to a USER is that the
+      // identification is checkable: they can look at the shroud and see the
+      // same words. Without this the anchor is just a silently better guess.
+      final container = await pumpScan(tester, overrides: [
+        // The classifier would say `treadmill` for this machine — that is what
+        // v1 actually did to the operator's abduction machine, at 0.892.
+        visualEquipmentServiceProvider.overrideWithValue(
+          MockVisualEquipmentService(fixedResults: const [
+            VisualMatch(equipmentId: 'treadmill', confidence: 0.89),
+          ]),
+        ),
+        machineTextRecogniserProvider.overrideWithValue(
+          FakeMachineTextRecogniser(
+              'NAUTILUS\nINSPIRATION\nABDUCTION / ADDUCTION'),
+        ),
+        // The anchor reads the catalogue and SKIPS itself while that is
+        // unresolved -- deliberately, so a slow catalogue cannot block a scan.
+        // Proven, not assumed: without a resolved catalogue the screen renders
+        // `treadmill | 89% confidence`, i.e. the classifier answered because
+        // the anchor stood down.
+        //
+        // OVERRIDDEN, not awaited. `await
+        // container.read(equipmentListProvider.future)` HUNG this test for 6.5
+        // minutes (log frozen 22:32:44 -> 22:39:14 with flutter_tester.exe
+        // alive): the real repository reads the catalogue off the asset bundle
+        // and that never completes here. A widget test that hangs is worse
+        // than one that fails -- it looks like it is still working.
+        equipmentListProvider.overrideWith((_) async => const [
+              EquipmentItem(
+                id: 'hip_abductor_adductor',
+                name: 'Hip abductor / adductor',
+                manufacturer: 'Any',
+                category: 'strength',
+                description: '',
+              ),
+            ]),
+      ]);
+
+      // BOTH are needed, and each for a different reason:
+      //   - the override, so the catalogue resolves at all (awaiting the real
+      //     asset-backed one hung this test for 6.5 minutes);
+      //   - the await, because a FutureProvider is still async even when its
+      //     body returns immediately, so the first `read(...).valueOrNull`
+      //     inside the anchor is null without it -- and the anchor then stands
+      //     down, the classifier answers, and this test fails claiming the
+      //     rendering is broken when it is the setup that is.
+      await container.read(equipmentListProvider.future);
+      await container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/machine.jpg');
+      await tester.pump();
+
+      expect(find.text('Read on the machine: ABDUCTION ADDUCTION'),
+          findsOneWidget);
+      // And the classifier's answer is not on screen at all: a decisive
+      // reading short-circuits it.
+      expect(find.text('treadmill'), findsNothing);
     });
 
     testWidgets('remembered machines surface as "My machines" chips',

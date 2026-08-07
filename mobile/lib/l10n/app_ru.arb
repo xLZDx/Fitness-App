@@ -329,6 +329,7 @@
   "scannerCouldNotCapture": "Не удалось сделать снимок: {arg0}",
   "scannerLiveRecognitionFailed": "Живое распознавание не работает: {arg0}",
   "scannerOfFramesAgree": "{arg0}% · совпало кадров: {arg1}%",
+  "scannerReadOnMachine": "Прочитано на тренажёре: {arg0}",
   "scannerRecognitionFailed": "Распознавание не удалось: {arg0}",
   "scannerYouCanStillPickAPhoto": "{arg0} — можно выбрать фото из галереи ниже.",
   "subscriptionContinueAs": "Продолжить как {arg0}",

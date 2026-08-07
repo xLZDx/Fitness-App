@@ -1029,6 +1029,21 @@ class _Matches extends ConsumerWidget {
                           color: theme.colors.textSecondary,
                         ),
                       ),
+                      // Only for a match that came from text printed on the
+                      // machine. The classifier fills `labelHint` too, but
+                      // with its own internal label (`treadmill`, `bench`) --
+                      // captioning that "read on the machine" would be a
+                      // straight lie, which is why the source is checked and
+                      // not merely the presence of the hint.
+                      if (m.source == MatchSource.printedText &&
+                          m.labelHint != null)
+                        Text(
+                          AppLocalizations.of(context)
+                              .scannerReadOnMachine(m.labelHint!.toUpperCase()),
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colors.textSecondary,
+                          ),
+                        ),
                     ],
                   ),
                 ),

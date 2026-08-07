@@ -154,6 +154,9 @@ class VisualEquipmentController extends Notifier<AsyncValue<ScanResult>> {
         equipmentId: hit.equipmentId,
         confidence: hit.confidence,
         labelHint: hit.matchedPhrase,
+        // The only place this is set. It is what licenses the Scan tab to
+        // print "read on the machine: ..." next to the answer.
+        source: MatchSource.printedText,
       ),
     ]);
   }

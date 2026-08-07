@@ -119,9 +119,17 @@ Checked before leaving it: `grep -rn "labelHint" lib/` returns only the four
 places that WRITE the field. No widget reads it. The claim was false and the
 doc is corrected.
 
-Not built here: it needs an l10n string in ru and en plus visual verification
-on a device, and neither the anchor work nor the operator's list called for
-UI. Named as uncovered rather than silently added or silently dropped.
+First response: named as uncovered rather than silently added or dropped.
+**Then built**, in the next turn, once `70d8fd0` was pushed and there was room
+for it — `scannerReadOnMachine` in ru + en, rendered in `_Matches`.
+
+Decision inside that: a new `MatchSource` field on `VisualMatch` rather than
+rendering `labelHint` whenever it is non-null. The classifier fills the same
+field with its own internal label (`treadmill`, `bench`), and captioning that
+"read on the machine" is a straight lie. Nothing in the value distinguishes
+them, so the source has to be carried explicitly. Default is
+`MatchSource.classifier`, so every existing call site keeps its meaning and
+only the anchor opts in.
 
 ### Verified from data — B3 needs no code change
 
