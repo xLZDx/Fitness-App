@@ -296,3 +296,56 @@ cause before the search starts.
 Cost, recorded because it argues against itself: OCR adds ~11 MB of native
 code plus ~1.4 MB of models — more than the 7.2 MB per ABI reclaimed by
 dropping `tflite_flutter` the same day.
+
+### Evidence — the round-2 filter run was a total failure that looked like a result
+
+All 184 lookups failed. The script printed a tidy report ending
+`classes covered by the usable set (0)`, wrote `datasets_usable_round2.json`
+containing `[]`, and **exited 0**. It was reported to the operator as a
+finished job before being checked.
+
+Cause, isolated by running the identical request under three interpreters:
+
+```
+D:\tools\ml-train-env\Scripts\python.exe        HTTP 200, 58 classes
+...\Programs\Python\Python311\python.exe        HTTP 200, 58 classes
+D:\test 2\oracle-pdm-loader\.venv\...\python    SSL: CERTIFICATE_VERIFY_FAILED
+                                                "Basic Constraints of CA cert
+                                                 not marked critical"
+```
+
+`python` on PATH resolved to an **unrelated project's venv** whose CA bundle
+rejects the Roboflow certificate. `curl` against the same URL answered fine,
+which is why "the network is down" was never the explanation. The 28-minute
+runtime was 184 x 3 attempts x the retry sleeps — it was counting timeouts,
+not working.
+
+Two distinct defects, and the second is the dangerous one:
+
+1. Nothing pins the interpreter, so `python` means whatever PATH says that day.
+2. `except Exception: pass` in `meta()` collapsed "the API never answered" into
+   the same `None` as "this project does not exist", which the report renders
+   as `no metadata` — indistinguishable from a legitimate negative result.
+
+Fixed: `meta()` now returns `(data, error)`; a 404 is a real answer and stays
+an ordinary drop, everything else is recorded as a failure. If more than a
+fifth of lookups fail the run prints a `RUN FAILED` banner naming the error
+kinds, says the selection is not a result, points at a known-good interpreter,
+and **returns 1**.
+
+Proven in both directions rather than asserted — same input, same script:
+broken interpreter → `RUN FAILED: 5/5`, exit 1; good interpreter → two real
+KEEPs, exit 0.
+
+The same probe re-confirmed the morning's `map_class` fix on the exact dataset
+that motivated it: `hip-osteo-ylkzl` (hip radiographs), whose class names are
+`'=============================='` and a Roboflow export blurb, now maps
+`0/4` and is dropped. Before `_MIN_NAME`, both normalised to the empty string
+and matched `hip_abductor_adductor`.
+
+Deleted, not left in place: the `[]` output file the failed run wrote. An
+empty result file beside a green-looking log is exactly what a fresh session
+picks up as data.
+
+The round-2 fetch itself was NOT re-run — the operator postponed the
+recognition track to 2026-08-08.
