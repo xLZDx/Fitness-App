@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -69,7 +71,45 @@ import 'features/workouts/state/scheduled_session_providers.dart';
 import 'features/workouts/state/workout_log_providers.dart';
 import 'features/workouts/state/workout_session_providers.dart';
 import 'firebase_options.dart';
+import 'core/diagnostics/debug_telemetry.dart';
+import 'core/diagnostics/debug_telemetry_sink.dart';
 import 'shared/widgets/aurora_background.dart';
+
+/// Session log for this run, or null in release / when the define is off.
+///
+/// Top-level rather than passed down: `captureDebugPrint` hooks a global, so
+/// pretending the owner is local would be a lie about its lifetime.
+DebugTelemetry? _telemetry;
+
+/// Held only to keep the listener alive for the process lifetime.
+///
+/// Nothing reads it, and that is correct: an `AppLifecycleListener` that goes
+/// out of scope is collected and stops delivering, so dropping the reference
+/// would silently disable the flush. Named with a leading underscore and
+/// ignored rather than deleted.
+// ignore: unused_element
+AppLifecycleListener? _lifecycle;
+
+/// Uploads the session log, swallowing its own failures deliberately.
+///
+/// A diagnostics upload that throws into a lifecycle callback would take down
+/// the app it exists to observe, and it fires exactly when the user is leaving
+/// — the worst possible moment for a crash. The failure still gets a line in
+/// the console, which is where a developer running this build is looking.
+Future<void> _flushTelemetry() async {
+  final t = _telemetry;
+  if (t == null || t.events.isEmpty) return;
+  try {
+    await FirestoreDebugTelemetrySink(
+      uid: FirebaseAuth.instance.currentUser?.uid,
+    ).send(t.toJson());
+  } catch (e) {
+    // Not debugPrint: that is captured back into the very log we failed to
+    // send, which would grow the buffer on every retry.
+    // ignore: avoid_print
+    print('B6: session log upload failed: $e');
+  }
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -112,6 +152,50 @@ Future<void> main() async {
   } catch (e) {
     debugPrint('R0: Crashlytics collection toggle failed, continuing: $e');
   }
+  // B6 -- session diagnostics, debug builds only.
+  //
+  // Crashlytics above reports crashes and is OFF in debug on purpose. This is
+  // the other half: a session that did not crash and still did the wrong
+  // thing, on the operator's own phone, where the emulator cannot follow.
+  //
+  // Installed here, right after Crashlytics and before the bootstrap below,
+  // for the same reason Crashlytics is: the asset copy, prefs open and
+  // notification init are exactly where an early failure hides, and a log
+  // that starts after them cannot describe them.
+  if (kDebugMode && kDebugTelemetryEnabled) {
+    _telemetry = DebugTelemetry(
+      identity: SessionIdentity(
+        appVersion: const String.fromEnvironment('APP_VERSION',
+            defaultValue: '1.0.0'),
+        buildNumber:
+            const String.fromEnvironment('BUILD_NUMBER', defaultValue: '14'),
+        // Pass these from the build command:
+        //   --dart-define=GIT_SHA=$(git rev-parse --short HEAD)
+        //   --dart-define=BUILT_AT=$(date -u +%FT%TZ)
+        // 'unknown' is not a placeholder to ignore -- it means this APK cannot
+        // be traced to a commit, which is the exact question that cost a
+        // session on 2026-08-07.
+        gitSha:
+            const String.fromEnvironment('GIT_SHA', defaultValue: 'unknown'),
+        platform: defaultTargetPlatform.name,
+        builtAt:
+            const String.fromEnvironment('BUILT_AT', defaultValue: 'unknown'),
+      ),
+    );
+    captureDebugPrint(_telemetry!);
+    // Flushed when the app leaves the foreground, not on a timer: that is the
+    // moment the operator has finished doing the thing they wanted logged, and
+    // a timer would either upload half a session or burn battery uploading
+    // nothing. Fire-and-forget with its own catch -- diagnostics that can
+    // crash the app they observe are worse than no diagnostics.
+    _lifecycle = AppLifecycleListener(
+      onPause: () => unawaited(_flushTelemetry()),
+      onDetach: () => unawaited(_flushTelemetry()),
+    );
+    debugPrint('B6: session log armed — build ${_telemetry!.identity.gitSha} '
+        'built ${_telemetry!.identity.builtAt}');
+  }
+
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
   PlatformDispatcher.instance.onError = (error, stack) {
     // Debug-only console echo: `setCrashlyticsCollectionEnabled(false)`
