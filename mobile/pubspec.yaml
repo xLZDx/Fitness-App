@@ -83,6 +83,13 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   fake_async: ^1.3.1
+  # Test-only. `image_picker` re-exports XFile and ImageSource but NOT
+  # ImagePickerPlatform, and that class is the seam that makes the scanner's
+  # own gallery path reachable from a host widget test: both entry points into
+  # _classify cross a platform boundary, and the camera one also reads the file
+  # off disk. Swapping ImagePickerPlatform.instance removes the only obstacle
+  # on the gallery side without touching production code.
+  image_picker_platform_interface: ^2.11.0
   # Drives the real app on a real device/emulator. The unit + widget suite runs
   # against fakes and cannot see the two things that broke on the operator's
   # phone: the native ML Kit bridge and what actually ends up in the APK.

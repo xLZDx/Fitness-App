@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 
 import '../helpers/test_app.dart';
 import 'package:fitness_app/core/camera/camera_availability.dart';
@@ -14,6 +15,7 @@ import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/scanner/scanner_page.dart';
 import 'package:fitness_app/features/visual_equipment/data/live_equipment_service.dart';
 import 'package:fitness_app/features/visual_equipment/data/recognition_history.dart';
+import 'package:fitness_app/features/visual_equipment/data/scan_outcome.dart';
 import 'package:fitness_app/features/visual_equipment/state/recognition_history_providers.dart';
 import 'package:fitness_app/features/visual_equipment/data/live_recognition.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_match.dart';
@@ -21,6 +23,7 @@ import 'package:fitness_app/features/visual_equipment/state/live_equipment_provi
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_service.dart';
 import 'package:fitness_app/features/visual_equipment/state/visual_equipment_providers.dart';
 import 'package:fitness_app/features/visual_equipment/widgets/live_equipment_preview.dart';
+import 'package:fitness_app/shared/widgets/app_buttons.dart';
 
 /// Records lifecycle calls without touching a camera.
 class _SpySession extends CameraSession {
@@ -128,6 +131,96 @@ class _LightSession extends CameraSession {
   Future<void> stop() async {}
 }
 
+/// Answers the gallery pick without a platform channel.
+///
+/// The page's `_classify` — and with it `_lastScannedPath`, the remember rule
+/// and the retry guard — has exactly two entry points, and both used to be out
+/// of reach here. The camera one still is: it needs a real capture AND reads
+/// the file back off disk to crop it. The gallery one only ever hands the
+/// picked PATH to the controller ([ScannerPage] `_recogniseFromGallery`), so
+/// with the picker faked there is nothing platform-bound left in it — the
+/// mocked service is perfectly happy with a path that never existed.
+///
+/// This corrects a claim made while building R2: that the retry guard was
+/// unreachable from a host test. That was true of the camera path, and was
+/// generalised to both.
+class _FakeImagePicker extends ImagePickerPlatform {
+  _FakeImagePicker({this.path = '/tmp/picked.jpg'});
+
+  /// null models the user backing out of the picker.
+  final String? path;
+  int calls = 0;
+
+  @override
+  Future<XFile?> getImageFromSource({
+    required ImageSource source,
+    ImagePickerOptions options = const ImagePickerOptions(),
+  }) async {
+    calls++;
+    return path == null ? null : XFile(path!);
+  }
+}
+
+/// Installs [_FakeImagePicker] for one test and puts the real one back after.
+///
+/// `ImagePickerPlatform.instance` is process-global static state; leaving a
+/// fake behind would silently change every test that runs later in this file.
+_FakeImagePicker _useFakePicker({String? path = '/tmp/picked.jpg'}) {
+  final previous = ImagePickerPlatform.instance;
+  final fake = _FakeImagePicker(path: path);
+  ImagePickerPlatform.instance = fake;
+  addTearDown(() => ImagePickerPlatform.instance = previous);
+  return fake;
+}
+
+/// Counts calls at the boundary that costs money.
+///
+/// `classifyFile` IS the paid cloud call. Asserting on rendered state instead
+/// would not distinguish one recognition from two racing ones that happen to
+/// agree — and the cost, the duplicate history row and the last-write-wins are
+/// all on this side of the boundary.
+class _CountingService implements VisualEquipmentService {
+  _CountingService(this.results);
+
+  final List<VisualMatch> results;
+  int calls = 0;
+
+  @override
+  Future<List<VisualMatch>> classifyFile({
+    required String path,
+    int topK = 3,
+  }) async {
+    calls++;
+    return rankTopK(results, limit: topK);
+  }
+}
+
+/// Fails the first call, then hangs — the exact shape the retry card is for.
+///
+/// The hang is deliberate: it holds the retry in flight so a second tap in the
+/// SAME frame meets the in-flight guard rather than a rebuilt, already-disabled
+/// button. Those are two different defences and only one of them is the guard.
+class _RetryProbeService implements VisualEquipmentService {
+  int calls = 0;
+  final Completer<List<VisualMatch>> _pending =
+      Completer<List<VisualMatch>>();
+
+  /// Lets the in-flight retry finish, so the controller's `.timeout()` Timer is
+  /// cancelled and the test does not end with one pending.
+  void finish() => _pending.complete(
+      const [VisualMatch(equipmentId: 'leg_press', confidence: 0.95)]);
+
+  @override
+  Future<List<VisualMatch>> classifyFile({
+    required String path,
+    int topK = 3,
+  }) async {
+    calls++;
+    if (calls == 1) throw const VisualEquipmentException('model missing');
+    return _pending.future;
+  }
+}
+
 /// Answers the Settings call without a platform channel.
 class _FakePermissionGate extends CameraPermissionGate {
   _FakePermissionGate({this.opens = true, this.throws = false});
@@ -189,6 +282,20 @@ void main() {
     ));
     await tester.pump();
     return ProviderScope.containerOf(tester.element(find.byType(ScannerPage)));
+  }
+
+  /// Runs the REAL gallery path: scrolls the button in, taps it, and lets the
+  /// picked path travel through the page's own `_classify`.
+  ///
+  /// Requires [_useFakePicker] to have been called. Two pumps rather than
+  /// `pumpAndSettle`: the viewfinder's warming spinner animates for as long as
+  /// the fake session publishes no surface, so settling never arrives.
+  Future<void> tapGallery(WidgetTester tester) async {
+    final gallery = find.byKey(const Key('scan-recognise-gallery'));
+    await tester.scrollUntilVisible(gallery, 120);
+    await tester.tap(gallery);
+    await tester.pump();
+    await tester.pump();
   }
 
   group('ScannerPage', () {
@@ -334,7 +441,10 @@ void main() {
         ),
       ]);
 
-      // Drive the controller directly: tapping the button would need a camera.
+      // Drives the controller directly, which is enough for a rendering
+      // assertion. (The gallery button IS tappable here — see _useFakePicker —
+      // but this test is about what the matches list renders, not about how
+      // the result got there.)
       await container
           .read(visualEquipmentControllerProvider.notifier)
           .classifyFilePath('/tmp/machine.jpg');
@@ -824,6 +934,159 @@ void main() {
 
       expect(gate.openCalls, 1);
       expect(find.textContaining('Could not open Settings'), findsNothing);
+    });
+
+    testWidgets('a confident gallery scan is remembered', (tester) async {
+      // The positive control for the test below it. Without one, "an undecided
+      // scan writes nothing" passes exactly as happily when NOTHING on the path
+      // can write at all — which is how the earlier version of that test
+      // passed while never reaching `_remember`.
+      final picker = _useFakePicker();
+      final history = MockRecognitionHistoryRepository();
+      addTearDown(history.dispose);
+      final service = _CountingService(const [
+        VisualMatch(equipmentId: 'leg_press', confidence: 0.95),
+      ]);
+
+      await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(_SpySession()),
+        recognitionHistoryRepositoryProvider.overrideWithValue(history),
+        visualEquipmentServiceProvider.overrideWithValue(service),
+      ]);
+      await tapGallery(tester);
+
+      expect(picker.calls, 1, reason: 'the button opened the picker');
+      expect(service.calls, 1, reason: 'the picked path reached recognition');
+      expect((await history.list()).map((e) => e.equipmentId), ['leg_press'],
+          reason: 'a confident scan IS a machine the user identified');
+    });
+
+    testWidgets('an undecided gallery scan is not remembered', (tester) async {
+      // `alternatives` is the app saying "I am not sure, you pick". Recording
+      // its top candidate would file, as a machine the user identified, one
+      // they were never asked about.
+      //
+      // Restored from R2d, where it was deleted for passing on a technicality:
+      // it drove the controller directly, one layer BELOW `_remember`, so the
+      // history was empty no matter what the outcome had been. It now goes
+      // through the button, and the test above proves this same path does
+      // write when the result warrants it.
+      final picker = _useFakePicker();
+      final history = MockRecognitionHistoryRepository();
+      addTearDown(history.dispose);
+      final service = _CountingService(const [
+        VisualMatch(equipmentId: 'leg_press', confidence: 0.45),
+        VisualMatch(equipmentId: 'hack_squat', confidence: 0.40),
+      ]);
+
+      final container = await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(_SpySession()),
+        recognitionHistoryRepositoryProvider.overrideWithValue(history),
+        visualEquipmentServiceProvider.overrideWithValue(service),
+      ]);
+      await tapGallery(tester);
+
+      expect(picker.calls, 1);
+      expect(service.calls, 1);
+      expect(
+          container.read(visualEquipmentControllerProvider).requireValue.outcome,
+          ScanOutcome.alternatives,
+          reason: 'two close matches are an undecided result');
+      expect(await history.list(), isEmpty,
+          reason: 'an undecided scan must not become a remembered machine');
+    });
+
+    testWidgets('backing out of the picker changes nothing', (tester) async {
+      // `if (picked == null) return;` — a real production branch that only
+      // became reachable from a host test with the picker faked. Leaving it
+      // uncovered would mean the fake carries a null mode nothing exercises.
+      final history = MockRecognitionHistoryRepository();
+      addTearDown(history.dispose);
+      final service = _CountingService(const [
+        VisualMatch(equipmentId: 'leg_press', confidence: 0.95),
+      ]);
+
+      final picker = _useFakePicker(path: null);
+      final container = await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(_SpySession()),
+        recognitionHistoryRepositoryProvider.overrideWithValue(history),
+        visualEquipmentServiceProvider.overrideWithValue(service),
+      ]);
+      await tapGallery(tester);
+
+      expect(picker.calls, 1, reason: 'the picker did open');
+      expect(service.calls, 0, reason: 'no image, no paid recognition');
+      expect(await history.list(), isEmpty);
+      expect(container.read(visualEquipmentControllerProvider).hasError, isFalse,
+          reason: 'cancelling is not an error to report');
+      // The assertion that actually discriminates. Without the early return,
+      // `picked.path` throws on null, the catch turns it into a "could not
+      // capture" SnackBar, and every OTHER assertion here still holds —
+      // recognition is not reached either way. Deciding to say nothing to a
+      // user who chose to back out is the whole behaviour under test.
+      expect(find.byType(SnackBar), findsNothing,
+          reason: 'a deliberate cancel is not a failure to report');
+    });
+
+    testWidgets('a double-tapped retry runs recognition once', (tester) async {
+      // Driven through the "Recognition failed" card — a thrown recogniser,
+      // not a timeout. Both problem cards carry the same retry button and the
+      // same invitation to tap it again. Unguarded, a double tap fired two
+      // concurrent recognitions racing on the controller state, the machine
+      // card and the history write: two PAID cloud calls, two history rows,
+      // last-write-wins on screen.
+      //
+      // Asserted at `classifyFile` — the paid boundary itself. Asserting on
+      // what the screen shows could not tell one recognition from two racing
+      // ones that happen to agree.
+      _useFakePicker();
+      final service = _RetryProbeService();
+      await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(_SpySession()),
+        visualEquipmentServiceProvider.overrideWithValue(service),
+      ]);
+      await tapGallery(tester);
+
+      // Scroll to the BUTTON, not to the card that contains it: the page's
+      // list is lazy, and a finder resolved against the card leaves the button
+      // itself outside the built range.
+      final retry = find.byKey(const Key('scan-retry-recognition'));
+      await tester.scrollUntilVisible(retry, 120);
+      expect(find.byKey(const Key('scan-failed')), findsOneWidget,
+          reason: 'a thrown recognition is the failed outcome, not a timeout');
+      expect(service.calls, 1, reason: 'the scan that failed');
+
+      // Fire the button's OWN callback twice without a frame in between.
+      //
+      // Two `tester.tap`s cannot express this: dispatching the first pointer
+      // event flushes the rebuild, `classifyFilePath` has already set the state
+      // to loading, and the failed card — button and all — is gone before the
+      // second tap is delivered. That disappearance is itself a real defence,
+      // asserted below; it is simply not the one this half is about. Invoking
+      // `onPressed` twice is what a same-frame double arrival (two fingers, a
+      // synthesised repeat) actually looks like inside the widget, and it is
+      // the only route that reaches the in-flight guard in `_retryLastScan`.
+      final onPressed = tester.widget<AppSecondaryButton>(retry).onPressed;
+      expect(onPressed, isNotNull, reason: 'the retry button starts enabled');
+      onPressed!();
+      onPressed();
+      await tester.pump();
+
+      expect(service.calls, 2,
+          reason: 'one failed scan + exactly one retry; a concurrent second '
+              'retry would be a second paid cloud call');
+
+      // The second defence, one layer out: once the frame HAS been rebuilt,
+      // the retry control is not offered at all while recognition is in
+      // flight, so no further tap can reach the callback.
+      expect(retry, findsNothing,
+          reason: 'an in-flight retry withdraws the button');
+
+      // Let the retry finish so the controller's timeout Timer is cancelled
+      // and the test does not end with one pending.
+      service.finish();
+      await tester.pump();
+      await tester.pump();
     });
   });
 }
