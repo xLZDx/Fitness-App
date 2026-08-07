@@ -1,4 +1,4 @@
-# `flutter run` wrapped with the debug daemon.
+﻿# `flutter run` wrapped with the debug daemon.
 #
 # Starts the daemon in a separate child process so both run side-by-side:
 # the daemon captures device logs / errors / touches / screencaps, while
@@ -14,7 +14,7 @@
 param(
     [string]$Session = 'default',
     [string]$EmulatorSerial = 'emulator-5556',
-    [string]$Package = 'com.fitnessapp.fitness_app',
+    [string]$Package = 'com.fitnessapp.fitness_app.sptr',
     [switch]$Profile,
     [switch]$Release
 )

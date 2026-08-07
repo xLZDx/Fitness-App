@@ -20,7 +20,7 @@
 param(
     [string]$Session = 'default',
     [string]$EmulatorSerial = 'emulator-5556',
-    [string]$Package = 'com.fitnessapp.fitness_app',
+    [string]$Package = 'com.fitnessapp.fitness_app.sptr',
     [string]$Project = 'traidingbot-b4061',
     [int]$ScreenshotInterval = 30,
     [int]$FunctionsPollInterval = 30

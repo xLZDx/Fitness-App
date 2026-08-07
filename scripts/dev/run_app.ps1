@@ -1,4 +1,4 @@
-# One-shot dev runner.
+﻿# One-shot dev runner.
 #
 # Rebuilds the debug APK if missing, force-stops + clears the app on the
 # emulator, launches it fresh, then hands the terminal to debug_daemon.ps1
@@ -14,7 +14,7 @@
 param(
     [string]$Session = 'default',
     [string]$EmulatorSerial = 'emulator-5556',
-    [string]$Package = 'com.fitnessapp.fitness_app',
+    [string]$Package = 'com.fitnessapp.fitness_app.sptr',
     [switch]$Rebuild
 )
 

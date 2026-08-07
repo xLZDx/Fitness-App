@@ -87,8 +87,22 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.fitnessapp.fitness_app"
+        // `com.fitnessapp.fitness_app` was rejected by the Play Console on
+        // 2026-08-07: "This package name is already in use." A package name is
+        // burned permanently once taken -- by anyone, including an earlier
+        // draft of your own -- so the suffix is the only way forward, not a
+        // preference.
+        //
+        // Lowercase `sptr`, not `SPTR`: segments are conventionally lowercase,
+        // and mixed case has bitten toolchains and case-insensitive file
+        // systems before.
+        //
+        // This value can never be changed again after the first Play upload.
+        //
+        // NOT the same as `namespace` above (still `com.fitnessapp.fitness_app`).
+        // That one is the Kotlin/R-class namespace and is deliberately left
+        // alone -- changing it would mean moving `MainActivity.kt` for no gain.
+        applicationId = "com.fitnessapp.fitness_app.sptr"
         // health package needs Android 8.0+ (API 26). Health Connect
         // itself ships from 14+ but the plugin auto-falls back to
         // Google Fit on 26–33.

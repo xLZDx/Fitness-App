@@ -23,7 +23,7 @@ In the Firebase console:
 ## 3. Add the Android app
 
 1. Project overview → **Add app → Android**.
-2. Android package name: `com.fitnessapp.fitness_app` (must match exactly).
+2. Android package name: `com.fitnessapp.fitness_app.sptr` (must match exactly).
 3. App nickname: `Fitness App (Android)`.
 4. **Debug signing certificate SHA-1**: open a terminal and run:
    ```powershell

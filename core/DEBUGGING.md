@@ -85,7 +85,7 @@ All knobs are PowerShell parameters on `debug_daemon.ps1`:
 pwsh .\scripts\dev\debug_daemon.ps1 `
     -Session quick-check `
     -EmulatorSerial emulator-5556 `
-    -Package com.fitnessapp.fitness_app `
+    -Package com.fitnessapp.fitness_app.sptr `
     -Project traidingbot-b4061 `
     -ScreenshotInterval 10 `      # default 30 s
     -FunctionsPollInterval 60     # default 30 s

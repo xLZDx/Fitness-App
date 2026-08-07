@@ -12,7 +12,12 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.fitnessapp.fitness_app"
+        // MUST equal the phone module's applicationId. The Wearable Data Layer
+        // pairs the watch to the phone by matching applicationId + signing key
+        // (see wear/settings.gradle.kts); renaming one side alone silently
+        // unpairs them -- the watch keeps building, keeps installing, and
+        // simply never hears from the phone again.
+        applicationId = "com.fitnessapp.fitness_app.sptr"
         minSdk = 30
         targetSdk = 34
         versionCode = 1
