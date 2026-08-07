@@ -99,10 +99,14 @@ AppLifecycleListener? _lifecycle;
 Future<void> _flushTelemetry() async {
   final t = _telemetry;
   if (t == null || t.events.isEmpty) return;
+  // No uid, no upload. The rule for `debug_sessions` requires the document to
+  // stamp its own author, so a signed-out session cannot be written — and
+  // trying anyway would turn every pre-login run into a permission-denied line
+  // that reads like a broken pipeline rather than the expected state it is.
+  final uid = FirebaseAuth.instance.currentUser?.uid;
+  if (uid == null) return;
   try {
-    await FirestoreDebugTelemetrySink(
-      uid: FirebaseAuth.instance.currentUser?.uid,
-    ).send(t.toJson());
+    await FirestoreDebugTelemetrySink(uid: uid).send(t.toJson());
   } catch (e) {
     // Not debugPrint: that is captured back into the very log we failed to
     // send, which would grow the buffer on every retry.

@@ -65,5 +65,25 @@ service cloud.firestore {
       allow read: if false;
       allow write: if false;
     }
+
+    // B6 session diagnostics. Written by DEBUG builds only, and read by
+    // nobody through this API.
+    //
+    // Create-only for a signed-in user, and only for a document that stamps
+    // its own uid. Not `allow write`, which would also grant update and
+    // delete: a session log that a client can edit after the fact is not
+    // evidence, it is a note. Read is closed outright -- these are inspected
+    // in the Firebase console, and no client has any business reading another
+    // person's session, or its own back.
+    //
+    // The log is redacted on the way in (core/diagnostics/debug_telemetry.dart)
+    // and the collection only ever receives debug builds, but neither of those
+    // is a rule. This is the rule.
+    match /debug_sessions/{sessionId} {
+      allow read: if false;
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
   }
 }
