@@ -21,6 +21,9 @@ class _ErroringPoseService implements PoseDetectorService {
   Stream<PoseFrame> frames() => _ctrl.stream;
 
   @override
+  Future<void> ensurePermission() async {}
+
+  @override
   Future<void> start() async {
     _ctrl.addError(StateError('Pose detection failed: bad frame format'));
   }

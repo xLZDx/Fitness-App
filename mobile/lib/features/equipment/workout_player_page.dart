@@ -10,6 +10,7 @@ import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../form_check/state/form_check_providers.dart';
+import 'data/video_failure.dart';
 import '../workouts/data/progression.dart';
 import '../workouts/data/scheduled_session.dart';
 import '../workouts/data/workout_session.dart';
@@ -376,7 +377,7 @@ class _VideoBlockState extends ConsumerState<_VideoBlock> {
           // Signing failed or the object is gone. The poster is already on
           // screen; leave it there and say why rather than replacing a
           // picture of the exercise with an exception.
-          if (mounted) setState(() => _error = 'unresolved');
+          if (mounted) setState(() => _error = kUnresolvedClip);
           return;
         }
         if (!mounted) return;
@@ -491,7 +492,8 @@ class _VideoBlockState extends ConsumerState<_VideoBlock> {
                 left: 8,
                 right: 8,
                 bottom: 8,
-                child: _VideoFailedNote(hasPoster: poster != null),
+                child: _VideoFailedNote(
+                    hasPoster: poster != null, error: _error!),
               ),
             if (_fromCache && playing)
               Positioned(
@@ -523,12 +525,33 @@ class _VideoBlockState extends ConsumerState<_VideoBlock> {
 }
 
 /// Says the clip did not arrive, without taking the picture away.
+///
+/// Names the reason it actually has. Until 2026-08-08 this picked its text
+/// from `hasPoster` alone and announced "Нет сети — показан кадр" for every
+/// failure, network or not -- which is what a 1 Gb connection was told.
 class _VideoFailedNote extends StatelessWidget {
-  const _VideoFailedNote({required this.hasPoster});
+  const _VideoFailedNote({required this.hasPoster, required this.error});
   final bool hasPoster;
+  final Object error;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final reason = classifyVideoFailure(error);
+    final headline = switch (reason) {
+      VideoFailureReason.linkUnavailable => l10n.equipmentClipLinkUnavailable,
+      VideoFailureReason.offline => hasPoster
+          ? l10n.equipmentClipOfflineStillShown
+          : l10n.equipmentClipOfflineNoStill,
+      VideoFailureReason.playbackFailed => l10n.equipmentClipCouldNotLoad,
+    };
+    // Only for the case we could not name. Under a headline that already
+    // says what happened it is noise; under "did not load" it is the whole
+    // difference between a bug report and a shrug.
+    final detail = reason == VideoFailureReason.playbackFailed
+        ? videoFailureDetail(error)
+        : null;
+
     return Container(
       key: const Key('workout.video_failed'),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -536,11 +559,33 @@ class _VideoFailedNote extends StatelessWidget {
         color: Colors.black.withValues(alpha: 0.62),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Text(
-        hasPoster
-            ? AppLocalizations.of(context).equipmentClipOfflineStillShown
-            : AppLocalizations.of(context).equipmentClipCouldNotLoad,
-        style: const TextStyle(color: Colors.white, fontSize: 11),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(headline,
+              style: const TextStyle(color: Colors.white, fontSize: 11)),
+          if (detail != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                detail,
+                key: const Key('workout.video_failed.detail'),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                // Full white, not white70. This sits on a 0.62 black scrim
+                // over arbitrary video content, where a dimmed white at this
+                // size stops being readable on a light frame -- and an error
+                // detail nobody can read is the same as not printing it.
+                // Secondary by size and position instead.
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

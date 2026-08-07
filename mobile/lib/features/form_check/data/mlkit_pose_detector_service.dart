@@ -70,6 +70,9 @@ class MlKitPoseDetectorService implements PoseDetectorService {
   Stream<PoseFrame> frames() => _ctrl.stream;
 
   @override
+  Future<void> ensurePermission() => session.ensurePermission();
+
+  @override
   Future<void> start() async {
     if (_initialised) return;
     _detector = mlkit.PoseDetector(

@@ -105,10 +105,13 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
       ref.read(repSessionControllerProvider.notifier).resetSet();
       ref.read(poseMatchProvider.notifier).state = null;
     });
-    _startDetector();
+    // A fresh mount means the user tapped their way onto the coach screen,
+    // which is them asking for the camera. A lifecycle resume is not, and
+    // passes false below.
+    _startDetector(requestPermission: true);
   }
 
-  void _startDetector() {
+  void _startDetector({bool requestPermission = false}) {
     final token = ++_lifecycle;
     _started = false;
     _startError = null;
@@ -126,6 +129,14 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
 
         final svc = ref.read(poseDetectorServiceProvider);
         _service = svc;
+        // Deliberately OUTSIDE the timeout below. That bound exists to catch a
+        // platform call that hung; this step waits for a person to read a
+        // dialog, and the two must not share a deadline. Fifteen seconds is
+        // right for the first and absurd for the second.
+        if (requestPermission) {
+          await svc.ensurePermission();
+          if (!mounted || token != _lifecycle) return;
+        }
         await svc.start().timeout(_startTimeout);
         // Two guards, not one. `mounted` catches the page being closed;
         // the token catches a newer start or a stop that overtook this one,
@@ -259,7 +270,13 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                       Center(
                         child: _StartFailure(
                           failure: failure,
-                          onRetry: _startDetector,
+                          // Pressing "try again" on a permission failure is
+                          // the clearest possible ask for the camera, so this
+                          // one always requests. Passing the tear-off would
+                          // silently take the `false` default -- it type-checks
+                          // (optional named parameters are droppable in Dart),
+                          // which is exactly why it would not have been caught.
+                          onRetry: () => _startDetector(requestPermission: true),
                         ),
                       )
                     else if (!_started)

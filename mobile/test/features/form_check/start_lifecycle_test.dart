@@ -25,13 +25,25 @@ class _ManualService implements PoseDetectorService {
   final List<Completer<void>> starts = [];
   final List<Completer<void>> stops = [];
 
+  /// How many times the screen asked for camera permission, and in what order
+  /// relative to `start`. Recorded rather than counted so a test can prove the
+  /// ask happens BEFORE the camera is opened, not merely that it happens.
+  final List<String> calls = [];
+
   int get startCount => starts.length;
+  int get permissionAsks => calls.where((c) => c == 'permission').length;
 
   @override
   Stream<PoseFrame> frames() => _frames.stream;
 
   @override
+  Future<void> ensurePermission() async {
+    calls.add('permission');
+  }
+
+  @override
   Future<void> start() {
+    calls.add('start');
     final c = Completer<void>();
     starts.add(c);
     return c.future;
@@ -226,6 +238,84 @@ void main() {
     svc.stops.first.complete();
     await t.pump();
     expect(svc.startCount, 2, reason: 'and it must run once the stop lands');
+
+    svc.starts.last.complete();
+    await t.pump();
+  });
+
+  // Reported from a real device, 2026-08-08: opening the coach before ever
+  // using the scanner showed
+  // `CameraUnavailable(CameraUnavailableReason.permissionDenied)` and no
+  // system dialog had appeared. `CameraSession.start` defaults to not
+  // requesting -- correctly, so a resume cannot ambush the user -- and this
+  // screen had no path that requested either. The camera was unreachable
+  // unless some OTHER screen had already won the permission.
+  testWidgets('arriving on the coach asks for the camera, before opening it',
+      (t) async {
+    _phoneSized(t);
+    final svc = _ManualService();
+    await t.pumpWidget(_page(svc));
+    await t.pump();
+
+    expect(svc.permissionAsks, 1,
+        reason: 'a fresh arrival IS the user asking for the camera');
+    expect(svc.calls.first, 'permission',
+        reason: 'asking after opening the camera is asking too late — the '
+            'open is what fails with permissionDenied');
+
+    svc.starts.first.complete();
+    await t.pump();
+  });
+
+  testWidgets('resuming from background does not put the dialog up again',
+      (t) async {
+    // The other half of the same rule, and the reason the default is `false`.
+    // Someone who glanced at a notification did not ask for anything; a
+    // permission dialog on the way back is an ambush, and on Android 13+ a
+    // refusal collected that way is close to permanent.
+    _phoneSized(t);
+    final svc = _ManualService();
+    await t.pumpWidget(_page(svc));
+    await t.pump();
+    svc.starts.first.complete();
+    await t.pump();
+    expect(svc.permissionAsks, 1);
+
+    t.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await t.pump();
+    t.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await t.pump();
+    svc.stops.first.complete();
+    await t.pump();
+
+    expect(svc.startCount, 2, reason: 'the camera does reopen');
+    expect(svc.permissionAsks, 1,
+        reason: 'but nothing new was asked of the user');
+
+    svc.starts.last.complete();
+    await t.pump();
+  });
+
+  testWidgets('retry asks again — it is the clearest ask there is', (t) async {
+    // Passing the `_startDetector` tear-off straight to onRetry type-checks in
+    // Dart (optional named parameters are droppable) and silently takes the
+    // `false` default, which would leave the retry button unable to fix the
+    // one failure it is most often shown for.
+    _phoneSized(t);
+    final svc = _ManualService();
+    await t.pumpWidget(_page(svc));
+    await t.pump();
+    svc.starts.first.completeError(StateError('permission denied'));
+    await t.pump();
+
+    expect(svc.permissionAsks, 1);
+    await t.tap(find.byKey(const Key('form-check-retry')));
+    await t.pump();
+
+    expect(svc.permissionAsks, 2,
+        reason: 'the retry button must be able to raise the dialog');
+    expect(svc.calls.last, 'start',
+        reason: 'and still open the camera afterwards');
 
     svc.starts.last.complete();
     await t.pump();

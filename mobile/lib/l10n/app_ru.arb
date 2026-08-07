@@ -655,6 +655,8 @@
   "formcheckStandSideOn": "Встаньте боком к камере — силуэт нарисован сбоку.",
   "equipmentClipOfflineStillShown": "Нет сети — показан кадр",
   "equipmentClipCouldNotLoad": "Ролик не загрузился",
+  "equipmentClipOfflineNoStill": "Нет сети — ролик не загрузился",
+  "equipmentClipLinkUnavailable": "Ссылка на ролик недоступна",
   "workoutsFilterStretching": "Растяжка",
   "settingsTestAccess": "Тестовый доступ",
   "settingsTestAccessBody": "Открывает платные функции только на этом телефоне. Ничего не списывается и никуда не отправляется — настоящая подписка не меняется.",

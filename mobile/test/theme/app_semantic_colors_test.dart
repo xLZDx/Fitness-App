@@ -348,6 +348,13 @@ void main() {
     //
     // If this number moves, one of those categories grew — or a foreground
     // white came back onto a gradient. Read the diff before repinning it.
+    //
+    // 43 -> 44, 2026-08-08: the first category grew by one. The workout
+    // player's failure note gained a second line carrying the platform's own
+    // error text, on the same `Colors.black @0.62` scrim as the headline
+    // directly above it, because the note used to announce "Нет сети" for
+    // every failure including ones on a 1 Gb connection. Diff read: scrim
+    // foreground, sanctioned category, not a foreground white on a gradient.
     final whites = <String, int>{};
     for (final f in Directory('lib').listSync(recursive: true)) {
       if (f is! File || !f.path.endsWith('.dart')) continue;
@@ -361,7 +368,7 @@ void main() {
       if (n > 0) whites[f.path.replaceAll(r'\', '/')] = n;
     }
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 43, reason: 'per file: $whites');
+    expect(total, 44, reason: 'per file: $whites');
   });
 
   group('lerp', () {

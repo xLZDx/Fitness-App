@@ -1261,6 +1261,8 @@
   "formcheckStandSideOn": "Stand side-on to the camera — the outline is drawn from the side.",
   "equipmentClipOfflineStillShown": "No connection — showing the still",
   "equipmentClipCouldNotLoad": "The clip could not be loaded",
+  "equipmentClipOfflineNoStill": "No connection — the clip did not load",
+  "equipmentClipLinkUnavailable": "The clip link is unavailable",
   "workoutsFilterStretching": "Stretching",
   "settingsTestAccess": "Test access",
   "settingsTestAccessBody": "Unlocks paid features on this phone only. Nothing is charged and nothing is sent anywhere — the real subscription is unaffected.",

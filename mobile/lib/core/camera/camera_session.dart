@@ -79,6 +79,31 @@ class CameraSession {
   /// When a frame was last delivered, for staleness checks.
   DateTime? get lastFrameAt => _lastFrameAt;
 
+  /// Puts the system permission dialog up, when it is still askable.
+  ///
+  /// Exists so a caller can wait on a HUMAN without that wait sharing a
+  /// deadline with [start], which is bounded to catch a hung platform call.
+  /// The coach screen needs exactly this: it must ask (it had no path that
+  /// ever did -- `permissionDenied` with no dialog, seen on a real device
+  /// 2026-08-08) and it must still detect a camera held by another app.
+  ///
+  /// Returns normally whatever the user chooses, and deliberately reports
+  /// nothing itself: [start] re-reads the status immediately afterwards and
+  /// turns a refusal into a typed [CameraUnavailable], so a refusal is
+  /// rendered in one place rather than two that could disagree.
+  Future<void> ensurePermission() async {
+    try {
+      final status = await _permissions.status();
+      // `isDenied` is "askable" -- permanently denied is a different status
+      // and requesting it does nothing but flash a dialog that never appears.
+      if (status.isDenied) await _permissions.request();
+    } catch (_) {
+      // A platform-channel failure here is not lost: the very next [start]
+      // makes the same two calls inside its own try, and throws
+      // `initializationFailed` carrying the cause.
+    }
+  }
+
   /// Idempotent: safe to call when already running.
   ///
   /// Throws [CameraUnavailable] — never a raw plugin exception — so callers

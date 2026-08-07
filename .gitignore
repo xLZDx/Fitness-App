@@ -56,6 +56,10 @@ mobile/android/.cxx/
 
 # Per-developer Firebase secrets (never commit)
 mobile/android/app/google-services.json
+# ...including the copies taken before replacing it. The file is not in git,
+# so there is no history to restore from and a backup is the only way back --
+# which is exactly why one must not be committed by accident either.
+mobile/android/app/google-services.json.bak-*
 mobile/ios/Runner/GoogleService-Info.plist
 .firebase/
 firebase-debug.log

@@ -349,3 +349,129 @@ picks up as data.
 
 The round-2 fetch itself was NOT re-run — the operator postponed the
 recognition track to 2026-08-08.
+
+---
+
+## 2026-08-08 00:00–01:30 local / 21:00–22:30 UTC — four defects from a real device
+
+The operator installed `2a930c0` and reported five things. Four had causes;
+the fifth was a request to finish the whole chain autonomously. Two of the
+causes came straight off the screenshots, which is the argument for putting
+technical detail on an error screen rather than a friendly sentence.
+
+### Evidence — Google sign-in: the release fingerprint was never registered
+
+`AuthException: Google sign-in failed (unknownError): [28444] Developer
+console is not set up correctly.`
+
+`gradlew signingReport` gives the release config's SHA-1 as
+`16:69:B7:...:F0:6A` from `upload-keystore.jks`. The on-disk
+`google-services.json` knew exactly one certificate hash,
+`35f15213...` — the **debug** key. Every release build was therefore asking
+Google to authorise a certificate it had never been told about.
+
+Fixed by the operator adding the fingerprint in the Firebase console; the
+regenerated config now carries both hashes. Not a code change, and not
+committable: the file is gitignored (`.gitignore:58`), so a backup was taken
+first — there is no history to restore it from.
+
+### Decision — the coach asks for the camera through a separate method
+
+`CameraUnavailable(CameraUnavailableReason.permissionDenied)` on the coach
+screen, with no system dialog ever shown. `CameraSession.start` defaults to
+`requestPermission: false` — correctly, so a lifecycle resume cannot ambush
+someone who never asked — and the coach screen passed `true` from nowhere.
+The camera was reachable only if the *scanner* had already won the permission,
+which is why it looked intermittent.
+
+First attempt: a `requestPermission` flag threaded into `start`, with the
+15 s timeout raised to 90 s to allow for a human reading a dialog. Rejected
+after it became clear it would break `start_lifecycle_test.dart:85`, which
+pumps 16 seconds to prove a hung camera is caught — and rightly so. The bound
+exists to catch a **platform call that hung**; a human reading a dialog is a
+different kind of wait and must not share its deadline.
+
+Shipped instead: `ensurePermission()` on `CameraSession` and on
+`PoseDetectorService`, called outside the timeout, then `start()` under the
+unchanged 15 s. Same shape as the notification permission split the previous
+day (`init()` warms up, `ensurePermission()` prompts), so there is now one
+pattern for "ask a human" across the app.
+
+Called on a fresh mount and from the retry button; deliberately NOT on
+lifecycle resume. Pinned by three tests, including the ordering one — asking
+after opening the camera is asking too late.
+
+Rejected: passing the `_startDetector` tear-off straight to `onRetry`. It
+type-checks (Dart drops optional named parameters) and silently takes the
+`false` default, which would have left the retry button unable to fix the one
+failure it is most often shown for.
+
+### Evidence — "Нет сети" was never a network claim
+
+`workout_player_page.dart` chose its failure text from ONE fact: whether a
+poster was on screen. With a poster it said "Нет сети — показан кадр".
+Nothing anywhere checked connectivity. The operator saw it on a 1 Gb line.
+
+Rules out treating that message as a symptom: it carried no information about
+the network at all, and **the real reason that clip failed is still unknown**
+because the app discarded it.
+
+Fixed with `classifyVideoFailure` — pure, unit-tested — which names the
+network only on a positive signal (`SocketException`, or one of ten explicit
+markers) and otherwise reports a playback failure with the platform's own
+error text attached. The marker list is deliberately narrow: a broad one
+("error", "failed") would restore exactly the confident-wrong-cause behaviour
+being removed, and a test pins that "error" alone does not mean the network.
+
+Cross-checked: `clipUrl` and `clipUrls` ARE deployed (v2, europe-west1), and
+`firebasestorage` App Check is not enforced, so neither explains it. The next
+build will say what does.
+
+### Evidence — cloud recognition cannot work on this build at all
+
+App Check enforcement, read from the API:
+`firebaseml.googleapis.com` → **ENFORCED**; `identitytoolkit` and `firestore`
+→ UNENFORCED. Release builds attest through `AndroidPlayIntegrityProvider`
+(`main.dart:270`), Play Integrity recognises apps distributed by Play, and
+nothing is published — the developer account is still in identity review.
+
+So the scanner's cloud path is rejected before it reaches Gemini, and falls
+back to the on-device v1 model. That, not the model, is why it answered
+"беговая дорожка".
+
+This contradicts the app's own stated design, quoted from `main.dart:215`:
+"App Check, monitor-before-enforce by design, not cold enforcement", with the
+reason given two lines down — cold enforcement locks out genuine users on any
+provider mismatch.
+
+**Refused:** turning enforcement down. Lowering a security control is a
+decision of its own and is not covered by an implementation GO, however broad.
+Raised with both options; the operator decides.
+
+### Finding — the backlog said two defects were open; both are shipped
+
+Checked before opening a gate to fix them, which is the only reason it was
+caught. `BACKLOG_2026-07-31.md` lists E3.1 (English cues) and E3.2 (the coach
+scoring a face) as VERIFIED-open. Neither is:
+
+* `form_classifier.dart` holds no sentences — it emits `FormCueKey`, and
+  `cue_text.dart:24` resolves all nine through l10n.
+* `pose_gate.dart` + `evaluateGated` (`form_classifier.dart:311`) drop
+  unscorable frames before any classifier runs.
+
+A day of work avoided, and the backlog corrected in place rather than
+silently skipped. Standing consequence: verify each backlog item against the
+code before starting it — the file is a record of 2026-07-31, not of now.
+
+### Decision — the hardcoded-white tripwire was repinned, not silenced
+
+`app_semantic_colors_test.dart` counts `Colors.white*` across `lib/` and
+failed at 44 against its pinned 43. The extra one is the new error-detail
+line. The test's own instruction is "read the diff before repinning it", and
+it lists sanctioned categories — the first being a foreground on a
+`Colors.black @0.30..0.65` scrim, which is exactly what this is (0.62).
+
+Repinned to 44 with that reasoning written beside the number. Also changed
+`Colors.white70` to `Colors.white` at 10 px first: dimmed white at 9 px over
+arbitrary video frames is not reliably readable, and an error detail nobody
+can read is the same as not printing it.
