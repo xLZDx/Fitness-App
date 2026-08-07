@@ -137,3 +137,162 @@ only the anchor opts in.
 `assets/posters/`. No remote URLs, no `assets/exercises/`. The catalogue
 cannot serve a photo of a person. The operator's screenshots came from a
 build predating `88d0759`.
+
+---
+
+## 2026-08-07 23:00–23:30 local / 20:00–20:30 UTC — release build, and a number I got wrong
+
+### Evidence — the release build was broken by the text-anchor dependency
+
+`:app:minifyReleaseWithR8`, "Compilation failed to complete", BUILD FAILED in
+5m 41s. Named by R8 itself in
+`mobile/build/app/outputs/mapping/release/missing_rules.txt:3-10`: eight
+classes, `Options` and `Options$Builder` for chinese / devanagari / japanese /
+korean.
+
+The plugin's single `initialize()` can build a recogniser for any of five
+scripts; we bundle only latin. R8 treats the dangling reference as a hard
+error. Fixed in `2a930c0` with the eight rules copied verbatim.
+
+**Rules out: "the tests are green, therefore the app ships."** 1586 passing
+tests say nothing about what minification does to an APK. This defect was
+introduced with the dependency in `cda4503` and no test could have seen it —
+only a real release build could, which is exactly why the rule requires one.
+
+Rejected: adding the other four ML Kit script artifacts. That grows the APK for
+writing systems no decal in the catalogue uses.
+
+Kept deliberately: the older `-dontwarn org.tensorflow.lite.gpu.**`, even
+though `tflite_flutter` was removed the same day. `google_mlkit_image_labeling`
+embeds TFLite itself and whether the reference survived is unverified. A
+needless `-dontwarn` costs nothing; a missing one costs a six-minute build.
+
+### Self-correction — my source-diversity numbers were invented, and wrong
+
+Claimed earlier today, in prose, with no script behind it: *"18 of 54 classes
+come from <=2 sources"* and *"`hip_abductor_adductor`'s 535 crops all come from
+ONE dataset"*.
+
+Measured (`D:\tools\equipment-model\source_diversity.py`, snapshot in
+`diversity_before.json`):
+
+| claimed | measured |
+|---|---|
+| 18 of 54 classes thin | **6 of 37** have <=2 sources |
+| `hip_abductor_adductor` = 1 source | **3 sources**, 66% from the largest |
+| — | **0 of 37** classes come from a single source |
+
+Both numbers were worse than reality, which is not the safe direction to be
+wrong in either: it would have justified a large indiscriminate download to
+fix a problem that is six specific classes wide.
+
+The real concentration, and the actual target for round 2:
+`exercise_bike` 97% · `stability_ball` 95% · `calf_raise_machine` 92% ·
+`stair_climber` 86% · `captains_chair` 81% · `resistance_bands` 80%.
+
+Root cause of the error: the figure was arithmetic done in my head over a
+partial listing and then repeated as if measured. The fix is the script, not
+more care — a number quoted twice needs to be reproducible by someone else.
+
+Still true and still the biggest gap: `ab_crunch_machine` — the operator's own
+ABDOMINAL machine — has 31 crops and lives in `dataset_v2_thin/`, so it does
+not appear in the table at all.
+
+### Decision — round 2 fetches the weak classes, not everything found
+
+Discovery returned 184 datasets / 237,479 images / 72 new. Downloading all of
+it is the kitchen-sink move the trading project already proved wrong: more
+columns, not more independent hypotheses.
+
+The corrected measurement says the deficit is six dominated classes plus
+`ab_crunch_machine`, so round 2 pulls only datasets that cover those, and
+prefers sources that are NOT already the dominant one for that class. Adding
+5,000 more crops from `gym-equipment-t6kck` raises the count and lowers the
+diversity.
+
+`diversity_before.json` exists so the claim "diversity improved" can be checked
+against a before, rather than asserted.
+
+### Evidence — the classifier has a ceiling that data cannot raise
+
+`select_targets.py` run against round 1: of the catalogue's 69 machines, **42
+are weak** (no data, under 300 crops, <=2 sources, or >=80% from one source),
+and **23 of those no Roboflow dataset can fix at all** — `captains_chair`,
+`stability_ball`, `stair_climber`, `preacher_curl_bench`,
+`multi_hip_machine`, `rotary_torso_machine`, plus most small kit (TRX,
+skipping rope, yoga blocks, gymnastic rings, tyre).
+
+This is a supply fact, not a training one: labelled photographs of those
+machines are not publicly available. No amount of downloading, epochs or
+architecture changes it. The classifier tops out somewhere near 46 of 69.
+
+The printed name does not care how rare a machine is — `MULTI HIP` on a decal
+reads exactly like `TREADMILL`. Today's 18-of-18 vs 5-of-18 stops being a
+coincidence and becomes the expected consequence.
+
+Caveat kept deliberately: the "23" is measured against round 1's 36 datasets.
+Round 2 found 184 candidates and may close some. It cannot close the small kit.
+
+### Decision — v2.1 is NOT embedded, despite "beating" the bar
+
+37 classes (was 29), same 30 photos, same truth file:
+`top-3 6/18 (33%)` against v2's `5/18 (28%)`, abstention `15/30 (50%)` against
+`10/30`.
+
+The stated bar was "do not embed unless it beats 28%". It beats it by **one
+photograph**. At n=18 that is indistinguishable from re-running the same
+training with a different seed, and it was bought with a doubling of "I don't
+know" — half the operator's frames now get no answer at all.
+
+Rejected: shipping it because the number moved in the right direction. That is
+exactly the "beautiful result" the kill-first rule exists to stop.
+
+The app therefore still ships `equipment_v1.tflite` (2026-07-29). The build
+delivered tonight has the NEW text anchor and the OLD classifier, and the
+operator was told so before testing — otherwise a v1-grade wrong answer would
+read as the anchor being broken.
+
+### Self-correction — my own script destroyed the model needed to check that
+
+`train_v2.py` wrote to a fixed path, so the 37-class run landed on top of the
+29-class one. The paired comparison — which specific photos changed answer
+between v2 and v2.1 — is now impossible; only the two aggregate numbers
+survive, and two numbers cannot show whether they moved together or in
+opposite directions on different frames.
+
+An hour of CPU to reproduce, and the loss was silent: nothing failed, the file
+was simply replaced.
+
+Fixed: each run now writes `out_v2/<classes>c_<UTC stamp>/`, with the stable
+`out_v2/equipment_v2.tflite` kept as a copy of the newest so every existing
+command keeps working. Named by class count rather than a version number
+because the count is what actually differs between runs and needs no
+hand-maintained counter — a hand-maintained one is how this collision
+happened. v2.1 was moved into `out_v2/37c_20260807_2035/` after the fact.
+
+### Refusal — `D:\tools\equipment-model` is not under version control
+
+`git rev-parse` → `fatal: not a git repository`. The entire pipeline that
+produces the model the app ships — `classes.py`, `fetch_roboflow.py`,
+`train_v2.py`, `eval_on_gym_photos.py` and tonight's two additions — has no
+history and no backup. Two real bugs were fixed in those files today with
+nothing to roll back to.
+
+Not fixed here: `git init` in the operator's tools directory is new scope,
+outside the "build + А+Б+В" GO. Raised for a decision instead — either version
+it in place, or move the scripts (not the datasets) into the app repo.
+
+### Verified — the shipped APK really contains latin OCR
+
+`-dontwarn` suppresses a warning; it does not prove the wanted class survived
+minification. Checked inside the delivered APK rather than inferred from a
+green build: `lib/arm64-v8a/libmlkit_google_ocr_pipeline.so` (10.8 MB),
+`.../Latn_ctc/optical/lstm_model.fb` (302 KB),
+`.../rpn_text_detector_...mbv2_v1.tflite` (333 KB).
+
+So if the anchor misbehaves on the device, minification is ruled out as the
+cause before the search starts.
+
+Cost, recorded because it argues against itself: OCR adds ~11 MB of native
+code plus ~1.4 MB of models — more than the 7.2 MB per ABI reclaimed by
+dropping `tflite_flutter` the same day.
