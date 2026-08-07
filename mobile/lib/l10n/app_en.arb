@@ -229,6 +229,8 @@
   "scannerCameraFailedBody": "Something interrupted the camera. Try again, or pick a photo from the gallery instead.",
   "scannerRetry": "Try again",
   "scannerCouldNotOpenSettings": "Could not open Settings on this device. Open it manually and allow camera access for this app.",
+  "scannerLowLight": "Too dark to recognise — add light or move closer",
+  "scannerOfflineAnswer": "Recognised on this device — you were offline, so this answer may be less accurate.",
   "scannerTimeoutTitle": "Recognition took too long",
   "scannerTimeoutBody": "The machine could not be identified in time. Check your connection and try the same photo again.",
   "scannerFailedTitle": "Recognition failed",

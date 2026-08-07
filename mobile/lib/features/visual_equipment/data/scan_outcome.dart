@@ -49,13 +49,27 @@ enum ScanOutcome {
 
 /// The result of one recognition attempt: what was found, and how it ended.
 class ScanResult {
-  const ScanResult({required this.outcome, this.matches = const []});
+  const ScanResult({
+    required this.outcome,
+    this.matches = const [],
+    this.answeredOffline = false,
+  });
 
-  const ScanResult.confident(List<VisualMatch> matches)
-      : this(outcome: ScanOutcome.confident, matches: matches);
+  const ScanResult.confident(List<VisualMatch> matches,
+      {bool answeredOffline = false})
+      : this(
+          outcome: ScanOutcome.confident,
+          matches: matches,
+          answeredOffline: answeredOffline,
+        );
 
-  const ScanResult.alternatives(List<VisualMatch> matches)
-      : this(outcome: ScanOutcome.alternatives, matches: matches);
+  const ScanResult.alternatives(List<VisualMatch> matches,
+      {bool answeredOffline = false})
+      : this(
+          outcome: ScanOutcome.alternatives,
+          matches: matches,
+          answeredOffline: answeredOffline,
+        );
 
   const ScanResult.unknown() : this(outcome: ScanOutcome.unknown);
   const ScanResult.noEquipment() : this(outcome: ScanOutcome.noEquipment);
@@ -67,6 +81,14 @@ class ScanResult {
   /// Ranked, best first. Empty for every outcome except [ScanOutcome.confident]
   /// and [ScanOutcome.alternatives].
   final List<VisualMatch> matches;
+
+  /// True when the on-device fallback answered because the cloud recogniser
+  /// could not be reached.
+  ///
+  /// R2.2 state 12. Surfaced so a weaker answer reads as "we were offline"
+  /// rather than as the app being bad at recognition — and so the user knows
+  /// a retry on a connection is worth something.
+  final bool answeredOffline;
 
   /// True when trying the same shot again could plausibly change the answer.
   ///
@@ -89,12 +111,17 @@ class ScanResult {
   /// Never returns [ScanOutcome.unknown] or [ScanOutcome.noEquipment]: an
   /// empty list means the CALLER must decide which of those two it is, and it
   /// needs the describer's answer to tell them apart.
-  factory ScanResult.fromMatches(List<VisualMatch> ranked) {
+  factory ScanResult.fromMatches(
+    List<VisualMatch> ranked, {
+    bool answeredOffline = false,
+  }) {
     if (ranked.isEmpty) return const ScanResult.noEquipment();
-    if (ranked.length == 1) return ScanResult.confident(ranked);
+    if (ranked.length == 1) {
+      return ScanResult.confident(ranked, answeredOffline: answeredOffline);
+    }
     final lead = ranked[0].confidence - ranked[1].confidence;
     return lead >= confidentMargin
-        ? ScanResult.confident(ranked)
-        : ScanResult.alternatives(ranked);
+        ? ScanResult.confident(ranked, answeredOffline: answeredOffline)
+        : ScanResult.alternatives(ranked, answeredOffline: answeredOffline);
   }
 }

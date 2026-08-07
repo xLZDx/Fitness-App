@@ -256,11 +256,22 @@ Uint8List resizeForCloud(String path) {
 /// model needs neither. Any cloud failure falls back silently-but-logged, so
 /// the user in a basement gym still gets an answer — the weaker one, honestly
 /// scored. Only when BOTH fail does the user see an error.
-class HybridVisualEquipmentService implements VisualEquipmentService {
+class HybridVisualEquipmentService
+    implements VisualEquipmentService, FallbackReportingRecogniser {
   HybridVisualEquipmentService({required this.cloud, required this.local});
 
   final VisualEquipmentService cloud;
   final VisualEquipmentService local;
+
+  bool _lastAnsweredOffline = false;
+
+  /// R2.2 state 12. The fallback used to be invisible: "silently-but-logged"
+  /// meant the user got the weaker answer, honestly scored, but was never told
+  /// it came from the weaker model — so a low-confidence result in a basement
+  /// gym looked like the app being bad at its job rather than the network
+  /// being absent.
+  @override
+  bool get lastAnsweredOffline => _lastAnsweredOffline;
 
   @override
   Future<List<VisualMatch>> classifyFile({
@@ -269,14 +280,21 @@ class HybridVisualEquipmentService implements VisualEquipmentService {
   }) async {
     Object? cloudError;
     try {
-      return await cloud.classifyFile(path: path, topK: topK);
+      final answer = await cloud.classifyFile(path: path, topK: topK);
+      _lastAnsweredOffline = false;
+      return answer;
     } catch (e) {
       cloudError = e;
       debugPrint('cloud recognition unavailable, falling back on-device: $e');
     }
     try {
-      return await local.classifyFile(path: path, topK: topK);
+      final answer = await local.classifyFile(path: path, topK: topK);
+      _lastAnsweredOffline = true;
+      return answer;
     } catch (e) {
+      // Both failed: there is no answer, so there is nothing to label as
+      // having come from the fallback.
+      _lastAnsweredOffline = false;
       throw VisualEquipmentException(
           'recognition failed (cloud: $cloudError; on-device: $e)');
     }

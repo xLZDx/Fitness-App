@@ -28,6 +28,29 @@ abstract class VisualEquipmentService {
   });
 }
 
+/// Implemented only by a service that HAS a fallback and can say when it used
+/// one.
+///
+/// R2.2 state 12. A separate capability interface rather than a member on
+/// [VisualEquipmentService], because Dart's `implements` does not inherit
+/// concrete members: putting a defaulted getter on the main interface would
+/// force every implementation and every test fake to restate it, including
+/// the several that have no fallback and nothing to report.
+///
+/// This is a capability check, not the layering mistake this file's history
+/// records elsewhere (a preview downcasting a *detector* to reach a camera).
+/// The caller is not reaching through the abstraction for internals — it is
+/// asking whether an optional capability is present at all, which is what an
+/// `is` check is for.
+abstract interface class FallbackReportingRecogniser
+    implements VisualEquipmentService {
+  /// Whether the LAST `classifyFile` was answered by the on-device fallback
+  /// rather than the primary (cloud) recogniser.
+  ///
+  /// Read immediately after an awaited call; it describes that call.
+  bool get lastAnsweredOffline;
+}
+
 class MockVisualEquipmentService implements VisualEquipmentService {
   MockVisualEquipmentService({this.fixedResults = const []});
   final List<VisualMatch> fixedResults;

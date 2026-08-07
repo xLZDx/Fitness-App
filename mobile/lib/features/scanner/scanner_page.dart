@@ -442,6 +442,27 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                     )
                   else ...[
                     LiveEquipmentPreview(session: session),
+                    // R2.2 state 9. Over the viewfinder, not instead of it:
+                    // the guidance is "add light", and a user who cannot see
+                    // what the camera sees cannot tell whether they followed
+                    // it. Non-blocking by construction.
+                    ValueListenableBuilder<bool>(
+                      valueListenable: session.isLowLight,
+                      builder: (context, dark, _) => dark
+                          ? Align(
+                              alignment: Alignment.topCenter,
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: _ViewfinderBanner(
+                                  key: const Key('scan-low-light'),
+                                  icon: Icons.light_mode_outlined,
+                                  text: AppLocalizations.of(context)
+                                      .scannerLowLight,
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
                     // Only over a live viewfinder. An aiming frame drawn on
                     // top of "camera access is blocked" tells the user to aim
                     // at something that is not there — and, being the topmost
@@ -541,9 +562,26 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                   AppLocalizations.of(context).scannerRecognitionFailed(e)),
             ),
             data: (result) => switch (result.outcome) {
-              ScanOutcome.confident ||
-              ScanOutcome.alternatives =>
-                _Matches(matches: result.matches, onOpen: _openEquipment),
+              ScanOutcome.confident || ScanOutcome.alternatives => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // R2.2 state 12. The hybrid recogniser falls back to the
+                    // on-device model "silently-but-logged" — the user got the
+                    // weaker answer and was never told why it was weaker, so a
+                    // low-confidence result in a basement gym read as the app
+                    // being bad rather than the network being absent.
+                    if (result.answeredOffline) ...[
+                      _ScanNote(
+                        key: const Key('scan-offline-answer'),
+                        icon: Icons.cloud_off_rounded,
+                        text: AppLocalizations.of(context)
+                            .scannerOfflineAnswer,
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                    _Matches(matches: result.matches, onOpen: _openEquipment),
+                  ],
+                ),
               // Not in the catalogue, but the describer could name it. That
               // card IS the answer -- "не удалось понять" stops being true the
               // moment the app can say what the machine is.
@@ -928,6 +966,79 @@ class _Matches extends StatelessWidget {
           const SizedBox(height: 8),
         ],
       ],
+    );
+  }
+}
+
+/// A qualifier attached to a result — how it was produced, not what it says.
+class _ScanNote extends StatelessWidget {
+  const _ScanNote({super.key, required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GlassCard(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: theme.colors.textSecondary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colors.textSecondary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A short, non-blocking message drawn over the viewfinder.
+///
+/// Deliberately small and translucent: the camera stays the dominant surface,
+/// per the rule that the viewfinder must not be covered by large cards.
+class _ViewfinderBanner extends StatelessWidget {
+  const _ViewfinderBanner({super.key, required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    // The DARK token set explicitly, not the app's current one: this sits on a
+    // camera preview, which is dark whatever theme the app is in. Tokens
+    // rather than literal whites because the design system's own guard test
+    // counts hardcoded `Colors.white` and refuses new ones — correctly: two
+    // more here is how a palette stops being a palette.
+    final ink = AppSemanticColors.dark.textPrimary;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppSemanticColors.dark.cameraOverlay,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: ink, size: 18),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                text,
+                style: theme.textTheme.bodySmall?.copyWith(color: ink),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -80,6 +81,34 @@ class _ThrowingService implements VisualEquipmentService {
     int topK = 3,
   }) async =>
       throw const VisualEquipmentException('model missing');
+}
+
+/// Answers with matches and reports having used the on-device fallback.
+class _OfflineAnsweringService implements VisualEquipmentService,
+    FallbackReportingRecogniser {
+  @override
+  bool lastAnsweredOffline = true;
+
+  @override
+  Future<List<VisualMatch>> classifyFile({
+    required String path,
+    int topK = 3,
+  }) async =>
+      const [VisualMatch(equipmentId: 'leg_press', confidence: 0.9)];
+}
+
+/// A session whose low-light verdict a test can flip.
+class _LightSession extends CameraSession {
+  final ValueNotifier<bool> dark = ValueNotifier<bool>(false);
+
+  @override
+  ValueListenable<bool> get isLowLight => dark;
+
+  @override
+  Future<void> start({bool requestPermission = false}) async {}
+
+  @override
+  Future<void> stop() async {}
 }
 
 /// Answers the Settings call without a platform channel.
@@ -608,6 +637,71 @@ void main() {
       // that one is not the spinner this rule is about.
       expect(container.read(visualEquipmentControllerProvider).isLoading,
           isFalse);
+    });
+
+    testWidgets('a dark viewfinder says so, without covering the camera',
+        (tester) async {
+      // R2.2 state 9. The guidance is "add light" — a user who cannot see what
+      // the camera sees cannot tell whether they followed it, so the banner
+      // sits over the preview rather than replacing it.
+      final session = _LightSession();
+      await pumpScan(tester,
+          overrides: [scanCameraSessionProvider.overrideWithValue(session)]);
+      await tester.pump();
+
+      expect(find.byKey(const Key('scan-low-light')), findsNothing);
+
+      session.dark.value = true;
+      await tester.pump();
+
+      expect(find.byKey(const Key('scan-low-light')), findsOneWidget);
+      expect(find.byType(LiveEquipmentPreview), findsOneWidget,
+          reason: 'the viewfinder must stay visible under the banner');
+
+      session.dark.value = false;
+      await tester.pump();
+      expect(find.byKey(const Key('scan-low-light')), findsNothing);
+    });
+
+    testWidgets('an offline answer says it came from the device',
+        (tester) async {
+      // R2.2 state 12. The fallback used to be invisible: the user got the
+      // weaker answer and was never told the cloud was unreachable, so a poor
+      // result read as the app being bad rather than the network being absent.
+      final container = await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(_SpySession()),
+        visualEquipmentServiceProvider
+            .overrideWithValue(_OfflineAnsweringService()),
+      ]);
+
+      await container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/a.jpg');
+      await tester.pump();
+      await tester.scrollUntilVisible(
+          find.byKey(const Key('scan-offline-answer')), 120);
+
+      expect(find.byKey(const Key('scan-offline-answer')), findsOneWidget);
+      expect(container.read(visualEquipmentControllerProvider).requireValue
+          .answeredOffline, isTrue);
+    });
+
+    testWidgets('a cloud answer carries no offline note', (tester) async {
+      final container = await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(_SpySession()),
+        visualEquipmentServiceProvider.overrideWithValue(
+          MockVisualEquipmentService(fixedResults: const [
+            VisualMatch(equipmentId: 'leg_press', confidence: 0.9),
+          ]),
+        ),
+      ]);
+
+      await container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/a.jpg');
+      await tester.pump();
+
+      expect(find.byKey(const Key('scan-offline-answer')), findsNothing);
     });
 
     testWidgets('an undecided result is not written into My machines',

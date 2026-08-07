@@ -43,11 +43,18 @@ class VisualEquipmentController extends Notifier<AsyncValue<ScanResult>> {
       // spinner up permanently — the exact failure this gate exists to
       // remove, reintroduced by a line that looks like bookkeeping.
       ref.read(lastMachineCardProvider.notifier).clear();
-      final matches = await ref
-          .read(visualEquipmentServiceProvider)
-          .classifyFile(path: path)
-          .timeout(timeout);
-      final result = ScanResult.fromMatches(matches);
+      final service = ref.read(visualEquipmentServiceProvider);
+      final matches =
+          await service.classifyFile(path: path).timeout(timeout);
+      // Read straight after the awaited call, which is what the flag
+      // describes. Only one scan runs at a time, so there is no second call
+      // to have overwritten it in between. Services without a fallback do not
+      // implement the capability and simply have nothing to report.
+      final result = ScanResult.fromMatches(
+        matches,
+        answeredOffline: service is FallbackReportingRecogniser &&
+            service.lastAnsweredOffline,
+      );
       // In the catalog → the catalog answers, and it answers immediately.
       // Operator: *"если есть в каталоге то показывать из каталога сразу"*.
       if (result.outcome != ScanOutcome.noEquipment) {

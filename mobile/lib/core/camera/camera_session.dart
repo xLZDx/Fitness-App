@@ -8,6 +8,7 @@ import 'package:google_mlkit_commons/google_mlkit_commons.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'camera_availability.dart';
+import 'frame_brightness.dart';
 import 'nv21_converter.dart';
 
 /// Which way the camera points. Named per feature intent, not per plugin enum.
@@ -260,12 +261,43 @@ class CameraSession {
     }
   }
 
+  /// Whether the last several frames were too dark to recognise from.
+  ///
+  /// A listenable rather than a getter for the same reason [surface] is: it
+  /// changes between frames, and no widget can observe a field.
+  ValueListenable<bool> get isLowLight => _lowLight;
+  final ValueNotifier<bool> _lowLight = ValueNotifier<bool>(false);
+  int _darkFrameRun = 0;
+
+  /// Folds one frame's brightness into the sustained low-light verdict.
+  ///
+  /// A run, not a single reading: a hand passing the lens or auto-exposure
+  /// settling right after the camera opens both produce one dark frame in a
+  /// perfectly lit room, and a banner that flickers on those teaches the user
+  /// to ignore it.
+  void _updateLowLight(CameraImage image) {
+    final plane = image.planes.first;
+    final brightness = averageFrameBrightness(
+      plane.bytes,
+      interleavedBgra: !Platform.isAndroid,
+    );
+    if (brightness == null) return;
+    if (brightness < kLowLightBrightness) {
+      if (_darkFrameRun < kLowLightFrameRun) _darkFrameRun++;
+    } else {
+      _darkFrameRun = 0;
+    }
+    final dark = _darkFrameRun >= kLowLightFrameRun;
+    if (_lowLight.value != dark) _lowLight.value = dark;
+  }
+
   void _onFrame(CameraImage image) {
     if (!_running || _busy) return;
     // Guards against a slow listener queueing frames faster than they drain;
     // conversion itself is synchronous, so this only ever skips.
     _busy = true;
     try {
+      if (image.planes.isNotEmpty) _updateLowLight(image);
       final input = _toInputImage(image);
       if (input == null) return;
       _lastFrameAt = DateTime.now();
@@ -311,6 +343,10 @@ class CameraSession {
   /// re-subscribe across visits.
   Future<void> stop() async {
     _running = false;
+    // A released camera is not a dark room. Leaving the verdict latched would
+    // show a low-light banner over a viewfinder that is not even running.
+    _darkFrameRun = 0;
+    _lowLight.value = false;
     _watchdog?.cancel();
     _watchdog = null;
     _lastFrameAt = null;
@@ -331,6 +367,7 @@ class CameraSession {
   Future<void> dispose() async {
     await stop();
     _surface.dispose();
+    _lowLight.dispose();
     await _frames.close();
   }
 }
