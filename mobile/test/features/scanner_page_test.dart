@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import '../helpers/test_app.dart';
+import 'package:fitness_app/core/camera/camera_availability.dart';
 import 'package:fitness_app/core/camera/camera_session.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/scanner/scanner_page.dart';
@@ -24,10 +25,55 @@ class _SpySession extends CameraSession {
   int stops = 0;
 
   @override
-  Future<void> start() async => starts++;
+  Future<void> start({bool requestPermission = false}) async => starts++;
 
   @override
   Future<void> stop() async => stops++;
+}
+
+/// Fails [start] with a typed reason, then succeeds once [fixed] is set.
+///
+/// The second half is what makes the retry tests real: a session that always
+/// throws cannot tell "the button did nothing" apart from "the button ran and
+/// the camera is still refused".
+class _FailingSession extends CameraSession {
+  _FailingSession(this.reason);
+
+  final CameraUnavailableReason reason;
+  bool fixed = false;
+  int starts = 0;
+  int stops = 0;
+
+  /// Records whether the caller asked for the system prompt, so a test can
+  /// prove the automatic paths do NOT and the user-initiated one does.
+  final List<bool> requestedPermission = [];
+
+  @override
+  Future<void> start({bool requestPermission = false}) async {
+    starts++;
+    requestedPermission.add(requestPermission);
+    if (fixed) return;
+    throw CameraUnavailable(reason);
+  }
+
+  @override
+  Future<void> stop() async => stops++;
+}
+
+/// Answers the Settings call without a platform channel.
+class _FakePermissionGate extends CameraPermissionGate {
+  _FakePermissionGate({this.opens = true, this.throws = false});
+
+  final bool opens;
+  final bool throws;
+  int openCalls = 0;
+
+  @override
+  Future<bool> openSettings() async {
+    openCalls++;
+    if (throws) throw Exception('platform refused');
+    return opens;
+  }
 }
 
 void main() {
@@ -343,6 +389,179 @@ void main() {
               matching: find.text('rowing machine')),
           findsOneWidget);
       expect(find.textContaining('100% of frames agree'), findsOneWidget);
+    });
+  });
+
+  /// R2.9 — the camera-off overlay must name the cause and offer the action
+  /// that fixes THAT cause. Before this gate every failure rendered one title
+  /// ("Camera unavailable"), the raw exception in the body, and no button.
+  group('ScannerPage camera-unavailable states', () {
+    Future<_FailingSession> pumpFailing(
+      WidgetTester tester,
+      CameraUnavailableReason reason, {
+      CameraPermissionGate? gate,
+    }) async {
+      final session = _FailingSession(reason);
+      await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(session),
+        if (gate != null) cameraPermissionGateProvider.overrideWithValue(gate),
+      ]);
+      // Armed from a post-frame callback; the failure lands on the pump after.
+      await tester.pump();
+      await tester.pump();
+      return session;
+    }
+
+    testWidgets('an ungranted permission explains before it asks',
+        (tester) async {
+      // `PermissionStatus.denied` means "never asked" AND "asked once,
+      // refused" on Android — indistinguishable. Titling this card "access
+      // denied" would be a false statement for every first-time user.
+      await pumpFailing(tester, CameraUnavailableReason.permissionDenied);
+
+      expect(find.text('Camera access needed'), findsOneWidget);
+      expect(find.byKey(const Key('scan-camera-retry')), findsOneWidget);
+      expect(find.byKey(const Key('scan-camera-open-settings')), findsNothing);
+    });
+
+    testWidgets('arriving on the page never triggers the system prompt',
+        (tester) async {
+      // The page arms on arrival, on route change and on resume. Requesting
+      // there would put the OS dialog in front of someone who never asked,
+      // once per foreground event.
+      final session =
+          await pumpFailing(tester, CameraUnavailableReason.permissionDenied);
+
+      expect(session.requestedPermission, isNotEmpty);
+      expect(session.requestedPermission.every((asked) => !asked), isTrue,
+          reason: 'automatic arming must not prompt');
+    });
+
+    testWidgets('tapping the permission button is what asks', (tester) async {
+      final session =
+          await pumpFailing(tester, CameraUnavailableReason.permissionDenied);
+
+      await tester.tap(find.byKey(const Key('scan-camera-retry')));
+      await tester.pump();
+      await tester.pump();
+
+      expect(session.requestedPermission.last, isTrue,
+          reason: 'the user asking for the camera IS the contextual request');
+    });
+
+    testWidgets('a permanently-refused permission offers Settings, not retry',
+        (tester) async {
+      await pumpFailing(
+          tester, CameraUnavailableReason.permissionPermanentlyDenied);
+
+      expect(find.text('Camera access is blocked'), findsOneWidget);
+      expect(find.byKey(const Key('scan-camera-open-settings')), findsOneWidget);
+      expect(find.byKey(const Key('scan-camera-retry')), findsNothing);
+    });
+
+    testWidgets('no camera offers no action at all', (tester) async {
+      // A retry button for hardware that does not exist would be a lie with a
+      // button on it. The gallery path stays available below the viewfinder.
+      await pumpFailing(tester, CameraUnavailableReason.noCamera);
+
+      expect(find.text('No camera on this device'), findsOneWidget);
+      expect(find.byKey(const Key('scan-camera-retry')), findsNothing);
+      expect(find.byKey(const Key('scan-camera-open-settings')), findsNothing);
+    });
+
+    testWidgets('a failed init offers a retry', (tester) async {
+      await pumpFailing(tester, CameraUnavailableReason.initializationFailed);
+
+      expect(find.text('Camera could not start'), findsOneWidget);
+      expect(find.byKey(const Key('scan-camera-retry')), findsOneWidget);
+    });
+
+    testWidgets('the four causes do not share one message', (tester) async {
+      // The regression this gate exists for: one title for every cause.
+      final titles = <String>{};
+      for (final reason in CameraUnavailableReason.values) {
+        await pumpFailing(tester, reason);
+        final overlay = find.byKey(const Key('scan-camera-unavailable'));
+        final texts = tester
+            .widgetList<Text>(
+                find.descendant(of: overlay, matching: find.byType(Text)))
+            .map((t) => t.data)
+            .whereType<String>();
+        titles.add(texts.first);
+      }
+      expect(titles, hasLength(CameraUnavailableReason.values.length));
+    });
+
+    testWidgets('retry re-arms the camera and clears the overlay',
+        (tester) async {
+      final session =
+          await pumpFailing(tester, CameraUnavailableReason.permissionDenied);
+      final startsBeforeRetry = session.starts;
+
+      // What the user does after granting access in the system dialog.
+      session.fixed = true;
+      await tester.tap(find.byKey(const Key('scan-camera-retry')));
+      // Explicit pumps, not pumpAndSettle: a restored viewfinder renders the
+      // preview's own warming spinner, which animates forever and never
+      // settles.
+      await tester.pump();
+      await tester.pump();
+
+      expect(session.starts, greaterThan(startsBeforeRetry));
+      expect(find.byKey(const Key('scan-camera-unavailable')), findsNothing);
+      expect(find.byType(LiveEquipmentPreview), findsOneWidget);
+    });
+
+    testWidgets('no raw exception text reaches the screen', (tester) async {
+      // Never show internal exceptions to users. The old body interpolated the
+      // caught object straight into the sentence.
+      await pumpFailing(tester, CameraUnavailableReason.initializationFailed);
+
+      expect(find.textContaining('CameraException'), findsNothing);
+      expect(find.textContaining('Exception'), findsNothing);
+      expect(find.textContaining('CameraUnavailableReason'), findsNothing);
+    });
+
+    testWidgets('a Settings screen that will not open says so', (tester) async {
+      // Open Settings is the ONLY action for a permanently-refused
+      // permission. A platform that declines the intent — some locked-down
+      // Android builds do — used to leave the user tapping a dead button.
+      final gate = _FakePermissionGate(opens: false);
+      await pumpFailing(
+          tester, CameraUnavailableReason.permissionPermanentlyDenied,
+          gate: gate);
+
+      await tester.tap(find.byKey(const Key('scan-camera-open-settings')));
+      await tester.pump();
+
+      expect(gate.openCalls, 1);
+      expect(find.textContaining('Could not open Settings'), findsOneWidget);
+    });
+
+    testWidgets('a throwing Settings call is reported, not swallowed',
+        (tester) async {
+      final gate = _FakePermissionGate(throws: true);
+      await pumpFailing(
+          tester, CameraUnavailableReason.permissionPermanentlyDenied,
+          gate: gate);
+
+      await tester.tap(find.byKey(const Key('scan-camera-open-settings')));
+      await tester.pump();
+
+      expect(find.textContaining('Could not open Settings'), findsOneWidget);
+    });
+
+    testWidgets('a Settings screen that opens stays quiet', (tester) async {
+      final gate = _FakePermissionGate();
+      await pumpFailing(
+          tester, CameraUnavailableReason.permissionPermanentlyDenied,
+          gate: gate);
+
+      await tester.tap(find.byKey(const Key('scan-camera-open-settings')));
+      await tester.pump();
+
+      expect(gate.openCalls, 1);
+      expect(find.textContaining('Could not open Settings'), findsNothing);
     });
   });
 }

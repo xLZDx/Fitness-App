@@ -2,9 +2,15 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/camera/camera_availability.dart';
 import '../../../core/camera/camera_session.dart';
 import '../data/live_equipment_service.dart';
 import '../data/live_recognition.dart';
+
+/// The camera-permission platform calls, behind a provider so a widget test
+/// can drive "Open Settings" without reaching the real platform channel.
+final cameraPermissionGateProvider =
+    Provider<CameraPermissionGate>((ref) => const CameraPermissionGate());
 
 /// The Scan tab's camera.
 ///

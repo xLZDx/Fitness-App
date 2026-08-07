@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/camera/camera_availability.dart';
 import '../../core/camera/camera_session.dart';
 import '../../core/camera/centre_crop.dart';
 import '../../core/theme/app_palette.dart';
@@ -51,9 +52,17 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   /// the two used to render the same hint card.
   bool _attempted = false;
 
-  /// Set when the camera could not be opened at all, so the page can say so
+  /// Set when the camera could not be opened at all, so the page can say WHY
   /// instead of showing a placeholder forever.
-  Object? _cameraError;
+  ///
+  /// R2.9: typed, not a bare `Object`. It used to hold the raw plugin
+  /// exception and every cause — permission refused, refused permanently, no
+  /// camera at all — rendered the same sentence with the exception appended.
+  CameraUnavailable? _cameraFailure;
+
+  /// True while a permission request or retry is in flight, so the action
+  /// button can show progress and refuse a second tap.
+  bool _retrying = false;
 
   GoRouter? _router;
 
@@ -130,24 +139,72 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   }
 
   /// Opens the camera. Idempotent.
-  Future<void> _arm() async {
+  ///
+  /// [requestPermission] is false on every automatic path — arrival, route
+  /// change, app resume. The system dialog belongs to the moment the user
+  /// asks for the camera, not to every foreground event; without that split
+  /// a refusal re-prompted on each resume.
+  Future<void> _arm({bool requestPermission = false}) async {
     if (!mounted) return;
-    // `??=` on a nullable field yields a nullable static type even though the
-    // provider cannot return null, hence the separate non-null read.
-    _session ??= ref.read(scanCameraSessionProvider);
-    _liveMode ??= ref.read(liveModeEnabledProvider.notifier);
-    final session = _session!;
     try {
-      await session.start();
+      // Inside the try, not above it: these are `ref` reads on a path that
+      // also runs from lifecycle callbacks, and a throw here used to escape
+      // _arm entirely — past its own catch, out through the retry button's
+      // `unawaited`, leaving the spinner cleared and nothing on screen.
+      _session ??= ref.read(scanCameraSessionProvider);
+      _liveMode ??= ref.read(liveModeEnabledProvider.notifier);
+      await _session!.start(requestPermission: requestPermission);
       if (!mounted) return;
-      if (_cameraError != null) setState(() => _cameraError = null);
+      if (_cameraFailure != null) setState(() => _cameraFailure = null);
     } catch (e) {
-      // Permission denied, camera busy, no camera at all. Surfaced, because a
-      // viewfinder that never appears with no explanation is the defect this
-      // page was reported for.
+      // Permission refused, refused for good, no camera at all, or a failed
+      // init. Surfaced with its reason, because a viewfinder that never
+      // appears with no explanation is the defect this page was reported for,
+      // and one message for four causes only tells the user something is
+      // wrong — not which of the four fixes is theirs.
       if (!mounted) return;
-      setState(() => _cameraError = e);
+      setState(() => _cameraFailure = classifyCameraFailure(e));
     }
+  }
+
+  /// Retries after a failure the user can plausibly have fixed.
+  ///
+  /// Goes through [_arm] rather than calling `start()` directly so a retry
+  /// runs the permission gate again — the whole point when the user has just
+  /// returned from granting access in Settings. Requests the permission,
+  /// because reaching this button IS the user asking for the camera.
+  Future<void> _retryCamera() async {
+    if (_retrying) return;
+    setState(() => _retrying = true);
+    try {
+      await _arm(requestPermission: true);
+    } finally {
+      if (mounted) setState(() => _retrying = false);
+    }
+  }
+
+  /// Sends the user to the system settings page for this app.
+  ///
+  /// No retry is scheduled here: leaving for Settings backgrounds the app, and
+  /// `didChangeAppLifecycleState` re-arms on resume, which is the same path a
+  /// successful grant would take anyway.
+  Future<void> _openCameraSettings() async {
+    // The result is checked, not discarded. This is the ONLY action offered
+    // for a permanently-refused permission, so a platform that declines to
+    // open Settings — some locked-down Android builds do — would otherwise
+    // leave the user tapping a button that does nothing, with no feedback and
+    // no other way forward.
+    var opened = false;
+    try {
+      opened = await ref.read(cameraPermissionGateProvider).openSettings();
+    } catch (e) {
+      debugPrint('open app settings failed: $e');
+    }
+    if (opened || !mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(AppLocalizations.of(context).scannerCouldNotOpenSettings),
+      behavior: SnackBarBehavior.floating,
+    ));
   }
 
   Future<void> _disarm({bool flipLiveMode = true}) async {
@@ -353,25 +410,39 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  if (_cameraError != null)
-                    _CameraUnavailable(error: _cameraError!)
-                  else
+                  if (_cameraFailure != null)
+                    _CameraUnavailable(
+                      failure: _cameraFailure!,
+                      busy: _retrying,
+                      onRetry: _retryCamera,
+                      onOpenSettings: _openCameraSettings,
+                    )
+                  else ...[
                     LiveEquipmentPreview(session: session),
-                  Center(
-                    child: FractionallySizedBox(
-                      widthFactor: 0.75,
-                      heightFactor: 0.75,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.85),
-                            width: 2,
+                    // Only over a live viewfinder. An aiming frame drawn on
+                    // top of "camera access is blocked" tells the user to aim
+                    // at something that is not there — and, being the topmost
+                    // Stack child, it also sat over the overlay's own action
+                    // button. IgnorePointer because it is decoration: it must
+                    // never be what a tap lands on.
+                    const IgnorePointer(
+                      child: Center(
+                        child: FractionallySizedBox(
+                          widthFactor: 0.75,
+                          heightFactor: 0.75,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              border: Border.fromBorderSide(
+                                BorderSide(color: Colors.white, width: 2),
+                              ),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(20)),
+                            ),
                           ),
-                          borderRadius: BorderRadius.circular(20),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -814,46 +885,130 @@ class _Matches extends StatelessWidget {
   }
 }
 
+/// The camera-off overlay, with the reason and the action that fixes it.
+///
+/// R2.9. The previous version took a raw `Object error`, printed one title for
+/// every cause, and interpolated the exception into the body — which is both
+/// the "never show internal exceptions" prohibition and, for a user who had
+/// simply refused the permission, no path back: there was no button at all.
 class _CameraUnavailable extends StatelessWidget {
-  const _CameraUnavailable({required this.error});
-  final Object error;
+  const _CameraUnavailable({
+    required this.failure,
+    required this.busy,
+    required this.onRetry,
+    required this.onOpenSettings,
+  });
+
+  final CameraUnavailable failure;
+  final bool busy;
+  final Future<void> Function() onRetry;
+  final Future<void> Function() onOpenSettings;
+
+  /// Icon chosen per cause, so the state is not distinguished by wording
+  /// alone — the same reason the app pairs colour with an icon elsewhere.
+  IconData get _icon => switch (failure.reason) {
+        CameraUnavailableReason.permissionDenied => Icons.lock_outline_rounded,
+        CameraUnavailableReason.permissionPermanentlyDenied =>
+          Icons.settings_outlined,
+        CameraUnavailableReason.noCamera => Icons.no_photography_outlined,
+        CameraUnavailableReason.initializationFailed =>
+          Icons.camera_alt_outlined,
+      };
+
+  /// `permissionDenied` renders the EXPLANATION, not an accusation.
+  /// `PermissionStatus.denied` means "never asked" and "asked once, refused"
+  /// alike on Android — the platform does not separate them — so this card is
+  /// the first thing a new user sees, and "Camera access denied" would be a
+  /// false statement to half of the people reading it. Explaining what the
+  /// camera is for, next to the button that asks, is the contextual request.
+  String _title(AppLocalizations l10n) => switch (failure.reason) {
+        CameraUnavailableReason.permissionDenied => l10n.scannerPermissionTitle,
+        CameraUnavailableReason.permissionPermanentlyDenied =>
+          l10n.scannerPermissionBlockedTitle,
+        CameraUnavailableReason.noCamera => l10n.scannerNoCameraTitle,
+        CameraUnavailableReason.initializationFailed =>
+          l10n.scannerCameraFailedTitle,
+      };
+
+  String _body(AppLocalizations l10n) => switch (failure.reason) {
+        CameraUnavailableReason.permissionDenied => l10n.scannerPermissionBody,
+        CameraUnavailableReason.permissionPermanentlyDenied =>
+          l10n.scannerPermissionBlockedBody,
+        CameraUnavailableReason.noCamera => l10n.scannerNoCameraBody,
+        CameraUnavailableReason.initializationFailed =>
+          l10n.scannerCameraFailedBody,
+      };
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    // Settings for a permission only Settings can change; retry for anything
+    // the user could plausibly have just fixed. `noCamera` gets neither —
+    // offering a retry for absent hardware would be a lie with a button on it.
+    final action = failure.needsSettings
+        ? (
+            key: const Key('scan-camera-open-settings'),
+            label: l10n.scannerOpenSettings,
+            onPressed: onOpenSettings,
+          )
+        : failure.isRetryable
+            ? (
+                key: const Key('scan-camera-retry'),
+                label: failure.reason == CameraUnavailableReason.permissionDenied
+                    ? l10n.scannerPermissionAllow
+                    : l10n.scannerRetry,
+                onPressed: onRetry,
+              )
+            : null;
+
     return Container(
+      key: const Key('scan-camera-unavailable'),
       color: Colors.black.withValues(alpha: 0.65),
       padding: const EdgeInsets.all(24),
       child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                gradient: const LinearGradient(colors: [
-                  AppPalette.auroraViolet,
-                  AppPalette.auroraBlue,
-                ]),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  gradient: const LinearGradient(colors: [
+                    AppPalette.auroraViolet,
+                    AppPalette.auroraBlue,
+                  ]),
+                ),
+                child: Icon(_icon,
+                    color: AppSemanticColors.onGradientInk, size: 36),
               ),
-              child: const Icon(Icons.camera_alt_outlined,
-                  color: AppSemanticColors.onGradientInk, size: 36),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              AppLocalizations.of(context).scannerCameraUnavailable,
-              style: theme.textTheme.titleMedium
-                  ?.copyWith(color: Colors.white, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              AppLocalizations.of(context).scannerYouCanStillPickAPhoto(error),
-              style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const SizedBox(height: 14),
+              Text(
+                _title(l10n),
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleMedium?.copyWith(
+                    color: Colors.white, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                _body(l10n),
+                style:
+                    theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
+                textAlign: TextAlign.center,
+              ),
+              if (action != null) ...[
+                const SizedBox(height: 16),
+                AppPrimaryButton(
+                  key: action.key,
+                  onPressed: busy ? null : () => unawaited(action.onPressed()),
+                  loading: busy,
+                  label: action.label,
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );

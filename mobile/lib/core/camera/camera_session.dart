@@ -5,7 +5,9 @@ import 'dart:ui' show Size;
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart';
+import 'package:permission_handler/permission_handler.dart';
 
+import 'camera_availability.dart';
 import 'nv21_converter.dart';
 
 /// Which way the camera points. Named per feature intent, not per plugin enum.
@@ -26,9 +28,16 @@ enum SessionFacing { back, front }
 /// independently, which is what lets the QR watcher run continuously while the
 /// far more expensive equipment labeler runs only when the user asks for it.
 class CameraSession {
-  CameraSession({this.facing = SessionFacing.back});
+  CameraSession({
+    this.facing = SessionFacing.back,
+    CameraPermissionGate permissions = const CameraPermissionGate(),
+  }) : _permissions = permissions;
 
   final SessionFacing facing;
+
+  /// Injectable so a widget test can drive every permission state without a
+  /// platform channel — see `camera_availability.dart`.
+  final CameraPermissionGate _permissions;
 
   CameraController? _camera;
   final ValueNotifier<CameraController?> _surface =
@@ -40,6 +49,10 @@ class CameraSession {
   bool _busy = false;
   DateTime? _lastFrameAt;
   Timer? _watchdog;
+
+  /// The in-flight [start], so concurrent callers join it instead of opening a
+  /// second camera. See the re-entrancy note on [start].
+  Future<void>? _starting;
 
   /// A live preview keeps painting the last texture even when nothing is
   /// analysing it, so a stalled stream looks HEALTHIER than a broken one. Past
@@ -66,9 +79,74 @@ class CameraSession {
   DateTime? get lastFrameAt => _lastFrameAt;
 
   /// Idempotent: safe to call when already running.
-  Future<void> start() async {
+  ///
+  /// Throws [CameraUnavailable] — never a raw plugin exception — so callers
+  /// can render a reason the user can act on instead of one catch-all message.
+  /// Set [requestPermission] only when the call is a direct response to the
+  /// user asking for the camera. The screen arms itself on arrival, on every
+  /// route change and on every app resume; requesting there would put the
+  /// system dialog in front of someone who never asked for it, repeatedly.
+  Future<void> start({bool requestPermission = false}) async {
     if (_running) return;
+    // Re-entrancy, not idempotence: `_running` does not flip until the very
+    // end of [_open], and this method now awaits a permission dialog the user
+    // can sit on for seconds. Without this, a second caller (the page arms
+    // from a post-frame callback, a route listener AND a lifecycle resume)
+    // builds a second CameraController over the field the first is still
+    // initialising — orphaning the first, which no teardown path can then
+    // reach, leaving the platform camera and its indicator light on.
+    if (_starting != null) return _starting;
+    final attempt = _startOnce(requestPermission: requestPermission);
+    _starting = attempt;
+    try {
+      await attempt;
+    } finally {
+      if (identical(_starting, attempt)) _starting = null;
+    }
+  }
+
+  Future<void> _startOnce({required bool requestPermission}) async {
+    // Asked before touching the camera, not inferred from the failure
+    // afterwards: `permission_handler` is the one source that distinguishes
+    // "denied, ask again" from "denied for good, only Settings will do" the
+    // same way on both platforms. The plugin's own exception cannot — Android
+    // emits `CameraAccessDenied` for both.
+    //
+    // Wrapped: these are platform-channel calls too. An unwrapped
+    // MissingPluginException here would escape as an untyped crash, past the
+    // exact typed-reason mechanism this gate exists to provide.
+    PermissionStatus status;
+    try {
+      status = await _permissions.status();
+      if (status.isDenied && requestPermission) {
+        status = await _permissions.request();
+      }
+    } catch (e) {
+      throw CameraUnavailable(
+          CameraUnavailableReason.initializationFailed, e);
+    }
+    final refusal = reasonForPermission(status);
+    if (refusal != null) throw CameraUnavailable(refusal);
+
+    try {
+      await _open();
+    } catch (e) {
+      // Leaves no half-open controller behind for the retry to trip over.
+      await _releaseAfterFailedStart();
+      throw classifyCameraFailure(e);
+    }
+  }
+
+  /// Everything [start] does once the permission gate has passed.
+  Future<void> _open() async {
     final cameras = await availableCameras();
+    // Explicit, rather than letting `cameras.first` throw StateError for the
+    // classifier to recognise by type. That matched ANY StateError raised
+    // anywhere below, and `noCamera` is the one reason that renders no
+    // recovery action at all — the worst outcome to reach by accident.
+    if (cameras.isEmpty) {
+      throw const CameraUnavailable(CameraUnavailableReason.noCamera);
+    }
     final wanted = facing == SessionFacing.front
         ? CameraLensDirection.front
         : CameraLensDirection.back;
@@ -117,6 +195,26 @@ class CameraSession {
       }
       unawaited(stop());
     });
+  }
+
+  /// Undoes a partial [_open] so a retry starts from a clean slate.
+  ///
+  /// `initialize()` can fail after the controller exists, and a controller left
+  /// in that state holds the platform camera — the next attempt would then fail
+  /// for a second, invented reason.
+  Future<void> _releaseAfterFailedStart() async {
+    _running = false;
+    _watchdog?.cancel();
+    _watchdog = null;
+    _surface.value = null;
+    final camera = _camera;
+    _camera = null;
+    if (camera == null) return;
+    try {
+      await camera.dispose();
+    } catch (e) {
+      debugPrint('camera dispose after failed start: $e');
+    }
   }
 
   /// Waits for the camera to be usable, or gives up.
