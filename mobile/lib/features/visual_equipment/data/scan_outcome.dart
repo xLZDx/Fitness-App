@@ -98,6 +98,20 @@ class ScanResult {
   bool get isRetryable =>
       outcome == ScanOutcome.timeout || outcome == ScanOutcome.failed;
 
+  /// Whether this result should be written into the user's recognition
+  /// history ("My machines").
+  ///
+  /// Only a confident answer. [ScanOutcome.alternatives] is the app saying
+  /// "I am not sure, you pick" — filing its top candidate would record, as a
+  /// machine the user identified, one they were never even asked about.
+  ///
+  /// A rule on the result rather than an `if` inside the page, because the
+  /// page's own capture path cannot be driven from a host widget test (it
+  /// needs a real camera file), so an `if` there is a decision no test can
+  /// reach. Two widget tests written against it passed by writing nothing at
+  /// all — the wrong reason.
+  bool get isWorthRemembering => outcome == ScanOutcome.confident;
+
   /// The gap that separates "one answer" from "pick one of these".
   ///
   /// 0.15 is not tuned against a labelled set — it is a starting threshold,

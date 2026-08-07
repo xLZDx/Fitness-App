@@ -61,6 +61,42 @@ void main() {
     });
   });
 
+  group('ScanResult.isWorthRemembering', () {
+    // R2.6. This rule lives on the result, not as an `if` inside the page,
+    // because the page's capture path needs a real camera file and cannot be
+    // driven from a host widget test. Two widget tests written against the
+    // inline version passed by writing nothing at all — the wrong reason —
+    // which is what moved the rule here.
+    test('a confident answer is remembered', () {
+      expect(
+          ScanResult.confident(const [
+            VisualMatch(equipmentId: 'leg_press', confidence: 0.9),
+          ]).isWorthRemembering,
+          isTrue);
+    });
+
+    test('an undecided answer is NOT remembered', () {
+      // "I am not sure, you pick" must not become "you identified this".
+      expect(
+          ScanResult.alternatives(const [
+            VisualMatch(equipmentId: 'leg_press', confidence: 0.45),
+            VisualMatch(equipmentId: 'hack_squat', confidence: 0.40),
+          ]).isWorthRemembering,
+          isFalse);
+    });
+
+    test('nothing without an identified machine is remembered', () {
+      for (final r in [
+        const ScanResult.unknown(),
+        const ScanResult.noEquipment(),
+        const ScanResult.timeout(),
+        const ScanResult.failed(),
+      ]) {
+        expect(r.isWorthRemembering, isFalse, reason: '${r.outcome}');
+      }
+    });
+  });
+
   group('ScanResult.isRetryable', () {
     test('timeout and failure are worth a second attempt', () {
       expect(const ScanResult.timeout().isRetryable, isTrue);

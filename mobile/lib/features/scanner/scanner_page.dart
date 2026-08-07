@@ -347,12 +347,10 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
         .read(visualEquipmentControllerProvider.notifier)
         .classifyFilePath(path);
     final result = ref.read(visualEquipmentControllerProvider).valueOrNull;
-    // Only a confident result is remembered. An `alternatives` outcome is the
-    // app saying "I am not sure, you pick" — writing its top candidate into
-    // "My machines" would record, as a fact the user identified, a machine
-    // they were never even asked about. The outcome distinction is new here;
-    // before it existed this path took `.first` of any non-empty list.
-    if (result != null && result.outcome == ScanOutcome.confident) {
+    // The rule lives on ScanResult, not as an `if` here: this method needs a
+    // real camera file to run, so a decision written inline would be one no
+    // host test can reach. See ScanResult.isWorthRemembering.
+    if (result != null && result.isWorthRemembering) {
       final top = result.matches.firstOrNull;
       if (top != null) {
         _remember(top.equipmentId, top.confidence, RecognitionSource.photo);
@@ -628,7 +626,32 @@ class _HistorySection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final entries = ref.watch(recognitionHistoryProvider).valueOrNull;
-    if (entries == null || entries.isEmpty) return const SizedBox.shrink();
+    // Still loading is not the same as empty. Rendering the empty state here
+    // would flash "nothing yet" at a user who has a full list arriving.
+    if (entries == null) return const SizedBox.shrink();
+    if (entries.isEmpty) {
+      // R2.6 requires an empty history to have a useful state. This section
+      // used to vanish entirely when empty, which meant a user could not
+      // learn the feature existed until they had already used it — the one
+      // moment the explanation is worthless.
+      return Column(
+        key: const Key('scan-history-empty'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            AppLocalizations.of(context).scannerMyMachines,
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            AppLocalizations.of(context).scannerMyMachinesEmpty,
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: theme.colors.textSecondary),
+          ),
+        ],
+      );
+    }
 
     // Catalog names are localized; while the catalog is still loading (or
     // for ids from older builds) fall back to a prettified id rather than

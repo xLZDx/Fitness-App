@@ -16,7 +16,6 @@ import 'package:fitness_app/features/visual_equipment/data/live_equipment_servic
 import 'package:fitness_app/features/visual_equipment/data/recognition_history.dart';
 import 'package:fitness_app/features/visual_equipment/state/recognition_history_providers.dart';
 import 'package:fitness_app/features/visual_equipment/data/live_recognition.dart';
-import 'package:fitness_app/features/visual_equipment/data/scan_outcome.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_match.dart';
 import 'package:fitness_app/features/visual_equipment/state/live_equipment_providers.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_service.dart';
@@ -365,9 +364,20 @@ void main() {
           reason: 'a chip routes back to the machine page');
     });
 
-    testWidgets('no history means no section at all', (tester) async {
+    testWidgets('an empty history explains itself instead of vanishing',
+        (tester) async {
+      // Reverses the previous behaviour, which hid the section entirely when
+      // empty. R2.6 requires an empty history to have a useful state, and the
+      // old one meant a user could not learn the feature existed until they
+      // had already used it — the one moment the explanation is worthless.
       await pumpScan(tester);
-      expect(find.byKey(const Key('scan-history')), findsNothing);
+      await tester.scrollUntilVisible(
+          find.byKey(const Key('scan-history-empty')), 120);
+
+      expect(find.byKey(const Key('scan-history-empty')), findsOneWidget);
+      expect(find.byKey(const Key('scan-history')), findsNothing,
+          reason: 'no chips without entries');
+      expect(find.text('My machines'), findsOneWidget);
     });
 
     testWidgets('live mode is off by default and shows no live card',
@@ -702,34 +712,6 @@ void main() {
       await tester.pump();
 
       expect(find.byKey(const Key('scan-offline-answer')), findsNothing);
-    });
-
-    testWidgets('an undecided result is not written into My machines',
-        (tester) async {
-      // `alternatives` is the app saying "I am not sure, you pick". Recording
-      // its top candidate would file, as a machine the user identified, one
-      // they were never asked about.
-      final history = MockRecognitionHistoryRepository();
-      final container = await pumpScan(tester, overrides: [
-        scanCameraSessionProvider.overrideWithValue(_SpySession()),
-        recognitionHistoryRepositoryProvider.overrideWithValue(history),
-        visualEquipmentServiceProvider.overrideWithValue(
-          MockVisualEquipmentService(fixedResults: const [
-            VisualMatch(equipmentId: 'leg_press', confidence: 0.45),
-            VisualMatch(equipmentId: 'hack_squat', confidence: 0.40),
-          ]),
-        ),
-      ]);
-
-      await container
-          .read(visualEquipmentControllerProvider.notifier)
-          .classifyFilePath('/tmp/close.jpg');
-      await tester.pump();
-
-      expect(container.read(visualEquipmentControllerProvider).requireValue
-          .outcome, ScanOutcome.alternatives);
-      expect(await history.list(), isEmpty,
-          reason: 'an undecided scan must not become a remembered machine');
     });
 
     testWidgets('a failed recognition shows no raw exception', (tester) async {

@@ -369,6 +369,7 @@
   "aiCoachFailed": "Тренер недоступен: {arg0}",
   "aiCoachRetry": "Повторить",
   "aiCoachDisclaimer": "Советы сгенерированы ИИ — это не медицинская рекомендация. При острой боли остановитесь.",
+  "scannerMyMachinesEmpty": "Распознанные тренажёры сохраняются здесь — их можно открыть снова без повторного сканирования.",
   "scannerMyMachines": "Мои тренажёры",
   "equipmentAiTag": "ИИ",
   "workoutsFilterForYou": "Для вас",

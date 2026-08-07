@@ -782,6 +782,7 @@
   },
   "aiCoachRetry": "Try again",
   "aiCoachDisclaimer": "AI-generated guidance — not medical advice. Stop on sharp pain.",
+  "scannerMyMachinesEmpty": "Machines you recognise are saved here, so you can reopen them without scanning again.",
   "scannerMyMachines": "My machines",
   "equipmentAiTag": "AI",
   "workoutsFilterForYou": "For you",
