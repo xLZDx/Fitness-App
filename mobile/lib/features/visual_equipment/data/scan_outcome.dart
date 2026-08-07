@@ -130,6 +130,27 @@ class ScanResult {
     bool answeredOffline = false,
   }) {
     if (ranked.isEmpty) return const ScanResult.noEquipment();
+    // An on-device answer is never presented as settled, however sure the
+    // model sounds. It is a 10-class classifier serving a catalogue of 70+
+    // machines, so every machine outside those ten MUST come back wearing one
+    // of their labels — and measurement says it does so at full confidence.
+    //
+    // B1, 30 real gym photos (core/plans/B1_RECOGNITION_MEASUREMENT_2026-08-07.md):
+    // an abduction machine scored `treadmill` 0.892, a Nautilus shoulder press
+    // scored `leg_press` 0.897, an abdominal machine `treadmill` 0.742. Those
+    // were the model's THREE most confident answers in the whole set and all
+    // three are wrong. A confidence gate cannot catch that — 0.85 would have
+    // admitted two of them — and neither can the top-1/top-2 margin, which for
+    // the abduction machine was 0.892 vs 0.032.
+    //
+    // So the honest degradation is at the source of the answer rather than at
+    // its score: "possibly one of these" is what this model can support. The
+    // real fix is more classes plus a none-of-mine class (B5); until then this
+    // keeps a guess from being dressed as an identification, and — via
+    // isWorthRemembering — keeps it out of the user's saved machines.
+    if (answeredOffline) {
+      return ScanResult.alternatives(ranked, answeredOffline: true);
+    }
     if (ranked.length == 1) {
       return ScanResult.confident(ranked, answeredOffline: answeredOffline);
     }

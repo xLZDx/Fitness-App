@@ -857,13 +857,32 @@ class _HintCard extends StatelessWidget {
 
 /// Live-mode readout. What the camera has settled on, how much of the vote
 /// agreed, and a way straight into the exercises.
-class _LiveCard extends StatelessWidget {
+/// The catalogue's own localised name for [equipmentId], or the prettified id
+/// while the catalogue is still loading.
+///
+/// Four call sites rendered `equipmentId.replaceAll('_', ' ')` straight onto
+/// the screen, which is why a Russian UI showed the bare English `treadmill`
+/// (operator screenshot 2026-08-06, `Screenshot_20260806_140916.jpg`). The ids
+/// are English on purpose — they drive filtering and the alias index — so
+/// every screen that shows one has to translate it, and doing that in one
+/// function is what stops the next screen from forgetting.
+///
+/// The loading fallback is the same one the history chips already used: a
+/// prettified id names the right machine, and waiting would show nothing.
+String equipmentDisplayName(WidgetRef ref, String equipmentId) =>
+    (ref.watch(equipmentListProvider).valueOrNull ?? const [])
+        .where((eq) => eq.id == equipmentId)
+        .map((eq) => eq.name)
+        .firstOrNull ??
+    equipmentId.replaceAll('_', ' ');
+
+class _LiveCard extends ConsumerWidget {
   const _LiveCard({required this.recognition, required this.onOpen});
   final LiveRecognition? recognition;
   final Future<void> Function(String equipmentId) onOpen;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final r = recognition;
     if (r == null) {
@@ -908,7 +927,7 @@ class _LiveCard extends StatelessWidget {
                 children: [
                   Text(
                     AppLocalizations.of(context).scannerPossibly(
-                        r.equipmentId.replaceAll('_', ' '),
+                        equipmentDisplayName(ref, r.equipmentId),
                         (r.confidence * 100).toStringAsFixed(0)),
                     style: theme.textTheme.titleSmall
                         ?.copyWith(fontWeight: FontWeight.w700),
@@ -938,7 +957,7 @@ class _LiveCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  r.equipmentId.replaceAll('_', ' '),
+                  equipmentDisplayName(ref, r.equipmentId),
                   style: theme.textTheme.titleMedium
                       ?.copyWith(fontWeight: FontWeight.w800),
                 ),
@@ -961,7 +980,7 @@ class _LiveCard extends StatelessWidget {
   }
 }
 
-class _Matches extends StatelessWidget {
+class _Matches extends ConsumerWidget {
   const _Matches({required this.matches, required this.onOpen});
 
   /// Routed through the page so navigation is uniform; the route listener is
@@ -975,7 +994,7 @@ class _Matches extends StatelessWidget {
   static const _unsureBelow = 0.45;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final unsure = matches.isEmpty || matches.first.confidence < _unsureBelow;
     return Column(
@@ -999,7 +1018,7 @@ class _Matches extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        m.equipmentId.replaceAll('_', ' '),
+                        equipmentDisplayName(ref, m.equipmentId),
                         style: theme.textTheme.titleSmall
                             ?.copyWith(fontWeight: FontWeight.w800),
                       ),
@@ -1074,11 +1093,7 @@ class _ScanAiCoachEntry extends ConsumerWidget {
     // id otherwise — the same fallback the history chips use, so a coach
     // opened mid-catalogue-load still names the right machine rather than
     // waiting or showing nothing.
-    final name = (ref.watch(equipmentListProvider).valueOrNull ?? const [])
-            .where((eq) => eq.id == match.equipmentId)
-            .map((eq) => eq.name)
-            .firstOrNull ??
-        match.equipmentId.replaceAll('_', ' ');
+    final name = equipmentDisplayName(ref, match.equipmentId);
 
     return GlassCard(
       key: const Key('scan-ai-coach'),

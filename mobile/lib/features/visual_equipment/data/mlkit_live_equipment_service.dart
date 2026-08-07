@@ -85,7 +85,19 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
         // Lower than the photo path on purpose: a single frame is weak
         // evidence and the smoother is what decides. Filtering hard here would
         // starve the vote.
-        confidenceThreshold: 0.05,
+        //
+        // 0.05 was HALF of chance for a 10-class softmax, so it admitted every
+        // frame ever shown to it — measured, 30/30 real gym photos passed with
+        // a minimum score of 0.215 (B1, core/plans/B1_RECOGNITION_MEASUREMENT
+        // _2026-08-07.md). A gate that rejects nothing is not a gate.
+        //
+        // Chance level is the floor a per-class score has to clear to mean
+        // anything at all. It is deliberately NOT presented as a fix: B1 also
+        // showed the model at 0.892 on a machine it has no class for, so no
+        // threshold on this model separates right from wrong. It stops the
+        // gate from being nonsense; B5 (more classes + a none-of-mine class)
+        // is what makes the answer trustworthy.
+        confidenceThreshold: 1 / 10,
         maxCount: 3,
       ),
     );

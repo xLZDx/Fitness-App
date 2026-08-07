@@ -117,4 +117,56 @@ void main() {
       expect(const ScanResult.noEquipment().isRetryable, isFalse);
     });
   });
+  group('an on-device answer is never settled', () {
+    // B1 measured this model against 30 real gym photos: its three most
+    // confident answers were all wrong, and all three were machines it has no
+    // class for -- an abduction machine at treadmill 0.892, a shoulder press
+    // at leg_press 0.897, an abdominal machine at treadmill 0.742. A gate on
+    // the score cannot catch that, so the degradation is on the SOURCE.
+    test('a lone offline match is alternatives, not confident', () {
+      final r = ScanResult.fromMatches(
+        const [VisualMatch(equipmentId: 'treadmill', confidence: 0.892)],
+        answeredOffline: true,
+      );
+      expect(r.outcome, ScanOutcome.alternatives);
+      expect(r.answeredOffline, isTrue);
+    });
+
+    test('a runaway offline lead is still alternatives', () {
+      // 0.892 vs 0.032 -- the real numbers from the abduction machine. The
+      // margin rule would call this settled with room to spare.
+      final r = ScanResult.fromMatches(
+        const [
+          VisualMatch(equipmentId: 'treadmill', confidence: 0.892),
+          VisualMatch(equipmentId: 'cable_machine', confidence: 0.032),
+        ],
+        answeredOffline: true,
+      );
+      expect(r.outcome, ScanOutcome.alternatives,
+          reason: 'a 0.86 lead from a 10-class model is not an identification');
+    });
+
+    test('an offline answer is never remembered as a saved machine', () {
+      final r = ScanResult.fromMatches(
+        const [VisualMatch(equipmentId: 'treadmill', confidence: 0.95)],
+        answeredOffline: true,
+      );
+      expect(r.isWorthRemembering, isFalse,
+          reason: 'the fallback must not file a machine identity');
+    });
+
+    test('the cloud path keeps its confident outcome', () {
+      // The control. Without it this suite would pass just as well if
+      // fromMatches had stopped returning confident altogether.
+      final r = ScanResult.fromMatches(
+        const [
+          VisualMatch(equipmentId: 'leg_press', confidence: 0.9),
+          VisualMatch(equipmentId: 'bench', confidence: 0.1),
+        ],
+      );
+      expect(r.outcome, ScanOutcome.confident);
+      expect(r.isWorthRemembering, isTrue);
+    });
+  });
+
 }
