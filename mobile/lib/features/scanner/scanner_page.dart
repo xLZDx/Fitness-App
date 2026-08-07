@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../ai_coach/ai_coach_context.dart';
+import '../ai_coach/ai_coach_sheet.dart';
 import '../../core/camera/camera_availability.dart';
 import '../../core/camera/camera_session.dart';
 import '../../core/camera/centre_crop.dart';
@@ -98,6 +100,10 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _router?.routerDelegate.removeListener(_onRouteChanged);
+    // The session outlives this page (it is app-lifetime, by design), so a
+    // listener left attached would call setState on a defunct element every
+    // time the watchdog fired for whoever holds the camera next.
+    _session?.selfStopped.removeListener(_onSessionSelfStopped);
     // No live-mode flip here: flipping the provider mid-dispose notifies this
     // very element after it is defunct. It is also unnecessary — the page is
     // going away, so the autoDispose recognition provider detaches the
@@ -154,6 +160,12 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
       // `unawaited`, leaving the spinner cleared and nothing on screen.
       _session ??= ref.read(scanCameraSessionProvider);
       _liveMode ??= ref.read(liveModeEnabledProvider.notifier);
+      // A session that stops ITSELF (the frame-stall watchdog) throws nothing
+      // — nobody is awaiting it. Without this listener the preview simply fell
+      // back to its warming spinner and stayed there, with none of the
+      // reason-and-retry UI, until the user happened to leave and come back.
+      _session!.selfStopped.removeListener(_onSessionSelfStopped);
+      _session!.selfStopped.addListener(_onSessionSelfStopped);
       await _session!.start(requestPermission: requestPermission);
       if (!mounted) return;
       if (_cameraFailure != null) setState(() => _cameraFailure = null);
@@ -166,6 +178,14 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
       if (!mounted) return;
       setState(() => _cameraFailure = classifyCameraFailure(e));
     }
+  }
+
+  /// Mirrors a session that stopped itself into the page's failure state, so
+  /// the same overlay and retry button handle it.
+  void _onSessionSelfStopped() {
+    final failure = _session?.selfStopped.value;
+    if (!mounted || failure == null) return;
+    setState(() => _cameraFailure = failure);
   }
 
   /// Retries after a failure the user can plausibly have fixed.
@@ -362,10 +382,21 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   /// second attempt can genuinely differ (timeout, failure) — never for
   /// "not in the catalogue", where the same image and model produce the same
   /// answer and the button would be a loop with a friendly label.
+  ///
+  /// Guarded by the same `_handling` flag the capture paths use. Without it a
+  /// double tap — which a card headed "recognition took too long" actively
+  /// invites — fired two concurrent recognitions racing on the controller's
+  /// state, the machine card and the history write: two paid cloud calls, two
+  /// history rows, last-write-wins on screen.
   Future<void> _retryLastScan() async {
     final path = _lastScannedPath;
-    if (path == null) return;
-    await _classify(path);
+    if (path == null || _handling) return;
+    setState(() => _handling = true);
+    try {
+      await _classify(path);
+    } finally {
+      if (mounted) setState(() => _handling = false);
+    }
   }
 
   @override
@@ -374,8 +405,6 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     final scan = ref.watch(visualEquipmentControllerProvider);
     final card = ref.watch(lastMachineCardProvider);
     final liveOn = ref.watch(liveModeEnabledProvider);
-    final liveAsync = ref.watch(liveRecognitionProvider);
-    final live = liveAsync.valueOrNull;
     final session = ref.watch(scanCameraSessionProvider);
     // Record settled live readings, at most one write per machine per window.
     //
@@ -532,17 +561,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
           ),
           if (liveOn) ...[
             const SizedBox(height: 14),
-            // An error here means the model or the labeler failed, which is
-            // NOT the same as "no machine recognised yet" — spinning forever
-            // on a broken model was a real defect.
-            liveAsync.hasError
-                ? GlassCard(
-                    key: const Key('scan-live-error'),
-                    tint: theme.colorScheme.error,
-                    child: Text(AppLocalizations.of(context)
-                        .scannerLiveRecognitionFailed(liveAsync.error ?? '')),
-                  )
-                : _LiveCard(recognition: live, onOpen: _openEquipment),
+            _LiveSection(onOpen: _openEquipment),
           ],
           const SizedBox(height: 14),
           scan.when(
@@ -563,6 +582,16 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
               ScanOutcome.confident || ScanOutcome.alternatives => Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // R2.8. Only for a confident answer: the coach needs ONE
+                    // subject, and `alternatives` is the app saying it does
+                    // not know which of them the user is standing at. Offering
+                    // "ask about this machine" there would pick one silently —
+                    // the same thing the alternatives list exists to avoid.
+                    if (result.outcome == ScanOutcome.confident &&
+                        result.matches.isNotEmpty) ...[
+                      _ScanAiCoachEntry(match: result.matches.first),
+                      const SizedBox(height: 10),
+                    ],
                     // R2.2 state 12. The hybrid recogniser falls back to the
                     // on-device model "silently-but-logged" — the user got the
                     // weaker answer and was never told why it was weaker, so a
@@ -595,12 +624,14 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                   key: const Key('scan-timeout'),
                   title: AppLocalizations.of(context).scannerTimeoutTitle,
                   body: AppLocalizations.of(context).scannerTimeoutBody,
+                  busy: _handling,
                   onRetry: _retryLastScan,
                 ),
               ScanOutcome.failed => _ScanProblemCard(
                   key: const Key('scan-failed'),
                   title: AppLocalizations.of(context).scannerFailedTitle,
                   body: AppLocalizations.of(context).scannerFailedBody,
+                  busy: _handling,
                   onRetry: _retryLastScan,
                 ),
             },
@@ -993,6 +1024,98 @@ class _Matches extends StatelessWidget {
   }
 }
 
+/// The live-recognition card, watching the live stream on its own.
+///
+/// A separate widget because the page's `build` used to `ref.watch` the live
+/// recognition directly, and that stream emits on essentially every processed
+/// frame while Live mode is on — so the whole page (camera stack, buttons,
+/// matches, history) rebuilt at inference rate. Scoping the watch here keeps
+/// the rebuild to the one card whose contents actually changed. The same
+/// pattern the low-light banner already uses two levels up.
+class _LiveSection extends ConsumerWidget {
+  const _LiveSection({required this.onOpen});
+
+  final Future<void> Function(String equipmentId) onOpen;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final liveAsync = ref.watch(liveRecognitionProvider);
+    // An error here means the model or the labeler failed, which is NOT the
+    // same as "no machine recognised yet" — spinning forever on a broken
+    // model was a real defect.
+    if (liveAsync.hasError) {
+      return GlassCard(
+        key: const Key('scan-live-error'),
+        tint: theme.colorScheme.error,
+        child: Text(AppLocalizations.of(context)
+            .scannerLiveRecognitionFailed(liveAsync.error ?? '')),
+      );
+    }
+    return _LiveCard(recognition: liveAsync.valueOrNull, onOpen: onOpen);
+  }
+}
+
+/// Opens the existing AI Coach sheet for a recognised machine.
+///
+/// R2.8. Reuses `AiCoachSheet` and its service unchanged — the same entry the
+/// equipment page already offers, moved one step earlier to the moment the
+/// user is standing in front of the machine with the answer on screen. No
+/// second chat implementation, no second service, no new context type.
+class _ScanAiCoachEntry extends ConsumerWidget {
+  const _ScanAiCoachEntry({required this.match});
+
+  final VisualMatch match;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    // The catalogue's own localised name where it is loaded, the prettified
+    // id otherwise — the same fallback the history chips use, so a coach
+    // opened mid-catalogue-load still names the right machine rather than
+    // waiting or showing nothing.
+    final name = (ref.watch(equipmentListProvider).valueOrNull ?? const [])
+            .where((eq) => eq.id == match.equipmentId)
+            .map((eq) => eq.name)
+            .firstOrNull ??
+        match.equipmentId.replaceAll('_', ' ');
+
+    return GlassCard(
+      key: const Key('scan-ai-coach'),
+      onTap: () => AiCoachSheet.show(
+        context,
+        source: AiCoachSource.equipment,
+        subjectId: match.equipmentId,
+        subjectName: name,
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.auto_awesome),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context).aiCoachButton,
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                Text(
+                  AppLocalizations.of(context).aiCoachButtonHint,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colors.textSecondary),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right_rounded),
+        ],
+      ),
+    );
+  }
+}
+
 /// A qualifier attached to a result — how it was produced, not what it says.
 class _ScanNote extends StatelessWidget {
   const _ScanNote({super.key, required this.icon, required this.text});
@@ -1076,11 +1199,17 @@ class _ScanProblemCard extends StatelessWidget {
     super.key,
     required this.title,
     required this.body,
+    required this.busy,
     required this.onRetry,
   });
 
   final String title;
   final String body;
+
+  /// Disables the button while a retry is in flight. The card invites
+  /// impatience by definition, so an enabled button during the retry is an
+  /// invitation to fire a second one.
+  final bool busy;
   final Future<void> Function() onRetry;
 
   @override
@@ -1109,7 +1238,8 @@ class _ScanProblemCard extends StatelessWidget {
           const SizedBox(height: 12),
           AppSecondaryButton(
             key: const Key('scan-retry-recognition'),
-            onPressed: () => unawaited(onRetry()),
+            onPressed: busy ? null : () => unawaited(onRetry()),
+            loading: busy,
             icon: Icons.refresh_rounded,
             label: AppLocalizations.of(context).scannerRetry,
           ),

@@ -466,3 +466,48 @@ placement, scroll behaviour — is not worth writing before the refactor replace
 screen. Verification that survives it is: that an asset really reaches the APK, that a
 background isolate really performs the work. Both kinds were written on 2026-08-06; only
 the second kind was kept (`integration_test/app_test.dart`).
+
+---
+
+## R2 Scanner — completed 2026-08-07
+
+Implemented as five sub-gates against the R2 section of
+`DEV_SINGLE_FILE_MASTER_PROMPT_v1.9` (the operator supplied that file; the
+`fitness-app-redesign.md` this audit's §6 cites for the "14 scanner states"
+is NOT in the repository — recorded here as a stale reference, and the master
+prompt's own R2.2 list was used instead, per its "do not narrow scope because
+a repo doc is missing" rule).
+
+| Sub-gate | Commit | Scope |
+|---|---|---|
+| R2a | `acd133d` | States 1, 13 + R2.9 — typed camera failures, contextual permission |
+| R2b | `242ac78` | States 6, 7, 8, 10, 11 — scan outcomes, bounded timeout |
+| R2c | `4b1bcb4` | States 9, 12 — low light, offline fallback labelled |
+| R2d | `db71b1b` | State 14, R2.6/R2.7 — history empty state, remember rule |
+| R2e | this commit | R2.8 — AI Coach entry, plus four cross-gate defects |
+
+### The 14 states, honestly
+
+Present and tested: 1 permission, 2 ready, 5 analysing, 6 confident,
+7 alternatives, 8 unknown, 9 low light, 10 no equipment, 11 timeout,
+12 offline fallback, 13 differentiated error, 14 history.
+
+Present but NOT verified against the design: 3 targeting (guide frame and
+aiming hints predate this gate), 4 capturing (`_handling` guard + button
+loading state predate it). No screenshot comparison was run for R2 at all —
+there is no accessible Figma reference in this environment, so §30's
+screenshot step is outstanding for every state above, not just these two.
+
+### What R2 did NOT do
+
+- No device or emulator run. Native permission flows, a genuinely dark room,
+  a genuinely absent network and the frame-stall watchdog were all exercised
+  through fakes only.
+- `confidentMargin = 0.15`, `kLowLightBrightness = 0.18` and
+  `kLowLightFrameRun = 8` are starting values, not calibrated ones.
+- The page's capture path (`_recogniseWithCamera` / `_recogniseFromGallery`)
+  remains unreachable from host widget tests — it needs a real camera file.
+  Two rules that used to live inside it were moved onto `ScanResult` so they
+  could be tested; the retry guard could not be, and is named as untested in
+  R2e's commit body.
+- Recognition services, models and catalogue matching were not touched (R2.1).

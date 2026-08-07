@@ -195,6 +195,11 @@ class CameraSession {
         ));
       }
       unawaited(stop());
+      // After stop(), which clears it: this is the one stop that the user did
+      // not ask for and must be told about. Retryable — a stalled camera
+      // usually reopens.
+      _selfStopped.value = const CameraUnavailable(
+          CameraUnavailableReason.initializationFailed);
     });
   }
 
@@ -254,12 +259,39 @@ class CameraSession {
     try {
       return await cam.takePicture();
     } finally {
-      if (wasStreaming && _running && !cam.value.isStreamingImages) {
-        _lastFrameAt = DateTime.now();
-        await cam.startImageStream(_onFrame);
+      // `identical`, not just `_running`: a concurrent stop()+start() (app
+      // backgrounded mid-capture) swaps in a NEW controller while `_running`
+      // flips back to true, and restarting the stream on the old, disposed
+      // one throws. Thrown from a `finally`, that exception REPLACES the
+      // photo that was actually taken — the user is told the capture failed
+      // for a shot that succeeded.
+      //
+      // Wrapped for the same reason: restarting the preview stream is
+      // housekeeping, and housekeeping must never eat the result.
+      if (wasStreaming &&
+          _running &&
+          identical(cam, _camera) &&
+          !cam.value.isStreamingImages) {
+        try {
+          _lastFrameAt = DateTime.now();
+          await cam.startImageStream(_onFrame);
+        } catch (e) {
+          debugPrint('preview stream not restarted after capture: $e');
+        }
       }
     }
   }
+
+  /// Set when the session stopped ITSELF — today only the frame-stall
+  /// watchdog. Null while the session is healthy or was stopped deliberately.
+  ///
+  /// Without this the watchdog was invisible: it called `stop()`, the preview
+  /// fell back to its warming spinner, and the page — which only learns about
+  /// failures thrown by `start()` — showed that spinner forever, with none of
+  /// the reason-and-retry UI, until the user happened to leave and come back.
+  ValueListenable<CameraUnavailable?> get selfStopped => _selfStopped;
+  final ValueNotifier<CameraUnavailable?> _selfStopped =
+      ValueNotifier<CameraUnavailable?>(null);
 
   /// Whether the last several frames were too dark to recognise from.
   ///
@@ -347,6 +379,9 @@ class CameraSession {
     // show a low-light banner over a viewfinder that is not even running.
     _darkFrameRun = 0;
     _lowLight.value = false;
+    // A deliberate stop is not a fault. The watchdog re-sets this right after
+    // its own stop() call, which is what keeps the two apart.
+    _selfStopped.value = null;
     _watchdog?.cancel();
     _watchdog = null;
     _lastFrameAt = null;
@@ -368,6 +403,7 @@ class CameraSession {
     await stop();
     _surface.dispose();
     _lowLight.dispose();
+    _selfStopped.dispose();
     await _frames.close();
   }
 }

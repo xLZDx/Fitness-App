@@ -96,6 +96,24 @@ class _OfflineAnsweringService implements VisualEquipmentService,
       const [VisualMatch(equipmentId: 'leg_press', confidence: 0.9)];
 }
 
+/// Starts fine, then stops itself the way the frame-stall watchdog does.
+class _SelfStoppingSession extends CameraSession {
+  final ValueNotifier<CameraUnavailable?> _stopped =
+      ValueNotifier<CameraUnavailable?>(null);
+
+  @override
+  ValueListenable<CameraUnavailable?> get selfStopped => _stopped;
+
+  void stall() => _stopped.value =
+      const CameraUnavailable(CameraUnavailableReason.initializationFailed);
+
+  @override
+  Future<void> start({bool requestPermission = false}) async {}
+
+  @override
+  Future<void> stop() async {}
+}
+
 /// A session whose low-light verdict a test can flip.
 class _LightSession extends CameraSession {
   final ValueNotifier<bool> dark = ValueNotifier<bool>(false);
@@ -712,6 +730,70 @@ void main() {
       await tester.pump();
 
       expect(find.byKey(const Key('scan-offline-answer')), findsNothing);
+    });
+
+    testWidgets('a camera that stops itself surfaces a retry, not a spinner',
+        (tester) async {
+      // The frame-stall watchdog calls stop() and throws nothing — nobody is
+      // awaiting it. The page only learned about failures thrown by start(),
+      // so this left the preview on its warming spinner forever, with none of
+      // the reason-and-retry UI.
+      final session = _SelfStoppingSession();
+      await pumpScan(tester,
+          overrides: [scanCameraSessionProvider.overrideWithValue(session)]);
+      await tester.pump();
+
+      expect(find.byKey(const Key('scan-camera-unavailable')), findsNothing);
+
+      session.stall();
+      await tester.pump();
+
+      expect(find.byKey(const Key('scan-camera-unavailable')), findsOneWidget);
+      expect(find.byKey(const Key('scan-camera-retry')), findsOneWidget);
+    });
+
+    testWidgets('a confident result offers the AI Coach', (tester) async {
+      // R2.8: reuse the existing sheet at the moment the user is standing in
+      // front of the machine, rather than only one screen later.
+      final container = await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(_SpySession()),
+        visualEquipmentServiceProvider.overrideWithValue(
+          MockVisualEquipmentService(fixedResults: const [
+            VisualMatch(equipmentId: 'leg_press', confidence: 0.95),
+          ]),
+        ),
+      ]);
+
+      await container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/a.jpg');
+      await tester.pump();
+      await tester.scrollUntilVisible(
+          find.byKey(const Key('scan-ai-coach')), 120);
+
+      expect(find.byKey(const Key('scan-ai-coach')), findsOneWidget);
+    });
+
+    testWidgets('an undecided result offers no AI Coach', (tester) async {
+      // The coach needs ONE subject. Offering it against a list the app just
+      // said it could not choose between would pick one silently — exactly
+      // what the alternatives list exists to avoid.
+      final container = await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(_SpySession()),
+        visualEquipmentServiceProvider.overrideWithValue(
+          MockVisualEquipmentService(fixedResults: const [
+            VisualMatch(equipmentId: 'leg_press', confidence: 0.45),
+            VisualMatch(equipmentId: 'hack_squat', confidence: 0.40),
+          ]),
+        ),
+      ]);
+
+      await container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/close.jpg');
+      await tester.pump();
+
+      expect(find.byKey(const Key('scan-ai-coach')), findsNothing);
     });
 
     testWidgets('a failed recognition shows no raw exception', (tester) async {
