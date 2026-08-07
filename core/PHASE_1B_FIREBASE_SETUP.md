@@ -24,6 +24,32 @@ In the Firebase console:
 
 1. Project overview → **Add app → Android**.
 2. Android package name: `com.fitnessapp.fitness_app.sptr` (must match exactly).
+
+> **The file is gitignored** (`.gitignore:58`) and has never been tracked — it
+> carries the API key. A fresh clone therefore does NOT build until you fetch
+> it from the console; `:app:processDebugGoogleServices` fails with
+> `No matching client found for package name '...'`. That failure is the good
+> case: it stops at build time rather than crashing on someone's phone.
+>
+> **Renamed 2026-08-07.** `com.fitnessapp.fitness_app` was rejected by the Play
+> Console — "This package name is already in use" — and a package name is burned
+> permanently once taken. The downloaded file contains BOTH clients, so an
+> install of the old package keeps working:
+>
+> ```
+> com.fitnessapp.fitness_app        oauth=1  android_client=0  cert_hash=NO
+> com.fitnessapp.fitness_app.sptr   oauth=2  android_client=1  cert_hash=yes
+> ```
+>
+> `android_client=0` on the old package is why Google Sign-In failed there:
+> without an Android OAuth client there is no ID token, which is the exact
+> failure `firebase_auth_repository.dart:110-113` was written to explain. The
+> new registration has one, tied to the debug SHA-1.
+>
+> Verified on the emulator 2026-08-07: `FirebaseInitProvider: FirebaseApp
+> initialization successful`, no FATAL/AndroidRuntime/E-flutter, login screen
+> renders. `aapt dump badging` confirms
+> `package: name='com.fitnessapp.fitness_app.sptr'`.
 3. App nickname: `Fitness App (Android)`.
 4. **Debug signing certificate SHA-1**: open a terminal and run:
    ```powershell
