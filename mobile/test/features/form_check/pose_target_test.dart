@@ -193,13 +193,13 @@ void main() {
       // target with three joints would silently return null forever, which
       // reads on screen as "the coach cannot see you" for a target that is
       // simply malformed.
-      for (final t in [squatTopTarget, squatBottomTarget, pushupTopTarget]) {
+      for (final t in allShippedTargets) {
         expect(t.joints.length, greaterThanOrEqualTo(4), reason: t.id);
       }
     });
 
     test('bones only connect joints the target actually has', () {
-      for (final t in [squatTopTarget, squatBottomTarget, pushupTopTarget]) {
+      for (final t in allShippedTargets) {
         for (final (a, b) in t.bones) {
           expect(t.joints.keys, contains(a), reason: '${t.id} bone start');
           expect(t.joints.keys, contains(b), reason: '${t.id} bone end');
@@ -210,7 +210,7 @@ void main() {
     test('targets sit inside a portrait frame, so they can be drawn', () {
       // Scoring normalises these away, but the same numbers are painted on
       // screen as the outline to stand in.
-      for (final t in [squatTopTarget, squatBottomTarget, pushupTopTarget]) {
+      for (final t in allShippedTargets) {
         for (final j in t.joints.values) {
           expect(j.$1, inInclusiveRange(0.0, 1.0), reason: t.id);
           expect(j.$2, inInclusiveRange(0.0, 1.0), reason: t.id);
@@ -225,6 +225,71 @@ void main() {
       final score = poseMatchScore(poseOf(squatTopTarget), squatBottomTarget)!;
       expect(score, lessThan(0.6),
           reason: 'top vs bottom scored ${score.toStringAsFixed(2)}');
+    });
+
+    test('EVERY movement has two genuinely different phases', () {
+      // The same guard, generalised — and the one that decides whether a
+      // movement can live in this representation at all.
+      //
+      // `poseMatchScore` normalises away position and size, so a movement
+      // whose two ends differ ONLY by where the body is cannot be expressed
+      // here: both phases normalise to one shape and every attempt scores the
+      // same, including a rep never performed. That is exactly why
+      // `calf_raise` is absent from `poseTargetsByTag` despite the catalogue
+      // tagging 17 exercises with it — a pure vertical translation on an
+      // unchanging skeleton. Adding it would fail here, which is the point.
+      for (final e in poseTargetsByTag.entries) {
+        final (top, bottom) = e.value;
+        final score = poseMatchScore(poseOf(top), bottom);
+        expect(score, isNotNull, reason: '${e.key}: phases are not comparable');
+        expect(score!, lessThan(0.6),
+            reason: '${e.key}: top vs bottom scored '
+                '${score.toStringAsFixed(2)} — the two ends are the same '
+                'shape, so this movement cannot be judged by matching');
+      }
+    });
+
+    test('limbs keep their length between the two phases', () {
+      // `pushupBottomTarget`'s comment states the rule and nothing enforced
+      // it: a limb that changes length mid-demonstration reads as a glitch
+      // rather than as a movement, because `lerpPoseTarget` interpolates the
+      // ENDPOINTS and lets the segment stretch on the way through.
+      //
+      // 15% is loose on purpose. These are drawn figures, and a side view
+      // genuinely foreshortens a limb that rotates towards the camera; the
+      // bound is here to catch a typo'd coordinate, not to impose rigid-body
+      // kinematics on a stick figure.
+      //
+      // `squat` is excluded, and that is a FINDING rather than housekeeping.
+      // Measured when this test was written (2026-08-08): its thigh is 0.210
+      // at the top and 0.150 at the bottom — 28% shorter. A squat happens in
+      // the sagittal plane, so a true side view foreshortens nothing; the
+      // figure drawn at the bottom is not the same body as the one at the
+      // top, and `lerpPoseTarget` shrinks the thigh on the way down.
+      //
+      // Not fixed here on purpose. `squatBottomTarget` is the one target with
+      // real use behind it and the operator has watched it on a phone; new
+      // numbers picked to satisfy a test, without seeing the outline on a
+      // device, would trade a measured flaw for an unmeasured one. Left
+      // failing-by-exception so it stays visible.
+      const knownDeviation = {'squat'};
+      for (final e in poseTargetsByTag.entries) {
+        if (knownDeviation.contains(e.key)) continue;
+        final (top, bottom) = e.value;
+        for (final (a, b) in top.bones) {
+          final ta = top.joints[a], tb = top.joints[b];
+          final ba = bottom.joints[a], bb = bottom.joints[b];
+          if (ta == null || tb == null || ba == null || bb == null) continue;
+          double len((double, double) p, (double, double) q) =>
+              math.sqrt(math.pow(p.$1 - q.$1, 2) + math.pow(p.$2 - q.$2, 2));
+          final lt = len(ta, tb), lb = len(ba, bb);
+          final longer = math.max(lt, lb);
+          if (longer < 1e-9) continue;
+          expect((lt - lb).abs() / longer, lessThan(0.15),
+              reason: '${e.key}: $a-$b is ${lt.toStringAsFixed(3)} at the top '
+                  'and ${lb.toStringAsFixed(3)} at the bottom');
+        }
+      }
     });
   });
 

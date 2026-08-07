@@ -1,0 +1,1650 @@
+{
+  "calf_raise": [
+    {
+      "id": "ea_barbell_standing_leg_calf_raises",
+      "title": "Barbell Standing Leg Calf Raises",
+      "side_score": 0.901,
+      "min_visibility": 0.002,
+      "joints": {
+        "leftShoulder": [
+          0.4823,
+          0.3157
+        ],
+        "leftElbow": [
+          0.4679,
+          0.3407
+        ],
+        "leftWrist": [
+          0.4663,
+          0.3297
+        ],
+        "leftHip": [
+          0.5083,
+          0.4558
+        ],
+        "leftKnee": [
+          0.4982,
+          0.579
+        ],
+        "leftAnkle": [
+          0.4945,
+          0.6948
+        ]
+      }
+    },
+    {
+      "id": "ea_bodyweight_calf_raises",
+      "title": "Bodyweight Calf Raises",
+      "side_score": 0.663,
+      "min_visibility": 0.823,
+      "joints": {
+        "leftShoulder": [
+          0.5156,
+          0.2435
+        ],
+        "leftElbow": [
+          0.5121,
+          0.39
+        ],
+        "leftWrist": [
+          0.4963,
+          0.5032
+        ],
+        "leftHip": [
+          0.5193,
+          0.4885
+        ],
+        "leftKnee": [
+          0.5165,
+          0.6971
+        ],
+        "leftAnkle": [
+          0.5198,
+          0.895
+        ]
+      }
+    },
+    {
+      "id": "ea_calf_raise_from_deficit_with_chair_supported",
+      "title": "Calf Raise From Deficit with Chair Supported",
+      "side_score": 0.564,
+      "min_visibility": 0.063,
+      "joints": {
+        "leftShoulder": [
+          0.4637,
+          0.2786
+        ],
+        "leftElbow": [
+          0.4736,
+          0.3821
+        ],
+        "leftWrist": [
+          0.5108,
+          0.4317
+        ],
+        "leftHip": [
+          0.4492,
+          0.4615
+        ],
+        "leftKnee": [
+          0.4505,
+          0.6107
+        ],
+        "leftAnkle": [
+          0.4492,
+          0.7511
+        ]
+      }
+    },
+    {
+      "id": "ea_calf_raise_with_wall_support",
+      "title": "Calf Raise with Wall Support",
+      "side_score": 0.55,
+      "min_visibility": 0.615,
+      "joints": {
+        "leftShoulder": [
+          0.474,
+          0.3196
+        ],
+        "leftElbow": [
+          0.5155,
+          0.3652
+        ],
+        "leftWrist": [
+          0.5383,
+          0.3137
+        ],
+        "leftHip": [
+          0.471,
+          0.5038
+        ],
+        "leftKnee": [
+          0.4732,
+          0.6489
+        ],
+        "leftAnkle": [
+          0.4723,
+          0.7797
+        ]
+      }
+    },
+    {
+      "id": "ea_bodyweight_standing_calf_raise",
+      "title": "Bodyweight Standing Calf Raise",
+      "side_score": 0.189,
+      "min_visibility": 0.035,
+      "joints": {
+        "leftShoulder": [
+          0.455,
+          0.2631
+        ],
+        "leftElbow": [
+          0.4619,
+          0.3966
+        ],
+        "leftWrist": [
+          0.4792,
+          0.473
+        ],
+        "leftHip": [
+          0.4824,
+          0.5005
+        ],
+        "leftKnee": [
+          0.4788,
+          0.6767
+        ],
+        "leftAnkle": [
+          0.4776,
+          0.8459
+        ]
+      }
+    },
+    {
+      "id": "ea_calf_raise_clap",
+      "title": "Calf Raise Clap",
+      "side_score": 0.0,
+      "min_visibility": 0.844,
+      "joints": {
+        "leftShoulder": [
+          0.5238,
+          0.3086
+        ],
+        "leftElbow": [
+          0.5688,
+          0.3215
+        ],
+        "leftWrist": [
+          0.6118,
+          0.3096
+        ],
+        "leftHip": [
+          0.5085,
+          0.5006
+        ],
+        "leftKnee": [
+          0.4999,
+          0.6434
+        ],
+        "leftAnkle": [
+          0.4946,
+          0.7821
+        ]
+      }
+    },
+    {
+      "id": "ea_donkey_calf_raise",
+      "title": "Donkey Calf Raise",
+      "side_score": 0.0,
+      "min_visibility": 0.799,
+      "joints": {
+        "leftShoulder": [
+          0.3418,
+          0.3592
+        ],
+        "leftElbow": [
+          0.4155,
+          0.4559
+        ],
+        "leftWrist": [
+          0.4438,
+          0.5627
+        ],
+        "leftHip": [
+          0.4333,
+          0.3528
+        ],
+        "leftKnee": [
+          0.4472,
+          0.3929
+        ],
+        "leftAnkle": [
+          0.4503,
+          0.5225
+        ]
+      }
+    }
+  ],
+  "curl": [
+    {
+      "id": "ea_alternate_biceps_curl_resistance_band",
+      "title": "Alternate Biceps Curl Resistance Band",
+      "side_score": 0.0,
+      "min_visibility": 0.954,
+      "joints": {
+        "leftShoulder": [
+          0.5318,
+          0.2325
+        ],
+        "leftElbow": [
+          0.5502,
+          0.3573
+        ],
+        "leftWrist": [
+          0.5591,
+          0.4692
+        ],
+        "leftHip": [
+          0.5126,
+          0.4802
+        ],
+        "leftKnee": [
+          0.5123,
+          0.6873
+        ],
+        "leftAnkle": [
+          0.5207,
+          0.8762
+        ]
+      }
+    },
+    {
+      "id": "ea_alternate_biceps_curl_standing_dumbbells",
+      "title": "Alternate Biceps Curl Standing Dumbbells",
+      "side_score": 0.0,
+      "min_visibility": 0.988,
+      "joints": {
+        "leftShoulder": [
+          0.5489,
+          0.2363
+        ],
+        "leftElbow": [
+          0.5751,
+          0.3569
+        ],
+        "leftWrist": [
+          0.5983,
+          0.4664
+        ],
+        "leftHip": [
+          0.527,
+          0.4892
+        ],
+        "leftKnee": [
+          0.5307,
+          0.6915
+        ],
+        "leftAnkle": [
+          0.5336,
+          0.8804
+        ]
+      }
+    },
+    {
+      "id": "ea_alternate_hammer_curl_standing_dumbbells",
+      "title": "Alternate Hammer Curl Standing Dumbbells",
+      "side_score": 0.0,
+      "min_visibility": 0.789,
+      "joints": {
+        "leftShoulder": [
+          0.5376,
+          0.2223
+        ],
+        "leftElbow": [
+          0.5626,
+          0.3463
+        ],
+        "leftWrist": [
+          0.5792,
+          0.4589
+        ],
+        "leftHip": [
+          0.5176,
+          0.4852
+        ],
+        "leftKnee": [
+          0.5176,
+          0.6945
+        ],
+        "leftAnkle": [
+          0.5238,
+          0.8834
+        ]
+      }
+    },
+    {
+      "id": "ea_alternating_biceps_hammer_curl_resistance_band",
+      "title": "Alternating Biceps Hammer Curl Resistance Band",
+      "side_score": 0.0,
+      "min_visibility": 0.98,
+      "joints": {
+        "leftShoulder": [
+          0.5467,
+          0.2287
+        ],
+        "leftElbow": [
+          0.5647,
+          0.357
+        ],
+        "leftWrist": [
+          0.5754,
+          0.4763
+        ],
+        "leftHip": [
+          0.5236,
+          0.475
+        ],
+        "leftKnee": [
+          0.5233,
+          0.6843
+        ],
+        "leftAnkle": [
+          0.5279,
+          0.8773
+        ]
+      }
+    },
+    {
+      "id": "ea_alternating_hamstring_curl",
+      "title": "Alternating Hamstring Curl",
+      "side_score": 0.0,
+      "min_visibility": 0.927,
+      "joints": {
+        "leftShoulder": [
+          0.6207,
+          0.2815
+        ],
+        "leftElbow": [
+          0.6465,
+          0.3795
+        ],
+        "leftWrist": [
+          0.6561,
+          0.4783
+        ],
+        "leftHip": [
+          0.5822,
+          0.5007
+        ],
+        "leftKnee": [
+          0.5808,
+          0.6899
+        ],
+        "leftAnkle": [
+          0.5715,
+          0.8408
+        ]
+      }
+    },
+    {
+      "id": "ea_alternating_hamstring_curl_with_punch",
+      "title": "Alternating Hamstring Curl with Punch",
+      "side_score": 0.0,
+      "min_visibility": 0.861,
+      "joints": {
+        "leftShoulder": [
+          0.5379,
+          0.2819
+        ],
+        "leftElbow": [
+          0.5776,
+          0.3417
+        ],
+        "leftWrist": [
+          0.5496,
+          0.2845
+        ],
+        "leftHip": [
+          0.5226,
+          0.4811
+        ],
+        "leftKnee": [
+          0.5484,
+          0.6417
+        ],
+        "leftAnkle": [
+          0.5385,
+          0.7887
+        ]
+      }
+    },
+    {
+      "id": "ea_band_close_grip_biceps_curl",
+      "title": "Band Close-grip Biceps Curl",
+      "side_score": 0.0,
+      "min_visibility": 0.837,
+      "joints": {
+        "leftShoulder": [
+          0.5271,
+          0.2529
+        ],
+        "leftElbow": [
+          0.5382,
+          0.361
+        ],
+        "leftWrist": [
+          0.556,
+          0.4525
+        ],
+        "leftHip": [
+          0.5187,
+          0.4773
+        ],
+        "leftKnee": [
+          0.5094,
+          0.6481
+        ],
+        "leftAnkle": [
+          0.5048,
+          0.7991
+        ]
+      }
+    }
+  ],
+  "hinge": [
+    {
+      "id": "ea_band_deadlift",
+      "title": "Band Deadlift",
+      "side_score": 0.132,
+      "min_visibility": 0.018,
+      "joints": {
+        "leftShoulder": [
+          0.4668,
+          0.4392
+        ],
+        "leftElbow": [
+          0.4481,
+          0.5681
+        ],
+        "leftWrist": [
+          0.4568,
+          0.6862
+        ],
+        "leftHip": [
+          0.4009,
+          0.6007
+        ],
+        "leftKnee": [
+          0.463,
+          0.6998
+        ],
+        "leftAnkle": [
+          0.4371,
+          0.8404
+        ]
+      }
+    },
+    {
+      "id": "ea_banded_feet_elevated_hip_thrusters",
+      "title": "Banded Feet Elevated Hip Thrusters",
+      "side_score": 0.061,
+      "min_visibility": 0.008,
+      "joints": {
+        "leftShoulder": [
+          0.3505,
+          0.6886
+        ],
+        "leftElbow": [
+          0.4519,
+          0.7045
+        ],
+        "leftWrist": [
+          0.5281,
+          0.6958
+        ],
+        "leftHip": [
+          0.5161,
+          0.6076
+        ],
+        "leftKnee": [
+          0.5456,
+          0.3653
+        ],
+        "leftAnkle": [
+          0.6811,
+          0.4247
+        ]
+      }
+    },
+    {
+      "id": "ea_air_swing_side_to_side_swing",
+      "title": "Air Swing Side to Side Swing",
+      "side_score": 0.059,
+      "min_visibility": 0.411,
+      "joints": {
+        "leftShoulder": [
+          0.4761,
+          0.2352
+        ],
+        "leftElbow": [
+          0.484,
+          0.3394
+        ],
+        "leftWrist": [
+          0.4975,
+          0.3944
+        ],
+        "leftHip": [
+          0.4723,
+          0.4512
+        ],
+        "leftKnee": [
+          0.4743,
+          0.6322
+        ],
+        "leftAnkle": [
+          0.4668,
+          0.8041
+        ]
+      }
+    },
+    {
+      "id": "ea_air_swing_walking",
+      "title": "Air Swing Walking",
+      "side_score": 0.036,
+      "min_visibility": 0.993,
+      "joints": {
+        "leftShoulder": [
+          0.5284,
+          0.1849
+        ],
+        "leftElbow": [
+          0.5498,
+          0.316
+        ],
+        "leftWrist": [
+          0.541,
+          0.4281
+        ],
+        "leftHip": [
+          0.5066,
+          0.4382
+        ],
+        "leftKnee": [
+          0.5204,
+          0.6383
+        ],
+        "leftAnkle": [
+          0.5351,
+          0.8116
+        ]
+      }
+    },
+    {
+      "id": "ea_air_swing_running",
+      "title": "Air Swing Running",
+      "side_score": 0.0,
+      "min_visibility": 0.983,
+      "joints": {
+        "leftShoulder": [
+          0.527,
+          0.198
+        ],
+        "leftElbow": [
+          0.5517,
+          0.3132
+        ],
+        "leftWrist": [
+          0.5384,
+          0.4202
+        ],
+        "leftHip": [
+          0.5082,
+          0.4531
+        ],
+        "leftKnee": [
+          0.5398,
+          0.6587
+        ],
+        "leftAnkle": [
+          0.5651,
+          0.8783
+        ]
+      }
+    },
+    {
+      "id": "ea_arm_swing_side_to_side",
+      "title": "Arm Swing Side to Side",
+      "side_score": 0.0,
+      "min_visibility": 0.984,
+      "joints": {
+        "leftShoulder": [
+          0.5511,
+          0.194
+        ],
+        "leftElbow": [
+          0.6197,
+          0.2074
+        ],
+        "leftWrist": [
+          0.6951,
+          0.1715
+        ],
+        "leftHip": [
+          0.5268,
+          0.4792
+        ],
+        "leftKnee": [
+          0.5271,
+          0.6921
+        ],
+        "leftAnkle": [
+          0.5306,
+          0.8936
+        ]
+      }
+    },
+    {
+      "id": "ea_barbell_coan_deadlift",
+      "title": "Barbell Coan Deadlift",
+      "side_score": 0.0,
+      "min_visibility": 0.997,
+      "joints": {
+        "leftShoulder": [
+          0.4633,
+          0.4186
+        ],
+        "leftElbow": [
+          0.4825,
+          0.5376
+        ],
+        "leftWrist": [
+          0.4789,
+          0.66
+        ],
+        "leftHip": [
+          0.5221,
+          0.5502
+        ],
+        "leftKnee": [
+          0.5123,
+          0.7045
+        ],
+        "leftAnkle": [
+          0.5398,
+          0.8754
+        ]
+      }
+    }
+  ],
+  "lunge": [
+    {
+      "id": "ea_alternate_sprinter_lunge",
+      "title": "Alternate Sprinter Lunge",
+      "side_score": 0.644,
+      "min_visibility": 0.01,
+      "joints": {
+        "leftShoulder": [
+          0.4994,
+          0.2403
+        ],
+        "leftElbow": [
+          0.4963,
+          0.3716
+        ],
+        "leftWrist": [
+          0.5081,
+          0.4759
+        ],
+        "leftHip": [
+          0.5082,
+          0.4697
+        ],
+        "leftKnee": [
+          0.5228,
+          0.6433
+        ],
+        "leftAnkle": [
+          0.4914,
+          0.7995
+        ]
+      }
+    },
+    {
+      "id": "ea_band_spanish_split_squat",
+      "title": "Band Spanish Split Squat",
+      "side_score": 0.144,
+      "min_visibility": 0.923,
+      "joints": {
+        "leftShoulder": [
+          0.7073,
+          0.4201
+        ],
+        "leftElbow": [
+          0.6687,
+          0.5044
+        ],
+        "leftWrist": [
+          0.6509,
+          0.4342
+        ],
+        "leftHip": [
+          0.6993,
+          0.6215
+        ],
+        "leftKnee": [
+          0.6143,
+          0.7102
+        ],
+        "leftAnkle": [
+          0.6196,
+          0.8767
+        ]
+      }
+    },
+    {
+      "id": "ea_barbell_bulgarian_split_squat_left_side_view",
+      "title": "Barbell Bulgarian Split Squat Left Side View",
+      "side_score": 0.033,
+      "min_visibility": 0.921,
+      "joints": {
+        "leftShoulder": [
+          0.3851,
+          0.2557
+        ],
+        "leftElbow": [
+          0.3755,
+          0.3624
+        ],
+        "leftWrist": [
+          0.3562,
+          0.2679
+        ],
+        "leftHip": [
+          0.3939,
+          0.5194
+        ],
+        "leftKnee": [
+          0.3292,
+          0.678
+        ],
+        "leftAnkle": [
+          0.3446,
+          0.8837
+        ]
+      }
+    },
+    {
+      "id": "ea_alternating_lunge_with_rotation",
+      "title": "Alternating Lunge with Rotation",
+      "side_score": 0.0,
+      "min_visibility": 0.986,
+      "joints": {
+        "leftShoulder": [
+          0.3959,
+          0.5985
+        ],
+        "leftElbow": [
+          0.4143,
+          0.736
+        ],
+        "leftWrist": [
+          0.4003,
+          0.8792
+        ],
+        "leftHip": [
+          0.483,
+          0.6142
+        ],
+        "leftKnee": [
+          0.4705,
+          0.6855
+        ],
+        "leftAnkle": [
+          0.51,
+          0.7924
+        ]
+      }
+    },
+    {
+      "id": "ea_barbell_bulgarian_split_squat",
+      "title": "Barbell Bulgarian Split Squat",
+      "side_score": 0.0,
+      "min_visibility": 0.735,
+      "joints": {
+        "leftShoulder": [
+          0.4749,
+          0.2752
+        ],
+        "leftElbow": [
+          0.452,
+          0.3445
+        ],
+        "leftWrist": [
+          0.4489,
+          0.2372
+        ],
+        "leftHip": [
+          0.4913,
+          0.4903
+        ],
+        "leftKnee": [
+          0.466,
+          0.6474
+        ],
+        "leftAnkle": [
+          0.479,
+          0.8083
+        ]
+      }
+    },
+    {
+      "id": "ea_barbell_bulgarian_split_squat_left_front_back_view",
+      "title": "Barbell Bulgarian Split Squat Left Front-back View",
+      "side_score": 0.0,
+      "min_visibility": 0.923,
+      "joints": {
+        "leftShoulder": [
+          0.5407,
+          0.2689
+        ],
+        "leftElbow": [
+          0.5785,
+          0.3825
+        ],
+        "leftWrist": [
+          0.5974,
+          0.2602
+        ],
+        "leftHip": [
+          0.5161,
+          0.5148
+        ],
+        "leftKnee": [
+          0.5017,
+          0.7041
+        ],
+        "leftAnkle": [
+          0.5023,
+          0.8969
+        ]
+      }
+    }
+  ],
+  "overhead_press": [
+    {
+      "id": "ea_band_single_arm_overhead_press",
+      "title": "Band Single Arm Overhead Press",
+      "side_score": 0.0,
+      "min_visibility": 0.425,
+      "joints": {
+        "leftShoulder": [
+          0.5519,
+          0.2982
+        ],
+        "leftElbow": [
+          0.5786,
+          0.3849
+        ],
+        "leftWrist": [
+          0.5569,
+          0.4062
+        ],
+        "leftHip": [
+          0.5484,
+          0.508
+        ],
+        "leftKnee": [
+          0.5528,
+          0.6847
+        ],
+        "leftAnkle": [
+          0.5398,
+          0.8298
+        ]
+      }
+    },
+    {
+      "id": "ea_barbell_behind_neck_push_press",
+      "title": "Barbell Behind Neck Push Press",
+      "side_score": 0.0,
+      "min_visibility": 0.897,
+      "joints": {
+        "leftShoulder": [
+          0.5354,
+          0.3658
+        ],
+        "leftElbow": [
+          0.5586,
+          0.4428
+        ],
+        "leftWrist": [
+          0.5618,
+          0.357
+        ],
+        "leftHip": [
+          0.5309,
+          0.5639
+        ],
+        "leftKnee": [
+          0.5412,
+          0.7158
+        ],
+        "leftAnkle": [
+          0.5265,
+          0.8465
+        ]
+      }
+    },
+    {
+      "id": "ea_barbell_standing_close_grip_military_press",
+      "title": "Barbell Standing Close Grip Military Press",
+      "side_score": 0.0,
+      "min_visibility": 0.787,
+      "joints": {
+        "leftShoulder": [
+          0.5357,
+          0.3788
+        ],
+        "leftElbow": [
+          0.5673,
+          0.4343
+        ],
+        "leftWrist": [
+          0.5605,
+          0.3512
+        ],
+        "leftHip": [
+          0.5216,
+          0.5803
+        ],
+        "leftKnee": [
+          0.527,
+          0.7413
+        ],
+        "leftAnkle": [
+          0.5393,
+          0.8836
+        ]
+      }
+    },
+    {
+      "id": "ea_barbell_standing_military_press",
+      "title": "Barbell Standing Military Press",
+      "side_score": 0.0,
+      "min_visibility": 0.828,
+      "joints": {
+        "leftShoulder": [
+          0.5432,
+          0.3587
+        ],
+        "leftElbow": [
+          0.5758,
+          0.4159
+        ],
+        "leftWrist": [
+          0.5895,
+          0.333
+        ],
+        "leftHip": [
+          0.5258,
+          0.5658
+        ],
+        "leftKnee": [
+          0.5337,
+          0.7291
+        ],
+        "leftAnkle": [
+          0.544,
+          0.8797
+        ]
+      }
+    },
+    {
+      "id": "ea_barbell_standing_shoulder_press",
+      "title": "Barbell Standing Shoulder Press",
+      "side_score": 0.0,
+      "min_visibility": 0.835,
+      "joints": {
+        "leftShoulder": [
+          0.5419,
+          0.3539
+        ],
+        "leftElbow": [
+          0.5753,
+          0.4116
+        ],
+        "leftWrist": [
+          0.5903,
+          0.327
+        ],
+        "leftHip": [
+          0.5289,
+          0.575
+        ],
+        "leftKnee": [
+          0.5344,
+          0.7364
+        ],
+        "leftAnkle": [
+          0.5338,
+          0.8641
+        ]
+      }
+    },
+    {
+      "id": "ea_barbell_standing_wide_grip_military_press",
+      "title": "Barbell Standing Wide Grip Military Press",
+      "side_score": 0.0,
+      "min_visibility": 0.884,
+      "joints": {
+        "leftShoulder": [
+          0.5397,
+          0.3396
+        ],
+        "leftElbow": [
+          0.5878,
+          0.3836
+        ],
+        "leftWrist": [
+          0.6332,
+          0.3341
+        ],
+        "leftHip": [
+          0.5267,
+          0.552
+        ],
+        "leftKnee": [
+          0.5346,
+          0.7238
+        ],
+        "leftAnkle": [
+          0.5464,
+          0.874
+        ]
+      }
+    }
+  ],
+  "pushup": [
+    {
+      "id": "ea_alternate_leg_raise_from_reverse_plank_position",
+      "title": "Alternate Leg Raise From Reverse Plank Position",
+      "side_score": 0.105,
+      "min_visibility": 0.019,
+      "joints": {
+        "leftShoulder": [
+          0.2632,
+          0.6113
+        ],
+        "leftElbow": [
+          0.2899,
+          0.7372
+        ],
+        "leftWrist": [
+          0.3515,
+          0.7108
+        ],
+        "leftHip": [
+          0.423,
+          0.7309
+        ],
+        "leftKnee": [
+          0.5792,
+          0.7104
+        ],
+        "leftAnkle": [
+          0.7481,
+          0.7428
+        ]
+      }
+    },
+    {
+      "id": "ea_ab_wheel_plank",
+      "title": "Ab Wheel Plank",
+      "side_score": 0.0,
+      "min_visibility": 0.438,
+      "joints": {
+        "leftShoulder": [
+          0.4751,
+          0.3702
+        ],
+        "leftElbow": [
+          0.4812,
+          0.5174
+        ],
+        "leftWrist": [
+          0.4499,
+          0.6418
+        ],
+        "leftHip": [
+          0.5772,
+          0.473
+        ],
+        "leftKnee": [
+          0.6529,
+          0.5926
+        ],
+        "leftAnkle": [
+          0.7215,
+          0.6182
+        ]
+      }
+    },
+    {
+      "id": "ea_alternate_arm_leg_plank",
+      "title": "Alternate Arm Leg Plank",
+      "side_score": 0.0,
+      "min_visibility": 0.815,
+      "joints": {
+        "leftShoulder": [
+          0.3662,
+          0.3534
+        ],
+        "leftElbow": [
+          0.4658,
+          0.5047
+        ],
+        "leftWrist": [
+          0.3739,
+          0.6135
+        ],
+        "leftHip": [
+          0.5389,
+          0.4864
+        ],
+        "leftKnee": [
+          0.6679,
+          0.6022
+        ],
+        "leftAnkle": [
+          0.788,
+          0.6625
+        ]
+      }
+    },
+    {
+      "id": "ea_alternate_arm_leg_plank_hold",
+      "title": "Alternate Arm Leg Plank Hold",
+      "side_score": 0.0,
+      "min_visibility": 0.101,
+      "joints": {
+        "leftShoulder": [
+          0.6846,
+          0.5197
+        ],
+        "leftElbow": [
+          0.7517,
+          0.6269
+        ],
+        "leftWrist": [
+          0.8356,
+          0.6832
+        ],
+        "leftHip": [
+          0.4302,
+          0.499
+        ],
+        "leftKnee": [
+          0.2788,
+          0.5328
+        ],
+        "leftAnkle": [
+          0.1758,
+          0.5096
+        ]
+      }
+    },
+    {
+      "id": "ea_alternate_arm_leg_plank_rest_pause",
+      "title": "Alternate Arm Leg Plank Rest Pause",
+      "side_score": 0.0,
+      "min_visibility": 0.118,
+      "joints": {
+        "leftShoulder": [
+          0.6839,
+          0.5158
+        ],
+        "leftElbow": [
+          0.7523,
+          0.629
+        ],
+        "leftWrist": [
+          0.8376,
+          0.6847
+        ],
+        "leftHip": [
+          0.4337,
+          0.4992
+        ],
+        "leftKnee": [
+          0.2816,
+          0.5313
+        ],
+        "leftAnkle": [
+          0.1757,
+          0.5113
+        ]
+      }
+    },
+    {
+      "id": "ea_alternate_single_leg_raises_plank",
+      "title": "Alternate Single Leg Raises Plank",
+      "side_score": 0.0,
+      "min_visibility": 0.866,
+      "joints": {
+        "leftShoulder": [
+          0.2941,
+          0.278
+        ],
+        "leftElbow": [
+          0.3602,
+          0.5629
+        ],
+        "leftWrist": [
+          0.3144,
+          0.776
+        ],
+        "leftHip": [
+          0.5207,
+          0.3544
+        ],
+        "leftKnee": [
+          0.6501,
+          0.495
+        ],
+        "leftAnkle": [
+          0.7643,
+          0.5369
+        ]
+      }
+    },
+    {
+      "id": "ea_archer_push_up",
+      "title": "Archer Push Up",
+      "side_score": 0.0,
+      "min_visibility": 0.031,
+      "joints": {
+        "leftShoulder": [
+          0.485,
+          0.5188
+        ],
+        "leftElbow": [
+          0.4051,
+          0.5501
+        ],
+        "leftWrist": [
+          0.3393,
+          0.6248
+        ],
+        "leftHip": [
+          0.3416,
+          0.5316
+        ],
+        "leftKnee": [
+          0.4154,
+          0.5343
+        ],
+        "leftAnkle": [
+          0.3543,
+          0.6376
+        ]
+      }
+    }
+  ],
+  "situp": [
+    {
+      "id": "ea_abdominal_crunches_with_hold",
+      "title": "Abdominal Crunches with Hold",
+      "side_score": 0.679,
+      "min_visibility": 0.775,
+      "joints": {
+        "leftShoulder": [
+          0.2806,
+          0.4608
+        ],
+        "leftElbow": [
+          0.4149,
+          0.4433
+        ],
+        "leftWrist": [
+          0.5388,
+          0.3523
+        ],
+        "leftHip": [
+          0.4378,
+          0.7225
+        ],
+        "leftKnee": [
+          0.6059,
+          0.4654
+        ],
+        "leftAnkle": [
+          0.7483,
+          0.7627
+        ]
+      }
+    },
+    {
+      "id": "ea_abdominal_crunches",
+      "title": "Abdominal Crunches",
+      "side_score": 0.243,
+      "min_visibility": 0.866,
+      "joints": {
+        "leftShoulder": [
+          0.2504,
+          0.4561
+        ],
+        "leftElbow": [
+          0.3845,
+          0.4184
+        ],
+        "leftWrist": [
+          0.468,
+          0.2545
+        ],
+        "leftHip": [
+          0.4219,
+          0.7
+        ],
+        "leftKnee": [
+          0.5837,
+          0.449
+        ],
+        "leftAnkle": [
+          0.7232,
+          0.7418
+        ]
+      }
+    },
+    {
+      "id": "ea_air_bike_crunch",
+      "title": "Air Bike Crunch",
+      "side_score": 0.0,
+      "min_visibility": 0.479,
+      "joints": {
+        "leftShoulder": [
+          0.6869,
+          0.6639
+        ],
+        "leftElbow": [
+          0.7676,
+          0.7574
+        ],
+        "leftWrist": [
+          0.7742,
+          0.587
+        ],
+        "leftHip": [
+          0.4611,
+          0.6904
+        ],
+        "leftKnee": [
+          0.437,
+          0.3819
+        ],
+        "leftAnkle": [
+          0.2505,
+          0.3931
+        ]
+      }
+    },
+    {
+      "id": "ea_air_twisting_crunch",
+      "title": "Air Twisting Crunch",
+      "side_score": 0.0,
+      "min_visibility": 0.969,
+      "joints": {
+        "leftShoulder": [
+          0.6677,
+          0.6871
+        ],
+        "leftElbow": [
+          0.7239,
+          0.7591
+        ],
+        "leftWrist": [
+          0.7578,
+          0.7046
+        ],
+        "leftHip": [
+          0.4651,
+          0.7066
+        ],
+        "leftKnee": [
+          0.3772,
+          0.4725
+        ],
+        "leftAnkle": [
+          0.275,
+          0.6955
+        ]
+      }
+    },
+    {
+      "id": "ea_alternate_oblique_crunch",
+      "title": "Alternate Oblique Crunch",
+      "side_score": 0.0,
+      "min_visibility": 0.948,
+      "joints": {
+        "leftShoulder": [
+          0.7306,
+          0.4836
+        ],
+        "leftElbow": [
+          0.7231,
+          0.6377
+        ],
+        "leftWrist": [
+          0.6628,
+          0.7333
+        ],
+        "leftHip": [
+          0.5478,
+          0.6224
+        ],
+        "leftKnee": [
+          0.4019,
+          0.5281
+        ],
+        "leftAnkle": [
+          0.3124,
+          0.807
+        ]
+      }
+    },
+    {
+      "id": "ea_alternating_oblique_sit_ups",
+      "title": "Alternating Oblique Sit-ups",
+      "side_score": 0.0,
+      "min_visibility": 0.265,
+      "joints": {
+        "leftShoulder": [
+          0.3378,
+          0.3733
+        ],
+        "leftElbow": [
+          0.3099,
+          0.2347
+        ],
+        "leftWrist": [
+          0.248,
+          0.3138
+        ],
+        "leftHip": [
+          0.4847,
+          0.5937
+        ],
+        "leftKnee": [
+          0.598,
+          0.4935
+        ],
+        "leftAnkle": [
+          0.6758,
+          0.7487
+        ]
+      }
+    }
+  ],
+  "squat": [
+    {
+      "id": "ea_barbell_full_squat_side_pov",
+      "title": "Barbell Full Squat Side Pov",
+      "side_score": 0.508,
+      "min_visibility": 0.012,
+      "joints": {
+        "leftShoulder": [
+          0.4566,
+          0.3081
+        ],
+        "leftElbow": [
+          0.4628,
+          0.3952
+        ],
+        "leftWrist": [
+          0.4819,
+          0.4551
+        ],
+        "leftHip": [
+          0.4748,
+          0.4964
+        ],
+        "leftKnee": [
+          0.5071,
+          0.6617
+        ],
+        "leftAnkle": [
+          0.4854,
+          0.8167
+        ]
+      }
+    },
+    {
+      "id": "ea_barbell_clean_grip_front_squat",
+      "title": "Barbell Clean Grip Front Squat",
+      "side_score": 0.017,
+      "min_visibility": 0.235,
+      "joints": {
+        "leftShoulder": [
+          0.5379,
+          0.3066
+        ],
+        "leftElbow": [
+          0.5495,
+          0.3859
+        ],
+        "leftWrist": [
+          0.553,
+          0.33
+        ],
+        "leftHip": [
+          0.5396,
+          0.4886
+        ],
+        "leftKnee": [
+          0.5503,
+          0.6398
+        ],
+        "leftAnkle": [
+          0.5362,
+          0.7715
+        ]
+      }
+    },
+    {
+      "id": "ea_barbell_box_squat",
+      "title": "Barbell Box Squat",
+      "side_score": 0.0,
+      "min_visibility": 0.735,
+      "joints": {
+        "leftShoulder": [
+          0.586,
+          0.2642
+        ],
+        "leftElbow": [
+          0.6085,
+          0.3499
+        ],
+        "leftWrist": [
+          0.6211,
+          0.2371
+        ],
+        "leftHip": [
+          0.562,
+          0.4993
+        ],
+        "leftKnee": [
+          0.5744,
+          0.6904
+        ],
+        "leftAnkle": [
+          0.5549,
+          0.86
+        ]
+      }
+    },
+    {
+      "id": "ea_barbell_front_chest_squat",
+      "title": "Barbell Front Chest Squat",
+      "side_score": 0.0,
+      "min_visibility": 0.99,
+      "joints": {
+        "leftShoulder": [
+          0.5556,
+          0.2836
+        ],
+        "leftElbow": [
+          0.6,
+          0.3719
+        ],
+        "leftWrist": [
+          0.5841,
+          0.3041
+        ],
+        "leftHip": [
+          0.5299,
+          0.5131
+        ],
+        "leftKnee": [
+          0.5233,
+          0.7017
+        ],
+        "leftAnkle": [
+          0.546,
+          0.8562
+        ]
+      }
+    },
+    {
+      "id": "ea_barbell_full_squat",
+      "title": "Barbell Full Squat",
+      "side_score": 0.0,
+      "min_visibility": 0.924,
+      "joints": {
+        "leftShoulder": [
+          0.5551,
+          0.2712
+        ],
+        "leftElbow": [
+          0.5736,
+          0.3607
+        ],
+        "leftWrist": [
+          0.606,
+          0.2597
+        ],
+        "leftHip": [
+          0.545,
+          0.5118
+        ],
+        "leftKnee": [
+          0.5772,
+          0.7004
+        ],
+        "leftAnkle": [
+          0.5466,
+          0.8607
+        ]
+      }
+    }
+  ]
+}

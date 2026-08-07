@@ -188,6 +188,249 @@ const pushupBottomTarget = PoseTarget(
   bones: _sideViewBones,
 );
 
+// ---------------------------------------------------------------------------
+// Targets for the `poseTargetId` tags the catalogue already carries.
+//
+// `exercises_vendor.json` tags 540 of its 1887 exercises with one of eight
+// ids. Two of them — `squat` and `pushup` — had geometry above; the rest were
+// labels pointing at nothing, so the coach could not coach them.
+//
+// ## Why these are authored rather than measured
+//
+// Measured first, and the measurement is what settled it. `scripts/pose/
+// extract_pose_targets.py` ran MediaPipe over the catalogue's own posters and
+// scored each for how nearly a side view it is — left and right joints
+// coincide horizontally in a profile, and spread apart by roughly shoulder
+// width head-on. Result across 44 posters covering all eight tags: **zero**
+// usable side views. Nearly every score was 0.00, and even the one exercise
+// whose id ends `_side_pov` scored 0.51 with 0.01 visibility. The posters are
+// rendered head-on because that is what reads at thumbnail size, which is
+// correct for their job and useless for this one.
+//
+// Tracing a frontal poster and shipping it as a side-view target would be
+// worse than authoring: it would be wrong for the instruction on screen while
+// looking like it came from data. So these follow `squatBottomTarget`'s
+// precedent — the numbers describe the movement's geometry, and `poseMatchScore`
+// normalises away position and size, so they never claim to be anyone's body.
+//
+// Segment lengths are held within a few percent between the two phases of each
+// movement, for the reason `pushupBottomTarget` gives: a limb that changes
+// length mid-demonstration reads as a glitch, not as a movement.
+// ---------------------------------------------------------------------------
+
+/// Standing tall with the arm hanging: the extended end of a curl.
+///
+/// "top" and "bottom" name where the MOVING part travels, as they do for the
+/// squat and the push-up. For a curl the hand rises, so the curled position is
+/// the top one.
+const curlBottomTarget = PoseTarget(
+  id: 'curl.bottom',
+  joints: {
+    LandmarkType.leftShoulder: (0.47, 0.30),
+    LandmarkType.leftElbow: (0.48, 0.46),
+    LandmarkType.leftWrist: (0.49, 0.62),
+    LandmarkType.leftHip: (0.50, 0.57),
+    LandmarkType.leftKnee: (0.50, 0.77),
+    LandmarkType.leftAnkle: (0.49, 0.95),
+  },
+  bones: _sideViewBones,
+);
+
+/// The curled end: forearm rotated up, upper arm still hanging at the side.
+///
+/// The elbow does not move. That is the whole point of the shape — an elbow
+/// that drifts forward is the most common way a curl turns into a swing, and
+/// a target that moved it would be teaching the fault.
+const curlTopTarget = PoseTarget(
+  id: 'curl.top',
+  joints: {
+    LandmarkType.leftShoulder: (0.47, 0.30),
+    LandmarkType.leftElbow: (0.48, 0.46),
+    LandmarkType.leftWrist: (0.44, 0.31),
+    LandmarkType.leftHip: (0.50, 0.57),
+    LandmarkType.leftKnee: (0.50, 0.77),
+    LandmarkType.leftAnkle: (0.49, 0.95),
+  },
+  bones: _sideViewBones,
+);
+
+/// Standing tall, arms hanging: the top of a hip hinge.
+const hingeTopTarget = PoseTarget(
+  id: 'hinge.top',
+  joints: {
+    LandmarkType.leftShoulder: (0.47, 0.26),
+    LandmarkType.leftElbow: (0.48, 0.40),
+    LandmarkType.leftWrist: (0.49, 0.53),
+    LandmarkType.leftHip: (0.50, 0.53),
+    LandmarkType.leftKnee: (0.50, 0.74),
+    LandmarkType.leftAnkle: (0.49, 0.93),
+  },
+  bones: _sideViewBones,
+);
+
+/// The bottom of a hinge: hips travelled BACK, torso inclined, knees only
+/// slightly bent, arms hanging straight down under the shoulders.
+///
+/// The distinction from `squatBottomTarget` is the entire reason a separate
+/// shape exists: a squat drops the hips between the feet and keeps the shins
+/// angled forward; a hinge sends the hips backwards and keeps the shins close
+/// to vertical. Told to "squat deeper" during a Romanian deadlift, a user
+/// would be right to ignore the coach.
+const hingeBottomTarget = PoseTarget(
+  id: 'hinge.bottom',
+  joints: {
+    LandmarkType.leftShoulder: (0.62, 0.43),
+    LandmarkType.leftElbow: (0.62, 0.57),
+    LandmarkType.leftWrist: (0.62, 0.70),
+    LandmarkType.leftHip: (0.40, 0.58),
+    LandmarkType.leftKnee: (0.53, 0.75),
+    LandmarkType.leftAnkle: (0.49, 0.93),
+  },
+  bones: _sideViewBones,
+);
+
+/// Standing tall: the top of a lunge.
+const lungeTopTarget = PoseTarget(
+  id: 'lunge.top',
+  joints: {
+    LandmarkType.leftShoulder: (0.47, 0.26),
+    LandmarkType.leftElbow: (0.48, 0.40),
+    LandmarkType.leftWrist: (0.49, 0.53),
+    LandmarkType.leftHip: (0.50, 0.53),
+    LandmarkType.leftKnee: (0.50, 0.74),
+    LandmarkType.leftAnkle: (0.49, 0.93),
+  },
+  bones: _sideViewBones,
+);
+
+/// The bottom of a lunge, front leg only: knee stacked over the ankle, shin
+/// vertical, torso upright while the hips drop.
+///
+/// Only the front leg is described, because `_sideViewBones` is a left-side
+/// chain and the trailing leg is behind the body where the detector is
+/// guessing. A user standing side-on presents the front leg to the camera,
+/// which is the leg the shape is about.
+const lungeBottomTarget = PoseTarget(
+  id: 'lunge.bottom',
+  joints: {
+    LandmarkType.leftShoulder: (0.42, 0.35),
+    LandmarkType.leftElbow: (0.43, 0.49),
+    LandmarkType.leftWrist: (0.44, 0.62),
+    LandmarkType.leftHip: (0.45, 0.62),
+    LandmarkType.leftKnee: (0.60, 0.77),
+    LandmarkType.leftAnkle: (0.61, 0.95),
+  },
+  bones: _sideViewBones,
+);
+
+/// Lying flat, hands by the head: the bottom of a sit-up or crunch.
+const situpBottomTarget = PoseTarget(
+  id: 'situp.bottom',
+  joints: {
+    LandmarkType.leftShoulder: (0.30, 0.72),
+    LandmarkType.leftElbow: (0.22, 0.61),
+    LandmarkType.leftWrist: (0.34, 0.57),
+    LandmarkType.leftHip: (0.55, 0.75),
+    LandmarkType.leftKnee: (0.72, 0.68),
+    LandmarkType.leftAnkle: (0.85, 0.78),
+  },
+  bones: _sideViewBones,
+);
+
+/// Curled up: the torso has rotated about the hip, the feet have not moved.
+///
+/// The hip is the pivot and stays put, which is what separates a crunch from
+/// a hip flexor raise — the shape says "fold the ribs toward the hips", not
+/// "pull yourself up by the legs".
+const situpTopTarget = PoseTarget(
+  id: 'situp.top',
+  joints: {
+    LandmarkType.leftShoulder: (0.36, 0.59),
+    LandmarkType.leftElbow: (0.27, 0.49),
+    LandmarkType.leftWrist: (0.39, 0.45),
+    LandmarkType.leftHip: (0.55, 0.75),
+    LandmarkType.leftKnee: (0.72, 0.68),
+    LandmarkType.leftAnkle: (0.85, 0.78),
+  },
+  bones: _sideViewBones,
+);
+
+/// Racked at the shoulders: the bottom of an overhead press.
+///
+/// The whole figure sits lower in the frame than the squat's does, so the
+/// locked-out arm above still has room. Absolute position is irrelevant to
+/// scoring and matters only to the drawn outline, which must not run off the
+/// top of the panel.
+const overheadPressBottomTarget = PoseTarget(
+  id: 'overhead_press.bottom',
+  joints: {
+    LandmarkType.leftShoulder: (0.47, 0.36),
+    LandmarkType.leftElbow: (0.44, 0.50),
+    LandmarkType.leftWrist: (0.50, 0.39),
+    LandmarkType.leftHip: (0.50, 0.62),
+    LandmarkType.leftKnee: (0.50, 0.80),
+    LandmarkType.leftAnkle: (0.49, 0.96),
+  },
+  bones: _sideViewBones,
+);
+
+/// Locked out overhead: elbow and wrist stacked over the shoulder.
+///
+/// Stacked, not forward. A press finished in front of the head is the fault
+/// this shape is meant to make visible.
+const overheadPressTopTarget = PoseTarget(
+  id: 'overhead_press.top',
+  joints: {
+    LandmarkType.leftShoulder: (0.47, 0.36),
+    LandmarkType.leftElbow: (0.47, 0.22),
+    LandmarkType.leftWrist: (0.47, 0.09),
+    LandmarkType.leftHip: (0.50, 0.62),
+    LandmarkType.leftKnee: (0.50, 0.80),
+    LandmarkType.leftAnkle: (0.49, 0.96),
+  },
+  bones: _sideViewBones,
+);
+
+/// Every movement the coach can demonstrate, keyed by the catalogue's own
+/// `poseTargetId`, as `(top, bottom)`.
+///
+/// One registry rather than a list per call site: `pose_target_test.dart` used
+/// to enumerate targets by hand and had silently never covered
+/// [pushupBottomTarget] at all, so its invariants — enough joints to score,
+/// bones that reference real joints, coordinates inside the frame — did not
+/// apply to a shipped target. Anything added below is covered from the moment
+/// it is added.
+///
+/// ## `calf_raise` is absent, and cannot be added here
+///
+/// Seven of the catalogue's eight tags appear. The eighth is not an omission
+/// and not work left for later: the movement is not expressible in this
+/// representation. The scored set is shoulder, elbow, wrist, hip, knee and
+/// ankle — there is no heel and no toe. A calf raise moves the whole body
+/// straight up on an unchanging skeleton, and [poseMatchScore] removes
+/// position and size before comparing, so both ends of the movement normalise
+/// to the *same* shape. A pair would score every attempt identically,
+/// including a rep never performed.
+///
+/// Representing it needs a landmark below the ankle — a change to
+/// [LandmarkType] and to what the detector is asked for, which is a larger
+/// decision than adding a shape and should be made when something else needs
+/// feet too. The 17 exercises tagged `calf_raise` stay uncoached, visibly,
+/// rather than being handed a target that cannot judge them.
+const poseTargetsByTag = <String, (PoseTarget, PoseTarget)>{
+  'squat': (squatTopTarget, squatBottomTarget),
+  'pushup': (pushupTopTarget, pushupBottomTarget),
+  'curl': (curlTopTarget, curlBottomTarget),
+  'hinge': (hingeTopTarget, hingeBottomTarget),
+  'lunge': (lungeTopTarget, lungeBottomTarget),
+  'situp': (situpTopTarget, situpBottomTarget),
+  'overhead_press': (overheadPressTopTarget, overheadPressBottomTarget),
+};
+
+/// Flat view of [poseTargetsByTag], derived rather than written twice.
+List<PoseTarget> get allShippedTargets =>
+    [for (final p in poseTargetsByTag.values) ...[p.$1, p.$2]];
+
 /// A pose part-way between two targets, for drawing a movement instead of a
 /// position.
 ///
