@@ -15,6 +15,7 @@ import '../equipment/state/equipment_providers.dart';
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import '../visual_equipment/data/live_recognition.dart';
+import '../visual_equipment/data/scan_outcome.dart';
 import '../visual_equipment/data/recognition_history.dart';
 import '../visual_equipment/data/visual_equipment_match.dart';
 import '../visual_equipment/data/machine_card.dart';
@@ -335,22 +336,44 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     }
   }
 
+  /// The image the last scan ran on, so a timeout or a failure can be retried
+  /// without making the user photograph the machine again.
+  String? _lastScannedPath;
+
   Future<void> _classify(String path) async {
     if (mounted) setState(() => _attempted = true);
+    _lastScannedPath = path;
     await ref
         .read(visualEquipmentControllerProvider.notifier)
         .classifyFilePath(path);
-    final top =
-        ref.read(visualEquipmentControllerProvider).valueOrNull?.firstOrNull;
-    if (top != null) {
-      _remember(top.equipmentId, top.confidence, RecognitionSource.photo);
+    final result = ref.read(visualEquipmentControllerProvider).valueOrNull;
+    // Only a confident result is remembered. An `alternatives` outcome is the
+    // app saying "I am not sure, you pick" — writing its top candidate into
+    // "My machines" would record, as a fact the user identified, a machine
+    // they were never even asked about. The outcome distinction is new here;
+    // before it existed this path took `.first` of any non-empty list.
+    if (result != null && result.outcome == ScanOutcome.confident) {
+      final top = result.matches.firstOrNull;
+      if (top != null) {
+        _remember(top.equipmentId, top.confidence, RecognitionSource.photo);
+      }
     }
+  }
+
+  /// Re-runs recognition on the same shot. Offered only for outcomes where a
+  /// second attempt can genuinely differ (timeout, failure) — never for
+  /// "not in the catalogue", where the same image and model produce the same
+  /// answer and the button would be a loop with a friendly label.
+  Future<void> _retryLastScan() async {
+    final path = _lastScannedPath;
+    if (path == null) return;
+    await _classify(path);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final matches = ref.watch(visualEquipmentControllerProvider);
+    final scan = ref.watch(visualEquipmentControllerProvider);
     final card = ref.watch(lastMachineCardProvider);
     final liveOn = ref.watch(liveModeEnabledProvider);
     final liveAsync = ref.watch(liveRecognitionProvider);
@@ -503,24 +526,48 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                 : _LiveCard(recognition: live, onOpen: _openEquipment),
           ],
           const SizedBox(height: 14),
-          matches.when(
+          scan.when(
             loading: () => const Padding(
               padding: EdgeInsets.symmetric(vertical: 24),
               child: Center(child: CircularProgressIndicator()),
             ),
+            // Kept for a state the controller no longer produces — it now
+            // converts every failure into a ScanResult so the outcome, not an
+            // exception, drives the screen. Left as a safety net rather than
+            // a `!`: an unexpected AsyncError must not blank the page.
             error: (e, _) => GlassCard(
               tint: theme.colorScheme.error,
               child: Text(
                   AppLocalizations.of(context).scannerRecognitionFailed(e)),
             ),
-            data: (list) => list.isEmpty
-                // Not in the catalog. If the second question came back with
-                // something, that IS the answer -- "не удалось понять" is no
-                // longer true once we can say what the machine is.
-                ? (card != null
-                    ? MachineCardView(card: card)
-                    : _HintCard(theme: theme, noMatch: _attempted))
-                : _Matches(matches: list, onOpen: _openEquipment),
+            data: (result) => switch (result.outcome) {
+              ScanOutcome.confident ||
+              ScanOutcome.alternatives =>
+                _Matches(matches: result.matches, onOpen: _openEquipment),
+              // Not in the catalogue, but the describer could name it. That
+              // card IS the answer -- "не удалось понять" stops being true the
+              // moment the app can say what the machine is.
+              ScanOutcome.unknown => card != null
+                  ? MachineCardView(card: card)
+                  : _HintCard(theme: theme, noMatch: _attempted),
+              // Nothing machine-like in the frame. Distinct from unknown:
+              // telling someone pointing at a wall that their machine is
+              // missing from our catalogue is a lie about our data.
+              ScanOutcome.noEquipment =>
+                _HintCard(theme: theme, noMatch: _attempted),
+              ScanOutcome.timeout => _ScanProblemCard(
+                  key: const Key('scan-timeout'),
+                  title: AppLocalizations.of(context).scannerTimeoutTitle,
+                  body: AppLocalizations.of(context).scannerTimeoutBody,
+                  onRetry: _retryLastScan,
+                ),
+              ScanOutcome.failed => _ScanProblemCard(
+                  key: const Key('scan-failed'),
+                  title: AppLocalizations.of(context).scannerFailedTitle,
+                  body: AppLocalizations.of(context).scannerFailedBody,
+                  onRetry: _retryLastScan,
+                ),
+            },
           ),
           const SizedBox(height: 20),
           _HistorySection(onOpen: _openEquipment),
@@ -881,6 +928,59 @@ class _Matches extends StatelessWidget {
           const SizedBox(height: 8),
         ],
       ],
+    );
+  }
+}
+
+/// A recognition attempt that ended without an answer, and the retry for it.
+///
+/// R2.2 states 11 and 13. Both were previously invisible: a timeout had no
+/// representation at all (the call was unbounded, so the spinner simply never
+/// stopped) and a failure rendered the caught exception into the card.
+class _ScanProblemCard extends StatelessWidget {
+  const _ScanProblemCard({
+    super.key,
+    required this.title,
+    required this.body,
+    required this.onRetry,
+  });
+
+  final String title;
+  final String body;
+  final Future<void> Function() onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.error_outline_rounded,
+                  color: theme.colorScheme.error, size: 22),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(title,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w800)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(body,
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colors.textSecondary)),
+          const SizedBox(height: 12),
+          AppSecondaryButton(
+            key: const Key('scan-retry-recognition'),
+            onPressed: () => unawaited(onRetry()),
+            icon: Icons.refresh_rounded,
+            label: AppLocalizations.of(context).scannerRetry,
+          ),
+        ],
+      ),
     );
   }
 }

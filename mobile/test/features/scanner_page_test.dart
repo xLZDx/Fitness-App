@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +15,7 @@ import 'package:fitness_app/features/visual_equipment/data/live_equipment_servic
 import 'package:fitness_app/features/visual_equipment/data/recognition_history.dart';
 import 'package:fitness_app/features/visual_equipment/state/recognition_history_providers.dart';
 import 'package:fitness_app/features/visual_equipment/data/live_recognition.dart';
+import 'package:fitness_app/features/visual_equipment/data/scan_outcome.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_match.dart';
 import 'package:fitness_app/features/visual_equipment/state/live_equipment_providers.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_service.dart';
@@ -58,6 +61,25 @@ class _FailingSession extends CameraSession {
 
   @override
   Future<void> stop() async => stops++;
+}
+
+/// Never answers — models a recognition call that hangs rather than fails.
+class _HangingService implements VisualEquipmentService {
+  @override
+  Future<List<VisualMatch>> classifyFile({
+    required String path,
+    int topK = 3,
+  }) =>
+      Completer<List<VisualMatch>>().future;
+}
+
+class _ThrowingService implements VisualEquipmentService {
+  @override
+  Future<List<VisualMatch>> classifyFile({
+    required String path,
+    int topK = 3,
+  }) async =>
+      throw const VisualEquipmentException('model missing');
 }
 
 /// Answers the Settings call without a platform channel.
@@ -549,6 +571,88 @@ void main() {
       await tester.pump();
 
       expect(find.textContaining('Could not open Settings'), findsOneWidget);
+    });
+
+    testWidgets('a recognition timeout renders a retry, not a spinner',
+        (tester) async {
+      // R2.2 state 11. The call used to be unbounded: a request that hung left
+      // the spinner up forever, with no retry and no way out but leaving.
+      final container = await pumpScan(tester, overrides: [
+        // A working camera, so the page has exactly one Scrollable. Without
+        // it the real session hits the permission channel, fails, and the
+        // camera-unavailable overlay adds its own scroll view — which
+        // scrollUntilVisible then drives instead of the page's list.
+        scanCameraSessionProvider.overrideWithValue(_SpySession()),
+        recogniseTimeoutProvider
+            .overrideWithValue(const Duration(milliseconds: 30)),
+        visualEquipmentServiceProvider.overrideWithValue(_HangingService()),
+      ]);
+
+      // Started, not awaited: the timeout is a Timer, and inside testWidgets
+      // timers only fire when the test clock is pumped. Awaiting first would
+      // deadlock — the future is waiting on a timer the await prevents from
+      // ever running.
+      final scan = container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/hangs.jpg');
+      await tester.pump(const Duration(milliseconds: 50));
+      await scan;
+      await tester.pump();
+      await tester.scrollUntilVisible(find.byKey(const Key('scan-timeout')), 120);
+
+      expect(find.byKey(const Key('scan-timeout')), findsOneWidget);
+      expect(find.byKey(const Key('scan-retry-recognition')), findsOneWidget);
+      // The recognition itself has settled. Asserted on the state rather than
+      // on "no CircularProgressIndicator anywhere": the viewfinder shows its
+      // own warming spinner while the fake session publishes no surface, and
+      // that one is not the spinner this rule is about.
+      expect(container.read(visualEquipmentControllerProvider).isLoading,
+          isFalse);
+    });
+
+    testWidgets('an undecided result is not written into My machines',
+        (tester) async {
+      // `alternatives` is the app saying "I am not sure, you pick". Recording
+      // its top candidate would file, as a machine the user identified, one
+      // they were never asked about.
+      final history = MockRecognitionHistoryRepository();
+      final container = await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(_SpySession()),
+        recognitionHistoryRepositoryProvider.overrideWithValue(history),
+        visualEquipmentServiceProvider.overrideWithValue(
+          MockVisualEquipmentService(fixedResults: const [
+            VisualMatch(equipmentId: 'leg_press', confidence: 0.45),
+            VisualMatch(equipmentId: 'hack_squat', confidence: 0.40),
+          ]),
+        ),
+      ]);
+
+      await container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/close.jpg');
+      await tester.pump();
+
+      expect(container.read(visualEquipmentControllerProvider).requireValue
+          .outcome, ScanOutcome.alternatives);
+      expect(await history.list(), isEmpty,
+          reason: 'an undecided scan must not become a remembered machine');
+    });
+
+    testWidgets('a failed recognition shows no raw exception', (tester) async {
+      final container = await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(_SpySession()),
+        visualEquipmentServiceProvider.overrideWithValue(_ThrowingService()),
+      ]);
+
+      await container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/a.jpg');
+      await tester.pump();
+      await tester.scrollUntilVisible(find.byKey(const Key('scan-failed')), 120);
+
+      expect(find.byKey(const Key('scan-failed')), findsOneWidget);
+      expect(find.textContaining('model missing'), findsNothing,
+          reason: 'internal exceptions must never reach the user');
     });
 
     testWidgets('a Settings screen that opens stays quiet', (tester) async {
