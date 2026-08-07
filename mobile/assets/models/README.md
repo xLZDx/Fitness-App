@@ -91,6 +91,60 @@ Two Windows-specific notes for whoever runs this next:
   `pip` needs a CA bundle that includes the interceptor's root, otherwise
   every install fails with `CERTIFICATE_VERIFY_FAILED`.
 
+## v2 — in progress (2026-08-07)
+
+Not shipped. `equipment_v1.tflite` above is still what the app loads.
+
+**Why v2 exists**: B1 measured v1 against 30 real gym photos
+(`core/plans/B1_RECOGNITION_MEASUREMENT_2026-08-07.md`). Its three most
+confident answers were all wrong, and all three were machines it has no class
+for — an abduction machine as `treadmill` 0.892, a Nautilus shoulder press as
+`leg_press` 0.897. Ten classes serving a 69-machine catalogue cannot do
+otherwise, and no confidence threshold repairs it.
+
+**What changed**
+
+| | v1 | v2 |
+|---|---|---|
+| classes | 10, typed by hand in 3 places | generated from `equipment.json` |
+| "not mine" | impossible | `none`, a real trained class |
+| corpus | 1741 web-crawled catalogue photos | 55,466 crops from CC BY 4.0 Roboflow datasets |
+| framing | whole machine, clean background | bounding-box crops — the machine fills the frame |
+| test set | a slice of the same crawl | the operator's own 30 gym photos, never trained on |
+
+**Pipeline** (still outside the repo, `D:\tools\equipment-model\`):
+
+`classes.py` → `fetch_roboflow.py` → `train_v2.py` → `eval_on_gym_photos.py`
+
+- `classes.py` reads `equipment.json`, so the label set cannot drift from the
+  app again. `bench` and `adjustable_bench` were the same object and are now
+  one class.
+- `fetch_roboflow.py` pulls only `CC BY 4.0` projects, writes `ATTRIBUTION.md`
+  during the download (attribution is a licence condition, and nobody collects
+  it afterwards), crops every bounding box, and mines background crops from the
+  same photos for `none`. Class names it cannot map are COUNTED and PRINTED —
+  that report is what found `chest fly machine` = our `pec_deck`, 1081 crops
+  that were being silently dropped.
+- `train_v2.py` MOVES classes under 150 images out of the training tree rather
+  than filtering them in code, and prints them. That list is the gap, not a
+  rounding error.
+
+**Known gaps in the v2 corpus**
+
+- `hip_abductor_adductor` has ZERO crops despite being in the coverage survey:
+  only 5 of the 36 CC BY datasets were pulled. It is the machine from the
+  operator's screenshot. Pull more datasets before shipping v2.
+- Dropped under 150 images: `ab_crunch_machine` 119, `pullup_bar` 145,
+  `elliptical` 128, `squat_rack` 21, `weight_plates` 15,
+  `tricep_extension_machine` 12, `calf_raise_machine` 3, `recumbent_bike` 2.
+- `'Abdominal Bench'` (35 crops) deliberately unmapped: it is a decline sit-up
+  bench, neither `ab_crunch_machine` nor `adjustable_bench`. A guess would
+  poison whichever class received it.
+
+**Do not train on the operator's 30 photos.** They are the only real-world
+sample in the project. Spending them on training buys a slightly better model
+and destroys the ability to know whether it is better.
+
 ## Improving v2
 
 Biggest wins, in order: real gym photos at user angles (the current corpus is
