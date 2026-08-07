@@ -5,10 +5,27 @@ import '../../features/workouts/data/scheduled_session.dart';
 /// default Riverpod provider use `MockNotificationService` so unit tests
 /// don't drag in a platform plugin.
 abstract class NotificationService {
-  /// Best-effort permission request + plugin warm-up. Safe to call multiple
-  /// times. Returns true when the platform reports notifications can be
-  /// delivered (the user accepted, or the platform doesn't gate).
+  /// Plugin warm-up ONLY: timezone database, channel registration, tap
+  /// handler. Never prompts. Safe to call multiple times, and safe to call
+  /// from `main()` before the first frame.
+  ///
+  /// The permission request used to live here, which meant the Android
+  /// "Allow notifications?" dialog was the first thing a new user saw --
+  /// before the app had shown a single screen, let alone a reason to want
+  /// reminders. A prompt with no context is a prompt that gets denied, and on
+  /// Android a denial is close to permanent: the system stops re-asking, and
+  /// the only way back is Settings.
   Future<bool> init();
+
+  /// Ask for notification permission, at a moment the user can connect to a
+  /// reminder they just asked for. Returns true when reminders can be
+  /// delivered.
+  ///
+  /// Separate from [init] so the prompt is tied to intent rather than to
+  /// process start. Call it where the user has just done something that
+  /// implies they want to be reminded -- [scheduleReminder] does exactly
+  /// that, so most callers never need this directly.
+  Future<bool> ensurePermission();
 
   /// Schedule a one-shot reminder for [session]. Replaces any prior
   /// reminder with the same session id.

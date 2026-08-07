@@ -72,6 +72,9 @@ class _RecordingNotifications implements NotificationService {
   Future<bool> init() async => true;
 
   @override
+  Future<bool> ensurePermission() async => true;
+
+  @override
   Future<void> cancelAll() async {}
 
   @override

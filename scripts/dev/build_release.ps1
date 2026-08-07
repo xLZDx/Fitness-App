@@ -1,0 +1,147 @@
+﻿# Repeatable release build + optional Firebase App Distribution upload.
+#
+# WHY THIS EXISTS
+#
+# Build 1.0.0 (2014) was produced by hand: the GIT_SHA and BUILT_AT
+# dart-defines were typed into the flutter command at the keyboard. That
+# works exactly once. The next person -- or the same person next week --
+# forgets one, and B6's session header ships reading "unknown", which
+# defeats the point of B6: a log you cannot tie to a build tells you
+# nothing about which code produced it.
+#
+# The two values are derived here, never typed. There is no way to run this
+# script and get an unstamped build.
+#
+# WHY --split-per-abi IS THE DEFAULT
+#
+# The single fat APK is ~244 MB, of which ~207 MB is native libraries for
+# three ABIs -- arm64-v8a, armeabi-v7a, x86_64 -- and only ~33 MB is the
+# app. A phone runs exactly one of those. Splitting gives ~98 MB for
+# arm64-v8a, which is every Android phone shipped in the last several years.
+# Pass -Fat when you genuinely need one file that installs anywhere.
+#
+# For the Play Store use -Bundle: Play does the splitting itself and an AAB
+# is what the console accepts.
+#
+# Usage:
+#   pwsh ./scripts/dev/build_release.ps1
+#   pwsh ./scripts/dev/build_release.ps1 -Distribute
+#   pwsh ./scripts/dev/build_release.ps1 -Bundle
+#   pwsh ./scripts/dev/build_release.ps1 -Distribute -Notes "B5 model v2"
+
+[CmdletBinding()]
+param(
+    [switch]$Distribute,
+    [switch]$Bundle,
+    [switch]$Fat,
+    [string]$Notes = '',
+    [string]$Testers = 'korostelevivan@gmail.com',
+    [string]$FirebaseAppId = '1:988522745882:android:b9af40bb887a0388c201a3'
+)
+
+$ErrorActionPreference = 'Stop'
+$ProjectRoot = Resolve-Path "$PSScriptRoot\..\.."
+$MobileDir = Join-Path $ProjectRoot 'mobile'
+$Flutter = 'D:/flutter/bin/flutter.bat'
+
+if ($Bundle -and $Fat) { throw '-Bundle and -Fat are mutually exclusive.' }
+
+# --- The two stamps -------------------------------------------------------
+
+# Short SHA of HEAD. Fails loudly outside a git checkout rather than
+# stamping "unknown" and shipping a build nobody can trace back.
+Push-Location $ProjectRoot
+try {
+    $GitSha = (& git rev-parse --short HEAD 2>$null)
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($GitSha)) {
+        throw 'git rev-parse failed -- run this from inside the repository.'
+    }
+    $GitSha = $GitSha.Trim()
+
+    # A dirty tree means the APK does not match the commit it claims. Marked
+    # in the stamp itself, because the whole value of the stamp is that it is
+    # not a polite approximation.
+    & git diff --quiet HEAD 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        $GitSha = "$GitSha-dirty"
+        Write-Host "WARNING: working tree is dirty -- stamping $GitSha" -ForegroundColor Yellow
+    }
+} finally {
+    Pop-Location
+}
+
+# UTC, ISO 8601, second precision. Matches what debug_telemetry.dart parses.
+$BuiltAt = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')
+$LocalNow = (Get-Date).ToString('yyyy-MM-dd HH:mm')
+
+Write-Host ''
+Write-Host "GIT_SHA  : $GitSha" -ForegroundColor Cyan
+Write-Host "BUILT_AT : $BuiltAt UTC  ($LocalNow local)" -ForegroundColor Cyan
+Write-Host ''
+
+# --- Build ----------------------------------------------------------------
+
+$defines = @(
+    "--dart-define=GIT_SHA=$GitSha",
+    "--dart-define=BUILT_AT=$BuiltAt"
+)
+
+Push-Location $MobileDir
+try {
+    if ($Bundle) {
+        Write-Host 'Building AAB (release)...' -ForegroundColor Cyan
+        & $Flutter build appbundle --release @defines
+        $Artifact = Join-Path $MobileDir 'build\app\outputs\bundle\release\app-release.aab'
+    } elseif ($Fat) {
+        Write-Host 'Building fat APK (release, all ABIs)...' -ForegroundColor Cyan
+        & $Flutter build apk --release @defines
+        $Artifact = Join-Path $MobileDir 'build\app\outputs\flutter-apk\app-release.apk'
+    } else {
+        Write-Host 'Building split APKs (release, per ABI)...' -ForegroundColor Cyan
+        & $Flutter build apk --release --split-per-abi @defines
+        $Artifact = Join-Path $MobileDir 'build\app\outputs\flutter-apk\app-arm64-v8a-release.apk'
+    }
+    if ($LASTEXITCODE -ne 0) { throw "flutter build failed ($LASTEXITCODE)" }
+} finally {
+    Pop-Location
+}
+
+if (-not (Test-Path $Artifact)) {
+    throw "Build reported success but $Artifact is missing."
+}
+
+$SizeMb = [math]::Round((Get-Item $Artifact).Length / 1MB, 1)
+Write-Host ''
+Write-Host "Artifact : $Artifact" -ForegroundColor Green
+Write-Host "Size     : $SizeMb MB" -ForegroundColor Green
+
+# --- Distribute -----------------------------------------------------------
+
+if (-not $Distribute) {
+    Write-Host ''
+    Write-Host 'Not distributed. Re-run with -Distribute to send to testers.' -ForegroundColor DarkGray
+    exit 0
+}
+
+if ($Bundle) {
+    throw 'App Distribution takes an APK, not an AAB. Drop -Bundle to distribute.'
+}
+
+if ([string]::IsNullOrWhiteSpace($Notes)) {
+    $Notes = "$GitSha built $BuiltAt"
+}
+# The stamps go in the release notes too. The tester sees which build they
+# have without opening the app, and the note survives in the console after
+# the local file is gone.
+$Notes = "$Notes`n`ngit $GitSha | built $BuiltAt UTC | $SizeMb MB"
+
+Write-Host ''
+Write-Host "Distributing to $Testers ..." -ForegroundColor Cyan
+& firebase appdistribution:distribute $Artifact `
+    --app $FirebaseAppId `
+    --release-notes $Notes `
+    --testers $Testers
+if ($LASTEXITCODE -ne 0) { throw "firebase appdistribution:distribute failed ($LASTEXITCODE)" }
+
+Write-Host ''
+Write-Host "Distributed $GitSha ($SizeMb MB) to $Testers" -ForegroundColor Green

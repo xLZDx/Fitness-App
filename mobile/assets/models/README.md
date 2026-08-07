@@ -129,17 +129,80 @@ otherwise, and no confidence threshold repairs it.
   than filtering them in code, and prints them. That list is the gap, not a
   rounding error.
 
-**Known gaps in the v2 corpus**
+**Measured against the operator's 30 gym photos — the only real-world test**
 
-- `hip_abductor_adductor` has ZERO crops despite being in the coverage survey:
-  only 5 of the 36 CC BY datasets were pulled. It is the machine from the
-  operator's screenshot. Pull more datasets before shipping v2.
-- Dropped under 150 images: `ab_crunch_machine` 119, `pullup_bar` 145,
-  `elliptical` 128, `squat_rack` 21, `weight_plates` 15,
-  `tricep_extension_machine` 12, `calf_raise_machine` 3, `recumbent_bike` 2.
+18 of the 30 could be labelled with certainty (the machine's name is printed
+on it); the other 12 are wide room shots with no single subject and are NOT
+graded, because a one-label-per-image classifier cannot be scored on them.
+Labels + evidence per frame: `D:\tools\equipment-model\gym_photos_truth.json`.
+
+```
+top-3 accuracy on 18 labelled photos: 5/18 (28%)
+abstained ('none'):                   10/30 (33%)
+top-1 confidence:  min 0.294  median 0.736  max 0.998
+```
+
+What v2 fixed and what it did not:
+
+- **Fixed**: the abduction machine that v1 called `treadmill` at 0.892 now
+  returns `none` at 0.808. The abdominal machine likewise. Abstention exists
+  and works — v1 had no way to say "not mine" at all.
+- **Not fixed**: 28% top-3 is not a product. The Nautilus shoulder press is
+  `seated_dip_machine`; two treadmill frames are `lat_pulldown` and
+  `hack_squat_machine`. The corpus is still catalogue-style crops and users
+  still shoot from wherever they stand.
+- **Still confidently wrong on the machine with no class**: the abdominal
+  machine reads `treadmill` at 0.940 from one angle and `none` at 0.946 from
+  another. Abstention is not yet stable under viewpoint.
+
+**Corpus, second pass (v2.1)**
+
+The first pull used a hand-written list of 5 datasets while the coverage
+survey had found 36 — which is why `hip_abductor_adductor`, the machine in the
+operator's own screenshot, had ZERO crops. The list is now generated:
+
+`discover_roboflow.py` (search) -> `filter_datasets.py` (licence + class
+relevance) -> `fetch_roboflow.py`. 112 CC BY 4.0 datasets found, 36 usable
+after filtering, 49,574 images.
+
+Two defects found and fixed while doing it, both caught BEFORE any download:
+
+- `map_class` filed 41 datasets' worth of classes as `hip_abductor_adductor`.
+  `norm()` strips non-letters, so YOLO's numeric class names (`'0'`, `'1'`)
+  and decorative ones (`'=========='`) normalised to the EMPTY string — and
+  `'' in k` is true for every k, so each matched the longest key in the index.
+  Audited against the 5 datasets v2 was actually trained on: 0 mappings
+  changed, so the shipped v2 corpus was NOT contaminated.
+- `mine_negatives` took `none` crops from any photo without an annotated box.
+  The expanded search reaches helmet, bus, cow-disease and hip-radiograph
+  datasets; their backgrounds would all have been filed as "a gym with nothing
+  in it". Negatives now come only from photos that contain a machine we
+  recognise.
+
+Class counts after the second pass: `hip_abductor_adductor` 0 -> 535,
+`elliptical` 128 -> 460, `adjustable_bench` 119 -> 388, `punching_bag` -> 359,
+`assisted_pullup_machine` -> 1058.
+
+**Known gaps remaining**
+
+- Still thin: `ab_crunch_machine` 31, `recumbent_bike` 31, `agility_ladder` 11,
+  `tricep_extension_machine` 2, `rowing_machine` 2, `rotary_torso_machine` 1.
+  `ab_crunch_machine` is the operator's ABDOMINAL machine — the one that reads
+  `treadmill` at 0.940. It is the next gap that matters.
 - `'Abdominal Bench'` (35 crops) deliberately unmapped: it is a decline sit-up
   bench, neither `ab_crunch_machine` nor `adjustable_bench`. A guess would
   poison whichever class received it.
+- `'transformer'` (549), `'inversion_table'` (144), `'dumbell rack'` (158)
+  unmapped on purpose — the first is a multi-station rig, the other two have no
+  catalogue id, and inventing one files crops under a class with no page.
+
+**The text anchor is the other half of this**
+
+`core/plans/B5b_TEXT_ANCHOR_2026-08-07.md`. On the same 18 labelled frames the
+machine's own printed name identifies 18; this classifier identifies 5. The
+two compose: the anchor is near-certain when text is in frame and silent
+otherwise, which is the opposite failure mode to a softmax that always
+answers.
 
 **Do not train on the operator's 30 photos.** They are the only real-world
 sample in the project. Spending them on training buys a slightly better model

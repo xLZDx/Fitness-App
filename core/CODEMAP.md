@@ -81,7 +81,7 @@ rest are pushed full-screen.
 | `community` | 4 | 454 | Teams and team feeds |
 | `marketplace` | 4 | 405 | Coach marketplace |
 | `progress` | 2 | 400 | Charts + stats over logged workouts |
-| `visual_equipment` | 13 | ~1,300 | Equipment recognition data layer: Gemini cloud recogniser (`gemini_equipment_service.dart`, Firebase AI Logic) with on-device TFLite fallback, live smoother, recognition history. Rendered by `scanner` |
+| `visual_equipment` | 15 | ~1,600 | Equipment recognition data layer. TWO anchors: `machine_text_anchor.dart` reads the machine's own printed name (pure matching rules; `mlkit_text_recogniser.dart` is only the OCR bridge) and runs FIRST, then the Gemini cloud recogniser (`gemini_equipment_service.dart`, Firebase AI Logic) with on-device TFLite fallback. Plus live smoother and recognition history. Rendered by `scanner` |
 | `ai_coach` | 5 | ~700 | Gemini-backed technique advice sheet (opened from every equipment page) + AI exercise generator with a per-(user, machine, language) Firestore cache, used only for machines the vendored catalog has nothing for. Requests are described by `AiCoachContext` (`ai_coach_context.dart`) — source screen, stable subject id, locale — which is also the advice cache key and holds the prompt builder |
 | `social_feed` | 4 | 333 | Social activity feed |
 | `ai_planner` | 4 | 326 | AI-generated training plan (`/plan`) |

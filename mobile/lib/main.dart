@@ -55,6 +55,7 @@ import 'features/visual_equipment/data/firestore_recognition_history.dart';
 import 'features/visual_equipment/data/mlkit_live_equipment_service.dart';
 import 'features/ai_coach/generated_exercise_repository.dart';
 import 'features/visual_equipment/data/gemini_equipment_service.dart';
+import 'features/visual_equipment/data/mlkit_text_recogniser.dart';
 import 'features/visual_equipment/data/mlkit_visual_equipment_service.dart';
 import 'features/visual_equipment/state/live_equipment_providers.dart';
 import 'features/visual_equipment/data/firestore_machine_cards.dart';
@@ -273,9 +274,12 @@ Future<void> main() async {
     FirebaseCrashlytics.instance.recordError(e, st, fatal: false);
   }
 
-  // Warm up notifications + request permissions once on launch. We keep a
-  // single instance and inject it into Riverpod so reminders are de-duped
-  // and cancellable across restarts.
+  // Warm up notifications. Warm-up ONLY -- no permission prompt: this runs
+  // before the first frame, and an "Allow notifications?" dialog over a blank
+  // screen is a dialog the user denies. The prompt now happens in
+  // `scheduleReminder`, where the user has just asked to be reminded of
+  // something. We keep a single instance and inject it into Riverpod so
+  // reminders are de-duped and cancellable across restarts.
   final NotificationService notifications = LocalNotificationService();
   await notifications.init();
 
@@ -411,6 +415,18 @@ Future<void> main() async {
             local: MlKitVisualEquipmentService(),
           ),
         ),
+
+        // B5b — the text anchor. Runs before the classifier and reads the
+        // machine's own printed name. On the operator's 30 gym photos, 18
+        // carry that name legibly and the v2 classifier scored 5 of those
+        // same 18; when the text is in frame it is simply the better signal.
+        // It stays silent when there is no text, so the classifier path is
+        // unchanged for every other photo.
+        machineTextRecogniserProvider.overrideWith((ref) {
+          final r = MlKitMachineTextRecogniser();
+          ref.onDispose(r.dispose);
+          return r;
+        }),
 
         // Live (continuous) recognition. Attaches the labeler to the Scan
         // tab's camera session -- it owns no camera of its own, so the

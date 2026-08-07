@@ -25,13 +25,46 @@ void main() {
       svc.now = () => DateTime.utc(2026, 5, 8, 12);
     });
 
-    test('init reports the configured permission result', () async {
+    test('init warms up without ever raising a permission prompt', () async {
       expect(svc.initialized, isFalse);
       expect(await svc.init(), isTrue);
       expect(svc.initialized, isTrue);
+      // The whole point of the split: main() calls init() before the first
+      // frame, so init() must not prompt. Nothing else in this file would
+      // catch a regression that moved the request back into init().
+      expect(svc.permissionRequests, 0);
+
+      // Still no prompt even when the platform would refuse.
+      svc.initResult = false;
+      expect(await svc.init(), isTrue);
+      expect(svc.permissionRequests, 0);
+    });
+
+    test('ensurePermission is what prompts, and reports the platform answer',
+        () async {
+      expect(await svc.ensurePermission(), isTrue);
+      expect(svc.permissionRequests, 1);
 
       svc.initResult = false;
-      expect(await svc.init(), isFalse);
+      expect(await svc.ensurePermission(), isFalse);
+      expect(svc.permissionRequests, 2);
+    });
+
+    test('scheduleReminder asks for permission at the point of scheduling',
+        () async {
+      await svc.scheduleReminder(_s(when: DateTime.utc(2026, 5, 9, 9)),
+          title: 'T', body: 'B');
+      expect(svc.permissionRequests, 1);
+      expect(svc.scheduled, hasLength(1));
+    });
+
+    test('a denied prompt schedules nothing', () async {
+      svc.initResult = false;
+      await svc.scheduleReminder(_s(when: DateTime.utc(2026, 5, 9, 9)),
+          title: 'T', body: 'B');
+      // A reminder the OS will never deliver must not sit in our state
+      // pretending it will.
+      expect(svc.scheduled, isEmpty);
     });
 
     test('scheduleReminder adds an entry fired ahead of the session', () async {

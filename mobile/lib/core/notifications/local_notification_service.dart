@@ -16,6 +16,10 @@ class LocalNotificationService implements NotificationService {
 
   final FlutterLocalNotificationsPlugin _plugin;
   bool _initialized = false;
+  /// null until the OS has actually been asked. Distinguishes "not asked yet"
+  /// from "asked and refused" -- collapsing those two into a bool is how a
+  /// denial turns into a prompt on every single schedule.
+  bool? _permissionGranted;
 
   static const _channelId = 'workout_reminders';
   static const _channelName = 'Workout reminders';
@@ -34,28 +38,46 @@ class LocalNotificationService implements NotificationService {
     const init = InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       iOS: DarwinInitializationSettings(
+        // Already false on iOS: Darwin has always taken the permission
+        // request as an explicit call. Android is what was prompting at
+        // launch, and now neither does.
         requestAlertPermission: false,
         requestBadgePermission: false,
         requestSoundPermission: false,
       ),
     );
     await _plugin.initialize(init);
+    _initialized = true;
+    return true;
+  }
+
+  @override
+  Future<bool> ensurePermission() async {
+    if (!_initialized) await init();
+    // Asked once per process. Re-prompting after a denial does nothing on
+    // Android 13+ anyway -- the system returns the same answer without
+    // showing anything -- and re-prompting after a grant is pure noise.
+    if (_permissionGranted != null) return _permissionGranted!;
 
     final android = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
-    if (android != null) {
-      // 13+ requires runtime POST_NOTIFICATIONS approval; older OSes
-      // return null/true.
-      final granted = await android.requestNotificationsPermission();
-      if (granted == false) {
-        _initialized = true;
-        return false;
-      }
-      // Best-effort exact-alarm grant on 12+. The user can still revoke it
-      // manually; we degrade to inexact scheduling later if so.
-      await android.requestExactAlarmsPermission();
+    if (android == null) {
+      // iOS or a platform with no gate. Treat as granted; a Darwin
+      // implementation would request here.
+      _permissionGranted = true;
+      return true;
     }
-    _initialized = true;
+    // 13+ requires runtime POST_NOTIFICATIONS approval; older OSes
+    // return null/true.
+    final granted = await android.requestNotificationsPermission();
+    if (granted == false) {
+      _permissionGranted = false;
+      return false;
+    }
+    // Best-effort exact-alarm grant on 12+. The user can still revoke it
+    // manually; we degrade to inexact scheduling later if so.
+    await android.requestExactAlarmsPermission();
+    _permissionGranted = true;
     return true;
   }
 
@@ -66,7 +88,11 @@ class LocalNotificationService implements NotificationService {
     required String body,
     Duration leadTime = const Duration(minutes: 30),
   }) async {
-    if (!_initialized) await init();
+    // THE in-context moment: the user has just scheduled a workout, so a
+    // prompt about reminding them of it explains itself. Returning early on
+    // a denial matters -- scheduling into a channel the OS will not deliver
+    // leaves a reminder that exists in our state and nowhere else.
+    if (!await ensurePermission()) return;
     final fireAt = session.scheduledFor.subtract(leadTime);
     if (!fireAt.isAfter(DateTime.now())) {
       // Reminder window already passed — clear any stale entry and bail.

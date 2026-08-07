@@ -24,6 +24,10 @@ class MockNotificationService implements NotificationService {
   /// (platform/user accepted the prompt).
   bool initResult = true;
 
+  /// How many times the permission prompt was raised. A test asserting this
+  /// is 0 after launch is what stops the launch-time prompt coming back.
+  int permissionRequests = 0;
+
   /// Override "now" so tests can reason about late reminders without
   /// touching real time.
   DateTime Function() now = DateTime.now;
@@ -48,6 +52,16 @@ class MockNotificationService implements NotificationService {
   @override
   Future<bool> init() async {
     _initialized = true;
+    // Deliberately does NOT consult initResult: init() no longer prompts, so
+    // it cannot fail for lack of permission. A mock that still returned false
+    // here would let a test pass while the real launch path prompted.
+    return true;
+  }
+
+  @override
+  Future<bool> ensurePermission() async {
+    if (!_initialized) await init();
+    permissionRequests++;
     return initResult;
   }
 
@@ -58,6 +72,7 @@ class MockNotificationService implements NotificationService {
     required String body,
     Duration leadTime = const Duration(minutes: 30),
   }) async {
+    if (!await ensurePermission()) return;
     final fireAt = session.scheduledFor.subtract(leadTime);
     if (!fireAt.isAfter(now())) {
       // The reminder window already passed — drop silently rather than

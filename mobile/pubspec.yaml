@@ -69,8 +69,25 @@ dependencies:
   encrypt: ^5.0.3
   permission_handler: ^11.3.1
   flutter_blue_plus: ^1.32.12
-  tflite_flutter: ^0.11.0
+  # tflite_flutter REMOVED 2026-08-07. It was never imported -- `grep -rn
+  # "package:tflite_flutter" lib/ test/` returns nothing, and the only mention
+  # anywhere is the comment in mlkit_visual_equipment_service.dart explaining
+  # why ML Kit's labeler is used INSTEAD of it. As a declared dependency it
+  # still shipped libtensorflowlite_jni.so (3.7 MB) and
+  # libtensorflowlite_gpu_jni.so (3.5 MB) into every APK: 7.2 MB of native
+  # code with no call site, per ABI.
+  #
+  # The bundled equipment model is still TFLite -- it is loaded by ML Kit's
+  # own interpreter via LocalLabelerOptions, which is why nothing breaks.
+  # If a future change needs raw tensor access (custom pre/post-processing
+  # ML Kit will not do), add it back deliberately and pay the 7.2 MB then.
   google_mlkit_image_labeling: ^0.14.0
+  # B5b, the text anchor. Measured on the operator's own 30 gym photos: 18 of
+  # them carry the machine's name legibly on its own shroud, and the v2
+  # classifier scored 5 of those same 18. Reading what the manufacturer
+  # already printed beats guessing from shape, whenever it is in frame.
+  # Latin script only -- gym equipment is labelled in English worldwide.
+  google_mlkit_text_recognition: ^0.15.0
   image_picker: ^1.1.2
   google_sign_in: ^7.1.1
   flutter_svg: ^2.2.0
