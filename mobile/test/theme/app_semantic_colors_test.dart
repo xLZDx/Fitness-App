@@ -355,6 +355,12 @@ void main() {
     // directly above it, because the note used to announce "Нет сети" for
     // every failure including ones on a 1 Gb connection. Diff read: scrim
     // foreground, sanctioned category, not a foreground white on a gradient.
+    //
+    // 44 -> 45, 2026-08-08 (R8): `_RepCountNotTrackedBadge` in
+    // `form_check_page.dart` -- `Colors.white70` on `Colors.black @0.45`,
+    // the same corner the rep-count badge occupies and the same scrim
+    // pattern as that badge's own phase text. Sanctioned category, same
+    // file's count moving 15 -> 16.
     final whites = <String, int>{};
     for (final f in Directory('lib').listSync(recursive: true)) {
       if (f is! File || !f.path.endsWith('.dart')) continue;
@@ -368,7 +374,7 @@ void main() {
       if (n > 0) whites[f.path.replaceAll(r'\', '/')] = n;
     }
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 44, reason: 'per file: $whites');
+    expect(total, 45, reason: 'per file: $whites');
   });
 
   group('lerp', () {

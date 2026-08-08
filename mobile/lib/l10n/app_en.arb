@@ -919,6 +919,10 @@
   },
   "formcheckUpgradeSubtitle": "Works on the phone you already own - no depth camera, no extra hardware.",
   "formcheckVoiceUnavailable": "Voice coaching is unavailable on this device - the steps below still work.",
+  "formcheckRepCountNotTracked": "count off - form still checked",
+  "@formcheckRepCountNotTracked": {
+    "description": "Shown in place of the rep badge for a movement where the measured counter fell below the accuracy bar (MM-Fit holdout under 80%) - curl/overhead_press/lunge/squat clear it and show a number; sit-ups and push-ups do not. The silhouette coaching still runs; only the number is withheld, and the interface says why rather than just omitting it. Kept short: this sits in a small corner badge over the camera preview, the same slot the rep count occupies."
+  },
   "formcheckWaitingForTop": "stand tall to start counting",
   "@formcheckWaitingForTop": {
     "description": "Shown under the rep count while the counter has not yet seen the lifter standing at the top. Until it does, the count physically cannot move, and a frozen zero with no explanation reads as a broken app."

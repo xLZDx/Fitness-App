@@ -307,12 +307,13 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                           ),
                         ),
                       ),
-                      if (showRepCount)
-                        Positioned(
-                          left: 12,
-                          top: 12,
-                          child: _RepBadge(session: session),
-                        ),
+                      Positioned(
+                        left: 12,
+                        top: 12,
+                        child: showRepCount
+                            ? _RepBadge(session: session)
+                            : const _RepCountNotTrackedBadge(),
+                      ),
                       const Positioned(
                         right: 12,
                         top: 12,
@@ -588,6 +589,40 @@ class _StartFailure extends StatelessWidget {
             label: l10n.formcheckTryAgain,
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Sits where [_RepBadge] would, for a movement `showRepCountFor` refuses.
+///
+/// Silent omission was the first draft and was wrong: the operator's own R8
+/// decision (`core/SESSION_STATE_2026-08-08.md`) is that a movement with
+/// counting turned off says so on screen, rather than leaving a blank corner
+/// that reads as a bug. The silhouette coaching underneath keeps running
+/// either way — this replaces only the number, not the feature.
+class _RepCountNotTrackedBadge extends StatelessWidget {
+  const _RepCountNotTrackedBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 140),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.45),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Text(
+          AppLocalizations.of(context).formcheckRepCountNotTracked,
+          key: const Key('form_check.rep_count_not_tracked'),
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: Colors.white70,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
     );
   }
