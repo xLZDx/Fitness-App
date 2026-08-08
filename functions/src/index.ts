@@ -92,6 +92,82 @@ async function stripeClient(): Promise<Stripe> {
   });
 }
 
+/* ---------------------------------------------------------------------------
+ * Reading Stripe objects across the Acacia -> Basil field moves.
+ *
+ * Two fields this code depends on were relocated in API version 2025-03-31
+ * ("Basil"):
+ *
+ *   subscription.current_period_end -> subscription.items.data[].current_period_end
+ *   invoice.subscription            -> invoice.parent.subscription_details.subscription
+ *
+ * The client above PINS `2025-02-24.acacia`, so direct API calls still return
+ * the old shape and are not at risk. **Webhooks are the exposure**: Stripe
+ * serialises an event at the ACCOUNT's default version (or the version pinned
+ * on the endpoint), not at the SDK's — so a payload can arrive in the new
+ * shape regardless of the line above.
+ *
+ * If that happens, the old code did not throw. `s.current_period_end` would be
+ * `undefined`, `periodEnd` would be written as `null`, and a paying
+ * subscriber's record would quietly lose its renewal date. Silent, and only
+ * visible later as a subscriber who looks lapsed.
+ *
+ * Rather than migrate to Basil-only — which would break in the opposite
+ * direction if the account is still on Acacia, and which cannot be verified
+ * from here without the Stripe key — both readers accept EITHER shape. The
+ * account's version then stops mattering, which is the point: this code should
+ * not depend on a setting it cannot see.
+ * ------------------------------------------------------------------------ */
+
+/** Renewal timestamp as ISO-8601, from either field position. */
+export function subscriptionPeriodEnd(
+  s: Stripe.Subscription,
+): string | null {
+  // Acacia: on the subscription itself.
+  const flat = (s as unknown as { current_period_end?: number })
+    .current_period_end;
+  if (typeof flat === "number") {
+    return new Date(flat * 1000).toISOString();
+  }
+  // Basil: on each item. A subscription can hold several items with different
+  // periods; the LATEST is the date the customer keeps access until, which is
+  // what `currentPeriodEndsAt` is read as everywhere downstream.
+  const items = (s as unknown as {
+    items?: { data?: Array<{ current_period_end?: number }> };
+  }).items?.data;
+  if (!items?.length) return null;
+  const ends = items
+    .map((i) => i.current_period_end)
+    .filter((v): v is number => typeof v === "number");
+  if (!ends.length) return null;
+  return new Date(Math.max(...ends) * 1000).toISOString();
+}
+
+/** Subscription id carried by an invoice, from either field position. */
+export function invoiceSubscriptionId(
+  inv: Stripe.Invoice,
+): string | null {
+  // Acacia: a top-level field, string id or expanded object.
+  const flat = (inv as unknown as {
+    subscription?: string | { id?: string } | null;
+  }).subscription;
+  if (typeof flat === "string") return flat;
+  if (flat && typeof flat === "object" && typeof flat.id === "string") {
+    return flat.id;
+  }
+  // Basil: moved under `parent`.
+  const nested = (inv as unknown as {
+    parent?: {
+      subscription_details?: { subscription?: string | { id?: string } };
+    };
+  }).parent?.subscription_details?.subscription;
+  if (typeof nested === "string") return nested;
+  if (nested && typeof nested === "object" && typeof nested.id === "string") {
+    return nested.id;
+  }
+  return null;
+}
+
 type Tier = "standard" | "celebrityTrainer";
 type Period =
   | "monthly"
@@ -523,9 +599,7 @@ async function applySubscription(
     period === "family2" ? 2 : period === "family4" ? 4 : 1;
 
   // Stripe surfaces these timestamps as Unix seconds.
-  const periodEnd = s.current_period_end
-    ? new Date(s.current_period_end * 1000).toISOString()
-    : null;
+  const periodEnd = subscriptionPeriodEnd(s);
   const trialEnd = s.trial_end
     ? new Date(s.trial_end * 1000).toISOString()
     : null;
@@ -664,7 +738,7 @@ export const stripeWebhook = onRequest(
         case "invoice.payment_failed": {
           // Refresh the subscription state so periodEnd advances.
           const inv = event.data.object as Stripe.Invoice;
-          const subId = inv.subscription;
+          const subId = invoiceSubscriptionId(inv);
           if (typeof subId === "string") {
             const sub = await stripe.subscriptions.retrieve(subId);
             await applySubscription(sub, event.created);
