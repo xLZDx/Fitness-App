@@ -5,7 +5,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../profile/data/profile_models.dart';
 import '../state/questionnaire_notifier.dart';
+import '../widgets/body_metric_cards.dart';
 import '../widgets/inputs.dart';
+import '../widgets/measure_ruler.dart';
 
 class StepPersonal extends ConsumerWidget {
   const StepPersonal({super.key});
@@ -48,32 +50,57 @@ class StepPersonal extends ConsumerWidget {
           onChanged: (g) =>
               notifier.updatePersonal((p) => p.copyWith(gender: g)),
         ),
+        // R11b: rulers, not number fields. The design uses a scale for all
+        // three of these, and the reason is not decoration -- a ruler cannot
+        // produce 1750 cm, cannot be left half-typed, and shows the
+        // neighbouring values so someone unsure between 72 and 73 sees both.
+        // A number field's failure modes are all silent.
         FieldLabel(l10n.onbHeightCm),
-        GlassTextField(
-          value: personal.heightCm?.toString() ?? '',
-          keyboardType: TextInputType.number,
-          hint: '175',
+        MeasureRuler(
+          key: const Key('onb.heightRuler'),
+          value: personal.heightCm?.toDouble(),
+          min: 120,
+          max: 220,
+          unit: l10n.onbUnitCm,
           onChanged: (v) => notifier.updatePersonal(
-            (p) => p.copyWith(heightCm: int.tryParse(v)),
+            (p) => p.copyWith(heightCm: v.round()),
           ),
         ),
         FieldLabel(l10n.onbWeightCurrent),
-        GlassTextField(
-          value: personal.weightCurrentKg?.toString() ?? '',
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          hint: '72',
+        MeasureRuler(
+          key: const Key('onb.weightRuler'),
+          value: personal.weightCurrentKg,
+          min: 35,
+          max: 200,
+          step: 0.5,
+          majorEvery: 10,
+          unit: l10n.onbUnitKg,
           onChanged: (v) => notifier.updatePersonal(
-            (p) => p.copyWith(weightCurrentKg: double.tryParse(v)),
+            (p) => p.copyWith(weightCurrentKg: v),
           ),
         ),
+        const SizedBox(height: 12),
+        BmiCard(
+          heightCm: personal.heightCm,
+          weightKg: personal.weightCurrentKg,
+        ),
         FieldLabel(l10n.onbWeightTarget),
-        GlassTextField(
-          value: personal.weightTargetKg?.toString() ?? '',
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          hint: '70',
+        MeasureRuler(
+          key: const Key('onb.targetRuler'),
+          value: personal.weightTargetKg,
+          min: 35,
+          max: 200,
+          step: 0.5,
+          majorEvery: 10,
+          unit: l10n.onbUnitKg,
           onChanged: (v) => notifier.updatePersonal(
-            (p) => p.copyWith(weightTargetKg: double.tryParse(v)),
+            (p) => p.copyWith(weightTargetKg: v),
           ),
+        ),
+        const SizedBox(height: 12),
+        WeightDeltaCard(
+          currentKg: personal.weightCurrentKg,
+          targetKg: personal.weightTargetKg,
         ),
         FieldLabel(l10n.onbActivityLevel),
         SingleChoiceChips<ActivityLevel>(

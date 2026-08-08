@@ -1669,5 +1669,30 @@
   "coachBlockerNoBody": "Step into frame so your whole body is visible",
   "coachBlockerCropped": "Move back — part of you is outside the frame",
   "coachBlockerTooFar": "Move closer, or set the phone further away",
-  "coachBlockerSensor": "The camera is reporting positions the coach cannot read. Reopening the screen usually clears it."
+  "coachBlockerSensor": "The camera is reporting positions the coach cannot read. Reopening the screen usually clears it.",
+  "onbUnitCm": "cm",
+  "onbUnitKg": "kg",
+  "onbBmiTitle": "BMI {value}",
+  "@onbBmiTitle": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "onbBmiUnderweight": "Underweight range",
+  "onbBmiHealthy": "Healthy range",
+  "onbBmiOverweight": "Overweight range",
+  "onbBmiObese": "Obese range",
+  "onbBmiCaveat": "BMI does not tell muscle from fat. Shown for reference; nothing in your plan is based on it.",
+  "onbDeltaTitle": "{value} kg to go",
+  "@onbDeltaTitle": {
+    "description": "Signed difference between target and current weight. The sign is the information; the app does not call either direction good.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "onbDeltaSame": "Same as your current weight"
 }
