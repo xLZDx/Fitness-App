@@ -361,6 +361,14 @@ void main() {
     // the same corner the rep-count badge occupies and the same scrim
     // pattern as that badge's own phase text. Sanctioned category, same
     // file's count moving 15 -> 16.
+    //
+    // 45 -> 51, 2026-08-08 (R10): `posture_page.dart` is a new screen that
+    // reuses Form Check's own camera-preview scrim wholesale (start/loading
+    // spinners, the `_StartFailure` retry text, a dim placeholder icon) plus
+    // one new band of its own (`_CaptureBand`'s "hold still" text on
+    // `Colors.black @0.55`, the same shape as the capture band it visually
+    // extends). All six are the scrim-foreground category, none are a
+    // foreground white on a gradient.
     final whites = <String, int>{};
     for (final f in Directory('lib').listSync(recursive: true)) {
       if (f is! File || !f.path.endsWith('.dart')) continue;
@@ -374,7 +382,7 @@ void main() {
       if (n > 0) whites[f.path.replaceAll(r'\', '/')] = n;
     }
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 45, reason: 'per file: $whites');
+    expect(total, 51, reason: 'per file: $whites');
   });
 
   group('lerp', () {

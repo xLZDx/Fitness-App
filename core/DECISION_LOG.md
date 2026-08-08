@@ -1176,3 +1176,60 @@ verified that assumption against a real device. Shipping the function
 without that caveat would have looked exactly as confident as the two
 metrics that ARE verified (shoulder/pelvis, whose sign logic has a
 dedicated regression test using a physically-constructed "higher" shoulder).
+
+## 2026-08-08 17:25 local / 14:25 UTC — R10 screen shipped; entry point resolved as a Home card
+
+### Decision — entry point is a Home card, not a nav tab or a Profile card
+
+The operator resolved §4's open question directly: "home". Wired as a new
+`_PostureCheckCard` on `HomePage`, positioned after `_AiPlanCard` and before
+`HealthSyncCard` — a brand-tinted CTA row alongside the app's other
+single-purpose entry points, not folded into an existing card. Routes to
+`/posture`, gated and outside the shell (`app_router.dart`), the same
+placement `/form-check` uses and for the same reason: reached from a card,
+returns there, not a persistent tab.
+
+### Decision — one side-on capture window for all three metrics, not per-metric framing
+
+The plan (§5) named a real tension left unresolved: forward-head needs a
+side-on view to show sagittal displacement at all, while shoulder/pelvis
+asymmetry reads most cleanly face-on. Rather than block the screen on a
+second product decision (which framing, or a multi-angle capture flow),
+`posture_page.dart` asks for ONE side-on stand — reusing the app's existing
+`formcheckStandSideOn` convention — and accepts that shoulder/pelvis may
+compute a smaller or noisier signal than a face-on capture would give.
+Consistent with the plan §3's own honesty bar ("weaker evidence than R8's"):
+a per-metric `null` (`_MetricCard`'s "not enough data" state) is the
+sanctioned failure mode when a stance does not produce a wide enough
+shoulder/hip separation, rather than a guessed framing compromise.
+
+### Evidence — a `ref`-after-dispose bug caught by the widget test, not by inspection
+
+First draft of `_PosturePageState.dispose()` called
+`ref.read(postureSessionControllerProvider.notifier).reset()` to clear a
+stale result on the way out — the same instinct `FormCheckPage`'s own
+comments warn against ("Cannot use ref after the widget was disposed",
+found by the on-device suite there, invisible to a widget test that never
+unmounts the page). This time a widget test in `posture_page_test.dart` DID
+unmount the page (each `testWidgets` case pumps a fresh tree) and threw the
+exact `StateError` at teardown. Fixed the same way Form Check's own
+`RepSessionController.resetSet` is fixed: the reset moved to the NEXT
+mount's `initState` postFrameCallback, never to `dispose()`.
+
+### Evidence — the whites-ratchet test caught 6 new scrim-foreground `Colors.white*` uses
+
+`app_semantic_colors_test.dart`'s hardcoded-whites tripwire failed after
+`posture_page.dart` landed: 45 -> 51. All six are the camera-preview scrim
+pattern `form_check_page.dart` already uses 16 times (loading spinners,
+retry text, a dim placeholder icon, plus one new "hold still" capture band)
+— read the diff per the test's own instruction before repinning, confirmed
+none is a foreground white on a gradient, repinned to 51 with a dated
+comment entry matching the file's existing convention.
+
+### Verified
+
+`flutter analyze`: 0 new issues (7 pre-existing, none in touched files).
+`flutter test`: 1741/1741 passed, including 20 new posture tests (12 pure
+metric-summarizing + verdict tests, 5 capture-session controller tests
+against a `MockPoseDetectorService`, 3 screen widget tests) and 1 new Home
+card navigation test.

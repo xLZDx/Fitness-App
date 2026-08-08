@@ -82,6 +82,8 @@ class _HomePageState extends ConsumerState<HomePage> {
           const SizedBox(height: 16),
           const _AiPlanCard(),
           const SizedBox(height: 16),
+          const _PostureCheckCard(),
+          const SizedBox(height: 16),
           const HealthSyncCard(),
           const SizedBox(height: 12),
           const DeloadBanner(),
@@ -638,6 +640,61 @@ class _HeroCard extends StatelessWidget {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Entry point for R10's posture check -- a card rather than a 6th bottom-nav
+/// tab, per `core/plans/PLAN_R10_POSTURE_2026-08-08.md` section 4: the shell
+/// is a fixed 5 tabs and none of them fit a static stand-and-check feature.
+class _PostureCheckCard extends StatelessWidget {
+  const _PostureCheckCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GlassCard(
+      key: const Key('home.postureCard'),
+      onTap: () => GoRouter.of(context).push('/posture'),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              gradient: const LinearGradient(colors: [
+                AppPalette.auroraLime,
+                AppPalette.auroraTeal,
+              ]),
+            ),
+            child: const Icon(Icons.accessibility_new_rounded,
+                color: AppSemanticColors.onGradientInk),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context).postureTitle,
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  AppLocalizations.of(context).postureHomeSubtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right_rounded, color: theme.colors.textSecondary),
         ],
       ),
     );

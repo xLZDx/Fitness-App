@@ -55,6 +55,9 @@ Widget _buildApp({
         builder: (_, state) => Scaffold(
             body: Text('player_${state.pathParameters['id']}')),
       ),
+      GoRoute(
+          path: '/posture',
+          builder: (_, __) => const Scaffold(body: Text('posture-stub'))),
     ],
   );
   return ProviderScope(
@@ -164,6 +167,17 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       expect(find.text('scan-stub'), findsOneWidget);
+    });
+
+    testWidgets('Posture card navigates to /posture', (tester) async {
+      await _setLargeSurface(tester);
+      await tester.pumpWidget(_buildApp());
+      await tester.pump();
+      expect(find.byKey(const Key('home.postureCard')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('home.postureCard')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('posture-stub'), findsOneWidget);
     });
   });
 

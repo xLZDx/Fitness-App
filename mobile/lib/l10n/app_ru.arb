@@ -847,5 +847,20 @@
   "progressphotosAngleCustom": "Другой",
   "progressphotosMonthCount": "{count, plural, one{{count} снимок} few{{count} снимка} many{{count} снимков} other{{count} снимка}}",
   "progressphotosDelete": "Удалить снимок",
-  "progressphotosStaysOnPhone": "Зашифровано на этом телефоне. Копии на сервере нет, и поделиться отсюда нельзя."
+  "progressphotosStaysOnPhone": "Зашифровано на этом телефоне. Копии на сервере нет, и поделиться отсюда нельзя.",
+  "postureTitle": "Осанка",
+  "postureHomeSubtitle": "Проверьте плечи, таз и наклон головы",
+  "postureIntro": "Встаньте так, чтобы всё тело было видно, боком к камере, и замрите.",
+  "postureStart": "Проверить осанку",
+  "postureCapturing": "Держите позу...",
+  "postureCheckAgain": "Проверить снова",
+  "postureNoBodyDetected": "Не удалось чётко увидеть тело. Встаньте так, чтобы вас было видно целиком, и попробуйте снова.",
+  "postureShoulderAsymmetry": "Разница высоты плеч",
+  "posturePelvisTilt": "Наклон таза",
+  "postureForwardHead": "Наклон головы вперёд",
+  "postureMetricUnavailable": "Недостаточно данных для этого показателя",
+  "postureVerdictTypical": "В пределах обычного",
+  "postureVerdictMild": "Небольшое отклонение",
+  "postureVerdictNotable": "Заметное отклонение",
+  "postureDisclaimer": "Это не медицинская оценка. Показывает, насколько ваша поза отличается от диапазона, измеренного по выборке движений, а не диагноз и не цель \"правильной осанки\"."
 }

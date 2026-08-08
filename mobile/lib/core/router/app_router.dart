@@ -28,6 +28,7 @@ import '../../features/home/home_page.dart';
 import '../../features/marketplace/marketplace_page.dart';
 import '../../features/onboarding/onboarding_page.dart';
 import '../../features/data_export/backup_page.dart';
+import '../../features/posture/posture_page.dart';
 import '../../features/progress_photos/progress_photos_page.dart';
 import '../../features/social_feed/social_feed_page.dart';
 import '../../features/profile/data/profile_repository.dart';
@@ -345,6 +346,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/form-check',
         pageBuilder: (_, __) => _fadeThrough(const FormCheckPage()),
+      ),
+      GoRoute(
+        // Gated, outside the shell -- same reasoning as /form-check: this is
+        // reached from a Home card and returns there, not a persistent tab.
+        path: '/posture',
+        pageBuilder: (_, __) => _fadeThrough(const PosturePage()),
       ),
       GoRoute(
         path: '/contribute',

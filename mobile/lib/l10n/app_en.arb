@@ -1552,5 +1552,20 @@
     }
   },
   "progressphotosDelete": "Delete photo",
-  "progressphotosStaysOnPhone": "Encrypted on this phone. There is no server copy, and no way to share one from here."
+  "progressphotosStaysOnPhone": "Encrypted on this phone. There is no server copy, and no way to share one from here.",
+  "postureTitle": "Posture",
+  "postureHomeSubtitle": "Check shoulder, hip and head alignment",
+  "postureIntro": "Stand where your whole body is visible, side-on to the camera, and hold still.",
+  "postureStart": "Check posture",
+  "postureCapturing": "Hold still...",
+  "postureCheckAgain": "Check again",
+  "postureNoBodyDetected": "Could not see your body clearly. Stand where your whole body is visible and try again.",
+  "postureShoulderAsymmetry": "Shoulder height difference",
+  "posturePelvisTilt": "Pelvis tilt",
+  "postureForwardHead": "Forward head position",
+  "postureMetricUnavailable": "Not enough data for this metric",
+  "postureVerdictTypical": "Typical range",
+  "postureVerdictMild": "Mild variation",
+  "postureVerdictNotable": "Notable variation",
+  "postureDisclaimer": "Not a medical assessment. Shows how your stance compares to a range measured in a motion-capture sample, not a diagnosis or a correct-posture target."
 }
