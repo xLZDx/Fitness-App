@@ -184,6 +184,11 @@ class MlKitPoseDetectorService implements PoseDetectorService {
         side: LandmarkSide.left);
     add(LandmarkType.rightAnkle, mlkit.PoseLandmarkType.rightAnkle,
         side: LandmarkSide.right);
+    // R10: posture's forward-head metric.
+    add(LandmarkType.leftEar, mlkit.PoseLandmarkType.leftEar,
+        side: LandmarkSide.left);
+    add(LandmarkType.rightEar, mlkit.PoseLandmarkType.rightEar,
+        side: LandmarkSide.right);
 
     return PoseFrame(
       timestampMs: ts,

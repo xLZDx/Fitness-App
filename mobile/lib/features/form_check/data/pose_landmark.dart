@@ -21,6 +21,11 @@ enum LandmarkType {
   rightKnee,
   leftAnkle,
   rightAnkle,
+  // R10: added for the forward-head posture metric, which needs a
+  // head-position reference closer to the skull than `nose` gives on a
+  // side-on frame. Unused by anything under form_check/.
+  leftEar,
+  rightEar,
 }
 
 /// Single keypoint estimate from a frame.
