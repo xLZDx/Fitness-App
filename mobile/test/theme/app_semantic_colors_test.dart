@@ -380,6 +380,13 @@ void main() {
     // `equipment_detail_page.dart` -- the same back icon on the same token.
     // Diff read: one bed, three scrim foregrounds, zero foreground whites on
     // a gradient.
+    //
+    // 55 -> 57, 2026-08-08 (R11c): `_ScanTopBar`'s title pill and its Live
+    // label, both on `cameraOverlay` over a live camera frame -- the same
+    // category and the same token as R11d's back buttons. Net zero from the
+    // frame itself: `ScanFrame` took the outline's own `Colors.white` with it
+    // when it replaced it, which is why `scan_frame.dart: 1` appears while
+    // `scanner_page.dart` did not grow by the full amount.
     final whites = <String, int>{};
     for (final f in Directory('lib').listSync(recursive: true)) {
       if (f is! File || !f.path.endsWith('.dart')) continue;
@@ -393,7 +400,7 @@ void main() {
       if (n > 0) whites[f.path.replaceAll(r'\', '/')] = n;
     }
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 55, reason: 'per file: $whites');
+    expect(total, 57, reason: 'per file: $whites');
   });
 
   group('lerp', () {

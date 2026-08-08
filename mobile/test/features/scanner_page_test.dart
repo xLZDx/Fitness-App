@@ -25,6 +25,7 @@ import 'package:fitness_app/features/visual_equipment/data/visual_equipment_matc
 import 'package:fitness_app/features/visual_equipment/state/live_equipment_providers.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_service.dart';
 import 'package:fitness_app/features/visual_equipment/state/visual_equipment_providers.dart';
+import 'package:fitness_app/features/scanner/widgets/scan_frame.dart';
 import 'package:fitness_app/features/visual_equipment/widgets/live_equipment_preview.dart';
 import 'package:fitness_app/shared/widgets/app_buttons.dart';
 
@@ -354,10 +355,56 @@ void main() {
       final preview = tester.getRect(find.byType(LiveEquipmentPreview));
       expect(preview.height / screen, greaterThan(0.6));
 
-      final frame = tester
-          .widget<FractionallySizedBox>(find.byType(FractionallySizedBox));
+      // Scoped to the frame. R11c put the rest of the page in a
+      // `DraggableScrollableSheet`, which builds its own `FractionallySizedBox`
+      // to carry the sheet's current extent — an unscoped `byType` finder now
+      // matches two and `tester.widget` throws "Too many elements". The
+      // assertion was always about the aiming frame.
+      final frame = tester.widget<FractionallySizedBox>(find.descendant(
+        of: find.byType(ScanFrame),
+        matching: find.byType(FractionallySizedBox),
+      ));
       expect(frame.widthFactor, 0.75);
       expect(frame.heightFactor, 0.75);
+    });
+
+    testWidgets('the viewfinder is full-bleed, not a card in a list',
+        (tester) async {
+      // R11c. The preview used to be a rounded card occupying 68% of a
+      // scrolling page, so aiming scrolled away. The design gives the screen
+      // to the camera and puts everything else in a sheet over it.
+      await pumpScan(tester);
+      final screen =
+          tester.view.physicalSize.height / tester.view.devicePixelRatio;
+      final preview = tester.getRect(find.byType(LiveEquipmentPreview));
+
+      expect(preview.top, lessThanOrEqualTo(0.5),
+          reason: 'the preview starts at the top edge, under the status bar');
+      expect(preview.height / screen, greaterThan(0.95),
+          reason: 'edge to edge, not a card');
+    });
+
+    testWidgets('everything that is not the viewfinder is in a pull-up sheet',
+        (tester) async {
+      await pumpScan(tester);
+
+      expect(find.byType(DraggableScrollableSheet), findsOneWidget);
+      // The sheet's resting extent has to show the capture controls: a
+      // shutter the user must first discover by dragging is not a shutter.
+      expect(find.byKey(const Key('scan-recognise-camera')), findsOneWidget);
+      expect(find.byKey(const Key('scan-recognise-gallery')), findsOneWidget);
+    });
+
+    testWidgets('the live toggle moved onto the scrim and still works',
+        (tester) async {
+      final container = await pumpScan(tester);
+      expect(container.read(liveModeEnabledProvider), isFalse);
+
+      await tester.tap(find.byKey(const Key('scan-live-toggle')));
+      await tester.pump();
+
+      expect(container.read(liveModeEnabledProvider), isTrue,
+          reason: 'the control moved out of the app bar, not out of the app');
     });
 
     testWidgets('nothing separates the app bar from the viewfinder',

@@ -423,44 +423,21 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
       _remember(r.equipmentId, r.confidence, RecognitionSource.live);
     });
     return FrostedScaffold(
-      appBar: GlassAppBar(
-        title: AppLocalizations.of(context).scannerScan,
-        actions: [
-          // Gates the labeler, not the camera.
-          Row(
-            children: [
-              Text(AppLocalizations.of(context).scannerLive,
-                  style: theme.textTheme.labelLarge),
-              Switch(
-                key: const Key('scan-live-toggle'),
-                value: liveOn,
-                onChanged: (on) =>
-                    ref.read(liveModeEnabledProvider.notifier).state = on,
-              ),
-            ],
-          ),
-        ],
-      ),
-      // No SafeArea. `FrostedScaffold` sets `extendBodyBehindAppBar`, so the
-      // list already starts at y=0 and the 92 below clears the bar exactly as
-      // it does on every other page. Wrapping it in a SafeArea counted the
-      // status bar a second time, which is the empty band the operator circled
-      // — about 128 logical points of nothing between the title and the
-      // viewfinder.
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(12, 92, 12, 110),
+      // R11c: no app bar, no page-level list. The design hands this screen to
+      // the camera (`App.tsx:2565-2720`) -- the preview fills it edge to edge,
+      // the chrome floats on glass over it, and everything else lives in a
+      // sheet the user pulls up.
+      //
+      // The screen was already most of the way there in intent: the preview
+      // was 68% of the height because "recognition is aiming, and aiming is
+      // the whole screen's job" (operator: "камера была почти во весь экран").
+      // It was still a card in a scroll view, so aiming scrolled away.
+      body: Stack(
         children: [
-          // As tall as the screen allows. Recognition is aiming, and aiming is
-          // the whole screen's job — operator: "камера была почти во весь
-          // экран". The guide frame is proportional and mirrors the 75% centre
-          // crop the classifier actually receives.
-          SizedBox(
-            height: MediaQuery.sizeOf(context).height * 0.68,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(28),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
+          Positioned.fill(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
                   if (_cameraFailure != null)
                     _CameraUnavailable(
                       failure: _cameraFailure!,
@@ -514,50 +491,43 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                     ),
                   ],
                 ],
+            ),
+          ),
+          // The design's top chrome (`App.tsx:2584-2590`): a title pill on
+          // glass, with the live-labelling toggle where its capture-mode
+          // button sits. No back arrow -- the design's returns to Home, and
+          // here Scan IS a root tab, so the bottom nav already does that. A
+          // second control doing the same thing is one more thing to explain.
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              bottom: false,
+              child: _ScanTopBar(
+                live: liveOn,
+                onLive: (on) =>
+                    ref.read(liveModeEnabledProvider.notifier).state = on,
               ),
             ),
           ),
-          const SizedBox(height: 14),
+          // Everything that is not the viewfinder. A sheet rather than a list
+          // under the camera: at rest it shows the capture controls and the
+          // top of the answer, and it pulls up over the preview when the user
+          // wants the history or the alternatives.
+          DraggableScrollableSheet(
+            initialChildSize: 0.34,
+            minChildSize: 0.24,
+            maxChildSize: 0.92,
+            snap: true,
+            builder: (context, controller) => _ScanSheet(
+              controller: controller,
+              capture: _CaptureCluster(
+                onCamera: _recogniseWithCamera,
+                onGallery: _recogniseFromGallery,
+              ),
+              children: [
           const _ScanPrivacyStrip(),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: AppPrimaryButton(
-                  key: const Key('scan-recognise-camera'),
-                  onPressed: _recogniseWithCamera,
-                  icon: Icons.photo_camera_outlined,
-                  label: AppLocalizations.of(context).scannerRecogniseMachine,
-                ),
-              ),
-              const SizedBox(width: 8),
-              // The app theme gives buttons minimumSize Size.fromHeight(54),
-              // i.e. minWidth == infinity. In a Row's non-flex slot the width
-              // constraint is unbounded, so an unwrapped button forces an
-              // infinite width and the whole page fails to lay out (blank
-              // screen, no red error). Always bound button width outside
-              // Expanded.
-              SizedBox(
-                width: 56,
-                // Not `AppIconButton`: that wraps `IconButton`, which drops
-                // the visible outline this control has always had, sitting
-                // next to a filled CTA. Not `AppSecondaryButton` either: it
-                // requires a label and this is deliberately icon-only. Same
-                // defect class as the twelve `IconButton`s in G2.1b-i,
-                // caught late because it isn't built from `IconButton` --
-                // `Tooltip` is the same fix `IconButton.tooltip` applies
-                // internally, applied by hand.
-                child: Tooltip(
-                  message: AppLocalizations.of(context).scannerPickFromGallery,
-                  child: OutlinedButton(
-                    key: const Key('scan-recognise-gallery'),
-                    onPressed: _recogniseFromGallery,
-                    child: const Icon(Icons.photo_library_outlined),
-                  ),
-                ),
-              ),
-            ],
-          ),
           // Also gated on `_cameraFailure == null`, the same condition the
           // viewfinder itself branches on above: without it, denying camera
           // permission left this card showing regardless, its `_LiveCard`
@@ -643,6 +613,205 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
           const SizedBox(height: 20),
           _HistorySection(onOpen: _openEquipment),
           const _PreparingSection(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The glass strip over the top of the viewfinder.
+class _ScanTopBar extends StatelessWidget {
+  const _ScanTopBar({required this.live, required this.onLive});
+
+  final bool live;
+  final ValueChanged<bool> onLive;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: theme.colors.cameraOverlay,
+              borderRadius: BorderRadius.circular(99),
+            ),
+            child: Text(
+              l10n.scannerScan,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const Spacer(),
+          // Gates the labeler, not the camera. On the scrim rather than in a
+          // bar, so it stays the same control it was -- the tests that drive
+          // `scan-live-toggle` still find a Switch.
+          Container(
+            padding: const EdgeInsets.only(left: 12),
+            decoration: BoxDecoration(
+              color: theme.colors.cameraOverlay,
+              borderRadius: BorderRadius.circular(99),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(l10n.scannerLive,
+                    style: theme.textTheme.labelLarge
+                        ?.copyWith(color: Colors.white)),
+                Switch(
+                  key: const Key('scan-live-toggle'),
+                  value: live,
+                  onChanged: onLive,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Gallery, shutter, and the room the design leaves for a flash control.
+///
+/// The shutter is a 68px circle rather than the old full-width filled button,
+/// per `App.tsx:2636-2700`. Both keys are unchanged (`scan-recognise-camera`,
+/// `scan-recognise-gallery`) because they are what every scanner test drives,
+/// and this gate changes where the controls sit, not what they do.
+class _CaptureCluster extends StatelessWidget {
+  const _CaptureCluster({required this.onCamera, required this.onGallery});
+
+  final VoidCallback onCamera;
+  final VoidCallback onGallery;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Not `AppIconButton`: that wraps `IconButton`, which drops the
+        // visible outline this control has always had. `Tooltip` is the same
+        // fix `IconButton.tooltip` applies internally, applied by hand.
+        SizedBox(
+          width: 56,
+          child: Tooltip(
+            message: l10n.scannerPickFromGallery,
+            child: OutlinedButton(
+              key: const Key('scan-recognise-gallery'),
+              onPressed: onGallery,
+              child: const Icon(Icons.photo_library_outlined),
+            ),
+          ),
+        ),
+        const SizedBox(width: 28),
+        Tooltip(
+          message: l10n.scannerRecogniseMachine,
+          child: Semantics(
+            button: true,
+            label: l10n.scannerRecogniseMachine,
+            child: Material(
+              color: theme.colors.accentPrimary,
+              shape: const CircleBorder(),
+              child: InkWell(
+                key: const Key('scan-recognise-camera'),
+                customBorder: const CircleBorder(),
+                onTap: onCamera,
+                child: SizedBox(
+                  width: 68,
+                  height: 68,
+                  child: Icon(Icons.photo_camera_outlined,
+                      size: 28, color: theme.colors.onAccent),
+                ),
+              ),
+            ),
+          ),
+        ),
+        // The design's third slot is a flash toggle. Left empty rather than
+        // faked: `CameraSession` has no torch API, and a button that cannot
+        // turn the light on is worse than a gap. Balanced so the shutter stays
+        // centred.
+        const SizedBox(width: 28),
+        const SizedBox(width: 56),
+      ],
+        ),
+        const SizedBox(height: 6),
+        // The design's shutter is a bare circle. This app names its controls:
+        // an icon-only PRIMARY action is discoverable only to someone who
+        // already knows what it does, and `gallery_button_a11y_test.dart`
+        // exists because that exact gap was found here before. The caption
+        // keeps the design's shape and the control's name.
+        Text(
+          l10n.scannerRecogniseMachine,
+          style: theme.textTheme.labelMedium
+              ?.copyWith(color: theme.colors.textSecondary),
+        ),
+      ],
+    );
+  }
+}
+
+/// The pull-up sheet holding everything that is not the viewfinder.
+class _ScanSheet extends StatelessWidget {
+  const _ScanSheet({
+    required this.controller,
+    required this.capture,
+    required this.children,
+  });
+
+  final ScrollController controller;
+  final Widget capture;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        // Opaque, not the card's translucent fill: this sheet sits over a live
+        // camera frame, and at card opacity the preview reads straight through
+        // the text on top of it -- the same defect `GlassCard.floating`
+        // documents for bottom sheets.
+        color: theme.colors.surfaceElevated,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(top: BorderSide(color: theme.colors.outline)),
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 8),
+          Container(
+            width: 38,
+            height: 4,
+            decoration: BoxDecoration(
+              color: theme.colors.textDisabled,
+              borderRadius: BorderRadius.circular(99),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: capture,
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: ListView(
+              controller: controller,
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 110),
+              children: children,
+            ),
+          ),
         ],
       ),
     );
