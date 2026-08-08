@@ -1707,5 +1707,84 @@
   "profileSectionCoaching": "Coaching",
   "profileSectionCommunity": "Community",
   "profileSectionMembership": "Membership",
-  "profileSectionApp": "App"
+  "profileSectionApp": "App",
+  "programmeGoalStrength": "Strength",
+  "programmeGoalMuscle": "Muscle",
+  "programmeGoalWeightLoss": "Weight loss",
+  "programmeGoalForm": "Form",
+  "programmeGoalComeback": "Comeback",
+  "programmeFullBody": "Full body",
+  "programmeWeekOfWeeks": "Week {week} of {weeks}",
+  "@programmeWeekOfWeeks": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      },
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "programmeAddedToSchedule": "Added to {title}",
+  "@programmeAddedToSchedule": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "programmeNoActiveProgramme": "No active programme yet — start one from Workouts",
+  "equipmentAddToProgramme": "Add to programme",
+  "equipmentAddAnotherExercise": "Add another exercise",
+  "equipmentPickAnotherExercise": "Pick another exercise",
+  "equipmentNoOtherExercises": "No other exercises available right now",
+  "equipmentSessionExerciseCount": "{count, plural, =1{1 exercise this session} other{{count} exercises this session}}",
+  "@equipmentSessionExerciseCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "workoutsSubTabPrograms": "Programs",
+  "workoutsSubTabLibrary": "Library",
+  "programmeCurrentProgramme": "Current programme",
+  "programmeStart": "Start programme",
+  "programmeContinue": "Continue",
+  "programmeSwitchWarning": "Starting this will end your current programme: {title}",
+  "@programmeSwitchWarning": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "programmeWeeksAndDaysPerWeek": "{weeks, plural, =1{1 week} other{{weeks} weeks}} · {days, plural, =1{1 day/week} other{{days} days/week}}",
+  "@programmeWeeksAndDaysPerWeek": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "programmeEnrolled": "Enrolled in {title}",
+  "@programmeEnrolled": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "programmeCouldNotEnroll": "Couldn't start this programme: {error}",
+  "@programmeCouldNotEnroll": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "programmeNoUpcomingSession": "No upcoming session yet — check back after the schedule updates"
 }

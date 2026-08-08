@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../auth/state/auth_providers.dart';
 import '../profile/data/profile_models.dart';
 import '../profile/state/profile_providers.dart';
+import '../programmes/state/programme_providers.dart';
 import '../progress_photos/data/progress_photo.dart';
 import '../progress_photos/state/progress_photos_providers.dart';
 import '../workouts/data/workout_session.dart'
@@ -52,10 +53,11 @@ class DataExportAction extends Notifier<AsyncValue<void>> {
       // workout_logs after the backfill, and the only collection new
       // completions write to after F3.4 -- reading workout_logs here would
       // silently start missing every workout logged after that point.
-      // Mapped through the same WorkoutLogEntry adapter view every other
-      // consumer uses, so the exported JSON shape is unchanged. Filtered to
-      // completed sessions first -- exportAll() is deliberately unwindowed
-      // and unfiltered (every session, any status), but asLogEntryView()
+      // Expanded through the same WorkoutLogEntry adapter every other
+      // consumer uses (R11e: `expand`, not `map` -- a multi-exercise session
+      // contributes one export row per exercise, not just its first). Filtered
+      // to completed sessions first -- exportAll() is deliberately unwindowed
+      // and unfiltered (every session, any status), but asLogEntries()
       // synthesizes completedAt = startedAt for a session with none; without
       // this filter a pending/abandoned session would export as an ordinary
       // finished workout with a fabricated completion time. Same filter
@@ -67,10 +69,14 @@ class DataExportAction extends Notifier<AsyncValue<void>> {
           .where((s) =>
               s.status == WorkoutSessionStatus.completed &&
               s.completedAt != null)
-          .map((s) => s.asLogEntryView())
+          .expand((s) => s.asLogEntries())
           .toList();
       final scheduledSessions = await ref
           .read(scheduledSessionRepositoryProvider)
+          .exportAll(user.uid)
+          .timeout(readTimeout);
+      final programmes = await ref
+          .read(programmeRepositoryProvider)
           .exportAll(user.uid)
           .timeout(readTimeout);
 
@@ -100,6 +106,7 @@ class DataExportAction extends Notifier<AsyncValue<void>> {
         profile: profile,
         workoutLogs: workoutLogs,
         scheduledSessions: scheduledSessions,
+        programmes: programmes,
         progressPhotos: progressPhotos,
         progressPhotosIncomplete: photosIncomplete,
       );

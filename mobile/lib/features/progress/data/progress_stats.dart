@@ -112,29 +112,38 @@ ProgressStats deriveProgress(
     prev = d;
   }
 
-  // This-week count: logs since the local Monday of [today].
+  // This-week count: DISTINCT SESSIONS since the local Monday of [today], not
+  // rows. R11e's multi-exercise sessions put more than one [WorkoutLogEntry]
+  // under one [WorkoutLogEntry.sessionId] -- counting rows here would report
+  // a 5-exercise gym visit as 5 workouts.
   final monday = _weekStart(today);
-  final thisWeek = logs.where((l) {
-    final d = _dayOf(l.completedAt);
-    return !d.isBefore(monday);
-  }).length;
+  final thisWeek = logs
+      .where((l) => !_dayOf(l.completedAt).isBefore(monday))
+      .map((l) => l.sessionId)
+      .toSet()
+      .length;
 
-  // Last 8 weeks of counts (oldest → newest, index 7 = this week).
+  // Last 8 weeks of counts (oldest → newest, index 7 = this week). Same
+  // distinct-session rule per bucket -- a bucket tracks which session ids it
+  // has already counted rather than incrementing per row.
   final buckets = List<int>.filled(8, 0);
+  final seenInBucket = List<Set<String>>.generate(8, (_) => <String>{});
   for (final l in logs) {
     final w = _weekStart(l.completedAt);
     final weeksAgo = monday.difference(w).inDays ~/ 7;
     if (weeksAgo < 0 || weeksAgo > 7) continue;
-    buckets[7 - weeksAgo]++;
+    final idx = 7 - weeksAgo;
+    if (seenInBucket[idx].add(l.sessionId)) buckets[idx]++;
   }
 
   final record = totals?.longestStreakDays ?? 0;
 
   return ProgressStats(
-    // All-time when we have it. `logs.length` is the window size for anyone
-    // whose history outgrew it, and rendering that as "workouts" would tell a
+    // All-time when we have it. A raw row count is the window size for
+    // anyone whose history outgrew it (and, since R11e, inflated further by
+    // multi-exercise sessions) -- rendering that as "workouts" would tell a
     // three-year customer they had done 200.
-    total: totals?.total ?? logs.length,
+    total: totals?.total ?? logs.map((l) => l.sessionId).toSet().length,
     thisWeek: thisWeek,
     currentStreakDays: current,
     // The record beats the window: a streak set before the window begins is

@@ -122,6 +122,29 @@ class WorkoutSessionExercise {
       exerciseId, exerciseTitle, groupId, Object.hashAll(sets), difficulty);
 }
 
+/// Replaces the ENTRY exercise -- `exercises[0]`, always the exercise the
+/// player page was opened on -- with [updated], keeping every exercise after
+/// it untouched.
+///
+/// R11e's player only ever APPENDS beyond index 0 (`_AddExerciseButton`,
+/// `workout_player_page.dart`), so "index 0" and "the entry exercise" are the
+/// same thing for the lifetime of a session -- position, not `exerciseId`, is
+/// what identifies it here, matching how the player's own "already logged"
+/// lookup already worked (`already?.exercises.first`).
+///
+/// Exists because the obvious inline version -- `exercises: [updated]` --
+/// silently dropped every exercise appended after the first the moment the
+/// entry exercise's own set was re-edited. That bug shipped once already in
+/// this file's history; this function is here so it cannot ship a second
+/// time from a different call site.
+List<WorkoutSessionExercise> replaceEntryExercise(
+  List<WorkoutSessionExercise> exercises,
+  WorkoutSessionExercise updated,
+) {
+  if (exercises.isEmpty) return [updated];
+  return [updated, ...exercises.skip(1)];
+}
+
 bool _listEquals<T>(List<T> a, List<T> b) {
   if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i++) {
@@ -246,34 +269,73 @@ class WorkoutSession {
 /// workout history stay typed against [WorkoutLogEntry] -- `progress_stats`,
 /// `suggestion_builder`, `progression`, `deload_detector`, `fitness_model`,
 /// and the GDPR data export -- while the actual data source moves to
-/// [WorkoutSession]. Rewriting those five pure functions to accept
-/// [WorkoutSession] directly was the alternative; this adapter was chosen
-/// because it is additive to already-reviewed code instead of touching it.
+/// [WorkoutSession].
 ///
-/// Valid only because every session today holds exactly one exercise and at
-/// most one set -- the same constraint F3.4 keeps until a future gate (R3+)
-/// builds real multi-exercise logging (see the plan doc). A session with >1
-/// exercise, or an exercise with >1 set, loses information through this
-/// view (only the first exercise and the last set survive) -- silently
-/// correct today, silently lossy the day that constraint stops holding.
-/// Whoever builds multi-exercise sessions must replace this adapter's call
-/// sites with real [WorkoutSession]-typed reads, not widen it.
+/// R11e superseded the F3.3-era `asLogEntryView()`, which returned exactly
+/// one [WorkoutLogEntry] per session (only the first exercise and its last
+/// set) -- valid only while the player wrote at most one exercise per
+/// session, which R11e's player loop stops being true. [asLogEntries] emits
+/// ONE ROW PER EXERCISE instead, all sharing [WorkoutLogEntry.sessionId] =
+/// [id] but each with its own [WorkoutLogEntry.id] -- so a 5-exercise gym
+/// visit surfaces all five to muscle recovery, progression and
+/// personal-record tracking (all keyed by `exerciseId`, unaffected by how
+/// many rows share a session) while still counting as the ONE workout it
+/// is, in whatever reads [WorkoutLogEntry.sessionId] rather than counting
+/// rows (`deriveProgress`, `deriveWeekTotals` -- see their own doc comments).
+///
+/// Each exercise contributes its LAST set's weight/reps, same simplification
+/// [WorkoutLogEntry]'s one-weight-one-reps shape already made for the
+/// single-exercise case -- now applied per exercise instead of applied once
+/// and then discarding every exercise after the first.
+///
+/// A session with zero exercises (should not happen, but [exercises] is not
+/// guaranteed non-empty by the type) still contributes one placeholder row --
+/// the same fallback `asLogEntryView()` used -- so a session that is
+/// `completed` always counts toward the streak/total it earned by being
+/// marked complete at all.
 extension WorkoutSessionLogView on WorkoutSession {
-  WorkoutLogEntry asLogEntryView() {
-    final exercise = exercises.isNotEmpty
-        ? exercises.first
-        : const WorkoutSessionExercise(exerciseId: '', exerciseTitle: '');
-    final set = exercise.sets.isNotEmpty ? exercise.sets.last : null;
-    return WorkoutLogEntry(
-      id: id,
-      exerciseId: exercise.exerciseId,
-      exerciseTitle: exercise.exerciseTitle,
-      completedAt: completedAt ?? startedAt,
-      durationMinutes: durationMinutes ?? 0,
-      notes: notes,
-      weightKg: set?.weightKg,
-      repsCompleted: set?.reps,
-      difficulty: exercise.difficulty,
-    );
+  List<WorkoutLogEntry> asLogEntries() {
+    if (exercises.isEmpty) {
+      return [
+        WorkoutLogEntry(
+          id: id,
+          sessionId: id,
+          exerciseId: '',
+          exerciseTitle: '',
+          completedAt: completedAt ?? startedAt,
+          durationMinutes: durationMinutes ?? 0,
+          notes: notes,
+        ),
+      ];
+    }
+    return [
+      for (var i = 0; i < exercises.length; i++)
+        () {
+          final exercise = exercises[i];
+          final set = exercise.sets.isNotEmpty ? exercise.sets.last : null;
+          return WorkoutLogEntry(
+            // Plain `id` for the single-exercise case -- the common one,
+            // and every row this app has ever written before R11e -- so a
+            // session with one exercise produces the exact same
+            // WorkoutLogEntry.id `asLogEntryView()` used to. Only suffixed
+            // by index once there is more than one exercise to distinguish
+            // between; index-qualified rather than exerciseId-qualified
+            // because the same exercise could in principle appear twice in
+            // one session (e.g. both a warm-up and a main lift), and two
+            // rows sharing an `id` would upsert onto each other the moment
+            // either is ever persisted standalone.
+            id: exercises.length == 1 ? id : '${id}_$i',
+            sessionId: id,
+            exerciseId: exercise.exerciseId,
+            exerciseTitle: exercise.exerciseTitle,
+            completedAt: completedAt ?? startedAt,
+            durationMinutes: durationMinutes ?? 0,
+            notes: notes,
+            weightKg: set?.weightKg,
+            repsCompleted: set?.reps,
+            difficulty: exercise.difficulty,
+          );
+        }(),
+    ];
   }
 }

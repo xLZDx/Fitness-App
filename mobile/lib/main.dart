@@ -63,6 +63,8 @@ import 'features/visual_equipment/data/machine_describer.dart';
 import 'features/visual_equipment/state/machine_card_providers.dart';
 import 'features/visual_equipment/state/recognition_history_providers.dart';
 import 'features/visual_equipment/state/visual_equipment_providers.dart';
+import 'features/programmes/data/firestore_programme_repository.dart';
+import 'features/programmes/state/programme_providers.dart';
 import 'features/workouts/data/firestore_scheduled_session_repository.dart';
 import 'features/workouts/data/firestore_workout_log_repository.dart';
 import 'features/workouts/data/firestore_workout_session_repository.dart';
@@ -344,6 +346,8 @@ Future<void> main() async {
             .overrideWith((_) => FirestoreScheduledSessionRepository()),
         offlineVideoCacheProvider
             .overrideWith((_) => FileOfflineVideoCache()),
+        programmeRepositoryProvider
+            .overrideWith((_) => FirestoreProgrammeRepository()),
 
         // Equipment
         equipmentReportServiceProvider

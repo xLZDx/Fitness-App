@@ -97,13 +97,116 @@ autonomously. Section 5 above is superseded by that GO for R11a–R11i.
 | **R11h** Technique Coach | **PARTIAL** — readiness stages, not the full wizard | `9794d27` |
 | **R11b** Onboarding | **PARTIAL** — rulers + BMI/delta, not the 13-step flow | `4f78b0c` |
 | **R11f** Progress Photos | **PARTIAL** — angle + viewfinder, 2 of 9 states | `0e98021` |
-| **R11e** Workout Player | **HELD** — needs a data-model decision | — |
-| **R11i** Workouts + Profile + Paywall | **PARTIAL** — Profile grouped; Workouts not started; Paywall **HELD** on pricing | `3b6841b` |
+| **R11e** Workout Player | **PARTIAL** — see §7 | pending |
+| **R11i** Workouts + Profile + Paywall | **PARTIAL** — Workouts done via §7's Programme gate; Profile grouped; Paywall still **HELD** on pricing | `3b6841b` + pending |
 
-Verification at the stopping point: `flutter analyze` 7 issues (identical
-to the pre-R11 baseline, 0 new), `flutter test` **1826 passed / 0 failed**
-(1748 before R11a). `4dc291a..a67e5b9` is pushed; everything after it is
-local and needs a separate push-GO.
+Verification at THIS stopping point: `4dc291a..a67e5b9` is pushed; the R11a
+through R11i(Profile) commits above that are local and need a separate
+push-GO. §7 below covers what unblocked R11e and R11i's Workouts half, and
+carries its own verification numbers.
+
+## 7. Post-decision closure — 2026-08-09
+
+The operator answered both open questions directly:
+
+1. **R11e** — *"это одна тренировка, но тут надо смотреть на уровень
+   человека, время тренировки, направление и цели... один поход в
+   тренажерный зал это одна тренировка на разных тренажерах... количество
+   подходов, разнообразие предложенных упражнений зависит от каждого
+   человека индивидуально"* — a session is ONE workout regardless of how
+   many exercises it holds. This is the answer §6's blocking question
+   needed: multi-exercise sessions are allowed, and "1 session = 1 workout"
+   is a counting rule, not a data-model constraint.
+2. **Programme entity (named three times in §6)** — *"согласен с планом...
+   Это добавление, а не изменение"* — build it as an additive header over
+   the existing schedule, per the impact analysis presented separately.
+3. **Paywall** — explicitly deferred: *"отложи на потом, прода еще нету тк
+   что щас это не важно"*. Still HELD; not started.
+
+### Gate P — the programme entity
+
+Built exactly as scoped: `Programme` + `ProgrammeTemplate` (6 templates,
+sourced from the real `PROGRAMS` array in the prototype, `App.tsx:4726-4733`)
++ `ScheduledSession.programmeId` (nullable, additive — no migration) +
+`ProgrammeRepository` (mock + Firestore) + `buildProgrammeSchedule` (pure,
+turns a template into real screened-catalogue `ScheduledSession` rows) +
+`ProgrammeAction` (enroll / add-one-exercise). Wired into: Home's header bar
+(replaces the plain schedule bar when a programme is active), the Equipment
+exercise page ("Add to programme" button, R11d's own named gap), the GDPR
+export, and R11i's Workouts split (below).
+
+### R11e — closure
+
+Two parts, matching how every other PARTIAL gate in this plan is reported:
+
+1. **Data correctness (full, not partial).** `WorkoutSession.asLogEntryView()`
+   — documented in its own comment as "silently correct today, silently
+   lossy the day [multi-exercise] stops holding" — is now
+   `asLogEntries()`: one row per exercise, all sharing a new
+   `WorkoutLogEntry.sessionId`. Every counter that used to count rows
+   (`deriveProgress`'s total/thisWeek/last8Weeks, `deriveWeekTotals`'s
+   `workouts`) now counts distinct `sessionId`s, so a 5-exercise gym visit
+   is one workout in every stat, matching the operator's own resolution.
+   `sessionId` defaults to `id` — every existing single-exercise session,
+   every legacy `workout_logs` document, reads back byte-identical.
+2. **Player loop (real, deliberately smaller than the prototype's exact
+   screen).** `_AddExerciseButton` lets the player append a second (third,
+   ...) exercise to the SAME open session via the existing
+   `SetCaptureSheet`/`DifficultyRatingSheet` flow, reusing the real
+   injury-screened catalogue. What is NOT built: the prototype's dedicated
+   full-screen carousel with progress dots — this reuses the existing
+   single-exercise screen's chrome plus one more button, not a new screen
+   design. A real bug was found and fixed while wiring this: the entry
+   exercise's own "Mark complete" re-edit path used to overwrite the whole
+   `exercises` list, silently dropping anything `_AddExerciseButton` had
+   already appended — extracted into `replaceEntryExercise`, unit-tested
+   directly (`workout_session_models_test.dart`).
+
+### R11i — Workouts half, closure
+
+Programs/Library sub-tab split built on Gate P: `_ProgramsTab` (current-
+programme card with real week/percent + a "continue to the next scheduled
+session" CTA sourced from `upcomingSessionsProvider`, goal-filtered template
+browse list, enroll wired to `ProgrammeAction.enroll`) sits behind a toggle
+next to `_LibraryTab` (the original Train tab, moved verbatim). Existing
+`workouts_page_test.dart` assertions needed one mechanical change — tap
+"Library" first, since the page no longer opens directly on it — everything
+those tests were actually pinning is unchanged.
+
+### What is still open
+
+- **Paywall** — deferred by the operator, not started.
+- **R11e's exact screen chrome** — full-screen rest overlay between
+  exercises, progress dots, is not built; the append flow is a button on
+  the existing screen.
+- **Device verification** — see §8.
+
+### Verification for §7
+
+`flutter analyze` — 7 issues, identical to the pre-R11 baseline, 0 new.
+`flutter test` — **1879 passed / 0 failed** (1826 before this closure pass;
++53 new tests: programme model/schedule/repo/action, R11e's `asLogEntries`/
+`replaceEntryExercise`/session-counting fixes, R11i's Programs-tab wiring).
+Two real bugs were found and fixed by this verification pass itself, not
+shipped: `asLogEntries()` initially suffixed EVERY row's id with an index,
+including the single-exercise case, breaking the "byte-identical to
+`asLogEntryView()`" promise (caught by this closure's own new test); the
+whites-ratchet and floating-sheet design-system tripwires both fired
+correctly on new code (3 new sanctioned translucent-white surfaces, one new
+sheet needed `GlassCard(floating: true)` instead of a hand-rolled solid
+container) and were resolved per their own established conventions, not
+by loosening either test.
+
+## 8. Device verification
+
+No physical phone was connected to this machine when the release build ran
+(`flutter devices`: only `emulator-5554` (Pixel_API_34, Android 14),
+Windows desktop, Chrome, Edge — no ADB-connected hardware). The release APK
+was built (`flutter build apk --release`) and installed on the emulator as
+the strongest verification available in this session; the operator needs to
+sideload the same APK onto their own device for the "real telefon" test.
+See the turn's final report for the APK path, install/launch result on the
+emulator, and the exact screens walked live.
 
 ### What each PARTIAL still owes
 

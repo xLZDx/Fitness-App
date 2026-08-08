@@ -38,7 +38,8 @@ class WorkoutLogEntry {
     this.weightKg,
     this.repsCompleted,
     this.difficulty,
-  });
+    String? sessionId,
+  }) : sessionId = sessionId ?? id;
 
   final String id;
   final String exerciseId;
@@ -46,6 +47,22 @@ class WorkoutLogEntry {
   final DateTime completedAt;
   final int durationMinutes;
   final String? notes;
+
+  /// R11e: which [WorkoutSession] this row came from.
+  ///
+  /// Defaults to [id] when not given — correct for every row that predates
+  /// this field: a legacy `workout_logs` document IS its own session (one
+  /// exercise, one set), and the F3.3 backfill gave every pre-session log its
+  /// session's id as [id] already. What changes at R11e is that
+  /// [WorkoutSession.asLogEntries] can now emit MULTIPLE rows sharing one
+  /// [sessionId] — one per exercise in a multi-exercise session, each with
+  /// its own [id] — because a 5-exercise gym visit is one workout, and
+  /// counting logic (`deriveProgress`, `deriveWeekTotals`) must count
+  /// distinct [sessionId]s, not rows, or it would report five workouts for
+  /// one visit. Per-exercise readers (muscle recovery, progression,
+  /// personal records) are unaffected either way — they already key off
+  /// [exerciseId], not [id].
+  final String sessionId;
 
   /// Working weight on the bar (or selectorized cable stack). Optional —
   /// some exercises (mobility, body-weight work) don't carry a load.
@@ -70,6 +87,7 @@ class WorkoutLogEntry {
     double? weightKg,
     int? repsCompleted,
     DifficultyRating? difficulty,
+    String? sessionId,
   }) =>
       WorkoutLogEntry(
         id: id ?? this.id,
@@ -81,6 +99,10 @@ class WorkoutLogEntry {
         weightKg: weightKg ?? this.weightKg,
         repsCompleted: repsCompleted ?? this.repsCompleted,
         difficulty: difficulty ?? this.difficulty,
+        // Not `sessionId ?? this.sessionId` alone -- a bare copyWith() with no
+        // args must keep the EXISTING sessionId, not re-derive it from `id`
+        // (which the constructor default would do if this were omitted).
+        sessionId: sessionId ?? this.sessionId,
       );
 
   Map<String, dynamic> toJson() => {
@@ -93,6 +115,10 @@ class WorkoutLogEntry {
         if (weightKg != null) 'weightKg': weightKg,
         if (repsCompleted != null) 'repsCompleted': repsCompleted,
         if (difficulty != null) 'difficulty': difficulty!.name,
+        // Omitted when it equals `id` -- the common case for every
+        // single-exercise session -- so a legacy consumer that has never
+        // heard of this field sees byte-identical JSON to before R11e.
+        if (sessionId != id) 'sessionId': sessionId,
       };
 
   factory WorkoutLogEntry.fromJson(Map<String, dynamic> j) {
@@ -128,6 +154,7 @@ class WorkoutLogEntry {
       weightKg: (j['weightKg'] as num?)?.toDouble(),
       repsCompleted: (j['repsCompleted'] as num?)?.toInt(),
       difficulty: difficulty,
+      sessionId: j['sessionId'] as String?,
     );
   }
 
@@ -143,9 +170,10 @@ class WorkoutLogEntry {
           other.notes == notes &&
           other.weightKg == weightKg &&
           other.repsCompleted == repsCompleted &&
-          other.difficulty == difficulty;
+          other.difficulty == difficulty &&
+          other.sessionId == sessionId;
 
   @override
   int get hashCode => Object.hash(id, exerciseId, exerciseTitle, completedAt,
-      durationMinutes, notes, weightKg, repsCompleted, difficulty);
+      durationMinutes, notes, weightKg, repsCompleted, difficulty, sessionId);
 }

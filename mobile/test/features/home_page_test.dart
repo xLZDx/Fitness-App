@@ -12,6 +12,9 @@ import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/home/home_page.dart';
+import 'package:fitness_app/features/programmes/data/mock_programme_repository.dart';
+import 'package:fitness_app/features/programmes/data/programme.dart';
+import 'package:fitness_app/features/programmes/state/programme_providers.dart';
 import 'package:fitness_app/features/workouts/data/mock_scheduled_session_repository.dart';
 import 'package:fitness_app/features/workouts/state/scheduled_session_providers.dart';
 import 'package:fitness_app/shared/widgets/aurora_background.dart';
@@ -40,6 +43,12 @@ ExerciseItem _ex(String id, String title, List<String> primary) => ExerciseItem(
 
 Widget _buildApp({
   MockScheduledSessionRepository? scheduleRepo,
+  MockProgrammeRepository? programmeRepo,
+  // A direct StreamProvider override, not routed through a repository --
+  // see the test that uses this for why (a broadcast-stream repo left the
+  // whole suite hanging until the global 10-minute timeout, the exact trap
+  // this file's own comment already names for scheduled sessions).
+  List<Programme>? programmes,
   AuthUser? user,
   List<ExerciseItem>? catalog,
 }) {
@@ -68,6 +77,10 @@ Widget _buildApp({
       if (scheduleRepo != null)
         scheduledSessionRepositoryProvider
             .overrideWithValue(scheduleRepo),
+      if (programmeRepo != null)
+        programmeRepositoryProvider.overrideWithValue(programmeRepo),
+      if (programmes != null)
+        programmesProvider.overrideWith((ref) => Stream.value(programmes)),
       if (user != null)
         authUserProvider.overrideWith((_) => Stream.value(user)),
       // Pinned so the Suggestions section is deterministic. The ranking itself
@@ -248,4 +261,38 @@ void main() {
   // is fully exercised by `filterUpcoming` and `formatScheduleLabel` unit
   // tests. Driving an in-memory repo through the live StreamProvider chain
   // hangs `pumpAndSettle` because the broadcast stream stays open.
+
+  // Gate P: the header bar prefers an active programme over the plain
+  // schedule bar. `programme_test.dart` and `programme_action_test.dart`
+  // cover the arithmetic and the write path; this is the one place proving
+  // Home actually renders what enrolling produces.
+  group('HomePage (active programme)', () {
+    testWidgets('shows the programme title and week instead of the plain bar',
+        (tester) async {
+      final programme = Programme(
+        id: 'prog_1',
+        templateId: 'strength_base',
+        title: 'Силовая база',
+        goal: ProgrammeGoal.strength,
+        level: ExerciseDifficulty.intermediate,
+        weeks: 8,
+        daysPerWeek: 4,
+        startedAt: DateTime.now().subtract(const Duration(days: 8)),
+      );
+
+      await _setLargeSurface(tester);
+      await tester.pumpWidget(_buildApp(
+        user: const AuthUser(uid: 'u1', displayName: 'Ivan'),
+        programmes: [programme],
+      ));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.byKey(const Key('home.programmeProgress')), findsOneWidget);
+      expect(find.byKey(const Key('home.planProgress')), findsNothing,
+          reason: 'an active programme replaces the plain bar, not both');
+      // Day 8 since start (kTestLocale is 'en') reads as week 2 of 8.
+      expect(find.textContaining('Силовая база · Week 2 of 8'), findsOneWidget);
+    });
+  });
 }

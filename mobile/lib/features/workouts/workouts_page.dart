@@ -12,9 +12,14 @@ import '../equipment/data/equipment_models.dart';
 import '../equipment/state/equipment_providers.dart';
 import '../form_check/state/form_check_providers.dart';
 import '../personalisation/state/personalisation_providers.dart';
+import '../programmes/data/programme.dart';
+import '../programmes/data/programme_templates.dart';
+import '../programmes/state/programme_providers.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
+import 'data/scheduled_session.dart';
 import 'state/offline_video_providers.dart';
+import 'state/scheduled_session_providers.dart';
 import '../equipment/widgets/exercise_thumb.dart';
 import '../profile/state/profile_providers.dart';
 
@@ -197,6 +202,15 @@ final _filteredExercisesProvider =
       .toList());
 });
 
+/// Which half of the Train tab is showing. R11i split what used to be one
+/// flat exercise browser into the prototype's own two-tab shape
+/// (`App.tsx`'s `WorkoutsScreen`, `subTab: 'programs' | 'library'`):
+/// [programs] is the NEW half, built on Gate P's programme entity;
+/// [library] is every pixel of the original tab, unchanged, just moved into
+/// its own widget so it could sit behind a toggle instead of always being
+/// what "Train" shows.
+enum _WorkoutsSubTab { programs, library }
+
 class WorkoutsPage extends ConsumerStatefulWidget {
   const WorkoutsPage({super.key});
 
@@ -205,6 +219,105 @@ class WorkoutsPage extends ConsumerStatefulWidget {
 }
 
 class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
+  // The prototype opens on 'programs' -- the tab this app had nothing to
+  // show on before Gate P, and the one that gives a new session on Home's
+  // header something real to point at the moment it exists.
+  _WorkoutsSubTab _subTab = _WorkoutsSubTab.programs;
+
+  @override
+  Widget build(BuildContext context) {
+    return FrostedScaffold(
+      appBar: GlassAppBar(title: AppLocalizations.of(context).workoutsTrain),
+      body: Column(
+        children: [
+          const SizedBox(height: 92),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _SubTabToggle(
+              selected: _subTab,
+              onChanged: (t) => setState(() => _subTab = t),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: _subTab == _WorkoutsSubTab.programs
+                ? const _ProgramsTab()
+                : const _LibraryTab(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The toggle pill itself -- same visual language as the filter chips below
+/// it (`AnimatedContainer`, accent gradient on the active side), because it
+/// is the same kind of control: pick one of a small fixed set.
+class _SubTabToggle extends StatelessWidget {
+  const _SubTabToggle({required this.selected, required this.onChanged});
+  final _WorkoutsSubTab selected;
+  final ValueChanged<_WorkoutsSubTab> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
+    return Container(
+      height: 44,
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: theme.colors.surfaceInteractive,
+        borderRadius: BorderRadius.circular(13),
+      ),
+      child: Row(
+        children: _WorkoutsSubTab.values.map((tab) {
+          final isSelected = tab == selected;
+          return Expanded(
+            child: Semantics(
+              button: true,
+              selected: isSelected,
+              child: GestureDetector(
+                onTap: () => onChanged(tab),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOutCubic,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: isSelected ? theme.colors.accentPrimary : null,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    tab == _WorkoutsSubTab.programs
+                        ? l.workoutsSubTabPrograms
+                        : l.workoutsSubTabLibrary,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                      color: isSelected
+                          ? AppSemanticColors.onGradientInk
+                          : theme.colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+/// The original Train tab, byte-for-byte, minus the top padding the parent
+/// [Column] now supplies (it used to be baked into this list's own padding,
+/// back when this WAS the whole page).
+class _LibraryTab extends ConsumerStatefulWidget {
+  const _LibraryTab();
+
+  @override
+  ConsumerState<_LibraryTab> createState() => _LibraryTabState();
+}
+
+class _LibraryTabState extends ConsumerState<_LibraryTab> {
   WorkoutsFilter _selected = WorkoutsFilter.forYou;
 
   @override
@@ -212,103 +325,100 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
     final theme = Theme.of(context);
     final list = ref.watch(_filteredExercisesProvider(_selected));
 
-    return FrostedScaffold(
-      appBar: GlassAppBar(title: AppLocalizations.of(context).workoutsTrain),
-      body: SmoothScrollList(
-        padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
-        children: [
-          const _QuickToolsRow(),
-          const SizedBox(height: 16),
-          const _OfflinePrefetchCard(),
-          const SizedBox(height: 16),
-          SizedBox(
-            // 48, not 44. The row is the app's main navigation between
-            // exercise lists and 44dp is under every platform's minimum
-            // target; the extra four pixels are the difference between a chip
-            // a shaky hand can hit and one it cannot.
-            height: 48,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.zero,
-              physics: const BouncingScrollPhysics(),
-              itemCount: WorkoutsFilter.values.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 10),
-              itemBuilder: (context, i) {
-                final filter = WorkoutsFilter.values[i];
-                final selected = filter == _selected;
-                return Semantics(
-                  // A GestureDetector announces nothing, so the whole filter
-                  // row read to a screen reader as a list of words with no
-                  // indication that any of them was tappable or which one was
-                  // active. `selected` is what makes the current filter
-                  // audible at all.
-                  button: true,
-                  selected: selected,
-                  child: GestureDetector(
-                    onTap: () => setState(() => _selected = filter),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 280),
-                      curve: Curves.easeOutCubic,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 18, vertical: 8),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(22),
-                        gradient: selected
-                            ? LinearGradient(
-                                colors: AppPalette.tileGradients[i % 5])
-                            : null,
-                        color: selected
-                            ? null
-                            : Colors.white.withValues(alpha: 0.32),
-                      ),
-                      child: Center(
-                        child: Text(
-                          workoutsFilterLabel(
-                              AppLocalizations.of(context), filter),
-                          style: TextStyle(
-                            fontWeight:
-                                selected ? FontWeight.w700 : FontWeight.w600,
-                            color: selected
-                                ? AppSemanticColors.onGradientInk
-                                : theme.colorScheme.onSurface,
-                          ),
+    return SmoothScrollList(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 110),
+      children: [
+        const _QuickToolsRow(),
+        const SizedBox(height: 16),
+        const _OfflinePrefetchCard(),
+        const SizedBox(height: 16),
+        SizedBox(
+          // 48, not 44. The row is the app's main navigation between
+          // exercise lists and 44dp is under every platform's minimum
+          // target; the extra four pixels are the difference between a chip
+          // a shaky hand can hit and one it cannot.
+          height: 48,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.zero,
+            physics: const BouncingScrollPhysics(),
+            itemCount: WorkoutsFilter.values.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (context, i) {
+              final filter = WorkoutsFilter.values[i];
+              final selected = filter == _selected;
+              return Semantics(
+                // A GestureDetector announces nothing, so the whole filter
+                // row read to a screen reader as a list of words with no
+                // indication that any of them was tappable or which one was
+                // active. `selected` is what makes the current filter
+                // audible at all.
+                button: true,
+                selected: selected,
+                child: GestureDetector(
+                  onTap: () => setState(() => _selected = filter),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 280),
+                    curve: Curves.easeOutCubic,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(22),
+                      gradient: selected
+                          ? LinearGradient(
+                              colors: AppPalette.tileGradients[i % 5])
+                          : null,
+                      color: selected
+                          ? null
+                          : Colors.white.withValues(alpha: 0.32),
+                    ),
+                    child: Center(
+                      child: Text(
+                        workoutsFilterLabel(
+                            AppLocalizations.of(context), filter),
+                        style: TextStyle(
+                          fontWeight:
+                              selected ? FontWeight.w700 : FontWeight.w600,
+                          color: selected
+                              ? AppSemanticColors.onGradientInk
+                              : theme.colorScheme.onSurface,
                         ),
                       ),
                     ),
                   ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 22),
-          ...list.when(
-            loading: () => const [_LoadingCard()],
-            error: (e, _) => [
-              GlassCard(
-                  child: Text(AppLocalizations.of(context)
-                      .workoutsCouldNotLoadWorkouts(e))),
-            ],
-            data: (items) {
-              if (items.isEmpty) {
-                return [
-                  GlassCard(
-                    child: Text(
-                      _emptyMessage(context, _selected),
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                  ),
-                ];
-              }
-              final out = <Widget>[];
-              for (final ex in items) {
-                out.add(_ExerciseCard(exercise: ex));
-                out.add(const SizedBox(height: 16));
-              }
-              return out;
+                ),
+              );
             },
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 22),
+        ...list.when(
+          loading: () => const [_LoadingCard()],
+          error: (e, _) => [
+            GlassCard(
+                child: Text(AppLocalizations.of(context)
+                    .workoutsCouldNotLoadWorkouts(e))),
+          ],
+          data: (items) {
+            if (items.isEmpty) {
+              return [
+                GlassCard(
+                  child: Text(
+                    _emptyMessage(context, _selected),
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ),
+              ];
+            }
+            final out = <Widget>[];
+            for (final ex in items) {
+              out.add(_ExerciseCard(exercise: ex));
+              out.add(const SizedBox(height: 16));
+            }
+            return out;
+          },
+        ),
+      ],
     );
   }
 
@@ -588,6 +698,429 @@ class _QuickTool extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// R11i's other half: the enrolled/browse-programmes screen the prototype's
+/// Workouts tab opens on, built on Gate P's [Programme] entity.
+class _ProgramsTab extends ConsumerStatefulWidget {
+  const _ProgramsTab();
+
+  @override
+  ConsumerState<_ProgramsTab> createState() => _ProgramsTabState();
+}
+
+class _ProgramsTabState extends ConsumerState<_ProgramsTab> {
+  // null = every goal, same "no filter selected" shape WorkoutsFilter.all
+  // uses, kept as a real null rather than a synthetic sixth ProgrammeGoal so
+  // the domain enum never has to carry a UI-only value.
+  ProgrammeGoal? _goalFilter;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final templates = _goalFilter == null
+        ? programmeTemplates
+        : programmeTemplates.where((t) => t.goal == _goalFilter).toList();
+
+    return SmoothScrollList(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 110),
+      children: [
+        const _CurrentProgrammeCard(),
+        const SizedBox(height: 18),
+        SizedBox(
+          height: 40,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.zero,
+            physics: const BouncingScrollPhysics(),
+            itemCount: ProgrammeGoal.values.length + 1,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, i) {
+              final goal = i == 0 ? null : ProgrammeGoal.values[i - 1];
+              final selected = goal == _goalFilter;
+              return Semantics(
+                button: true,
+                selected: selected,
+                child: GestureDetector(
+                  onTap: () => setState(() => _goalFilter = goal),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(99),
+                      border: Border.all(
+                        color: selected
+                            ? theme.colors.accentPrimary
+                            : theme.colors.outline,
+                        width: 1.5,
+                      ),
+                      color: selected
+                          ? theme.colors.accentPrimary.withValues(alpha: 0.12)
+                          : theme.colors.surfaceElevated,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      goal == null ? l.workoutsFilterAll : _goalLabel(l, goal),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: selected
+                            ? theme.colors.accentPrimary
+                            : theme.colors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 18),
+        if (templates.isEmpty)
+          GlassCard(child: Text(l.workoutsEmptyFiltered(_goalLabel(l, _goalFilter!))))
+        else
+          for (var i = 0; i < templates.length; i++) ...[
+            _ProgrammeTemplateCard(template: templates[i], index: i),
+            const SizedBox(height: 16),
+          ],
+      ],
+    );
+  }
+}
+
+/// [ProgrammeGoal] display labels. Own function rather than a
+/// `CatalogLabels` method -- the goal vocabulary belongs to programmes, not
+/// the exercise catalogue `CatalogLabels` otherwise speaks for.
+String _goalLabel(AppLocalizations l, ProgrammeGoal goal) {
+  switch (goal) {
+    case ProgrammeGoal.strength:
+      return l.programmeGoalStrength;
+    case ProgrammeGoal.muscle:
+      return l.programmeGoalMuscle;
+    case ProgrammeGoal.weightLoss:
+      return l.programmeGoalWeightLoss;
+    case ProgrammeGoal.form:
+      return l.programmeGoalForm;
+    case ProgrammeGoal.comeback:
+      return l.programmeGoalComeback;
+  }
+}
+
+/// "Текущая программа" -- title, week/percent bar, and a way into the next
+/// session. Absent (not a placeholder) when nothing is active, same
+/// convention [PlanProgress.isEmpty] uses on Home for the same reason: an
+/// empty card reads as failure, not as "you have not started one yet".
+class _CurrentProgrammeCard extends ConsumerWidget {
+  const _CurrentProgrammeCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final programme = ref.watch(activeProgrammeProvider);
+    final progress = ref.watch(activeProgrammeProgressProvider);
+    if (programme == null || progress == null) return const SizedBox.shrink();
+
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    // Earliest upcoming session belonging to THIS programme -- the same
+    // "Спина и бицепс →" CTA the prototype's current-programme card shows,
+    // sourced from real scheduled rows rather than a guessed "next day".
+    // upcomingSessionsProvider is already sorted ascending, so `.first` is
+    // the earliest.
+    final matching = ref
+        .watch(upcomingSessionsProvider)
+        .where((s) => s.programmeId == programme.id);
+    final ScheduledSession? next = matching.isEmpty ? null : matching.first;
+
+    return GlassCard(
+      key: const Key('workouts.currentProgramme'),
+      padding: const EdgeInsets.all(16),
+      borderRadius: 18,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l.programmeCurrentProgramme,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: theme.colors.accentPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            programme.title,
+            style: theme.textTheme.headlineSmall
+                ?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(99),
+            child: LinearProgressIndicator(
+              value: progress.fraction,
+              minHeight: 4,
+              backgroundColor: theme.colors.surfaceInteractive,
+              valueColor: AlwaysStoppedAnimation<Color>(theme.colors.accentPrimary),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${l.programmeWeekOfWeeks(progress.week, progress.weeks)} · '
+            '${progress.percent}%',
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: theme.colors.textSecondary),
+          ),
+          const SizedBox(height: 14),
+          if (next != null)
+            GlassCard(
+              key: const Key('workouts.currentProgramme.continue'),
+              padding: EdgeInsets.zero,
+              onTap: () => GoRouter.of(context).push('/workout/${next.exerciseId}'),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  gradient: LinearGradient(
+                      colors: [AppPalette.auroraTeal, AppPalette.auroraBlue]),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  '${next.exerciseTitle} →',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: AppSemanticColors.onGradientInk,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            )
+          else
+            Text(
+              l.programmeNoUpcomingSession,
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colors.textSecondary),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One enrollable programme. Header block colour rotates through
+/// [AppPalette.tileGradients] by [index], the same rotation the filter
+/// chips already use (`workoutsFilterLabel`'s callers, `i % 5` there).
+class _ProgrammeTemplateCard extends ConsumerWidget {
+  const _ProgrammeTemplateCard({required this.template, required this.index});
+  final ProgrammeTemplate template;
+  final int index;
+
+  Future<void> _start(BuildContext context, WidgetRef ref, Programme? active) async {
+    if (active != null && active.templateId != template.id) {
+      final confirmed = await _ConfirmSwitchSheet.show(context, active.title);
+      if (confirmed != true || !context.mounted) return;
+    }
+    final l = AppLocalizations.of(context);
+    await ref.read(programmeActionProvider.notifier).enroll(template);
+    if (!context.mounted) return;
+    final state = ref.read(programmeActionProvider);
+    state.when(
+      data: (_) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(l.programmeEnrolled(template.title)),
+        behavior: SnackBarBehavior.floating,
+      )),
+      error: (e, _) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(l.programmeCouldNotEnroll('$e')),
+        behavior: SnackBarBehavior.floating,
+      )),
+      loading: () {},
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final active = ref.watch(activeProgrammeProvider);
+    final loading = ref.watch(programmeActionProvider).isLoading;
+    final isCurrent =
+        active != null && active.templateId == template.id && active.status == ProgrammeStatus.active;
+    final muscleLabel = template.isFullBody
+        ? l.programmeFullBody
+        : template.muscles.map((m) => CatalogLabels.muscle(l, m)).join(', ');
+    final gradient =
+        AppPalette.tileGradients[index % AppPalette.tileGradients.length];
+
+    return GlassCard(
+      key: Key('programme.template.${template.id}'),
+      padding: EdgeInsets.zero,
+      borderRadius: 18,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 76,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+              gradient: LinearGradient(colors: gradient),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _TemplateChip(CatalogLabels.difficulty(l, template.level)),
+                _TemplateChip(_goalLabel(l, template.goal)),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  template.title,
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  muscleLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colors.textSecondary),
+                ),
+                Text(
+                  l.programmeWeeksAndDaysPerWeek(
+                      template.weeks, template.daysPerWeek),
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colors.textSecondary),
+                ),
+                const SizedBox(height: 12),
+                GlassCard(
+                  padding: EdgeInsets.zero,
+                  onTap: loading || isCurrent
+                      ? null
+                      : () => _start(context, ref, active),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: isCurrent
+                          ? null
+                          : Border.all(color: theme.colors.outline, width: 1.5),
+                      color: isCurrent ? theme.colors.surfaceInteractive : null,
+                    ),
+                    alignment: Alignment.center,
+                    child: loading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2))
+                        : Text(
+                            isCurrent ? l.programmeContinue : l.programmeStart,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              color: theme.colorScheme.onSurface,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TemplateChip extends StatelessWidget {
+  const _TemplateChip(this.label);
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.28),
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: AppSemanticColors.onGradientInk,
+        ),
+      ),
+    );
+  }
+}
+
+/// Confirms replacing the active programme -- enrolling in a second one
+/// abandons the first (`ProgrammeAction.enroll`'s own doc comment), which is
+/// a real state change worth a beat before committing to, not a silent
+/// side-effect of tapping "Start programme" on a browse card.
+class _ConfirmSwitchSheet extends StatelessWidget {
+  const _ConfirmSwitchSheet({required this.currentTitle});
+  final String currentTitle;
+
+  static Future<bool?> show(BuildContext context, String currentTitle) {
+    return showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ConfirmSwitchSheet(currentTitle: currentTitle),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    // `floating: true` -- same reason every other confirm/rate sheet in the
+    // app uses it (`difficulty_rating_sheet.dart`): an ordinary GlassCard is
+    // translucent, and a translucent card over the template list this sheet
+    // opens on top of would read the list through the confirmation text.
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+      child: GlassCard(
+        floating: true,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l.programmeSwitchWarning(currentTitle),
+              style: theme.textTheme.bodyLarge,
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text(
+                        MaterialLocalizations.of(context).cancelButtonLabel),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text(l.programmeStart),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

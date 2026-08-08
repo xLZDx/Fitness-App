@@ -12,6 +12,7 @@ class ScheduledSession {
     required this.durationMinutes,
     this.status = ScheduledSessionStatus.pending,
     this.notes,
+    this.programmeId,
   });
 
   final String id;
@@ -22,6 +23,17 @@ class ScheduledSession {
   final ScheduledSessionStatus status;
   final String? notes;
 
+  /// Which `Programme` laid this session out, or null for a session the user
+  /// scheduled on their own.
+  ///
+  /// Nullable and additive: every row written before the programme entity
+  /// existed reads back with this null, and every existing consumer of
+  /// [ScheduledSession] (Home's week strip, the offline prefetch, the GDPR
+  /// export) keeps working unchanged because none of them look at it.
+  /// [deriveProgrammeProgress] (`programmes/data/programme.dart`) is the one
+  /// reader that does.
+  final String? programmeId;
+
   ScheduledSession copyWith({
     String? id,
     String? exerciseId,
@@ -30,6 +42,7 @@ class ScheduledSession {
     int? durationMinutes,
     ScheduledSessionStatus? status,
     String? notes,
+    String? programmeId,
   }) =>
       ScheduledSession(
         id: id ?? this.id,
@@ -39,6 +52,7 @@ class ScheduledSession {
         durationMinutes: durationMinutes ?? this.durationMinutes,
         status: status ?? this.status,
         notes: notes ?? this.notes,
+        programmeId: programmeId ?? this.programmeId,
       );
 
   Map<String, dynamic> toJson() => {
@@ -49,6 +63,7 @@ class ScheduledSession {
         'durationMinutes': durationMinutes,
         'status': status.name,
         if (notes != null) 'notes': notes,
+        if (programmeId != null) 'programmeId': programmeId,
       };
 
   factory ScheduledSession.fromJson(Map<String, dynamic> j) {
@@ -75,6 +90,7 @@ class ScheduledSession {
       durationMinutes: (j['durationMinutes'] as num?)?.toInt() ?? 0,
       status: status,
       notes: j['notes'] as String?,
+      programmeId: j['programmeId'] as String?,
     );
   }
 
@@ -88,9 +104,10 @@ class ScheduledSession {
           other.scheduledFor == scheduledFor &&
           other.durationMinutes == durationMinutes &&
           other.status == status &&
-          other.notes == notes;
+          other.notes == notes &&
+          other.programmeId == programmeId;
 
   @override
   int get hashCode => Object.hash(id, exerciseId, exerciseTitle, scheduledFor,
-      durationMinutes, status, notes);
+      durationMinutes, status, notes, programmeId);
 }

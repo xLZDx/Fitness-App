@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../profile/data/profile_models.dart';
+import '../programmes/data/programme.dart';
 import '../progress_photos/data/progress_photo.dart';
 import '../workouts/data/scheduled_session.dart';
 import '../workouts/data/workout_log.dart';
@@ -33,6 +34,7 @@ Map<String, dynamic> buildExport({
   required UserProfile profile,
   required List<WorkoutLogEntry> workoutLogs,
   required List<ScheduledSession> scheduledSessions,
+  required List<Programme> programmes,
   required List<ProgressPhoto> progressPhotos,
   // True when the caller could not confirm it read every progress photo --
   // today only a stalled read (data_export_providers.dart's 5s timeout), but
@@ -63,6 +65,7 @@ Map<String, dynamic> buildExport({
     'profile': profile.toJson()..['uid'] = profile.uid,
     'workoutLogs': workoutLogs.map((e) => e.toJson()).toList(),
     'scheduledSessions': scheduledSessions.map((s) => s.toJson()).toList(),
+    'programmes': programmes.map((p) => p.toJson()).toList(),
     'progressPhotosIncomplete': progressPhotosIncomplete,
     'progressPhotos': progressPhotos
         .map((p) => {
@@ -88,6 +91,7 @@ String buildExportJson({
   required UserProfile profile,
   required List<WorkoutLogEntry> workoutLogs,
   required List<ScheduledSession> scheduledSessions,
+  required List<Programme> programmes,
   required List<ProgressPhoto> progressPhotos,
   bool progressPhotosIncomplete = false,
 }) {
@@ -95,6 +99,7 @@ String buildExportJson({
     profile: profile,
     workoutLogs: workoutLogs,
     scheduledSessions: scheduledSessions,
+    programmes: programmes,
     progressPhotos: progressPhotos,
     progressPhotosIncomplete: progressPhotosIncomplete,
   );

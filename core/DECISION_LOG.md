@@ -1624,3 +1624,115 @@ written, so neither diff contains it, which the Continuous Decision Log
 rule requires. Recorded here rather than by amending: both commits are
 already pushed-adjacent history and amending a commit to retrofit a block
 is forbidden by Git Lifecycle. Applied from the next commit forward.
+
+### Decision — R11e and the programme entity, both unblocked (2026-08-09)
+
+Operator answered both open questions the previous entry named:
+
+- **R11e**: *"это одна тренировка, но тут надо смотреть на уровень
+  человека, время тренировки, направление и цели... один поход в
+  тренажерный зал это одна тренировка на разных тренажерах"* — a session
+  is ONE workout no matter how many exercises it holds. This resolves the
+  data-model question directly: multi-exercise sessions are allowed, and
+  "1 session = 1 workout" is a COUNTING rule applied on top, not a reason
+  to keep `WorkoutSession` single-exercise.
+- **Programme entity**: *"согласен с планом... Это добавление, а не
+  изменение"* — build additively over the existing schedule, per the
+  impact analysis presented (Programme → R11e → Paywall order, Paywall
+  deferred).
+- **Paywall**: *"отложи на потом, прода еще нету"* — explicitly deferred,
+  not started.
+
+Full GO: *"ГО на все автономно + го пуш когда надо... Дальше продолжай
+автономно, и в конце выкати финальный билд на тест на реальном телефоне"*.
+
+### Evidence — R11e's real bug, found while wiring the fix
+
+`asLogEntryView()`'s own doc comment predicted the failure mode: "silently
+lossy the day [multi-exercise] stops holding." Replaced with
+`asLogEntries()` (one row per exercise) + a new `WorkoutLogEntry.sessionId`
+field (defaults to `id`, so every existing row reads back unchanged).
+Every counter that previously counted ROWS (`deriveProgress`'s
+total/thisWeek/last8Weeks in `progress_stats.dart`, `deriveWeekTotals`'s
+`workouts` in `home_dashboard.dart`) was switched to counting distinct
+`sessionId`s — verified with a dedicated test in each file asserting a
+3-exercise session counts as 1 workout, not 3.
+
+A second real bug surfaced while building the player's "add another
+exercise" loop: `_MarkCompleteButton`'s re-edit path replaced the WHOLE
+`exercises` list with just the entry exercise (`exercises: [exerciseEntry]`),
+which would have silently dropped any exercise appended after it the
+moment the user re-edited exercise #1's own set. Extracted into
+`replaceEntryExercise` (`workout_session.dart`) and unit-tested directly
+rather than fixed inline a second time.
+
+### Gap — R11e's screen chrome is smaller than the prototype's
+
+The prototype's multi-exercise player is a dedicated full-screen carousel
+with progress dots between exercises. What shipped is a button
+(`_AddExerciseButton`) on the EXISTING single-exercise screen that appends
+to the same open session via the existing set-capture/difficulty flow.
+Functionally equivalent (N exercises, one session, correct stats); visually
+smaller than the design. Named here rather than silently shipped as if it
+were the full redesign.
+
+### Evidence — a hang trap in this test suite, and its fix
+
+A widget test for Home's programme-progress bar, built against
+`MockProgrammeRepository` the same way `scheduled_session_providers_test.dart`
+uses `MockScheduledSessionRepository`, hung the ENTIRE suite until the
+10-minute global timeout (`flutter test` reported the same single test
+name on a loop for 9+ minutes before timing out). Isolated re-run confirmed
+it was this test, not suite-wide flakiness. Fix: override the StreamProvider
+directly (`programmesProvider.overrideWith((ref) => Stream.value([...]))`)
+instead of routing through a repository — a plain single-value stream,
+not a broadcast one that needs disposal ordering. Same fix applied
+pre-emptively in `workouts_page_test.dart`'s current-programme-card test
+via direct `Provider.overrideWithValue` on the already-sync
+`activeProgrammeProvider`/`activeProgrammeProgressProvider`, which needs no
+stream at all. Neither fix is a workaround for a real widget bug — both are
+about which provider layer a test overrides.
+
+### Gap — an unrelated pre-existing test flake observed, not caused
+
+The same full-suite run surfaced 2 failures in `test/widgets/app_buttons_test.dart`
+(and briefly a repeat of the same class in `blur_budget_test.dart`,
+`floating_sheet_test.dart`, `glass_card_test.dart`, `glass_nav_bar_test.dart`
+before the run's own totals confirmed only 2 were new) — a Flutter
+test-binding scheduler assertion ("EXCEPTION CAUGHT BY SCHEDULER LIBRARY",
+`!_needsLayout`) unrelated to any file this session touched. Isolated
+re-run of `app_buttons_test.dart` alone: 21/21 passed, same scary stack
+trace printed but non-fatal. Recorded as pre-existing, order-dependent
+flakiness in the full-suite run, not a regression from this session's work.
+
+### Evidence — two real bugs the full-suite run caught before they shipped
+
+A full `flutter test` after Gate P + R11e + R11i-Workouts landed 3 genuine
+failures, none of them the flake above:
+
+1. **`asLogEntries()` broke its own backward-compatibility promise.** The
+   doc comment said a single-exercise session produces the SAME
+   `WorkoutLogEntry.id` `asLogEntryView()` used to. The implementation
+   suffixed every row's id with its index unconditionally, so a
+   single-exercise session got `'s1_0'` instead of `'s1'` — caught by
+   this closure's OWN new test (`workout_session_models_test.dart`).
+   Fixed: the suffix now applies only when `exercises.length > 1`.
+2. **Two design-system tripwires fired correctly on new code, not
+   incorrectly on old.** The whites-ratchet test (`app_semantic_colors_test.dart`)
+   caught 3 new `Colors.white` uses (`_TemplateChip`,
+   `_AddToProgrammeButton`, `_AddExerciseButton`) — verified each is the
+   sanctioned translucent-SURFACE category (same as `_ScheduleButton`'s
+   existing background), repinned 59 → 62 with a dated comment per the
+   test's own instructions. The floating-sheet test
+   (`floating_sheet_test.dart`) caught `_ConfirmSwitchSheet` using a
+   hand-rolled solid `Container` instead of the app's established
+   `GlassCard(floating: true)` pattern for exactly this situation (a
+   transparent-backed `showModalBottomSheet` whose content must not show
+   the page through it) — fixed by switching to the canonical pattern,
+   matching `difficulty_rating_sheet.dart` exactly, rather than widening
+   the test's exemption list.
+
+Both are exactly what "Functional Tests Prove Behavior" and the whites-
+ratchet/floating-sheet tests exist for: a class of bug that is invisible at
+review time and only surfaces when something actually exercises the code
+or scans the source for the pattern.

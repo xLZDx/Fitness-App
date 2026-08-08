@@ -65,5 +65,21 @@ void main() {
       final b = session.copyWith(status: ScheduledSessionStatus.completed);
       expect(a, isNot(equals(b)));
     });
+
+    // Gate P: programmeId is additive. A row written before the programme
+    // entity existed must read back with it null, and toJson must not emit
+    // the key at all for such a row -- the same "omit when null" contract
+    // notes already has, so a Firestore doc predating this change round-trips
+    // unchanged.
+    test('programmeId defaults to null and round-trips when set', () {
+      expect(session.programmeId, isNull);
+      expect(session.toJson().containsKey('programmeId'), isFalse);
+
+      final linked = session.copyWith(programmeId: 'prog_1');
+      final json = linked.toJson();
+      expect(json['programmeId'], 'prog_1');
+      expect(ScheduledSession.fromJson(json).programmeId, 'prog_1');
+      expect(linked, isNot(equals(session)));
+    });
   });
 }

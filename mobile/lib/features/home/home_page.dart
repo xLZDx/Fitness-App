@@ -15,6 +15,7 @@ import '../moments/state/moment_providers.dart';
 import '../moments/widgets/day3_welcome_modal.dart';
 import '../recovery/widgets/deload_banner.dart';
 import '../equipment/data/catalog_labels.dart';
+import '../programmes/state/programme_providers.dart';
 import '../workouts/data/session_digest.dart';
 import '../workouts/state/day_result_providers.dart';
 import '../workouts/state/session_digest_providers.dart';
@@ -45,8 +46,10 @@ import '../equipment/widgets/exercise_thumb.dart';
 ///   notifications route in this app (`app_router.dart` registers 27 paths and
 ///   none of them is one), so the bell would be a control that does nothing.
 /// * The prototype's progress bar reads "Силовая база · Неделя 2 из 8" — a
-///   multi-week programme. No programme entity exists here; see
-///   [derivePlanProgress] for what the bar shows instead and why.
+///   multi-week programme. Gate P added that entity
+///   (`programmes/data/programme.dart`); [_PlanProgressBar] now shows it when
+///   the user has enrolled in one, and falls back to [derivePlanProgress]'s
+///   plain "this week's schedule" bar when they have not.
 ///
 /// The app's own entry points that the prototype has no equivalent for (AI
 /// plan, posture check, health sync, suggestions) are kept, moved below the
@@ -207,24 +210,65 @@ class _GreetingHeader extends ConsumerWidget {
   }
 }
 
-/// This week's schedule completion, as the prototype's header bar.
-///
-/// Renders nothing at all when the week holds no sessions — see
-/// [PlanProgress.isEmpty].
+/// The prototype's header bar: "Силовая база · Неделя 2 из 8" when the user
+/// has enrolled in a programme (Gate P), otherwise this week's plain
+/// schedule completion — see [PlanProgress.isEmpty] for when that fallback
+/// itself renders nothing.
 class _PlanProgressBar extends ConsumerWidget {
   const _PlanProgressBar();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final programme = ref.watch(activeProgrammeProvider);
+    final programmeProgress = ref.watch(activeProgrammeProgressProvider);
+    if (programme != null && programmeProgress != null) {
+      return _ProgressBarCard(
+        key: const Key('home.programmeProgress'),
+        label: '${programme.title} · '
+            '${AppLocalizations.of(context).programmeWeekOfWeeks(
+              programmeProgress.week,
+              programmeProgress.weeks,
+            )}',
+        fraction: programmeProgress.fraction,
+        percent: programmeProgress.percent,
+      );
+    }
+
     final progress = ref.watch(planProgressProvider);
     if (progress.isEmpty) return const SizedBox.shrink();
 
     final l10n = AppLocalizations.of(context);
+    return _ProgressBarCard(
+      key: const Key('home.planProgress'),
+      label: '${l10n.homeWeekPlan} · '
+          '${l10n.homeWeekPlanCount(progress.done, progress.total)}',
+      fraction: progress.fraction,
+      percent: progress.percent,
+    );
+  }
+}
+
+/// The card shell shared by the programme bar and the plain-schedule bar —
+/// same label/percent/track layout either way, so enrolling in a programme
+/// changes what the bar says, not how it looks.
+class _ProgressBarCard extends StatelessWidget {
+  const _ProgressBarCard({
+    super.key,
+    required this.label,
+    required this.fraction,
+    required this.percent,
+  });
+
+  final String label;
+  final double fraction;
+  final int percent;
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colors;
 
     return Padding(
-      key: const Key('home.planProgress'),
       padding: const EdgeInsets.only(bottom: 14),
       child: GlassCard(
         padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
@@ -237,8 +281,7 @@ class _PlanProgressBar extends ConsumerWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '${l10n.homeWeekPlan} · '
-                    '${l10n.homeWeekPlanCount(progress.done, progress.total)}',
+                    label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.labelMedium?.copyWith(
@@ -249,7 +292,7 @@ class _PlanProgressBar extends ConsumerWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '${progress.percent}%',
+                  '$percent%',
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: colors.accentPrimary,
                     fontWeight: FontWeight.w700,
@@ -261,7 +304,7 @@ class _PlanProgressBar extends ConsumerWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(99),
               child: LinearProgressIndicator(
-                value: progress.fraction,
+                value: fraction,
                 minHeight: 4,
                 backgroundColor: colors.surfaceInteractive,
                 valueColor: AlwaysStoppedAnimation<Color>(colors.accentPrimary),

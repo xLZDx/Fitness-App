@@ -9,6 +9,8 @@ import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/equipment/data/asset_equipment_repository.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
+import 'package:fitness_app/features/programmes/data/programme.dart';
+import 'package:fitness_app/features/programmes/state/programme_providers.dart';
 import 'package:fitness_app/features/workouts/workouts_page.dart';
 import 'package:fitness_app/shared/widgets/aurora_background.dart';
 import 'package:fitness_app/shared/widgets/smooth_scroll_list.dart';
@@ -117,6 +119,18 @@ final Finder _chipRow = find.byWidgetPredicate(
   (w) => w is Scrollable && w.axisDirection == AxisDirection.right,
 );
 
+/// R11i: WorkoutsPage now opens on the Programs sub-tab (matching the
+/// prototype's own default), so every test below that exercises the
+/// Library filter chips/list must switch to it first — the chip row and
+/// exercise list this whole file already tested did not move or change,
+/// they just live behind a tap now.
+Future<void> _pumpLibrary(WidgetTester tester, AssetEquipmentRepository repo) async {
+  await tester.pumpWidget(_harness(repo));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Library'));
+  await tester.pumpAndSettle();
+}
+
 /// Brings a chip into the viewport and taps it.
 ///
 /// `scrollUntilVisible` alone is not enough and the difference cost four
@@ -143,8 +157,7 @@ void main() {
       // Round 4 (S4): five chips could not navigate a 192-exercise catalog
       // across 48 machines, so the row gained muscle groups and split
       // equipment type into machines / free weights / cardio.
-      await tester.pumpWidget(_harness(_seededRepo()));
-      await tester.pumpAndSettle();
+      await _pumpLibrary(tester, _seededRepo());
 
       // The chip row scrolls horizontally, so only the leading ones are
       // laid out; assert on those plus the enum's own completeness below.
@@ -193,15 +206,13 @@ void main() {
 
     testWidgets('shows a SmoothScrollList for the workout list',
         (tester) async {
-      await tester.pumpWidget(_harness(_seededRepo()));
-      await tester.pumpAndSettle();
+      await _pumpLibrary(tester, _seededRepo());
       expect(find.byType(SmoothScrollList), findsOneWidget);
     });
 
     testWidgets('"For you" surfaces every catalog exercise (no profile)',
         (tester) async {
-      await tester.pumpWidget(_harness(_seededRepo()));
-      await tester.pumpAndSettle();
+      await _pumpLibrary(tester, _seededRepo());
       expect(find.text('Easy run'), findsOneWidget);
       expect(find.text('Back squat'), findsOneWidget);
       expect(find.text('Push-ups'), findsOneWidget);
@@ -209,8 +220,7 @@ void main() {
 
     testWidgets('Cardio filter restricts to cardio-category equipment',
         (tester) async {
-      await tester.pumpWidget(_harness(_seededRepo()));
-      await tester.pumpAndSettle();
+      await _pumpLibrary(tester, _seededRepo());
 
       await _tapChip(tester, 'Cardio');
 
@@ -221,8 +231,7 @@ void main() {
 
     testWidgets('Machines filter restricts to strength-category equipment',
         (tester) async {
-      await tester.pumpWidget(_harness(_seededRepo()));
-      await tester.pumpAndSettle();
+      await _pumpLibrary(tester, _seededRepo());
 
       await _tapChip(tester, 'Machines');
 
@@ -237,8 +246,7 @@ void main() {
       // filter never checked: it selects on `!needsEquipment`, so a kettlebell
       // swing in your kitchen is out and a hamstring stretch in a commercial
       // gym is in.
-      await tester.pumpWidget(_harness(_seededRepo()));
-      await tester.pumpAndSettle();
+      await _pumpLibrary(tester, _seededRepo());
 
       await _tapChip(tester, 'No equipment');
 
@@ -249,8 +257,7 @@ void main() {
 
     testWidgets('a muscle chip filters by muscle tag, not by equipment',
         (tester) async {
-      await tester.pumpWidget(_harness(_seededRepo()));
-      await tester.pumpAndSettle();
+      await _pumpLibrary(tester, _seededRepo());
 
       // 'Chest' must find the body-weight push-up, proving the muscle chips
       // slice on tags rather than on which machine the exercise belongs to.
@@ -271,14 +278,138 @@ void main() {
       //
       // Both routes are stubbed in the harness, so this fails if the list
       // opens the player again rather than passing on whichever exists.
-      await tester.pumpWidget(_harness(_seededRepo()));
-      await tester.pumpAndSettle();
+      await _pumpLibrary(tester, _seededRepo());
 
       await tester.tap(find.text('Push-ups'));
       await tester.pumpAndSettle();
 
       expect(find.text('exercise_pushup'), findsOneWidget);
       expect(find.text('player_pushup'), findsNothing);
+    });
+  });
+
+  // R11i: the Programs/Library split. Every enrollment-write assertion lives
+  // in `programme_action_test.dart` (which already proves the write path
+  // end-to-end); this file only proves the PAGE shows what the entity says
+  // and reaches the action when tapped.
+  group('WorkoutsPage (Programs tab)', () {
+    testWidgets('opens on Programs, showing the template catalogue',
+        (tester) async {
+      await tester.pumpWidget(_harness(_seededRepo()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Programs'), findsOneWidget);
+      expect(find.text('Library'), findsOneWidget);
+      // A static template title -- `programmeTemplates` needs no provider
+      // override to render, so this is present the instant the page opens.
+      expect(find.text('Силовая база'), findsOneWidget);
+    });
+
+    testWidgets('switching to Library and back preserves both tabs\' content',
+        (tester) async {
+      await tester.pumpWidget(_harness(_seededRepo()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Library'));
+      await tester.pumpAndSettle();
+      expect(find.text('For you'), findsOneWidget);
+      expect(find.text('Силовая база'), findsNothing);
+
+      await tester.tap(find.text('Programs'));
+      await tester.pumpAndSettle();
+      expect(find.text('Силовая база'), findsOneWidget);
+      expect(find.text('For you'), findsNothing);
+    });
+
+    testWidgets('no current-programme card when nothing is active',
+        (tester) async {
+      await tester.pumpWidget(_harness(_seededRepo()));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('workouts.currentProgramme')), findsNothing);
+    });
+
+    testWidgets('an active programme shows the current-programme card with '
+        'its title and week', (tester) async {
+      final programme = Programme(
+        id: 'prog_1',
+        templateId: 'strength_base',
+        title: 'Силовая база',
+        goal: ProgrammeGoal.strength,
+        level: ExerciseDifficulty.intermediate,
+        weeks: 8,
+        daysPerWeek: 4,
+        startedAt: DateTime.now().subtract(const Duration(days: 8)),
+      );
+
+      final router = GoRouter(
+        initialLocation: '/workouts',
+        routes: [
+          GoRoute(path: '/workouts', builder: (_, __) => const WorkoutsPage()),
+        ],
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            equipmentRepositoryProvider.overrideWithValue(_seededRepo()),
+            // Plain sync Provider overrides -- no stream, no repository, no
+            // hang risk (see home_page_test.dart's own note on why a
+            // broadcast-stream mock repo is the wrong tool for this).
+            activeProgrammeProvider.overrideWithValue(programme),
+            activeProgrammeProgressProvider.overrideWithValue(
+              deriveProgrammeProgress(programme, const []),
+            ),
+          ],
+          child: MaterialApp.router(
+            theme: AppTheme.light(),
+            locale: kTestLocale,
+            localizationsDelegates: kTestLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('workouts.currentProgramme')), findsOneWidget);
+      expect(find.textContaining('Week 2 of 8'), findsOneWidget);
+    });
+
+    testWidgets('the goal filter narrows the template list', (tester) async {
+      await tester.pumpWidget(_harness(_seededRepo()));
+      await tester.pumpAndSettle();
+
+      // 'Гипертрофия' is a Muscle-goal template; 'Старт в зале' is Form.
+      // Selecting Muscle must keep one and drop the other. Scoped to the
+      // filter row itself, not a bare `find.text('Muscle')` -- two of the
+      // six templates ('Гипертрофия', 'Плечи и руки') carry that same goal
+      // and print it on their own card via `_TemplateChip`, so the bare text
+      // matches three widgets, not one.
+      final muscleChip =
+          find.descendant(of: _chipRow, matching: find.text('Muscle'));
+      await tester.scrollUntilVisible(muscleChip, 80, scrollable: _chipRow);
+      await tester.ensureVisible(muscleChip);
+      await tester.tap(muscleChip);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Гипертрофия'), findsOneWidget);
+      expect(find.text('Старт в зале'), findsNothing);
+    });
+
+    testWidgets('tapping Start on a template reaches the enroll action',
+        (tester) async {
+      await tester.pumpWidget(_harness(_seededRepo()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Start programme').first);
+      await tester.pumpAndSettle();
+
+      // No signed-in user is overridden in this harness, so the action
+      // surfaces the same signed-out error `programme_action_test.dart`
+      // pins directly -- proof the tap reached `ProgrammeAction.enroll`
+      // rather than doing nothing.
+      expect(find.textContaining('Couldn\'t start this programme'),
+          findsOneWidget);
     });
   });
 }

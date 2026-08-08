@@ -89,6 +89,72 @@ void main() {
       expect(deriveProgress(logs, now: now).currentStreakDays, 1);
     });
 
+    // R11e: a multi-exercise session contributes several WorkoutLogEntry
+    // rows sharing one sessionId (WorkoutSession.asLogEntries). Every count
+    // in this file must be counting distinct sessions, not rows -- a
+    // 5-exercise gym visit is one workout.
+    test('multiple rows sharing a sessionId count as one workout, not '
+        'several', () {
+      final now = DateTime(2026, 5, 8);
+      final logs = [
+        WorkoutLogEntry(
+          id: 'sess_1_0',
+          sessionId: 'sess_1',
+          exerciseId: 'bench',
+          exerciseTitle: 'Bench',
+          completedAt: DateTime(2026, 5, 8, 9),
+          durationMinutes: 45,
+        ),
+        WorkoutLogEntry(
+          id: 'sess_1_1',
+          sessionId: 'sess_1',
+          exerciseId: 'row',
+          exerciseTitle: 'Row',
+          completedAt: DateTime(2026, 5, 8, 9),
+          durationMinutes: 45,
+        ),
+        WorkoutLogEntry(
+          id: 'sess_1_2',
+          sessionId: 'sess_1',
+          exerciseId: 'ohp',
+          exerciseTitle: 'Overhead Press',
+          completedAt: DateTime(2026, 5, 8, 9),
+          durationMinutes: 45,
+        ),
+      ];
+      final stats = deriveProgress(logs, now: now);
+      expect(stats.total, 1, reason: '3 exercises, 1 gym visit');
+      expect(stats.thisWeek, 1);
+      expect(stats.last8Weeks[7], 1);
+      expect(stats.last8Weeks.reduce((a, b) => a + b), 1);
+    });
+
+    test('two distinct sessions on the same day both count, and both count '
+        'as one streak day', () {
+      final now = DateTime(2026, 5, 8);
+      final logs = [
+        WorkoutLogEntry(
+          id: 'morning_0',
+          sessionId: 'morning',
+          exerciseId: 'bench',
+          exerciseTitle: 'Bench',
+          completedAt: DateTime(2026, 5, 8, 7),
+          durationMinutes: 30,
+        ),
+        WorkoutLogEntry(
+          id: 'evening_0',
+          sessionId: 'evening',
+          exerciseId: 'squat',
+          exerciseTitle: 'Squat',
+          completedAt: DateTime(2026, 5, 8, 19),
+          durationMinutes: 30,
+        ),
+      ];
+      final stats = deriveProgress(logs, now: now);
+      expect(stats.total, 2);
+      expect(stats.currentStreakDays, 1);
+    });
+
     test('buckets logs into the last 8 weeks (oldest → newest)', () {
       final now = DateTime(2026, 5, 8); // Friday
       final logs = [

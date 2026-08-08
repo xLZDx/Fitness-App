@@ -290,5 +290,60 @@ void main() {
 
       expect(t.personalRecords, 1);
     });
+
+    // R11e: WorkoutSession.asLogEntries() emits one row per exercise for a
+    // multi-exercise session, all sharing one WorkoutLogEntry.sessionId. A
+    // gym visit covering three machines is one workout, not three.
+    test('rows sharing a sessionId count as one workout, but their volume '
+        'and records still each count', () {
+      final t = deriveWeekTotals([
+        WorkoutLogEntry(
+          id: 'sess_1_0',
+          sessionId: 'sess_1',
+          exerciseId: 'bench',
+          exerciseTitle: 'Bench',
+          completedAt: now,
+          durationMinutes: 45,
+          weightKg: 80,
+          repsCompleted: 5,
+        ),
+        WorkoutLogEntry(
+          id: 'sess_1_1',
+          sessionId: 'sess_1',
+          exerciseId: 'row',
+          exerciseTitle: 'Row',
+          completedAt: now,
+          durationMinutes: 45,
+          weightKg: 60,
+          repsCompleted: 10,
+        ),
+        WorkoutLogEntry(
+          id: 'sess_1_2',
+          sessionId: 'sess_1',
+          exerciseId: 'ohp',
+          exerciseTitle: 'Overhead Press',
+          completedAt: now,
+          durationMinutes: 45,
+          weightKg: 30,
+          repsCompleted: 8,
+        ),
+      ], now: now);
+
+      expect(t.workouts, 1, reason: '3 exercises, 1 gym visit');
+      expect(t.volumeKg, 400 + 600 + 240,
+          reason: 'volume sums every exercise in the session, not just one');
+    });
+
+    test('two separate sessions the same week both count as separate '
+        'workouts', () {
+      final t = deriveWeekTotals([
+        _log('bench', now, id: 'sessA_0', weightKg: 80, reps: 5)
+            .copyWith(sessionId: 'sessA'),
+        _log('squat', now, id: 'sessB_0', weightKg: 100, reps: 5)
+            .copyWith(sessionId: 'sessB'),
+      ], now: now);
+
+      expect(t.workouts, 2);
+    });
   });
 }

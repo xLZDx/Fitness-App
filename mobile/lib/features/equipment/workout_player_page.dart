@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../form_check/state/form_check_providers.dart';
+import '../programmes/state/programme_providers.dart';
 import 'widgets/exercise_reference.dart';
 import '../workouts/data/progression.dart';
 import '../workouts/data/scheduled_session.dart';
@@ -223,7 +225,11 @@ class WorkoutPlayerPage extends ConsumerWidget {
               const SizedBox(height: 20),
               _MarkCompleteButton(exercise: item),
               const SizedBox(height: 12),
+              _AddExerciseButton(entryExercise: item),
+              const SizedBox(height: 12),
               _ScheduleButton(exercise: item),
+              const SizedBox(height: 12),
+              _AddToProgrammeButton(exercise: item),
             ],
           );
         },
@@ -298,10 +304,22 @@ class _MarkCompleteButton extends ConsumerWidget {
                 startedAt: DateTime.now(),
               ))
           .copyWith(
-        exercises: [exerciseEntry],
+        // R11e: replaceEntryExercise keeps any exercise `_AddExerciseButton`
+        // has appended after index 0 -- `exercises: [exerciseEntry]` here
+        // used to drop them the moment this entry exercise's set was
+        // re-edited.
+        exercises: replaceEntryExercise(already?.exercises ?? const [], exerciseEntry),
         completedAt: DateTime.now(),
         status: WorkoutSessionStatus.completed,
-        durationMinutes: exercise.durationMinutes,
+        // `already?.durationMinutes` when a session already exists --
+        // `_AddExerciseButton` is what grows this number when it appends an
+        // exercise (each exercise's own `durationMinutes` lives on
+        // `ExerciseItem`, not on the stored `WorkoutSessionExercise`, so
+        // there is nothing to re-sum from the tail here; re-editing THIS
+        // exercise's set does not change how many exercises are in the
+        // session). Falls back to this exercise's own duration only on the
+        // very first tap, when no session exists yet.
+        durationMinutes: already?.durationMinutes ?? exercise.durationMinutes,
       );
       await ref.read(logSessionActionProvider.notifier).log(entry);
       if (!context.mounted) return;
@@ -343,8 +361,13 @@ class _MarkCompleteButton extends ConsumerWidget {
         exerciseTitle: exercise.title,
       );
       if (rating != null) {
+        // Same replaceEntryExercise as above -- rating exercise #1 must not
+        // erase exercises #2+.
         final rated = entry.copyWith(
-          exercises: [entry.exercises.first.copyWith(difficulty: rating)],
+          exercises: replaceEntryExercise(
+            entry.exercises,
+            entry.exercises.first.copyWith(difficulty: rating),
+          ),
         );
         await ref.read(logSessionActionProvider.notifier).log(rated);
         ref.read(_loggedEntryProvider(exercise.id).notifier).state = rated;
@@ -388,6 +411,217 @@ class _MarkCompleteButton extends ConsumerWidget {
                 color: AppSemanticColors.onGradientInk,
                 fontWeight: FontWeight.w800,
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// R11e: lets a session grow past its entry exercise -- "один поход в
+/// тренажерный зал это одна тренировка на разных тренажерах", the
+/// operator's own resolution of R11e's blocking question (a session is one
+/// workout no matter how many exercises it holds; see
+/// `WorkoutSessionLogView.asLogEntries`'s doc comment for how that is kept
+/// true in the stats).
+///
+/// Hidden until [entryExercise] itself has been logged
+/// (`_loggedEntryProvider(entryExercise.id)` non-null) -- there is no session
+/// to add a second exercise TO before the first one exists. Reuses the exact
+/// [SetCaptureSheet] / [DifficultyRatingSheet] flow [_MarkCompleteButton]
+/// already uses, so a second exercise is captured exactly like the first.
+class _AddExerciseButton extends ConsumerWidget {
+  const _AddExerciseButton({required this.entryExercise});
+  final ExerciseItem entryExercise;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final already = ref.watch(_loggedEntryProvider(entryExercise.id));
+    if (already == null) return const SizedBox.shrink();
+
+    final action = ref.watch(logSessionActionProvider);
+    final theme = Theme.of(context);
+    final loading = action.isLoading;
+
+    Future<void> onTap() async {
+      final exclude = already.exercises.map((e) => e.exerciseId).toSet();
+      final catalog =
+          await ref.read(safeCatalogProvider.future);
+      final candidates =
+          catalog.where((e) => !exclude.contains(e.id)).toList();
+      if (!context.mounted) return;
+      final picked = await _ExercisePickerSheet.show(context, candidates);
+      if (picked == null || !context.mounted) return;
+
+      final captured =
+          await SetCaptureSheet.show(context, exerciseTitle: picked.title);
+      if (!context.mounted) return;
+
+      final sets = (captured?.weightKg != null || captured?.reps != null)
+          ? [(weightKg: captured?.weightKg, reps: captured?.reps)]
+          : const <SetCapture>[];
+      var newExercise = WorkoutSessionExercise(
+        exerciseId: picked.id,
+        exerciseTitle: picked.title,
+        sets: sets,
+      );
+
+      if (!context.mounted) return;
+      final rating = await DifficultyRatingSheet.show(
+        context,
+        exerciseTitle: picked.title,
+      );
+      if (rating != null) newExercise = newExercise.copyWith(difficulty: rating);
+      if (!context.mounted) return;
+
+      final updated = already.copyWith(
+        exercises: [...already.exercises, newExercise],
+        completedAt: DateTime.now(),
+        // Parenthesized deliberately: `??` binds looser than `+`, so
+        // `already.durationMinutes ?? 0 + picked.durationMinutes` would have
+        // ignored the addition entirely whenever `durationMinutes` was
+        // already non-null -- i.e. always, since `already` is a session that
+        // has already completed once.
+        durationMinutes: (already.durationMinutes ?? 0) + picked.durationMinutes,
+      );
+      await ref.read(logSessionActionProvider.notifier).log(updated);
+      if (!context.mounted) return;
+      final newState = ref.read(logSessionActionProvider);
+      if (newState.hasError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                AppLocalizations.of(context).equipmentCouldNotSave(newState.error ?? '')),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+      ref.read(_loggedEntryProvider(entryExercise.id).notifier).state = updated;
+      // Same ordering as _MarkCompleteButton: persist THEN rest, never the
+      // reverse.
+      ref
+          .read(restTimerProvider.notifier)
+          .start(Duration(seconds: _restSecondsFor(picked)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              AppLocalizations.of(context).equipmentLoggedNiceWork(picked.title)),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+
+    return GlassCard(
+      key: const Key('player.addExercise'),
+      padding: EdgeInsets.zero,
+      onTap: loading ? null : onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          color: Colors.white.withValues(alpha: 0.32),
+        ),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (loading) ...[
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2.4),
+                  ),
+                  const SizedBox(width: 10),
+                ] else ...[
+                  Icon(Icons.add_circle_outline, color: theme.colorScheme.onSurface),
+                  const SizedBox(width: 8),
+                ],
+                Text(
+                  AppLocalizations.of(context).equipmentAddAnotherExercise,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              AppLocalizations.of(context)
+                  .equipmentSessionExerciseCount(already.exercises.length),
+              style: theme.textTheme.labelSmall
+                  ?.copyWith(color: theme.colors.textSecondary),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Bottom sheet listing exercises not yet in the current session. Returns the
+/// tapped [ExerciseItem], or null on dismiss.
+class _ExercisePickerSheet extends StatelessWidget {
+  const _ExercisePickerSheet({required this.candidates});
+  final List<ExerciseItem> candidates;
+
+  static Future<ExerciseItem?> show(
+      BuildContext context, List<ExerciseItem> candidates) {
+    return showModalBottomSheet<ExerciseItem>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _ExercisePickerSheet(candidates: candidates),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.4,
+      maxChildSize: 0.92,
+      expand: false,
+      builder: (_, controller) => Container(
+        decoration: BoxDecoration(
+          color: theme.scaffoldBackgroundColor,
+          borderRadius:
+              const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              AppLocalizations.of(context).equipmentPickAnotherExercise,
+              style: theme.textTheme.titleLarge
+                  ?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: candidates.isEmpty
+                  ? Center(
+                      child: Text(
+                          AppLocalizations.of(context).equipmentNoOtherExercises))
+                  : ListView.builder(
+                      controller: controller,
+                      itemCount: candidates.length,
+                      itemBuilder: (context, i) {
+                        final e = candidates[i];
+                        return ListTile(
+                          key: Key('picker.exercise.${e.id}'),
+                          title: Text(e.title),
+                          subtitle: e.muscles.isEmpty
+                              ? null
+                              : Text(e.muscles.take(3).join(' · ')),
+                          onTap: () => Navigator.of(context).pop(e),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
@@ -553,6 +787,100 @@ class _ScheduleButton extends ConsumerWidget {
     );
   }
 
+}
+
+/// Gate P: "add this exercise to my programme" — the button R11d's own doc
+/// comment named as wanting "nothing to add to" before the programme entity
+/// existed (`programmes/data/programme.dart`).
+///
+/// Two states, not a picker: with an active programme, tapping schedules
+/// [exercise] at [nextProgrammeSlot] under it (`programme_providers.dart`) —
+/// same one-tap shape as [_ScheduleButton], minus the date/time pickers,
+/// since the programme already owns the cadence. With none active, tapping
+/// routes to Workouts (where R11i's Programs tab lets the user enrol)
+/// instead of showing a dead control — the same choice this page already
+/// made for the notification bell it does not have (`home_page.dart`'s own
+/// doc comment on fabrication).
+class _AddToProgrammeButton extends ConsumerWidget {
+  const _AddToProgrammeButton({required this.exercise});
+  final ExerciseItem exercise;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final programme = ref.watch(activeProgrammeProvider);
+    final action = ref.watch(programmeActionProvider);
+    final theme = Theme.of(context);
+    final loading = action.isLoading;
+
+    Future<void> onTap() async {
+      if (programme == null) {
+        GoRouter.of(context).push('/workouts');
+        return;
+      }
+      await ref
+          .read(programmeActionProvider.notifier)
+          .addExerciseToActiveProgramme(exercise);
+      if (!context.mounted) return;
+      final newState = ref.read(programmeActionProvider);
+      newState.when(
+        data: (_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)
+                  .programmeAddedToSchedule(programme.title)),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
+        error: (e, _) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  AppLocalizations.of(context).equipmentCouldNotSchedule(e)),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
+        loading: () {},
+      );
+    }
+
+    return GlassCard(
+      key: const Key('player.addToProgramme'),
+      padding: EdgeInsets.zero,
+      onTap: loading ? null : onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          color: Colors.white.withValues(alpha: 0.32),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (loading) ...[
+              const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2.4),
+              ),
+              const SizedBox(width: 10),
+            ] else ...[
+              Icon(Icons.playlist_add, color: theme.colorScheme.onSurface),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              AppLocalizations.of(context).equipmentAddToProgramme,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.onSurface,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// Reads the user's recent logs for [exerciseId] and surfaces the next

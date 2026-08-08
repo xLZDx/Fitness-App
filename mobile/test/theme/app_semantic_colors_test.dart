@@ -392,6 +392,17 @@ void main() {
     // instruction text, on `cameraOverlay` over the Form Coach's camera
     // preview -- the same category, the same token and the same screen family
     // as `form_check_page.dart`'s existing sixteen.
+    //
+    // 59 -> 62, 2026-08-09 (Gate P + R11e + R11i-Workouts): three new
+    // translucent-white SURFACE backgrounds (category 2, alpha 0.28-0.32),
+    // none a foreground white on a gradient. `workout_player_page.dart`'s
+    // `_AddToProgrammeButton` and `_AddExerciseButton` are the exact same
+    // `Colors.white.withValues(alpha: 0.32)` card background
+    // `_ScheduleButton` already used on the same screen -- two more buttons
+    // in the same family, not a new pattern. `workouts_page.dart`'s
+    // `_TemplateChip` is `Colors.white.withValues(alpha: 0.28)` behind
+    // `AppSemanticColors.onGradientInk` text on a programme card's gradient
+    // header -- the surface the chip sits ON, not the text drawn on it.
     final whites = <String, int>{};
     for (final f in Directory('lib').listSync(recursive: true)) {
       if (f is! File || !f.path.endsWith('.dart')) continue;
@@ -405,7 +416,7 @@ void main() {
       if (n > 0) whites[f.path.replaceAll(r'\', '/')] = n;
     }
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 59, reason: 'per file: $whites');
+    expect(total, 62, reason: 'per file: $whites');
   });
 
   group('lerp', () {

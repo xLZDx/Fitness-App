@@ -47,19 +47,21 @@ final workoutSessionTotalsProvider =
   return ref.watch(workoutSessionRepositoryProvider).totals(user.uid);
 });
 
-/// F3.3 read-convergence: [workoutSessionsProvider] reshaped into the
-/// [WorkoutLogEntry] view every existing consumer (progress, home,
-/// suggestions, recovery, personalisation, data export) already reads via
-/// [WorkoutSessionLogView.asLogEntryView]. Only completed sessions are
-/// included -- a pending/abandoned session has no [WorkoutSession.completedAt]
-/// and is not a past workout to show.
+/// F3.3 read-convergence, extended at R11e: [workoutSessionsProvider]
+/// reshaped into the [WorkoutLogEntry] view every existing consumer
+/// (progress, home, suggestions, recovery, personalisation, data export)
+/// already reads via [WorkoutSessionLogView.asLogEntries] -- now `expand`ed
+/// rather than `map`ped, because R11e's multi-exercise sessions can produce
+/// more than one row per session (see that method's own doc comment). Only
+/// completed sessions are included -- a pending/abandoned session has no
+/// [WorkoutSession.completedAt] and is not a past workout to show.
 final workoutSessionHistoryProvider = Provider<List<WorkoutLogEntry>>((ref) {
   final sessions =
       ref.watch(workoutSessionsProvider).valueOrNull ?? const <WorkoutSession>[];
   return sessions
       .where((s) =>
           s.status == WorkoutSessionStatus.completed && s.completedAt != null)
-      .map((s) => s.asLogEntryView())
+      .expand((s) => s.asLogEntries())
       .toList(growable: false);
 });
 
@@ -116,7 +118,7 @@ class LogSessionAction extends Notifier<AsyncValue<void>> {
           .where((s) =>
               s.status == WorkoutSessionStatus.completed &&
               s.completedAt != null)
-          .map((s) => s.asLogEntryView())
+          .expand((s) => s.asLogEntries())
           .toList();
       final streak = deriveProgress(logs).currentStreakDays;
       if (streak > 0) await repo.recordStreak(uid, streak);

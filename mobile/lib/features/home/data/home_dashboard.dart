@@ -319,7 +319,10 @@ WeekTotals deriveWeekTotals(
     ..sort((a, b) => a.completedAt.compareTo(b.completedAt));
 
   final bestBefore = <String, double>{};
-  var workouts = 0;
+  // Distinct sessions this week, not rows -- R11e's multi-exercise sessions
+  // put several [WorkoutLogEntry] rows under one [WorkoutLogEntry.sessionId],
+  // and a gym visit covering five machines is one workout, not five.
+  final sessionsThisWeek = <String>{};
   var volume = 0.0;
   var records = 0;
 
@@ -328,7 +331,7 @@ WeekTotals deriveWeekTotals(
     final w = l.weightKg;
 
     if (inWeek) {
-      workouts++;
+      sessionsThisWeek.add(l.sessionId);
       if (w != null && l.repsCompleted != null) {
         volume += w * l.repsCompleted!;
       }
@@ -345,7 +348,7 @@ WeekTotals deriveWeekTotals(
   }
 
   return WeekTotals(
-    workouts: workouts,
+    workouts: sessionsThisWeek.length,
     volumeKg: volume,
     personalRecords: records,
   );

@@ -3,7 +3,10 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/features/data_export/data_export.dart';
+import 'package:fitness_app/features/equipment/data/equipment_models.dart'
+    show ExerciseDifficulty;
 import 'package:fitness_app/features/profile/data/profile_models.dart';
+import 'package:fitness_app/features/programmes/data/programme.dart';
 import 'package:fitness_app/features/progress_photos/data/progress_photo.dart';
 import 'package:fitness_app/features/workouts/data/scheduled_session.dart';
 import 'package:fitness_app/features/workouts/data/workout_log.dart';
@@ -44,6 +47,17 @@ ScheduledSession _session(String id) => ScheduledSession(
       durationMinutes: 30,
     );
 
+Programme _programme(String id) => Programme(
+      id: id,
+      templateId: 'strength_base',
+      title: 'Силовая база',
+      goal: ProgrammeGoal.strength,
+      level: ExerciseDifficulty.intermediate,
+      weeks: 8,
+      daysPerWeek: 4,
+      startedAt: DateTime(2026, 1, 1),
+    );
+
 ProgressPhoto _photo(String id) => ProgressPhoto(
       id: id,
       takenAt: DateTime(2026, 1, 3),
@@ -61,6 +75,7 @@ void main() {
         profile: _profile(),
         workoutLogs: const [],
         scheduledSessions: const [],
+        programmes: const [],
         progressPhotos: const [],
       );
       // Not a re-derivation -- literally the same map UserProfile.toJson()
@@ -76,10 +91,30 @@ void main() {
         profile: _profile(),
         workoutLogs: logs,
         scheduledSessions: sessions,
+        programmes: const [],
         progressPhotos: const [],
       );
       expect(out['workoutLogs'], hasLength(5));
       expect(out['scheduledSessions'], hasLength(5));
+    });
+
+    // The programme entity (Gate P) is a fourth first-class collection
+    // alongside logs/sessions/photos -- a user who enrolled in a programme
+    // and never got it back in their own export would have real data this
+    // function silently dropped.
+    test('every enrolled programme is included', () {
+      final programmes = List.generate(3, (i) => _programme('prog_$i'));
+      final out = buildExport(
+        profile: _profile(),
+        workoutLogs: const [],
+        scheduledSessions: const [],
+        programmes: programmes,
+        progressPhotos: const [],
+      );
+      expect(out['programmes'], hasLength(3));
+      final first = (out['programmes'] as List).first as Map;
+      expect(first['id'], 'prog_0');
+      expect(first['title'], 'Силовая база');
     });
 
     test('a photo carries its metadata but never its storage path or key',
@@ -93,6 +128,7 @@ void main() {
         profile: _profile(),
         workoutLogs: const [],
         scheduledSessions: const [],
+        programmes: const [],
         progressPhotos: [_photo('p1')],
       );
       final photo = (out['progressPhotos'] as List).single as Map;
@@ -108,6 +144,7 @@ void main() {
         profile: _profile(),
         workoutLogs: const [],
         scheduledSessions: const [],
+        programmes: const [],
         progressPhotos: const [],
       );
       expect(out['progressPhotosIncomplete'], isFalse);
@@ -122,6 +159,7 @@ void main() {
         profile: _profile(),
         workoutLogs: const [],
         scheduledSessions: const [],
+        programmes: const [],
         progressPhotos: const [],
         progressPhotosIncomplete: true,
       );
@@ -137,6 +175,7 @@ void main() {
         profile: _profile(),
         workoutLogs: const [],
         scheduledSessions: const [],
+        programmes: const [],
         progressPhotos: const [],
       );
       expect((out['notes'] as List).join(' '), contains('not included'));
@@ -156,6 +195,7 @@ void main() {
         profile: _profile(),
         workoutLogs: const [],
         scheduledSessions: const [],
+        programmes: const [],
         progressPhotos: const [],
         progressPhotosIncomplete: true,
       );
@@ -170,6 +210,7 @@ void main() {
         profile: _profile(),
         workoutLogs: const [],
         scheduledSessions: const [],
+        programmes: const [],
         progressPhotos: const [],
       );
       expect(out['exportFormatVersion'], 1);
@@ -182,6 +223,7 @@ void main() {
         profile: _profile(),
         workoutLogs: [_log('a')],
         scheduledSessions: [_session('b')],
+        programmes: [_programme('p')],
         progressPhotos: [_photo('c')],
       );
       final decoded = jsonDecode(json) as Map<String, dynamic>;
@@ -194,6 +236,7 @@ void main() {
         profile: _profile(),
         workoutLogs: const [],
         scheduledSessions: const [],
+        programmes: const [],
         progressPhotos: const [],
       );
       expect(json, contains('\n  '));
