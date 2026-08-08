@@ -1059,3 +1059,69 @@ scope to cover it without a plan.
 this gap — its gate-sequence review focused on the post-onboarding app.
 Worth a note there too if a future session re-reads that audit as
 authoritative without checking this log first.
+
+---
+
+## 2026-08-08 16:27 local / 13:27 UTC — R9b landed at 6 of 22 files; the other 16 are a deliberate rainbow system, not a gap
+
+### Evidence — main_shell.dart and all 7 onboarding steps sweep the full aurora spectrum on purpose
+
+Operator authorized recolouring all 22 files referencing
+`AppPalette.auroraPink`. Before doing so, pulled context around every
+occurrence (`aurora_pink_usages.txt`, all 22 files). Two files disproved
+the "just swap them all to lime" premise:
+
+- `main_shell.dart:24-58`: the five bottom-nav tabs each carry a
+  DIFFERENT two-colour gradient, and concatenated in order they sweep
+  the entire aurora spectrum once — pink→violet, violet→blue,
+  blue→teal, teal→lime, peach→pink. The fourth tab ("Progress")
+  already legitimately ends on lime as part of that sweep.
+- `grep iconGradient lib/features/onboarding/steps/*.dart`: all seven
+  onboarding steps, seven different pairs, same full-spectrum sweep
+  (`step_lifestyle` is teal→lime, same as the nav's fourth tab).
+
+This is the identical pattern already named as out-of-scope for the
+6-hue `tileGradients`/decorative aurora system in R9's own commit
+(`112ee5b`): a deliberate per-item colour-coding system, not a
+brand-identity gradient that happens to be pink/violet. Recolouring it
+to lime would have flattened intentional visual variety (this tab vs
+that tab, this step vs that step) into monotone repetition — a
+regression dressed as a fix.
+
+### Decision — split the 22 by role, not by file list
+
+Classified every occurrence by what it actually represents:
+
+- **Brand / single global colour** (moved to lime): the app's launch
+  icon (splash), the sign-in CTA and icon badge (login), the
+  onboarding "Next/Done" button and progress-bar fill, the universal
+  "this pill is selected" indicator (`_ChoicePill`). Each of these is
+  ONE colour, always, everywhere it appears — exactly the role
+  `accentPrimary` plays in the token system.
+- **Per-item decorative variety** (left alone): nav-tab icons,
+  onboarding-step icons, donor tiers, celebrity-plan cards, muscle-group
+  tags, weight-suggestion arrows (increase/decrease), like-button heart,
+  difficulty ratings, subscription-tier cards — each of these
+  legitimately differs BY WHICH ITEM it is, and lime is not
+  semantically privileged among them.
+
+Found and fixed the actual biggest gap along the way:
+`aurora_background.dart` wraps the whole app once (`main.dart:577`)
+and had never been touched by R9 at all — its private dark palette
+was still the pre-R9 violet/blue, so every screen's background, not
+just onboarding's, was still off-theme. This one file likely accounts
+for most of the visible "still looks violet" impression that triggered
+this investigation in the first place.
+
+### Refusal, explicit — 16 files not touched, named not silently dropped
+
+`celebrity_plans_page.dart`, `team_feed_page.dart`,
+`donor_wall_page.dart`, `exercise_reference.dart`,
+`workout_player_page.dart`, `form_check_page.dart`, `home_page.dart`,
+`day3_welcome_modal.dart`, `profile_page.dart`, `deload_banner.dart`,
+`social_feed_page.dart`, `subscription_page.dart`,
+`difficulty_rating_sheet.dart`, `workouts_page.dart`,
+`main_shell.dart`, and all 7 files under `onboarding/steps/`. If any of
+these turns out to need recolouring after all, it needs its own
+reasoning per file (what does this specific colour mean here, and does
+lime replace or dilute that meaning) — not a blanket find-and-replace.
