@@ -15,6 +15,7 @@ import '../subscription/state/subscription_providers.dart';
 import 'data/photo_timeline.dart';
 import 'data/progress_photo.dart';
 import 'state/progress_photos_providers.dart';
+import 'widgets/photo_capture_sheet.dart';
 
 /// Progress photos: a month-grouped timeline plus a before/after card.
 ///
@@ -72,8 +73,20 @@ class ProgressPhotosPage extends ConsumerWidget {
           if (isPaid)
             AppPrimaryButton(
               key: const Key('photos.capture'),
-              onPressed: () =>
-                  ref.read(progressPhotosControllerProvider.notifier).capture(),
+              // R11f. This used to call `capture()` bare: no angle, so every
+              // shot was filed as `front`, and no preview, so the user pressed
+              // a button and a picture was taken of wherever the phone
+              // happened to point. Both halves of "two shots taken the same
+              // way" -- which is the entire feature -- were unaskable.
+              onPressed: () async {
+                final angle = await PhotoCaptureSheet.show(context);
+                // Null is a real answer: the user backed out, and firing a
+                // capture anyway is the bug in a new place.
+                if (angle == null) return;
+                await ref
+                    .read(progressPhotosControllerProvider.notifier)
+                    .capture(angle: angle);
+              },
               icon: Icons.photo_camera_outlined,
               label: l10n.progressphotosTakeANewPhoto,
             ),

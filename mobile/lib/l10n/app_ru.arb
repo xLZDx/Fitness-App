@@ -922,5 +922,12 @@
   "onbBmiObese": "Ожирение",
   "onbBmiCaveat": "ИМТ не отличает мышцы от жира. Показан для справки; план на нём не строится.",
   "onbDeltaTitle": "{value} кг до цели",
-  "onbDeltaSame": "Совпадает с текущим весом"
+  "onbDeltaSame": "Совпадает с текущим весом",
+  "photosPickAngle": "Какой ракурс?",
+  "photosAngleWhy": "Сравнение работает только между снимками, сделанными одинаково.",
+  "photosAngleFront": "Спереди",
+  "photosAngleSide": "Сбоку",
+  "photosAngleBack": "Сзади",
+  "photosAngleOther": "Другой",
+  "photosShoot": "Сделать снимок"
 }

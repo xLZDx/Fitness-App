@@ -1694,5 +1694,12 @@
       }
     }
   },
-  "onbDeltaSame": "Same as your current weight"
+  "onbDeltaSame": "Same as your current weight",
+  "photosPickAngle": "Which angle?",
+  "photosAngleWhy": "Comparisons only work between shots taken the same way.",
+  "photosAngleFront": "Front",
+  "photosAngleSide": "Side",
+  "photosAngleBack": "Back",
+  "photosAngleOther": "Other",
+  "photosShoot": "Take the photo"
 }
