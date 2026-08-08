@@ -1255,3 +1255,55 @@ because that requires a real body in frame — the emulator cannot produce
 one. Same for forward-head's sign convention, named as unverified in the
 prior commit. Both require a physical device with a person standing in
 front of it; unchanged from before this check.
+
+## 2026-08-08 18:11 local / 15:11 UTC — Evidence: Home does not match the Figma Make prototype at all; R1-R4 shipped before anyone fetched the real source
+
+Operator, looking at the distributed release build on a real phone: "это не
+похоже на дизайн с фигмы. это старый дизайн только лайма добавили" (this
+doesn't look like the Figma design, it's the old design with just lime
+added). Verified rather than conceded on trust.
+
+### Evidence — the real HomeScreen component vs `home_page.dart`
+
+Cloned `xLZDx/ReviewExistingExamples` at `8209787` (the same commit R5's
+entry above already cites) into
+`D:\Temp\claude\...\scratchpad\figma_proto\` and read `src/App.tsx:2441-2555`
+(`HomeScreen`) directly. It has, in order: a greeting + first-name header
+("Добрый вечер" / "Иван") with a notification-bell button; a program-progress
+bar ("Силовая база · Неделя 2 из 8", 28%) directly under the header; a "TODAY
+HERO" gradient card carrying the day's actual workout name, muscle-group
+chips, duration, and a full-width "Начать тренировку" CTA; a "Quick Scan"
+row; a horizontal muscle-recovery strip (colour-coded dot + status per
+muscle); a 7-day week strip (done/rest/active squares); and 3 stat tiles
+reading workouts / total kg lifted / PR count.
+
+`home_page.dart` has none of these. What it has instead: `_HeroCard`
+("Ready to train?" + a Scan CTA, not the day's workout), `_AiPlanCard`,
+`_PostureCheckCard`, `HealthSyncCard`, `DeloadBanner`, `_TodayCard` (title +
+one-line schedule summary, no muscle chips, no big CTA button), no recovery
+strip, no week strip, and 3 stat tiles reading Workouts / Streak / This week
+-- different metrics entirely from the design's kg-lifted/PR-count pair. R9b
+recoloured this file's gradients from pink/violet to lime; it never touched
+structure, because R9's own scope (plan section 10: "R9 light theme,
+platform, accessibility") was never structural to begin with.
+
+### Root cause — R4 (Home) shipped before the real prototype was ever fetched
+
+R5's own entry above says it plainly: "Дизайн получен впервые за цепочку" --
+design obtained for the first time in this CHAIN, at R5. Read backwards,
+that sentence is admitting R1-R4 (Rest Timer, Scanner, Exercise/Player
+split, Home) were all built from the audit document's prose retelling of
+the design, never from `App.tsx` itself. `R4.2`'s entry (same file, above)
+is entirely about wiring `todayDigestProvider` into the pre-existing
+`_TodayCard`/hero shape -- zero mention of the header, the progress bar,
+the recovery strip, or the week strip, because nobody had the component
+source in front of them when R4 was scoped or built.
+
+### Refusal — not rebuilding Home unilaterally
+
+This is a genuine scope decision, not a bug fix: rebuilding Home to match
+`HomeScreen` structurally is itself gate-sized work (new header, progress
+bar, hero card, recovery strip, week strip, restructured stats), and the
+same gap plausibly extends to R1-R3 (never checked against real source
+either). Surfaced to the operator with the evidence above rather than
+started without a GO, per Gate-Based Development.
