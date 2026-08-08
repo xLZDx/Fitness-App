@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import '../workouts/data/workout_log.dart';
+import '../workouts/data/workout_session.dart';
 import '../workouts/state/workout_session_providers.dart';
+import 'data/progress_charts.dart';
 import 'data/progress_stats.dart';
 
 class ProgressPage extends ConsumerWidget {
@@ -96,6 +99,12 @@ class ProgressPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 24),
+          const _VolumeSection(),
+          const SizedBox(height: 24),
+          const _ConsistencySection(),
+          const SizedBox(height: 24),
+          const _RecordsSection(),
+          const SizedBox(height: 24),
           Text(
             AppLocalizations.of(context).progressRecentActivity,
             style: theme.textTheme.titleLarge?.copyWith(
@@ -122,6 +131,195 @@ class ProgressPage extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Everything below reads whole sessions rather than the `WorkoutLogEntry`
+/// window the page opens with: volume and records live in the SETS, and the
+/// log-entry view carries one exercise with no set collection.
+List<WorkoutSession> _sessionsOf(WidgetRef ref) =>
+    ref.watch(workoutSessionsProvider).valueOrNull ?? const [];
+
+/// A section heading, in the page's existing style.
+class _Heading extends StatelessWidget {
+  const _Heading(this.text, {this.trailing});
+  final String text;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        Expanded(
+          child: Text(text,
+              style: theme.textTheme.titleLarge
+                  ?.copyWith(color: theme.colors.textSecondary)),
+        ),
+        if (trailing != null) trailing!,
+      ],
+    );
+  }
+}
+
+class _VolumeSection extends ConsumerWidget {
+  const _VolumeSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final now = DateTime.now();
+    final weeks = volumeByWeek(_sessionsOf(ref), now);
+    final trend = volumeTrend(_sessionsOf(ref), now);
+    final moved = weeks.any((w) => w.volumeKg > 0);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _Heading(
+          l10n.progressVolume,
+          // No badge when there is no earlier volume to compare against: a
+          // percentage against zero is either infinity or a lie.
+          trailing: trend == null
+              ? null
+              : Text(
+                  l10n.progressVsPreviousMonth(_signed(trend)),
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: trend >= 0
+                        ? AppPalette.auroraLime
+                        : theme.colorScheme.error,
+                  ),
+                ),
+        ),
+        const SizedBox(height: 8),
+        GlassCard(
+          padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
+          child: SizedBox(
+            height: 140,
+            child: moved
+                ? _BarChart(
+                    values: [for (final w in weeks) w.volumeKg.round()],
+                  )
+                : Center(
+                    child: Text(
+                      l10n.progressVolumeNeedsWeights,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: theme.colors.textSecondary),
+                    ),
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// `+18` / `-4`. The sign is the information; a bare "18%" after a bad month
+  /// reads as praise.
+  static String _signed(double fraction) {
+    final pct = (fraction * 100).round();
+    return pct > 0 ? '+$pct' : '$pct';
+  }
+}
+
+class _ConsistencySection extends ConsumerWidget {
+  const _ConsistencySection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final now = DateTime.now();
+    final days = monthActivity(_sessionsOf(ref), now);
+    final month = DateFormat.MMMM(Localizations.localeOf(context).toString())
+        .format(now);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _Heading('${l10n.progressConsistency} — $month'),
+        const SizedBox(height: 8),
+        GlassCard(
+          padding: const EdgeInsets.fromLTRB(16, 18, 16, 14),
+          child: SizedBox(
+            height: 60,
+            child: _BarChart(values: days, showLabels: false),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RecordsSection extends ConsumerWidget {
+  const _RecordsSection();
+
+  /// The design's tile reads "3 рекорда" with no period. A month is the period
+  /// the rest of this screen already works in, and a lifetime count would
+  /// simply be the number of exercises ever done with a weight.
+  static const _window = Duration(days: 30);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final records =
+        recentRecords(_sessionsOf(ref), DateTime.now().subtract(_window));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _Heading(l10n.progressRecords),
+        const SizedBox(height: 8),
+        if (records.isEmpty)
+          GlassCard(
+            child: Text(
+              l10n.progressNoRecordsYet,
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: theme.colors.textSecondary),
+            ),
+          )
+        else
+          for (final r in records.take(5)) ...[
+            GlassCard(
+              child: Row(
+                children: [
+                  const Icon(Icons.emoji_events_outlined,
+                      color: AppPalette.auroraLime),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(r.exerciseTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleSmall
+                                ?.copyWith(fontWeight: FontWeight.w700)),
+                        const SizedBox(height: 2),
+                        Text(
+                          l10n.progressRecordLine(
+                              _trim(r.weightKg), r.reps),
+                          style: theme.textTheme.bodySmall
+                              ?.copyWith(color: theme.colors.textSecondary),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
+      ],
+    );
+  }
+
+  /// `82.5` stays, `80.0` becomes `80`. Trailing zeros on a weight read as
+  /// precision that was never measured.
+  static String _trim(double kg) =>
+      kg == kg.roundToDouble() ? kg.round().toString() : kg.toString();
 }
 
 class _StatCard extends StatelessWidget {
@@ -172,8 +370,18 @@ class _StatCard extends StatelessWidget {
 }
 
 class _BarChart extends StatelessWidget {
-  const _BarChart({required this.values});
+  const _BarChart({required this.values, this.showLabels = true});
   final List<int> values;
+
+  /// Whether each bar carries its number underneath.
+  ///
+  /// Off for the month chart: 31 numbers across a phone's width are unreadable
+  /// at any font size, and the shape of the month is the whole point of that
+  /// chart. It also keeps 31 zeros off the widget tree, which
+  /// `progress_page_test.dart` counts when it asserts the four stat tiles read
+  /// "0" — that assertion is about the tiles, and thirty-three matches meant
+  /// the test had stopped being about anything.
+  final bool showLabels;
 
   @override
   Widget build(BuildContext context) {
@@ -215,14 +423,16 @@ class _BarChart extends StatelessWidget {
                       },
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '${values[i]}',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colors.textSecondary,
-                      fontWeight: FontWeight.w600,
+                  if (showLabels) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      '${values[i]}',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),

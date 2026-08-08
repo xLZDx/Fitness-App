@@ -1162,6 +1162,21 @@
       "minutes": { "type": "int" }
     }
   },
+  "progressVolume": "Volume (kg)",
+  "progressVsPreviousMonth": "{value}% vs last month",
+  "@progressVsPreviousMonth": {
+    "description": "Trend badge next to the volume chart. The value already carries its sign (+18 / -4): a bare number after a bad month reads as praise.",
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "progressVolumeNeedsWeights": "Record the weight on a set and your volume shows up here.",
+  "progressConsistency": "Consistency",
+  "progressRecords": "Records this month",
+  "progressNoRecordsYet": "No records yet. A record needs both a weight and a rep count on the same set.",
+  "progressRecordLine": "{weight} kg × {reps}",
+  "@progressRecordLine": {
+    "description": "A personal record: what was actually lifted, never an estimated one-rep max.",
+    "placeholders": { "weight": { "type": "String" }, "reps": { "type": "int" } }
+  },
   "summaryTitle": "Workout summary",
   "summaryDone": "Workout complete",
   "summaryNothingToday": "Nothing finished today yet",
