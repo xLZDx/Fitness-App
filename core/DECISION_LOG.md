@@ -1520,6 +1520,39 @@ R11g wired it in. Correction to an earlier claim in this session: I first
 reported "no progress-photos feature exists" from a `grep | head -20` that
 truncated before reaching it; the feature was there all along.
 
+### Decision — R11d's suitability card reports screening, it does not judge
+
+The design shows a green "Подходит вам" badge on the equipment page
+(`App.tsx:3057`). This app screens EXERCISES against logged injuries
+(`mobile/lib/features/equipment/data/exercise_filter.dart`), never machines.
+Rejected alternative: a new per-machine suitability rule. The card reports
+the existing screening's outcome for that machine's curated list instead,
+renders nothing until the screening resolves, and flips to a warning
+pointing at a human when anything was hidden. Rules out: a safety-adjacent
+badge whose cheerful state is also its default state.
+
+### Decision — R11c delivered partially, on purpose
+
+The Scan screen's full rebuild is a layout inversion: the design puts the
+camera edge-to-edge with glass controls and a result bottom-sheet over it,
+where the app has a 68%-height preview inside a scrolling card list
+(`mobile/lib/features/scanner/scanner_page.dart`, 1,456 lines, 40 widget
+tests asserting the current structure). Rejected alternative: attempt the
+whole inversion in this pass. Judged the risk of a half-working 1,456-line
+rewrite higher than the cost of splitting, so this gate shipped only the
+screen's signature element — the animated scan frame — fully tested, and
+the layout inversion is named as outstanding rather than half-done. The
+remaining work is listed in the R11c commit body.
+
+### Evidence — the old aiming frame could not distinguish aiming from working
+
+`scanner_page.dart` drew a plain 75% outline in both states, so a
+two-second classification looked like a frozen screen. `ScanFrame`
+(`mobile/lib/features/scanner/widgets/scan_frame.dart:39`) keeps the 75%
+because that is exactly the crop `core/camera/centre_crop.dart` hands the
+classifier — the fraction is semantics, not styling, which is why it is a
+fraction rather than the design's fixed 260px.
+
 ### Process miss — the first two R11 commits do not carry their log entry
 
 `11f94b6` (R11a) and `a4d00e0` (R11g) were committed before this entry was

@@ -27,6 +27,7 @@ import '../visual_equipment/state/recognition_history_providers.dart';
 import '../visual_equipment/state/visual_equipment_providers.dart';
 import '../visual_equipment/widgets/live_equipment_preview.dart';
 import '../visual_equipment/widgets/machine_card_view.dart';
+import 'widgets/scan_frame.dart';
 
 /// The Scan tab.
 ///
@@ -496,21 +497,19 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                     // Stack child, it also sat over the overlay's own action
                     // button. IgnorePointer because it is decoration: it must
                     // never be what a tap lands on.
-                    const IgnorePointer(
-                      child: Center(
-                        child: FractionallySizedBox(
-                          widthFactor: 0.75,
-                          heightFactor: 0.75,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              border: Border.fromBorderSide(
-                                BorderSide(color: Colors.white, width: 2),
-                              ),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(20)),
-                            ),
-                          ),
-                        ),
+                    //
+                    // R11c: corner brackets with a sweep line, and a pulse
+                    // while a capture is classified (`App.tsx:2592-2614`).
+                    // The plain outline this replaces marked the right area
+                    // and said nothing else -- a two-second classification
+                    // looked like a frozen screen, because nothing on the
+                    // viewfinder distinguished "aim" from "working".
+                    IgnorePointer(
+                      child: ScanFrame(
+                        key: const Key('scan-frame'),
+                        phase: scan.isLoading
+                            ? ScanFramePhase.analyzing
+                            : ScanFramePhase.ready,
                       ),
                     ),
                   ],
