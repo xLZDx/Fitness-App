@@ -587,7 +587,9 @@ class ExerciseCautionCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   item.contraindications
-                      .map((c) => c.replaceAll('_', ' '))
+                      .map((c) =>
+                          CatalogLabels.contraindication(
+                              AppLocalizations.of(context), c))
                       .join(', '),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colors.textSecondary,

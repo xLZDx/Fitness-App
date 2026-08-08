@@ -1309,3 +1309,156 @@ bar, hero card, recovery strip, week strip, restructured stats), and the
 same gap plausibly extends to R1-R3 (never checked against real source
 either). Surfaced to the operator with the evidence above rather than
 started without a GO, per Gate-Based Development.
+
+## 2026-08-08 19:15 local / 16:15 UTC — Full-app Figma parity audit: 10 screens checked, 9 diverge structurally, 6 real bugs fixed
+
+Operator: "прогони агентов по всему что есть, почини баги и собери новый гейт
+под реальный App.tsx. ГО" (run agents across everything, fix the bugs, and
+build a new gate against the real App.tsx. GO). Ran 9 parallel read-only
+audit agents, each comparing one screen/flow's real prototype source
+(xLZDx/ReviewExistingExamples @ 8209787, cloned to
+D:\Temp\claude\d--test-2\3794b893-82f5-45ea-88c1-54177fdd7e82\scratchpad\figma_proto\)
+against the current Flutter implementation, citing file:line on both sides.
+Home was already audited manually earlier this session (previous entry,
+18:11).
+
+### Evidence -- per-screen structural match, one line each
+
+- Home (App.tsx:2441-2555 vs home_page.dart): no match. Missing
+  greeting+name header, program-progress bar, "today" hero with the day's
+  real workout, muscle-recovery strip, 7-day week strip; different stat
+  metrics.
+- Onboarding (App.tsx:1204-2441 vs onboarding_page.dart + 7 step files): no
+  match. 13 prototype steps (welcome, goal+level, location+equipment,
+  schedule, body-diagram injuries, barriers, birth-year+height, weight,
+  Health Connect opt-in, generating, plan-preview, account creation,
+  notifications) vs Flutter's 7 generic data-category steps. None of the
+  prototype's custom pickers (WheelYear, HRuler, VRuler, BodyDiagram,
+  ChoiceCard, BMICard, DeltaCard) exist in Flutter at all -- plain text
+  fields and generic chips throughout.
+- Scan (App.tsx:2555-2781 vs scanner_page.dart): no match. Prototype is
+  full-bleed camera-as-canvas with animated scan-frame + bottom-sheet
+  result; Flutter is a scrollable list-of-cards page with the camera as one
+  68%-height card among several.
+- Exercise (App.tsx:2781-3008 vs exercise_page.dart + exercise_reference.dart):
+  no match. No immersive hero image/video, no quick-stats row, no
+  set-history, no sticky CTA.
+- Equipment (App.tsx:3009-3161 vs equipment_detail_page.dart): no match. No
+  hero/title-over-image, no suitability signal, no featured-exercise/full-list
+  split.
+- Workout Player + Rest Timer (App.tsx:3162-3369 vs workout_player_page.dart
+  + rest_timer.dart): no match. Prototype is a multi-exercise loop with
+  inline weight/rep steppers and a full-screen rest overlay; Flutter logs
+  one set via a modal sheet and shows rest as an inline card, plus an
+  unrelated SetTimerCard interval timer the prototype never had. (Rest
+  timer wiring itself, separately flagged stale in the 2026-08-05 audit, is
+  now confirmed FIXED -- workout_player_page.dart:322-324.)
+- Progress Photos (App.tsx:3450-3943 vs progress_photos_page.dart): worst
+  gap found. Of the prototype's 9 flow states (privacy gate, angle select,
+  capture, preview, metadata, notification prompt, gallery, compare,
+  export) only gallery and compare exist, both heavily simplified; the
+  other 7 are entirely absent. Persistence and AES-256-GCM encryption ARE
+  real (2026-08-05 "scaffold/mock" audit note is now stale) -- the gap is
+  structural, not backend.
+- Progress charts (App.tsx:3944-4022 vs progress_page.dart): partial match.
+  Volume and consistency charts are faithful ports; missing the prototype's
+  "Фото прогресса" block entirely (feature exists in the app, just not
+  surfaced here); has three sections (8-week chart, full records list,
+  recent-activity list) the prototype never specified.
+- Technique Coach (App.tsx:4023-4619 vs form_check_page.dart): no match.
+  Prototype is an 8-phase guided wizard (intro, preparation, quality-check,
+  calibration, ready, active/paused, summary screens); Flutter collapses
+  everything into one persistent camera panel with no dedicated
+  onboarding/gate/calibration/summary screens. (The underlying rep math
+  legitimately differs by design -- real pose detection vs a fake
+  setInterval animation -- that is NOT counted as a gap.)
+- Workout Summary (App.tsx:4620-4734 vs workout_summary_page.dart): closest
+  match by far -- this is the one screen R5 built directly from the real
+  source (previous decision-log entry, "R5: итоги тренировки"). Two small
+  undocumented drifts found: the personalized subtitle was silently
+  swapped for a muscle-name list, and the muscle-load bars lost their
+  colour/label severity coding (red/orange/green) in favour of a plain
+  percentage. Neither is a functional bug.
+- Workouts + Profile + Paywall (App.tsx:4735-5069 vs workouts_page.dart +
+  profile_page.dart + subscription_page.dart): no match, all three.
+  Workouts lost the Programs(with progress %)/Library split entirely.
+  AICoachPanel's chat-with-follow-up-input has no Flutter equivalent
+  (AiCoachSheet is a one-shot answer, not wired into Workouts at all).
+  Profile is a flat 10-tile list vs the prototype's 7 grouped sections
+  (missing: units, integrations, notifications, privacy, help -- present
+  but extra: Coaches, Celebrity Plans, Community). Paywall is 3-tier with
+  per-card bullets vs the prototype's 2-tier comparison table, and claims a
+  14-day trial vs the design's 7.
+
+Net: 9 of 10 screens/flows audited diverge structurally, one (Workout
+Summary) is close. This is not a handful of stragglers -- it is nearly the
+entire app. R9/R9b's colour pass sat on top of a UI layer that, except for
+Workout Summary, was never built from the real prototype source in the
+first place (root cause already recorded in the 18:11 entry above: "Дизайн
+получен впервые за цепочку" at R5).
+
+### Decision -- fixed 6 small, isolated, mechanical bugs found along the way; left 1 for the operator
+
+Per "почини баги": fixed everything that was a contained, low-risk, purely
+mechanical correction, independent of the Figma-parity question:
+
+1. GlassTextField (onboarding/widgets/inputs.dart) used
+   TextFormField(initialValue: ...) with no controller and no key --
+   questionnaire_notifier.dart:16-23 rehydrates the draft from a cached
+   profile once authUserProvider resolves (a frame or two after first
+   mount), and the field silently kept showing stale/blank text through
+   that update. Converted to a StatefulWidget owning a
+   TextEditingController, synced in didUpdateWidget only when the value
+   actually diverges (so the user's own keystrokes are not fought).
+2. workout_player_page.dart:270-271 -- captured?.weightKg ??
+   alreadySet?.weightKg silently restored the previous weight/reps whenever
+   a re-edit submitted an intentionally-cleared field, contradicting
+   set_capture_sheet.dart:171-174's own documented Skip-vs-Save contract
+   (captured == null means keep-stored, NOT captured.field == null). Fixed
+   to branch on captured == null instead of using ??.
+3. exercise_reference.dart:589-591 showed contraindication tags as raw
+   underscore-stripped English (shoulder_injury -> "shoulder injury")
+   regardless of app locale, bypassing catalog_labels.dart entirely -- the
+   one file that exists, per its own doc comment, "so a Russian UI cannot
+   end up with ... untranslated" vocabulary. Added
+   CatalogLabels.contraindication(), reusing injury_regions.dart's
+   suggestRegion() (safe here: only picks a display label, makes no
+   screening decision) plus the SAME injuryRegion* l10n keys
+   injuries_page.dart already labels the user's own injuries with.
+4. progress_page.dart:405-411 -- h.clamp(2, constraints.maxHeight) throws
+   if a squeezed layout ever gives maxHeight < 2 (min > max is a clamp
+   ArgumentError). Latent on every current call site (all fix a height >=
+   60) but still a real defect. Fixed by clamping the lower bound to
+   min(2, maxHeight) instead of a bare 2.
+5. scanner_page.dart:562 rendered _LiveSection whenever the Live toggle was
+   on, with no check against _cameraFailure -- with permission denied,
+   _LiveCard's "Ищем..." spinner had no frames to ever settle on, a
+   dead-end UI state. Gated on the same _cameraFailure == null condition
+   the viewfinder itself already branches on.
+6. subscription_page.dart:130,146,162 hardcoded 'Stay a Member'/'Become a
+   Supporter'/'Become a Sustainer' in an otherwise fully-localized file --
+   bypassing AppLocalizations even though the exact keys (subStayMember,
+   subBecomeSupporter, subBecomeSustainer) already existed in both
+   app_en.arb and app_ru.arb, unused. Wired them in -- this was dead,
+   already-translated copy, not new content to write.
+
+Left for the operator, not fixed silently: the donation-language
+contradiction in subscription_page.dart -- the file's own class doc
+(:19-23) says S0b removed "donation/nonprofit" framing since "these are
+subscriptions," yet live strings still read
+subscriptionManageDonationUpdateCardOrPause, "Could not update donation:",
+subscriptionLearnHowDonationsAreUsed, and
+subscriptionWeReANonprofitSubscriptionsAre. Deciding which framing is
+correct is a business/legal copy call, not a mechanical fix -- flagged, not
+silently resolved either direction.
+
+### Refusal -- not starting the structural rebuild in this same turn
+
+Rebuilding 9 screens to match the real prototype (new onboarding wizard
+with custom pickers, a redesigned Home hero, a full-bleed scanner, a
+multi-exercise workout-player loop, 7 new progress-photo states, an
+8-phase Technique Coach wizard, restructured Workouts/Profile/Paywall) is
+unambiguously gate-sized under this project's own Quantified Scope-Trigger
+rule (>2h, >15 files). A proposed sub-gate breakdown follows in
+core/plans/PLAN_R11_FIGMA_PARITY_REBUILD_2026-08-08.md, presented for the
+operator's sequencing decision rather than built blind under one GO.

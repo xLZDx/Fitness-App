@@ -267,8 +267,17 @@ class _MarkCompleteButton extends ConsumerWidget {
       // toSession()) and the one asLogEntryView() assumes throughout. A
       // repeat tap overwrites this one set rather than appending a second,
       // same behavior as the old WorkoutLogEntry.copyWith did.
-      final weightKg = captured?.weightKg ?? alreadySet?.weightKg;
-      final reps = captured?.reps ?? alreadySet?.reps;
+      //
+      // `captured == null` (Skip) keeps the stored values, per
+      // SetCaptureSheet's own contract (set_capture_sheet.dart:171-174).
+      // `captured != null` (Save) uses exactly what was submitted, INCLUDING
+      // a null field the user cleared on purpose ("declined to say") -- a
+      // `captured?.weightKg ?? alreadySet?.weightKg` here would silently
+      // restore the old weight the moment the user tried to blank it out on
+      // a re-edit, contradicting the sheet's own "leave blank if no load"
+      // hint.
+      final weightKg = captured == null ? alreadySet?.weightKg : captured.weightKg;
+      final reps = captured == null ? alreadySet?.reps : captured.reps;
       final sets = (weightKg != null || reps != null)
           ? [(weightKg: weightKg, reps: reps)]
           : const <SetCapture>[];

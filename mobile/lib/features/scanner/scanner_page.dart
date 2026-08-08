@@ -559,7 +559,12 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
               ),
             ],
           ),
-          if (liveOn) ...[
+          // Also gated on `_cameraFailure == null`, the same condition the
+          // viewfinder itself branches on above: without it, denying camera
+          // permission left this card showing regardless, its `_LiveCard`
+          // spinner stuck on "Ищем..." forever -- no frames were ever going
+          // to arrive to settle it, and nothing on screen said why.
+          if (liveOn && _cameraFailure == null) ...[
             const SizedBox(height: 14),
             _LiveSection(onOpen: _openEquipment),
           ],

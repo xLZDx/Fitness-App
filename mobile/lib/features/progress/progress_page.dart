@@ -403,12 +403,20 @@ class _BarChart extends StatelessWidget {
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         final h = (values[i] / safeMax) * constraints.maxHeight;
+                        // `clamp(2, maxHeight)` throws (min > max) the
+                        // moment a squeezed layout gives maxHeight < 2 --
+                        // every current call site fixes a height >= 60, so
+                        // this was latent, not reachable, but `clamp`
+                        // asserts on its argument order regardless of
+                        // whether the bug ever gets exercised.
+                        final minH =
+                            constraints.maxHeight < 2 ? constraints.maxHeight : 2.0;
                         return Align(
                           alignment: Alignment.bottomCenter,
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 320),
                             curve: Curves.easeOutCubic,
-                            height: h.clamp(2, constraints.maxHeight),
+                            height: h.clamp(minH, constraints.maxHeight),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
                               gradient: LinearGradient(

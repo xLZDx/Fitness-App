@@ -127,7 +127,7 @@ class SubscriptionPage extends ConsumerWidget {
                   ref.read(subscriptionActionProvider.notifier).chooseTier(
                         SubscriptionTier.free,
                       ),
-              cta: 'Stay a Member',
+              cta: l10n.subStayMember,
             ),
             const SizedBox(height: 12),
             _PlanCardForPeriod(
@@ -143,7 +143,7 @@ class SubscriptionPage extends ConsumerWidget {
               currentTier: tier,
               highlight: true,
               isLoading: action.isLoading,
-              cta: 'Become a Supporter',
+              cta: l10n.subBecomeSupporter,
             ),
             const SizedBox(height: 12),
             _PlanCardForPeriod(
@@ -159,7 +159,7 @@ class SubscriptionPage extends ConsumerWidget {
               ],
               currentTier: tier,
               isLoading: action.isLoading,
-              cta: 'Become a Sustainer',
+              cta: l10n.subBecomeSustainer,
             ),
             const SizedBox(height: 16),
             _LearnMoreLink(),

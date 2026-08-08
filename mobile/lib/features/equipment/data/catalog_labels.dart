@@ -1,5 +1,7 @@
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../profile/data/injury_regions.dart';
+import '../../profile/data/profile_models.dart';
 import 'equipment_models.dart';
 
 /// Localized display names for catalog vocabulary — muscle tags, difficulty
@@ -87,4 +89,30 @@ class CatalogLabels {
   /// — it is a placeholder, not a brand, so it needs translating too.
   static String manufacturer(AppLocalizations l, String manufacturer) =>
       manufacturer == 'Any' ? l.equipmentAnyBrand : manufacturer;
+
+  /// A contraindication tag (`ExerciseItem.contraindications`), translated
+  /// via the same eight-region vocabulary `injuries_page.dart` already
+  /// labels the user's own injuries with -- so "shoulder_injury" on an
+  /// exercise and "Shoulder" on the injuries screen read as the same body
+  /// part, not two different vocabularies that happen to overlap.
+  ///
+  /// [suggestRegion] is normally reserved for proposing a match to a human
+  /// for confirmation, never for a screening decision on its own
+  /// (`injury_regions.dart`'s own doc comment). Using it here is safe: this
+  /// only chooses a display label, nothing is filtered or blocked by the
+  /// result.
+  static String contraindication(AppLocalizations l, String tag) {
+    final region = suggestRegion(tag);
+    if (region == null) return tag.replaceAll('_', ' ');
+    return switch (region) {
+      InjuryRegion.neck => l.injuryRegionNeck,
+      InjuryRegion.shoulder => l.injuryRegionShoulder,
+      InjuryRegion.elbow => l.injuryRegionElbow,
+      InjuryRegion.wrist => l.injuryRegionWrist,
+      InjuryRegion.lowerBack => l.injuryRegionLowerBack,
+      InjuryRegion.hip => l.injuryRegionHip,
+      InjuryRegion.knee => l.injuryRegionKnee,
+      InjuryRegion.ankle => l.injuryRegionAnkle,
+    };
+  }
 }

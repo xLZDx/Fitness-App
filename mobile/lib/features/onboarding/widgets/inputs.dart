@@ -218,7 +218,15 @@ class _ChoicePill extends StatelessWidget {
 }
 
 /// A glass-style numeric / text input.
-class GlassTextField extends StatelessWidget {
+///
+/// Owns a [TextEditingController] rather than using `TextFormField`'s
+/// `initialValue` -- `initialValue` is read once in `initState` and never
+/// again, so a [value] that changes for a reason other than this field's own
+/// [onChanged] (the onboarding draft rehydrating from a cached profile once
+/// `authUserProvider` resolves, `questionnaire_notifier.dart:16-23`) left the
+/// field showing stale or blank text while the provider already held the
+/// real answer.
+class GlassTextField extends StatefulWidget {
   const GlassTextField({
     super.key,
     required this.value,
@@ -235,16 +243,45 @@ class GlassTextField extends StatelessWidget {
   final int maxLines;
 
   @override
+  State<GlassTextField> createState() => _GlassTextFieldState();
+}
+
+class _GlassTextFieldState extends State<GlassTextField> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.value);
+
+  @override
+  void didUpdateWidget(covariant GlassTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only when the two disagree: overwriting the controller on every
+    // rebuild -- including the one this field's own onChanged just
+    // triggered -- would reset the cursor to the end on every keystroke.
+    if (widget.value != _controller.text) {
+      _controller.value = _controller.value.copyWith(
+        text: widget.value,
+        selection: TextSelection.collapsed(offset: widget.value.length),
+        composing: TextRange.empty,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return TextFormField(
-      initialValue: value,
-      onChanged: onChanged,
-      keyboardType: keyboardType,
-      maxLines: maxLines,
+      controller: _controller,
+      onChanged: widget.onChanged,
+      keyboardType: widget.keyboardType,
+      maxLines: widget.maxLines,
       style: theme.textTheme.bodyLarge,
       decoration: InputDecoration(
-        hintText: hint,
+        hintText: widget.hint,
         filled: true,
         fillColor: Colors.white.withValues(alpha: 0.40),
         border: OutlineInputBorder(

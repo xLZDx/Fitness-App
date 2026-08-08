@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui' show Locale;
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -44,6 +45,35 @@ void main() {
         SubscriptionPage.tierLabel(l10n, SubscriptionTier.celebrityTrainer),
         'Sustainer',
       );
+    });
+  });
+
+  group('SubscriptionPage source -- CTAs stay localized', () {
+    // A source-level guard rather than a widget test: this file's own
+    // top-of-file comment (see setUpAll below, "AuroraBackground + GoRouter
+    // combo") documents that rendering the real page hangs the test runner.
+    // The three plan CTAs were hardcoded English literals
+    // ('Stay a Member', 'Become a Supporter', 'Become a Sustainer') even
+    // though the matching l10n keys (subStayMember, subBecomeSupporter,
+    // subBecomeSustainer) already existed, unused, in both .arb files --
+    // this pins that they stay wired through AppLocalizations instead of
+    // silently reverting to a literal on some future edit.
+    test('no hardcoded plan CTA literal in the page source', () {
+      final source =
+          File('lib/features/subscription/subscription_page.dart')
+              .readAsStringSync();
+      for (final literal in [
+        "'Stay a Member'",
+        "'Become a Supporter'",
+        "'Become a Sustainer'",
+      ]) {
+        expect(source.contains(literal), isFalse,
+            reason: '$literal must come from AppLocalizations, not a '
+                'hardcoded string');
+      }
+      expect(source.contains('l10n.subStayMember'), isTrue);
+      expect(source.contains('l10n.subBecomeSupporter'), isTrue);
+      expect(source.contains('l10n.subBecomeSustainer'), isTrue);
     });
   });
 

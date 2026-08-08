@@ -1155,5 +1155,28 @@ void main() {
       await tester.pump();
       await tester.pump();
     });
+
+    testWidgets(
+        'a denied camera hides the Live card instead of spinning forever',
+        (tester) async {
+      // Before this fix, `_LiveSection` rendered whenever the Live toggle was
+      // on regardless of `_cameraFailure` -- with no camera, no frame was
+      // ever going to arrive to settle `_LiveCard`'s "searching" spinner, so
+      // it spun with no explanation next to the unavailable-camera card.
+      await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(
+            _FailingSession(CameraUnavailableReason.permissionDenied)),
+        liveModeEnabledProvider.overrideWith((_) => true),
+      ]);
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Camera access needed'), findsOneWidget,
+          reason: 'the failure card is still shown');
+      expect(find.byKey(const Key('scan-live-searching')), findsNothing,
+          reason: 'the Live card must not render over a dead camera');
+      expect(find.byKey(const Key('scan-live-result')), findsNothing);
+      expect(find.byKey(const Key('scan-live-tentative')), findsNothing);
+    });
   });
 }
