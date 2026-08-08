@@ -12,6 +12,16 @@ class AppPalette {
   /// `TOKEN_COLORS` table, is `0xFFC9FF47`. This is also the R9 seed --
   /// `app_theme.dart` reads it for the dark theme's `ColorScheme.fromSeed`.
   static const auroraLime = Color(0xFFC9FF47);
+
+  /// R9: second stop for the brand gradient (login/splash/onboarding CTAs),
+  /// paired with [auroraLime]. The design's own `TOKEN_COLORS.accentSecondary`
+  /// -- declared but never actually used anywhere in the 5471-line prototype
+  /// (`App.tsx`), so this is the best-evidenced value for a second lime tone,
+  /// not an invented one. Same value as `AppSemanticColors.dark.accentSecondary`;
+  /// duplicated here rather than referenced because this file holds
+  /// theme-independent literals and that token is theme-scoped.
+  static const auroraLimeDeep = Color(0xFFA8D93A);
+
   static const auroraPeach = Color(0xFFFFB37C);
 
   static const tileGradients = <List<Color>>[

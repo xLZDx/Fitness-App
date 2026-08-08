@@ -87,14 +87,16 @@ class _LogoOrb extends StatelessWidget {
       height: 116,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(36),
+        // R9: first frame the app shows, moved off the pre-R9 pink/violet
+        // logo mark onto the design's lime family.
         gradient: const LinearGradient(
-          colors: [AppPalette.auroraPink, AppPalette.auroraViolet],
+          colors: [AppPalette.auroraLime, AppPalette.auroraLimeDeep],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppPalette.auroraViolet.withValues(alpha: 0.45),
+            color: AppPalette.auroraLime.withValues(alpha: 0.45),
             blurRadius: 40,
             offset: const Offset(0, 16),
           ),

@@ -183,17 +183,19 @@ class _ChoicePill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
+          // R9: the "selected" indicator, one colour everywhere a pill is
+          // chosen -- moved off the pre-R9 pink/violet pair onto lime.
           gradient: selected
               ? const LinearGradient(colors: [
-                  AppPalette.auroraPink,
-                  AppPalette.auroraViolet,
+                  AppPalette.auroraLime,
+                  AppPalette.auroraLimeDeep,
                 ])
               : null,
           color: selected ? null : Colors.white.withValues(alpha: 0.32),
           boxShadow: selected
               ? [
                   BoxShadow(
-                    color: AppPalette.auroraViolet.withValues(alpha: 0.30),
+                    color: AppPalette.auroraLime.withValues(alpha: 0.30),
                     blurRadius: 14,
                     offset: const Offset(0, 6),
                   ),

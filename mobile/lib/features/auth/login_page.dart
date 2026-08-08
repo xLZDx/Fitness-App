@@ -48,17 +48,19 @@ class LoginPage extends ConsumerWidget {
                         height: 76,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(24),
+                          // R9: brand icon badge, moved off the pre-R9
+                          // pink/violet pair onto the design's lime family.
                           gradient: const LinearGradient(
                             colors: [
-                              AppPalette.auroraPink,
-                              AppPalette.auroraViolet,
+                              AppPalette.auroraLime,
+                              AppPalette.auroraLimeDeep,
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppPalette.auroraViolet
+                              color: AppPalette.auroraLime
                                   .withValues(alpha: 0.45),
                               blurRadius: 24,
                               offset: const Offset(0, 12),
@@ -151,13 +153,14 @@ class _GradientButton extends StatelessWidget {
         height: 54,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
+          // R9: brand CTA, moved off the pre-R9 pink/violet pair.
           gradient: LinearGradient(
             colors: disabled
                 ? [
-                    AppPalette.auroraPink.withValues(alpha: 0.55),
-                    AppPalette.auroraViolet.withValues(alpha: 0.55),
+                    AppPalette.auroraLime.withValues(alpha: 0.55),
+                    AppPalette.auroraLimeDeep.withValues(alpha: 0.55),
                   ]
-                : const [AppPalette.auroraPink, AppPalette.auroraViolet],
+                : const [AppPalette.auroraLime, AppPalette.auroraLimeDeep],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
@@ -165,7 +168,7 @@ class _GradientButton extends StatelessWidget {
               ? null
               : [
                   BoxShadow(
-                    color: AppPalette.auroraViolet.withValues(alpha: 0.45),
+                    color: AppPalette.auroraLime.withValues(alpha: 0.45),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),

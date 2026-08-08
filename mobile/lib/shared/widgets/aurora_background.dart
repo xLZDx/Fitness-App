@@ -19,18 +19,29 @@ class AuroraBackground extends StatelessWidget {
     Color(0xFFCEE2F2), // soft blue
   ];
 
+  /// R9 (2026-08-08): this file has its own private palette, independent of
+  /// `AppSemanticColors` -- it was not touched by the token-level R9 commit
+  /// (`112ee5b`) and kept painting the pre-R9 violet/blue dark scheme behind
+  /// EVERY screen (`main.dart:577` wraps the whole app in this widget once).
+  /// Retuned to the lime family confirmed for R9 rather than reusing the old
+  /// violet/blue hues: the design source (`App.tsx:1234-1236`, Step0) shows a
+  /// near-flat `#06060F` background with a single restrained lime glow, not a
+  /// colourful multi-hue wash, so the base gradient stays close to the two
+  /// confirmed background tones ([AppSemanticColors.dark]'s
+  /// backgroundPrimary/backgroundSecondary) and only the two blooms carry
+  /// colour -- the primary lime accent and its documented secondary shade.
   static const _darkBase = <Color>[
-    Color(0xFF1A0830),
-    Color(0xFF12103A),
-    Color(0xFF1B0826),
-    Color(0xFF0A1F30),
-    Color(0xFF071626),
+    Color(0xFF06060F),
+    Color(0xFF08080F),
+    Color(0xFF0A0A14),
+    Color(0xFF08080F),
+    Color(0xFF06060F),
   ];
 
   static const _lightBloomA = Color(0xFFFF6FB5);
   static const _lightBloomB = Color(0xFF2BE5C2);
-  static const _darkBloomA = Color(0xFF8A5BFF);
-  static const _darkBloomB = Color(0xFF3DC8FF);
+  static const _darkBloomA = Color(0xFFC9FF47); // accentPrimary
+  static const _darkBloomB = Color(0xFFA8D93A); // accentSecondary
 
   @override
   Widget build(BuildContext context) {

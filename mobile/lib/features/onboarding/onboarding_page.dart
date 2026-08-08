@@ -157,15 +157,16 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                       onTap: isSubmitting ? null : _next,
                       child: Container(
                         height: 54,
+                        // R9: brand CTA, moved off the pre-R9 pink/violet pair.
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           gradient: const LinearGradient(colors: [
-                            AppPalette.auroraPink,
-                            AppPalette.auroraViolet,
+                            AppPalette.auroraLime,
+                            AppPalette.auroraLimeDeep,
                           ]),
                           boxShadow: [
                             BoxShadow(
-                              color: AppPalette.auroraViolet
+                              color: AppPalette.auroraLime
                                   .withValues(alpha: 0.40),
                               blurRadius: 18,
                               offset: const Offset(0, 8),
@@ -221,12 +222,13 @@ class _ProgressBar extends StatelessWidget {
             Container(color: Colors.white.withValues(alpha: 0.30)),
             FractionallySizedBox(
               widthFactor: value.clamp(0.0, 1.0),
+              // R9: brand progress fill, moved off the pre-R9 pink/violet/blue
+              // sweep onto the design's two lime tones.
               child: const DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(colors: [
-                    AppPalette.auroraPink,
-                    AppPalette.auroraViolet,
-                    AppPalette.auroraBlue,
+                    AppPalette.auroraLime,
+                    AppPalette.auroraLimeDeep,
                   ]),
                 ),
               ),
