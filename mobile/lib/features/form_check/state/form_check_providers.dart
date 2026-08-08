@@ -13,10 +13,20 @@ import '../data/pose_silhouette.dart';
 import '../data/pose_target.dart';
 import '../data/pose_unit_probe.dart';
 import '../data/rep_counter.dart';
+import '../data/rep_signals.dart';
 import '../data/voice_coach.dart';
 
 /// What the user says they are doing. Rules are chosen from this.
-enum FormExercise { squat, pushup, deadlift }
+enum FormExercise {
+  squat,
+  pushup,
+  deadlift,
+  curl,
+  hinge,
+  lunge,
+  situp,
+  overheadPress,
+}
 
 /// Catalog pattern id -> the movement this coach knows, or null.
 ///
@@ -26,7 +36,31 @@ enum FormExercise { squat, pushup, deadlift }
 /// the honest state of the feature, not an oversight.
 const Map<String, FormExercise> kPosePatternToExercise = {
   'squat': FormExercise.squat,
+  'curl': FormExercise.curl,
+  'hinge': FormExercise.hinge,
+  'lunge': FormExercise.lunge,
+  'situp': FormExercise.situp,
+  'overhead_press': FormExercise.overheadPress,
 };
+
+/// Catalogue tag for [e], i.e. the inverse of [kPosePatternToExercise].
+///
+/// Written as a switch rather than a reversed map so a new enum value fails to
+/// compile until it is answered here — the registries this feeds are what
+/// decide whether a movement is offered to a user at all.
+String? poseTagFor(FormExercise e) => switch (e) {
+      FormExercise.squat => 'squat',
+      FormExercise.pushup => 'pushup',
+      FormExercise.curl => 'curl',
+      FormExercise.hinge => 'hinge',
+      FormExercise.lunge => 'lunge',
+      FormExercise.situp => 'situp',
+      FormExercise.overheadPress => 'overhead_press',
+      // No catalogue tag: `deadlift` predates the tagging and the catalogue
+      // files its exercises under `hinge`, which is the same movement with a
+      // shape authored for it.
+      FormExercise.deadlift => null,
+    };
 
 /// Whether the Form Coach can judge [poseTargetId] well enough to offer it.
 ///
@@ -55,23 +89,40 @@ bool formCoachSupports(String? poseTargetId) {
 /// A plain function rather than only a provider, so the support gate above can
 /// be decided -- and tested -- without a ProviderContainer. `poseDemoProvider`
 /// reads it, which keeps one answer instead of two.
-(PoseTarget, PoseTarget)? poseTargetsFor(FormExercise e) => switch (e) {
-      FormExercise.squat => (squatTopTarget, squatBottomTarget),
-      FormExercise.pushup => (pushupTopTarget, pushupBottomTarget),
-      FormExercise.deadlift => null,
-    };
+(PoseTarget, PoseTarget)? poseTargetsFor(FormExercise e) {
+  final tag = poseTagFor(e);
+  return tag == null ? null : poseTargetsByTag[tag];
+}
 
 /// Whether a rep of [e] can actually be counted.
 ///
-/// Only the squat, and it is not an omission. `RepCounter`'s default extractor
-/// is `squatDepthSignal` -- mean hip y minus mean knee y -- and there is no
-/// second one. For a push-up that quantity barely moves, which
-/// `pushupBottomTarget`'s own comment states outright; for a deadlift it moves
-/// but means something else.
-///
 /// Kept separate from [poseTargetsFor] because the push-up is exactly the case
-/// where the two disagree: shapes authored, reps uncountable.
-bool countsRepsFor(FormExercise e) => e == FormExercise.squat;
+/// where the two disagree: shapes authored, reps uncountable. Its only signal
+/// would be hip-versus-knee height, which barely moves during a push-up —
+/// `pushupBottomTarget`'s own comment says so.
+///
+/// The squat keeps `squatDepthSignal`; every movement added since reads a
+/// body-relative signal from `rep_signals.dart`, so its thresholds do not
+/// depend on how far the lifter stands from the phone.
+bool countsRepsFor(FormExercise e) {
+  if (e == FormExercise.squat) return true;
+  final tag = poseTagFor(e);
+  return tag != null && repSignalsByTag.containsKey(tag);
+}
+
+/// The signal and thresholds to count [e] with, or null when it cannot be
+/// counted.
+///
+/// One lookup for both halves: a config paired with the wrong extractor would
+/// produce a counter that never leaves the top phase, which on screen is
+/// indistinguishable from a camera that cannot see the user.
+(RepSignalExtractor, RepCounterConfig)? repSignalFor(FormExercise e) {
+  if (e == FormExercise.squat) {
+    return (squatDepthSignal, const RepCounterConfig());
+  }
+  final tag = poseTagFor(e);
+  return tag == null ? null : repSignalsByTag[tag];
+}
 
 /// How broad to draw the outline, from whatever the intake collected.
 ///
@@ -126,11 +177,23 @@ final selectedExerciseProvider =
 /// Null when the movement has no authored target yet — in which case the
 /// silhouette is not drawn and no rep is failed for missing it, because failing
 /// someone against a target that does not exist is worse than not judging.
+/// Which END of the movement is scored, and why it differs between movements.
+///
+/// A squat is judged at the bottom — the depth is the question. A push-up is
+/// judged at the TOP, because the rep counter cannot find its bottom (see
+/// [countsRepsFor]) and a target nothing arrives at fails everyone.
+///
+/// The movements added in 2026-08-08 are judged at the end the user is trying
+/// to REACH: the curled position, the locked-out press, the folded crunch, the
+/// bottom of the hinge and of the lunge. That is where the fault lives — a
+/// half-curl and a half-press are the errors worth naming.
 final poseTargetProvider = Provider<PoseTarget?>((ref) {
-  return switch (ref.watch(selectedExerciseProvider)) {
-    FormExercise.squat => squatBottomTarget,
-    FormExercise.pushup => pushupTopTarget,
-    FormExercise.deadlift => null,
+  final e = ref.watch(selectedExerciseProvider);
+  final pair = poseTargetsFor(e);
+  if (pair == null) return null;
+  return switch (e) {
+    FormExercise.pushup => pair.$1,
+    _ => pair.$2,
   };
 });
 
@@ -182,6 +245,21 @@ final activeClassifiersProvider = Provider<List<FormClassifier>>((ref) {
     FormExercise.squat => [SquatDepthClassifier()],
     FormExercise.pushup => [PushupAlignmentClassifier()],
     FormExercise.deadlift => [DeadliftHipHingeClassifier()],
+    // Empty ON PURPOSE, not pending work. The movements added 2026-08-08 are
+    // coached by standing in a shape and having the match scored; they have no
+    // rule-based classifier and must not borrow one. Every classifier here
+    // measures a specific quantity of a specific movement — the push-up rule
+    // grading a squat is the exact defect recorded above, and handing a curl
+    // to `SquatDepthClassifier` would repeat it with a different name.
+    //
+    // A cue for these movements therefore comes from the pose match, which is
+    // the mechanism that replaced thresholds because thresholds were wrong.
+    FormExercise.curl ||
+    FormExercise.hinge ||
+    FormExercise.lunge ||
+    FormExercise.situp ||
+    FormExercise.overheadPress =>
+      const [],
   };
 });
 

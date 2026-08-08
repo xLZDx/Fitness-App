@@ -417,14 +417,28 @@ const overheadPressTopTarget = PoseTarget(
 /// decision than adding a shape and should be made when something else needs
 /// feet too. The 17 exercises tagged `calf_raise` stay uncoached, visibly,
 /// rather than being handed a target that cannot judge them.
+/// The pair is **(start, end)**, not (top, bottom) — and the distinction cost
+/// a round of failing tests, so it is stated here rather than inferred.
+///
+/// A target's own name says where the BODY is: `curl.top` is the curled
+/// position, because that is where the hand ends up. `RepCounter`'s phases say
+/// where the SIGNAL is: its `top` phase is the LOW end of the number. For a
+/// squat those agree — standing is both the top of the body's travel and the
+/// low end of the depth signal. For a curl they are opposite ends, and reading
+/// the pair as (top, bottom) put the counter's start at the curled position,
+/// where it could never begin a rep.
+///
+/// So: `.$1` is where the movement STARTS and the counter idles; `.$2` is what
+/// the user is trying to reach, which is also what `poseTargetProvider` scores
+/// and what `lerpPoseTarget` animates towards.
 const poseTargetsByTag = <String, (PoseTarget, PoseTarget)>{
   'squat': (squatTopTarget, squatBottomTarget),
   'pushup': (pushupTopTarget, pushupBottomTarget),
-  'curl': (curlTopTarget, curlBottomTarget),
+  'curl': (curlBottomTarget, curlTopTarget),
   'hinge': (hingeTopTarget, hingeBottomTarget),
   'lunge': (lungeTopTarget, lungeBottomTarget),
-  'situp': (situpTopTarget, situpBottomTarget),
-  'overhead_press': (overheadPressTopTarget, overheadPressBottomTarget),
+  'situp': (situpBottomTarget, situpTopTarget),
+  'overhead_press': (overheadPressBottomTarget, overheadPressTopTarget),
 };
 
 /// Flat view of [poseTargetsByTag], derived rather than written twice.

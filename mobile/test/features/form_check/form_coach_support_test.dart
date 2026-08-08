@@ -5,15 +5,35 @@ import 'package:fitness_app/features/form_check/state/form_check_providers.dart'
 
 /// T1 — the rail that separates "tagged" from "works".
 ///
-/// The catalog tags 570 exercises across eight movement patterns. One pattern
-/// has both authored targets and a rep signal. Everything the user is offered
-/// has to come from the second number, never the first, or the coach draws a
-/// silhouette for a movement it cannot score and teaches them the feature is
-/// broken.
+/// The catalogue tags 540 exercises across eight movement patterns. SIX of
+/// those patterns now have both authored targets and a rep signal — the squat
+/// from the start, and `curl` / `hinge` / `lunge` / `situp` / `overhead_press`
+/// added 2026-08-08 with body-relative signals in `rep_signals.dart`.
+///
+/// What the user is offered still has to come from the second number, never
+/// the first, or the coach draws a silhouette for a movement it cannot score
+/// and teaches them the feature is broken. The two patterns below that are
+/// still refused are refused for reasons, not for want of work.
 void main() {
   group('formCoachSupports', () {
     test('offers the squat, which has targets and a countable rep', () {
       expect(formCoachSupports('squat'), isTrue);
+    });
+
+    test('offers the five movements taught 2026-08-08', () {
+      for (final id in const [
+        'curl',
+        'hinge',
+        'lunge',
+        'situp',
+        'overhead_press',
+      ]) {
+        expect(poseTargetsFor(kPosePatternToExercise[id]!), isNotNull,
+            reason: '$id: no shape');
+        expect(countsRepsFor(kPosePatternToExercise[id]!), isTrue,
+            reason: '$id: no rep signal');
+        expect(formCoachSupports(id), isTrue, reason: id);
+      }
     });
 
     /// The case the gate exists for. `pushupTopTarget` and
@@ -26,17 +46,13 @@ void main() {
       expect(formCoachSupports('pushup'), isFalse);
     });
 
-    test('refuses patterns the coach was never taught', () {
-      for (final id in const [
-        'hinge',
-        'lunge',
-        'overhead_press',
-        'curl',
-        'situp',
-        'calf_raise',
-      ]) {
-        expect(formCoachSupports(id), isFalse, reason: id);
-      }
+    /// `calf_raise` is the last untaught pattern, and it stays that way. The
+    /// movement is a vertical translation of an unchanging skeleton, and
+    /// `poseMatchScore` normalises position away — so both ends of it are the
+    /// same shape and no target pair can tell a rep from standing still. Full
+    /// reasoning lives beside `poseTargetsByTag`.
+    test('refuses calf_raise, which cannot be represented at all', () {
+      expect(formCoachSupports('calf_raise'), isFalse);
     });
 
     test('refuses an untagged exercise and an unknown tag', () {

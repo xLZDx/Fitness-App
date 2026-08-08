@@ -884,6 +884,11 @@ class _ExercisePicker extends ConsumerWidget {
           FormExercise.squat => l10n.formcheckExerciseSquat,
           FormExercise.pushup => l10n.formcheckExercisePushup,
           FormExercise.deadlift => l10n.formcheckExerciseDeadlift,
+          FormExercise.curl => l10n.formcheckExerciseCurl,
+          FormExercise.hinge => l10n.formcheckExerciseHinge,
+          FormExercise.lunge => l10n.formcheckExerciseLunge,
+          FormExercise.situp => l10n.formcheckExerciseSitup,
+          FormExercise.overheadPress => l10n.formcheckExerciseOverheadPress,
         };
     return Wrap(
       spacing: 8,
