@@ -79,3 +79,62 @@ It does not start building any of the nine. Per Gate-Based Development, a
 sub-gate above becomes buildable only on its own explicit `GO R11<letter>`
 — the standing GO that authorised the audit-and-fix-bugs turn does not
 retroactively authorise nine gates' worth of new screens.
+
+---
+
+## 6. Execution status — updated 2026-08-08, 22:40 local (Europe/Chisinau) / 19:40 UTC
+
+Operator authorised the whole sequence: *"Пуш + ГО R11a–R11i по порядку автономно"*
+— a multi-gate GO in this plan's own recommended order (§4), run
+autonomously. Section 5 above is superseded by that GO for R11a–R11i.
+
+| Gate | Status | Commit |
+|---|---|---|
+| **R11a** Home | **DONE** | `11f94b6` |
+| **R11g** Progress | **DONE** | `a4d00e0` |
+| **R11d** Exercise + Equipment | **DONE** | `7d614ca` |
+| **R11c** Scan | **PARTIAL** — scan frame only | `9579144` |
+| **R11h** Technique Coach | not started | — |
+| **R11b** Onboarding | not started | — |
+| **R11f** Progress Photos | not started | — |
+| **R11e** Workout Player | **HELD** — needs a data-model decision | — |
+| **R11i** Workouts + Profile + Paywall | **HELD (Paywall half)** — needs a pricing decision | — |
+
+Verification at the stopping point: `flutter analyze` 7 issues (identical
+to the pre-R11 baseline, 0 new), `flutter test` 1791 passed / 0 failed
+(1748 before R11a). Nothing pushed since `4dc291a` — all four gate commits
+are local and need a separate push-GO.
+
+### Where to resume
+
+**Next gate in order is R11c's remainder**, then R11h.
+
+R11c's outstanding work, in the order it should be done:
+
+1. Invert `mobile/lib/features/scanner/scanner_page.dart`'s build (line
+   ~424): `Stack` with the preview `Positioned.fill` behind everything,
+   instead of a `SizedBox(height: 0.68 * screen)` inside a `ListView`.
+2. Replace `GlassAppBar` with a glass row over the preview: back,
+   "Распознавание" pill, capture-mode toggle.
+3. Move the capture + gallery buttons into a control cluster over the
+   camera; the design also has a flash control, which has **no equivalent
+   anywhere in the app** — it needs a `CameraSession` torch API first, so
+   treat it as its own sub-item, not a layout detail.
+4. Put the result cards into a `DraggableScrollableSheet` over the preview.
+5. Re-run `test/features/scanner_page_test.dart` — 40 tests assert the
+   current structure and several use `scrollUntilVisible` against the
+   `ListView` that step 1 removes. Expect to rewrite their scrolling, not
+   their assertions.
+
+`ScanFrame` (`mobile/lib/features/scanner/widgets/scan_frame.dart`) is
+already built, tested and wired; the inversion does not change it.
+
+### Two gates still need an operator decision before they can be scoped
+
+- **R11e** — does a `WorkoutSession` become multi-exercise / multi-set?
+  The F3.4 decision (one exercise, at most one set per session) is what
+  makes the design's player loop unbuildable as specified. Reversing it is
+  a data-model change with a migration, not a layout change.
+- **R11i, Paywall half** — 2 tiers or 3, and 7-day trial or 14. Both are
+  monetisation calls. The Workouts and Profile halves have no blocker and
+  can proceed alone if the operator wants the gate split.
