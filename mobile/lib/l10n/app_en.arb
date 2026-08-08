@@ -852,6 +852,8 @@
       }
     }
   },
+  "exerciseTitle": "Exercise",
+  "exerciseStartWorkout": "Start workout",
   "exerciseMinutes": "{arg0} min",
   "@exerciseMinutes": {
     "placeholders": {

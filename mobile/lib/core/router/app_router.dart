@@ -20,6 +20,7 @@ import '../../features/celebrity_plans/celebrity_plans_page.dart';
 import '../../features/community/team_feed_page.dart';
 import '../../features/donor_wall/donor_wall_page.dart';
 import '../../features/equipment/equipment_detail_page.dart';
+import '../../features/equipment/exercise_page.dart';
 import '../../features/equipment/workout_player_page.dart';
 import '../../features/form_check/form_check_page.dart';
 import '../../features/home/home_page.dart';
@@ -60,10 +61,16 @@ String? resolveRedirect({
   if (isSignedIn && location == '/login') {
     return isOnboarded ? '/home' : '/onboarding';
   }
-  // /equipment/:id and /workout/:id are gated but accessible without
-  // onboarding so a freshly scanned QR isn't dead-ended on its way back
-  // from the camera.
+  // /equipment/:id, /exercise/:id and /workout/:id are gated but accessible
+  // without onboarding so a freshly scanned QR isn't dead-ended on its way
+  // back from the camera.
+  //
+  // `/exercise/:id` joined this list the moment it existed (R3.2). It is the
+  // route the machine page now opens, i.e. the first thing after a scan —
+  // leaving it out would have bounced exactly the journey this exemption was
+  // written for, and it would have looked like the scanner was broken.
   final isEquipmentOrWorkout = location.startsWith('/equipment/') ||
+      location.startsWith('/exercise/') ||
       location.startsWith('/workout/');
   // A public path is public regardless of sign-in state, and this exclusion
   // is what makes that actually true rather than true-until-signed-in. Before
@@ -248,6 +255,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         pageBuilder: (_, state) => _fadeThrough(
           EquipmentDetailPage(equipmentId: state.pathParameters['id']!),
         ),
+      ),
+      GoRoute(
+        path: '/exercise/:id',
+        builder: (context, state) =>
+            ExercisePage(exerciseId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/workout/:id',

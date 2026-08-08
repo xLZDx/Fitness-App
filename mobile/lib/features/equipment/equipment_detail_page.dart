@@ -258,7 +258,7 @@ class _ExerciseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return GlassCard(
-      onTap: () => GoRouter.of(context).push('/workout/${exercise.id}'),
+      onTap: () => GoRouter.of(context).push('/exercise/${exercise.id}'),
       child: Row(
         children: [
           ExerciseThumb(exercise: exercise, size: 52),

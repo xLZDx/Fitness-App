@@ -32,9 +32,12 @@ import '../../../shared/widgets/glass.dart';
 import '../data/video_failure.dart';
 import '../../workouts/state/offline_video_providers.dart';
 import '../data/catalog_labels.dart';
+import '../../form_check/state/form_check_providers.dart';
+import '../../profile/state/profile_providers.dart';
 import '../data/equipment_models.dart';
 import '../state/equipment_providers.dart';
 import 'exercise_thumb.dart';
+import 'muscle_map.dart';
 
 class ExerciseHero extends StatelessWidget {
   const ExerciseHero({super.key, required this.exercise});
@@ -596,5 +599,142 @@ class ExerciseCautionCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+
+/// The description of an exercise, as a list of sections both screens splat
+/// into their own scroll view.
+///
+/// A list rather than a widget so the spacing between sections stays the
+/// property of this file. Returning a Column would have let each caller wrap
+/// it differently, and "the exercise page has slightly different padding" is
+/// precisely the drift a shared source of truth is meant to prevent.
+List<Widget> exerciseReferenceSections(
+  BuildContext context,
+  ExerciseItem item,
+  String? body,
+) {
+  final theme = Theme.of(context);
+  final demoVideo = item.playableVideoFor(body) ?? item.videoUrl;
+  return [
+    ExerciseHero(exercise: item),
+    const SizedBox(height: 16),
+    // A clip or nothing. The two photograph fallbacks that used to sit here
+    // are gone: `frames` and `imageUrls` are both stills of a man in a gym,
+    // and putting either in front of an exercise made the catalog look like
+    // two different apps stitched together.
+    if (demoVideo != null)
+      ExerciseVideoBlock(url: demoVideo, poster: item.posterFor(body))
+    else
+      const ExerciseNoVideoFallback(),
+    if (item.muscles.isNotEmpty) ...[
+      const SizedBox(height: 16),
+      GlassCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(AppLocalizations.of(context).equipmentMusclesWorked,
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w800)),
+            const SizedBox(height: 8),
+            MuscleMap(
+              primary: item.primaryMuscles.isEmpty
+                  ? item.muscles.take(1).toList()
+                  : item.primaryMuscles,
+              secondary: item.muscles
+                  .where((m) => !item.primaryMuscles.contains(m))
+                  .toList(),
+            ),
+          ],
+        ),
+      ),
+    ],
+    const SizedBox(height: 16),
+    ExerciseStepsCard(exercise: item),
+    // Right under the technique steps, which is where the design puts it and
+    // where it belongs: you have just read how the movement should look, and
+    // this offers to watch you do it.
+    //
+    // Shown ONLY where the coach can actually judge the movement --
+    // `formCoachSupports`, not merely `poseTargetId != null`.
+    if (formCoachSupports(item.poseTargetId)) ...[
+      const SizedBox(height: 16),
+      const ExerciseFormCoachCard(),
+    ],
+    if (item.contraindications.isNotEmpty) ...[
+      const SizedBox(height: 16),
+      ExerciseCautionCard(item: item),
+    ],
+  ];
+}
+
+/// Resolves an exercise id and renders the three states that are not the
+/// exercise: still loading, failed to load, and withheld by the user's own
+/// injury list.
+///
+/// Shared because those states carry wording that must not diverge. The
+/// injury one especially: telling someone "we couldn't find that exercise"
+/// when their own settings are hiding it is false, and it conceals the single
+/// fact they can act on.
+class ExerciseResolutionView extends ConsumerWidget {
+  const ExerciseResolutionView({
+    super.key,
+    required this.exerciseId,
+    required this.builder,
+  });
+
+  final String exerciseId;
+  final Widget Function(BuildContext, ExerciseItem, String? body) builder;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    return ref.watch(exerciseResolutionProvider(exerciseId)).when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Text(l10n.equipmentCouldNotLoad(e))),
+          data: (resolution) {
+            if (resolution.hiddenForInjury) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
+                child: GlassCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.equipmentHiddenForInjury(
+                            resolution.exercise!.title),
+                        style: theme.textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(l10n.equipmentHiddenForInjuryHint,
+                          style: theme.textTheme.bodyMedium),
+                    ],
+                  ),
+                ),
+              );
+            }
+            final item = resolution.visible;
+            if (item == null) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
+                child: GlassCard(
+                  child: Text(l10n.equipmentWeCouldnTFindThatExercise,
+                      style: theme.textTheme.titleMedium),
+                ),
+              );
+            }
+            // Which body to demonstrate on. Null when the user has not said,
+            // or said they would rather not — there is nothing to infer from,
+            // and the model falls back to whichever clip exists.
+            final body = ExerciseItem.bodyForGender(ref
+                .watch(currentProfileProvider)
+                .valueOrNull
+                ?.personal
+                .gender);
+            return builder(context, item, body);
+          },
+        );
   }
 }

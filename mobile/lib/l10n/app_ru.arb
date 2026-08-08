@@ -417,6 +417,8 @@
   "muscleCore": "Пресс",
   "workoutsEmptyFiltered": "В разделе «{arg0}» пока пусто.",
   "workoutsOfflineFailed": "Прошлая загрузка не удалась: {arg0}",
+  "exerciseTitle": "Упражнение",
+  "exerciseStartWorkout": "Начать тренировку",
   "exerciseMinutes": "{arg0} мин",
   "celebrityplansSampleBadge": "ПРИМЕР",
   "celebrityplansSampleStarterTitle": "Базовая сила · 4 недели",

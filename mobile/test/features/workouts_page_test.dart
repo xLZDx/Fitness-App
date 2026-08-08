@@ -83,6 +83,14 @@ Widget _harness(AssetEquipmentRepository repo) {
         builder: (_, state) =>
             Scaffold(body: Center(child: Text('player_${state.pathParameters['id']}'))),
       ),
+      // Both stubs, so the test can tell WHICH of the two screens the list
+      // opens rather than passing on either.
+      GoRoute(
+        path: '/exercise/:id',
+        builder: (_, state) => Scaffold(
+            body: Center(
+                child: Text('exercise_${state.pathParameters['id']}'))),
+      ),
     ],
   );
   return ProviderScope(
@@ -253,15 +261,24 @@ void main() {
       expect(find.text('Back squat'), findsNothing);
     });
 
-    testWidgets('Tapping a card routes to /workout/:id',
+    testWidgets('Tapping a card routes to /exercise/:id, not the player',
         (tester) async {
+      // Changed with R3.2. Browsing the catalogue is a question — "what is
+      // this movement" — and it used to be answered with the workout player:
+      // set timers, rest, mark-complete and a schedule button, for a session
+      // the user had not started. The reference page answers the question and
+      // offers to start the workout from there.
+      //
+      // Both routes are stubbed in the harness, so this fails if the list
+      // opens the player again rather than passing on whichever exists.
       await tester.pumpWidget(_harness(_seededRepo()));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Push-ups'));
       await tester.pumpAndSettle();
 
-      expect(find.text('player_pushup'), findsOneWidget);
+      expect(find.text('exercise_pushup'), findsOneWidget);
+      expect(find.text('player_pushup'), findsNothing);
     });
   });
 }

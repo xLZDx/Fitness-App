@@ -350,7 +350,7 @@ class _ExerciseCard extends ConsumerWidget {
         ref.watch(currentProfileProvider).valueOrNull?.personal.gender);
     return GlassCard(
       padding: const EdgeInsets.all(16),
-      onTap: () => GoRouter.of(context).push('/workout/${exercise.id}'),
+      onTap: () => GoRouter.of(context).push('/exercise/${exercise.id}'),
       child: Row(
         children: [
           ExerciseThumb(exercise: exercise, size: 52, body: body),
