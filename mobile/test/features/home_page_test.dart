@@ -51,6 +51,9 @@ Widget _buildApp({
           path: '/scan',
           builder: (_, __) => const Scaffold(body: Text('scan-stub'))),
       GoRoute(
+          path: '/plan',
+          builder: (_, __) => const Scaffold(body: Text('plan-stub'))),
+      GoRoute(
         path: '/workout/:id',
         builder: (_, state) => Scaffold(
             body: Text('player_${state.pathParameters['id']}')),
@@ -86,28 +89,76 @@ Widget _buildApp({
 }
 
 void main() {
+  // R11a rebuilt this screen against the real design source
+  // (`App.tsx:2441-2548`). The assertions below moved with it: the old ones
+  // pinned an app bar reading "Home", a "Ready to train?" hero and three
+  // quick-stat tiles, none of which the design has. What each section is
+  // derived FROM is covered in `home/home_dashboard_test.dart`; this file
+  // checks that the screen renders it and that its CTAs reach real routes.
   group('HomePage (default empty)', () {
-    testWidgets('renders the hero card and primary sections', (tester) async {
-      await _setLargeSurface(tester);
-      await tester.pumpWidget(_buildApp());
-      await tester.pump();
-
-      expect(find.text('GOOD MORNING'), findsOneWidget);
-      expect(find.text('Ready to train?'), findsOneWidget);
-      expect(find.text('Scan equipment'), findsOneWidget);
-      expect(find.text('Today'), findsOneWidget);
-      expect(find.text('No workouts scheduled'), findsOneWidget);
-    });
-
-    testWidgets('shows three quick stat tiles with the new labels',
+    testWidgets('renders the greeting header, hero and week section',
         (tester) async {
       await _setLargeSurface(tester);
       await tester.pumpWidget(_buildApp());
       await tester.pump();
 
-      expect(find.text('Workouts'), findsOneWidget);
-      expect(find.text('Streak'), findsOneWidget);
-      expect(find.text('This week'), findsOneWidget);
+      expect(find.byKey(const Key('home.greeting')), findsOneWidget);
+      expect(find.byKey(const Key('home.heroEmpty')), findsOneWidget);
+      expect(find.text('No workouts scheduled'), findsOneWidget);
+      expect(find.byKey(const Key('home.quickScan')), findsOneWidget);
+      expect(find.byKey(const Key('home.week')), findsOneWidget);
+    });
+
+    testWidgets('the greeting shows the first name only', (tester) async {
+      await _setLargeSurface(tester);
+      await tester.pumpWidget(_buildApp(
+        user: const AuthUser(uid: 'u1', displayName: 'Ivan Korostelev'),
+      ));
+      await tester.pump();
+
+      expect(find.text('Ivan'), findsOneWidget);
+      expect(find.text('Ivan Korostelev'), findsNothing,
+          reason: 'a full name in 34pt display type is a document, not a hello');
+    });
+
+    testWidgets('an anonymous user is greeted by a word, not by a blank',
+        (tester) async {
+      await _setLargeSurface(tester);
+      await tester.pumpWidget(
+          _buildApp(user: const AuthUser(uid: 'u2', displayName: '')));
+      await tester.pump();
+
+      expect(find.text('Athlete'), findsOneWidget);
+    });
+
+    testWidgets('the plan bar is absent when nothing is scheduled',
+        (tester) async {
+      await _setLargeSurface(tester);
+      await tester.pumpWidget(_buildApp());
+      await tester.pump();
+
+      expect(find.byKey(const Key('home.planProgress')), findsNothing,
+          reason: 'a 0% bar over an empty week reads as failure');
+    });
+
+    testWidgets('the recovery strip is absent with no history', (tester) async {
+      await _setLargeSurface(tester);
+      await tester.pumpWidget(_buildApp());
+      await tester.pump();
+
+      expect(find.byKey(const Key('home.recovery')), findsNothing,
+          reason: 'you cannot be recovered from work you never did');
+    });
+
+    testWidgets('the week totals carry the design\'s three labels',
+        (tester) async {
+      await _setLargeSurface(tester);
+      await tester.pumpWidget(_buildApp());
+      await tester.pump();
+
+      expect(find.text('workouts'), findsOneWidget);
+      expect(find.text('kg lifted'), findsOneWidget);
+      expect(find.text('records'), findsOneWidget);
     });
 
     testWidgets('uses a SmoothScrollList for the home content', (tester) async {
@@ -159,14 +210,26 @@ void main() {
       expect(find.byKey(const Key('suggestions-empty')), findsOneWidget);
     });
 
-    testWidgets('Scan equipment button navigates to /scan', (tester) async {
+    testWidgets('the quick-scan card navigates to /scan', (tester) async {
       await _setLargeSurface(tester);
       await tester.pumpWidget(_buildApp());
       await tester.pump();
-      await tester.tap(find.text('Scan equipment'));
+      await tester.tap(find.byKey(const Key('home.quickScan')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       expect(find.text('scan-stub'), findsOneWidget);
+    });
+
+    testWidgets('the empty hero offers the planner instead of a dead button',
+        (tester) async {
+      await _setLargeSurface(tester);
+      await tester.pumpWidget(_buildApp());
+      await tester.pump();
+
+      await tester.tap(find.text('Today\'s adaptive plan').first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('plan-stub'), findsOneWidget);
     });
 
     testWidgets('Posture card navigates to /posture', (tester) async {

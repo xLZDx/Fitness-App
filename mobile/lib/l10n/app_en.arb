@@ -1567,5 +1567,45 @@
   "postureVerdictTypical": "Typical range",
   "postureVerdictMild": "Mild variation",
   "postureVerdictNotable": "Notable variation",
-  "postureDisclaimer": "Not a medical assessment. Shows how your stance compares to a range measured in a motion-capture sample, not a diagnosis or a correct-posture target."
+  "postureDisclaimer": "Not a medical assessment. Shows how your stance compares to a range measured in a motion-capture sample, not a diagnosis or a correct-posture target.",
+  "homeGreetingMorning": "Good morning",
+  "homeGreetingAfternoon": "Good afternoon",
+  "homeGreetingEvening": "Good evening",
+  "homeAthlete": "Athlete",
+  "@homeAthlete": {
+    "description": "Stand-in for the name in the header greeting, for a user who signed in anonymously and has no display name. Not 'User': the header addresses a person."
+  },
+  "homeWeekPlan": "This week's plan",
+  "homeWeekPlanCount": "{done} of {total} done",
+  "@homeWeekPlanCount": {
+    "description": "Label on the header progress bar. Counts this week's scheduled sessions, NOT a multi-week programme — the app has no programme entity, see home_dashboard.dart.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "homeTodayIs": "Today — {weekday}",
+  "@homeTodayIs": {
+    "description": "Eyebrow label over the hero title. The weekday comes from DateFormat in the active locale, never from a hard-coded list.",
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "homeStartWorkout": "Start workout",
+  "homeUnfamiliarMachine": "Unfamiliar machine?",
+  "homeIdentifyWithCamera": "Identify it with the camera and get exercises",
+  "homeSectionRecovery": "Muscle recovery",
+  "homeRecoveryRecovering": "Recovering",
+  "homeRecoveryModerate": "Moderate",
+  "homeRecoveryReady": "Ready",
+  "homeStatWorkouts": "workouts",
+  "homeStatVolume": "kg lifted",
+  "homeStatRecords": "records",
+  "homeSectionMore": "More"
 }
