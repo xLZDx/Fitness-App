@@ -75,8 +75,24 @@ class FirebaseAuthRepository implements AuthRepository {
   /// `android/app/google-services.json`). Android's Credential Manager needs
   /// it as `serverClientId` to mint the ID token Firebase verifies. Not a
   /// secret — it ships in the app bundle either way.
-  static const _serverClientId =
-      '1007678328591-j034epr1u9hjc99u1f3t649qdf3q57d0.apps.googleusercontent.com';
+  ///
+  /// It must belong to the SAME project as the `google-services.json` the APK
+  /// was built against. It did not: this constant used to read
+  /// `1007678328591-j034epr…`, whose project number is `1007678328591`, while
+  /// the shipped config is project `988522745882` (`fitness-app-korostelev`).
+  /// Credential Manager was being asked for a token whose audience belongs to
+  /// a project this app is not part of, and answered
+  /// `[28444] Developer console is not set up correctly` — the same message it
+  /// gives for an unregistered signing SHA, which is what made this look for
+  /// two builds like a missing fingerprint. Registering the release SHA-1 was
+  /// necessary and did not help, because no fingerprint in the right project
+  /// can satisfy a request pointed at the wrong one.
+  ///
+  /// `firebase_auth_repository_test.dart` now reads the real
+  /// `google-services.json` and fails if these two ever disagree again, so the
+  /// next project swap breaks a test instead of the sign-in button.
+  static const serverClientId =
+      '988522745882-05gql4s6t59f7l6qjftveh5jj5kado4e.apps.googleusercontent.com';
 
   bool _googleReady = false;
 
@@ -84,7 +100,7 @@ class FirebaseAuthRepository implements AuthRepository {
     final signIn = gsi.GoogleSignIn.instance;
     if (!_googleReady) {
       // v7 requires an explicit initialize before any auth call.
-      await signIn.initialize(serverClientId: _serverClientId);
+      await signIn.initialize(serverClientId: serverClientId);
       _googleReady = true;
     }
     return signIn;

@@ -124,6 +124,51 @@ failure moves only what is missing rather than 0.69 GB again. Objects go up as
 `video/mp4`: served as `application/octet-stream` some players download the
 whole file before the first frame and others refuse it outright.
 
+## Signing, in a project that has just been moved to
+
+Every one of the catalog's 2,539 clip references is an object key now — zero
+absolute urls remain (`assets/data/exercises_vendor.json`). So the whole video
+feature hangs on one IAM binding, and the day it is missing **nothing plays at
+all**, on every exercise, for every user.
+
+That day was 2026-08-08. The phone said "Ссылка на ролик недоступна" on all of
+them; the function log said:
+
+```
+E clipurl: {"object":"exercises/men/Calisthenics-Cardio-Plyo-Functional/180 Jump Turns.mp4",
+ "error":"SigningError: Permission 'iam.serviceAccounts.signBlob' denied on resource"}
+```
+
+The bucket was fine and the object was there (`gcloud storage ls` found that
+exact key). `getSignedUrl` never touches the object — it signs a string — so a
+missing grant and a missing file are indistinguishable from the phone, which is
+why the log is the only place this is legible.
+
+The grant, on the **Compute Engine default** account and on itself (see the
+`video_bundle_import.md` note: it is not the `@appspot` account the
+documentation implies):
+
+```bash
+gcloud iam service-accounts add-iam-policy-binding \
+  988522745882-compute@developer.gserviceaccount.com \
+  --member="serviceAccount:988522745882-compute@developer.gserviceaccount.com" \
+  --role="roles/iam.serviceAccountTokenCreator" \
+  --project=fitness-app-korostelev
+```
+
+It takes effect within a minute or two and needs no redeploy and no new APK —
+the failure is entirely server-side.
+
+Verify with the checker that already exists rather than by opening the app:
+
+```bash
+python scripts/catalog/verify_clip_signing.py
+```
+
+**This step belongs to every project move.** `LICENSED_BUCKET` is derived from
+`GCLOUD_PROJECT`, so the bucket follows a move on its own and this binding does
+not — which is exactly how it got missed here.
+
 ## Monitor
 
 Two tests were written to fail the day a host was chosen, as notes for whoever

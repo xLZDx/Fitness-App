@@ -74,16 +74,61 @@ try {
 $BuiltAt = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')
 $LocalNow = (Get-Date).ToString('yyyy-MM-dd HH:mm')
 
+# --- The build number ------------------------------------------------------
+#
+# WHY THIS IS DERIVED AND NOT TYPED
+#
+# Three consecutive App Distribution releases all read "1.0.0 (2014)". The
+# tester could not tell which build was installed, and the "Installed" badge
+# sat on whichever release the console listed first regardless of the APK on
+# the phone. Nothing was broken in the upload: the release NOTES did differ.
+# The version did not, because pubspec.yaml has said `1.0.0+14` since
+# 2026-08-02 and nothing bumps it.
+#
+# The 2014 is not 14 with a typo. `--split-per-abi` makes Flutter override
+# each split's versionCode with `abi * 1000 + versionCode`, and arm64-v8a is
+# abi 2 -- so 2000 + 14 = 2014, and the fat/bundle build of the same commit
+# would have read 14. Both numbers are correct and neither moves on its own.
+#
+# The commit count is the build number: monotonic on master, derived from
+# the same HEAD the SHA stamp comes from, and impossible to forget.
+Push-Location $ProjectRoot
+try {
+    $BuildNumber = (& git rev-list --count HEAD 2>$null)
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($BuildNumber)) {
+        throw 'git rev-list --count failed -- run this from inside the repository.'
+    }
+    $BuildNumber = [int]$BuildNumber.Trim()
+} finally {
+    Pop-Location
+}
+
+# A shallow clone counts only the commits it fetched, which is how a build
+# number silently goes BACKWARDS. Android refuses to install a lower
+# versionCode over a higher one, so that failure arrives as "install failed"
+# on a tester's phone rather than as an error here. Compare against the
+# floor pubspec still declares and stop if we would regress.
+$PubspecVersion = (Get-Content (Join-Path $MobileDir 'pubspec.yaml') |
+    Select-String -Pattern '^version:\s*(.+)$').Matches.Groups[1].Value.Trim()
+$PubspecBuild = 0
+if ($PubspecVersion -match '\+(\d+)$') { $PubspecBuild = [int]$Matches[1] }
+if ($BuildNumber -le $PubspecBuild) {
+    throw ("Derived build number $BuildNumber is not above pubspec's $PubspecBuild " +
+           '-- a shallow clone? Fetch full history (git fetch --unshallow).')
+}
+
 Write-Host ''
 Write-Host "GIT_SHA  : $GitSha" -ForegroundColor Cyan
 Write-Host "BUILT_AT : $BuiltAt UTC  ($LocalNow local)" -ForegroundColor Cyan
+Write-Host "BUILD No : $BuildNumber  (arm64 split shows as $(2000 + $BuildNumber))" -ForegroundColor Cyan
 Write-Host ''
 
 # --- Build ----------------------------------------------------------------
 
 $defines = @(
     "--dart-define=GIT_SHA=$GitSha",
-    "--dart-define=BUILT_AT=$BuiltAt"
+    "--dart-define=BUILT_AT=$BuiltAt",
+    "--build-number=$BuildNumber"
 )
 
 Push-Location $MobileDir

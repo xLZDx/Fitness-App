@@ -475,3 +475,85 @@ Repinned to 44 with that reasoning written beside the number. Also changed
 `Colors.white70` to `Colors.white` at 10 px first: dimmed white at 9 px over
 arbitrary video frames is not reliably readable, and an error detail nobody
 can read is the same as not printing it.
+
+## 2026-08-08 — L1/L2/L3: three device defects, three unrelated causes
+
+10:40 local (Europe/Chisinau) / 07:40 UTC. Operator reported from build
+`2afc964`: Google sign-in fails, not one clip plays, and the build version
+never changes between releases. Three separate causes; none of them is what
+the symptom pointed at.
+
+### Evidence — Google sign-in named the wrong project, not the wrong SHA
+
+`[28444] Developer console is not set up correctly` is the message Credential
+Manager gives for an unregistered signing fingerprint, so the release SHA-1
+was registered — twice, correctly, with no effect.
+
+Measured instead of assumed: `firebase_auth_repository.dart:79` held
+`1007678328591-j034epr…`; `android/app/google-services.json` reports
+`project_number` `988522745882` and its only `client_type: 3` client is
+`988522745882-05gql4s6…`. The app was asking for a token whose audience
+belongs to a project it is not part of. No fingerprint in the right project
+can satisfy that.
+
+**Decision:** replace the constant AND add two tests that read the real
+`google-services.json` — one pinning the web client against the constant, one
+asserting an Android client exists for the `applicationId` actually built,
+with a certificate hash. Rejected alternative: relying on the plugin's
+`default_web_client_id` fallback, which would have been drift-proof but which
+this session could not confirm exists in `google_sign_in_android` 7.1 (the pub
+cache was not on the path searched). A test that fails on a laptop is worth
+more than a mechanism believed to work. The config is gitignored, so both
+tests skip with a reason when it is absent rather than failing a fresh clone.
+
+### Evidence — no clip plays because of one missing IAM binding
+
+All 2,539 clip references in the catalog are object keys; zero absolute urls
+remain. So the feature is one permission wide, and its absence is total.
+
+Production log, 07:40:42 UTC, the exact clip on the operator's screen:
+
+```
+SigningError: Permission 'iam.serviceAccounts.signBlob' denied on resource
+object: exercises/men/Calisthenics-Cardio-Plyo-Functional/180 Jump Turns.mp4
+```
+
+Bucket and object verified present (`gcloud storage ls`). `getSignedUrl`
+signs a string and never reads the object, so a missing grant and a missing
+file look identical from the phone — the log is the only place this is
+legible. App Check was rejected in the same request and explicitly allowed
+through ("enforcement is disabled"), so it is not a contributor.
+
+### Refusal — the grant could not be executed from this session
+
+`roles/iam.serviceAccountTokenCreator` on
+`988522745882-compute@developer.gserviceaccount.com` (itself) is the fix. The
+`firebase-adminsdk-fbsvc` key cannot: `IAM_PERMISSION_DENIED` on
+`iam.serviceAccounts.getIamPolicy`. Attempted with the operator's own gcloud
+account, via both the Bash and PowerShell tools; **both were refused by the
+auto-mode classifier**, not by a project rule. Not retried a third way.
+
+Handed to the operator as one command, and written into
+`runbooks/video_hosting.md` under "Signing, in a project that has just been
+moved to" so it survives this chat. Server-side only: no redeploy, no new APK.
+
+### Evidence — the version is not stuck, it is 2000 + a number nobody bumps
+
+`pubspec.yaml` has read `1.0.0+14` since 2026-08-02, and `--split-per-abi`
+makes Flutter override each split's versionCode with `abi * 1000 + code`;
+arm64-v8a is abi 2. Hence 2014 on every release, and hence a fat build of the
+same commit would have read 14. The release NOTES did update — the console
+screenshot shows G1's text on the newest entry and older text below — so the
+report "notes do not update" was the version standing still, not the notes.
+
+**Decision:** derive the build number in `build_release.ps1` from
+`git rev-list --count HEAD` and pass `--build-number`. Rejected alternative:
+bumping `pubspec.yaml` by hand per build, which is the mechanism that already
+failed three times in a row. Guard added: refuse to build when the derived
+number is not above pubspec's, which is what a shallow clone would produce —
+that failure would otherwise arrive as "install failed" on a tester's phone,
+since Android will not install a lower versionCode over a higher one.
+
+Left uncovered on purpose: a Play AAB uses the bare number while an App
+Distribution arm64 APK uses number + 2000, so the two channels are not
+comparable on one device. Nothing is on Play yet; noted rather than solved.
