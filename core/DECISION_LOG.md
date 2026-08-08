@@ -1233,3 +1233,25 @@ comment entry matching the file's existing convention.
 metric-summarizing + verdict tests, 5 capture-session controller tests
 against a `MockPoseDetectorService`, 3 screen widget tests) and 1 new Home
 card navigation test.
+
+## 2026-08-08 17:37 local / 14:37 UTC — R10 verified live on the emulator, not just in tests
+
+Pushed `83c46e4`, built `app-debug.apk`, installed on `emulator-5554`,
+walked the full path by hand: onboarding (fresh install, no prior account
+state survived the reinstall) -> Home shows the new "Осанка" card with the
+correct icon/subtitle -> tap opens `/posture` -> camera permission prompt
+-> granted -> live camera preview renders inside the same rounded 9:16
+panel Form Check uses -> tapped "Проверить осанку" -> the REAL on-device
+detector ran (not `MockPoseDetectorService`) -> capture window elapsed ->
+screen correctly reported "Не удалось чётко увидеть тело" and relabelled
+the button to "Проверить снова". Expected outcome, not a failure: the
+emulator's virtual scene camera has no human body in frame, so ML Kit
+legitimately finding nothing and the screen's honest-empty path firing is
+the pipeline working correctly end to end (camera -> detector -> signal ->
+averaging -> verdict -> UI), not a bug to chase.
+
+**Still not verified**: any actual verdict card (typical/mild/notable),
+because that requires a real body in frame — the emulator cannot produce
+one. Same for forward-head's sign convention, named as unverified in the
+prior commit. Both require a physical device with a person standing in
+front of it; unchanged from before this check.
