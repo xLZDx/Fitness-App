@@ -202,11 +202,38 @@ by loosening either test.
 No physical phone was connected to this machine when the release build ran
 (`flutter devices`: only `emulator-5554` (Pixel_API_34, Android 14),
 Windows desktop, Chrome, Edge — no ADB-connected hardware). The release APK
-was built (`flutter build apk --release`) and installed on the emulator as
-the strongest verification available in this session; the operator needs to
-sideload the same APK onto their own device for the "real telefon" test.
-See the turn's final report for the APK path, install/launch result on the
-emulator, and the exact screens walked live.
+(`build/app/outputs/flutter-apk/app-release.apk`, 258.5MB) was built and
+installed on the emulator as the strongest verification available in this
+session. The operator needs to sideload the same APK onto their own device
+for the actual "real telefon" test.
+
+Walked live on the emulator, guest account, full flow start to finish:
+1. Onboarding (7 steps) -> Home, empty state (no programme, no schedule) --
+   correct: no bar, no fabricated "0%".
+2. Workouts -> Programs (default tab) -> 6 templates render with real
+   `programmeTemplates` data ("Силовая база", "Средний", "Сила", "Всё тело",
+   "8 недель · 4 дня/нед.").
+3. "Начать программу" -> `_CurrentProgrammeCard` appears immediately:
+   "Силовая база · Неделя 1 из 8 · 0%" + today's real scheduled exercise
+   ("Скручивания на 3/4 →").
+4. Home -> the same programme bar now shows there too (R11a wiring), same
+   exercise as today's hero card.
+5. Opened the player -> "Отметить выполненной" -> `SetCaptureSheet` ->
+   `DifficultyRatingSheet` -> rest timer starts -> `_AddExerciseButton`
+   appears: "Добавить ещё упражнение · 1 упражнение за тренировку".
+6. Tapped it -> `_ExercisePickerSheet` lists real catalogue exercises,
+   correctly excluding the one already in the session -> picked one ->
+   same capture/rating flow runs for it -> counter updates to
+   "2 упражнения за тренировку" (Russian plural form switches correctly,
+   one -> few).
+7. **Progress tab: "1 тренировок"** (1 workout) -- not 2 -- despite two
+   exercises logged in the one session. This is the exact behaviour §7's
+   data-correctness fix exists for, confirmed live on the release build,
+   not just in a test.
+
+No crash, no visual break, at any step. This is the strongest evidence
+this plan has produced for any R11 gate -- every other gate before §7
+shipped on analyze+test alone.
 
 ### What each PARTIAL still owes
 

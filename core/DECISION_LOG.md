@@ -1736,3 +1736,19 @@ Both are exactly what "Functional Tests Prove Behavior" and the whites-
 ratchet/floating-sheet tests exist for: a class of bug that is invisible at
 review time and only surfaces when something actually exercises the code
 or scans the source for the pattern.
+
+### Evidence — full live verification of the closure arc on the release build
+
+No physical phone was connected (`flutter devices`: emulator + desktop +
+browsers only). Built `app-release.apk` (258.5MB), installed it on
+`emulator-5554`, walked the complete flow as a guest account: onboarding
+-> Home (correct empty state) -> Workouts/Programs (real template data) ->
+enrol -> Home picks up the programme bar + today's real scheduled exercise
+-> player -> mark complete -> `_AddExerciseButton` appears -> add a second
+exercise via the real catalogue picker -> difficulty rating for both ->
+**Progress tab reads "1 тренировок" (1 workout), not 2**, with the correct
+Russian plural switch on the session's own exercise counter along the way.
+No crash, no visual break. See PLAN_R11_FIGMA_PARITY_REBUILD_2026-08-08.md
+§8 for the full step list. This is the first R11 gate with device evidence
+beyond analyze+test — every earlier gate in this plan shipped without it
+(§6's own "Gap — no device verification" entry).
