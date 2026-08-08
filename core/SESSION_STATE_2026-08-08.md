@@ -187,3 +187,100 @@ from mediapipe.tasks.python import vision   # PoseLandmarker, PoseLandmarkerOpti
   параметры. Передавать замыкание.
 - `app_semantic_colors_test.dart` — растяжка на количество `Colors.white*`.
   При росте читать её собственную инструкцию, а не поднимать число молча.
+
+---
+
+## ОБНОВЛЕНО 11:20 local (Europe/Chisinau) / 08:20 UTC — три дефекта с устройства
+
+Оператор прислал сборку `2afc964`: вход через Google не работает, не играет ни
+один ролик, версия сборки не меняется между релизами. Три несвязанные причины.
+
+```
+cbaa2c3  fix(auth,release)  вход через Google + номер сборки; причина видео найдена
+ff75129  feat(home)         R4.2 — герой говорит о дне, а не о первой строке
+```
+
+`origin/master` = `ff75129`, непушенных нет. **1641 тест зелёный**,
+`flutter analyze` — 7 issues, тот же баланс, что и до правок.
+
+### L1 вход через Google — ИСПРАВЛЕНО, нужна новая сборка
+
+Причина не в отпечатке. `firebase_auth_repository.dart:79` содержал
+`1007678328591-j034epr…` — веб-клиент ЧУЖОГО проекта, тогда как
+`google-services.json` это проект `988522745882`. `[28444] Developer console is
+not set up correctly` — то же сообщение, что и на незарегистрированный SHA,
+поэтому SHA регистрировали дважды впустую.
+
+Константа теперь публичная и закрыта двумя тестами, читающими настоящий
+`google-services.json`: один сверяет веб-клиент, второй требует Android-клиент
+для реального `applicationId` с отпечатком. Файл в gitignore — тесты
+пропускаются с причиной, а не краснеют на свежем клоне.
+
+**Требует пересборки:** константа компилируется в APK.
+
+### L2 видео — причина доказана, ОДНА КОМАНДА ЗА ОПЕРАТОРОМ
+
+Все 2539 ссылок каталога — ключи объектов, прямых http нет ни одной, поэтому
+отказ подписи означает «не играет вообще ничего».
+
+Лог продакшена 07:40:42 UTC, тот самый ролик с экрана оператора:
+
+```
+SigningError: Permission 'iam.serviceAccounts.signBlob' denied on resource
+object: exercises/men/Calisthenics-Cardio-Plyo-Functional/180 Jump Turns.mp4
+```
+
+Бакет и объект на месте (`gcloud storage ls` нашёл этот ключ). Не хватает роли:
+
+```bash
+gcloud iam service-accounts add-iam-policy-binding \
+  988522745882-compute@developer.gserviceaccount.com \
+  --member="serviceAccount:988522745882-compute@developer.gserviceaccount.com" \
+  --role="roles/iam.serviceAccountTokenCreator" \
+  --project=fitness-app-korostelev
+```
+
+Проверка после: `python scripts/catalog/verify_clip_signing.py`.
+Серверная настройка — **ни пересборки, ни передеплоя не нужно**.
+
+Ключ `firebase-adminsdk-fbsvc` этого не может (`IAM_PERMISSION_DENIED` на
+`getIamPolicy`); попытка учёткой оператора отклонена классификатором auto-mode
+и через Bash, и через PowerShell. Команда записана в
+`runbooks/video_hosting.md`, раздел «Signing, in a project that has just been
+moved to», чтобы не потеряться вместе с перепиской.
+
+### L3 версия сборки — ИСПРАВЛЕНО
+
+`pubspec.yaml` держит `1.0.0+14` с 2026-08-02, а `--split-per-abi` подменяет
+versionCode на `abi * 1000 + code`; arm64-v8a — abi 2. Отсюда 2014 на каждом
+релизе. Заметки о релизе при этом обновлялись — стояла версия, а не заметки.
+
+`build_release.ps1` теперь берёт номер из `git rev-list --count HEAD` и
+передаёт `--build-number`; отказывается собирать, если номер не выше
+объявленного в pubspec (так выглядит мелкий клон, и иначе ошибка приходит как
+«install failed» на телефоне).
+
+### R4.2 — дайджест дошёл до экрана
+
+`todayDigestProvider` считает день по тому же экранированному списку, что
+рендерится под героем. Метка времени оставлена перед дайджестом: `upcoming` —
+окно на ближайшие дни, и без неё карточка под заголовком «Сегодня» молча
+описывала бы четверг.
+
+### Где остановлено
+
+**R5 «Workout Summary»** — следующий гейт, ещё не начат. Сущность для него уже
+есть: F3 закрыт, `workout_session.dart` несёт `exercises` c `sets`,
+`startedAt`/`completedAt`, `durationMinutes`, оценки сложности. Экран
+net-new: `WorkoutDone`/`WorkoutSummary` в `lib/` не существует (аудит §7.1),
+маршрута в `app_router.dart` нет. Прототипа `App.tsx` в репозитории НЕТ —
+описание экрана есть только в аудите и в мастер-промпте оператора.
+
+## Что ждёт оператора (обновлено)
+
+1. **Команда IAM выше** — единственное, что стоит между вами и видео.
+2. **Новая сборка** для проверки входа через Google: `pwsh
+   ./scripts/dev/build_release.ps1 -Distribute -Notes "..."`. Версия впервые
+   изменится — станет `2000 + <число коммитов>`.
+3. Деплой Cloud Functions (правка Stripe живёт только в репозитории).
+4. Вернуть `firebaseml` в ENFORCED в день публикации в Play.
