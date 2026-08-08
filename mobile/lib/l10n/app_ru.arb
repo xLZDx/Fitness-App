@@ -880,5 +880,17 @@
   "homeStatWorkouts": "тренировки",
   "homeStatVolume": "кг поднято",
   "homeStatRecords": "рекордов",
-  "homeSectionMore": "Ещё"
+  "homeSectionMore": "Ещё",
+  "progressStatWorkouts": "тренировок",
+  "progressStatDays": "дней подряд",
+  "progressStatRecords": "рекордов",
+  "progressWeekAndLongest": "На этой неделе: {week} · Лучшая серия: {longest} дн.",
+  "progressPhotoSection": "Фото прогресса",
+  "progressPhotoAll": "Все",
+  "progressPhotoAddFirst": "Добавить первое фото",
+  "progressPhotoCompareOverTime": "Сравнивайте изменения во времени",
+  "progressPhotoCompare": "Сравнить",
+  "progressPhotoRange": "{from} → {to}",
+  "progressPhotoWeightDelta": "{delta} кг",
+  "progressPhotoNoPixels": "Предпросмотр недоступен"
 }

@@ -1607,5 +1607,47 @@
   "homeStatWorkouts": "workouts",
   "homeStatVolume": "kg lifted",
   "homeStatRecords": "records",
-  "homeSectionMore": "More"
+  "homeSectionMore": "More",
+  "progressStatWorkouts": "workouts",
+  "progressStatDays": "day streak",
+  "progressStatRecords": "records",
+  "progressWeekAndLongest": "This week: {week} · Longest streak: {longest}d",
+  "@progressWeekAndLongest": {
+    "description": "The two numbers the design's three-tile row has no slot for. Kept as a subtitle rather than dropped: both are real history, and a redesign is not a reason to stop showing them.",
+    "placeholders": {
+      "week": {
+        "type": "int"
+      },
+      "longest": {
+        "type": "int"
+      }
+    }
+  },
+  "progressPhotoSection": "Progress photos",
+  "progressPhotoAll": "All",
+  "progressPhotoAddFirst": "Add your first photo",
+  "progressPhotoCompareOverTime": "Compare changes over time",
+  "progressPhotoCompare": "Compare",
+  "progressPhotoRange": "{from} → {to}",
+  "@progressPhotoRange": {
+    "description": "The span the two compared shots cover. Dates come from DateFormat in the active locale.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "progressPhotoWeightDelta": "{delta} kg",
+  "@progressPhotoWeightDelta": {
+    "description": "Weight change between the two compared shots. The value already carries its sign — a bare number after a gain reads as praise.",
+    "placeholders": {
+      "delta": {
+        "type": "String"
+      }
+    }
+  },
+  "progressPhotoNoPixels": "Preview unavailable"
 }

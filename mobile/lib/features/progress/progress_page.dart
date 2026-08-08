@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
+import '../progress_photos/data/photo_timeline.dart';
+import '../progress_photos/data/progress_photo.dart';
+import '../progress_photos/state/progress_photos_providers.dart';
 import '../workouts/data/workout_log.dart';
 import '../workouts/data/workout_session.dart';
 import '../workouts/state/workout_session_providers.dart';
@@ -34,45 +38,12 @@ class ProgressPage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 120),
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: _StatCard(
-                  label: AppLocalizations.of(context).progressTotalWorkouts,
-                  value: '${stats.total}',
-                  gradient: AppPalette.tileGradients[0],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _StatCard(
-                  label: AppLocalizations.of(context).homeThisWeek,
-                  value: '${stats.thisWeek}',
-                  gradient: AppPalette.tileGradients[1],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _StatCard(
-                  label: AppLocalizations.of(context).progressCurrentStreak,
-                  value: '${stats.currentStreakDays}d',
-                  gradient: AppPalette.tileGradients[2],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _StatCard(
-                  label: AppLocalizations.of(context).progressLongest,
-                  value: '${stats.longestStreakDays}d',
-                  gradient: AppPalette.tileGradients[4],
-                ),
-              ),
-            ],
-          ),
+          // R11g: the design's three-across row of accent numbers
+          // (`App.tsx:3957`), not the app's previous 2x2 grid of gradient
+          // tiles. `thisWeek` and `longestStreakDays` have no slot in that
+          // row and are kept as the line underneath rather than dropped —
+          // a redesign is not a reason to stop showing real history.
+          const _HeadlineStats(),
           const SizedBox(height: 24),
           Text(
             AppLocalizations.of(context).progressLast8Weeks,
@@ -102,6 +73,11 @@ class ProgressPage extends ConsumerWidget {
           const _VolumeSection(),
           const SizedBox(height: 24),
           const _ConsistencySection(),
+          const SizedBox(height: 24),
+          // R11g's real gap: the design gives Progress a photo block
+          // (`App.tsx:3980-4010`) and the app had one working, encrypted
+          // photo feature at `/photos` that nothing on this screen linked to.
+          const _PhotoProgressSection(),
           const SizedBox(height: 24),
           const _RecordsSection(),
           const SizedBox(height: 24),
@@ -158,6 +134,326 @@ class _Heading extends StatelessWidget {
         if (trailing != null) trailing!,
       ],
     );
+  }
+}
+
+/// The design's three headline numbers, in accent type.
+///
+/// Records use the same 30-day window [_RecordsSection] does, so the tile and
+/// the list under it cannot disagree about how many there are.
+class _HeadlineStats extends ConsumerWidget {
+  const _HeadlineStats();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final stats = deriveProgress(
+      ref.watch(workoutSessionHistoryProvider),
+      totals: ref.watch(workoutSessionTotalsProvider).valueOrNull,
+    );
+    final records = recentRecords(
+      _sessionsOf(ref),
+      DateTime.now().subtract(_RecordsSection._window),
+    ).length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _HeadlineStat(
+                value: '${stats.total}',
+                label: l10n.progressStatWorkouts,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _HeadlineStat(
+                value: '${stats.currentStreakDays}',
+                label: l10n.progressStatDays,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _HeadlineStat(
+                value: '$records',
+                label: l10n.progressStatRecords,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Text(
+          l10n.progressWeekAndLongest(stats.thisWeek, stats.longestStreakDays),
+          style: theme.textTheme.bodySmall
+              ?.copyWith(color: theme.colors.textSecondary),
+        ),
+      ],
+    );
+  }
+}
+
+class _HeadlineStat extends StatelessWidget {
+  const _HeadlineStat({required this.value, required this.label});
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GlassCard(
+      borderRadius: 16,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+      child: Column(
+        children: [
+          FittedBox(
+            child: Text(
+              value,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: theme.colors.accentPrimary,
+              ),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.labelSmall
+                ?.copyWith(color: theme.colors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Before/after photos on the Progress screen, per `App.tsx:3980-4010`.
+///
+/// The photo feature itself is not new — `/photos` has an encrypted local
+/// store, a month timeline and a compare picker. What was missing is the only
+/// thing the design puts on THIS screen: a way in. Without it the feature was
+/// reachable from one place, and the screen the design says should advertise
+/// it said nothing.
+class _PhotoProgressSection extends ConsumerWidget {
+  const _PhotoProgressSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final pair = ref.watch(defaultComparePairProvider);
+    final photos =
+        ref.watch(progressPhotosProvider).valueOrNull ?? const <ProgressPhoto>[];
+
+    return Column(
+      key: const Key('progress.photos'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _Heading(
+          l10n.progressPhotoSection,
+          trailing: photos.isEmpty
+              ? null
+              : TextButton(
+                  onPressed: () => GoRouter.of(context).push('/photos'),
+                  child: Text('${l10n.progressPhotoAll} →'),
+                ),
+        ),
+        const SizedBox(height: 8),
+        // Three states, not two: no photos at all, photos but nothing
+        // comparable (one shot, or two at different angles — see
+        // `defaultComparePair`), and a real pair.
+        if (pair == null)
+          _PhotoEmptyCta(
+            hasPhotos: photos.isNotEmpty,
+          )
+        else
+          _PhotoComparePreview(pair: pair),
+      ],
+    );
+  }
+}
+
+class _PhotoEmptyCta extends StatelessWidget {
+  const _PhotoEmptyCta({required this.hasPhotos});
+
+  /// Photos exist but no two of them share an angle — the invitation is to
+  /// take a matching one, not a first one.
+  final bool hasPhotos;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    return InkWell(
+      key: const Key('progress.photosEmpty'),
+      borderRadius: BorderRadius.circular(18),
+      onTap: () => GoRouter.of(context).push('/photos'),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: theme.colors.outline,
+            width: 1.5,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(Icons.photo_camera_outlined,
+                size: 26, color: theme.colors.textSecondary),
+            const SizedBox(height: 8),
+            Text(
+              hasPhotos
+                  ? l10n.progressPhotoSection
+                  : l10n.progressPhotoAddFirst,
+              style: theme.textTheme.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              l10n.progressPhotoCompareOverTime,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colors.textSecondary),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PhotoComparePreview extends StatelessWidget {
+  const _PhotoComparePreview({required this.pair});
+  final ComparePair pair;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final locale = l10n.localeName;
+    final fmt = DateFormat.MMMd(locale);
+
+    final before = pair.before.weightKg;
+    final after = pair.after.weightKg;
+    // Only when BOTH shots carry a weight: a delta against a missing number
+    // is not a smaller delta, it is no delta at all.
+    final delta = (before != null && after != null) ? after - before : null;
+
+    return GlassCard(
+      key: const Key('progress.photoCompare'),
+      borderRadius: 18,
+      padding: EdgeInsets.zero,
+      onTap: () => GoRouter.of(context).push('/photos'),
+      child: Column(
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+            child: SizedBox(
+              height: 140,
+              child: Row(
+                children: [
+                  Expanded(child: _PhotoThumb(photo: pair.before)),
+                  const SizedBox(width: 1),
+                  Expanded(child: _PhotoThumb(photo: pair.after)),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.progressPhotoRange(
+                          fmt.format(pair.before.takenAt),
+                          fmt.format(pair.after.takenAt),
+                        ),
+                        style: theme.textTheme.bodySmall
+                            ?.copyWith(color: theme.colors.textSecondary),
+                      ),
+                      if (delta != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          l10n.progressPhotoWeightDelta(_signed(delta)),
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            // Neither direction is praised: a gain is the goal
+                            // for someone bulking and the opposite for someone
+                            // cutting, and this screen does not know which.
+                            color: theme.colors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+                  decoration: BoxDecoration(
+                    color: theme.colors.accentPrimary,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    l10n.progressPhotoCompare,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: theme.colors.onAccent,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// `+1.4` / `-2.0`. Same rule as the volume trend badge.
+  static String _signed(double kg) {
+    final rounded = (kg * 10).round() / 10;
+    return rounded > 0 ? '+$rounded' : '$rounded';
+  }
+}
+
+/// One decrypted photo, or an honest placeholder.
+///
+/// The bytes can genuinely be missing: while the disk store is resolving the
+/// repository is the mock, and `MockProgressPhotosRepository.bytesOf` throws
+/// by design rather than returning an empty image that would render as a
+/// broken tile with no explanation.
+class _PhotoThumb extends ConsumerWidget {
+  const _PhotoThumb({required this.photo});
+  final ProgressPhoto photo;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    return ref.watch(photoBytesProvider(photo)).when(
+          data: (bytes) => Image.memory(bytes, fit: BoxFit.cover),
+          loading: () => ColoredBox(color: theme.colors.surfaceInteractive),
+          error: (_, __) => ColoredBox(
+            color: theme.colors.surfaceInteractive,
+            child: Center(
+              child: Text(
+                AppLocalizations.of(context).progressPhotoNoPixels,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.labelSmall
+                    ?.copyWith(color: theme.colors.textSecondary),
+              ),
+            ),
+          ),
+        );
   }
 }
 
@@ -322,52 +618,10 @@ class _RecordsSection extends ConsumerWidget {
       kg == kg.roundToDouble() ? kg.round().toString() : kg.toString();
 }
 
-class _StatCard extends StatelessWidget {
-  const _StatCard({
-    required this.label,
-    required this.value,
-    required this.gradient,
-  });
-
-  final String label;
-  final String value;
-  final List<Color> gradient;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return GlassCard(
-      padding: const EdgeInsets.fromLTRB(14, 16, 14, 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 30,
-            height: 6,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              gradient: LinearGradient(colors: gradient),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            label,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: theme.colors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// `_StatCard` (a gradient-bar tile, 2x2) lived here until R11g. The design's
+// Progress screen has one row of three accent numbers instead — see
+// `_HeadlineStats`. Deleted rather than kept unused: an orphaned widget is a
+// second design nobody chose.
 
 class _BarChart extends StatelessWidget {
   const _BarChart({required this.values, this.showLabels = true});
