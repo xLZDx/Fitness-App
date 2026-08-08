@@ -905,5 +905,12 @@
   "equipmentCheckWithCoach": "Проконсультируйтесь с тренером",
   "equipmentCheckBecauseInjury": "У вас указана травма, которую этот тренажёр может нагрузить",
   "equipmentRecommendedForYou": "Рекомендовано для вас",
-  "equipmentRecommendedBadge": "Рекомендовано"
+  "equipmentRecommendedBadge": "Рекомендовано",
+  "coachCheckingView": "Проверяем кадр",
+  "coachSettling": "Не двигайтесь — снимаем мерки",
+  "coachReady": "Готово. Начинайте, когда будете готовы.",
+  "coachBlockerNoBody": "Встаньте в кадр так, чтобы вас было видно целиком",
+  "coachBlockerCropped": "Отойдите — часть тела вне кадра",
+  "coachBlockerTooFar": "Подойдите ближе или отставьте телефон дальше",
+  "coachBlockerSensor": "Камера присылает координаты, которые тренер не может прочитать. Обычно помогает заново открыть экран."
 }

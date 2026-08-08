@@ -387,6 +387,11 @@ void main() {
     // frame itself: `ScanFrame` took the outline's own `Colors.white` with it
     // when it replaced it, which is why `scan_frame.dart: 1` appears while
     // `scanner_page.dart` did not grow by the full amount.
+    //
+    // 57 -> 59, 2026-08-08 (R11h): `coach_readiness_band.dart`'s icon and its
+    // instruction text, on `cameraOverlay` over the Form Coach's camera
+    // preview -- the same category, the same token and the same screen family
+    // as `form_check_page.dart`'s existing sixteen.
     final whites = <String, int>{};
     for (final f in Directory('lib').listSync(recursive: true)) {
       if (f is! File || !f.path.endsWith('.dart')) continue;
@@ -400,7 +405,7 @@ void main() {
       if (n > 0) whites[f.path.replaceAll(r'\', '/')] = n;
     }
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 57, reason: 'per file: $whites');
+    expect(total, 59, reason: 'per file: $whites');
   });
 
   group('lerp', () {

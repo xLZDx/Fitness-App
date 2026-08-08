@@ -24,6 +24,7 @@ import 'data/rep_counter.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
 import 'state/form_check_providers.dart';
+import 'widgets/coach_readiness_band.dart';
 
 /// Live form-check page. Starts the pose-detection service in
 /// initState, renders the camera preview behind the cue overlay, and
@@ -296,6 +297,17 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                       // against the input rather than on top of the verdicts.
                       const Positioned.fill(
                         child: IgnorePointer(child: _SkeletonOverlay()),
+                      ),
+                      // R11h. The design's pre-set stages, from the gate's own
+                      // verdicts: what is wrong with the view, how far the
+                      // coach is from settled, and when it is ready. The gate
+                      // has always known all six reasons a frame is unusable
+                      // and the screen used that only to withhold a rep count.
+                      // Removes itself once the set is running -- an
+                      // instruction band mid-rep competes with the cue card.
+                      const Align(
+                        alignment: Alignment.topCenter,
+                        child: IgnorePointer(child: CoachReadinessBand()),
                       ),
                       // Over the preview, under the readouts: what to do, then
                       // the shape to arrive at.

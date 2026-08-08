@@ -1662,5 +1662,12 @@
   "equipmentCheckWithCoach": "Check with a coach",
   "equipmentCheckBecauseInjury": "You have logged an injury this equipment can load",
   "equipmentRecommendedForYou": "Recommended for you",
-  "equipmentRecommendedBadge": "Recommended"
+  "equipmentRecommendedBadge": "Recommended",
+  "coachCheckingView": "Checking the view",
+  "coachSettling": "Hold still — getting your measurements",
+  "coachReady": "Ready. Start when you are.",
+  "coachBlockerNoBody": "Step into frame so your whole body is visible",
+  "coachBlockerCropped": "Move back — part of you is outside the frame",
+  "coachBlockerTooFar": "Move closer, or set the phone further away",
+  "coachBlockerSensor": "The camera is reporting positions the coach cannot read. Reopening the screen usually clears it."
 }
