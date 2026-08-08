@@ -929,5 +929,11 @@
   "photosAngleSide": "Сбоку",
   "photosAngleBack": "Сзади",
   "photosAngleOther": "Другой",
-  "photosShoot": "Сделать снимок"
+  "photosShoot": "Сделать снимок",
+  "profileSectionYou": "О вас",
+  "profileSectionProgress": "Прогресс",
+  "profileSectionCoaching": "Тренеры",
+  "profileSectionCommunity": "Сообщество",
+  "profileSectionMembership": "Подписка",
+  "profileSectionApp": "Приложение"
 }

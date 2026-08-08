@@ -77,6 +77,12 @@ class ProfilePage extends ConsumerWidget {
           const SizedBox(height: 16),
           if (profile != null && onboarded) _ProfileSummary(profile: profile),
           if (profile != null && onboarded) const SizedBox(height: 16),
+          // R11i: grouped sections, not one flat list of nine tiles
+          // (`App.tsx:4916`). Nine rows in one card is a menu you scan rather
+          // than read -- and two of them (sign out, subscription) carry rather
+          // different weight from "celebrity plans". The groups are by what a
+          // row DOES, so nothing had to be renamed to fit a heading.
+          _SectionLabel(l10n.profileSectionYou),
           GlassCard(
             padding: EdgeInsets.zero,
             child: Column(
@@ -111,7 +117,14 @@ class ProfilePage extends ConsumerWidget {
                   // who has onboarded, so it can reach no save at all.
                   onTap: () => context.push('/injuries'),
                 ),
-                _divider(context),
+              ],
+            ),
+          ),
+          _SectionLabel(l10n.profileSectionProgress),
+          GlassCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
                 _profileTile(
                   context,
                   icon: Icons.photo_library_outlined,
@@ -129,7 +142,14 @@ class ProfilePage extends ConsumerWidget {
                           .profileEndToEndEncryptedOnYour,
                   onTap: () => context.push('/photos'),
                 ),
-                _divider(context),
+              ],
+            ),
+          ),
+          _SectionLabel(l10n.profileSectionCoaching),
+          GlassCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
                 _profileTile(
                   context,
                   icon: Icons.people_alt_outlined,
@@ -150,7 +170,14 @@ class ProfilePage extends ConsumerWidget {
                       .profileInKindDonatedProgrammes,
                   onTap: () => context.push('/celebrity-plans'),
                 ),
-                _divider(context),
+              ],
+            ),
+          ),
+          _SectionLabel(l10n.profileSectionCommunity),
+          GlassCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
                 _profileTile(
                   context,
                   icon: Icons.forum_outlined,
@@ -160,7 +187,14 @@ class ProfilePage extends ConsumerWidget {
                       AppLocalizations.of(context).profileHevyStyleSocialFeed,
                   onTap: () => context.push('/community'),
                 ),
-                _divider(context),
+              ],
+            ),
+          ),
+          _SectionLabel(l10n.profileSectionMembership),
+          GlassCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
                 _profileTile(
                   context,
                   icon: Icons.workspace_premium_outlined,
@@ -179,7 +213,14 @@ class ProfilePage extends ConsumerWidget {
                       .profileHowDonationsAreUsedDonorWall,
                   onTap: () => context.push('/about'),
                 ),
-                _divider(context),
+              ],
+            ),
+          ),
+          _SectionLabel(l10n.profileSectionApp),
+          GlassCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
                 _profileTile(
                   context,
                   icon: Icons.settings_outlined,
@@ -370,6 +411,33 @@ class _ProfileSummary extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A heading over one group of profile rows.
+///
+/// R11i. The page was one card holding nine tiles, which is a menu you scan
+/// rather than read -- and "sign out" and "subscription" carry rather
+/// different weight from "celebrity plans". The groups are by what a row DOES,
+/// so nothing had to be renamed to fit a heading.
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 20, 4, 8),
+      child: Text(
+        text.toUpperCase(),
+        style: theme.textTheme.labelMedium?.copyWith(
+          color: theme.colors.textSecondary,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.8,
+        ),
       ),
     );
   }

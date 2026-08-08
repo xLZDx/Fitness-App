@@ -1701,5 +1701,11 @@
   "photosAngleSide": "Side",
   "photosAngleBack": "Back",
   "photosAngleOther": "Other",
-  "photosShoot": "Take the photo"
+  "photosShoot": "Take the photo",
+  "profileSectionYou": "You",
+  "profileSectionProgress": "Progress",
+  "profileSectionCoaching": "Coaching",
+  "profileSectionCommunity": "Community",
+  "profileSectionMembership": "Membership",
+  "profileSectionApp": "App"
 }

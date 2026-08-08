@@ -80,4 +80,57 @@ void main() {
     expect(find.textContaining('encrypted'), findsNothing);
     expect(find.textContaining('Compare side-by-side'), findsOneWidget);
   });
+
+  // R11i: the page's nine tiles were one flat card. Grouped now, by what each
+  // row DOES -- so no row had to be renamed to fit a heading, and every route
+  // that was reachable before still is.
+  testWidgets('the rows are grouped under headings, and none went missing',
+      (tester) async {
+    // Tall enough for every group: a `ListView` does not build what is off
+    // screen, and the default 800x600 viewport stops around "Coaching".
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.dark(),
+          locale: kTestLocale,
+          localizationsDelegates: kTestLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const ProfilePage(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    for (final heading in const [
+      'YOU',
+      'PROGRESS',
+      'COACHING',
+      'COMMUNITY',
+      'MEMBERSHIP',
+      'APP',
+    ]) {
+      expect(find.text(heading), findsOneWidget, reason: 'missing $heading');
+    }
+
+    // The nine destinations, still all present. A regrouping that quietly
+    // dropped a row would leave a feature reachable from nowhere.
+    for (final title in const [
+      'Injuries',
+      'Progress photos',
+      'Coaches',
+      'Community',
+      'Subscription',
+      'Settings',
+      'Sign out',
+    ]) {
+      expect(find.text(title), findsOneWidget, reason: 'missing $title');
+    }
+  });
 }

@@ -16,6 +16,17 @@ void main() {
   group('ProfilePage', () {
     testWidgets('renders the guest header and the primary menu items',
         (tester) async {
+      // R11i grouped the menu under six headings, which pushed the lower rows
+      // past the default 800x600 viewport — and a `ListView` does not build
+      // what is off screen, so "Community" stopped being found. The rows are
+      // all still there; the viewport was the thing that changed.
+      tester.view.physicalSize = const Size(800, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
       await tester.pumpWidget(buildApp(MockAuthRepository(latency: Duration.zero),
           MockProfileRepository(latency: Duration.zero)));
       await tester.pump();
