@@ -1154,6 +1154,14 @@
     }
   },
   "homeSectionToday": "Today",
+  "homeTodayDigest": "{exercises, plural, =1{1 exercise} other{{exercises} exercises}} · {minutes, plural, =1{1 min} other{{minutes} min}}",
+  "@homeTodayDigest": {
+    "description": "Home hero subtitle: the whole training day at a glance. Two ICU plurals in one message rather than a Dart-side ternary, because the project's l10n guard test does not see ternary-wrapped Text() and two untranslated strings have already slipped past it that way.",
+    "placeholders": {
+      "exercises": { "type": "int" },
+      "minutes": { "type": "int" }
+    }
+  },
   "homeSectionUpcoming": "Upcoming",
   "homeSectionQuickStats": "Quick stats",
   "homeSectionSuggestions": "Suggestions",

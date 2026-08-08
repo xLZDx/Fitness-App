@@ -624,6 +624,7 @@
   "commonCentimetres": "{value} см",
   "commonKilograms": "{value} кг",
   "homeSectionToday": "Сегодня",
+  "homeTodayDigest": "{exercises, plural, one{{exercises} упражнение} few{{exercises} упражнения} many{{exercises} упражнений} other{{exercises} упражнения}} · {minutes, plural, one{{minutes} минута} few{{minutes} минуты} many{{minutes} минут} other{{minutes} минуты}}",
   "homeSectionUpcoming": "Дальше",
   "homeSectionQuickStats": "Кратко",
   "homeSectionSuggestions": "Рекомендации",

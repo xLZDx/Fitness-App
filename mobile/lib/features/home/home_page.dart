@@ -14,6 +14,9 @@ import '../moments/state/moment_providers.dart';
 import '../moments/widgets/day3_welcome_modal.dart';
 import '../progress/data/progress_stats.dart';
 import '../recovery/widgets/deload_banner.dart';
+import '../equipment/data/catalog_labels.dart';
+import '../workouts/data/session_digest.dart';
+import '../workouts/state/session_digest_providers.dart';
 import '../workouts/state/session_screening_providers.dart';
 import '../workouts/state/workout_session_providers.dart';
 import 'data/suggestion_builder.dart';
@@ -83,7 +86,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           const DeloadBanner(),
           _SectionHeader(l10n.homeSectionToday),
           const SizedBox(height: 12),
-          _TodayCard(upcoming: upcoming),
+          _TodayCard(upcoming: upcoming, digest: ref.watch(todayDigestProvider)),
           if (upcoming.length > 1) ...[
             const SizedBox(height: 24),
             _SectionHeader(l10n.homeSectionUpcoming),
@@ -185,8 +188,17 @@ class _GradientTile extends StatelessWidget {
 }
 
 class _TodayCard extends StatelessWidget {
-  const _TodayCard({required this.upcoming});
+  const _TodayCard({required this.upcoming, required this.digest});
   final List<ScreenedSession> upcoming;
+
+  /// The whole day, not just its first row.
+  ///
+  /// R4: the design's hero reads "Спина и бицепс, 7 упражнений · 48 минут" and
+  /// this card could not produce it, because a [ScheduledSession] carries one
+  /// exercise — so Home said "Push-ups, 10 min" where the design promised the
+  /// shape of the session. [SessionDigest] is that arithmetic; this is where
+  /// it reaches a screen.
+  final SessionDigest digest;
 
   @override
   Widget build(BuildContext context) {
@@ -231,6 +243,29 @@ class _TodayCard extends StatelessWidget {
 
     final screened = upcoming.first;
     final next = screened.session;
+
+    // The muscles the day is mostly about, or the exercise itself when it is
+    // the only one — a one-exercise day IS its exercise, and "Спина" tells the
+    // user less there than "Приседания" does.
+    //
+    // Joined with a comma rather than the design's "Спина и бицепс": a
+    // conjunction is a per-language grammar rule, and the labels are already
+    // capitalised nouns, so inventing one here would translate badly into
+    // every language nobody in this repo speaks.
+    final muscles = digest.muscles
+        .map((m) => CatalogLabels.muscle(l10n, m))
+        .join(', ');
+    final title =
+        (digest.exerciseCount > 1 && muscles.isNotEmpty) ? muscles : next.exerciseTitle;
+
+    // The schedule label is kept in front of the digest, not replaced by it.
+    // `upcoming` is a window over the next days, so its first row is not
+    // necessarily today — without the label a card headed "Сегодня" could
+    // silently describe Thursday, which the old single-session card could not
+    // do because it always printed the date.
+    final summary = '${formatScheduleLabel(l10n, next.scheduledFor)} · '
+        '${l10n.homeTodayDigest(digest.exerciseCount, digest.totalMinutes)}';
+
     return GlassCard(
       onTap: () => GoRouter.of(context).push('/workout/${next.exerciseId}'),
       child: Row(
@@ -252,7 +287,7 @@ class _TodayCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(next.exerciseTitle,
+                Text(title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleSmall
@@ -261,9 +296,9 @@ class _TodayCard extends StatelessWidget {
                 Text(
                   screened.hiddenForInjury
                       ? l10n.equipmentScheduledHiddenForInjury
-                      : AppLocalizations.of(context).notificationsMin(
-                          formatScheduleLabel(l10n, next.scheduledFor),
-                          next.durationMinutes),
+                      : summary,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: screened.hiddenForInjury
                         ? scheme.error
