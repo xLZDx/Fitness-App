@@ -1125,3 +1125,54 @@ this investigation in the first place.
 these turns out to need recolouring after all, it needs its own
 reasoning per file (what does this specific colour mean here, and does
 lime replace or dilute that meaning) — not a blanket find-and-replace.
+
+---
+
+## 2026-08-08 16:41 local / 13:41 UTC — R10 data layer landed; screen deliberately stopped short of a product decision
+
+### Evidence — a real bug caught in the extraction script before it reached Dart
+
+First run of `extract_mmfit_posture.py` (`--out posture_measured.json`)
+produced `forward_head: {median: -0.5151, std: 0.44, p05: -0.88, p95:
+0.39}` — a distribution too wide, relative to its own median, to trust.
+Root cause: the script picked the "forward" horizontal axis independently
+per clip (whichever axis had more variance in THAT clip), which silently
+mixes clips filmed at different camera angles into one pooled distribution.
+Fixed by determining one forward axis globally, from pooled variance across
+all 9,070 frames, applied uniformly. Re-run: `std` dropped from 0.44 to
+0.24. The remaining spread (still wider, relatively, than shoulder_asym or
+pelvis_tilt) is attributed to genuine behavioural noise — the proxy is
+"standing between reps," not "holding a deliberately neutral pose," and
+people look around, adjust, don't hold still. Named in the plan and in
+`measured_posture_config.dart`'s class doc rather than smoothed over.
+
+### Evidence — a sign-convention inversion caught in comments before it shipped
+
+`extract_mmfit_targets.py`'s `verify_layout` already establishes Human3.6M's
+vertical axis convention: larger value = higher up (feet < knee < hip <
+shoulder < head). The first draft of this session's new script's docstring
+said "positive = right side lower" for shoulder/pelvis asymmetry — backwards.
+Caught before committing, corrected in both the Python comment and the Dart
+port (`posture_metrics.dart`'s `shoulderAsymmetrySignal` doc explicitly
+works the image-space-vs-Human3.6M sign flip out in prose, not just in code).
+
+### Decision — ship the data layer, stop before the screen
+
+`core/plans/PLAN_R10_POSTURE_2026-08-08.md` §4 named the entry-point
+question (where does a posture check live in the app's IA — the bottom nav
+is a fixed 5 tabs, none of which R10 obviously belongs on) as a product
+decision, not an engineering one, before any screen code was written. Held
+to that: committed the landmark wiring, the extraction script, the measured
+config, and the metric functions with their tests (`f1aad8f`), and stopped
+there rather than guessing a navigation entry point to get something
+visually demoable.
+
+### Refusal — forward-head's live sign convention is untested, said so rather than implied confidence
+
+`posture_metrics.dart`'s `forwardHeadSignal` doc names, explicitly, that the
+sign convention assumes the same side-on camera orientation the measured
+MM-Fit population happened to face, and that nothing in this codebase has
+verified that assumption against a real device. Shipping the function
+without that caveat would have looked exactly as confident as the two
+metrics that ARE verified (shoulder/pelvis, whose sign logic has a
+dedicated regression test using a physically-constructed "higher" shoulder).
