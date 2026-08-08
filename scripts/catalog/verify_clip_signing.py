@@ -25,7 +25,15 @@ import urllib.request
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from provision_video_bucket import BUCKET, PROJECT, _request, access_token  # noqa: E402
 
-REGION = "us-central1"
+# `europe-west1`, matching `mobile/lib/core/firebase/functions_region.dart:16`
+# and `functions/src/scaling.ts` ("one region for everything").
+#
+# This read `us-central1` until 2026-08-08, which is Firebase's default and not
+# this project's: the verifier was resolving a hostname no function of ours has
+# ever answered on. Nothing caught it because a wrong region fails the same way
+# a broken deployment does, and the script had not been re-run since the region
+# was chosen.
+REGION = "europe-west1"
 
 # This machine runs Norton Web/Mail Shield, which terminates TLS to
 # *.cloudfunctions.net and *.run.app and re-signs it with a CA whose Basic

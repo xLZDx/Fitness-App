@@ -21,6 +21,7 @@ whole reason this is a module and not four lines inlined into each script.
 from __future__ import annotations
 
 import json
+import os
 import sys
 import urllib.parse
 import urllib.request
@@ -72,7 +73,40 @@ def api(url: str, token: str, method: str = 'GET', payload: dict | None = None,
                 '_body': e.read().decode('utf-8', 'replace')[:600]}
 
 
-PROJECT = 'traidingbot-b4061'
+def _default_project() -> str:
+    """The project `firebase deploy` targets, read from the same file it reads.
+
+    This was the literal string `'traidingbot-b4061'` until 2026-08-08, and
+    every ops script imports it. The repo moved to `fitness-app-korostelev`;
+    `.firebaserc` was updated, the CLI followed it, and these scripts did not.
+    `verify_clip_signing.py` was calling functions in a project that has none,
+    and scored 6/9 while doing it -- its rejection checks read HTTP 404 as
+    "refused", which a wrong hostname produces for free. A stale project
+    constant does not fail loudly; it passes quietly.
+
+    Reading `.firebaserc` means the scripts and the CLI cannot disagree again.
+    `FIREBASE_PROJECT` overrides for a one-off against another project, and a
+    missing/unparsable file is fatal rather than defaulted -- guessing which
+    project to mutate is precisely the mistake this replaces.
+    """
+    env = os.environ.get('FIREBASE_PROJECT') or os.environ.get('GCLOUD_PROJECT')
+    if env:
+        return env
+    rc = Path(__file__).resolve().parents[2] / '.firebaserc'
+    if not rc.is_file():
+        sys.exit(f'no .firebaserc at {rc} -- set FIREBASE_PROJECT explicitly')
+    try:
+        return json.loads(rc.read_text('utf-8'))['projects']['default']
+    except (ValueError, KeyError) as e:
+        sys.exit(f'{rc} has no projects.default ({e}) -- set FIREBASE_PROJECT')
+
+
+PROJECT = _default_project()
+
+# The project the app was built in before the move. Named so that a script
+# which genuinely means the old one says so, instead of relying on [PROJECT]
+# happening to still point there.
+LEGACY_PROJECT = 'traidingbot-b4061'
 
 
 def main() -> None:
