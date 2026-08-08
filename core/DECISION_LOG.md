@@ -1005,3 +1005,57 @@ question the operator has not been asked, and `form_coach_support_test.dart`
 (T1, pre-existing) already pins the current offered set; changing it would
 have required updating that test's stated contract without being asked to.
 
+
+---
+
+## 2026-08-08 14:19 local / 11:19 UTC — R9 landed at token level; onboarding/login found out of scope of the token system entirely
+
+### Evidence — visual check on Pixel_API_34 diverged from the token change
+
+After committing `112ee5b` (dark theme recoloured to lime `#C9FF47` on
+`#06060F`, mechanically verified: `flutter test test/theme/` 44/44,
+full suite 1720/1720), built and installed on the running emulator
+(`emulator-5554`) per the project's UI-change convention. Screenshot of
+the login page (`r9_check.png`) showed a pink/mint pastel gradient
+background and a pink-to-violet CTA button — **not** the new dark/lime
+theme. Grepped `login_page.dart:51-168`: the whole screen paints
+`AppPalette.auroraPink`/`AppPalette.auroraViolet` directly as
+`LinearGradient` stops, never reading `AppSemanticColors` or
+`Theme.of(context)` at all. Tapped through to onboarding step 1
+(`r9_check2.png`, anonymous sign-in) — same pattern, same pink/mint
+gradient, "Далее" button the same pink-violet gradient.
+
+### Evidence — this is not the intended design, confirmed against the prototype source
+
+`App.tsx:1234-1236` (`Step0`, the prototype's actual first onboarding
+screen): `background: C.bg` (`#06060F`, the dark background) with a
+lime glow (`radial-gradient(circle, ${bc(C.acc, 0.12)} 0%, transparent
+70%)`, `C.acc` = `#C9FF47`). The onboarding flow is designed dark, with
+lime accents — matching the main app, not a separate light "welcome"
+moment. The currently-shipped Flutter onboarding/login screens
+predate this design and were never migrated onto it.
+
+### Decision — do not fold this into R9's commit; name it, do not fix it blind
+
+`login_page.dart` + the ~12 `OnboardingFlow` step widgets (`App.tsx`
+defines `Step0` through `Step13`) is a structural re-skin — background,
+card style, text colour, button treatment all flip from light-on-pastel
+to dark-on-glass — not a value substitution the way the semantic-token
+change was. Estimate: 12+ files, each needing its own layout read
+against the corresponding `App.tsx` step before editing, well past the
+`>2h / 15+ files` scope-split threshold. Started it inside the same
+commit as the token change would have mixed a small, fully-verified
+change with a large, unverified one in one diff.
+
+**Refusal, not yet a fix:** left `login_page.dart` and every
+`OnboardingFlow` step exactly as they were. Flagging this to the
+operator as newly-discovered R9 scope (call it R9b) rather than
+silently treating R9 as fully done, and rather than silently expanding
+scope to cover it without a plan.
+
+### Cross-reference
+
+`core/plans/FIGMA_MAKE_REFACTOR_AUDIT_2026-08-05.md` §10 did not surface
+this gap — its gate-sequence review focused on the post-onboarding app.
+Worth a note there too if a future session re-reads that audit as
+authoritative without checking this log first.
