@@ -1553,6 +1553,70 @@ because that is exactly the crop `core/camera/centre_crop.dart` hands the
 classifier — the fraction is semantics, not styling, which is why it is a
 fraction rather than the design's fixed 260px.
 
+### Decision — R11h refuses to build the design's calibration bar
+
+The design's Technique Coach has a calibration percentage that fills; in the
+prototype it is `setInterval(() => p + 4, 60)`. Rejected alternative: build
+it against a timer, which a first attempt did — it worked, its own tests
+passed, and it broke 12 unrelated form-check page tests with a pending
+timer. That was the honest signal: the screen had gained a poller in order
+to animate something it does not know. Removed rather than suppressed. A
+usable view now goes straight to `ready`
+(`mobile/lib/features/form_check/data/coach_phases.dart:96`). Rules out:
+shipping a progress bar that measures nothing, which "Empiricism over
+Poetry" forbids.
+
+### Evidence — the gate already knew everything the coach needed to say
+
+`PoseGateVerdict` has six values, each naming exactly why a frame is
+unscorable (`mobile/lib/features/form_check/data/pose_gate.dart:39`). The
+screen consumed that only to withhold a rep count, so someone with their
+hips out of frame saw a camera, a skeleton and no reps with nothing
+connecting them. R11h maps the six onto four instructions —
+`unitMismatch` kept separate because it is a bug, not a framing problem, and
+telling that user to "step back" would have them moving until they gave up.
+
+### Decision — R11f's capture sheet returns an angle instead of capturing
+
+"Take a new photo" called `capture()` bare: no angle (so every shot was
+filed `front`) and no preview. Rejected alternative: have the sheet take the
+still itself. It returns the chosen angle and closes, so it holds no opinion
+about storage, encryption or failure — all of which already have an owner in
+`LocalProgressPhotosRepository`. Null means cancelled, matching
+`PhotoSource.take` one layer down.
+
+### Evidence — two layout bugs were found by tests, not by review
+
+R11f's sheet overflowed by 465px on a short viewport, and an overflowing
+Column clips rather than shrinks — what it clipped off was the shutter, the
+one control the sheet exists for. R11b's ruler failed Flutter's slider
+semantics assert (`value` set with an increase action but no
+`increasedValue`), which would have shipped a control a screen-reader user
+cannot aim. Both are recorded because both were invisible to reading the
+code.
+
+### Refusal — R11e not started
+
+The design's workout player logs N exercises x M sets per session. This
+app's `WorkoutSession` deliberately supports one exercise and at most one
+set per session (F3.4). Reversing that is a data-model change with a
+migration behind it, not a layout change, so the gate was not scoped and no
+code was written. Awaiting the operator's decision.
+
+### Refusal — R11i's Paywall not started
+
+Tier count (2 vs 3) and trial length (7 vs 14 days) are monetisation
+decisions. The Profile half shipped; the Paywall half was left untouched
+rather than implemented against a guess.
+
+### Gap — no device verification for any R11 gate
+
+Every gate is analyze-and-test green and nothing more. None of the rebuilt
+screens has been rendered on the Pixel_API_34 emulator or a phone. For a
+redesign this is the weakest evidence there is, and it is the reason two
+gates (R11h's launch/preparation screens, which change when the camera
+opens) were deliberately left unbuilt rather than shipped blind.
+
 ### Process miss — the first two R11 commits do not carry their log entry
 
 `11f94b6` (R11a) and `a4d00e0` (R11g) were committed before this entry was

@@ -88,46 +88,57 @@ Operator authorised the whole sequence: *"Пуш + ГО R11a–R11i по пор�
 — a multi-gate GO in this plan's own recommended order (§4), run
 autonomously. Section 5 above is superseded by that GO for R11a–R11i.
 
-| Gate | Status | Commit |
+| Gate | Status | Commit(s) |
 |---|---|---|
 | **R11a** Home | **DONE** | `11f94b6` |
 | **R11g** Progress | **DONE** | `a4d00e0` |
 | **R11d** Exercise + Equipment | **DONE** | `7d614ca` |
-| **R11c** Scan | **PARTIAL** — scan frame only | `9579144` |
-| **R11h** Technique Coach | not started | — |
-| **R11b** Onboarding | not started | — |
-| **R11f** Progress Photos | not started | — |
+| **R11c** Scan | **DONE** | `9579144` + `4ddea5a` |
+| **R11h** Technique Coach | **PARTIAL** — readiness stages, not the full wizard | `9794d27` |
+| **R11b** Onboarding | **PARTIAL** — rulers + BMI/delta, not the 13-step flow | `4f78b0c` |
+| **R11f** Progress Photos | **PARTIAL** — angle + viewfinder, 2 of 9 states | `0e98021` |
 | **R11e** Workout Player | **HELD** — needs a data-model decision | — |
-| **R11i** Workouts + Profile + Paywall | **HELD (Paywall half)** — needs a pricing decision | — |
+| **R11i** Workouts + Profile + Paywall | **PARTIAL** — Profile grouped; Workouts not started; Paywall **HELD** on pricing | `3b6841b` |
 
 Verification at the stopping point: `flutter analyze` 7 issues (identical
-to the pre-R11 baseline, 0 new), `flutter test` 1791 passed / 0 failed
-(1748 before R11a). Nothing pushed since `4dc291a` — all four gate commits
-are local and need a separate push-GO.
+to the pre-R11 baseline, 0 new), `flutter test` **1826 passed / 0 failed**
+(1748 before R11a). `4dc291a..a67e5b9` is pushed; everything after it is
+local and needs a separate push-GO.
 
-### Where to resume
+### What each PARTIAL still owes
 
-**Next gate in order is R11c's remainder**, then R11h.
+Each gate's own commit body carries the full list under "Что осталось
+непокрытым". The short version:
 
-R11c's outstanding work, in the order it should be done:
+- **R11h** — `launch` and `preparation` screens (they change WHEN the camera
+  opens, which nine `start_lifecycle_test.dart` tests pin deliberately and
+  which wants device verification first); `paused`/`summary` as real phases.
+  A real settling signal for `calibration` does not exist, and the gate
+  refuses to fake the design's percentage bar.
+- **R11b** — the 13-step flow (a UX decision, not a port); `WheelYear`
+  (needs birth-year in the profile model, which stores `age`);
+  `BodyDiagram` selector; `ChoiceCard`.
+- **R11f** — privacy gate, preview+retake, metadata (weight/note/milestone —
+  the model already has all three fields and nothing sets them, which is
+  also why R11g's compare card can only sometimes show a delta), export,
+  reminder.
+- **R11i** — Workouts' Programs/Library split, which needs a programme
+  entity that does not exist; the Paywall.
 
-1. Invert `mobile/lib/features/scanner/scanner_page.dart`'s build (line
-   ~424): `Stack` with the preview `Positioned.fill` behind everything,
-   instead of a `SizedBox(height: 0.68 * screen)` inside a `ListView`.
-2. Replace `GlassAppBar` with a glass row over the preview: back,
-   "Распознавание" pill, capture-mode toggle.
-3. Move the capture + gallery buttons into a control cluster over the
-   camera; the design also has a flash control, which has **no equivalent
-   anywhere in the app** — it needs a `CameraSession` torch API first, so
-   treat it as its own sub-item, not a layout detail.
-4. Put the result cards into a `DraggableScrollableSheet` over the preview.
-5. Re-run `test/features/scanner_page_test.dart` — 40 tests assert the
-   current structure and several use `scrollUntilVisible` against the
-   `ListView` that step 1 removes. Expect to rewrite their scrolling, not
-   their assertions.
+### The programme entity, named three times
 
-`ScanFrame` (`mobile/lib/features/scanner/widgets/scan_frame.dart`) is
-already built, tested and wired; the inversion does not change it.
+R11a's progress bar, R11d's "add to programme" button and R11i's Workouts
+split all stopped at the same missing thing: this app has no multi-week
+programme. `GeneratedPlan` (`mobile/lib/features/ai_planner/data/workout_plan.dart:4`)
+is ONE day. Three gates worked around it honestly; a fourth should probably
+build it rather than work around it again.
+
+### No device verification, anywhere
+
+Every gate above is `flutter analyze` + `flutter test` green and nothing
+more. For a redesign that is the weakest possible evidence: none of these
+screens has been rendered on the `Pixel_API_34` emulator or a phone. This
+is the single largest gap in the whole sequence.
 
 ### Two gates still need an operator decision before they can be scoped
 
