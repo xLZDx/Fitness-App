@@ -84,6 +84,287 @@ class ExerciseHero extends StatelessWidget {
   }
 }
 
+/// The design's 260px immersive header: the movement's own still, a scrim, and
+/// the name in display type over it.
+///
+/// R11d. `ExerciseHero` above is a 56px thumbnail in a card — a list row, not a
+/// header — and the prototype (`App.tsx:2818-2856`) opens the screen with the
+/// picture at full bleed. Kept as a separate widget rather than a mode on
+/// `ExerciseHero` because the player still wants the compact row: a screen you
+/// are DOING an exercise on should not spend 260px re-introducing it.
+class ExerciseImmersiveHero extends StatelessWidget {
+  const ExerciseImmersiveHero({
+    super.key,
+    required this.exercise,
+    this.body,
+    this.onBack,
+  });
+
+  final ExerciseItem exercise;
+
+  /// Which filmed body to take the still from — same values as
+  /// [ExerciseItem.video].
+  final String? body;
+
+  /// Null uses the router's own pop. Injectable so a test can drive it
+  /// without a GoRouter in the tree.
+  final VoidCallback? onBack;
+
+  static const double height = 260;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colors = theme.colors;
+    final poster = exercise.posterFor(body);
+    final top = MediaQuery.paddingOf(context).top;
+
+    return SizedBox(
+      height: height,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (poster != null)
+            // White bed for the same reason `ExerciseThumb` uses one: the clips
+            // are rendered on flat white, so anything else frames the figure in
+            // a grey letterbox.
+            ColoredBox(
+              color: Colors.white,
+              child: Image.asset(poster, fit: BoxFit.cover),
+            )
+          else
+            // The design calls this state "Анимация недоступна". 168 of the
+            // catalogue's exercises have no clip and so no still; a gradient
+            // with an explanation beats a blank rectangle.
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    colors.backgroundSecondary,
+                    colors.accentPrimary.withValues(alpha: 0.10),
+                  ],
+                ),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.movie_outlined,
+                        size: 30, color: colors.textDisabled),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.exerciseNoAnimation,
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: colors.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          // Bottom scrim, so the title reads over any still.
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 60, 20, 18),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    colors.backgroundPrimary,
+                    colors.backgroundPrimary.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+              child: Text(
+                exercise.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  height: 1.1,
+                  color: colors.textPrimary,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: top + 8,
+            left: 12,
+            child: _ScrimCircleButton(
+              icon: Icons.arrow_back_ios_new_rounded,
+              semanticLabel: l10n.commonBack,
+              onTap: onBack ?? () => GoRouter.of(context).pop(),
+            ),
+          ),
+          if (exercise.muscles.isNotEmpty)
+            Positioned(
+              top: top + 12,
+              left: 64,
+              right: 20,
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: _ScrimChip(
+                  label: exercise.muscles
+                      .take(2)
+                      .map((m) => CatalogLabels.muscle(l10n, m))
+                      .join(' · '),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A control drawn over artwork this app does not control.
+///
+/// `Colors.white` here is the sanctioned scrim-foreground case, the same one
+/// `form_check_page.dart` uses over a camera frame: the fill is
+/// [AppSemanticColors.cameraOverlay] (black at 0.55) in both themes, so a
+/// theme-reactive foreground would be wrong half the time.
+class _ScrimCircleButton extends StatelessWidget {
+  const _ScrimCircleButton({
+    required this.icon,
+    required this.semanticLabel,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String semanticLabel;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Theme.of(context).colors.cameraOverlay,
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: SizedBox(
+          width: 38,
+          height: 38,
+          child: Icon(icon, size: 16, color: Colors.white,
+              semanticLabel: semanticLabel),
+        ),
+      ),
+    );
+  }
+}
+
+class _ScrimChip extends StatelessWidget {
+  const _ScrimChip({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: theme.colors.cameraOverlay,
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+/// Level / equipment / type, as the design's three-up row
+/// (`App.tsx:2874-2885`).
+///
+/// Every value is already on [ExerciseItem]; nothing here is derived or
+/// guessed. `equipmentLabel` is the vendor's own free text — shown verbatim
+/// rather than mapped, because the mapping onto this app's 52 machine ids does
+/// not exist yet and inventing one per label would be worse than quoting.
+class ExerciseQuickStats extends StatelessWidget {
+  const ExerciseQuickStats({super.key, required this.exercise});
+  final ExerciseItem exercise;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Row(
+      children: [
+        Expanded(
+          child: _QuickStat(
+            label: l10n.exerciseStatLevel,
+            value: CatalogLabels.difficulty(l10n, exercise.difficulty),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _QuickStat(
+            label: l10n.exerciseStatEquipment,
+            value: exercise.equipmentLabel ?? l10n.exerciseBodyweight,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _QuickStat(
+            label: l10n.exerciseStatType,
+            value: exercise.isStretch
+                ? l10n.exerciseTypeMobility
+                : l10n.exerciseTypeStrength,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _QuickStat extends StatelessWidget {
+  const _QuickStat({required this.label, required this.value});
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GlassCard(
+      borderRadius: 12,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      child: Column(
+        children: [
+          Text(
+            value,
+            maxLines: 2,
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelLarge
+                ?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label.toUpperCase(),
+            textAlign: TextAlign.center,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colors.textSecondary,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.6,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class ExercisePill extends StatelessWidget {
   const ExercisePill({super.key, required this.text});
   final String text;
@@ -620,7 +901,11 @@ List<Widget> exerciseReferenceSections(
   final theme = Theme.of(context);
   final demoVideo = item.playableVideoFor(body) ?? item.videoUrl;
   return [
-    ExerciseHero(exercise: item),
+    // R11d: the name and the picture moved OUT of this list and into
+    // `ExerciseImmersiveHero`, which the page renders edge-to-edge above the
+    // padding. What is left here is the design's three-up stats row
+    // (`App.tsx:2874`), which the old 56px card hero folded into pills.
+    ExerciseQuickStats(exercise: item),
     const SizedBox(height: 16),
     // A clip or nothing. The two photograph fallbacks that used to sit here
     // are gone: `frames` and `imageUrls` are both stills of a man in a gym,

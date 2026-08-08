@@ -31,7 +31,10 @@ class EquipmentDetailPage extends ConsumerWidget {
     final ex = ref.watch(recommendedExercisesProvider(equipmentId));
 
     return FrostedScaffold(
-      appBar: GlassAppBar(title: AppLocalizations.of(context).equipmentEquipment),
+      // R11d: no GlassAppBar. The design opens on the machine's own picture at
+      // full bleed (`App.tsx:3014-3040`) with the back control and the name
+      // drawn over it; a bar above that repeats the name and costs 92px of the
+      // only picture the screen has.
       body: eq.when(
         loading: () =>
             const Center(child: CircularProgressIndicator()),
@@ -42,33 +45,27 @@ class EquipmentDetailPage extends ConsumerWidget {
             return _NotFound(equipmentId: equipmentId);
           }
           return SmoothScrollList(
-            padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
+            padding: EdgeInsets.zero,
             children: [
-              GlassCard(
-                child: Row(
+              _EquipmentImmersiveHero(item: item),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _EquipmentThumb(equipmentId: item.id),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(item.name, style: theme.textTheme.titleLarge),
-                          const SizedBox(height: 2),
-                          Text(
-                            '${CatalogLabels.manufacturer(AppLocalizations.of(context), item.manufacturer)}'
-                            ' · '
-                            '${CatalogLabels.category(AppLocalizations.of(context), item.category)}',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+              Text(
+                '${CatalogLabels.manufacturer(AppLocalizations.of(context), item.manufacturer)}'
+                ' · '
+                '${CatalogLabels.category(AppLocalizations.of(context), item.category)}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colors.textSecondary,
                 ),
               ),
+              const SizedBox(height: 12),
+              // The design's suitability signal (`App.tsx:3057-3065`), from the
+              // screening that already runs for this machine's exercises rather
+              // than from a new judgement about the machine itself.
+              _SuitabilityCard(equipmentId: item.id),
               const SizedBox(height: 12),
               const _ToolsRow(),
               const SizedBox(height: 16),
@@ -190,9 +187,187 @@ class EquipmentDetailPage extends ConsumerWidget {
                   return widgets;
                 },
               ),
+                  ],
+                ),
+              ),
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// The design's 240px machine header (`App.tsx:3014-3040`).
+///
+/// Same construction as `ExerciseImmersiveHero` and deliberately not shared
+/// with it: the picture source differs (a provider lookup here, an asset path
+/// on the model there) and the two heroes carry different chips. A common
+/// widget taking six nullable parameters to serve both would be harder to read
+/// than the eighty lines it saved.
+class _EquipmentImmersiveHero extends ConsumerWidget {
+  const _EquipmentImmersiveHero({required this.item});
+  final EquipmentItem item;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colors = theme.colors;
+    final hero = ref.watch(equipmentHeroImageProvider(item.id)).valueOrNull;
+    final top = MediaQuery.paddingOf(context).top;
+
+    final fallback = DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppPalette.auroraViolet, AppPalette.auroraBlue],
+        ),
+      ),
+      child: const Center(
+        child: Icon(Icons.fitness_center,
+            size: 56, color: AppSemanticColors.onGradientInk),
+      ),
+    );
+
+    return SizedBox(
+      height: 240,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (hero == null)
+            fallback
+          else if (hero.startsWith('http'))
+            Image.network(
+              hero,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => fallback,
+              loadingBuilder: (_, child, progress) =>
+                  progress == null ? child : fallback,
+            )
+          else
+            Image.asset(hero,
+                fit: BoxFit.cover, errorBuilder: (_, __, ___) => fallback),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 60, 20, 18),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    colors.backgroundPrimary,
+                    colors.backgroundPrimary.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+              child: Text(
+                item.name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  height: 1.1,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: top + 8,
+            left: 12,
+            child: Material(
+              color: colors.cameraOverlay,
+              shape: const CircleBorder(),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: () => GoRouter.of(context).pop(),
+                child: SizedBox(
+                  width: 38,
+                  height: 38,
+                  child: Icon(Icons.arrow_back_ios_new_rounded,
+                      size: 16,
+                      color: Colors.white,
+                      semanticLabel: l10n.commonBack),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// "Suits you" / "Check with a coach", from the injury screening that already
+/// runs over this machine's curated exercises.
+///
+/// Deliberately NOT a claim about the machine. The app screens EXERCISES
+/// against the user's logged injuries (`exercise_filter.dart`); saying a bench
+/// "suits you" is shorthand for "everything we would put you on here passed
+/// that screening". When something did not pass, the card says so and points
+/// at a human rather than reassuring — a safety signal must not be the
+/// cheerful default.
+class _SuitabilityCard extends ConsumerWidget {
+  const _SuitabilityCard({required this.equipmentId});
+  final String equipmentId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final rec = ref.watch(recommendedExercisesProvider(equipmentId)).valueOrNull;
+    // Nothing to say until the screening has actually run. An unresolved
+    // provider rendering "suits you" would be the reassurance-by-default this
+    // card exists to avoid.
+    if (rec == null || rec.items.isEmpty) return const SizedBox.shrink();
+
+    final flagged = rec.hiddenForInjury > 0;
+    final tone = flagged ? theme.colors.warning : theme.colors.success;
+
+    return Container(
+      key: const Key('equipment.suitability'),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: tone.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: tone.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            flagged
+                ? Icons.report_problem_outlined
+                : Icons.check_circle_outline_rounded,
+            color: tone,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  flagged
+                      ? l10n.equipmentCheckWithCoach
+                      : l10n.equipmentSuitableForYou,
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w700, color: tone),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  flagged
+                      ? l10n.equipmentCheckBecauseInjury
+                      : l10n.equipmentSuitableBecause,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colors.textSecondary),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -204,51 +379,12 @@ class EquipmentDetailPage extends ConsumerWidget {
 /// The placeholder is deliberately still there rather than hidden: 11
 /// mostly-cardio machines have no vendored photo at all, and an empty slot
 /// would read as a broken image.
-class _EquipmentThumb extends ConsumerWidget {
-  const _EquipmentThumb({required this.equipmentId});
-  final String equipmentId;
-
-  static const _size = 56.0;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final hero = ref.watch(equipmentHeroImageProvider(equipmentId)).valueOrNull;
-    final radius = BorderRadius.circular(18);
-    final placeholder = Container(
-      width: _size,
-      height: _size,
-      decoration: BoxDecoration(
-        borderRadius: radius,
-        gradient: const LinearGradient(colors: [
-          AppPalette.auroraViolet,
-          AppPalette.auroraBlue,
-        ]),
-      ),
-      child: const Icon(Icons.fitness_center, color: AppSemanticColors.onGradientInk, size: 30),
-    );
-    if (hero == null) return placeholder;
-    return ClipRRect(
-      borderRadius: radius,
-      child: SizedBox(
-        width: _size,
-        height: _size,
-        child: hero.startsWith('http')
-            ? Image.network(
-                hero,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => placeholder,
-                loadingBuilder: (_, child, progress) =>
-                    progress == null ? child : placeholder,
-              )
-            : Image.asset(
-                hero,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => placeholder,
-              ),
-      ),
-    );
-  }
-}
+// `_EquipmentThumb` (a 56px rounded tile in the old header card) lived here
+// until R11d. Its one caller was the header the immersive hero replaced, and
+// its picture logic — provider lookup, http-vs-asset branch, gradient
+// fallback — moved into `_EquipmentImmersiveHero` unchanged. Deleted rather
+// than kept: an unused widget rendering the same image at a different size is
+// how "one design" becomes two.
 
 class _ExerciseCard extends StatelessWidget {
   const _ExerciseCard({required this.exercise});

@@ -892,5 +892,18 @@
   "progressPhotoCompare": "Сравнить",
   "progressPhotoRange": "{from} → {to}",
   "progressPhotoWeightDelta": "{delta} кг",
-  "progressPhotoNoPixels": "Предпросмотр недоступен"
+  "progressPhotoNoPixels": "Предпросмотр недоступен",
+  "exerciseNoAnimation": "Анимация недоступна",
+  "exerciseStatLevel": "Уровень",
+  "exerciseStatEquipment": "Оборуд.",
+  "exerciseStatType": "Тип",
+  "exerciseTypeStrength": "Сила",
+  "exerciseTypeMobility": "Мобильность",
+  "exerciseBodyweight": "Свой вес",
+  "equipmentSuitableForYou": "Подходит вам",
+  "equipmentSuitableBecause": "На основе вашей цели и уровня",
+  "equipmentCheckWithCoach": "Проконсультируйтесь с тренером",
+  "equipmentCheckBecauseInjury": "У вас указана травма, которую этот тренажёр может нагрузить",
+  "equipmentRecommendedForYou": "Рекомендовано для вас",
+  "equipmentRecommendedBadge": "Рекомендовано"
 }

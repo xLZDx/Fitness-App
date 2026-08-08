@@ -369,6 +369,17 @@ void main() {
     // `Colors.black @0.55`, the same shape as the capture band it visually
     // extends). All six are the scrim-foreground category, none are a
     // foreground white on a gradient.
+    //
+    // 51 -> 55, 2026-08-08 (R11d): the two immersive headers. Three in
+    // `exercise_reference.dart` -- the white bed under a poster (the SAME
+    // third category `exercise_thumb.dart` already occupies, for the same
+    // reason: the clips are rendered on flat white) plus the back icon and
+    // the muscle chip's text, both on `AppSemanticColors.cameraOverlay`,
+    // which is theme-invariant by its own contract, so a theme-reactive
+    // foreground would be wrong in one theme. One in
+    // `equipment_detail_page.dart` -- the same back icon on the same token.
+    // Diff read: one bed, three scrim foregrounds, zero foreground whites on
+    // a gradient.
     final whites = <String, int>{};
     for (final f in Directory('lib').listSync(recursive: true)) {
       if (f is! File || !f.path.endsWith('.dart')) continue;
@@ -382,7 +393,7 @@ void main() {
       if (n > 0) whites[f.path.replaceAll(r'\', '/')] = n;
     }
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 51, reason: 'per file: $whites');
+    expect(total, 55, reason: 'per file: $whites');
   });
 
   group('lerp', () {

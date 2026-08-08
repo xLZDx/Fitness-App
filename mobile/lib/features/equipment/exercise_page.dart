@@ -33,19 +33,31 @@ class ExercisePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return FrostedScaffold(
-      appBar: GlassAppBar(title: AppLocalizations.of(context).exerciseTitle),
+      // R11d: no GlassAppBar. The design opens this screen with the movement's
+      // own picture at full bleed (`App.tsx:2818`), and the hero carries both
+      // the back control and the title — a bar above it would repeat the name
+      // and cost the picture 92px.
       body: ExerciseResolutionView(
         exerciseId: exerciseId,
         builder: (context, item, body) => SmoothScrollList(
-          padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
+          padding: EdgeInsets.zero,
           children: [
-            ...exerciseReferenceSections(context, item, body),
-            const SizedBox(height: 20),
-            AppPrimaryButton(
-              key: const Key('exercise.start'),
-              onPressed: () =>
-                  GoRouter.of(context).push('/workout/${item.id}'),
-              label: AppLocalizations.of(context).exerciseStartWorkout,
+            ExerciseImmersiveHero(exercise: item, body: body),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ...exerciseReferenceSections(context, item, body),
+                  const SizedBox(height: 20),
+                  AppPrimaryButton(
+                    key: const Key('exercise.start'),
+                    onPressed: () =>
+                        GoRouter.of(context).push('/workout/${item.id}'),
+                    label: AppLocalizations.of(context).exerciseStartWorkout,
+                  ),
+                ],
+              ),
             ),
           ],
         ),

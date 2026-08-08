@@ -1649,5 +1649,18 @@
       }
     }
   },
-  "progressPhotoNoPixels": "Preview unavailable"
+  "progressPhotoNoPixels": "Preview unavailable",
+  "exerciseNoAnimation": "Animation unavailable",
+  "exerciseStatLevel": "Level",
+  "exerciseStatEquipment": "Equipment",
+  "exerciseStatType": "Type",
+  "exerciseTypeStrength": "Strength",
+  "exerciseTypeMobility": "Mobility",
+  "exerciseBodyweight": "Bodyweight",
+  "equipmentSuitableForYou": "Suits you",
+  "equipmentSuitableBecause": "Based on your goal and level",
+  "equipmentCheckWithCoach": "Check with a coach",
+  "equipmentCheckBecauseInjury": "You have logged an injury this equipment can load",
+  "equipmentRecommendedForYou": "Recommended for you",
+  "equipmentRecommendedBadge": "Recommended"
 }

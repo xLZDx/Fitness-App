@@ -1462,3 +1462,68 @@ unambiguously gate-sized under this project's own Quantified Scope-Trigger
 rule (>2h, >15 files). A proposed sub-gate breakdown follows in
 core/plans/PLAN_R11_FIGMA_PARITY_REBUILD_2026-08-08.md, presented for the
 operator's sequencing decision rather than built blind under one GO.
+
+## 2026-08-08 — R11 authorised in full; R11a and R11g built
+
+Operator: "Пуш + ГО R11a–R11i по порядку автономно" — a push-GO for the
+three pending commits plus a multi-gate implementation GO covering the
+whole R11 sequence, in the plan's own recommended order (§4), run
+autonomously. Under Gate-Based Development that means: run the gates end
+to end, report ONCE at the end, and stop only where a decision is
+genuinely the operator's.
+
+Pushed `076452a..4dc291a`.
+
+### Decision — R11a's programme bar shows the week, not a programme
+
+The design's Home header reads "Силовая база · Неделя 2 из 8". Rejected
+alternative: print a week index. There is no programme entity in this app
+— `mobile/lib/features/ai_planner/data/workout_plan.dart:4` (`GeneratedPlan`)
+is ONE day's training and carries no week number or horizon. The bar keeps
+its shape and counts this week's scheduled sessions instead
+(`mobile/lib/features/home/data/home_dashboard.dart:80`), and hides itself
+entirely when the week is empty. Rules out: retrofitting a fake programme
+label later and having to explain where "week 2 of 8" came from.
+
+### Decision — R11a drops the design's notification bell
+
+`mobile/lib/core/router/app_router.dart` registers 27 paths and none is a
+notifications screen (verified by listing every `path:` in the file). A
+bell would be a control that does nothing. Rules out: shipping a visible
+affordance that has to be explained away in a review.
+
+### Evidence — muscle recovery is derivable without new data
+
+`WorkoutLogEntry` carries `exerciseId` + `completedAt`
+(`mobile/lib/features/workouts/data/workout_log.dart:43-46`) and the
+catalogue carries `primaryMuscles`
+(`mobile/lib/features/equipment/data/equipment_models.dart:23`), so
+hours-since-last-trained per muscle needs no new entity. Same for volume
+(`weightKg` × `repsCompleted`, both already on the log) and per-exercise
+records. This is why R11a shipped five new sections with zero schema
+change.
+
+### Decision — R11g keeps three sections the design does not specify
+
+The 8-week chart, the full records list and the recent-activity list have
+no equivalent in `App.tsx:3944-4015`. Kept anyway: cutting three working
+sections is a product call, and this gate's GO was for a rebuild, not for
+a scope cut. Flagged to the operator instead of decided here.
+
+### Evidence — the progress-photo feature existed and was nearly unreachable
+
+`mobile/lib/features/progress_photos/` is 1,251 lines across 9 files —
+AES store, key store, month timeline, `defaultComparePair` — routed at
+`/photos` (`app_router.dart:329`). Nothing on the Progress screen linked
+to it, which is exactly the block the design puts in that screen's middle.
+R11g wired it in. Correction to an earlier claim in this session: I first
+reported "no progress-photos feature exists" from a `grep | head -20` that
+truncated before reaching it; the feature was there all along.
+
+### Process miss — the first two R11 commits do not carry their log entry
+
+`11f94b6` (R11a) and `a4d00e0` (R11g) were committed before this entry was
+written, so neither diff contains it, which the Continuous Decision Log
+rule requires. Recorded here rather than by amending: both commits are
+already pushed-adjacent history and amending a commit to retrofit a block
+is forbidden by Git Lifecycle. Applied from the next commit forward.
