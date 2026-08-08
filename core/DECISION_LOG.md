@@ -1267,8 +1267,10 @@ added). Verified rather than conceded on trust.
 
 Cloned `xLZDx/ReviewExistingExamples` at `8209787` (the same commit R5's
 entry above already cites) into
-`D:\Temp\claude\...\scratchpad\figma_proto\` and read `src/App.tsx:2441-2555`
-(`HomeScreen`) directly. It has, in order: a greeting + first-name header
+`D:\Temp\claude\d--test-2\3794b893-82f5-45ea-88c1-54177fdd7e82\scratchpad\figma_proto\`
+(session scratchpad, outside this repo -- not `D:\test 2\Fitness App\...`)
+and read `src/App.tsx:2441-2555` inside that clone (`HomeScreen`) directly.
+It has, in order: a greeting + first-name header
 ("Добрый вечер" / "Иван") with a notification-bell button; a program-progress
 bar ("Силовая база · Неделя 2 из 8", 28%) directly under the header; a "TODAY
 HERO" gradient card carrying the day's actual workout name, muscle-group
