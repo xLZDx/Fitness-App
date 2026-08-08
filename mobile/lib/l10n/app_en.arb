@@ -1158,15 +1158,23 @@
   "@homeTodayDigest": {
     "description": "Home hero subtitle: the whole training day at a glance. Two ICU plurals in one message rather than a Dart-side ternary, because the project's l10n guard test does not see ternary-wrapped Text() and two untranslated strings have already slipped past it that way.",
     "placeholders": {
-      "exercises": { "type": "int" },
-      "minutes": { "type": "int" }
+      "exercises": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "progressVolume": "Volume (kg)",
   "progressVsPreviousMonth": "{value}% vs last month",
   "@progressVsPreviousMonth": {
     "description": "Trend badge next to the volume chart. The value already carries its sign (+18 / -4): a bare number after a bad month reads as praise.",
-    "placeholders": { "value": { "type": "String" } }
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
   },
   "progressVolumeNeedsWeights": "Record the weight on a set and your volume shows up here.",
   "progressConsistency": "Consistency",
@@ -1175,7 +1183,14 @@
   "progressRecordLine": "{weight} kg × {reps}",
   "@progressRecordLine": {
     "description": "A personal record: what was actually lifted, never an estimated one-rep max.",
-    "placeholders": { "weight": { "type": "String" }, "reps": { "type": "int" } }
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      },
+      "reps": {
+        "type": "int"
+      }
+    }
   },
   "summaryTitle": "Workout summary",
   "summaryDone": "Workout complete",
@@ -1505,5 +1520,33 @@
   "restTimerAddTime": "+30 s",
   "restTimerAddTimeHint": "Add 30 seconds",
   "restTimerResume": "Resume",
-  "workoutsFilterFormCoach": "Form Coach"
+  "workoutsFilterFormCoach": "Form Coach",
+  "progressphotosCompare": "Compare",
+  "progressphotosBefore": "Before",
+  "progressphotosAfter": "After",
+  "progressphotosCompareSpan": "{days, plural, =0{Same day} =1{1 day apart} other{{days} days apart}}",
+  "@progressphotosCompareSpan": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "progressphotosNeedTwoSameAngle": "Two photos from the same angle are needed before a comparison means anything.",
+  "progressphotosKeyMissing": "Encrypted with a key this device no longer has.",
+  "progressphotosBlobMissing": "The image file for this photo is gone.",
+  "progressphotosAngleFront": "Front",
+  "progressphotosAngleSide": "Side",
+  "progressphotosAngleBack": "Back",
+  "progressphotosAngleCustom": "Other",
+  "progressphotosMonthCount": "{count, plural, =1{1 photo} other{{count} photos}}",
+  "@progressphotosMonthCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "progressphotosDelete": "Delete photo",
+  "progressphotosStaysOnPhone": "Encrypted on this phone. There is no server copy, and no way to share one from here."
 }

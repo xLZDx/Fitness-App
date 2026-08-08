@@ -832,5 +832,19 @@
   "restTimerAddTime": "+30 с",
   "restTimerAddTimeHint": "Добавить 30 секунд",
   "restTimerResume": "Продолжить",
-  "workoutsFilterFormCoach": "Тренер по технике"
+  "workoutsFilterFormCoach": "Тренер по технике",
+  "progressphotosCompare": "Сравнение",
+  "progressphotosBefore": "До",
+  "progressphotosAfter": "После",
+  "progressphotosCompareSpan": "{days, plural, =0{В один день} one{{days} день разницы} few{{days} дня разницы} many{{days} дней разницы} other{{days} дня разницы}}",
+  "progressphotosNeedTwoSameAngle": "Чтобы сравнение что-то значило, нужны два снимка с одного ракурса.",
+  "progressphotosKeyMissing": "Зашифровано ключом, которого на этом устройстве больше нет.",
+  "progressphotosBlobMissing": "Файл этого снимка пропал.",
+  "progressphotosAngleFront": "Спереди",
+  "progressphotosAngleSide": "Сбоку",
+  "progressphotosAngleBack": "Сзади",
+  "progressphotosAngleCustom": "Другой",
+  "progressphotosMonthCount": "{count, plural, one{{count} снимок} few{{count} снимка} many{{count} снимков} other{{count} снимка}}",
+  "progressphotosDelete": "Удалить снимок",
+  "progressphotosStaysOnPhone": "Зашифровано на этом телефоне. Копии на сервере нет, и поделиться отсюда нельзя."
 }

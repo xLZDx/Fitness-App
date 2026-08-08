@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,9 +19,15 @@ class _NeverPersists implements ProgressPhotosRepository {
   @override
   Stream<List<ProgressPhoto>> watch() => Stream.value(const []);
   @override
-  Future<ProgressPhoto> capture() async => throw UnimplementedError();
+  Future<ProgressPhoto?> capture({
+    ProgressPhotoAngle angle = ProgressPhotoAngle.front,
+  }) async =>
+      throw UnimplementedError();
   @override
   Future<void> delete(String id) async {}
+  @override
+  Future<Uint8List> bytesOf(ProgressPhoto photo) async =>
+      throw UnimplementedError();
 }
 
 Widget _host({List<Override> overrides = const []}) => ProviderScope(
@@ -60,6 +67,11 @@ void main() {
   /// that binding a real repository is the single act that makes it reappear —
   /// no second edit, and no way to ship the storage layer while the claim
   /// stays switched off.
+  ///
+  /// R7 bound that repository, so the promise is now true and the wording
+  /// changed with it: it names the phone and says outright that there is no
+  /// server copy and no way to share one. The gate stays, because the mock is
+  /// still what serves the window before the disk store resolves.
   testWidgets('the encryption promise is withheld while the mock is bound',
       (tester) async {
     await tester.pumpWidget(_host());
@@ -74,7 +86,7 @@ void main() {
     ]));
     await tester.pumpAndSettle();
     expect(
-      find.textContaining('encrypted on your device'),
+      find.textContaining('Encrypted on this phone'),
       findsOneWidget,
     );
   });

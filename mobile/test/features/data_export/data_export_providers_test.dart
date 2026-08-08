@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'dart:async';
 import 'dart:convert';
 
@@ -250,7 +251,13 @@ class _NeverEmitsPhotosRepo implements ProgressPhotosRepository {
       // test needs to model.
       Stream.fromFuture(Completer<List<ProgressPhoto>>().future);
   @override
-  Future<ProgressPhoto> capture() async => throw UnimplementedError();
+  Future<ProgressPhoto?> capture({
+    ProgressPhotoAngle angle = ProgressPhotoAngle.front,
+  }) async =>
+      throw UnimplementedError();
   @override
   Future<void> delete(String id) async {}
+  @override
+  Future<Uint8List> bytesOf(ProgressPhoto photo) async =>
+      throw UnimplementedError();
 }
