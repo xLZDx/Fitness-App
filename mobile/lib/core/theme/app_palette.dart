@@ -5,7 +5,13 @@ class AppPalette {
   static const auroraViolet = Color(0xFF8A5BFF);
   static const auroraBlue = Color(0xFF3DC8FF);
   static const auroraTeal = Color(0xFF2BE5C2);
-  static const auroraLime = Color(0xFFC2F562);
+  /// R9: corrected 2026-08-08 from `0xFFC2F562`. The audit's first pass
+  /// (`FIGMA_MAKE_REFACTOR_AUDIT_2026-08-05.md` §11.2) measured that value
+  /// from a compressed 800x675 thumbnail, which is not evidence; the real
+  /// design token, confirmed against `index.css` and the prototype's own
+  /// `TOKEN_COLORS` table, is `0xFFC9FF47`. This is also the R9 seed --
+  /// `app_theme.dart` reads it for the dark theme's `ColorScheme.fromSeed`.
+  static const auroraLime = Color(0xFFC9FF47);
   static const auroraPeach = Color(0xFFFFB37C);
 
   static const tileGradients = <List<Color>>[

@@ -97,35 +97,43 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   /// Pressed / hovered / selected fill on top of a surface.
   final Color surfaceInteractive;
 
-  /// Body and heading text. Dark 17.73:1, light 14.98:1.
+  /// Body and heading text. Dark 17.80:1 (R9, `#F0F0F8` on `#06060F`), light
+  /// 14.98:1.
   final Color textPrimary;
 
-  /// Supporting text. Dark 8.64:1, light 4.55:1 — both clear AA, and they are
-  /// **different alphas** (0.70 dark, 0.60 light) because the same alpha does
-  /// not produce the same contrast against two different backgrounds.
+  /// Supporting text. Dark 9.58:1 (R9, `#B1B1C6` on `#06060F` — 5.12:1 on the
+  /// translucent card, which is the binding constraint; see the R9 class doc),
+  /// light 4.55:1 — both clear AA. The dark and light values are no longer
+  /// drawn from a shared alpha rule; each theme's hex is picked for its own
+  /// background and surfaces.
   final Color textSecondary;
 
-  /// Text of an inactive control. Dark 3.12:1, light 2.38:1.
+  /// Text of an inactive control. Dark 2.23:1 (R9, `#47475B` on `#06060F`),
+  /// light 2.38:1.
   ///
   /// Below AA on purpose: WCAG 1.4.3 exempts inactive components, and a
   /// disabled control that reads as strongly as an enabled one is a worse
   /// failure than a low ratio — it invites taps that do nothing.
   final Color textDisabled;
 
-  /// The brand accent, per theme. Dark #8A5BFF at 4.90:1; light #5A25D0 at
-  /// 6.49:1 — **not** the same colour, because #8A5BFF on the light background
-  /// is 3.37:1 and fails.
+  /// The brand accent, per theme. Dark `#C9FF47` at 17.18:1 (R9, lime on
+  /// `#06060F`); light `#5A25D0` at 6.49:1 — **not** the same colour: the two
+  /// themes were never going to share one hue (`#8A5BFF`, the pre-R9 dark
+  /// accent, was already 3.37:1 on the light background and failed), and R9
+  /// widens the gap further by design, not by accident.
   final Color accentPrimary;
 
-  /// The secondary accent. Dark 7.99:1, light 4.57:1.
+  /// The secondary accent. Dark 12.16:1 (R9, `#A8D93A` on `#06060F` — the
+  /// design's own documented-but-unused `accentSecondary` token; see the R9
+  /// class doc), light 4.57:1.
   final Color accentSecondary;
 
   /// Content placed on [accentPrimary] or [accentSecondary] as a solid fill.
   ///
-  /// Flips between themes for the same reason the accents do: the dark theme's
-  /// accents are bright, so content on them must be ink (4.71:1 worst case);
-  /// the light theme's accents are deep, so content on them is white (5.67:1
-  /// worst case).
+  /// Flips between themes for the same reason the accents do: the dark
+  /// theme's accents are bright, so content on them must be ink (R9: 11.76:1
+  /// worst case, `#060F00` on `#A8D93A`); the light theme's accents are deep,
+  /// so content on them is white (5.67:1 worst case).
   final Color onAccent;
 
   /// Content placed on brand artwork — an `AppPalette.tileGradients` tile, an
@@ -154,13 +162,13 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   /// and this constant is what the deleter will find.
   static const onGradientInk = Color(0xFF0B0918);
 
-  /// Dark 12.77:1, light 5.20:1.
+  /// Dark 12.39:1 (R9, `#22E87A` on `#06060F`), light 5.20:1.
   final Color success;
 
-  /// Dark 11.70:1, light 5.05:1.
+  /// Dark 10.62:1 (R9, `#FFAA33` on `#06060F`), light 5.05:1.
   final Color warning;
 
-  /// Dark 6.77:1, light 4.76:1.
+  /// Dark 6.29:1 (R9, `#FF4D70` on `#06060F`), light 4.76:1.
   final Color danger;
 
   /// Hairlines, card borders, dividers.
@@ -190,27 +198,49 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   final Color poseError;
 
   /// The dark configuration — the app's shipping default.
+  ///
+  /// R9 (2026-08-08): recoloured from the violet palette to the design's
+  /// lime-on-near-black scheme. Every value below traces to the Figma Make
+  /// export (`xLZDx/ReviewExistingExamples`, commit `8209787`, `src/App.tsx`
+  /// + `src/index.css`) — the app's own `C.*` constants and its
+  /// `TOKEN_COLORS` documentation table — not chosen by eye, per this file's
+  /// own header rule. Two categories of exception, both computed rather than
+  /// copied, because the prototype's opaque `#141422` card does not match
+  /// this app's translucent glass card: [surfaceElevated] is the prototype's
+  /// `white @ 10%` flattened onto the NEW background (`Color.alphaBlend`,
+  /// verified by `app_semantic_colors_test.dart`'s own contrast function),
+  /// and [textSecondary]/[textDisabled] keep the prototype's hue but are
+  /// lightened until they clear this app's actual contrast bars — the
+  /// prototype's own `#888898` passes against its opaque card (`#141422`)
+  /// but not against this app's lighter translucent one (`3.09:1` measured).
+  /// `accentSecondary` has no single documented value in the source: the
+  /// design's own `TOKEN_COLORS.accentSecondary` (`#A8D93A`) is declared but
+  /// never actually used anywhere in the 5471-line prototype, and the
+  /// recurring violets (`#7C3AED`/`#7C6AFF`) are muscle-group category tags,
+  /// not a brand secondary — `#A8D93A` is used anyway, as the only value the
+  /// design source states for this role, and flagged here rather than
+  /// silently presented as equally solid evidence to the rest of the table.
   static const dark = AppSemanticColors(
-    backgroundPrimary: Color(0xFF050214),
-    backgroundSecondary: Color(0xFF0C0725),
-    surfacePrimary: Color(0x38FFFFFF), // white @ 0.22
-    surfaceElevated: Color(0xFF1E1B2C), // white @ 0.10 flattened onto the bg
-    surfaceInteractive: Color(0x1FFFFFFF), // white @ 0.12
-    textPrimary: Color(0xFFF1ECFF),
-    textSecondary: Color(0xFFAAA6B8),
-    textDisabled: Color(0xFF5F5B6D),
-    accentPrimary: Color(0xFF8A5BFF),
-    accentSecondary: Color(0xFFFF6FB5),
-    onAccent: Color(0xFF0B0918),
+    backgroundPrimary: Color(0xFF06060F),
+    backgroundSecondary: Color(0xFF0D0D1A),
+    surfacePrimary: Color(0x38FFFFFF), // white @ 0.22, unchanged mechanism
+    surfaceElevated: Color(0xFF1F1F27), // white @ 0.10 flattened onto the new bg
+    surfaceInteractive: Color(0x1FFFFFFF), // white @ 0.12, unchanged mechanism
+    textPrimary: Color(0xFFF0F0F8),
+    textSecondary: Color(0xFFB1B1C6), // hue of measured #888898, lightened for this app's card
+    textDisabled: Color(0xFF47475B), // hue of measured #3E3E50, lightened into the (2.0,4.5) band
+    accentPrimary: Color(0xFFC9FF47),
+    accentSecondary: Color(0xFFA8D93A), // documented but unused in the source; see class doc
+    onAccent: Color(0xFF060F00),
     onGradient: onGradientInk,
-    success: Color(0xFF2BE5C2),
-    warning: Color(0xFFFFB37C),
-    danger: Color(0xFFFF5A6E),
-    outline: Color(0x2EFFFFFF), // white @ 0.18
-    cameraOverlay: Color(0x73000000), // black @ 0.45
-    poseCorrect: Color(0xFF2BE5C2),
-    poseWarning: Color(0xFFFFB37C),
-    poseError: Color(0xFFFF5A6E),
+    success: Color(0xFF22E87A),
+    warning: Color(0xFFFFAA33),
+    danger: Color(0xFFFF4D70),
+    outline: Color(0x21FFFFFF), // white @ 0.13, the source's stronger/interactive border tier
+    cameraOverlay: Color(0x8C000000), // black @ 0.55, the source's documented cameraOverlay token
+    poseCorrect: Color(0xFF22E87A),
+    poseWarning: Color(0xFFFFAA33),
+    poseError: Color(0xFFFF4D70),
   );
 
   /// The light configuration.
@@ -235,7 +265,12 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     warning: Color(0xFF9A4A05),
     danger: Color(0xFFC0243C),
     outline: Color(0x24131027), // ink @ 0.14
-    cameraOverlay: Color(0x73000000),
+    // R9: kept in sync with dark's cameraOverlay -- theme-invariant by this
+    // class's own contract (see the field doc + the "does not flip either"
+    // test), so it moved to the design's documented 0.55 alongside dark's,
+    // even though the rest of the light configuration is untouched (Q1/Q41
+    // deferred).
+    cameraOverlay: Color(0x8C000000),
     poseCorrect: Color(0xFF2BE5C2),
     poseWarning: Color(0xFFFFB37C),
     poseError: Color(0xFFFF5A6E),

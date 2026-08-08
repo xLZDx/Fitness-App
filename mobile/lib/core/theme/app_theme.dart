@@ -21,7 +21,16 @@ class AppTheme {
     // Master prompt §4 rule 2 — do not duplicate a source of truth. Found by
     // the architecture review, 2026-08-06.
     final scheme = ColorScheme.fromSeed(
-      seedColor: AppPalette.auroraViolet,
+      // R9 (2026-08-08): the dark theme reseeds to the design's lime accent.
+      // Light stays on the pre-R9 violet seed -- Q1/Q41 deferred the light
+      // theme ("dark first... light later behind a toggle"), and the design
+      // source itself marks its own light palette "открыто" (open,
+      // undecided; `App.tsx`'s `LC` block). A single shared seed would have
+      // pulled light's Material-derived roles (colorScheme.primary etc.)
+      // toward lime while AppSemanticColors.light kept its own violet
+      // literals -- the exact two-sources-of-truth failure this token layer
+      // exists to prevent, just moved one level down into the seed.
+      seedColor: isDark ? AppPalette.auroraLime : AppPalette.auroraViolet,
       brightness: brightness,
       surface: tokens.backgroundPrimary,
       onSurface: tokens.textPrimary,
