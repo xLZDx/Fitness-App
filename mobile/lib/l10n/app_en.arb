@@ -1162,6 +1162,20 @@
       "minutes": { "type": "int" }
     }
   },
+  "summaryTitle": "Workout summary",
+  "summaryDone": "Workout complete",
+  "summaryNothingToday": "Nothing finished today yet",
+  "summaryNothingTodayHint": "Complete a set and this is where the day adds up.",
+  "summaryUnitMinutes": "min",
+  "summaryUnitExercises": "exercises",
+  "summaryUnitSets": "sets",
+  "summaryUnitKilograms": "kg",
+  "summaryMuscleLoad": "Muscles worked",
+  "@summaryMuscleLoad": {
+    "description": "Heading over the per-muscle share bars. Deliberately 'worked', not 'recovery': the share of the day's exercises is measured, recovery time is not."
+  },
+  "summaryNextWorkout": "Next workout",
+  "summaryGoHome": "Go home",
   "homeSectionUpcoming": "Upcoming",
   "homeSectionQuickStats": "Quick stats",
   "homeSectionSuggestions": "Suggestions",

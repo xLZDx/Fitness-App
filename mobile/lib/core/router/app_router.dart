@@ -22,6 +22,7 @@ import '../../features/donor_wall/donor_wall_page.dart';
 import '../../features/equipment/equipment_detail_page.dart';
 import '../../features/equipment/exercise_page.dart';
 import '../../features/equipment/workout_player_page.dart';
+import '../../features/workouts/workout_summary_page.dart';
 import '../../features/form_check/form_check_page.dart';
 import '../../features/home/home_page.dart';
 import '../../features/marketplace/marketplace_page.dart';
@@ -260,6 +261,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/exercise/:id',
         builder: (context, state) =>
             ExercisePage(exerciseId: state.pathParameters['id']!),
+      ),
+      // No `:id`: the summary is of the DAY, not of one session. The app
+      // writes one exercise per session (`workout_player_page.dart:265`), so a
+      // per-session summary would say "1 упражнение" after every exercise —
+      // see the note at the top of `day_result.dart`.
+      GoRoute(
+        path: '/workout-summary',
+        builder: (context, state) => const WorkoutSummaryPage(),
       ),
       GoRoute(
         path: '/workout/:id',

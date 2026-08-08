@@ -16,6 +16,7 @@ import '../progress/data/progress_stats.dart';
 import '../recovery/widgets/deload_banner.dart';
 import '../equipment/data/catalog_labels.dart';
 import '../workouts/data/session_digest.dart';
+import '../workouts/state/day_result_providers.dart';
 import '../workouts/state/session_digest_providers.dart';
 import '../workouts/state/session_screening_providers.dart';
 import '../workouts/state/workout_session_providers.dart';
@@ -87,6 +88,13 @@ class _HomePageState extends ConsumerState<HomePage> {
           _SectionHeader(l10n.homeSectionToday),
           const SizedBox(height: 12),
           _TodayCard(upcoming: upcoming, digest: ref.watch(todayDigestProvider)),
+          // R5's way in. Shown only once the day has something to summarise:
+          // a permanent link to a screen that says "nothing finished today"
+          // is a link to a disappointment.
+          if (!ref.watch(todayResultProvider).isEmpty) ...[
+            const SizedBox(height: 12),
+            const _SummaryLinkCard(),
+          ],
           if (upcoming.length > 1) ...[
             const SizedBox(height: 24),
             _SectionHeader(l10n.homeSectionUpcoming),
@@ -304,6 +312,51 @@ class _TodayCard extends StatelessWidget {
                         ? scheme.error
                         : theme.colors.textSecondary,
                   ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Icon(Icons.chevron_right_rounded, color: theme.colors.textSecondary),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryLinkCard extends ConsumerWidget {
+  const _SummaryLinkCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final result = ref.watch(todayResultProvider);
+
+    return GlassCard(
+      key: const Key('home.summaryLink'),
+      onTap: () => GoRouter.of(context).push('/workout-summary'),
+      child: Row(
+        children: [
+          _GradientTile(
+            icon: Icons.check_circle_outline_rounded,
+            gradient: const [AppPalette.auroraTeal, AppPalette.auroraLime],
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(l10n.summaryTitle,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 2),
+                Text(
+                  l10n.homeTodayDigest(
+                      result.exerciseCount, result.totalMinutes),
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colors.textSecondary),
                 ),
               ],
             ),
