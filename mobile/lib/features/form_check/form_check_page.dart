@@ -197,6 +197,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     ref.watch(formFeedbackControllerProvider);
     final svc = ref.watch(poseDetectorServiceProvider);
     final session = ref.watch(repSessionControllerProvider);
+    final showRepCount = showRepCountFor(ref.watch(selectedExerciseProvider));
     final muted = ref.watch(voiceMutedProvider);
     final gateVerdict = ref.watch(poseGateVerdictProvider);
     // Either the camera never opened, or the native detector died mid-stream.
@@ -306,11 +307,12 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                           ),
                         ),
                       ),
-                      Positioned(
-                        left: 12,
-                        top: 12,
-                        child: _RepBadge(session: session),
-                      ),
+                      if (showRepCount)
+                        Positioned(
+                          left: 12,
+                          top: 12,
+                          child: _RepBadge(session: session),
+                        ),
                       const Positioned(
                         right: 12,
                         top: 12,
@@ -375,12 +377,14 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
             ),
             const SizedBox(height: 16),
           ],
-          _SetSummaryCard(
-            session: session,
-            onReset: () =>
-                ref.read(repSessionControllerProvider.notifier).resetSet(),
-          ),
-          const SizedBox(height: 16),
+          if (showRepCount) ...[
+            _SetSummaryCard(
+              session: session,
+              onReset: () =>
+                  ref.read(repSessionControllerProvider.notifier).resetSet(),
+            ),
+            const SizedBox(height: 16),
+          ],
           GlassCard(
             child: Text(
               AppLocalizations.of(context).formcheckFormCoachRunsOnDeviceUsing,

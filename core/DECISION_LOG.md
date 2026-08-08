@@ -937,3 +937,71 @@ Zenodo 7672767 — это видео того же MM-Fit, 39.1 ГБ. Скачи
 инвертировать, и ошибка здесь ничего не выбросила бы — счётчик молча считал бы
 верх повтора низом. На это есть тест `is negated, so it rises as the joint
 closes` и assert в `toConfig()`.
+
+---
+
+## 2026-08-08 13:50 local / 10:50 UTC — R8 remainder closed: live counter was never wired to any per-exercise signal at all
+
+### Evidence — the bug was bigger than "switch to counterFor"
+
+Read before touching anything: `RepSessionController.build()`
+(`form_check_providers.dart:519-523`, pre-fix) constructed
+`RepCounter(config: ref.watch(repCounterConfigProvider))` with **no `signal`
+argument**, and `repCounterConfigProvider` was `Provider<RepCounterConfig>((_)
+=> const RepCounterConfig())` — a constant, never reading
+`selectedExerciseProvider`. `RepCounter`'s own constructor defaults an absent
+signal to `squatDepthSignal` (`rep_counter.dart:228`). Net effect: **every
+movement's live rep counter ran squat's hip-vs-knee signal and squat's
+thresholds**, regardless of what the user selected. `repSignalFor()` — the
+function that already existed to pick a per-movement signal — had zero call
+sites anywhere in `lib/` (confirmed by grep). This is not what the previous
+session's handoff one-liner ("переключить экран формы на counterFor(tag)")
+described; the actual gap was one level deeper — nothing per-exercise was
+wired at all, old or new.
+
+### Decision — keep the counter running for every movement, gate only the number
+
+Considered making `_counter` null for situp/pushup (mirroring `counterFor`
+returning null) and rejected it: `_onFrame` returns immediately when `_counter
+== null`, before the silhouette-match / classifier code runs, which would
+have killed the whole coaching feature (outline colour, cues) for those
+movements, not just the rep count. Built `liveRepSignalFor(FormExercise)`
+instead: measured MM-Fit config for squat/curl/overhead_press/lunge (the four
+that cleared `MeasuredRepConfig.countsReps`'s 80% holdout bar), falling back
+to the existing `repSignalFor()` (authored-shape, pre-2026-08-08) for
+situp/hinge so their counters keep running internally. A new
+`showRepCountFor(FormExercise)` gates only the UI: `_RepBadge` and
+`_SetSummaryCard` in `form_check_page.dart` are now wrapped in `if
+(showRepCount)`. situp and pushup lose the visible number (41%/29% holdout —
+worse than absent); hinge keeps its number, because "never measured" and
+"measured and found wrong" are different states and only the second one
+justifies hiding a working feature. Squat is untouched — same signal, same
+config, per `measured_rep_configs.dart`'s own note that a measured squat
+config exists for reference but does not replace the shipped, tuned one.
+
+`repCounterConfigProvider` deleted rather than left orphaned: its own comment
+said "a future per-exercise profile (press, curl) can override it in one
+place", which is exactly what `liveRepSignalFor` now is — the provider's
+purpose was fulfilled by superseding it, not by extending it.
+
+### Verification
+
+`flutter analyze`: 7 issues, same baseline as `14d3ba4`. `flutter test`: 1716
+passed (1705 + 11 new in `live_rep_signal_test.dart`), 0 failed. New test file
+asserts the config values the live counter gets for each movement — not
+`repSignalFor`, which was already correct and already tested, and not
+`MeasuredRepConfig.signal`'s identity (it is a getter; every access,
+including inside `liveRepSignalFor`, builds a fresh closure, so identity
+comparison there is meaningless and was dropped after the first test run
+failed on exactly that).
+
+### Refusal — did not touch the exercise picker or `formCoachSupports`
+
+`countsRepsFor`/`formCoachSupports` still gate on the OLD `repSignalsByTag`
+map, unchanged, so situp stays offered in the exercise list exactly as
+before. Narrowed the fix to "which signal drives the counter" and "whether
+the number is shown", not "which movements are offered" — that is a separate
+question the operator has not been asked, and `form_coach_support_test.dart`
+(T1, pre-existing) already pins the current offered set; changing it would
+have required updating that test's stated contract without being asked to.
+

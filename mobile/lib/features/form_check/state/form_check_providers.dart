@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../profile/data/profile_models.dart';
 import '../../profile/state/profile_providers.dart';
 import '../data/form_classifier.dart';
+import '../data/measured_rep_configs.dart';
 import '../data/pose_detector_service.dart';
 import '../data/pose_gate.dart';
 import '../data/pose_landmark.dart';
@@ -122,6 +123,43 @@ bool countsRepsFor(FormExercise e) {
   }
   final tag = poseTagFor(e);
   return tag == null ? null : repSignalsByTag[tag];
+}
+
+/// Signal + thresholds that actually drive [RepSessionController], per
+/// movement -- the wiring [repSignalFor] was defined for but never reached:
+/// the live counter had zero call sites for it and always ran the squat
+/// signal regardless of [selectedExerciseProvider].
+///
+/// Prefers a measured config from `measured_rep_configs.dart` (MM-Fit,
+/// [MeasuredRepConfig.countsReps] cleared) over the older, authored-shape
+/// [repSignalFor]. Squat is the one exception: [squatDepthSignal] stays --
+/// a measured squat config exists too, but replacing a tuned, shipped signal
+/// for no accuracy gain is not what the measurement was for.
+(RepSignalExtractor, RepCounterConfig)? liveRepSignalFor(FormExercise e) {
+  if (e == FormExercise.squat) return repSignalFor(e);
+  final tag = poseTagFor(e);
+  final measured = tag == null ? null : measuredRepConfigs[tag];
+  if (measured != null && measured.countsReps) {
+    return (measured.signal, measured.toConfig());
+  }
+  return repSignalFor(e);
+}
+
+/// Whether the on-screen rep count for [e] is accurate enough to show.
+///
+/// Deliberately separate from whether [e] is coached at all: the frame
+/// pipeline (silhouette match, phase tracking) runs the same for every
+/// movement via [liveRepSignalFor]'s fallback, so a push-up or a sit-up is
+/// still demonstrated and judged on shape. Only the NUMBER is withheld for
+/// the two movements MM-Fit measured below the 80% bar -- a count that is
+/// wrong more often than right is worse than no count, the same contract
+/// [MeasuredRepConfig.countsReps] states for [counterFor].
+bool showRepCountFor(FormExercise e) {
+  if (e == FormExercise.squat) return true;
+  final tag = poseTagFor(e);
+  final measured = tag == null ? null : measuredRepConfigs[tag];
+  if (measured != null) return measured.countsReps;
+  return countsRepsFor(e);
 }
 
 /// How broad to draw the outline, from whatever the intake collected.
@@ -393,11 +431,6 @@ final formFeedbackControllerProvider =
     NotifierProvider<FormFeedbackController, FormFeedback?>(
         FormFeedbackController.new);
 
-/// Thresholds the rep counter runs on. A provider rather than a constant so
-/// a future per-exercise profile (press, curl) can override it in one place.
-final repCounterConfigProvider =
-    Provider<RepCounterConfig>((_) => const RepCounterConfig());
-
 /// Speech engine. Defaults to the mock so widget tests never open a
 /// MethodChannel; `main.dart` binds [TtsVoiceCoach] on device.
 final voiceCoachProvider = Provider<VoiceCoach>((ref) {
@@ -520,7 +553,12 @@ class RepSessionController extends Notifier<RepSessionState> {
   RepSessionState build() {
     final svc = ref.watch(poseDetectorServiceProvider);
     final coach = ref.watch(voiceCoachProvider);
-    _counter = RepCounter(config: ref.watch(repCounterConfigProvider));
+    final exercise = ref.watch(selectedExerciseProvider);
+    final signal = liveRepSignalFor(exercise);
+    _counter = RepCounter(
+      config: signal?.$2 ?? const RepCounterConfig(),
+      signal: signal?.$1,
+    );
 
     coach.setMuted(ref.read(voiceMutedProvider));
     ref.listen<bool>(voiceMutedProvider, (_, isMuted) {
