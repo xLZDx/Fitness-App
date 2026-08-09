@@ -2105,3 +2105,170 @@ run.
 **Not pushed. No build distributed.** Both deliberately: the push gate is
 "0 failures", and shipping a red build to the tester is what the new
 release-notes rule exists to prevent.
+
+---
+
+## 2026-08-09, 23:40 local (Europe/Chisinau) / 20:40 UTC — closing the entry above: it went green, shipped, and its own last paragraph is now stale
+
+**Correction, not an update.** The entry directly above ends "Not pushed. No
+build distributed." and describes 21 red tests. That was true when it was
+written and stopped being true roughly an hour later, in the same session,
+and nobody appended the closure. A log whose newest entry says a gate is red
+is worse than no log — the next reader has no way to tell a genuine blocker
+from an unfinished sentence. Recorded here rather than by editing that entry,
+because this file is append-only.
+
+### What actually happened
+
+The 21 became 7 once the self-inflicted regression named in that entry (both
+rewritten widgets read tokens through `theme.colors`, a getter ending in `!`,
+which throws under a bare `MaterialApp`) was fixed in production code rather
+than in the tests. All 7 survivors were one class: each asserted the design
+that had just been replaced. The one that looked like a real regression —
+`workouts_page_test`, the enrol flow touched by bug 3 — was searching for
+`"Couldn't start this programme: "`, the raw-exception copy that bug 3
+existed to delete.
+
+All seven were repointed, none deleted: in every case the guarded property
+had not disappeared, it had inverted. "Background paints a gradient" became
+"paints no gradient"; "an ordinary card is still translucent" became "is
+opaque too".
+
+### Evidence
+
+* `flutter test`: **1882 passed, 0 failed**.
+* `flutter analyze`: 7 issues, prior baseline, 0 new.
+* Commits `4d12bc4` (steps 0/1 + Ф1a–Ф1c) and `8092b87` (the seven test
+  rewrites), both pushed to `origin/master`.
+* Release **1.0.0 (2322)** built from `8092b87`, 103.2 MB, distributed to
+  `korostelevivan@gmail.com` via Firebase App Distribution
+  (`.../releases/56iqsdfvkvht0`), with release notes naming the four things
+  the build knowingly does not yet do.
+
+### Worth keeping
+
+The whites ratchet in `app_semantic_colors_test.dart` went **down** for the
+first time in its history, 62 → 61. `glass.dart` lost
+`final base = tint ?? Colors.white` — one line that was seeding a
+translucent white fill for all 175 `GlassCard` call sites. A counter that can
+only rise is measuring accumulation, not health.
+
+---
+
+## 2026-08-09, 23:55 local (Europe/Chisinau) / 20:55 UTC — Ф2: the tab bar, rebuilt from the prototype's source; and §30 finally executed
+
+**Gate**: operator GO, "го ф2", single gate. Scope: the bottom tab bar only.
+
+### Decision — build it from `App.tsx`, not from the reference frames
+
+The frames show what it looks like; `src/App.tsx:83-102` states what it is.
+The bar is 80px of `C.s1` with a `rgba(255,255,255,0.07)` top hairline, 20px
+monoline icons, 10px labels, and one element pulled out of it — the Scan
+circle at 46px with `marginTop: -18`. Every number below comes from there
+rather than from measuring a JPEG.
+
+What the app had instead: a floating pill inset 16px, radius 34, filled
+`Colors.white @ 0.10` behind a `BackdropFilter` blur of 26, with a per-tab
+aurora gradient sliding under the selection and a second icon per tab for the
+selected state.
+
+### Plan — what changed and why
+
+1. **`glass_nav_bar.dart` rewritten** (`mobile/lib/shared/widgets/glass_nav_bar.dart`)
+   - Зачем: the widget was the last large piece of the aurora/glass design
+     still shipping, and the operator's Ф2 ask was the nav bar specifically.
+   - Почему так: the lift is done in **layout** — a 46px circle inside a 28px
+     `SizedBox` via `OverflowBox(alignment: bottomCenter)` — rather than with
+     `Transform.translate`. A transform paints high and leaves the hit region
+     where it was, which would give the app's most prominent control a dead
+     cap. The `OverflowBox` reproduces CSS's negative-margin arithmetic
+     exactly: the column is measured as if the circle were 28px, so the
+     circle's top lands 18px above its flow position and ~2px above the bar's
+     hairline. `CrossAxisAlignment.stretch` on the row is the other half —
+     without it each tab shrinks to its own content and the ink region starts
+     below the bar's top edge.
+2. **Tokens read nullably** (`glass_nav_bar.dart:55`)
+   - Зачем: Ф1b shipped `context.colors` in shared chrome and every themeless
+     widget test died before layout.
+   - Почему так: `theme.extension<AppSemanticColors>()` with a `colorScheme`
+     fallback, not a test change — a shared presentational widget that only
+     renders under one specific `ThemeData` is the defect.
+3. **Inactive tabs use `textSecondary`, not the prototype's `fg3`**
+   (`glass_nav_bar.dart`, `main_shell.dart`)
+   - Зачем: `#3E3E50` on the bar's `#0D0D1A` is **1.96:1**, computed with
+     `app_semantic_colors_test.dart`'s own contrast function.
+   - Почему так: an unselected tab is an interactive control, so WCAG 1.4.3's
+     exemption for *inactive components* does not reach it. `textSecondary`
+     is 9.27:1. This is the same call R9 already made and documented for this
+     exact hex — see `app_semantic_colors.dart`'s `textDisabled` note — not a
+     new policy.
+4. **Two icons diverge from the prototype's glyphs** (`main_shell.dart`)
+   - Зачем: `⊞ ◉ ↗` are real shapes and Material ships exact matches
+     (`grid_view_outlined`, `radio_button_checked`, `north_east`), so those
+     three are copied. `◈` for Workouts and `○` for Profile are Figma Make
+     placeholders — the tool cannot ship an icon font — and carry no meaning.
+   - Почему так: shipping a bare diamond for "Тренировки" would be faithful
+     to a limitation rather than to a design. Recorded in a comment at the
+     call site instead of left to be rediscovered as a mismatch.
+5. **`navWorkouts` added** (`app_ru.arb`, `app_en.arb`)
+   - Зачем: the tab read "Тренировка", the prototype labels the section
+     "Тренировки".
+   - Почему так: a separate key rather than editing `workoutsTrain`, which is
+     also the Workouts page's own `GlassAppBar` title — the same split, and
+     the same reason, as `navScan` before it.
+6. **`iconSelected` and `gradient` deleted from `GlassNavItem`**
+   - Зачем: the design changes colour on selection and nothing else, so both
+     fields were dead the moment the pill went.
+   - Почему так: deleting beats leaving them unread — `gradient` held the
+     five aurora pairs, which is the nav half of the operator's bug 6.
+7. **`Semantics(button:, selected:)` per tab**
+   - Зачем: a tab bar that never announces which tab is current is an
+     accessibility defect, and the widget was being rewritten anyway.
+   - Почему так: minimal — the visible `Text` already supplies the label.
+8. **Seven nav tests, up from three** (`test/widgets/glass_nav_bar_test.dart`)
+   - Зачем: the old three could not fail on any of this.
+   - Почему так: each new one pins a property that can actually regress —
+     no gradient anywhere, the circle drawn at 46 while occupying 28, its top
+     above the bar, a tap **at the top of the circle** (its centre passes
+     either way, so the centre proves nothing), and rendering under a bare
+     `MaterialApp`.
+
+### Что осталось непокрытым
+
+* **Ф1a's headings depend on a runtime download, and it fails silently.**
+  Found by reading device logcat, not by any test: `google_fonts` could not
+  fetch `BarlowCondensed-Black`/`-Bold` on the emulator
+  (`CERTIFICATE_VERIFY_FAILED`), so every style at
+  `app_theme.dart:102-107` — w900 ×2, w800 ×3, w700 — fell back to Inter.
+  There is no `assets/fonts` directory; nothing is bundled. **Not a
+  regression introduced by Ф1a**: `GoogleFonts.interTextTheme()` already
+  fetched the body font the same way long before it. Ф1a made the
+  consequence more visible, not the mechanism worse. Deliberately NOT fixed
+  under this gate — bundling the families is its own scope and "го ф2" does
+  not cover it.
+* **The name `GlassNavBar` is now false.** Renaming it alone would leave
+  `GlassCard` (175 call sites) and `GlassAppBar` carrying the same dead
+  metaphor. One accurate name beside four stale ones reads worse than five
+  stale ones; the family gets renamed in one pass after Ф3.
+* **Programme-card gradients** (the other half of bug 6) and every per-screen
+  layout are untouched. Ф3.
+* **Label crowding at 320dp.** On this emulator a tab is 64dp and
+  "Тренировки"/"Прогресс" nearly touch. No wrap, no ellipsis — the
+  `maxLines: 1` guard holds — but it is tight. The prototype's viewport is
+  ~390dp. Measured, not fixed.
+
+### Проверки
+
+* `flutter test`: **1886 passed, 0 failed** (1882 → 1886, the four new nav
+  cases).
+* `flutter analyze`: 7 issues, prior baseline, 0 new.
+* Whites ratchet **61 → 60** — the second decrease ever, same category as the
+  first: the bar's `Colors.white @ 0.10` glass fill.
+* **§30 executed for the first time.** Release APK built for the emulator's
+  own ABI, installed over the existing release-signed package (a debug APK
+  cannot install over it, and uninstalling would wipe the login session that
+  is required to reach any tab at all), app confirmed running as pid 24242,
+  screenshot captured and compared against `p_162.jpg`. Both the capture and
+  the deviations are in `docs/Redisign/reference/emulator/`.
+* Device logcat read: one real finding (the font, above); the rest is
+  emulator noise — `GoogleApiManager`, `RkpdRegistrationBinder`, Wi-Fi HAL.

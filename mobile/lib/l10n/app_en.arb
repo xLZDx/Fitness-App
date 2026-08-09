@@ -1309,6 +1309,7 @@
   "donorwallLifetime": "LIFETIME",
   "formcheckShowSkeleton": "Show what the camera sees",
   "navScan": "Scan",
+  "navWorkouts": "Workouts",
   "formcheckTuneTheOutline": "Tune the outline to you",
   "formcheckMissingAnswers": "Still needed: {arg0}",
   "@formcheckMissingAnswers": {

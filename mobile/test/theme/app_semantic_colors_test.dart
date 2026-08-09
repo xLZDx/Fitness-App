@@ -426,8 +426,15 @@ void main() {
     // Worth noting for whoever reads this next: a ratchet that only ever goes
     // up is measuring accumulation, not health. This is the direction the
     // token work was for.
+    //
+    // 61 -> 60, 2026-08-09 (Ф2): the second decrease, same category as the
+    // first. `glass_nav_bar.dart` lost `Colors.white.withValues(alpha: 0.10)`
+    // — the bar's translucent glass fill — when the bar became the design's
+    // flat `backgroundSecondary`. glass_nav_bar.dart 1 -> 0; the two
+    // `Colors.black` shadow lines in that file were never counted by this
+    // regex and one of them survives on the Scan circle.
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 61, reason: 'per file: $whites');
+    expect(total, 60, reason: 'per file: $whites');
   });
 
   group('lerp', () {

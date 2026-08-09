@@ -667,6 +667,7 @@
   "donorwallLifetime": "НАВСЕГДА",
   "formcheckShowSkeleton": "Показать, что видит камера",
   "navScan": "Скан",
+  "navWorkouts": "Тренировки",
   "formcheckTuneTheOutline": "Подогнать силуэт под вас",
   "formcheckMissingAnswers": "Не хватает: {arg0}",
   "@formcheckMissingAnswers": {
