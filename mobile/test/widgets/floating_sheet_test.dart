@@ -20,17 +20,24 @@ import 'package:fitness_app/shared/widgets/glass.dart';
 /// page that reads as a surface, because the app controls what is behind it.
 /// A sheet opens over whatever happened to be on screen.
 
-Gradient _fillOf(WidgetTester t) {
-  // The one with a gradient, not simply the first: GlassCard's outer Container
+/// The card's fill, whichever form it takes.
+///
+/// 2026-08-09 (Ф1c): a card's default fill is a flat `color` now, not a
+/// `LinearGradient`, so a helper that only looked for `gradient != null` found
+/// nothing and every test using it failed on the helper rather than on its own
+/// assertion. Both shapes are returned because `gradient` is still the answer
+/// when a caller passes one explicitly.
+BoxDecoration _fillOf(WidgetTester t) {
+  // The one that has a fill, not simply the first: GlassCard's outer Container
   // also carries a BoxDecoration, for the drop shadow, and it has no fill.
   final boxes = t
       .widgetList<DecoratedBox>(find.descendant(
           of: find.byType(GlassCard), matching: find.byType(DecoratedBox)))
       .map((b) => b.decoration)
       .whereType<BoxDecoration>()
-      .where((d) => d.gradient != null);
+      .where((d) => d.gradient != null || d.color != null);
   expect(boxes, hasLength(1), reason: 'expected exactly one filled surface');
-  return boxes.first.gradient!;
+  return boxes.first;
 }
 
 Widget _host(Widget child) => MaterialApp(
@@ -41,17 +48,28 @@ Widget _host(Widget child) => MaterialApp(
 void main() {
   testWidgets('a floating card is opaque', (t) async {
     await t.pumpWidget(_host(const GlassCard(floating: true, child: Text('x'))));
-    for (final c in (_fillOf(t) as LinearGradient).colors) {
-      expect(c.a, 1.0, reason: 'a sheet must not show the page through it');
-    }
+    expect(_fillOf(t).color?.a, 1.0,
+        reason: 'a sheet must not show the page through it');
   });
 
-  testWidgets('an ordinary card is still translucent', (t) async {
-    // The look is the point of the design everywhere else; this fix must not
-    // turn the whole app into flat panels.
+  testWidgets('an ordinary card is opaque too', (t) async {
+    // 2026-08-09 (Ф1c): this test asserted the OPPOSITE — that a non-floating
+    // card stays translucent — on the reasoning that "the look is the point of
+    // the design everywhere else". That reasoning was wrong about the design.
+    //
+    // The prototype's own design-system page lists where glass may be used
+    // (camera overlays, floating controls, modal sheets, temporary status
+    // overlays) and marks three things it must NOT be used on: "Scrolling
+    // cards", "Exercise list items", "Regular surfaces". An ordinary GlassCard
+    // is all three. Translucency also made the surface colour unstable —
+    // white over an olive-tinted backdrop is a different colour than white
+    // over black, so the same card read differently on every screen.
+    //
+    // Kept rather than deleted: the invariant is still worth pinning, it just
+    // points the other way now. Deleting it would leave nothing asserting that
+    // cards have a fill at all.
     await t.pumpWidget(_host(const GlassCard(child: Text('x'))));
-    final colours = (_fillOf(t) as LinearGradient).colors;
-    expect(colours.every((c) => c.a < 1.0), isTrue);
+    expect(_fillOf(t).color?.a, 1.0);
   });
 
   testWidgets('an explicit gradient still wins', (t) async {
@@ -60,7 +78,8 @@ void main() {
       gradient: LinearGradient(colors: [Colors.red, Colors.blue]),
       child: Text('x'),
     )));
-    expect((_fillOf(t) as LinearGradient).colors, [Colors.red, Colors.blue]);
+    expect((_fillOf(t).gradient! as LinearGradient).colors,
+        [Colors.red, Colors.blue]);
   });
 
   test('every transparent-backed sheet uses a floating card', () {

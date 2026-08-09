@@ -415,8 +415,19 @@ void main() {
                   a + RegExp(r'Colors\.white[0-9]*').allMatches(l).length);
       if (n > 0) whites[f.path.replaceAll(r'\', '/')] = n;
     }
+    //
+    // 62 -> 61, 2026-08-09 (Ф1c): the first decrease this counter has ever
+    // recorded. `glass.dart` lost `final base = tint ?? Colors.white` when the
+    // card's default fill stopped being white-at-alpha and became a flat
+    // opaque token, so category 2 — "a translucent white used as a SURFACE" —
+    // shrank by the one line that was seeding it for all 175 call sites.
+    // glass.dart 2 -> 1; the survivor is not a fill.
+    //
+    // Worth noting for whoever reads this next: a ratchet that only ever goes
+    // up is measuring accumulation, not health. This is the direction the
+    // token work was for.
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 62, reason: 'per file: $whites');
+    expect(total, 61, reason: 'per file: $whites');
   });
 
   group('lerp', () {

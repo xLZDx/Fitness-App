@@ -55,17 +55,25 @@ void main() {
       );
       // Losing the frost means the fill carries the separation from the
       // background on its own, so it must be meaningfully opaque.
-      // Pick the gradient-bearing box rather than `.first`: Material and the
-      // Scaffold contribute DecoratedBoxes of their own.
-      final gradients = tester
-          .widgetList<DecoratedBox>(find.byType(DecoratedBox))
+      //
+      // 2026-08-09 (Ф1c): this asserted a `LinearGradient` at alpha > 0.6.
+      // The fill is a flat opaque colour now — the prototype's cards are one
+      // tone with a hairline border, and a two-stop white gradient at 0.22 is
+      // the "glass" its design-system page rules out for regular surfaces.
+      // The assertion is kept and tightened rather than dropped: what this
+      // test is really for is that the card is a surface, and full opacity is
+      // a stronger form of the same claim.
+      // Pick the filled box rather than `.first`: Material and the Scaffold
+      // contribute DecoratedBoxes of their own.
+      final fills = tester
+          .widgetList<DecoratedBox>(find.descendant(
+              of: find.byType(GlassCard), matching: find.byType(DecoratedBox)))
           .map((b) => b.decoration)
           .whereType<BoxDecoration>()
-          .map((d) => d.gradient)
-          .whereType<LinearGradient>()
+          .where((d) => d.color != null)
           .toList();
-      expect(gradients, isNotEmpty, reason: 'the card fill should be a gradient');
-      expect(gradients.first.colors.first.a, greaterThan(0.6));
+      expect(fills, isNotEmpty, reason: 'the card should have a flat fill');
+      expect(fills.first.color!.a, 1.0);
     });
 
     testWidgets('invokes onTap when pressed', (tester) async {

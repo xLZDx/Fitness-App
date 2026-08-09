@@ -404,12 +404,17 @@ void main() {
       await tester.tap(find.text('Start programme').first);
       await tester.pumpAndSettle();
 
-      // No signed-in user is overridden in this harness, so the action
-      // surfaces the same signed-out error `programme_action_test.dart`
-      // pins directly -- proof the tap reached `ProgrammeAction.enroll`
-      // rather than doing nothing.
-      expect(find.textContaining('Couldn\'t start this programme'),
-          findsOneWidget);
+      // No signed-in user is overridden in this harness, so the action fails
+      // and the failure snackbar appears -- proof the tap reached
+      // `ProgrammeAction.enroll` rather than doing nothing.
+      //
+      // The assertion is on the Retry action, not on the message. The message
+      // used to be "Couldn't start this programme: $e" and carried the raw
+      // Firestore exception into the UI; it is now a fixed localized string
+      // shared with every other service failure, so matching on it would tie
+      // this test to copy that says nothing about enrolment. The Retry button
+      // is what makes this snackbar the *enrolment* failure specifically.
+      expect(find.widgetWithText(SnackBar, 'Retry'), findsOneWidget);
     });
   });
 }
