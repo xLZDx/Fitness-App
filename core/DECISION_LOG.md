@@ -1752,3 +1752,144 @@ No crash, no visual break. See PLAN_R11_FIGMA_PARITY_REBUILD_2026-08-08.md
 §8 for the full step list. This is the first R11 gate with device evidence
 beyond analyze+test — every earlier gate in this plan shipped without it
 (§6's own "Gap — no device verification" entry).
+
+---
+
+## 2026-08-09, 13:47 local (Europe/Chisinau) / 10:47 UTC
+
+### Implementation — release 1.0.0 (2317) distributed to the tester
+
+Operator asked for the build on their phone; no physical device is attached
+to this machine (`adb devices -l`: `emulator-5554` only), so it went through
+the project's own canonical path instead of a manual file copy:
+`scripts/dev/build_release.ps1 -Distribute`. Stamped `GIT_SHA 337aa29`,
+`BUILT_AT 2026-08-09T06:23:13Z`, build number 317 (arm64 split reads 2317),
+arm64-v8a APK 103.2 MB, uploaded to Firebase App Distribution app
+`1:988522745882:android:b9af40bb887a0388c201a3`, tester
+`korostelevivan@gmail.com`.
+
+Why the script and not the fat APK built the night before: that one was
+unstamped and 271 MB. The script derives SHA/build-number from HEAD rather
+than accepting typed values, which is the whole reason it exists (its own
+header documents three consecutive releases that all read "1.0.0 (2014)").
+
+### Evidence — the app does not look like the Figma Make prototype
+
+Operator supplied a 190s screen recording of the prototype
+(`Rec - Aug 9, 2026 12-31-52 PM.mp4`) and a fresh export of the Make source
+(`Review Existing Examples (Copy).zip`, `src/App.tsx`, 5471 lines). Frames
+were cropped out of the recording and compared against the release build's
+own screenshots. The verdict is that the colour **tokens** match and
+essentially nothing else does:
+
+| | Prototype | Build 337aa29 |
+|---|---|---|
+| Background | flat `#06060F` | same token, but `AuroraBackground` paints two lime radial blooms at 34%/30% alpha over it (`mobile/lib/shared/widgets/aurora_background.dart:70-88`) — an olive haze on every screen |
+| Display type | Barlow Condensed 500–900 (`.font-display`) | absent; theme has only `GoogleFonts.interTextTheme()` (`mobile/lib/core/theme/app_theme.dart:45`) |
+| Surfaces | flat opaque `#12121C`/`#1B1B2C`, 1px border | `GlassCard` (white @22% + blur) in 45 files |
+| Bottom nav | line icons + raised circular Scan button | Material `NavigationBar`, pink pill, label wraps to "Трениров / ка" |
+| Button accent | lime `#C9FF47` throughout | Workout Player still violet + cyan |
+
+Tokens themselves are correct: `backgroundPrimary: Color(0xFF06060F)`
+(`mobile/lib/core/theme/app_semantic_colors.dart:224`) and
+`auroraLime = Color(0xFFC9FF47)` (`mobile/lib/core/theme/app_palette.dart:14`)
+are byte-identical to the prototype's CSS. They are simply painted over.
+
+Sharpest detail: the prototype's own "Система" tab states glassmorphism is
+for camera overlays / floating controls / modal sheets / status overlays,
+with explicit ❌ against "Scrolling cards", "Exercise list items" and
+"Regular surfaces". The app does the forbidden thing in 45 files.
+
+### Process miss — §30 screenshot comparison was never run, in any gate
+
+PLAN_R11 §1 already recorded the inherited half of this: R1–R4 were scoped
+"from an audit document's prose retelling of the design, not from `App.tsx`
+itself", and R9 recoloured old layout rather than rebuilding it. R11 was
+the correction, and five of its nine gates are still PARTIAL (§6).
+
+The half that belongs to this session and the previous one is different and
+worth naming separately: the master prompt's §30 (capture an emulator
+screenshot, compare it against the reference, record the deviations) was
+not executed once. What was run — 1879/1879 tests, clean `flutter analyze`,
+a live emulator walkthrough — answers "does it work", never "does it look
+like the design", and was reported as verification without that distinction
+being drawn. `App.tsx` was not opened at all until today. Green tests on a
+wrong design read as success right up until the operator opens the app.
+
+### Evidence — six bugs, from three operator screenshots
+
+1. **Home suggestion thumbnails never load a poster.**
+   `mobile/lib/features/home/home_page.dart:979` is a *const*
+   `ExerciseThumb(exercise: null, size: 48)`, and
+   `mobile/lib/features/equipment/widgets/exercise_thumb.dart:48-49` returns
+   `_Fallback` whenever `posterFor` yields null. So every row renders the
+   dumbbell placeholder. Not an asset problem: every poster path in
+   `exercises_vendor.json` was checked against disk — 1764 `men` + 775
+   `girl` present, 0 broken. The comment above the line already admits
+   "Only a suggestion id is in scope here, not a catalog row".
+2. **Hardcoded English in the Russian UI.**
+   `mobile/lib/features/home/data/suggestion_builder.dart:111` —
+   `'You have not trained ${_pretty(untrained.first)} this week'`, plus the
+   sibling reason strings on 118–126. A named prohibition in the master
+   prompt.
+3. **Raw Firestore exceptions shown to users.**
+   `mobile/lib/l10n/app_ru.arb:337` and `:961` interpolate `e.toString()`,
+   so the screen reads `[cloud_firestore/unavailable] The service is
+   currently unavailable...`. Also a named prohibition. Behind it sits a
+   real outage that leaves both Workouts tabs empty with no retry.
+4. **Snackbar is light-on-dark.** No `snackBarTheme` anywhere in
+   `mobile/lib/core/theme/app_theme.dart`, so Material's default cream
+   surface is used in the dark theme.
+5. **Right-edge clipping.** The "Тренажёр" chip is cut by the screen edge;
+   several titles ellipsise where space exists.
+6. **Aurora palette still on screen** — pink/orange and blue/cyan programme
+   card headers, cyan and pink nav circles.
+
+Not reproduced: the operator's "3 exercises have no video". The three
+screenshots do not show it. Exercise clips are not bundled — a relative path
+is signed by a Cloud Function
+(`mobile/lib/features/equipment/data/clip_url_resolver.dart:58`,
+`FunctionsClipUrlResolver`), and a missing Storage object or a failed
+signature falls back to the poster silently. Plausibly the same root cause
+as bug 1, but that was not asserted without the screen.
+
+### Refusal — no rebuild started; plan presented and held
+
+A four-phase plan was presented (Ф0 bugs; Ф1 foundation — Barlow Condensed,
+remove `AuroraBackground` across 44 files, `GlassCard` -> flat surfaces
+across 45; Ф2 the custom nav bar; Ф3 one gate per screen, each built from
+`App.tsx` directly). Nothing was built. Gate-Based Development: the standing
+GO covering the R11 sequence does not extend to a fresh UI-layer rebuild,
+and the operator has not yet said whether to start at Ф0 or Ф1.
+
+Also proposed and still unanswered: run the Make prototype locally (it ships
+a `vite` setup) to capture deterministic reference screenshots, and close
+every screen gate only on a side-by-side reference/emulator pair. Without
+that, the failure recorded in the "Process miss" entry above repeats a third
+time.
+
+### Gap — this log exists in one project out of six
+
+Checked under `D:\test 2`: `Fitness App` has `core/DECISION_LOG.md`; `AI
+trading assistance`, `arbitrage_strategy`, `Life Companion`, `Remote
+control` and `Task_Repeat` do not. The rule dates from 2026-08-07 and those
+projects have had no session since, so nothing was skipped retroactively —
+but "every project keeps a standing log" is not true today, and the first
+session in each of those five owes it a file.
+
+### Open — the rule cannot execute itself on a commitless turn
+
+This entry was written only after an explicit operator GO, which exposes a
+gap in the rule as written. `core/DECISION_LOG.md` is not `CLAUDE.md`, so it
+falls outside the one pre-approved write in Gate-Based Development; on a turn
+that produces no commit — exactly the turn the rule was created for, the one
+that carries a refusal — writing the entry requires asking first. Two ways
+out were put to the operator and neither is chosen yet:
+
+- **A** — extend the gate's pre-approval to append-only writes of
+  `core/DECISION_LOG.md`, so the log maintains itself.
+- **B** — leave the gate alone and end every such turn with an explicit
+  "write this to the log?" question.
+
+Until one is picked, B is what happens in practice, because it is what the
+gate already requires.
