@@ -47,6 +47,37 @@ class AppTheme {
       displayColor: scheme.onSurface,
     );
 
+    // The prototype runs two families, not one: Inter for reading, Barlow
+    // Condensed for anything large — screen titles, stat numbers, the weight
+    // and height readouts. `src/index.css` loads exactly these two and gives
+    // the second its own class:
+    //
+    //   @import url('...family=Barlow+Condensed:wght@500..900&family=Inter:...')
+    //   .font-display { font-family: 'Barlow Condensed'; letter-spacing: -0.01em; }
+    //
+    // The app shipped only `GoogleFonts.interTextTheme()`, so every heading
+    // that the design draws in a tall condensed face was rendering in the
+    // body font. That single omission is most of why the built screens read
+    // as a different product from the prototype even after R9 matched the
+    // palette.
+    //
+    // Condensed faces set narrower at the same point size, so the headline
+    // sizes go up rather than staying put: matching the design's *presence*
+    // means matching how much of the screen the word occupies, not the number
+    // in the size field.
+    TextStyle display(TextStyle? base, double size, FontWeight weight) =>
+        GoogleFonts.barlowCondensed(
+          textStyle: base,
+          fontSize: size,
+          fontWeight: weight,
+          // CSS -0.01em, resolved against each size rather than copied as one
+          // constant — tracking is proportional, and a single -0.8 that suits
+          // a 32px title is heavy-handed on a 57px number.
+          letterSpacing: size * -0.01,
+          height: 1.05,
+          color: scheme.onSurface,
+        );
+
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
@@ -64,21 +95,35 @@ class AppTheme {
       scaffoldBackgroundColor: Colors.transparent,
       canvasColor: Colors.transparent,
       textTheme: textTheme.copyWith(
-        headlineLarge: textTheme.headlineLarge?.copyWith(
-          fontWeight: FontWeight.w800,
-          letterSpacing: -0.8,
-        ),
-        headlineMedium: textTheme.headlineMedium?.copyWith(
-          fontWeight: FontWeight.w800,
-          letterSpacing: -0.6,
-        ),
-        headlineSmall: textTheme.headlineSmall?.copyWith(
-          fontWeight: FontWeight.w700,
-          letterSpacing: -0.4,
-        ),
+        // display*/headline* -> Barlow Condensed. title*/body*/label* stay
+        // Inter: the design switches families by role, not by size, and a
+        // condensed face is wrong for anything the user has to actually read
+        // a paragraph of.
+        displayLarge: display(textTheme.displayLarge, 57, FontWeight.w900),
+        displayMedium: display(textTheme.displayMedium, 45, FontWeight.w900),
+        displaySmall: display(textTheme.displaySmall, 36, FontWeight.w800),
+        headlineLarge: display(textTheme.headlineLarge, 36, FontWeight.w800),
+        headlineMedium: display(textTheme.headlineMedium, 30, FontWeight.w800),
+        headlineSmall: display(textTheme.headlineSmall, 26, FontWeight.w700),
         titleLarge: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         titleMedium:
             textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+      ),
+      // Bug 4 from the operator's screenshots: an enrolment failure showed a
+      // cream snackbar with dark text over the dark theme, because nothing
+      // here overrode Material's default. It inherits the app's own elevated
+      // surface now, so it belongs to the same screen it appears on.
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: tokens.surfaceElevated,
+        contentTextStyle: textTheme.bodyMedium?.copyWith(
+          color: tokens.textPrimary,
+        ),
+        actionTextColor: tokens.accentPrimary,
+        behavior: SnackBarBehavior.floating,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,

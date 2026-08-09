@@ -394,10 +394,33 @@ class _LibraryTabState extends ConsumerState<_LibraryTab> {
         const SizedBox(height: 22),
         ...list.when(
           loading: () => const [_LoadingCard()],
+          // The exception used to be interpolated straight into the card, so
+          // a Firestore outage read as "[cloud_firestore/unavailable] The
+          // service is currently unavailable. This is a most likely a
+          // transient condition and may be corrected by retrying with a
+          // backoff." — a backend sentence, in English, telling the user to
+          // do something they have no button for. Now: what happened, and
+          // the retry the message was describing.
           error: (e, _) => [
             GlassCard(
-                child: Text(AppLocalizations.of(context)
-                    .workoutsCouldNotLoadWorkouts(e))),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(AppLocalizations.of(context).errorServiceUnavailable),
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: () => ref
+                          .invalidate(_filteredExercisesProvider(_selected)),
+                      icon: const Icon(Icons.refresh_rounded, size: 18),
+                      label: Text(AppLocalizations.of(context).errorRetry),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
           data: (items) {
             if (items.isEmpty) {
@@ -930,9 +953,20 @@ class _ProgrammeTemplateCard extends ConsumerWidget {
         content: Text(l.programmeEnrolled(template.title)),
         behavior: SnackBarBehavior.floating,
       )),
+      // Same reason as the list card above: `'$e'` put the raw Firestore
+      // error in front of the user. The action is retryable and the snackbar
+      // is where the retry belongs, so it carries one instead of the
+      // exception text.
       error: (e, _) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(l.programmeCouldNotEnroll('$e')),
+        content: Text(l.errorServiceUnavailable),
         behavior: SnackBarBehavior.floating,
+        // `active: null` deliberately: the switch-confirmation sheet was
+        // already answered on the first attempt, and asking again on a retry
+        // of the same action would be a second dialog for one decision.
+        action: SnackBarAction(
+          label: l.errorRetry,
+          onPressed: () => _start(context, ref, null),
+        ),
       )),
       loading: () {},
     );

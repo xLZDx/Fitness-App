@@ -1989,3 +1989,119 @@ than 30% of an 89-file rewrite.
 
 **Wired-but-unreachable, named so it is not mistaken for working:** the two
 new error strings above. They exist in both ARBs and nothing calls them.
+
+---
+
+## 2026-08-09, evening — steps 0/1 and Ф1a–Ф1c, stopped red
+
+Operator authorised the order `0 → 1 → Ф1a → Ф1b → Ф1c` after a scoping
+correction (below). Everything below is committed locally and **not pushed,
+and no build was distributed**: the suite ends 21 red.
+
+### Correction — "89 files" was wrong; it is two
+
+Ф1b/Ф1c were scoped at 44 + 45 files. Measured instead of assumed:
+
+- `grep -rl "AuroraBackground(" lib/` → **2** (`main.dart`, its own
+  definition). The 44 was a count of files referencing `AppPalette.aurora*`
+  *colour constants*, which are a different thing from the background widget.
+- `grep -rl "GlassCard(" lib/` → 43 files, 175 call sites — but `GlassCard`
+  is one widget with a centralised implementation, so all 175 inherit a
+  change to `glass.dart`.
+
+So the "89-file mechanical sweep" that justified reaching for Aider, and
+justified splitting Ф1 into three gates for revertability, was **two files**.
+The error was counting references rather than definition sites without first
+checking whether the design system was centralised — it is.
+
+Consequence worth keeping: the Aider recommendation in the same plan was
+also unfounded, and separately Aider does not currently run at all
+(`aider.exe` → `uv trampoline failed to spawn Python child process`; `uv` is
+not on PATH), nor is it configured for this project (no `.aider.conf.yml`,
+no `.env` — those live only in `AI trading assistance`).
+
+### Step 0 — reference frames, in the repository
+
+49 JPEGs at `docs/Redisign/reference/prototype/` with a README carrying
+provenance, the exact `ffmpeg` crop command, a frame→screen index, and the
+limits. Cheap path checked first and rejected: `src/imports/*` in the Make
+zip are screenshots of the **old** app (one of them shows the `pose[pixels]`
+debug string the brief asks to remove), not references for the new design.
+
+Not covered, and named in the README: Scanner, Exercise, Workout Player,
+Rest Timer, Technique Coach, Progress, Progress Photos, Paywall — the
+operator's walkthrough never opened them. Ф3 needs the prototype run locally
+(`vite`) for those.
+
+### Step 1 — bug 3, raw Firestore exceptions
+
+`workouts_page.dart` no longer interpolates the exception. The list error
+card and the enrolment snackbar both show `errorServiceUnavailable` and
+carry a Retry — `ref.invalidate(_filteredExercisesProvider(_selected))` for
+the list, a re-call of `_start` for enrolment. The two ARB keys added earlier
+today are now reachable.
+
+### Ф1a — typography and the snackbar
+
+`GoogleFonts.barlowCondensed` on `display*`/`headline*`, Inter kept for
+`title*`/`body*`/`label*`. The prototype loads exactly two families and gives
+the second its own `.font-display` class; the app shipped only Inter, so
+every heading the design draws in a tall condensed face was rendering in the
+body font. Headline sizes raised deliberately — a condensed face sets
+narrower at equal point size, and matching the design means matching how much
+of the screen a word occupies. `snackBarTheme` added (bug 4).
+
+### Ф1b / Ф1c — the flat surfaces
+
+`AuroraBackground` is now a single `ColoredBox`. Its own R9-era comment had
+already identified the target — *"a near-flat #06060F background with a
+single restrained lime glow"* — and then kept two lime radial blooms at 34%
+and 30% alpha, which on a phone overlap across most of the screen and read as
+olive. `GlassCard` fills with an opaque token plus a hairline border instead
+of white at 0.22; `tint`/`gradient` callers are unaffected. The prototype's
+own design-system page lists "Scrolling cards", "Exercise list items" and
+"Regular surfaces" as places glass must **not** be used, which is what all
+175 call sites are.
+
+### Evidence — a real regression, caught by a test that was not a tripwire
+
+The first version of both widgets read tokens through `theme.colors`, whose
+getter is `extension<AppSemanticColors>()!`. Six `glass_card_test` cases and
+`aurora_background_test`'s "renders the child" pump a **stock** `MaterialApp`
+with no app theme, so the bang threw and the widgets failed to build at all.
+The failures that surfaced were "renders its child" and "invokes onTap when
+pressed" — not colour assertions. A shared presentational widget that cannot
+render outside one specific `ThemeData` is worse than one that is the wrong
+colour, so the fix was a tolerant read with a `colorScheme` fallback, not a
+rewrite of the tests. That took those two files from 9 failures to 3.
+
+### Gap — 21 tests red, and what each group needs
+
+`flutter analyze`: 7 issues, prior baseline, 0 new. `flutter test`: **1860
+passed, 21 failed.** Not shipped, per this session's own new rule that a
+build with failing tests is reported rather than distributed.
+
+The three verified so far are all **intentional** — they assert the design
+that was just replaced, and each needs rewriting to assert the new one, not
+deleting:
+
+1. `glass_card_test: an unfrosted card still reads as a surface` — asserted
+   translucency.
+2. `aurora_background_test: paints a linear gradient layer behind the child`.
+3. `aurora_background_test: uses different stops for light and dark`.
+
+Known and expected among the remaining 18, not yet individually confirmed:
+`app_semantic_colors_test`'s whites ratchet (the count went **down** — whites
+were removed from both widgets — so it needs repinning with a dated comment),
+and `floating_sheet_test: an ordinary card is still translucent`, which is
+now deliberately false.
+
+The rest are page-level tests that render `GlassCard`; whether they fail on
+appearance assertions or on something structural is **unverified**, and
+saying which would be a guess. That is the first thing the next session
+should establish — `flutter test 2>&1 | grep "\[E\]"` gives the list in one
+run.
+
+**Not pushed. No build distributed.** Both deliberately: the push gate is
+"0 failures", and shipping a red build to the tester is what the new
+release-notes rule exists to prevent.

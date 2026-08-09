@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_semantic_colors.dart';
+
 class GlassCard extends StatelessWidget {
   const GlassCard({
     super.key,
@@ -57,46 +59,50 @@ class GlassCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final base = tint ?? Colors.white;
-
-    // Without the frost the fill carries the whole separation from the
-    // background, so it runs more opaque than the blurred variant.
-    final fill = gradient ??
-        (floating
-            // Opaque, and the app's own surface colour rather than white at a
-            // high alpha: white-over-anything shifts hue with whatever is
-            // behind it, which is how a "glass" sheet ends up looking like a
-            // different colour on every screen it opens over.
-            ? LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color.alphaBlend(
-                      base.withValues(alpha: isDark ? 0.10 : 0.55),
-                      theme.colorScheme.surface),
-                  Color.alphaBlend(
-                      base.withValues(alpha: isDark ? 0.04 : 0.30),
-                      theme.colorScheme.surface),
-                ],
-              )
-            : LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: blur
-                    ? [
-                        base.withValues(alpha: isDark ? 0.16 : 0.50),
-                        base.withValues(alpha: isDark ? 0.06 : 0.28),
-                      ]
-                    : [
-                        base.withValues(alpha: isDark ? 0.22 : 0.68),
-                        base.withValues(alpha: isDark ? 0.12 : 0.46),
-                      ],
-              ));
+    // Ф1c: flat opaque surface, not translucent white.
+    //
+    // The prototype's own design-system page is explicit about where glass is
+    // allowed — camera overlays, floating controls, modal sheets, temporary
+    // status overlays — and lists three things it must NOT be used on:
+    // "Scrolling cards", "Exercise list items", "Regular surfaces". This
+    // widget is all three, on 175 call sites across 43 files, and it was
+    // painting white at 0.22 over the background on every one of them.
+    //
+    // Translucency is also what made the surface colour unstable: white over
+    // an olive-tinted backdrop is a different colour than white over black,
+    // so the "same" card read differently on every screen. An opaque token
+    // is the same card everywhere.
+    //
+    // `tint` and `gradient` are still honoured — a caller that asks for a
+    // specific fill (the programme cards' coloured headers) gets it. What
+    // changed is the default.
+    // Read the extension without the `!` that `theme.colors` uses.
+    //
+    // `GlassCard` is a shared presentational widget: it is pumped inside a
+    // stock `MaterialApp` by six of its own tests, by widget previews, and by
+    // anything else that does not install the app's theme. The first version
+    // of this change used `theme.colors`, whose getter ends in
+    // `extension<AppSemanticColors>()!` — so under a bare MaterialApp the
+    // widget threw before it built anything, and the tests that failed were
+    // not the colour assertions but "renders its child" and "invokes onTap".
+    // A card that cannot render outside one specific ThemeData is a worse
+    // card, regardless of how it is coloured.
+    final tokens = theme.extension<AppSemanticColors>();
+    final surfaceColor = tint ??
+        tokens?.surfaceElevated ??
+        theme.colorScheme.surfaceContainerHighest;
+    final borderColor = (tokens?.outline ?? theme.colorScheme.outline)
+        .withValues(alpha: isDark ? 0.10 : 0.14);
 
     Widget surface = DecoratedBox(
       decoration: BoxDecoration(
-        gradient: fill,
+        color: gradient == null ? surfaceColor : null,
+        gradient: gradient,
         borderRadius: BorderRadius.circular(borderRadius),
+        // The design separates a card from the page with a hairline, not with
+        // a brightness step — at #06060F there is very little room below the
+        // surface colour to step down into.
+        border: Border.all(color: borderColor, width: 1),
       ),
       child: Material(
         color: Colors.transparent,

@@ -1,101 +1,54 @@
 import 'package:flutter/material.dart';
 
-/// A soft, dimensional backdrop in the same palette as the rest of the app.
-/// Built from three layers:
-///   1. A vertical base gradient (top → bottom flow of the aurora colors).
-///   2. A wide radial bloom in the upper-left, in the pink/violet family.
-///   3. A wide radial bloom in the lower-right, in the teal/blue family.
-/// Every layer is fully static — the background does not animate.
+import '../../core/theme/app_semantic_colors.dart';
+
+/// The app's page background: one flat fill, nothing else.
+///
+/// ## Why this is flat, and why the name did not change
+///
+/// The design's background is a single colour — `#06060F` — with no gradient
+/// and no glow. `src/index.css` in the prototype export is one line about it:
+///
+///   html, body, #root { ... background: #06060F; }
+///
+/// This widget used to paint three layers over that: a five-stop vertical
+/// gradient plus two wide radial blooms in the lime accent at 34% and 30%
+/// alpha. On a phone the two blooms overlap across most of the screen, and
+/// lime at a third opacity over near-black reads as olive — which is the
+/// green haze the operator saw on every screen and the single largest reason
+/// the built app did not look like the prototype.
+///
+/// R9 had already identified the target ("a near-flat #06060F background with
+/// a single restrained lime glow" — its own comment, since removed with the
+/// code it justified) and then kept the blooms anyway. Restraint at 34% alpha
+/// across a whole screen is not restraint.
+///
+/// The class keeps its name. `AuroraBackground` is referenced from `main.dart`
+/// and eight test files, and renaming it would put a ten-file sweep in the
+/// same diff as a visual change — the exact coupling the design-token gate
+/// was structured to avoid. The name is now inaccurate and that is a cleanup,
+/// not a bug.
+///
+/// It stays a widget rather than becoming `scaffoldBackgroundColor` because
+/// the app sets that to transparent on purpose: one wrapper is the single
+/// place a future full-screen treatment (camera, onboarding hero) can be
+/// introduced without editing every route.
 class AuroraBackground extends StatelessWidget {
   const AuroraBackground({super.key, required this.child});
 
   final Widget child;
 
-  static const _lightBase = <Color>[
-    Color(0xFFFFD8E8), // pink
-    Color(0xFFEFD9FF), // lavender
-    Color(0xFFFFE6D2), // peach
-    Color(0xFFD0EFE8), // mint
-    Color(0xFFCEE2F2), // soft blue
-  ];
-
-  /// R9 (2026-08-08): this file has its own private palette, independent of
-  /// `AppSemanticColors` -- it was not touched by the token-level R9 commit
-  /// (`112ee5b`) and kept painting the pre-R9 violet/blue dark scheme behind
-  /// EVERY screen (`main.dart:577` wraps the whole app in this widget once).
-  /// Retuned to the lime family confirmed for R9 rather than reusing the old
-  /// violet/blue hues: the design source (`App.tsx:1234-1236`, Step0) shows a
-  /// near-flat `#06060F` background with a single restrained lime glow, not a
-  /// colourful multi-hue wash, so the base gradient stays close to the two
-  /// confirmed background tones ([AppSemanticColors.dark]'s
-  /// backgroundPrimary/backgroundSecondary) and only the two blooms carry
-  /// colour -- the primary lime accent and its documented secondary shade.
-  static const _darkBase = <Color>[
-    Color(0xFF06060F),
-    Color(0xFF08080F),
-    Color(0xFF0A0A14),
-    Color(0xFF08080F),
-    Color(0xFF06060F),
-  ];
-
-  static const _lightBloomA = Color(0xFFFF6FB5);
-  static const _lightBloomB = Color(0xFF2BE5C2);
-  static const _darkBloomA = Color(0xFFC9FF47); // accentPrimary
-  static const _darkBloomB = Color(0xFFA8D93A); // accentSecondary
-
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: isDark ? _darkBase : _lightBase,
-                stops: const [0.0, 0.30, 0.55, 0.78, 1.0],
-              ),
-            ),
-          ),
-        ),
-        Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: const Alignment(-0.4, -0.85),
-                radius: 1.1,
-                colors: [
-                  (isDark ? _darkBloomA : _lightBloomA)
-                      .withValues(alpha: isDark ? 0.34 : 0.42),
-                  (isDark ? _darkBloomA : _lightBloomA)
-                      .withValues(alpha: 0.0),
-                ],
-                stops: const [0.0, 1.0],
-              ),
-            ),
-          ),
-        ),
-        Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: const Alignment(0.9, 0.95),
-                radius: 1.2,
-                colors: [
-                  (isDark ? _darkBloomB : _lightBloomB)
-                      .withValues(alpha: isDark ? 0.30 : 0.36),
-                  (isDark ? _darkBloomB : _lightBloomB)
-                      .withValues(alpha: 0.0),
-                ],
-                stops: const [0.0, 1.0],
-              ),
-            ),
-          ),
-        ),
-        Positioned.fill(child: child),
-      ],
+    final theme = Theme.of(context);
+    // Without the `!` in `theme.colors` — this widget is pumped under a stock
+    // `MaterialApp` by its own tests and by every page test's harness, and a
+    // background that throws when the app theme is absent takes the whole
+    // page down with it. Same reason as `GlassCard`.
+    final tokens = theme.extension<AppSemanticColors>();
+    return ColoredBox(
+      color: tokens?.backgroundPrimary ?? theme.colorScheme.surface,
+      child: child,
     );
   }
 }
