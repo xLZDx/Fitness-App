@@ -2,6 +2,29 @@ import '../../equipment/data/equipment_models.dart';
 import '../../profile/data/profile_models.dart';
 import '../../workouts/data/workout_log.dart';
 
+/// Why an exercise was suggested.
+///
+/// An enum rather than a built string. This builder is a pure function with no
+/// `BuildContext`, so any sentence it composes itself is a sentence in one
+/// language — which is how `'You have not trained hamstrings this week'`
+/// ended up on a Russian Home screen. The builder decides *which* reason
+/// applies; the widget that has a `BuildContext` decides how to say it.
+enum SuggestionReason {
+  /// A primary muscle of this exercise has gone untrained this week.
+  /// Carries [WorkoutSuggestion.reasonMuscle] — a catalog muscle tag, to be
+  /// rendered through `CatalogLabels.muscle`.
+  untrainedMuscle,
+  cardioForWeightLoss,
+  cardioForEndurance,
+  buildsStrength,
+  buildsMuscle,
+  fitsSessionLength,
+
+  /// Nothing more specific applied. Deliberately weak: the alternative was
+  /// inventing a reason, and a vague true statement beats a precise false one.
+  matchesProfile,
+}
+
 /// One row in the Suggestions section.
 ///
 /// Carries a real [exerciseId] so the card can open the actual workout — the
@@ -12,30 +35,48 @@ class WorkoutSuggestion {
     required this.title,
     required this.durationMinutes,
     required this.reason,
+    this.reasonMuscle,
+    this.exercise,
   });
 
   final String exerciseId;
   final String title;
   final int durationMinutes;
 
-  /// Why this was suggested, in the user's terms. Shown on the card: a
-  /// recommendation the user cannot interrogate is indistinguishable from a
-  /// random pick.
-  final String reason;
+  /// Why this was suggested. Shown on the card: a recommendation the user
+  /// cannot interrogate is indistinguishable from a random pick.
+  final SuggestionReason reason;
 
+  /// The muscle tag for [SuggestionReason.untrainedMuscle]; null otherwise.
+  final String? reasonMuscle;
+
+  /// The catalog row this suggestion came from.
+  ///
+  /// Present so the card can show the exercise's bundled poster. Before this,
+  /// the Home card passed `ExerciseThumb(exercise: null)` — a const, so every
+  /// row rendered the fallback dumbbell tile and none of the 1764 bundled
+  /// posters was ever reached. Nullable only because the pure-function tests
+  /// construct suggestions directly without a catalog row.
+  final ExerciseItem? exercise;
+
+  /// Excluded from equality and [hashCode]: [exerciseId] already identifies
+  /// the row, so two suggestions with the same id and different exercise
+  /// objects would be a catalog bug, not two distinct suggestions.
   @override
   bool operator ==(Object other) =>
       other is WorkoutSuggestion &&
       other.exerciseId == exerciseId &&
       other.title == title &&
       other.durationMinutes == durationMinutes &&
-      other.reason == reason;
+      other.reason == reason &&
+      other.reasonMuscle == reasonMuscle;
 
   @override
-  int get hashCode => Object.hash(exerciseId, title, durationMinutes, reason);
+  int get hashCode =>
+      Object.hash(exerciseId, title, durationMinutes, reason, reasonMuscle);
 
   @override
-  String toString() => 'WorkoutSuggestion($exerciseId, $reason)';
+  String toString() => 'WorkoutSuggestion($exerciseId, ${reason.name})';
 }
 
 /// Equipment whose work is primarily cardiovascular.
@@ -104,28 +145,30 @@ List<WorkoutSuggestion> buildSuggestions({
         .toList(growable: false);
 
     var score = 0;
-    String? reason;
+    SuggestionReason? reason;
+    String? reasonMuscle;
 
     if (untrained.isNotEmpty && trainedMuscles.isNotEmpty) {
       score += 3;
-      reason = 'You have not trained ${_pretty(untrained.first)} this week';
+      reason = SuggestionReason.untrainedMuscle;
+      reasonMuscle = untrained.first;
     }
     if (wantsCardio && isCardio) {
       score += 2;
       reason ??= goals.weightLoss
-          ? 'Cardio for your weight-loss goal'
-          : 'Cardio for your endurance goal';
+          ? SuggestionReason.cardioForWeightLoss
+          : SuggestionReason.cardioForEndurance;
     }
     if (wantsStrength && !isCardio) {
       score += 2;
       reason ??= goals.strength
-          ? 'Builds strength, which you picked as a goal'
-          : 'Builds muscle, which you picked as a goal';
+          ? SuggestionReason.buildsStrength
+          : SuggestionReason.buildsMuscle;
     }
     if (targetMinutes != null &&
         (ex.durationMinutes - targetMinutes).abs() <= 4) {
       score += 1;
-      reason ??= 'Fits the session length you prefer';
+      reason ??= SuggestionReason.fitsSessionLength;
     }
     // Removed: `reason ??= 'Safe with the injuries you listed'`.
     //
@@ -148,7 +191,8 @@ List<WorkoutSuggestion> buildSuggestions({
       exercise: ex,
       score: score,
       order: i,
-      reason: reason ?? 'Matches your profile',
+      reason: reason ?? SuggestionReason.matchesProfile,
+      reasonMuscle: reasonMuscle,
     ));
   }
 
@@ -172,6 +216,8 @@ List<WorkoutSuggestion> buildSuggestions({
       title: s.exercise.title,
       durationMinutes: s.exercise.durationMinutes,
       reason: s.reason,
+      reasonMuscle: s.reasonMuscle,
+      exercise: s.exercise,
     ));
   }
 
@@ -203,18 +249,18 @@ int? _targetMinutes(WorkoutDuration? d) => switch (d) {
       WorkoutDuration.over60 => 65,
     };
 
-String _pretty(String muscleTag) => muscleTag.replaceAll('_', ' ');
-
 class _Scored {
   const _Scored({
     required this.exercise,
     required this.score,
     required this.order,
     required this.reason,
+    this.reasonMuscle,
   });
 
   final ExerciseItem exercise;
   final int score;
   final int order;
-  final String reason;
+  final SuggestionReason reason;
+  final String? reasonMuscle;
 }

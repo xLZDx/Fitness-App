@@ -959,5 +959,14 @@
   "programmeWeeksAndDaysPerWeek": "{weeks, plural, one{{weeks} неделя} few{{weeks} недели} many{{weeks} недель} other{{weeks} недели}} · {days, plural, one{{days} день/нед.} few{{days} дня/нед.} many{{days} дней/нед.} other{{days} дня/нед.}}",
   "programmeEnrolled": "Вы записаны на «{title}»",
   "programmeCouldNotEnroll": "Не удалось начать программу: {error}",
-  "programmeNoUpcomingSession": "Пока нет ближайшей сессии — проверьте позже"
+  "programmeNoUpcomingSession": "Пока нет ближайшей сессии — проверьте позже",
+  "suggestionReasonUntrainedMuscle": "На этой неделе вы не тренировали: {muscle}",
+  "suggestionReasonCardioWeightLoss": "Кардио — под вашу цель снизить вес",
+  "suggestionReasonCardioEndurance": "Кардио — под вашу цель по выносливости",
+  "suggestionReasonBuildsStrength": "Развивает силу — вы выбрали её целью",
+  "suggestionReasonBuildsMuscle": "Наращивает мышцы — вы выбрали это целью",
+  "suggestionReasonFitsSessionLength": "Подходит под вашу длительность тренировки",
+  "suggestionReasonMatchesProfile": "Подходит вашему профилю",
+  "errorServiceUnavailable": "Сервис временно недоступен. Проверьте связь и попробуйте ещё раз.",
+  "errorRetry": "Повторить"
 }

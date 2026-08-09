@@ -114,7 +114,8 @@ void main() {
         now: now,
       );
       expect(out.first.exerciseId, 'backy');
-      expect(out.first.reason, contains('not trained back this week'));
+      expect(out.first.reason, SuggestionReason.untrainedMuscle);
+      expect(out.first.reasonMuscle, 'back');
     });
 
     test('a weight-loss goal surfaces cardio with a matching reason', () {
@@ -128,7 +129,7 @@ void main() {
         now: now,
       );
       expect(out.first.exerciseId, 'run');
-      expect(out.first.reason, contains('weight-loss'));
+      expect(out.first.reason, SuggestionReason.cardioForWeightLoss);
     });
 
     test('an endurance goal names endurance, not weight loss', () {
@@ -138,7 +139,7 @@ void main() {
         recentLogs: const [],
         now: now,
       );
-      expect(out.first.reason, contains('endurance'));
+      expect(out.first.reason, SuggestionReason.cardioForEndurance);
     });
 
     test('a strength goal surfaces resistance work over cardio', () {
@@ -152,7 +153,7 @@ void main() {
         now: now,
       );
       expect(out.first.exerciseId, 'squat');
-      expect(out.first.reason, contains('strength'));
+      expect(out.first.reason, SuggestionReason.buildsStrength);
     });
 
     test('a preferred session length is honoured', () {
@@ -166,7 +167,7 @@ void main() {
         now: now,
       );
       expect(out.first.exerciseId, 'short');
-      expect(out.first.reason, contains('session length'));
+      expect(out.first.reason, SuggestionReason.fitsSessionLength);
     });
 
     test('does not repeat the same primary muscle while variety is available',
@@ -256,9 +257,13 @@ void main() {
         recentLogs: const [],
         now: now,
       );
-      expect(out.first.reason, isNot(contains('injuries you listed')));
-      expect(out.first.reason, isNot(contains('Safe with')));
-      expect(out.first.reason, isNotEmpty,
+      // Now enforced by the type rather than by string matching: there is no
+      // `SuggestionReason` member that makes a safety claim, so the removed
+      // sentence cannot come back through this builder without someone adding
+      // an enum case — a much louder change than editing a string literal.
+      expect(SuggestionReason.values.map((r) => r.name),
+          isNot(anyElement(contains('safe'))));
+      expect(out.first.reason, SuggestionReason.matchesProfile,
           reason: 'the card still needs a reason -- the honest ones remain');
     });
 
@@ -270,10 +275,11 @@ void main() {
         now: now,
       );
       expect(out, hasLength(1));
-      expect(out.first.reason, isNotEmpty);
+      expect(out.first.reason, SuggestionReason.matchesProfile);
     });
 
-    test('every suggestion carries a non-empty reason', () {
+    test('every suggestion carries a reason, and the catalog row behind it',
+        () {
       final out = buildSuggestions(
         candidates: [
           for (var i = 0; i < 6; i++) ex('e$i', primary: ['m$i']),
@@ -282,9 +288,42 @@ void main() {
         recentLogs: const [],
         now: now,
       );
+      expect(out, isNotEmpty);
       for (final s in out) {
-        expect(s.reason.trim(), isNotEmpty);
+        // `reason` is an enum now, so "non-empty string" is no longer the
+        // assertion that matters — the builder cannot produce a blank one.
+        // What can still regress is the row travelling with it: the Home card
+        // needs it for the poster, and passing null there is exactly the bug
+        // that made every suggestion render the fallback dumbbell tile.
+        expect(s.exercise, isNotNull,
+            reason: 'the catalog row must travel with the suggestion');
+        expect(s.exercise!.id, s.exerciseId);
       }
+    });
+
+    test('untrainedMuscle carries the muscle tag it is about', () {
+      final out = buildSuggestions(
+        candidates: [ex('worked', primary: ['chest']), ex('fresh', primary: ['lats'])],
+        profile: profileWith(goals: const FitnessGoals(generalFitness: true)),
+        recentLogs: [log('worked', now.subtract(const Duration(days: 3)))],
+        now: now,
+      );
+      final fresh = out.firstWhere((s) => s.exerciseId == 'fresh');
+      expect(fresh.reason, SuggestionReason.untrainedMuscle);
+      // Without this the UI localizes an empty tag and the card reads
+      // "На этой неделе вы не тренировали: " with nothing after the colon.
+      expect(fresh.reasonMuscle, 'lats');
+    });
+
+    test('a reason other than untrainedMuscle carries no muscle tag', () {
+      final out = buildSuggestions(
+        candidates: [ex('only', primary: ['chest'])],
+        profile: profileWith(goals: const FitnessGoals(strength: true)),
+        recentLogs: const [],
+        now: now,
+      );
+      expect(out.single.reason, SuggestionReason.buildsStrength);
+      expect(out.single.reasonMuscle, isNull);
     });
   });
 }

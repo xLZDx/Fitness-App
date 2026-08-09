@@ -1893,3 +1893,99 @@ out were put to the operator and neither is chosen yet:
 
 Until one is picked, B is what happens in practice, because it is what the
 gate already requires.
+
+### Correction — the repository went private mid-push; `dead49f`'s body is now stale
+
+Sequence, as measured rather than assumed. At 13:47 local (Europe/Chisinau)
+/ 10:47 UTC an unauthenticated `GET api.github.com/repos/xLZDx/Fitness-App`
+returned **200** — public. On that basis the operator was shown exactly what
+would become public (roadmap, the 44-question decisions register, paywall
+tiers and trial length, the 11.8 MB Make export) and chose to publish all of
+it. `docs/Redisign/` was committed as `dead49f` and pushed
+(`337aa29..dead49f`). Within roughly the same two minutes the operator
+switched the repository to private; the same request now returns **404**.
+
+Two consequences, neither hidden:
+
+1. **The ordering cannot be established from this side.** A push succeeds
+   under either visibility, so its output does not distinguish them. The
+   public window for these files is therefore either zero or on the order of
+   minutes — but claiming it was zero would be a guess. Residual exposure
+   requires someone to have cloned or forked inside that window. No
+   credentials are involved: the pre-push scan for keys/tokens/passwords
+   returned 0 real hits, every match being the phrase "design tokens".
+2. **`dead49f`'s commit body asserts something no longer true.** It says
+   "Публикация в публичный репозиторий -- осознанная" and cites the 200. That
+   was accurate when written and is not now. The commit is pushed, so it is
+   not amended — "never amend a pushed commit" (Git Lifecycle). This entry is
+   the correction of record; a reader of `dead49f` should land here.
+
+Worth recording as a decision rather than an accident: making the repository
+private removed the main objection to the choice the operator made. Of the
+four costs put to them, three were about publicity. What remains is 11.8 MB
+of binary permanently in git history plus the conflict with their own
+"Repository separation is mandatory" clause — a taste question now, not a
+safety one.
+
+### Decision — Ф0–Ф3 authorised as one autonomous run, closing with a distributed build
+
+Operator: *"Го на правку + Го Ф0-Ф3 автономно и в конце пришли новый билд на
+фаирбэйз тест апп"*. This is the multi-gate GO that Gate-Based Development
+recognises: sub-gates run without per-step approval or per-step reports, one
+report at the end, stopping only for a decision that is genuinely the
+operator's or a serious problem.
+
+Scope-trigger acknowledged rather than skipped: Ф0–Ф3 is far past the
+>2h/15-file/350-line line that normally forces a split proposal before
+building — Ф1 alone rewrites 89 files, Ф3 is eleven screens with new custom
+widgets. The rule permits an explicit operator override and this is one. It
+is recorded here so the size is not later mistaken for scope creep.
+
+The same message added a standing rule — always close a run by shipping a
+build to Firebase App Distribution with release notes written in user-visible
+terms, including known gaps. Canonical text in `~/.claude/CLAUDE.md`
+("Ship the Build to the Tester, With Real Release Notes"), pointer in
+`D:\test 2\CLAUDE.md`. Its trigger: this run's build had to be requested
+explicitly, twice, after the work was already reported finished.
+
+### Checkpoint — Ф0 half-done, Ф1–Ф3 not started, and why the run stopped here
+
+Stopped on context budget, not on a blocker, and stopped deliberately rather
+than by running out mid-sweep. Ф1's first act is deleting `AuroraBackground`
+from 44 files and replacing `GlassCard` in 45; beginning that with the
+remaining budget would have left the app in a state that neither compiles nor
+reverts cleanly. A checkpoint the next session can resume from is worth more
+than 30% of an 89-file rewrite.
+
+**Done and verified:**
+
+- **Bug 1, posters.** `WorkoutSuggestion` now carries the `ExerciseItem` it
+  was built from, and `home_page.dart` passes it to `ExerciseThumb` instead
+  of the `const ... exercise: null` that guaranteed the fallback tile.
+- **Bug 2, English in a Russian UI.** `reason` changed from a pre-built
+  `String` to a `SuggestionReason` enum plus an optional muscle tag. The
+  builder is a pure function without a `BuildContext`, so any sentence it
+  wrote was a sentence in one language — that is the whole root cause, and
+  the type now prevents it. `_reasonText` in `home_page.dart` renders it, and
+  the muscle goes through `CatalogLabels.muscle`, the same table the rest of
+  the app uses. Seven new l10n keys in `app_ru.arb`/`app_en.arb`.
+- Tests: `test/features/home/` 47/47. Three assertions were rewritten rather
+  than deleted, and the "never claims an exercise is safe" test now asserts
+  against the enum's members instead of grepping a string — a claim can no
+  longer reappear without someone adding an enum case.
+- `flutter analyze`: 7 issues, all pre-existing baseline, 0 new.
+
+**Not done, in the order they should be picked up:**
+
+1. Bug 3 — `app_ru.arb:337` and `:961` still interpolate `e.toString()`, so
+   `[cloud_firestore/unavailable] ...` still reaches the screen. Keys
+   `errorServiceUnavailable` and `errorRetry` were added in this session and
+   are **not yet wired to any call site** — that is the next concrete step.
+2. Bug 4 — no `snackBarTheme`, so snackbars render light-on-dark.
+3. Bug 5 — right-edge chip clipping.
+4. Bug 6 — aurora palette on programme cards and nav circles; overlaps Ф1 and
+   should be done there rather than twice.
+5. Ф1 → Ф2 → Ф3 as planned, unstarted.
+
+**Wired-but-unreachable, named so it is not mistaken for working:** the two
+new error strings above. They exist in both ARBs and nothing calls them.

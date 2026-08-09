@@ -1786,5 +1786,21 @@
       }
     }
   },
-  "programmeNoUpcomingSession": "No upcoming session yet — check back after the schedule updates"
+  "programmeNoUpcomingSession": "No upcoming session yet — check back after the schedule updates",
+  "suggestionReasonUntrainedMuscle": "You have not trained {muscle} this week",
+  "@suggestionReasonUntrainedMuscle": {
+    "placeholders": {
+      "muscle": {
+        "type": "String"
+      }
+    }
+  },
+  "suggestionReasonCardioWeightLoss": "Cardio for your weight-loss goal",
+  "suggestionReasonCardioEndurance": "Cardio for your endurance goal",
+  "suggestionReasonBuildsStrength": "Builds strength, which you picked as a goal",
+  "suggestionReasonBuildsMuscle": "Builds muscle, which you picked as a goal",
+  "suggestionReasonFitsSessionLength": "Fits the session length you prefer",
+  "suggestionReasonMatchesProfile": "Matches your profile",
+  "errorServiceUnavailable": "The service is temporarily unavailable. Check your connection and try again.",
+  "errorRetry": "Retry"
 }

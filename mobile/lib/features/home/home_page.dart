@@ -973,10 +973,12 @@ class _SuggestionCard extends StatelessWidget {
       onTap: () => GoRouter.of(context).push('/workout/${s.exerciseId}'),
       child: Row(
         children: [
-          // Only a suggestion id is in scope here, not a catalog row, so
-          // this renders the fallback tile — but through the shared widget,
-          // so it is the same shape and radius as everywhere else.
-          const ExerciseThumb(exercise: null, size: 48),
+          // The catalog row now travels on the suggestion, so this reaches
+          // the exercise's bundled poster. It used to be a `const` with
+          // `exercise: null`, which meant every row in this list rendered the
+          // fallback dumbbell tile and none of the 1764 bundled posters was
+          // ever asked for — the "картинки не отображаются" the operator saw.
+          ExerciseThumb(exercise: s.exercise, size: 48),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -1007,7 +1009,7 @@ class _SuggestionCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  s.reason,
+                  _reasonText(AppLocalizations.of(context), s),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(
@@ -1022,6 +1024,28 @@ class _SuggestionCard extends StatelessWidget {
     );
   }
 }
+
+/// Renders [WorkoutSuggestion.reason] in the user's language.
+///
+/// The builder is a pure function with no `BuildContext`, so it reports which
+/// reason applies and this turns it into a sentence. Before the split, the
+/// builder composed the sentence itself and a Russian Home screen read
+/// "You have not trained hamstrings this week" — English string *and* an
+/// untranslated catalog muscle tag. The muscle goes through `CatalogLabels`,
+/// the same table every other screen uses, so it cannot be translated on the
+/// exercise page and raw here.
+String _reasonText(AppLocalizations l, WorkoutSuggestion s) =>
+    switch (s.reason) {
+      SuggestionReason.untrainedMuscle => l.suggestionReasonUntrainedMuscle(
+          CatalogLabels.muscle(l, s.reasonMuscle ?? ''),
+        ),
+      SuggestionReason.cardioForWeightLoss => l.suggestionReasonCardioWeightLoss,
+      SuggestionReason.cardioForEndurance => l.suggestionReasonCardioEndurance,
+      SuggestionReason.buildsStrength => l.suggestionReasonBuildsStrength,
+      SuggestionReason.buildsMuscle => l.suggestionReasonBuildsMuscle,
+      SuggestionReason.fitsSessionLength => l.suggestionReasonFitsSessionLength,
+      SuggestionReason.matchesProfile => l.suggestionReasonMatchesProfile,
+    };
 
 class _SuggestionsPlaceholder extends StatelessWidget {
   const _SuggestionsPlaceholder();
