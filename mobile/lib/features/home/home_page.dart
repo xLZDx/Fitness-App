@@ -478,12 +478,23 @@ class _AccentButton extends StatelessWidget {
               children: [
                 Icon(icon, size: 20, color: colors.onAccent),
                 const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: colors.onAccent,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                // Flexible, not bare: a `Row` gives an unconstrained child all
+                // the width it asks for, so at 320 dp this label overflowed the
+                // button by 19 px — the one real defect among the seven
+                // failing integration tests. `Flexible` + `ellipsis` makes it
+                // yield instead of the layout breaking; `TextOverflow.fade`
+                // was rejected because a faded verb reads as a rendering bug
+                // rather than as a truncation.
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: colors.onAccent,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],

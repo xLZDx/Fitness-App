@@ -295,4 +295,28 @@ void main() {
       expect(find.textContaining('Силовая база · Week 2 of 8'), findsOneWidget);
     });
   });
+
+  group('A8 — narrow screens', () {
+    testWidgets('renders at 320 dp without overflowing', (tester) async {
+      // The audit measured a 19 px overflow on the Home CTA at this width,
+      // and the Android integration suite fails on it. 320 dp is not
+      // hypothetical: it is a Galaxy A-series in display-size "large", and
+      // the prototype the screen was rebuilt from has a ~390 dp viewport, so
+      // nothing in the design process would have caught it.
+      //
+      // Asserted via `takeException` rather than by measuring the button:
+      // a RenderFlex overflow is reported as a framework exception, so this
+      // fails on ANY overflow the screen grows later, not only this one.
+      tester.view.physicalSize = const Size(320, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(_buildApp(
+        user: const AuthUser(uid: 'u1', displayName: 'Ivan'),
+      ));
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+    });
+  });
 }
