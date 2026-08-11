@@ -90,7 +90,15 @@ not later mistaken for scope creep.
 | **A6-full** App Check | **DONE** — staged flags + anonymous-trial guard; budget `notificationsRule` still unset | `af6dc6a` |
 | Act gate on A2-sec | **DONE** — 2 BLOCKER, 2 MAJOR, 1 MINOR, all 5 closed | act-gate commit |
 | **S1** ML strategy | **DONE** — `core/plans/ML_STRATEGY_2026-08-11.md` | `1cd9a72` |
-| P1 / P2 / redesign remainder | not started, except the mock-disclosure item which was **already closed** (see below) | |
+| **P1a** Rules emulator tests | **DONE** — 27 tests; found and closed two `firestore.rules` gaps | `7a31d3c` |
+| **P1b** Fail-closed CI | **DONE** — 4 jobs; found two live production advisories, both fixed | `7a31d3c` |
+| **P1c** Platform scope | **DONE** — `core/PLATFORM_SCOPE.md` | `7a31d3c` |
+| **P1d** Entitlement states | **DONE** — paywall no longer shown to paying users on cold start or stream error | `55cb4ae` |
+| **P1e** Duplicate reconciliation | **DONE** — repairs pre-A4 double charges on the webhook | `55cb4ae` |
+| **P1f** Deletion + multi-account e2e | **DONE** — 8 tests, real Admin SDK against the emulators | this commit |
+| **P1g** Device photo-capture ordering | **BLOCKED** — needs hardware | |
+| Mock disclosure (P1) | **already closed** before the gate ran (see below) | |
+| P2 / redesign remainder | not started | |
 
 **Audit finding that no longer holds.** `AUDIT_REPORT_2026-08-11.md:35` says
 `/community` uses an undisclosed in-memory mock. It is disclosed:

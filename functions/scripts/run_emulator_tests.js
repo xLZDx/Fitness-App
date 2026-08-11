@@ -1,9 +1,17 @@
 /**
- * Runs the Firestore rules tests, choosing a JDK the emulator will accept.
+ * Runs a jest suite inside the Firebase emulators, choosing a JDK they accept.
+ *
+ *     node scripts/run_emulator_tests.js <jest-config> <emulators> <projectId>
+ *
+ * Two suites use it — the rules tests (`firestore`) and the account-deletion
+ * e2e (`firestore,auth`). It was `run_rules_tests.js` and served only the
+ * first; the e2e needed the identical JDK shim, and a second copy of logic this
+ * fiddly is a copy that drifts. The three things that differ between the suites
+ * are arguments.
  *
  * `firebase-tools` requires Java 21+. This machine's `JAVA_HOME` points at the
  * JDK 17 the Android release build uses, and moving it would change what
- * `flutter build apk` compiles against — so the emulator gets its own JDK
+ * `flutter build apk` compiles against — so the emulators get their own JDK
  * instead, and only for the life of this process.
  *
  * Deliberately a script rather than `cross-env JAVA_HOME=... firebase ...` in
@@ -23,6 +31,15 @@
 const { spawnSync } = require("child_process");
 const { existsSync, readdirSync } = require("fs");
 const { join, delimiter: pathSep } = require("path");
+
+const [config, emulators, projectId] = process.argv.slice(2);
+if (!config || !emulators || !projectId) {
+  console.error(
+    "\nusage: node scripts/run_emulator_tests.js <jest-config> <emulators> <projectId>\n" +
+      "   eg: node scripts/run_emulator_tests.js jest.rules.config.js firestore demo-fitness-rules\n",
+  );
+  process.exit(1);
+}
 
 /** Major version of the JDK at `home`, or 0 if it is not usable. */
 function majorVersion(home) {
@@ -67,11 +84,12 @@ for (const home of candidates()) {
 
 if (!chosen) {
   console.error(
-    `\nNo JDK ${MINIMUM}+ found, and the Firestore emulator requires one.\n` +
+    `\nNo JDK ${MINIMUM}+ found, and the Firebase emulators require one.\n` +
       `Checked: ${candidates().join(", ") || "(nothing)"}\n\n` +
-      `The rules tests are the only coverage firestore.rules has, so this is\n` +
-      `not a suite to skip. Install a JDK ${MINIMUM}+ and either put it on\n` +
-      `JAVA_HOME or drop it in D:/tools/jdk-21*.\n`,
+      `These suites are the only coverage firestore.rules and the deletion\n` +
+      `path have against a real Firestore, so this is not a suite to skip.\n` +
+      `Install a JDK ${MINIMUM}+ and either put it on JAVA_HOME or drop it in\n` +
+      `D:/tools/jdk-21*.\n`,
   );
   process.exit(1);
 }
@@ -81,9 +99,9 @@ if (!chosen) {
 // Windows IS `npx.cmd`, so the argv form dies with a bare `EINVAL` that says
 // nothing about why.
 const result = spawnSync(
-  "npx firebase emulators:exec --only firestore " +
-    "--project demo-fitness-rules " +
-    '"npx jest --config jest.rules.config.js"',
+  `npx firebase emulators:exec --only ${emulators} ` +
+    `--project ${projectId} ` +
+    `"npx jest --config ${config}"`,
   {
     shell: true,
     stdio: "inherit",
@@ -105,7 +123,7 @@ const result = spawnSync(
 if (result.error) {
   // A spawn failure used to exit silently with no output at all, which in a
   // script whose entire job is failing loudly is the worst possible outcome.
-  console.error(`\nCould not start the emulator: ${result.error.message}\n`);
+  console.error(`\nCould not start the emulators: ${result.error.message}\n`);
   process.exit(1);
 }
 

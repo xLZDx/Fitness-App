@@ -1533,9 +1533,9 @@ async function commitInChunks(
  *     rows nobody can ever read again.
  *   - `debug_sessions` is SOLE. It is device telemetry about one person with
  *     no counterparty, so it is deleted. It also cannot be cleaned up any
- *     other way: `firestore.rules:82-87` sets `allow update, delete: if false`,
- *     so even the owner's own client cannot remove it -- only the Admin SDK,
- *     which bypasses rules, can.
+ *     other way: `firestore.rules:101-112` sets `allow update, delete: if
+ *     false`, so even the owner's own client cannot remove it -- only the
+ *     Admin SDK, which bypasses rules, can.
  *
  * Each query is a single-field equality, so none of them needs a composite
  * index that a fresh project would not already have.
@@ -1553,20 +1553,56 @@ async function sweepSharedRecords(uid: string): Promise<void> {
   // Both sides queried separately rather than with an `or`: a user can be the
   // client on one booking and the coach on another, and one query per field
   // is what keeps "which field do I anonymise" decidable per document.
-  for (const doc of asClient.docs) {
-    const other = doc.data()?.coachUid;
-    if (other === DELETED_UID || other === undefined) {
-      ops.push((b) => b.delete(doc.ref));
+  //
+  // The two result sets are then MERGED per document before any op is built.
+  // They can overlap: `bookCoachSession` (index.ts:1150-1199) never compares
+  // `coachUid` to `auth.uid`, so a coach with a listing can book themselves,
+  // and that document comes back in both queries. Building an op per query
+  // instead of per document queued two updates against the same ref. Measured
+  // against the emulator, not reasoned about: the two updates apply without
+  // error, and the row SURVIVES -- a booking whose every side reads
+  // `deleted_user`, which is exactly the unreadable record the "delete once
+  // both sides are gone" rule above exists to prevent. Found by the e2e's act
+  // gate; the mocked suite could not see it, having never seeded a
+  // self-booking.
+  type Side = {
+    ref: FirebaseFirestore.DocumentReference;
+    data: FirebaseFirestore.DocumentData;
+    isClient: boolean;
+    isCoach: boolean;
+  };
+  const bookings = new Map<string, Side>();
+  const mark = (
+    doc: FirebaseFirestore.QueryDocumentSnapshot,
+    side: "isClient" | "isCoach",
+  ) => {
+    const found = bookings.get(doc.ref.path) ?? {
+      ref: doc.ref,
+      data: doc.data() ?? {},
+      isClient: false,
+      isCoach: false,
+    };
+    found[side] = true;
+    bookings.set(doc.ref.path, found);
+  };
+  for (const doc of asClient.docs) mark(doc, "isClient");
+  for (const doc of asCoach.docs) mark(doc, "isCoach");
+
+  // `undefined` counts as gone for the same reason `DELETED_UID` does: a
+  // booking with no counterparty field is already unreachable by anyone.
+  const gone = (v: unknown) => v === undefined || v === DELETED_UID;
+  for (const b of bookings.values()) {
+    const client = b.isClient ? DELETED_UID : b.data.clientUid;
+    const coach = b.isCoach ? DELETED_UID : b.data.coachUid;
+    if (gone(client) && gone(coach)) {
+      ops.push((batch) => batch.delete(b.ref));
     } else {
-      ops.push((b) => b.update(doc.ref, { clientUid: DELETED_UID }));
-    }
-  }
-  for (const doc of asCoach.docs) {
-    const other = doc.data()?.clientUid;
-    if (other === DELETED_UID || other === undefined) {
-      ops.push((b) => b.delete(doc.ref));
-    } else {
-      ops.push((b) => b.update(doc.ref, { coachUid: DELETED_UID }));
+      ops.push((batch) =>
+        batch.update(b.ref, {
+          ...(b.isClient ? { clientUid: DELETED_UID } : {}),
+          ...(b.isCoach ? { coachUid: DELETED_UID } : {}),
+        }),
+      );
     }
   }
   for (const doc of reports.docs) {

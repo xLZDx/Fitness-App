@@ -3351,3 +3351,101 @@ paywall was where the harm was.
 
 Neither P1d nor P1e has run against anything real: no device, and no test-mode
 Stripe replay of a genuine duplicate.
+
+---
+
+## 2026-08-11, 23:40 local (Europe/Chisinau) / 20:40 UTC — P1f: the deletion path had two suites and neither could see Firestore
+
+### Evidence — the existing deletion test replaces the thing under test
+
+`delete_account.test.ts:36` is `const recursiveDelete = jest.fn(async () =>
+undefined)`. That single substitution removes the two claims that matter:
+
+1. **Completeness.** `recursiveDelete` is a server-side traversal. Whether it
+   reaches `users/{uid}/programme/{id}/weeks/{id}/days/{id}` is a fact about
+   Firestore, and asserting the mock was CALLED with a reference proves nothing
+   about what it removed.
+2. **Isolation.** Every collection here is written by more than one person. A
+   `where` on the wrong field, a `recursiveDelete` aimed one level too high, a
+   batch built over the wrong snapshot — each deletes somebody else's account,
+   and each looks correct in a suite where only one user exists.
+
+So P1f runs the real Admin SDK against the Firestore and Auth emulators, with
+Bob present in every test holding Alice's exact data shapes and re-read
+afterwards. Only `stripe` is mocked — calling a billing API for real from a
+test suite is not fidelity, it is a network dependency and, on the wrong key, a
+refund.
+
+### Evidence — the suite was proven by breaking the code, not by passing
+
+8/8 green on the first run proves nothing on its own. `recursiveDelete` on
+`users/{uid}` was replaced with a plain `.delete()` — the shallow, pre-A1
+deletion — and re-run: **1 failed, 7 passed**, the failure being exactly the
+depth claim. Reverted, `git diff --stat` byte-clean.
+
+### Decision — the runner was parameterised, not copied
+
+`run_rules_tests.js` → `run_emulator_tests.js <config> <emulators> <project>`.
+The JDK-selection shim in it was expensive to get right (three separate bugs:
+`java -version` writes to stderr, firebase-tools reads `java` from PATH and not
+`JAVA_HOME`, and Node refuses to spawn `npx.cmd` without a shell). A second
+copy of logic that fiddly is a copy that drifts. The rules suite still passes
+27/27 through the renamed runner, which is the check that the rename was safe.
+
+Auth emulator added to `firebase.json` so step 3 of the deletion is real: the
+suite asserts Alice's Auth user is gone AND Bob's still resolves.
+
+### Act gate — 3 MAJOR accepted, 1 MINOR accepted, 1 MINOR + 1 NIT rejected
+
+**Accepted, all three now tested:** `listAllSubscriptions`' `starting_after`
+pagination was untested past one page, on a function whose own comment names a
+">100 subscriptions from a webhook retry storm" as its reason to exist;
+`commitInChunks`' 450-write split had only ever run against a fake `commit()`;
+and a self-referential booking was unseeded in both suites.
+
+**Accepted MINOR:** `index.ts:1536` cited `firestore.rules:82-87` for
+`debug_sessions`' `allow update, delete: if false`. Checked — the rule is at
+`firestore.rules:111`, the block at `101-112`. Corrected.
+
+**Rejected — exporting `DELETED_UID` from `index.ts`.** The duplication is
+real, but `scaling.test.ts` pins the deployed entrypoint surface of that
+module, and a rename of the sentinel fails these tests loudly rather than
+silently. Widening a deployed module's exports to remove a loud-failure
+duplication is the wrong trade.
+
+**Rejected as confabulation — the hoisting NIT.** The agent claimed the e2e
+file's comment about `jest.mock` being hoisted is wrong because the project has
+no `babel-plugin-jest-hoist`. `functions/node_modules/ts-jest/dist/transformers/
+hoist-jest.js` exists: ts-jest ships its own hoisting transformer. The claim was
+asserted from the absence of one mechanism without checking the other.
+
+### Evidence — the self-booking defect is real, and was measured in both directions
+
+`bookCoachSession` (`index.ts:1150-1199`) never compares `coachUid` to
+`auth.uid`, so a coach with a listing can book themselves — reachable, not
+hypothetical. That document then returns from BOTH queries in
+`sweepSharedRecords`, and the old per-query loop queued two `update()` calls
+against the same ref.
+
+Not reasoned about — run. With the pre-fix loop restored: the two updates apply
+without error and **the row survives** (`Expected: false, Received: true`), a
+booking whose every side reads `deleted_user`. Nobody can ever read it again,
+which is precisely what the function's own "delete once both sides are gone"
+rule exists to prevent.
+
+Fixed by merging the two query results per document before building any op.
+The two-party and both-gone cases keep their existing behaviour exactly; only
+the overlap changes. The mocked suite (151) is unchanged by it, which is the
+evidence that nothing else moved.
+
+### Что осталось непокрытым
+
+`bookCoachSession` still lets someone book themselves, and would charge them
+their own price minus a 15% platform fee. Named, not fixed: that is a payments
+decision, not a deletion one, and it is not in P1f's scope.
+
+P1g stays **blocked** — a device photo-capture ordering test needs hardware.
+P2 and the redesign remainder are untouched. The client half of multi-account
+isolation needed no work: `local_data_wipe_test.dart:41` and `:81` already pin
+"another account's health blob" and "another account's photos" on a shared
+phone.

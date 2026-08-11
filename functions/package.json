@@ -9,7 +9,8 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "test": "jest",
-    "test:rules": "node scripts/run_rules_tests.js"
+    "test:rules": "node scripts/run_emulator_tests.js jest.rules.config.js firestore demo-fitness-rules",
+    "test:e2e": "node scripts/run_emulator_tests.js jest.e2e.config.js firestore,auth demo-fitness-e2e"
   },
   "engines": {
     "node": "20"
