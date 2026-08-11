@@ -84,14 +84,14 @@ not later mistaken for scope creep.
 | Act gate (Rosetta) | **DONE** — 2 units, 6 findings, 4 fixed, 1 deferred, 1 rejected | `e54bbef` |
 | **A6-lite** Cost bleed | **DONE** except the budget notification rule (attempt did not apply) | `ec5aae4` + `d7335c0` |
 | Act gate on A6-lite | **DONE** — 3 findings, all 3 fixed | `d7335c0` |
-| **A3** Export completeness | not started | |
+| **A3** Export completeness | **DONE** — server assembler + client merge; photo bytes still excluded | `7a73cbf` + `4c81fbe` |
 | **A2-sec** Photo hardening | not started | |
 | **A5** Stripe drift | not started | |
 | **A6-full** App Check | not started | |
 | **S1** ML strategy | not started | |
 | P1 / P2 / redesign remainder | not started | |
 
-**Resume point.** The next gate is **A3**. A6-lite is closed except its budget half. A3's shape is
+**Resume point.** The next gate is **A2-sec**, after an Act gate on A3's two new files (`functions/src/account_export.ts`, `mobile/lib/features/data_export/server_export.dart`). A3's shape is
 already decided and does not need re-deriving: `core/DATA_INVENTORY_2026-08-11.md`
 §"What this fixes in the two dependent gates" lists exactly which collections
 `buildExport` is missing, and each has a repository with an `exportAll()`
@@ -99,8 +99,8 @@ already (the pattern `WorkoutLogRepository.exportAll()` established). The one
 open question inside A3 is photo BYTES — excluded today by a comment in
 `data_export.dart:13-22` that `public/privacy.html` does not repeat.
 
-**Push state.** `c496a13` is on `origin/master`. Local and awaiting a
-push-GO: `d7335c0` and this update.
+**Push state.** `c496a13` is on `origin/master`. Everything after it is local
+and awaiting a push-GO.
 
 ## 5. Closing condition
 

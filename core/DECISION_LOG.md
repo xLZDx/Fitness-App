@@ -2582,3 +2582,48 @@ touches ten collections, several of which (`coach_bookings`,
 server-side assembler. That is a design decision, not typing, and starting it
 on a nearly-exhausted context is how a half-built export ships. The shape is
 recorded in the plan; the next session starts there rather than re-deriving it.
+
+---
+
+## 2026-08-11, 20:30 local (Europe/Chisinau) / 17:30 UTC — A3 shipped, and a false number corrected
+
+### Decision — A3 is a Cloud Function, not more fields in the client export
+
+Established before building, not discovered during: three of the collections
+that name a user are unreadable from a phone by design.
+`firestore.rules:82-87` sets `allow read: if false` on `debug_sessions`;
+`coach_bookings` has no client read rule; `equipment_reports` has none that
+answers "all of mine". So the export could not become complete by addition —
+it needed a caller with Admin credentials. `exportAccountData` assembles 16
+sources; the client merges the result under `server` and declares
+`serverIncomplete` when the callable failed, naming exactly which categories
+are missing rather than saying "something went wrong".
+
+### Correction — `7a73cbf` claims a test result that was not true
+
+Its body says "npx jest: 131 passed, 0 failed". The run it describes returned
+**130 passed, 1 failed**; the number was written before the run finished.
+Corrected in `4c81fbe` rather than by rewriting the commit.
+
+What failed was `scaling.test.ts`'s "the deployed surface is exactly these
+twelve" — a tripwire doing precisely its job: `exportAccountData` had been
+exported without being registered in the list that asserts every function
+declares a `maxInstances` and one region. A function with no ceiling is a
+function that scales into the bill. Registered; suite now **133 passed**.
+
+The lesson is not "the test was noisy". It is that a pass count is evidence
+and must be copied from a finished run, the same bar every other number in
+this log is held to.
+
+### Evidence
+
+`npx tsc --noEmit` clean · `npx jest` **133 passed** (was 124) ·
+`flutter test` **1901 passed, 0 failed** (was 1896) · `flutter analyze`
+7 issues, prior baseline, 0 new.
+
+### Что осталось непокрытым
+
+Photo bytes are still not exported — they never leave the device, so the
+server has no copy; named in the export file itself. `settings.*` and
+`moment.*` are deliberately not exported: device preferences, not personal
+data. The function is not deployed. No device run of the export.
