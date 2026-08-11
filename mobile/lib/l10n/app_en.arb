@@ -301,6 +301,14 @@
   "profilePersonalizePlan": "Personalize your plan",
   "workoutsPause": "Pause",
   "workoutsReset": "Reset",
+  "videoPlay": "Play",
+  "@videoPlay": {
+    "description": "Screen-reader label for the tap target over a demonstration clip. The control is an icon over video with no text of its own, so without this it announces nothing at all."
+  },
+  "videoPause": "Pause",
+  "@videoPause": {
+    "description": "Screen-reader label for the same target while the clip is playing. Separate from workoutsPause, which is the rest timer."
+  },
   "equipmentSaving": "Saving…",
   "equipmentMarkComplete": "Mark complete",
   "equipmentScheduling": "Scheduling…",

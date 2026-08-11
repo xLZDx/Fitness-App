@@ -251,8 +251,8 @@ class _ScrimCircleButton extends StatelessWidget {
         child: SizedBox(
           width: 38,
           height: 38,
-          child: Icon(icon, size: 16, color: Colors.white,
-              semanticLabel: semanticLabel),
+          child: Icon(icon,
+              size: 16, color: Colors.white, semanticLabel: semanticLabel),
         ),
       ),
     );
@@ -403,7 +403,8 @@ class ExercisePill extends StatelessWidget {
 /// picture of the exercise plus an explanation is a far better failure than a
 /// grey card containing an exception.
 class ExerciseVideoBlock extends ConsumerStatefulWidget {
-  const ExerciseVideoBlock({super.key, required this.url, required this.poster});
+  const ExerciseVideoBlock(
+      {super.key, required this.url, required this.poster});
   final String url;
 
   /// Bundled asset path, or null for the handful of clips cut before posters
@@ -529,19 +530,32 @@ class ExerciseVideoBlockState extends ConsumerState<ExerciseVideoBlock> {
                 child: VideoPlayer(ctrl),
               ),
             if (playing)
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => setState(
-                    () => ctrl.value.isPlaying ? ctrl.pause() : ctrl.play()),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 220),
-                  child: ctrl.value.isPlaying
-                      ? const SizedBox.shrink()
-                      : Container(
-                          color: Colors.black.withValues(alpha: 0.30),
-                          child: const Icon(Icons.play_arrow_rounded,
-                              color: Colors.white, size: 80),
-                        ),
+              // Оверлей play/pause — иконка поверх видео и ничего больше.
+              // Метки у него не было вообще: пока клип играет, потомок —
+              // `SizedBox.shrink()`, то есть скринридер не находил здесь
+              // ни кнопки, ни текста, и остановить воспроизведение было
+              // нечем. `excludeSemantics` глушит саму иконку, чтобы метка
+              // осталась одна и менялась вместе с состоянием.
+              Semantics(
+                button: true,
+                excludeSemantics: true,
+                label: ctrl.value.isPlaying
+                    ? AppLocalizations.of(context).videoPause
+                    : AppLocalizations.of(context).videoPlay,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => setState(
+                      () => ctrl.value.isPlaying ? ctrl.pause() : ctrl.play()),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    child: ctrl.value.isPlaying
+                        ? const SizedBox.shrink()
+                        : Container(
+                            color: Colors.black.withValues(alpha: 0.30),
+                            child: const Icon(Icons.play_arrow_rounded,
+                                color: Colors.white, size: 80),
+                          ),
+                  ),
                 ),
               ),
             if (playing)
@@ -612,7 +626,8 @@ class ExerciseVideoBlockState extends ConsumerState<ExerciseVideoBlock> {
 /// from `hasPoster` alone and announced "Нет сети — показан кадр" for every
 /// failure, network or not -- which is what a 1 Gb connection was told.
 class ExerciseVideoFailedNote extends StatelessWidget {
-  const ExerciseVideoFailedNote({super.key, required this.hasPoster, required this.error});
+  const ExerciseVideoFailedNote(
+      {super.key, required this.hasPoster, required this.error});
   final bool hasPoster;
   final Object error;
 
@@ -834,7 +849,6 @@ class ExerciseStepsCard extends StatelessWidget {
   }
 }
 
-
 class ExerciseCautionCard extends StatelessWidget {
   const ExerciseCautionCard({super.key, required this.item});
   final ExerciseItem item;
@@ -855,7 +869,8 @@ class ExerciseCautionCard extends StatelessWidget {
                 AppPalette.auroraPink,
               ]),
             ),
-            child: const Icon(Icons.warning_amber_rounded, color: AppSemanticColors.onGradientInk),
+            child: const Icon(Icons.warning_amber_rounded,
+                color: AppSemanticColors.onGradientInk),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -868,9 +883,8 @@ class ExerciseCautionCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   item.contraindications
-                      .map((c) =>
-                          CatalogLabels.contraindication(
-                              AppLocalizations.of(context), c))
+                      .map((c) => CatalogLabels.contraindication(
+                          AppLocalizations.of(context), c))
                       .join(', '),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colors.textSecondary,
@@ -884,7 +898,6 @@ class ExerciseCautionCard extends StatelessWidget {
     );
   }
 }
-
 
 /// The description of an exercise, as a list of sections both screens splat
 /// into their own scroll view.
@@ -1015,11 +1028,8 @@ class ExerciseResolutionView extends ConsumerWidget {
             // Which body to demonstrate on. Null when the user has not said,
             // or said they would rather not — there is nothing to infer from,
             // and the model falls back to whichever clip exists.
-            final body = ExerciseItem.bodyForGender(ref
-                .watch(currentProfileProvider)
-                .valueOrNull
-                ?.personal
-                .gender);
+            final body = ExerciseItem.bodyForGender(
+                ref.watch(currentProfileProvider).valueOrNull?.personal.gender);
             return builder(context, item, body);
           },
         );

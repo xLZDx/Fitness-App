@@ -153,46 +153,68 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                   if (_index > 0) const SizedBox(width: 12),
                   Expanded(
                     flex: 2,
-                    child: GestureDetector(
-                      onTap: isSubmitting ? null : _next,
-                      child: Container(
-                        height: 54,
-                        // R9: brand CTA, moved off the pre-R9 pink/violet pair.
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          gradient: const LinearGradient(colors: [
-                            AppPalette.auroraLime,
-                            AppPalette.auroraLimeDeep,
-                          ]),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppPalette.auroraLime
-                                  .withValues(alpha: 0.40),
-                              blurRadius: 18,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: isSubmitting
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation(
-                                        AppSemanticColors.onGradientInk),
+                    // Кнопка «Далее» соседствует с `AppSecondaryButton`
+                    // («Назад»), который объявляет себя сам. Эта — не
+                    // объявляла ничего: ни что это кнопка, ни что во время
+                    // отправки она выключена. Хуже того, в этот момент текст
+                    // подменяется спиннером, то есть у элемента не остаётся
+                    // вообще никакой метки — скринридер молчит ровно тогда,
+                    // когда человек ждёт ответа.
+                    child: Semantics(
+                      button: true,
+                      enabled: !isSubmitting,
+                      // Метка задаётся только под спиннером: в обычном
+                      // состоянии её даёт сам Text, и второй label превратил
+                      // бы объявление в «Далее Далее».
+                      label: isSubmitting
+                          ? (isLast
+                              ? AppLocalizations.of(context).commonDone
+                              : AppLocalizations.of(context).commonNext)
+                          : null,
+                      child: GestureDetector(
+                        onTap: isSubmitting ? null : _next,
+                        child: Container(
+                          height: 54,
+                          // R9: brand CTA, moved off the pre-R9 pink/violet pair.
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            gradient: const LinearGradient(colors: [
+                              AppPalette.auroraLime,
+                              AppPalette.auroraLimeDeep,
+                            ]),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppPalette.auroraLime
+                                    .withValues(alpha: 0.40),
+                                blurRadius: 18,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: isSubmitting
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation(
+                                          AppSemanticColors.onGradientInk),
+                                    ),
+                                  )
+                                : Text(
+                                    isLast
+                                        ? AppLocalizations.of(context)
+                                            .commonDone
+                                        : AppLocalizations.of(context)
+                                            .commonNext,
+                                    style:
+                                        theme.textTheme.titleMedium?.copyWith(
+                                      color: AppSemanticColors.onGradientInk,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
-                                )
-                              : Text(
-                                  isLast
-                                      ? AppLocalizations.of(context).commonDone
-                                      : AppLocalizations.of(context).commonNext,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    color: AppSemanticColors.onGradientInk,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
+                          ),
                         ),
                       ),
                     ),

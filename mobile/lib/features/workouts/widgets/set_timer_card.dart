@@ -124,8 +124,7 @@ class SetTimerCard extends ConsumerWidget {
                       style: theme.textTheme.labelSmall?.copyWith(
                         letterSpacing: 2,
                         fontWeight: FontWeight.w900,
-                        color:
-                            theme.colors.textSecondary,
+                        color: theme.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -163,13 +162,15 @@ class SetTimerCard extends ConsumerWidget {
                   onTap: () {
                     if (timer.isDone) {
                       controller.reset();
-                      controller.start(plan, spokenIntro: _intro(context, plan));
+                      controller.start(plan,
+                          spokenIntro: _intro(context, plan));
                     } else if (timer.running) {
                       controller.pause();
                     } else {
                       controller.start(
                         plan,
-                        spokenIntro: timer.isIdle ? _intro(context, plan) : null,
+                        spokenIntro:
+                            timer.isIdle ? _intro(context, plan) : null,
                       );
                     }
                   },
@@ -209,8 +210,7 @@ class _MuteButton extends ConsumerWidget {
       size: AppButtonSize.compact,
       tooltip: AppLocalizations.of(context).timerSounds,
       icon: muted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-      onPressed: () =>
-          ref.read(setCuesMutedProvider.notifier).state = !muted,
+      onPressed: () => ref.read(setCuesMutedProvider.notifier).state = !muted,
     );
   }
 }
@@ -224,8 +224,7 @@ class _VoiceButton extends ConsumerWidget {
       size: AppButtonSize.compact,
       tooltip: AppLocalizations.of(context).timerVoice,
       icon: on ? Icons.record_voice_over_rounded : Icons.voice_over_off,
-      onPressed: () =>
-          ref.read(setVoiceEnabledProvider.notifier).state = !on,
+      onPressed: () => ref.read(setVoiceEnabledProvider.notifier).state = !on,
     );
   }
 }
@@ -246,24 +245,30 @@ class _Primary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 15),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          gradient: LinearGradient(
-              colors: [colour, colour.withValues(alpha: 0.72)]),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: AppSemanticColors.onGradientInk, size: 22),
-            const SizedBox(width: 8),
-            Text(label,
-                style: theme.textTheme.titleMedium?.copyWith(
-                    color: AppSemanticColors.onGradientInk, fontWeight: FontWeight.w800)),
-          ],
+    // Главная кнопка таймера («Старт»/«Пауза»). Метку даёт Text внутри —
+    // отдельный label здесь только продублировал бы её.
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 15),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            gradient: LinearGradient(
+                colors: [colour, colour.withValues(alpha: 0.72)]),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: AppSemanticColors.onGradientInk, size: 22),
+              const SizedBox(width: 8),
+              Text(label,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                      color: AppSemanticColors.onGradientInk,
+                      fontWeight: FontWeight.w800)),
+            ],
+          ),
         ),
       ),
     );
@@ -284,21 +289,26 @@ class _Secondary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 15),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: theme.colorScheme.onSurface.withValues(alpha: 0.09),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 20),
-            const SizedBox(height: 2),
-            Text(label, style: theme.textTheme.labelSmall),
-          ],
+    // Второстепенные кнопки таймера (+30 сек, сброс). Иконка и подпись под
+    // ней читались как две несвязанные надписи.
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 15),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.09),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 20),
+              const SizedBox(height: 2),
+              Text(label, style: theme.textTheme.labelSmall),
+            ],
+          ),
         ),
       ),
     );

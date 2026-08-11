@@ -120,26 +120,35 @@ class _RatingPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            gradient: LinearGradient(colors: gradient),
-          ),
-          child: Column(
-            children: [
-              Text(emoji, style: const TextStyle(fontSize: 32)),
-              const SizedBox(height: 6),
-              Text(
-                label,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: AppSemanticColors.onGradientInk,
-                  fontWeight: FontWeight.w800,
+      // `excludeSemantics`, а не просто обёртка: внутри эмодзи, и без этого
+      // скринридер читает сначала его собственное описание («лицо с высунутым
+      // языком»), а потом подпись. Оценка нагрузки — это одна кнопка с одним
+      // названием, и слышать её надо один раз.
+      child: Semantics(
+        button: true,
+        label: label,
+        excludeSemantics: true,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              gradient: LinearGradient(colors: gradient),
+            ),
+            child: Column(
+              children: [
+                Text(emoji, style: const TextStyle(fontSize: 32)),
+                const SizedBox(height: 6),
+                Text(
+                  label,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: AppSemanticColors.onGradientInk,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

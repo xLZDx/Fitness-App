@@ -175,41 +175,48 @@ class _ChoicePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          // R9: the "selected" indicator, one colour everywhere a pill is
-          // chosen -- moved off the pre-R9 pink/violet pair onto lime.
-          gradient: selected
-              ? const LinearGradient(colors: [
-                  AppPalette.auroraLime,
-                  AppPalette.auroraLimeDeep,
-                ])
-              : null,
-          color: selected ? null : Colors.white.withValues(alpha: 0.32),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: AppPalette.auroraLime.withValues(alpha: 0.30),
-                    blurRadius: 14,
-                    offset: const Offset(0, 6),
-                  ),
-                ]
-              : null,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: selected
-                ? AppSemanticColors.onGradientInk
-                : theme.colorScheme.onSurface,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-            fontSize: 14,
+    // Выбранность здесь несёт только градиент. Для скринридера пилюля была
+    // просто текстом: ни что по ней можно нажать, ни какая из них выбрана —
+    // а это единственный способ ответить на вопрос анкеты.
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            // R9: the "selected" indicator, one colour everywhere a pill is
+            // chosen -- moved off the pre-R9 pink/violet pair onto lime.
+            gradient: selected
+                ? const LinearGradient(colors: [
+                    AppPalette.auroraLime,
+                    AppPalette.auroraLimeDeep,
+                  ])
+                : null,
+            color: selected ? null : Colors.white.withValues(alpha: 0.32),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: AppPalette.auroraLime.withValues(alpha: 0.30),
+                      blurRadius: 14,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected
+                  ? AppSemanticColors.onGradientInk
+                  : theme.colorScheme.onSurface,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+              fontSize: 14,
+            ),
           ),
         ),
       ),
