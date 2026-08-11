@@ -98,9 +98,10 @@ already (the pattern `WorkoutLogRepository.exportAll()` established). The one
 open question inside A3 is photo BYTES — excluded today by a comment in
 `data_export.dart:13-22` that `public/privacy.html` does not repeat.
 
-Nothing after `3cc8126` has been pushed: `2953bc3`, `1aee73b`, `b481dd0` and
-`e54bbef` are local. The run's opening `push` covered the held commit only; a
-new push needs its own GO.
+**Push state.** `b993684` is on `origin/master` — that push covered `2953bc3`,
+`1aee73b`, `b481dd0`, `e54bbef` and `b993684` under the operator's second
+`пуш`. Everything after it (`ec5aae4`, `821cebf`, and this correction) is local
+and needs its own push-GO.
 
 ## 5. Closing condition
 
