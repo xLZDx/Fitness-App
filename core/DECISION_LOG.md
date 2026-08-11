@@ -2627,3 +2627,36 @@ Photo bytes are still not exported — they never leave the device, so the
 server has no copy; named in the export file itself. `settings.*` and
 `moment.*` are deliberately not exported: device preferences, not personal
 data. The function is not deployed. No device run of the export.
+
+---
+
+## 2026-08-11, 22:10 local (Europe/Chisinau) / 19:10 UTC — the Act gate caught a privacy defect I had just written
+
+`dbc7cb5` pushed. The Act gate ran on A3 and returned three MAJOR findings,
+all real, all closed in `aa9abf7`.
+
+The one worth naming: **A3 as shipped exported other people's personal data.**
+A `coach_bookings` document carries `clientUid`, `coachUid` and
+`stripePaymentIntentId`, and the export returned the row whole — so a coach
+with 200 bookings downloaded 200 real Firebase uids belonging to clients who
+never asked to be in anyone's export, plus a payment-intent id per session, in
+a file they can forward anywhere. That is a privacy defect introduced by the
+gate whose entire purpose is privacy compliance, and it survived my own review
+of the same code. Now the counterparty is stripped and only `yourRole` remains.
+
+The other two: every read was unbounded on a 256 MiB instance, with
+`debug_sessions` client-writable without limit (`firestore.rules:82-87`) —
+~260 documents at Firestore's 1 MB ceiling exhaust the function, so the export
+would fail precisely for the users with the most data. Capped at 2000 rows per
+section, with the cap NAMED in the payload and in the file's own notes. And the
+client swallowed every error into "no server part", including `unauthenticated`,
+where the file's advice to "re-run the export" is false — that one now surfaces.
+
+`npx jest` **136 passed** · `flutter test test/features/data_export/` 42 passed
+· `flutter analyze` 7, prior baseline.
+
+### Worth keeping
+
+Two gates in a row, the Act gate found a defect the author's own reading did
+not. Its cost is one agent call; the two things it has caught so far are an
+account that could never finish deleting and third-party data in a GDPR export.
