@@ -44,6 +44,12 @@ Map<String, dynamic> buildExport({
   // is "you have none", and collapsing them is a GDPR export lying about its
   // own completeness by omission.
   bool progressPhotosIncomplete = false,
+  // A3. Everything only the server can read -- `debug_sessions`,
+  // `coach_bookings`, `equipment_reports`, plus the subscription, machine
+  // cards, recognition history, generated exercises and stats. Null when the
+  // callable failed, which is NOT the same as "you have none of it": the note
+  // below says so in the file the user keeps.
+  Map<String, dynamic>? server,
 }) {
   // One sentence, not two. The second used to read "The encryption key never
   // leaves this device", which was written into a file the user downloads and
@@ -54,6 +60,13 @@ Map<String, dynamic> buildExport({
   final notes = <String>[
     'Progress photo image data is not included in this export.',
   ];
+  if (server == null) {
+    notes.add(
+      'The server-held part of your data (subscriptions, coach bookings, '
+      'equipment reports, saved machines, recognition history and diagnostic '
+      'sessions) could not be retrieved. Re-run the export to try again.',
+    );
+  }
   if (progressPhotosIncomplete) {
     notes.add(
       'The list of progress photos below may be incomplete: reading it '
@@ -82,6 +95,8 @@ Map<String, dynamic> buildExport({
               // at are exactly what this export does not decrypt.
             })
         .toList(),
+    'serverIncomplete': server == null,
+    if (server != null) 'server': server,
     'notes': notes,
   };
 }
@@ -94,6 +109,7 @@ String buildExportJson({
   required List<Programme> programmes,
   required List<ProgressPhoto> progressPhotos,
   bool progressPhotosIncomplete = false,
+  Map<String, dynamic>? server,
 }) {
   final data = buildExport(
     profile: profile,
@@ -102,6 +118,7 @@ String buildExportJson({
     programmes: programmes,
     progressPhotos: progressPhotos,
     progressPhotosIncomplete: progressPhotosIncomplete,
+    server: server,
   );
   return const JsonEncoder.withIndent('  ').convert(data);
 }

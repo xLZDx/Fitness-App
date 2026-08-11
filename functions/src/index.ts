@@ -1594,3 +1594,9 @@ export const deleteAccount = onCall(
 // because it is the one part of this file that exists to satisfy a contract
 // rather than a feature request — see the header of video_urls.ts.
 export { clipUrl, clipUrls } from "./video_urls";
+
+// A3. Separate module for the same reason as the clip signer: it exists to
+// satisfy a written promise (`public/privacy.html:89`) rather than a feature
+// request, and it is the only function here that reads across every
+// collection a user touches.
+export { exportAccountData } from "./account_export";

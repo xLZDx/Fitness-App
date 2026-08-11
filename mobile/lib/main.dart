@@ -35,6 +35,8 @@ import 'features/account_deletion/data/cloud_functions_account_deletion_service.
 import 'features/account_deletion/data/local_data_wipe.dart';
 import 'features/account_deletion/state/account_deletion_providers.dart';
 import 'features/data_export/data_export_sink.dart';
+import 'features/data_export/data_export_providers.dart';
+import 'features/data_export/server_export.dart';
 import 'features/equipment/data/cloud_functions_equipment_report_service.dart';
 import 'features/equipment/state/equipment_providers.dart';
 import 'features/form_check/data/cue_text.dart';
@@ -499,6 +501,11 @@ Future<void> main() async {
         // sheet. Mock by default so widget tests never touch the
         // share_plus/path_provider platform channels.
         dataExportSinkProvider.overrideWith((_) => ShareDataExportSink()),
+
+        // A3 — the server half of the export. Real only here: the default
+        // provider returns nothing, so a widget test can never reach the
+        // backend, the same shape as the sink override above.
+        serverExportProvider.overrideWith((_) => CloudFunctionsServerExport()),
 
         // Account deletion (L0b) — calls the deleteAccount Cloud Function.
         accountDeletionServiceProvider

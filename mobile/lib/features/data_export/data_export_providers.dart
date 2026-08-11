@@ -11,6 +11,7 @@ import '../workouts/data/workout_session.dart'
 import '../workouts/state/scheduled_session_providers.dart';
 import '../workouts/state/workout_session_providers.dart';
 import 'data_export.dart';
+import 'server_export.dart';
 import 'data_export_sink.dart';
 
 /// Runs L0c: gathers everything about the signed-in user and hands it to
@@ -19,6 +20,11 @@ import 'data_export_sink.dart';
 /// A [Notifier] rather than a bare async function so the settings tile can
 /// show a spinner and an error state the same way every other action on that
 /// page already does (`ProfileSubmit`, `ScheduleSessionAction`).
+/// A3 — the server-side assembler. Overridden in `main.dart` with the real
+/// callable client; the default is the fake so a widget test never reaches the
+/// network, the same shape as `dataExportSinkProvider` beside it.
+final serverExportProvider = Provider<ServerExport>((_) => FakeServerExport());
+
 class DataExportAction extends Notifier<AsyncValue<void>> {
   @override
   AsyncValue<void> build() => const AsyncValue.data(null);
@@ -102,6 +108,12 @@ class DataExportAction extends Notifier<AsyncValue<void>> {
             },
           );
 
+      // A3. The server half, fetched in parallel with nothing else because it
+      // is the last thing needed. Null on failure rather than an exception:
+      // losing the local export too would punish the user twice for one
+      // callable being down.
+      final server = await ref.read(serverExportProvider).fetch();
+
       final json = buildExportJson(
         profile: profile,
         workoutLogs: workoutLogs,
@@ -109,6 +121,7 @@ class DataExportAction extends Notifier<AsyncValue<void>> {
         programmes: programmes,
         progressPhotos: progressPhotos,
         progressPhotosIncomplete: photosIncomplete,
+        server: server,
       );
 
       final stamp = DateTime.now().toIso8601String().replaceAll(':', '-');
