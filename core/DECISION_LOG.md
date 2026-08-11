@@ -2547,3 +2547,38 @@ session's context budget is the binding constraint and a checkpoint was worth
 more than the review. The unit is small and carries four new behavioural tests,
 which is not the same thing as having been reviewed. The next session should
 run it on `functions/src/abuse_guard.ts` + `video_urls.ts` before starting A3.
+
+---
+
+## 2026-08-11, 18:55 local (Europe/Chisinau) / 15:55 UTC — the owed Act gate ran, and paid for itself again
+
+`b993684..c496a13` pushed after the usual ahead/behind check.
+
+The Act gate the previous entry recorded as **owed** ran on
+`abuse_guard.ts` + `video_urls.ts`. Three findings, all real, all closed in
+`d7335c0`:
+
+1. The batch endpoint charged `objects.length` before signing and never gave
+   any of it back. Worst case measured by the reviewer: a systemic signing
+   fault burns the whole 1,200-object daily budget across 20 calls for zero
+   usable URLs. Now refunded per unsigned object — with the charge still taken
+   BEFORE signing, because charging afterwards hands IAM operations free to
+   anyone requesting objects that fail.
+2. A batch where nothing signed returned `{urls: {}}` and a normal expiry. The
+   one systemic fault this file already documents — the missing
+   `tokenCreator` grant — therefore reached the phone as successful empty
+   prefetches, which reads as "this session has no clips". Now an error.
+3. A quota-transaction failure for any non-quota reason left this module with
+   no log line carrying uid or action. Now logged; behaviour stays fail-closed.
+
+`npx jest`: **124 passed** (was 122). `tsc` clean.
+
+### Refusal — A3 still not started
+
+Second time this run, same reason and the same judgement: the export gate
+touches ten collections, several of which (`coach_bookings`,
+`equipment_reports`, `debug_sessions`) the CLIENT cannot read at all under
+`firestore.rules`, so A3 is not "add fields to `buildExport`" — it needs a
+server-side assembler. That is a design decision, not typing, and starting it
+on a nearly-exhausted context is how a half-built export ships. The shape is
+recorded in the plan; the next session starts there rather than re-deriving it.

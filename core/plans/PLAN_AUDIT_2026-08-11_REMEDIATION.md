@@ -82,7 +82,8 @@ not later mistaken for scope creep.
 | **A4** Stripe duplicates | **DONE** except reconciliation of pre-existing duplicates | `1aee73b` + `e54bbef` |
 | **A8-lite** Home CTA overflow | **DONE** | `b481dd0` |
 | Act gate (Rosetta) | **DONE** — 2 units, 6 findings, 4 fixed, 1 deferred, 1 rejected | `e54bbef` |
-| **A6-lite** Cost bleed | **DONE** except the budget notification rule (attempt did not apply) | `ec5aae4` |
+| **A6-lite** Cost bleed | **DONE** except the budget notification rule (attempt did not apply) | `ec5aae4` + `d7335c0` |
+| Act gate on A6-lite | **DONE** — 3 findings, all 3 fixed | `d7335c0` |
 | **A3** Export completeness | not started | |
 | **A2-sec** Photo hardening | not started | |
 | **A5** Stripe drift | not started | |
@@ -98,10 +99,8 @@ already (the pattern `WorkoutLogRepository.exportAll()` established). The one
 open question inside A3 is photo BYTES — excluded today by a comment in
 `data_export.dart:13-22` that `public/privacy.html` does not repeat.
 
-**Push state.** `b993684` is on `origin/master` — that push covered `2953bc3`,
-`1aee73b`, `b481dd0`, `e54bbef` and `b993684` under the operator's second
-`пуш`. Everything after it (`ec5aae4`, `821cebf`, and this correction) is local
-and needs its own push-GO.
+**Push state.** `c496a13` is on `origin/master`. Local and awaiting a
+push-GO: `d7335c0` and this update.
 
 ## 5. Closing condition
 
