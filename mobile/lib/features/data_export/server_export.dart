@@ -30,9 +30,17 @@ class CloudFunctionsServerExport implements ServerExport {
           .call<Map<String, dynamic>>()
           .timeout(const Duration(seconds: 20));
       return Map<String, dynamic>.from(res.data);
+    } on FirebaseFunctionsException catch (e) {
+      // One error class is not "there is no server part": a stale token means
+      // the user must sign in again, and the export file's own note would tell
+      // them to "re-run the export", which fails identically every time. Let
+      // it out so the export reports a failure the user can actually act on.
+      if (e.code == 'unauthenticated') rethrow;
+      return null;
     } catch (_) {
-      // Deliberately opaque: the caller only needs "there is no server part",
-      // and the failure is already logged server-side with the uid.
+      // Everything else stays opaque: the caller only needs "there is no
+      // server part", and the failure is already logged server-side with the
+      // uid that produced it.
       return null;
     }
   }

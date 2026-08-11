@@ -26,9 +26,18 @@ const snapOf = (rows: Array<{ id: string; data: any }>) => ({
 
 const collectionRef = (name: string): any => ({
   get: async () => snapOf(collections.get(name) ?? []),
+  limit: (n: number) => ({
+    get: async () => snapOf((collections.get(name) ?? []).slice(0, n)),
+  }),
   where: (field: string, _op: string, value: unknown) => ({
-    get: async () =>
-      snapOf((collections.get(name) ?? []).filter((r) => r.data[field] === value)),
+    limit: (n: number) => ({
+      get: async () =>
+        snapOf(
+          (collections.get(name) ?? [])
+            .filter((r) => r.data[field] === value)
+            .slice(0, n),
+        ),
+    }),
   }),
 });
 
@@ -157,6 +166,63 @@ test("a uid in the request body is ignored", async () => {
 
   expect(res.uid).toBe("u1");
   expect(res.profile).toMatchObject({ goal: "mine" });
+});
+
+test("a coach's export does not carry their clients' uids or payment ids",
+  async () => {
+    // Third-party personal data in a file the recipient can forward anywhere.
+    collections.set("coach_bookings", [
+      {
+        id: "b1",
+        data: {
+          clientUid: "client_7",
+          coachUid: "u1",
+          priceCents: 5000,
+          stripePaymentIntentId: "pi_secret",
+          startsAt: "2026-08-01T10:00:00Z",
+        },
+      },
+    ]);
+
+    const res = await exportAccountData.run(req());
+    const booking = res.coachBookings[0] as any;
+
+    expect(JSON.stringify(res)).not.toContain("client_7");
+    expect(JSON.stringify(res)).not.toContain("pi_secret");
+    // What is theirs stays: when it was, what it cost, which side they were on.
+    expect(booking.startsAt).toBe("2026-08-01T10:00:00Z");
+    expect(booking.priceCents).toBe(5000);
+    expect(booking.yourRole).toBe("coach");
+  });
+
+test("a capped section is named, never silently short", async () => {
+  // A cap that drops rows without saying so is the same lie as a partial
+  // export claiming to be whole.
+  collections.set(
+    "debug_sessions",
+    Array.from({ length: 2100 }, (_, i) => ({
+      id: `d${i}`,
+      data: { uid: "u1" },
+    })),
+  );
+
+  const res = await exportAccountData.run(req());
+
+  expect(res.debugSessions).toHaveLength(2000);
+  expect(res.truncated).toContain("debug_sessions.uid");
+  expect((res.notes as string[]).join(" ")).toContain("capped at 2000");
+});
+
+test("exactly at the cap is not reported as truncated", async () => {
+  collections.set(
+    "users/u1/workout_logs",
+    Array.from({ length: 2000 }, (_, i) => ({ id: `l${i}`, data: {} })),
+  );
+
+  const res = await exportAccountData.run(req());
+
+  expect(res.workoutLogs).toHaveLength(2000);
+  expect(res.truncated).toEqual([]);
 });
 
 test("absent documents export as null, not as missing keys", async () => {
