@@ -2837,3 +2837,60 @@ one), and it is personal data collected for no other purpose.
   next step in this run.
 - Neither App Check flag has ever been set to `true` anywhere, so the enforced
   path has unit coverage and zero field evidence.
+
+---
+
+## 2026-08-11, 17:55 local (Europe/Chisinau) / 14:55 UTC — S1: the ML strategy, and the finding that the fastest path to individualised programmes does not need ML
+
+Written per the operator's substitution for gate A7 — *"пока пропускаем, но
+нужен детальный план/стратегия как довести МЛ до ума и рабочего состояния, он
+необходим для составления индивидуальных программ и тренировок"*.
+`core/plans/ML_STRATEGY_2026-08-11.md`. No behaviour changes.
+
+### What the document concludes, and the part worth arguing with
+
+The audit named three methodological blockers and the strategy accepts all
+three as stated, with their citations:
+
+- **Equipment recognition** returns confident out-of-distribution errors up to
+  `0.892`, and the temporal smoother (`live_recognition.dart:29-96`) checks
+  that an answer *repeats*, not that it is right. A stable wrong answer passes
+  exactly as cleanly as a stable right one.
+- **Rep counting**'s accuracy numbers measure a different program than the one
+  that ships: the MM-Fit evaluation uses averaged bilateral 3D angles and a
+  two-phase counter, production uses one side, 2D and four phases. Those
+  figures are not weak evidence about Form Coach — they are evidence about
+  something else.
+- **Posture** computes forward-head (needs a profile view) and shoulder/pelvis
+  symmetry (need a front view) from ONE frame. Some of its numbers are being
+  read off the wrong projection whatever the user gives it.
+
+The conclusion the operator should push back on if they disagree: **only one of
+the three is on the critical path to individualised programmes, and it is not
+blocking either.** A plan needs to know what equipment is reachable; the user
+can type that in a minute, and recognition only makes it faster. Progression
+needs reliable set data; manual logging already provides it. Posture's output
+is closest to medical advice and the health questionnaire plus
+`exercise_filter.dart` already carry the constraints that change exercise
+selection. So the ML is an accelerator on a path that works without it — the
+only shape in which unvalidated ML belongs in a shipping product.
+
+The critical path the document lays out is **M0 → E1/E2 → E3 → E4**, and every
+step is small. M0 is the blocker: a second, independent held-out set of ≥150
+frames from gyms not in the current 30, WITH negatives (mirrors, benches,
+walls, people) — the current sample has none, which is precisely why nothing
+measures OOD behaviour today. The highest-value change in the whole document is
+not a model change at all: give the classifier a way to say "I don't know".
+
+### Что осталось непокрытым
+
+The strategy authorises nothing. No training run, no model artifact, no change
+to `live_equipment_providers.dart:41`, and explicitly no relabelling of the
+operator's 30 test photos into a training set — training on them buys a
+slightly better model and destroys the only means of knowing whether it is
+better.
+
+Audit recommendation 7 (`AUDIT_REPORT_2026-08-11.md:360`) — labelling the
+scanner, Form Coach and Posture as experimental in the UI — is named in the
+document as the one piece that should become a gate before release. It is not
+done here.
