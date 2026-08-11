@@ -12,8 +12,17 @@ flutter analyze
 flutter test
 ```
 
-There is **no** `mobile/integration_test/` directory. `flutter test integration_test` fails — do not
-run it. `mobile/test/` (71 files) is the only suite.
+`mobile/test/` (214 test files) is the suite `flutter test` runs on the host, and the one a change is
+expected to keep at 0 failures.
+
+`mobile/integration_test/app_test.dart` also exists. It drives the real app on a device or emulator
+and is the only thing that can see the native ML Kit bridge and what actually ships in the APK —
+`flutter test` does not run it, and it needs hardware.
+
+*(Corrected 2026-08-12. This said "There is **no** `mobile/integration_test/` directory" and "71
+files". The directory is there, and 71 was a third of the real count. An agent reading this would
+have been told not to run the one suite that can see the device, on the grounds that it does not
+exist. `CLAUDE.md` had it right the whole time, which is how the contradiction was found.)*
 
 ```powershell
 cd "D:\test 2\Fitness App"
@@ -40,7 +49,7 @@ analyze` + `flutter test` passing does not prove a UI change renders correctly.
 
 ## Testing requirement
 
-`mobile/test/` (unit + widget, 71 files) is the canonical suite. 0 failures required before claiming a
+`mobile/test/` (unit + widget, 214 files) is the canonical suite. 0 failures required before claiming a
 change complete. Do not report a pass count without having actually run the suite after the current
 changes.
 

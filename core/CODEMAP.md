@@ -1,7 +1,21 @@
 # CODEMAP — where everything lives
 
 **Purpose: answer "which file do I open?" in one read, instead of several Glob/Grep rounds.**
-Paths are relative to `mobile/` unless stated. Counts verified against the working tree 2026-07-28.
+Paths are relative to `mobile/` unless stated. Counts re-measured against the working tree
+**2026-08-12**; 22 of the 31 rows had drifted since the previous 2026-07-28 pass, some of them far
+(`home` said 1 file / 594 lines and is 5 / 1,907; `progress_photos` said 5 / 519 and is 12 / 2,027).
+
+Counts are `.dart` files under `mobile/lib/features/<feature>/`, recursive, and their raw line
+totals — reproduce with:
+
+```bash
+find mobile/lib/features/<feature> -name '*.dart' | wc -l
+find mobile/lib/features/<feature> -name '*.dart' -exec cat {} + | wc -l
+```
+
+A number here is a rough sense of weight, not a metric anything depends on. It going stale is not a
+bug in itself; it going stale by 3x, as `home` had, is a sign the row's DESCRIPTION should be re-read
+too — which is how "Landing dashboard, single file" was caught still saying that about five files.
 
 Descriptions marked **[doc]** are quoted from the module's own doc-comment (the code carries ticket
 IDs like `MK.6` / `TX.3`). Unmarked ones are derived from the route + entry filename.
@@ -67,28 +81,28 @@ rest are pushed full-screen.
 
 | Feature | Files | Lines | What it does |
 |---|---:|---:|---|
-| `workouts` | 22 | 3,385 | Workout browsing + logging. `lib/features/workouts/data/offline/` handles prefetch; `widgets/` holds the plate, rest and warm-up calculators plus `set_timer_card.dart`. The timed set lives in `data/set_session.dart` (pure, clock-free) driven by `state/set_timer_providers.dart` (owns the only clock) with `data/cue_player.dart` for the three synthesised sounds |
-| `equipment` | 18 | 3,630 | Equipment detail + workout player. `data/exercise_filter.dart` holds the injury filter — which currently gates **nothing**: `safetyCoverage()` in the same file measures 0 of 1,887 exercises carrying a contraindication tag, so `filterContraindicated` removes no row on any surface. `widgets/exercise_thumb.dart` is the one tile every list renders an exercise as (bundled poster, gradient fallback) |
-| `subscription` | 10 | 1,834 | Tiers, paywall, Stripe checkout. `subscription_page.dart` is the biggest file in the repo. `effectiveTierProvider` is the single point that decides the tier — including the Settings test-access override |
-| `onboarding` | 10 | 1,209 | Multi-step intake incl. the injury questionnaire. `lib/features/onboarding/steps/` = one file per step |
-| `profile` | 6 | 1,024 | Profile + settings. `lib/features/profile/data/firestore_profile_repository.dart` is the Firestore boundary |
-| `form_check` | 16 | 4,799 | On-device pose/form checking. `data/mlkit_pose_detector_service.dart` + `data/form_classifier.dart`; `data/pose_silhouette.dart` builds the two-sided outline (drawn only — scoring still reads the six authored side-view joints) and `data/pose_projection.dart` maps measured landmarks onto the preview |
-| `home` | 1 | 594 | Landing dashboard, single file |
-| `progress_photos` | 5 | 519 | Progress photo capture + timeline |
-| `donor_wall` | 5 | 501 | Public donor recognition (ties to the nonprofit model) |
+| `workouts` | 37 | 6,558 | Workout browsing + logging. `lib/features/workouts/data/offline/` handles prefetch; `widgets/` holds the plate, rest and warm-up calculators plus `set_timer_card.dart`. The timed set lives in `data/set_session.dart` (pure, clock-free) driven by `state/set_timer_providers.dart` (owns the only clock) with `data/cue_player.dart` for the three synthesised sounds |
+| `equipment` | 23 | 5,586 | Equipment detail + workout player. `data/exercise_filter.dart` holds the injury filter — which currently gates **nothing**: `safetyCoverage()` in the same file measures 0 of 1,887 exercises carrying a contraindication tag, so `filterContraindicated` removes no row on any surface. `widgets/exercise_thumb.dart` is the one tile every list renders an exercise as (bundled poster, gradient fallback) |
+| `subscription` | 10 | 2,021 | Tiers, paywall, Stripe checkout. `subscription_page.dart` is the biggest file in the repo. `effectiveTierProvider` is the single point that decides the tier — including the Settings test-access override |
+| `onboarding` | 13 | 1,790 | Multi-step intake incl. the injury questionnaire. `lib/features/onboarding/steps/` = one file per step |
+| `profile` | 11 | 2,212 | Profile + settings. `lib/features/profile/data/firestore_profile_repository.dart` is the Firestore boundary |
+| `form_check` | 21 | 6,175 | On-device pose/form checking. `data/mlkit_pose_detector_service.dart` + `data/form_classifier.dart`; `data/pose_silhouette.dart` builds the two-sided outline (drawn only — scoring still reads the six authored side-view joints) and `data/pose_projection.dart` maps measured landmarks onto the preview |
+| `home` | 5 | 1,907 | Landing dashboard. `home_page.dart` plus four widgets it composes |
+| `progress_photos` | 12 | 2,027 | Progress photo capture + timeline. AES-GCM envelopes on disk (`data/photo_store.dart`), month-grouped timeline paged 30 at a time, `widgets/photo_bitmap.dart` decodes at the size the layout needs |
+| `donor_wall` | 5 | 507 | Public donor recognition (ties to the nonprofit model) |
 | `catalog` | 5 | 498 | Community video contribution + moderation queue |
-| `auth` | 6 | 479 | Firebase email / social sign-in |
-| `community` | 4 | 454 | Teams and team feeds |
-| `marketplace` | 4 | 405 | Coach marketplace |
-| `progress` | 2 | 400 | Charts + stats over logged workouts |
+| `auth` | 6 | 734 | Firebase email / social sign-in |
+| `community` | 4 | 477 | Teams and team feeds |
+| `marketplace` | 4 | 442 | Coach marketplace |
+| `progress` | 3 | 1,116 | Charts + stats over logged workouts |
 | `visual_equipment` | 15 | ~1,600 | Equipment recognition data layer. TWO anchors: `machine_text_anchor.dart` reads the machine's own printed name (pure matching rules; `mlkit_text_recogniser.dart` is only the OCR bridge) and runs FIRST, then the Gemini cloud recogniser (`gemini_equipment_service.dart`, Firebase AI Logic) with on-device TFLite fallback. Plus live smoother and recognition history. Rendered by `scanner` |
 | `ai_coach` | 5 | ~700 | Gemini-backed technique advice sheet (opened from every equipment page) + AI exercise generator with a per-(user, machine, language) Firestore cache, used only for machines the vendored catalog has nothing for. Requests are described by `AiCoachContext` (`ai_coach_context.dart`) — source screen, stable subject id, locale — which is also the advice cache key and holds the prompt builder |
-| `social_feed` | 4 | 333 | Social activity feed |
-| `ai_planner` | 4 | 326 | AI-generated training plan (`/plan`) |
-| `about` | 1 | 287 | About / info page |
-| `celebrity_plans` | 4 | 228 | Celebrity-authored plans |
+| `social_feed` | 4 | 359 | Social activity feed |
+| `ai_planner` | 4 | 314 | AI-generated training plan (`/plan`) |
+| `about` | 1 | 280 | About / info page |
+| `celebrity_plans` | 4 | 306 | Celebrity-authored plans |
 | `scanner` | 1 | ~700 | Photo-recognition tab (the core moat feature): live viewfinder at min zoom, centre-crop capture, honest confidences, "My machines" history. QR was removed 2026-07-30 (operator request) |
-| `splash` | 1 | 106 | Launch / routing gate |
+| `splash` | 1 | 108 | Launch / routing gate |
 
 ## Logic-only modules (no screen)
 
@@ -97,10 +111,10 @@ quoted here.
 
 | Feature | Files | Lines | What it does |
 |---|---:|---:|---|
-| `moments` | 6 | 433 | **[doc]** In-app "moments" — one-shot celebration / nurture prompts |
-| `recovery` | 3 | 323 | **[doc]** Auto-deload signal, pure function on recent history (`lib/features/recovery/data/deload_detector.dart`) + `lib/features/recovery/widgets/deload_banner.dart` |
-| `injury_coach` | 2 | 201 | **[doc]** TX.1 Injury Recovery Coach — multi-week, day-by-day rehab plans tagged to injuries |
-| `personalisation` | 3 | 199 | **[doc]** Re-ranks the For-You feed from the user's `FitnessProfile` |
+| `moments` | 5 | 318 | **[doc]** In-app "moments" — one-shot celebration / nurture prompts |
+| `recovery` | 3 | 314 | **[doc]** Auto-deload signal, pure function on recent history (`lib/features/recovery/data/deload_detector.dart`) + `lib/features/recovery/widgets/deload_banner.dart` |
+| `injury_coach` | 0 | 0 | **[not built]** TX.1 Injury Recovery Coach was documented here as 2 files / 201 lines; `mobile/lib/features/injury_coach/` does not exist. The only injury data that ships is `lib/features/profile/data/injury_regions.dart` |
+| `personalisation` | 3 | 210 | **[doc]** Re-ranks the For-You feed from the user's `FitnessProfile` |
 | `voice` | 1 | 137 | **[doc]** TX.6 / MK.1 voice-only hands-free workout control; restricted command grammar |
 | `cycle_aware` | 1 | 80 | **[doc]** MK.3 Cycle-Aware Programming — 4-phase model, pure |
 | `buddy` | 1 | 75 | **[doc]** TX.3 Buddy Matching — in-gym presence via BLE |
