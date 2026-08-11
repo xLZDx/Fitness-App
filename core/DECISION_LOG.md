@@ -2409,6 +2409,9 @@ Presented as the plan; the v1 above stands only as the audit trail.
 8. **Start with A0 → A1**, not A8. A1 is the one confirmed blocker that breaks
    a written promise and has no external or business dependency.
 
+**Superseded in part by the execution entry below** — the run started, and
+four gates closed. This block stays as the plan-gate record.
+
 **My own read, marked as judgement, not the agent's:** A6's cheap half
 (`enforceAppCheck` in monitoring mode, per-UID quotas, a budget alert) belongs
 early despite being sequenced late — it is the only finding with an ongoing
@@ -2416,3 +2419,74 @@ cost bleed rather than a latent one. Unenforced App Check plus anonymous auth
 plus Gemini means money can be burned today, not at release.
 
 Still no GO. Nothing built.
+
+---
+
+## 2026-08-11, 16:05 local (Europe/Chisinau) / 13:05 UTC — the run: four gates closed, six remaining, and why it stopped here
+
+Operator: *"пуш + ГО все пункты и гейты автономно"* plus three decisions —
+export completed to match the promise (not the promise amended), A7 replaced
+by a strategy document, console access granted for A5/A6. Multi-gate GO, so
+one report at the end rather than per sub-gate.
+
+`3cc8126` pushed (`8092b87..3cc8126`), verified first as exactly one commit
+ahead and nothing behind, so the push sent what was authorised and no more.
+
+### What shipped
+
+* **A0** `2953bc3` — the inventory. Built from three independent directions
+  (rules, functions, client) because no single one is complete: `coach_bookings`
+  appears in no rule, `progress_photos.key.v1` is invisible from the server.
+  Three collections named as surviving deletion, with their uid FIELDS, which
+  is what made A1 buildable without guessing.
+* **A1** `1aee73b` — deletion made complete on both sides. Server: sweeps the
+  three orphans, and cancels every subscription Stripe knows about rather than
+  the one id the document caches. Device: a new `LocalDataWipe` clears the
+  health blob by exact key, drops the photo key, and deletes the photo
+  directory whole.
+* **A4** `1aee73b` — a second live subscription is now refused server-side, and
+  a double-tap can no longer open two payable Checkout sessions.
+* **A8-lite** `b481dd0` — the 19 px Home CTA overflow, with a 320 dp
+  regression test confirmed to fail without the fix (`git stash`, `+0 -1`).
+* **Act gate** `e54bbef` — four real defects in the above, found by the
+  gate and fixed before the report, not after it.
+
+### Evidence
+
+* `npx tsc --noEmit`: 0 errors. `npx jest`: **118 passed** (was 107).
+* `flutter test`: **1896 passed, 0 failed** (was 1886). `flutter analyze`:
+  7 issues, prior baseline, 0 new.
+* The 320 dp test was verified to fail on the unfixed file, not assumed to.
+
+### The Act gate earned its cost
+
+Two units, six findings. Four were real and are fixed in `e54bbef`: an
+unbounded `db.batch()` that would throw past 500 documents and then fail
+identically on every retry, leaving an account permanently half-deleted; an
+unpaginated `subscriptions.list` that made "cancel EVERY subscription" untrue
+past 100; an idempotency key that omitted `locale` although `locale` is part
+of the request body, so changing app language mid-checkout would return a
+Stripe error rather than a session; and two silent skips on the client.
+
+One finding was **deferred, not fixed**: `recursiveDelete` resolves even when
+some nested deletes fail, so the Auth user can be deleted while orphaned data
+remains, with nothing logged. That is pre-existing — the file quotes the
+contract in its own comment — and closing it needs a post-delete verification
+pass, which is its own gate. One was **rejected** by the reviewer itself as
+unprovable without a rendered layout.
+
+### Refusal — A3 not started, deliberately
+
+The remaining budget was enough to begin the export gate and not enough to
+finish it. A half-written export is the one failure mode that produces a file
+a user believes is complete, which is worse than today's known-incomplete one.
+Same reasoning as the 2026-08-09 checkpoint: a resume point is worth more than
+30% of a gate. `core/plans/PLAN_AUDIT_2026-08-11_REMEDIATION.md` §4 carries
+the exact resume point and the one open question inside A3 (photo bytes).
+
+### Not pushed
+
+`2953bc3`, `1aee73b`, `b481dd0`, `e54bbef` are local. The opening `push`
+authorised the held commit; new commits need their own push-GO. No build was
+distributed either — the closing-build rule applies to the end of the run, and
+the run is not finished.

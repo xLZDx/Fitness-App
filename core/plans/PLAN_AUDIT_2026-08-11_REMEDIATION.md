@@ -73,7 +73,36 @@ split proposal before building. The rule permits an explicit operator override
 and *"ГО все пункты и гейты автономно"* is one. Recorded here so the size is
 not later mistaken for scope creep.
 
-## 4. Closing condition
+## 4. Execution status — 2026-08-11, 16:05 local (Europe/Chisinau) / 13:05 UTC
+
+| Gate | Status | Commit |
+|---|---|---|
+| **A0** Data inventory | **DONE** | `2953bc3` |
+| **A1** Account deletion | **DONE** | `1aee73b` + `e54bbef` |
+| **A4** Stripe duplicates | **DONE** except reconciliation of pre-existing duplicates | `1aee73b` + `e54bbef` |
+| **A8-lite** Home CTA overflow | **DONE** | `b481dd0` |
+| Act gate (Rosetta) | **DONE** — 2 units, 6 findings, 4 fixed, 1 deferred, 1 rejected | `e54bbef` |
+| **A6-lite** Cost bleed | not started | |
+| **A3** Export completeness | not started | |
+| **A2-sec** Photo hardening | not started | |
+| **A5** Stripe drift | not started | |
+| **A6-full** App Check | not started | |
+| **S1** ML strategy | not started | |
+| P1 / P2 / redesign remainder | not started | |
+
+**Resume point.** The next gate is **A6-lite**, then **A3**. A3's shape is
+already decided and does not need re-deriving: `core/DATA_INVENTORY_2026-08-11.md`
+§"What this fixes in the two dependent gates" lists exactly which collections
+`buildExport` is missing, and each has a repository with an `exportAll()`
+already (the pattern `WorkoutLogRepository.exportAll()` established). The one
+open question inside A3 is photo BYTES — excluded today by a comment in
+`data_export.dart:13-22` that `public/privacy.html` does not repeat.
+
+Nothing after `3cc8126` has been pushed: `2953bc3`, `1aee73b`, `b481dd0` and
+`e54bbef` are local. The run's opening `push` covered the held commit only; a
+new push needs its own GO.
+
+## 5. Closing condition
 
 Per "Ship the Build to the Tester, With Real Release Notes": the run ends with
 a build distributed through `scripts/dev/build_release.ps1 -Distribute`, with
