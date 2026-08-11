@@ -73,12 +73,21 @@ class DeviceLocalDataWipe implements LocalDataWipe {
 
     final personalKeys = {..._personalKeys, 'profile.sensitive.$uid'};
 
-    for (final key in prefs.getKeys().toList()) {
-      final personal =
-          personalKeys.contains(key) || _personalPrefixes.any(key.startsWith);
-      if (personal) {
-        await prefs.remove(key);
+    // Guarded separately from the directory below, and deliberately so: a
+    // platform-channel hiccup on one `remove` used to abort this method before
+    // the photos were touched at all, which meant the LARGER leak was the one
+    // that survived the smaller failure. Each half now runs regardless of the
+    // other.
+    try {
+      for (final key in prefs.getKeys().toList()) {
+        final personal =
+            personalKeys.contains(key) || _personalPrefixes.any(key.startsWith);
+        if (personal) {
+          await prefs.remove(key);
+        }
       }
+    } catch (e) {
+      debugPrint('local data wipe: could not clear preferences: $e');
     }
 
     try {

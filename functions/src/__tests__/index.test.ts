@@ -263,7 +263,7 @@ describe("createCheckoutSession", () => {
     },
     {
       // A4 — a double-tap on Subscribe must not open two payable sessions.
-      idempotencyKey: "checkout_u1_standard_monthly",
+      idempotencyKey: "checkout_u1_standard_monthly_auto",
     });
   });
 
@@ -316,7 +316,7 @@ describe("createCheckoutSession", () => {
       },
       allow_promotion_codes: true,
     },
-    { idempotencyKey: "checkout_u2_celebrityTrainer_lifetime" });
+    { idempotencyKey: "checkout_u2_celebrityTrainer_lifetime_auto" });
   });
 
   test("a one-time purchase never asks whether a subscription exists",

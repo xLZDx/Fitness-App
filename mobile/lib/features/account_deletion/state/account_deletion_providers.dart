@@ -67,6 +67,19 @@ class AccountDeletionAction extends Notifier<AsyncValue<void>> {
         } catch (e) {
           debugPrint('local data wipe after account deletion failed: $e');
         }
+      } else {
+        // Every other best-effort step here logs when it fails; this one used
+        // to be the exception, and it is the one whose silence costs the most.
+        // A null `currentUser` at this point — a token invalidated between
+        // opening the page and confirming, or a re-entrant second attempt
+        // after the first cleared auth — means the health blob and the whole
+        // photo directory stay on the device while the UI reports a clean
+        // deletion. Not fixable here without a uid, but it must not be
+        // undiagnosable.
+        debugPrint(
+          'local data wipe SKIPPED: no uid at deletion time. '
+          'Device-local data for the deleted account remains.',
+        );
       }
 
       // Explicit, not relied-upon. The server just deleted this Firebase

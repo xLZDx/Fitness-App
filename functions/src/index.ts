@@ -431,12 +431,8 @@ export const createCheckoutSession = onCall(
     // One-time purchases (lifetime, donations) are exempt on purpose: buying
     // one is not mutually exclusive with holding a subscription.
     if (!oneTime) {
-      const live = await stripe.subscriptions.list({
-        customer: customerId,
-        status: "all",
-        limit: 100,
-      });
-      const blocking = live.data.find((s) =>
+      const live = await listAllSubscriptions(stripe, customerId);
+      const blocking = live.find((s) =>
         ["active", "trialing", "past_due", "unpaid"].includes(s.status),
       );
       if (blocking) {
@@ -497,7 +493,16 @@ export const createCheckoutSession = onCall(
       // A repeat within the window returns the SAME session rather than an
       // error, so a user who backed out of Checkout and tapped Subscribe
       // again lands on the same page instead of being blocked.
-      idempotencyKey: `checkout_${auth.uid}_${tier}_${period}`,
+      //
+      // The locale is part of the key because it is part of the REQUEST BODY
+      // (`locale:` above, from the client's current language). Stripe returns
+      // an error, not the cached response, when one key is replayed with a
+      // different body -- so a user who backs out of Checkout, switches the
+      // app to Russian and taps Subscribe again would otherwise hit an opaque
+      // internal error instead of a Russian checkout page.
+      idempotencyKey:
+        `checkout_${auth.uid}_${tier}_${period}_` +
+        `${checkoutLocale(request.data?.locale)}`,
     });
 
     if (!session.url) {
@@ -1314,6 +1319,60 @@ export const reportEquipment = onCall(
 const DELETED_UID = "deleted_user";
 
 /**
+ * Every subscription on a customer, following Stripe's pagination.
+ *
+ * A single `list({limit: 100})` silently truncates at 100, which turns both
+ * callers into quiet lies: the deletion path would claim to cancel "every"
+ * subscription while leaving the 101st billing, and the duplicate guard would
+ * wave a new purchase through because it could not see the existing one.
+ * 100 sounds like plenty until a webhook retry storm has created the objects
+ * itself -- which is the exact class of bug this file is closing.
+ */
+async function listAllSubscriptions(
+  stripe: Stripe,
+  customerId: string,
+): Promise<Stripe.Subscription[]> {
+  const out: Stripe.Subscription[] = [];
+  let startingAfter: string | undefined;
+  // Bounded: 20 pages x 100 is 2000 subscriptions for one customer. Past that
+  // the data is pathological and a loop that never ends is worse than a
+  // truncated answer, so the bound is explicit rather than accidental.
+  for (let page = 0; page < 20; page++) {
+    const res = await stripe.subscriptions.list({
+      customer: customerId,
+      status: "all",
+      limit: 100,
+      ...(startingAfter ? { starting_after: startingAfter } : {}),
+    });
+    out.push(...res.data);
+    if (!res.has_more || res.data.length === 0) break;
+    startingAfter = res.data[res.data.length - 1].id;
+  }
+  return out;
+}
+
+/**
+ * Firestore commits at most 500 writes per batch, and the sweep below has no
+ * upper bound on how many documents it matches: a coach with a long booking
+ * history blows the cap, `commit()` throws, and the caller's own message tells
+ * the user the step "is safe to repeat" -- which it is, and it fails again
+ * identically every time, leaving the account permanently half-deleted.
+ *
+ * 450 rather than 500: the margin costs one extra round trip in the rare case
+ * and removes any dependence on the cap being exactly 500 forever.
+ */
+async function commitInChunks(
+  ops: Array<(batch: FirebaseFirestore.WriteBatch) => void>,
+): Promise<void> {
+  const chunkSize = 450;
+  for (let i = 0; i < ops.length; i += chunkSize) {
+    const batch = db.batch();
+    for (const apply of ops.slice(i, i + chunkSize)) apply(batch);
+    await batch.commit();
+  }
+}
+
+/**
  * The three collections A0's inventory found outside `users/{uid}` that name a
  * user and survived `deleteAccount`.
  *
@@ -1336,7 +1395,7 @@ const DELETED_UID = "deleted_user";
  * index that a fresh project would not already have.
  */
 async function sweepSharedRecords(uid: string): Promise<void> {
-  const batch = db.batch();
+  const ops: Array<(batch: FirebaseFirestore.WriteBatch) => void> = [];
 
   const [asClient, asCoach, reports, debugSessions] = await Promise.all([
     db.collection("coach_bookings").where("clientUid", "==", uid).get(),
@@ -1351,27 +1410,27 @@ async function sweepSharedRecords(uid: string): Promise<void> {
   for (const doc of asClient.docs) {
     const other = doc.data()?.coachUid;
     if (other === DELETED_UID || other === undefined) {
-      batch.delete(doc.ref);
+      ops.push((b) => b.delete(doc.ref));
     } else {
-      batch.update(doc.ref, { clientUid: DELETED_UID });
+      ops.push((b) => b.update(doc.ref, { clientUid: DELETED_UID }));
     }
   }
   for (const doc of asCoach.docs) {
     const other = doc.data()?.clientUid;
     if (other === DELETED_UID || other === undefined) {
-      batch.delete(doc.ref);
+      ops.push((b) => b.delete(doc.ref));
     } else {
-      batch.update(doc.ref, { coachUid: DELETED_UID });
+      ops.push((b) => b.update(doc.ref, { coachUid: DELETED_UID }));
     }
   }
   for (const doc of reports.docs) {
-    batch.update(doc.ref, { reporterUid: DELETED_UID });
+    ops.push((b) => b.update(doc.ref, { reporterUid: DELETED_UID }));
   }
   for (const doc of debugSessions.docs) {
-    batch.delete(doc.ref);
+    ops.push((b) => b.delete(doc.ref));
   }
 
-  await batch.commit();
+  await commitInChunks(ops);
 }
 
 export const deleteAccount = onCall(
@@ -1423,12 +1482,9 @@ export const deleteAccount = onCall(
         const ids = new Set<string>();
         if (subscriptionId) ids.add(subscriptionId);
         if (customerId) {
-          const list = await stripe.subscriptions.list({
-            customer: customerId,
-            status: "all",
-            limit: 100,
-          });
-          for (const s of list.data) ids.add(s.id);
+          for (const s of await listAllSubscriptions(stripe, customerId)) {
+            ids.add(s.id);
+          }
         }
 
         for (const id of ids) {

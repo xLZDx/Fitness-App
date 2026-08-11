@@ -445,6 +445,26 @@ describe("deleteAccount", () => {
     expect(commit).toHaveBeenCalled();
   });
 
+  test("splits the sweep across batches instead of blowing Firestore's 500 cap",
+    async () => {
+      // Act-gate finding: one `db.batch()` with no bound. A coach with a long
+      // booking history would make `commit()` throw, and the caller's own
+      // message says the step "is safe to repeat" -- which it is, and it fails
+      // identically every time, leaving the account permanently half-deleted.
+      seed(
+        "debug_sessions",
+        Array.from({ length: 600 }, (_, i) => ({
+          id: `d$${i}`,
+          data: { uid: "u1" },
+        })),
+      );
+
+      await deleteAccount.run(req({ uid: "u1" }));
+
+      expect(batchOps).toHaveLength(600);
+      expect(commit).toHaveBeenCalledTimes(2); // 450 + 150
+    });
+
   test("leaves other users' shared records alone", async () => {
     seed("coach_bookings", [
       { id: "b9", data: { clientUid: "someone_else", coachUid: "coach_9" } },
