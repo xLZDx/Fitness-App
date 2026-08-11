@@ -3020,3 +3020,79 @@ user-visible failure closed end to end: the three URLs that pointed at
 - No test-mode webhook replay of either event format was performed.
 - App Check enforcement remains OFF in production, as designed.
 - The budget `notificationsRule` is still empty.
+
+---
+
+## 2026-08-11, 19:20 local (Europe/Chisinau) / 16:20 UTC — the build FAILED and nothing was shipped; the machine cannot download any new Maven artifact
+
+Two attempts, both `BUILD FAILED`. **No APK was produced and nothing was
+distributed.** The closing condition of this run is not met.
+
+### Root cause, measured
+
+`flutter_secure_storage` 10.3.1 — added by A2-sec — replaced Jetpack Security
+with Google Tink, so the build now needs `com.google.crypto.tink:tink-android`
+and its transitive tree (`gson`, `error_prone_annotations`, …). None of it was
+in the Gradle cache, and **this machine cannot fetch anything new from Maven
+Central**:
+
+```
+PKIX path validation failed: Path does not chain with any of the trust anchors
+```
+
+Not a network fault. `curl` fetches the exact same POM with `HTTP/1.1 200 OK`.
+The chain:
+
+1. `SSLKEYLOGFILE=\\.\nllMonFltProxy\...` — NetLimiter's filter proxy is
+   intercepting TLS and re-signing with its own CA.
+2. Windows trusts that CA, which is why curl and the browser are fine.
+3. `D:\.gradle\gradle.properties` sets
+   `systemProp.javax.net.ssl.trustStore=D:/tools/java-truststore/cacerts.jks`,
+   and that property REPLACES the JDK default rather than adding to it.
+4. That JKS holds **145 entries, all ordinary public roots dated Dec 6 2025,
+   and no proxy CA** (`keytool -list`; the apparent "proxy" hits are roots
+   named `certainly`, `e-commerce_monitoring`, `entrust`).
+
+So Java validates the proxy's certificate against a bundle that does not
+contain the proxy's issuer, and every fresh download fails. Every build that
+has worked on this machine worked from cache.
+
+### Verified fix, not a guess
+
+```
+cd mobile/android && ./gradlew -Djavax.net.ssl.trustStoreType=Windows-ROOT \
+    :app:dependencies --configuration releaseRuntimeClasspath
+→ +--- com.google.crypto.tink:tink-android:1.21.0
+→ BUILD SUCCESSFUL in 41s
+```
+
+`Windows-ROOT` makes Java read the Windows certificate store, which already
+holds both the public roots and the proxy CA.
+
+### A wrong assumption I acted on, and the correction
+
+After that probe I retried the release build expecting the artifact to now be
+cached. It failed again, on `gson-2.13.2.jar` and
+`error_prone_annotations-2.41.0.jar`. The probe only resolved **POMs**;
+`:app:dependencies` never downloads the JARs. Caching one artifact was never
+going to be enough — the problem is not per-artifact, it is that no new
+artifact can be downloaded at all.
+
+### Not done, and why
+
+The fix belongs in `D:\.gradle\gradle.properties` — **outside this repo and
+shared machine state**, which the approval gate requires asking about rather
+than doing. Stopped and asked instead of editing it. The alternative of putting
+`trustStoreType=Windows-ROOT` in the repo's own
+`mobile/android/gradle.properties` was rejected: `gradle.properties` has no
+conditionals, and that value is invalid off Windows, so it would bake a
+machine-specific workaround into a cross-platform repo.
+
+### State at this point
+
+Everything except the build is done and verified: A2-sec + its act-gate fixes,
+A5, A6-full, S1, and a deploy of 14 functions with four live 200s. `flutter
+test` 1925 passed, `npx jest` 144 passed, `flutter analyze` 7 (prior baseline),
+working tree clean. What is missing is the artifact on the operator's phone —
+and with it the first real execution of the Keystore migration, which is the
+single most important thing left unverified in this whole run.
