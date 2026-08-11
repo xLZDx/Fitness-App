@@ -1,0 +1,82 @@
+# Audit remediation plan — 2026-08-11
+
+Source: `core/AUDIT_REPORT_2026-08-11.md` (independent read-only review, verdict
+**BLOCK** for a public production release), merged with the unfinished redesign
+track (Ф3 unstarted, five R11 gates PARTIAL).
+
+Authorised 2026-08-11 by the operator as one autonomous multi-gate run:
+*"пуш + ГО все пункты и гейты автономно"*, with three decisions attached —
+recorded in §0 below. Push of `3cc8126` executed under the same message.
+
+This file is the source of truth for the run. `core/DECISION_LOG.md` carries the
+per-turn narrative; this carries the gate list and its state.
+
+---
+
+## 0. Operator decisions that shaped the plan
+
+| Question | Answer | Consequence |
+|---|---|---|
+| **A3** — complete the export, or amend the promise? | *"доводим экспорт до обещания"* | The export must reach what `public/privacy.html:89` already claims. No legal-copy edit substitutes for it. |
+| **A7** — disable the ML features or label them experimental? | *"пока пропускаем, но нужен детальный план/стратегия как довести МЛ до ума и рабочего состояния, он необходим для составления индивидуальных программ и тренировок"* | A7 as a *gate* is skipped. It is replaced by a strategy document: how recognition / rep counting / posture get to a state that can drive individualised programmes. No shipping claim changes under this run. |
+| **A5 / A6** — console access? | *"разрешаю доступ к Stripe/Firebase-консоли и выполнять все необходимые действия"* | Stripe and Firebase console operations are in scope for this run, not handed back as a checklist. |
+
+## 1. Where the plan came from
+
+v1 was drafted from the audit alone. The Rosetta Plan gate ran one matched
+agent (`planner`; `security-reviewer` flagged **recommended, not spawned** per
+`agent_routing.json` group `S_opt_in_only`) and moved it materially:
+
+1. A1 and A4 were rewriting the same function four gates apart → merged.
+2. A1's local photo wipe was keyed to a structure A2 later replaces → made
+   directory-level, so it survives A2 either way.
+3. A2 was merged with R11f, an independently XL gate → split back apart.
+4. A8 bundled a real defect, stale-test triage and a redesign cosmetic → split.
+5. A0 (shared data inventory) did not exist; A1 and A3 were each about to
+   re-derive the same list.
+6. A4 prevented new duplicate subscriptions but never reconciled existing ones.
+
+One finding it raised as "possibly open" was measured rather than assumed: the
+`iam.serviceAccounts.signBlob` grant from `DECISION_LOG.md:509-537` **is in
+place** (`roles/iam.serviceAccountTokenCreator`, verified via
+`gcloud iam service-accounts get-iam-policy`). That P0 is closed; only
+end-to-end playback on a device remains unproven.
+
+## 2. Gates
+
+Order is dependency-driven, not severity-driven. Each gate is its own commit.
+
+| # | Gate | Scope | State |
+|---|---|---|---|
+| **A0** | Data inventory | Every uid-bearing store, server and on-device, with its delete path and its export path. Markdown + CSV twin. Feeds A1 and A3. | |
+| **A1** | Account deletion completeness | `deleteAccount` also sweeps `coach_bookings` + `equipment_reports`; cancels **every** subscription, not one id; client wipes local health blob and the photo directory **at directory level**; the server test stops pinning incomplete deletion as correct; one live multi-account check in-gate. | |
+| **A6-lite** | Cost bleed | `enforceAppCheck` in monitoring posture, per-UID/device quotas, budget alert. Ahead of its siblings because it is the only finding losing money now rather than at release. | |
+| **A4** | Stripe duplicate subscriptions | Idempotency key on checkout creation, server-side active-subscription pre-check, and reconciliation of duplicates that already exist. | |
+| **A3** | Export completeness | Export reaches the promise in `public/privacy.html:89`: recognition history, machine cards/notes, generated exercises, subscriptions/receipts, equipment reports, coach bookings, donor entry, debug telemetry — and a decision, recorded, on photo bytes. | |
+| **A2-sec** | Progress-photo hardening | UID-scoped directory + index + key, key into Android Keystore, plaintext camera temp deleted, "end-to-end encryption" copy corrected to what it is. R11f's seven remaining flow states are **not** in this gate. | |
+| **A5** | Stripe deployment drift | Verify the endpoint's API version first; deploy the Acacia/Basil fix and replay test-mode events of both formats only if that verification says it is needed. Placeholder redirect domains (`index.ts:497`, `:1033-1034`) fixed here. | |
+| **A8-lite** | Home CTA overflow | `mobile/lib/features/home/home_page.dart:475-489` — bare `Text` in a `Row`. Stale integration-test triage is P1, not this gate. | |
+| **A6-full** | App Check enforcement | Staged enforcement, anonymous-trial rotation protection, cost anomaly alerts. | |
+| **S1** | ML strategy (replaces A7) | Document: what each ML feature actually measures today, what "working" means for individualised programmes, and the measurement path to it. No behaviour change. | |
+
+Then P1 (rules emulator tests, deletion + multi-account e2e, mock disclosure,
+entitlement loading/error states, fail-closed CI, platform scope) and P2
+(bundled fonts, accessibility, photo thumbnails/pagination, cache LRU, doc
+refresh, production manifest), then the redesign remainder: Ф3, bug 5, bug 6's
+programme-card half, R11f/R11h/R11b's open states, Paywall (still HELD on
+pricing).
+
+## 3. Scope-trigger acknowledgement
+
+This run is far past the >2h / 15-file / 350-line line that normally forces a
+split proposal before building. The rule permits an explicit operator override
+and *"ГО все пункты и гейты автономно"* is one. Recorded here so the size is
+not later mistaken for scope creep.
+
+## 4. Closing condition
+
+Per "Ship the Build to the Tester, With Real Release Notes": the run ends with
+a build distributed through `scripts/dev/build_release.ps1 -Distribute`, with
+notes in user-visible terms naming what changed, what to check, and what is
+knowingly still broken. A build whose tests do not pass is reported, never
+shipped.

@@ -1,0 +1,34 @@
+layer,location,holds,uid_field,deleted_by_deleteAccount,in_export,gate
+firestore,users/{uid}/profile/main,"profile, goals, injuries",path,yes,yes,-
+firestore,users/{uid}/workout_logs/*,workout history,path,yes,yes,-
+firestore,users/{uid}/workout_sessions/*,"sessions, sets, difficulty",path,yes,no,A3
+firestore,users/{uid}/scheduled_sessions/*,schedule,path,yes,yes,-
+firestore,users/{uid}/programmes/*,enrolled programmes,path,yes,yes,-
+firestore,users/{uid}/subscription/main,"tier, stripe customer + subscription ids",path,yes,no,A3
+firestore,users/{uid}/machine_cards/*,saved machines + notes,path,yes,no,A3
+firestore,users/{uid}/recognised_equipment/*,recognition history,path,yes,no,A3
+firestore,users/{uid}/generated_exercises/*,AI-generated exercises,path,yes,no,A3
+firestore,users/{uid}/stats/workouts,aggregate counters,path,yes,no,A3
+firestore,donor_wall/{uid},public donor entry,path,yes,no,A3
+firestore,coach_listings/{uid},coach profile,path,yes,no,A3
+firestore,coach_bookings/{id},"times, price, payment intent",clientUid+coachUid,NO,no,A1+A3
+firestore,equipment_reports/{id},"gym, fault, note",reporterUid,NO,no,A1+A3
+firestore,debug_sessions/{id},device telemetry,uid,NO,no,A1+A3
+firestore,gyms/*,shared reference data,none,n/a,n/a,-
+firestore,equipment/*,shared reference data,none,n/a,n/a,-
+firestore,exercises/*,shared reference data,none,n/a,n/a,-
+prefs,profile.sensitive.{uid},health/injury blob (plaintext JSON),key,NO,partial,A1+A3
+prefs,progress_photos.key.v1,AES-256 key (base64),NONE,NO,no,A1+A2
+prefs,settings.language,preference,none,NO,no,A1+A3
+prefs,settings.theme_mode,preference,none,NO,no,A1+A3
+prefs,settings.notifications_enabled,preference,none,NO,no,A1+A3
+prefs,settings.tier_override,debug tier override,none,NO,no,A1+A3
+prefs,moment.first_launch_at,moment counter,none,NO,no,A1
+prefs,moment.launch_count,moment counter,none,NO,no,A1
+prefs,moment.injury_filter_uses,moment counter,none,NO,no,A1
+prefs,moment.shown.*,moment seen flags,none,NO,no,A1
+file,<docs>/progress_photos/,AES envelopes + plaintext index,NONE,NO,metadata only,A1+A2+A3
+file,<temp>/camera stills,plaintext JPEG,none,NO,no,A2
+file,<docs>/offline_videos/,cached catalogue clips,none,no,n/a,-
+file,<docs>/<model assets>,ML model files,none,no,n/a,-
+file,<temp>/export file,the export itself,none,n/a,n/a,-

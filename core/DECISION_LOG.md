@@ -2272,3 +2272,147 @@ selected state.
   the deviations are in `docs/Redisign/reference/emulator/`.
 * Device logcat read: one real finding (the font, above); the rest is
   emulator noise — `GoogleApiManager`, `RkpdRegistrationBinder`, Wi-Fi HAL.
+
+---
+
+## 2026-08-11, 13:10 local (Europe/Chisinau) / 10:10 UTC — an independent audit lands a BLOCK verdict; intake, cross-check, and a merged plan held pending GO
+
+Operator supplied `AUDIT_REPORT_2026-08-11.md` (untracked, repo root) — an
+independent read-only review, verdict **BLOCK for a public production
+release**, acceptable status "closed Android beta with AI / progress photos /
+social / marketplace / Wear disabled or explicitly labelled experimental".
+
+It was produced against exactly this tree: it reports local HEAD
+`3cc8126` and remote HEAD `8092b87`, which is what `git rev-parse` returns
+here. So its citations are current, not against an older commit.
+
+### Cross-check — what was verified from this side, before quoting any of it
+
+Per "Empiricism over Poetry", the load-bearing findings were checked against
+the files rather than accepted:
+
+* **Account deletion is partial — confirmed.** `functions/src/index.ts:1325-1332`
+  deletes `users/{uid}`, `donor_wall/{uid}`, `coach_listings/{uid}` and
+  nothing else, while `coach_bookings/{id}` (`:755`, `:1102`) and
+  `equipment_reports/{id}` (`:1155`) are top-level, uid-bearing, and never
+  touched.
+* **One subscription id, one cancellation — confirmed.** `:1287-1312` reads a
+  single `stripeSubscriptionId` and cancels that one.
+* **Checkout has no idempotency and no active-subscription pre-check —
+  confirmed.** `:420-455` creates the session directly.
+* **`enforceAppCheck` appears nowhere in `functions/src/` — confirmed** (grep,
+  0 hits). The live-console side of the same finding (App Check `UNENFORCED`)
+  is the report's, not re-measured here.
+* **Placeholder redirect domains — confirmed, and narrower than it sounds.**
+  Checkout success/cancel already moved to `RETURN_ORIGIN` (`:243`, `:429-430`);
+  what still points at `fitnessapp.example.com` is the Billing Portal
+  (`:497`) and Stripe Connect onboarding (`:1033-1034`).
+* **Export scope — confirmed.** `mobile/lib/features/data_export/data_export.dart:33-86`
+  emits profile, workout logs, scheduled sessions, programmes and photo
+  *metadata*; the collections the report lists as absent are absent.
+* **Photo key in SharedPreferences, not UID-scoped — confirmed**, and already
+  documented in-repo as the wrong implementation awaiting its own gate
+  (`photo_key_store.dart:8-33`, `_prefsKey = 'progress_photos.key.v1'` with no
+  uid). Plaintext camera temp is read and not deleted
+  (`local_progress_photos_repository.dart:35-39`).
+* **Home CTA overflow — confirmed mechanically.** `home_page.dart:475-489`:
+  `Row` → `Icon` + `SizedBox(8)` + bare `Text`, no `Flexible`.
+* **Wear has no Gradle wrapper — confirmed** (`wear/` holds README,
+  `build.gradle.kts`, `gradle.properties`, `settings.gradle.kts`, `src`).
+
+**One overstatement found.** The report says release Gradle "может молча
+использовать debug signing". It is not silent: `mobile/android/app/build.gradle:55-67`
+emits `logger.warn("R0: android/key.properties not found … this build will be
+DEBUG-SIGNED")`, gated to release-shaped tasks. The defect is real — the build
+*succeeds* debug-signed rather than failing — but "silently" is wrong, and the
+fix is therefore "fail the task", not "add a warning".
+
+**Not verified from here, quoted as the report's own measurements:** live App
+Check / Firestore ruleset / Hosting drift, deployed Functions revision dates,
+the Stripe endpoint's API version, `npm audit` counts, and the
+`3 passed / 7 failed` Android integration run.
+
+### Where the redesign track actually stands, for the merge
+
+Unchanged by the audit and worth restating in one place: Ф0 bugs 1-4 done,
+bug 5 (right-edge clipping) and bug 6's programme-card half open; Ф1a-Ф1c and
+Ф2 done and green (1886/0); **Ф3 — per-screen rebuild — not started**; of R11,
+five gates are PARTIAL and the Paywall is HELD on a pricing decision the
+operator deferred ("отложи на потом, прода еще нету").
+
+The audit does not contradict that; it adds a second, independent axis
+(privacy / payments / production drift / ML validity) that the redesign plan
+never covered, and which outranks it for a public release.
+
+### Refusal — nothing built, no plan file written
+
+A merged priority plan (audit P0-P2 interleaved with Ф3/R11) was presented in
+chat only. Gate-Based Development: no GO has been given for any of it, and the
+standing Ф0-Ф3 GO does not stretch to a security/privacy remediation track
+that did not exist when it was issued. `core/plans/` gets its file on GO, per
+Plan Persistence; this entry is the pointer until then.
+
+### Rosetta mode ON — Plan gate ran one matched agent, and it moved the plan
+
+Operator invoked `/rosetta`. Approval authority unchanged (literal `GO` only);
+session marker at `D:\tmp\claude_rosetta_mode\f8f76275-….json`. Plan gate
+routed deterministically: `stack_profiles["D:\test 2\Fitness App"]` is
+`dart-flutter / typescript / firebase / web-frontend`, the artefact is a
+multi-phase sequence rather than a diff, so `planner` — one agent, not a
+panel. `security-reviewer` flagged **recommended, not spawned**
+(`agent_routing.json` group `S_opt_in_only`, "NEVER automatic"), even though
+the surface is privacy/payments/App Check.
+
+Every load-bearing citation it returned was cross-checked here before being
+used: `mobile/integration_test/app_test.dart:230` really does assert the old
+tab name `'Тренировка'`; `public/privacy.html:89` really does promise the
+deletion "erases **every** document under your account" — a stronger claim
+than the earlier paraphrase in this log; `photo_key_store.dart:26-30` really
+does defer the Keystore swap to its own gate with a device build; R11f really
+is sized **XL** in `PLAN_R11_…:41`.
+
+**The finding that earned the gate.** It flagged that `core/DECISION_LOG.md:509-537`
+records "no clip plays" root-caused to a missing `iam.serviceAccounts.signBlob`
+grant, handed to the operator and **never confirmed applied in any later
+entry** — so possibly an open P0 that no gate covered. Measured instead of
+assumed: `gcloud iam service-accounts get-iam-policy
+988522745882-compute@developer.gserviceaccount.com --account=korostelevivan@gmail.com`
+returns exactly one binding, `roles/iam.serviceAccountTokenCreator` on the
+account itself. **The grant is in place; that root cause is closed.** What
+remains unproven is end-to-end playback on a device, which nobody has run
+since. Recorded here so the next reader does not re-open it a third time.
+
+### Plan v2 — what the gate changed
+
+Presented as the plan; the v1 above stands only as the audit trail.
+
+1. **New A0, shared data inventory.** A1 (delete) and A3 (export) were each
+   about to re-derive the same list of uid-bearing stores. One pass feeds both.
+2. **A1 absorbs A4's deletion half.** Both rewrite `deleteAccount`
+   (`functions/src/index.ts:1287-1332`); shipping them four gates apart means
+   editing the same function twice, the second time discarding the first.
+3. **A1's local photo wipe becomes directory-level, not index-keyed.**
+   Alternative rejected: reordering A2's storage restructure ahead of A1. A
+   structure-agnostic wipe survives A2 either way and costs less.
+4. **A2 splits.** UID-scoping + Keystore + plaintext-temp deletion + honest
+   copy stay P0; R11f's seven remaining flow states go back to the redesign
+   track. Merging a P0 security fix into an XL feature gate is the exact
+   scope-trigger violation A3 (the rule) exists to stop.
+5. **A8 splits and mostly demotes.** The Home overflow
+   (`mobile/lib/features/home/home_page.dart:475-489`) stays P0 as a visible
+   defect; stale-integration-test triage folds into P1's fail-closed CI item;
+   the chip-clipping bug was never P0.
+6. **A5 rescoped to verify-then-decide** — the audit itself does not claim a
+   live incident, only deployment drift.
+7. **A4 gains reconciliation**: a second subscription created before
+   idempotency ships is not fixed by preventing new ones.
+8. **Start with A0 → A1**, not A8. A1 is the one confirmed blocker that breaks
+   a written promise and has no external or business dependency.
+
+**My own read, marked as judgement, not the agent's:** A6's cheap half
+(`enforceAppCheck` in monitoring mode, per-UID quotas, a budget alert) belongs
+early despite being sequenced late — it is the only finding with an ongoing
+cost bleed rather than a latent one. Unenforced App Check plus anonymous auth
+plus Gemini means money can be burned today, not at release.
+
+Still no GO. Nothing built.
