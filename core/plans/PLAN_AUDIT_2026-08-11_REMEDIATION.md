@@ -82,7 +82,7 @@ not later mistaken for scope creep.
 | **A4** Stripe duplicates | **DONE** except reconciliation of pre-existing duplicates | `1aee73b` + `e54bbef` |
 | **A8-lite** Home CTA overflow | **DONE** | `b481dd0` |
 | Act gate (Rosetta) | **DONE** — 2 units, 6 findings, 4 fixed, 1 deferred, 1 rejected | `e54bbef` |
-| **A6-lite** Cost bleed | not started | |
+| **A6-lite** Cost bleed | **DONE** except the budget notification rule (attempt did not apply) | `ec5aae4` |
 | **A3** Export completeness | not started | |
 | **A2-sec** Photo hardening | not started | |
 | **A5** Stripe drift | not started | |
@@ -90,7 +90,7 @@ not later mistaken for scope creep.
 | **S1** ML strategy | not started | |
 | P1 / P2 / redesign remainder | not started | |
 
-**Resume point.** The next gate is **A6-lite**, then **A3**. A3's shape is
+**Resume point.** The next gate is **A3**. A6-lite is closed except its budget half. A3's shape is
 already decided and does not need re-deriving: `core/DATA_INVENTORY_2026-08-11.md`
 §"What this fixes in the two dependent gates" lists exactly which collections
 `buildExport` is missing, and each has a repository with an `exportAll()`

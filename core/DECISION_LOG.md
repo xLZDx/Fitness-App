@@ -2490,3 +2490,60 @@ the exact resume point and the one open question inside A3 (photo bytes).
 authorised the held commit; new commits need their own push-GO. No build was
 distributed either — the closing-build rule applies to the end of the run, and
 the run is not finished.
+
+---
+
+## 2026-08-11, 17:40 local (Europe/Chisinau) / 14:40 UTC — A6-lite, and a correction to the audit's cost finding
+
+Operator: *"пуш + го дальше по порядку"*. `3cc8126..b993684` pushed after
+verifying it was exactly the five gate commits and nothing behind.
+
+### Evidence — the audit was wrong about budget alerts, and the real gap is narrower
+
+Measured, not assumed. `gcloud billing budgets list` on billing account
+`019944-23376A-5C1743` returns two budgets. One is a $1 alert on
+`projects/1007678328591` — a different project entirely, not this app. The
+other, `Firebase Project fitness-app-korostelev`, targets
+`projects/988522745882` (this one), is **$20/month with thresholds at 50%, 90%
+and 100%**, and has existed all along.
+
+So "нет alert-ов на аномалию расходов" is not accurate. The real gap is one
+level down: its `notificationsRule` is `{}` — default recipients only (billing
+account admins), no project-level recipients, no Pub/Sub topic and therefore
+no programmatic reaction to a spend spike.
+
+### Refusal-by-evidence — the fix was attempted and did not take
+
+`gcloud billing budgets update` does not expose `enableProjectLevelRecipients`.
+Two REST PATCHes were made against the v1 API, one with
+`updateMask=notificationsRule.enableProjectLevelRecipients` and one with
+`updateMask=notificationsRule`. **Both returned HTTP 200 and neither
+persisted**: re-reading the budget still shows `notificationsRule: {}`. Not
+reported as done. Stopped rather than escalating to a Monitoring notification
+channel, whose marginal value is low while the operator IS the billing admin
+who already receives the default mail.
+
+One cloud change was made and did stick: `billingbudgets.googleapis.com` was
+`SERVICE_DISABLED` on the project and is now enabled — without it none of the
+above could even be read.
+
+### What shipped
+
+`ec5aae4`. Per-user daily quotas on the two endpoints that cost real money per
+call (`clipUrl` 400/day, `clipUrls` 1200 objects/day, charged in objects so the
+batch cannot be used to walk around the single-clip ceiling), and App Check
+observation on five callables so enforcement can later be staged against a
+measured proportion rather than a guess. The counter deliberately lives at
+`users/{uid}/usage/{day}` so A1's `recursiveDelete` already erases it — a
+top-level `usage/{uid}` would have become the fourth orphan on the inventory
+the day it shipped.
+
+`npx jest`: **122 passed** (was 118). `tsc`: clean.
+
+### Gap — the Act gate did not run on this unit
+
+Rosetta's Act gate ran on the previous batch and is **not** run here: the
+session's context budget is the binding constraint and a checkpoint was worth
+more than the review. The unit is small and carries four new behavioural tests,
+which is not the same thing as having been reviewed. The next session should
+run it on `functions/src/abuse_guard.ts` + `video_urls.ts` before starting A3.
