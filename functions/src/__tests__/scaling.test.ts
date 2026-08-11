@@ -51,6 +51,10 @@ const ENTRYPOINTS: Record<string, unknown> = {
   bookCoachSession: index.bookCoachSession,
   reportEquipment: index.reportEquipment,
   deleteAccount: index.deleteAccount,
+  // A3. Added here in the same change that exported it -- this list IS the
+  // registration, and the count test below is what refuses a function that
+  // ships without a ceiling.
+  exportAccountData: index.exportAccountData,
 };
 
 describe("scaling ceilings", () => {
@@ -60,8 +64,8 @@ describe("scaling ceilings", () => {
     expect(admin.initializeApp).toHaveBeenCalledTimes(1);
   });
 
-  test("the deployed surface is exactly these twelve", () => {
-    // A thirteenth function added without a ceiling is the regression this
+  test("the deployed surface is exactly these thirteen", () => {
+    // A fourteenth function added without a ceiling is the regression this
     // whole file exists to catch, and it can only be caught by noticing the
     // count moved.
     const exported = Object.keys(index).filter(
