@@ -139,7 +139,7 @@ class ProfilePage extends ConsumerWidget {
                       ? AppLocalizations.of(context)
                           .progressphotosCompareSideBySideOverWeeks
                       : AppLocalizations.of(context)
-                          .profileEndToEndEncryptedOnYour,
+                          .profileEncryptedOnThisDevice,
                   onTap: () => context.push('/photos'),
                 ),
               ],

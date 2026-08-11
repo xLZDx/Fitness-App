@@ -190,7 +190,10 @@
   "profileAtAGlance": "At a glance",
   "profileBrowse11Sessions15Fee": "Browse 1:1 sessions (15% fee funds the org)",
   "profileCommunity": "Community",
-  "profileEndToEndEncryptedOnYour": "End-to-end encrypted, on your device",
+  "profileEncryptedOnThisDevice": "Encrypted on this device, never uploaded",
+  "@profileEncryptedOnThisDevice": {
+    "description": "Progress-photos subtitle. Replaced 'End-to-end encrypted, on your device' in A2-sec: end-to-end encryption describes data in transit between two parties, and these photos are never transmitted at all. The claim that IS true and is the one users care about is that the bytes stay on the phone and are AES-GCM encrypted at rest under a Keystore-held key."
+  },
   "profileHevyStyleSocialFeed": "Hevy-style social feed",
   "profileHowDonationsAreUsedDonorWall": "How your support is used + supporter wall",
   "profileInKindDonatedProgrammes": "In-kind donated programmes",

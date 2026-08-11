@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:fitness_app/features/account_deletion/data/local_data_wipe.dart';
+import 'package:fitness_app/features/progress_photos/data/photo_directory.dart';
 
 /// A1 — the on-device half of account deletion.
 ///
@@ -61,21 +62,65 @@ void main() {
     expect(prefs.getString('progress_photos.key.v1'), isNull);
   });
 
-  test('deletes the whole progress-photo directory, not just indexed files',
+  test('deletes this account\'s photo directory, not just its indexed files',
       () async {
-    // Directory-level on purpose: A2 is about to move these into per-uid
-    // subdirectories, and an index-driven wipe would silently miss anything
-    // the index did not list -- including a half-written blob.
-    final photoDir = Directory('${docs.path}/progress_photos')
+    // Directory-level on purpose: an index-driven wipe silently misses
+    // anything the index did not list, including a half-written blob.
+    final mine = Directory('${docs.path}/progress_photos/u1')
       ..createSync(recursive: true);
-    File('${photoDir.path}/index.json').writeAsStringSync('[{"id":"p1"}]');
-    File('${photoDir.path}/p1.bin').writeAsBytesSync([1, 2, 3]);
-    File('${photoDir.path}/orphan.bin').writeAsBytesSync([4, 5, 6]);
+    File('${mine.path}/index.json').writeAsStringSync('[{"id":"p1"}]');
+    File('${mine.path}/p1.bin').writeAsBytesSync([1, 2, 3]);
+    File('${mine.path}/orphan.bin').writeAsBytesSync([4, 5, 6]);
 
     final prefs = await prefsWith({});
     await DeviceLocalDataWipe(prefs: prefs, documentsDir: docs).wipe('u1');
 
-    expect(photoDir.existsSync(), isFalse);
+    expect(mine.existsSync(), isFalse);
+  });
+
+  test('leaves another account\'s photos alone', () async {
+    // The mirror of the health-blob case, and the reason A2-sec's per-uid
+    // layout had to reach this class: deleting the whole tree would erase a
+    // family member's photos as a side effect of deleting your account.
+    final mine = Directory('${docs.path}/progress_photos/u1')
+      ..createSync(recursive: true);
+    File('${mine.path}/p1.bin').writeAsBytesSync([1]);
+    final theirs = Directory('${docs.path}/progress_photos/u2')
+      ..createSync(recursive: true);
+    File('${theirs.path}/p9.bin').writeAsBytesSync([9]);
+
+    final prefs = await prefsWith({});
+    await DeviceLocalDataWipe(prefs: prefs, documentsDir: docs).wipe('u1');
+
+    expect(mine.existsSync(), isFalse);
+    expect(File('${theirs.path}/p9.bin').existsSync(), isTrue);
+  });
+
+  test('sweeps pre-A2-sec files still loose at the photo root', () async {
+    // An install that upgraded but never re-opened the Photos tab still has
+    // its photos directly under progress_photos/, adopted by nobody. They are
+    // this user's by every available signal.
+    final root = Directory('${docs.path}/progress_photos')
+      ..createSync(recursive: true);
+    File('${root.path}/index.json').writeAsStringSync('[{"id":"p1"}]');
+    File('${root.path}/p1.bin').writeAsBytesSync([1, 2, 3]);
+
+    final prefs = await prefsWith({});
+    await DeviceLocalDataWipe(prefs: prefs, documentsDir: docs).wipe('u1');
+
+    expect(File('${root.path}/index.json').existsSync(), isFalse);
+    expect(File('${root.path}/p1.bin').existsSync(), isFalse);
+  });
+
+  test('forgets the legacy-migration marker only when it names this user',
+      () async {
+    final prefs = await prefsWith({kLegacyPhotoMigrationMarker: 'u1'});
+    await DeviceLocalDataWipe(prefs: prefs, documentsDir: docs).wipe('u1');
+    expect(prefs.getString(kLegacyPhotoMigrationMarker), isNull);
+
+    final other = await prefsWith({kLegacyPhotoMigrationMarker: 'u2'});
+    await DeviceLocalDataWipe(prefs: other, documentsDir: docs).wipe('u1');
+    expect(other.getString(kLegacyPhotoMigrationMarker), 'u2');
   });
 
   test('a missing photo directory is not an error', () async {

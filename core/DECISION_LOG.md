@@ -2660,3 +2660,95 @@ where the file's advice to "re-run the export" is false — that one now surface
 Two gates in a row, the Act gate found a defect the author's own reading did
 not. Its cost is one agent call; the two things it has caught so far are an
 account that could never finish deleting and third-party data in a GDPR export.
+
+---
+
+## 2026-08-11, 17:28 local (Europe/Chisinau) / 14:28 UTC — A2-sec: the photo encryption was guarding a door with the key taped to it
+
+Operator GO: *"продолжай ГО -A2-sec, A5, A6-full, затем S1, P1, P2, редизайн и
+финальный билд"* — one autonomous multi-gate run. No `push` word in it, so
+everything below is local.
+
+Same message closed the logging loophole: *"теперь ты должен всегда писать
+лог"*. Confirmed against the evidence — of the 17 commits on this branch, 8
+carried a `DECISION_LOG.md` change and **every one of those 8 was a separate
+`docs(log,...)` commit written after 1–3 code commits**, never inside the code
+commit's own diff. That is the anti-pattern `~/.claude/CLAUDE.md` names
+explicitly (2026-08-09 addendum): a reverted commit does not carry its "why"
+with it, and in the window between a code commit and its deferred log commit
+the log's freshest entry confidently describes an already-stale state. **From
+this commit forward the log entry is written before the commit and rides in the
+same diff.** This entry is the first one to do it.
+
+### Decision — the key moves to the Keystore, and everything gets a uid
+
+Four defects, one root cause: nothing about on-device photos knew which
+account it belonged to.
+
+1. **The AES key was base64 in SharedPreferences** — an XML file in the app's
+   data dir, readable by anything running as the app's uid, by root, and by
+   any backup of the data partition. The key sat next to the ciphertext it
+   unlocks. `photo_key_store.dart`'s own doc comment had said this was the
+   wrong home and that fixing it "needs its own gate, with a device build to
+   prove it". This is that gate; the device build is the closing step of the
+   run.
+2. **The directory was install-wide.** Sign out, sign in as someone else, open
+   Photos, see the previous person's timeline.
+3. **The plaintext camera temp was never deleted.** `takePicture()` writes a
+   readable JPEG to the cache dir; everything downstream encrypted the BYTES
+   and left the original. The encryption was protecting a copy.
+4. **The UI called it "end-to-end encrypted."** End-to-end describes data in
+   transit between two parties. These photos are never transmitted at all.
+
+### Почему так, where there was a real choice
+
+- **`flutter_secure_storage`, not a hand-rolled Keystore channel.** It is the
+  standard package and it covers iOS Keychain in the same call, which the
+  cross-platform rule in `core/CONVENTIONS.md` requires. Its
+  `encryptedSharedPreferences: true` Android option is *deliberately not
+  passed* — Jetpack Security is discontinued, the plugin ignores the flag and
+  migrates entries to its own ciphers, and passing it is a deprecation warning
+  that says nothing.
+- **The legacy key is adopted, not replaced.** Minting a fresh key would make
+  every already-captured photo permanently unreadable. The copy is committed
+  to secure storage *before* the prefs entry is deleted; the other order loses
+  the key outright if the process dies between the two.
+- **The legacy folder goes to the first account that opens Photos after the
+  upgrade.** It carries no record of whose it is, so the options were: adopt,
+  delete, or strand. Deleting destroys a user's own data to close a window;
+  stranding does that *and* leaves the plaintext-adjacent key. Adopting shrinks
+  the shared-folder bug from "every future account" to "the one account that
+  migrates", and that residual window is stated in the code rather than hidden.
+- **Deletion narrowed from the tree to `<uid>/`.** The A1 comment predicted
+  this: once the layout is per-uid, `delete(recursive: true)` on the root
+  erases a *different* account's photos as a side effect of deleting yours —
+  the same mistake the exact-key match on `profile.sensitive.{uid}` exists to
+  avoid. Loose pre-A2-sec files at the root are still swept, and the Keystore
+  entry is forgotten so no key outlives the blobs it opened.
+
+### Проверки
+
+`flutter analyze` **7 issues** — the prior baseline exactly, 0 new (the four
+new ones this gate introduced mid-work — a misplaced `library` directive, a
+self-deprecation reference and two deprecated-option warnings — are fixed, not
+suppressed). `flutter test` **1911 passed, 0 failed** (was 1901; +10 new).
+`npx tsc --noEmit` clean, `npx jest` 136 passed — unchanged, this gate touches
+no TypeScript.
+
+### Что осталось непокрытым
+
+**Nothing here has run on a device.** The Keystore, the migration and the temp
+delete are all platform behaviour that `flutter test` cannot reach; the closing
+build of this run is the first time any of it executes for real. If the
+migration misbehaves there, it misbehaves on the operator's own photos.
+
+The capture ordering race the audit describes (sheet dismissed → session
+disposed → `captureStill()`) is **untouched** — it is a lifecycle bug, not a
+privacy one, and it needs the same device run to even observe.
+
+The index is still plaintext metadata (dates, angles, notes). That was a
+deliberate pre-existing decision documented in `photo_store.dart:17-22` and
+this gate did not revisit it.
+
+The Rosetta Act gate on this unit was still running when the commit was made;
+its findings land in the next one.

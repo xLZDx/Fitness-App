@@ -4,6 +4,9 @@ import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../progress_photos/data/photo_directory.dart';
+import '../../progress_photos/data/photo_key_store.dart';
+
 /// Erases everything about a user that lives on the DEVICE.
 ///
 /// A1 exists because "delete my account" was a server-only operation: the
@@ -17,11 +20,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 ///      account signed in on the same device opened the previous account's
 ///      photos with the previous account's key.
 ///
-/// (2) is why this class deletes the photo directory WHOLE rather than
-/// walking the index and deleting the photos it lists. A2 is about to
-/// restructure that directory into per-uid subdirectories; an index-driven
-/// wipe would be silently wrong the day that lands, while `dir.delete(
-/// recursive: true)` keeps meaning "no photos remain" under either layout.
+/// (2) is why this class deletes photo DIRECTORIES rather than walking the
+/// index and deleting the photos it lists: an index-driven wipe leaves behind
+/// exactly the blobs whose index row was lost.
+///
+/// A2-sec has since landed the per-uid layout this class was written to
+/// anticipate, so the target narrowed from the whole tree to
+/// `<docs>/progress_photos/<uid>/` plus any loose legacy files left directly
+/// under the root. Deleting the tree would now erase a DIFFERENT account's
+/// photos as a side effect of deleting yours — the same mistake the exact-key
+/// match on `profile.sensitive.{uid}` below exists to avoid.
 ///
 /// Best-effort by design, and the caller must treat it that way: the account
 /// IS deleted server-side by the time this runs. A failure here is a
@@ -48,6 +56,14 @@ class DeviceLocalDataWipe implements LocalDataWipe {
   /// different, still-existing account's blob on a shared phone — deleting
   /// someone else's health data as a side effect of deleting yours. Their own
   /// deletion is what removes theirs.
+  /// `progress_photos.key.v1` is the pre-A2-sec install-wide photo key. It is
+  /// still listed because an install that never opened the Photos tab after
+  /// the upgrade never migrated it, and it would otherwise stay in plaintext
+  /// prefs forever. The current key is not here at all — it lives in the
+  /// Keystore and is removed by [SecurePhotoKeyStore.forget] below.
+  ///
+  /// `progress_photos.legacy_migrated_to` holds a uid, so it is erased when it
+  /// holds THIS one; see [wipe].
   static const _personalPrefixes = <String>['moment.'];
   static const _personalKeys = <String>[
     'progress_photos.key.v1',
@@ -79,6 +95,9 @@ class DeviceLocalDataWipe implements LocalDataWipe {
     // that survived the smaller failure. Each half now runs regardless of the
     // other.
     try {
+      if (prefs.getString(kLegacyPhotoMigrationMarker) == uid) {
+        personalKeys.add(kLegacyPhotoMigrationMarker);
+      }
       for (final key in prefs.getKeys().toList()) {
         final personal =
             personalKeys.contains(key) || _personalPrefixes.any(key.startsWith);
@@ -92,16 +111,39 @@ class DeviceLocalDataWipe implements LocalDataWipe {
 
     try {
       final dir = _injectedDir ?? await getApplicationDocumentsDirectory();
-      final photos = Directory('${dir.path}/progress_photos');
-      if (await photos.exists()) {
-        await photos.delete(recursive: true);
+      final root = Directory('${dir.path}/progress_photos');
+      final mine = Directory('${root.path}/$uid');
+      if (await mine.exists()) {
+        await mine.delete(recursive: true);
       }
+      // Loose `index.json` / `*.bin` sitting directly under the root are
+      // pre-A2-sec leftovers that no account has adopted yet. They are
+      // unreadable without the legacy key removed above, but "unreadable"
+      // is not "deleted", and this user is the only one who was ever plausibly
+      // in them.
+      await _deleteLooseLegacyFiles(root);
     } catch (e) {
       // A locked or missing directory must not turn a completed server-side
       // deletion into an error the user sees as "your account was not
       // deleted". Logged, not thrown -- same contract as the sign-out step in
       // the caller.
       debugPrint('local data wipe: could not delete progress photos: $e');
+    }
+
+    // The envelopes are gone; the key that opened them must not outlive them
+    // in the Keystore. Best-effort by the same contract as everything else
+    // here — it already unlocks nothing.
+    await SecurePhotoKeyStore.forget(uid);
+  }
+
+  Future<void> _deleteLooseLegacyFiles(Directory root) async {
+    if (!await root.exists()) return;
+    await for (final entity in root.list()) {
+      if (entity is! File) continue;
+      final name = entity.uri.pathSegments.last;
+      if (name == 'index.json' || name.endsWith('.bin')) {
+        await entity.delete();
+      }
     }
   }
 }

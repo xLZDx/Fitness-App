@@ -1,4 +1,7 @@
+import 'dart:io';
 import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart' show debugPrint;
 
 import '../../../core/camera/camera_session.dart';
 import '../state/progress_photos_providers.dart';
@@ -35,7 +38,26 @@ class CameraSessionPhotoSource implements PhotoSource {
   Future<Uint8List?> take() async {
     final shot = await _session.captureStill();
     if (shot == null) return null;
-    return shot.readAsBytes();
+    final bytes = await shot.readAsBytes();
+
+    // A2-sec. `CameraController.takePicture()` writes a plaintext JPEG to the
+    // app's cache directory and hands back an XFile pointing at it. Everything
+    // downstream encrypts the BYTES, so without this delete the encryption was
+    // protecting a copy while the original sat on disk unencrypted, in a
+    // directory the OS may hand to a backup agent and that nothing else ever
+    // cleans up. One capture per session, kept forever, was the actual leak.
+    //
+    // After the read, never before: losing the shot to a failed cleanup would
+    // trade a privacy bug for a data-loss bug.
+    try {
+      await File(shot.path).delete();
+    } catch (e) {
+      // The pixels are already in hand and about to be encrypted. A temp file
+      // that would not delete is worth a log line, never worth failing a
+      // capture the user just posed for.
+      debugPrint('progress photo: plaintext temp not deleted: $e');
+    }
+    return bytes;
   }
 }
 

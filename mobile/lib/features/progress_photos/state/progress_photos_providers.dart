@@ -1,12 +1,13 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../core/camera/camera_session.dart';
+import '../../auth/state/auth_providers.dart';
 import '../data/aes_photo_cipher.dart';
 import '../data/local_progress_photos_repository.dart';
+import '../data/photo_directory.dart';
 import '../data/photo_key_store.dart';
 import '../data/photo_store.dart';
 import '../data/photo_timeline.dart';
@@ -64,15 +65,30 @@ class MockProgressPhotosRepository implements ProgressPhotosRepository {
   }
 }
 
-/// Builds the on-disk store. Async because both the documents directory and
-/// the key come from platform channels.
-final progressPhotosStoreProvider = FutureProvider<PhotoStore>((ref) async {
-  final dir = await getApplicationDocumentsDirectory();
-  final key = await PrefsPhotoKeyStore().loadOrCreate();
-  return PhotoStore(
-    dir: Directory('${dir.path}/progress_photos'),
-    cipher: AesPhotoCipher(key),
-  );
+/// Builds the on-disk store for the SIGNED-IN account, or null when there is
+/// no account to build one for.
+///
+/// A2-sec made both halves uid-scoped: the directory
+/// (`<docs>/progress_photos/<uid>/`, see `photo_directory.dart`) and the key
+/// (`progress_photos.key.v2.<uid>` in platform secure storage, see
+/// [SecurePhotoKeyStore]). Watching [authUserProvider] rather than reading a
+/// uid once is what makes a sign-out actually close the previous account's
+/// store instead of leaving it live behind a stale provider.
+///
+/// Async because the documents directory, the migration and the Keystore are
+/// all platform channels.
+final progressPhotosStoreProvider = FutureProvider<PhotoStore?>((ref) async {
+  final uid = ref.watch(authUserProvider).valueOrNull?.uid;
+  // Signed out: no store at all, rather than a shared one. The repository
+  // below falls back to the demo mock, which is what the banner already
+  // describes, and no bytes are written anywhere they could outlive the
+  // session.
+  if (uid == null || uid.isEmpty) return null;
+
+  final documents = await getApplicationDocumentsDirectory();
+  final dir = await resolvePhotoDir(documents: documents, uid: uid);
+  final key = await SecurePhotoKeyStore(uid: uid).loadOrCreate();
+  return PhotoStore(dir: dir, cipher: AesPhotoCipher(key));
 });
 
 /// The camera used for progress shots.
@@ -99,9 +115,9 @@ final progressPhotosRepositoryProvider =
 
 /// True while [progressPhotosRepositoryProvider] is still the mock.
 ///
-/// It now means "the disk store has not resolved yet", which is a much
-/// shorter window than it used to be — but the banner still has to exist,
-/// because in that window a capture really does vanish on restart.
+/// Two states reach it since A2-sec: the disk store has not resolved yet, or
+/// there is no signed-in account to scope it to. The banner has to exist for
+/// both — in either window a capture really does vanish on restart.
 final progressPhotosAreDemoProvider = Provider<bool>((ref) {
   return ref.watch(progressPhotosRepositoryProvider)
       is MockProgressPhotosRepository;
