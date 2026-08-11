@@ -79,11 +79,52 @@ service cloud.firestore {
     // The log is redacted on the way in (core/diagnostics/debug_telemetry.dart)
     // and the collection only ever receives debug builds, but neither of those
     // is a rule. This is the rule.
+    // P1a adds shape and size validation. Before it, this was the only
+    // collection any signed-in client could write to in a shared namespace,
+    // with no constraint but the uid stamp -- so a caller could create
+    // unlimited documents of arbitrary shape, each up to Firestore's 1 MB
+    // ceiling, under keys nothing reads. That is a storage bill with a uid
+    // attached, and it is the same collection A3's export had to cap its
+    // reads over for exactly this reason.
+    //
+    // The allowlist mirrors what `debug_telemetry.dart:175-179` and
+    // `debug_telemetry_sink.dart:36-40` actually send, and the 500-event
+    // ceiling is the writer's own ring-buffer capacity
+    // (`debug_telemetry.dart:141`) rather than a number invented here -- so a
+    // legitimate client cannot be refused, and a client sending more than its
+    // own buffer can hold is not a legitimate client.
+    //
+    // This bounds SHAPE, not bytes: rules cannot measure document size, so a
+    // 1 MB string inside `identity` still passes. What it removes is the
+    // ability to store arbitrary keys and unbounded arrays, which is the part
+    // that made this an open-ended dump.
     match /debug_sessions/{sessionId} {
       allow read: if false;
       allow create: if request.auth != null
-                    && request.resource.data.uid == request.auth.uid;
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.keys().hasOnly(
+                         ['identity', 'droppedCount', 'events',
+                          'uid', 'receivedAt'])
+                    && request.resource.data.keys().hasAll(['uid', 'events'])
+                    && request.resource.data.events is list
+                    && request.resource.data.events.size() <= 500;
       allow update, delete: if false;
+    }
+
+    // Coach marketplace bookings. This block grants nothing, and that is the
+    // point of writing it down: the collection was previously absent from
+    // this file entirely, so it was default-denied by accident of omission
+    // rather than by decision. A reader could not tell the two apart, and the
+    // next person to add a client-side booking query would have had no way to
+    // know the denial was deliberate.
+    //
+    // `bookCoachSession` and `sweepSharedRecords` reach it with the Admin SDK,
+    // which bypasses rules; `exportAccountData` reads a user's own bookings
+    // the same way and redacts the counterparty. A client must never read
+    // these directly: a booking names BOTH parties and carries a
+    // payment-intent id (`index.ts:1154-1164`).
+    match /coach_bookings/{bookingId} {
+      allow read, write: if false;
     }
   }
 }

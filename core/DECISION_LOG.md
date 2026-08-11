@@ -3145,3 +3145,118 @@ Everything the release notes list as not ready, and one thing they do not:
 R11f/R11h/R11b, Paywall) were named in the operator's GO and are NOT started.**
 The run covered A2-sec, its act gate, A5, A6-full, S1, the deploy and the
 build; it did not reach the P1/P2/redesign block.
+
+---
+
+## 2026-08-11, 21:15 local (Europe/Chisinau) / 18:15 UTC — pushed; P1a/P1b/P1c, and CI found two real production vulnerabilities before it ever ran
+
+Operator: *"пуш+добавить в лог+го P1"*.
+
+**Push.** `dbc7cb5..caf044f`, nine commits, zero unpushed. Stale-GO check
+passed first: the nine were unchanged since the report that offered them.
+
+### P1 is over the scope trigger, so it is split
+
+Eight items in `AUDIT_REPORT_2026-08-11.md:365-373`, far past the >2h /
+15-file line. The GO names P1 as a block, so the split runs under it. Measured
+starting state, not assumed: `.github/workflows/` held **`flutter.yml` only**;
+`firebase.json` had **no `emulators` block**; **zero rules tests existed**; and
+`firestore.rules` (89 lines) had never been executed by anything.
+
+| Sub-gate | Item | State |
+|---|---|---|
+| **P1a** | Rules emulator tests + schema/size validation | **DONE** |
+| **P1b** | CI fail-closed | **DONE** |
+| **P1c** | Official Android / iOS / Wear scope | **DONE** |
+| **P1d** | Entitlement loading/error, cold-start recovery | not started |
+| **P1e** | Stripe duplicate reconciliation (A4 leftover) | not started |
+| **P1f** | E2E deletion + multi-account isolation | not started |
+| **P1g** | Device photo-capture ordering test | **blocked — needs hardware** |
+| — | Item 5, mock disclosure | **already closed** |
+
+### P1a — the boundary had no tests, and two gaps behind that
+
+**27 tests, all passing against a real Firestore emulator.** Writing them
+surfaced two things that were not merely untested:
+
+1. **`debug_sessions` create was unbounded in shape.** Any signed-in client
+   could write unlimited documents with arbitrary keys, each up to Firestore's
+   1 MB ceiling, into a collection nothing reads back — a storage bill with a
+   uid attached, and the same collection A3 had to cap its export reads over.
+   Now constrained to the five keys `debug_telemetry.dart:175-179` and
+   `debug_telemetry_sink.dart:36-40` actually send, with `events` capped at
+   500 — the writer's OWN ring-buffer capacity (`debug_telemetry.dart:141`),
+   so a full legitimate buffer cannot be refused and a client exceeding its own
+   buffer is not legitimate. Bounds shape, not bytes; rules cannot measure
+   document size and the comment says so.
+2. **`coach_bookings` had no rule block at all** — denied by omission rather
+   than decision, and a reader could not tell those apart. Now explicit.
+
+### Three bugs in my own test runner, each found by running it
+
+The emulator needs JDK 21; this machine had only the 17 the Android build uses.
+Operator approved a portable JDK 21 in `D:\tools` (`jdk-21.0.12+8`), scoped so
+`JAVA_HOME` and the release build are untouched. Then the shim I wrote to use
+it failed three times:
+
+1. `java -version` writes to **stderr** and exits 0, so `execFileSync` returned
+   empty stdout and every JDK parsed as version 0 — including the correct one
+   it had already located.
+2. firebase-tools resolves `java` from **PATH**, not `JAVA_HOME`. Setting only
+   the latter looked right, changed nothing, and produced the identical error.
+3. Node refuses to spawn a `.cmd` without a shell (CVE-2024-27980 hardening),
+   so the argv form died with a bare `EINVAL`.
+
+Worth recording because of #3's shape: the run exited **0 with no output at
+all**. A script whose entire job is failing loudly was failing silently, and it
+only became visible after adding `result.error` handling. That is now in the
+script.
+
+### P1b — CI, and what it caught before it ever ran
+
+Four required jobs, none with `continue-on-error`: typecheck+unit, rules
+against the emulator (with `setup-java` 21), dependency audit, deployment
+drift.
+
+The audit job earned its place during authoring. The obvious form,
+`npm audit --omit=dev`, audits the INSTALLED tree and still reports dev
+packages — it would have failed on `websocket-driver` reached through
+`@firebase/rules-unit-testing`, which reaches no user. With
+`--package-lock-only` it found **two real production advisories instead**:
+
+- **`@grpc/grpc-js` 1.14.0-1.14.3, high** — a malformed request crashes the
+  server. Reached via `firebase-admin`, so it was running in every deployed
+  function, including the ones holding a payment key.
+- **`body-parser <1.20.6`** — DoS via silently-disabled size enforcement.
+
+Both fixed by a non-breaking `npm audit fix`. The audit now exits 0 at `high`.
+One advisory remains open deliberately: `uuid <11.1.1`, **moderate**, whose fix
+is `firebase-admin@14` — a breaking major that does not belong inside this gate.
+
+Also fixed while here: I had installed `firebase@12.17.1` against
+`@firebase/rules-unit-testing`'s `^11.0.0` peer — npm reported it `invalid` and
+I had not looked. Pinned to `^11`.
+
+### P1c — the platform question had never been answered
+
+"Android first, iOS on the roadmap" does not say whether an iOS bug is a bug,
+whether a Wear regression blocks a release, or what a tester may expect.
+`core/PLATFORM_SCOPE.md` answers all three in four tiers, and separates two
+things that were being collapsed: iOS is **not a target for defect reports**
+and **still a constraint on design**. It also states plainly what nobody had
+written down — nobody has ever built this on iOS, there is no signing or
+provisioning, and Stripe cannot be used for digital goods there, so the paywall
+needs a second payment path before iOS can ship at all.
+
+### Проверки
+
+`npx tsc --noEmit` clean · `npx jest` **144 passed** · `npm run test:rules`
+**27 passed** against the emulator · `npm audit --omit=dev --package-lock-only
+--audit-level=high` **exit 0**.
+
+### Что осталось непокрытым
+
+P1d, P1e, P1f not started. P1g is blocked on hardware — a device
+photo-capture ordering test cannot run here at all. P2 and the redesign
+remainder untouched. The CI workflow itself has never executed on GitHub; its
+first real run is the next push.

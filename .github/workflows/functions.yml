@@ -1,0 +1,121 @@
+# P1b — the backend half of CI, and the first thing here that fails closed.
+#
+# Before this file, `.github/workflows/` held `flutter.yml` and nothing else:
+# the Cloud Functions suite, the Firestore rules and the dependency tree were
+# all unverified on every push. That is the state the audit called out — a
+# release gate that cannot go red for a backend regression is not a gate.
+#
+# Every job below is required to pass. None of them tolerate a failure, and
+# none use `continue-on-error`; a step that is allowed to fail is a step that
+# reports nothing.
+name: functions
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+# A push that supersedes an in-flight run cancels it. The value of these
+# checks is on the newest commit, not on a queue of stale ones.
+concurrency:
+  group: functions-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: functions
+
+jobs:
+  unit:
+    name: typecheck + unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+      # `npm ci` rather than `npm install`: it installs exactly the lockfile
+      # and fails if package.json and the lock have drifted, which is itself a
+      # check worth having.
+      - run: npm ci
+      - name: typecheck
+        run: npx tsc --noEmit
+      - name: unit tests
+        run: npm test
+
+  rules:
+    name: firestore rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+      # The Firestore emulator requires JDK 21+. This is also why the local
+      # runner script exists: dev machines here have 17 for the Android build,
+      # and moving that would change what the release APK compiles against.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - run: npm ci
+      - name: rules tests against the emulator
+        run: npm run test:rules
+
+  audit:
+    name: dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+      - run: npm ci
+      # `--omit=dev` on purpose. A vulnerability in jest or ts-jest never
+      # reaches a user; one in `stripe` or `firebase-admin` runs in production
+      # holding a payment key. Auditing everything at `high` would fail this
+      # job on tooling advisories nobody can act on and train people to ignore
+      # a red build, which costs more than it buys.
+      #
+      # `--package-lock-only` is load-bearing, not decoration: without it npm
+      # audits the INSTALLED tree, which still contains the dev packages
+      # `--omit=dev` was meant to exclude. The first version of this job read
+      # green-looking dev advisories as production ones and would have failed
+      # on `websocket-driver` reached through `@firebase/rules-unit-testing`.
+      # With the lockfile form it found two REAL ones instead — a high in
+      # `@grpc/grpc-js` (reached via firebase-admin, so it runs in every
+      # deployed function) and a DoS in `body-parser` — both since fixed.
+      - name: production dependencies, high and above
+        run: npm audit --omit=dev --package-lock-only --audit-level=high
+
+  drift:
+    name: deployment drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+      - run: npm ci
+      # The audit's deployment-drift finding was real and expensive: an
+      # Acacia/Basil webhook fix sat committed-but-undeployed for three days,
+      # and `exportAccountData` was written, tested, recorded as done and never
+      # deployed at all. Neither was visible from the repo.
+      #
+      # This cannot see what is deployed without credentials, so it checks the
+      # half it can: that the built output compiles and that every entrypoint
+      # in `index.ts` is registered in `scaling.ts`. `scaling.test.ts` already
+      # asserts the exact deployed surface, and that tripwire is what caught
+      # `exportAccountData` missing its ceiling.
+      - name: build the deployable output
+        run: npm run build
+      - name: entrypoint surface is complete
+        run: npx jest scaling
