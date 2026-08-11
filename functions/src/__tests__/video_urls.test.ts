@@ -20,7 +20,33 @@ jest.mock("firebase-admin/storage", () => ({
   getStorage: jest.fn(() => ({ bucket })),
 }));
 
+/**
+ * A6-lite gave both endpoints a per-user daily quota, which is a Firestore
+ * transaction. Modelled rather than stubbed away: `usage` starts at whatever
+ * `__setUsage` says, the transaction reads and writes it, so a test can drive
+ * the counter to the ceiling and see the endpoint refuse.
+ */
+let usage: Record<string, number> = {};
+const usagePaths: string[] = [];
+jest.mock("firebase-admin", () => ({
+  firestore: jest.fn(() => ({
+    doc: jest.fn((path: string) => {
+      usagePaths.push(path);
+      return { path };
+    }),
+    runTransaction: jest.fn(async (fn: (tx: any) => Promise<void>) =>
+      fn({
+        get: async () => ({ data: () => ({ ...usage }) }),
+        set: (_ref: any, data: Record<string, number>) => {
+          usage = { ...usage, ...data };
+        },
+      }),
+    ),
+  })),
+}));
+
 import { clipUrl, clipUrls, __resetSignatureCache } from "../video_urls";
+import { QUOTAS } from "../abuse_guard";
 
 const TTL_SECONDS = 15 * 60;
 
@@ -35,6 +61,8 @@ let signCount = 0;
 beforeEach(() => {
   __resetSignatureCache();
   jest.clearAllMocks();
+  usage = {};
+  usagePaths.length = 0;
   signCount = 0;
   getSignedUrl.mockImplementation(async () => [
     `https://signed.test/${++signCount}`,
@@ -72,6 +100,12 @@ describe("clipUrl", () => {
     const inFlight = Array.from({ length: 50 }, () =>
       clipUrl.run(req({ object: OBJ })),
     );
+    // A6-lite put the quota transaction in front of the signer, so no call
+    // reaches `getSignedUrl` in the same turn any more and `release` is still
+    // unassigned here. One macrotask is enough for all 50 to clear the
+    // transaction and collapse onto the in-flight signature — which is the
+    // property under test, and it survives the reordering.
+    await new Promise((r) => setTimeout(r, 0));
     release(["https://signed.test/burst"]);
     const results = await Promise.all(inFlight);
 
@@ -166,4 +200,46 @@ describe("clipUrls", () => {
     );
     expect(getSignedUrl).not.toHaveBeenCalled();
   });
+});
+
+describe("A6-lite — per-user daily quota", () => {
+  const OBJ = "exercises/men/Chest/Barbell Bench Press.mp4";
+
+  test("refuses once the day's single-clip ceiling is reached", async () => {
+    // The signed-in check stops an anonymous crawler. It does nothing about a
+    // signed-in one looping the 2,539-clip library, which is the licence
+    // breach the endpoint's own comment describes.
+    usage = { clipUrl: QUOTAS.clipUrl };
+
+    await expect(clipUrl.run(req({ object: OBJ }))).rejects.toThrow(
+      /limit for this action/,
+    );
+    expect(getSignedUrl).not.toHaveBeenCalled();
+  });
+
+  test("the batch endpoint is charged in objects, not in calls", async () => {
+    // Otherwise the two endpoints play against each other: 60 objects for the
+    // price of one call is a way around the single-clip ceiling.
+    await clipUrls.run(req({ objects: [OBJ, "exercises/girl/Back/Row.mp4"] }));
+
+    expect(usage.clipUrlsObjects).toBe(2);
+  });
+
+  test("one call short of the ceiling still works", async () => {
+    usage = { clipUrl: QUOTAS.clipUrl - 1 };
+
+    const res = await clipUrl.run(req({ object: OBJ }));
+
+    expect(res.url).toBe("https://signed.test/1");
+    expect(usage.clipUrl).toBe(QUOTAS.clipUrl);
+  });
+
+  test("the counter lives under the user document, so deletion erases it",
+    async () => {
+      // A top-level `usage/{uid}` would have become a fourth entry on
+      // `core/DATA_INVENTORY_2026-08-11.md`'s orphan list the day it shipped.
+      await clipUrl.run(req({ object: OBJ }, "u7"));
+
+      expect(usagePaths.some((p) => p.startsWith("users/u7/usage/"))).toBe(true);
+    });
 });

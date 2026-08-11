@@ -48,6 +48,7 @@ import * as logger from "firebase-functions/logger";
 import type Stripe from "stripe";
 import { tierForPriceId } from "./tiers";
 import { INTERACTIVE, RARE, WEBHOOK } from "./scaling";
+import { noteAppCheck } from "./abuse_guard";
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -320,6 +321,7 @@ export const startFreeTrial = onCall(
     if (!auth) {
       throw new HttpsError("unauthenticated", "Sign in to start a trial.");
     }
+    noteAppCheck(request, "startFreeTrial");
     const tier = request.data?.tier as Tier | undefined;
     if (tier !== "standard" && tier !== "celebrityTrainer") {
       throw new HttpsError(
@@ -388,6 +390,7 @@ export const createCheckoutSession = onCall(
     if (!auth) {
       throw new HttpsError("unauthenticated", "Sign in to subscribe.");
     }
+    noteAppCheck(request, "createCheckoutSession");
 
     const tier = request.data?.tier as Tier | undefined;
     if (tier !== "standard" && tier !== "celebrityTrainer") {
@@ -1186,6 +1189,7 @@ export const reportEquipment = onCall(
     if (!auth) {
       throw new HttpsError("unauthenticated", "Sign in to file a report.");
     }
+    noteAppCheck(request, "reportEquipment");
     const data = request.data ?? {};
     const equipmentId = data.equipmentId as string | undefined;
     const gymId = (data.gymId as string | undefined) ?? "unknown";

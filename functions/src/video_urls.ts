@@ -39,6 +39,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import { getStorage } from "firebase-admin/storage";
 import { VIDEO_BATCH, VIDEO_HOT } from "./scaling";
+import { QUOTAS, enforceDailyQuota, noteAppCheck } from "./abuse_guard";
 
 /**
  * Where the licensed library lives. Private — no `allUsers` binding.
@@ -224,7 +225,13 @@ export const clipUrl = onCall(VIDEO_HOT, async (request) => {
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "Sign in to watch clips.");
   }
+  noteAppCheck(request, "clipUrl");
   const object = assertSafeObject(request.data?.object);
+  // A6-lite. The signed-in check above stops an anonymous crawler; it does not
+  // stop a signed-in one, and `maxInstances` only slows the drain rather than
+  // bounding it. The quota is what makes "mint links for the whole library in
+  // a loop" -- the comment directly above -- actually impossible per account.
+  await enforceDailyQuota(request.auth.uid, "clipUrl", QUOTAS.clipUrl);
 
   try {
     const now = Date.now();
@@ -258,7 +265,18 @@ export const clipUrls = onCall(VIDEO_BATCH, async (request) => {
   if (raw.length > 60) {
     throw new HttpsError("invalid-argument", "Too many clips in one request.");
   }
+  noteAppCheck(request, "clipUrls");
   const objects = raw.map(assertSafeObject);
+  // Charged in OBJECTS, not in calls: the per-call cap of 60 above bounds one
+  // request, and a caller who wants the library simply makes more requests.
+  // Metering the thing that actually costs -- an IAM signing operation -- is
+  // what makes the two endpoints impossible to play against each other.
+  await enforceDailyQuota(
+    request.auth.uid,
+    "clipUrlsObjects",
+    QUOTAS.clipUrlsObjects,
+    objects.length,
+  );
   const now = Date.now();
 
   const entries = await Promise.all(
