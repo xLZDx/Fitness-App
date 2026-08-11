@@ -2752,3 +2752,88 @@ this gate did not revisit it.
 
 The Rosetta Act gate on this unit was still running when the commit was made;
 its findings land in the next one.
+
+---
+
+## 2026-08-11, 17:50 local (Europe/Chisinau) / 14:50 UTC — A5 + A6-full: three dead redirects, and a trial anyone could farm
+
+Committed together rather than as two commits. Both gates edit
+`functions/src/index.ts`, and hunk-level staging needs an interactive `git add
+-p` this environment cannot run — so splitting them would mean reverting and
+re-applying edits by hand, which risks more than the tidier history buys. The
+plan block in the commit separates them; this is a stated deviation from
+one-gate-one-commit, not an oversight.
+
+### A5 — the redirects
+
+`RETURN_ORIGIN` was introduced during the F0 project split and wired into
+checkout only. Three URLs kept the `fitnessapp.example.com` placeholder, a
+domain that does not resolve:
+
+- the **billing portal** return (`index.ts:549`) — the page a user lands on
+  after CANCELLING. A browser error at that exact moment is the worst possible
+  place in the product to look broken;
+- both **Connect onboarding** links (`index.ts:1085-1086`) — Stripe returns the
+  coach on the success path AND the expiry path, so a dead domain stranded them
+  mid-onboarding with a half-created account and no way forward.
+
+All three now derive from the deployed project. The three pages they point at
+did not exist and now do (`public/portal-return.html`,
+`public/coach/onboarding-done.html`, `public/coach/onboarding-refresh.html`),
+matching the existing checkout pages; `firebase.json` has `cleanUrls: true`, so
+`/portal-return` resolves to `portal-return.html` without a rewrite rule.
+
+**The API-version verification A5 also asked for did not happen.** Reading
+`STRIPE_SECRET_KEY` was refused by the environment's own permission classifier,
+and there is no Stripe CLI on this machine. It is worth being clear about what
+that does and does not block: the Acacia/Basil reader
+(`index.ts:97-165`) was written to handle BOTH field layouts precisely so it
+does not need to know which version the endpoint is on, so deploying it is safe
+under either. What stays unknown is whether a live incident exists *today* —
+that is an observation, not a precondition.
+
+### A6-full — enforcement that can be staged, and a guard that binds
+
+**App Check.** A6-lite made every callable REPORT whether attestation arrived.
+This adds the switch that turns observation into refusal — and leaves it OFF.
+
+Not caution for its own sake. Play Integrity only attests builds distributed
+through Google Play, and this project ships testers through Firebase App
+Distribution (`scripts/dev/build_release.ps1 -Distribute`). Enforcing today
+locks out the operator's own phone first, silently, as if it were an attacker.
+Two variables instead of one: `APP_CHECK_ENFORCED_VIDEO` gates the clip-signing
+pair (already quota-limited, already the only per-call-billed functions, and a
+refused clip degrades one screen), `APP_CHECK_ENFORCED` gates everything else.
+The day video is green is not automatically the day it is safe to put
+`deleteAccount` behind attestation. Stage 2 implies stage 1, so no flag
+combination leaves the expensive functions open while the cheap ones are shut,
+and anything other than the exact string `true` fails safe.
+
+**Anonymous trials.** `trialStartedOnce` is per-uid, and an anonymous uid costs
+nothing to replace: sign out, sign in anonymously, new uid, new 14-day trial,
+repeat. The flag was guarding a door in a wall the caller walks around. The
+trial now requires a non-anonymous provider — signing in again with the same
+Google account returns the SAME uid, so the flag is finally load-bearing.
+
+Deliberately **not** a device fingerprint: defeated by a factory reset, collides
+on shared and refurbished phones (denying a trial to someone who never had
+one), and it is personal data collected for no other purpose.
+
+### Проверки
+
+`npx tsc --noEmit` clean · `npx jest` **144 passed** (was 136; +8) ·
+`flutter analyze` 7, prior baseline · no Dart touched.
+
+### Что осталось непокрытым
+
+- **The budget notification rule is still not configured.** The $20/mo budget
+  with 50/90/100% thresholds exists on `projects/988522745882`, but its
+  `notificationsRule` is empty, so there is no project-level channel and no
+  Pub/Sub topic to react programmatically. Two attempts at the REST PATCH
+  returned HTTP 200 and did not persist; `gcloud billing projects describe`
+  returns empty output on this machine. Reported as open, not done — it is a
+  two-minute console operation for the operator.
+- **Nothing is deployed yet.** Everything above is local. The deploy is the
+  next step in this run.
+- Neither App Check flag has ever been set to `true` anywhere, so the enforced
+  path has unit coverage and zero field evidence.

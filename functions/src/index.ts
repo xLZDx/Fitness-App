@@ -322,6 +322,32 @@ export const startFreeTrial = onCall(
       throw new HttpsError("unauthenticated", "Sign in to start a trial.");
     }
     noteAppCheck(request, "startFreeTrial");
+
+    // A6-full — account rotation.
+    //
+    // The `trialStartedOnce` guard below is per-uid, and an anonymous uid
+    // costs nothing to replace: sign out, sign in anonymously again, new uid,
+    // new 14-day trial, repeat forever. The flag was guarding a door in a wall
+    // the caller could walk around.
+    //
+    // Requiring a real identity provider is what makes the guard bind. Signing
+    // in again with the same Google account returns the SAME uid, so the flag
+    // is still there; minting a fresh Google account is a real cost with a
+    // phone-number check behind it, which is the whole difference.
+    //
+    // Deliberately not a device fingerprint: it would be defeated by a factory
+    // reset, it would collide on shared or refurbished phones (denying a trial
+    // to someone who never had one), and it is personal data collected for no
+    // other purpose. The identity requirement is cheaper, stronger and
+    // explainable to the user in one sentence.
+    if (auth.token?.firebase?.sign_in_provider === "anonymous") {
+      throw new HttpsError(
+        "failed-precondition",
+        "Add a Google account to start your free trial. " +
+          "This keeps the trial to one per person.",
+      );
+    }
+
     const tier = request.data?.tier as Tier | undefined;
     if (tier !== "standard" && tier !== "celebrityTrainer") {
       throw new HttpsError(
@@ -546,7 +572,13 @@ export const createPortalSession = onCall(
     const stripe = await stripeClient();
     const portal = await stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url: "https://fitnessapp.example.com/portal-return",
+      // A5: was `https://fitnessapp.example.com/portal-return`, a domain that
+      // does not resolve. The billing portal is where a user CANCELS, so the
+      // dead redirect landed them on a browser error immediately after asking
+      // to stop paying — the single worst place in the product to look broken.
+      // `RETURN_ORIGIN` is the same derived-from-the-deployed-project value
+      // checkout already uses.
+      return_url: `${RETURN_ORIGIN}/portal-return`,
     });
     return { url: portal.url };
   },
@@ -1082,8 +1114,11 @@ export const startCoachOnboarding = onCall(
     }
     const link = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: "https://fitnessapp.example.com/coach/onboarding-refresh",
-      return_url: "https://fitnessapp.example.com/coach/onboarding-done",
+      // A5, same placeholder as the portal above. Stripe Connect onboarding
+      // sends the coach back here on BOTH paths, so a dead domain stranded
+      // them mid-onboarding with a half-created account and no way forward.
+      refresh_url: `${RETURN_ORIGIN}/coach/onboarding-refresh`,
+      return_url: `${RETURN_ORIGIN}/coach/onboarding-done`,
       type: "account_onboarding",
     });
     return { url: link.url, accountId };

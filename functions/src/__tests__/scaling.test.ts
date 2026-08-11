@@ -146,3 +146,73 @@ describe("scaling ceilings", () => {
     }
   });
 });
+
+/* ------------------------------------------------------------------ */
+/* A6-full — App Check enforcement is staged, and OFF until staged on  */
+/* ------------------------------------------------------------------ */
+
+describe("App Check enforcement flags", () => {
+  /** Re-imports `scaling` with a fresh environment, since the flags are
+   * read once at module load. */
+  const withEnv = (env: Record<string, string | undefined>) => {
+    const saved = { ...process.env };
+    Object.assign(process.env, env);
+    let mod: typeof import("../scaling");
+    jest.isolateModules(() => {
+      mod = require("../scaling");
+    });
+    process.env = saved;
+    return mod!;
+  };
+
+  test("every callable profile is unenforced by default", () => {
+    // Enforcing today locks out the operator's own phone: Play Integrity only
+    // attests builds distributed through Google Play, and this project ships
+    // testers through Firebase App Distribution. Default-on would be a silent
+    // lockout, not a visible error.
+    const s = withEnv({
+      APP_CHECK_ENFORCED: undefined,
+      APP_CHECK_ENFORCED_VIDEO: undefined,
+    });
+    expect(s.APP_CHECK_ENFORCED).toBe(false);
+    expect(s.APP_CHECK_ENFORCED_VIDEO).toBe(false);
+    expect(s.VIDEO_HOT.enforceAppCheck).toBe(false);
+    expect(s.RARE.enforceAppCheck).toBe(false);
+  });
+
+  test("stage 1 enforces the clip-signing pair and nothing else", () => {
+    const s = withEnv({
+      APP_CHECK_ENFORCED: undefined,
+      APP_CHECK_ENFORCED_VIDEO: "true",
+    });
+    expect(s.VIDEO_HOT.enforceAppCheck).toBe(true);
+    expect(s.VIDEO_BATCH.enforceAppCheck).toBe(true);
+    // Not `deleteAccount`, not checkout. Video going green is not evidence
+    // that gating an account operation behind attestation is safe.
+    expect(s.INTERACTIVE.enforceAppCheck).toBe(false);
+    expect(s.RARE.enforceAppCheck).toBe(false);
+  });
+
+  test("stage 2 implies stage 1", () => {
+    // There must be no flag combination where the cheap functions are
+    // enforced and the expensive, per-call-billed ones are not.
+    const s = withEnv({
+      APP_CHECK_ENFORCED: "true",
+      APP_CHECK_ENFORCED_VIDEO: undefined,
+    });
+    expect(s.VIDEO_HOT.enforceAppCheck).toBe(true);
+    expect(s.INTERACTIVE.enforceAppCheck).toBe(true);
+  });
+
+  test("anything other than the exact string 'true' fails safe", () => {
+    // A typo in a deploy environment must not lock the product.
+    for (const value of ["1", "TRUE", "yes", "", "false"]) {
+      const s = withEnv({
+        APP_CHECK_ENFORCED: value,
+        APP_CHECK_ENFORCED_VIDEO: value,
+      });
+      expect(s.APP_CHECK_ENFORCED).toBe(false);
+      expect(s.APP_CHECK_ENFORCED_VIDEO).toBe(false);
+    }
+  });
+});

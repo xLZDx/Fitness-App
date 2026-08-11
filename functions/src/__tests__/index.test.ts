@@ -71,6 +71,12 @@ jest.mock("stripe", () => {
     // subscription before creating a second one. Defaulted to "none" in
     // `beforeEach`; the duplicate-guard tests override it.
     subscriptions: { list: jest.fn() },
+    // A5 — both of these took a `return_url` pointing at a domain that does
+    // not resolve, so the tests below can only see the fix if the mock
+    // records what was sent.
+    billingPortal: { sessions: { create: jest.fn() } },
+    accountLinks: { create: jest.fn() },
+    accounts: { create: jest.fn() },
   };
   const ctor: any = jest.fn(() => instance);
   ctor.__instance = instance;
@@ -90,6 +96,8 @@ import {
   createCheckoutSession,
   generateAnnualReceipt,
   bookCoachSession,
+  createPortalSession,
+  startCoachOnboarding,
 } from "../index";
 
 const adminMock = jest.requireMock("firebase-admin") as any;
@@ -211,6 +219,40 @@ describe("startFreeTrial", () => {
       "invalid-argument",
     );
     expect(ref.set).not.toHaveBeenCalled();
+  });
+
+  test("an anonymous account cannot start a trial", async () => {
+    // A6-full. `trialStartedOnce` is per-uid and an anonymous uid costs
+    // nothing to replace: sign out, sign in anonymously, new uid, new trial,
+    // forever. The flag was guarding a door in a wall the caller walks around.
+    const ref = primeDoc(SUB_PATH, undefined);
+
+    await expectHttpsError(
+      startFreeTrial.run(
+        req(
+          { tier: "standard" },
+          { uid: "anon1", token: { firebase: { sign_in_provider: "anonymous" } } },
+        ),
+      ),
+      "failed-precondition",
+    );
+    expect(ref.set).not.toHaveBeenCalled();
+  });
+
+  test("a Google account still can", async () => {
+    // The guard must bind rotation, not block the product. Signing in again
+    // with the same Google account returns the same uid, so the once-only flag
+    // is still there to do its job.
+    primeDoc(SUB_PATH, undefined);
+
+    const res = await startFreeTrial.run(
+      req(
+        { tier: "standard" },
+        { uid: "u1", token: { firebase: { sign_in_provider: "google.com" } } },
+      ),
+    );
+
+    expect(res.trialEndsAt).toBeTruthy();
   });
 
   test("second trial attempt throws failed-precondition and writes nothing", async () => {
@@ -841,4 +883,51 @@ describe("bookCoachSession", () => {
     );
     expect(stripeMock.paymentIntents.create).not.toHaveBeenCalled();
   });
+});
+
+/* ------------------------------------------------------------------ */
+/* A5 — every Stripe redirect goes somewhere that exists              */
+/* ------------------------------------------------------------------ */
+
+describe("Stripe return URLs", () => {
+  /** The dead placeholder these three URLs used to carry. */
+  const DEAD = "fitnessapp.example.com";
+
+  test("the billing portal returns to a page that resolves", async () => {
+    // The portal is where a user CANCELS. A dead redirect landed them on a
+    // browser error immediately after asking to stop paying -- the single
+    // worst place in the product to look broken.
+    primeDoc("users/u1/subscription/main", { stripeCustomerId: "cus_1" });
+    stripeMock.billingPortal.sessions.create.mockResolvedValue({
+      url: "https://billing.stripe.com/session/x",
+    });
+
+    await createPortalSession.run(req({}, { uid: "u1" }));
+
+    const [args] = stripeMock.billingPortal.sessions.create.mock.calls[0];
+    expect(args.return_url).toBe(`${RETURN_ORIGIN}/portal-return`);
+    expect(args.return_url).not.toContain(DEAD);
+  });
+
+  test("coach onboarding returns to pages that resolve, on both paths",
+    async () => {
+      // Connect sends the coach back on BOTH links, so a dead domain
+      // stranded them mid-onboarding with a half-created account.
+      // Both branches reach the same `accountLinks.create`, so the account is
+      // left to be created rather than primed -- that is the first-time
+      // onboarding path, which is the one a new coach actually walks.
+      stripeMock.accounts.create.mockResolvedValue({ id: "acct_new" });
+      stripeMock.accountLinks.create.mockResolvedValue({
+        url: "https://connect.stripe.com/setup/x",
+      });
+
+      await startCoachOnboarding.run(req({}, { uid: "c1" }));
+
+      const [args] = stripeMock.accountLinks.create.mock.calls[0];
+      expect(args.return_url).toBe(`${RETURN_ORIGIN}/coach/onboarding-done`);
+      expect(args.refresh_url).toBe(
+        `${RETURN_ORIGIN}/coach/onboarding-refresh`,
+      );
+      expect(JSON.stringify(args)).not.toContain(DEAD);
+    });
 });

@@ -70,6 +70,60 @@ type Capped<T> = T & { maxInstances: number };
 const REGION = "europe-west1";
 
 /**
+ * A6-full — App Check enforcement, staged rather than flipped.
+ *
+ * A6-lite made every callable REPORT whether a valid App Check token arrived
+ * (`noteAppCheck` in `abuse_guard.ts`, one structured log line per call). This
+ * is the switch that turns that observation into refusal. It is read from the
+ * environment, so moving from stage to stage is a config change plus a
+ * redeploy, not a code edit under pressure.
+ *
+ * ## Why it is OFF by default, and what has to be true before it goes on
+ *
+ * Enforcement is not free to turn on, and the failure mode is silent lockout
+ * of legitimate users rather than a visible error. Three preconditions, all
+ * checkable, none currently met:
+ *
+ *   1. **Play Integrity only attests builds distributed through Google Play.**
+ *      This project ships its tester builds through Firebase App Distribution
+ *      (`scripts/dev/build_release.ps1 -Distribute`), which is NOT Play. A
+ *      release APK from that channel attests as a stranger. Enforcing today
+ *      breaks the operator's own phone first.
+ *   2. **The console has to show attestation actually succeeding.** The
+ *      `attested: true` share in the `noteAppCheck` logs is the number; it is
+ *      currently unmeasured because A6-lite has not been in the field.
+ *   3. **A registered debug token**, or every locally-built debug APK stops
+ *      working — see the `AndroidDebugProvider` branch in `main.dart:257-275`.
+ *
+ * ## The stages
+ *
+ * `APP_CHECK_ENFORCED_VIDEO` first: `clipUrl` / `clipUrls` are the functions
+ * that cost real money per call (IAM signing, then bucket egress), they are
+ * already quota-limited per uid by A6-lite, and a refused clip degrades one
+ * screen rather than locking anyone out of their account.
+ *
+ * `APP_CHECK_ENFORCED` second, for everything else. It is deliberately a
+ * SEPARATE variable: the day the video flag is on and healthy is not
+ * automatically the day it is safe to gate `deleteAccount` behind attestation.
+ *
+ * Set either to the string `true` in `functions/.env` (or as a Cloud Run env
+ * var) and redeploy. Any other value, including unset, is off — a typo fails
+ * safe rather than locking the product.
+ */
+const envFlag = (name: string): boolean => process.env[name] === "true";
+
+/** Stage 2: every callable. */
+export const APP_CHECK_ENFORCED = envFlag("APP_CHECK_ENFORCED");
+
+/**
+ * Stage 1: the clip-signing pair. Inherits stage 2 when that is already on,
+ * so there is no combination of flags where the cheap functions are enforced
+ * and the expensive ones are not.
+ */
+export const APP_CHECK_ENFORCED_VIDEO =
+  envFlag("APP_CHECK_ENFORCED_VIDEO") || APP_CHECK_ENFORCED;
+
+/**
  * `clipUrl` — every clip play, on every screen, for every user.
  *
  * `minInstances: 0`, and it should stay there. Do not "restore" it to 1.
@@ -100,6 +154,7 @@ export const VIDEO_HOT: Capped<CallableOptions> = {
   region: REGION,
   maxInstances: 30,
   minInstances: 0,
+  enforceAppCheck: APP_CHECK_ENFORCED_VIDEO,
 };
 
 /**
@@ -114,6 +169,7 @@ export const VIDEO_HOT: Capped<CallableOptions> = {
 export const VIDEO_BATCH: Capped<CallableOptions> = {
   region: REGION,
   maxInstances: 20,
+  enforceAppCheck: APP_CHECK_ENFORCED_VIDEO,
 };
 
 /**
@@ -139,6 +195,7 @@ export const WEBHOOK: Capped<HttpsOptions> = {
 export const INTERACTIVE: Capped<CallableOptions> = {
   region: REGION,
   maxInstances: 10,
+  enforceAppCheck: APP_CHECK_ENFORCED,
 };
 
 /**
@@ -152,4 +209,5 @@ export const INTERACTIVE: Capped<CallableOptions> = {
 export const RARE: Capped<CallableOptions> = {
   region: REGION,
   maxInstances: 5,
+  enforceAppCheck: APP_CHECK_ENFORCED,
 };
