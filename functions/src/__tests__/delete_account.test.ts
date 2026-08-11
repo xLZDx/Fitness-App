@@ -36,11 +36,48 @@ const getRef = (path: string): any => {
 const recursiveDelete = jest.fn(async (_ref?: any) => undefined);
 const deleteUser = jest.fn(async () => undefined);
 
+/**
+ * A1 — the shared-record sweep needs three things the original mock did not
+ * model: single-field `where` queries, a write batch, and documents that
+ * exist without anyone having called `doc()` for them first. Seeded per test
+ * via `seed()`; asserted via `batchOps`.
+ */
+const seededDocs = new Map<string, Array<{ id: string; data: any }>>();
+const batchOps: Array<{ op: "update" | "delete"; path: string; data?: any }> =
+  [];
+const commit = jest.fn(async () => undefined);
+
+const seed = (collection: string, docs: Array<{ id: string; data: any }>) =>
+  seededDocs.set(collection, docs);
+
+const makeQuery = (name: string, field?: string, value?: unknown): any => ({
+  where: (f: string, _op: string, v: unknown) => makeQuery(name, f, v),
+  get: jest.fn(async () => {
+    const all = seededDocs.get(name) ?? [];
+    const matched =
+      field === undefined ? all : all.filter((d) => d.data[field] === value);
+    return {
+      docs: matched.map((d) => ({
+        id: d.id,
+        ref: { path: `${name}/${d.id}` },
+        data: () => d.data,
+      })),
+    };
+  }),
+});
+
 jest.mock("firebase-admin", () => {
   const firestoreFn: any = jest.fn(() => ({
     doc: jest.fn((path: string) => getRef(path)),
     collection: jest.fn((name: string) => ({
       doc: jest.fn((id: string) => getRef(`${name}/${id}`)),
+      where: (f: string, op: string, v: unknown) => makeQuery(name, f, v),
+    })),
+    batch: jest.fn(() => ({
+      update: (ref: any, data: any) =>
+        batchOps.push({ op: "update", path: ref.path, data }),
+      delete: (ref: any) => batchOps.push({ op: "delete", path: ref.path }),
+      commit,
     })),
     recursiveDelete,
   }));
@@ -55,8 +92,11 @@ jest.mock("firebase-admin", () => {
 
 const cancel = jest.fn();
 const retrieve = jest.fn();
+const listSubscriptions = jest.fn();
 jest.mock("stripe", () => {
-  const instance = { subscriptions: { cancel, retrieve } };
+  const instance = {
+    subscriptions: { cancel, retrieve, list: listSubscriptions },
+  };
   const ctor: any = jest.fn(() => instance);
   ctor.__instance = instance;
   return ctor;
@@ -93,6 +133,10 @@ async function expectHttpsError(
 
 beforeEach(() => {
   refs.clear();
+  seededDocs.clear();
+  batchOps.length = 0;
+  commit.mockClear();
+  listSubscriptions.mockReset().mockResolvedValue({ data: [] });
   recursiveDelete.mockReset().mockResolvedValue(undefined);
   deleteUser.mockReset().mockResolvedValue(undefined);
   cancel.mockReset().mockResolvedValue(undefined);
@@ -288,4 +332,129 @@ describe("deleteAccount", () => {
       expect(deleteUser).toHaveBeenCalledWith("u1");
       expect(deleteUser).not.toHaveBeenCalledWith("attacker");
     });
+
+  // ---------------------------------------------------------------------
+  // A1 — what the audit of 2026-08-11 found this function did NOT do.
+  // ---------------------------------------------------------------------
+
+  test("cancels EVERY subscription on the customer, not just the stored id",
+    async () => {
+      // The failure this closes: two Checkout sessions produce two live
+      // subscriptions, the webhook overwrites `stripeSubscriptionId` with the
+      // second, and deleting the account cancelled only that one -- leaving
+      // the first billing a card its owner can no longer reach.
+      getRef("users/u1/subscription/main").__setStored({
+        stripeSubscriptionId: "sub_second",
+        stripeCustomerId: "cus_1",
+      });
+      listSubscriptions.mockResolvedValue({
+        data: [{ id: "sub_first" }, { id: "sub_second" }],
+      });
+
+      await deleteAccount.run(req({ uid: "u1" }));
+
+      expect(listSubscriptions).toHaveBeenCalledWith({
+        customer: "cus_1",
+        status: "all",
+        limit: 100,
+      });
+      expect(cancel).toHaveBeenCalledWith("sub_first");
+      expect(cancel).toHaveBeenCalledWith("sub_second");
+      expect(cancel).toHaveBeenCalledTimes(2);
+    });
+
+  test("an already-canceled subscription in the listing is not cancelled twice",
+    async () => {
+      getRef("users/u1/subscription/main").__setStored({
+        stripeCustomerId: "cus_1",
+      });
+      listSubscriptions.mockResolvedValue({
+        data: [{ id: "sub_live" }, { id: "sub_dead" }],
+      });
+      retrieve.mockImplementation(async (id: string) => ({
+        status: id === "sub_dead" ? "canceled" : "active",
+      }));
+
+      await deleteAccount.run(req({ uid: "u1" }));
+
+      expect(cancel).toHaveBeenCalledWith("sub_live");
+      expect(cancel).not.toHaveBeenCalledWith("sub_dead");
+    });
+
+  test("anonymises the departing side of a booking and keeps the counterparty's record",
+    async () => {
+      seed("coach_bookings", [
+        { id: "b1", data: { clientUid: "u1", coachUid: "coach_9" } },
+        { id: "b2", data: { clientUid: "client_7", coachUid: "u1" } },
+      ]);
+
+      await deleteAccount.run(req({ uid: "u1" }));
+
+      expect(batchOps).toEqual(
+        expect.arrayContaining([
+          {
+            op: "update",
+            path: "coach_bookings/b1",
+            data: { clientUid: "deleted_user" },
+          },
+          {
+            op: "update",
+            path: "coach_bookings/b2",
+            data: { coachUid: "deleted_user" },
+          },
+        ]),
+      );
+      // The record survives: a coach who was paid for a session keeps their
+      // own row, with nothing in it pointing at a person any more.
+      expect(batchOps.some((o) => o.op === "delete")).toBe(false);
+    });
+
+  test("deletes a booking whose OTHER side was already deleted", async () => {
+    seed("coach_bookings", [
+      { id: "b3", data: { clientUid: "u1", coachUid: "deleted_user" } },
+    ]);
+
+    await deleteAccount.run(req({ uid: "u1" }));
+
+    expect(batchOps).toContainEqual({
+      op: "delete",
+      path: "coach_bookings/b3",
+    });
+  });
+
+  test("anonymises equipment reports and deletes debug telemetry", async () => {
+    seed("equipment_reports", [
+      { id: "r1", data: { reporterUid: "u1", fault: "cable frayed" } },
+    ]);
+    seed("debug_sessions", [{ id: "d1", data: { uid: "u1" } }]);
+
+    await deleteAccount.run(req({ uid: "u1" }));
+
+    // The gym still has to fix the cable; the person who reported it is gone.
+    expect(batchOps).toContainEqual({
+      op: "update",
+      path: "equipment_reports/r1",
+      data: { reporterUid: "deleted_user" },
+    });
+    // Telemetry has no counterparty, and `firestore.rules` forbids the client
+    // deleting it -- the Admin SDK is the only thing that can.
+    expect(batchOps).toContainEqual({
+      op: "delete",
+      path: "debug_sessions/d1",
+    });
+    expect(commit).toHaveBeenCalled();
+  });
+
+  test("leaves other users' shared records alone", async () => {
+    seed("coach_bookings", [
+      { id: "b9", data: { clientUid: "someone_else", coachUid: "coach_9" } },
+    ]);
+    seed("equipment_reports", [
+      { id: "r9", data: { reporterUid: "someone_else" } },
+    ]);
+
+    await deleteAccount.run(req({ uid: "u1" }));
+
+    expect(batchOps).toEqual([]);
+  });
 });

@@ -67,6 +67,10 @@ jest.mock("stripe", () => {
     checkout: { sessions: { create: jest.fn() } },
     invoices: { list: jest.fn() },
     paymentIntents: { create: jest.fn() },
+    // A4 — checkout now asks Stripe whether this customer already has a live
+    // subscription before creating a second one. Defaulted to "none" in
+    // `beforeEach`; the duplicate-guard tests override it.
+    subscriptions: { list: jest.fn() },
   };
   const ctor: any = jest.fn(() => instance);
   ctor.__instance = instance;
@@ -154,6 +158,8 @@ beforeEach(() => {
   stripeCtor.mockClear(); // keeps the () => instance implementation
   stripeMock.customers.create.mockReset();
   stripeMock.checkout.sessions.create.mockReset();
+  // No live subscription by default: the ordinary path is a first purchase.
+  stripeMock.subscriptions.list.mockReset().mockResolvedValue({ data: [] });
   stripeMock.invoices.list.mockReset();
   stripeMock.paymentIntents.create.mockReset();
 });
@@ -254,6 +260,10 @@ describe("createCheckoutSession", () => {
         metadata: { firebaseUid: "u1", tier: "standard", period: "monthly" },
       },
       allow_promotion_codes: true,
+    },
+    {
+      // A4 — a double-tap on Subscribe must not open two payable sessions.
+      idempotencyKey: "checkout_u1_standard_monthly",
     });
   });
 
@@ -305,7 +315,89 @@ describe("createCheckoutSession", () => {
         },
       },
       allow_promotion_codes: true,
+    },
+    { idempotencyKey: "checkout_u2_celebrityTrainer_lifetime" });
+  });
+
+  test("a one-time purchase never asks whether a subscription exists",
+    async () => {
+      // Buying lifetime or donating is not mutually exclusive with holding a
+      // subscription, so the duplicate guard must not reach these at all.
+      primeDoc(SUB_PATH, { stripeCustomerId: "cus_existing" });
+      stripeMock.checkout.sessions.create.mockResolvedValue({
+        id: "cs_1",
+        url: "https://checkout.stripe.test/cs_1",
+      });
+
+      await createCheckoutSession.run(
+        req(
+          { tier: "celebrityTrainer", period: "lifetime" },
+          { uid: "u1", token: { email: "u1@example.com" } },
+        ),
+      );
+
+      expect(stripeMock.subscriptions.list).not.toHaveBeenCalled();
     });
+
+  test("refuses a second subscription while a live one exists", async () => {
+    // The audit's scenario: two Checkout sessions, two recurring
+    // subscriptions, one stored id, and the account-deletion path cancelling
+    // only the id it remembers while the other keeps billing.
+    primeDoc(SUB_PATH, { stripeCustomerId: "cus_existing" });
+    stripeMock.subscriptions.list.mockResolvedValue({
+      data: [{ id: "sub_live", status: "active" }],
+    });
+
+    const err = await expectHttpsError(
+      createCheckoutSession.run(
+        req(
+          { tier: "standard", period: "monthly" },
+          { uid: "u1", token: { email: "u1@example.com" } },
+        ),
+      ),
+      "failed-precondition",
+    );
+
+    expect(err.message).toMatch(/already have an active subscription/i);
+    expect(stripeMock.checkout.sessions.create).not.toHaveBeenCalled();
+  });
+
+  test("past_due counts as live -- it still bills", async () => {
+    primeDoc(SUB_PATH, { stripeCustomerId: "cus_existing" });
+    stripeMock.subscriptions.list.mockResolvedValue({
+      data: [{ id: "sub_late", status: "past_due" }],
+    });
+
+    await expectHttpsError(
+      createCheckoutSession.run(
+        req(
+          { tier: "standard", period: "monthly" },
+          { uid: "u1", token: { email: "u1@example.com" } },
+        ),
+      ),
+      "failed-precondition",
+    );
+  });
+
+  test("a canceled subscription does not block a new one", async () => {
+    // Someone who cancelled and came back must be able to subscribe again.
+    primeDoc(SUB_PATH, { stripeCustomerId: "cus_existing" });
+    stripeMock.subscriptions.list.mockResolvedValue({
+      data: [{ id: "sub_old", status: "canceled" }],
+    });
+    stripeMock.checkout.sessions.create.mockResolvedValue({
+      id: "cs_2",
+      url: "https://checkout.stripe.test/cs_2",
+    });
+
+    const res = await createCheckoutSession.run(
+      req(
+        { tier: "standard", period: "monthly" },
+        { uid: "u1", token: { email: "u1@example.com" } },
+      ),
+    );
+
+    expect(res).toEqual({ url: "https://checkout.stripe.test/cs_2" });
   });
 
   test("unauthenticated request throws unauthenticated", async () => {

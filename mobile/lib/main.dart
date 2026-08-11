@@ -32,6 +32,7 @@ import 'features/auth/state/auth_providers.dart';
 import 'features/donor_wall/data/cloud_donor_wall_repository.dart';
 import 'features/donor_wall/state/donor_wall_providers.dart';
 import 'features/account_deletion/data/cloud_functions_account_deletion_service.dart';
+import 'features/account_deletion/data/local_data_wipe.dart';
 import 'features/account_deletion/state/account_deletion_providers.dart';
 import 'features/data_export/data_export_sink.dart';
 import 'features/equipment/data/cloud_functions_equipment_report_service.dart';
@@ -502,6 +503,11 @@ Future<void> main() async {
         // Account deletion (L0b) — calls the deleteAccount Cloud Function.
         accountDeletionServiceProvider
             .overrideWith((_) => CloudFunctionsAccountDeletionService()),
+
+        // A1 — the on-device half of the same operation. Real implementation
+        // only here: the default provider records instead of deleting, so a
+        // widget test can never wipe the host machine's documents directory.
+        localDataWipeProvider.overrideWith((_) => DeviceLocalDataWipe()),
 
         // Nurture moments + notifications.
         momentRepositoryProvider.overrideWithValue(momentRepo),

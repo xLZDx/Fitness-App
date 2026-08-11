@@ -418,6 +418,36 @@ export const createCheckoutSession = onCall(
     );
 
     const oneTime = isOneTime(period);
+
+    // A4 — refuse a SECOND recurring subscription for a customer who already
+    // has a live one.
+    //
+    // Asked of Stripe, not of `users/{uid}/subscription/main`: that document
+    // holds one `stripeSubscriptionId`, so if two subscriptions already exist
+    // it describes only the later one, and a check against it would wave the
+    // duplicate through on the strength of a record of the duplicate itself.
+    // Stripe is the system of record; the document is a cache.
+    //
+    // One-time purchases (lifetime, donations) are exempt on purpose: buying
+    // one is not mutually exclusive with holding a subscription.
+    if (!oneTime) {
+      const live = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "all",
+        limit: 100,
+      });
+      const blocking = live.data.find((s) =>
+        ["active", "trialing", "past_due", "unpaid"].includes(s.status),
+      );
+      if (blocking) {
+        throw new HttpsError(
+          "failed-precondition",
+          "You already have an active subscription. Manage or cancel it " +
+            "from the billing portal before starting a new one.",
+        );
+      }
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: oneTime ? "payment" : "subscription",
       customer: customerId,
@@ -454,6 +484,20 @@ export const createCheckoutSession = onCall(
             },
           }),
       allow_promotion_codes: true,
+    }, {
+      // A4 — one Checkout session per (user, tier, period) per 24h, which is
+      // how long Stripe remembers a key.
+      //
+      // The precheck above closes the case where a subscription already
+      // exists; this closes the one it cannot see — two sessions opened
+      // seconds apart, both before either has completed, from a double-tap or
+      // a retried request. Without the key each creates its own session and
+      // each session can be paid.
+      //
+      // A repeat within the window returns the SAME session rather than an
+      // error, so a user who backed out of Checkout and tapped Subscribe
+      // again lands on the same page instead of being blocked.
+      idempotencyKey: `checkout_${auth.uid}_${tier}_${period}`,
     });
 
     if (!session.url) {
@@ -1259,6 +1303,77 @@ export const reportEquipment = onCall(
  * backend has to add its cleanup here in the same change, not as a follow-up
  * that is easy to forget once this function already looks complete.
  */
+/**
+ * What replaces a departing user's id in a record that is not theirs alone.
+ *
+ * Not a real uid, and deliberately not an empty string: an empty `clientUid`
+ * reads as "field never set" to every query in this file, while this value
+ * reads as "there was someone here and they are gone", which is what actually
+ * happened.
+ */
+const DELETED_UID = "deleted_user";
+
+/**
+ * The three collections A0's inventory found outside `users/{uid}` that name a
+ * user and survived `deleteAccount`.
+ *
+ * Two different treatments, because they are two different kinds of record:
+ *
+ *   - `coach_bookings` and `equipment_reports` are SHARED. A booking is a
+ *     transaction between two people and a report is a fault the gym still has
+ *     to fix; deleting either would erase a counterparty's own record of
+ *     something that really happened. The departing user's id is replaced, so
+ *     nothing remaining identifies them, and a booking whose BOTH sides are
+ *     gone is then deleted outright -- otherwise the collection accumulates
+ *     rows nobody can ever read again.
+ *   - `debug_sessions` is SOLE. It is device telemetry about one person with
+ *     no counterparty, so it is deleted. It also cannot be cleaned up any
+ *     other way: `firestore.rules:82-87` sets `allow update, delete: if false`,
+ *     so even the owner's own client cannot remove it -- only the Admin SDK,
+ *     which bypasses rules, can.
+ *
+ * Each query is a single-field equality, so none of them needs a composite
+ * index that a fresh project would not already have.
+ */
+async function sweepSharedRecords(uid: string): Promise<void> {
+  const batch = db.batch();
+
+  const [asClient, asCoach, reports, debugSessions] = await Promise.all([
+    db.collection("coach_bookings").where("clientUid", "==", uid).get(),
+    db.collection("coach_bookings").where("coachUid", "==", uid).get(),
+    db.collection("equipment_reports").where("reporterUid", "==", uid).get(),
+    db.collection("debug_sessions").where("uid", "==", uid).get(),
+  ]);
+
+  // Both sides queried separately rather than with an `or`: a user can be the
+  // client on one booking and the coach on another, and one query per field
+  // is what keeps "which field do I anonymise" decidable per document.
+  for (const doc of asClient.docs) {
+    const other = doc.data()?.coachUid;
+    if (other === DELETED_UID || other === undefined) {
+      batch.delete(doc.ref);
+    } else {
+      batch.update(doc.ref, { clientUid: DELETED_UID });
+    }
+  }
+  for (const doc of asCoach.docs) {
+    const other = doc.data()?.clientUid;
+    if (other === DELETED_UID || other === undefined) {
+      batch.delete(doc.ref);
+    } else {
+      batch.update(doc.ref, { coachUid: DELETED_UID });
+    }
+  }
+  for (const doc of reports.docs) {
+    batch.update(doc.ref, { reporterUid: DELETED_UID });
+  }
+  for (const doc of debugSessions.docs) {
+    batch.delete(doc.ref);
+  }
+
+  await batch.commit();
+}
+
 export const deleteAccount = onCall(
   { ...RARE, secrets: [STRIPE_SECRET_KEY] },
   async (request) => {
@@ -1285,23 +1400,51 @@ export const deleteAccount = onCall(
     // to delete data or the account while Stripe keeps billing is the exact
     // harm this function exists to prevent.
     const subSnap = await db.doc(`users/${uid}/subscription/main`).get();
-    const subscriptionId = subSnap.data()?.stripeSubscriptionId as
-      | string
-      | undefined;
-    if (subscriptionId) {
+    const subData = subSnap.data();
+    const subscriptionId = subData?.stripeSubscriptionId as string | undefined;
+    const customerId = subData?.stripeCustomerId as string | undefined;
+    if (subscriptionId || customerId) {
       try {
         const stripe = await stripeClient();
-        const current = await stripe.subscriptions.retrieve(subscriptionId);
-        if (current.status !== "canceled") {
-          // Immediate cancellation, not `cancel_at_period_end` — the
-          // account is being deleted now, not at the end of a billing
-          // period nobody will be signed in to see.
-          await stripe.subscriptions.cancel(subscriptionId);
+
+        // EVERY subscription on the customer, not the one id this document
+        // happens to remember. `users/{uid}/subscription/main` stores a
+        // single `stripeSubscriptionId`, so a second concurrently-created
+        // subscription overwrites the first here while BOTH keep billing in
+        // Stripe. Cancelling only the remembered one leaves the other
+        // charging a card whose owner no longer has an account to cancel it
+        // from -- the exact harm the audit named. Stripe is the system of
+        // record for subscriptions; this document is a cache of it, so the
+        // deletion path asks Stripe rather than trusting the cache.
+        //
+        // `status: "all"` deliberately: `past_due` and `unpaid` still bill,
+        // and `trialing` still converts. Only `canceled` is genuinely inert,
+        // and that is filtered per-id below.
+        const ids = new Set<string>();
+        if (subscriptionId) ids.add(subscriptionId);
+        if (customerId) {
+          const list = await stripe.subscriptions.list({
+            customer: customerId,
+            status: "all",
+            limit: 100,
+          });
+          for (const s of list.data) ids.add(s.id);
+        }
+
+        for (const id of ids) {
+          const current = await stripe.subscriptions.retrieve(id);
+          if (current.status !== "canceled") {
+            // Immediate cancellation, not `cancel_at_period_end` — the
+            // account is being deleted now, not at the end of a billing
+            // period nobody will be signed in to see.
+            await stripe.subscriptions.cancel(id);
+          }
         }
       } catch (err) {
         logger.error("account deletion: failed to cancel subscription", {
           uid,
           subscriptionId,
+          customerId,
           err,
         });
         throw new HttpsError(
@@ -1330,6 +1473,10 @@ export const deleteAccount = onCall(
         db.recursiveDelete(db.collection("donor_wall").doc(uid)),
         db.recursiveDelete(db.collection("coach_listings").doc(uid)),
       ]);
+
+      // The three collections `recursiveDelete` cannot reach, because they
+      // are not keyed by uid -- they only MENTION it. See sweepSharedRecords.
+      await sweepSharedRecords(uid);
     } catch (err) {
       logger.error("account deletion: failed to delete Firestore data", {
         uid,
