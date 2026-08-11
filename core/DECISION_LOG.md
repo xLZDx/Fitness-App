@@ -2894,3 +2894,90 @@ Audit recommendation 7 (`AUDIT_REPORT_2026-08-11.md:360`) — labelling the
 scanner, Form Coach and Posture as experimental in the UI — is named in the
 document as the one piece that should become a gate before release. It is not
 done here.
+
+---
+
+## 2026-08-11, 18:20 local (Europe/Chisinau) / 15:20 UTC — the Act gate on A2-sec returned BLOCK, and it was right twice
+
+Third gate in a row where the Act gate found something my own reading of the
+same code did not. Two BLOCKERs, two MAJORs, one MINOR — all five closed.
+
+### BLOCKER 1 — the key store could destroy every photo on the device
+
+`_readValid` caught a failed `_storage.read` and returned null. `loadOrCreate`
+cannot tell that null from "this account has no key yet", so it minted a fresh
+key **and wrote it over the alias whose read had just failed**. A transient
+Keystore error — real, documented, and one that leaves `write` working — took
+the only key that could open every existing photo and overwrote it. There is no
+second copy; the fingerprint check in `photo_store.dart:100-105` would then
+correctly report that every blob was encrypted with a key this device no longer
+holds, forever.
+
+The part worth recording is not the bug, it is that **the comment I wrote
+directly above it claimed the opposite of what the code did**: "not a reason to
+silently mint a second key and orphan the blobs", two lines above the code that
+mints and orphans. A comment asserting a safety property is not evidence of it,
+and mine read as reassurance while the code did the damage.
+
+There are now three outcomes, not two: absent (mint), unreadable (throw
+`PhotoKeyUnavailable`, write nothing, fall back to the demo grid for this
+launch), corrupt (mint — whatever wrote the blobs is unrecoverable either way,
+and refusing forever would trap the user in demo mode with no exit).
+
+### BLOCKER 2 — deleting your account could delete a stranger's photos
+
+`_deleteLooseLegacyFiles(root)` and the removal of `progress_photos.key.v1` ran
+for **any** `wipe(uid)`, while the migration-marker removal three lines above
+correctly checked `== uid`. That asymmetry is the defect: when the marker names
+another account, the loose legacy folder and key are demonstrably theirs, and
+deleting your own account must not take their photos with it — the exact rule
+the exact-key match on `profile.sensitive.{uid}` already encodes in the same
+class.
+
+Both are now gated on `_legacyIsMine(marker, uid)`. When the marker is UNSET
+the data is genuinely unclaimed and it IS erased — a deliberate tie-break, not
+an oversight: the key and the ciphertext have to travel together (a plaintext
+key beside deleted blobs is a dangling secret; blobs beside a deleted key are
+junk nobody can open), and between failing this user's deletion promise and
+possibly erasing an un-migrated stranger's photos on a shared phone, the
+promise wins.
+
+### The rest
+
+- **MAJOR** — `keyFromBase64` sat outside the try, so a malformed stored value
+  threw `FormatException` out of a method whose caller is building the photos
+  tab, every launch, with nothing rewriting the bad value. Both read paths now
+  handle it.
+- **MAJOR** — `.valueOrNull` flattened loading, signed-out and FAILED into one
+  null. The fallback to the demo repository is still right, but a real
+  `PhotoKeyUnavailable` left no trace at all. Now logged.
+- **MINOR** — `authUserProvider` is a StreamProvider; before its first emission
+  `.valueOrNull` is null and indistinguishable from signed-out, so a signed-in
+  user saw the demo grid for a frame on cold start. Switched to
+  `ref.watch(authUserProvider.future)`, which suspends until it settles.
+
+### The test gap under all of it
+
+`SecurePhotoKeyStore` had **zero tests** — that is how both BLOCKERs shipped.
+It could not have had any: it took a concrete `FlutterSecureStorage` over a
+method channel, so no test could make a read throw. Introduced
+`SecureKeyStorage`, a three-method seam with a real `PlatformSecureKeyStorage`
+behind it. That is not indirection for its own sake — it is the difference
+between "unverified" and "verifiable", and both key-loss paths now have a test
+that fails on the old code.
+
+### Проверки
+
+`flutter analyze` **7** — prior baseline, 0 new. `flutter test
+test/features/progress_photos test/features/account_deletion` **84 passed, 0
+failed** (was 63; +21 across two new/extended files).
+
+### Что осталось непокрытым
+
+Still no device run — the same gap A2-sec's own entry names, unchanged by this.
+
+Also verified while here: audit finding `AUDIT_REPORT_2026-08-11.md:35`
+("`/community` uses an undisclosed in-memory mock") **no longer holds**.
+`app_router.dart:337` routes `/community` to `team_feed_page.dart`, which
+renders `DemoDataBanner` at `:39` gated on `teamFeedIsDemoProvider` (`:31`).
+Closed by an earlier gate in this round; recorded so nobody re-opens it.

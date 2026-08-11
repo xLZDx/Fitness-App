@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -78,7 +79,12 @@ class MockProgressPhotosRepository implements ProgressPhotosRepository {
 /// Async because the documents directory, the migration and the Keystore are
 /// all platform channels.
 final progressPhotosStoreProvider = FutureProvider<PhotoStore?>((ref) async {
-  final uid = ref.watch(authUserProvider).valueOrNull?.uid;
+  // `.future`, not `.valueOrNull`. `authUserProvider` is a StreamProvider and
+  // has not emitted anything on a cold start, where `valueOrNull` is null and
+  // therefore indistinguishable from signed-out — which would show a
+  // signed-in user the demo grid until the stream caught up. Awaiting the
+  // first emission removes that window entirely.
+  final uid = (await ref.watch(authUserProvider.future))?.uid;
   // Signed out: no store at all, rather than a shared one. The repository
   // below falls back to the demo mock, which is what the banner already
   // describes, and no bytes are written anywhere they could outlive the
@@ -105,7 +111,16 @@ final progressPhotoCameraProvider = Provider<CameraSession>((ref) {
 
 final progressPhotosRepositoryProvider =
     Provider<ProgressPhotosRepository>((ref) {
-  final store = ref.watch(progressPhotosStoreProvider).valueOrNull;
+  final async = ref.watch(progressPhotosStoreProvider);
+  // `.valueOrNull` flattens loading, signed-out and FAILED into one null, and
+  // the third is not benign: a `PhotoKeyUnavailable` means a user with photos
+  // is looking at the demo grid. The fallback is still right — it is the only
+  // safe thing to show — but it must not be the only trace that anything went
+  // wrong.
+  if (async.hasError) {
+    debugPrint('progress photos: store unavailable — ${async.error}');
+  }
+  final store = async.valueOrNull;
   if (store == null) return MockProgressPhotosRepository();
   return LocalProgressPhotosRepository(
     store: store,

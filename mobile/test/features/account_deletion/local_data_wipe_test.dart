@@ -112,6 +112,46 @@ void main() {
     expect(File('${root.path}/p1.bin').existsSync(), isFalse);
   });
 
+  test('leaves un-migrated legacy data alone when it belongs to someone else',
+      () async {
+    // The Act gate's second blocker. The marker names A, so the loose root
+    // files and the v1 key are demonstrably A's -- B deleting their own
+    // account must not take A's photos with it.
+    final root = Directory('${docs.path}/progress_photos')
+      ..createSync(recursive: true);
+    File('${root.path}/index.json').writeAsStringSync('[{"id":"p1"}]');
+    File('${root.path}/p1.bin').writeAsBytesSync([1, 2, 3]);
+
+    final prefs = await prefsWith({
+      kLegacyPhotoMigrationMarker: 'A',
+      'progress_photos.key.v1': 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+    });
+    await DeviceLocalDataWipe(prefs: prefs, documentsDir: docs).wipe('B');
+
+    expect(File('${root.path}/p1.bin').existsSync(), isTrue);
+    expect(File('${root.path}/index.json').existsSync(), isTrue);
+    expect(prefs.getString('progress_photos.key.v1'), isNotNull);
+    expect(prefs.getString(kLegacyPhotoMigrationMarker), 'A');
+  });
+
+  test('the key and the blobs it opens are always erased together', () async {
+    // Never one without the other: a plaintext key left beside deleted
+    // ciphertext is a dangling secret, and ciphertext left beside a deleted
+    // key is junk nobody can ever open.
+    final root = Directory('${docs.path}/progress_photos')
+      ..createSync(recursive: true);
+    File('${root.path}/p1.bin').writeAsBytesSync([1]);
+
+    final prefs = await prefsWith({
+      'progress_photos.key.v1': 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+    });
+    await DeviceLocalDataWipe(prefs: prefs, documentsDir: docs).wipe('u1');
+
+    // Unclaimed legacy data, so it is this user's to erase -- both halves.
+    expect(File('${root.path}/p1.bin').existsSync(), isFalse);
+    expect(prefs.getString('progress_photos.key.v1'), isNull);
+  });
+
   test('forgets the legacy-migration marker only when it names this user',
       () async {
     final prefs = await prefsWith({kLegacyPhotoMigrationMarker: 'u1'});

@@ -85,11 +85,19 @@ not later mistaken for scope creep.
 | **A6-lite** Cost bleed | **DONE** except the budget notification rule (attempt did not apply) | `ec5aae4` + `d7335c0` |
 | Act gate on A6-lite | **DONE** — 3 findings, all 3 fixed | `d7335c0` |
 | **A3** Export completeness | **DONE** — server assembler + client merge; photo bytes still excluded | `7a73cbf` + `4c81fbe` |
-| **A2-sec** Photo hardening | not started | |
-| **A5** Stripe drift | not started | |
-| **A6-full** App Check | not started | |
-| **S1** ML strategy | not started | |
-| P1 / P2 / redesign remainder | not started | |
+| **A2-sec** Photo hardening | **DONE** — key in the Keystore, per-uid store, temp deleted, copy corrected | `1ef60f6` + act-gate fixes |
+| **A5** Stripe drift | **DONE** except the endpoint's live API version (secret access denied by the environment) | `af6dc6a` |
+| **A6-full** App Check | **DONE** — staged flags + anonymous-trial guard; budget `notificationsRule` still unset | `af6dc6a` |
+| Act gate on A2-sec | **DONE** — 2 BLOCKER, 2 MAJOR, 1 MINOR, all 5 closed | act-gate commit |
+| **S1** ML strategy | **DONE** — `core/plans/ML_STRATEGY_2026-08-11.md` | `1cd9a72` |
+| P1 / P2 / redesign remainder | not started, except the mock-disclosure item which was **already closed** (see below) | |
+
+**Audit finding that no longer holds.** `AUDIT_REPORT_2026-08-11.md:35` says
+`/community` uses an undisclosed in-memory mock. It is disclosed:
+`app_router.dart:337` routes `/community` to `team_feed_page.dart`, which
+renders `DemoDataBanner` at `:39` gated on `teamFeedIsDemoProvider` (`:31`,
+defined at `team_feed_providers.dart:15-18`). Closed by an earlier gate in this
+same remediation round; no work needed.
 
 **Resume point.** The next gate is **A2-sec**, after an Act gate on A3's two new files (`functions/src/account_export.ts`, `mobile/lib/features/data_export/server_export.dart`). A3's shape is
 already decided and does not need re-deriving: `core/DATA_INVENTORY_2026-08-11.md`

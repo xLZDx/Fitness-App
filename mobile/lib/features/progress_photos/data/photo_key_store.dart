@@ -1,10 +1,30 @@
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'aes_photo_cipher.dart';
 import 'photo_encryption.dart';
+
+/// The platform key store is there but would not open.
+///
+/// Distinct from "this account has no key yet", and the distinction is the
+/// whole point: the first is transient and must never cause a new key to be
+/// written, because that overwrites the one every existing photo was encrypted
+/// with. Surfaced instead of swallowed so the store fails to build for this
+/// launch and the photos tab shows its demo state, which is recoverable.
+class PhotoKeyUnavailable implements Exception {
+  PhotoKeyUnavailable(this.keyName, this.cause);
+
+  final String keyName;
+  final Object cause;
+
+  @override
+  String toString() =>
+      'PhotoKeyUnavailable($keyName): secure storage could not be read '
+      '— $cause. No key was written; existing photos are untouched.';
+}
 
 /// Where the photo encryption key lives between launches.
 ///
@@ -40,6 +60,37 @@ abstract class PhotoKeyStore {
   Future<Uint8List> loadOrCreate();
 }
 
+/// The three operations this file needs from platform secure storage.
+///
+/// A seam, not indirection for its own sake: `FlutterSecureStorage` is a
+/// concrete class over a method channel, so without it the key-loss paths the
+/// Act gate found — a read that throws, a stored value that is not a key —
+/// cannot be exercised by any test at all. That is how they shipped.
+abstract class SecureKeyStorage {
+  Future<String?> read(String key);
+  Future<void> write(String key, String value);
+  Future<void> delete(String key);
+}
+
+/// The real one.
+class PlatformSecureKeyStorage implements SecureKeyStorage {
+  const PlatformSecureKeyStorage([
+    this._storage = const FlutterSecureStorage(),
+  ]);
+
+  final FlutterSecureStorage _storage;
+
+  @override
+  Future<String?> read(String key) => _storage.read(key: key);
+
+  @override
+  Future<void> write(String key, String value) =>
+      _storage.write(key: key, value: value);
+
+  @override
+  Future<void> delete(String key) => _storage.delete(key: key);
+}
+
 /// The key for ONE account, in platform secure storage.
 ///
 /// Scoped by uid for the same reason the photo directory is: two people
@@ -49,9 +100,9 @@ abstract class PhotoKeyStore {
 class SecurePhotoKeyStore implements PhotoKeyStore {
   SecurePhotoKeyStore({
     required this.uid,
-    FlutterSecureStorage? storage,
+    SecureKeyStorage? storage,
     SharedPreferences? prefs,
-  })  : _storage = storage ?? const FlutterSecureStorage(),
+  })  : _storage = storage ?? const PlatformSecureKeyStorage(),
         _injectedPrefs = prefs;
 
   /// The account this key belongs to.
@@ -62,7 +113,7 @@ class SecurePhotoKeyStore implements PhotoKeyStore {
 
   static String secureKeyFor(String uid) => 'progress_photos.key.v2.$uid';
 
-  final FlutterSecureStorage _storage;
+  final SecureKeyStorage _storage;
   final SharedPreferences? _injectedPrefs;
   Uint8List? _cached;
 
@@ -73,7 +124,10 @@ class SecurePhotoKeyStore implements PhotoKeyStore {
     final cached = _cached;
     if (cached != null) return cached;
 
-    final existing = await _readValid(_name);
+    // Throws [PhotoKeyUnavailable] rather than returning null when the store
+    // is present but unreadable — see [_read] for why that distinction is
+    // load-bearing.
+    final existing = await _read(_name);
     if (existing != null) return _cache(existing);
 
     // Nothing yet under this uid. Before minting a new key — which would make
@@ -83,7 +137,7 @@ class SecurePhotoKeyStore implements PhotoKeyStore {
     if (migrated != null) return _cache(migrated);
 
     final fresh = AesPhotoCipher.newKey();
-    await _storage.write(key: _name, value: keyToBase64(fresh));
+    await _storage.write(_name, keyToBase64(fresh));
     return _cache(fresh);
   }
 
@@ -92,23 +146,44 @@ class SecurePhotoKeyStore implements PhotoKeyStore {
     return key;
   }
 
-  /// Reads and validates one secure entry, or null.
-  Future<Uint8List?> _readValid(String name) async {
+  /// One secure entry, or null when the account genuinely has no key yet.
+  ///
+  /// **Three outcomes, and collapsing any two of them destroys photos.** The
+  /// first version of this method had two, and the Act gate on A2-sec caught
+  /// it: a `read` that THREW returned null, the caller could not tell that
+  /// from "never written", and so it minted a fresh key and wrote it over the
+  /// alias whose read had just failed. A transient Keystore error — a real,
+  /// documented failure mode, and one that leaves `write` working — silently
+  /// destroyed the only key that could open every existing photo. The comment
+  /// that stood here claimed the opposite of what the code did.
+  ///
+  ///   - **absent** (`raw == null`): nothing was ever written. Mint one.
+  ///   - **unreadable** (`read` threw): a key may well be there. Throw
+  ///     [PhotoKeyUnavailable] and let the store fail to build. The photos tab
+  ///     falls back to the demo repository for this launch, which is
+  ///     recoverable; overwriting the key is not.
+  ///   - **corrupt** (present, but not 32 bytes): whatever wrote the blobs is
+  ///     unrecoverable either way, so minting loses nothing that was not
+  ///     already lost — and refusing forever would strand the user in demo
+  ///     mode with no way out.
+  Future<Uint8List?> _read(String name) async {
     String? raw;
     try {
-      raw = await _storage.read(key: name);
+      raw = await _storage.read(name);
     } catch (e) {
-      // A Keystore that will not open is not a reason to lose the photos tab
-      // forever, but it IS a reason not to silently mint a second key and
-      // orphan the blobs. Surfaced to the caller as "no key", which mints one
-      // — the same outcome as a first run, and the fingerprint check in
-      // PhotoStore.read then names the mismatch instead of returning garbage.
-      return null;
+      throw PhotoKeyUnavailable(name, e);
     }
     if (raw == null) return null;
-    final key = keyFromBase64(raw);
-    // A key of the wrong length throws inside AesPhotoCipher's assert in debug
-    // and produces garbage in release. Treat it as absent.
+
+    Uint8List key;
+    try {
+      key = keyFromBase64(raw);
+    } catch (e) {
+      // Corrupt, not unreadable: the value came back, it is simply not a key.
+      // Same treatment as a wrong length below.
+      debugPrint('progress photos: stored key for $name is not base64: $e');
+      return null;
+    }
     return key.length == 32 ? key : null;
   }
 
@@ -125,12 +200,24 @@ class SecurePhotoKeyStore implements PhotoKeyStore {
     final prefs = _injectedPrefs ?? await SharedPreferences.getInstance();
     final legacy = prefs.getString(legacyPrefsKey);
     if (legacy == null) return null;
-    final key = keyFromBase64(legacy);
+
+    Uint8List key;
+    try {
+      key = keyFromBase64(legacy);
+    } catch (e) {
+      // Same class as a wrong length: the value is there and is not a key, so
+      // nothing it could have opened is recoverable. Discard it rather than
+      // let a FormatException out of a method whose caller is trying to build
+      // the photos tab.
+      debugPrint('progress photos: legacy key is not base64: $e');
+      await prefs.remove(legacyPrefsKey);
+      return null;
+    }
     if (key.length != 32) {
       await prefs.remove(legacyPrefsKey);
       return null;
     }
-    await _storage.write(key: _name, value: keyToBase64(key));
+    await _storage.write(_name, keyToBase64(key));
     // Only after the secure copy is committed. The other order loses the key
     // outright if the process dies between the two, and with it every photo.
     await prefs.remove(legacyPrefsKey);
@@ -140,10 +227,10 @@ class SecurePhotoKeyStore implements PhotoKeyStore {
   /// Forgets this account's key. Called by the account-deletion wipe: the
   /// envelopes are deleted with the directory, and a key left behind in the
   /// Keystore is a dangling secret for data that no longer exists.
-  static Future<void> forget(String uid, {FlutterSecureStorage? storage}) async {
-    final store = storage ?? const FlutterSecureStorage();
+  static Future<void> forget(String uid, {SecureKeyStorage? storage}) async {
+    final store = storage ?? const PlatformSecureKeyStorage();
     try {
-      await store.delete(key: secureKeyFor(uid));
+      await store.delete(secureKeyFor(uid));
     } catch (_) {
       // Best effort. The blobs are already gone by the time this runs, so a
       // surviving key unlocks nothing — worth attempting, never worth
