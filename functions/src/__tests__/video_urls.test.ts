@@ -234,6 +234,40 @@ describe("A6-lite — per-user daily quota", () => {
     expect(usage.clipUrl).toBe(QUOTAS.clipUrl);
   });
 
+  test("refunds the objects that never signed", async () => {
+    // Charging must happen before signing -- otherwise a caller consumes IAM
+    // operations for free by asking for objects that fail -- but a batch of
+    // stale paths must not bill for work that never happened.
+    getSignedUrl
+      .mockImplementationOnce(async () => ["https://signed.test/ok"])
+      .mockImplementationOnce(async () => {
+        throw new Error("no such object");
+      });
+
+    await clipUrls.run(
+      req({ objects: [OBJ, "exercises/girl/Back/Row.mp4"] }),
+    );
+
+    expect(usage.clipUrlsObjects).toBe(1);
+  });
+
+  test("a batch where NOTHING signs is an error, not an empty success",
+    async () => {
+      // It used to return `{urls: {}}` with a normal expiry. A systemic
+      // signing fault -- the missing tokenCreator grant this file names --
+      // then reached the phone as successful, empty prefetches instead of
+      // errors, which reads as "this session has no clips".
+      getSignedUrl.mockImplementation(async () => {
+        throw new Error("SigningError: permission denied");
+      });
+
+      await expect(
+        clipUrls.run(req({ objects: [OBJ] })),
+      ).rejects.toThrow(/Could not prepare any/);
+      // ...and the whole charge came back.
+      expect(usage.clipUrlsObjects ?? 0).toBe(0);
+    });
+
   test("the counter lives under the user document, so deletion erases it",
     async () => {
       // A top-level `usage/{uid}` would have become a fourth entry on

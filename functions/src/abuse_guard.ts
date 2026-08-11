@@ -81,22 +81,75 @@ export async function enforceDailyQuota(
   const day = new Date().toISOString().slice(0, 10);
   const ref = db().doc(`users/${uid}/usage/${day}`);
 
-  await db().runTransaction(async (tx) => {
-    const snap = await tx.get(ref);
-    const used = (snap.data()?.[action] as number | undefined) ?? 0;
-    if (used + cost > limit) {
-      logger.warn("quota exceeded", { uid, action, used, cost, limit });
-      throw new HttpsError(
-        "resource-exhausted",
-        "You have reached today's limit for this action. It resets tomorrow.",
+  try {
+    await db().runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const used = (snap.data()?.[action] as number | undefined) ?? 0;
+      if (used + cost > limit) {
+        logger.warn("quota exceeded", { uid, action, used, cost, limit });
+        throw new HttpsError(
+          "resource-exhausted",
+          "You have reached today's limit for this action. It resets tomorrow.",
+        );
+      }
+      tx.set(
+        ref,
+        { [action]: used + cost, updatedAt: new Date().toISOString() },
+        { merge: true },
       );
-    }
-    tx.set(
-      ref,
-      { [action]: used + cost, updatedAt: new Date().toISOString() },
-      { merge: true },
-    );
-  });
+    });
+  } catch (e) {
+    // The quota refusal above is already logged with everything needed to read
+    // it, so it passes through untouched. Anything else -- Firestore
+    // unavailable, contention retries exhausted -- used to leave this module
+    // with zero log lines carrying the uid or the action, which is the one
+    // failure here nobody could diagnose afterwards. It stays fail-CLOSED: the
+    // transaction is atomic, so nothing was charged, and the caller does not
+    // get its metered resource.
+    if (e instanceof HttpsError) throw e;
+    logger.error("quota check failed", { uid, action, cost, limit, err: String(e) });
+    throw new HttpsError("internal", "Could not check your usage limit.");
+  }
+}
+
+/**
+ * Gives back part of a charge that turned out not to be used.
+ *
+ * `clipUrls` has to charge before it signs -- charging afterwards would let a
+ * caller consume IAM signing operations for free by requesting objects that
+ * fail. But a batch where half the objects do not exist would then bill the
+ * user for work that never happened. This returns the difference.
+ *
+ * Deliberately silent on failure: a refund that fails is a user who kept a
+ * charge they should not have, which is a smaller harm than turning a
+ * successful prefetch into an error.
+ */
+export async function refundQuota(
+  uid: string,
+  action: string,
+  amount: number,
+): Promise<void> {
+  if (amount <= 0) return;
+  const day = new Date().toISOString().slice(0, 10);
+  const ref = db().doc(`users/${uid}/usage/${day}`);
+  try {
+    await db().runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const used = (snap.data()?.[action] as number | undefined) ?? 0;
+      tx.set(
+        ref,
+        {
+          // Never below zero: a refund racing the day boundary must not hand
+          // out tomorrow's budget as a negative starting balance.
+          [action]: Math.max(0, used - amount),
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true },
+      );
+    });
+  } catch (e) {
+    logger.warn("quota refund failed", { uid, action, amount, err: String(e) });
+  }
 }
 
 /**

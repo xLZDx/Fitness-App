@@ -39,7 +39,12 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import { getStorage } from "firebase-admin/storage";
 import { VIDEO_BATCH, VIDEO_HOT } from "./scaling";
-import { QUOTAS, enforceDailyQuota, noteAppCheck } from "./abuse_guard";
+import {
+  QUOTAS,
+  enforceDailyQuota,
+  noteAppCheck,
+  refundQuota,
+} from "./abuse_guard";
 
 /**
  * Where the licensed library lives. Private — no `allUsers` binding.
@@ -269,8 +274,15 @@ export const clipUrls = onCall(VIDEO_BATCH, async (request) => {
   const objects = raw.map(assertSafeObject);
   // Charged in OBJECTS, not in calls: the per-call cap of 60 above bounds one
   // request, and a caller who wants the library simply makes more requests.
-  // Metering the thing that actually costs -- an IAM signing operation -- is
-  // what makes the two endpoints impossible to play against each other.
+  // Metering per object is what makes the two endpoints impossible to play
+  // against each other.
+  //
+  // What is metered is a REQUEST for a url, not necessarily a signature: a
+  // cache hit costs no IAM call and is still charged. That is deliberate --
+  // the cache is shared across users, so billing only cache misses would let
+  // one account walk the library for free behind another's warm entries --
+  // but it is not the same claim as "we meter what costs", so it is written
+  // down rather than implied.
   await enforceDailyQuota(
     request.auth.uid,
     "clipUrlsObjects",
@@ -295,6 +307,29 @@ export const clipUrls = onCall(VIDEO_BATCH, async (request) => {
   const urls: Record<string, string> = {};
   for (const [object, url] of entries) {
     if (url) urls[object] = url;
+  }
+
+  const signed = Object.keys(urls).length;
+
+  // Give back what was charged for objects that never signed. The charge has
+  // to happen BEFORE signing -- charging after would let a caller consume IAM
+  // operations for free by asking for objects that fail -- but a batch where
+  // half the paths are stale would otherwise bill for work that never
+  // happened.
+  await refundQuota(
+    request.auth.uid,
+    "clipUrlsObjects",
+    objects.length - signed,
+  );
+
+  // A batch where NOTHING signed is a failure, not an empty success. It used
+  // to return `{urls: {}}` with a normal expiry, which the client reads as
+  // "this session simply has no clips" -- so the one systemic fault this file
+  // already knows about (the missing tokenCreator grant, named above) would
+  // surface to the phone as twenty successful, empty prefetches instead of
+  // twenty errors.
+  if (signed === 0) {
+    throw new HttpsError("internal", "Could not prepare any of those clips.");
   }
   // The shortest life among the URLs actually returned, so a client that
   // honoured this field could not outlive the weakest one in the batch. Every
