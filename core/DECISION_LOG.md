@@ -2981,3 +2981,42 @@ Also verified while here: audit finding `AUDIT_REPORT_2026-08-11.md:35`
 `app_router.dart:337` routes `/community` to `team_feed_page.dart`, which
 renders `DemoDataBanner` at `:39` gated on `teamFeedIsDemoProvider` (`:31`).
 Closed by an earlier gate in this round; recorded so nobody re-opens it.
+
+---
+
+## 2026-08-11, 18:45 local (Europe/Chisinau) / 15:45 UTC — deployed; A3 was never live until now
+
+`firebase deploy --only functions,hosting --project fitness-app-korostelev`,
+exit 0. Fourteen functions in `europe-west1`: thirteen updated, and
+**`exportAccountData` CREATED** — the A3 export function had been committed,
+tested and recorded as done while never existing in production. Its own entry
+named that gap ("the function is not deployed"); this closes it.
+
+Also live now: the deleteAccount sweep and cancel-all-subscriptions (A1), the
+checkout duplicate guard (A4), the per-uid quotas on clip signing (A6-lite),
+the two-stage App Check flags (both OFF, A6-full), the anonymous-trial guard
+(A6-full), and the three Stripe redirect fixes (A5).
+
+### Verified live, not assumed
+
+```
+portal-return               200
+coach/onboarding-done       200
+coach/onboarding-refresh    200
+checkout-success            200
+```
+
+against `https://fitness-app-korostelev.web.app`. That is the whole of A5's
+user-visible failure closed end to end: the three URLs that pointed at
+`fitnessapp.example.com` now point at pages that exist and answer.
+
+### Что осталось непокрытым
+
+- The Acacia/Basil webhook fix is deployed, but **whether it was ever needed
+  is still unverified** — reading `STRIPE_SECRET_KEY` is refused by this
+  environment's permission classifier, so the endpoint's live API version was
+  never read. The reader handles both layouts by construction, so the deploy
+  is safe under either; what is unknown is whether an incident existed.
+- No test-mode webhook replay of either event format was performed.
+- App Check enforcement remains OFF in production, as designed.
+- The budget `notificationsRule` is still empty.
