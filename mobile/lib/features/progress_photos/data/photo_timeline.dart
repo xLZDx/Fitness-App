@@ -40,6 +40,46 @@ List<PhotoMonth> groupByMonth(List<ProgressPhoto> photos) {
   return List.unmodifiable(months);
 }
 
+/// How many photos [months] holds in total.
+int totalPhotos(List<PhotoMonth> months) =>
+    months.fold(0, (sum, m) => sum + m.count);
+
+/// The [count] newest photos, still grouped by month.
+///
+/// The timeline pages on this rather than rendering the whole history, because
+/// every tile that mounts decrypts a blob and holds a decoded bitmap: the cost
+/// of the grid was linear in how long the user had been using the feature, and
+/// it was all paid at once when the screen opened.
+///
+/// Paging by PHOTO and not by MONTH is deliberate. Months are whatever size
+/// the user's habits made them -- someone who shot daily for a month would get
+/// thirty tiles from "one month", which is the same unbounded page with an
+/// extra step.
+///
+/// Correctness here rests on [groupByMonth]'s ordering: newest month first,
+/// newest photo first inside it. That makes any prefix of the flattened list
+/// exactly "the N most recent photos", so a truncated month is truncated at
+/// its oldest end.
+List<PhotoMonth> newestMonths(List<PhotoMonth> months, int count) {
+  if (count <= 0) return const [];
+  final out = <PhotoMonth>[];
+  var left = count;
+  for (final m in months) {
+    if (left <= 0) break;
+    if (m.count <= left) {
+      out.add(m);
+      left -= m.count;
+    } else {
+      out.add(PhotoMonth(
+        month: m.month,
+        photos: List.unmodifiable(m.photos.take(left)),
+      ));
+      left = 0;
+    }
+  }
+  return List.unmodifiable(out);
+}
+
 /// A pair chosen for the before/after view, oldest first.
 class ComparePair {
   const ComparePair(this.before, this.after);

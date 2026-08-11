@@ -1574,6 +1574,15 @@
   },
   "progressphotosDelete": "Delete photo",
   "progressphotosStaysOnPhone": "Encrypted on this phone. There is no server copy, and no way to share one from here.",
+  "progressphotosUnreadable": "This photo could not be displayed.",
+  "progressphotosShowMore": "{count, plural, =1{Show 1 older photo} other{Show {count} older photos}}",
+  "@progressphotosShowMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "postureTitle": "Posture",
   "postureHomeSubtitle": "Check shoulder, hip and head alignment",
   "postureIntro": "Stand where your whole body is visible, side-on to the camera, and hold still.",

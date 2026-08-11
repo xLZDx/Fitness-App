@@ -15,6 +15,7 @@ import '../subscription/state/subscription_providers.dart';
 import 'data/photo_timeline.dart';
 import 'data/progress_photo.dart';
 import 'state/progress_photos_providers.dart';
+import 'widgets/photo_bitmap.dart';
 import 'widgets/photo_capture_sheet.dart';
 
 /// Progress photos: a month-grouped timeline plus a before/after card.
@@ -67,7 +68,17 @@ class ProgressPhotosPage extends ConsumerWidget {
               tint: theme.colorScheme.error,
               child: Text(l10n.progressphotosCouldNotLoadPhotos(e)),
             ),
-            data: (photos) => _Body(photos: photos, locked: !isPaid),
+            // Keyed so the paging cursor survives. `_Body` sits in a list
+            // whose shape changes with the demo banner, the upgrade card and
+            // the capture button, and an unkeyed child in a shifting list is
+            // matched by position: the day both ends of the list change in one
+            // rebuild, `_visible` would silently reset and the user would find
+            // themselves back at the newest thirty.
+            data: (photos) => _Body(
+              key: const Key('photos.body'),
+              photos: photos,
+              locked: !isPaid,
+            ),
           ),
           const SizedBox(height: 16),
           if (isPaid)
@@ -96,15 +107,30 @@ class ProgressPhotosPage extends ConsumerWidget {
   }
 }
 
-class _Body extends ConsumerWidget {
-  const _Body({required this.photos, required this.locked});
+/// How many photos the timeline shows before the user asks for more.
+///
+/// Ten rows of three. Enough that the first screen and a scroll or two are
+/// already there, small enough that opening the page is a bounded amount of
+/// decryption no matter how long the history is.
+const int kPhotoPageSize = 30;
+
+class _Body extends ConsumerStatefulWidget {
+  const _Body({super.key, required this.photos, required this.locked});
 
   final List<ProgressPhoto> photos;
   final bool locked;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_Body> createState() => _BodyState();
+}
+
+class _BodyState extends ConsumerState<_Body> {
+  int _visible = kPhotoPageSize;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final photos = widget.photos;
     if (photos.isEmpty) {
       return GlassCard(
         child: Text(
@@ -113,8 +139,14 @@ class _Body extends ConsumerWidget {
         ),
       );
     }
+    // The compare pair is chosen from the WHOLE history, not from the visible
+    // page. Its whole point is the widest span the user has, and that lives at
+    // the oldest end — the end paging hides. It is two photos.
     final pair = defaultComparePair(photos);
-    final months = groupByMonth(photos);
+    final all = groupByMonth(photos);
+    final total = totalPhotos(all);
+    final months = newestMonths(all, _visible);
+    final remaining = total - _visible;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -126,6 +158,12 @@ class _Body extends ConsumerWidget {
           _PhotoGrid(photos: m.photos),
           const SizedBox(height: 18),
         ],
+        if (remaining > 0)
+          AppSecondaryButton(
+            key: const Key('photos.showMore'),
+            onPressed: () => setState(() => _visible += kPhotoPageSize),
+            label: l10n.progressphotosShowMore(remaining),
+          ),
       ],
     );
   }
@@ -350,7 +388,7 @@ class _PhotoImage extends ConsumerWidget {
           ),
         ),
       ),
-      data: (Uint8List data) => Image.memory(data, fit: BoxFit.cover),
+      data: (Uint8List data) => PhotoBitmap(bytes: data),
     );
   }
 }

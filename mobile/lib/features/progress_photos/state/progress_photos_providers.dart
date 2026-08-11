@@ -154,10 +154,22 @@ final defaultComparePairProvider = Provider<ComparePair?>((ref) {
   return defaultComparePair(photos);
 });
 
-/// Decrypted pixels for one photo. Keyed by id so two tiles showing the same
-/// photo share one decrypt.
-final photoBytesProvider =
-    FutureProvider.family<Uint8List, ProgressPhoto>((ref, photo) async {
+/// Decrypted pixels for one photo. Two tiles showing the same photo share one
+/// decrypt — [ProgressPhoto] carries value equality for exactly this.
+///
+/// `autoDispose` is what bounds the memory. A plain family keeps every entry
+/// for the life of the container, so a decrypted JPEG stayed resident after
+/// its tile was gone and after the screen itself was gone; the ceiling was the
+/// user's whole photo history, reached by scrolling once and never given back.
+/// With it, the bytes live exactly as long as something is showing them, and
+/// the timeline's paging (see `newestMonths`) is what bounds how many that can
+/// be at one time.
+///
+/// The cost is a re-decrypt when the user comes back to the screen. That is
+/// one AES-GCM pass over a few tens of kilobytes per visible tile, and it is
+/// the right side of the trade against holding the history in RAM.
+final photoBytesProvider = FutureProvider.autoDispose
+    .family<Uint8List, ProgressPhoto>((ref, photo) async {
   return ref.watch(progressPhotosRepositoryProvider).bytesOf(photo);
 });
 

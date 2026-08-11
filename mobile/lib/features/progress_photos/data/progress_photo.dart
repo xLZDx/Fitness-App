@@ -35,6 +35,35 @@ class ProgressPhoto {
   final double? weightKg;
   final double? bodyFatPercent;
   final String? note;
+
+  /// Value equality, and it is load-bearing rather than cosmetic.
+  ///
+  /// `photoBytesProvider` is a family keyed by this object. Without `==` the
+  /// key was identity, and `PhotoStore.index()` rebuilds every [ProgressPhoto]
+  /// from JSON on each read -- so a single capture, which invalidates the
+  /// stream, gave every existing photo a NEW key. The whole history was
+  /// re-decrypted on every shot, and the bytes behind the old keys stayed in
+  /// the container with nothing left to reach them.
+  ///
+  /// Every field, not just [id]: a partial `==` on a plain value object is a
+  /// trap for the next reader, who will reasonably assume two equal photos
+  /// carry equal metadata.
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProgressPhoto &&
+          other.id == id &&
+          other.takenAt == takenAt &&
+          other.storagePath == storagePath &&
+          other.keyFingerprint == keyFingerprint &&
+          other.angle == angle &&
+          other.weightKg == weightKg &&
+          other.bodyFatPercent == bodyFatPercent &&
+          other.note == note;
+
+  @override
+  int get hashCode => Object.hash(id, takenAt, storagePath, keyFingerprint,
+      angle, weightKg, bodyFatPercent, note);
 }
 
 enum ProgressPhotoAngle { front, side, back, custom }

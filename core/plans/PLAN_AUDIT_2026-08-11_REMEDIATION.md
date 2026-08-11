@@ -95,10 +95,17 @@ not later mistaken for scope creep.
 | **P1c** Platform scope | **DONE** — `core/PLATFORM_SCOPE.md` | `7a31d3c` |
 | **P1d** Entitlement states | **DONE** — paywall no longer shown to paying users on cold start or stream error | `55cb4ae` |
 | **P1e** Duplicate reconciliation | **DONE** — repairs pre-A4 double charges on the webhook | `55cb4ae` |
-| **P1f** Deletion + multi-account e2e | **DONE** — 8 tests, real Admin SDK against the emulators | this commit |
+| **P1f** Deletion + multi-account e2e | **DONE** — 11 tests, real Admin SDK against the emulators; found a live self-booking orphan row | `f0beafd` |
 | **P1g** Device photo-capture ordering | **BLOCKED** — needs hardware | |
 | Mock disclosure (P1) | **already closed** before the gate ran (see below) | |
-| P2 / redesign remainder | not started | |
+| Entitlement readers | **DONE** — eight remaining surfaces, not ten as reported mid-run | `57f8000` |
+| **P2a** Bundled fonts | **DONE** — 11 faces; act gate caught that w800 (105 uses) was unbundled | `bf4983f` |
+| **P2b** Touch-target semantics | **DONE** — six unwrapped targets, not twelve as reported mid-run | `2a0e63d` |
+| **P2c** Photo paging + bounded bytes + decode size | **DONE** — 15 tests; found an identity-keyed cache leak the audit did not name | this commit |
+| **P2d** Video cache quota/LRU | not started | |
+| **P2e** Doc refresh | not started | |
+| **P2f** Production manifest | not started | |
+| Redesign remainder | not started | |
 
 **Audit finding that no longer holds.** `AUDIT_REPORT_2026-08-11.md:35` says
 `/community` uses an undisclosed in-memory mock. It is disclosed:

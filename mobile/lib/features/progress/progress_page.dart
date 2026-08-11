@@ -10,6 +10,7 @@ import '../../shared/widgets/glass.dart';
 import '../progress_photos/data/photo_timeline.dart';
 import '../progress_photos/data/progress_photo.dart';
 import '../progress_photos/state/progress_photos_providers.dart';
+import '../progress_photos/widgets/photo_bitmap.dart';
 import '../workouts/data/workout_log.dart';
 import '../workouts/data/workout_session.dart';
 import '../workouts/state/workout_session_providers.dart';
@@ -440,7 +441,7 @@ class _PhotoThumb extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     return ref.watch(photoBytesProvider(photo)).when(
-          data: (bytes) => Image.memory(bytes, fit: BoxFit.cover),
+          data: (bytes) => PhotoBitmap(bytes: bytes),
           loading: () => ColoredBox(color: theme.colors.surfaceInteractive),
           error: (_, __) => ColoredBox(
             color: theme.colors.surfaceInteractive,

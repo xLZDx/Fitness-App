@@ -854,6 +854,8 @@
   "progressphotosMonthCount": "{count, plural, one{{count} снимок} few{{count} снимка} many{{count} снимков} other{{count} снимка}}",
   "progressphotosDelete": "Удалить снимок",
   "progressphotosStaysOnPhone": "Зашифровано на этом телефоне. Копии на сервере нет, и поделиться отсюда нельзя.",
+  "progressphotosUnreadable": "Этот снимок не удалось показать.",
+  "progressphotosShowMore": "{count, plural, one{Показать ещё {count} снимок} few{Показать ещё {count} снимка} many{Показать ещё {count} снимков} other{Показать ещё {count} снимка}}",
   "postureTitle": "Осанка",
   "postureHomeSubtitle": "Проверьте плечи, таз и наклон головы",
   "postureIntro": "Встаньте так, чтобы всё тело было видно, боком к камере, и замрите.",
