@@ -3096,3 +3096,52 @@ test` 1925 passed, `npx jest` 144 passed, `flutter analyze` 7 (prior baseline),
 working tree clean. What is missing is the artifact on the operator's phone —
 and with it the first real execution of the Keystore migration, which is the
 single most important thing left unverified in this whole run.
+
+---
+
+## 2026-08-11, 19:40 local (Europe/Chisinau) / 16:40 UTC — build shipped: 1.0.0 (2344) from e8ad0a7
+
+The run's closing condition is met. Operator approved the truststore fix
+against a diff naming the exact file and lines; applied to
+`D:\.gradle\gradle.properties` with `gradle.properties.bak-20260811` beside it.
+
+```
+systemProp.javax.net.ssl.trustStoreType=Windows-ROOT
+```
+
+replacing the two `trustStore=D:/tools/java-truststore/cacerts.jks` lines,
+which were the cause: that property replaces the JDK default, and the bundle
+had no proxy CA.
+
+### Result
+
+```
+assembleRelease                                327.1s
+app-arm64-v8a-release.apk                      103.5 MB
+uploaded new release 1.0.0 (2344) successfully
+added release notes successfully
+distributed to testers/groups successfully
+Distributed e8ad0a7 (103.5 MB) to korostelevivan@gmail.com
+```
+
+Built from a clean tree at `e8ad0a7`, so the artifact matches the commit
+exactly. Release notes name what changed in user-visible terms, the four things
+to check first, and six things knowingly not ready — including that nothing in
+this build has ever run on a device before, which is the whole point of
+shipping it.
+
+### Why this file, and not the repo
+
+`mobile/android/gradle.properties` was rejected: `gradle.properties` has no
+conditionals and `Windows-ROOT` is invalid off Windows, so it would bake a
+machine-specific workaround into a repo whose standing rule is that every
+choice must accommodate iOS and other platforms. The fault is this machine's
+TLS interception, so the fix belongs in this machine's Gradle home.
+
+### Что осталось непокрытым
+
+Everything the release notes list as not ready, and one thing they do not:
+**P1, P2 and the redesign remainder (Ф3, bug 5, bug 6's programme-card half,
+R11f/R11h/R11b, Paywall) were named in the operator's GO and are NOT started.**
+The run covered A2-sec, its act gate, A5, A6-full, S1, the deploy and the
+build; it did not reach the P1/P2/redesign block.

@@ -110,6 +110,38 @@ open question inside A3 is photo BYTES — excluded today by a comment in
 **Push state.** `c496a13` is on `origin/master`. Everything after it is local
 and awaiting a push-GO.
 
+## 4b. Run outcome — 2026-08-11, 19:40 local (Europe/Chisinau) / 16:40 UTC
+
+**Shipped:** `1.0.0 (2344)` from `e8ad0a7`, 103.5 MB arm64, to
+korostelevivan@gmail.com with release notes naming what changed, what to check
+and what is knowingly not ready.
+
+**Not started, and named in the operator's GO:** P1, P2, and the redesign
+remainder — Ф3, bug 5, bug 6's programme-card half, R11f/R11h/R11b, Paywall
+(still HELD on pricing). The run covered A2-sec + its act gate, A5, A6-full,
+S1, the deploy and the build, then stopped.
+
+**Still open inside the gates that are done:**
+
+- The live Stripe endpoint's API version was never read — `STRIPE_SECRET_KEY`
+  access is refused by the environment's permission classifier. The
+  Acacia/Basil reader handles both layouts by construction, so the deploy is
+  safe either way; what is unknown is whether an incident existed.
+- The budget `notificationsRule` on `projects/988522745882` is still empty.
+- UI labelling of scanner / Form Coach / Posture as experimental — audit
+  recommendation 7, and the one item `ML_STRATEGY_2026-08-11.md` names as
+  gate-worthy before release.
+- No device verification of the Keystore migration, the per-uid photo
+  directory or the camera-temp delete. The shipped build is the first
+  execution.
+
+**Machine-level change made under a separate operator approval:**
+`D:\.gradle\gradle.properties` now sets
+`systemProp.javax.net.ssl.trustStoreType=Windows-ROOT` (backup:
+`gradle.properties.bak-20260811`). Without it no new Maven artifact can be
+downloaded on this machine — NetLimiter intercepts TLS and the previous
+explicit truststore held no proxy CA.
+
 ## 5. Closing condition
 
 Per "Ship the Build to the Tester, With Real Release Notes": the run ends with
