@@ -1,0 +1,22 @@
+section,key,value,detail
+git,commit,52818051212bf1506f7af70e1fe0a940dcfbde21,master
+git,tree,DIRTY -- 3 uncommitted path(s),
+functions,bookCoachSession,1786459750064372,gcfv2 europe-west1 nodejs20
+functions,clipUrl,1786459749764135,gcfv2 europe-west1 nodejs20
+functions,clipUrls,1786459750001136,gcfv2 europe-west1 nodejs20
+functions,createCheckoutSession,1786459749905895,gcfv2 europe-west1 nodejs20
+functions,createPortalSession,1786459749721848,gcfv2 europe-west1 nodejs20
+functions,deleteAccount,1786459749862047,gcfv2 europe-west1 nodejs20
+functions,exportAccountData,1786459690851312,gcfv2 europe-west1 nodejs20
+functions,generateAnnualReceipt,1786459749968379,gcfv2 europe-west1 nodejs20
+functions,optInDonorWall,1786459749727417,gcfv2 europe-west1 nodejs20
+functions,optOutDonorWall,1786459749751560,gcfv2 europe-west1 nodejs20
+functions,reportEquipment,1786459749872875,gcfv2 europe-west1 nodejs20
+functions,startCoachOnboarding,1786459749874653,gcfv2 europe-west1 nodejs20
+functions,startFreeTrial,1786459749684022,gcfv2 europe-west1 nodejs20
+functions,stripeWebhook,1786459749875272,gcfv2 europe-west1 nodejs20
+firestore_rules,cloud.firestore,298949ea-bc19-4f70-a72c-c7a343510ebf,2026-08-05T12:32:14.064940Z
+app_check,firebaseml.googleapis.com,UNENFORCED,2026-08-07T22:18:33.818415Z
+app_check,firestore.googleapis.com,UNENFORCED,2026-08-05T14:26:48.336431Z
+app_check,identitytoolkit.googleapis.com,UNENFORCED,2026-08-05T14:26:47.403167Z
+hosting,1786459779252000,3ab6ffd44614d492,FINALIZED 2026-08-11T14:48:05.317400Z
