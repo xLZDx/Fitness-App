@@ -94,7 +94,7 @@ class DeloadBanner extends ConsumerWidget {
                           : 'Accept deload (50% volume × 7d)',
                     ),
                   ),
-                ] else ...[
+                ] else if (ref.watch(entitlementResolvedProvider)) ...[
                   Expanded(
                     child: AppSecondaryButton(
                       onPressed: () =>
@@ -105,6 +105,10 @@ class DeloadBanner extends ConsumerWidget {
                     ),
                   ),
                 ],
+                // Third case, deliberately empty: the plan is not known yet.
+                // The banner's advice above is worth reading on its own, and a
+                // "become a supporter" button under it — shown to somebody who
+                // already is one — is not.
               ],
             ),
             if (action.hasError) ...[

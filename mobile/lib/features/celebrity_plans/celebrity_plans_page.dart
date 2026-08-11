@@ -21,6 +21,9 @@ class CelebrityPlansPage extends ConsumerWidget {
     final theme = Theme.of(context);
     final tier = ref.watch(effectiveTierProvider);
     final isPremium = tier == SubscriptionTier.celebrityTrainer;
+    // The cards below stay locked while the plan is unknown; only the pitch
+    // waits. See [entitlementResolvedProvider].
+    final mayOffer = ref.watch(entitlementResolvedProvider);
     final plansAsync = ref.watch(celebrityPlansProvider);
 
     return FrostedScaffold(
@@ -47,7 +50,7 @@ class CelebrityPlansPage extends ConsumerWidget {
               ],
             ),
           ),
-          if (!isPremium) ...[
+          if (!isPremium && mayOffer) ...[
             const SizedBox(height: 12),
             AppPrimaryButton(
               onPressed: () => GoRouter.of(context).push('/subscription'),

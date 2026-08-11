@@ -3449,3 +3449,90 @@ P2 and the redesign remainder are untouched. The client half of multi-account
 isolation needed no work: `local_data_wipe_test.dart:41` and `:81` already pin
 "another account's health blob" and "another account's photos" on a shared
 phone.
+
+---
+
+## 2026-08-12, 00:35 local (Europe/Chisinau) / 21:35 UTC — the rest of the entitlement readers, and a correction to my own count
+
+### Correction — there were eight surfaces, not ten
+
+I have been saying "the other ten files reading `featureAccessProvider` /
+`effectiveTierProvider`" since P1d. Counted properly (`grep -rln` over `lib/`):
+eleven files match, of which `subscription_providers.dart` is the definition,
+`subscription_page.dart` was done in P1d, and `app_settings.dart` only mentions
+`effectiveTierProvider` in a doc comment about the debug tier override — it
+reads nothing. **Eight** surfaces actually needed a decision. The number was
+repeated from memory across three reports without being re-derived.
+
+### Decision — the distinction goes to surfaces that SELL, not to surfaces that LOCK
+
+Wiring `EntitlementStatus` into all eight mechanically would have been the
+literal reading of the task and the wrong one. Each site was read and sorted by
+what a momentary `free` actually costs there:
+
+- **Six sell.** `celebrity_plans_page:50` ("Become a sustainer to unlock"),
+  `team_feed_page:43` (the locked hero) and `:61` (the empty-state pitch),
+  `form_check_page:247` and `progress_photos_page:57` (`_UpgradeCard`),
+  `deload_banner:97` ("Become a supporter"), `workouts_page:558` (tapping the
+  offline card routes to `/subscription`). Each of these, on a cold start,
+  aimed a sales pitch at somebody who had already bought the thing.
+- **One states the plan.** `profile_page`'s Subscription tile subtitle. `sub`
+  is null both when there is no subscription and when the stream has not
+  answered, so it greeted a paying member with "Free · start a 14-day trial".
+- **One refuses a feature.** `offline_video_providers:60` threw
+  `'Offline downloads are a Supporter+ benefit.'` — the app denying a paying
+  member something they bought, in their own words.
+
+The locks themselves are untouched everywhere. `_PlanCard(locked: !isPremium)`,
+`_PostCard(locked:)`, the lock icons — all still resolve from the concrete
+tier, because `free` is the right default for withholding and the wrong one for
+selling. A card that unlocks half a second later is a flicker; a paywall shown
+to a paying customer is the product telling them they have not paid.
+
+### Decision — a bool provider, not the enum, at six of the eight
+
+`entitlementResolvedProvider` exists because six sites need exactly one bit —
+"may I pitch right now" — and threading a three-valued enum through each would
+have invited a fourth answer per site. `profile_page` reads the full enum,
+because it has three genuinely different things to say (checking / could not
+check / here is your plan), and that is what the enum is for.
+
+### Decision — the two async sites WAIT rather than guess
+
+`workouts_page`'s tap handler and `prefetchNext7Days` are both already async, so
+neither has to answer from the loading default: they await
+`currentSubscriptionProvider.future` and then decide. A download is not so
+urgent that it cannot wait for the plan it depends on.
+
+Rejected — a dead tap while unresolved. It removes the wrong paywall and
+replaces it with a button that does nothing, which reads as a broken app rather
+than a slow one.
+
+The refusal message now separates two cases that were one: "Could not check
+your plan" when the stream failed, and the original "Supporter+ benefit" only
+when free is a real, resolved answer.
+
+### Evidence — mutation-checked, like P1f
+
+Removing the wait in `prefetchNext7Days` (`if (false)`) turns
+"it waits for the answer instead of refusing" red — `Expected: false,
+Actual: <true>` on `hasError` — which is precisely the paying member being
+refused. Restored; `git diff --stat` on that file is empty.
+
+The existing eight prefetch tests overrode only `effectiveTierProvider`, so the
+new status read would have reached live Firestore from a unit test. Fixture now
+states `entitlementStatusProvider.overrideWithValue(resolved)` explicitly,
+which is what those tests actually assume.
+
+### Что осталось непокрытым
+
+No widget test drives any of the six gated sell surfaces; the coverage is at
+the provider and at the one place with real behaviour (prefetch). Six
+`if (... && mayOffer)` conditions are verified by reading, not by execution.
+
+`'Offline downloads are a Supporter+ benefit.'` and the new
+`'Could not check your plan. Please try again.'` are hardcoded English, like
+every other `StateError` in that file. Left as found rather than half-localising
+one error string.
+
+Nothing here has run on a device.

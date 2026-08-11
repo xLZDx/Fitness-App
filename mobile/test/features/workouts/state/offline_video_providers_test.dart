@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -8,6 +10,7 @@ import 'package:fitness_app/features/equipment/data/clip_url_resolver.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/subscription/data/subscription_models.dart';
+import 'package:fitness_app/features/subscription/data/subscription_repository.dart';
 import 'package:fitness_app/features/subscription/state/subscription_providers.dart';
 import 'package:fitness_app/features/workouts/data/offline_video_cache.dart';
 import 'package:fitness_app/features/workouts/data/scheduled_session.dart';
@@ -59,6 +62,11 @@ ProviderContainer _premiumContainer(
 }) {
   return ProviderContainer(overrides: [
     effectiveTierProvider.overrideWithValue(tier),
+    // These tests are about what gets cached for a user whose plan is already
+    // known. Stated rather than inherited: prefetch now waits for a real
+    // answer before refusing, so a container that left this to the live
+    // provider would reach Firestore.
+    entitlementStatusProvider.overrideWithValue(EntitlementStatus.resolved),
     authUserProvider.overrideWith((_) => Stream.value(
           const AuthUser(uid: 'u1', email: 'a@b.com', displayName: 'T'),
         )),
@@ -246,4 +254,94 @@ void main() {
       expect(await cache.sizeBytes(), 0);
     });
   });
+
+  /// The refusal used to be decided from `effectiveTierProvider` alone, which
+  /// answers `free` while the subscription stream is still loading. A paying
+  /// member who tapped Download during that window was told the feature is "a
+  /// Supporter+ benefit" — the app denying them something they had bought.
+  group('a plan that has not loaded yet is not a free plan', () {
+    ProviderContainer containerWithLiveStatus(
+      InMemoryOfflineVideoCache cache,
+      SubscriptionRepository repo,
+    ) =>
+        ProviderContainer(overrides: [
+          // Deliberately NOT overriding effectiveTierProvider or
+          // entitlementStatusProvider: the point is what they derive from a
+          // stream the test controls.
+          subscriptionRepositoryProvider.overrideWithValue(repo),
+          authUserProvider.overrideWith((_) => Stream.value(
+                const AuthUser(uid: 'u1', email: 'a@b.com', displayName: 'T'),
+              )),
+          offlineVideoCacheProvider.overrideWithValue(cache),
+          clipUrlResolverProvider
+              .overrideWithValue(PassthroughClipUrlResolver()),
+          equipmentRepositoryProvider.overrideWithValue(_repoWithVideo()),
+        ]);
+
+    test('it waits for the answer instead of refusing', () async {
+      final cache = InMemoryOfflineVideoCache();
+      final subs = _ControlledSubs();
+      final container = containerWithLiveStatus(cache, subs);
+      addTearDown(container.dispose);
+      addTearDown(subs.controller.close);
+      await container.read(authUserProvider.future);
+      container.listen(currentSubscriptionProvider, (_, __) {});
+      await Future<void>.delayed(Duration.zero);
+
+      // Tapped before the plan arrived — the exact window of the bug.
+      expect(container.read(entitlementStatusProvider),
+          EntitlementStatus.resolving);
+      final pending = container
+          .read(offlinePrefetchActionProvider.notifier)
+          .prefetchNext7Days(overrideSessions: [_sessionInWindow('bench')]);
+
+      subs.controller.add(Subscription(
+        uid: 'u1',
+        tier: SubscriptionTier.standard,
+        status: SubscriptionStatus.active,
+        currentPeriodEndsAt: DateTime.now().add(const Duration(days: 30)),
+      ));
+      await pending;
+
+      expect(container.read(offlinePrefetchActionProvider).hasError, isFalse,
+          reason: 'the member pays; the plan was merely slow to load');
+      expect(await cache.sizeBytes(), greaterThan(0));
+    });
+
+    test('a plan that cannot be read says so, and does not blame the user',
+        () async {
+      final cache = InMemoryOfflineVideoCache();
+      final subs = _ControlledSubs();
+      final container = containerWithLiveStatus(cache, subs);
+      addTearDown(container.dispose);
+      addTearDown(subs.controller.close);
+      await container.read(authUserProvider.future);
+      container.listen(currentSubscriptionProvider, (_, __) {});
+      await Future<void>.delayed(Duration.zero);
+
+      final pending = container
+          .read(offlinePrefetchActionProvider.notifier)
+          .prefetchNext7Days(overrideSessions: [_sessionInWindow('bench')]);
+      subs.controller.addError(StateError('firestore unavailable'));
+      await pending;
+
+      final error = container.read(offlinePrefetchActionProvider).error;
+      expect(error, isA<StateError>());
+      // The distinction the whole gate is about: "we could not check" is not
+      // "you have not paid".
+      expect('$error', contains('Could not check your plan'));
+      expect(await cache.sizeBytes(), 0);
+    });
+  });
+}
+
+/// A subscription store whose stream the test drives by hand.
+class _ControlledSubs implements SubscriptionRepository {
+  final controller = StreamController<Subscription?>.broadcast();
+
+  @override
+  Stream<Subscription?> watch(String uid) => controller.stream;
+
+  @override
+  noSuchMethod(Invocation i) => super.noSuchMethod(i);
 }

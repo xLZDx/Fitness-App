@@ -1136,6 +1136,10 @@
   "profileHealthQuestionnaire": "Health questionnaire",
   "profileCompleteQuestionnaire": "Complete questionnaire",
   "profileFreeStartTrial": "Free · start a 14-day trial",
+  "profileCheckingPlan": "Checking your plan…",
+  "@profileCheckingPlan": {
+    "description": "Subtitle of the Subscription tile while the plan is still loading. Shown instead of naming a tier, because naming one from a not-yet-loaded default tells a paying member they are on Free."
+  },
   "profileTierFree": "Free",
   "profileTierStandard": "Standard",
   "profileTierCelebrity": "Celebrity trainer",

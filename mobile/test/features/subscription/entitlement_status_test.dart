@@ -153,4 +153,41 @@ void main() {
     expect(c.read(effectiveTierProvider), SubscriptionTier.celebrityTrainer,
         reason: 'a transient read failure must not revoke a paid tier');
   });
+
+  // The one-line form every sell surface reads. Six of them ask nothing more
+  // than "may I pitch right now", and each of the three statuses has to answer
+  // it correctly or the wiring is decorative.
+  group('entitlementResolvedProvider — may the app offer to sell', () {
+    test('no, while the plan is still loading', () async {
+      final c = containerWith(_SignedInAuth());
+      c.listen(currentSubscriptionProvider, (_, __) {});
+      await Future<void>.delayed(Duration.zero);
+
+      expect(c.read(entitlementResolvedProvider), isFalse);
+    });
+
+    test('no, when the plan could not be read', () async {
+      final c = containerWith(_SignedInAuth());
+      c.listen(currentSubscriptionProvider, (_, __) {});
+      await Future<void>.delayed(Duration.zero);
+
+      subs.controller.addError(StateError('offline'));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(c.read(entitlementResolvedProvider), isFalse);
+    });
+
+    test('yes, to a user who genuinely has no plan', () async {
+      // The case the gating must not break: this user SHOULD be sold to.
+      final c = containerWith(_SignedInAuth());
+      c.listen(currentSubscriptionProvider, (_, __) {});
+      await Future<void>.delayed(Duration.zero);
+
+      subs.controller.add(null);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(c.read(entitlementResolvedProvider), isTrue);
+      expect(c.read(effectiveTierProvider), SubscriptionTier.free);
+    });
+  });
 }

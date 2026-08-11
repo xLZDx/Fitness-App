@@ -200,7 +200,8 @@ class ProfilePage extends ConsumerWidget {
                   icon: Icons.workspace_premium_outlined,
                   gradient: AppPalette.tileGradients[3],
                   title: AppLocalizations.of(context).profileSubscription,
-                  subtitle: _subscriptionSubtitle(l10n, sub, tier),
+                  subtitle: _subscriptionSubtitle(
+                      l10n, sub, tier, ref.watch(entitlementStatusProvider)),
                   onTap: () => context.push('/subscription'),
                 ),
                 _divider(context),
@@ -296,8 +297,20 @@ class ProfilePage extends ConsumerWidget {
     );
   }
 
-  String _subscriptionSubtitle(
-      AppLocalizations l10n, Subscription? sub, SubscriptionTier tier) {
+  String _subscriptionSubtitle(AppLocalizations l10n, Subscription? sub,
+      SubscriptionTier tier, EntitlementStatus status) {
+    // This line NAMES the member's plan, which makes it a claim about them.
+    // `sub` is null both when there is no subscription and when the stream has
+    // not answered yet, so without the status it greeted a paying member with
+    // "Free · start a 14-day trial" on every cold start.
+    switch (status) {
+      case EntitlementStatus.resolving:
+        return l10n.profileCheckingPlan;
+      case EntitlementStatus.unavailable:
+        return l10n.subscriptionCouldNotCheckPlan;
+      case EntitlementStatus.resolved:
+        break;
+    }
     if (sub == null || sub.status == SubscriptionStatus.none) {
       return l10n.profileFreeStartTrial;
     }

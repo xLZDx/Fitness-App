@@ -54,7 +54,7 @@ class ProgressPhotosPage extends ConsumerWidget {
             const _PrivacyStrip(),
             const SizedBox(height: 16),
           ],
-          if (!isPaid) ...[
+          if (!isPaid && ref.watch(entitlementResolvedProvider)) ...[
             const _UpgradeCard(),
             const SizedBox(height: 16),
           ],

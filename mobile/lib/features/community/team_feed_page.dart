@@ -27,6 +27,8 @@ class TeamFeedPage extends ConsumerWidget {
     final theme = Theme.of(context);
     final tier = ref.watch(effectiveTierProvider);
     final isPremium = tier == SubscriptionTier.celebrityTrainer;
+    // Posts stay locked while the plan is unknown; only the pitch waits.
+    final mayOffer = ref.watch(entitlementResolvedProvider);
     final feedAsync = ref.watch(teamFeedProvider(teamId));
     final isDemo = ref.watch(teamFeedIsDemoProvider);
 
@@ -40,7 +42,7 @@ class TeamFeedPage extends ConsumerWidget {
             isDemo: isDemo,
             message: AppLocalizations.of(context).communityDemoFeed,
           ),
-          if (!isPremium) ...[
+          if (!isPremium && mayOffer) ...[
             _LockedHero(),
             const SizedBox(height: 16),
           ],
@@ -58,7 +60,9 @@ class TeamFeedPage extends ConsumerWidget {
               if (posts.isEmpty) {
                 return GlassCard(
                   child: Text(
-                    isPremium
+                    // The neutral line, not the pitch, whenever the plan is
+                    // not yet known — "no posts yet" is true either way.
+                    isPremium || !mayOffer
                         ? AppLocalizations.of(context).communityNoPostsYet
                         : 'Become a Sustainer to read what your coach is sharing.',
                     style: theme.textTheme.bodyMedium,

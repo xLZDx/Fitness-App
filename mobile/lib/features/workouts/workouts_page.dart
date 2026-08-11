@@ -555,7 +555,20 @@ class _OfflinePrefetchCard extends ConsumerWidget {
     return GlassCard(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       onTap: () async {
-        if (!isPremium) {
+        // The plan may still be loading, and `isPremium` reads `free` while it
+        // is. Deciding from that would send a paying user to the paywall for a
+        // feature they already have, so the tap waits for the answer instead
+        // of guessing from the default.
+        if (!ref.read(entitlementResolvedProvider)) {
+          try {
+            await ref.read(currentSubscriptionProvider.future);
+          } catch (_) {
+            // Still unknown. Handled below: no pitch, no false unlock.
+          }
+        }
+        if (!context.mounted) return;
+        if (!ref.read(entitlementResolvedProvider)) return;
+        if (ref.read(effectiveTierProvider) == SubscriptionTier.free) {
           GoRouter.of(context).push('/subscription');
           return;
         }

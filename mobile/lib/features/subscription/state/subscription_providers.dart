@@ -84,6 +84,22 @@ final entitlementStatusProvider = Provider<EntitlementStatus>((ref) {
   return EntitlementStatus.resolved;
 });
 
+/// Whether this moment is one where the app may offer to SELL something.
+///
+/// The one-line form of [EntitlementStatus] for the surfaces that need nothing
+/// more than the yes/no: an upsell button, a "become a supporter" CTA, a
+/// subtitle claiming which plan the user is on. Every one of those is a
+/// statement about the customer, and making it from a `free` that only means
+/// "not loaded yet" tells somebody who pays that they do not.
+///
+/// Deliberately NOT applied to locking. A feature that stays locked for the
+/// half-second before the stream answers costs a flicker; unlocking it
+/// optimistically would give away paid features to everyone on every cold
+/// start. The asymmetry is the whole design — see [EntitlementStatus].
+final entitlementResolvedProvider = Provider<bool>(
+  (ref) => ref.watch(entitlementStatusProvider) == EntitlementStatus.resolved,
+);
+
 /// The tier the rest of the app should gate on. Resolves trial/period
 /// expiry server-side in case Firestore hasn't synced the lapse yet.
 ///

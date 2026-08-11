@@ -57,6 +57,23 @@ class OfflinePrefetchAction extends Notifier<AsyncValue<void>> {
   }) async {
     state = const AsyncValue.loading();
     try {
+      // `effectiveTierProvider` answers `free` while the subscription stream
+      // is still loading, and refusing on that told a paying user that their
+      // plan does not include something they bought. Wait for a real answer
+      // first; a download is not so urgent that it cannot.
+      if (ref.read(entitlementStatusProvider) != EntitlementStatus.resolved) {
+        try {
+          await ref.read(currentSubscriptionProvider.future);
+        } catch (_) {
+          // Handled by the status re-read below, so the failure surfaces as
+          // "could not check" rather than as "you have not paid".
+        }
+      }
+      if (ref.read(entitlementStatusProvider) != EntitlementStatus.resolved) {
+        throw StateError(
+          'Could not check your plan. Please try again.',
+        );
+      }
       final tier = ref.read(effectiveTierProvider);
       if (tier == SubscriptionTier.free) {
         throw StateError(

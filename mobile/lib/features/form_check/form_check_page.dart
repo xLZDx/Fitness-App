@@ -244,7 +244,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
-          if (!isPremium) ...[
+          if (!isPremium && ref.watch(entitlementResolvedProvider)) ...[
             _UpgradeCard(),
             const SizedBox(height: 16),
           ],
