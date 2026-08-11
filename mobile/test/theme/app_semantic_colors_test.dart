@@ -3,7 +3,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'package:fitness_app/core/theme/app_palette.dart';
 import 'package:fitness_app/core/theme/app_semantic_colors.dart';
@@ -37,10 +36,9 @@ Color flatten(Color fg, Color bg) => Color.alphaBlend(fg, bg);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  // `AppTheme` builds its text theme from Inter. Without this the two tests
-  // that realise a real theme reach for fonts.gstatic.com, and a machine with
-  // no network fails them for a reason that has nothing to do with colour.
-  GoogleFonts.config.allowRuntimeFetching = false;
+  // Inter is bundled now, so building a theme reaches nothing. This used to
+  // need `GoogleFonts.config.allowRuntimeFetching = false`, or a machine with
+  // no network failed these for a reason that had nothing to do with colour.
 
   // Sanity check on the checker itself. A contrast function with a sign error
   // or a missing gamma step would let every assertion below pass.
@@ -214,14 +212,14 @@ void main() {
   });
 
   group('the theme installs it', () {
-    // `testWidgets`, not `test`: building the theme touches GoogleFonts, which
-    // reports its failure asynchronously even with runtime fetching off, and
-    // only a tester can consume that. The same reason `app_theme_test.dart`
-    // realises every theme through a pump.
+    // Still `testWidgets` rather than `test`: these realise a theme through a
+    // pump, which is what the surrounding group asserts against. The
+    // `takeException` calls that used to sit here were consuming GoogleFonts'
+    // asynchronous download failure and are gone with it — a bare
+    // `takeException` left behind would silently swallow a real error.
     testWidgets('both themes carry the extension', (t) async {
       final dark = AppTheme.dark();
       final light = AppTheme.light();
-      t.takeException();
       expect(dark.extension<AppSemanticColors>(), AppSemanticColors.dark);
       expect(light.extension<AppSemanticColors>(), AppSemanticColors.light);
     });
@@ -239,7 +237,6 @@ void main() {
       }.entries) {
         final scheme = entry.key.colorScheme;
         final tokens = entry.value;
-        t.takeException();
         expect(scheme.surface, tokens.backgroundPrimary);
         expect(scheme.onSurface, tokens.textPrimary);
         // `colorScheme.error` is the one a stock Material widget reaches for.
@@ -286,8 +283,6 @@ void main() {
           return const SizedBox();
         }),
       ));
-      // GoogleFonts still reports asynchronously even with fetching off.
-      t.takeException();
       expect(seen.textPrimary, AppSemanticColors.dark.textPrimary);
     });
   });

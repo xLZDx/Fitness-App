@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_palette.dart';
 import 'app_semantic_colors.dart';
+
+/// The two bundled families, declared in `pubspec.yaml` under `fonts:`.
+///
+/// Named constants rather than string literals at each of the eight use sites:
+/// a typo in one of those is not an error, it is a silent fall back to the
+/// platform font — the exact failure this gate removed by dropping
+/// `google_fonts`' runtime download. `font_bundle_test.dart` pins both names
+/// and every weight against what pubspec actually ships.
+const String kBodyFont = 'Inter';
+const String kDisplayFont = 'Barlow Condensed';
 
 class AppTheme {
   static ThemeData light() => _build(Brightness.light);
@@ -42,10 +51,17 @@ class AppTheme {
       outline: tokens.outline,
     );
 
-    final textTheme = GoogleFonts.interTextTheme().apply(
-      bodyColor: scheme.onSurface,
-      displayColor: scheme.onSurface,
-    );
+    // Was `GoogleFonts.interTextTheme()`, which returned Material's own
+    // typography with Inter's family name attached. `Typography.material2021`
+    // is where that geometry came from, so taking it directly and applying the
+    // family keeps every size, weight and height identical while removing the
+    // download.
+    final base = isDark
+        ? Typography.material2021().white
+        : Typography.material2021().black;
+    final textTheme = base
+        .apply(fontFamily: kBodyFont)
+        .apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface);
 
     // The prototype runs two families, not one: Inter for reading, Barlow
     // Condensed for anything large — screen titles, stat numbers, the weight
@@ -65,9 +81,9 @@ class AppTheme {
     // sizes go up rather than staying put: matching the design's *presence*
     // means matching how much of the screen the word occupies, not the number
     // in the size field.
-    TextStyle display(TextStyle? base, double size, FontWeight weight) =>
-        GoogleFonts.barlowCondensed(
-          textStyle: base,
+    TextStyle display(TextStyle? from, double size, FontWeight weight) =>
+        (from ?? const TextStyle()).copyWith(
+          fontFamily: kDisplayFont,
           fontSize: size,
           fontWeight: weight,
           // CSS -0.01em, resolved against each size rather than copied as one
@@ -138,7 +154,8 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          textStyle: GoogleFonts.inter(
+          textStyle: const TextStyle(
+            fontFamily: kBodyFont,
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
@@ -154,7 +171,8 @@ class AppTheme {
             color: scheme.onSurface.withValues(alpha: 0.18),
             width: 1.2,
           ),
-          textStyle: GoogleFonts.inter(
+          textStyle: const TextStyle(
+            fontFamily: kBodyFont,
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),

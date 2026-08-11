@@ -3536,3 +3536,90 @@ every other `StateError` in that file. Left as found rather than half-localising
 one error string.
 
 Nothing here has run on a device.
+
+---
+
+## 2026-08-12, 01:20 local (Europe/Chisinau) / 22:20 UTC — P2a: fonts bundled, and the act gate caught me shipping the wrong three
+
+### Decision — the download was removed, not merely disabled
+
+`google_fonts` fetched Inter and Barlow Condensed from fonts.gstatic.com on
+first launch. Every failure mode of that is silent: offline, a captive portal,
+or a TLS-intercepting proxy all end in Flutter falling back to the platform
+font, which is a different width — so the first launch, the one a new user
+judges the app on, is the one that renders in the wrong typeface and reflows
+when the download lands. This project has already lost a day to exactly that
+proxy (`nllMonFltProxy`, the truststore incident earlier in this same run).
+
+Rejected: keeping the package with `allowRuntimeFetching = false` plus files in
+`assets/google_fonts/`. It works, but it leaves a code path that can reach the
+network for a typeface and a manifest-name matching rule between the package
+and the filenames that nothing checks. Dropping the dependency makes the
+failure impossible rather than unlikely, and it deleted the
+`allowRuntimeFetching = false` line from three test files that only existed
+because a unit test could otherwise try to reach the internet.
+
+### Evidence — the act gate returned BLOCK, and it was right
+
+I bundled Inter at w400/w600/w700 and Barlow Condensed at w700/w800/w900 —
+"the weights `app_theme.dart` asks for". That reasoning was wrong, and the gate
+said so. Measured rather than argued:
+
+```
+grep -rho "FontWeight\.w[0-9]00" lib/ | sort | uniq -c
+    105 FontWeight.w800
+     68 FontWeight.w700
+     29 FontWeight.w600
+      8 FontWeight.w900
+      1 FontWeight.w500
+```
+
+**w800 is the single most-used weight in the app — 105 call sites — and it was
+not in the bundle.** The theme file names only a handful of weights directly;
+the rest of `lib/` reaches for them through `.copyWith(fontWeight:)` at 211
+further sites, which my "what does the theme ask for" reading never looked at.
+Material's own 2021 type scale additionally defaults `titleSmall` and the
+`label*` roles to w500.
+
+A weight with no bundled face does not fail. The engine synthesizes a fake one
+— the same silent-degradation class as the download I was removing. Fixed by
+bundling 500-900 for both families plus Inter's w400 default: eleven faces,
+~2.4 MB against a 103 MB APK.
+
+### Decision — the test derives the weight list, it does not hardcode it
+
+`font_bundle_test.dart` scans `lib/` for `FontWeight.wNNN` at test time and
+asserts the pubspec covers every value found. A hardcoded list would have
+encoded my original wrong answer and passed forever; this way a feature that
+introduces a new weight fails the test instead of quietly rendering a fake one.
+
+Proven by mutation: removing the w800 face from the pubspec turns it red —
+`Expected: contains all of Set:[800, 700, 900, 600, 500], Actual:
+Set:[400, 500, 600, 700, 900]`. Restored after.
+
+### Correction — the file-size check was not a font check
+
+The first version accepted any declared file over 20 KB. An HTML error page or
+a truncated download of a 325 KB font passes that. It now reads the first four
+bytes and requires the sfnt version tag (`0x00010000`, or `true`/`ttcf`/`OTTO`)
+— these files came off the network and "plausible size" is not evidence.
+
+### Что осталось непокрытым — stated because the gate caught me overselling it
+
+**`flutter test` does not rasterize bundled fonts.** There is no
+`flutter_test_config.dart` and no `loadAppFonts()`, so the widget test reads
+the family NAME off `ThemeData` and proves nothing about glyphs. This is
+metadata coverage. That is also why no layout test moved when a real font was
+introduced — the tests never rendered Inter before or after, so "1941 passed"
+says nothing about how the app looks.
+
+Whether the eleven faces parse and render is answerable only on a device, and
+is deliberately not claimed here. It goes on the list for the final build.
+
+One claim I could not verify either way: that `Typography.material2021()` +
+`.apply(fontFamily:)` reproduces `GoogleFonts.interTextTheme()`'s scale exactly.
+The package is gone from the lockfile, so the old base cannot be diffed from
+this checkout. The sizes and weights the theme sets explicitly are unchanged;
+the roles it does not touch inherit Material's own scale, which is what
+`interTextTheme()` was applying a family to in the first place. Recorded as an
+assumption rather than a fact.

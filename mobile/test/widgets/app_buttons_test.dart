@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart' show SemanticsFlag;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'package:fitness_app/core/theme/app_palette.dart';
 import 'package:fitness_app/core/theme/app_semantic_colors.dart';
@@ -10,9 +9,9 @@ import 'package:fitness_app/shared/widgets/app_buttons.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  // `AppTheme` resolves Inter through Google Fonts; a test machine has no
-  // network and the failure has nothing to do with buttons.
-  GoogleFonts.config.allowRuntimeFetching = false;
+  // Inter is bundled, so `AppTheme` resolves it from the asset bundle. This
+  // used to disable Google Fonts' runtime fetching, because a test machine has
+  // no network and the failure had nothing to do with buttons.
 
   Future<void> pump(WidgetTester t, Widget child) async {
     await t.pumpWidget(MaterialApp(

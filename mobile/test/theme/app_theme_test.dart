@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'package:fitness_app/core/theme/app_theme.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  GoogleFonts.config.allowRuntimeFetching = false;
 
   Future<ThemeData> realiseTheme(WidgetTester tester, ThemeData theme) async {
     late ThemeData captured;
@@ -19,8 +17,6 @@ void main() {
         }),
       ),
     );
-    // GoogleFonts may async-fail; consume the error so it doesn't fail the test.
-    tester.takeException();
     return captured;
   }
 
