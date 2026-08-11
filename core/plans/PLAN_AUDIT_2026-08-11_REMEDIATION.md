@@ -102,7 +102,7 @@ not later mistaken for scope creep.
 | **P2a** Bundled fonts | **DONE** — 11 faces; act gate caught that w800 (105 uses) was unbundled | `bf4983f` |
 | **P2b** Touch-target semantics | **DONE** — six unwrapped targets, not twelve as reported mid-run | `2a0e63d` |
 | **P2c** Photo paging + bounded bytes + decode size | **DONE** — 15 tests; found an identity-keyed cache leak the audit did not name | this commit |
-| **P2d** Video cache quota/LRU | not started | |
+| **P2d** Video cache quota/LRU + `.part` cleanup | **DONE** — 9 tests against the real class, which had none | this commit |
 | **P2e** Doc refresh | not started | |
 | **P2f** Production manifest | not started | |
 | Redesign remainder | not started | |
