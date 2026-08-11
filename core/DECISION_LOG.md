@@ -3260,3 +3260,94 @@ P1d, P1e, P1f not started. P1g is blocked on hardware — a device
 photo-capture ordering test cannot run here at all. P2 and the redesign
 remainder untouched. The CI workflow itself has never executed on GitHub; its
 first real run is the next push.
+
+---
+
+## 2026-08-11, 22:10 local (Europe/Chisinau) / 19:10 UTC — P1d/P1e: the app was showing a paywall to paying customers, and nothing ever fixed a double charge
+
+Pushed `caf044f..7a31d3c` first, on the operator's push-GO naming that commit.
+CI runs for the first time on that push; until its result is in, "the jobs are
+green" is a claim about this machine only.
+
+### P1d — three different situations were all being rendered as "you have not paid"
+
+`effectiveTierProvider:102` read `ref.watch(currentSubscriptionProvider)
+.valueOrNull`, and `currentSubscriptionProvider` read `authUserProvider
+.valueOrNull`. Both are StreamProviders that have emitted NOTHING on a cold
+start, where `.valueOrNull` is null — indistinguishable from signed-out, which
+resolves to `free`.
+
+So on every cold start, before Firestore answered, a paying user was a free
+user. `subscription_page.dart:69` then mapped that null through `_stateFor` to
+the SELL branch: **"Choose a way to support", shown to somebody already paying
+for it.** The same path fired whenever the subscription stream errored — a
+moment offline both downgraded the user and offered to sell them what they
+already had.
+
+This is the identical `.valueOrNull` conflation the Act gate caught in the
+photos provider three commits ago. Same shape, different feature, and I did not
+go looking for it after the first one. Worth recording as a pattern rather than
+two incidents: `.valueOrNull` on a StreamProvider silently equates "loading",
+"failed" and "genuinely absent", and every one of those needs a different
+answer.
+
+**Fixed at the root, not at the call sites.** `currentSubscriptionProvider` now
+awaits `authUserProvider.future`, which removes the auth window for all 38
+readers without touching one of them. `effectiveTierProvider` keeps returning a
+concrete tier — that IS the right default for locking a feature — and a new
+`entitlementStatusProvider` carries the distinction for surfaces that must not
+sell: `resolving` shows a spinner where the plan picker would be, `unavailable`
+shows "we couldn't check your plan" with a retry.
+
+The asymmetry is the whole design: a locked button that unlocks a moment later
+is a flicker; a paywall shown to a paying customer is the product telling them
+they have not paid.
+
+Six regression tests, including the one that matters most — a genuinely free
+user must still resolve to `resolved`/`free`, or the fix would have broken the
+only sales page in the product.
+
+### P1e — A4 prevented duplicates and never repaired one
+
+A4 added an idempotency key and an active-subscription precheck, which stops a
+SECOND subscription being created. Anyone double-charged BEFORE A4 shipped is
+still double-charged, and nothing was looking. Prevention and remediation are
+different problems; only one had been solved.
+
+`reconcileDuplicateSubscriptions` now runs on every
+`customer.subscription.*` webhook event. Not a scheduled sweep: a cron over
+every customer pays a full Stripe list forever to find a condition that is rare
+and getting rarer, while the webhook already fires on change and already knows
+the customer.
+
+**The oldest billing subscription survives.** It is what the customer believes
+they bought, and cancelling it would end the plan they have been using while
+leaving one they never knowingly started. Stripe prorates the cancelled
+duplicate.
+
+Three deliberate refusals, each tested: subscriptions already
+`cancel_at_period_end` are untouched (the customer has already asked for that);
+non-billing statuses are not duplicates; and a reconciliation failure is logged
+and swallowed, because this runs INSIDE the webhook and a non-2xx makes Stripe
+retry the whole event — replaying `applySubscription` indefinitely over a
+problem that is not the entitlement write.
+
+### Проверки
+
+`npx tsc --noEmit` clean · `npx jest` **151 passed** (was 144; +7).
+Flutter figures in the commit.
+
+### Что осталось непокрытым
+
+P1f (E2E deletion + multi-account) not started. **P1g is blocked** — a device
+photo-capture ordering test needs hardware. P2 and the redesign remainder
+untouched.
+
+P1d is wired into `subscription_page` only. The other ten files reading
+`featureAccessProvider` / `effectiveTierProvider` still get the concrete-tier
+answer, which is correct for locking but means none of them distinguish
+"resolving" yet. That is a deliberate stopping point, not an oversight — the
+paywall was where the harm was.
+
+Neither P1d nor P1e has run against anything real: no device, and no test-mode
+Stripe replay of a genuine duplicate.

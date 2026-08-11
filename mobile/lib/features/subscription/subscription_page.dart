@@ -67,6 +67,12 @@ class SubscriptionPage extends ConsumerWidget {
     final tier = ref.watch(effectiveTierProvider);
     final action = ref.watch(subscriptionActionProvider);
     final state = _stateFor(sub);
+    // P1d. `sub` is null in three different situations and `_stateFor` maps
+    // all three to the SELL branch: no subscription, the stream still
+    // loading, and the stream failed. Only the first of those is a person
+    // who should be offered a plan — the other two show "choose a way to
+    // support" to somebody who may already be paying for one.
+    final status = ref.watch(entitlementStatusProvider);
 
     return FrostedScaffold(
       appBar: GlassAppBar(
@@ -91,6 +97,18 @@ class SubscriptionPage extends ConsumerWidget {
               onUpgrade: () => ref
                   .read(subscriptionActionProvider.notifier)
                   .chooseTier(sub.tier),
+            ),
+          ] else if (status == EntitlementStatus.resolving) ...[
+            // Not a spinner over the whole page: the mission strip and status
+            // card above are honest at every moment. This replaces only the
+            // part that would otherwise ask a paying customer for money.
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 32),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          ] else if (status == EntitlementStatus.unavailable) ...[
+            _EntitlementUnavailable(
+              onRetry: () => ref.invalidate(currentSubscriptionProvider),
             ),
           ] else ...[
             Text(
@@ -969,5 +987,48 @@ class _PlanCardForPeriod extends ConsumerWidget {
       case SubscriptionPeriod.family4:
         return null;
     }
+  }
+}
+
+/// Shown when the subscription stream failed (P1d).
+///
+/// Deliberately NOT the plan picker. A failed read is not evidence that this
+/// user has no plan, and rendering the sell here is the app asserting
+/// something it does not know — to a customer who may be paying right now.
+/// Saying "we could not check" and offering a retry is both true and
+/// actionable; a paywall is neither.
+class _EntitlementUnavailable extends StatelessWidget {
+  const _EntitlementUnavailable({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GlassCard(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              AppLocalizations.of(context).subscriptionCouldNotCheckPlan,
+              style: theme.textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              AppLocalizations.of(context).subscriptionCouldNotCheckPlanBody,
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: theme.colors.textSecondary),
+            ),
+            const SizedBox(height: 16),
+            AppSecondaryButton(
+              label: AppLocalizations.of(context).commonRetry,
+              onPressed: onRetry,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

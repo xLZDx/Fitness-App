@@ -31,13 +31,57 @@ final stripeCheckoutServiceProvider =
   return MockStripeCheckoutService();
 });
 
-/// Live subscription record for the signed-in user. Emits null while the
-/// user is signed out or hasn't started a trial / subscribed yet.
-final currentSubscriptionProvider = StreamProvider<Subscription?>((ref) {
-  final user = ref.watch(authUserProvider).valueOrNull;
-  if (user == null) return Stream.value(null);
-  final repo = ref.watch(subscriptionRepositoryProvider);
-  return repo.watch(user.uid);
+/// Live subscription record for the signed-in user. Emits null when the user
+/// is signed out or hasn't started a trial / subscribed yet.
+///
+/// P1d: `await ref.watch(authUserProvider.future)` rather than
+/// `.valueOrNull`. `authUserProvider` is a StreamProvider and has emitted
+/// NOTHING on a cold start, where `.valueOrNull` is null and therefore
+/// indistinguishable from signed-out — so this provider used to resolve to
+/// `Stream.value(null)` for a signed-in paying user, and every entitlement
+/// downstream read "free" until auth caught up. Awaiting the first emission
+/// removes the window instead of racing it.
+final currentSubscriptionProvider = StreamProvider<Subscription?>((ref) async* {
+  final user = await ref.watch(authUserProvider.future);
+  if (user == null) {
+    yield null;
+    return;
+  }
+  yield* ref.watch(subscriptionRepositoryProvider).watch(user.uid);
+});
+
+/// How much the app actually knows about this user's entitlement right now.
+///
+/// Exists because [effectiveTierProvider] cannot express it. That provider
+/// must return a concrete tier for 38 call sites, so "still loading" and
+/// "this user has no subscription" both arrive as `free` — which is the right
+/// default for LOCKING a feature and the wrong one for OFFERING to sell it.
+/// A locked button that unlocks a moment later is a flicker; a paywall shown
+/// to somebody who already pays is the product telling a paying customer they
+/// have not paid.
+enum EntitlementStatus {
+  /// Auth or the subscription stream has not answered yet. Lock features if
+  /// you must, but do not offer to sell anything.
+  resolving,
+
+  /// A real answer, whatever it is. `free` here means free.
+  resolved,
+
+  /// The subscription stream failed. The tier fell back to whatever was last
+  /// known, which may be stale — say so rather than silently downgrading.
+  unavailable,
+}
+
+final entitlementStatusProvider = Provider<EntitlementStatus>((ref) {
+  // A tier override is a deliberate local answer and needs no network.
+  if (ref.watch(allowTierOverrideProvider) &&
+      ref.watch(settingsControllerProvider).tierOverride != TierOverride.off) {
+    return EntitlementStatus.resolved;
+  }
+  final sub = ref.watch(currentSubscriptionProvider);
+  if (sub.isLoading && !sub.hasValue) return EntitlementStatus.resolving;
+  if (sub.hasError) return EntitlementStatus.unavailable;
+  return EntitlementStatus.resolved;
 });
 
 /// The tier the rest of the app should gate on. Resolves trial/period

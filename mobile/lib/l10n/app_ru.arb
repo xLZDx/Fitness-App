@@ -235,6 +235,8 @@
   "socialfeedLike": "Нравится",
   "socialfeedUnlike": "Убрать отметку «нравится»",
   "subscription14DayTrial": "14 дней пробного доступа",
+  "subscriptionCouldNotCheckPlan": "Не удалось проверить ваш план",
+  "subscriptionCouldNotCheckPlanBody": "Ваш действующий план, если он есть, не затронут. Это проблема связи на нашей стороне.",
   "subscriptionChooseAWayToSupport": "Выберите, как поддержать",
   "subscriptionContinueWithStripe": "Продолжить через Stripe",
   "subscriptionCopyError": "Скопировать ошибку",

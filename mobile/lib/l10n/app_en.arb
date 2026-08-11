@@ -254,6 +254,11 @@
   "socialfeedUnlike": "Unlike",
   "subscription14DayTrial": "14-day trial",
   "subscriptionChooseAWayToSupport": "Choose a way to support",
+  "subscriptionCouldNotCheckPlan": "We couldn't check your plan",
+  "@subscriptionCouldNotCheckPlan": {
+    "description": "P1d. Shown when the subscription stream failed. Deliberately not the plan picker: a failed read is not evidence the user has no plan, and showing a paywall to someone who may be paying right now is the app asserting something it does not know."
+  },
+  "subscriptionCouldNotCheckPlanBody": "Your existing plan, if you have one, is unaffected. This is a connection problem on our side.",
   "subscriptionContinueWithStripe": "Continue with Stripe",
   "subscriptionCopyError": "Copy error",
   "subscriptionCouldNotUpdateDonation": "Could not update subscription",

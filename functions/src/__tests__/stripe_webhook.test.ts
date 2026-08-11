@@ -52,7 +52,13 @@ const constructEvent = jest.fn();
 jest.mock("stripe", () => {
   const instance = {
     webhooks: { constructEvent },
-    subscriptions: { retrieve: jest.fn() },
+    // P1e reconciles duplicates on every subscription event, so the mock has
+    // to answer `list` and record `cancel` or the handler cannot be observed.
+    subscriptions: {
+      retrieve: jest.fn(),
+      list: jest.fn(async () => ({ data: [], has_more: false })),
+      cancel: jest.fn(async () => ({})),
+    },
   };
   const ctor: any = jest.fn(() => instance);
   ctor.__instance = instance;
@@ -270,5 +276,111 @@ describe("signature verification", () => {
     );
     expect(res.status).toHaveBeenCalledWith(400);
     expect(refs.has(SUB_DOC)).toBe(false);
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/* P1e -- duplicate subscription reconciliation                       */
+/* ------------------------------------------------------------------ */
+
+describe("duplicate subscriptions", () => {
+  const stripeMock = (jest.requireMock("stripe") as any).__instance;
+
+  /** A subscription as `subscriptions.list` returns it. */
+  const live = (id: string, created: number, extra: object = {}) => ({
+    id,
+    created,
+    status: "active",
+    customer: "cus_1",
+    cancel_at_period_end: false,
+    ...extra,
+  });
+
+  const listReturns = (subs: object[]) =>
+    stripeMock.subscriptions.list.mockResolvedValue({
+      data: subs,
+      has_more: false,
+    });
+
+  const anEvent = () =>
+    subscriptionEvent({ created: 1700000000, status: "active", priceId: "price_standard_monthly" });
+
+  test("a single subscription is left alone", async () => {
+    listReturns([live("sub_1", 100)]);
+    await deliver(anEvent());
+    expect(stripeMock.subscriptions.cancel).not.toHaveBeenCalled();
+  });
+
+  test("the oldest survives and the newer duplicate is cancelled", async () => {
+    // The oldest is what the customer believes they bought. Cancelling it
+    // would end the plan they have been using and leave one they never
+    // knowingly started.
+    listReturns([live("sub_new", 200), live("sub_old", 100)]);
+
+    await deliver(anEvent());
+
+    expect(stripeMock.subscriptions.cancel).toHaveBeenCalledTimes(1);
+    expect(stripeMock.subscriptions.cancel).toHaveBeenCalledWith("sub_new", {
+      prorate: true,
+    });
+  });
+
+  test("three duplicates leave exactly one", async () => {
+    listReturns([live("sub_c", 300), live("sub_a", 100), live("sub_b", 200)]);
+
+    await deliver(anEvent());
+
+    const cancelled = stripeMock.subscriptions.cancel.mock.calls.map(
+      (c: unknown[]) => c[0],
+    );
+    expect(cancelled.sort()).toEqual(["sub_b", "sub_c"]);
+  });
+
+  test("one failed cancel does not stop the others", async () => {
+    // A customer with three duplicates must end up with one, not two.
+    listReturns([live("sub_c", 300), live("sub_a", 100), live("sub_b", 200)]);
+    stripeMock.subscriptions.cancel
+      .mockRejectedValueOnce(new Error("stripe down"))
+      .mockResolvedValue({});
+
+    await deliver(anEvent());
+
+    expect(stripeMock.subscriptions.cancel).toHaveBeenCalledTimes(2);
+  });
+
+  test("subscriptions already ending are not touched", async () => {
+    // The customer has already asked for that; re-cancelling is a no-op that
+    // muddies the audit trail.
+    listReturns([
+      live("sub_old", 100),
+      live("sub_leaving", 200, { cancel_at_period_end: true }),
+    ]);
+
+    await deliver(anEvent());
+
+    expect(stripeMock.subscriptions.cancel).not.toHaveBeenCalled();
+  });
+
+  test("non-billing statuses are not duplicates", async () => {
+    listReturns([
+      live("sub_old", 100),
+      live("sub_dead", 200, { status: "canceled" }),
+      live("sub_gone", 300, { status: "incomplete_expired" }),
+    ]);
+
+    await deliver(anEvent());
+
+    expect(stripeMock.subscriptions.cancel).not.toHaveBeenCalled();
+  });
+
+  test("a reconciliation failure still returns 200 to Stripe", async () => {
+    // This runs inside the webhook. A non-2xx makes Stripe retry the whole
+    // event, replaying applySubscription forever over a problem that is not
+    // the entitlement write.
+    stripeMock.subscriptions.list.mockRejectedValue(new Error("stripe down"));
+
+    const res = await deliver(anEvent());
+
+    expect(res.status).not.toHaveBeenCalledWith(500);
   });
 });

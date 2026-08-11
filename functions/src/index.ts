@@ -817,6 +817,15 @@ export const stripeWebhook = onRequest(
             event.data.object as Stripe.Subscription,
             event.created,
           );
+          // P1e. A4 stopped NEW duplicates being created; it never dealt with
+          // the ones that already exist, and a customer double-charged before
+          // A4 shipped stays double-charged forever with nothing detecting it.
+          // This is the only place a duplicate reliably becomes observable:
+          // Stripe tells us about a subscription, and we can ask what else
+          // that customer has.
+          await reconcileDuplicateSubscriptions(
+            event.data.object as Stripe.Subscription,
+          );
           break;
         case "invoice.paid":
         case "invoice.payment_failed": {
@@ -1367,6 +1376,104 @@ const DELETED_UID = "deleted_user";
  * 100 sounds like plenty until a webhook retry storm has created the objects
  * itself -- which is the exact class of bug this file is closing.
  */
+/** Statuses that mean the customer is currently being billed for this. */
+const BILLING_STATUSES = ["active", "trialing", "past_due", "unpaid"];
+
+/**
+ * P1e — cancels the extra subscriptions when a customer has more than one.
+ *
+ * ## Why this exists separately from A4
+ *
+ * A4 added an idempotency key and an active-subscription precheck to
+ * `createCheckoutSession`, which stops a SECOND subscription being created.
+ * It does nothing for a customer who already has two — and anyone
+ * double-charged before A4 shipped is still double-charged, with nothing in
+ * the system looking. Prevention and remediation are different problems and
+ * only one of them was solved.
+ *
+ * ## Why here, and not a scheduled sweep
+ *
+ * A cron over every customer costs a full Stripe list on a schedule, forever,
+ * to find a condition that is rare and getting rarer. The webhook already
+ * fires on every subscription change and already knows the customer, so the
+ * check runs exactly when new evidence arrives and costs one list call
+ * against one customer.
+ *
+ * ## Which one survives
+ *
+ * The OLDEST billing subscription is kept and the newer ones cancelled. Two
+ * reasons, and the second is the one that matters: the oldest is what the
+ * customer believes they bought, and cancelling it would end the plan they
+ * have been using while leaving a newer one they never knowingly started.
+ * Stripe's own proration then credits the cancelled duplicate.
+ *
+ * Cancels rather than deletes, and never touches a subscription that is
+ * already ending: `cancel_at_period_end` subscriptions are left alone because
+ * the customer has already asked for that and re-cancelling would be a no-op
+ * that muddies the audit trail.
+ *
+ * Failures are logged and swallowed. This runs INSIDE the webhook, and a
+ * non-2xx makes Stripe retry the whole event — so a reconciliation problem
+ * would replay `applySubscription` indefinitely. The entitlement write is the
+ * part that must not be lost; the duplicate is still there next time.
+ */
+async function reconcileDuplicateSubscriptions(
+  changed: Stripe.Subscription,
+): Promise<void> {
+  try {
+    const customerId =
+      typeof changed.customer === "string"
+        ? changed.customer
+        : changed.customer?.id;
+    if (!customerId) return;
+
+    const stripe = await stripeClient();
+    const billing = (await listAllSubscriptions(stripe, customerId))
+      .filter((s) => BILLING_STATUSES.includes(s.status))
+      .filter((s) => !s.cancel_at_period_end);
+
+    if (billing.length < 2) return;
+
+    // Oldest first. `created` is seconds since epoch; ties broken by id so the
+    // choice is deterministic rather than dependent on Stripe's page order.
+    billing.sort((a, b) => a.created - b.created || a.id.localeCompare(b.id));
+    const [keep, ...extras] = billing;
+
+    logger.warn("duplicate subscriptions found", {
+      customerId,
+      total: billing.length,
+      keeping: keep.id,
+      cancelling: extras.map((s) => s.id),
+    });
+
+    for (const extra of extras) {
+      try {
+        await stripe.subscriptions.cancel(extra.id, {
+          prorate: true,
+        });
+        logger.info("cancelled duplicate subscription", {
+          customerId,
+          cancelled: extra.id,
+          kept: keep.id,
+        });
+      } catch (err) {
+        // One failure must not stop the others: a customer with three
+        // duplicates should end up with one, not two.
+        logger.error("could not cancel duplicate subscription", {
+          customerId,
+          subscriptionId: extra.id,
+          err: String(err),
+        });
+      }
+    }
+  } catch (err) {
+    logger.error("duplicate reconciliation failed", {
+      subscriptionId: changed.id,
+      err: String(err),
+    });
+  }
+}
+
 async function listAllSubscriptions(
   stripe: Stripe,
   customerId: string,
