@@ -84,6 +84,13 @@ class _SilentNotifications implements NotificationService {
   @override
   Future<void> cancelAll() async {}
   @override
+  Future<void> scheduleAt(
+    String id, {
+    required DateTime fireAt,
+    required String title,
+    required String body,
+  }) async {}
+  @override
   Future<void> scheduleReminder(
     ScheduledSession session, {
     required String title,

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/settings/state/settings_providers.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/app_buttons.dart';
 
@@ -38,7 +40,7 @@ class PhotoDetails {
 /// by exactly the amount the feature exists to track. A prefilled stale number
 /// that the user saves without reading is a false record, which is worse than
 /// the null it replaced — an empty field at least says "unknown" honestly.
-class PhotoDetailsSheet extends StatefulWidget {
+class PhotoDetailsSheet extends ConsumerStatefulWidget {
   const PhotoDetailsSheet({super.key});
 
   /// Resolves to the details, or null if the user backed out — which discards
@@ -54,10 +56,10 @@ class PhotoDetailsSheet extends StatefulWidget {
   }
 
   @override
-  State<PhotoDetailsSheet> createState() => _PhotoDetailsSheetState();
+  ConsumerState<PhotoDetailsSheet> createState() => _PhotoDetailsSheetState();
 }
 
-class _PhotoDetailsSheetState extends State<PhotoDetailsSheet> {
+class _PhotoDetailsSheetState extends ConsumerState<PhotoDetailsSheet> {
   final _weight = TextEditingController();
   final _note = TextEditingController();
 
@@ -161,6 +163,25 @@ class _PhotoDetailsSheetState extends State<PhotoDetailsSheet> {
                 // not — leaving them blank IS the skip.
                 label: l10n.photosDetailsSave,
               ),
+              // The reminder is promised BEFORE it is scheduled, and saving is
+              // what raises the notification-permission dialog on Android.
+              // Without this line that dialog arrives unexplained, which is
+              // the one thing the design brief forbids outright ("no
+              // notification permission before contextual explanation").
+              //
+              // Shown only when reminders are actually on, or it would be a
+              // promise the app has already decided not to keep.
+              if (ref.watch(settingsControllerProvider).notificationsEnabled)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Text(
+                    l10n.photosDetailsReminderPromise,
+                    key: const Key('photos.details.reminderPromise'),
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.labelSmall
+                        ?.copyWith(color: theme.colors.textSecondary),
+                  ),
+                ),
             ],
           ),
         ),

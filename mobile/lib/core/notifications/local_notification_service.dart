@@ -87,16 +87,32 @@ class LocalNotificationService implements NotificationService {
     required String title,
     required String body,
     Duration leadTime = const Duration(minutes: 30),
+  }) =>
+      // The lead-time arithmetic is the only thing this adds over the general
+      // form. Expressed in terms of it rather than beside it, so the
+      // "already past -> cancel" rule exists once instead of twice.
+      scheduleAt(
+        session.id,
+        fireAt: session.scheduledFor.subtract(leadTime),
+        title: title,
+        body: body,
+      );
+
+  @override
+  Future<void> scheduleAt(
+    String id, {
+    required DateTime fireAt,
+    required String title,
+    required String body,
   }) async {
-    // THE in-context moment: the user has just scheduled a workout, so a
-    // prompt about reminding them of it explains itself. Returning early on
-    // a denial matters -- scheduling into a channel the OS will not deliver
-    // leaves a reminder that exists in our state and nowhere else.
+    // THE in-context moment: the user has just done the thing the reminder is
+    // about, so a prompt explains itself. Returning early on a denial matters
+    // -- scheduling into a channel the OS will not deliver leaves a reminder
+    // that exists in our state and nowhere else.
     if (!await ensurePermission()) return;
-    final fireAt = session.scheduledFor.subtract(leadTime);
     if (!fireAt.isAfter(DateTime.now())) {
       // Reminder window already passed — clear any stale entry and bail.
-      await cancelReminder(session.id);
+      await cancelReminder(id);
       return;
     }
 
@@ -112,7 +128,7 @@ class LocalNotificationService implements NotificationService {
     final tzWhen = tz.TZDateTime.from(fireAt, tz.local);
 
     await _plugin.zonedSchedule(
-      _idFor(session.id),
+      _idFor(id),
       title,
       body,
       tzWhen,
@@ -120,7 +136,7 @@ class LocalNotificationService implements NotificationService {
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
-      payload: session.id,
+      payload: id,
     );
   }
 

@@ -71,17 +71,30 @@ class MockNotificationService implements NotificationService {
     required String title,
     required String body,
     Duration leadTime = const Duration(minutes: 30),
+  }) =>
+      scheduleAt(
+        session.id,
+        fireAt: session.scheduledFor.subtract(leadTime),
+        title: title,
+        body: body,
+      );
+
+  @override
+  Future<void> scheduleAt(
+    String id, {
+    required DateTime fireAt,
+    required String title,
+    required String body,
   }) async {
     if (!await ensurePermission()) return;
-    final fireAt = session.scheduledFor.subtract(leadTime);
     if (!fireAt.isAfter(now())) {
       // The reminder window already passed — drop silently rather than
       // spam a notification on save. Caller doesn't need to care.
-      _store.remove(session.id);
+      _store.remove(id);
       return;
     }
-    _store[session.id] = _ScheduledReminder(
-      sessionId: session.id,
+    _store[id] = _ScheduledReminder(
+      sessionId: id,
       fireAt: fireAt,
       title: title,
       body: body,

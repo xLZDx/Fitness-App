@@ -44,7 +44,30 @@ abstract class NotificationService {
     Duration leadTime = const Duration(minutes: 30),
   });
 
+  /// Schedule a one-shot reminder at an absolute time, keyed by [id].
+  ///
+  /// The general form. [scheduleReminder] is this plus the lead-time
+  /// arithmetic — a workout reminder is a `scheduleAt` whose time happens to
+  /// be derived from a session.
+  ///
+  /// Exists because not every reminder is about a [ScheduledSession]. The
+  /// first one that was not is the progress-photo nudge: it has no session, no
+  /// exercise and no duration, and forcing it through the session-shaped call
+  /// would have meant inventing a fake session to carry a date.
+  ///
+  /// Same contract as [scheduleReminder]: replaces any prior reminder with the
+  /// same [id], and when [fireAt] is already past it cancels rather than fires.
+  /// Cancel with [cancelReminder], which keys on the same string.
+  Future<void> scheduleAt(
+    String id, {
+    required DateTime fireAt,
+    required String title,
+    required String body,
+  });
+
   /// Cancel a previously-scheduled reminder. Idempotent.
+  ///
+  /// The parameter is named for its first caller; any [scheduleAt] id works.
   Future<void> cancelReminder(String sessionId);
 
   /// Cancel every pending reminder (e.g. account sign-out).

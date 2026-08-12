@@ -44,6 +44,8 @@ Also here: `context_baseline.csv` — measured AI-context cost over time, append
 | [IMPLEMENTATION_PLAN.md](plans/IMPLEMENTATION_PLAN.md) | Live phase/sequence roadmap |
 | [PLAN_AI_RESTRUCTURE_2026-07-28.md](plans/PLAN_AI_RESTRUCTURE_2026-07-28.md) | This restructure: gates, baseline, progress tracker |
 | [PLAN_REDESIGN_REMAINDER_2026-08-12.md](plans/PLAN_REDESIGN_REMAINDER_2026-08-12.md) | **Where the redesign block stands and what to pick up next** — prototype screen map with line numbers, why R11h is one gate and not four, the six-point chain R11f's metadata fix has to walk |
+| [PLAN_R11_DECISIONS_2026-08-12.md](plans/PLAN_R11_DECISIONS_2026-08-12.md) | The operator's six answers and the sub-gates they produced — P1 done, P2/P3/P4-lite pending, the O-series that rebuilds onboarding on the Figma design at 7 screens |
+| [O0_ONBOARDING_SCHEMA_2026-08-12.md](plans/O0_ONBOARDING_SCHEMA_2026-08-12.md) | **Read before touching onboarding data.** Which Figma fields already exist (`InjuryRegion` is the body-diagram vocabulary, unused), which existing fields look right and are not (`frequencyPerWeek` means *current*, not *planned*), and the three decisions the schema cannot make on its own |
 
 > Roadmap docs deliberately name files that do not exist yet (`lib/features/rehab/`,
 > `web_trainer_studio/`, ...). That is intentional — `scripts/dev/audit_doc_links.ps1` classifies

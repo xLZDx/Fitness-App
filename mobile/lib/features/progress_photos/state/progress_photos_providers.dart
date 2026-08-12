@@ -1,10 +1,14 @@
 import 'dart:typed_data';
+import 'dart:ui' show Locale;
 
 import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../core/camera/camera_session.dart';
+import '../../../core/notifications/notification_providers.dart';
+import '../../../core/settings/state/settings_providers.dart';
 import '../../auth/state/auth_providers.dart';
 import '../data/aes_photo_cipher.dart';
 import '../data/local_progress_photos_repository.dart';
@@ -13,6 +17,17 @@ import '../data/photo_key_store.dart';
 import '../data/photo_store.dart';
 import '../data/photo_timeline.dart';
 import '../data/progress_photo.dart';
+
+/// The one notification id every progress-photo reminder uses.
+///
+/// Stable and shared on purpose: scheduling replaces a reminder with the same
+/// id, so each save moves the single pending nudge instead of stacking a new
+/// one on top of it. A per-photo id would give a user with a year of history
+/// twelve pending notifications.
+const String kProgressPhotoReminderId = 'progress_photo_next';
+
+/// How long after a photo the next reminder fires. Operator's choice, 2026-08-12.
+const Duration kProgressPhotoReminderGap = Duration(days: 30);
 
 /// Repository boundary. Bound to [LocalProgressPhotosRepository] once
 /// [progressPhotosStoreProvider] resolves; the mock covers the window before
@@ -249,10 +264,56 @@ class ProgressPhotosController extends Notifier<AsyncValue<void>> {
             note: note,
           );
       ref.invalidate(progressPhotosProvider);
+      await _scheduleNextReminder();
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
       rethrow;
+    }
+  }
+
+  /// Nudge the user to take the next shot in a month.
+  ///
+  /// ## Why the anchor is the save, not a calendar
+  ///
+  /// Each save schedules one reminder under the SAME id, which replaces the
+  /// previous one. So the reminder is always "a month after the last photo",
+  /// and it self-corrects: somebody who shoots early simply moves their own
+  /// reminder, and nobody who has stopped keeps being reminded on a schedule
+  /// they set months ago. No background job, no stored due-date, nothing to
+  /// drift.
+  ///
+  /// ## Why a month
+  ///
+  /// Operator's choice (2026-08-12), and it matches the feature: the compare
+  /// card exists to show a difference, and at a week the difference is noise.
+  /// A reminder that keeps announcing "nothing has changed" teaches the user
+  /// to swipe it away.
+  ///
+  /// Best-effort throughout — the photo is already encrypted and on disk, and
+  /// a reminder that could not be registered must never surface as a failed
+  /// save. Logged rather than swallowed: a silent catch here is how the
+  /// workouts path once hid a localisation-load failure that stopped every
+  /// reminder being registered at all.
+  Future<void> _scheduleNextReminder() async {
+    // The Settings switch is what makes it a real preference rather than a
+    // decorative one: with reminders off the photo is still saved, it just
+    // stays silent.
+    if (!ref.read(settingsControllerProvider).notificationsEnabled) return;
+    try {
+      // Loaded from the delegate, not a BuildContext: this is a provider, and
+      // the reminder text has to be in the user's language wherever it is
+      // built from.
+      final l = await AppLocalizations.delegate
+          .load(Locale(ref.read(effectiveLanguageCodeProvider)));
+      await ref.read(notificationServiceProvider).scheduleAt(
+            kProgressPhotoReminderId,
+            fireAt: DateTime.now().add(kProgressPhotoReminderGap),
+            title: l.photosReminderTitle,
+            body: l.photosReminderBody,
+          );
+    } catch (e) {
+      debugPrint('progress photo reminder not scheduled: $e');
     }
   }
 
