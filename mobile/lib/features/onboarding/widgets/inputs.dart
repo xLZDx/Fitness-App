@@ -3,72 +3,52 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 
-/// Section title rendered above each step's body. Optional [icon] and
-/// [iconGradient] render a small gradient tile to the left.
+/// The question, rendered above each step's body.
+///
+/// Typography traced from the design's own onboarding header
+/// (`App.tsx:1215-1216`): 30pt at weight 800 with a tight 1.1 line height, and
+/// the supporting line at 13pt in the secondary colour.
+///
+/// The gradient icon tile that used to sit to the left is gone. The design puts
+/// nothing beside its onboarding titles, and the tile was a pre-R9 flourish
+/// painted from `AppPalette` directly — the exact class of hardcoded artwork
+/// colour the semantic-token layer exists to retire.
 class StepTitle extends StatelessWidget {
   const StepTitle({
     super.key,
     required this.title,
     this.subtitle,
-    this.icon,
-    this.iconGradient,
   });
 
   final String title;
   final String? subtitle;
-  final IconData? icon;
-  final List<Color>? iconGradient;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Row(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (icon != null) ...[
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              gradient: LinearGradient(
-                colors: iconGradient ??
-                    [AppPalette.auroraPink, AppPalette.auroraViolet],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: (iconGradient?.last ?? AppPalette.auroraViolet)
-                      .withValues(alpha: 0.35),
-                  blurRadius: 14,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Icon(icon, color: AppSemanticColors.onGradientInk, size: 22),
-          ),
-          const SizedBox(width: 12),
-        ],
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: theme.textTheme.headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.w800),
-              ),
-              if (subtitle != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  subtitle!,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colors.textSecondary,
-                  ),
-                ),
-              ],
-            ],
+        Text(
+          title,
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontSize: 30,
+            fontWeight: FontWeight.w800,
+            height: 1.1,
+            color: theme.colors.textPrimary,
           ),
         ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 6),
+          Text(
+            subtitle!,
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontSize: 13,
+              height: 1.5,
+              color: theme.colors.textSecondary,
+            ),
+          ),
+        ],
       ],
     );
   }

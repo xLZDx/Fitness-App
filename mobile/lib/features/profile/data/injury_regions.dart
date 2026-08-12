@@ -21,8 +21,28 @@ import 'profile_models.dart';
 /// Bilingual because the app ships English and Russian, and a Russian user
 /// typing "колено" who got no proposal would make [Injury.confirmed]
 /// meaningless — they would be declining a match the app never offered.
+/// **Declaration order is load-bearing.** [suggestRegion] returns the first
+/// entry that matches, and [InjuryRegion.lowerBack] claims the generic tokens
+/// `back` and `спина`. "upper back" normalises to `upper_back`, whose tokens
+/// are `{upper, back}` — so an [InjuryRegion.upperBack] declared *after*
+/// `lowerBack` would never win: `back` would match first and file a thoracic
+/// complaint as a lumbar one. It is declared before. A test pins this.
 const Map<InjuryRegion, List<String>> kInjurySynonyms = {
   InjuryRegion.neck: ['neck', 'cervical', 'шея', 'шейный'],
+  InjuryRegion.upperBack: [
+    'upper_back',
+    'upperback',
+    'thoracic',
+    'trapezius',
+    'traps',
+    'rhomboid',
+    'scapula',
+    'верх_спины',
+    'лопатка',
+    'лопатки',
+    'трапеция',
+    'грудной_отдел',
+  ],
   InjuryRegion.shoulder: [
     'shoulder',
     'rotator',
@@ -34,6 +54,11 @@ const Map<InjuryRegion, List<String>> kInjurySynonyms = {
   ],
   InjuryRegion.elbow: ['elbow', 'tennis_elbow', 'локоть', 'локти'],
   InjuryRegion.wrist: ['wrist', 'carpal', 'hand', 'запястье', 'кисть'],
+  // `back` and `спина` stay here on purpose. They are genuinely ambiguous now
+  // that upper back exists, and moving them would only move the wrong guess
+  // rather than remove it. This whole table is a *proposal* shown for
+  // confirmation, and the redesign's body diagram replaces typing with
+  // tapping — which is what actually resolves the ambiguity.
   InjuryRegion.lowerBack: [
     'lower_back',
     'lowback',

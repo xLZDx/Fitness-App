@@ -154,6 +154,12 @@ class TestTheShippedCatalog:
         counts = tagger.coverage(rows, tagger.load_vocabulary())
         assert counts == {
             "neck": 117,
+            # Zero on purpose: the region joined the vocabulary on 2026-08-12
+            # and no batch has tagged it. The app does not pretend otherwise --
+            # `CatalogSafetyCoverage.coversAllOf` keeps the disclosure up for
+            # anyone who reports an upper back. This line turns red the moment
+            # a batch ships, which is when it should be updated, not before.
+            "upper_back": 0,
             "shoulder": 486,
             "elbow": 371,
             "wrist": 188,

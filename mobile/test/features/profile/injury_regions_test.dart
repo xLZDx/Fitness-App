@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/data/exercise_filter.dart';
+import 'package:fitness_app/features/equipment/state/safety_coverage_providers.dart';
 import 'package:fitness_app/features/profile/data/injury_regions.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 
@@ -49,7 +50,7 @@ void main() {
       expect(suggestRegion('левое колено'), InjuryRegion.knee);
     });
 
-    test('returns null for a part that is none of the eight', () {
+    test('returns null for a part that is none of the nine', () {
       // A real answer, not a failure. Forcing "rib" onto the nearest region
       // would be a safety claim about a body part the tag does not describe.
       expect(suggestRegion('rib'), isNull);
@@ -208,6 +209,68 @@ void main() {
       });
       expect(i.region, isNull);
       expect(i.isResolved, isFalse, reason: 'so the user is asked again');
+    });
+  });
+
+  group('the ninth region, upper back', () {
+    // Added for the redesign's body diagram, which offers upper back as its
+    // own zone. Not merged into `neck`: an overhead press is a neck question,
+    // a bent-over row is a thoracic one, and one tag cannot answer both.
+
+    test('"upper back" is upper back, not lower back', () {
+      // The trap this pins. "upper back" normalises to `upper_back`, whose
+      // tokens are {upper, back} -- and `back` is a lowerBack synonym. Match
+      // order is declaration order, so a `upperBack` entry declared after
+      // `lowerBack` would lose every time and file it as lumbar. Reordering
+      // the map turns this red.
+      expect(suggestRegion('upper back'), InjuryRegion.upperBack);
+      expect(suggestRegion('Upper Back'), InjuryRegion.upperBack);
+      expect(suggestRegion('thoracic'), InjuryRegion.upperBack);
+      expect(suggestRegion('traps'), InjuryRegion.upperBack);
+    });
+
+    test('and in Russian', () {
+      expect(suggestRegion('верх спины'), InjuryRegion.upperBack);
+      expect(suggestRegion('лопатка'), InjuryRegion.upperBack);
+      expect(suggestRegion('трапеция'), InjuryRegion.upperBack);
+    });
+
+    test('bare "спина" still proposes lower back, deliberately', () {
+      // Documented rather than fixed. The word is genuinely ambiguous now, and
+      // moving it to upperBack would only move the wrong guess. The proposal
+      // is shown for confirmation, and the body diagram replaces typing with
+      // tapping -- which is what actually removes the ambiguity.
+      expect(suggestRegion('спина'), InjuryRegion.lowerBack);
+      expect(suggestRegion('back'), InjuryRegion.lowerBack);
+    });
+
+    test('screens on its own tag, and not on the lower back one', () {
+      const upper = Injury(
+        bodyPart: 'верх спины',
+        type: 'strain',
+        region: InjuryRegion.upperBack,
+      );
+      expect(isContraindicated(_ex(['upper_back']), [upper]), isTrue);
+      expect(isContraindicated(_ex(['lower_back']), [upper]), isFalse,
+          reason: 'the two regions are separate or there was no point adding '
+              'the ninth');
+    });
+
+    test('ships with no tagged exercises, and the app says so', () {
+      // The honest half of adding a region to a catalog that is already
+      // tagged for the other eight. `coversAllOf` is what stops the app
+      // claiming a screening it cannot perform, so a user who reports an upper
+      // back keeps the disclosure until a tagging batch runs.
+      const coverage = CatalogSafetyCoverage(
+        tagged: 1435,
+        total: 1887,
+        byRegion: {InjuryRegion.knee: 362, InjuryRegion.upperBack: 0},
+      );
+      expect(coverage.filteringCanFire, isTrue,
+          reason: 'the catalog as a whole is tagged');
+      expect(coverage.coversAllOf([InjuryRegion.upperBack]), isFalse,
+          reason: 'but not for this user');
+      expect(coverage.coversAllOf([InjuryRegion.knee]), isTrue);
     });
   });
 

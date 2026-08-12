@@ -460,8 +460,15 @@ void main() {
     // with `textPrimary` straight on the wash at 7.51-9.28.
     // workouts_page.dart 2 -> 1; the survivor is `_ScheduleButton`'s 0.32 fill,
     // category 2, untouched.
+    //
+    // 59 -> 58, 2026-08-12 (O1): the fourth decrease. `onboarding_page.dart`
+    // lost `_ProgressBar`'s `Colors.white.withValues(alpha: 0.30)` track when
+    // the redesign's chrome moved into `ObProgressHeader`, whose track is the
+    // `outline` token. onboarding_page.dart 1 -> 0. The header's own fill is
+    // `surfaceInteractive`, so replacing the widget did not move the number
+    // back up somewhere else — which is the failure this ratchet catches.
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 59, reason: 'per file: $whites');
+    expect(total, 58, reason: 'per file: $whites');
   });
 
   group('lerp', () {

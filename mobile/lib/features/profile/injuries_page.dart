@@ -278,6 +278,8 @@ String _regionLabel(AppLocalizations l10n, InjuryRegion region) {
   switch (region) {
     case InjuryRegion.neck:
       return l10n.injuryRegionNeck;
+    case InjuryRegion.upperBack:
+      return l10n.injuryRegionUpperBack;
     case InjuryRegion.shoulder:
       return l10n.injuryRegionShoulder;
     case InjuryRegion.elbow:

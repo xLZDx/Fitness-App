@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../../core/theme/app_palette.dart';
 import '../../profile/data/profile_models.dart';
 import '../state/questionnaire_notifier.dart';
 import '../widgets/inputs.dart';
@@ -23,8 +22,6 @@ class StepLifestyle extends ConsumerWidget {
           title: AppLocalizations.of(context).onboardingLifestyleHabits,
           subtitle: AppLocalizations.of(context)
               .onboardingRecoveryNutritionAndStressAllFeed,
-          icon: Icons.restaurant_outlined,
-          iconGradient: [AppPalette.auroraTeal, AppPalette.auroraLime],
         ),
         FieldLabel(l10n.onbDiet),
         MultiChoiceChips<DietaryPreference>(

@@ -106,6 +106,7 @@ class CatalogLabels {
     if (region == null) return tag.replaceAll('_', ' ');
     return switch (region) {
       InjuryRegion.neck => l.injuryRegionNeck,
+      InjuryRegion.upperBack => l.injuryRegionUpperBack,
       InjuryRegion.shoulder => l.injuryRegionShoulder,
       InjuryRegion.elbow => l.injuryRegionElbow,
       InjuryRegion.wrist => l.injuryRegionWrist,

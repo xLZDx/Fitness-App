@@ -53,13 +53,31 @@ enum WorkoutDuration { under15, m15to30, m30to45, m45to60, over60 }
 /// finite and has to be the same on both sides. This is that vocabulary, named
 /// once, on the side that already exists.
 ///
-/// Eight regions, from the plan. Not a taxonomy of every injury a person can
-/// have — a taxonomy of what an exercise tag can usefully say. Anything that
-/// does not fit stays as [Injury.note] and is never matched, which is honest:
-/// a rib injury that silently matched "core" would be worse than one the app
-/// admits it cannot screen for.
+/// Nine regions. Not a taxonomy of every injury a person can have — a taxonomy
+/// of what an exercise tag can usefully say. Anything that does not fit stays
+/// as [Injury.note] and is never matched, which is honest: a rib injury that
+/// silently matched "core" would be worse than one the app admits it cannot
+/// screen for.
+///
+/// [upperBack] was the ninth, added for the redesign's body diagram, which
+/// offers it as its own zone. It is deliberately NOT merged into [neck]: the
+/// two carry different contraindications (an overhead press is a neck
+/// question, a bent-over row is a thoracic one), and merging them would make
+/// the filter answer one while claiming to have answered both.
+///
+/// It ships with **zero** tagged exercises. That is safe by construction, not
+/// by luck: `CatalogSafetyCoverage.coversAllOf`
+/// (`equipment/state/safety_coverage_providers.dart:58-61`) refuses to claim
+/// screening for any region with no tags, so a user who reports an upper back
+/// sees the disclosure instead of a promise. Tagging is a separate catalog
+/// batch, and until it runs this region screens nothing and says so.
+///
+/// Declared in anatomical order, top-down: [InjuryRegion.values] is what the
+/// pickers iterate. Nothing serialises the index — [Injury.fromJson] matches
+/// on `name` — so inserting in the middle is safe for stored profiles.
 enum InjuryRegion {
   neck,
+  upperBack,
   shoulder,
   elbow,
   wrist,
@@ -79,6 +97,8 @@ extension InjuryRegionTag on InjuryRegion {
         return 'lower_back';
       case InjuryRegion.neck:
         return 'neck';
+      case InjuryRegion.upperBack:
+        return 'upper_back';
       case InjuryRegion.shoulder:
         return 'shoulder';
       case InjuryRegion.elbow:

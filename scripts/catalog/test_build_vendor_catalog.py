@@ -245,10 +245,16 @@ class TestTheSafetyVocabulary:
     including the ratchet the tagging batches are graded on.
     """
 
-    def test_the_vocabulary_is_the_eight_regions(self):
+    def test_the_vocabulary_is_the_nine_regions(self):
         vocabulary = build_vendor_catalog.load_vocabulary()
         assert vocabulary == {
             "neck",
+            # Ninth, added 2026-08-12 for the redesign's body diagram, which
+            # offers upper back as its own zone. Legal to write from this
+            # commit forward; nothing carries it yet, which is a tagging batch,
+            # not a defect -- see the coverage assertion in
+            # test_tag_contraindications.py.
+            "upper_back",
             "shoulder",
             "elbow",
             "wrist",

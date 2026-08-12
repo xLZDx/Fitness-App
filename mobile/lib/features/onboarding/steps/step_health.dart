@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../../core/theme/app_palette.dart';
 import '../../profile/data/profile_models.dart';
 import '../state/questionnaire_notifier.dart';
 import '../widgets/inputs.dart';
@@ -30,8 +29,6 @@ class StepHealth extends ConsumerWidget {
         StepTitle(
           title: AppLocalizations.of(context).onboardingHealthSnapshot,
           subtitle: AppLocalizations.of(context).onboardingWeUseThisToKeepYour,
-          icon: Icons.favorite_outline,
-          iconGradient: [AppPalette.auroraPink, AppPalette.auroraPeach],
         ),
         FieldLabel(l10n.onbConditions),
         GlassTextField(

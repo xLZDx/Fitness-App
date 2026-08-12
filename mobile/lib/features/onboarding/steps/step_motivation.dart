@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../../core/theme/app_palette.dart';
 import '../../profile/data/profile_models.dart';
 import '../state/questionnaire_notifier.dart';
 import '../widgets/inputs.dart';
@@ -23,8 +22,6 @@ class StepMotivation extends ConsumerWidget {
           title: AppLocalizations.of(context).onboardingHowDoYouLikeToTrain,
           subtitle:
               AppLocalizations.of(context).onboardingTheseTweakTheToneAndLength,
-          icon: Icons.bolt_outlined,
-          iconGradient: [AppPalette.auroraViolet, AppPalette.auroraPink],
         ),
         FieldLabel(l10n.onbMotivationPrompt),
         GlassTextField(

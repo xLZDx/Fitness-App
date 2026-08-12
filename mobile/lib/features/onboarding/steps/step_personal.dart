@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../../core/theme/app_palette.dart';
 import '../../profile/data/profile_models.dart';
 import '../state/questionnaire_notifier.dart';
 import '../widgets/body_metric_cards.dart';
@@ -25,8 +24,6 @@ class StepPersonal extends ConsumerWidget {
           title: AppLocalizations.of(context).onboardingTellUsAboutYou,
           subtitle: AppLocalizations.of(context)
               .onboardingWeTailorYourPlanAroundThese,
-          icon: Icons.person_outline,
-          iconGradient: [AppPalette.auroraPink, AppPalette.auroraViolet],
         ),
         FieldLabel(l10n.onbAge),
         GlassTextField(

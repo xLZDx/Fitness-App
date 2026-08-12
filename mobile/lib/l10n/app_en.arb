@@ -566,6 +566,18 @@
       }
     }
   },
+  "onboardingStepCounterA11y": "Step {arg0} of {arg1}",
+  "@onboardingStepCounterA11y": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      },
+      "arg1": {
+        "type": "Object"
+      }
+    }
+  },
+  "onboardingSkipStep": "Skip",
   "onboardingStepOf": "Step {arg0} of {arg1} · {arg2}",
   "@onboardingStepOf": {
     "placeholders": {
@@ -1500,6 +1512,7 @@
   "injuriesNote": "Anything else",
   "injuriesNoteHint": "Not used for filtering",
   "injuryRegionNeck": "Neck",
+  "injuryRegionUpperBack": "Upper back",
   "injuryRegionShoulder": "Shoulder",
   "injuryRegionElbow": "Elbow",
   "injuryRegionWrist": "Wrist",

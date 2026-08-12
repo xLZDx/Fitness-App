@@ -5,10 +5,11 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
-import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import '../profile/state/profile_providers.dart';
+import 'data/step_answered.dart';
 import 'state/questionnaire_notifier.dart';
+import 'widgets/ob_shell.dart';
 import 'steps/step_equipment.dart';
 import 'steps/step_goals.dart';
 import 'steps/step_health.dart';
@@ -110,23 +111,32 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
     final submitState = ref.watch(profileSubmitProvider);
     final isSubmitting = submitState.isLoading;
     final isLast = _index == _stepCount - 1;
 
+    // The button reads "Skip" and goes quiet on a step nothing has been put
+    // into, per the design (`App.tsx:1598`). It still advances either way --
+    // every question here is optional and `_submit` sends whatever the draft
+    // holds -- so this is a statement about what the user has done, not a gate.
+    final answered =
+        isOnboardingStepAnswered(_index, ref.watch(questionnaireDraftProvider));
+
     return FrostedScaffold(
-      appBar: GlassAppBar(
-        title: AppLocalizations.of(context)
-            .onboardingStepOf(_index + 1, _stepCount, _titles(l10n)[_index]),
-      ),
+      // The counter moved into `ObProgressHeader`; leaving "Step N of M" here
+      // as well would print it twice on every screen.
+      appBar: GlassAppBar(title: _titles(l10n)[_index]),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 88, 20, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _ProgressBar(value: (_index + 1) / _stepCount),
+              ObProgressHeader(
+                step: _index + 1,
+                total: _stepCount,
+                onBack: (_index == 0 || isSubmitting) ? null : _back,
+              ),
               const SizedBox(height: 18),
               Expanded(
                 child: PageView.builder(
@@ -141,85 +151,13 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                 ),
               ),
               const SizedBox(height: 12),
-              Row(
-                children: [
-                  if (_index > 0)
-                    Expanded(
-                      child: AppSecondaryButton(
-                        onPressed: isSubmitting ? null : _back,
-                        label: AppLocalizations.of(context).onboardingBack,
-                      ),
-                    ),
-                  if (_index > 0) const SizedBox(width: 12),
-                  Expanded(
-                    flex: 2,
-                    // Кнопка «Далее» соседствует с `AppSecondaryButton`
-                    // («Назад»), который объявляет себя сам. Эта — не
-                    // объявляла ничего: ни что это кнопка, ни что во время
-                    // отправки она выключена. Хуже того, в этот момент текст
-                    // подменяется спиннером, то есть у элемента не остаётся
-                    // вообще никакой метки — скринридер молчит ровно тогда,
-                    // когда человек ждёт ответа.
-                    child: Semantics(
-                      button: true,
-                      enabled: !isSubmitting,
-                      // Метка задаётся только под спиннером: в обычном
-                      // состоянии её даёт сам Text, и второй label превратил
-                      // бы объявление в «Далее Далее».
-                      label: isSubmitting
-                          ? (isLast
-                              ? AppLocalizations.of(context).commonDone
-                              : AppLocalizations.of(context).commonNext)
-                          : null,
-                      child: GestureDetector(
-                        onTap: isSubmitting ? null : _next,
-                        child: Container(
-                          height: 54,
-                          // R9: brand CTA, moved off the pre-R9 pink/violet pair.
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            gradient: const LinearGradient(colors: [
-                              AppPalette.auroraLime,
-                              AppPalette.auroraLimeDeep,
-                            ]),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppPalette.auroraLime
-                                    .withValues(alpha: 0.40),
-                                blurRadius: 18,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: Center(
-                            child: isSubmitting
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation(
-                                          AppSemanticColors.onGradientInk),
-                                    ),
-                                  )
-                                : Text(
-                                    isLast
-                                        ? AppLocalizations.of(context)
-                                            .commonDone
-                                        : AppLocalizations.of(context)
-                                            .commonNext,
-                                    style:
-                                        theme.textTheme.titleMedium?.copyWith(
-                                      color: AppSemanticColors.onGradientInk,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              _PrimaryCta(
+                label: !answered
+                    ? l10n.onboardingSkipStep
+                    : (isLast ? l10n.commonDone : l10n.commonNext),
+                answered: answered,
+                busy: isSubmitting,
+                onTap: _next,
               ),
             ],
           ),
@@ -229,33 +167,87 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   }
 }
 
-class _ProgressBar extends StatelessWidget {
-  const _ProgressBar({required this.value});
-  final double value;
+/// The single bottom control.
+///
+/// One button, not two. The design ships both patterns and they contradict
+/// each other: most steps put a ghost "Пропустить этот шаг" *under* an
+/// always-enabled primary, where both call the same handler
+/// (`App.tsx:1565`), while step 5 uses one button whose label and variant
+/// follow whether anything was answered (`App.tsx:1598`). The second is the
+/// one implemented here — two controls that do the identical thing is a fork
+/// in the prototype, not an affordance.
+class _PrimaryCta extends StatelessWidget {
+  const _PrimaryCta({
+    required this.label,
+    required this.answered,
+    required this.busy,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool answered;
+  final bool busy;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: SizedBox(
-        height: 8,
-        child: Stack(
-          children: [
-            Container(color: Colors.white.withValues(alpha: 0.30)),
-            FractionallySizedBox(
-              widthFactor: value.clamp(0.0, 1.0),
-              // R9: brand progress fill, moved off the pre-R9 pink/violet/blue
-              // sweep onto the design's two lime tones.
-              child: const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [
+    final theme = Theme.of(context);
+    final colors = theme.colors;
+    // Спиннер подменяет текст, поэтому под ним у элемента не остаётся никакой
+    // метки — скринридер молчал бы ровно тогда, когда человек ждёт ответа. В
+    // обычном состоянии метку даёт сам Text, и второй label превратил бы
+    // объявление в «Далее Далее».
+    return Semantics(
+      button: true,
+      enabled: !busy,
+      label: busy ? label : null,
+      child: GestureDetector(
+        key: const Key('onboarding.cta'),
+        onTap: busy ? null : onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          height: 54,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            // R9: brand CTA, moved off the pre-R9 pink/violet pair.
+            gradient: answered
+                ? const LinearGradient(colors: [
                     AppPalette.auroraLime,
                     AppPalette.auroraLimeDeep,
-                  ]),
-                ),
-              ),
-            ),
-          ],
+                  ])
+                : null,
+            color: answered ? null : colors.surfaceInteractive,
+            boxShadow: answered
+                ? [
+                    BoxShadow(
+                      color: AppPalette.auroraLime.withValues(alpha: 0.40),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Center(
+            child: busy
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor:
+                          AlwaysStoppedAnimation(AppSemanticColors.onGradientInk),
+                    ),
+                  )
+                : Text(
+                    label,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: answered
+                          ? AppSemanticColors.onGradientInk
+                          : colors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+          ),
         ),
       ),
     );
