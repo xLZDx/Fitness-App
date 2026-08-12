@@ -516,10 +516,35 @@ Future<void> main() async {
     };
 
     expect(tags, isNotEmpty, reason: 'the tagging pass never reached the APK');
-    // Exactly one pattern may offer the coach today, and it must be the one
-    // with authored targets AND a rep signal.
-    final offered = tags.where(formCoachSupports).toList();
-    expect(offered, ['squat']);
+    // Every pattern the coach offers must have BOTH authored targets and a rep
+    // signal — that pairing is what `formCoachSupports` decides, and it is the
+    // thing worth pinning. The membership below is not: it grew from one
+    // movement to six when `rep_signals.dart` gained body-relative signals for
+    // curl, overhead press, sit-up, hinge and lunge (`rep_signals.dart:214-231`),
+    // and this expectation was left reading `['squat']` from before that work.
+    //
+    // It failed on all three targets — emulator, Galaxy S8, S23 Ultra — for
+    // three sessions, which is the real cost: a suite with one permanently red
+    // test is a suite whose next genuine failure looks like the usual one.
+    //
+    // Sorted, because a Set's iteration order is not a contract and a test that
+    // encodes one fails on an unrelated day.
+    final offered = tags.where(formCoachSupports).toList()..sort();
+    expect(offered, [
+      'curl',
+      'hinge',
+      'lunge',
+      'overhead_press',
+      'situp',
+      'squat',
+    ]);
+    // `pushup` and `deadlift` must NOT appear, and for two different reasons —
+    // the push-up has both silhouettes authored but no signal that tracks it
+    // (hip-versus-knee height barely moves), the deadlift has no shape at all.
+    // Both are still offered as chips; the screen says counting is off rather
+    // than showing a number that cannot move.
+    expect(offered, isNot(contains('pushup')));
+    expect(offered, isNot(contains('deadlift')));
 
     final squats = rows.where((r) => r['poseTargetId'] == 'squat').toList();
     expect(squats.length, greaterThan(20));

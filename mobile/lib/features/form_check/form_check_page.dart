@@ -400,17 +400,6 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                       const Positioned.fill(
                         child: IgnorePointer(child: _SkeletonOverlay()),
                       ),
-                      // R11h. The design's pre-set stages, from the gate's own
-                      // verdicts: what is wrong with the view, how far the
-                      // coach is from settled, and when it is ready. The gate
-                      // has always known all six reasons a frame is unusable
-                      // and the screen used that only to withhold a rep count.
-                      // Removes itself once the set is running -- an
-                      // instruction band mid-rep competes with the cue card.
-                      const Align(
-                        alignment: Alignment.topCenter,
-                        child: IgnorePointer(child: CoachReadinessBand()),
-                      ),
                       // Over the preview, under the readouts: what to do, then
                       // the shape to arrive at.
                       Positioned.fill(
@@ -421,17 +410,18 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                           ),
                         ),
                       ),
+                      // One strip, laid out top-down. Previously these were
+                      // three independently positioned children of this Stack,
+                      // and two of them claimed the same corner -- see
+                      // `CoachTopStrip`.
                       Positioned(
                         left: 12,
-                        top: 12,
-                        child: showRepCount
-                            ? _RepBadge(session: session)
-                            : const _RepCountNotTrackedBadge(),
-                      ),
-                      const Positioned(
                         right: 12,
                         top: 12,
-                        child: _MatchReadout(),
+                        child: CoachTopStrip(
+                          session: session,
+                          showRepCount: showRepCount,
+                        ),
                       ),
                       Positioned(
                         left: 12,
@@ -778,6 +768,73 @@ class _StartFailure extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Everything drawn across the top of the camera preview, in one column.
+///
+/// ## Why this exists as a widget rather than three Stack children
+///
+/// It used to be three: `Align(topCenter)` for [CoachReadinessBand], and two
+/// `Positioned(top: 12)` readouts. The band supplied its own `Padding(all: 12)`,
+/// so its card began at (12, 12) — the exact origin of
+/// `Positioned(left: 12, top: 12)`. Before a set starts, both are on screen at
+/// once, and they drew one on top of the other: "Встаньте в кадр так, чтобы вас
+/// было видно целиком" across the rep counter.
+///
+/// A Stack does not complain about that. Overlapping children are its entire
+/// purpose — there is no overflow, no exception, no failing assertion. The host
+/// suite cannot see it, and neither could the device suite: both read the widget
+/// tree, and the tree was correct. It took a screenshot from a real phone.
+///
+/// The fix is not a larger offset. Two siblings positioned independently from
+/// the same edge will collide again the moment either one's height changes.
+/// Laid out in a column, they cannot overlap at all — the guarantee comes from
+/// the layout, not from a number someone tuned once.
+///
+/// Public so the arrangement can be pumped without a camera. [ScanTopBar] is
+/// public for the same reason and after the same class of bug.
+class CoachTopStrip extends StatelessWidget {
+  const CoachTopStrip({
+    super.key,
+    required this.session,
+    required this.showRepCount,
+  });
+
+  final RepSessionState session;
+  final bool showRepCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          // `spaceBetween` + `Flexible`, not `Spacer`: a Spacer makes the row's
+          // minimum width the sum of its children, so a long enough readout
+          // pushes the other pill off a narrow screen instead of shrinking it.
+          // That is precisely how `/scan` overflowed 142px at 320dp, in Russian
+          // only, invisibly to a suite that renders English.
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(
+              child: showRepCount
+                  ? _RepBadge(session: session)
+                  : const _RepCountNotTrackedBadge(),
+            ),
+            const SizedBox(width: 8),
+            const Flexible(child: _MatchReadout()),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // Below the readouts, not beside them: it is an instruction, and the
+        // numbers above it are what the instruction is about. Removes itself
+        // once the set is running — an instruction band mid-rep competes with
+        // the cue card.
+        const IgnorePointer(child: CoachReadinessBand()),
+      ],
     );
   }
 }
