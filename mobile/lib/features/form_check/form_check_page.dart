@@ -23,7 +23,10 @@ import 'data/pose_target.dart';
 import 'data/rep_counter.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
+import 'data/coach_phases.dart';
+import 'state/coach_phase_providers.dart';
 import 'state/form_check_providers.dart';
+import 'widgets/coach_intro_cards.dart';
 import 'widgets/coach_readiness_band.dart';
 
 /// Live form-check page. Starts the pose-detection service in
@@ -45,10 +48,16 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
   ///
   /// One second each way. Slower reads as a stretch rather than a repetition;
   /// faster is hard to follow while also trying to copy it.
-  late final AnimationController _demo = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1000),
-  );
+  /// Built in [initState], not lazily on first use.
+  ///
+  /// It was `late final ... = AnimationController(...)`, which constructs on
+  /// first read. That was harmless while `build` always reached `_syncDemo`,
+  /// and became a crash the moment R11h gave the page a branch that returns
+  /// before it: a user who backs out on the intro card never touches `_demo`,
+  /// so `dispose()`'s `_demo.dispose()` was the FIRST read — constructing a
+  /// ticker against a deactivated element, mid-unmount. Caught by the lifecycle
+  /// suite, not by reasoning.
+  late final AnimationController _demo;
 
   /// Run the demonstration only while it is on screen.
   ///
@@ -94,6 +103,10 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
   @override
   void initState() {
     super.initState();
+    _demo = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
     WidgetsBinding.instance.addObserver(this);
     // The rep session and the match readout are app-scoped, so they outlive
     // this page. Walking back in showed the last set's count and the verdict
@@ -106,11 +119,29 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
       ref.read(repSessionControllerProvider.notifier).resetSet();
       ref.read(poseMatchProvider.notifier).state = null;
     });
-    // A fresh mount means the user tapped their way onto the coach screen,
-    // which is them asking for the camera. A lifecycle resume is not, and
-    // passes false below.
-    _startDetector(requestPermission: true);
+    // R11h: arriving on this page is NOT asking for the camera any more. The
+    // intro and preparation cards come first, and `_openCamera` below is the
+    // single place the hardware is requested — by a tap that says so.
   }
+
+  /// True once the user has asked for the camera on this visit.
+  ///
+  /// Guards the lifecycle-resume path: coming back from the background while
+  /// still on the intro card must not open a camera the user has not asked
+  /// for, and `_started` alone cannot tell "not started yet" from "stopped
+  /// when we backgrounded".
+  bool _cameraRequested = false;
+
+  /// The preparation card's only button.
+  ///
+  /// Moves the phase and nothing else. Opening the camera is [build]'s job, on
+  /// the rule "past preparation means the camera belongs open" — so the phase
+  /// is the single source of truth, and anything else that legitimately puts
+  /// the session into a camera phase (a test starting at the screen it is
+  /// actually about; a future deep link into a set) gets a camera without
+  /// having to know this method exists.
+  void _openCamera() =>
+      ref.read(coachPhaseControllerProvider.notifier).openCamera();
 
   void _startDetector({bool requestPermission = false}) {
     final token = ++_lifecycle;
@@ -169,15 +200,24 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
       _lifecycle++;
       _stopping = svc.stop();
       if (mounted) setState(() => _started = false);
-    } else if (state == AppLifecycleState.resumed && mounted && !_started) {
+    } else if (state == AppLifecycleState.resumed &&
+        mounted &&
+        !_started &&
+        // Not while the user is still on the intro or preparation card.
+        _cameraRequested) {
       _startDetector();
     }
   }
 
   @override
   void dispose() {
-    _demo.dispose();
+    // Observer first. It used to be second, behind `_demo.dispose()`, and when
+    // that line threw the page stayed registered as a lifecycle observer after
+    // being disposed — so the NEXT screen's background/resume arrived at a dead
+    // widget and failed with "Cannot use ref after the widget was disposed".
+    // One throw, two unrelated-looking failures.
     WidgetsBinding.instance.removeObserver(this);
+    _demo.dispose();
     // stop() releases the camera AND leaves the service restartable, so a
     // second visit to this page works. (It used to leave `_initialised` true,
     // which made every later start() a silent no-op — the feature was dead
@@ -189,6 +229,30 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    // R11h. Two cards before anything opens. Deliberately ABOVE every provider
+    // watch below, `formFeedbackControllerProvider` in particular: watching it
+    // is what subscribes to the frame stream, so returning early here is also
+    // what guarantees nothing is listening for frames while the user is still
+    // reading.
+    final phase = ref.watch(coachSessionProvider).phase;
+    if (phase == CoachPhase.launch) return const CoachLaunchCard();
+    if (phase == CoachPhase.preparation) {
+      return CoachPreparationCard(onOpenCamera: _openCamera);
+    }
+
+    // Past preparation, so the camera belongs open. Once per visit: the flag
+    // is what stops a rebuild from starting a second one, and it is also what
+    // the lifecycle-resume path reads to tell "stopped" from "never asked
+    // for". Deferred to a post-frame callback because starting a camera is a
+    // side effect and build must not have one mid-frame.
+    if (!_cameraRequested) {
+      _cameraRequested = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _startDetector(requestPermission: true);
+      });
+    }
+
     final tier = ref.watch(effectiveTierProvider);
     final isPremium = tier == SubscriptionTier.celebrityTrainer;
     // Watched for its side effects, not its value: building this controller is

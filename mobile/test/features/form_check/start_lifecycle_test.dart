@@ -75,6 +75,27 @@ Widget _page(PoseDetectorService svc) => ProviderScope(
 /// the page's camera panel is 9:16 — on the default surface the retry button
 /// lands off the bottom, and scrolling it into view tucks it under the
 /// translucent app bar. Neither says anything about the code under test.
+/// Mounts the page and walks R11h's two cards, so the camera is open by the
+/// time a test starts asserting about it.
+///
+/// Every case below used to begin `pumpWidget` + `pump` and have a camera. It
+/// does not any more: arriving on the coach shows what it does and how to
+/// stand, and the hardware is requested by the button on the second card. The
+/// cases themselves — a start that hangs, a stop that overtakes it, a retry —
+/// are unchanged, and that is the point of routing them all through one helper
+/// rather than editing nine preludes into nine slightly different shapes.
+Future<void> _pumpToCamera(WidgetTester t, PoseDetectorService svc) async {
+  await t.pumpWidget(_page(svc));
+  await t.pumpAndSettle();
+  await t.tap(find.byKey(const Key('coach.intro.start')));
+  await t.pumpAndSettle();
+  await t.tap(find.byKey(const Key('coach.prep.openCamera')));
+  // Two pumps, not one: the button only moves the phase, and the camera is
+  // opened by the post-frame callback the resulting build schedules.
+  await t.pump();
+  await t.pump();
+}
+
 void _phoneSized(WidgetTester t) {
   t.view.physicalSize = const Size(400, 1600);
   t.view.devicePixelRatio = 1.0;
@@ -86,8 +107,7 @@ void main() {
   testWidgets('a start that never returns stops being a spinner', (t) async {
     _phoneSized(t);
     final svc = _ManualService();
-    await t.pumpWidget(_page(svc));
-    await t.pump(); // let the post-frame callback run
+    await _pumpToCamera(t, svc);
 
     expect(find.byType(CircularProgressIndicator), findsWidgets,
         reason: 'while the camera is genuinely opening, a spinner is right');
@@ -115,8 +135,7 @@ void main() {
   testWidgets('retry actually tries again', (t) async {
     _phoneSized(t);
     final svc = _ManualService();
-    await t.pumpWidget(_page(svc));
-    await t.pump();
+    await _pumpToCamera(t, svc);
     await t.pump(const Duration(seconds: 16));
     await t.pump();
 
@@ -139,8 +158,7 @@ void main() {
   testWidgets('a real failure names itself and offers a retry', (t) async {
     _phoneSized(t);
     final svc = _ManualService();
-    await t.pumpWidget(_page(svc));
-    await t.pump();
+    await _pumpToCamera(t, svc);
 
     svc.starts.first.completeError(StateError('camera in use'));
     await t.pump();
@@ -160,8 +178,7 @@ void main() {
     // it leaves the page showing a live preview over a released camera.
     _phoneSized(t);
     final svc = _ManualService();
-    await t.pumpWidget(_page(svc));
-    await t.pump();
+    await _pumpToCamera(t, svc);
 
     t.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
     await t.pump();
@@ -214,15 +231,16 @@ void main() {
     expect(session.lastReject, isNull);
     expect(container.read(poseMatchProvider), isNull);
 
-    svc.starts.first.complete();
-    await t.pump();
+    // No `starts.first.complete()` any more, and no tap-through to make one:
+    // the reset happens in `initState`, so this case never needed a camera. It
+    // only had one because arriving used to open it unconditionally.
+    expect(svc.startCount, 0);
   });
 
   testWidgets('resuming waits for the teardown before reopening', (t) async {
     _phoneSized(t);
     final svc = _ManualService();
-    await t.pumpWidget(_page(svc));
-    await t.pump();
+    await _pumpToCamera(t, svc);
     svc.starts.first.complete();
     await t.pump();
 
@@ -250,15 +268,35 @@ void main() {
   // requesting -- correctly, so a resume cannot ambush the user -- and this
   // screen had no path that requested either. The camera was unreachable
   // unless some OTHER screen had already won the permission.
-  testWidgets('arriving on the coach asks for the camera, before opening it',
+  testWidgets('nothing is asked for, and nothing opens, until the user says so',
       (t) async {
     _phoneSized(t);
     final svc = _ManualService();
+
+    // R11h moved this. It used to read "a fresh arrival IS the user asking for
+    // the camera", which was true when arriving was the only signal there was.
+    // Now there are two cards in front of it and the second one ends on a
+    // button that says "open the camera", so arriving is no longer an ask —
+    // and this half of the test is the one that proves the cards are not
+    // decoration over an already-running preview.
     await t.pumpWidget(_page(svc));
+    await t.pumpAndSettle();
+    expect(svc.permissionAsks, 0, reason: 'the intro card asks for nothing');
+    expect(svc.startCount, 0, reason: 'and opens nothing');
+
+    await t.tap(find.byKey(const Key('coach.intro.start')));
+    await t.pumpAndSettle();
+    expect(svc.permissionAsks, 0,
+        reason: 'nor does the preparation card, which promises as much in its '
+            'own body text');
+    expect(svc.startCount, 0);
+
+    await t.tap(find.byKey(const Key('coach.prep.openCamera')));
+    await t.pump();
     await t.pump();
 
     expect(svc.permissionAsks, 1,
-        reason: 'a fresh arrival IS the user asking for the camera');
+        reason: 'the button that says "open the camera" is the ask');
     expect(svc.calls.first, 'permission',
         reason: 'asking after opening the camera is asking too late — the '
             'open is what fails with permissionDenied');
@@ -275,8 +313,7 @@ void main() {
     // refusal collected that way is close to permanent.
     _phoneSized(t);
     final svc = _ManualService();
-    await t.pumpWidget(_page(svc));
-    await t.pump();
+    await _pumpToCamera(t, svc);
     svc.starts.first.complete();
     await t.pump();
     expect(svc.permissionAsks, 1);
@@ -303,8 +340,7 @@ void main() {
     // one failure it is most often shown for.
     _phoneSized(t);
     final svc = _ManualService();
-    await t.pumpWidget(_page(svc));
-    await t.pump();
+    await _pumpToCamera(t, svc);
     svc.starts.first.completeError(StateError('permission denied'));
     await t.pump();
 

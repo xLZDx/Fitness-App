@@ -154,10 +154,18 @@ class GlassCard extends StatelessWidget {
 }
 
 class GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const GlassAppBar({super.key, required this.title, this.actions});
+  const GlassAppBar(
+      {super.key, required this.title, this.actions, this.leading});
 
   final String title;
   final List<Widget>? actions;
+
+  /// Replaces the automatic back button.
+  ///
+  /// Added for R11h, where "back" means "return to the previous card in this
+  /// flow" rather than "leave the screen" — a distinction `AppBar`'s automatic
+  /// leading cannot make, because it only knows about the navigator.
+  final Widget? leading;
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -173,6 +181,7 @@ class GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
           elevation: 0,
           surfaceTintColor: Colors.transparent,
           centerTitle: false,
+          leading: leading,
           title: Text(title),
           actions: actions,
         ),

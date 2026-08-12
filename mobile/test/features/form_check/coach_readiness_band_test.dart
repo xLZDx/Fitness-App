@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/features/form_check/data/coach_phases.dart';
 import 'package:fitness_app/features/form_check/data/pose_gate.dart';
 import 'package:fitness_app/features/form_check/state/coach_phase_providers.dart';
 import 'package:fitness_app/features/form_check/state/form_check_providers.dart';
@@ -27,6 +28,9 @@ Widget _harness(ProviderContainer container) => UncontrolledProviderScope(
 ProviderContainer _container(PoseGateVerdict verdict) {
   final c = ProviderContainer(overrides: [
     poseGateVerdictProvider.overrideWith((_) => verdict),
+    // R11h: this file's subject is the camera UI, so it starts where
+    // that UI lives instead of tapping through the two intro cards.
+    coachInitialPhaseProvider.overrideWithValue(CoachPhase.qualityCheck),
   ]);
   addTearDown(c.dispose);
   return c;

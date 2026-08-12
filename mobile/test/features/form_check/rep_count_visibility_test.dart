@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/features/form_check/data/coach_phases.dart';
+import 'package:fitness_app/features/form_check/state/coach_phase_providers.dart';
 import 'package:fitness_app/features/form_check/data/pose_detector_service.dart';
 import 'package:fitness_app/features/form_check/data/rep_counter.dart';
 import 'package:fitness_app/features/form_check/form_check_page.dart';
@@ -33,6 +35,9 @@ ProviderContainer _container(FormExercise exercise) {
   final c = ProviderContainer(overrides: [
     poseDetectorServiceProvider
         .overrideWithValue(MockPoseDetectorService(const [])),
+    // R11h: this file's subject is the camera UI, so it starts where
+    // that UI lives instead of tapping through the two intro cards.
+    coachInitialPhaseProvider.overrideWithValue(CoachPhase.qualityCheck),
   ]);
   c.read(selectedExerciseProvider.notifier).state = exercise;
   addTearDown(c.dispose);

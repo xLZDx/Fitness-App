@@ -7,7 +7,7 @@ import 'form_check_providers.dart';
 /// Where the coached session is, and why the view is unusable when it is.
 class CoachSessionState {
   const CoachSessionState({
-    this.phase = CoachPhase.qualityCheck,
+    this.phase = CoachPhase.launch,
     this.blocker = CoachBlocker.none,
   });
 
@@ -23,16 +23,36 @@ class CoachSessionState {
 
 /// Drives the coached session through the design's stages.
 ///
-/// Starts at [CoachPhase.qualityCheck] rather than [CoachPhase.launch]: this
-/// app opens the camera on arrival (`form_check_page.dart`'s start lifecycle,
-/// which nine tests pin deliberately), so by the time this controller exists
-/// there is already a frame stream to judge. Gating the camera behind an intro
-/// screen changes WHEN the camera opens, and that wants verification on a real
-/// device before it ships — see R11h in
-/// `core/plans/PLAN_R11_FIGMA_PARITY_REBUILD_2026-08-08.md`.
+/// Starts at [CoachPhase.launch]: nothing is running, and in particular the
+/// camera is not open.
+///
+/// It used to start at [CoachPhase.qualityCheck] because the page opened the
+/// camera on arrival, and this doc used to argue that moving it wanted device
+/// verification first. That argument is now the wrong way round. The design's
+/// preparation card ends on a button reading "включить камеру" and its own body
+/// text promises the camera is not yet in use (`App.tsx:4558-4562`) — so
+/// drawing those screens over a live preview would have been a lie in the
+/// interface, not a compromise. And the change moves the permission prompt
+/// LATER, to the moment the user explicitly asks for it, which is the safer
+/// direction to be wrong in.
 class CoachPhaseController extends Notifier<CoachSessionState> {
   @override
-  CoachSessionState build() => const CoachSessionState();
+  CoachSessionState build() =>
+      CoachSessionState(phase: ref.watch(coachInitialPhaseProvider));
+
+  /// The user asked to begin. Show them how to stand before anything opens.
+  void toPreparation() =>
+      state = state.copyWith(phase: CoachPhase.preparation);
+
+  /// Back out of the preparation card to the intro.
+  void toLaunch() => state = state.copyWith(phase: CoachPhase.launch);
+
+  /// The user has read the preparation card and asked for the camera.
+  ///
+  /// Only moves the phase. Actually opening the camera belongs to the page,
+  /// which owns the service handle and the lifecycle token — a Notifier that
+  /// reached for hardware would also have to own tearing it down.
+  void openCamera() => state = state.copyWith(phase: CoachPhase.qualityCheck);
 
   /// Fold the current gate verdict in.
   void onVerdict(PoseGateVerdict verdict) {
@@ -60,6 +80,19 @@ class CoachPhaseController extends Notifier<CoachSessionState> {
   /// Back to judging the view.
   void restart() => state = const CoachSessionState();
 }
+
+/// Where a fresh coached session begins.
+///
+/// A provider rather than a constant purely so a test can start at the screen
+/// it is actually about. Fifteen existing cases — the skeleton toggle, the cue
+/// gate, rep counting — pump this page to exercise the camera UI and have
+/// nothing to say about the intro cards; making each of them tap through two
+/// screens would be fifteen copies of a walk-through that tests nothing, and
+/// the first one to be written slightly differently would be the one that
+/// stops catching its own bug.
+///
+/// Production never overrides it.
+final coachInitialPhaseProvider = Provider<CoachPhase>((_) => CoachPhase.launch);
 
 final coachPhaseControllerProvider =
     NotifierProvider<CoachPhaseController, CoachSessionState>(
