@@ -160,6 +160,12 @@ int _difficultyRank(ExerciseDifficulty d) {
 
 int _tierRank(FitnessTier t) {
   switch (t) {
+    // Ranks the same as `beginner`, and that is the whole answer, not a
+    // shortcut: the catalogue's easiest grade IS `ExerciseDifficulty.beginner`,
+    // so there is nothing below it to sort someone towards. `never` earns its
+    // own enum value because a first programme should be built differently, not
+    // because a different exercise ordering exists to give it.
+    case FitnessTier.never:
     case FitnessTier.beginner:
       return 0;
     case FitnessTier.intermediate:

@@ -36,6 +36,11 @@ class AppPalette {
   static const programmeForm = Color(0xFF059669);
   static const programmeWeightLoss = Color(0xFFD97706);
   static const programmeComeback = Color(0xFFDC2626);
+  // Sixth hue, added with `ProgrammeGoal.endurance` in O3. Teal rather than
+  // another blue: it sits beside `programmeMuscle` (0xFF2563EB) in the goal
+  // filter row, and two blues one chip apart are two chips nobody can tell
+  // apart at a glance.
+  static const programmeEndurance = Color(0xFF0D9488);
 
   static const tileGradients = <List<Color>>[
     [Color(0xFFFF7AC6), Color(0xFFFFB37C)],

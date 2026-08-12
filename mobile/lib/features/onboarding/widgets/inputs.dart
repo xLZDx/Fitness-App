@@ -142,6 +142,120 @@ class MultiChoiceChips<T> extends StatelessWidget {
   }
 }
 
+/// A full-width radio card: icon, title, supporting line, selection ring.
+///
+/// The design uses these wherever a screen asks ONE question with a handful of
+/// answers that each need a sentence of explanation (`App.tsx:1290-1332`) —
+/// "Набрать мышечную массу / Рост силы и объёма" reads as a choice; the same
+/// text squeezed into a chip reads as a tag.
+///
+/// Chips are still right for multi-select and for short answers; this is not
+/// their replacement. Deferred out of O1 deliberately, until a screen actually
+/// needed one — a shared widget with no consumer is a guess about what the
+/// second consumer will want.
+class ChoiceCard extends StatelessWidget {
+  const ChoiceCard({
+    super.key,
+    required this.title,
+    required this.selected,
+    required this.onTap,
+    this.subtitle,
+    this.icon,
+  });
+
+  final String title;
+  final String? subtitle;
+  final IconData? icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    // `selected` carries the answer, and colour is the only thing that says so.
+    // Without this a screen reader reads a list of sentences with no indication
+    // that any of them is pressable or that one is already chosen.
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            color: selected
+                ? AppPalette.auroraLime.withValues(alpha: 0.16)
+                : theme.colors.surfaceInteractive,
+            border: Border.all(
+              color: selected ? AppPalette.auroraLime : theme.colors.outline,
+              width: selected ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              if (icon != null) ...[
+                Icon(
+                  icon,
+                  size: 22,
+                  color: selected
+                      ? AppPalette.auroraLimeDeep
+                      : theme.colors.textSecondary,
+                ),
+                const SizedBox(width: 14),
+              ],
+              // Flexible, not fixed: these titles are questionnaire answers and
+              // the Russian ones are the longest strings in the flow. A row
+              // that cannot shrink is the `/scan` overflow again.
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: theme.colors.textPrimary,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle!,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontSize: 12,
+                          color: theme.colors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              // The ring reads as "chosen" without relying on the fill colour,
+              // which matters for anyone who cannot separate the lime tint from
+              // the muted surface behind it.
+              Icon(
+                selected
+                    ? Icons.radio_button_checked_rounded
+                    : Icons.radio_button_unchecked_rounded,
+                size: 20,
+                color: selected
+                    ? AppPalette.auroraLimeDeep
+                    : theme.colors.textSecondary,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ChoicePill extends StatelessWidget {
   const _ChoicePill({
     required this.label,

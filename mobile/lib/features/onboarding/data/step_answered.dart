@@ -9,8 +9,14 @@ import '../../profile/data/profile_models.dart';
 enum OnboardingStep {
   personal,
   health,
-  goals,
-  level,
+  /// Goal AND starting level, one screen since O3.
+  ///
+  /// Replaced the separate `goals` and `level` values rather than joining them:
+  /// leaving both in the enum would have left two names for one screen, and the
+  /// next reader would have had to work out which of them the flow actually
+  /// uses. The underlying model is untouched — [FitnessGoals] and [FitnessLevel]
+  /// are still separate, because they answer different questions.
+  goalAndLevel,
   lifestyle,
   equipment,
   motivation,
@@ -33,8 +39,7 @@ enum OnboardingStep {
 /// This list IS the flow. Changing it changes the order, and nothing else has
 /// to move.
 const List<OnboardingStep> kOnboardingOrder = [
-  OnboardingStep.goals,
-  OnboardingStep.level,
+  OnboardingStep.goalAndLevel,
   OnboardingStep.equipment,
   OnboardingStep.health,
   OnboardingStep.motivation,
@@ -84,18 +89,15 @@ bool isOnboardingStepAnswered(OnboardingStep step, UserProfile p) {
           h.recentSurgeries.isNotEmpty ||
           h.bloodPressure != null ||
           (h.otherConcerns?.isNotEmpty ?? false);
-    case OnboardingStep.goals:
+    case OnboardingStep.goalAndLevel:
+      // One screen, so ONE answer is enough to count it as touched — picking a
+      // goal and leaving the level blank is a real, intentional way to use this
+      // screen, and calling it unanswered would put "Skip" on a button that
+      // would discard a choice the user just made.
       final g = p.goals;
-      return g.weightLoss ||
-          g.muscleGain ||
-          g.endurance ||
-          g.strength ||
-          g.flexibility ||
-          g.generalFitness ||
-          (g.specificSport?.isNotEmpty ?? false);
-    case OnboardingStep.level:
       final l = p.level;
-      return l.frequencyPerWeek != null ||
+      return g.hasAny ||
+          l.frequencyPerWeek != null ||
           l.currentExercises.isNotEmpty ||
           l.tier != null ||
           l.basics != null;
@@ -109,7 +111,14 @@ bool isOnboardingStepAnswered(OnboardingStep step, UserProfile p) {
           l.occupation != null;
     case OnboardingStep.equipment:
       final e = p.equipment;
-      return e.hasGymAccess != null || e.homeEquipment.isNotEmpty;
+      // `hasGymAccess` is derived from `location` since O4, so testing it alone
+      // would still be correct — but only by accident, and it would stop being
+      // correct the moment a fifth location did not map cleanly onto a boolean.
+      // The fields the screen writes are the ones asked about here.
+      return e.location != null ||
+          e.available.isNotEmpty ||
+          e.hasGymAccess != null ||
+          e.homeEquipment.isNotEmpty;
     case OnboardingStep.motivation:
       final m = p.motivation;
       return (m.motivation?.isNotEmpty ?? false) ||

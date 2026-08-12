@@ -2,13 +2,28 @@
 // of the questionnaire maps to one nested object on [UserProfile]. Every
 // field is nullable / has a default so a half-completed draft is valid.
 
+// The ONE import this file carries, and only for `FitnessGoals.primary`. The
+// direction is profile -> programmes and stays that way: `programme.dart` pulls
+// in equipment and workout models, neither of which reaches back here, so there
+// is no cycle to reason about. Checked before adding, not assumed.
+import '../../programmes/data/programme.dart' show ProgrammeGoal;
+
 enum Gender { male, female, nonBinary, preferNotToSay }
 
 enum ActivityLevel { sedentary, moderatelyActive, active, veryActive }
 
 enum BloodPressure { low, normal, high }
 
-enum FitnessTier { beginner, intermediate, advanced }
+/// Self-rated training experience.
+///
+/// `never` is FIRST so the declaration order reads as increasing — anything
+/// that sorts or indexes these values gets the right answer for free, and a
+/// reader does not have to check whether the list is ordered before trusting
+/// it. It was added in O3: the design's first screen offers "никогда не
+/// тренировался" as a distinct answer, and folding it into `beginner` would
+/// throw away the one distinction that changes what a first programme should
+/// look like.
+enum FitnessTier { never, beginner, intermediate, advanced }
 
 enum BasicExerciseAbility { yes, partial, no }
 
@@ -371,6 +386,7 @@ class HealthHistory {
 
 class FitnessGoals {
   const FitnessGoals({
+    this.primary,
     this.weightLoss = false,
     this.muscleGain = false,
     this.endurance = false,
@@ -379,6 +395,21 @@ class FitnessGoals {
     this.generalFitness = false,
     this.specificSport,
   });
+
+  /// The ONE goal the user picked first, in the programme layer's own
+  /// vocabulary.
+  ///
+  /// Deliberately not derived from the booleans below, and they are
+  /// deliberately not derived from it. The design's first screen asks "what is
+  /// your main goal" and takes a single answer; the older multi-select asks
+  /// what else interests you. "I mainly want strength, and I would also like
+  /// to lose some weight" is a normal answer, and collapsing it either way
+  /// loses information the plan generator will want.
+  ///
+  /// Typed as [ProgrammeGoal] rather than a private onboarding enum so the
+  /// answer is usable for programme selection without a translation table —
+  /// see that enum's own doc for why a second vocabulary was rejected.
+  final ProgrammeGoal? primary;
 
   final bool weightLoss;
   final bool muscleGain;
@@ -391,6 +422,7 @@ class FitnessGoals {
   static const empty = FitnessGoals();
 
   bool get hasAny =>
+      primary != null ||
       weightLoss ||
       muscleGain ||
       endurance ||
@@ -400,6 +432,7 @@ class FitnessGoals {
       (specificSport != null && specificSport!.isNotEmpty);
 
   FitnessGoals copyWith({
+    ProgrammeGoal? primary,
     bool? weightLoss,
     bool? muscleGain,
     bool? endurance,
@@ -409,6 +442,7 @@ class FitnessGoals {
     String? specificSport,
   }) =>
       FitnessGoals(
+        primary: primary ?? this.primary,
         weightLoss: weightLoss ?? this.weightLoss,
         muscleGain: muscleGain ?? this.muscleGain,
         endurance: endurance ?? this.endurance,
@@ -485,20 +519,82 @@ class Lifestyle {
       );
 }
 
-class EquipmentAccess {
-  const EquipmentAccess({this.hasGymAccess, this.homeEquipment = const []});
+/// Where the training happens.
+///
+/// `mixed` is not a hedge — "gym on weekdays, home at the weekend" is the
+/// commonest real answer, and forcing it into one of the other three would make
+/// every plan wrong half the week.
+enum TrainingLocation { gym, home, outdoor, mixed }
 
-  final bool? hasGymAccess;
+/// What is available to train with, as a closed set the exercise filter can
+/// actually match against.
+///
+/// `cameraScan` is the odd one out and stays anyway: on screen it is another
+/// chip ("я распознаю оборудование камерой"), but it describes an intention,
+/// not a piece of equipment. Anything selecting exercises must ignore it —
+/// treating it as kit would let the filter offer a machine nobody has.
+enum EquipmentKind {
+  fullGym,
+  machines,
+  dumbbells,
+  barbell,
+  kettlebells,
+  bands,
+  bodyweight,
+  cameraScan,
+}
+
+class EquipmentAccess {
+  const EquipmentAccess({
+    this.location,
+    this.available = const [],
+    bool? hasGymAccess,
+    this.homeEquipment = const [],
+  }) : _storedGymAccess = hasGymAccess;
+
+  /// O4. The answer the design's screen 2 actually asks for.
+  final TrainingLocation? location;
+
+  /// O4. The equipment chips, as a closed set.
+  final List<EquipmentKind> available;
+
+  /// Free text for everything the closed set above cannot hold.
+  ///
+  /// Kept rather than replaced, on the same principle as `Injury.note`: what
+  /// does not fit a category is stored and left out of matching, which is
+  /// honest, instead of being forced into the nearest category, which is not.
   final List<String> homeEquipment;
+
+  /// What was written into Firestore before [location] existed.
+  ///
+  /// Private, and read only when [location] is null. Profiles created before O4
+  /// carry this and nothing else; dropping it would have silently un-answered
+  /// the equipment question for every existing user, and nothing would have
+  /// gone red — `hasGymAccess` would simply have started returning null.
+  final bool? _storedGymAccess;
+
+  /// Derived from [location] when there is one, else the stored legacy answer.
+  ///
+  /// A getter rather than a field so the two can never disagree. Existing
+  /// readers (`step_answered.dart`, the exercise filter) did not have to change.
+  bool? get hasGymAccess => switch (location) {
+        TrainingLocation.gym || TrainingLocation.mixed => true,
+        TrainingLocation.home || TrainingLocation.outdoor => false,
+        null => _storedGymAccess,
+      };
 
   static const empty = EquipmentAccess();
 
   EquipmentAccess copyWith({
+    TrainingLocation? location,
+    List<EquipmentKind>? available,
     bool? hasGymAccess,
     List<String>? homeEquipment,
   }) =>
       EquipmentAccess(
-        hasGymAccess: hasGymAccess ?? this.hasGymAccess,
+        location: location ?? this.location,
+        available: available ?? this.available,
+        hasGymAccess: hasGymAccess ?? _storedGymAccess,
         homeEquipment: homeEquipment ?? this.homeEquipment,
       );
 }
@@ -571,6 +667,7 @@ class UserProfile {
         },
         'health': health.toJson(),
         'goals': {
+          'primary': goals.primary?.name,
           'weightLoss': goals.weightLoss,
           'muscleGain': goals.muscleGain,
           'endurance': goals.endurance,
@@ -594,6 +691,12 @@ class UserProfile {
           'occupation': lifestyle.occupation?.name,
         },
         'equipment': {
+          'location': equipment.location?.name,
+          'available': equipment.available.map((e) => e.name).toList(),
+          // Written as the DERIVED value, deliberately. Anything still reading
+          // this key — an export taken last month, a Cloud Function — keeps
+          // getting a true answer instead of a stale one, and the field stays
+          // readable by a version of the app that predates `location`.
           'hasGymAccess': equipment.hasGymAccess,
           'homeEquipment': equipment.homeEquipment,
         },

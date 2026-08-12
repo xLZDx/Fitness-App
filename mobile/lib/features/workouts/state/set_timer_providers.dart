@@ -39,7 +39,11 @@ final setVoiceEnabledProvider = StateProvider<bool>((_) => true);
 /// the catalog.
 SetPlan planFor(ExerciseItem? exercise, FitnessTier? tier) {
   var plan = switch (tier) {
-    FitnessTier.beginner => SetPlan.beginner,
+    // `never` takes the beginner plan rather than something gentler still.
+    // There are three plans, and inventing a fourth for a tier that has never
+    // been exercised against real users would be guessing at numbers, which is
+    // worse than reusing numbers the operator has already looked at.
+    FitnessTier.never || FitnessTier.beginner => SetPlan.beginner,
     FitnessTier.advanced => SetPlan.advanced,
     FitnessTier.intermediate || null => SetPlan.intermediate,
   };

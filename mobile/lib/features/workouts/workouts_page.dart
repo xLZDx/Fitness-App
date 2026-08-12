@@ -857,6 +857,8 @@ Color _goalHue(ProgrammeGoal goal) {
       return AppPalette.programmeForm;
     case ProgrammeGoal.comeback:
       return AppPalette.programmeComeback;
+    case ProgrammeGoal.endurance:
+      return AppPalette.programmeEndurance;
   }
 }
 
@@ -872,6 +874,8 @@ String _goalLabel(AppLocalizations l, ProgrammeGoal goal) {
       return l.programmeGoalForm;
     case ProgrammeGoal.comeback:
       return l.programmeGoalComeback;
+    case ProgrammeGoal.endurance:
+      return l.programmeGoalEndurance;
   }
 }
 

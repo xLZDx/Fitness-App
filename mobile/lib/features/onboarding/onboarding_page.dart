@@ -13,9 +13,8 @@ import 'data/step_answered.dart';
 import 'state/questionnaire_notifier.dart';
 import 'widgets/ob_shell.dart';
 import 'steps/step_equipment.dart';
-import 'steps/step_goals.dart';
+import 'steps/step_goal_and_level.dart';
 import 'steps/step_health.dart';
-import 'steps/step_level.dart';
 import 'steps/step_lifestyle.dart';
 import 'steps/step_motivation.dart';
 import 'steps/step_personal.dart';
@@ -40,10 +39,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         return l10n.onbStepPersonal;
       case OnboardingStep.health:
         return l10n.onbStepHealth;
-      case OnboardingStep.goals:
-        return l10n.onbStepGoals;
-      case OnboardingStep.level:
-        return l10n.onbStepLevel;
+      case OnboardingStep.goalAndLevel:
+        return l10n.onbStepGoalAndLevel;
       case OnboardingStep.lifestyle:
         return l10n.onbStepLifestyle;
       case OnboardingStep.equipment:
@@ -59,10 +56,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         return const StepPersonal();
       case OnboardingStep.health:
         return const StepHealth();
-      case OnboardingStep.goals:
-        return const StepGoals();
-      case OnboardingStep.level:
-        return const StepLevel();
+      case OnboardingStep.goalAndLevel:
+        return const StepGoalAndLevel();
       case OnboardingStep.lifestyle:
         return const StepLifestyle();
       case OnboardingStep.equipment:

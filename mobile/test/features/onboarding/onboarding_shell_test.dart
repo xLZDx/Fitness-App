@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/features/onboarding/data/step_answered.dart';
 import 'package:fitness_app/features/onboarding/onboarding_page.dart';
 import 'package:fitness_app/features/onboarding/state/questionnaire_notifier.dart';
 import 'package:fitness_app/features/profile/data/mock_profile_repository.dart';
@@ -51,16 +52,29 @@ Widget _harness(UserProfile seed) {
 void main() {
   final empty = UserProfile.empty('u');
 
-  testWidgets('the counter says 1/7, not 1/9', (tester) async {
+  /// However many screens the flow currently has.
+  ///
+  /// Derived, not typed. These assertions used to read `1/7` literally, and
+  /// every one of them went red the moment O3 merged two screens into one —
+  /// seven failures that were all the same fact, none of which was a defect.
+  /// The flow is going to keep changing (O5 adds a schedule screen), and a test
+  /// that has to be edited on every such change teaches its reader to edit it
+  /// without looking, which is how a real failure gets waved through.
+  final total = kOnboardingOrder.length;
+
+  testWidgets('the counter matches the flow, and is not the design\'s 9',
+      (tester) async {
     // The design hard-codes `TOTAL_OB_STEPS = 9` (`App.tsx:1202`) for a flow
-    // this app does not render yet -- O2 is the gate that renumbers. A bar
-    // that fills to 1/9 over seven screens would misreport how much is left,
-    // which is the one job a progress bar has.
+    // this app does not render. A bar that fills to 1/9 over fewer screens
+    // would misreport how much is left, which is the one job a progress bar
+    // has. The second assertion is the one with teeth: the first would pass
+    // even if somebody had copied 9 across AND padded the flow to match.
     await tester.pumpWidget(_harness(empty));
     await tester.pumpAndSettle();
 
-    expect(find.text('1/7'), findsOneWidget);
-    expect(find.text('1/9'), findsNothing);
+    expect(find.text('1/$total'), findsOneWidget);
+    expect(find.text('1/9'), findsNothing,
+        reason: 'the flow has $total screens, not the prototype\'s 9');
   });
 
   testWidgets('the first step offers no back chevron', (tester) async {
@@ -83,7 +97,7 @@ void main() {
     await tester.tap(find.byKey(const Key('onboarding.cta')));
     await tester.pumpAndSettle();
 
-    expect(find.text('2/7'), findsOneWidget,
+    expect(find.text('2/$total'), findsOneWidget,
         reason: 'Skip is a label, not a gate -- every question is optional');
   });
 
@@ -111,7 +125,7 @@ void main() {
     // throw the user onto screen two while they were still on it.
     await tester.pumpWidget(_harness(empty));
     await tester.pumpAndSettle();
-    expect(find.text('1/7'), findsOneWidget);
+    expect(find.text('1/$total'), findsOneWidget);
 
     final element = tester.element(find.byType(OnboardingPage));
     ProviderScope.containerOf(element)
@@ -119,7 +133,7 @@ void main() {
         .updateGoals((g) => g.copyWith(strength: true));
     await tester.pumpAndSettle();
 
-    expect(find.text('1/7'), findsOneWidget,
+    expect(find.text('1/$total'), findsOneWidget,
         reason: 'the user is still on the screen they were answering');
   });
 
@@ -133,7 +147,7 @@ void main() {
 
     await tester.tap(find.byKey(const Key('onboarding.back')));
     await tester.pumpAndSettle();
-    expect(find.text('1/7'), findsOneWidget);
+    expect(find.text('1/$total'), findsOneWidget);
     expect(find.byKey(const Key('onboarding.back')), findsNothing);
   });
 
@@ -144,7 +158,7 @@ void main() {
     await tester.pumpWidget(_harness(empty));
     await tester.pumpAndSettle();
 
-    expect(find.text('Goals'), findsOneWidget);
+    expect(find.text('Goal and level'), findsOneWidget);
   });
 
   testWidgets('a returning user resumes at the first screen they left empty',
@@ -159,8 +173,9 @@ void main() {
     ));
     await tester.pumpAndSettle();
 
-    expect(find.text('3/7'), findsOneWidget,
-        reason: 'goals and level are answered; equipment is the first gap');
+    expect(find.text('2/$total'), findsOneWidget,
+        reason: 'the goal-and-level screen is answered; equipment is the '
+            'first gap. Before O3 these were two screens and this read 3');
     expect(find.byKey(const Key('onboarding.back')), findsOneWidget,
         reason: 'and they can still walk back into what they answered');
   });
@@ -171,7 +186,7 @@ void main() {
     await tester.pumpWidget(_harness(empty));
     await tester.pumpAndSettle();
 
-    expect(find.bySemanticsLabel('Step 1 of 7'), findsOneWidget);
+    expect(find.bySemanticsLabel('Step 1 of $total'), findsOneWidget);
     handle.dispose();
   });
 }

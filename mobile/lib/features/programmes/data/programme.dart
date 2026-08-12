@@ -27,7 +27,17 @@ import '../../workouts/data/scheduled_session.dart';
 ///
 /// It is also not the *catalogue*. [Programme] is one user's enrolment;
 /// `programme_templates.dart` holds the offer they enrolled from.
-enum ProgrammeGoal { strength, muscle, weightLoss, form, comeback }
+/// What a programme is FOR.
+///
+/// `endurance` joined the other five in O3, when onboarding started asking for
+/// a single primary goal (`FitnessGoals.primary`). The design offers six
+/// choices and five of them already existed here; inventing a second, parallel
+/// "onboarding goal" enum and a mapping table between the two would have left
+/// two vocabularies to keep in step, and nobody maintains a mapping table.
+///
+/// Every switch over this enum is exhaustive on purpose — adding a seventh
+/// value should be a compile error at each display site, not a silent default.
+enum ProgrammeGoal { strength, muscle, weightLoss, form, comeback, endurance }
 
 /// Lifecycle. `active` is what "current programme" means; there is at most one
 /// per user at a time (see `activeProgrammeProvider`), but finished ones are

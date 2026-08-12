@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/features/onboarding/data/step_answered.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
+import 'package:fitness_app/features/programmes/data/programme.dart'
+    show ProgrammeGoal;
 
 /// The rule behind the primary button's label, and behind where a returning
 /// user lands.
@@ -24,9 +26,9 @@ void main() {
     test('opens on the goal, per the design', () {
       // `App.tsx` step 1/9 is "Цель и уровень". The pre-O2 flow opened on
       // height and weight, which asks a person to measure themselves before
-      // being told what it is for.
-      expect(kOnboardingOrder.first, OnboardingStep.goals);
-      expect(kOnboardingOrder[1], OnboardingStep.level);
+      // being told what it is for. O3 merged goal and level into that one
+      // screen, so there is nothing at index 1 to assert about any more.
+      expect(kOnboardingOrder.first, OnboardingStep.goalAndLevel);
     });
   });
 
@@ -70,35 +72,61 @@ void main() {
       expect(isOnboardingStepAnswered(OnboardingStep.health, p), isTrue);
     });
 
-    test('goals — one checkbox, or the sport field', () {
+    test('goal and level — the primary goal alone', () {
+      // The design's own first answer. Before O3 this field did not exist and
+      // the only way to answer the screen was the multi-select below it.
       expect(
-        isOnboardingStepAnswered(OnboardingStep.goals,
+        isOnboardingStepAnswered(
+            OnboardingStep.goalAndLevel,
+            empty.copyWith(
+                goals: const FitnessGoals(primary: ProgrammeGoal.endurance))),
+        isTrue,
+      );
+    });
+
+    test('goal and level — a secondary checkbox, or the sport field', () {
+      expect(
+        isOnboardingStepAnswered(OnboardingStep.goalAndLevel,
             empty.copyWith(goals: const FitnessGoals(strength: true))),
         isTrue,
       );
       expect(
         isOnboardingStepAnswered(
-            OnboardingStep.goals,
+            OnboardingStep.goalAndLevel,
             empty.copyWith(
                 goals: const FitnessGoals(specificSport: 'climbing'))),
         isTrue,
       );
     });
 
-    test('goals — an empty sport string is not an answer', () {
+    test('goal and level — the level half alone also counts', () {
+      // Two former screens share one now, so either half answers it. Requiring
+      // both would put "Skip" on a button that would throw away the goal the
+      // user had just picked.
+      expect(
+        isOnboardingStepAnswered(OnboardingStep.goalAndLevel,
+            empty.copyWith(level: const FitnessLevel(frequencyPerWeek: 3))),
+        isTrue,
+      );
+      expect(
+        isOnboardingStepAnswered(
+            OnboardingStep.goalAndLevel,
+            empty.copyWith(
+                level: const FitnessLevel(tier: FitnessTier.never))),
+        isTrue,
+        reason: '"never trained" is an answer, not an absence of one',
+      );
+    });
+
+    test('goal and level — an empty sport string is not an answer', () {
       // `GlassTextField` writes '' on the first keystroke-then-delete. Treating
       // that as answered would leave the button on "Next" for a step the user
       // emptied again.
       final p = empty.copyWith(goals: const FitnessGoals(specificSport: ''));
-      expect(isOnboardingStepAnswered(OnboardingStep.goals, p), isFalse);
+      expect(isOnboardingStepAnswered(OnboardingStep.goalAndLevel, p), isFalse);
     });
 
-    test('level, lifestyle, equipment, motivation', () {
-      expect(
-        isOnboardingStepAnswered(OnboardingStep.level,
-            empty.copyWith(level: const FitnessLevel(frequencyPerWeek: 3))),
-        isTrue,
-      );
+    test('lifestyle, equipment, motivation', () {
       expect(
         isOnboardingStepAnswered(OnboardingStep.lifestyle,
             empty.copyWith(lifestyle: const Lifestyle(sleepHoursPerNight: 7))),
@@ -131,12 +159,13 @@ void main() {
     });
 
     test('the FIRST gap, not the furthest screen reached', () {
-      // Someone who skipped the goal and answered their level should come back
-      // to the goal. Resuming at the furthest point would bury the one screen
-      // still missing behind the ones already done.
-      final p = empty.copyWith(level: const FitnessLevel(tier: FitnessTier.beginner));
+      // Someone who skipped the opening screen and answered their equipment
+      // should come back to the opening screen. Resuming at the furthest point
+      // would bury the one screen still missing behind the ones already done.
+      final p =
+          empty.copyWith(equipment: const EquipmentAccess(hasGymAccess: true));
       expect(onboardingResumeIndex(p), 0,
-          reason: 'goals is index 0 and is still empty');
+          reason: 'goalAndLevel is index 0 and is still empty');
     });
 
     test('a fully answered draft lands on the last screen, not past it', () {

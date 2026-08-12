@@ -5,6 +5,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../programmes/data/programme.dart' show ProgrammeGoal;
 import 'profile_models.dart';
 import 'profile_repository.dart';
 
@@ -60,6 +61,7 @@ class FirestoreProfileRepository implements ProfileRepository {
       // and are still parsed. H1b is what empties them.
       health: HealthHistory.fromJson(Map<String, dynamic>.from(health)),
       goals: FitnessGoals(
+        primary: _enumByName(ProgrammeGoal.values, goals['primary']),
         weightLoss: goals['weightLoss'] ?? false,
         muscleGain: goals['muscleGain'] ?? false,
         endurance: goals['endurance'] ?? false,
@@ -88,6 +90,17 @@ class FirestoreProfileRepository implements ProfileRepository {
             _enumByName(OccupationActivity.values, lifestyle['occupation']),
       ),
       equipment: EquipmentAccess(
+        location:
+            _enumByName(TrainingLocation.values, equipment['location']),
+        available: [
+          for (final e in (equipment['available'] as List?) ?? const [])
+            if (_enumByName(EquipmentKind.values, e) case final k?) k,
+        ],
+        // Still read, and this is the migration: profiles written before O4
+        // carry only this. `EquipmentAccess.hasGymAccess` prefers `location`
+        // when there is one and falls back to this when there is not, so an
+        // existing user's answer survives without a rewrite pass over the
+        // collection.
         hasGymAccess: equipment['hasGymAccess'] as bool?,
         homeEquipment:
             List<String>.from(equipment['homeEquipment'] ?? const []),
