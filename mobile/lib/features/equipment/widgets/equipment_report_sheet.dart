@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../shared/widgets/glass.dart';
+import '../../../shared/widgets/shell_insets.dart';
 import '../../auth/state/auth_providers.dart';
 import '../data/equipment_report.dart';
 import '../state/equipment_providers.dart';
@@ -101,7 +102,10 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
         16,
         24,
         16,
-        24 + MediaQuery.of(context).viewInsets.bottom,
+        // Keyboard OR gesture indicator, whichever is taller. This handled
+        // only the keyboard, so with it down the Send row sat in the system's
+        // swipe band.
+        sheetBottomInset(context, base: 24),
       ),
       child: GlassCard(
         floating: true,

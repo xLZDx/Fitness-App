@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/glass.dart';
+import '../../../shared/widgets/shell_insets.dart';
 import '../data/workout_log.dart';
 
 /// Modal bottom sheet shown right after "Mark complete" succeeds. Single
@@ -33,7 +34,10 @@ class DifficultyRatingSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+      // Same fix as the other confirm-style sheets: the rating row is the
+      // sheet's only control and a flat 24 put it under the gesture indicator.
+      padding:
+          EdgeInsets.fromLTRB(16, 24, 16, sheetBottomInset(context, base: 24)),
       child: GlassCard(
         floating: true,
         padding: const EdgeInsets.all(20),

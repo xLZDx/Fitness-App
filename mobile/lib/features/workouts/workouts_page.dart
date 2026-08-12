@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/shell_insets.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../equipment/data/catalog_labels.dart';
 import '../equipment/data/equipment_models.dart';
@@ -1201,7 +1202,9 @@ class _ConfirmSwitchSheet extends StatelessWidget {
     // translucent, and a translucent card over the template list this sheet
     // opens on top of would read the list through the confirmation text.
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+      // Bottom derived, not a flat 24: the Cancel/Start row sat under the
+      // gesture indicator on the operator's phone.
+      padding: EdgeInsets.fromLTRB(16, 24, 16, sheetBottomInset(context, base: 24)),
       child: GlassCard(
         floating: true,
         padding: const EdgeInsets.all(20),

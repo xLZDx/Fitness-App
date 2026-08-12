@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/glass.dart';
+import '../../../shared/widgets/shell_insets.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../data/set_capture.dart';
 
@@ -108,7 +109,10 @@ class _SetCaptureSheetState extends State<SetCaptureSheet> {
         left: 16,
         right: 16,
         top: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        // Was `viewInsets.bottom + 24`, which handles the keyboard and not the
+        // gesture indicator — so with the keyboard DOWN the Save row sat in
+        // the system's own swipe band.
+        bottom: sheetBottomInset(context, base: 24),
       ),
       child: GlassCard(
         floating: true,

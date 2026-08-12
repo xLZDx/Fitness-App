@@ -16,6 +16,7 @@ import '../../core/theme/app_semantic_colors.dart';
 import '../equipment/state/equipment_providers.dart';
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/shell_insets.dart';
 import '../visual_equipment/data/live_recognition.dart';
 import '../visual_equipment/data/scan_outcome.dart';
 import '../visual_equipment/data/recognition_history.dart';
@@ -515,13 +516,45 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
           // under the camera: at rest it shows the capture controls and the
           // top of the answer, and it pulls up over the preview when the user
           // wants the history or the alternatives.
-          DraggableScrollableSheet(
-            initialChildSize: 0.34,
-            minChildSize: 0.24,
-            maxChildSize: 0.92,
+          // Sized in PIXELS, not in a fraction of the screen.
+          //
+          // `MainShell` sets `extendBody: true`, so this Stack is laid out
+          // against the full height and the nav bar is then painted over its
+          // bottom ~110-130px. The old `minChildSize: 0.24` ignored that: on a
+          // 780px phone the sheet's lowest position was 187px tall, of which
+          // 128 were behind the bar — the caption under the shutter was gone
+          // and the scrollable strip, the ONLY surface that can drag the sheet
+          // back up, was entirely hidden. The sheet became unrecoverable, not
+          // merely cramped, which is exactly what the operator hit.
+          //
+          // LayoutBuilder rather than `MediaQuery.sizeOf`: `FrostedScaffold`
+          // decides this body's height, and a screen-height guess would be
+          // wrong by the status bar in the unsafe direction.
+          LayoutBuilder(builder: (context, box) {
+            const maxFrac = 0.92;
+            final obstruction = shellBottomObstruction(context);
+            double frac(double content, double designed) => sheetMinChildSize(
+                  viewportHeight: box.maxHeight,
+                  obstruction: obstruction,
+                  visibleContentNeeded: content,
+                  floor: designed,
+                  ceiling: maxFrac,
+                );
+            // The design's own 0.24 / 0.34 are kept as the FLOOR. On a screen
+            // tall enough for them they are what the sheet uses, unchanged;
+            // the pixel budget only lifts them where the bar would otherwise
+            // eat the controls.
+            final minFrac = frac(_kScanSheetHead + _kScanSheetDragStrip, 0.24);
+            final restFrac =
+                frac(_kScanSheetHead + _kScanSheetRestingPeek, 0.34);
+            return DraggableScrollableSheet(
+            initialChildSize: restFrac,
+            minChildSize: minFrac,
+            maxChildSize: maxFrac,
             snap: true,
             builder: (context, controller) => _ScanSheet(
               controller: controller,
+              bottomInset: obstruction,
               capture: _CaptureCluster(
                 onCamera: _recogniseWithCamera,
                 onGallery: _recogniseFromGallery,
@@ -615,7 +648,8 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
           const _PreparingSection(),
               ],
             ),
-          ),
+            );
+          }),
         ],
       ),
     );
@@ -806,17 +840,41 @@ class _CaptureCluster extends StatelessWidget {
   }
 }
 
+/// The scan sheet's fixed head: `8 + 4` for the drag handle, `12`, then the
+/// capture cluster (a 68px shutter, a 6px gap and its ~18px caption), then 12.
+///
+/// Named because the sheet's minimum height is DERIVED from it. Written as the
+/// sum rather than as `128` so that changing the shutter changes the number
+/// that keeps it on screen.
+const double _kScanSheetHead = 8 + 4 + 12 + 68 + 6 + 18 + 12;
+
+/// The scrollable strip kept visible when the sheet is at its lowest.
+///
+/// This is the load-bearing one. The head does not scroll, so the list is the
+/// only surface a drag can reach, and `DraggableScrollableSheet` grows the
+/// sheet from that list's overscroll. A minimum that hides the list leaves the
+/// sheet with no way back up at all.
+const double _kScanSheetDragStrip = 72;
+
+/// How much of the answer sits under the head when the sheet is at rest.
+const double _kScanSheetRestingPeek = 150;
+
 /// The pull-up sheet holding everything that is not the viewfinder.
 class _ScanSheet extends StatelessWidget {
   const _ScanSheet({
     required this.controller,
     required this.capture,
     required this.children,
+    required this.bottomInset,
   });
 
   final ScrollController controller;
   final Widget capture;
   final List<Widget> children;
+
+  /// Pixels at the bottom covered by the nav bar. The list pads past it so its
+  /// last row can be scrolled clear of the bar instead of resting under it.
+  final double bottomInset;
 
   @override
   Widget build(BuildContext context) {
@@ -851,7 +909,9 @@ class _ScanSheet extends StatelessWidget {
           Expanded(
             child: ListView(
               controller: controller,
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 110),
+              // Was a flat `110`, which was a guess at the bar's height and
+              // ignored the gesture inset underneath it entirely.
+              padding: EdgeInsets.fromLTRB(12, 0, 12, bottomInset + 12),
               children: children,
             ),
           ),

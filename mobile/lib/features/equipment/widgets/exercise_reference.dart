@@ -792,21 +792,55 @@ class ExerciseFormCoachCard extends StatelessWidget {
 class ExerciseStepsCard extends StatelessWidget {
   const ExerciseStepsCard({super.key, required this.exercise});
   final ExerciseItem exercise;
+
+  /// True when this card has nothing to show.
+  ///
+  /// `summary` is derived as `steps[0]` by every catalog builder
+  /// (`build_vendor_catalog.py:291`, `build_catalog.py:109`,
+  /// `build_library.py:136`), so the two are empty on exactly the same rows —
+  /// measured, not assumed: 403 of the 1,887 vendor exercises lack both, and
+  /// the two sets are identical.
+  bool get _isBlank => exercise.summary.trim().isEmpty && exercise.steps.isEmpty;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(AppLocalizations.of(context).equipmentHowToDoIt,
+          Text(l10n.equipmentHowToDoIt,
               style: theme.textTheme.titleMedium
                   ?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
-          Text(exercise.summary,
+          // Says so, rather than rendering a heading over blank space.
+          //
+          // 21% of the vendor catalogue ships without a technique description
+          // — their metadata sheet is ~79% filled, which the builder's own
+          // header states — so this is not an edge case, it is one exercise in
+          // five. The card used to draw `Text('')` and zero steps, which reads
+          // as the app having lost the text rather than never having had it.
+          //
+          // Not hidden entirely: a section that silently disappears on some
+          // exercises and not others looks like a rendering bug, and it also
+          // hides the gap from whoever could fill it. Nothing here invents
+          // technique — a fabricated instruction on a fitness app is an injury
+          // risk, not a nicer empty state.
+          if (_isBlank)
+            Text(
+              l10n.equipmentNoStepsYet,
+              key: const Key('exercise-steps-missing'),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colors.textSecondary,
-              )),
+                fontStyle: FontStyle.italic,
+              ),
+            )
+          else
+            Text(exercise.summary,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colors.textSecondary,
+                )),
           const SizedBox(height: 10),
           for (var i = 0; i < exercise.steps.length; i++)
             Padding(
