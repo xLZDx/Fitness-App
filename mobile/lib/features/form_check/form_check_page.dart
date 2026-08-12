@@ -310,7 +310,35 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
           ),
         ],
       ),
-      body: ListView(
+      // The set is over: the numbers get the screen. Not an early `return`
+      // above — every provider watched further up stays watched, so the frame
+      // subscription and the camera survive the summary and "new set" resumes
+      // instantly instead of walking back through preparation and the gate.
+      body: phase == CoachPhase.summary
+          ? ListView(
+              padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
+              children: [
+                _SetSummaryCard(
+                  session: session,
+                  onReset: () => ref
+                      .read(repSessionControllerProvider.notifier)
+                      .resetSet(),
+                ),
+                const SizedBox(height: 16),
+                AppPrimaryButton(
+                  key: const Key('form_check.new_set'),
+                  label: AppLocalizations.of(context).formcheckNewSet,
+                  onPressed: () {
+                    // Reset first, then unpause. The other order would let the
+                    // frames that arrive between the two land on the previous
+                    // set's counter.
+                    ref.read(repSessionControllerProvider.notifier).resetSet();
+                    ref.read(coachPhaseControllerProvider.notifier).start();
+                  },
+                ),
+              ],
+            )
+          : ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
           if (!isPremium && ref.watch(entitlementResolvedProvider)) ...[
@@ -328,6 +356,11 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
           // before the set, not discovered after it.
           const _ExercisePicker(),
           const SizedBox(height: 12),
+          // Above the preview, not overlaid on it. The bottom of the preview is
+          // already the cue card's, and a control that shares space with the
+          // one sentence telling you what you did wrong is a control that will
+          // be pressed by accident mid-rep.
+          _SetControls(phase: phase),
           AspectRatio(
             aspectRatio: 9 / 16,
             child: ClipRRect(
@@ -459,7 +492,10 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
             ),
             const SizedBox(height: 16),
           ],
-          if (showRepCount) ...[
+          // Mid-set the summary is a running tally under the preview; once the
+          // user calls the set finished it is the whole screen, and the tally
+          // stops being something to glance past.
+          if (showRepCount && phase != CoachPhase.summary) ...[
             _SetSummaryCard(
               session: session,
               onReset: () =>
@@ -478,6 +514,77 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
         ],
       ),
     );
+  }
+}
+
+/// Start, pause, resume, finish — the four taps the phase machine was built for
+/// and had no caller for.
+///
+/// `CoachPhaseController` has shipped `start`/`pause`/`resume`/`finish` since
+/// R11h and nothing in the app called any of them, so `active` was unreachable
+/// and `paused` was a value the enum could hold but the product could not. That
+/// is worse than a missing feature: every reader of the phase, including the
+/// guard in `RepSessionController._onFrame`, was correct about a state that
+/// could not occur.
+class _SetControls extends ConsumerWidget {
+  const _SetControls({required this.phase});
+
+  final CoachPhase phase;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final coach = ref.read(coachPhaseControllerProvider.notifier);
+
+    switch (phase) {
+      case CoachPhase.ready:
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: AppPrimaryButton(
+            key: const Key('form_check.start_set'),
+            label: l10n.formcheckStartSet,
+            icon: Icons.play_arrow,
+            onPressed: coach.start,
+          ),
+        );
+      case CoachPhase.active:
+      case CoachPhase.paused:
+        final paused = phase == CoachPhase.paused;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: AppSecondaryButton(
+                  key: Key(paused
+                      ? 'form_check.resume_set'
+                      : 'form_check.pause_set'),
+                  label: paused ? l10n.formcheckResumeSet : l10n.formcheckPauseSet,
+                  icon: paused ? Icons.play_arrow : Icons.pause,
+                  onPressed: paused ? coach.resume : coach.pause,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: AppPrimaryButton(
+                  key: const Key('form_check.finish_set'),
+                  label: l10n.formcheckFinishSet,
+                  icon: Icons.check,
+                  onPressed: coach.finish,
+                ),
+              ),
+            ],
+          ),
+        );
+      // Nothing to control: the camera is not open, or the view is not usable
+      // yet and the readiness band is already saying why.
+      case CoachPhase.launch:
+      case CoachPhase.preparation:
+      case CoachPhase.qualityCheck:
+      case CoachPhase.calibration:
+      case CoachPhase.summary:
+        return const SizedBox.shrink();
+    }
   }
 }
 

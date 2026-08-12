@@ -87,16 +87,6 @@ void main() {
         reason: 'Skip is a label, not a gate -- every question is optional');
   });
 
-  testWidgets('answering the step turns Skip into Next', (tester) async {
-    await tester.pumpWidget(_harness(
-      empty.copyWith(personal: const PersonalInfo(age: 31)),
-    ));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Next'), findsOneWidget);
-    expect(find.text('Skip'), findsNothing);
-  });
-
   testWidgets('the label follows the draft as it is edited', (tester) async {
     // The half a static seed cannot prove: the button has to react to the
     // answer, not to what the page was built with.
@@ -107,10 +97,30 @@ void main() {
     final element = tester.element(find.byType(OnboardingPage));
     ProviderScope.containerOf(element)
         .read(questionnaireDraftProvider.notifier)
-        .updatePersonal((p) => p.copyWith(age: 31));
+        .updateGoals((g) => g.copyWith(strength: true));
     await tester.pumpAndSettle();
 
     expect(find.text('Next'), findsOneWidget);
+  });
+
+  testWidgets('answering the screen you are on does NOT jump you forward',
+      (tester) async {
+    // The failure the resume latch is placed to avoid. Resume is armed until
+    // auth resolves, not until the target stops being zero -- otherwise the
+    // first answer typed on screen one would read as "screen one is done" and
+    // throw the user onto screen two while they were still on it.
+    await tester.pumpWidget(_harness(empty));
+    await tester.pumpAndSettle();
+    expect(find.text('1/7'), findsOneWidget);
+
+    final element = tester.element(find.byType(OnboardingPage));
+    ProviderScope.containerOf(element)
+        .read(questionnaireDraftProvider.notifier)
+        .updateGoals((g) => g.copyWith(strength: true));
+    await tester.pumpAndSettle();
+
+    expect(find.text('1/7'), findsOneWidget,
+        reason: 'the user is still on the screen they were answering');
   });
 
   testWidgets('the chevron appears on step 2 and walks back', (tester) async {
@@ -125,6 +135,34 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('1/7'), findsOneWidget);
     expect(find.byKey(const Key('onboarding.back')), findsNothing);
+  });
+
+  testWidgets('the flow opens on the goal, not on height and weight',
+      (tester) async {
+    // O2's reorder, asserted where a user would see it. The pre-O2 flow asked
+    // a person to measure themselves before telling them what it was for.
+    await tester.pumpWidget(_harness(empty));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Goals'), findsOneWidget);
+  });
+
+  testWidgets('a returning user resumes at the first screen they left empty',
+      (tester) async {
+    // The draft already survived; their place in it did not. Every reopen
+    // restarted at screen one and made them walk past every answer again.
+    await tester.pumpWidget(_harness(
+      empty.copyWith(
+        goals: const FitnessGoals(strength: true),
+        level: const FitnessLevel(frequencyPerWeek: 3),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text('3/7'), findsOneWidget,
+        reason: 'goals and level are answered; equipment is the first gap');
+    expect(find.byKey(const Key('onboarding.back')), findsOneWidget,
+        reason: 'and they can still walk back into what they answered');
   });
 
   testWidgets('the step counter is announced as words, not as a slash',

@@ -3,26 +3,39 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitness_app/features/onboarding/data/step_answered.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 
-/// The rule behind the primary button's label.
+/// The rule behind the primary button's label, and behind where a returning
+/// user lands.
 ///
-/// Asserted directly rather than by reading a label off a pumped page: the
-/// question "has this step been touched" is a fact about the draft, and a
-/// widget test would only prove that one screen renders one branch of it.
+/// Asserted directly rather than by reading a label off a pumped page: both
+/// questions are facts about the draft, and a widget test would only prove that
+/// one screen renders one branch of them.
 void main() {
   final empty = UserProfile.empty('u');
 
-  group('an untouched draft', () {
-    test('answers nothing, on every step the page renders', () {
-      for (var i = 0; i < 7; i++) {
-        expect(isOnboardingStepAnswered(i, empty), isFalse, reason: 'step $i');
-      }
+  group('the order', () {
+    test('holds every section exactly once', () {
+      // The list IS the flow, and a section dropped from it is a question the
+      // app silently stops asking -- with the data still in the model, so
+      // nothing else goes red.
+      expect(kOnboardingOrder.toSet(), OnboardingStep.values.toSet());
+      expect(kOnboardingOrder, hasLength(OnboardingStep.values.length));
     });
 
-    test('and an index the page does not render is false, not a crash', () {
-      // O2 renumbers these. Until then an out-of-range index must degrade to a
-      // "Skip" label rather than take the onboarding screen down.
-      expect(isOnboardingStepAnswered(7, empty), isFalse);
-      expect(isOnboardingStepAnswered(-1, empty), isFalse);
+    test('opens on the goal, per the design', () {
+      // `App.tsx` step 1/9 is "Цель и уровень". The pre-O2 flow opened on
+      // height and weight, which asks a person to measure themselves before
+      // being told what it is for.
+      expect(kOnboardingOrder.first, OnboardingStep.goals);
+      expect(kOnboardingOrder[1], OnboardingStep.level);
+    });
+  });
+
+  group('an untouched draft', () {
+    test('answers nothing, on every section', () {
+      for (final step in OnboardingStep.values) {
+        expect(isOnboardingStepAnswered(step, empty), isFalse,
+            reason: step.name);
+      }
     });
   });
 
@@ -33,9 +46,9 @@ void main() {
 
     test('personal — a single field', () {
       final p = empty.copyWith(personal: const PersonalInfo(age: 31));
-      expect(isOnboardingStepAnswered(0, p), isTrue);
-      expect(isOnboardingStepAnswered(1, p), isFalse,
-          reason: 'answering one step must not light up the others');
+      expect(isOnboardingStepAnswered(OnboardingStep.personal, p), isTrue);
+      expect(isOnboardingStepAnswered(OnboardingStep.health, p), isFalse,
+          reason: 'answering one section must not light up the others');
     });
 
     test('health — one injury', () {
@@ -44,7 +57,7 @@ void main() {
           injuries: [Injury(bodyPart: 'верх спины', type: 'strain')],
         ),
       );
-      expect(isOnboardingStepAnswered(1, p), isTrue);
+      expect(isOnboardingStepAnswered(OnboardingStep.health, p), isTrue);
     });
 
     test('health — free text alone counts', () {
@@ -54,18 +67,20 @@ void main() {
       final p = empty.copyWith(
         health: const HealthHistory(otherConcerns: 'shoulder clicks'),
       );
-      expect(isOnboardingStepAnswered(1, p), isTrue);
+      expect(isOnboardingStepAnswered(OnboardingStep.health, p), isTrue);
     });
 
     test('goals — one checkbox, or the sport field', () {
       expect(
-        isOnboardingStepAnswered(
-            2, empty.copyWith(goals: const FitnessGoals(strength: true))),
+        isOnboardingStepAnswered(OnboardingStep.goals,
+            empty.copyWith(goals: const FitnessGoals(strength: true))),
         isTrue,
       );
       expect(
-        isOnboardingStepAnswered(2,
-            empty.copyWith(goals: const FitnessGoals(specificSport: 'climbing'))),
+        isOnboardingStepAnswered(
+            OnboardingStep.goals,
+            empty.copyWith(
+                goals: const FitnessGoals(specificSport: 'climbing'))),
         isTrue,
       );
     });
@@ -75,31 +90,81 @@ void main() {
       // that as answered would leave the button on "Next" for a step the user
       // emptied again.
       final p = empty.copyWith(goals: const FitnessGoals(specificSport: ''));
-      expect(isOnboardingStepAnswered(2, p), isFalse);
+      expect(isOnboardingStepAnswered(OnboardingStep.goals, p), isFalse);
     });
 
     test('level, lifestyle, equipment, motivation', () {
       expect(
-        isOnboardingStepAnswered(
-            3, empty.copyWith(level: const FitnessLevel(frequencyPerWeek: 3))),
+        isOnboardingStepAnswered(OnboardingStep.level,
+            empty.copyWith(level: const FitnessLevel(frequencyPerWeek: 3))),
         isTrue,
       );
       expect(
-        isOnboardingStepAnswered(4,
+        isOnboardingStepAnswered(OnboardingStep.lifestyle,
             empty.copyWith(lifestyle: const Lifestyle(sleepHoursPerNight: 7))),
         isTrue,
       );
       expect(
         isOnboardingStepAnswered(
-            5, empty.copyWith(equipment: const EquipmentAccess(hasGymAccess: false))),
+            OnboardingStep.equipment,
+            empty.copyWith(
+                equipment: const EquipmentAccess(hasGymAccess: false))),
         isTrue,
         reason: '"no gym" is an answer; only null means unanswered',
       );
       expect(
-        isOnboardingStepAnswered(6,
+        isOnboardingStepAnswered(OnboardingStep.motivation,
             empty.copyWith(motivation: const MotivationPrefs(motivation: 'x'))),
         isTrue,
       );
+    });
+  });
+
+  group('where a returning user lands', () {
+    test('an untouched draft opens at the beginning', () {
+      expect(onboardingResumeIndex(empty), 0);
+    });
+
+    test('answering the first screen moves the resume point past it', () {
+      final p = empty.copyWith(goals: const FitnessGoals(strength: true));
+      expect(onboardingResumeIndex(p), 1);
+    });
+
+    test('the FIRST gap, not the furthest screen reached', () {
+      // Someone who skipped the goal and answered their level should come back
+      // to the goal. Resuming at the furthest point would bury the one screen
+      // still missing behind the ones already done.
+      final p = empty.copyWith(level: const FitnessLevel(tier: FitnessTier.beginner));
+      expect(onboardingResumeIndex(p), 0,
+          reason: 'goals is index 0 and is still empty');
+    });
+
+    test('a fully answered draft lands on the last screen, not past it', () {
+      final full = empty.copyWith(
+        goals: const FitnessGoals(strength: true),
+        level: const FitnessLevel(frequencyPerWeek: 3),
+        equipment: const EquipmentAccess(hasGymAccess: true),
+        health: const HealthHistory(otherConcerns: 'none'),
+        motivation: const MotivationPrefs(motivation: 'x'),
+        personal: const PersonalInfo(age: 31),
+        lifestyle: const Lifestyle(sleepHoursPerNight: 7),
+      );
+      expect(onboardingResumeIndex(full), kOnboardingOrder.length - 1,
+          reason: 'so they land on Done rather than being bounced out');
+    });
+
+    test('the index is always renderable', () {
+      // The value is fed straight to `PageController.jumpToPage`. An
+      // off-by-one here is a crash on open, not a cosmetic slip.
+      for (final p in [
+        empty,
+        empty.copyWith(goals: const FitnessGoals(strength: true)),
+        empty.copyWith(lifestyle: const Lifestyle(stressLevel: 4)),
+      ]) {
+        final i = onboardingResumeIndex(p);
+        expect(i, greaterThanOrEqualTo(0));
+        expect(i, lessThan(kOnboardingOrder.length));
+      }
     });
   });
 }

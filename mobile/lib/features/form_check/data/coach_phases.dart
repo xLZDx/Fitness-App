@@ -74,6 +74,23 @@ enum CoachBlocker {
   sensorBug,
 }
 
+/// Whether repetitions may be counted while the session is in [phase].
+///
+/// Stated as the two phases that STOP it rather than as `phase == active`, and
+/// the difference is load-bearing. `active` is only ever entered by pressing
+/// Start, and the count has never required that: the page counts from the
+/// moment the view is usable, which is what every existing rep test drives and
+/// what a user who just points the phone at themselves expects. Gating on
+/// `== active` would have made counting depend on a button that did not exist
+/// until this gate — a silent behaviour change dressed as a refactor.
+///
+/// [CoachPhase.paused] and [CoachPhase.summary] are the two states where the
+/// user has SAID the set is not running. Summary is here because a finished
+/// set whose numbers keep climbing while it is being read is not a summary of
+/// anything — the defect the P2 test caught, one guard short.
+bool countingIsLiveIn(CoachPhase phase) =>
+    phase != CoachPhase.paused && phase != CoachPhase.summary;
+
 /// The instruction that belongs to a gate verdict.
 CoachBlocker blockerFor(PoseGateVerdict verdict) {
   return switch (verdict) {

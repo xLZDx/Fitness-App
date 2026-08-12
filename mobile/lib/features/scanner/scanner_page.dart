@@ -504,7 +504,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
             right: 0,
             child: SafeArea(
               bottom: false,
-              child: _ScanTopBar(
+              child: ScanTopBar(
                 live: liveOn,
                 onLive: (on) =>
                     ref.read(liveModeEnabledProvider.notifier).state = on,
@@ -623,8 +623,14 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
 }
 
 /// The glass strip over the top of the viewfinder.
-class _ScanTopBar extends StatelessWidget {
-  const _ScanTopBar({required this.live, required this.onLive});
+///
+/// Public so its layout can be pumped at a given width and locale without a
+/// camera. It was private, and the only way to reach it was through the whole
+/// scanner page — which is why the 12px Russian overflow it shipped with was
+/// found by a device walk rather than by a widget test that costs milliseconds.
+/// Testability is a design property; see `scan_strip_overflow_test.dart`.
+class ScanTopBar extends StatelessWidget {
+  const ScanTopBar({super.key, required this.live, required this.onLive});
 
   final bool live;
   final ValueChanged<bool> onLive;
@@ -635,44 +641,81 @@ class _ScanTopBar extends StatelessWidget {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+      // Both pills shrink; neither is allowed to push the row past the screen.
+      //
+      // This strip overflowed by 12px on a real device in Russian, and the
+      // reason it was never caught is worth keeping: the host suite renders in
+      // English (`kTestLocale`), where these read "Scan" and "Live". Production
+      // pins Russian — "Распознавание" and "Живой режим" — so the overflow was
+      // visible to every actual user and to none of the 2,039 host tests. The
+      // device walk found it on the first run.
+      // Both pills shrink; neither may push the row past the screen.
+      //
+      // This strip overflowed on a real device in Russian, and the reason no
+      // host test saw it is worth keeping: the suite renders in English
+      // (`kTestLocale`), where these read "Scan" and "Live" -- four characters
+      // each. Production pins Russian (`main.dart`): "Распознавание" and
+      // "Живой режим". Measured against the pre-fix layout, the overflow was
+      // 142px at 320 logical pixels, 102px at 360 and 51px at 411 -- so it was
+      // visible to every Russian-speaking user, worst on the cheapest phones,
+      // and invisible to all 2,039 host tests. The device walk found it on its
+      // first run; `scan_strip_overflow_test.dart` now holds it.
       child: Row(
+        // Keeps the two pills at opposite ends the way `Spacer` did, without
+        // `Spacer`'s side effect: it takes every pixel the children do not,
+        // which makes the row's minimum width the sum of two unshrinkable
+        // pills plus a Switch, whatever the screen is.
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: theme.colors.cameraOverlay,
-              borderRadius: BorderRadius.circular(99),
-            ),
-            child: Text(
-              l10n.scannerScan,
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                color: theme.colors.cameraOverlay,
+                borderRadius: BorderRadius.circular(99),
+              ),
+              child: Text(
+                l10n.scannerScan,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
-          const Spacer(),
+          const SizedBox(width: 8),
           // Gates the labeler, not the camera. On the scrim rather than in a
           // bar, so it stays the same control it was -- the tests that drive
           // `scan-live-toggle` still find a Switch.
-          Container(
-            padding: const EdgeInsets.only(left: 12),
-            decoration: BoxDecoration(
-              color: theme.colors.cameraOverlay,
-              borderRadius: BorderRadius.circular(99),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(l10n.scannerLive,
-                    style: theme.textTheme.labelLarge
-                        ?.copyWith(color: Colors.white)),
-                Switch(
-                  key: const Key('scan-live-toggle'),
-                  value: live,
-                  onChanged: onLive,
-                ),
-              ],
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.only(left: 12),
+              decoration: BoxDecoration(
+                color: theme.colors.cameraOverlay,
+                borderRadius: BorderRadius.circular(99),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      l10n.scannerLive,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelLarge
+                          ?.copyWith(color: Colors.white),
+                    ),
+                  ),
+                  // The Switch keeps its intrinsic size on purpose: an
+                  // ellipsised label is still readable, a squeezed toggle is
+                  // not reliably tappable.
+                  Switch(
+                    key: const Key('scan-live-toggle'),
+                    value: live,
+                    onChanged: onLive,
+                  ),
+                ],
+              ),
             ),
           ),
         ],

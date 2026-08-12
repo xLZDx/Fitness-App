@@ -6,7 +6,6 @@ import 'package:flutter/services.dart' show AssetManifest, rootBundle;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
 
 import 'package:fitness_app/core/assets/asset_bootstrap.dart';
@@ -215,9 +214,24 @@ Future<void> main() async {
 
     expect(find.text('Главная'), findsWidgets,
         reason: 'nav labels must be translated, not just body copy');
-    expect(find.text('Готовы тренироваться?'), findsOneWidget);
+
+    // Was `find.text('Готовы тренироваться?')`. That string is `homeReadyToTrain`,
+    // and grepping `lib/` for it returns the two .arb files and NOTHING else —
+    // the home header now greets by time of day (`home_page.dart:183-186`). The
+    // test was asserting a sentence the product had removed, which is why it
+    // reported a boot failure for a home screen that boots fine.
+    //
+    // Any of the three, not one: which greeting shows depends on the clock, and
+    // a test that passes only in the afternoon is a test that fails at night.
+    final greeting = find.byWidgetPredicate((w) =>
+        w is Text &&
+        const ['Доброе утро', 'Добрый день', 'Добрый вечер'].contains(w.data));
+    expect(greeting, findsWidgets,
+        reason: 'the home header greets in Russian');
     // The English default would mean the locale pin regressed.
-    expect(find.text('Ready to train?'), findsNothing);
+    expect(find.text('Good morning'), findsNothing);
+    expect(find.text('Good afternoon'), findsNothing);
+    expect(find.text('Good evening'), findsNothing);
   });
 
   testWidgets('every tab opens without an error widget', (tester) async {
@@ -227,7 +241,12 @@ Future<void> main() async {
     // "Распознавание" when this was written and is "Скан" now — a rename that
     // took this test and the one below down together, and looked like a boot
     // failure in the log.
-    for (final tab in ['Скан', 'Тренировка', 'Прогресс', 'Профиль']) {
+    //
+    // It happened again: `navWorkouts` is "Тренировки", and this list said
+    // "Тренировка". The tab was there the whole time. Hard-coding a display
+    // string is what keeps costing this test — the strings live in
+    // `app_ru.arb:708-709` and nothing binds them to this list.
+    for (final tab in ['Скан', 'Тренировки', 'Прогресс', 'Профиль']) {
       await tapTab(tester, tab);
       expect(find.byType(ErrorWidget), findsNothing, reason: 'on $tab');
       expect(tester.takeException(), isNull, reason: 'on $tab');
@@ -350,11 +369,18 @@ Future<void> main() async {
     // Reached directly: tab-hopping is covered above, and this test is about
     // the locale actually changing under a real engine.
     //
-    // The context has to come from INSIDE a routed page: AuroraBackground lives
-    // in MaterialApp.builder, which sits above the Router's inherited widget,
-    // so GoRouter.of() there throws "No GoRouter found in context".
-    final ctx = tester.element(find.text('Готовы тренироваться?'));
-    GoRouter.of(ctx).push('/settings');
+    // The comment here used to say the context must come from INSIDE a routed
+    // page, because `AuroraBackground` sits above the Router's inherited widget
+    // and `GoRouter.of()` there throws. That diagnosis was right and the remedy
+    // was fragile: it anchored on a home-screen sentence, and when that sentence
+    // was removed this test started failing with `Bad state: No element` — a
+    // message about a missing widget, for a test about translation.
+    //
+    // The provider holds the same router and does not care where it is read.
+    final router = ProviderScope.containerOf(
+      tester.element(find.byType(AuroraBackground).first),
+    ).read(appRouterProvider);
+    router.push('/settings');
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 250));
     }
@@ -400,6 +426,77 @@ Future<void> main() async {
       (envelope: sealed, passphrase: 'a phrase i will remember'),
     );
     expect(opened, contains('sensitive-profile'));
+  });
+
+  /// Every route the app can reach, opened on the device, in one pass.
+  ///
+  /// The four-tab walk above covers the shell and nothing else: 28 of the 33
+  /// routes in `app_router.dart` are reachable only by a deep link or a tap
+  /// several screens in, and none of them had ever been opened by a test on a
+  /// device. A screen that throws on a real bundle — a missing asset, a plugin
+  /// that only exists on Android, a provider that reads a platform channel —
+  /// looks identical to a passing widget test until someone opens it.
+  ///
+  /// Navigated with `go` rather than by tapping through, deliberately: the
+  /// question here is "does this screen render on a phone", not "can it be
+  /// reached", and a tap path would make one broken button hide every screen
+  /// behind it.
+  ///
+  /// A screen that renders an empty state or a "not found" is a PASS. The bar
+  /// is an `ErrorWidget` (Flutter's red screen) or an escaped exception —
+  /// the two things a user cannot do anything about.
+  testWidgets('every route in the router opens on the device', (tester) async {
+    await boot(tester);
+    // From the provider, NOT `GoRouter.of(context)`. `AuroraBackground` is
+    // installed by `MaterialApp.router`'s `builder`, which sits ABOVE the
+    // Navigator the router injects `InheritedGoRouter` into — so the lookup
+    // asserts "No GoRouter found in context". The provider holds the same
+    // instance and does not care where in the tree it is read from.
+    final router = ProviderScope.containerOf(
+      tester.element(find.byType(AuroraBackground).first),
+    ).read(appRouterProvider);
+
+    // Parameterised routes get an id that does not exist on purpose: the
+    // not-found path is the one a deep link from a stale notification actually
+    // hits, and it is the half nobody opens by hand.
+    const routes = <String>[
+      '/home', '/scan', '/workouts', '/progress', '/profile',
+      '/onboarding', '/settings', '/about', '/licences', '/terms', '/privacy',
+      '/injuries', '/subscription', '/donors', '/plan', '/celebrity-plans',
+      '/photos', '/backup', '/community', '/contribute', '/moderate',
+      '/coaches', '/posture', '/form-check', '/workout-summary',
+      '/delete-account',
+      '/equipment/does-not-exist',
+      '/exercise/does-not-exist',
+      '/workout/does-not-exist',
+      '/team/does-not-exist',
+    ];
+
+    final broken = <String>[];
+    for (final route in routes) {
+      router.go(route);
+      // Sliced rather than pumpAndSettle: several of these open a camera or a
+      // stream, and settle never returns against a live one.
+      for (var i = 0; i < 12; i++) {
+        await tester.pump(const Duration(milliseconds: 250));
+      }
+      final err = tester.takeException();
+      if (err != null) broken.add('$route -> $err');
+      if (find.byType(ErrorWidget).evaluate().isNotEmpty) {
+        broken.add('$route -> ErrorWidget on screen');
+      }
+      // Back to a known screen, so a route that leaves a modal or a camera
+      // open cannot make the NEXT one look broken.
+      router.go('/home');
+      for (var i = 0; i < 4; i++) {
+        await tester.pump(const Duration(milliseconds: 250));
+      }
+      tester.takeException();
+    }
+
+    expect(broken, isEmpty,
+        reason: 'routes that failed to render on the device:\n'
+            '${broken.join('\n')}');
   });
 
   /// T1, on a device, against the catalog inside the installed APK.

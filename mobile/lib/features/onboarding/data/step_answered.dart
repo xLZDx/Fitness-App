@@ -1,6 +1,48 @@
 import '../../profile/data/profile_models.dart';
 
-/// Whether the user has put anything into step [index] yet.
+/// The seven questionnaire sections, named rather than numbered.
+///
+/// O1 keyed the same logic on the page index, which was correct only while the
+/// order was frozen. O2 reorders the flow, and a positional key would have gone
+/// on answering confidently about a different screen than the one on display —
+/// silently, because both are ints in range.
+enum OnboardingStep {
+  personal,
+  health,
+  goals,
+  level,
+  lifestyle,
+  equipment,
+  motivation,
+}
+
+/// The order the screens are shown in.
+///
+/// Traced to the design's sequence (`App.tsx`, steps 1-9), collapsed onto the
+/// seven screens that exist today: goal, then level (the design merges these
+/// into 1/9 — merging is O3, not this gate), place and equipment (2/9), body
+/// limitations (4/9), barriers (5/9), about you (6-7/9). Lifestyle has no home
+/// in the design's flow and stays its own screen by the operator's decision, at
+/// the end where it reads as supporting detail rather than as a gate.
+///
+/// Health Connect (8/9) is deliberately absent: the operator removed it from
+/// onboarding entirely, and connecting watches and trackers becomes its own
+/// gate later. The `HealthService` seam is untouched — a step was dropped, not
+/// the interface.
+///
+/// This list IS the flow. Changing it changes the order, and nothing else has
+/// to move.
+const List<OnboardingStep> kOnboardingOrder = [
+  OnboardingStep.goals,
+  OnboardingStep.level,
+  OnboardingStep.equipment,
+  OnboardingStep.health,
+  OnboardingStep.motivation,
+  OnboardingStep.personal,
+  OnboardingStep.lifestyle,
+];
+
+/// Whether the user has put anything into [step] yet.
 ///
 /// ## Why this exists as a pure function
 ///
@@ -10,21 +52,21 @@ import '../../profile/data/profile_models.dart';
 /// place the prototype gets this right — its other steps ship a separate
 /// "Пропустить этот шаг" text button *underneath* an always-enabled primary
 /// (`App.tsx:1565`), so both controls call the same `onNext` and differ only in
-/// how they look. Two controls that do exactly the same thing is not a design;
-/// it is a fork in the prototype nobody reconciled.
+/// how they look.
 ///
 /// Keeping the rule out of the widget means the answer can be asserted
-/// directly, without pumping a page and reading a label off it.
+/// directly, without pumping a page and reading a label off it. It also gives
+/// [onboardingResumeIndex] something to be built from.
 ///
 /// ## "Answered" means *touched*, not *complete*
 ///
 /// Every question in this questionnaire is optional — `_submit` sends whatever
 /// the draft holds. So this cannot ask "is the step valid"; there is no such
 /// thing. It asks whether the user put anything in, which is the only fact the
-/// button label needs.
-bool isOnboardingStepAnswered(int index, UserProfile p) {
-  switch (index) {
-    case 0:
+/// button label and the resume point need.
+bool isOnboardingStepAnswered(OnboardingStep step, UserProfile p) {
+  switch (step) {
+    case OnboardingStep.personal:
       final i = p.personal;
       return i.age != null ||
           i.gender != null ||
@@ -32,7 +74,7 @@ bool isOnboardingStepAnswered(int index, UserProfile p) {
           i.weightCurrentKg != null ||
           i.weightTargetKg != null ||
           i.activityLevel != null;
-    case 1:
+    case OnboardingStep.health:
       final h = p.health;
       return h.conditions.isNotEmpty ||
           h.allergies.isNotEmpty ||
@@ -42,7 +84,7 @@ bool isOnboardingStepAnswered(int index, UserProfile p) {
           h.recentSurgeries.isNotEmpty ||
           h.bloodPressure != null ||
           (h.otherConcerns?.isNotEmpty ?? false);
-    case 2:
+    case OnboardingStep.goals:
       final g = p.goals;
       return g.weightLoss ||
           g.muscleGain ||
@@ -51,13 +93,13 @@ bool isOnboardingStepAnswered(int index, UserProfile p) {
           g.flexibility ||
           g.generalFitness ||
           (g.specificSport?.isNotEmpty ?? false);
-    case 3:
+    case OnboardingStep.level:
       final l = p.level;
       return l.frequencyPerWeek != null ||
           l.currentExercises.isNotEmpty ||
           l.tier != null ||
           l.basics != null;
-    case 4:
+    case OnboardingStep.lifestyle:
       final l = p.lifestyle;
       return l.diet.isNotEmpty ||
           l.smoking != null ||
@@ -65,18 +107,39 @@ bool isOnboardingStepAnswered(int index, UserProfile p) {
           l.sleepHoursPerNight != null ||
           l.stressLevel != null ||
           l.occupation != null;
-    case 5:
+    case OnboardingStep.equipment:
       final e = p.equipment;
       return e.hasGymAccess != null || e.homeEquipment.isNotEmpty;
-    case 6:
+    case OnboardingStep.motivation:
       final m = p.motivation;
       return (m.motivation?.isNotEmpty ?? false) ||
           m.environments.isNotEmpty ||
           m.preferredDuration != null;
-    default:
-      // An index the page does not render. False rather than an assert: the
-      // consequence is a button reading "Skip", not a crash, and O2 renumbers
-      // these steps.
-      return false;
   }
+}
+
+/// Where to drop the user when they open onboarding again.
+///
+/// The draft is already persisted on every advance (`_next` saves before it
+/// moves) and rehydrates from the cached profile, so a returning user's answers
+/// survive. What did not survive was their *place*: the flow always restarted
+/// at screen one, and the only way past the questions they had already answered
+/// was to walk through all of them again.
+///
+/// Derived rather than stored. A saved cursor is a second source of truth that
+/// can disagree with the answers — a user who clears a section would resume
+/// past a screen that is now empty. The first gap in the answers cannot
+/// disagree with the answers, because it *is* them.
+///
+/// The first unanswered screen, not the furthest reached: skipping screen two
+/// and answering screen three should bring you back to two, which is the one
+/// still missing. A fully answered draft returns the last screen, so the user
+/// lands on Done rather than being bounced out of a flow they never finished.
+int onboardingResumeIndex(UserProfile draft,
+    [List<OnboardingStep> order = kOnboardingOrder]) {
+  if (order.isEmpty) return 0;
+  for (var i = 0; i < order.length; i++) {
+    if (!isOnboardingStepAnswered(order[i], draft)) return i;
+  }
+  return order.length - 1;
 }

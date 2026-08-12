@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../profile/data/profile_models.dart';
 import '../../profile/state/profile_providers.dart';
+import '../data/coach_phases.dart';
 import '../data/form_classifier.dart';
 import '../data/measured_rep_configs.dart';
 import '../data/pose_detector_service.dart';
@@ -16,6 +17,12 @@ import '../data/pose_unit_probe.dart';
 import '../data/rep_counter.dart';
 import '../data/rep_signals.dart';
 import '../data/voice_coach.dart';
+// Imports back into this library, which Dart allows and which is deliberate:
+// the alternative was a second copy of "is the set running" living here, and a
+// pause that two places had to agree about is a pause that will eventually
+// disagree. The dependency is one-way at RUNTIME — the phase controller never
+// reads the rep session — so there is no provider cycle, only an import one.
+import 'coach_phase_providers.dart';
 
 /// What the user says they are doing. Rules are chosen from this.
 enum FormExercise {
@@ -605,6 +612,21 @@ class RepSessionController extends Notifier<RepSessionState> {
     if (target != null) {
       match = poseMatchScore(frame, target);
       ref.read(poseMatchProvider.notifier).state = match;
+    }
+
+    // Paused, or finished. One guard, and it sits HERE rather than at the top
+    // of the method on purpose: everything above is a readout of the live
+    // camera — the skeleton, the match percentage — and the camera keeps
+    // running through a pause by the operator's decision. Freezing the overlay
+    // over a moving preview would read as a crash, not as a pause.
+    //
+    // What stops below this line is the COUNT, and with it the fault
+    // accumulation and the voice. Keyed on the phase rather than on a flag of
+    // this controller's own, so the app has exactly one answer to "is the set
+    // running" — the same reason R11h put the pre-set stages behind the gate
+    // verdict instead of behind a second copy of it.
+    if (!countingIsLiveIn(ref.read(coachPhaseControllerProvider).phase)) {
+      return;
     }
 
     final wasInRep = counter.phase != RepPhase.top;

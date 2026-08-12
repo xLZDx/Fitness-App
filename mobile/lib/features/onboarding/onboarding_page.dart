@@ -6,6 +6,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
+import '../auth/state/auth_providers.dart';
+import '../profile/data/profile_models.dart';
 import '../profile/state/profile_providers.dart';
 import 'data/step_answered.dart';
 import 'state/questionnaire_notifier.dart';
@@ -28,40 +30,78 @@ class OnboardingPage extends ConsumerStatefulWidget {
 class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   final _ctrl = PageController();
 
-  /// The seven step names, in order. A function rather than a `static const`
-  /// list: a translated string is a method call on the localizations object,
-  /// and a const list cannot hold one.
-  static List<String> _titles(AppLocalizations l10n) => [
-        l10n.onbStepPersonal,
-        l10n.onbStepHealth,
-        l10n.onbStepGoals,
-        l10n.onbStepLevel,
-        l10n.onbStepLifestyle,
-        l10n.onbStepEquipment,
-        l10n.onbStepMotivation,
-      ];
+  /// O2 turned three parallel lists — titles, widgets, answeredness — into one
+  /// keyed on [OnboardingStep]. They used to be a switch over an int and a list
+  /// in the same order, which is a shape that stays correct exactly until
+  /// somebody reorders one of them.
+  static String _titleFor(OnboardingStep step, AppLocalizations l10n) {
+    switch (step) {
+      case OnboardingStep.personal:
+        return l10n.onbStepPersonal;
+      case OnboardingStep.health:
+        return l10n.onbStepHealth;
+      case OnboardingStep.goals:
+        return l10n.onbStepGoals;
+      case OnboardingStep.level:
+        return l10n.onbStepLevel;
+      case OnboardingStep.lifestyle:
+        return l10n.onbStepLifestyle;
+      case OnboardingStep.equipment:
+        return l10n.onbStepEquipment;
+      case OnboardingStep.motivation:
+        return l10n.onbStepMotivation;
+    }
+  }
 
-  static const _stepCount = 7;
+  static Widget _widgetFor(OnboardingStep step) {
+    switch (step) {
+      case OnboardingStep.personal:
+        return const StepPersonal();
+      case OnboardingStep.health:
+        return const StepHealth();
+      case OnboardingStep.goals:
+        return const StepGoals();
+      case OnboardingStep.level:
+        return const StepLevel();
+      case OnboardingStep.lifestyle:
+        return const StepLifestyle();
+      case OnboardingStep.equipment:
+        return const StepEquipment();
+      case OnboardingStep.motivation:
+        return const StepMotivation();
+    }
+  }
+
+  int get _stepCount => kOnboardingOrder.length;
 
   int _index = 0;
 
-  Widget _stepFor(int i) {
-    switch (i) {
-      case 0:
-        return const StepPersonal();
-      case 1:
-        return const StepHealth();
-      case 2:
-        return const StepGoals();
-      case 3:
-        return const StepLevel();
-      case 4:
-        return const StepLifestyle();
-      case 5:
-        return const StepEquipment();
-      default:
-        return const StepMotivation();
-    }
+  /// Resume happens exactly once, the moment the draft is known to be real.
+  ///
+  /// `questionnaireDraftProvider` builds from an empty profile and rehydrates a
+  /// frame later, when `authUserProvider` resolves and the cached profile is
+  /// read. Deciding in `initState` would therefore always decide against an
+  /// empty draft and always land on screen one — the bug this gate removes.
+  ///
+  /// The latch is on **auth resolving**, not on the target being non-zero, and
+  /// the difference is not academic. Latching on "target moved off zero" would
+  /// leave this armed while the user sat on screen one — so the moment they
+  /// answered the question in front of them, the page would decide they had
+  /// finished it and jump them to screen two mid-typing. Auth resolves once and
+  /// never again; the user is driving from that frame on.
+  bool _resumed = false;
+
+  void _maybeResume(UserProfile draft) {
+    if (_resumed) return;
+    if (!ref.watch(authUserProvider).hasValue) return;
+    _resumed = true;
+    final target = onboardingResumeIndex(draft);
+    if (target == 0) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_ctrl.hasClients) return;
+      _ctrl.jumpToPage(target);
+      setState(() => _index = target);
+    });
   }
 
   @override
@@ -114,18 +154,20 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     final submitState = ref.watch(profileSubmitProvider);
     final isSubmitting = submitState.isLoading;
     final isLast = _index == _stepCount - 1;
+    final draft = ref.watch(questionnaireDraftProvider);
+    _maybeResume(draft);
 
     // The button reads "Skip" and goes quiet on a step nothing has been put
     // into, per the design (`App.tsx:1598`). It still advances either way --
     // every question here is optional and `_submit` sends whatever the draft
     // holds -- so this is a statement about what the user has done, not a gate.
     final answered =
-        isOnboardingStepAnswered(_index, ref.watch(questionnaireDraftProvider));
+        isOnboardingStepAnswered(kOnboardingOrder[_index], draft);
 
     return FrostedScaffold(
       // The counter moved into `ObProgressHeader`; leaving "Step N of M" here
       // as well would print it twice on every screen.
-      appBar: GlassAppBar(title: _titles(l10n)[_index]),
+      appBar: GlassAppBar(title: _titleFor(kOnboardingOrder[_index], l10n)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 88, 20, 24),
@@ -146,7 +188,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                   physics: const NeverScrollableScrollPhysics(),
                   itemBuilder: (context, i) => SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
-                    child: _stepFor(i),
+                    child: _widgetFor(kOnboardingOrder[i]),
                   ),
                 ),
               ),
