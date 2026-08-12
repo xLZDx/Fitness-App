@@ -136,6 +136,28 @@ void main() {
         }
       });
 
+      test('programme-card tags clear AA on every goal wash', () {
+        // Bug 6 moved the programme header from a full-strength aurora ramp to
+        // a per-goal wash at the prototype's own 0.20 alpha. That changed what
+        // the tags sit on, so the pairing had to be re-measured rather than
+        // assumed: the old white-pill-plus-`onGradientInk` scored 4.36 and 4.44
+        // on two of the five hues. This is the replacement, and it is here so
+        // adding a sixth goal cannot quietly reintroduce the problem.
+        final card = flatten(t.surfacePrimary, bg);
+        for (final hue in const {
+          'strength': AppPalette.programmeStrength,
+          'muscle': AppPalette.programmeMuscle,
+          'form': AppPalette.programmeForm,
+          'weightLoss': AppPalette.programmeWeightLoss,
+          'comeback': AppPalette.programmeComeback,
+        }.entries) {
+          final wash =
+              Color.alphaBlend(hue.value.withValues(alpha: 0.20), card);
+          expect(contrast(t.textPrimary, wash), greaterThanOrEqualTo(4.5),
+              reason: 'tag text on the ${hue.key} wash');
+        }
+      });
+
       test('the ink cannot be made translucent and stay legible', () {
         // Three call sites carried `Colors.white.withValues(alpha: 0.80..0.85)`
         // for secondary text. Reproducing that hierarchy with a translucent ink
@@ -428,8 +450,18 @@ void main() {
     // flat `backgroundSecondary`. glass_nav_bar.dart 1 -> 0; the two
     // `Colors.black` shadow lines in that file were never counted by this
     // regex and one of them survives on the Scan circle.
+    //
+    // 60 -> 59, 2026-08-12 (bug 6): the third decrease, and the first that was
+    // forced by a contrast measurement rather than chosen. `workouts_page.dart`
+    // lost `_TemplateChip`'s `Colors.white.withValues(alpha: 0.28)` pill. Once
+    // the programme header stopped being a full-strength aurora ramp and became
+    // the design's 0.20 -> 0.08 wash, `onGradientInk` on that pill measured
+    // 4.36 (comeback) and 4.44 (strength) — under AA. The chip is outlined now,
+    // with `textPrimary` straight on the wash at 7.51-9.28.
+    // workouts_page.dart 2 -> 1; the survivor is `_ScheduleButton`'s 0.32 fill,
+    // category 2, untouched.
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 60, reason: 'per file: $whites');
+    expect(total, 59, reason: 'per file: $whites');
   });
 
   group('lerp', () {

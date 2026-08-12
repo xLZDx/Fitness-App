@@ -820,7 +820,7 @@ class _ProgramsTabState extends ConsumerState<_ProgramsTab> {
           GlassCard(child: Text(l.workoutsEmptyFiltered(_goalLabel(l, _goalFilter!))))
         else
           for (var i = 0; i < templates.length; i++) ...[
-            _ProgrammeTemplateCard(template: templates[i], index: i),
+            _ProgrammeTemplateCard(template: templates[i]),
             const SizedBox(height: 16),
           ],
       ],
@@ -831,6 +831,35 @@ class _ProgramsTabState extends ConsumerState<_ProgramsTab> {
 /// [ProgrammeGoal] display labels. Own function rather than a
 /// `CatalogLabels` method -- the goal vocabulary belongs to programmes, not
 /// the exercise catalogue `CatalogLabels` otherwise speaks for.
+/// The card wash for a programme, keyed by its goal.
+///
+/// Bug 6, second half. Two things were wrong with what this replaces.
+///
+/// The visible one: `AppPalette.tileGradients` are saturated two-hue aurora
+/// ramps painted at full opacity, which is the look Ф1 already removed from
+/// the background and the glass cards and which the design never had on these
+/// headers either.
+///
+/// The one nobody had noticed: the gradient was picked by `index % 5` over the
+/// **filtered** list, so tapping a goal chip renumbered the survivors and the
+/// same programme changed colour. Keying off the goal makes a programme's
+/// colour a property of the programme instead of a property of what else
+/// happens to be on screen.
+Color _goalHue(ProgrammeGoal goal) {
+  switch (goal) {
+    case ProgrammeGoal.strength:
+      return AppPalette.programmeStrength;
+    case ProgrammeGoal.muscle:
+      return AppPalette.programmeMuscle;
+    case ProgrammeGoal.weightLoss:
+      return AppPalette.programmeWeightLoss;
+    case ProgrammeGoal.form:
+      return AppPalette.programmeForm;
+    case ProgrammeGoal.comeback:
+      return AppPalette.programmeComeback;
+  }
+}
+
 String _goalLabel(AppLocalizations l, ProgrammeGoal goal) {
   switch (goal) {
     case ProgrammeGoal.strength:
@@ -944,13 +973,13 @@ class _CurrentProgrammeCard extends ConsumerWidget {
   }
 }
 
-/// One enrollable programme. Header block colour rotates through
-/// [AppPalette.tileGradients] by [index], the same rotation the filter
-/// chips already use (`workoutsFilterLabel`'s callers, `i % 5` there).
+/// One enrollable programme. The header wash comes from the programme's goal
+/// ([_goalHue]); it used to rotate through [AppPalette.tileGradients] by list
+/// position, which is what made a card change colour when the list was
+/// filtered. `index` went with it — it had no other reader.
 class _ProgrammeTemplateCard extends ConsumerWidget {
-  const _ProgrammeTemplateCard({required this.template, required this.index});
+  const _ProgrammeTemplateCard({required this.template});
   final ProgrammeTemplate template;
-  final int index;
 
   Future<void> _start(BuildContext context, WidgetRef ref, Programme? active) async {
     if (active != null && active.templateId != template.id) {
@@ -996,8 +1025,7 @@ class _ProgrammeTemplateCard extends ConsumerWidget {
     final muscleLabel = template.isFullBody
         ? l.programmeFullBody
         : template.muscles.map((m) => CatalogLabels.muscle(l, m)).join(', ');
-    final gradient =
-        AppPalette.tileGradients[index % AppPalette.tileGradients.length];
+    final hue = _goalHue(template.goal);
 
     return GlassCard(
       key: Key('programme.template.${template.id}'),
@@ -1011,14 +1039,34 @@ class _ProgrammeTemplateCard extends ConsumerWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
-              gradient: LinearGradient(colors: gradient),
+              // 0.20 -> 0.08 are the prototype's own `${p.color}33` and
+              // `${p.color}15` (`App.tsx:4795`), read as alpha.
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  hue.withValues(alpha: 0.20),
+                  hue.withValues(alpha: 0.08),
+                ],
+              ),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _TemplateChip(CatalogLabels.difficulty(l, template.level)),
-                _TemplateChip(_goalLabel(l, template.goal)),
+                // Bug 5, the "right-edge chip clipping" from the operator's
+                // device walkthrough. A Row neither wraps nor scrolls, so two
+                // content-sized chips that together want more than the card's
+                // 256dp simply clipped the right-hand one -- measured at 70px
+                // and 34px over on two of the six templates, at 320dp with the
+                // text size Android's own accessibility settings reach.
+                // `Flexible` is what lets the Row shrink them instead;
+                // `spaceBetween` still pushes them apart whenever they fit.
+                Flexible(
+                    child: _TemplateChip(
+                        CatalogLabels.difficulty(l, template.level))),
+                const SizedBox(width: 8),
+                Flexible(child: _TemplateChip(_goalLabel(l, template.goal))),
               ],
             ),
           ),
@@ -1092,18 +1140,32 @@ class _TemplateChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colors;
+    // Outlined, not a filled white pill. The header is no longer a bright
+    // gradient (bug 6 above), so the pill-plus-dark-ink pairing stopped
+    // working: measured on the new wash it scores 4.36 on the comeback hue and
+    // 4.44 on strength, both under AA 4.5. Light text straight on the wash
+    // scores 7.51-9.28. The prototype's own answer -- the hue as text on a
+    // 15%-hue pill -- was measured too and is worse still, 1.61-2.30, the same
+    // failure its `#3E3E50` nav labels had; parity does not extend to
+    // illegibility.
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.28),
+        border: Border.all(color: colors.outline),
         borderRadius: BorderRadius.circular(99),
       ),
       child: Text(
         label,
-        style: const TextStyle(
+        // Bounded for the same reason `_ScrimChip` in `exercise_reference.dart`
+        // is: once the parent is allowed to squeeze the chip, an unbounded
+        // Text inside it just moves the clip one level down.
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w700,
-          color: AppSemanticColors.onGradientInk,
+          color: colors.textPrimary,
         ),
       ),
     );

@@ -24,6 +24,19 @@ class AppPalette {
 
   static const auroraPeach = Color(0xFFFFB37C);
 
+  /// One hue per programme goal, taken verbatim from the prototype's own
+  /// `PROGRAMS` table (`App.tsx:4726-4733`).
+  ///
+  /// These are drawn as a near-flat wash (0.20 -> 0.08 alpha), never at full
+  /// strength — the same correction Ф1 made to [AuroraBackground], for the same
+  /// reason: a saturated two-hue gradient at full opacity is the "aurora
+  /// everywhere" look the design moved away from. Bug 6.
+  static const programmeStrength = Color(0xFF7C3AED);
+  static const programmeMuscle = Color(0xFF2563EB);
+  static const programmeForm = Color(0xFF059669);
+  static const programmeWeightLoss = Color(0xFFD97706);
+  static const programmeComeback = Color(0xFFDC2626);
+
   static const tileGradients = <List<Color>>[
     [Color(0xFFFF7AC6), Color(0xFFFFB37C)],
     [Color(0xFF7B6CFF), Color(0xFF3DC8FF)],

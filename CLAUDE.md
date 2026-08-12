@@ -8,7 +8,7 @@ read on demand. Start with the table below.
 
 | Need | Go to |
 |---|---|
-| **Which file do I open?** — 33 features, 22 routes, entry points | `core/CODEMAP.md` |
+| **Which file do I open?** — per-feature map with entry points and file counts | `core/CODEMAP.md` |
 | The rules a change is reviewed against (layout, iOS portability, injury filtering, testing) | `core/CONVENTIONS.md` |
 | Index of all docs, tiered by who reads them | `core/INDEX.md` |
 | Stack versions, key decisions, toolchain paths | `core/TECHSTACK.md` |
@@ -31,7 +31,7 @@ engineering facts** — skip it for code work.
 - **Android ships first, but every choice must accommodate iOS** — full rule in
   `core/CONVENTIONS.md`. The `HealthService` interface is the Health Connect ↔ HealthKit seam;
   do not bypass it.
-- **Tests:** `mobile/test/` (214 files, 1,969 tests as of 2026-08-12) runs on the host — `flutter test`. The catalog
+- **Tests:** `mobile/test/` (216 files, 1,976 tests as of 2026-08-12) runs on the host — `flutter test`. The catalog
   build scripts have their own suite: `python -m pytest scripts/catalog/ -q` (74 tests). There IS also
   `mobile/integration_test/app_test.dart`, which drives the real app on a device or emulator and is
   the only thing that can see the native ML Kit bridge and what actually ends up in the APK. It
