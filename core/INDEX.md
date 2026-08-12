@@ -43,6 +43,7 @@ Also here: `context_baseline.csv` — measured AI-context cost over time, append
 | [NEXT_TICKETS.md](plans/NEXT_TICKETS.md) | Concrete, ready-to-pick-up tickets |
 | [IMPLEMENTATION_PLAN.md](plans/IMPLEMENTATION_PLAN.md) | Live phase/sequence roadmap |
 | [PLAN_AI_RESTRUCTURE_2026-07-28.md](plans/PLAN_AI_RESTRUCTURE_2026-07-28.md) | This restructure: gates, baseline, progress tracker |
+| [PLAN_REDESIGN_REMAINDER_2026-08-12.md](plans/PLAN_REDESIGN_REMAINDER_2026-08-12.md) | **Where the redesign block stands and what to pick up next** — prototype screen map with line numbers, why R11h is one gate and not four, the six-point chain R11f's metadata fix has to walk |
 
 > Roadmap docs deliberately name files that do not exist yet (`lib/features/rehab/`,
 > `web_trainer_studio/`, ...). That is intentional — `scripts/dev/audit_doc_links.ps1` classifies
