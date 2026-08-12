@@ -671,6 +671,30 @@
   "equipmentFaultOther": "Другое",
   "donorwallLifetime": "НАВСЕГДА",
   "formcheckShowSkeleton": "Показать, что видит камера",
+  "cameraUseBackLens": "Включить заднюю камеру",
+  "cameraUseFrontLens": "Включить фронтальную камеру",
+  "photosFlipCamera": "Сменить камеру",
+  "photosCaptureFailed": "Камера не смогла сделать снимок: {arg0}",
+  "@photosCaptureFailed": {
+    "placeholders": { "arg0": { "type": "Object" } }
+  },
+  "photosSaveFailed": "Снимок не сохранён: {arg0}",
+  "@photosSaveFailed": {
+    "placeholders": { "arg0": { "type": "Object" } }
+  },
+  "photosReviewTitle": "Как получилось?",
+  "photosReviewAngle": "Ракурс: {arg0}",
+  "@photosReviewAngle": {
+    "placeholders": { "arg0": { "type": "String" } }
+  },
+  "photosReviewKeep": "Оставить этот",
+  "photosReviewRetake": "Переснять",
+  "photosDetailsTitle": "Записать что-нибудь?",
+  "photosDetailsWhy": "Оба поля необязательны. Вес отсюда и сравнивает карточка «до и после».",
+  "photosDetailsWeight": "Вес, кг",
+  "photosDetailsWeightBad": "Введите вес от 20 до 400 кг",
+  "photosDetailsNote": "Заметка",
+  "photosDetailsSave": "Сохранить снимок",
   "navScan": "Скан",
   "navWorkouts": "Тренировки",
   "formcheckTuneTheOutline": "Подогнать силуэт под вас",

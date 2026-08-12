@@ -13,6 +13,7 @@ import '../form_check/data/mlkit_pose_detector_service.dart';
 import '../form_check/data/pose_detector_service.dart';
 import '../form_check/state/form_check_providers.dart'
     show poseDetectorServiceProvider, poseErrorProvider;
+import '../form_check/widgets/camera_flip_button.dart';
 import 'data/measured_posture_config.dart';
 import 'state/posture_providers.dart';
 
@@ -125,7 +126,15 @@ class _PosturePageState extends ConsumerState<PosturePage>
     final failure = _startError ?? ref.watch(poseErrorProvider);
 
     return FrostedScaffold(
-      appBar: GlassAppBar(title: l10n.postureTitle),
+      appBar: GlassAppBar(
+        title: l10n.postureTitle,
+        // The screen this control was asked for. Every posture number is a
+        // line through the WHOLE body -- shoulder tilt, pelvis tilt, the head
+        // over the shoulders -- and the front camera at arm's length frames a
+        // torso. A mirror plus the back lens is how the user gets far enough
+        // away and still reads the result.
+        actions: [CameraFlipButton(svc: svc)],
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [

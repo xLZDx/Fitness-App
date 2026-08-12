@@ -13,7 +13,7 @@ import 'unscorable_frame_test.dart' show oneSquat;
 
 /// Stands in for the ML Kit service when the native detector dies: the stream
 /// stays open but carries an error instead of frames.
-class _ErroringPoseService implements PoseDetectorService {
+class _ErroringPoseService with NoCameraControls implements PoseDetectorService {
   final StreamController<PoseFrame> _ctrl =
       StreamController<PoseFrame>.broadcast();
 

@@ -46,8 +46,14 @@ class _CountingRepo implements ProgressPhotosRepository {
   Stream<List<ProgressPhoto>> watch() => Stream.value(photos);
 
   @override
-  Future<ProgressPhoto?> capture({
-    ProgressPhotoAngle angle = ProgressPhotoAngle.front,
+  Future<Uint8List?> takeShot() async => throw UnimplementedError();
+
+  @override
+  Future<ProgressPhoto> save(
+    Uint8List bytes, {
+    required ProgressPhotoAngle angle,
+    double? weightKg,
+    String? note,
   }) async =>
       throw UnimplementedError();
 
@@ -79,8 +85,14 @@ class _ReemitRepo implements ProgressPhotosRepository {
   Stream<List<ProgressPhoto>> watch() => _ctrl.stream;
 
   @override
-  Future<ProgressPhoto?> capture({
-    ProgressPhotoAngle angle = ProgressPhotoAngle.front,
+  Future<Uint8List?> takeShot() async => throw UnimplementedError();
+
+  @override
+  Future<ProgressPhoto> save(
+    Uint8List bytes, {
+    required ProgressPhotoAngle angle,
+    double? weightKg,
+    String? note,
   }) async =>
       throw UnimplementedError();
 

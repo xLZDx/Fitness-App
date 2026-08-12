@@ -4,6 +4,8 @@
 Paths are relative to `mobile/` unless stated. Counts re-measured against the working tree
 **2026-08-12**; 22 of the 31 rows had drifted since the previous 2026-07-28 pass, some of them far
 (`home` said 1 file / 594 lines and is 5 / 1,907; `progress_photos` said 5 / 519 and is 12 / 2,027).
+`form_check` and `progress_photos` moved again later the same day — the camera-switch control and the
+four-step capture flow — and their rows below carry the newer figures, not the ones in that sentence.
 
 Counts are `.dart` files under `mobile/lib/features/<feature>/`, recursive, and their raw line
 totals — reproduce with:
@@ -86,9 +88,9 @@ rest are pushed full-screen.
 | `subscription` | 10 | 2,021 | Tiers, paywall, Stripe checkout. `subscription_page.dart` is the biggest file in the repo. `effectiveTierProvider` is the single point that decides the tier — including the Settings test-access override |
 | `onboarding` | 13 | 1,790 | Multi-step intake incl. the injury questionnaire. `lib/features/onboarding/steps/` = one file per step |
 | `profile` | 11 | 2,212 | Profile + settings. `lib/features/profile/data/firestore_profile_repository.dart` is the Firestore boundary |
-| `form_check` | 21 | 6,175 | On-device pose/form checking. `data/mlkit_pose_detector_service.dart` + `data/form_classifier.dart`; `data/pose_silhouette.dart` builds the two-sided outline (drawn only — scoring still reads the six authored side-view joints) and `data/pose_projection.dart` maps measured landmarks onto the preview |
+| `form_check` | 23 | 6,675 | On-device pose/form checking. `data/mlkit_pose_detector_service.dart` + `data/form_classifier.dart`; `data/pose_silhouette.dart` builds the two-sided outline (drawn only — scoring still reads the six authored side-view joints) and `data/pose_projection.dart` maps measured landmarks onto the preview. `widgets/camera_flip_button.dart` is shared with `posture` — both open the front lens and both need the back one at a mirror for a full-body frame |
 | `home` | 5 | 1,907 | Landing dashboard. `home_page.dart` plus four widgets it composes |
-| `progress_photos` | 12 | 2,027 | Progress photo capture + timeline. AES-GCM envelopes on disk (`data/photo_store.dart`), month-grouped timeline paged 30 at a time, `widgets/photo_bitmap.dart` decodes at the size the layout needs |
+| `progress_photos` | 14 | 2,562 | Progress photo capture + timeline. AES-GCM envelopes on disk (`data/photo_store.dart`), month-grouped timeline paged 30 at a time, `widgets/photo_bitmap.dart` decodes at the size the layout needs. Capture is a four-step flow driven by `runPhotoCaptureFlow` in the page: angle + shutter (`widgets/photo_capture_sheet.dart`, which takes the picture itself — the camera is only open there), review/retake (`widgets/photo_review_screen.dart`), weight + note (`widgets/photo_details_sheet.dart`), then `save` |
 | `donor_wall` | 5 | 507 | Public donor recognition (ties to the nonprofit model) |
 | `catalog` | 5 | 498 | Community video contribution + moderation queue |
 | `auth` | 6 | 734 | Firebase email / social sign-in |

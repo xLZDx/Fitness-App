@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show ValueListenable, ValueNotifier;
+
+import '../../../core/camera/camera_session.dart' show SessionFacing;
 import 'pose_landmark.dart';
 
 /// Boundary between rule-based form check (pure) and the underlying
@@ -35,11 +38,47 @@ abstract class PoseDetectorService {
   Future<void> start();
   Future<void> stop();
   Future<void> dispose();
+
+  /// Which way the camera behind this detector points.
+  ValueListenable<SessionFacing> get facing;
+
+  /// Point the camera the other way.
+  ///
+  /// Selfie framing cannot get far enough away for a full-body view unless the
+  /// phone is propped up. The back camera aimed at a mirror can, which is what
+  /// this is for — posture in particular, where every measurement is a line
+  /// through the whole body and a frame that stops at the ribs yields none of
+  /// them.
+  Future<void> flipCamera();
 }
+
+/// Satisfies the two camera controls for a detector that HAS no camera.
+///
+/// A mixin rather than concrete bodies on [PoseDetectorService] itself,
+/// because every implementation in this codebase uses `implements` — which in
+/// Dart inherits the interface and none of the bodies. Written as defaults on
+/// the abstract class they would have compiled and then failed at every one of
+/// the five call sites, which is exactly what the analyzer said when this was
+/// tried that way first.
+///
+/// The answers are truthful rather than stubbed: a replay of canned frames
+/// really does point one fixed way, and really has nothing to switch.
+mixin NoCameraControls implements PoseDetectorService {
+  @override
+  ValueListenable<SessionFacing> get facing => _fixedFacing;
+
+  @override
+  Future<void> flipCamera() async {}
+}
+
+/// Never mutated, so one instance across every camera-less implementation is
+/// not shared mutable state.
+final ValueNotifier<SessionFacing> _fixedFacing =
+    ValueNotifier<SessionFacing>(SessionFacing.front);
 
 /// In-memory replay of canned frames. Used for tests + the demo path
 /// when the device has no camera (emulator, web).
-class MockPoseDetectorService implements PoseDetectorService {
+class MockPoseDetectorService with NoCameraControls implements PoseDetectorService {
   MockPoseDetectorService(this._fixtures);
   final List<PoseFrame> _fixtures;
 

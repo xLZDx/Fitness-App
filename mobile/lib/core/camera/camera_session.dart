@@ -30,11 +30,97 @@ enum SessionFacing { back, front }
 /// far more expensive equipment labeler runs only when the user asks for it.
 class CameraSession {
   CameraSession({
-    this.facing = SessionFacing.back,
+    SessionFacing facing = SessionFacing.back,
     CameraPermissionGate permissions = const CameraPermissionGate(),
-  }) : _permissions = permissions;
+  })  : _requested = facing,
+        _facing = ValueNotifier<SessionFacing>(facing),
+        _permissions = permissions;
 
-  final SessionFacing facing;
+  /// Which camera the caller asked for. Not necessarily the one that opened —
+  /// see [facing].
+  SessionFacing _requested;
+
+  /// Which camera is actually delivering frames, or the requested one while
+  /// nothing is open.
+  ///
+  /// The two are separate because [_open] falls back to `cameras.first` when
+  /// the wanted lens does not exist. Publishing the REQUEST would make a
+  /// switch button on a phone with one camera report a change that did not
+  /// happen; publishing what opened lets the button tell the truth.
+  final ValueNotifier<SessionFacing> _facing;
+
+  /// Which way the open camera points.
+  SessionFacing get facing => _facing.value;
+
+  /// [facing] as something a widget can rebuild on.
+  ValueListenable<SessionFacing> get activeFacing => _facing;
+
+  /// Serialises overlapping swaps. Each one stops and reopens the camera, and
+  /// two of those interleaved is the same orphaned-controller bug [start]'s
+  /// own re-entrancy guard exists to prevent — one level up.
+  Future<void>? _switching;
+
+  /// Point the camera the other way, reopening it if it is already running.
+  ///
+  /// Flips off what is OPEN rather than off what was last requested: on a
+  /// device with no front camera the request never took effect, and flipping
+  /// off the request would ask for the same missing lens twice.
+  Future<void> flip() => setFacing(
+        facing == SessionFacing.front ? SessionFacing.back : SessionFacing.front,
+      );
+
+  /// Switches which camera this session uses.
+  ///
+  /// Cheap while nothing is running — it only records the choice. While a
+  /// camera IS open it is a stop and a reopen, because [CameraController] is
+  /// bound to one physical camera for its lifetime.
+  Future<void> setFacing(SessionFacing wanted) {
+    final previous = _switching ?? Future<void>.value();
+    // Runs after the previous swap whether that one succeeded or failed: a
+    // camera that refused to reopen must not wedge every later switch.
+    final attempt = previous.then(
+      (_) => _applyFacing(wanted),
+      onError: (Object _, StackTrace __) => _applyFacing(wanted),
+    );
+    // The chain's own link swallows the outcome; the CALLER still gets it.
+    _switching = attempt.then((_) {}, onError: (Object _, StackTrace __) {});
+    return attempt;
+  }
+
+  Future<void> _applyFacing(SessionFacing wanted) async {
+    if (_requested == wanted && _facing.value == wanted) return;
+    final wasRequested = _requested;
+    final wasFacing = _facing.value;
+    _requested = wanted;
+    // The getter, not the `_running` field it reads. They are the same thing
+    // here and deliberately not the same seam: `isRunning` is the public
+    // statement of whether a camera is open, and a subclass that answers it
+    // differently is entitled to be believed.
+    if (!isRunning) {
+      // Nothing to reopen. The next start() will pick it up.
+      _facing.value = wanted;
+      return;
+    }
+    await stop();
+    // Provisional, so the preview does not sit on the old label while the new
+    // camera initialises. [_open] overwrites it with what really opened.
+    _facing.value = wanted;
+    try {
+      // Never `requestPermission: true`: the camera was running a moment ago,
+      // so permission is already granted, and a swap is not the moment to
+      // raise a dialog.
+      await start();
+    } catch (_) {
+      // The switch did not happen, so the session must stop claiming it did.
+      // Two things break otherwise, and the second is the nastier: the control
+      // labels itself with a lens that is not open, and an identical retry
+      // takes the equality check at the top of this method and returns without
+      // trying anything — the button goes permanently dead after one failure.
+      _requested = wasRequested;
+      _facing.value = wasFacing;
+      rethrow;
+    }
+  }
 
   /// Injectable so a widget test can drive every permission state without a
   /// platform channel — see `camera_availability.dart`.
@@ -173,13 +259,19 @@ class CameraSession {
     if (cameras.isEmpty) {
       throw const CameraUnavailable(CameraUnavailableReason.noCamera);
     }
-    final wanted = facing == SessionFacing.front
+    final wanted = _requested == SessionFacing.front
         ? CameraLensDirection.front
         : CameraLensDirection.back;
     final description = cameras.firstWhere(
       (c) => c.lensDirection == wanted,
       orElse: () => cameras.first,
     );
+    // What OPENED, which is not always what was asked for — a phone with one
+    // camera answers every request with the same lens. Published here so a
+    // switch control reflects the hardware instead of the intent.
+    _facing.value = description.lensDirection == CameraLensDirection.front
+        ? SessionFacing.front
+        : SessionFacing.back;
     _camera = CameraController(
       description,
       ResolutionPreset.medium,
@@ -427,6 +519,7 @@ class CameraSession {
   Future<void> dispose() async {
     await stop();
     _surface.dispose();
+    _facing.dispose();
     _lowLight.dispose();
     _selfStopped.dispose();
     await _frames.close();

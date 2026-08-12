@@ -17,7 +17,7 @@ import 'package:fitness_app/features/posture/state/posture_providers.dart';
 /// what `start_lifecycle_test.dart` already covers for Form Check (the two
 /// screens share the exact same start/stop/retry code). This file is about
 /// what R10 actually adds: the capture window and its per-metric results.
-class _ImmediateService implements PoseDetectorService {
+class _ImmediateService with NoCameraControls implements PoseDetectorService {
   final _frames = StreamController<PoseFrame>.broadcast();
 
   @override

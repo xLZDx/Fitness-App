@@ -251,8 +251,13 @@ class _NeverEmitsPhotosRepo implements ProgressPhotosRepository {
       // test needs to model.
       Stream.fromFuture(Completer<List<ProgressPhoto>>().future);
   @override
-  Future<ProgressPhoto?> capture({
-    ProgressPhotoAngle angle = ProgressPhotoAngle.front,
+  Future<Uint8List?> takeShot() async => throw UnimplementedError();
+  @override
+  Future<ProgressPhoto> save(
+    Uint8List bytes, {
+    required ProgressPhotoAngle angle,
+    double? weightKg,
+    String? note,
   }) async =>
       throw UnimplementedError();
   @override

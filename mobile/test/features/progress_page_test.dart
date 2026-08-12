@@ -35,10 +35,16 @@ class _FixedPhotosRepository implements ProgressPhotosRepository {
   Stream<List<ProgressPhoto>> watch() => Stream.value(photos);
 
   @override
-  Future<ProgressPhoto?> capture({
-    ProgressPhotoAngle angle = ProgressPhotoAngle.front,
+  Future<Uint8List?> takeShot() async => null;
+
+  @override
+  Future<ProgressPhoto> save(
+    Uint8List bytes, {
+    required ProgressPhotoAngle angle,
+    double? weightKg,
+    String? note,
   }) async =>
-      null;
+      throw UnimplementedError();
 
   @override
   Future<void> delete(String id) async {}

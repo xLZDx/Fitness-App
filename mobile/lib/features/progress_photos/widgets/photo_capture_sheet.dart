@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +9,14 @@ import '../../../core/theme/app_semantic_colors.dart';
 import '../../visual_equipment/widgets/live_equipment_preview.dart';
 import '../data/progress_photo.dart';
 import '../state/progress_photos_providers.dart';
+
+/// One shot, framed the way the user chose.
+class PhotoShot {
+  const PhotoShot({required this.bytes, required this.angle});
+
+  final Uint8List bytes;
+  final ProgressPhotoAngle angle;
+}
 
 /// Choose an angle, see yourself, then shoot.
 ///
@@ -22,20 +32,31 @@ import '../state/progress_photos_providers.dart';
 /// across angles, so a library where everything is silently `front` cannot
 /// tell a genuine front-to-front comparison from two unrelated pictures.
 ///
-/// ## Returns the angle, does not capture
+/// ## The shutter fires HERE, and that is load-bearing
 ///
-/// The sheet hands its caller the chosen angle and closes; the repository
-/// takes the still. Keeping the capture out of here means the sheet has no
-/// opinion about storage, encryption or what happens on failure — all of
-/// which already have an owner.
+/// It used to return the angle and let the page call `capture()` afterwards.
+/// That was already a race: closing the sheet runs [dispose], which stops the
+/// camera, while the page was starting a capture on it — `captureStill` has a
+/// guard for exactly that collision. It happened to win often enough to look
+/// like it worked.
+///
+/// R11f made it certain to lose. With a review screen between the shot and
+/// the write, the camera would have been stopped for seconds before anyone
+/// asked it for a picture, and `awaitReady` would have timed out and returned
+/// null — indistinguishable, one layer up, from "the user backed out".
+///
+/// So the sheet takes the picture while its own camera is demonstrably open,
+/// and hands back the pixels. It still has no opinion about storage or
+/// encryption: [ProgressPhotosController.takeShot] goes through the repository
+/// as before, which is what deletes the plaintext temp file.
 class PhotoCaptureSheet extends ConsumerStatefulWidget {
   const PhotoCaptureSheet({super.key});
 
-  /// Opens the sheet. Resolves to the chosen angle, or null if the user
-  /// backed out — the same "null means cancelled" contract
-  /// `PhotoSource.take` uses one layer down.
-  static Future<ProgressPhotoAngle?> show(BuildContext context) {
-    return showModalBottomSheet<ProgressPhotoAngle>(
+  /// Opens the sheet. Resolves to the shot, or null if the user backed out —
+  /// the same "null means cancelled" contract `PhotoSource.take` uses one
+  /// layer down.
+  static Future<PhotoShot?> show(BuildContext context) {
+    return showModalBottomSheet<PhotoShot>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -50,6 +71,41 @@ class PhotoCaptureSheet extends ConsumerStatefulWidget {
 
 class _PhotoCaptureSheetState extends ConsumerState<PhotoCaptureSheet> {
   ProgressPhotoAngle _angle = ProgressPhotoAngle.front;
+
+  /// A capture in flight. Blocks the shutter, because `takePicture()` takes
+  /// long enough on a real phone for a second tap to land, and two taps used
+  /// to mean two photos of the same pose.
+  bool _shooting = false;
+
+  /// Why the last attempt produced nothing. Shown in the sheet rather than
+  /// thrown away: the camera failing is the one moment the user is standing
+  /// still waiting for a result.
+  Object? _shotError;
+
+  Future<void> _shoot() async {
+    setState(() {
+      _shooting = true;
+      _shotError = null;
+    });
+    try {
+      final bytes =
+          await ref.read(progressPhotosControllerProvider.notifier).takeShot();
+      if (!mounted) return;
+      if (bytes == null) {
+        // The camera declined without failing — nothing to hand back, and
+        // nothing to apologise for either.
+        setState(() => _shooting = false);
+        return;
+      }
+      Navigator.of(context).pop(PhotoShot(bytes: bytes, angle: _angle));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _shooting = false;
+        _shotError = e;
+      });
+    }
+  }
 
   /// Held from `initState` so `dispose` can release the camera without
   /// touching `ref` — reading a provider after the element unmounts throws,
@@ -140,14 +196,36 @@ class _PhotoCaptureSheetState extends ConsumerState<PhotoCaptureSheet> {
               ),
             ),
           ),
+          if (_shotError != null) ...[
+            const SizedBox(height: 10),
+            Text(
+              l10n.photosCaptureFailed(_shotError!),
+              key: const Key('photos.shotError'),
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colorScheme.error),
+            ),
+          ],
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TextButton(
-                key: const Key('photos.captureCancel'),
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n.commonCancel),
+              // Flexible because this Row now carries a third control. A Row
+              // neither wraps nor scrolls, and the label is the only child
+              // whose width depends on the language and the text scale -- so
+              // it is the one that has to give, rather than the shutter being
+              // pushed off the edge. Same failure the programme-card chips hit
+              // (bug 5, `725c215`).
+              Flexible(
+                child: TextButton(
+                  key: const Key('photos.captureCancel'),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    l10n.commonCancel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ),
               const SizedBox(width: 24),
               Semantics(
@@ -159,14 +237,44 @@ class _PhotoCaptureSheetState extends ConsumerState<PhotoCaptureSheet> {
                   child: InkWell(
                     key: const Key('photos.shutter'),
                     customBorder: const CircleBorder(),
-                    onTap: () => Navigator.of(context).pop(_angle),
+                    onTap: _shooting ? null : _shoot,
                     child: SizedBox(
                       width: 68,
                       height: 68,
-                      child: Icon(Icons.photo_camera_outlined,
-                          size: 28, color: theme.colors.onAccent),
+                      child: _shooting
+                          ? Padding(
+                              padding: const EdgeInsets.all(22),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: theme.colors.onAccent,
+                              ),
+                            )
+                          : Icon(Icons.photo_camera_outlined,
+                              size: 28, color: theme.colors.onAccent),
                     ),
                   ),
+                ),
+              ),
+              const SizedBox(width: 24),
+              // A progress shot is of the user, and this sheet opens the BACK
+              // camera -- so without this the only way to take one was to hand
+              // the phone to somebody else or shoot blind. The front lens
+              // frames a torso at arm's length, the back lens at a mirror
+              // frames all of you: both are the right answer to different
+              // rooms, so the choice belongs to the user rather than to a
+              // default.
+              ValueListenableBuilder<SessionFacing>(
+                valueListenable: session.activeFacing,
+                builder: (context, facing, _) => IconButton(
+                  key: const Key('photos.flipCamera'),
+                  tooltip: l10n.photosFlipCamera,
+                  icon: Icon(
+                    facing == SessionFacing.front
+                        ? Icons.cameraswitch_outlined
+                        : Icons.cameraswitch,
+                    color: theme.colors.textSecondary,
+                  ),
+                  onPressed: session.flip,
                 ),
               ),
             ],

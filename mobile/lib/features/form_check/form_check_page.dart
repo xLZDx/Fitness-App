@@ -26,6 +26,7 @@ import '../subscription/state/subscription_providers.dart';
 import 'data/coach_phases.dart';
 import 'state/coach_phase_providers.dart';
 import 'state/form_check_providers.dart';
+import 'widgets/camera_flip_button.dart';
 import 'widgets/coach_intro_cards.dart';
 import 'widgets/coach_readiness_band.dart';
 
@@ -282,6 +283,10 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
       appBar: GlassAppBar(
         title: AppLocalizations.of(context).formcheckFormCoach,
         actions: [
+          // First, because it is the control that decides whether the coach
+          // can see the user at all. The skeleton and the mute switch adjust
+          // what is reported about a body already in frame.
+          CameraFlipButton(svc: svc),
           AppIconButton(
             icon: ref.watch(showSkeletonProvider)
                 ? Icons.accessibility_new

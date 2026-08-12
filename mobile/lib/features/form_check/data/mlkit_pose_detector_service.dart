@@ -5,7 +5,8 @@ import 'package:google_mlkit_commons/google_mlkit_commons.dart'
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart'
     as mlkit;
 
-import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/foundation.dart'
+    show ValueListenable, debugPrint;
 import 'package:flutter/services.dart' show PlatformException;
 
 import '../../../core/camera/camera_session.dart';
@@ -71,6 +72,20 @@ class MlKitPoseDetectorService implements PoseDetectorService {
 
   @override
   Future<void> ensurePermission() => session.ensurePermission();
+
+  @override
+  ValueListenable<SessionFacing> get facing => session.activeFacing;
+
+  /// Swaps the lens without disturbing the detector.
+  ///
+  /// Deliberately NOT `stop()` + `start()` on this service: that would close
+  /// the ML Kit detector and cancel the frame subscription, and the broadcast
+  /// stream every downstream Notifier is listening to would go quiet for the
+  /// duration. [CameraSession.setFacing] reopens only the camera, and the
+  /// subscription rides through it — the frames simply resume from the other
+  /// lens.
+  @override
+  Future<void> flipCamera() => session.flip();
 
   @override
   Future<void> start() async {

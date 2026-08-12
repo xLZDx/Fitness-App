@@ -17,6 +17,8 @@ import 'data/progress_photo.dart';
 import 'state/progress_photos_providers.dart';
 import 'widgets/photo_bitmap.dart';
 import 'widgets/photo_capture_sheet.dart';
+import 'widgets/photo_details_sheet.dart';
+import 'widgets/photo_review_screen.dart';
 
 /// Progress photos: a month-grouped timeline plus a before/after card.
 ///
@@ -84,25 +86,81 @@ class ProgressPhotosPage extends ConsumerWidget {
           if (isPaid)
             AppPrimaryButton(
               key: const Key('photos.capture'),
-              // R11f. This used to call `capture()` bare: no angle, so every
-              // shot was filed as `front`, and no preview, so the user pressed
-              // a button and a picture was taken of wherever the phone
-              // happened to point. Both halves of "two shots taken the same
-              // way" -- which is the entire feature -- were unaskable.
-              onPressed: () async {
-                final angle = await PhotoCaptureSheet.show(context);
-                // Null is a real answer: the user backed out, and firing a
-                // capture anyway is the bug in a new place.
-                if (angle == null) return;
-                await ref
-                    .read(progressPhotosControllerProvider.notifier)
-                    .capture(angle: angle);
-              },
+              onPressed: () => runPhotoCaptureFlow(context, ref),
               icon: Icons.photo_camera_outlined,
               label: l10n.progressphotosTakeANewPhoto,
             ),
         ],
       ),
+    );
+  }
+}
+
+/// Shoot, look, describe, file.
+///
+/// The order is the design's (`ProgressPhotoModule:3909`) and each step earns
+/// its place: the angle is what makes two photos comparable, the review is the
+/// only chance to notice a bad frame while it can still be retaken, and the
+/// details are what put a weight on the compare card. Before R11f the button
+/// did all four at once — it called `capture()` bare, so every shot was filed
+/// as `front`, unseen, with no weight.
+///
+/// **Retake loops, it does not exit.** Answering "retake" reopens the camera
+/// rather than dropping the user back on the timeline to press the button
+/// again; the first draft returned, which turned one bad frame into three taps
+/// to fix.
+///
+/// Top-level rather than a method on the page: nothing here reads the widget,
+/// and a free function is directly callable from a test without pumping a
+/// timeline first.
+Future<void> runPhotoCaptureFlow(BuildContext context, WidgetRef ref) async {
+  final l10n = AppLocalizations.of(context);
+  // Captured BEFORE the first await. Every step below is an async gap, and
+  // reaching for the messenger after one of them is the classic
+  // use-BuildContext-across-an-async-gap fault.
+  final messenger = ScaffoldMessenger.of(context);
+  final controller = ref.read(progressPhotosControllerProvider.notifier);
+
+  try {
+    while (true) {
+      // At the TOP of the loop, not before `continue`. A retake comes back
+      // here through several async gaps, and checking on the way out of the
+      // previous pass says nothing about the state of this one.
+      if (!context.mounted) return;
+      // The shot is taken INSIDE the sheet, while its camera is demonstrably
+      // open — see the note on PhotoCaptureSheet for why that placement is
+      // load-bearing rather than tidy.
+      final shot = await PhotoCaptureSheet.show(context);
+      if (shot == null) return; // backed out of the camera
+      if (!context.mounted) return;
+
+      final choice = await PhotoReviewScreen.show(
+        context,
+        bytes: shot.bytes,
+        angle: shot.angle,
+      );
+      // Dismissed the review outright: the shot is discarded, and nothing was
+      // written, so there is nothing to undo.
+      if (choice == null) return;
+      if (choice == PhotoReviewChoice.retake) continue;
+      if (!context.mounted) return;
+
+      final details = await PhotoDetailsSheet.show(context);
+      if (details == null) return; // changed their mind before it was filed
+
+      await controller.save(
+        shot.bytes,
+        angle: shot.angle,
+        weightKg: details.weightKg,
+        note: details.note,
+      );
+      return;
+    }
+  } catch (e) {
+    // The write failing used to be recorded in a provider nothing rendered, so
+    // a photo the user posed for could vanish without a word.
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.photosSaveFailed(e))),
     );
   }
 }

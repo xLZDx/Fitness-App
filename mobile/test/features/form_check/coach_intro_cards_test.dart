@@ -21,7 +21,7 @@ import 'package:fitness_app/features/form_check/state/form_check_providers.dart'
 /// That claim is why they could not be drawn as an overlay over a live preview,
 /// so it is worth a test rather than a comment.
 
-class _SilentService implements PoseDetectorService {
+class _SilentService with NoCameraControls implements PoseDetectorService {
   final _frames = StreamController<PoseFrame>.broadcast();
   int startCount = 0;
   int permissionAsks = 0;

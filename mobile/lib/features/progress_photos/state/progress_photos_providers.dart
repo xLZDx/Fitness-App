@@ -20,8 +20,35 @@ import '../data/progress_photo.dart';
 abstract class ProgressPhotosRepository {
   Stream<List<ProgressPhoto>> watch();
 
+  /// Takes the picture and hands back its pixels, writing NOTHING.
+  ///
   /// Returns null when the user cancelled the camera.
-  Future<ProgressPhoto?> capture({ProgressPhotoAngle angle});
+  ///
+  /// ## Why this is not one call with [save]
+  ///
+  /// It used to be: `capture()` took the still and wrote the record in one
+  /// step. That left nowhere for the two things standing between them in the
+  /// design (`ProgressPhotoModule:3909`) — looking at the shot before keeping
+  /// it, and saying what the user weighed when it was taken. Both had to
+  /// happen after the shutter and before the write, and a single method has no
+  /// such moment.
+  ///
+  /// The metadata half was not hypothetical. [PhotoStore.put] has taken
+  /// `weightKg` and `note` since R7, stores them and reads them back, and the
+  /// one caller never passed either — which is why the compare card almost
+  /// never had a weight delta to show.
+  Future<Uint8List?> takeShot();
+
+  /// Encrypts and files pixels that [takeShot] returned.
+  ///
+  /// Separate from the shot so the user can be shown what they took, and asked
+  /// about it, in between.
+  Future<ProgressPhoto> save(
+    Uint8List bytes, {
+    required ProgressPhotoAngle angle,
+    double? weightKg,
+    String? note,
+  });
 
   Future<void> delete(String id);
 
@@ -37,9 +64,20 @@ class MockProgressPhotosRepository implements ProgressPhotosRepository {
     yield List.unmodifiable(_photos);
   }
 
+  /// Placeholder pixels, so the review step has something to hand on.
+  ///
+  /// Deliberately not a decodable image: [bytesOf] below still refuses, and a
+  /// demo capture that produced a viewable photo would contradict the banner
+  /// telling the user nothing here is being kept.
   @override
-  Future<ProgressPhoto?> capture({
-    ProgressPhotoAngle angle = ProgressPhotoAngle.front,
+  Future<Uint8List?> takeShot() async => Uint8List.fromList(const [0, 0, 0]);
+
+  @override
+  Future<ProgressPhoto> save(
+    Uint8List bytes, {
+    required ProgressPhotoAngle angle,
+    double? weightKg,
+    String? note,
   }) async {
     final p = ProgressPhoto(
       id: 'p_${_photos.length + 1}',
@@ -47,6 +85,8 @@ class MockProgressPhotosRepository implements ProgressPhotosRepository {
       storagePath: 'mock://${_photos.length + 1}.bin',
       keyFingerprint: 'mockfp',
       angle: angle,
+      weightKg: weightKg,
+      note: note,
     );
     _photos.add(p);
     return p;
@@ -177,16 +217,42 @@ class ProgressPhotosController extends Notifier<AsyncValue<void>> {
   @override
   AsyncValue<void> build() => const AsyncValue.data(null);
 
-  Future<void> capture({
-    ProgressPhotoAngle angle = ProgressPhotoAngle.front,
+  /// Takes the picture. Must be called while the camera is still open — see
+  /// the note on [PhotoCaptureSheet].
+  ///
+  /// Records the failure in [state] AND rethrows. Recording alone was what the
+  /// old `capture()` did, and nothing in the app watches this provider's
+  /// value: a camera that refused to shoot set an error nobody rendered, and
+  /// the user saw a button that did nothing. Rethrowing is what gives the
+  /// caller something to show.
+  Future<Uint8List?> takeShot() async {
+    try {
+      return await ref.read(progressPhotosRepositoryProvider).takeShot();
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      rethrow;
+    }
+  }
+
+  Future<void> save(
+    Uint8List bytes, {
+    required ProgressPhotoAngle angle,
+    double? weightKg,
+    String? note,
   }) async {
     state = const AsyncValue.loading();
     try {
-      await ref.read(progressPhotosRepositoryProvider).capture(angle: angle);
+      await ref.read(progressPhotosRepositoryProvider).save(
+            bytes,
+            angle: angle,
+            weightKg: weightKg,
+            note: note,
+          );
       ref.invalidate(progressPhotosProvider);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
+      rethrow;
     }
   }
 

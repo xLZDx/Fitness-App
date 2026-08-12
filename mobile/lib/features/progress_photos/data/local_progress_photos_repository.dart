@@ -89,13 +89,29 @@ class LocalProgressPhotosRepository implements ProgressPhotosRepository {
   }
 
   @override
-  Future<ProgressPhoto?> capture({
-    ProgressPhotoAngle angle = ProgressPhotoAngle.front,
-  }) async {
-    final bytes = await _source.take();
-    if (bytes == null) return null;
-    return _store.put(bytes, takenAt: _clock(), angle: angle);
-  }
+  Future<Uint8List?> takeShot() => _source.take();
+
+  /// The clock is read HERE, not when the shutter fired.
+  ///
+  /// The two are now separated by however long the user spends looking at the
+  /// shot and typing a weight, so they are genuinely different times. This one
+  /// is the right one to keep: the timeline groups by month and the compare
+  /// card measures a span in days, and both of those are answering "when did
+  /// this get recorded", which is what a user reading the grid means.
+  @override
+  Future<ProgressPhoto> save(
+    Uint8List bytes, {
+    required ProgressPhotoAngle angle,
+    double? weightKg,
+    String? note,
+  }) =>
+      _store.put(
+        bytes,
+        takenAt: _clock(),
+        angle: angle,
+        weightKg: weightKg,
+        note: note,
+      );
 
   @override
   Future<void> delete(String id) => _store.remove(id);

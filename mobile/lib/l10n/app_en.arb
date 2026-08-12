@@ -1328,6 +1328,30 @@
   "equipmentFaultOther": "Other",
   "donorwallLifetime": "LIFETIME",
   "formcheckShowSkeleton": "Show what the camera sees",
+  "cameraUseBackLens": "Use the back camera",
+  "cameraUseFrontLens": "Use the front camera",
+  "photosFlipCamera": "Switch camera",
+  "photosCaptureFailed": "The camera could not take the shot: {arg0}",
+  "@photosCaptureFailed": {
+    "placeholders": { "arg0": { "type": "Object" } }
+  },
+  "photosSaveFailed": "The photo was not saved: {arg0}",
+  "@photosSaveFailed": {
+    "placeholders": { "arg0": { "type": "Object" } }
+  },
+  "photosReviewTitle": "How did it come out?",
+  "photosReviewAngle": "Taken as: {arg0}",
+  "@photosReviewAngle": {
+    "placeholders": { "arg0": { "type": "String" } }
+  },
+  "photosReviewKeep": "Keep this one",
+  "photosReviewRetake": "Take another",
+  "photosDetailsTitle": "Anything to note?",
+  "photosDetailsWhy": "Both optional. A weight here is what the before/after card compares.",
+  "photosDetailsWeight": "Weight, kg",
+  "photosDetailsWeightBad": "Enter a weight between 20 and 400 kg",
+  "photosDetailsNote": "Note",
+  "photosDetailsSave": "Save the photo",
   "navScan": "Scan",
   "navWorkouts": "Workouts",
   "formcheckTuneTheOutline": "Tune the outline to you",

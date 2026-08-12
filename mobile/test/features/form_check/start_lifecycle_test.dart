@@ -20,7 +20,7 @@ import 'package:fitness_app/features/form_check/state/form_check_providers.dart'
 /// would be.
 
 /// A service whose `start()` finishes when the test says so, and not before.
-class _ManualService implements PoseDetectorService {
+class _ManualService with NoCameraControls implements PoseDetectorService {
   final _frames = StreamController<PoseFrame>.broadcast();
   final List<Completer<void>> starts = [];
   final List<Completer<void>> stops = [];

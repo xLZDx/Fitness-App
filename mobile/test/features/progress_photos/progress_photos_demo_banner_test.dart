@@ -19,8 +19,13 @@ class _NeverPersists implements ProgressPhotosRepository {
   @override
   Stream<List<ProgressPhoto>> watch() => Stream.value(const []);
   @override
-  Future<ProgressPhoto?> capture({
-    ProgressPhotoAngle angle = ProgressPhotoAngle.front,
+  Future<Uint8List?> takeShot() async => throw UnimplementedError();
+  @override
+  Future<ProgressPhoto> save(
+    Uint8List bytes, {
+    required ProgressPhotoAngle angle,
+    double? weightKg,
+    String? note,
   }) async =>
       throw UnimplementedError();
   @override
