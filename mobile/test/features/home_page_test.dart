@@ -292,7 +292,13 @@ void main() {
       expect(find.byKey(const Key('home.planProgress')), findsNothing,
           reason: 'an active programme replaces the plain bar, not both');
       // Day 8 since start (kTestLocale is 'en') reads as week 2 of 8.
-      expect(find.textContaining('Силовая база · Week 2 of 8'), findsOneWidget);
+      //
+      // B2a, 2026-08-13: this used to assert 'Силовая база' — a Russian
+      // string under an English harness, which is precisely the defect the
+      // operator photographed. The title now resolves from `templateId`
+      // through `ProgrammeLabels`, so the assertion follows the locale and
+      // would fail again if a template title were ever hardcoded back.
+      expect(find.textContaining('Strength base · Week 2 of 8'), findsOneWidget);
     });
   });
 

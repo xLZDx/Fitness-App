@@ -24,10 +24,15 @@ import 'programme.dart';
 ///   "Кардио" is represented by its nearest real muscle tag (`core`) rather
 ///   than invented, since inventing a `cardio` muscle key would make this
 ///   catalogue disagree with the one everything else in the app reads.
+/// **Titles are NOT here.** They live in the ARB files and are resolved by
+/// [ProgrammeLabels] (`programme_labels.dart`) from [id]. Until 2026-08-13 each
+/// template carried its title as a Russian string literal, so an English UI
+/// rendered "Силовая база" under the header "Current programme" — which is what
+/// the operator photographed. Same rule as the exercise catalogue: the data
+/// layer keeps a stable English key, only the label is translated.
 class ProgrammeTemplate {
   const ProgrammeTemplate({
     required this.id,
-    required this.title,
     required this.goal,
     required this.level,
     required this.weeks,
@@ -36,7 +41,6 @@ class ProgrammeTemplate {
   });
 
   final String id;
-  final String title;
   final ProgrammeGoal goal;
   final ExerciseDifficulty level;
   final int weeks;
@@ -51,7 +55,6 @@ class ProgrammeTemplate {
 const List<ProgrammeTemplate> programmeTemplates = [
   ProgrammeTemplate(
     id: 'strength_base',
-    title: 'Силовая база',
     goal: ProgrammeGoal.strength,
     level: ExerciseDifficulty.intermediate,
     weeks: 8,
@@ -59,7 +62,6 @@ const List<ProgrammeTemplate> programmeTemplates = [
   ),
   ProgrammeTemplate(
     id: 'hypertrophy',
-    title: 'Гипертрофия',
     goal: ProgrammeGoal.muscle,
     level: ExerciseDifficulty.intermediate,
     weeks: 10,
@@ -68,7 +70,6 @@ const List<ProgrammeTemplate> programmeTemplates = [
   ),
   ProgrammeTemplate(
     id: 'gym_start',
-    title: 'Старт в зале',
     goal: ProgrammeGoal.form,
     level: ExerciseDifficulty.beginner,
     weeks: 6,
@@ -76,7 +77,6 @@ const List<ProgrammeTemplate> programmeTemplates = [
   ),
   ProgrammeTemplate(
     id: 'shred_endurance',
-    title: 'Рельеф и выносливость',
     goal: ProgrammeGoal.weightLoss,
     level: ExerciseDifficulty.intermediate,
     weeks: 8,
@@ -85,7 +85,6 @@ const List<ProgrammeTemplate> programmeTemplates = [
   ),
   ProgrammeTemplate(
     id: 'injury_comeback',
-    title: 'Возврат после перерыва',
     goal: ProgrammeGoal.comeback,
     level: ExerciseDifficulty.beginner,
     weeks: 4,
@@ -93,7 +92,6 @@ const List<ProgrammeTemplate> programmeTemplates = [
   ),
   ProgrammeTemplate(
     id: 'shoulders_arms',
-    title: 'Плечи и руки',
     goal: ProgrammeGoal.muscle,
     level: ExerciseDifficulty.intermediate,
     weeks: 6,

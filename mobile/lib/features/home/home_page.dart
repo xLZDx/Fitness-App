@@ -15,6 +15,8 @@ import '../moments/state/moment_providers.dart';
 import '../moments/widgets/day3_welcome_modal.dart';
 import '../recovery/widgets/deload_banner.dart';
 import '../equipment/data/catalog_labels.dart';
+import '../equipment/state/equipment_providers.dart';
+import '../programmes/data/programme_labels.dart';
 import '../programmes/state/programme_providers.dart';
 import '../workouts/data/session_digest.dart';
 import '../workouts/state/day_result_providers.dart';
@@ -222,10 +224,11 @@ class _PlanProgressBar extends ConsumerWidget {
     final programme = ref.watch(activeProgrammeProvider);
     final programmeProgress = ref.watch(activeProgrammeProgressProvider);
     if (programme != null && programmeProgress != null) {
+      final l = AppLocalizations.of(context);
       return _ProgressBarCard(
         key: const Key('home.programmeProgress'),
-        label: '${programme.title} · '
-            '${AppLocalizations.of(context).programmeWeekOfWeeks(
+        label: '${ProgrammeLabels.title(l, programme.templateId, stored: programme.title)} · '
+            '${l.programmeWeekOfWeeks(
               programmeProgress.week,
               programmeProgress.weeks,
             )}',
@@ -319,7 +322,7 @@ class _ProgressBarCard extends StatelessWidget {
 
 /// The day, as the prototype's centrepiece: eyebrow, large title, muscle
 /// chips, one line of shape, and a full-width accent CTA.
-class _TodayHero extends StatelessWidget {
+class _TodayHero extends ConsumerWidget {
   const _TodayHero({required this.upcoming, required this.digest});
 
   final List<ScreenedSession> upcoming;
@@ -328,7 +331,7 @@ class _TodayHero extends StatelessWidget {
   final SessionDigest digest;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final colors = theme.colors;
@@ -371,7 +374,8 @@ class _TodayHero extends StatelessWidget {
         ? digest.muscles
             .map((m) => CatalogLabels.muscle(l10n, m))
             .join(' · ')
-        : next.exerciseTitle;
+        : resolveExerciseTitle(
+            ref.watch(exerciseTitlesProvider), next.exerciseId, next.exerciseTitle);
 
     return GlassCard(
       key: const Key('home.hero'),
@@ -880,12 +884,12 @@ class _SummaryLinkCard extends ConsumerWidget {
   }
 }
 
-class _UpcomingCard extends StatelessWidget {
+class _UpcomingCard extends ConsumerWidget {
   const _UpcomingCard({required this.screened});
   final ScreenedSession screened;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final session = screened.session;
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
@@ -915,7 +919,9 @@ class _UpcomingCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(session.exerciseTitle,
+                Text(
+                    resolveExerciseTitle(ref.watch(exerciseTitlesProvider),
+                        session.exerciseId, session.exerciseTitle),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleSmall

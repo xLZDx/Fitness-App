@@ -467,8 +467,19 @@ void main() {
     // `outline` token. onboarding_page.dart 1 -> 0. The header's own fill is
     // `surfaceInteractive`, so replacing the widget did not move the number
     // back up somewhere else — which is the failure this ratchet catches.
+    //
+    // 58 -> 59, 2026-08-13 (B6): an increase, and the first since 44. Category
+    // one, the one this doc calls correct: the playback-rate pips moved off the
+    // bottom of the clip, where they covered the movement, to a column down the
+    // left edge, and the unselected pip's label is white on `cameraOverlay` —
+    // the same token and the same treatment as `_ScrimChip` two hundred lines
+    // above it in the same file. exercise_reference.dart +1.
+    //
+    // Deliberately NOT a new literal: the first draft of that widget carried
+    // its own `Colors.black.withValues(alpha: 0.42)` scrim, which would have
+    // been a second answer to a question this file had already answered twice.
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 58, reason: 'per file: $whites');
+    expect(total, 59, reason: 'per file: $whites');
   });
 
   group('lerp', () {

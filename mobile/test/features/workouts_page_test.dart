@@ -302,7 +302,10 @@ void main() {
       expect(find.text('Library'), findsOneWidget);
       // A static template title -- `programmeTemplates` needs no provider
       // override to render, so this is present the instant the page opens.
-      expect(find.text('Силовая база'), findsOneWidget);
+      //
+      // B2a: English, because the harness locale is English. It read
+      // 'Силовая база' until the titles moved into the ARB files.
+      expect(find.text('Strength base'), findsOneWidget);
     });
 
     testWidgets('switching to Library and back preserves both tabs\' content',
@@ -313,11 +316,11 @@ void main() {
       await tester.tap(find.text('Library'));
       await tester.pumpAndSettle();
       expect(find.text('For you'), findsOneWidget);
-      expect(find.text('Силовая база'), findsNothing);
+      expect(find.text('Strength base'), findsNothing);
 
       await tester.tap(find.text('Programs'));
       await tester.pumpAndSettle();
-      expect(find.text('Силовая база'), findsOneWidget);
+      expect(find.text('Strength base'), findsOneWidget);
       expect(find.text('For you'), findsNothing);
     });
 
@@ -392,8 +395,8 @@ void main() {
       await tester.tap(muscleChip);
       await tester.pumpAndSettle();
 
-      expect(find.text('Гипертрофия'), findsOneWidget);
-      expect(find.text('Старт в зале'), findsNothing);
+      expect(find.text('Hypertrophy'), findsOneWidget);
+      expect(find.text('Gym starter'), findsNothing);
     });
 
     testWidgets('tapping Start on a template reaches the enroll action',

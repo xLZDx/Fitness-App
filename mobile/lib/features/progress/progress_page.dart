@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
+import '../equipment/state/equipment_providers.dart';
 import '../progress_photos/data/photo_timeline.dart';
 import '../progress_photos/data/progress_photo.dart';
 import '../progress_photos/state/progress_photos_providers.dart';
@@ -589,7 +590,11 @@ class _RecordsSection extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(r.exerciseTitle,
+                        Text(
+                            resolveExerciseTitle(
+                                ref.watch(exerciseTitlesProvider),
+                                r.exerciseId,
+                                r.exerciseTitle),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.titleSmall
@@ -705,12 +710,12 @@ class _BarChart extends StatelessWidget {
   }
 }
 
-class _RecentLogCard extends StatelessWidget {
+class _RecentLogCard extends ConsumerWidget {
   const _RecentLogCard({required this.log});
   final WorkoutLogEntry log;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     return GlassCard(
@@ -736,7 +741,8 @@ class _RecentLogCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  log.exerciseTitle,
+                  resolveExerciseTitle(ref.watch(exerciseTitlesProvider),
+                      log.exerciseId, log.exerciseTitle),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.titleSmall

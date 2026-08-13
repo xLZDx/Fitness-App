@@ -663,21 +663,23 @@ class _SpeedPip extends StatelessWidget {
           height: 26,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            // Dark scrim rather than the theme surface: this floats over
-            // arbitrary video frames, and a light chip vanishes against a
-            // white gym wall.
+            // `cameraOverlay`, not a hand-rolled black: this file already
+            // solves "a control floating over media" twice (`_ScrimCircleButton`,
+            // `_ScrimChip`) and both use that token. A second literal here
+            // would be the same decision made twice, free to drift.
             color: selected
                 ? AppPalette.auroraLime.withValues(alpha: 0.92)
-                : Colors.black.withValues(alpha: 0.42),
+                : theme.colors.cameraOverlay,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             label,
             style: theme.textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.w800,
-              color: selected
-                  ? AppSemanticColors.onGradientInk
-                  : Colors.white.withValues(alpha: 0.92),
+              // Plain white on the scrim, exactly as `_ScrimChip` does it —
+              // category 1 of the hardcoded-white ratchet, and the one the
+              // ratchet's own doc calls correct.
+              color: selected ? AppSemanticColors.onGradientInk : Colors.white,
             ),
           ),
         ),

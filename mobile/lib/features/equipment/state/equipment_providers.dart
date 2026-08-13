@@ -279,6 +279,40 @@ final recommendedExercisesProvider =
 /// [forYouExercisesProvider]; callers slicing by muscle or category do their
 /// own slicing on top of a list that is already safe. Fusing the two is what
 /// made the raw feed the path of least resistance in the first place.
+/// `exerciseId` -> the catalogue's title, in the language the app is showing.
+///
+/// B2b. Every stored row — a scheduled session, a logged set, a programme day —
+/// carries `exerciseTitle` as a SNAPSHOT taken when it was written. That is
+/// correct for durability (a row whose exercise later leaves the catalogue
+/// still reads as something) and wrong for display: switch the app to English
+/// and the history keeps whatever language it was recorded in, which is what
+/// the operator photographed — English cards listing "Боковые шаги в четыре
+/// стороны".
+///
+/// Titles ONLY, deliberately. [_allExercisesProvider] stays private and
+/// unscreened because handing out `ExerciseItem`s past the injury filter is the
+/// mistake its doc describes; a NAME is not an offer, and a history row for an
+/// exercise the user's injuries now screen out still has to be readable.
+final exerciseTitlesProvider = Provider<Map<String, String>>((ref) {
+  final all =
+      ref.watch(_allExercisesProvider).valueOrNull ?? const <ExerciseItem>[];
+  return {for (final e in all) e.id: e.title};
+});
+
+/// The catalogue's name for [id], falling back to the [stored] snapshot.
+///
+/// Pure so the fallback order is assertable: catalogue first (follows the
+/// language), snapshot second (survives a removed exercise), never empty.
+String resolveExerciseTitle(
+  Map<String, String> titles,
+  String id,
+  String stored,
+) {
+  final live = titles[id];
+  if (live != null && live.trim().isNotEmpty) return live;
+  return stored;
+}
+
 final safeCatalogProvider = FutureProvider<List<ExerciseItem>>((ref) async {
   final all = await ref.watch(_allExercisesProvider.future);
   final profile = await ref.watch(screeningProfileProvider.future);

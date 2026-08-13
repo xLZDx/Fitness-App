@@ -14,6 +14,7 @@ import '../equipment/state/equipment_providers.dart';
 import '../form_check/state/form_check_providers.dart';
 import '../personalisation/state/personalisation_providers.dart';
 import '../programmes/data/programme.dart';
+import '../programmes/data/programme_labels.dart';
 import '../programmes/data/programme_templates.dart';
 import '../programmes/state/programme_providers.dart';
 import '../subscription/data/subscription_models.dart';
@@ -921,7 +922,8 @@ class _CurrentProgrammeCard extends ConsumerWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            programme.title,
+            ProgrammeLabels.title(l, programme.templateId,
+                stored: programme.title),
             style: theme.textTheme.headlineSmall
                 ?.copyWith(fontWeight: FontWeight.w800),
           ),
@@ -958,7 +960,7 @@ class _CurrentProgrammeCard extends ConsumerWidget {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  '${next.exerciseTitle} →',
+                  '${resolveExerciseTitle(ref.watch(exerciseTitlesProvider), next.exerciseId, next.exerciseTitle)} →',
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: AppSemanticColors.onGradientInk,
                     fontWeight: FontWeight.w800,
@@ -987,17 +989,21 @@ class _ProgrammeTemplateCard extends ConsumerWidget {
   final ProgrammeTemplate template;
 
   Future<void> _start(BuildContext context, WidgetRef ref, Programme? active) async {
+    final l = AppLocalizations.of(context);
     if (active != null && active.templateId != template.id) {
-      final confirmed = await _ConfirmSwitchSheet.show(context, active.title);
+      final confirmed = await _ConfirmSwitchSheet.show(
+        context,
+        ProgrammeLabels.title(l, active.templateId, stored: active.title),
+      );
       if (confirmed != true || !context.mounted) return;
     }
-    final l = AppLocalizations.of(context);
     await ref.read(programmeActionProvider.notifier).enroll(template);
     if (!context.mounted) return;
     final state = ref.read(programmeActionProvider);
     state.when(
       data: (_) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(l.programmeEnrolled(template.title)),
+        content: Text(
+            l.programmeEnrolled(ProgrammeLabels.title(l, template.id))),
         behavior: SnackBarBehavior.floating,
       )),
       // Same reason as the list card above: `'$e'` put the raw Firestore
@@ -1081,7 +1087,7 @@ class _ProgrammeTemplateCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  template.title,
+                  ProgrammeLabels.title(l, template.id),
                   style: theme.textTheme.titleMedium
                       ?.copyWith(fontWeight: FontWeight.w800),
                 ),

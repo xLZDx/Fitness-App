@@ -69,7 +69,13 @@ void main() {
 
       final saved = programmeRepo.cached('alice');
       expect(saved, hasLength(1));
-      expect(saved.single.title, template.title);
+      // B2a: the stored title is the template ID, not a display string. Every
+      // screen resolves the name from `templateId` through `ProgrammeLabels`,
+      // so a programme enrolled in Russian reads correctly after the user
+      // switches the app to English. What is stored only surfaces if the
+      // template itself disappears.
+      expect(saved.single.title, template.id);
+      expect(saved.single.templateId, template.id);
       expect(saved.single.status, ProgrammeStatus.active);
 
       final rows = sessionRepo.cached('alice');

@@ -1958,6 +1958,15 @@
   },
   "workoutsSubTabPrograms": "Programs",
   "workoutsSubTabLibrary": "Library",
+  "programmeStrengthBase": "Strength base",
+  "@programmeStrengthBase": {
+    "description": "Programme template title. The template id stays English in the data layer; only this label is translated."
+  },
+  "programmeHypertrophy": "Hypertrophy",
+  "programmeGymStart": "Gym starter",
+  "programmeShredEndurance": "Definition and endurance",
+  "programmeInjuryComeback": "Coming back after a break",
+  "programmeShouldersArms": "Shoulders and arms",
   "programmeCurrentProgramme": "Current programme",
   "programmeStart": "Start programme",
   "programmeContinue": "Continue",

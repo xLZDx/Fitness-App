@@ -1363,55 +1363,47 @@ class _SilhouettePainter extends CustomPainter {
 
     final limbWidth =
         (figure.limbThickness * scale * (isDemo ? 0.85 : 1.0)).clamp(4.0, 30.0);
-    final stroke = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = limbWidth
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..color = colour.withValues(alpha: alpha * 0.55);
 
-    // Trunk first, limbs over it. A filled torso is what gives the outline a
-    // centre; without it a deep squat, where the arms swing across the thighs,
-    // renders as crossing bars with no body in the middle of them.
+    // B4 — ONE body, not a set of parts.
+    //
+    // This used to stroke each bone as a thick round-capped line and outline
+    // the head separately. However wide the strokes, that is a stick figure —
+    // the operator rejected it three times and was right: limbs of constant
+    // width joined by visible caps do not read as a person. Every part now
+    // arrives as a closed outline (`SilhouetteFigure.limbs`, plus the trunk
+    // and the head) and they are unioned into a single non-zero path, so what
+    // is filled is one continuous silhouette with no seams where an arm meets
+    // a shoulder.
+    final body = Path()..fillType = PathFillType.nonZero;
     if (figure.torso.isNotEmpty) {
-      final path = Path()
-        ..addPolygon([for (final p in figure.torso) place(p)], true);
-      canvas.drawPath(
-          path, Paint()..color = colour.withValues(alpha: alpha * 0.30));
-      canvas.drawPath(
-        path,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = limbWidth * 0.45
-          ..strokeJoin = StrokeJoin.round
-          ..color = colour.withValues(alpha: alpha * 0.55),
-      );
+      body.addPolygon([for (final p in figure.torso) place(p)], true);
     }
-
-    for (final (a, b) in figure.segments) {
-      canvas.drawLine(place(a), place(b), stroke);
+    for (final limb in figure.limbs) {
+      if (limb.length < 3) continue;
+      body.addPolygon([for (final p in limb) place(p)], true);
     }
-
     final head = figure.head;
     if (head != null) {
-      // Outlined, not filled: a solid disc over a live camera hides the face
-      // of the person trying to line themselves up with it.
-      canvas.drawCircle(
-        place(head.$1),
-        head.$2 * scale,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = limbWidth * 0.55
-          ..color = colour.withValues(alpha: alpha),
+      body.addOval(
+        Rect.fromCircle(center: place(head.$1), radius: head.$2 * scale),
       );
     }
 
-    // The joints on top of the limbs, so the shape reads as articulated rather
-    // than as one bent tube.
-    final joint = Paint()..color = colour.withValues(alpha: alpha);
-    for (final p in figure.joints) {
-      canvas.drawCircle(place(p), limbWidth * 0.30, joint);
-    }
+    // Translucent fill, opaque rim. The rim is what the user actually lines
+    // themselves up against; the fill only has to say which side is body. A
+    // solid fill over a live camera would hide the person trying to match it —
+    // the same reason the head used to be drawn as an outline rather than a
+    // disc, kept now that the head is part of the filled body.
+    canvas.drawPath(
+        body, Paint()..color = colour.withValues(alpha: alpha * 0.28));
+    canvas.drawPath(
+      body,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = (limbWidth * 0.22).clamp(1.5, 5.0)
+        ..strokeJoin = StrokeJoin.round
+        ..color = colour.withValues(alpha: alpha),
+    );
   }
 
   @override

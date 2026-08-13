@@ -94,7 +94,13 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
       final programme = Programme(
         id: '${DateTime.now().microsecondsSinceEpoch}_${template.id}',
         templateId: template.id,
-        title: template.title,
+        // B2a. The stored title is a FALLBACK, not what the UI shows: every
+        // screen resolves the name from `templateId` through
+        // `ProgrammeLabels`, so the card follows the app's language instead of
+        // freezing whichever one was active at enrolment. This provider has no
+        // `AppLocalizations` — it is not a widget — so it stores the id, which
+        // is only ever surfaced if the template itself disappears.
+        title: template.id,
         goal: template.goal,
         level: template.level,
         weeks: template.weeks,

@@ -163,6 +163,7 @@ class SilhouetteFigure {
     required this.joints,
     required this.head,
     required this.limbThickness,
+    this.limbs = const [],
   });
 
   /// Bones, as endpoint pairs. The torso is [torso], not a segment: drawn as
@@ -180,6 +181,19 @@ class SilhouetteFigure {
 
   /// Centre and radius, or null when the torso could not be located.
   final (Offset, double)? head;
+
+  /// Closed outlines — one per limb — ready to be filled as a single body.
+  ///
+  /// B4. [segments] describes bones; drawing them as thick round-capped lines
+  /// produced a stick figure with fat strokes, which the operator rejected
+  /// three times. A limb is not a line of constant width: an arm leaves the
+  /// shoulder broad and narrows at the wrist, and only an outline can say so.
+  /// Filling these together with [torso] and [head] under one non-zero path
+  /// gives one continuous body instead of parts laid over each other.
+  ///
+  /// [segments] is kept: it is what the tests assert bone geometry with, and
+  /// the demo overlay still reads it.
+  final List<List<Offset>> limbs;
 
   /// In the same units as [segments].
   final double limbThickness;
@@ -203,6 +217,13 @@ class SilhouetteFigure {
     }
     for (final p in torso) {
       add(p.dx, p.dy);
+    }
+    // The filled outlines sit half a limb-width outside the bones they wrap,
+    // so a bounds computed from segments alone would let the fit clip an arm.
+    for (final limb in limbs) {
+      for (final p in limb) {
+        add(p.dx, p.dy);
+      }
     }
     final h = head;
     if (h != null) {
@@ -263,15 +284,67 @@ SilhouetteFigure buildSilhouette(
 
   final segments = <(Offset, Offset)>[];
   final joints = <Offset>[];
+  final limbs = <List<Offset>>[];
+
+  /// Turns a polyline into a closed outline that narrows along its length.
+  ///
+  /// B4. Each point gets its own half-width, and the outline runs down one
+  /// side and back up the other. At a bend the offset direction is the average
+  /// of the two adjacent segment normals, so a flexed elbow keeps its
+  /// thickness instead of pinching — the artefact that makes a naive
+  /// per-segment offset look broken exactly where a joint is.
+  List<Offset> outlineOf(List<Offset> pts, List<double> halfWidths) {
+    if (pts.length < 2) return const [];
+    Offset normalAt(int i) {
+      Offset dir;
+      if (i == 0) {
+        dir = pts[1] - pts[0];
+      } else if (i == pts.length - 1) {
+        dir = pts[i] - pts[i - 1];
+      } else {
+        final a = pts[i] - pts[i - 1];
+        final b = pts[i + 1] - pts[i];
+        final na = a.distance, nb = b.distance;
+        dir = (na > 1e-9 ? a / na : Offset.zero) +
+            (nb > 1e-9 ? b / nb : Offset.zero);
+      }
+      final d = dir.distance;
+      if (d <= 1e-9) return across;
+      return Offset(-dir.dy / d, dir.dx / d);
+    }
+
+    final left = <Offset>[];
+    final right = <Offset>[];
+    for (var i = 0; i < pts.length; i++) {
+      final n = normalAt(i) * halfWidths[i];
+      left.add(pts[i] + n);
+      right.add(pts[i] - n);
+    }
+    return [...left, ...right.reversed];
+  }
 
   final leftShoulder = shoulder + across * sHalf;
   final rightShoulder = shoulder - across * sHalf;
   final leftHip = hip + across * hHalf;
   final rightHip = hip - across * hHalf;
 
-  // Wound as a quad, so the painter can fill it. Order matters: shoulders
-  // then hips, reversed on the second side, or the polygon crosses itself.
-  final trunk = <Offset>[leftShoulder, rightShoulder, rightHip, leftHip];
+  // B4: six points, not four. A shoulders-to-hips quad has straight sides and
+  // reads as a box; a real trunk narrows at the waist and that single pair of
+  // points is most of what turns the outline into a person. Wound across the
+  // top, down the right, across the bottom, up the left — anything else and
+  // the polygon crosses itself.
+  final waistCentre = hip + spine * 0.45;
+  final waistHalf = (sHalf + hHalf) * 0.5 * 0.82;
+  final leftWaist = waistCentre + across * waistHalf;
+  final rightWaist = waistCentre - across * waistHalf;
+  final trunk = <Offset>[
+    leftShoulder,
+    rightShoulder,
+    rightWaist,
+    rightHip,
+    leftHip,
+    leftWaist,
+  ];
   joints.addAll([leftShoulder, rightShoulder, leftHip, rightHip]);
 
   /// Hangs one chain of joints off both sides of the body.
@@ -282,6 +355,7 @@ SilhouetteFigure buildSilhouette(
     List<LandmarkType> chain,
     double half,
     List<double> taper,
+    List<double> girth,
   ) {
     final points = <Offset>[];
     for (final t in chain) {
@@ -290,16 +364,27 @@ SilhouetteFigure buildSilhouette(
       points.add(p);
     }
     for (final sign in const [1.0, -1.0]) {
+      final placed = <Offset>[];
       Offset? previous;
       for (var i = 0; i < points.length; i++) {
         final p = points[i] + across * (sign * half * taper[i]);
         if (previous != null) segments.add((previous, p));
         joints.add(p);
+        placed.add(p);
         previous = p;
       }
+      // The outline, in the same pass and off the same placed points, so the
+      // filled body and the bones it was built from can never disagree.
+      final outline = outlineOf(placed, [
+        for (final g in girth) build.limbThickness * torso * g,
+      ]);
+      if (outline.isNotEmpty) limbs.add(outline);
     }
   }
 
+  // `girth` is the half-width at each joint, as a multiple of the build's own
+  // limb thickness. Arms are slimmer than legs and both narrow towards the
+  // extremity — a constant width is what made the old drawing read as tubing.
   limbPair(
     const [
       LandmarkType.leftShoulder,
@@ -308,6 +393,7 @@ SilhouetteFigure buildSilhouette(
     ],
     sHalf,
     const [0.85, 0.72, 0.62],
+    const [0.46, 0.36, 0.26],
   );
   limbPair(
     const [
@@ -317,6 +403,7 @@ SilhouetteFigure buildSilhouette(
     ],
     hHalf,
     const [1.0, 0.86, 0.74],
+    const [0.62, 0.44, 0.30],
   );
 
   // Head and neck. Placed along the spine so it stays over the chest when the
@@ -330,7 +417,17 @@ SilhouetteFigure buildSilhouette(
   const radius = 0.17;
   const neck = reach - radius + 0.01;
   final headCentre = shoulder + up * (torso * reach);
-  segments.add((shoulder, shoulder + up * (torso * neck)));
+  final neckTop = shoulder + up * (torso * neck);
+  segments.add((shoulder, neckTop));
+
+  // The neck joins the fill too, or the head floats clear of a body it is
+  // supposed to be attached to — which is most of what made the old drawing
+  // read as a circle balanced on sticks.
+  final neckOutline = outlineOf(
+    [shoulder, neckTop],
+    [build.limbThickness * torso * 0.52, build.limbThickness * torso * 0.44],
+  );
+  if (neckOutline.isNotEmpty) limbs.add(neckOutline);
 
   return SilhouetteFigure(
     segments: segments,
@@ -338,6 +435,7 @@ SilhouetteFigure buildSilhouette(
     joints: joints,
     head: (headCentre, torso * radius),
     limbThickness: build.limbThickness * torso,
+    limbs: limbs,
   );
 }
 

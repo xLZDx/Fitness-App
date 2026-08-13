@@ -9,6 +9,7 @@ import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../equipment/data/catalog_labels.dart';
+import '../equipment/state/equipment_providers.dart';
 import '../workouts/data/day_result.dart';
 import '../workouts/state/day_result_providers.dart';
 import '../workouts/state/session_digest_providers.dart';
@@ -299,7 +300,12 @@ class _NextWorkout extends ConsumerWidget {
                   fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
           Text(
-            muscles.isEmpty ? next.sessions.first.exerciseTitle : muscles,
+            muscles.isEmpty
+                ? resolveExerciseTitle(
+                    ref.watch(exerciseTitlesProvider),
+                    next.sessions.first.exerciseId,
+                    next.sessions.first.exerciseTitle)
+                : muscles,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.titleMedium

@@ -15,6 +15,7 @@ import 'package:fitness_app/features/form_check/data/pose_target.dart';
 /// on the broken version too, because the broken version rendered exactly what
 /// it was asked to render.
 void main() {
+  _b4();
   /// Distance between two joints in a built figure, for proportion checks.
   double span(Rect r) => math.max(r.width, r.height);
 
@@ -72,7 +73,10 @@ void main() {
       // is the neck: the leg chain needs an ankle, so neither the near nor the
       // far leg is drawn, and there is no arm chain at all.
       expect(figure.segments.length, 1);
-      expect(figure.torso, hasLength(4), reason: 'the trunk still draws');
+      // Six since B4: the trunk gained a waist pair, which is what stops the
+      // fill reading as a crate. Still "the trunk draws" — the claim this
+      // assertion has always made.
+      expect(figure.torso, hasLength(6), reason: 'the trunk still draws');
     });
   });
 
@@ -268,6 +272,98 @@ void main() {
       // body was sized off its width, and it dominated the outline.
       final ratio = (head.$2 * 2) / span(figure.bounds);
       expect(ratio, inInclusiveRange(0.06, 0.35));
+    });
+  });
+}
+
+/// B4 — the outline is a body, not thick sticks.
+///
+/// The operator rejected the drawing three times ("силует у тренера по прежнему
+/// палочки"). The fix is structural: every part now arrives as a CLOSED outline
+/// that the painter unions into one filled path, instead of bones stroked with
+/// a wide round cap. These assert the structure, because a golden image would
+/// go green on either version — both render exactly what they were asked to.
+void _b4() {
+  group('every part is a closed outline, not a stroked bone', () {
+    test('a full target produces four limb outlines and a neck', () {
+      final figure = buildSilhouette(squatTopTarget);
+      // Two arms, two legs, one neck. Not "at least one" — a missing side is
+      // the exact fault the two-sided figure was written to prevent.
+      expect(figure.limbs.length, 5);
+      for (final limb in figure.limbs) {
+        expect(limb.length, greaterThanOrEqualTo(4),
+            reason: 'an outline needs at least two points per side');
+        expect(limb.length.isEven, isTrue,
+            reason: 'one point per side, so the count is always even');
+      }
+    });
+
+    test('limbs narrow towards the extremity', () {
+      // The whole difference between a silhouette and a tube. Measured on the
+      // outline itself: the width at the first joint must exceed the width at
+      // the last.
+      final figure = buildSilhouette(squatTopTarget);
+      for (final limb in figure.limbs) {
+        final half = limb.length ~/ 2;
+        final atRoot = (limb.first - limb.last).distance;
+        final atTip = (limb[half - 1] - limb[half]).distance;
+        expect(atRoot, greaterThan(atTip),
+            reason: 'this limb has the same width at both ends');
+      }
+    });
+
+    test('the trunk has a waist', () {
+      // Four points is a box. The waist pair is most of what makes the fill
+      // read as a person rather than a crate.
+      final figure = buildSilhouette(squatTopTarget);
+      expect(figure.torso.length, 6);
+    });
+
+    test('the bounds cover the fill, not just the bones', () {
+      // The outlines sit half a limb-width outside the segments they wrap. A
+      // bounds computed from segments alone lets `fitSilhouette` clip an arm.
+      final figure = buildSilhouette(squatTopTarget);
+      final b = figure.bounds;
+      for (final limb in figure.limbs) {
+        for (final p in limb) {
+          // Compared inclusively rather than with `Rect.contains`, which is
+          // half-open: it excludes the right and bottom edges, so the very
+          // point that DEFINES the bound reads as outside it. The first draft
+          // of this test used `contains` and failed on a correct figure.
+          expect(
+            p.dx >= b.left && p.dx <= b.right &&
+                p.dy >= b.top && p.dy <= b.bottom,
+            isTrue,
+            reason: 'outline point $p falls outside the reported bounds $b',
+          );
+        }
+      }
+    });
+
+    test('a target with no torso produces no outlines either', () {
+      const noHip = PoseTarget(
+        id: 'fragment',
+        joints: {LandmarkType.leftShoulder: (0.5, 0.3)},
+        bones: [],
+      );
+      expect(buildSilhouette(noHip).limbs, isEmpty);
+    });
+
+    test('a missing ankle drops that whole limb, not half of it', () {
+      // Same contract the segments already had: a partial limb is worse than
+      // none. Asserted on the outlines too, or a half-drawn leg could come
+      // back through the new path.
+      final noAnkle = PoseTarget(
+        id: 'partial',
+        joints: {
+          for (final e in squatTopTarget.joints.entries)
+            if (e.key != LandmarkType.leftAnkle) e.key: e.value,
+        },
+        bones: const [],
+      );
+      final figure = buildSilhouette(noAnkle);
+      // Two arms and a neck survive; both legs are gone.
+      expect(figure.limbs.length, 3);
     });
   });
 }
