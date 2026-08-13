@@ -23,8 +23,16 @@ Iterable<String?> Function(ScheduledSession) videoUrlResolverFor(
     List<ExerciseItem> catalog) {
   final byId = {for (final e in catalog) e.id: e};
   return (session) {
-    final item = byId[session.exerciseId];
-    if (item == null) return const [null];
+    // Every exercise of the day since B5b, not just the first. Prefetch exists
+    // so the workout plays with no network; caching one clip of a four-clip day
+    // would have left the user offline three exercises in, which is worse than
+    // not offering the feature — they would have started the session believing
+    // it was covered.
+    final items = [
+      for (final e in session.exercises)
+        if (byId[e.exerciseId] case final item?) item,
+    ];
+    if (items.isEmpty) return const [null];
     // Both bodies, not the user's one. Prefetch runs ahead of the session, and
     // the point of caching is that the clip is there whichever demonstration
     // the page ends up choosing — a profile edited between the prefetch and
@@ -37,9 +45,11 @@ Iterable<String?> Function(ScheduledSession) videoUrlResolverFor(
     // whatever it is handed, so a duplicate would be a second download of a
     // file already on disk.
     return <String?>{
-      item.videoUrl,
-      item.playableVideoFor('girl'),
-      item.playableVideoFor('men'),
+      for (final item in items) ...[
+        item.videoUrl,
+        item.playableVideoFor('girl'),
+        item.playableVideoFor('men'),
+      ],
     };
   };
 }

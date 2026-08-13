@@ -4,13 +4,22 @@ import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/programmes/data/programme.dart';
 import 'package:fitness_app/features/programmes/data/programme_schedule.dart';
 
-ExerciseItem _ex(String id, {List<String> muscles = const []}) => ExerciseItem(
+ExerciseItem _ex(
+  String id, {
+  List<String> muscles = const [],
+  // 20 by default only because these tests predate B5b and their expectations
+  // are written against it. The day-filling tests pass 10 — the value every
+  // one of the 1,887 shipped rows actually carries — so their arithmetic can
+  // be read on the spot instead of against a fixture constant three screens up.
+  int durationMinutes = 20,
+}) =>
+    ExerciseItem(
       id: id,
       title: id,
       equipmentId: null,
       muscles: muscles,
       difficulty: ExerciseDifficulty.beginner,
-      durationMinutes: 20,
+      durationMinutes: durationMinutes,
       summary: '',
       steps: const [],
     );
@@ -143,6 +152,98 @@ void main() {
       final rows =
           buildProgrammeSchedule(programme: programme, catalogue: catalogue);
       expect(rows.map((r) => r.exerciseId), ['c', 'b', 'c', 'b', 'c', 'b']);
+    });
+
+    test('a day is filled up to the session length the user asked for', () {
+      // Every catalogue exercise is 10 minutes (measured: all 1,887 rows), so
+      // a 40-minute answer is four of them.
+      final catalogue = [
+        for (var i = 0; i < 10; i++) _ex('e$i', durationMinutes: 10),
+      ];
+      final programme = _programme(weeks: 1, daysPerWeek: 1, muscles: const []);
+      final rows = buildProgrammeSchedule(
+        programme: programme,
+        catalogue: catalogue,
+        sessionMinutes: 40,
+      );
+      expect(rows.single.exerciseCount, 4);
+      expect(rows.single.durationMinutes, 40);
+    });
+
+    test('a shorter answer produces a shorter day', () {
+      final catalogue = [
+        for (var i = 0; i < 10; i++) _ex('e$i', durationMinutes: 10),
+      ];
+      final rows = buildProgrammeSchedule(
+        programme: _programme(weeks: 1, daysPerWeek: 1),
+        catalogue: catalogue,
+        sessionMinutes: 20,
+      );
+      expect(rows.single.exerciseCount, 2);
+    });
+
+    test('an unanswered session length falls back to the documented default',
+        () {
+      final catalogue = [
+        for (var i = 0; i < 10; i++) _ex('e$i', durationMinutes: 10),
+      ];
+      final rows = buildProgrammeSchedule(
+        programme: _programme(weeks: 1, daysPerWeek: 1),
+        catalogue: catalogue,
+      );
+      expect(rows.single.durationMinutes,
+          lessThanOrEqualTo(kDefaultSessionMinutes));
+      expect(rows.single.exerciseCount, kDefaultSessionMinutes ~/ 10);
+    });
+
+    test('a day never repeats an exercise, even when the pool is smaller than '
+        'the session length', () {
+      // Two candidates, an hour asked for. Six slots' worth of time, two
+      // exercises available — scheduling the same movement three times would
+      // fill the minutes and would not be a workout.
+      final catalogue = [_ex('a'), _ex('b')];
+      final rows = buildProgrammeSchedule(
+        programme: _programme(weeks: 1, daysPerWeek: 1),
+        catalogue: catalogue,
+        sessionMinutes: 60,
+      );
+      final ids = rows.single.exercises.map((e) => e.exerciseId).toList();
+      expect(ids, hasLength(2));
+      expect(ids.toSet(), hasLength(2));
+    });
+
+    test('a day always has at least one exercise, even when one alone runs '
+        'past the asked-for length', () {
+      final rows = buildProgrammeSchedule(
+        programme: _programme(weeks: 1, daysPerWeek: 1),
+        catalogue: [_ex('a')],
+        sessionMinutes: 5,
+      );
+      expect(rows.single.exerciseCount, 1);
+    });
+
+    test('the row duration is the whole day, not the first exercise', () {
+      final catalogue = [
+        for (var i = 0; i < 5; i++) _ex('e$i', durationMinutes: 10),
+      ];
+      final rows = buildProgrammeSchedule(
+        programme: _programme(weeks: 1, daysPerWeek: 1),
+        catalogue: catalogue,
+        sessionMinutes: 30,
+      );
+      expect(rows.single.durationMinutes, 30);
+      expect(rows.single.exerciseCount, 3);
+    });
+
+    test('the first exercise of the day stays the rotation entry, so weeks '
+        'still differ from each other', () {
+      final catalogue = [_ex('a'), _ex('b'), _ex('c')];
+      final rows = buildProgrammeSchedule(
+        programme: _programme(weeks: 3, daysPerWeek: 1),
+        catalogue: catalogue,
+        sessionMinutes: 10,
+      );
+      expect(rows.map((r) => r.exerciseId), ['a', 'b', 'c']);
     });
 
     test('generated ids are unique across the whole schedule', () {

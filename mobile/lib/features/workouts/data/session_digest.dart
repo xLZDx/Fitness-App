@@ -79,13 +79,20 @@ SessionDigest digestForDay(
   // exercise happened to list.
   final tally = <String, int>{};
   for (final s in sameDay) {
-    final item = catalogue[s.exerciseId];
-    if (item == null) continue;
-    final primary = item.primaryMuscles.isEmpty
-        ? item.muscles.take(1)
-        : item.primaryMuscles;
-    for (final m in primary) {
-      tally[m] = (tally[m] ?? 0) + 1;
+    // Every exercise of each row, not one per row. Until B5b "several
+    // exercises in a day" meant several ROWS, so counting rows was the same
+    // thing; `buildProgrammeSchedule` now writes one row per day and folds the
+    // rest into it, and a tally over `s.exerciseId` alone would describe a
+    // four-exercise day by its first exercise's muscles.
+    for (final exercise in s.exercises) {
+      final item = catalogue[exercise.exerciseId];
+      if (item == null) continue;
+      final primary = item.primaryMuscles.isEmpty
+          ? item.muscles.take(1)
+          : item.primaryMuscles;
+      for (final m in primary) {
+        tally[m] = (tally[m] ?? 0) + 1;
+      }
     }
   }
   final ranked = tally.keys.toList()
@@ -98,7 +105,11 @@ SessionDigest digestForDay(
 
   return SessionDigest(
     sessions: sameDay,
-    exerciseCount: sameDay.length,
+    // Exercises, not rows. `sameDay.length` was the same number until B5b and
+    // is not any more: a programme day is one row holding several exercises,
+    // and the hero would have said "1 exercise · 40 min" over a workout of
+    // four.
+    exerciseCount: sameDay.fold(0, (sum, s) => sum + s.exerciseCount),
     totalMinutes: sameDay.fold(0, (sum, s) => sum + s.durationMinutes),
     muscles: ranked.take(_maxMuscles).toList(),
   );

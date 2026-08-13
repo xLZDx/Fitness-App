@@ -23,13 +23,30 @@ import 'scheduled_session_providers.dart';
 class ScreenedSession {
   const ScreenedSession({
     required this.session,
-    required this.hiddenForInjury,
+    required this.hiddenExerciseIds,
   });
 
   final ScheduledSession session;
 
-  /// True when the session's exercise now conflicts with a logged injury.
-  final bool hiddenForInjury;
+  /// Which of the day's exercises now conflict with a logged injury.
+  ///
+  /// A set rather than a single flag since B5b: a day holds several exercises,
+  /// and screening only `session.exerciseId` — which is what this did — left
+  /// exercises two onward unscreened on every surface that renders a scheduled
+  /// day. The set is what lets the UI strike the offending row instead of
+  /// striking the whole day or, worse, none of it.
+  final Set<String> hiddenExerciseIds;
+
+  /// True when ANY exercise of the day conflicts.
+  ///
+  /// Any, not all, and the day is flagged rather than dropped — the same
+  /// choice this provider already made for the single-exercise case. A day
+  /// containing one exercise the user must not do is a day they need to look
+  /// at, even if the other three are fine.
+  bool get hiddenForInjury => hiddenExerciseIds.isNotEmpty;
+
+  /// True when nothing in the day is left to do.
+  bool get hiddenEntirely => hiddenExerciseIds.length == session.exerciseCount;
 }
 
 /// [upcomingSessionsProvider], with each session's exercise re-resolved
@@ -43,12 +60,13 @@ final screenedUpcomingSessionsProvider =
   final upcoming = ref.watch(upcomingSessionsProvider);
   final out = <ScreenedSession>[];
   for (final session in upcoming) {
-    final resolution =
-        await ref.watch(exerciseResolutionProvider(session.exerciseId).future);
-    out.add(ScreenedSession(
-      session: session,
-      hiddenForInjury: resolution.hiddenForInjury,
-    ));
+    final hidden = <String>{};
+    for (final exercise in session.exercises) {
+      final resolution = await ref
+          .watch(exerciseResolutionProvider(exercise.exerciseId).future);
+      if (resolution.hiddenForInjury) hidden.add(exercise.exerciseId);
+    }
+    out.add(ScreenedSession(session: session, hiddenExerciseIds: hidden));
   }
   return List.unmodifiable(out);
 });
@@ -80,9 +98,19 @@ class SessionReminderReconciler {
     var cancelled = 0;
     for (final session in sessions) {
       if (session.status != ScheduledSessionStatus.pending) continue;
-      final resolution = await _ref
-          .read(exerciseResolutionProvider(session.exerciseId).future);
-      if (!resolution.hiddenForInjury) continue;
+      // Every exercise of the day, not just the first: a reminder for a day
+      // whose third exercise is now contraindicated is exactly as wrong as one
+      // whose first is, and the OS fires it with the app closed either way.
+      var conflicts = false;
+      for (final exercise in session.exercises) {
+        final resolution = await _ref
+            .read(exerciseResolutionProvider(exercise.exerciseId).future);
+        if (resolution.hiddenForInjury) {
+          conflicts = true;
+          break;
+        }
+      }
+      if (!conflicts) continue;
       try {
         await _ref.read(notificationServiceProvider).cancelReminder(session.id);
         cancelled++;

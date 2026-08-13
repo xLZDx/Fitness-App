@@ -352,6 +352,7 @@
   "workoutsOfWorkingWeight": "{arg0}% рабочего веса",
   "healthAsking": "Запрашиваем…",
   "healthConnectHealth": "Подключить Health",
+  "notificationsMinMulti": "{arg0} и ещё {arg1} · {arg2} мин",
   "notificationsMin": "{arg0} · {arg1} мин",
   "settingsLicencesAndCredits": "Лицензии и благодарности",
   "settingsFollowTheSystem": "Как в системе",

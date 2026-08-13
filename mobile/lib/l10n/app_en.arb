@@ -730,6 +730,20 @@
   },
   "healthAsking": "Asking…",
   "healthConnectHealth": "Connect Health",
+  "notificationsMinMulti": "{arg0} and {arg1} more · {arg2} min",
+  "@notificationsMinMulti": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      },
+      "arg1": {
+        "type": "Object"
+      },
+      "arg2": {
+        "type": "Object"
+      }
+    }
+  },
   "notificationsMin": "{arg0} · {arg1} min",
   "@notificationsMin": {
     "placeholders": {

@@ -14,6 +14,7 @@ import 'package:fitness_app/features/subscription/data/subscription_repository.d
 import 'package:fitness_app/features/subscription/state/subscription_providers.dart';
 import 'package:fitness_app/features/workouts/data/offline_video_cache.dart';
 import 'package:fitness_app/features/workouts/data/scheduled_session.dart';
+import 'package:fitness_app/features/workouts/data/workout_session.dart';
 import 'package:fitness_app/features/workouts/state/offline_video_providers.dart';
 
 const _benchUrl = 'https://cdn.example.com/bench.mp4';
@@ -108,7 +109,65 @@ AssetEquipmentRepository _repoWithLicensedClip() {
     );
 }
 
+const _squatUrl = 'https://cdn.example.com/squat.mp4';
+
 void main() {
+  group('videoUrlResolverFor covers the whole day (B5b)', () {
+    const bench = ExerciseItem(
+      id: 'bench',
+      title: 'Bench press',
+      equipmentId: 'rack',
+      muscles: ['chest'],
+      difficulty: ExerciseDifficulty.beginner,
+      durationMinutes: 10,
+      summary: '',
+      steps: [],
+      videoUrl: _benchUrl,
+    );
+    const squat = ExerciseItem(
+      id: 'squat',
+      title: 'Back squat',
+      equipmentId: 'rack',
+      muscles: ['quads'],
+      difficulty: ExerciseDifficulty.beginner,
+      durationMinutes: 10,
+      summary: '',
+      steps: [],
+      videoUrl: _squatUrl,
+    );
+
+    ScheduledSession day() => ScheduledSession(
+          id: 's1',
+          exerciseId: 'bench',
+          exerciseTitle: 'Bench press',
+          extraExercises: const [
+            WorkoutSessionExercise(
+                exerciseId: 'squat', exerciseTitle: 'Back squat'),
+          ],
+          scheduledFor: DateTime.now().add(const Duration(days: 1)),
+          durationMinutes: 20,
+        );
+
+    test('every exercise of the day contributes its clip', () {
+      // Caching only the first clip of a four-clip day leaves the user offline
+      // three exercises in — worse than not offering the feature, because they
+      // started the session believing it was covered.
+      final urls = videoUrlResolverFor([bench, squat])(day()).toSet();
+      expect(urls, containsAll([_benchUrl, _squatUrl]));
+    });
+
+    test('an exercise missing from the catalogue does not drop the others', () {
+      final urls = videoUrlResolverFor([squat])(day()).toSet();
+      expect(urls, contains(_squatUrl));
+    });
+
+    test('a day whose exercises are all unknown resolves to nothing playable',
+        () {
+      final urls = videoUrlResolverFor(const <ExerciseItem>[])(day()).toList();
+      expect(urls.whereType<String>(), isEmpty);
+    });
+  });
+
   group('licensed clips survive the offline prefetch', () {
     // The paid offline-download feature broke the moment the catalog started
     // holding object keys: it handed `exercises/girl/Legs/Squat.mp4` straight

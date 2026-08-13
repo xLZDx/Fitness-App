@@ -1,5 +1,6 @@
 import '../../equipment/data/equipment_models.dart';
 import '../../workouts/data/scheduled_session.dart';
+import '../../workouts/data/workout_session.dart' show WorkoutSessionExercise;
 import 'programme.dart';
 
 /// Turns an enrolment into the rows [ScheduledSessionRepository] actually
@@ -47,9 +48,20 @@ import 'programme.dart';
 /// bounded by what the catalogue actually offers for that muscle, not a
 /// promise of novelty this function cannot keep if the candidate list is
 /// short.
+/// How long one session should run, when the user has not said.
+///
+/// The screen offers 30/45/60/75/90 (`TrainingSchedule.sessionMinutes`). This
+/// is not their median — it is deliberately below it. The two ways of being
+/// wrong are not symmetric: a day that is too short is one tap to extend, the
+/// player has carried an add-exercise button since R11e, while a day that is
+/// too long has to be abandoned half-finished, and an abandoned day reads as a
+/// failure rather than as a plan that guessed high.
+const kDefaultSessionMinutes = 45;
+
 List<ScheduledSession> buildProgrammeSchedule({
   required Programme programme,
   required List<ExerciseItem> catalogue,
+  int? sessionMinutes,
 }) {
   if (catalogue.isEmpty || programme.weeks <= 0 || programme.daysPerWeek <= 0) {
     return const [];
@@ -89,7 +101,12 @@ List<ScheduledSession> buildProgrammeSchedule({
       }
       if (pool.isEmpty) continue;
 
-      final exercise = pool[(week + slot) % pool.length];
+      final picked = _fillDay(
+        pool,
+        startAt: (week + slot) % pool.length,
+        targetMinutes: sessionMinutes ?? kDefaultSessionMinutes,
+      );
+      final exercise = picked.first;
       final date = programme.startedAt
           .add(Duration(days: week * 7 + dayOffsets[slot]));
 
@@ -97,14 +114,56 @@ List<ScheduledSession> buildProgrammeSchedule({
         id: '${nowMicros}_${seq}_${exercise.id}',
         exerciseId: exercise.id,
         exerciseTitle: exercise.title,
+        extraExercises: [
+          for (final e in picked.skip(1))
+            WorkoutSessionExercise(exerciseId: e.id, exerciseTitle: e.title),
+        ],
         scheduledFor: date,
-        durationMinutes: exercise.durationMinutes,
+        // The whole day, not the first exercise. Everything that shows a
+        // duration — Home's tile, the week strip, the notification — was
+        // already reading this field and would otherwise announce ten minutes
+        // for a forty-minute workout.
+        durationMinutes:
+            picked.fold<int>(0, (sum, e) => sum + e.durationMinutes),
         programmeId: programme.id,
       ));
       seq++;
     }
   }
   return rows;
+}
+
+/// The exercises of one day: consecutive entries of [pool] from [startAt],
+/// wrapping, until adding another would overshoot [targetMinutes].
+///
+/// Sums each exercise's own `durationMinutes` rather than dividing the target
+/// by a constant. Measured on the shipped catalogue, every one of the 1,887
+/// rows says ten minutes, so today the two are the same arithmetic — but the
+/// day the catalogue carries real durations, dividing would quietly keep
+/// pretending they were all equal, and this does not.
+///
+/// Always returns at least one exercise, even when that one alone runs past
+/// the target: a day with no exercises is not a shorter workout, it is a
+/// missing one.
+///
+/// Never repeats within a day, and therefore never returns more than
+/// `pool.length` — running the pool dry is a real limit of what the catalogue
+/// offers for that muscle, not something to paper over by scheduling the same
+/// movement twice in one session.
+List<ExerciseItem> _fillDay(
+  List<ExerciseItem> pool, {
+  required int startAt,
+  required int targetMinutes,
+}) {
+  final picked = <ExerciseItem>[pool[startAt]];
+  var minutes = pool[startAt].durationMinutes;
+  for (var step = 1; step < pool.length; step++) {
+    final next = pool[(startAt + step) % pool.length];
+    if (minutes + next.durationMinutes > targetMinutes) break;
+    picked.add(next);
+    minutes += next.durationMinutes;
+  }
+  return picked;
 }
 
 /// Evenly spaced day-of-week offsets (0 = start day) for [count] sessions in

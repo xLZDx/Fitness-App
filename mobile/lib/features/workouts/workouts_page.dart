@@ -960,7 +960,18 @@ class _CurrentProgrammeCard extends ConsumerWidget {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  '${resolveExerciseTitle(ref.watch(exerciseTitlesProvider), next.exerciseId, next.exerciseTitle)} →',
+                  // Same "+N" as Home's tile, and for the same reason — see
+                  // `home_page.dart`.
+                  //
+                  // The label says how big the day is; the tap still opens
+                  // only its first exercise, and the player's add-exercise
+                  // button is how the rest get done. Seeding the player with a
+                  // whole planned day means changing what its "entry exercise"
+                  // is (`workout_player_page.dart:299-310`, `replaceEntryExercise`)
+                  // and that is its own gate. Written down here rather than
+                  // left to be discovered: an earlier revision of this comment
+                  // claimed the opposite of what the line below does.
+                  '${resolveExerciseTitle(ref.watch(exerciseTitlesProvider), next.exerciseId, next.exerciseTitle)}${next.exerciseCount > 1 ? '  +${next.exerciseCount - 1}' : ''} →',
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: AppSemanticColors.onGradientInk,
                     fontWeight: FontWeight.w800,

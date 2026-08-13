@@ -12,6 +12,7 @@ import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/workouts/data/mock_scheduled_session_repository.dart';
 import 'package:fitness_app/features/workouts/data/scheduled_session.dart';
+import 'package:fitness_app/features/workouts/data/workout_session.dart';
 import 'package:fitness_app/features/workouts/state/scheduled_session_providers.dart';
 import 'package:fitness_app/features/workouts/state/session_screening_providers.dart';
 
@@ -147,6 +148,63 @@ void main() {
     await c.read(scheduledSessionsProvider.future);
     return c.read(screenedUpcomingSessionsProvider.future);
   }
+
+  group('a day of several exercises is screened whole (B5b)', () {
+    /// The row is safe, the squat is not. Before B5b only `exerciseId` was
+    /// resolved, so a day whose FIRST exercise was harmless passed screening
+    /// with a contraindicated squat sitting second — unmarked on Home, and
+    /// with its reminder still armed.
+    ScheduledSession dayWithSquatSecond(DateTime when) => ScheduledSession(
+          id: 's1',
+          exerciseId: 'row',
+          exerciseTitle: 'Seated row',
+          extraExercises: const [
+            WorkoutSessionExercise(
+                exerciseId: 'squat', exerciseTitle: 'Back squat'),
+          ],
+          scheduledFor: when,
+          durationMinutes: 20,
+        );
+
+    test('an injury on the SECOND exercise flags the day', () async {
+      await sessions.save('u1', dayWithSquatSecond(soon));
+      final screened = await screenedFrom(container());
+      expect(screened, hasLength(1));
+      expect(screened.single.hiddenExerciseIds, {'squat'});
+      expect(screened.single.hiddenForInjury, isTrue);
+    });
+
+    test('the safe exercises of that day are not marked', () async {
+      await sessions.save('u1', dayWithSquatSecond(soon));
+      final screened = await screenedFrom(container());
+      expect(screened.single.hiddenExerciseIds, isNot(contains('row')));
+      expect(screened.single.hiddenEntirely, isFalse,
+          reason: 'one bad exercise must not strike out the whole day');
+    });
+
+    test('a day with no injured exercise is not flagged', () async {
+      await sessions.save('u1', dayWithSquatSecond(soon));
+      final screened = await screenedFrom(container(profile: null));
+      expect(screened.single.hiddenExerciseIds, isEmpty);
+      expect(screened.single.hiddenForInjury, isFalse);
+    });
+
+    test('the reminder is cancelled when the second exercise conflicts',
+        () async {
+      await sessions.save('u1', dayWithSquatSecond(soon));
+      final c = container();
+      // Same reason `screenedFrom` listens before awaiting: without a listener
+      // the stream provider is disposed still in its loading state and the
+      // future never completes, so the test times out on its own setup rather
+      // than on anything the reconciler does.
+      final sub = c.listen(scheduledSessionsProvider, (_, __) {});
+      addTearDown(sub.close);
+      await c.read(scheduledSessionsProvider.future);
+      final cancelled = await c.read(sessionReminderReconcilerProvider).reconcile();
+      expect(cancelled, 1);
+      expect(notifications.cancelled, ['s1']);
+    });
+  });
 
   group('upcoming sessions', () {
     test('a session that is now contraindicated is flagged', () async {

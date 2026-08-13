@@ -920,8 +920,17 @@ class _UpcomingCard extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                    resolveExerciseTitle(ref.watch(exerciseTitlesProvider),
-                        session.exerciseId, session.exerciseTitle),
+                    // B5b: a day can hold several exercises. The count goes on
+                    // the title as a bare "+3" rather than a phrase, because
+                    // "3 exercises" needs a Russian plural form for 1, 3 and 5
+                    // and this tile has room for neither the string nor the
+                    // mistake.
+                    session.exerciseCount > 1
+                        ? '${resolveExerciseTitle(ref.watch(exerciseTitlesProvider), session.exerciseId, session.exerciseTitle)}  +${session.exerciseCount - 1}'
+                        : resolveExerciseTitle(
+                            ref.watch(exerciseTitlesProvider),
+                            session.exerciseId,
+                            session.exerciseTitle),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleSmall

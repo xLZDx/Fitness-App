@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/workouts/data/scheduled_session.dart';
 import 'package:fitness_app/features/workouts/data/session_digest.dart';
+import 'package:fitness_app/features/workouts/data/workout_session.dart';
 
 /// R4 — the arithmetic Home was missing.
 ///
@@ -38,6 +39,43 @@ void main() {
     'curl': _e('curl', ['biceps'], ['biceps']),
     'squat': _e('squat', ['quadriceps'], ['quadriceps', 'glutes']),
   };
+
+  test('a single row holding several exercises counts all of them (B5b)', () {
+    // Until B5b "several exercises in a day" meant several ROWS, and counting
+    // rows was the same number. `buildProgrammeSchedule` now writes ONE row per
+    // day with the rest folded into it, so counting rows would put "1 exercise
+    // · 45 min" over a workout of three.
+    final day = ScheduledSession(
+      id: 'sched_day',
+      exerciseId: 'row',
+      exerciseTitle: 'row',
+      extraExercises: const [
+        WorkoutSessionExercise(exerciseId: 'curl', exerciseTitle: 'curl'),
+        WorkoutSessionExercise(exerciseId: 'squat', exerciseTitle: 'squat'),
+      ],
+      scheduledFor: morning,
+      durationMinutes: 45,
+    );
+    final d = digestForDay([day], catalogue);
+    expect(d.exerciseCount, 3);
+    expect(d.totalMinutes, 45);
+  });
+
+  test('the muscles of a day describe all its exercises, not just the first',
+      () {
+    final day = ScheduledSession(
+      id: 'sched_day',
+      exerciseId: 'row',
+      exerciseTitle: 'row',
+      extraExercises: const [
+        WorkoutSessionExercise(exerciseId: 'squat', exerciseTitle: 'squat'),
+      ],
+      scheduledFor: morning,
+      durationMinutes: 20,
+    );
+    final d = digestForDay([day], catalogue);
+    expect(d.muscles, containsAll(['back', 'quadriceps']));
+  });
 
   test('an empty day is empty rather than a zeroed sentence', () {
     final d = digestForDay(const [], catalogue);

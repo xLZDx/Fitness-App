@@ -129,6 +129,7 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
       final rows = buildProgrammeSchedule(
         programme: programme,
         catalogue: catalogue,
+        sessionMinutes: profile?.schedule.sessionMinutes,
       );
 
       await repo.save(user.uid, programme);

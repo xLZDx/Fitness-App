@@ -94,8 +94,15 @@ class ScheduleSessionAction extends Notifier<AsyncValue<void>> {
             session,
             leadTime: leadTime,
             title: l.notificationsWorkoutInMinutes(leadTime.inMinutes),
-            body: l.notificationsMin(
-                session.exerciseTitle, session.durationMinutes),
+            // The duration is the whole day since B5b, so naming one exercise
+            // beside it would read as "Push-ups · 40 min" for a day that is
+            // push-ups plus three other things. Says how many when there are
+            // more than one.
+            body: session.exerciseCount > 1
+                ? l.notificationsMinMulti(session.exerciseTitle,
+                    session.exerciseCount - 1, session.durationMinutes)
+                : l.notificationsMin(
+                    session.exerciseTitle, session.durationMinutes),
           );
         } catch (e) {
           // The user-visible save succeeded, so this must not fail the action.
