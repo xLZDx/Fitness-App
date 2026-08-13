@@ -2189,8 +2189,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand on the middle of the band with feet hip width apart and hold one end in each hand, palms forward",
+    "steps": [
+      "Stand on the middle of the band with feet hip width apart and hold one end in each hand, palms forward",
+      "Keep your elbows pinned against your ribs and your shoulders down",
+      "Curl one hand up toward the shoulder, letting the band stretch, and keep the other arm straight",
+      "Lower that hand under control all the way down before the other arm starts",
+      "Alternate arms for the whole set, never letting the elbows drift forward"
+    ],
     "video": {
       "girl": "exercises/girl/Biceps/Alternate Biceps Curl Resistance Band.mp4",
       "men": "exercises/men/Biceps/alternate biceps curl resistance band.mp4"
@@ -2205,7 +2211,8 @@
     "contraindications": [
       "elbow"
     ],
-    "poseTargetId": "curl"
+    "poseTargetId": "curl",
+    "purpose": "Works one arm at a time so the stronger side cannot quietly take over, which is what happens on every two-handed curl. A band keeps tension on the biceps at the top of the movement, where a dumbbell goes light and the muscle gets a rest it did not earn."
   },
   {
     "id": "ea_alternate_biceps_curl_standing_dumbbells",
@@ -2217,8 +2224,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand tall with a dumbbell in each hand, arms straight down, palms facing forward",
+    "steps": [
+      "Stand tall with a dumbbell in each hand, arms straight down, palms facing forward",
+      "Brace your stomach and keep your elbows touching your sides",
+      "Curl the right dumbbell up to shoulder height, keeping the wrist straight",
+      "Lower it slowly to the bottom, then curl the left one the same way",
+      "Keep your back still — if your shoulders rock, the weight is too heavy"
+    ],
     "video": {
       "girl": "exercises/girl/Biceps/Alternate Biceps Curl Standing Dumbbells.mp4",
       "men": "exercises/men/Biceps/Alternate biceps curl standing dumbbells.mp4"
@@ -2233,7 +2246,8 @@
     "contraindications": [
       "elbow"
     ],
-    "poseTargetId": "curl"
+    "poseTargetId": "curl",
+    "purpose": "The plainest way to build the biceps and the one every other curl is measured against. Alternating halves the load on your torso at any moment, so you can stand upright and let the arm do the work instead of swinging the weight up with your back."
   },
   {
     "id": "ea_alternate_front_kick_in_place",
@@ -7584,8 +7598,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Anchor the band to something solid behind your head and lie on your back",
+    "steps": [
+      "Anchor the band to something solid behind your head and lie on your back",
+      "Hold an end in each hand and bring your elbows up so the upper arms point at the ceiling",
+      "Keep the upper arms still — only the forearms will move",
+      "Straighten your elbows so your hands travel toward your hips and the band stretches",
+      "Bend the elbows slowly to bring your hands back beside your ears"
+    ],
     "video": {
       "girl": "exercises/girl/Triceps/Band Lying Press Down.mp4"
     },
@@ -7597,7 +7617,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Lying down pins your shoulder blades to the floor, so the shoulders cannot join in and the triceps has to straighten the arm on its own. The band pulls hardest at full extension, which is exactly where the triceps is strongest."
   },
   {
     "id": "ea_band_lying_reverse_grip_row",
@@ -7645,8 +7666,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Anchor the band at chest height and stand side-on to it, feet shoulder width apart",
+    "steps": [
+      "Anchor the band at chest height and stand side-on to it, feet shoulder width apart",
+      "Hold the end in both hands and pull it in to the middle of your chest",
+      "Step away until the band is already pulling you toward the anchor",
+      "Press your hands straight out in front of you and hold — do not let your body rotate",
+      "Bring your hands back to your chest under control, then repeat and turn to face the other way"
+    ],
     "video": {
       "men": "exercises/men/Chest/Band Pallof Press.mp4"
     },
@@ -7658,7 +7685,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Filed under chest, but it is not a chest exercise — the band tries to twist you and your job is to refuse. That is what the deep stomach muscles do all day, and training it standing carries over to carrying a bag, swinging a club and staying upright under a heavy bar."
   },
   {
     "id": "ea_band_palloff_press",
@@ -8310,8 +8338,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Anchor the band low behind you and lie on a bench or the floor with your head toward the anchor",
+    "steps": [
+      "Anchor the band low behind you and lie on a bench or the floor with your head toward the anchor",
+      "Hold both ends and press your arms straight up so the hands are over your shoulders",
+      "Keep the upper arms vertical and locked in place",
+      "Bend only the elbows to lower your hands toward your forehead",
+      "Straighten the arms back to the start, stopping just short of locking the elbows"
+    ],
     "video": {
       "men": "exercises/men/Triceps/Band Skullcrusher.mp4"
     },
@@ -8320,7 +8354,8 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_band_skullcrusher.jpg"
-    }
+    },
+    "purpose": "Loads the triceps with the arms overhead, which stretches the long head — the part that runs to the shoulder blade and is missed by every pushdown. A band does this without the elbow pressure a bar puts on the joint in the same position."
   },
   {
     "id": "ea_band_spanish_split_squat",
@@ -8484,8 +8519,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Anchor the band above head height and stand facing it, one step back",
+    "steps": [
+      "Anchor the band above head height and stand facing it, one step back",
+      "Take the end in one hand with the elbow bent and tucked against your ribs",
+      "Put the other hand on that elbow so you can feel it stay in place",
+      "Push the hand down until the arm is straight, keeping the elbow pinned",
+      "Let the band pull the hand back up slowly, then repeat and change arms"
+    ],
     "video": {
       "girl": "exercises/girl/Triceps/Band Triceps Pushdown Single Arm.mp4",
       "men": "exercises/men/Triceps/Band Triceps Pushdown Single Arm.mp4"
@@ -8499,7 +8540,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "purpose": "One arm at a time, so a stronger triceps cannot cover for a weaker one — which matters because a lagging triceps is usually what stalls a bench press. A band makes this possible anywhere, without a cable stack."
   },
   {
     "id": "ea_band_two_legs_calf_raise_band_under_both_legs_version_2",
@@ -9924,8 +9966,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand with the bar over your mid-foot, feet about hip width apart",
+    "steps": [
+      "Stand with the bar over your mid-foot, feet about hip width apart",
+      "Grip the bar just outside your knees and set your hips higher than in a normal deadlift",
+      "Pull the slack out of the bar and lock your upper back tight before anything moves",
+      "Push the floor away and drag the bar up your shins, keeping it touching your legs",
+      "Stand fully upright, then lower along the same path without rounding your back"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Barbell Coan Deadlift.mp4",
       "men": "exercises/men/Back/Barbell Coan Deadlift.mp4"
@@ -9941,7 +9989,8 @@
       "hip",
       "lower_back"
     ],
-    "poseTargetId": "hinge"
+    "poseTargetId": "hinge",
+    "purpose": "A deadlift done with the hips set higher and the bar dragged close, which shifts the work onto the upper back and hamstrings. It is a strength-sport variation — take it up only once a normal deadlift is comfortable and repeatable."
   },
   {
     "id": "ea_barbell_curl",
@@ -11416,8 +11465,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Lie on a bench and lift your feet, knees bent above your hips, shins roughly parallel to the floor",
+    "steps": [
+      "Lie on a bench and lift your feet, knees bent above your hips, shins roughly parallel to the floor",
+      "Press your lower back flat into the bench and keep it there",
+      "Unrack the bar and hold it over your chest with arms straight",
+      "Lower the bar to your mid-chest with the elbows at about forty-five degrees",
+      "Press it back up without letting your back arch or your feet drop"
+    ],
     "video": {
       "girl": "exercises/girl/Chest/Barbell Hooklying Bench Press.mp4"
     },
@@ -11429,7 +11484,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Pressing with your feet up and knees bent takes the arch out of your lower back, so nothing but the chest, shoulders and arms can move the bar. Useful when your back is sore and a normal bench press means bracing through it."
   },
   {
     "id": "ea_barbell_hooklying_bench_press_close_elbows",
@@ -11441,8 +11497,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Lie on the bench with your feet up and knees bent above your hips",
+    "steps": [
+      "Lie on the bench with your feet up and knees bent above your hips",
+      "Flatten your lower back into the bench and hold it there",
+      "Unrack the bar with your hands about shoulder width apart",
+      "Lower it toward the lower part of your chest, keeping your elbows brushing your sides",
+      "Press back up in a straight line, elbows staying tucked the whole way"
+    ],
     "video": {
       "men": "exercises/men/Chest/Barbell Hooklying Bench Press Close Elbows.mp4"
     },
@@ -11454,7 +11516,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "The same back-protecting position, with the elbows kept in against the ribs so the triceps takes the larger share and the front of the shoulder is spared. This is the version to use if a wide press makes the shoulder ache."
   },
   {
     "id": "ea_barbell_incline_shoulders_press",
@@ -11869,8 +11932,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Load one end of a barbell in the landmine and stand facing away from the anchor",
+    "steps": [
+      "Load one end of a barbell in the landmine and stand facing away from the anchor",
+      "Bring the loaded end up to the front of one shoulder and cup it with that hand",
+      "Stand in a short split stance and squeeze your stomach and glutes",
+      "Press the bar up and forward until the arm is straight, following its arc",
+      "Return it to your shoulder under control, then finish the set and switch sides"
+    ],
     "video": {
       "girl": "exercises/girl/Chest/Barbell landmine chest press.mp4",
       "men": "exercises/men/Chest/Barbell landmine chest press.mp4"
@@ -11884,7 +11953,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Presses on an upward arc rather than straight out, which keeps the shoulder in a position it likes and lets you press hard without a bench or a spotter. Often the first pressing movement people can return to after a shoulder problem."
   },
   {
     "id": "ea_barbell_landmine_side_bend",
@@ -11959,8 +12029,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Lie on a bench and place your feet flat on the floor well in front of your knees",
+    "steps": [
+      "Lie on a bench and place your feet flat on the floor well in front of your knees",
+      "Keep your hips and shoulders on the bench with a normal, not exaggerated, arch",
+      "Unrack the bar and hold it above your chest",
+      "Lower it to your chest under control without pushing through your feet",
+      "Press it back up using only your upper body — the legs stay passive throughout"
+    ],
     "video": {
       "girl": "exercises/girl/Chest/Barbell Larsen Bench Press.mp4",
       "men": "exercises/men/Chest/Barbell Larsen Bench Press.mp4"
@@ -11974,7 +12050,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Feet flat but out in front, so you cannot drive with your legs at all. Whatever weight you press here is what your upper body can genuinely do — which is why lifters use it to find out how much of their bench was leg drive."
   },
   {
     "id": "ea_barbell_lateral_lunges",
@@ -13579,8 +13656,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set the bar in a rack at hip height and take it with an overhand grip, standing tall",
+    "steps": [
+      "Set the bar in a rack at hip height and take it with an overhand grip, standing tall",
+      "Push your hips back and let the bar slide down the front of your thighs",
+      "Keep your back flat and your shins upright as the bar passes your knees",
+      "Lower until you feel a strong stretch behind the thighs, then touch the floor if you can reach it",
+      "Drive your hips forward to stand back up, finishing tall without leaning back"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Barbell Reverse Deadlift.mp4",
       "men": "exercises/men/Back/Barbell Reverse Deadlift.mp4"
@@ -13596,7 +13679,8 @@
       "hip",
       "lower_back"
     ],
-    "poseTargetId": "hinge"
+    "poseTargetId": "hinge",
+    "purpose": "Starting from the top and lowering first teaches the hip hinge without the hardest part — breaking the bar off the floor. Good for learning the movement and for loading the lowering phase, where most of the muscle is built."
   },
   {
     "id": "ea_barbell_reverse_grip_bench_press",
@@ -14904,8 +14988,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set up on the bench as you would for a normal press and unrack the bar",
+    "steps": [
+      "Set up on the bench as you would for a normal press and unrack the bar",
+      "Lower it under control until it is roughly two or three centimetres above your chest",
+      "Stop there and hold for a full second — the bar must not touch you",
+      "Press it back up without any bounce or momentum",
+      "Reset at the top and repeat, keeping the pause the same length every rep"
+    ],
     "video": {
       "girl": "exercises/girl/Chest/Barbell Spoto Press.mp4",
       "men": "exercises/men/Chest/Barbell Spoto Press.mp4"
@@ -14919,7 +15009,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Stopping the bar an inch above the chest removes the bounce, so you have to start the press from a dead stop in the weakest position. It is the standard fix for a bench press that stalls just off the chest."
   },
   {
     "id": "ea_barbell_squat_back_pov",
@@ -16183,8 +16274,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set the bar in a rack at stomach height and hook it into the crooks of both elbows",
+    "steps": [
+      "Set the bar in a rack at stomach height and hook it into the crooks of both elbows",
+      "Stand up with the bar held tight against your body, feet shoulder width apart",
+      "Take a deep breath and lock your upper back and stomach",
+      "Push your hips back and lower your chest toward the floor with the back flat",
+      "Stop when your torso is near parallel, then drive the hips forward to stand"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Barbell Zercher Good Morning.mp4"
     },
@@ -16198,7 +16295,8 @@
       "hip",
       "lower_back"
     ],
-    "poseTargetId": "hinge"
+    "poseTargetId": "hinge",
+    "purpose": "Holding the bar in the crooks of your elbows puts the load in front of you, so the whole back has to work far harder to keep you from folding. Brutal for the upper back and the brace, and it teaches an honest hinge fast."
   },
   {
     "id": "ea_basic_toe_touch",
@@ -21222,8 +21320,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set two low handles and stand facing the machine holding one in each hand",
+    "steps": [
+      "Set two low handles and stand facing the machine holding one in each hand",
+      "Step back and lean your torso forward about thirty degrees, back flat",
+      "Let the cables pull your shoulders forward and down at the start",
+      "Shrug your shoulder blades back and down along the line of your torso, arms straight",
+      "Hold the squeeze briefly, then let the blades travel forward again under control"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Cable 30 Degree Shrug.mp4",
       "men": "exercises/men/Shoulders/Cable 30 Degree Shrug.mp4"
@@ -21238,7 +21342,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "purpose": "A shrug angled forward instead of straight up, which puts the work into the part of the trapezius that runs down between the shoulder blades rather than the part that already gets used all day. That lower section is what holds the shoulder blades in place."
   },
   {
     "id": "ea_cable_alternate_triceps_extension",
@@ -21681,8 +21786,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set a single handle at chest height and stand side-on, a step away from the machine",
+    "steps": [
+      "Set a single handle at chest height and stand side-on, a step away from the machine",
+      "Hold the handle with both hands pressed against the middle of your chest",
+      "Set your feet shoulder width apart and brace your stomach hard",
+      "Press your arms straight out and hold for two or three seconds without twisting",
+      "Draw the handle back to your chest and repeat, then face the other way"
+    ],
     "video": {
       "girl": "exercises/girl/Chest/Cable Core Palloff Press.mp4",
       "men": "exercises/men/Chest/Cable Core Palloff Press.mp4"
@@ -21696,7 +21807,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "An anti-rotation hold, not a chest press, despite where it sits in the list. The cable pulls you sideways and the stomach muscles stop it — the same job they do when you carry something heavy in one hand."
   },
   {
     "id": "ea_cable_cross_pushdown",
@@ -21708,8 +21820,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set both pulleys at head height and take the left handle in your right hand and the right in your left",
+    "steps": [
+      "Set both pulleys at head height and take the left handle in your right hand and the right in your left",
+      "Stand in the middle so the cables cross in front of your chest, elbows bent and at your sides",
+      "Brace your stomach and lean forward very slightly from the hips",
+      "Push both hands down and slightly outward until the arms are straight",
+      "Return slowly to the bent position without letting the elbows drift forward"
+    ],
     "video": {
       "girl": "exercises/girl/Triceps/Cable Cross Pushdown.mp4",
       "men": "exercises/men/Triceps/Cable Cross Pushdown.mp4"
@@ -21723,7 +21841,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "purpose": "Crossing the cables in front of you pulls each arm outward as well as up, so the triceps has to hold the arm in line as it straightens. That extra job hits the outer head, the one that gives the arm its shape just above the elbow."
   },
   {
     "id": "ea_cable_face_pull_with_rope",
@@ -21735,8 +21854,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Attach a rope to a pulley set at about head height and step back until the cable is tight",
+    "steps": [
+      "Attach a rope to a pulley set at about head height and step back until the cable is tight",
+      "Hold one end in each hand with your thumbs pointing back",
+      "Pull the rope toward your face, splitting your hands apart as it comes",
+      "Finish with your hands beside your ears and your elbows level with your shoulders",
+      "Return slowly, letting the shoulder blades reach forward at the end"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Cable Face Pull With Rope.mp4",
       "men": "exercises/men/Shoulders/Cable Face Pull With Rope.mp4"
@@ -21750,7 +21875,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "One of the few exercises that trains the small muscles at the back of the shoulder, which get outnumbered by everything that presses. Doing these regularly is what keeps a heavy bench-press habit from slowly closing your shoulders forward."
   },
   {
     "id": "ea_cable_front_raises_straight_bar",
@@ -21928,8 +22054,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set a rope on the high pulley and kneel a step back from the machine",
+    "steps": [
+      "Set a rope on the high pulley and kneel a step back from the machine",
+      "Take both ends overhead with the arms almost straight and a small bend in the elbows",
+      "Sit your hips back slightly and lengthen through the spine",
+      "Pull the rope down in a wide arc toward your thighs without bending the elbows further",
+      "Let the arms rise slowly back overhead until you feel the lats stretch"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Cable Lat Prayer.mp4",
       "men": "exercises/men/Back/Cable Lat Prayer.mp4"
@@ -21940,7 +22072,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_cable_lat_prayer.jpg",
       "men": "assets/posters/men/ea_cable_lat_prayer.jpg"
-    }
+    },
+    "purpose": "Isolates the lats with the arms nearly straight, so the biceps cannot take over the way they do on every row and pulldown. This is the exercise for people who pull a lot and still never feel their back working."
   },
   {
     "id": "ea_cable_lateral_raises",
@@ -22798,8 +22931,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set a handle at chest height and kneel facing the machine, one step back",
+    "steps": [
+      "Set a handle at chest height and kneel facing the machine, one step back",
+      "Take the handle in both hands with the arms straight in front of you",
+      "Squeeze your glutes and stomach so your body stays upright and still",
+      "Pull the handle to your ribs, leading with the elbows and drawing the shoulder blades together",
+      "Let the cable straighten your arms slowly, feeling the back stretch at the end"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Cable Pull In Kneeling.mp4",
       "men": "exercises/men/Back/Cable Pull In Kneeling.mp4"
@@ -22813,7 +22952,8 @@
     },
     "contraindications": [
       "knee"
-    ]
+    ],
+    "purpose": "Kneeling removes the legs, so you cannot lean away and turn a row into a whole-body pull. What is left is the back, working against a cable that keeps its tension all the way to the stretch."
   },
   {
     "id": "ea_cable_pull_through",
@@ -23634,8 +23774,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set two handles at about hip height and stand facing the machine holding one in each hand",
+    "steps": [
+      "Set two handles at about hip height and stand facing the machine holding one in each hand",
+      "Step back and lean forward from the hips with your back flat and arms hanging",
+      "Let the cables pull your shoulder blades apart at the start of each rep",
+      "Squeeze the shoulder blades together and slightly down, keeping the arms straight",
+      "Hold the squeeze for a second, then let the blades open again under control"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Cable Silverback Shrug.mp4",
       "men": "exercises/men/Back/Cable Silverback Shrug.mp4"
@@ -23649,7 +23795,8 @@
     },
     "contraindications": [
       "lower_back"
-    ]
+    ],
+    "purpose": "A shrug done leaning forward against a cable, which points the work at the middle traps between the shoulder blades rather than the tops of the shoulders. That middle section is what holds your posture up all day."
   },
   {
     "id": "ea_cable_single_arm_reverse_fly",
@@ -23661,8 +23808,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set a handle at chest height and stand side-on, taking it with the far hand across your body",
+    "steps": [
+      "Set a handle at chest height and stand side-on, taking it with the far hand across your body",
+      "Step out until the cable is tight, arm straight in front of your chest",
+      "Keep a small fixed bend in the elbow and brace your stomach",
+      "Sweep the arm out and back in a wide arc until it is in line with your shoulder",
+      "Return slowly across the body without turning your torso, then swap sides"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Cable Single Arm Reverse Fly.mp4"
     },
@@ -23674,7 +23827,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Works the rear shoulder one side at a time against constant cable tension, so it keeps pulling at the end of the range where a dumbbell version has nothing left. That end position is where the rear shoulder actually needs the work."
   },
   {
     "id": "ea_cable_single_leg_deadlift",
@@ -24293,8 +24447,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set a single handle on the lowest pulley and stand facing the machine, one step back",
+    "steps": [
+      "Set a single handle on the lowest pulley and stand facing the machine, one step back",
+      "Take the handle with your palm facing your thigh and let your arm hang straight",
+      "Curl upward and rotate your palm to face the ceiling as the elbow bends",
+      "Finish with the hand at shoulder height and the palm fully turned up, elbow still at your side",
+      "Reverse both movements slowly — unbend and untwist together — then repeat"
+    ],
     "video": {
       "girl": "exercises/girl/Biceps/Cable Twisting Biceps Curl.mp4",
       "men": "exercises/men/Biceps/Cable Twisting Biceps Curl.mp4"
@@ -24308,7 +24468,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "purpose": "Turning the palm outward as you curl is what the biceps actually does — it bends the elbow and rotates the forearm, and most curls only ask for half of that. The cable holds tension through the whole path, including the turn, which a free weight cannot do."
   },
   {
     "id": "ea_cable_twisting_overhead_press",
@@ -30964,8 +31125,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Sit or stand holding two dumbbells at chest height, palms facing you",
+    "steps": [
+      "Sit or stand holding two dumbbells at chest height, palms facing you",
+      "Press one dumbbell up while rotating the palm to face forward",
+      "Finish overhead with the arm straight and the palm forward",
+      "Reverse the path exactly — rotate back as you lower to the chest",
+      "Repeat with the other arm, alternating for the whole set"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Dumbbell Alternating Arnold Press.mp4",
       "men": "exercises/men/Shoulders/Dumbbell Alternating Arnold Press.mp4"
@@ -30979,7 +31146,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "The rotation on the way up takes the shoulder through its full range, so the front and side of the muscle both get worked in one press. Alternating arms means the shoulder that is not pressing gets a moment to recover, which lets you keep the form clean for longer."
   },
   {
     "id": "ea_dumbbell_alternating_pendlay_row",
@@ -30991,8 +31159,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand with feet hip width and hinge forward until your torso is nearly parallel to the floor",
+    "steps": [
+      "Stand with feet hip width and hinge forward until your torso is nearly parallel to the floor",
+      "Set two dumbbells on the floor directly under your shoulders and take one in each hand",
+      "Keep your back flat and your neck in line with your spine",
+      "Row one dumbbell to your ribs, then lower it fully to the floor and let it rest",
+      "Row the other side the same way, alternating and resetting on the floor every rep"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Dumbbell Alternating Pendlay Row.mp4",
       "men": "exercises/men/Back/Dumbbell Alternating Pendlay Row.mp4"
@@ -31006,7 +31180,8 @@
     },
     "contraindications": [
       "lower_back"
-    ]
+    ],
+    "purpose": "Each rep starts from the floor with no momentum carried over, so the back has to produce the whole pull from a standstill. Alternating arms lets you hold the bent-over position longer without your lower back giving out first."
   },
   {
     "id": "ea_dumbbell_armpit_row",
@@ -31886,8 +32061,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set a bench to a low incline and lie face down with your chest on the pad",
+    "steps": [
+      "Set a bench to a low incline and lie face down with your chest on the pad",
+      "Hold a light dumbbell in each hand, arms hanging straight down, thumbs up",
+      "Keep your neck long and your chin gently tucked",
+      "Raise both arms up and out to form a Y with your body, thumbs leading",
+      "Stop at shoulder height or a little above, then lower slowly"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Dumbbell Chest Supported Y Raise.mp4",
       "men": "exercises/men/Shoulders/Dumbbell Chest Supported Y Raise.mp4"
@@ -31901,7 +32082,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Lying face down takes the lower back out of it entirely, so the small muscles between and below the shoulder blades have to lift the weight themselves. Raising the arms in a Y is the shape that reaches the lower trapezius, which almost nothing else does."
   },
   {
     "id": "ea_dumbbell_close_grip_shoulder_press_sit_up",
@@ -32418,8 +32600,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set a bench to a slight decline and hook your feet under the pads",
+    "steps": [
+      "Set a bench to a slight decline and hook your feet under the pads",
+      "Lie back with a dumbbell in each hand, palms facing each other and the weights touching",
+      "Press them up over your lower chest until the arms are straight",
+      "Lower them together toward the lower chest, keeping the elbows close to your ribs",
+      "Stop when you feel a stretch across the chest, then press back up"
+    ],
     "video": {
       "girl": "exercises/girl/Chest/Dumbbell Decline Close Neutral Grip Press.mp4",
       "men": "exercises/men/Chest/Dumbbell Decline Close Neutral Grip Press.mp4"
@@ -32433,7 +32621,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "The decline angle points the work at the lower chest, and the close neutral grip is the kindest position there is for the front of the shoulder. A good press for anyone whose shoulders complain about the flat barbell version."
   },
   {
     "id": "ea_dumbbell_decline_fly",
@@ -33818,8 +34007,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hold one dumbbell vertically against your chest with both hands, feet shoulder width apart",
+    "steps": [
+      "Hold one dumbbell vertically against your chest with both hands, feet shoulder width apart",
+      "Soften your knees slightly and keep them there",
+      "Push your hips straight back as if closing a door behind you",
+      "Lower your chest until you feel a stretch behind your thighs, back flat throughout",
+      "Squeeze your glutes to drive the hips forward and stand tall"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Dumbbell Goblet Good Morning.mp4",
       "men": "exercises/men/Back/Dumbbell Goblet Good Morning.mp4"
@@ -33835,7 +34030,8 @@
       "hip",
       "lower_back"
     ],
-    "poseTargetId": "hinge"
+    "poseTargetId": "hinge",
+    "purpose": "The gentlest way to learn the hip hinge — the movement underneath every deadlift, swing and row. Holding a weight at the chest gives you something to counterbalance against, so the pattern is easier to feel than with a bar on the back."
   },
   {
     "id": "ea_dumbbell_goblet_reverse_lunge",
@@ -34380,8 +34576,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Lie on a flat bench and hold a dumbbell in each hand, palms facing each other",
+    "steps": [
+      "Lie on a flat bench and hold a dumbbell in each hand, palms facing each other",
+      "Push the two dumbbells together so they touch, and keep pushing throughout",
+      "Start with the weights on your chest, elbows tucked in",
+      "Press straight up while still squeezing them together",
+      "Lower slowly back to the chest without letting them come apart"
+    ],
     "video": {
       "girl": "exercises/girl/Chest/Dumbbell Hex Press.mp4"
     },
@@ -34393,7 +34595,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Pressing the dumbbells hard against each other keeps the chest squeezing for the whole set, including at the top where a normal press goes slack. It is the easiest way to feel the inner chest working without a cable machine."
   },
   {
     "id": "ea_dumbbell_high_curl",
@@ -35571,8 +35774,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Take a staggered stance with one foot forward and rest the free hand on that thigh",
+    "steps": [
+      "Take a staggered stance with one foot forward and rest the free hand on that thigh",
+      "Hold a dumbbell in the other hand and let it hang toward the inside of the front foot",
+      "Hinge forward with a flat back so the weight starts low and across your body",
+      "Pull the dumbbell up and back toward your ribs, letting the torso open slightly",
+      "Reverse the path slowly to the low starting point, then finish the set and switch sides"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Dumbbell Knee Lawnmower Row.mp4",
       "men": "exercises/men/Back/Dumbbell Knee Lawnmower Row.mp4"
@@ -35583,7 +35792,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_knee_lawnmower_row.jpg",
       "men": "assets/posters/men/ea_dumbbell_knee_lawnmower_row.jpg"
-    }
+    },
+    "purpose": "Pulling on a diagonal from a low knee to the ribs works the back the way you actually use it — with some rotation, not in a straight line. It builds the connection between the lat and the opposite hip that carries into throwing and swinging."
   },
   {
     "id": "ea_dumbbell_kneeling_arnold_press",
@@ -35786,8 +35996,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set a bench to about thirty degrees and lie face down on it, chest supported",
+    "steps": [
+      "Set a bench to about thirty degrees and lie face down on it, chest supported",
+      "Hold a dumbbell in each hand with the arms hanging straight down",
+      "Let your shoulder blades slide forward and apart at the start",
+      "Draw the blades back and down toward your hips, arms staying straight",
+      "Hold the position for a second, then lower under control"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Dumbbell Laying 30 Degree Shrug.mp4",
       "men": "exercises/men/Shoulders/Dumbbell Laying 30 Degree Shrug.mp4"
@@ -35802,7 +36018,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "purpose": "Lying on an incline changes the direction of the load, so the shrug pulls the shoulder blades down and back instead of straight up. That is the direction that helps posture rather than the one that builds a thicker neck."
   },
   {
     "id": "ea_dumbbell_laying_silverback_shrug",
@@ -35814,8 +36031,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Lie face down on an incline bench with a dumbbell in each hand",
+    "steps": [
+      "Lie face down on an incline bench with a dumbbell in each hand",
+      "Let the arms hang straight down and allow the shoulder blades to spread apart",
+      "Keep the elbows locked straight for the whole movement",
+      "Squeeze the shoulder blades toward each other without bending the arms",
+      "Pause at the fully squeezed position, then release slowly"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Dumbbell Laying Silverback Shrug.mp4",
       "men": "exercises/men/Shoulders/Dumbbell Laying Silverback Shrug.mp4"
@@ -35830,7 +36053,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "purpose": "A face-down shrug that targets the middle of the trapezius — the section between the shoulder blades that holds them against the ribs. Weak there is why shoulders drift forward and why heavy pulling feels unstable."
   },
   {
     "id": "ea_dumbbell_leaning_fly",
@@ -36084,8 +36308,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Lie on your back on the floor with knees bent and feet flat, a dumbbell in each hand",
+    "steps": [
+      "Lie on your back on the floor with knees bent and feet flat, a dumbbell in each hand",
+      "Press the dumbbells up over your chest until your arms are straight",
+      "Lower them until the backs of your upper arms touch the floor",
+      "Pause there for a moment rather than bouncing off the floor",
+      "Press back up, keeping your lower back in contact with the ground"
+    ],
     "video": {
       "men": "exercises/men/Chest/Dumbbell Lying on Floor Chest Press.mp4"
     },
@@ -36097,7 +36327,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "The floor stops your elbows before the shoulder reaches the end of its range, so you get most of the pressing work with none of the position that irritates a sore shoulder. It also needs no bench at all."
   },
   {
     "id": "ea_dumbbell_lying_one_arm_neutral_triceps_extension",
@@ -37412,8 +37643,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hinge forward until your torso is roughly parallel to the floor, knees slightly bent",
+    "steps": [
+      "Hinge forward until your torso is roughly parallel to the floor, knees slightly bent",
+      "Place both dumbbells on the floor under your shoulders",
+      "Take a breath, brace, and keep your torso completely still for the whole rep",
+      "Pull both dumbbells explosively to your ribs, elbows driving back",
+      "Lower them all the way to the floor, let them settle, then pull again"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Dumbbell Pendlay Row.mp4",
       "men": "exercises/men/Back/Dumbbell Pendlay Row.mp4"
@@ -37427,7 +37664,8 @@
     },
     "contraindications": [
       "lower_back"
-    ]
+    ],
+    "purpose": "Resetting on the floor between every rep removes the bounce, so each pull is pure back strength from a dead stop. It carries over directly to the first inch of a deadlift, which is where most people are weakest."
   },
   {
     "id": "ea_dumbbell_plank_pullthrough",
@@ -37439,8 +37677,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set up in a high plank with a dumbbell on the floor just outside one hand",
+    "steps": [
+      "Set up in a high plank with a dumbbell on the floor just outside one hand",
+      "Widen your feet for balance and squeeze your glutes and stomach",
+      "Reach under your chest with the opposite hand and grip the dumbbell",
+      "Drag it across to the other side while keeping your hips completely level",
+      "Return that hand to the floor and repeat, alternating sides"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Dumbbell Plank Pullthrough.mp4",
       "men": "exercises/men/Shoulders/Dumbbell Plank Pullthrough.mp4"
@@ -37456,7 +37700,8 @@
       "elbow",
       "wrist"
     ],
-    "poseTargetId": "pushup"
+    "poseTargetId": "pushup",
+    "purpose": "Reaching under your body to drag a weight while holding a plank forces the shoulder that stays down to hold the whole load, and the stomach to stop the hips rotating. Two jobs at once, and neither can be faked."
   },
   {
     "id": "ea_dumbbell_preacher_curl",
@@ -39313,8 +39558,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Sit on the end of a bench with a dumbbell in each hand, arms hanging, palms forward",
+    "steps": [
+      "Sit on the end of a bench with a dumbbell in each hand, arms hanging, palms forward",
+      "Curl both dumbbells up to your shoulders with your elbows fixed at your sides",
+      "At the top, rotate your wrists so the palms now face the floor",
+      "Lower the dumbbells slowly in that position — this half should feel harder and take longer",
+      "At the bottom, rotate the palms forward again and start the next repetition"
+    ],
     "video": {
       "girl": "exercises/girl/Biceps/Dumbbell Seated Zottman Curl.mp4",
       "men": "exercises/men/Biceps/Dumbbell Seated Zottman Curl.mp4"
@@ -39328,7 +39579,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "purpose": "One exercise that trains both sides of the arm: you lift with the palm up, which loads the biceps, and lower with the palm down, which loads the forearm. Sitting removes the leg drive, so nothing but the arms moves the weight."
   },
   {
     "id": "ea_dumbbell_shoulder_extension",
@@ -39340,8 +39592,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand tall with a light dumbbell in each hand, arms by your sides, palms facing back",
+    "steps": [
+      "Stand tall with a light dumbbell in each hand, arms by your sides, palms facing back",
+      "Keep the ribs down and the chest open, without arching the lower back",
+      "Sweep both arms straight back behind you with the elbows locked",
+      "Go only as far as the shoulders allow without the chest collapsing forward",
+      "Return to your sides slowly, resisting the weight the whole way"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Dumbbell Shoulder Extension.mp4",
       "men": "exercises/men/Shoulders/Dumbbell Shoulder Extension.mp4"
@@ -39352,7 +39610,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_shoulder_extension.jpg",
       "men": "assets/posters/men/ea_dumbbell_shoulder_extension.jpg"
-    }
+    },
+    "purpose": "Taking the arms behind the body works the back of the shoulder and the lats through a range that almost nothing else uses. It directly opens the front of the shoulders, which is where the tightness from sitting collects."
   },
   {
     "id": "ea_dumbbell_shrugs",
@@ -39720,8 +39979,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand with feet hip width and a dumbbell in each hand",
+    "steps": [
+      "Stand with feet hip width and a dumbbell in each hand",
+      "Hinge forward from the hips with a flat back until your torso is at about forty-five degrees",
+      "Let the arms hang straight and the shoulder blades spread apart",
+      "Squeeze the blades together and slightly down without bending the elbows",
+      "Hold for a second, then let them spread again under control"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Dumbbell Silverback Shrug.mp4",
       "men": "exercises/men/Shoulders/Dumbbell Silverback Shrug.mp4"
@@ -39736,7 +40001,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "purpose": "A bent-over shrug with no bench, so your back has to hold the position while the middle trapezius does the work. Harder on the lower back than the supported version, and better for learning to hold a hinge."
   },
   {
     "id": "ea_dumbbell_simultaneous_biceps_curl",
@@ -40029,8 +40295,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand tall with a dumbbell in one hand resting against the front of your thigh",
+    "steps": [
+      "Stand tall with a dumbbell in one hand resting against the front of your thigh",
+      "Put the other hand on your hip and keep your shoulders level",
+      "Pull the dumbbell straight up close to your body, leading with the elbow",
+      "Stop when the elbow reaches shoulder height — no higher",
+      "Lower slowly to the thigh, then finish the set and change arms"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Dumbbell Single Arm Upright Row.mp4",
       "men": "exercises/men/Shoulders/Dumbbell Single Arm Upright Row.mp4"
@@ -40045,7 +40317,8 @@
     "contraindications": [
       "neck",
       "shoulder"
-    ]
+    ],
+    "purpose": "Builds the side of the shoulder and the upper trapezius together. Using one arm lets the elbow travel on the path your own shoulder prefers, which is what makes this safer than the two-handed barbell version many people find pinching."
   },
   {
     "id": "ea_dumbbell_single_leg_calf_raise_wall_support",
@@ -40405,8 +40678,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Lie on a bench with a dumbbell in each hand and press them up over your shoulders, palms facing each other",
+    "steps": [
+      "Lie on a bench with a dumbbell in each hand and press them up over your shoulders, palms facing each other",
+      "Keep your upper arms vertical for the whole set",
+      "Bend the elbows to lower the dumbbells down beside your ears",
+      "Stop when your forearms pass just below parallel with the floor",
+      "Straighten the arms back to the top without letting the elbows flare outward"
+    ],
     "video": {
       "girl": "exercises/girl/Triceps/Dumbbell Skullcrusher.mp4",
       "men": "exercises/men/Triceps/Dumbbell Skullcrusher.mp4"
@@ -40417,7 +40696,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_dumbbell_skullcrusher.jpg",
       "men": "assets/posters/men/ea_dumbbell_skullcrusher.jpg"
-    }
+    },
+    "purpose": "The classic mass builder for the triceps: arms overhead puts the long head on stretch, and separate dumbbells let each wrist find an angle the elbow is comfortable with, which a straight bar does not allow."
   },
   {
     "id": "ea_dumbbell_split_squat",
@@ -43163,8 +43443,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Place your feet on a box and walk your hands back until your hips are stacked high over your shoulders",
+    "steps": [
+      "Place your feet on a box and walk your hands back until your hips are stacked high over your shoulders",
+      "Keep your arms straight and your head between your upper arms",
+      "Let your shoulder blades rise up toward your ears without bending the elbows",
+      "Push the floor away and press your shoulders down away from your ears",
+      "Move slowly between the two positions, keeping the hips high throughout"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Elevated Pike Shoulder Shrug.mp4",
       "men": "exercises/men/Shoulders/Elevated Pike Shoulder Shrug.mp4"
@@ -43180,7 +43466,8 @@
       "lower_back",
       "neck",
       "shoulder"
-    ]
+    ],
+    "purpose": "With your feet raised and hips high, your own bodyweight loads the shoulders — the closest most people get to overhead pressing without a weight. It also trains the shoulder blades to move properly under load, which matters before any handstand work."
   },
   {
     "id": "ea_elevated_push_up",
@@ -44811,8 +45098,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Sit on the floor with your knees bent and feet flat, hands on the floor behind your hips, fingers pointing at your feet",
+    "steps": [
+      "Sit on the floor with your knees bent and feet flat, hands on the floor behind your hips, fingers pointing at your feet",
+      "Press through your hands to lift your hips off the floor",
+      "Keep your chest open and your shoulders pulled down away from your ears",
+      "Bend the elbows straight back to lower your hips toward the floor",
+      "Push back up until the arms are straight, without letting your hips touch down"
+    ],
     "video": {
       "girl": "exercises/girl/Triceps/Floor Tricep Dip.mp4",
       "men": "exercises/men/Triceps/Floor Tricep Dip.mp4"
@@ -44828,7 +45121,8 @@
       "elbow",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "purpose": "The triceps exercise that needs nothing at all — no bench, no weights, no band. Your feet stay on the floor, so you can make it as light or as hard as you need by walking them in or out, which makes it a safe first dip."
   },
   {
     "id": "ea_flutter_kicks",
@@ -47550,8 +47844,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand tall and hold a medicine ball with both hands at chest height, elbows out",
+    "steps": [
+      "Stand tall and hold a medicine ball with both hands at chest height, elbows out",
+      "Squeeze the ball between your palms so the chest stays engaged",
+      "Brace your stomach and keep your ribs pulled down",
+      "Press the ball straight out in front of you until the arms are almost locked",
+      "Hold for a moment, then draw it back to your chest without leaning back"
+    ],
     "video": {
       "girl": "exercises/girl/Chest/Hold the world med ball chest press.mp4",
       "men": "exercises/men/Chest/Hold the world med ball chest press.mp4"
@@ -47565,7 +47865,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Holding a ball out in front of you loads the chest and shoulders while your stomach fights to stop you tipping back. Light in the hands and hard in the middle — a good finisher when the heavy pressing is done."
   },
   {
     "id": "ea_hollow_hold",
@@ -48866,8 +49167,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Sit on a bench with your feet wide and lean forward slightly from the hips",
+    "steps": [
+      "Sit on a bench with your feet wide and lean forward slightly from the hips",
+      "Hold the kettlebell in one hand and brace the back of that upper arm against the inside of the same thigh",
+      "Let the arm hang straight down so the bell is just off the floor",
+      "Curl the bell up toward your shoulder without letting the elbow leave the thigh",
+      "Lower all the way until the arm is straight, then repeat and switch sides"
+    ],
     "video": {
       "girl": "exercises/girl/Biceps/Kettlebell Concentration Curl.mp4",
       "men": "exercises/men/Biceps/Kettlebell Concentration Curl.mp4"
@@ -48882,7 +49189,8 @@
     "contraindications": [
       "elbow"
     ],
-    "poseTargetId": "curl"
+    "poseTargetId": "curl",
+    "purpose": "Bracing the elbow against the inside of the thigh removes every way of cheating — you cannot swing, lean back or shrug the weight up. What is left is the biceps alone, which is why this is the exercise people use when an arm is visibly lagging."
   },
   {
     "id": "ea_kettlebell_curl",
@@ -48894,8 +49202,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand with a kettlebell in each hand, handles gripped so the bells hang in front of your thighs",
+    "steps": [
+      "Stand with a kettlebell in each hand, handles gripped so the bells hang in front of your thighs",
+      "Keep your wrists straight and locked — do not let the bells bend them back",
+      "Curl both bells up toward your shoulders with the elbows against your sides",
+      "Stop when your forearms are vertical and the bells rest against your forearms",
+      "Lower under control to full arm extension before the next repetition"
+    ],
     "video": {
       "girl": "exercises/girl/Biceps/Kettlebell Curl.mp4",
       "men": "exercises/men/Biceps/Kettlebell Curl.mp4"
@@ -48910,7 +49224,8 @@
     "contraindications": [
       "elbow"
     ],
-    "poseTargetId": "curl"
+    "poseTargetId": "curl",
+    "purpose": "The bell hangs below your hand rather than sitting in it, so the weight pulls the wrist backwards the whole way up. Your forearm has to work to keep the wrist straight, which is grip training you get for free alongside the biceps."
   },
   {
     "id": "ea_kettlebell_decline_skull_crusher",
@@ -48922,8 +49237,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set a bench to a slight decline and lie down with your feet hooked under the pads",
+    "steps": [
+      "Set a bench to a slight decline and lie down with your feet hooked under the pads",
+      "Hold a kettlebell in each hand and press them up so your arms point straight at the ceiling",
+      "Keep the upper arms fixed and vertical",
+      "Bend the elbows to lower the bells toward the top of your head",
+      "Straighten the arms back up, stopping just before the elbows lock"
+    ],
     "video": {
       "girl": "exercises/girl/Triceps/Kettlebell Decline Skull Crusher.mp4",
       "men": "exercises/men/Triceps/Kettlebell Decline Skull Crusher.mp4"
@@ -48937,7 +49258,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "purpose": "The decline angle keeps tension on the triceps at the top, where a flat bench lets the arms rest under the weight. The bell hanging below your hand also pulls the elbow further back, adding stretch at the bottom."
   },
   {
     "id": "ea_kettlebell_front_raise",
@@ -48949,8 +49271,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand tall holding a kettlebell in front of one thigh, or one in each hand",
+    "steps": [
+      "Stand tall holding a kettlebell in front of one thigh, or one in each hand",
+      "Brace your stomach and keep your ribs down so you cannot lean back",
+      "Raise the arm straight out in front of you with only a slight bend in the elbow",
+      "Stop at shoulder height with the wrist straight and the bell steady",
+      "Lower slowly to the thigh without letting the weight swing"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Kettlebell Front Raise.mp4",
       "men": "exercises/men/Shoulders/Kettlebell Front Raise.mp4"
@@ -48964,7 +49292,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Isolates the front of the shoulder, the part that lifts things in front of you. The bell hangs below the hand, so the wrist has to stay strong the whole way — the load pulls it back if you let it."
   },
   {
     "id": "ea_kettlebell_glute_bridge",
@@ -49004,8 +49333,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand tall and hold one kettlebell by the horns with both hands, arms hanging in front of you",
+    "steps": [
+      "Stand tall and hold one kettlebell by the horns with both hands, arms hanging in front of you",
+      "Keep the bell upside down or upright — whichever lets both wrists stay straight",
+      "Press your elbows into your ribs and brace your stomach",
+      "Curl the bell up to chest height using only the elbows",
+      "Lower slowly all the way down without letting your body lean back"
+    ],
     "video": {
       "girl": "exercises/girl/Biceps/Kettlebell Goblet Curl.mp4",
       "men": "exercises/men/Biceps/Kettlebell Goblet Curl.mp4"
@@ -49020,7 +49355,8 @@
     "contraindications": [
       "elbow"
     ],
-    "poseTargetId": "curl"
+    "poseTargetId": "curl",
+    "purpose": "Holding one bell with both hands keeps the load exactly in front of your chest, so a single heavy weight can be curled without either wrist twisting out of line. It is the simplest way to add load when two lighter bells are all you have."
   },
   {
     "id": "ea_kettlebell_gorilla_row",
@@ -49032,8 +49368,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand with feet wider than shoulder width and a kettlebell between your feet on each side",
+    "steps": [
+      "Stand with feet wider than shoulder width and a kettlebell between your feet on each side",
+      "Hinge at the hips with a flat back until you can grip both handles",
+      "Push one bell into the floor to anchor yourself",
+      "Row the other bell to your hip, keeping your shoulders level and your back flat",
+      "Lower it to the floor and row the opposite side, alternating for the whole set"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Kettlebell Gorilla Row.mp4",
       "men": "exercises/men/Back/Kettlebell Gorilla Row.mp4"
@@ -49044,7 +49386,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_gorilla_row.jpg",
       "men": "assets/posters/men/ea_kettlebell_gorilla_row.jpg"
-    }
+    },
+    "purpose": "Two bells on the floor let one side stay planted while the other rows, so you get a heavy back pull plus an anti-rotation job for the stomach. The wide stance keeps your lower back out of it more than a standard bent-over row does."
   },
   {
     "id": "ea_kettlebell_half_kneeling_shoulder_press",
@@ -49151,8 +49494,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Lie face down on an incline bench with a kettlebell in each hand",
+    "steps": [
+      "Lie face down on an incline bench with a kettlebell in each hand",
+      "Let the arms hang and the shoulder blades spread apart at the bottom",
+      "Keep the elbows straight and the neck relaxed",
+      "Pull the shoulder blades back and down along the angle of the bench",
+      "Hold briefly at the top, then lower under control"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Kettlebell Incline Shrug.mp4",
       "men": "exercises/men/Shoulders/Kettlebell Incline Shrug.mp4"
@@ -49167,7 +49516,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "purpose": "The incline angle lets the shoulder blades move down as well as back, which is the direction that supports the shoulder joint. Straight-up shrugs only train one of those and are far more common than they need to be."
   },
   {
     "id": "ea_kettlebell_kneeling_one_arm_shoulder_press",
@@ -49248,8 +49598,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand tall with a light kettlebell in one hand, arm hanging by your side",
+    "steps": [
+      "Stand tall with a light kettlebell in one hand, arm hanging by your side",
+      "Straighten the arm fully and keep it straight for the whole set",
+      "Raise the arm out to the side in a wide arc, keeping the bell far from your body",
+      "Stop at shoulder height, with the shoulder staying down away from the ear",
+      "Lower slowly along the same wide path, then switch sides"
+    ],
     "video": {
       "men": "exercises/men/Shoulders/Kettlebell Long Lever Lateral Raise.mp4"
     },
@@ -49261,7 +49617,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Holding the bell further from the body makes a light weight feel heavy, so the side of the shoulder gets a hard set without loading the joint. Useful when you want intensity but the shoulder cannot take a heavy dumbbell."
   },
   {
     "id": "ea_kettlebell_preacher_curl",
@@ -49273,8 +49630,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set the preacher bench so the top of the pad sits under your armpit when you sit down",
+    "steps": [
+      "Set the preacher bench so the top of the pad sits under your armpit when you sit down",
+      "Lay the back of one upper arm flat along the pad and hold the kettlebell in that hand",
+      "Straighten the arm until you feel the stretch, but do not let the elbow lock hard",
+      "Curl the bell up toward your shoulder, keeping the arm glued to the pad",
+      "Lower slowly to the stretched position and repeat, then change arms"
+    ],
     "video": {
       "girl": "exercises/girl/Biceps/Kettlebell Preacher Curl.mp4",
       "men": "exercises/men/Biceps/Kettlebell Preacher Curl.mp4"
@@ -49289,7 +49652,8 @@
     "contraindications": [
       "elbow"
     ],
-    "poseTargetId": "curl"
+    "poseTargetId": "curl",
+    "purpose": "The pad under your arm stops the elbow from travelling, which is the one thing that lets the shoulder help on a standing curl. With that route closed the biceps has to finish the lift from the hardest position — arm nearly straight."
   },
   {
     "id": "ea_kettlebell_pullover",
@@ -49301,8 +49665,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Lie on a bench or the floor and hold one kettlebell by the horns with both hands over your chest",
+    "steps": [
+      "Lie on a bench or the floor and hold one kettlebell by the horns with both hands over your chest",
+      "Keep a slight bend in the elbows and press your lower back into the surface",
+      "Lower the bell back over your head in an arc, only as far as your shoulders allow",
+      "Stop when you feel the stretch under the armpits, without your ribs flaring up",
+      "Pull the bell back over your chest using the back, not the arms"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Kettlebell Pullover.mp4",
       "men": "exercises/men/Back/Kettlebell Pullover.mp4"
@@ -49316,7 +49686,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "One of the few movements that stretches the lats under load with the arms overhead. It opens the shoulders and the upper back, which is exactly what tightens up in anyone who sits at a desk."
   },
   {
     "id": "ea_kettlebell_rear_delt_row",
@@ -49328,8 +49699,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hinge forward from the hips with a flat back, a kettlebell in each hand",
+    "steps": [
+      "Hinge forward from the hips with a flat back, a kettlebell in each hand",
+      "Let the arms hang straight down under your shoulders",
+      "Row both bells upward with the elbows travelling out wide, away from your body",
+      "Finish with the upper arms in line with your shoulders and the blades squeezed",
+      "Lower slowly to the hanging position without rounding the back"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Kettlebell Rear Delt Row.mp4",
       "men": "exercises/men/Shoulders/Kettlebell Rear Delt Row.mp4"
@@ -49343,7 +49720,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "A row with the elbows flared wide, which pulls the work off the lats and onto the rear shoulders and upper back. Those are the muscles that balance out a chest-heavy training week."
   },
   {
     "id": "ea_kettlebell_reverse_lunge",
@@ -49384,8 +49762,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand with feet hip width and a kettlebell just outside each foot",
+    "steps": [
+      "Stand with feet hip width and a kettlebell just outside each foot",
+      "Hinge forward with a flat back until your torso is close to parallel with the floor",
+      "Grip both handles and let your arms hang straight down",
+      "Row both bells to your ribs, driving the elbows back and squeezing the shoulder blades",
+      "Lower under control until the arms are straight again, without rounding your back"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Kettlebell Row.mp4",
       "men": "exercises/men/Back/Kettlebell Row.mp4"
@@ -49396,7 +49780,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_row.jpg",
       "men": "assets/posters/men/ea_kettlebell_row.jpg"
-    }
+    },
+    "purpose": "The basic back builder with two bells: the handles sit low, so the range is longer than with dumbbells and the lats get more stretch at the bottom of each pull."
   },
   {
     "id": "ea_kettlebell_seated_calf_raise",
@@ -49473,8 +49858,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand tall with a kettlebell in each hand, arms at your sides, palms facing back",
+    "steps": [
+      "Stand tall with a kettlebell in each hand, arms at your sides, palms facing back",
+      "Set your ribs down and squeeze your glutes so the lower back stays neutral",
+      "Sweep both straight arms backwards behind your hips",
+      "Stop where the chest starts to want to collapse forward",
+      "Return slowly to your sides, keeping the shoulders down throughout"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Kettlebell Shoulder Extension.mp4",
       "men": "exercises/men/Shoulders/Kettlebell Shoulder Extension.mp4"
@@ -49485,7 +49876,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_shoulder_extension.jpg",
       "men": "assets/posters/men/ea_kettlebell_shoulder_extension.jpg"
-    }
+    },
+    "purpose": "Drives the arms back behind the body, which opens the chest and works the back of the shoulder in the range that sitting takes away. A small movement with an outsized effect on how upright you stand."
   },
   {
     "id": "ea_kettlebell_shrug",
@@ -49497,8 +49889,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand tall with a kettlebell hanging in each hand at your sides",
+    "steps": [
+      "Stand tall with a kettlebell hanging in each hand at your sides",
+      "Keep your arms straight and your chin level",
+      "Lift your shoulders straight up toward your ears as high as they will go",
+      "Hold the top for a second without rolling the shoulders",
+      "Lower slowly and let the shoulders settle fully before the next repetition"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Kettlebell Shrug.mp4",
       "men": "exercises/men/Shoulders/Kettlebell Shrug.mp4"
@@ -49513,7 +49911,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "purpose": "The straightforward way to build the upper trapezius, the muscle that carries any load hanging from your hands. Kettlebells sit closer to the body than dumbbells, so heavy sets stay easier to control."
   },
   {
     "id": "ea_kettlebell_silverback_shrug",
@@ -49525,8 +49924,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hinge forward at the hips with a flat back, a kettlebell in each hand",
+    "steps": [
+      "Hinge forward at the hips with a flat back, a kettlebell in each hand",
+      "Let the arms hang straight and the shoulder blades spread wide",
+      "Keep the elbows completely straight throughout",
+      "Draw the shoulder blades together and slightly down",
+      "Pause at the squeeze, then let them spread apart again slowly"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Kettlebell Silverback Shrug.mp4",
       "men": "exercises/men/Shoulders/Kettlebell Silverback Shrug.mp4"
@@ -49541,7 +49946,8 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ]
+    ],
+    "purpose": "Bent forward, the shrug pulls the blades together rather than up, so it builds the middle back that holds your posture. This is the version to do if your upper traps are already tight from stress or desk work."
   },
   {
     "id": "ea_kettlebell_single_arm_chest_fly",
@@ -49553,8 +49959,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Lie on a bench with a kettlebell in one hand pressed above your chest, free hand on your stomach",
+    "steps": [
+      "Lie on a bench with a kettlebell in one hand pressed above your chest, free hand on your stomach",
+      "Keep a soft bend in the working elbow and hold it there",
+      "Lower the bell out to the side in a wide arc until you feel the chest stretch",
+      "Keep both shoulder blades flat on the bench — do not let your body roll",
+      "Bring the bell back over your chest along the same arc, then change sides"
+    ],
     "video": {
       "girl": "exercises/girl/Chest/Kettlebell Single Arm Chest Fly.mp4",
       "men": "exercises/men/Chest/Kettlebell Single Arm Chest Fly.mp4"
@@ -49568,7 +49980,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "One side at a time, so the chest has to both open the arm and stop your body rolling toward the weight. That second job is what a two-handed fly never asks for, and it is why this feels harder than the load suggests."
   },
   {
     "id": "ea_kettlebell_single_arm_clean_and_press",
@@ -49625,8 +50038,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand with your feet hip width apart and a kettlebell hanging in one hand",
+    "steps": [
+      "Stand with your feet hip width apart and a kettlebell hanging in one hand",
+      "Put the free hand on your hip so you can feel if your torso starts to lean",
+      "Curl the bell up toward the shoulder with the elbow fixed at your side",
+      "Lower it under control until the arm is fully straight",
+      "Finish all repetitions on that arm, then match the same number on the other side"
+    ],
     "video": {
       "girl": "exercises/girl/Biceps/Kettlebell Single Arm Curl.mp4",
       "men": "exercises/men/Biceps/Kettlebell Single Arm Curl.mp4"
@@ -49641,7 +50060,8 @@
     "contraindications": [
       "elbow"
     ],
-    "poseTargetId": "curl"
+    "poseTargetId": "curl",
+    "purpose": "One arm at a time exposes the difference between your sides, which a two-handed curl always hides. Working the weaker arm to the same number of clean repetitions is how that gap actually closes."
   },
   {
     "id": "ea_kettlebell_single_arm_lateral_raise",
@@ -49653,8 +50073,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand tall with a kettlebell in one hand, the other hand on a rack or your hip",
+    "steps": [
+      "Stand tall with a kettlebell in one hand, the other hand on a rack or your hip",
+      "Let the bell hang beside your thigh with a slight bend in the elbow",
+      "Raise the arm out to the side, leading with the elbow rather than the hand",
+      "Stop at shoulder height, keeping the shoulder pressed down away from your ear",
+      "Lower slowly, then finish the set and change arms"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Kettlebell Single Arm Lateral Raise.mp4",
       "men": "exercises/men/Shoulders/Kettlebell Single Arm Lateral Raise.mp4"
@@ -49668,7 +50094,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Builds the side of the shoulder, which is what makes shoulders look wide. One arm at a time lets you hold something with the other hand for balance, so the body cannot swing the weight up."
   },
   {
     "id": "ea_kettlebell_single_arm_rear_delt_fly",
@@ -49680,8 +50107,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hinge forward with a flat back, one hand braced on a bench for support",
+    "steps": [
+      "Hinge forward with a flat back, one hand braced on a bench for support",
+      "Hold a light kettlebell in the free hand, hanging straight down",
+      "Keep a small fixed bend in the working elbow",
+      "Raise the arm out to the side until it is level with your shoulder, without rotating your torso",
+      "Lower slowly to the hanging position, then switch sides"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Kettlebell Single Arm Rear Delt Fly.mp4",
       "men": "exercises/men/Shoulders/Kettlebell Single Arm Rear Delt Fly.mp4"
@@ -49695,7 +50128,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Works the back of one shoulder while the stomach stops the torso from twisting toward the weight. That anti-twist job is what a two-arm fly never trains, and it is why this feels harder than the weight suggests."
   },
   {
     "id": "ea_kettlebell_single_arm_row",
@@ -49707,8 +50141,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Place one hand and the same-side knee on a bench, with the other foot on the floor",
+    "steps": [
+      "Place one hand and the same-side knee on a bench, with the other foot on the floor",
+      "Hold the kettlebell in the free hand and let it hang straight down",
+      "Set your back flat and your shoulders square to the floor",
+      "Pull the bell to your hip, letting the shoulder blade slide toward your spine",
+      "Lower it fully, allowing the blade to reach forward at the bottom, then change sides"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Kettlebell Single Arm Row.mp4",
       "men": "exercises/men/Back/Kettlebell Single Arm Row.mp4"
@@ -49719,7 +50159,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_kettlebell_single_arm_row.jpg",
       "men": "assets/posters/men/ea_kettlebell_single_arm_row.jpg"
-    }
+    },
+    "purpose": "One arm at a time gives the shoulder blade room to travel further, so each lat gets a longer range than a two-handed row allows. It also shows you plainly which side is weaker."
   },
   {
     "id": "ea_kettlebell_single_leg_calf_raise",
@@ -49957,8 +50398,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Lie on a bench with a kettlebell in each hand, bells resting against the back of your forearms",
+    "steps": [
+      "Lie on a bench with a kettlebell in each hand, bells resting against the back of your forearms",
+      "Press the arms straight up over your shoulders",
+      "Hold the upper arms still and vertical",
+      "Bend the elbows and let the bells travel down past your ears",
+      "Extend the arms back to the start under control"
+    ],
     "video": {
       "girl": "exercises/girl/Triceps/Kettlebell Skull Crusher.mp4",
       "men": "exercises/men/Triceps/Kettlebell Skull Crusher.mp4"
@@ -49972,7 +50419,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "purpose": "Same stretch as the dumbbell version, but the bell hangs behind the hand, so the load sits further from the elbow and the triceps has to control a longer lever. Less weight does more work here."
   },
   {
     "id": "ea_kettlebell_sled_drag",
@@ -50188,8 +50636,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand with feet hip width apart and hold one kettlebell by the horns with both hands",
+    "steps": [
+      "Stand with feet hip width apart and hold one kettlebell by the horns with both hands",
+      "Press it overhead until your arms are straight, then let the bell rest behind your head",
+      "Squeeze your stomach so your ribs do not flare forward",
+      "Bend the elbows to lower the bell behind your head, keeping the upper arms beside your ears",
+      "Straighten the arms back overhead without arching your lower back"
+    ],
     "video": {
       "girl": "exercises/girl/Triceps/Kettlebell Standing Tricep Extension.mp4",
       "men": "exercises/men/Triceps/Kettlebell Standing Tricep Extension.mp4"
@@ -50203,7 +50657,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "purpose": "Standing means your stomach and lower back have to hold you upright while a weight sits behind your head — so this trains the triceps and the brace to keep the ribs down at the same time."
   },
   {
     "id": "ea_kettlebell_step_up",
@@ -50720,8 +51175,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand tall with a kettlebell in each hand, resting against the front of your thighs",
+    "steps": [
+      "Stand tall with a kettlebell in each hand, resting against the front of your thighs",
+      "Keep your back straight and your stomach braced",
+      "Pull both bells straight up the front of your body, leading with the elbows",
+      "Stop when the elbows reach shoulder height, no higher",
+      "Lower under control to the thighs and reset before the next repetition"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Kettlebell Upright Row.mp4",
       "men": "exercises/men/Shoulders/Kettlebell Upright Row.mp4"
@@ -50736,7 +51197,8 @@
     "contraindications": [
       "neck",
       "shoulder"
-    ]
+    ],
+    "purpose": "Trains the side of the shoulder and the upper trapezius together in one pull. Keep the elbows below shoulder height — going higher is what turns this exercise into shoulder pain for a lot of people."
   },
   {
     "id": "ea_kettlebell_walkover_pushup",
@@ -50890,8 +51352,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hang from the bar with an overhand grip, hands just outside shoulder width",
+    "steps": [
+      "Hang from the bar with an overhand grip, hands just outside shoulder width",
+      "Swing your body into an arch and then a hollow position, driven from the shoulders",
+      "As you swing forward, drive your knees and hips up to give the pull momentum",
+      "Pull your chin over the bar at the top of that surge, elbows finishing behind you",
+      "Fall back into the swing and let the next arch start the following repetition"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Kipping Pull Up.mp4",
       "men": "exercises/men/Back/Kipping Pull Up.mp4"
@@ -50906,7 +51374,8 @@
     "contraindications": [
       "elbow",
       "shoulder"
-    ]
+    ],
+    "purpose": "A pull-up that uses a hip swing to help the arms, which lets you do far more repetitions for conditioning. It trains rhythm and grip endurance rather than pure back strength — do strict pull-ups first, and only kip once you have them."
   },
   {
     "id": "ea_knee_to_chest_stretch",
@@ -51073,8 +51542,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Kneel on a mat and place your hands on the floor slightly wider than your shoulders",
+    "steps": [
+      "Kneel on a mat and place your hands on the floor slightly wider than your shoulders",
+      "Walk your knees back until your body makes a straight line from knees to head",
+      "Squeeze your stomach and glutes so your hips do not drop",
+      "Bend the elbows to lower your chest toward the floor, elbows at about forty-five degrees",
+      "Push back up to straight arms without letting the hips lead"
+    ],
     "video": {
       "girl": "exercises/girl/Chest/Kneeling Push-up.mp4",
       "men": "exercises/men/Chest/Kneeling Push-up.mp4"
@@ -51092,7 +51567,8 @@
       "shoulder",
       "wrist"
     ],
-    "poseTargetId": "pushup"
+    "poseTargetId": "pushup",
+    "purpose": "A push-up with the load turned down: knees on the floor take roughly a third of your weight out of it. This is the honest way to build toward a full push-up, and far better than a full one done with a sagging back."
   },
   {
     "id": "ea_kneeling_squat_jumps_bodyweight",
@@ -51262,8 +51738,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand facing away from the landmine with the loaded bar end at one shoulder",
+    "steps": [
+      "Stand facing away from the landmine with the loaded bar end at one shoulder",
+      "Hold the end in that hand, feet shoulder width apart, stomach braced",
+      "Press the bar up and forward until the arm is straight, following its arc",
+      "Bring it back to the shoulder and pass the end to the other hand",
+      "Press with that arm the same way, alternating for the whole set"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Landmine Alternating Single Arm Press.mp4",
       "men": "exercises/men/Shoulders/Landmine Alternating Single Arm Press.mp4"
@@ -51277,7 +51759,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "The landmine presses on an arc rather than straight overhead, which most shoulders tolerate far better than a vertical press. Alternating arms means your stomach has to resist being pulled sideways with every repetition."
   },
   {
     "id": "ea_landmine_bicep_curl",
@@ -51289,8 +51772,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Load one end of a barbell in the landmine holder and stand facing it",
+    "steps": [
+      "Load one end of a barbell in the landmine holder and stand facing it",
+      "Pick up the loaded end with both hands cupped underneath it, arms straight",
+      "Stand tall with elbows against your ribs and the bar resting in your palms",
+      "Curl the end of the bar up toward your chin, following the arc it wants to travel",
+      "Lower slowly along the same arc until your arms are straight again"
+    ],
     "video": {
       "girl": "exercises/girl/Biceps/Landmine Bicep Curl.mp4",
       "men": "exercises/men/Biceps/Landmine Bicep Curl.mp4"
@@ -51305,7 +51794,8 @@
     "contraindications": [
       "elbow"
     ],
-    "poseTargetId": "curl"
+    "poseTargetId": "curl",
+    "purpose": "The bar swings on a fixed arc, so the resistance changes as you rise and the top of the curl stays heavy instead of going weightless. Both hands share one bar, which lets you load more than a pair of dumbbells you can control."
   },
   {
     "id": "ea_landmine_calf_raise",
@@ -51385,8 +51875,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set a barbell in the landmine and sit or half-kneel beside the loaded end",
+    "steps": [
+      "Set a barbell in the landmine and sit or half-kneel beside the loaded end",
+      "Grip the end of the bar in one hand and brace that upper arm against the inside of your thigh",
+      "Let the arm hang so the bar is at its lowest point",
+      "Curl the bar up toward the shoulder, keeping the elbow pressed into the thigh",
+      "Lower under control to a straight arm, then repeat and switch sides"
+    ],
     "video": {
       "girl": "exercises/girl/Biceps/Landmine Concentration Curl.mp4",
       "men": "exercises/men/Biceps/Landmine Concentration Curl.mp4"
@@ -51401,7 +51897,8 @@
     "contraindications": [
       "elbow"
     ],
-    "poseTargetId": "curl"
+    "poseTargetId": "curl",
+    "purpose": "Combines the elbow brace of a concentration curl with the landmine's changing resistance, so the hardest part lands near the top rather than halfway. Useful when a dumbbell concentration curl has stopped feeling like anything."
   },
   {
     "id": "ea_landmine_curtsy_lunge",
@@ -51553,8 +52050,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Kneel on one knee facing away from the landmine, the down knee under your hip",
+    "steps": [
+      "Kneel on one knee facing away from the landmine, the down knee under your hip",
+      "Hold the loaded bar end in the hand on the same side as the down knee",
+      "Squeeze the glute of the kneeling leg and pull your ribs down",
+      "Press the bar up and forward until the arm is straight, back staying upright",
+      "Lower to the shoulder under control, then finish the set and switch sides"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Landmine Half Kneeling Single Arm Overhead Press.mp4",
       "men": "exercises/men/Shoulders/Landmine Half Kneeling Single Arm Overhead Press.mp4"
@@ -51570,7 +52073,8 @@
       "knee",
       "shoulder"
     ],
-    "poseTargetId": "overhead_press"
+    "poseTargetId": "overhead_press",
+    "purpose": "Half kneeling locks the hips, so you cannot lean back and turn the press into a throw. It exposes exactly how much of your overhead strength comes from the shoulder and how much came from your lower back."
   },
   {
     "id": "ea_landmine_hollow_hold",
@@ -51607,8 +52111,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Kneel on both knees facing away from the landmine, hips upright over the knees",
+    "steps": [
+      "Kneel on both knees facing away from the landmine, hips upright over the knees",
+      "Take the loaded bar end in one hand at shoulder height",
+      "Squeeze your glutes and keep your ribs pulled down",
+      "Press the bar out and up until the arm is straight, then return to the shoulder",
+      "Pass the end to the other hand and repeat, alternating throughout"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Landmine Kneeling Alternating Overhead Press.mp4",
       "men": "exercises/men/Shoulders/Landmine Kneeling Alternating Overhead Press.mp4"
@@ -51624,7 +52134,8 @@
       "knee",
       "shoulder"
     ],
-    "poseTargetId": "overhead_press"
+    "poseTargetId": "overhead_press",
+    "purpose": "Kneeling on both knees removes the legs entirely, so the shoulders press without any help. Alternating keeps one arm loaded at all times, which keeps the stomach working right through the set."
   },
   {
     "id": "ea_landmine_kneeling_overhead_press",
@@ -51636,8 +52147,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Kneel on both knees facing away from the landmine with your hips tall",
+    "steps": [
+      "Kneel on both knees facing away from the landmine with your hips tall",
+      "Cup the loaded end of the bar with both hands at chest height",
+      "Brace your stomach and squeeze your glutes to lock the hips",
+      "Press the bar up and forward along its arc until your arms are straight",
+      "Lower it back to your chest slowly without letting your back arch"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Landmine Kneeling Overhead Press.mp4",
       "men": "exercises/men/Shoulders/Landmine Kneeling Overhead Press.mp4"
@@ -51653,7 +52170,8 @@
       "knee",
       "shoulder"
     ],
-    "poseTargetId": "overhead_press"
+    "poseTargetId": "overhead_press",
+    "purpose": "A pressing position that gives the shoulder the arc it likes while the kneeling stance stops the lower back from arching to help. Good for anyone whose overhead press turns into a leaning-back contest."
   },
   {
     "id": "ea_landmine_kneeling_twist",
@@ -51721,8 +52239,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand side-on to the landmine and hold the loaded end in the outside hand",
+    "steps": [
+      "Stand side-on to the landmine and hold the loaded end in the outside hand",
+      "Let the arm hang across the front of your body with a slight elbow bend",
+      "Set your feet shoulder width and brace your stomach",
+      "Raise the arm out to the side along the bar's arc, to about shoulder height",
+      "Lower slowly along the same path, then move round and change sides"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Landmine Lateral Raise.mp4",
       "men": "exercises/men/Shoulders/Landmine Lateral Raise.mp4"
@@ -51736,7 +52260,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "The landmine's arc changes the resistance as the arm rises, so the hardest point lands nearer the top than with a dumbbell. That is where the side of the shoulder is normally weakest and least trained."
   },
   {
     "id": "ea_landmine_lunge_to_overhead_press",
@@ -51777,8 +52302,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set a bench in front of a landmine so the loaded end reaches over your head when you lie down",
+    "steps": [
+      "Set a bench in front of a landmine so the loaded end reaches over your head when you lie down",
+      "Lie back and take the end of the bar with both hands, arms pressed straight up",
+      "Keep your upper arms vertical and your shoulder blades flat on the bench",
+      "Bend the elbows to let the bar swing down behind your head along its arc",
+      "Push the bar back up to straight arms following the same arc"
+    ],
     "video": {
       "girl": "exercises/girl/Triceps/Landmine Lying Tricep Extension.mp4",
       "men": "exercises/men/Triceps/Landmine Lying Tricep Extension.mp4"
@@ -51792,7 +52323,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "purpose": "The landmine's arc keeps the bar travelling away from your face instead of toward it, which removes the one thing that makes people nervous about lying extensions. Both hands on one bar also let you load heavier than a pair of dumbbells."
   },
   {
     "id": "ea_landmine_oblique_twist",
@@ -51828,8 +52360,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand facing away from the landmine and cup the loaded bar end with both hands at your chest",
+    "steps": [
+      "Stand facing away from the landmine and cup the loaded bar end with both hands at your chest",
+      "Set your feet shoulder width apart with a slight bend in the knees",
+      "Brace your stomach and pull the ribs down",
+      "Press the bar up and forward until your arms lock out",
+      "Lower it under control to your chest and reset before the next repetition"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Landmine Overhead Press.mp4",
       "men": "exercises/men/Shoulders/Landmine Overhead Press.mp4"
@@ -51844,7 +52382,8 @@
     "contraindications": [
       "shoulder"
     ],
-    "poseTargetId": "overhead_press"
+    "poseTargetId": "overhead_press",
+    "purpose": "The standing landmine press builds real overhead strength on a path the shoulder finds comfortable, and lets the legs contribute a little. Often the heaviest pressing available to someone who cannot go straight overhead without pain."
   },
   {
     "id": "ea_landmine_romanian_deadlift",
@@ -51856,8 +52395,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Load one end of a barbell in the landmine and straddle it, facing away from the anchor",
+    "steps": [
+      "Load one end of a barbell in the landmine and straddle it, facing away from the anchor",
+      "Reach down and hold the loaded end with both hands between your legs",
+      "Stand tall with a small bend in the knees, back flat, shoulders down",
+      "Push your hips back and let the bar travel down its arc close to your legs",
+      "Stop at a strong hamstring stretch, then drive the hips forward to stand"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Landmine Romanian Deadlift.mp4",
       "men": "exercises/men/Back/Landmine Romanian Deadlift.mp4"
@@ -51873,7 +52418,8 @@
       "hip",
       "lower_back"
     ],
-    "poseTargetId": "hinge"
+    "poseTargetId": "hinge",
+    "purpose": "The landmine's arc keeps the bar travelling close to your legs by itself, so the hinge is harder to do badly than with a free bar. A good bridge for anyone whose back is nervous about conventional deadlifts."
   },
   {
     "id": "ea_landmine_rotational_lift_to_press",
@@ -51973,8 +52519,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Sit on a bench or the floor facing away from the landmine, back upright",
+    "steps": [
+      "Sit on a bench or the floor facing away from the landmine, back upright",
+      "Take the loaded bar end in one hand at shoulder height",
+      "Brace your stomach so your torso does not lean or twist",
+      "Press up and forward to a straight arm, then bring it back to the shoulder",
+      "Hand the bar to the other side and repeat, alternating for the whole set"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Landmine Seated Alternating Overhead Press.mp4",
       "men": "exercises/men/Shoulders/Landmine Seated Alternating Overhead Press.mp4"
@@ -51988,7 +52540,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Sitting takes the legs out completely and the alternating rhythm keeps one side under load at all times. It is the strictest way to press with a landmine, and the honest test of shoulder strength alone."
   },
   {
     "id": "ea_landmine_seated_overhead_press",
@@ -52000,8 +52553,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Sit facing away from the landmine with your back tall and feet planted",
+    "steps": [
+      "Sit facing away from the landmine with your back tall and feet planted",
+      "Cup the loaded end of the bar with both hands at chest height",
+      "Take a breath and lock your stomach before pressing",
+      "Push the bar up and forward until your arms are straight",
+      "Lower slowly to your chest, keeping your back from arching"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Landmine Seated Overhead Press.mp4",
       "men": "exercises/men/Shoulders/Landmine Seated Overhead Press.mp4"
@@ -52015,7 +52574,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Seated pressing removes any leg drive, so every kilo comes from the shoulders and upper back. With the landmine's arc it stays comfortable for shoulders that do not like a barbell overhead."
   },
   {
     "id": "ea_landmine_seated_single_arm_overhead_press",
@@ -52027,8 +52587,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Sit facing away from the landmine with your feet flat and your back tall",
+    "steps": [
+      "Sit facing away from the landmine with your feet flat and your back tall",
+      "Hold the loaded bar end in one hand at shoulder height",
+      "Rest the free hand on your thigh and keep your shoulders level",
+      "Press up and forward until the arm is straight, without leaning away",
+      "Lower under control, complete the set, then match the reps on the other side"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Landmine Seated Single Arm Overhead Press.mp4",
       "men": "exercises/men/Shoulders/Landmine Seated Single Arm Overhead Press.mp4"
@@ -52042,7 +52608,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "One arm, seated, so nothing can help: not the legs, not the other side, not a lean. It shows a side-to-side strength difference more clearly than any two-handed press, and lets you fix it."
   },
   {
     "id": "ea_landmine_single_arm_push_press",
@@ -52054,8 +52621,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand facing away from the landmine holding the loaded end at one shoulder",
+    "steps": [
+      "Stand facing away from the landmine holding the loaded end at one shoulder",
+      "Dip by bending the knees a few centimetres, keeping your torso upright",
+      "Drive up hard through the legs and let that momentum start the bar moving",
+      "Finish the press with the arm, locking it straight out along the bar's arc",
+      "Lower the bar to the shoulder under control and reset before the next rep"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Landmine Single Arm Push Press.mp4",
       "men": "exercises/men/Shoulders/Landmine Single Arm Push Press.mp4"
@@ -52070,7 +52643,8 @@
     "contraindications": [
       "shoulder"
     ],
-    "poseTargetId": "overhead_press"
+    "poseTargetId": "overhead_press",
+    "purpose": "A short dip and drive from the legs lets you move more weight than the shoulder could press on its own, which trains power rather than just strength. Useful once a strict press is already solid."
   },
   {
     "id": "ea_landmine_single_arm_staggered_overhead_press",
@@ -52082,8 +52656,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand facing away from the landmine and step one foot forward into a short stagger",
+    "steps": [
+      "Stand facing away from the landmine and step one foot forward into a short stagger",
+      "Hold the loaded end at the shoulder of the arm on the same side as the back foot",
+      "Square your hips and shoulders and brace your stomach",
+      "Press the bar up and forward until the arm is straight, staying square throughout",
+      "Lower to the shoulder, finish the set, then swap the stance and the arm"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Landmine Single Arm Staggered Overhead Press.mp4",
       "men": "exercises/men/Shoulders/Landmine Single Arm Staggered Overhead Press.mp4"
@@ -52098,7 +52678,8 @@
     "contraindications": [
       "shoulder"
     ],
-    "poseTargetId": "overhead_press"
+    "poseTargetId": "overhead_press",
+    "purpose": "The staggered stance narrows your base, so the stomach and hips have to work to keep you square while one arm presses. A step between a two-footed press and a kneeling one."
   },
   {
     "id": "ea_landmine_squat_and_press",
@@ -52564,8 +53145,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand in a split stance with a dumbbell in the hand opposite your front foot",
+    "steps": [
+      "Stand in a split stance with a dumbbell in the hand opposite your front foot",
+      "Rest your free hand on the front thigh and hinge forward with a flat back",
+      "Let the dumbbell hang low and slightly across your body",
+      "Pull it up past your ribs while opening the chest toward the working side",
+      "Lower it slowly back across the body, then finish the set and switch sides"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Lawnmower Row.mp4",
       "men": "exercises/men/Back/Lawnmower Row.mp4"
@@ -52576,7 +53163,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_lawnmower_row.jpg",
       "men": "assets/posters/men/ea_lawnmower_row.jpg"
-    }
+    },
+    "purpose": "Named for the motion of starting a mower, and useful for the same reason: it trains a pull that involves the whole body turning slightly, which is how you actually pull things in life rather than in a gym."
   },
   {
     "id": "ea_laying_lateral_raise",
@@ -52588,8 +53176,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Lie on your side on a bench or the floor with the top arm resting along your body",
+    "steps": [
+      "Lie on your side on a bench or the floor with the top arm resting along your body",
+      "Hold a light dumbbell in the top hand with a slight bend in the elbow",
+      "Support your head with the bottom arm and keep your body in a straight line",
+      "Raise the dumbbell up toward the ceiling until the arm is vertical",
+      "Lower slowly back to your body, then roll over and do the other side"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Laying Lateral Raise.mp4",
       "men": "exercises/men/Shoulders/Laying Lateral Raise.mp4"
@@ -52603,7 +53197,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Lying on your side changes where the load is heaviest: the bottom of the movement becomes the hard part, instead of the top. That reaches the side of the shoulder in a range a standing raise leaves almost unloaded."
   },
   {
     "id": "ea_leaning_dumbbell_lateral_raise",
@@ -55446,8 +56041,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Start in a push-up position with your feet spread wide for balance",
+    "steps": [
+      "Start in a push-up position with your feet spread wide for balance",
+      "Put one hand behind your back and place the working hand under the middle of your chest",
+      "Brace hard so your hips and shoulders stay square to the floor",
+      "Bend the working elbow to lower your chest as far as you can control",
+      "Press back up without twisting, then complete the set and change arms"
+    ],
     "video": {
       "girl": "exercises/girl/Chest/One Arm Push Up.mp4",
       "men": "exercises/men/Chest/One Arm Push Up.mp4"
@@ -55464,7 +56065,8 @@
       "shoulder",
       "wrist"
     ],
-    "poseTargetId": "pushup"
+    "poseTargetId": "pushup",
+    "purpose": "The hardest bodyweight press there is, and most of the difficulty is not in the chest — it is in refusing to rotate while one arm holds you up. Attempt it only when you can do clean full push-ups for reps."
   },
   {
     "id": "ea_one_arm_reverse_dumbbell_fly",
@@ -55849,8 +56451,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Adjust the seat so the handles sit at chest height when you sit down",
+    "steps": [
+      "Adjust the seat so the handles sit at chest height when you sit down",
+      "Sit back with your shoulder blades and head against the pad",
+      "Take the handles with a slight bend in the elbows",
+      "Bring the handles together in front of your chest and squeeze for a second",
+      "Open slowly until you feel the stretch, and stop before the shoulders roll forward"
+    ],
     "video": {
       "girl": "exercises/girl/Chest/Pec Deck Fly Machine Flies.mp4",
       "men": "exercises/men/Chest/Pec Deck Fly Machine Flies.mp4"
@@ -55864,7 +56472,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "The machine holds your arms on the path for you, so you can work the chest close to failure without needing to balance anything. That makes it the safest way to finish a chest session when you train alone."
   },
   {
     "id": "ea_pigeon_glutes_stretch",
@@ -56520,8 +57129,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set two plates on their edges on the floor and stand between them, feet hip width",
+    "steps": [
+      "Set two plates on their edges on the floor and stand between them, feet hip width",
+      "Hinge forward with a flat back and grip the top edge of each plate",
+      "Brace your stomach and keep your torso still throughout",
+      "Row one plate to your ribs, then set it back down completely",
+      "Row the other side the same way, pausing on the floor between every repetition"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Plate Alternating Deadstop Row.mp4",
       "men": "exercises/men/Back/Plate Alternating Deadstop Row.mp4"
@@ -56532,7 +57147,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_alternating_deadstop_row.jpg",
       "men": "assets/posters/men/ea_plate_alternating_deadstop_row.jpg"
-    }
+    },
+    "purpose": "Every rep starts from a full stop on the floor, so nothing is carried over from the last one — the back does all of it. Alternating sides keeps the total time bent over manageable."
   },
   {
     "id": "ea_plate_car_driver",
@@ -56544,8 +57160,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hold a plate like a steering wheel with both hands at chest height",
+    "steps": [
+      "Hold a plate like a steering wheel with both hands at chest height",
+      "Extend your arms straight out in front of you at shoulder level",
+      "Brace your stomach and keep the ribs down so you cannot lean back",
+      "Rotate the plate to one side as if turning a wheel, keeping the arms straight",
+      "Rotate to the other side and continue back and forth for the set"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Plate Car Driver.mp4",
       "men": "exercises/men/Shoulders/Plate Car Driver.mp4"
@@ -56556,7 +57178,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_car_driver.jpg",
       "men": "assets/posters/men/ea_plate_car_driver.jpg"
-    }
+    },
+    "purpose": "Rotating a plate held out in front of you trains the front of the shoulders to hold a position while the forearms turn under load. It looks easy and stops being easy after about twenty seconds."
   },
   {
     "id": "ea_plate_clean",
@@ -56636,8 +57259,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hold a weight plate at the sides with both hands, arms hanging in front of your hips",
+    "steps": [
+      "Hold a weight plate at the sides with both hands, arms hanging in front of your hips",
+      "Curl the plate up to chest height, keeping your elbows close to your body",
+      "From there press it straight overhead until your arms lock out",
+      "Lower the plate back to your chest with control",
+      "Uncurl it down to your hips — that is one repetition"
+    ],
     "video": {
       "girl": "exercises/girl/Biceps/Plate Curl To Overhead Press.mp4",
       "men": "exercises/men/Biceps/Plate Curl To Overhead Press.mp4"
@@ -56652,7 +57281,8 @@
     "contraindications": [
       "elbow",
       "shoulder"
-    ]
+    ],
+    "purpose": "Two movements on one breath: the curl builds the arms, the press builds the shoulders, and the plate held out in front makes your stomach work to stop you leaning back. A whole upper body in one exercise when a single plate is all the equipment you have."
   },
   {
     "id": "ea_plate_curl_to_overhead_press_to_tricep_extension",
@@ -56664,8 +57294,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hold a plate at the sides with both hands, arms hanging in front of your hips",
+    "steps": [
+      "Hold a plate at the sides with both hands, arms hanging in front of your hips",
+      "Curl it up to your chest with the elbows close to your body",
+      "Press it straight overhead until your arms lock out",
+      "Bend the elbows to lower the plate behind your head, then push it back overhead",
+      "Lower it to your chest and back down to your hips — that is one full repetition"
+    ],
     "video": {
       "girl": "exercises/girl/Triceps/Plate Curl To Overhead Press To Tricep Extension.mp4",
       "men": "exercises/men/Triceps/Plate Curl To Overhead Press To Tricep Extension.mp4"
@@ -56680,7 +57316,8 @@
     "contraindications": [
       "elbow",
       "shoulder"
-    ]
+    ],
+    "purpose": "Three movements chained without putting the plate down: biceps, then shoulders, then triceps. Because the weight never rests, your heart rate climbs — this is arm work that doubles as conditioning when time is short."
   },
   {
     "id": "ea_plate_curtsy_lunge",
@@ -56779,8 +57416,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Place two weight plates on the floor a little wider than shoulder width",
+    "steps": [
+      "Place two weight plates on the floor a little wider than shoulder width",
+      "Take a push-up position with one hand on each plate and your body in a straight line",
+      "Brace your stomach and glutes so your hips stay level",
+      "Lower until your chest drops below the level of your hands",
+      "Push back up to straight arms, keeping the elbows from flaring wide"
+    ],
     "video": {
       "girl": "exercises/girl/Chest/Plate Deficit Pushup.mp4",
       "men": "exercises/men/Chest/Plate Deficit Pushup.mp4"
@@ -56792,7 +57435,8 @@
       "girl": "assets/posters/girl/ea_plate_deficit_pushup.jpg",
       "men": "assets/posters/men/ea_plate_deficit_pushup.jpg"
     },
-    "poseTargetId": "pushup"
+    "poseTargetId": "pushup",
+    "purpose": "Hands raised on plates let your chest travel below them, which adds the part of the range a floor push-up cuts off. That extra stretch at the bottom is where most of the new growth comes from."
   },
   {
     "id": "ea_plate_forward_lunge",
@@ -56871,8 +57515,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hold a plate at the sides with both hands, arms hanging in front of your thighs",
+    "steps": [
+      "Hold a plate at the sides with both hands, arms hanging in front of your thighs",
+      "Stand tall with your stomach braced and ribs pulled down",
+      "Raise the plate with straight arms up to shoulder height",
+      "Continue lifting it overhead until your arms are beside your ears",
+      "Lower slowly all the way back to your thighs without swinging"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Plate Full Front Raise.mp4",
       "men": "exercises/men/Shoulders/Plate Full Front Raise.mp4"
@@ -56886,7 +57536,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Taking the plate from the hips all the way overhead trains the front of the shoulder through its whole range in one movement, rather than stopping at shoulder height like most front raises do."
   },
   {
     "id": "ea_plate_glute_bridge_to_chest_press",
@@ -56898,8 +57549,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Lie on your back with knees bent, feet flat, and hold a plate over your chest with both hands",
+    "steps": [
+      "Lie on your back with knees bent, feet flat, and hold a plate over your chest with both hands",
+      "Push through your heels to lift your hips until your body is straight from knees to shoulders",
+      "Hold the bridge and keep your glutes squeezed for the whole set",
+      "Press the plate straight up over your chest until your arms lock",
+      "Lower it back to your chest under control without letting your hips drop"
+    ],
     "video": {
       "girl": "exercises/girl/Chest/Plate Glute Bridge to Chest Press.mp4",
       "men": "exercises/men/Chest/Plate Glute Bridge to Chest Press.mp4"
@@ -56915,7 +57572,8 @@
       "hip",
       "shoulder"
     ],
-    "poseTargetId": "hinge"
+    "poseTargetId": "hinge",
+    "purpose": "Trains the two halves of the body that most people neglect together: the glutes hold the hips up while the chest presses. One plate, no bench, and both ends working at once when time is short."
   },
   {
     "id": "ea_plate_glute_bridge_to_pullover",
@@ -56927,8 +57585,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Lie on your back with knees bent and feet flat, holding a plate over your chest",
+    "steps": [
+      "Lie on your back with knees bent and feet flat, holding a plate over your chest",
+      "Lift your hips into a bridge and keep the glutes squeezed for the whole set",
+      "With slightly bent arms, lower the plate back over your head toward the floor",
+      "Go only as far as you can without your ribs lifting or your hips dropping",
+      "Pull the plate back over your chest using the lats, keeping the bridge held"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Plate Glute Bridge to Pullover.mp4",
       "men": "exercises/men/Back/Plate Glute Bridge to Pullover.mp4"
@@ -56944,7 +57608,8 @@
       "hip",
       "shoulder"
     ],
-    "poseTargetId": "hinge"
+    "poseTargetId": "hinge",
+    "purpose": "Holds the hips up with the glutes while the lats work overhead, so the front of your body is stretched open at both ends. A useful counter to a day spent folded forward at a desk."
   },
   {
     "id": "ea_plate_good_morning",
@@ -56956,8 +57621,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hold a weight plate against your chest with both hands, feet shoulder width apart",
+    "steps": [
+      "Hold a weight plate against your chest with both hands, feet shoulder width apart",
+      "Soften the knees and set your back flat",
+      "Push your hips straight back and lower your chest toward the floor",
+      "Keep the plate glued to your chest and your neck in line with your spine",
+      "Stop at a strong stretch behind the thighs, then squeeze the glutes to stand"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Plate Good Morning.mp4",
       "men": "exercises/men/Back/Plate Good Morning.mp4"
@@ -56973,7 +57644,8 @@
       "hip",
       "lower_back"
     ],
-    "poseTargetId": "hinge"
+    "poseTargetId": "hinge",
+    "purpose": "Teaches the hip hinge with a load you can hold anywhere, which makes it the version to practise at home. Holding the plate at the chest rather than a bar on the back keeps the spine loaded far more gently."
   },
   {
     "id": "ea_plate_good_morning_anterior",
@@ -57014,8 +57686,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hold a light plate with both hands in front of your chest",
+    "steps": [
+      "Hold a light plate with both hands in front of your chest",
+      "Stand tall with your stomach braced and your ribs down",
+      "Circle the plate around your head, passing it close behind the neck",
+      "Keep the movement slow and let the elbows travel rather than the torso",
+      "Complete the circles in one direction, then do the same number the other way"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Plate Halo.mp4",
       "men": "exercises/men/Shoulders/Plate Halo.mp4"
@@ -57026,7 +57704,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_halo.jpg",
       "men": "assets/posters/men/ea_plate_halo.jpg"
-    }
+    },
+    "purpose": "Circling a plate around your head takes the shoulders through their full range under a light load, which is why it works as both a warm-up and a mobility drill. It is the standard opener before overhead work."
   },
   {
     "id": "ea_plate_hollow_hold",
@@ -57063,8 +57742,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hinge forward with a flat back, holding a light plate in each hand",
+    "steps": [
+      "Hinge forward with a flat back, holding a light plate in each hand",
+      "Let the arms hang straight down and rotate them so the thumbs point toward the floor",
+      "Keep a small fixed bend in the elbows",
+      "Raise both arms out to the sides until level with your shoulders",
+      "Lower slowly, keeping the thumbs pointing down the whole time"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Plate Internally Rotated Rear Delt Fly.mp4",
       "men": "exercises/men/Shoulders/Plate Internally Rotated Rear Delt Fly.mp4"
@@ -57078,7 +57763,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Turning the thumbs down aims the work squarely at the rear shoulder and takes the middle back out of it. Use light plates — this position is unforgiving of weight, and the point is placement, not load."
   },
   {
     "id": "ea_plate_lateral_lunge",
@@ -57119,8 +57805,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hold a plate in each hand by the rim, arms hanging at your sides",
+    "steps": [
+      "Hold a plate in each hand by the rim, arms hanging at your sides",
+      "Stand tall with a slight bend in the elbows and your shoulders down",
+      "Raise both plates out to the sides in a wide arc",
+      "Stop at shoulder height without shrugging the shoulders up",
+      "Lower slowly along the same path, resisting the weight all the way down"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Plate Lateral Raise.mp4",
       "men": "exercises/men/Shoulders/Plate Lateral Raise.mp4"
@@ -57134,7 +57826,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Holding a plate rather than a dumbbell puts the weight further from your hand, so a light plate loads the side of the shoulder as hard as a heavier dumbbell would. Kinder on the joint for the same effect."
   },
   {
     "id": "ea_plate_overhead_carry",
@@ -57171,8 +57864,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hold a plate at the sides with both hands at chest height",
+    "steps": [
+      "Hold a plate at the sides with both hands at chest height",
+      "Press it straight overhead until your arms lock out",
+      "Keeping the upper arms still, bend the elbows to lower the plate behind your head",
+      "Extend the elbows to push it back overhead",
+      "Lower the plate to your chest — that is one full repetition"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Plate Overhead Press To Tricep Extension.mp4",
       "men": "exercises/men/Shoulders/Plate Overhead Press To Tricep Extension.mp4"
@@ -57188,7 +57887,8 @@
       "elbow",
       "shoulder"
     ],
-    "poseTargetId": "overhead_press"
+    "poseTargetId": "overhead_press",
+    "purpose": "Chains a shoulder press into a triceps extension without setting the weight down, so the whole back of the arm and the shoulder get worked in one continuous set. Efficient when you have one plate and little time."
   },
   {
     "id": "ea_plate_overhead_shrug",
@@ -57200,8 +57900,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Press a plate overhead with both hands and lock your arms straight",
+    "steps": [
+      "Press a plate overhead with both hands and lock your arms straight",
+      "Let your shoulders rise toward your ears while keeping the elbows locked",
+      "Brace your stomach so your lower back does not arch",
+      "Push the plate higher by pressing your shoulders up and away from your ears",
+      "Return to the starting position slowly, keeping the arms straight throughout"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Plate Overhead Shrug.mp4",
       "men": "exercises/men/Shoulders/Plate Overhead Shrug.mp4"
@@ -57217,7 +57923,8 @@
       "lower_back",
       "neck",
       "shoulder"
-    ]
+    ],
+    "purpose": "Shrugging with the arms overhead trains the lower trapezius, the part that pulls the shoulder blades down. Strength there is what makes overhead pressing feel stable instead of pinched."
   },
   {
     "id": "ea_plate_overhead_tricep_extension",
@@ -57229,8 +57936,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand tall and hold a weight plate at the sides with both hands",
+    "steps": [
+      "Stand tall and hold a weight plate at the sides with both hands",
+      "Press it overhead until your arms are straight",
+      "Keep your elbows pointing forward and close together, not flaring out",
+      "Bend the elbows to lower the plate down behind your head as far as is comfortable",
+      "Push it back overhead to straight arms, keeping your ribs down and back flat"
+    ],
     "video": {
       "girl": "exercises/girl/Triceps/Plate Overhead Tricep Extension.mp4",
       "men": "exercises/men/Triceps/Plate Overhead Tricep Extension.mp4"
@@ -57245,7 +57958,8 @@
     "contraindications": [
       "elbow",
       "shoulder"
-    ]
+    ],
+    "purpose": "Gets the long head of the triceps on full stretch with the simplest equipment there is. Gripping a plate by the edges also makes your fingers work, so grip gets trained alongside the arm."
   },
   {
     "id": "ea_plate_overhead_walking_lunge",
@@ -57287,8 +58001,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand two plates together on the floor with the smooth sides facing outward",
+    "steps": [
+      "Stand two plates together on the floor with the smooth sides facing outward",
+      "Stand over them with your feet either side, hips back and back flat",
+      "Pinch the outer faces with your fingers and thumb — no hooking the rim",
+      "Stand up by driving through the legs, keeping the plates hanging still",
+      "Hold at the top for a few seconds, then lower under control before your grip fails"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Plate Pinch Grip Deadlift.mp4",
       "men": "exercises/men/Back/Plate Pinch Grip Deadlift.mp4"
@@ -57304,7 +58024,8 @@
       "hip",
       "lower_back"
     ],
-    "poseTargetId": "hinge"
+    "poseTargetId": "hinge",
+    "purpose": "Pinching two plates between the fingers and thumb trains a grip that a hook or a strap can never build. Grip is the first thing to fail on heavy rows, carries and pull-ups, so it is worth training on its own."
   },
   {
     "id": "ea_plate_pinch_grip_row",
@@ -57316,8 +58037,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hinge forward with a flat back, holding a plate pinched in each hand by its smooth face",
+    "steps": [
+      "Hinge forward with a flat back, holding a plate pinched in each hand by its smooth face",
+      "Let both plates hang straight down under your shoulders",
+      "Brace your stomach and hold the torso still",
+      "Row both plates to your ribs, keeping the pinch tight",
+      "Lower them slowly to arms' length and repeat until the grip, not the back, stops you"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Plate Pinch Grip Row.mp4",
       "men": "exercises/men/Back/Plate Pinch Grip Row.mp4"
@@ -57328,7 +58055,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_pinch_grip_row.jpg",
       "men": "assets/posters/men/ea_plate_pinch_grip_row.jpg"
-    }
+    },
+    "purpose": "A back row and a grip test in one: the pinch hold fails long before the back does, so every rep is fighting to keep hold. Best used late in a session when heavy rowing is already done."
   },
   {
     "id": "ea_plate_pinch_grip_side_bend",
@@ -57364,8 +58092,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hold a weight plate flat between both palms at chest height, fingers pointing forward",
+    "steps": [
+      "Hold a weight plate flat between both palms at chest height, fingers pointing forward",
+      "Press your hands into the plate hard enough that it cannot slip",
+      "Stand tall, or lie on a bench if you prefer, with your ribs pulled down",
+      "Push the plate straight away from your chest until your arms are almost straight",
+      "Draw it back to your chest slowly, never stopping the inward squeeze"
+    ],
     "video": {
       "girl": "exercises/girl/Chest/Plate Press.mp4",
       "men": "exercises/men/Chest/Plate Press.mp4"
@@ -57379,7 +58113,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Squeezing a single plate between the palms keeps the chest under tension from start to finish, including at full extension where a dumbbell press gives it a rest. Very little weight is needed for it to burn."
   },
   {
     "id": "ea_plate_reach",
@@ -57391,8 +58126,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hold a plate with both hands against your chest, standing tall",
+    "steps": [
+      "Hold a plate with both hands against your chest, standing tall",
+      "Brace your stomach and pull your ribs down",
+      "Push the plate straight out in front of you until the arms are fully extended",
+      "Hold it there at shoulder height for the prescribed time",
+      "Draw it back to your chest under control without letting it drop"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Plate Reach.mp4",
       "men": "exercises/men/Shoulders/Plate Reach.mp4"
@@ -57403,7 +58144,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_reach.jpg",
       "men": "assets/posters/men/ea_plate_reach.jpg"
-    }
+    },
+    "purpose": "Holding a plate out at arm's length is a test of how long the front of your shoulders can hold a position, which is a different quality from how much they can lift. It also makes the stomach work to stop you leaning back."
   },
   {
     "id": "ea_plate_rear_delt_fly",
@@ -57415,8 +58157,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hinge forward from the hips with a flat back, a light plate in each hand",
+    "steps": [
+      "Hinge forward from the hips with a flat back, a light plate in each hand",
+      "Let the arms hang straight down beneath your shoulders",
+      "Keep a small fixed bend in the elbows for the whole set",
+      "Raise both plates out to the sides until they are level with your shoulders",
+      "Squeeze for a second, then lower slowly under control"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Plate Rear Delt Fly.mp4",
       "men": "exercises/men/Shoulders/Plate Rear Delt Fly.mp4"
@@ -57430,7 +58178,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Works the back of the shoulders, the muscles that pull the shoulders back and undo the forward rounding that comes with pressing and desk work. Light weight and a full squeeze matter far more than load here."
   },
   {
     "id": "ea_plate_russian_twist",
@@ -58514,8 +59263,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Attach a rope to the sled and sit or stand facing it at the far end",
+    "steps": [
+      "Attach a rope to the sled and sit or stand facing it at the far end",
+      "Take the rope with both hands and raise your arms overhead, arms straight",
+      "Set your feet and brace so your torso stays upright",
+      "Pull the rope down and back past your head, hand over hand, drawing the sled toward you",
+      "Reach forward for the next grip and keep pulling until the sled reaches you"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Push Pull Chair Over Head Pull.mp4",
       "men": "exercises/men/Back/Push Pull Chair Over Head Pull.mp4"
@@ -58526,7 +59281,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_push_pull_chair_over_head_pull.jpg",
       "men": "assets/posters/men/ea_push_pull_chair_over_head_pull.jpg"
-    }
+    },
+    "purpose": "Pulling a loaded sled with the rope overhead works the lats and the whole back without any lowering phase, so you can add hard back work without the soreness that limits how often you train."
   },
   {
     "id": "ea_push_pull_front_handle_push",
@@ -58538,8 +59294,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Load the sled and take the upright handles at about chest height",
+    "steps": [
+      "Load the sled and take the upright handles at about chest height",
+      "Lean forward into the sled with your arms firm and your back flat",
+      "Drive through the balls of your feet with short, quick steps",
+      "Keep pushing at a steady pace for the set distance or time, arms locked in place",
+      "Stop, reset your breathing, then turn the sled around for the next run"
+    ],
     "video": {
       "girl": "exercises/girl/Chest/Push Pull Front Handle Push.mp4",
       "men": "exercises/men/Chest/Push Pull Front Handle Push.mp4"
@@ -58550,7 +59312,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_push_pull_front_handle_push.jpg",
       "men": "assets/posters/men/ea_push_pull_front_handle_push.jpg"
-    }
+    },
+    "purpose": "Pushing a loaded sled trains the chest, shoulders and legs together against resistance that cannot be dropped, so there is no eccentric phase and almost no next-day soreness. That makes it easy to add work without adding recovery cost."
   },
   {
     "id": "ea_push_up_and_rotation",
@@ -61008,8 +61771,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Take a barbell with an overhand grip, hands about shoulder width apart",
+    "steps": [
+      "Take a barbell with an overhand grip, hands about shoulder width apart",
+      "Stand tall with the bar resting against your thighs and elbows at your sides",
+      "Curl the bar up toward your chest without letting the wrists bend backwards",
+      "Stop when your forearms are vertical, keeping the knuckles pointing up",
+      "Lower slowly to the thighs — expect to use noticeably less weight than a normal curl"
+    ],
     "video": {
       "men": "exercises/men/Biceps/reverse curl barbell.mp4"
     },
@@ -61023,7 +61792,8 @@
       "elbow",
       "wrist"
     ],
-    "poseTargetId": "curl"
+    "poseTargetId": "curl",
+    "purpose": "Turning the palms down shifts the work off the biceps and onto the muscle underneath it and the top of the forearm — the two things that decide how thick the arm looks from the side and how long your grip lasts."
   },
   {
     "id": "ea_reverse_grip_lat_pull_down",
@@ -61914,8 +62684,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Sit on the end of a bench with a dumbbell in each hand, palms facing each other",
+    "steps": [
+      "Sit on the end of a bench with a dumbbell in each hand, palms facing each other",
+      "Sit tall with your feet flat and your back straight",
+      "Raise both dumbbells straight out in front of you, thumbs pointing up",
+      "Stop at shoulder height without leaning back",
+      "Lower slowly to your thighs, keeping the palms facing each other throughout"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Seated Dumbbell Neutral Grip Front Raises.mp4",
       "men": "exercises/men/Shoulders/Seated Dumbbell Neutral Grip Front Raises.mp4"
@@ -61929,7 +62705,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Sitting stops you from swinging the weight up with your hips, and the neutral grip is easier on the front of the shoulder than turning the palms down. The strictest way to train the front delts."
   },
   {
     "id": "ea_seated_dumbbell_neutral_grip_side_raises",
@@ -61941,8 +62718,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Sit upright on the end of a bench with a dumbbell in each hand at your sides",
+    "steps": [
+      "Sit upright on the end of a bench with a dumbbell in each hand at your sides",
+      "Keep the palms facing each other and a slight bend in the elbows",
+      "Raise both arms out to the sides in a wide arc",
+      "Stop at shoulder height with the shoulders staying down, not shrugged",
+      "Lower slowly to your sides without letting the weights drop"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Seated Dumbbell Neutral Grip Side Raises.mp4",
       "men": "exercises/men/Shoulders/Seated Dumbbell Neutral Grip Side Raises.mp4"
@@ -61956,7 +62739,8 @@
     },
     "contraindications": [
       "shoulder"
-    ]
+    ],
+    "purpose": "Seated raises remove every trace of leg drive, so the side of the shoulder does all of the work with a weight far lighter than you would use standing. That is the point — this muscle responds to precision, not to load."
   },
   {
     "id": "ea_seated_dumbbell_one_arm_shoulder_press",
@@ -62434,8 +63218,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set the seat height so the handles line up with the middle of your chest",
+    "steps": [
+      "Set the seat height so the handles line up with the middle of your chest",
+      "Sit with your chest against the pad and your feet planted",
+      "Take the handles with your arms straight and shoulder blades relaxed forward",
+      "Pull the handles to your ribs, driving the elbows back and squeezing the blades together",
+      "Return slowly until the arms are straight and the blades open again"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Seated Row Machine Rows.mp4",
       "men": "exercises/men/Back/Seated Row Machine Rows.mp4"
@@ -62446,7 +63236,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_seated_row_machine_rows.jpg",
       "men": "assets/posters/men/ea_seated_row_machine_rows.jpg"
-    }
+    },
+    "purpose": "The machine supports your chest and lower back, so you can pull heavy without your spine having to hold the position. This is usually the safest heavy row available, and the one to choose when the lower back is already tired."
   },
   {
     "id": "ea_seated_shoulder_flexor_depressor_retractor_stretch",
@@ -66294,8 +67085,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Attach a straight bar to the high pulley and stand a step back, feet hip width",
+    "steps": [
+      "Attach a straight bar to the high pulley and stand a step back, feet hip width",
+      "Take the bar with an overhand grip and straight arms at about head height",
+      "Hinge forward slightly at the hips and keep your back flat",
+      "Sweep the bar down in an arc to your thighs without bending the elbows",
+      "Let the bar rise back slowly to head height, feeling the stretch under the arms"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Straight Arm Cable Lat Pull Down.mp4",
       "men": "exercises/men/Back/Straight Arm Cable Lat Pull Down.mp4"
@@ -66306,7 +67103,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_straight_arm_cable_lat_pull_down.jpg",
       "men": "assets/posters/men/ea_straight_arm_cable_lat_pull_down.jpg"
-    }
+    },
+    "purpose": "With the elbows locked the biceps cannot contribute, so the lats do the entire pull. It is the standard fix for a back workout you feel everywhere except your back."
   },
   {
     "id": "ea_straight_bar_cable_pull_down",
@@ -67317,8 +68115,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set the straps so the handles hang at about hip height and take one in each hand",
+    "steps": [
+      "Set the straps so the handles hang at about hip height and take one in each hand",
+      "Walk your feet forward and lean back until your arms are straight",
+      "Squeeze your glutes and stomach so your body forms a straight line",
+      "Pull your chest up to the handles, drawing your elbows past your ribs",
+      "Lower yourself slowly to straight arms without letting the hips sag"
+    ],
     "video": {
       "girl": "exercises/girl/Shoulders/Suspension Trainer with Grips Inverted Row on floor.mp4",
       "men": "exercises/men/Shoulders/Suspension Trainer with Grips Inverted Row on floor.mp4"
@@ -67329,7 +68133,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_suspension_trainer_with_grips_inverted_row_on_floor.jpg",
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_inverted_row_on_floor.jpg"
-    }
+    },
+    "purpose": "A pull where your own body is the weight and your feet set the difficulty, so it scales from very easy to very hard without changing equipment. It builds the upper back and rear shoulders that balance out pressing."
   },
   {
     "id": "ea_suspension_trainer_with_grips_knee_tuck_row",
@@ -68072,8 +68877,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set the straps so the handles hang at about hip height and take one in each hand",
+    "steps": [
+      "Set the straps so the handles hang at about hip height and take one in each hand",
+      "Walk your feet forward and lean back until your arms are straight and your body is a straight line",
+      "Set your hands wider than your shoulders with palms facing down",
+      "Pull your chest to the handles, driving the elbows out and back and squeezing the blades",
+      "Lower under control to straight arms, keeping your hips from sagging"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Suspension Trainer with Grips Wide Grip Inverted Row on floor_1.mp4",
       "men": "exercises/men/Back/Suspension Trainer with Grips Wide Grip Inverted Row on floor_1.mp4"
@@ -68084,7 +68895,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_suspension_trainer_with_grips_wide_grip_inverted_row_on_floor_1.jpg",
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_wide_grip_inverted_row_on_floor_1.jpg"
-    }
+    },
+    "purpose": "A row where your own body is the weight, so you can make it as easy or as hard as you need just by moving your feet. The wide grip aims the work at the upper back and rear shoulders, the muscles that pull the shoulders back."
   },
   {
     "id": "ea_svend_press_decline_bench",
@@ -68257,8 +69069,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hold a light band with both hands at chest height, arms straight in front of you",
+    "steps": [
+      "Hold a light band with both hands at chest height, arms straight in front of you",
+      "Stand tall with your ribs down and your chin gently tucked",
+      "Keep your arms straight and pull the band apart by drawing your shoulder blades together",
+      "Squeeze for two seconds at the point where your chest opens fully",
+      "Return slowly to the start without letting your shoulders creep up toward your ears"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Theraband Scapula Retraction.mp4",
       "men": "exercises/men/Back/Theraband Scapula Retraction.mp4"
@@ -68269,7 +69087,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_theraband_scapula_retraction.jpg",
       "men": "assets/posters/men/ea_theraband_scapula_retraction.jpg"
-    }
+    },
+    "purpose": "A light movement for the muscles between the shoulder blades, which get long and weak from hours at a keyboard. Doing it often matters more than doing it heavy — it is a posture exercise, not a strength one."
   },
   {
     "id": "ea_trap_bar_deadlift",
@@ -68566,8 +69385,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Attach a rope to the high pulley and stand facing the machine, one step back",
+    "steps": [
+      "Attach a rope to the high pulley and stand facing the machine, one step back",
+      "Take one end in each hand with the thumbs on top and pull your elbows to your sides",
+      "Lean forward very slightly and brace your stomach",
+      "Push the rope down and pull the ends apart as your arms straighten",
+      "Return slowly, letting the rope come back together until the forearms are parallel to the floor"
+    ],
     "video": {
       "girl": "exercises/girl/Triceps/Tricep Rope Extension on Crossover Machine.mp4",
       "men": "exercises/men/Triceps/tricep rope extension on crossover machine.mp4"
@@ -68581,7 +69406,8 @@
     },
     "contraindications": [
       "elbow"
-    ]
+    ],
+    "purpose": "The rope lets your hands separate at the bottom, so the arms finish fully straight and turned slightly outward — the position where the triceps contracts hardest. A straight bar locks the hands together and stops short of it."
   },
   {
     "id": "ea_triceps_dip_machine",
@@ -69461,8 +70287,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set the pad just below your hip bones and hook your heels under the rollers",
+    "steps": [
+      "Set the pad just below your hip bones and hook your heels under the rollers",
+      "Hold a plate against your chest and cross your arms over it",
+      "Start folded forward at the hips with your back flat, not rounded",
+      "Squeeze your glutes and lift your torso until your body forms a straight line",
+      "Stop there — do not arch past straight — and lower slowly under control"
+    ],
     "video": {
       "girl": "exercises/girl/Back/Weighted Back Extensions on Hyperextension Bench.mp4",
       "men": "exercises/men/Back/Weighted Back Extensions on Hyperextension Bench.mp4"
@@ -69476,7 +70308,8 @@
     },
     "contraindications": [
       "lower_back"
-    ]
+    ],
+    "purpose": "Trains the muscles that run along the spine to hold a position under load — the exact job they do during a deadlift or a heavy carry. A strong set of these is one of the better insurances against a back that gives out."
   },
   {
     "id": "ea_weighted_standing_shoulder_press_with_plate",

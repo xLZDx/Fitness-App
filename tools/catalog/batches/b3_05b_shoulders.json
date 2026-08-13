@@ -1,0 +1,530 @@
+{
+  "ea_landmine_alternating_single_arm_press": {
+    "en": {
+      "purpose": "The landmine presses on an arc rather than straight overhead, which most shoulders tolerate far better than a vertical press. Alternating arms means your stomach has to resist being pulled sideways with every repetition.",
+      "steps": [
+        "Stand facing away from the landmine with the loaded bar end at one shoulder",
+        "Hold the end in that hand, feet shoulder width apart, stomach braced",
+        "Press the bar up and forward until the arm is straight, following its arc",
+        "Bring it back to the shoulder and pass the end to the other hand",
+        "Press with that arm the same way, alternating for the whole set"
+      ]
+    },
+    "ru": {
+      "purpose": "Лендмайн жмёт по дуге, а не строго вверх, и большинство плеч переносят это намного легче вертикального жима. Чередование рук заставляет живот сопротивляться боковому уводу в каждом повторении.",
+      "steps": [
+        "Встаньте спиной к лендмайну, нагруженный конец грифа у одного плеча",
+        "Держите конец этой рукой, стопы на ширине плеч, живот напряжён",
+        "Выжмите гриф вверх и вперёд до прямой руки по его дуге",
+        "Верните к плечу и передайте конец в другую руку",
+        "Выжмите второй рукой так же, чередуя весь подход"
+      ]
+    }
+  },
+  "ea_landmine_half_kneeling_single_arm_overhead_press": {
+    "en": {
+      "purpose": "Half kneeling locks the hips, so you cannot lean back and turn the press into a throw. It exposes exactly how much of your overhead strength comes from the shoulder and how much came from your lower back.",
+      "steps": [
+        "Kneel on one knee facing away from the landmine, the down knee under your hip",
+        "Hold the loaded bar end in the hand on the same side as the down knee",
+        "Squeeze the glute of the kneeling leg and pull your ribs down",
+        "Press the bar up and forward until the arm is straight, back staying upright",
+        "Lower to the shoulder under control, then finish the set and switch sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Положение на одном колене фиксирует таз, поэтому отклониться назад и превратить жим в заброс невозможно. Хорошо показывает, какая часть силы над головой шла от плеча, а какая от поясницы.",
+      "steps": [
+        "Встаньте на одно колено спиной к лендмайну, опорное колено под тазом",
+        "Возьмите нагруженный конец грифа рукой со стороны опорного колена",
+        "Напрягите ягодицу опорной ноги и опустите рёбра",
+        "Выжмите гриф вверх и вперёд до прямой руки, спина остаётся прямой",
+        "Опустите к плечу под контролем, доделайте подход и смените сторону"
+      ]
+    }
+  },
+  "ea_landmine_kneeling_alternating_overhead_press": {
+    "en": {
+      "purpose": "Kneeling on both knees removes the legs entirely, so the shoulders press without any help. Alternating keeps one arm loaded at all times, which keeps the stomach working right through the set.",
+      "steps": [
+        "Kneel on both knees facing away from the landmine, hips upright over the knees",
+        "Take the loaded bar end in one hand at shoulder height",
+        "Squeeze your glutes and keep your ribs pulled down",
+        "Press the bar out and up until the arm is straight, then return to the shoulder",
+        "Pass the end to the other hand and repeat, alternating throughout"
+      ]
+    },
+    "ru": {
+      "purpose": "Стойка на обоих коленях полностью убирает ноги, и плечи жмут без помощи. Чередование держит одну руку под нагрузкой постоянно, поэтому живот работает весь подход.",
+      "steps": [
+        "Встаньте на оба колена спиной к лендмайну, таз прямо над коленями",
+        "Возьмите нагруженный конец грифа одной рукой на уровне плеча",
+        "Напрягите ягодицы, рёбра держите опущенными",
+        "Выжмите гриф вперёд и вверх до прямой руки, затем верните к плечу",
+        "Передайте конец в другую руку и повторите, чередуя весь подход"
+      ]
+    }
+  },
+  "ea_landmine_kneeling_overhead_press": {
+    "en": {
+      "purpose": "A pressing position that gives the shoulder the arc it likes while the kneeling stance stops the lower back from arching to help. Good for anyone whose overhead press turns into a leaning-back contest.",
+      "steps": [
+        "Kneel on both knees facing away from the landmine with your hips tall",
+        "Cup the loaded end of the bar with both hands at chest height",
+        "Brace your stomach and squeeze your glutes to lock the hips",
+        "Press the bar up and forward along its arc until your arms are straight",
+        "Lower it back to your chest slowly without letting your back arch"
+      ]
+    },
+    "ru": {
+      "purpose": "Жимовое положение даёт плечу удобную дугу, а стойка на коленях не позволяет пояснице прогибаться на помощь. Хороший вариант для тех, у кого жим над головой превращается в отклонение назад.",
+      "steps": [
+        "Встаньте на оба колена спиной к лендмайну, таз выпрямлен",
+        "Обхватите нагруженный конец грифа двумя ладонями на уровне груди",
+        "Напрягите живот и ягодицы, зафиксировав таз",
+        "Выжмите гриф вверх и вперёд по дуге до прямых рук",
+        "Медленно опустите к груди, не прогибая поясницу"
+      ]
+    }
+  },
+  "ea_landmine_lateral_raise": {
+    "en": {
+      "purpose": "The landmine's arc changes the resistance as the arm rises, so the hardest point lands nearer the top than with a dumbbell. That is where the side of the shoulder is normally weakest and least trained.",
+      "steps": [
+        "Stand side-on to the landmine and hold the loaded end in the outside hand",
+        "Let the arm hang across the front of your body with a slight elbow bend",
+        "Set your feet shoulder width and brace your stomach",
+        "Raise the arm out to the side along the bar's arc, to about shoulder height",
+        "Lower slowly along the same path, then move round and change sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Дуга лендмайна меняет сопротивление по ходу подъёма, поэтому самая тяжёлая точка ближе к верху, чем с гантелью. Именно там средняя дельта обычно слабее всего и меньше всего тренирована.",
+      "steps": [
+        "Встаньте боком к лендмайну и возьмите нагруженный конец дальней рукой",
+        "Рука опущена поперёк тела, в локте лёгкий сгиб",
+        "Стопы на ширине плеч, живот напряжён",
+        "Поднимите руку в сторону по дуге грифа примерно до уровня плеча",
+        "Медленно опустите по той же траектории, затем перейдите и смените сторону"
+      ]
+    }
+  },
+  "ea_landmine_overhead_press": {
+    "en": {
+      "purpose": "The standing landmine press builds real overhead strength on a path the shoulder finds comfortable, and lets the legs contribute a little. Often the heaviest pressing available to someone who cannot go straight overhead without pain.",
+      "steps": [
+        "Stand facing away from the landmine and cup the loaded bar end with both hands at your chest",
+        "Set your feet shoulder width apart with a slight bend in the knees",
+        "Brace your stomach and pull the ribs down",
+        "Press the bar up and forward until your arms lock out",
+        "Lower it under control to your chest and reset before the next repetition"
+      ]
+    },
+    "ru": {
+      "purpose": "Жим лендмайна стоя строит настоящую силу над головой по траектории, удобной плечу, и позволяет ногам немного помочь. Часто это самый тяжёлый доступный жим для того, кто не может жать строго вверх без боли.",
+      "steps": [
+        "Встаньте спиной к лендмайну и обхватите нагруженный конец грифа двумя ладонями у груди",
+        "Стопы на ширине плеч, колени слегка согнуты",
+        "Напрягите живот и опустите рёбра",
+        "Выжмите гриф вверх и вперёд до полного выпрямления рук",
+        "Опустите под контролем к груди и сделайте паузу перед следующим повторением"
+      ]
+    }
+  },
+  "ea_landmine_seated_alternating_overhead_press": {
+    "en": {
+      "purpose": "Sitting takes the legs out completely and the alternating rhythm keeps one side under load at all times. It is the strictest way to press with a landmine, and the honest test of shoulder strength alone.",
+      "steps": [
+        "Sit on a bench or the floor facing away from the landmine, back upright",
+        "Take the loaded bar end in one hand at shoulder height",
+        "Brace your stomach so your torso does not lean or twist",
+        "Press up and forward to a straight arm, then bring it back to the shoulder",
+        "Hand the bar to the other side and repeat, alternating for the whole set"
+      ]
+    },
+    "ru": {
+      "purpose": "Положение сидя полностью убирает ноги, а чередование держит одну сторону под нагрузкой постоянно. Это самый строгий вариант жима с лендмайном и честная проверка силы одних плеч.",
+      "steps": [
+        "Сядьте на скамью или пол спиной к лендмайну, спина прямая",
+        "Возьмите нагруженный конец грифа одной рукой на уровне плеча",
+        "Напрягите живот, чтобы корпус не наклонялся и не разворачивался",
+        "Выжмите вверх и вперёд до прямой руки, затем верните к плечу",
+        "Передайте гриф на другую сторону и повторите, чередуя весь подход"
+      ]
+    }
+  },
+  "ea_landmine_seated_overhead_press": {
+    "en": {
+      "purpose": "Seated pressing removes any leg drive, so every kilo comes from the shoulders and upper back. With the landmine's arc it stays comfortable for shoulders that do not like a barbell overhead.",
+      "steps": [
+        "Sit facing away from the landmine with your back tall and feet planted",
+        "Cup the loaded end of the bar with both hands at chest height",
+        "Take a breath and lock your stomach before pressing",
+        "Push the bar up and forward until your arms are straight",
+        "Lower slowly to your chest, keeping your back from arching"
+      ]
+    },
+    "ru": {
+      "purpose": "Жим сидя убирает помощь ног, поэтому каждый килограмм идёт от плеч и верха спины. Дуга лендмайна при этом остаётся комфортной для плеч, которым не нравится штанга над головой.",
+      "steps": [
+        "Сядьте спиной к лендмайну, спина прямая, стопы устойчиво на полу",
+        "Обхватите нагруженный конец грифа двумя ладонями на уровне груди",
+        "Вдохните и жёстко напрягите живот перед жимом",
+        "Выжмите гриф вверх и вперёд до прямых рук",
+        "Медленно опустите к груди, не прогибая спину"
+      ]
+    }
+  },
+  "ea_landmine_seated_single_arm_overhead_press": {
+    "en": {
+      "purpose": "One arm, seated, so nothing can help: not the legs, not the other side, not a lean. It shows a side-to-side strength difference more clearly than any two-handed press, and lets you fix it.",
+      "steps": [
+        "Sit facing away from the landmine with your feet flat and your back tall",
+        "Hold the loaded bar end in one hand at shoulder height",
+        "Rest the free hand on your thigh and keep your shoulders level",
+        "Press up and forward until the arm is straight, without leaning away",
+        "Lower under control, complete the set, then match the reps on the other side"
+      ]
+    },
+    "ru": {
+      "purpose": "Одна рука, сидя — помочь нечем: ни ногами, ни второй стороной, ни наклоном. Разницу в силе между сторонами это показывает яснее любого жима двумя руками и позволяет её исправить.",
+      "steps": [
+        "Сядьте спиной к лендмайну, стопы на полу, спина прямая",
+        "Возьмите нагруженный конец грифа одной рукой на уровне плеча",
+        "Свободную руку положите на бедро, плечи держите на одном уровне",
+        "Выжмите вверх и вперёд до прямой руки, не отклоняясь в сторону",
+        "Опустите под контролем, доделайте подход и повторите столько же другой рукой"
+      ]
+    }
+  },
+  "ea_landmine_single_arm_push_press": {
+    "en": {
+      "purpose": "A short dip and drive from the legs lets you move more weight than the shoulder could press on its own, which trains power rather than just strength. Useful once a strict press is already solid.",
+      "steps": [
+        "Stand facing away from the landmine holding the loaded end at one shoulder",
+        "Dip by bending the knees a few centimetres, keeping your torso upright",
+        "Drive up hard through the legs and let that momentum start the bar moving",
+        "Finish the press with the arm, locking it straight out along the bar's arc",
+        "Lower the bar to the shoulder under control and reset before the next rep"
+      ]
+    },
+    "ru": {
+      "purpose": "Короткий подсед и толчок ногами позволяют разогнать больший вес, чем плечо выжало бы само, — тренируется мощность, а не только сила. Имеет смысл, когда строгий жим уже уверенный.",
+      "steps": [
+        "Встаньте спиной к лендмайну, нагруженный конец грифа у одного плеча",
+        "Сделайте короткий подсед на несколько сантиметров, корпус остаётся прямым",
+        "Мощно толкнитесь ногами и передайте импульс грифу",
+        "Дожмите рукой до полного выпрямления по дуге грифа",
+        "Опустите гриф к плечу под контролем и сделайте паузу перед следующим повторением"
+      ]
+    }
+  },
+  "ea_landmine_single_arm_staggered_overhead_press": {
+    "en": {
+      "purpose": "The staggered stance narrows your base, so the stomach and hips have to work to keep you square while one arm presses. A step between a two-footed press and a kneeling one.",
+      "steps": [
+        "Stand facing away from the landmine and step one foot forward into a short stagger",
+        "Hold the loaded end at the shoulder of the arm on the same side as the back foot",
+        "Square your hips and shoulders and brace your stomach",
+        "Press the bar up and forward until the arm is straight, staying square throughout",
+        "Lower to the shoulder, finish the set, then swap the stance and the arm"
+      ]
+    },
+    "ru": {
+      "purpose": "Разножка сужает опору, поэтому живот и таз вынуждены удерживать корпус ровно, пока жмёт одна рука. Промежуточный шаг между жимом с двух стоп и жимом с колена.",
+      "steps": [
+        "Встаньте спиной к лендмайну и выставьте одну стопу вперёд в короткую разножку",
+        "Держите нагруженный конец у плеча со стороны задней ноги",
+        "Выровняйте таз и плечи, напрягите живот",
+        "Выжмите гриф вверх и вперёд до прямой руки, сохраняя корпус ровным",
+        "Опустите к плечу, доделайте подход, затем смените стойку и руку"
+      ]
+    }
+  },
+  "ea_laying_lateral_raise": {
+    "en": {
+      "purpose": "Lying on your side changes where the load is heaviest: the bottom of the movement becomes the hard part, instead of the top. That reaches the side of the shoulder in a range a standing raise leaves almost unloaded.",
+      "steps": [
+        "Lie on your side on a bench or the floor with the top arm resting along your body",
+        "Hold a light dumbbell in the top hand with a slight bend in the elbow",
+        "Support your head with the bottom arm and keep your body in a straight line",
+        "Raise the dumbbell up toward the ceiling until the arm is vertical",
+        "Lower slowly back to your body, then roll over and do the other side"
+      ]
+    },
+    "ru": {
+      "purpose": "Положение лёжа на боку меняет распределение нагрузки: тяжелее всего становится низ амплитуды, а не верх. Это достаёт до средней дельты там, где подъём стоя почти не нагружает её.",
+      "steps": [
+        "Лягте на бок на скамью или пол, верхняя рука лежит вдоль тела",
+        "Возьмите лёгкую гантель верхней рукой, в локте лёгкий сгиб",
+        "Голову поддержите нижней рукой, тело вытянуто в линию",
+        "Поднимите гантель к потолку до вертикального положения руки",
+        "Медленно опустите к телу, затем перевернитесь и сделайте другую сторону"
+      ]
+    }
+  },
+  "ea_plate_car_driver": {
+    "en": {
+      "purpose": "Rotating a plate held out in front of you trains the front of the shoulders to hold a position while the forearms turn under load. It looks easy and stops being easy after about twenty seconds.",
+      "steps": [
+        "Hold a plate like a steering wheel with both hands at chest height",
+        "Extend your arms straight out in front of you at shoulder level",
+        "Brace your stomach and keep the ribs down so you cannot lean back",
+        "Rotate the plate to one side as if turning a wheel, keeping the arms straight",
+        "Rotate to the other side and continue back and forth for the set"
+      ]
+    },
+    "ru": {
+      "purpose": "Вращение блина на вытянутых руках учит переднюю дельту удерживать положение, пока предплечья поворачиваются под нагрузкой. Выглядит просто и перестаёт быть простым примерно через двадцать секунд.",
+      "steps": [
+        "Возьмите блин как руль двумя руками на уровне груди",
+        "Вытяните руки прямо перед собой на уровне плеч",
+        "Напрягите живот и опустите рёбра, чтобы не отклоняться назад",
+        "Поверните блин в одну сторону, как руль, руки остаются прямыми",
+        "Поверните в другую сторону и продолжайте так весь подход"
+      ]
+    }
+  },
+  "ea_plate_full_front_raise": {
+    "en": {
+      "purpose": "Taking the plate from the hips all the way overhead trains the front of the shoulder through its whole range in one movement, rather than stopping at shoulder height like most front raises do.",
+      "steps": [
+        "Hold a plate at the sides with both hands, arms hanging in front of your thighs",
+        "Stand tall with your stomach braced and ribs pulled down",
+        "Raise the plate with straight arms up to shoulder height",
+        "Continue lifting it overhead until your arms are beside your ears",
+        "Lower slowly all the way back to your thighs without swinging"
+      ]
+    },
+    "ru": {
+      "purpose": "Подъём блина от бёдер до положения над головой прорабатывает переднюю дельту во всей амплитуде за одно движение, а не останавливается на уровне плеч, как большинство фронтальных подъёмов.",
+      "steps": [
+        "Возьмите блин двумя руками за края, руки опущены перед бёдрами",
+        "Встаньте прямо, живот напряжён, рёбра опущены",
+        "Поднимите блин прямыми руками до уровня плеч",
+        "Продолжите движение над головой, пока руки не окажутся у ушей",
+        "Медленно опустите обратно к бёдрам без раскачки"
+      ]
+    }
+  },
+  "ea_plate_halo": {
+    "en": {
+      "purpose": "Circling a plate around your head takes the shoulders through their full range under a light load, which is why it works as both a warm-up and a mobility drill. It is the standard opener before overhead work.",
+      "steps": [
+        "Hold a light plate with both hands in front of your chest",
+        "Stand tall with your stomach braced and your ribs down",
+        "Circle the plate around your head, passing it close behind the neck",
+        "Keep the movement slow and let the elbows travel rather than the torso",
+        "Complete the circles in one direction, then do the same number the other way"
+      ]
+    },
+    "ru": {
+      "purpose": "Круг блином вокруг головы проводит плечи через всю амплитуду с малым весом, поэтому упражнение работает и как разминка, и как подвижность. Стандартное начало перед работой над головой.",
+      "steps": [
+        "Возьмите лёгкий блин двумя руками перед грудью",
+        "Встаньте прямо, живот напряжён, рёбра опущены",
+        "Ведите блин по кругу вокруг головы, проводя его близко за шеей",
+        "Двигайтесь медленно, работают локти, а не корпус",
+        "Сделайте круги в одну сторону, затем столько же в другую"
+      ]
+    }
+  },
+  "ea_plate_internally_rotated_rear_delt_fly": {
+    "en": {
+      "purpose": "Turning the thumbs down aims the work squarely at the rear shoulder and takes the middle back out of it. Use light plates — this position is unforgiving of weight, and the point is placement, not load.",
+      "steps": [
+        "Hinge forward with a flat back, holding a light plate in each hand",
+        "Let the arms hang straight down and rotate them so the thumbs point toward the floor",
+        "Keep a small fixed bend in the elbows",
+        "Raise both arms out to the sides until level with your shoulders",
+        "Lower slowly, keeping the thumbs pointing down the whole time"
+      ]
+    },
+    "ru": {
+      "purpose": "Разворот больших пальцев вниз направляет работу точно на заднюю дельту и выключает середину спины. Берите лёгкие блины — это положение не прощает веса, здесь важна точность, а не нагрузка.",
+      "steps": [
+        "Наклонитесь с прямой спиной, в каждой руке по лёгкому блину",
+        "Опустите руки прямо вниз и разверните их так, чтобы большие пальцы смотрели в пол",
+        "Оставьте небольшой фиксированный сгиб в локтях",
+        "Поднимите обе руки в стороны до уровня плеч",
+        "Медленно опустите, всё время удерживая большие пальцы вниз"
+      ]
+    }
+  },
+  "ea_plate_lateral_raise": {
+    "en": {
+      "purpose": "Holding a plate rather than a dumbbell puts the weight further from your hand, so a light plate loads the side of the shoulder as hard as a heavier dumbbell would. Kinder on the joint for the same effect.",
+      "steps": [
+        "Hold a plate in each hand by the rim, arms hanging at your sides",
+        "Stand tall with a slight bend in the elbows and your shoulders down",
+        "Raise both plates out to the sides in a wide arc",
+        "Stop at shoulder height without shrugging the shoulders up",
+        "Lower slowly along the same path, resisting the weight all the way down"
+      ]
+    },
+    "ru": {
+      "purpose": "Блин в руке смещает вес дальше от кисти, поэтому лёгкий блин нагружает среднюю дельту так же, как более тяжёлая гантель. Тот же эффект, но мягче для сустава.",
+      "steps": [
+        "Возьмите по блину в каждую руку за край, руки опущены вдоль тела",
+        "Встаньте прямо, в локтях лёгкий сгиб, плечи опущены",
+        "Поднимите оба блина в стороны по широкой дуге",
+        "Остановитесь на уровне плеч, не поднимая плечи вверх",
+        "Медленно опустите по той же траектории, сопротивляясь весу"
+      ]
+    }
+  },
+  "ea_plate_overhead_press_to_tricep_extension": {
+    "en": {
+      "purpose": "Chains a shoulder press into a triceps extension without setting the weight down, so the whole back of the arm and the shoulder get worked in one continuous set. Efficient when you have one plate and little time.",
+      "steps": [
+        "Hold a plate at the sides with both hands at chest height",
+        "Press it straight overhead until your arms lock out",
+        "Keeping the upper arms still, bend the elbows to lower the plate behind your head",
+        "Extend the elbows to push it back overhead",
+        "Lower the plate to your chest — that is one full repetition"
+      ]
+    },
+    "ru": {
+      "purpose": "Связывает жим над головой и разгибание на трицепс без опускания веса, поэтому вся задняя поверхность руки и плечо работают одним непрерывным подходом. Эффективно, когда есть один блин и мало времени.",
+      "steps": [
+        "Возьмите блин двумя руками за края на уровне груди",
+        "Выжмите его строго над головой до выпрямления рук",
+        "Не двигая плечами, согните локти и опустите блин за голову",
+        "Разогните локти и выжмите его обратно вверх",
+        "Опустите блин к груди — это одно полное повторение"
+      ]
+    }
+  },
+  "ea_plate_overhead_shrug": {
+    "en": {
+      "purpose": "Shrugging with the arms overhead trains the lower trapezius, the part that pulls the shoulder blades down. Strength there is what makes overhead pressing feel stable instead of pinched.",
+      "steps": [
+        "Press a plate overhead with both hands and lock your arms straight",
+        "Let your shoulders rise toward your ears while keeping the elbows locked",
+        "Brace your stomach so your lower back does not arch",
+        "Push the plate higher by pressing your shoulders up and away from your ears",
+        "Return to the starting position slowly, keeping the arms straight throughout"
+      ]
+    },
+    "ru": {
+      "purpose": "Шраг с руками над головой тренирует нижнюю часть трапеции — ту, что тянет лопатки вниз. Сила там и делает жим над головой устойчивым, а не зажатым.",
+      "steps": [
+        "Выжмите блин над головой двумя руками и выпрямите руки",
+        "Дайте плечам подняться к ушам, локти остаются выпрямленными",
+        "Напрягите живот, чтобы поясница не прогибалась",
+        "Вытолкните блин выше, поднимая плечи вверх от ушей",
+        "Медленно вернитесь в исходное, руки всё время прямые"
+      ]
+    }
+  },
+  "ea_plate_reach": {
+    "en": {
+      "purpose": "Holding a plate out at arm's length is a test of how long the front of your shoulders can hold a position, which is a different quality from how much they can lift. It also makes the stomach work to stop you leaning back.",
+      "steps": [
+        "Hold a plate with both hands against your chest, standing tall",
+        "Brace your stomach and pull your ribs down",
+        "Push the plate straight out in front of you until the arms are fully extended",
+        "Hold it there at shoulder height for the prescribed time",
+        "Draw it back to your chest under control without letting it drop"
+      ]
+    },
+    "ru": {
+      "purpose": "Удержание блина на вытянутых руках проверяет, как долго передняя часть плеч держит положение, — это другое качество, чем сколько она может поднять. Заодно живот работает, не давая отклониться назад.",
+      "steps": [
+        "Прижмите блин двумя руками к груди, стоя прямо",
+        "Напрягите живот и опустите рёбра",
+        "Вытолкните блин прямо перед собой до полного выпрямления рук",
+        "Удерживайте его на уровне плеч заданное время",
+        "Притяните обратно к груди под контролем, не роняя"
+      ]
+    }
+  },
+  "ea_plate_rear_delt_fly": {
+    "en": {
+      "purpose": "Works the back of the shoulders, the muscles that pull the shoulders back and undo the forward rounding that comes with pressing and desk work. Light weight and a full squeeze matter far more than load here.",
+      "steps": [
+        "Hinge forward from the hips with a flat back, a light plate in each hand",
+        "Let the arms hang straight down beneath your shoulders",
+        "Keep a small fixed bend in the elbows for the whole set",
+        "Raise both plates out to the sides until they are level with your shoulders",
+        "Squeeze for a second, then lower slowly under control"
+      ]
+    },
+    "ru": {
+      "purpose": "Нагружает заднюю часть плеч — мышцы, которые отводят плечи назад и убирают сутулость от жимов и сидячей работы. Здесь лёгкий вес и полное сведение важнее нагрузки.",
+      "steps": [
+        "Наклонитесь от таза с прямой спиной, в каждой руке лёгкий блин",
+        "Руки свободно висят прямо под плечами",
+        "Оставьте небольшой фиксированный сгиб в локтях весь подход",
+        "Поднимите оба блина в стороны до уровня плеч",
+        "Задержитесь на секунду и медленно опустите под контролем"
+      ]
+    }
+  },
+  "ea_seated_dumbbell_neutral_grip_front_raises": {
+    "en": {
+      "purpose": "Sitting stops you from swinging the weight up with your hips, and the neutral grip is easier on the front of the shoulder than turning the palms down. The strictest way to train the front delts.",
+      "steps": [
+        "Sit on the end of a bench with a dumbbell in each hand, palms facing each other",
+        "Sit tall with your feet flat and your back straight",
+        "Raise both dumbbells straight out in front of you, thumbs pointing up",
+        "Stop at shoulder height without leaning back",
+        "Lower slowly to your thighs, keeping the palms facing each other throughout"
+      ]
+    },
+    "ru": {
+      "purpose": "Положение сидя не даёт забросить вес тазом, а нейтральный хват мягче для передней части плеча, чем разворот ладоней вниз. Самый строгий способ тренировать передние дельты.",
+      "steps": [
+        "Сядьте на край скамьи с гантелями в руках, ладони смотрят друг на друга",
+        "Сидите прямо, стопы на полу, спина ровная",
+        "Поднимите обе гантели прямо перед собой, большие пальцы вверх",
+        "Остановитесь на уровне плеч, не отклоняясь назад",
+        "Медленно опустите к бёдрам, сохраняя нейтральный хват"
+      ]
+    }
+  },
+  "ea_seated_dumbbell_neutral_grip_side_raises": {
+    "en": {
+      "purpose": "Seated raises remove every trace of leg drive, so the side of the shoulder does all of the work with a weight far lighter than you would use standing. That is the point — this muscle responds to precision, not to load.",
+      "steps": [
+        "Sit upright on the end of a bench with a dumbbell in each hand at your sides",
+        "Keep the palms facing each other and a slight bend in the elbows",
+        "Raise both arms out to the sides in a wide arc",
+        "Stop at shoulder height with the shoulders staying down, not shrugged",
+        "Lower slowly to your sides without letting the weights drop"
+      ]
+    },
+    "ru": {
+      "purpose": "Подъёмы сидя убирают любую помощь ног, поэтому среднюю дельту нагружает вес заметно меньший, чем вы взяли бы стоя. В этом и смысл: эта мышца отзывается на точность, а не на вес.",
+      "steps": [
+        "Сядьте прямо на край скамьи, гантели в руках у боков",
+        "Ладони смотрят друг на друга, в локтях лёгкий сгиб",
+        "Поднимите обе руки в стороны по широкой дуге",
+        "Остановитесь на уровне плеч, плечи опущены, без пожимания",
+        "Медленно опустите к бокам, не роняя вес"
+      ]
+    }
+  },
+  "ea_suspension_trainer_with_grips_inverted_row_on_floor": {
+    "en": {
+      "purpose": "A pull where your own body is the weight and your feet set the difficulty, so it scales from very easy to very hard without changing equipment. It builds the upper back and rear shoulders that balance out pressing.",
+      "steps": [
+        "Set the straps so the handles hang at about hip height and take one in each hand",
+        "Walk your feet forward and lean back until your arms are straight",
+        "Squeeze your glutes and stomach so your body forms a straight line",
+        "Pull your chest up to the handles, drawing your elbows past your ribs",
+        "Lower yourself slowly to straight arms without letting the hips sag"
+      ]
+    },
+    "ru": {
+      "purpose": "Тяга, где весом служит собственное тело, а сложность задаётся положением стоп: от очень лёгкой до очень тяжёлой без смены инвентаря. Развивает верх спины и задние дельты, уравновешивающие жимы.",
+      "steps": [
+        "Отрегулируйте петли так, чтобы рукояти были примерно на высоте таза, возьмите по одной в каждую руку",
+        "Переставьте стопы вперёд и отклонитесь назад до прямых рук",
+        "Напрягите ягодицы и живот, тело вытянуто в прямую линию",
+        "Подтяните грудь к рукоятям, уводя локти за рёбра",
+        "Медленно опуститесь до прямых рук, не роняя таз"
+      ]
+    }
+  }
+}

@@ -1,0 +1,574 @@
+{
+  "ea_alternate_biceps_curl_resistance_band": {
+    "en": {
+      "purpose": "Works one arm at a time so the stronger side cannot quietly take over, which is what happens on every two-handed curl. A band keeps tension on the biceps at the top of the movement, where a dumbbell goes light and the muscle gets a rest it did not earn.",
+      "steps": [
+        "Stand on the middle of the band with feet hip width apart and hold one end in each hand, palms forward",
+        "Keep your elbows pinned against your ribs and your shoulders down",
+        "Curl one hand up toward the shoulder, letting the band stretch, and keep the other arm straight",
+        "Lower that hand under control all the way down before the other arm starts",
+        "Alternate arms for the whole set, never letting the elbows drift forward"
+      ]
+    },
+    "ru": {
+      "purpose": "Работает по одной руке, поэтому сильная сторона не сможет незаметно тянуть за обе — а именно так и происходит в любом подъёме двумя руками. Лента держит напряжение в бицепсе в верхней точке, где гантель становится лёгкой и мышца получает незаслуженный отдых.",
+      "steps": [
+        "Встаньте на середину ленты, ноги на ширине таза, концы ленты возьмите в руки ладонями вперёд",
+        "Прижмите локти к рёбрам, плечи опустите",
+        "Согните одну руку к плечу, растягивая ленту, вторая рука остаётся прямой",
+        "Полностью опустите руку под контролем, только после этого начинайте вторую",
+        "Чередуйте руки весь подход, не позволяя локтям уходить вперёд"
+      ]
+    }
+  },
+  "ea_alternate_biceps_curl_standing_dumbbells": {
+    "en": {
+      "purpose": "The plainest way to build the biceps and the one every other curl is measured against. Alternating halves the load on your torso at any moment, so you can stand upright and let the arm do the work instead of swinging the weight up with your back.",
+      "steps": [
+        "Stand tall with a dumbbell in each hand, arms straight down, palms facing forward",
+        "Brace your stomach and keep your elbows touching your sides",
+        "Curl the right dumbbell up to shoulder height, keeping the wrist straight",
+        "Lower it slowly to the bottom, then curl the left one the same way",
+        "Keep your back still — if your shoulders rock, the weight is too heavy"
+      ]
+    },
+    "ru": {
+      "purpose": "Самый простой способ нарастить бицепс и тот, с которым сравнивают все остальные подъёмы. Попеременная работа вдвое уменьшает нагрузку на корпус в каждый момент, поэтому можно стоять прямо и работать рукой, а не забрасывать вес спиной.",
+      "steps": [
+        "Встаньте прямо с гантелями в руках, руки опущены, ладони смотрят вперёд",
+        "Напрягите живот, локти держите прижатыми к бокам",
+        "Поднимите правую гантель до уровня плеча, запястье прямое",
+        "Медленно опустите её вниз, затем так же поднимите левую",
+        "Спина неподвижна — если плечи раскачиваются, вес слишком большой"
+      ]
+    }
+  },
+  "ea_cable_twisting_biceps_curl": {
+    "en": {
+      "purpose": "Turning the palm outward as you curl is what the biceps actually does — it bends the elbow and rotates the forearm, and most curls only ask for half of that. The cable holds tension through the whole path, including the turn, which a free weight cannot do.",
+      "steps": [
+        "Set a single handle on the lowest pulley and stand facing the machine, one step back",
+        "Take the handle with your palm facing your thigh and let your arm hang straight",
+        "Curl upward and rotate your palm to face the ceiling as the elbow bends",
+        "Finish with the hand at shoulder height and the palm fully turned up, elbow still at your side",
+        "Reverse both movements slowly — unbend and untwist together — then repeat"
+      ]
+    },
+    "ru": {
+      "purpose": "Разворот ладони наружу во время подъёма — это то, что бицепс на самом деле делает: он сгибает локоть и вращает предплечье, а большинство подъёмов просит только половину. Трос держит напряжение на всём пути, включая разворот, — со свободным весом так не выйдет.",
+      "steps": [
+        "Закрепите одну рукоять на нижнем блоке и встаньте лицом к тренажёру, отойдя на шаг",
+        "Возьмите рукоять ладонью к бедру, рука свободно опущена",
+        "Сгибая локоть, поднимайте руку и одновременно разворачивайте ладонь вверх",
+        "В верхней точке кисть на уровне плеча, ладонь смотрит в потолок, локоть по-прежнему у бока",
+        "Медленно верните всё обратно — разгибание и разворот вместе — и повторите"
+      ]
+    }
+  },
+  "ea_dumbbell_seated_zottman_curl": {
+    "en": {
+      "purpose": "One exercise that trains both sides of the arm: you lift with the palm up, which loads the biceps, and lower with the palm down, which loads the forearm. Sitting removes the leg drive, so nothing but the arms moves the weight.",
+      "steps": [
+        "Sit on the end of a bench with a dumbbell in each hand, arms hanging, palms forward",
+        "Curl both dumbbells up to your shoulders with your elbows fixed at your sides",
+        "At the top, rotate your wrists so the palms now face the floor",
+        "Lower the dumbbells slowly in that position — this half should feel harder and take longer",
+        "At the bottom, rotate the palms forward again and start the next repetition"
+      ]
+    },
+    "ru": {
+      "purpose": "Одно упражнение на обе стороны руки: подъём ладонями вверх нагружает бицепс, опускание ладонями вниз — предплечье. Положение сидя убирает помощь ног, поэтому вес поднимают только руки.",
+      "steps": [
+        "Сядьте на край скамьи с гантелями в руках, руки опущены, ладони вперёд",
+        "Поднимите обе гантели к плечам, локти зафиксированы у боков",
+        "В верхней точке разверните кисти так, чтобы ладони смотрели в пол",
+        "Медленно опустите гантели в этом положении — эта половина должна быть тяжелее и дольше",
+        "Внизу снова разверните ладони вперёд и начните следующее повторение"
+      ]
+    }
+  },
+  "ea_kettlebell_concentration_curl": {
+    "en": {
+      "purpose": "Bracing the elbow against the inside of the thigh removes every way of cheating — you cannot swing, lean back or shrug the weight up. What is left is the biceps alone, which is why this is the exercise people use when an arm is visibly lagging.",
+      "steps": [
+        "Sit on a bench with your feet wide and lean forward slightly from the hips",
+        "Hold the kettlebell in one hand and brace the back of that upper arm against the inside of the same thigh",
+        "Let the arm hang straight down so the bell is just off the floor",
+        "Curl the bell up toward your shoulder without letting the elbow leave the thigh",
+        "Lower all the way until the arm is straight, then repeat and switch sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Упор локтя во внутреннюю сторону бедра убирает все способы схитрить — нельзя ни качнуть, ни отклониться назад, ни подбросить вес плечом. Остаётся только бицепс, поэтому именно это упражнение берут, когда одна рука заметно отстаёт.",
+      "steps": [
+        "Сядьте на скамью, широко расставьте ноги и слегка наклонитесь вперёд от таза",
+        "Возьмите гирю в одну руку и упритесь задней стороной плеча во внутреннюю поверхность бедра той же ноги",
+        "Опустите руку прямо вниз, гиря почти касается пола",
+        "Согните руку к плечу, не отрывая локоть от бедра",
+        "Опустите до полного выпрямления руки, повторите и смените сторону"
+      ]
+    }
+  },
+  "ea_kettlebell_curl": {
+    "en": {
+      "purpose": "The bell hangs below your hand rather than sitting in it, so the weight pulls the wrist backwards the whole way up. Your forearm has to work to keep the wrist straight, which is grip training you get for free alongside the biceps.",
+      "steps": [
+        "Stand with a kettlebell in each hand, handles gripped so the bells hang in front of your thighs",
+        "Keep your wrists straight and locked — do not let the bells bend them back",
+        "Curl both bells up toward your shoulders with the elbows against your sides",
+        "Stop when your forearms are vertical and the bells rest against your forearms",
+        "Lower under control to full arm extension before the next repetition"
+      ]
+    },
+    "ru": {
+      "purpose": "Гиря висит под кистью, а не лежит в ней, поэтому вес весь подъём тянет запястье назад. Предплечью приходится работать, чтобы держать запястье прямым, — это тренировка хвата, которая достаётся бесплатно вместе с бицепсом.",
+      "steps": [
+        "Встаньте с гирями в руках, возьмитесь за дужки так, чтобы гири висели перед бёдрами",
+        "Держите запястья прямыми и жёсткими — не давайте гирям загибать их назад",
+        "Согните обе руки к плечам, локти прижаты к бокам",
+        "Остановитесь, когда предплечья станут вертикально, а гири лягут на предплечья",
+        "Опустите под контролем до полного выпрямления рук и повторите"
+      ]
+    }
+  },
+  "ea_kettlebell_goblet_curl": {
+    "en": {
+      "purpose": "Holding one bell with both hands keeps the load exactly in front of your chest, so a single heavy weight can be curled without either wrist twisting out of line. It is the simplest way to add load when two lighter bells are all you have.",
+      "steps": [
+        "Stand tall and hold one kettlebell by the horns with both hands, arms hanging in front of you",
+        "Keep the bell upside down or upright — whichever lets both wrists stay straight",
+        "Press your elbows into your ribs and brace your stomach",
+        "Curl the bell up to chest height using only the elbows",
+        "Lower slowly all the way down without letting your body lean back"
+      ]
+    },
+    "ru": {
+      "purpose": "Одна гиря в двух руках держит нагрузку строго перед грудью, поэтому тяжёлый вес можно поднимать, не выворачивая запястья. Самый простой способ добавить вес, когда есть только лёгкие гири.",
+      "steps": [
+        "Встаньте прямо, возьмите одну гирю двумя руками за рога, руки опущены перед собой",
+        "Гирю держите дном вверх или вниз — как удобнее, чтобы оба запястья остались прямыми",
+        "Прижмите локти к рёбрам, напрягите живот",
+        "Поднимите гирю до уровня груди, сгибая только локти",
+        "Медленно опустите до конца, не отклоняясь корпусом назад"
+      ]
+    }
+  },
+  "ea_kettlebell_preacher_curl": {
+    "en": {
+      "purpose": "The pad under your arm stops the elbow from travelling, which is the one thing that lets the shoulder help on a standing curl. With that route closed the biceps has to finish the lift from the hardest position — arm nearly straight.",
+      "steps": [
+        "Set the preacher bench so the top of the pad sits under your armpit when you sit down",
+        "Lay the back of one upper arm flat along the pad and hold the kettlebell in that hand",
+        "Straighten the arm until you feel the stretch, but do not let the elbow lock hard",
+        "Curl the bell up toward your shoulder, keeping the arm glued to the pad",
+        "Lower slowly to the stretched position and repeat, then change arms"
+      ]
+    },
+    "ru": {
+      "purpose": "Подушка под рукой не даёт локтю смещаться, а именно это позволяет плечу помогать в подъёме стоя. Когда путь закрыт, бицепсу приходится делать всю работу из самого тяжёлого положения — с почти прямой рукой.",
+      "steps": [
+        "Настройте скамью Скотта так, чтобы верх подушки оказался под подмышкой, когда вы сядете",
+        "Положите заднюю поверхность плеча на подушку, гирю возьмите в эту руку",
+        "Выпрямите руку до ощущения растяжения, но не выключайте локоть жёстко",
+        "Согните руку с гирей к плечу, не отрывая её от подушки",
+        "Медленно опустите в растянутое положение, повторите и смените руку"
+      ]
+    }
+  },
+  "ea_kettlebell_single_arm_curl": {
+    "en": {
+      "purpose": "One arm at a time exposes the difference between your sides, which a two-handed curl always hides. Working the weaker arm to the same number of clean repetitions is how that gap actually closes.",
+      "steps": [
+        "Stand with your feet hip width apart and a kettlebell hanging in one hand",
+        "Put the free hand on your hip so you can feel if your torso starts to lean",
+        "Curl the bell up toward the shoulder with the elbow fixed at your side",
+        "Lower it under control until the arm is fully straight",
+        "Finish all repetitions on that arm, then match the same number on the other side"
+      ]
+    },
+    "ru": {
+      "purpose": "Работа по одной руке показывает разницу между сторонами, которую подъём двумя руками всегда скрывает. Слабая рука должна выполнить столько же чистых повторений — только так разрыв закрывается.",
+      "steps": [
+        "Встаньте, ноги на ширине таза, гиря висит в одной руке",
+        "Свободную руку положите на пояс, чтобы чувствовать, если корпус начнёт наклоняться",
+        "Согните руку с гирей к плечу, локоть зафиксирован у бока",
+        "Опустите под контролем до полностью прямой руки",
+        "Сделайте все повторения одной рукой, затем столько же другой"
+      ]
+    }
+  },
+  "ea_landmine_bicep_curl": {
+    "en": {
+      "purpose": "The bar swings on a fixed arc, so the resistance changes as you rise and the top of the curl stays heavy instead of going weightless. Both hands share one bar, which lets you load more than a pair of dumbbells you can control.",
+      "steps": [
+        "Load one end of a barbell in the landmine holder and stand facing it",
+        "Pick up the loaded end with both hands cupped underneath it, arms straight",
+        "Stand tall with elbows against your ribs and the bar resting in your palms",
+        "Curl the end of the bar up toward your chin, following the arc it wants to travel",
+        "Lower slowly along the same arc until your arms are straight again"
+      ]
+    },
+    "ru": {
+      "purpose": "Гриф движется по фиксированной дуге, поэтому сопротивление меняется с подъёмом и верхняя точка остаётся тяжёлой, а не невесомой. Обе руки держат один гриф, и это позволяет взять больше, чем пара подконтрольных гантелей.",
+      "steps": [
+        "Вставьте один конец грифа в лендмайн и встаньте к нему лицом",
+        "Возьмите нагруженный конец двумя руками снизу, руки прямые",
+        "Встаньте прямо, локти прижаты к рёбрам, гриф лежит в ладонях",
+        "Поднимите конец грифа к подбородку по той дуге, по которой он идёт сам",
+        "Медленно опустите по той же дуге до полного выпрямления рук"
+      ]
+    }
+  },
+  "ea_landmine_concentration_curl": {
+    "en": {
+      "purpose": "Combines the elbow brace of a concentration curl with the landmine's changing resistance, so the hardest part lands near the top rather than halfway. Useful when a dumbbell concentration curl has stopped feeling like anything.",
+      "steps": [
+        "Set a barbell in the landmine and sit or half-kneel beside the loaded end",
+        "Grip the end of the bar in one hand and brace that upper arm against the inside of your thigh",
+        "Let the arm hang so the bar is at its lowest point",
+        "Curl the bar up toward the shoulder, keeping the elbow pressed into the thigh",
+        "Lower under control to a straight arm, then repeat and switch sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Соединяет упор локтя, как в концентрированном подъёме, с меняющимся сопротивлением лендмайна — поэтому самое тяжёлое приходится ближе к верху, а не на середину. Пригодится, когда концентрированный подъём с гантелью перестал ощущаться.",
+      "steps": [
+        "Вставьте гриф в лендмайн, сядьте или встаньте на одно колено рядом с нагруженным концом",
+        "Возьмите конец грифа одной рукой и упритесь плечом во внутреннюю поверхность бедра",
+        "Опустите руку так, чтобы гриф оказался в нижней точке",
+        "Поднимите гриф к плечу, прижимая локоть к бедру",
+        "Опустите под контролем до прямой руки, повторите и смените сторону"
+      ]
+    }
+  },
+  "ea_plate_curl_to_overhead_press": {
+    "en": {
+      "purpose": "Two movements on one breath: the curl builds the arms, the press builds the shoulders, and the plate held out in front makes your stomach work to stop you leaning back. A whole upper body in one exercise when a single plate is all the equipment you have.",
+      "steps": [
+        "Hold a weight plate at the sides with both hands, arms hanging in front of your hips",
+        "Curl the plate up to chest height, keeping your elbows close to your body",
+        "From there press it straight overhead until your arms lock out",
+        "Lower the plate back to your chest with control",
+        "Uncurl it down to your hips — that is one repetition"
+      ]
+    },
+    "ru": {
+      "purpose": "Два движения на одном дыхании: подъём нагружает руки, жим — плечи, а блин перед собой заставляет живот работать, чтобы вы не отклонились назад. Весь верх тела в одном упражнении, когда из инвентаря есть только блин.",
+      "steps": [
+        "Возьмите блин двумя руками за края, руки опущены перед бёдрами",
+        "Поднимите блин до уровня груди, локти держите близко к корпусу",
+        "Оттуда выжмите его прямо над головой до выпрямления рук",
+        "Опустите блин обратно к груди под контролем",
+        "Опустите его к бёдрам — это одно повторение"
+      ]
+    }
+  },
+  "ea_reverse_curl_barbell": {
+    "en": {
+      "purpose": "Turning the palms down shifts the work off the biceps and onto the muscle underneath it and the top of the forearm — the two things that decide how thick the arm looks from the side and how long your grip lasts.",
+      "steps": [
+        "Take a barbell with an overhand grip, hands about shoulder width apart",
+        "Stand tall with the bar resting against your thighs and elbows at your sides",
+        "Curl the bar up toward your chest without letting the wrists bend backwards",
+        "Stop when your forearms are vertical, keeping the knuckles pointing up",
+        "Lower slowly to the thighs — expect to use noticeably less weight than a normal curl"
+      ]
+    },
+    "ru": {
+      "purpose": "Разворот ладоней вниз переносит работу с бицепса на мышцу под ним и на верх предплечья — от них зависит, насколько толстой рука выглядит сбоку и как долго держит хват.",
+      "steps": [
+        "Возьмите штангу хватом сверху, руки примерно на ширине плеч",
+        "Встаньте прямо, гриф лежит у бёдер, локти у боков",
+        "Поднимите гриф к груди, не давая запястьям загибаться назад",
+        "Остановитесь, когда предплечья встанут вертикально, костяшки смотрят вверх",
+        "Медленно опустите к бёдрам — вес будет заметно меньше, чем в обычном подъёме"
+      ]
+    }
+  },
+  "ea_band_lying_press_down": {
+    "en": {
+      "purpose": "Lying down pins your shoulder blades to the floor, so the shoulders cannot join in and the triceps has to straighten the arm on its own. The band pulls hardest at full extension, which is exactly where the triceps is strongest.",
+      "steps": [
+        "Anchor the band to something solid behind your head and lie on your back",
+        "Hold an end in each hand and bring your elbows up so the upper arms point at the ceiling",
+        "Keep the upper arms still — only the forearms will move",
+        "Straighten your elbows so your hands travel toward your hips and the band stretches",
+        "Bend the elbows slowly to bring your hands back beside your ears"
+      ]
+    },
+    "ru": {
+      "purpose": "Лёжа лопатки прижаты к полу, поэтому плечи не подключаются и трицепсу приходится разгибать руку самому. Лента тянет сильнее всего в полном выпрямлении — там, где трицепс как раз сильнее всего.",
+      "steps": [
+        "Закрепите ленту за что-то надёжное за головой и лягте на спину",
+        "Возьмите по концу в каждую руку и поднимите локти так, чтобы плечи смотрели в потолок",
+        "Плечи держите неподвижно — двигаются только предплечья",
+        "Разогните локти, уводя кисти к бёдрам и растягивая ленту",
+        "Медленно согните локти, возвращая кисти к ушам"
+      ]
+    }
+  },
+  "ea_band_skullcrusher": {
+    "en": {
+      "purpose": "Loads the triceps with the arms overhead, which stretches the long head — the part that runs to the shoulder blade and is missed by every pushdown. A band does this without the elbow pressure a bar puts on the joint in the same position.",
+      "steps": [
+        "Anchor the band low behind you and lie on a bench or the floor with your head toward the anchor",
+        "Hold both ends and press your arms straight up so the hands are over your shoulders",
+        "Keep the upper arms vertical and locked in place",
+        "Bend only the elbows to lower your hands toward your forehead",
+        "Straighten the arms back to the start, stopping just short of locking the elbows"
+      ]
+    },
+    "ru": {
+      "purpose": "Нагружает трицепс с руками над головой, растягивая длинную головку — ту, что идёт к лопатке и не работает ни в одном разгибании вниз. Лента делает это без давления на локоть, которое даёт гриф в том же положении.",
+      "steps": [
+        "Закрепите ленту низко за собой и лягте на скамью или пол головой к точке крепления",
+        "Возьмите оба конца и выпрямите руки вверх, кисти над плечами",
+        "Плечи держите вертикально и неподвижно",
+        "Сгибайте только локти, опуская кисти ко лбу",
+        "Разогните руки обратно, не доводя локти до жёсткого выключения"
+      ]
+    }
+  },
+  "ea_band_triceps_pushdown_single_arm": {
+    "en": {
+      "purpose": "One arm at a time, so a stronger triceps cannot cover for a weaker one — which matters because a lagging triceps is usually what stalls a bench press. A band makes this possible anywhere, without a cable stack.",
+      "steps": [
+        "Anchor the band above head height and stand facing it, one step back",
+        "Take the end in one hand with the elbow bent and tucked against your ribs",
+        "Put the other hand on that elbow so you can feel it stay in place",
+        "Push the hand down until the arm is straight, keeping the elbow pinned",
+        "Let the band pull the hand back up slowly, then repeat and change arms"
+      ]
+    },
+    "ru": {
+      "purpose": "По одной руке — сильный трицепс не прикроет слабый, а это важно: именно отстающий трицепс обычно останавливает жим лёжа. Лента позволяет делать это где угодно, без блочной рамы.",
+      "steps": [
+        "Закрепите ленту выше головы и встаньте к ней лицом, отойдя на шаг",
+        "Возьмите конец одной рукой, локоть согнут и прижат к рёбрам",
+        "Второй рукой придержите этот локоть, чтобы чувствовать, что он не смещается",
+        "Разогните руку вниз до полного выпрямления, локоть остаётся на месте",
+        "Дайте ленте медленно вернуть кисть вверх, повторите и смените руку"
+      ]
+    }
+  },
+  "ea_cable_cross_pushdown": {
+    "en": {
+      "purpose": "Crossing the cables in front of you pulls each arm outward as well as up, so the triceps has to hold the arm in line as it straightens. That extra job hits the outer head, the one that gives the arm its shape just above the elbow.",
+      "steps": [
+        "Set both pulleys at head height and take the left handle in your right hand and the right in your left",
+        "Stand in the middle so the cables cross in front of your chest, elbows bent and at your sides",
+        "Brace your stomach and lean forward very slightly from the hips",
+        "Push both hands down and slightly outward until the arms are straight",
+        "Return slowly to the bent position without letting the elbows drift forward"
+      ]
+    },
+    "ru": {
+      "purpose": "Перекрещенные тросы тянут каждую руку не только вверх, но и наружу, поэтому трицепсу приходится удерживать руку на линии, пока она разгибается. Эта дополнительная работа нагружает внешнюю головку — ту, что формирует руку сразу над локтем.",
+      "steps": [
+        "Поставьте оба блока на высоту головы, возьмите левую рукоять правой рукой, а правую — левой",
+        "Встаньте посередине так, чтобы тросы перекрещивались перед грудью, локти согнуты и у боков",
+        "Напрягите живот и слегка наклонитесь вперёд от таза",
+        "Разгибайте обе руки вниз и немного наружу до полного выпрямления",
+        "Медленно вернитесь в согнутое положение, не выводя локти вперёд"
+      ]
+    }
+  },
+  "ea_dumbbell_skullcrusher": {
+    "en": {
+      "purpose": "The classic mass builder for the triceps: arms overhead puts the long head on stretch, and separate dumbbells let each wrist find an angle the elbow is comfortable with, which a straight bar does not allow.",
+      "steps": [
+        "Lie on a bench with a dumbbell in each hand and press them up over your shoulders, palms facing each other",
+        "Keep your upper arms vertical for the whole set",
+        "Bend the elbows to lower the dumbbells down beside your ears",
+        "Stop when your forearms pass just below parallel with the floor",
+        "Straighten the arms back to the top without letting the elbows flare outward"
+      ]
+    },
+    "ru": {
+      "purpose": "Классика для набора массы трицепса: руки над головой растягивают длинную головку, а отдельные гантели позволяют каждому запястью найти угол, удобный для локтя, — с прямым грифом это невозможно.",
+      "steps": [
+        "Лягте на скамью с гантелями и выжмите их над плечами, ладони смотрят друг на друга",
+        "Плечи держите вертикально весь подход",
+        "Согните локти, опуская гантели вниз рядом с ушами",
+        "Остановитесь, когда предплечья пройдут чуть ниже параллели полу",
+        "Разогните руки обратно вверх, не разводя локти в стороны"
+      ]
+    }
+  },
+  "ea_floor_tricep_dip": {
+    "en": {
+      "purpose": "The triceps exercise that needs nothing at all — no bench, no weights, no band. Your feet stay on the floor, so you can make it as light or as hard as you need by walking them in or out, which makes it a safe first dip.",
+      "steps": [
+        "Sit on the floor with your knees bent and feet flat, hands on the floor behind your hips, fingers pointing at your feet",
+        "Press through your hands to lift your hips off the floor",
+        "Keep your chest open and your shoulders pulled down away from your ears",
+        "Bend the elbows straight back to lower your hips toward the floor",
+        "Push back up until the arms are straight, without letting your hips touch down"
+      ]
+    },
+    "ru": {
+      "purpose": "Упражнение на трицепс, для которого не нужно ничего — ни скамьи, ни веса, ни ленты. Стопы стоят на полу, поэтому нагрузку можно сделать легче или тяжелее, просто переставив ноги ближе или дальше, — это безопасный первый вариант отжиманий на трицепс.",
+      "steps": [
+        "Сядьте на пол, колени согнуты, стопы на полу, ладони на полу за тазом, пальцы к ногам",
+        "Оттолкнитесь руками и поднимите таз над полом",
+        "Держите грудь раскрытой, плечи опущены от ушей",
+        "Согните локти строго назад, опуская таз к полу",
+        "Разогните руки обратно, не касаясь тазом пола"
+      ]
+    }
+  },
+  "ea_kettlebell_decline_skull_crusher": {
+    "en": {
+      "purpose": "The decline angle keeps tension on the triceps at the top, where a flat bench lets the arms rest under the weight. The bell hanging below your hand also pulls the elbow further back, adding stretch at the bottom.",
+      "steps": [
+        "Set a bench to a slight decline and lie down with your feet hooked under the pads",
+        "Hold a kettlebell in each hand and press them up so your arms point straight at the ceiling",
+        "Keep the upper arms fixed and vertical",
+        "Bend the elbows to lower the bells toward the top of your head",
+        "Straighten the arms back up, stopping just before the elbows lock"
+      ]
+    },
+    "ru": {
+      "purpose": "Наклон вниз сохраняет напряжение в трицепсе в верхней точке, где на горизонтальной скамье руки отдыхают под весом. Гиря, висящая под кистью, дополнительно уводит локоть назад и добавляет растяжение внизу.",
+      "steps": [
+        "Поставьте скамью в небольшой отрицательный наклон и лягте, зацепив ноги за валики",
+        "Возьмите по гире в каждую руку и выжмите их так, чтобы руки смотрели строго в потолок",
+        "Плечи держите зафиксированными и вертикально",
+        "Согните локти, опуская гири к макушке",
+        "Разогните руки обратно, останавливаясь перед выключением локтей"
+      ]
+    }
+  },
+  "ea_kettlebell_skull_crusher": {
+    "en": {
+      "purpose": "Same stretch as the dumbbell version, but the bell hangs behind the hand, so the load sits further from the elbow and the triceps has to control a longer lever. Less weight does more work here.",
+      "steps": [
+        "Lie on a bench with a kettlebell in each hand, bells resting against the back of your forearms",
+        "Press the arms straight up over your shoulders",
+        "Hold the upper arms still and vertical",
+        "Bend the elbows and let the bells travel down past your ears",
+        "Extend the arms back to the start under control"
+      ]
+    },
+    "ru": {
+      "purpose": "То же растяжение, что и с гантелями, но гиря висит за кистью, поэтому вес дальше от локтя и трицепсу приходится контролировать более длинный рычаг. Здесь меньший вес делает больше работы.",
+      "steps": [
+        "Лягте на скамью с гирями в руках, гири лежат на задней стороне предплечий",
+        "Выжмите руки прямо вверх над плечами",
+        "Плечи держите неподвижно и вертикально",
+        "Согните локти и уведите гири вниз мимо ушей",
+        "Разогните руки в исходное положение под контролем"
+      ]
+    }
+  },
+  "ea_kettlebell_standing_tricep_extension": {
+    "en": {
+      "purpose": "Standing means your stomach and lower back have to hold you upright while a weight sits behind your head — so this trains the triceps and the brace to keep the ribs down at the same time.",
+      "steps": [
+        "Stand with feet hip width apart and hold one kettlebell by the horns with both hands",
+        "Press it overhead until your arms are straight, then let the bell rest behind your head",
+        "Squeeze your stomach so your ribs do not flare forward",
+        "Bend the elbows to lower the bell behind your head, keeping the upper arms beside your ears",
+        "Straighten the arms back overhead without arching your lower back"
+      ]
+    },
+    "ru": {
+      "purpose": "Стоя живот и поясница вынуждены держать вас прямо, пока вес находится за головой, — поэтому упражнение тренирует трицепс и одновременно умение удерживать рёбра опущенными.",
+      "steps": [
+        "Встаньте, ноги на ширине таза, возьмите одну гирю двумя руками за рога",
+        "Выжмите её над головой до прямых рук, затем опустите гирю за голову",
+        "Напрягите живот, чтобы рёбра не выходили вперёд",
+        "Согните локти, опуская гирю за голову, плечи остаются у ушей",
+        "Разогните руки обратно вверх, не прогибаясь в пояснице"
+      ]
+    }
+  },
+  "ea_landmine_lying_tricep_extension": {
+    "en": {
+      "purpose": "The landmine's arc keeps the bar travelling away from your face instead of toward it, which removes the one thing that makes people nervous about lying extensions. Both hands on one bar also let you load heavier than a pair of dumbbells.",
+      "steps": [
+        "Set a bench in front of a landmine so the loaded end reaches over your head when you lie down",
+        "Lie back and take the end of the bar with both hands, arms pressed straight up",
+        "Keep your upper arms vertical and your shoulder blades flat on the bench",
+        "Bend the elbows to let the bar swing down behind your head along its arc",
+        "Push the bar back up to straight arms following the same arc"
+      ]
+    },
+    "ru": {
+      "purpose": "Дуга лендмайна уводит гриф от лица, а не к нему, и это снимает главную причину, по которой люди опасаются разгибаний лёжа. Обе руки на одном грифе позволяют взять больше, чем пара гантелей.",
+      "steps": [
+        "Поставьте скамью перед лендмайном так, чтобы нагруженный конец доставал над головой, когда вы ляжете",
+        "Лягте и возьмите конец грифа двумя руками, руки выжаты вверх",
+        "Плечи держите вертикально, лопатки прижаты к скамье",
+        "Согните локти и дайте грифу уйти вниз за голову по его дуге",
+        "Выжмите гриф обратно до прямых рук по той же дуге"
+      ]
+    }
+  },
+  "ea_plate_curl_to_overhead_press_to_tricep_extension": {
+    "en": {
+      "purpose": "Three movements chained without putting the plate down: biceps, then shoulders, then triceps. Because the weight never rests, your heart rate climbs — this is arm work that doubles as conditioning when time is short.",
+      "steps": [
+        "Hold a plate at the sides with both hands, arms hanging in front of your hips",
+        "Curl it up to your chest with the elbows close to your body",
+        "Press it straight overhead until your arms lock out",
+        "Bend the elbows to lower the plate behind your head, then push it back overhead",
+        "Lower it to your chest and back down to your hips — that is one full repetition"
+      ]
+    },
+    "ru": {
+      "purpose": "Три движения подряд, не опуская блин: бицепс, затем плечи, затем трицепс. Вес не отдыхает, поэтому пульс растёт — это работа на руки, которая заодно работает как кардио, когда мало времени.",
+      "steps": [
+        "Возьмите блин двумя руками за края, руки опущены перед бёдрами",
+        "Поднимите его к груди, локти близко к корпусу",
+        "Выжмите блин прямо над головой до выпрямления рук",
+        "Согните локти, опуская блин за голову, затем выжмите обратно вверх",
+        "Опустите его к груди и затем к бёдрам — это одно полное повторение"
+      ]
+    }
+  },
+  "ea_plate_overhead_tricep_extension": {
+    "en": {
+      "purpose": "Gets the long head of the triceps on full stretch with the simplest equipment there is. Gripping a plate by the edges also makes your fingers work, so grip gets trained alongside the arm.",
+      "steps": [
+        "Stand tall and hold a weight plate at the sides with both hands",
+        "Press it overhead until your arms are straight",
+        "Keep your elbows pointing forward and close together, not flaring out",
+        "Bend the elbows to lower the plate down behind your head as far as is comfortable",
+        "Push it back overhead to straight arms, keeping your ribs down and back flat"
+      ]
+    },
+    "ru": {
+      "purpose": "Даёт полное растяжение длинной головки трицепса с самым простым инвентарём. Хват блина за края заодно нагружает пальцы, поэтому вместе с рукой тренируется и хват.",
+      "steps": [
+        "Встаньте прямо и возьмите блин двумя руками за края",
+        "Выжмите его над головой до прямых рук",
+        "Локти держите направленными вперёд и близко друг к другу, не разводите в стороны",
+        "Согните локти, опуская блин за голову настолько, насколько комфортно",
+        "Выжмите обратно вверх до прямых рук, рёбра опущены, спина без прогиба"
+      ]
+    }
+  },
+  "ea_tricep_rope_extension_on_crossover_machine": {
+    "en": {
+      "purpose": "The rope lets your hands separate at the bottom, so the arms finish fully straight and turned slightly outward — the position where the triceps contracts hardest. A straight bar locks the hands together and stops short of it.",
+      "steps": [
+        "Attach a rope to the high pulley and stand facing the machine, one step back",
+        "Take one end in each hand with the thumbs on top and pull your elbows to your sides",
+        "Lean forward very slightly and brace your stomach",
+        "Push the rope down and pull the ends apart as your arms straighten",
+        "Return slowly, letting the rope come back together until the forearms are parallel to the floor"
+      ]
+    },
+    "ru": {
+      "purpose": "Канат позволяет развести кисти внизу, поэтому руки полностью выпрямляются и слегка разворачиваются наружу — в этом положении трицепс сокращается сильнее всего. Прямая рукоять держит кисти вместе и до этой точки не доводит.",
+      "steps": [
+        "Закрепите канат на верхнем блоке и встаньте лицом к тренажёру, отойдя на шаг",
+        "Возьмите по концу в каждую руку, большие пальцы сверху, локти прижмите к бокам",
+        "Слегка наклонитесь вперёд и напрягите живот",
+        "Разгибайте руки вниз, разводя концы каната в стороны",
+        "Медленно вернитесь, сводя канат обратно, пока предплечья не станут параллельны полу"
+      ]
+    }
+  }
+}

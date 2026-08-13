@@ -284,14 +284,23 @@ class ExerciseItem {
 
   /// A copy with the display text replaced by a translation.
   ///
-  /// Deliberately narrow: only the three text fields can change. Muscles,
+  /// Deliberately narrow: only the four text fields can change. Muscles,
   /// contraindications, frames, difficulty and duration all feed filtering,
   /// recommendation and injury logic, so a translation file must not be able to
   /// reach them — the worst a bad translation can do is read badly.
+  ///
+  /// [purpose] is optional and falls back to the base row's own value. Same
+  /// reasoning as the steps fallback in the overlay loader: an overlay that is
+  /// missing a field must not be able to delete text the reader already had.
+  /// The data ratchet in `exercise_translations_test.dart` keeps the two
+  /// languages in step, so in practice this fallback should never fire — it
+  /// exists so that a future half-written batch degrades to the wrong language
+  /// rather than to an empty section.
   ExerciseItem withText({
     required String title,
     required String summary,
     required List<String> steps,
+    String? purpose,
   }) =>
       ExerciseItem(
         id: id,
@@ -303,7 +312,7 @@ class ExerciseItem {
         durationMinutes: durationMinutes,
         summary: summary,
         steps: steps,
-        purpose: purpose,
+        purpose: purpose ?? this.purpose,
         videoUrl: videoUrl,
         video: video,
         poster: poster,

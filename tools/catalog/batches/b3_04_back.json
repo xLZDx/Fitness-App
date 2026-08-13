@@ -1,0 +1,618 @@
+{
+  "ea_barbell_coan_deadlift": {
+    "en": {
+      "purpose": "A deadlift done with the hips set higher and the bar dragged close, which shifts the work onto the upper back and hamstrings. It is a strength-sport variation — take it up only once a normal deadlift is comfortable and repeatable.",
+      "steps": [
+        "Stand with the bar over your mid-foot, feet about hip width apart",
+        "Grip the bar just outside your knees and set your hips higher than in a normal deadlift",
+        "Pull the slack out of the bar and lock your upper back tight before anything moves",
+        "Push the floor away and drag the bar up your shins, keeping it touching your legs",
+        "Stand fully upright, then lower along the same path without rounding your back"
+      ]
+    },
+    "ru": {
+      "purpose": "Становая с более высоким положением таза и грифом, который тянут вплотную к ногам: работа смещается на верх спины и заднюю поверхность бедра. Это вариант из силового спорта — браться за него стоит, только когда обычная становая идёт уверенно.",
+      "steps": [
+        "Встаньте так, чтобы гриф был над серединой стопы, ноги на ширине таза",
+        "Возьмите гриф чуть шире коленей и поставьте таз выше, чем в обычной становой",
+        "Выберите люфт грифа и жёстко зафиксируйте верх спины до начала движения",
+        "Оттолкнитесь ногами от пола и тяните гриф по голеням, не отрывая его от ног",
+        "Полностью выпрямитесь, затем опустите по той же траектории, не круглая спину"
+      ]
+    }
+  },
+  "ea_barbell_reverse_deadlift": {
+    "en": {
+      "purpose": "Starting from the top and lowering first teaches the hip hinge without the hardest part — breaking the bar off the floor. Good for learning the movement and for loading the lowering phase, where most of the muscle is built.",
+      "steps": [
+        "Set the bar in a rack at hip height and take it with an overhand grip, standing tall",
+        "Push your hips back and let the bar slide down the front of your thighs",
+        "Keep your back flat and your shins upright as the bar passes your knees",
+        "Lower until you feel a strong stretch behind the thighs, then touch the floor if you can reach it",
+        "Drive your hips forward to stand back up, finishing tall without leaning back"
+      ]
+    },
+    "ru": {
+      "purpose": "Движение начинается сверху, с опускания, — это учит наклону от таза без самой сложной части, срыва штанги с пола. Подходит и для освоения техники, и для нагрузки уступающей фазы, в которой строится большая часть мышц.",
+      "steps": [
+        "Поставьте штангу в стойки на высоте таза и возьмите хватом сверху, стоя прямо",
+        "Отведите таз назад, позволяя грифу скользить по передней поверхности бёдер",
+        "Спина прямая, голени вертикальны, гриф проходит колени",
+        "Опускайтесь до сильного растяжения задней поверхности бедра, при возможности коснитесь пола",
+        "Выведите таз вперёд и встаньте, не отклоняясь назад в верхней точке"
+      ]
+    }
+  },
+  "ea_barbell_zercher_good_morning": {
+    "en": {
+      "purpose": "Holding the bar in the crooks of your elbows puts the load in front of you, so the whole back has to work far harder to keep you from folding. Brutal for the upper back and the brace, and it teaches an honest hinge fast.",
+      "steps": [
+        "Set the bar in a rack at stomach height and hook it into the crooks of both elbows",
+        "Stand up with the bar held tight against your body, feet shoulder width apart",
+        "Take a deep breath and lock your upper back and stomach",
+        "Push your hips back and lower your chest toward the floor with the back flat",
+        "Stop when your torso is near parallel, then drive the hips forward to stand"
+      ]
+    },
+    "ru": {
+      "purpose": "Гриф в сгибах локтей смещает вес вперёд, поэтому спине приходится работать несравнимо тяжелее, чтобы вас не сложило. Жёстко для верха спины и корпуса и очень быстро учит честному наклону от таза.",
+      "steps": [
+        "Поставьте штангу в стойки на высоте живота и подхватите её сгибами обоих локтей",
+        "Встаньте, прижав гриф к корпусу, стопы на ширине плеч",
+        "Сделайте глубокий вдох и жёстко напрягите верх спины и живот",
+        "Отведите таз назад и опускайте грудь к полу с прямой спиной",
+        "Остановитесь около параллели, затем выведите таз вперёд и выпрямитесь"
+      ]
+    }
+  },
+  "ea_cable_lat_prayer": {
+    "en": {
+      "purpose": "Isolates the lats with the arms nearly straight, so the biceps cannot take over the way they do on every row and pulldown. This is the exercise for people who pull a lot and still never feel their back working.",
+      "steps": [
+        "Set a rope on the high pulley and kneel a step back from the machine",
+        "Take both ends overhead with the arms almost straight and a small bend in the elbows",
+        "Sit your hips back slightly and lengthen through the spine",
+        "Pull the rope down in a wide arc toward your thighs without bending the elbows further",
+        "Let the arms rise slowly back overhead until you feel the lats stretch"
+      ]
+    },
+    "ru": {
+      "purpose": "Изолирует широчайшие при почти прямых руках, поэтому бицепс не может перехватить работу, как он делает в любой тяге. Это упражнение для тех, кто много тянет и всё равно не чувствует спину.",
+      "steps": [
+        "Закрепите канат на верхнем блоке и встаньте на колени в шаге от тренажёра",
+        "Возьмите оба конца над головой, руки почти прямые, лёгкий сгиб в локтях",
+        "Слегка отведите таз назад и вытянитесь в позвоночнике",
+        "Тяните канат вниз по широкой дуге к бёдрам, не сгибая локти сильнее",
+        "Медленно верните руки над головой до ощущения растяжения широчайших"
+      ]
+    }
+  },
+  "ea_cable_pull_in_kneeling": {
+    "en": {
+      "purpose": "Kneeling removes the legs, so you cannot lean away and turn a row into a whole-body pull. What is left is the back, working against a cable that keeps its tension all the way to the stretch.",
+      "steps": [
+        "Set a handle at chest height and kneel facing the machine, one step back",
+        "Take the handle in both hands with the arms straight in front of you",
+        "Squeeze your glutes and stomach so your body stays upright and still",
+        "Pull the handle to your ribs, leading with the elbows and drawing the shoulder blades together",
+        "Let the cable straighten your arms slowly, feeling the back stretch at the end"
+      ]
+    },
+    "ru": {
+      "purpose": "Положение на коленях убирает ноги, поэтому нельзя отклониться и превратить тягу в движение всем телом. Остаётся спина, работающая против троса, который сохраняет напряжение вплоть до растяжения.",
+      "steps": [
+        "Поставьте рукоять на высоту груди и встаньте на колени лицом к тренажёру, отойдя на шаг",
+        "Возьмите рукоять двумя руками, руки вытянуты вперёд",
+        "Напрягите ягодицы и живот, корпус прямой и неподвижный",
+        "Тяните рукоять к рёбрам, ведя локтями и сводя лопатки",
+        "Дайте тросу медленно выпрямить руки, чувствуя растяжение спины"
+      ]
+    }
+  },
+  "ea_cable_silverback_shrug": {
+    "en": {
+      "purpose": "A shrug done leaning forward against a cable, which points the work at the middle traps between the shoulder blades rather than the tops of the shoulders. That middle section is what holds your posture up all day.",
+      "steps": [
+        "Set two handles at about hip height and stand facing the machine holding one in each hand",
+        "Step back and lean forward from the hips with your back flat and arms hanging",
+        "Let the cables pull your shoulder blades apart at the start of each rep",
+        "Squeeze the shoulder blades together and slightly down, keeping the arms straight",
+        "Hold the squeeze for a second, then let the blades open again under control"
+      ]
+    },
+    "ru": {
+      "purpose": "Шраг в наклоне против троса — работа уходит на среднюю часть трапеции между лопатками, а не на верх плеч. Именно эта средняя часть весь день держит осанку.",
+      "steps": [
+        "Поставьте две рукояти примерно на высоту таза и встаньте лицом к тренажёру, взяв по одной в каждую руку",
+        "Отойдите назад и наклонитесь вперёд от таза, спина прямая, руки свободно висят",
+        "Позвольте тросам развести лопатки в начале каждого повторения",
+        "Сведите лопатки вместе и немного вниз, руки остаются прямыми",
+        "Задержитесь на секунду и под контролем снова разведите лопатки"
+      ]
+    }
+  },
+  "ea_dumbbell_alternating_pendlay_row": {
+    "en": {
+      "purpose": "Each rep starts from the floor with no momentum carried over, so the back has to produce the whole pull from a standstill. Alternating arms lets you hold the bent-over position longer without your lower back giving out first.",
+      "steps": [
+        "Stand with feet hip width and hinge forward until your torso is nearly parallel to the floor",
+        "Set two dumbbells on the floor directly under your shoulders and take one in each hand",
+        "Keep your back flat and your neck in line with your spine",
+        "Row one dumbbell to your ribs, then lower it fully to the floor and let it rest",
+        "Row the other side the same way, alternating and resetting on the floor every rep"
+      ]
+    },
+    "ru": {
+      "purpose": "Каждое повторение начинается с пола, без переноса инерции, поэтому спина выполняет всю тягу с места. Чередование рук позволяет дольше оставаться в наклоне, не выключая поясницу первой.",
+      "steps": [
+        "Встаньте, ноги на ширине таза, и наклонитесь вперёд почти до параллели корпуса с полом",
+        "Поставьте гантели на пол строго под плечами и возьмите по одной в каждую руку",
+        "Спина прямая, шея на одной линии с позвоночником",
+        "Подтяните одну гантель к рёбрам, затем полностью опустите её на пол",
+        "Так же выполните другой рукой, чередуя и ставя гантель на пол каждое повторение"
+      ]
+    }
+  },
+  "ea_dumbbell_goblet_good_morning": {
+    "en": {
+      "purpose": "The gentlest way to learn the hip hinge — the movement underneath every deadlift, swing and row. Holding a weight at the chest gives you something to counterbalance against, so the pattern is easier to feel than with a bar on the back.",
+      "steps": [
+        "Hold one dumbbell vertically against your chest with both hands, feet shoulder width apart",
+        "Soften your knees slightly and keep them there",
+        "Push your hips straight back as if closing a door behind you",
+        "Lower your chest until you feel a stretch behind your thighs, back flat throughout",
+        "Squeeze your glutes to drive the hips forward and stand tall"
+      ]
+    },
+    "ru": {
+      "purpose": "Самый мягкий способ освоить наклон от таза — движение, лежащее в основе становой, махов и тяг. Вес у груди работает противовесом, поэтому паттерн чувствуется легче, чем со штангой на спине.",
+      "steps": [
+        "Держите гантель вертикально у груди двумя руками, стопы на ширине плеч",
+        "Слегка согните колени и сохраняйте этот угол",
+        "Отводите таз строго назад, будто закрываете дверь позади себя",
+        "Опускайте грудь до растяжения задней поверхности бёдер, спина всё время прямая",
+        "Напрягите ягодицы, выведите таз вперёд и выпрямитесь"
+      ]
+    }
+  },
+  "ea_dumbbell_knee_lawnmower_row": {
+    "en": {
+      "purpose": "Pulling on a diagonal from a low knee to the ribs works the back the way you actually use it — with some rotation, not in a straight line. It builds the connection between the lat and the opposite hip that carries into throwing and swinging.",
+      "steps": [
+        "Take a staggered stance with one foot forward and rest the free hand on that thigh",
+        "Hold a dumbbell in the other hand and let it hang toward the inside of the front foot",
+        "Hinge forward with a flat back so the weight starts low and across your body",
+        "Pull the dumbbell up and back toward your ribs, letting the torso open slightly",
+        "Reverse the path slowly to the low starting point, then finish the set and switch sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Тяга по диагонали от низкого положения к рёбрам нагружает спину так, как вы её и используете, — с элементом разворота, а не по прямой. Это связывает широчайшую с противоположным бедром, что переносится на броски и удары.",
+      "steps": [
+        "Встаньте в разножку, одна нога впереди, свободную ладонь положите на это бедро",
+        "Гантель во второй руке опустите к внутренней стороне передней стопы",
+        "Наклонитесь вперёд с прямой спиной, вес в нижней точке идёт поперёк тела",
+        "Тяните гантель вверх и назад к рёбрам, слегка раскрывая корпус",
+        "Медленно верните по той же траектории вниз, доделайте подход и смените сторону"
+      ]
+    }
+  },
+  "ea_dumbbell_pendlay_row": {
+    "en": {
+      "purpose": "Resetting on the floor between every rep removes the bounce, so each pull is pure back strength from a dead stop. It carries over directly to the first inch of a deadlift, which is where most people are weakest.",
+      "steps": [
+        "Hinge forward until your torso is roughly parallel to the floor, knees slightly bent",
+        "Place both dumbbells on the floor under your shoulders",
+        "Take a breath, brace, and keep your torso completely still for the whole rep",
+        "Pull both dumbbells explosively to your ribs, elbows driving back",
+        "Lower them all the way to the floor, let them settle, then pull again"
+      ]
+    },
+    "ru": {
+      "purpose": "Возврат на пол между повторениями убирает отбив, поэтому каждая тяга — это чистая сила спины с места. Переносится прямо на первые сантиметры становой, где большинство слабее всего.",
+      "steps": [
+        "Наклонитесь вперёд примерно до параллели корпуса с полом, колени слегка согнуты",
+        "Поставьте обе гантели на пол под плечами",
+        "Вдохните, напрягите корпус и удерживайте его полностью неподвижным",
+        "Мощно подтяните обе гантели к рёбрам, локти уходят назад",
+        "Опустите их полностью на пол, дайте им замереть и повторите"
+      ]
+    }
+  },
+  "ea_kettlebell_gorilla_row": {
+    "en": {
+      "purpose": "Two bells on the floor let one side stay planted while the other rows, so you get a heavy back pull plus an anti-rotation job for the stomach. The wide stance keeps your lower back out of it more than a standard bent-over row does.",
+      "steps": [
+        "Stand with feet wider than shoulder width and a kettlebell between your feet on each side",
+        "Hinge at the hips with a flat back until you can grip both handles",
+        "Push one bell into the floor to anchor yourself",
+        "Row the other bell to your hip, keeping your shoulders level and your back flat",
+        "Lower it to the floor and row the opposite side, alternating for the whole set"
+      ]
+    },
+    "ru": {
+      "purpose": "Две гири на полу: одна сторона остаётся опорной, пока вторая тянет, — получается тяжёлая тяга спиной плюс работа живота против разворота. Широкая стойка нагружает поясницу меньше, чем классическая тяга в наклоне.",
+      "steps": [
+        "Встаньте шире плеч, по гире с каждой стороны между стопами",
+        "Наклонитесь от таза с прямой спиной, пока не возьмётесь за обе дужки",
+        "Вдавите одну гирю в пол, чтобы зафиксироваться",
+        "Подтяните вторую гирю к тазу, плечи держите на одном уровне, спина прямая",
+        "Опустите её на пол и потяните другую сторону, чередуя весь подход"
+      ]
+    }
+  },
+  "ea_kettlebell_pullover": {
+    "en": {
+      "purpose": "One of the few movements that stretches the lats under load with the arms overhead. It opens the shoulders and the upper back, which is exactly what tightens up in anyone who sits at a desk.",
+      "steps": [
+        "Lie on a bench or the floor and hold one kettlebell by the horns with both hands over your chest",
+        "Keep a slight bend in the elbows and press your lower back into the surface",
+        "Lower the bell back over your head in an arc, only as far as your shoulders allow",
+        "Stop when you feel the stretch under the armpits, without your ribs flaring up",
+        "Pull the bell back over your chest using the back, not the arms"
+      ]
+    },
+    "ru": {
+      "purpose": "Одно из немногих движений, которое растягивает широчайшие под нагрузкой при руках над головой. Раскрывает плечи и верх спины — именно то, что зажимается у всех, кто сидит за столом.",
+      "steps": [
+        "Лягте на скамью или пол, держа гирю за рога двумя руками над грудью",
+        "Оставьте лёгкий сгиб в локтях и прижмите поясницу к опоре",
+        "Опускайте гирю по дуге за голову настолько, насколько позволяют плечи",
+        "Остановитесь на ощущении растяжения под мышками, не выпуская рёбра вверх",
+        "Верните гирю над грудью силой спины, а не рук"
+      ]
+    }
+  },
+  "ea_kettlebell_row": {
+    "en": {
+      "purpose": "The basic back builder with two bells: the handles sit low, so the range is longer than with dumbbells and the lats get more stretch at the bottom of each pull.",
+      "steps": [
+        "Stand with feet hip width and a kettlebell just outside each foot",
+        "Hinge forward with a flat back until your torso is close to parallel with the floor",
+        "Grip both handles and let your arms hang straight down",
+        "Row both bells to your ribs, driving the elbows back and squeezing the shoulder blades",
+        "Lower under control until the arms are straight again, without rounding your back"
+      ]
+    },
+    "ru": {
+      "purpose": "Базовое упражнение на спину с двумя гирями: дужки находятся низко, поэтому амплитуда больше, чем с гантелями, и широчайшие получают больше растяжения внизу каждой тяги.",
+      "steps": [
+        "Встаньте, ноги на ширине таза, гири стоят снаружи от стоп",
+        "Наклонитесь вперёд с прямой спиной почти до параллели корпуса с полом",
+        "Возьмитесь за обе дужки, руки свободно опущены вниз",
+        "Подтяните обе гири к рёбрам, уводя локти назад и сводя лопатки",
+        "Опустите под контролем до прямых рук, не круглая спину"
+      ]
+    }
+  },
+  "ea_kettlebell_single_arm_row": {
+    "en": {
+      "purpose": "One arm at a time gives the shoulder blade room to travel further, so each lat gets a longer range than a two-handed row allows. It also shows you plainly which side is weaker.",
+      "steps": [
+        "Place one hand and the same-side knee on a bench, with the other foot on the floor",
+        "Hold the kettlebell in the free hand and let it hang straight down",
+        "Set your back flat and your shoulders square to the floor",
+        "Pull the bell to your hip, letting the shoulder blade slide toward your spine",
+        "Lower it fully, allowing the blade to reach forward at the bottom, then change sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Работа одной рукой даёт лопатке больше хода, поэтому амплитуда для каждой широчайшей больше, чем в тяге двумя руками. Заодно сразу видно, какая сторона слабее.",
+      "steps": [
+        "Поставьте ладонь и одноимённое колено на скамью, вторая стопа на полу",
+        "Гирю держите свободной рукой, она свободно висит вниз",
+        "Спина прямая, плечи параллельны полу",
+        "Тяните гирю к тазу, позволяя лопатке уходить к позвоночнику",
+        "Полностью опустите, давая лопатке уйти вперёд внизу, затем смените сторону"
+      ]
+    }
+  },
+  "ea_kipping_pull_up": {
+    "en": {
+      "purpose": "A pull-up that uses a hip swing to help the arms, which lets you do far more repetitions for conditioning. It trains rhythm and grip endurance rather than pure back strength — do strict pull-ups first, and only kip once you have them.",
+      "steps": [
+        "Hang from the bar with an overhand grip, hands just outside shoulder width",
+        "Swing your body into an arch and then a hollow position, driven from the shoulders",
+        "As you swing forward, drive your knees and hips up to give the pull momentum",
+        "Pull your chin over the bar at the top of that surge, elbows finishing behind you",
+        "Fall back into the swing and let the next arch start the following repetition"
+      ]
+    },
+    "ru": {
+      "purpose": "Подтягивание с раскачкой от таза, помогающей рукам: так можно сделать намного больше повторений и работать на выносливость. Тренирует ритм и хват, а не чистую силу спины, — сначала освойте строгие подтягивания, и только потом киппинг.",
+      "steps": [
+        "Повисните на перекладине хватом сверху, руки чуть шире плеч",
+        "Раскачайтесь от плеч, чередуя прогиб и подобранное положение корпуса",
+        "На движении вперёд подайте колени и таз вверх, создавая импульс для подтягивания",
+        "На пике импульса выведите подбородок над перекладиной, локти уходят назад",
+        "Вернитесь в раскачку и начните следующее повторение с прогиба"
+      ]
+    }
+  },
+  "ea_landmine_romanian_deadlift": {
+    "en": {
+      "purpose": "The landmine's arc keeps the bar travelling close to your legs by itself, so the hinge is harder to do badly than with a free bar. A good bridge for anyone whose back is nervous about conventional deadlifts.",
+      "steps": [
+        "Load one end of a barbell in the landmine and straddle it, facing away from the anchor",
+        "Reach down and hold the loaded end with both hands between your legs",
+        "Stand tall with a small bend in the knees, back flat, shoulders down",
+        "Push your hips back and let the bar travel down its arc close to your legs",
+        "Stop at a strong hamstring stretch, then drive the hips forward to stand"
+      ]
+    },
+    "ru": {
+      "purpose": "Дуга лендмайна сама ведёт гриф близко к ногам, поэтому испортить наклон сложнее, чем со свободной штангой. Хороший переходный вариант, если спина настороженно относится к классической становой.",
+      "steps": [
+        "Вставьте один конец грифа в лендмайн и встаньте над ним спиной к точке крепления",
+        "Наклонитесь и возьмите нагруженный конец двумя руками между ног",
+        "Выпрямитесь, колени слегка согнуты, спина прямая, плечи опущены",
+        "Отводите таз назад, гриф идёт вниз по дуге близко к ногам",
+        "Остановитесь на сильном растяжении бёдер и выведите таз вперёд, выпрямляясь"
+      ]
+    }
+  },
+  "ea_lawnmower_row": {
+    "en": {
+      "purpose": "Named for the motion of starting a mower, and useful for the same reason: it trains a pull that involves the whole body turning slightly, which is how you actually pull things in life rather than in a gym.",
+      "steps": [
+        "Stand in a split stance with a dumbbell in the hand opposite your front foot",
+        "Rest your free hand on the front thigh and hinge forward with a flat back",
+        "Let the dumbbell hang low and slightly across your body",
+        "Pull it up past your ribs while opening the chest toward the working side",
+        "Lower it slowly back across the body, then finish the set and switch sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Название от движения при запуске газонокосилки, и польза та же: тренируется тяга с лёгким разворотом всего тела — так вы и тянете вещи в жизни, а не в зале.",
+      "steps": [
+        "Встаньте в разножку, гантель в руке, разноимённой передней ноге",
+        "Свободную ладонь положите на переднее бедро и наклонитесь вперёд с прямой спиной",
+        "Гантель висит низко и немного поперёк тела",
+        "Тяните её вверх мимо рёбер, раскрывая грудь в сторону рабочей руки",
+        "Медленно опустите обратно поперёк тела, доделайте подход и смените сторону"
+      ]
+    }
+  },
+  "ea_plate_alternating_deadstop_row": {
+    "en": {
+      "purpose": "Every rep starts from a full stop on the floor, so nothing is carried over from the last one — the back does all of it. Alternating sides keeps the total time bent over manageable.",
+      "steps": [
+        "Set two plates on their edges on the floor and stand between them, feet hip width",
+        "Hinge forward with a flat back and grip the top edge of each plate",
+        "Brace your stomach and keep your torso still throughout",
+        "Row one plate to your ribs, then set it back down completely",
+        "Row the other side the same way, pausing on the floor between every repetition"
+      ]
+    },
+    "ru": {
+      "purpose": "Каждое повторение начинается с полной остановки на полу, ничего не переносится с предыдущего — всю работу делает спина. Чередование сторон удерживает общее время в наклоне в разумных пределах.",
+      "steps": [
+        "Поставьте два блина на ребро и встаньте между ними, ноги на ширине таза",
+        "Наклонитесь вперёд с прямой спиной и возьмитесь за верхний край каждого блина",
+        "Напрягите живот и удерживайте корпус неподвижным",
+        "Подтяните один блин к рёбрам, затем полностью поставьте его обратно",
+        "Так же выполните другой стороной, делая паузу на полу каждое повторение"
+      ]
+    }
+  },
+  "ea_plate_glute_bridge_to_pullover": {
+    "en": {
+      "purpose": "Holds the hips up with the glutes while the lats work overhead, so the front of your body is stretched open at both ends. A useful counter to a day spent folded forward at a desk.",
+      "steps": [
+        "Lie on your back with knees bent and feet flat, holding a plate over your chest",
+        "Lift your hips into a bridge and keep the glutes squeezed for the whole set",
+        "With slightly bent arms, lower the plate back over your head toward the floor",
+        "Go only as far as you can without your ribs lifting or your hips dropping",
+        "Pull the plate back over your chest using the lats, keeping the bridge held"
+      ]
+    },
+    "ru": {
+      "purpose": "Ягодицы удерживают таз наверху, пока широчайшие работают над головой, — передняя поверхность тела раскрывается с обоих концов. Полезный противовес дню, проведённому согнувшись за столом.",
+      "steps": [
+        "Лягте на спину, колени согнуты, стопы на полу, блин удерживайте над грудью",
+        "Поднимите таз в мост и держите ягодицы напряжёнными весь подход",
+        "Слегка согнув руки, опускайте блин за голову к полу",
+        "Опускайтесь только настолько, чтобы рёбра не поднимались, а таз не падал",
+        "Верните блин над грудью силой широчайших, удерживая мост"
+      ]
+    }
+  },
+  "ea_plate_good_morning": {
+    "en": {
+      "purpose": "Teaches the hip hinge with a load you can hold anywhere, which makes it the version to practise at home. Holding the plate at the chest rather than a bar on the back keeps the spine loaded far more gently.",
+      "steps": [
+        "Hold a weight plate against your chest with both hands, feet shoulder width apart",
+        "Soften the knees and set your back flat",
+        "Push your hips straight back and lower your chest toward the floor",
+        "Keep the plate glued to your chest and your neck in line with your spine",
+        "Stop at a strong stretch behind the thighs, then squeeze the glutes to stand"
+      ]
+    },
+    "ru": {
+      "purpose": "Учит наклону от таза с весом, который можно держать где угодно, — это домашний вариант. Блин у груди вместо штанги на спине нагружает позвоночник гораздо мягче.",
+      "steps": [
+        "Прижмите блин к груди двумя руками, стопы на ширине плеч",
+        "Слегка согните колени и выровняйте спину",
+        "Отведите таз строго назад и опускайте грудь к полу",
+        "Блин остаётся прижатым к груди, шея на одной линии с позвоночником",
+        "Дойдите до сильного растяжения задней поверхности бёдер и выпрямитесь ягодицами"
+      ]
+    }
+  },
+  "ea_plate_pinch_grip_deadlift": {
+    "en": {
+      "purpose": "Pinching two plates between the fingers and thumb trains a grip that a hook or a strap can never build. Grip is the first thing to fail on heavy rows, carries and pull-ups, so it is worth training on its own.",
+      "steps": [
+        "Stand two plates together on the floor with the smooth sides facing outward",
+        "Stand over them with your feet either side, hips back and back flat",
+        "Pinch the outer faces with your fingers and thumb — no hooking the rim",
+        "Stand up by driving through the legs, keeping the plates hanging still",
+        "Hold at the top for a few seconds, then lower under control before your grip fails"
+      ]
+    },
+    "ru": {
+      "purpose": "Щипковый хват двух блинов пальцами тренирует то, что не построят ни крюки, ни лямки. На тяжёлых тягах, переносах и подтягиваниях первым сдаёт именно хват, поэтому его стоит тренировать отдельно.",
+      "steps": [
+        "Поставьте два блина вместе на пол гладкими сторонами наружу",
+        "Встаньте над ними, стопы по сторонам, таз назад, спина прямая",
+        "Зажмите внешние поверхности пальцами и большим пальцем — не цепляясь за края",
+        "Выпрямитесь усилием ног, блины висят неподвижно",
+        "Задержитесь наверху на несколько секунд и опустите под контролем, пока хват держит"
+      ]
+    }
+  },
+  "ea_plate_pinch_grip_row": {
+    "en": {
+      "purpose": "A back row and a grip test in one: the pinch hold fails long before the back does, so every rep is fighting to keep hold. Best used late in a session when heavy rowing is already done.",
+      "steps": [
+        "Hinge forward with a flat back, holding a plate pinched in each hand by its smooth face",
+        "Let both plates hang straight down under your shoulders",
+        "Brace your stomach and hold the torso still",
+        "Row both plates to your ribs, keeping the pinch tight",
+        "Lower them slowly to arms' length and repeat until the grip, not the back, stops you"
+      ]
+    },
+    "ru": {
+      "purpose": "Тяга на спину и проверка хвата одновременно: щипковый хват сдаёт заметно раньше спины, поэтому каждое повторение — борьба за удержание. Лучше ставить в конец тренировки, когда тяжёлые тяги уже сделаны.",
+      "steps": [
+        "Наклонитесь вперёд с прямой спиной, удерживая по блину в каждой руке щипковым хватом за гладкую сторону",
+        "Оба блина висят строго под плечами",
+        "Напрягите живот и удерживайте корпус неподвижным",
+        "Подтяните оба блина к рёбрам, сохраняя жёсткий хват",
+        "Медленно опустите до прямых рук и повторяйте, пока не откажет хват, а не спина"
+      ]
+    }
+  },
+  "ea_push_pull_chair_over_head_pull": {
+    "en": {
+      "purpose": "Pulling a loaded sled with the rope overhead works the lats and the whole back without any lowering phase, so you can add hard back work without the soreness that limits how often you train.",
+      "steps": [
+        "Attach a rope to the sled and sit or stand facing it at the far end",
+        "Take the rope with both hands and raise your arms overhead, arms straight",
+        "Set your feet and brace so your torso stays upright",
+        "Pull the rope down and back past your head, hand over hand, drawing the sled toward you",
+        "Reach forward for the next grip and keep pulling until the sled reaches you"
+      ]
+    },
+    "ru": {
+      "purpose": "Тяга нагруженных саней канатом из-за головы нагружает широчайшие и всю спину без уступающей фазы: тяжёлую работу на спину можно добавить без крепатуры, которая ограничивает частоту тренировок.",
+      "steps": [
+        "Прикрепите канат к саням и сядьте или встаньте лицом к ним на другом конце",
+        "Возьмите канат двумя руками и поднимите прямые руки над головой",
+        "Поставьте стопы устойчиво и напрягите корпус, удерживая его прямым",
+        "Тяните канат вниз и назад мимо головы, перехватывая руками, притягивая сани",
+        "Тянитесь вперёд за следующим перехватом и продолжайте, пока сани не дойдут до вас"
+      ]
+    }
+  },
+  "ea_seated_row_machine_rows": {
+    "en": {
+      "purpose": "The machine supports your chest and lower back, so you can pull heavy without your spine having to hold the position. This is usually the safest heavy row available, and the one to choose when the lower back is already tired.",
+      "steps": [
+        "Set the seat height so the handles line up with the middle of your chest",
+        "Sit with your chest against the pad and your feet planted",
+        "Take the handles with your arms straight and shoulder blades relaxed forward",
+        "Pull the handles to your ribs, driving the elbows back and squeezing the blades together",
+        "Return slowly until the arms are straight and the blades open again"
+      ]
+    },
+    "ru": {
+      "purpose": "Тренажёр поддерживает грудь и поясницу, поэтому тянуть можно тяжело, не удерживая положение позвоночником. Обычно это самая безопасная тяжёлая тяга из доступных и правильный выбор, когда поясница уже устала.",
+      "steps": [
+        "Настройте высоту сиденья так, чтобы рукояти были на уровне середины груди",
+        "Сядьте, прижав грудь к упору, стопы устойчиво стоят",
+        "Возьмите рукояти, руки прямые, лопатки свободно уведены вперёд",
+        "Тяните рукояти к рёбрам, уводя локти назад и сводя лопатки",
+        "Медленно вернитесь до прямых рук и раскрытых лопаток"
+      ]
+    }
+  },
+  "ea_straight_arm_cable_lat_pull_down": {
+    "en": {
+      "purpose": "With the elbows locked the biceps cannot contribute, so the lats do the entire pull. It is the standard fix for a back workout you feel everywhere except your back.",
+      "steps": [
+        "Attach a straight bar to the high pulley and stand a step back, feet hip width",
+        "Take the bar with an overhand grip and straight arms at about head height",
+        "Hinge forward slightly at the hips and keep your back flat",
+        "Sweep the bar down in an arc to your thighs without bending the elbows",
+        "Let the bar rise back slowly to head height, feeling the stretch under the arms"
+      ]
+    },
+    "ru": {
+      "purpose": "При зафиксированных локтях бицепс не может вмешаться, и всю тягу выполняют широчайшие. Это стандартное решение, когда тренировка спины ощущается где угодно, кроме спины.",
+      "steps": [
+        "Закрепите прямую рукоять на верхнем блоке и отойдите на шаг, ноги на ширине таза",
+        "Возьмите рукоять хватом сверху, руки прямые примерно на высоте головы",
+        "Слегка наклонитесь от таза, спина прямая",
+        "Проведите рукоять вниз по дуге к бёдрам, не сгибая локти",
+        "Медленно верните её на высоту головы, чувствуя растяжение под руками"
+      ]
+    }
+  },
+  "ea_suspension_trainer_with_grips_wide_grip_inverted_row_on_floor_1": {
+    "en": {
+      "purpose": "A row where your own body is the weight, so you can make it as easy or as hard as you need just by moving your feet. The wide grip aims the work at the upper back and rear shoulders, the muscles that pull the shoulders back.",
+      "steps": [
+        "Set the straps so the handles hang at about hip height and take one in each hand",
+        "Walk your feet forward and lean back until your arms are straight and your body is a straight line",
+        "Set your hands wider than your shoulders with palms facing down",
+        "Pull your chest to the handles, driving the elbows out and back and squeezing the blades",
+        "Lower under control to straight arms, keeping your hips from sagging"
+      ]
+    },
+    "ru": {
+      "purpose": "Тяга, где весом служит собственное тело, поэтому сложность регулируется просто положением стоп. Широкий хват направляет работу на верх спины и заднюю часть плеч — мышцы, которые отводят плечи назад.",
+      "steps": [
+        "Отрегулируйте петли так, чтобы рукояти висели примерно на высоте таза, возьмите по одной в каждую руку",
+        "Переставьте стопы вперёд и отклонитесь назад до прямых рук и прямой линии тела",
+        "Поставьте руки шире плеч ладонями вниз",
+        "Подтяните грудь к рукоятям, разводя локти в стороны и назад и сводя лопатки",
+        "Опуститесь под контролем до прямых рук, не роняя таз"
+      ]
+    }
+  },
+  "ea_theraband_scapula_retraction": {
+    "en": {
+      "purpose": "A light movement for the muscles between the shoulder blades, which get long and weak from hours at a keyboard. Doing it often matters more than doing it heavy — it is a posture exercise, not a strength one.",
+      "steps": [
+        "Hold a light band with both hands at chest height, arms straight in front of you",
+        "Stand tall with your ribs down and your chin gently tucked",
+        "Keep your arms straight and pull the band apart by drawing your shoulder blades together",
+        "Squeeze for two seconds at the point where your chest opens fully",
+        "Return slowly to the start without letting your shoulders creep up toward your ears"
+      ]
+    },
+    "ru": {
+      "purpose": "Лёгкое движение для мышц между лопатками, которые растягиваются и слабеют от часов за клавиатурой. Здесь важнее регулярность, а не вес: это упражнение на осанку, а не на силу.",
+      "steps": [
+        "Возьмите лёгкую ленту двумя руками на уровне груди, руки вытянуты вперёд",
+        "Встаньте прямо, рёбра опущены, подбородок слегка подобран",
+        "Не сгибая руки, растяните ленту в стороны за счёт сведения лопаток",
+        "Задержитесь на две секунды в точке полного раскрытия груди",
+        "Медленно вернитесь в исходное, не поднимая плечи к ушам"
+      ]
+    }
+  },
+  "ea_weighted_back_extensions_on_hyperextension_bench": {
+    "en": {
+      "purpose": "Trains the muscles that run along the spine to hold a position under load — the exact job they do during a deadlift or a heavy carry. A strong set of these is one of the better insurances against a back that gives out.",
+      "steps": [
+        "Set the pad just below your hip bones and hook your heels under the rollers",
+        "Hold a plate against your chest and cross your arms over it",
+        "Start folded forward at the hips with your back flat, not rounded",
+        "Squeeze your glutes and lift your torso until your body forms a straight line",
+        "Stop there — do not arch past straight — and lower slowly under control"
+      ]
+    },
+    "ru": {
+      "purpose": "Тренирует мышцы вдоль позвоночника удерживать положение под нагрузкой — ровно то, что они делают в становой и при переносе тяжестей. Сильные разгибатели — одна из лучших страховок от спины, которая подводит.",
+      "steps": [
+        "Поставьте валик чуть ниже тазовых косточек и заведите пятки под ролики",
+        "Прижмите блин к груди и скрестите на нём руки",
+        "Начните из наклона вперёд от таза, спина прямая, не круглая",
+        "Напрягите ягодицы и поднимите корпус до прямой линии тела",
+        "На этом остановитесь — не прогибайтесь дальше — и медленно опуститесь"
+      ]
+    }
+  }
+}

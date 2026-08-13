@@ -139,6 +139,15 @@ class AssetEquipmentRepository implements EquipmentRepository {
     final title = entry['title'];
     if (title is! String || title.trim().isEmpty) return item;
     final steps = ExerciseItem.parseSteps(entry['steps']);
+    // Read separately from the steps: "why this matters" lives in its own
+    // field precisely because it cannot live in `summary`, which is pinned to
+    // step one. Forgetting it here is invisible in the data — both files carry
+    // the Russian text and the ratchet passes — but every Russian reader gets
+    // the English paragraph, because `withText` otherwise keeps the base row's.
+    final purposeText = (entry['purpose'] as String?)?.trim();
+    final purpose = (purposeText == null || purposeText.isEmpty)
+        ? null
+        : purposeText;
     // An overlay with no steps used to discard the whole entry, title and
     // all. That was safe while the pre-purchase catalog was the visible half
     // — every one of its rows had instructions. The purchased library ships
@@ -155,12 +164,14 @@ class AssetEquipmentRepository implements EquipmentRepository {
         title: title,
         summary: item.summary,
         steps: item.steps,
+        purpose: purpose,
       );
     }
     return item.withText(
       title: title,
       summary: steps.first,
       steps: steps,
+      purpose: purpose,
     );
   }
 

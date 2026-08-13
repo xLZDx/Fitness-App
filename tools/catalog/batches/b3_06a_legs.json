@@ -1,0 +1,750 @@
+{
+  "ea_ankle_pumps": {
+    "en": {
+      "purpose": "The simplest circulation exercise there is: pointing and flexing the foot pushes blood back up the leg. Used after surgery, on long flights and during any long stretch of sitting, where the calf stops acting as a pump.",
+      "steps": [
+        "Sit or lie down with your legs straight out in front of you",
+        "Keep your knees relaxed and still — only the ankles move",
+        "Point your toes away from you as far as they will go",
+        "Pull your toes back toward your shins until you feel the calf stretch",
+        "Move slowly and continue for the set time or number of repetitions"
+      ]
+    },
+    "ru": {
+      "purpose": "Самое простое упражнение на кровообращение: вытягивание и подтягивание стопы гонит кровь обратно вверх по ноге. Применяется после операций, в долгих перелётах и при любом длительном сидении, когда икра перестаёт работать насосом.",
+      "steps": [
+        "Сядьте или лягте, вытянув ноги перед собой",
+        "Колени расслаблены и неподвижны — двигаются только голеностопы",
+        "Вытяните носки от себя настолько, насколько получается",
+        "Потяните носки на себя до ощущения растяжения в икре",
+        "Двигайтесь медленно и продолжайте заданное время или число повторений"
+      ]
+    }
+  },
+  "ea_band_hip_adduction": {
+    "en": {
+      "purpose": "Trains the inner thigh, which almost nothing else in a normal programme reaches. Weak adductors are a common source of groin strains and of a knee that drifts inward under load.",
+      "steps": [
+        "Anchor a band at ankle height and loop it around the ankle nearest the anchor",
+        "Stand side-on and step away until the band pulls your leg outward",
+        "Hold something stable with one hand and stand tall on the other leg",
+        "Pull the banded leg across the front of your body against the resistance",
+        "Return slowly to the start without letting the band snap your leg back"
+      ]
+    },
+    "ru": {
+      "purpose": "Тренирует внутреннюю поверхность бедра, до которой почти ничто в обычной программе не добирается. Слабые приводящие — частая причина травм паха и ухода колена внутрь под нагрузкой.",
+      "steps": [
+        "Закрепите ленту на высоте щиколотки и наденьте петлю на ближнюю к креплению ногу",
+        "Встаньте боком и отойдите, чтобы лента тянула ногу в сторону",
+        "Придержитесь рукой за опору и встаньте прямо на второй ноге",
+        "Приведите ногу с лентой поперёк тела, преодолевая сопротивление",
+        "Медленно вернитесь, не позволяя ленте дёрнуть ногу обратно"
+      ]
+    }
+  },
+  "ea_dumbbell_feet_elevated_figure_four_glute_bridge": {
+    "en": {
+      "purpose": "Crossing one ankle over the opposite knee forces a single glute to do all the work, and raising the feet lengthens the range. Together they make a bodyweight bridge hard enough to actually build the muscle.",
+      "steps": [
+        "Lie on your back with your heels on a bench or box, knees bent",
+        "Cross one ankle over the opposite knee to make a figure four",
+        "Hold a dumbbell across the hip of the working leg",
+        "Drive through that heel to lift your hips until your body is straight",
+        "Lower slowly without touching the floor, then finish the set and switch legs"
+      ]
+    },
+    "ru": {
+      "purpose": "Лодыжка, закинутая на противоположное колено, заставляет работать одну ягодицу, а стопы на возвышении увеличивают амплитуду. Вместе это делает мост с весом тела достаточно тяжёлым, чтобы действительно растить мышцу.",
+      "steps": [
+        "Лягте на спину, пятки на скамье или тумбе, колени согнуты",
+        "Закиньте одну лодыжку на противоположное колено, образуя четвёрку",
+        "Положите гантель на таз со стороны рабочей ноги",
+        "Оттолкнитесь этой пяткой и поднимите таз до прямой линии тела",
+        "Медленно опуститесь, не касаясь пола, доделайте подход и смените ногу"
+      ]
+    }
+  },
+  "ea_dumbbell_goblet_reverse_lunge": {
+    "en": {
+      "purpose": "Stepping backwards rather than forwards keeps the knee behind the toes and puts the work into the glute of the front leg. It is the version of the lunge that most knees tolerate best.",
+      "steps": [
+        "Hold a dumbbell vertically against your chest with both hands",
+        "Stand tall with your feet hip width apart",
+        "Step one foot straight back and lower until both knees are at about ninety degrees",
+        "Keep your torso upright and your front shin close to vertical",
+        "Push through the front heel to stand, then step back with the other leg"
+      ]
+    },
+    "ru": {
+      "purpose": "Шаг назад, а не вперёд, удерживает колено за линией носка и переносит работу на ягодицу передней ноги. Это тот вариант выпада, который большинство коленей переносит лучше всего.",
+      "steps": [
+        "Держите гантель вертикально у груди двумя руками",
+        "Встаньте прямо, стопы на ширине таза",
+        "Сделайте шаг назад и опуститесь, пока оба колена не согнутся примерно до прямого угла",
+        "Корпус держите прямым, голень передней ноги — почти вертикально",
+        "Оттолкнитесь пяткой передней ноги и встаньте, затем шагните назад другой ногой"
+      ]
+    }
+  },
+  "ea_dumbbell_offset_squat": {
+    "en": {
+      "purpose": "One weight on one side means your stomach has to stop you tipping over while your legs squat. It trains the trunk and the legs at once, and it exposes any tendency to shift weight onto your stronger side.",
+      "steps": [
+        "Hold a single dumbbell on one shoulder, the other hand free for balance",
+        "Stand with your feet shoulder width apart, toes slightly out",
+        "Brace your stomach hard so your torso stays square and upright",
+        "Squat until your thighs are about parallel to the floor, keeping both feet evenly loaded",
+        "Stand back up, complete the set, then do the same number on the other shoulder"
+      ]
+    },
+    "ru": {
+      "purpose": "Один вес на одной стороне: живот должен удерживать вас от заваливания, пока ноги приседают. Тренируется корпус и ноги одновременно, и сразу видно склонность переносить вес на сильную сторону.",
+      "steps": [
+        "Положите одну гантель на плечо, вторая рука свободна для равновесия",
+        "Стопы на ширине плеч, носки слегка развёрнуты",
+        "Жёстко напрягите живот, корпус остаётся ровным и прямым",
+        "Присядьте примерно до параллели бёдер с полом, нагружая обе стопы одинаково",
+        "Встаньте, доделайте подход и повторите столько же с другого плеча"
+      ]
+    }
+  },
+  "ea_dumbbell_single_leg_hip_thrust": {
+    "en": {
+      "purpose": "One leg at a time, with the shoulders raised on a bench for a long range — this is the strongest position there is for loading the glute. It also shows which side has been doing less work.",
+      "steps": [
+        "Sit on the floor with your upper back against a bench and knees bent",
+        "Lift one foot off the floor and hold that knee bent in the air",
+        "Rest a dumbbell across the hips and hold it steady with both hands",
+        "Drive through the heel of the planted foot until your body is straight from knee to shoulder",
+        "Lower slowly under control, then finish the set and change legs"
+      ]
+    },
+    "ru": {
+      "purpose": "Одна нога и лопатки на скамье для большой амплитуды — это самое выгодное положение для нагрузки ягодицы. Заодно видно, какая сторона работала меньше.",
+      "steps": [
+        "Сядьте на пол, упритесь верхом спины в скамью, колени согнуты",
+        "Оторвите одну стопу от пола и удерживайте это колено согнутым на весу",
+        "Положите гантель поперёк таза и придерживайте её двумя руками",
+        "Оттолкнитесь пяткой опорной ноги до прямой линии от колена до плеча",
+        "Медленно опуститесь, доделайте подход и смените ногу"
+      ]
+    }
+  },
+  "ea_dumbbell_single_leg_single_arm_deadlift": {
+    "en": {
+      "purpose": "Balancing on one leg while hinging trains the hamstring, the glute and your balance at the same time. Holding the weight in the opposite hand adds a twist your back has to resist, which is exactly what carrying a bag on one side does.",
+      "steps": [
+        "Stand on one leg with a dumbbell in the opposite hand",
+        "Keep a soft bend in the standing knee and lock your back flat",
+        "Hinge forward from the hip, letting the free leg rise straight behind you",
+        "Lower until your torso and back leg form one line roughly parallel to the floor",
+        "Squeeze the glute to return upright, then finish the set and switch sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Баланс на одной ноге в наклоне тренирует заднюю поверхность бедра, ягодицу и равновесие одновременно. Вес в противоположной руке добавляет скручивание, которому спина должна сопротивляться, — ровно как при ношении сумки на одном плече.",
+      "steps": [
+        "Встаньте на одну ногу, гантель в противоположной руке",
+        "Опорное колено слегка согнуто, спина зафиксирована прямой",
+        "Наклонитесь вперёд от таза, свободная нога поднимается прямо назад",
+        "Опуститесь, пока корпус и задняя нога не составят одну линию примерно параллельно полу",
+        "Напрягите ягодицу и выпрямитесь, доделайте подход и смените сторону"
+      ]
+    }
+  },
+  "ea_dumbbell_staggered_deadlift": {
+    "en": {
+      "purpose": "The back foot is there only for balance, so most of the load goes through the front leg without needing the balance of a full single-leg deadlift. A practical middle step between two legs and one.",
+      "steps": [
+        "Stand with one foot forward and the other a half step back, heel raised",
+        "Hold a dumbbell in each hand in front of your thighs",
+        "Put around eighty percent of your weight on the front foot",
+        "Push your hips back and lower the weights along the front leg with a flat back",
+        "Drive through the front heel to stand, then change the stance and repeat"
+      ]
+    },
+    "ru": {
+      "purpose": "Задняя стопа нужна только для равновесия, поэтому основная нагрузка идёт на переднюю ногу без требований к балансу полной становой на одной ноге. Практичный промежуточный шаг между двумя ногами и одной.",
+      "steps": [
+        "Встаньте, одна стопа впереди, вторая на полшага назад с поднятой пяткой",
+        "Гантели держите перед бёдрами",
+        "Перенесите примерно восемьдесят процентов веса на переднюю стопу",
+        "Отведите таз назад и опустите гантели вдоль передней ноги с прямой спиной",
+        "Оттолкнитесь пяткой передней ноги, встаньте, затем смените стойку и повторите"
+      ]
+    }
+  },
+  "ea_dumbbell_staggered_glute_bridge": {
+    "en": {
+      "purpose": "Shifting most of the load onto one leg while the other stays down for support builds each glute separately without the balance demands of a true single-leg bridge. A good way to even out a side difference.",
+      "steps": [
+        "Lie on your back with knees bent and one foot slid further forward than the other",
+        "Hold a dumbbell across your hips with both hands",
+        "Press mostly through the heel of the near foot, using the far one only lightly",
+        "Lift your hips until your body is straight from knee to shoulder",
+        "Lower under control, then swap which foot is forward"
+      ]
+    },
+    "ru": {
+      "purpose": "Основная нагрузка смещается на одну ногу, а вторая остаётся опорной: каждая ягодица прорабатывается отдельно без требований к балансу настоящего одноногого моста. Хороший способ выровнять разницу между сторонами.",
+      "steps": [
+        "Лягте на спину, колени согнуты, одна стопа выдвинута дальше другой",
+        "Гантель держите поперёк таза двумя руками",
+        "Давите в основном пяткой ближней стопы, дальнюю используйте лишь слегка",
+        "Поднимите таз до прямой линии от колена до плеча",
+        "Опуститесь под контролем, затем поменяйте, какая стопа впереди"
+      ]
+    }
+  },
+  "ea_dumbbell_staggered_hip_thrust": {
+    "en": {
+      "purpose": "The raised shoulders give a longer range than a floor bridge, and the staggered feet load one glute at a time. This is the version to use when a full single-leg thrust is still too hard to control.",
+      "steps": [
+        "Sit with your upper back against a bench, knees bent, one foot ahead of the other",
+        "Rest a dumbbell across your hips and hold it with both hands",
+        "Push mostly through the heel of the rear foot, the front one only for balance",
+        "Drive your hips up until your body is straight from knee to shoulder",
+        "Lower slowly and repeat, then swap the feet over"
+      ]
+    },
+    "ru": {
+      "purpose": "Поднятые лопатки дают большую амплитуду, чем мост с пола, а разножка нагружает по одной ягодице. Этот вариант стоит выбрать, когда полный тяга таза на одной ноге ещё тяжело контролировать.",
+      "steps": [
+        "Сядьте, упершись верхом спины в скамью, колени согнуты, одна стопа впереди другой",
+        "Положите гантель поперёк таза и удерживайте её двумя руками",
+        "Давите преимущественно пяткой задней стопы, передняя только для равновесия",
+        "Поднимите таз до прямой линии от колена до плеча",
+        "Медленно опуститесь и повторите, затем поменяйте стопы местами"
+      ]
+    }
+  },
+  "ea_dumbbell_standing_hip_abduction": {
+    "en": {
+      "purpose": "Trains the muscle on the side of the hip that stops your knee falling inward when you walk, run or land. Weakness there shows up as knee pain long before anyone thinks to blame the hip.",
+      "steps": [
+        "Stand tall holding something stable with one hand for balance",
+        "Hold a light dumbbell against the outside of the working thigh",
+        "Keep both legs straight and your torso completely upright",
+        "Lift the working leg out to the side without leaning your body the other way",
+        "Lower it slowly back past the standing leg, then finish the set and switch sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Тренирует мышцу сбоку таза, которая не даёт колену уходить внутрь при ходьбе, беге и приземлении. Слабость там проявляется болью в колене задолго до того, как кто-то заподозрит бедро.",
+      "steps": [
+        "Встаньте прямо, одной рукой держитесь за опору",
+        "Прижмите лёгкую гантель к внешней стороне рабочего бедра",
+        "Обе ноги прямые, корпус строго вертикально",
+        "Отведите рабочую ногу в сторону, не отклоняя корпус в противоположную",
+        "Медленно опустите её обратно мимо опорной ноги, доделайте подход и смените сторону"
+      ]
+    }
+  },
+  "ea_frog_jumps": {
+    "en": {
+      "purpose": "Repeated jumps from a deep squat build power in the legs and get the heart rate up fast, with no equipment at all. Land quietly — the noise of the landing is the best indicator of whether you are absorbing it properly.",
+      "steps": [
+        "Squat down deep with your feet a little wider than your shoulders and hands on the floor",
+        "Keep your chest up and your back flat in the bottom position",
+        "Jump forward and up, swinging your arms to help",
+        "Land softly on the balls of your feet and immediately sink back into the deep squat",
+        "Repeat straight into the next jump for the set distance or number of repetitions"
+      ]
+    },
+    "ru": {
+      "purpose": "Серия прыжков из глубокого приседа развивает мощность ног и быстро поднимает пульс без всякого инвентаря. Приземляйтесь тихо — звук приземления лучше всего показывает, гасите вы удар или нет.",
+      "steps": [
+        "Присядьте глубоко, стопы чуть шире плеч, ладони на полу",
+        "В нижней точке грудь поднята, спина прямая",
+        "Прыгните вперёд и вверх, помогая махом рук",
+        "Приземлитесь мягко на переднюю часть стоп и сразу уйдите обратно в глубокий присед",
+        "Сразу переходите в следующий прыжок на заданную дистанцию или число повторений"
+      ]
+    }
+  },
+  "ea_glute_bridge_bodyweight": {
+    "en": {
+      "purpose": "The starting point for glute training and the first exercise given after most back problems. It teaches the hips to extend without the lower back arching to do the job for them.",
+      "steps": [
+        "Lie on your back with your knees bent and feet flat, heels close to your hips",
+        "Press your lower back gently into the floor and tuck your ribs down",
+        "Squeeze your glutes first, then lift your hips off the floor",
+        "Stop when your body forms a straight line from knees to shoulders",
+        "Lower slowly, touch down, and reset before the next repetition"
+      ]
+    },
+    "ru": {
+      "purpose": "Отправная точка тренировки ягодиц и первое упражнение, которое дают после большинства проблем со спиной. Учит разгибать таз без того, чтобы поясница прогибалась и делала работу за него.",
+      "steps": [
+        "Лягте на спину, колени согнуты, стопы на полу, пятки близко к тазу",
+        "Мягко прижмите поясницу к полу и опустите рёбра",
+        "Сначала напрягите ягодицы, затем поднимите таз",
+        "Остановитесь, когда тело составит прямую линию от коленей до плеч",
+        "Медленно опуститесь, коснитесь пола и повторите"
+      ]
+    }
+  },
+  "ea_good_mornings": {
+    "en": {
+      "purpose": "The bodyweight hip hinge — the movement pattern under every deadlift, row and kettlebell swing. Learning it without a load is what stops a rounded back from becoming a habit once weight is added.",
+      "steps": [
+        "Stand with your feet hip width apart and hands behind your head",
+        "Soften your knees slightly and keep them at that angle",
+        "Push your hips straight back and lower your chest toward the floor",
+        "Keep your back flat and your neck in line with your spine",
+        "Stop at a strong hamstring stretch, then squeeze the glutes to stand tall"
+      ]
+    },
+    "ru": {
+      "purpose": "Наклон от таза с весом тела — базовый паттерн любой становой, тяги и маха гирей. Освоение его без нагрузки не даёт круглой спине превратиться в привычку, когда добавится вес.",
+      "steps": [
+        "Встаньте, стопы на ширине таза, ладони за головой",
+        "Слегка согните колени и сохраняйте этот угол",
+        "Отведите таз строго назад и опускайте грудь к полу",
+        "Спина прямая, шея на одной линии с позвоночником",
+        "Остановитесь на сильном растяжении задней поверхности бедра и выпрямитесь ягодицами"
+      ]
+    }
+  },
+  "ea_hip_thrust_in_smith_machine": {
+    "en": {
+      "purpose": "The Smith machine holds the bar on a fixed path, so you can load a hip thrust heavily without spending any attention on balancing it. That makes it the easiest way to keep adding weight to the glutes over time.",
+      "steps": [
+        "Set a bench under the Smith bar and sit on the floor with your upper back against it",
+        "Set the bar height so it sits across your hips, and use a pad",
+        "Plant your feet flat, knees bent, and unlock the bar",
+        "Drive through your heels and squeeze your glutes to lift the hips to a straight line",
+        "Lower under control until your hips are just off the floor, then repeat"
+      ]
+    },
+    "ru": {
+      "purpose": "Машина Смита ведёт гриф по фиксированной траектории, поэтому тяга таза может быть тяжёлой, не отнимая внимания на баланс. Это самый простой способ регулярно добавлять вес на ягодицы.",
+      "steps": [
+        "Поставьте скамью под гриф Смита и сядьте на пол, упершись в неё верхом спины",
+        "Настройте высоту грифа так, чтобы он лёг поперёк таза, используйте мягкую подкладку",
+        "Поставьте стопы на пол, колени согнуты, снимите гриф с фиксаторов",
+        "Оттолкнитесь пятками и напрягите ягодицы, поднимая таз до прямой линии",
+        "Опуститесь под контролем почти до пола и повторите"
+      ]
+    }
+  },
+  "ea_horizontal_leg_press": {
+    "en": {
+      "purpose": "Lets you train the legs hard with your back fully supported, so there is no spinal load at all. That makes it the sensible heavy leg exercise for anyone whose back cannot take squatting.",
+      "steps": [
+        "Sit in the machine with your back and hips flat against the pad",
+        "Place your feet on the platform about shoulder width apart, toes slightly out",
+        "Release the safety catches and hold the handles",
+        "Bend your knees to bring the platform toward you until your knees are near ninety degrees",
+        "Press back out through the whole foot without locking the knees hard at the end"
+      ]
+    },
+    "ru": {
+      "purpose": "Позволяет тяжело нагрузить ноги при полностью поддержанной спине — осевой нагрузки нет вовсе. Поэтому это разумный вариант тяжёлой работы на ноги для тех, чья спина не переносит приседания.",
+      "steps": [
+        "Сядьте в тренажёр, прижав спину и таз к спинке",
+        "Поставьте стопы на платформу примерно на ширине плеч, носки слегка наружу",
+        "Снимите с предохранителей и возьмитесь за ручки",
+        "Согните колени, подводя платформу к себе, примерно до прямого угла",
+        "Выжмите обратно всей стопой, не выключая колени жёстко в конце"
+      ]
+    }
+  },
+  "ea_horizontal_leg_press_calf_raise": {
+    "en": {
+      "purpose": "Uses the leg press to load the calves with heavy weight while your back stays supported. The calf responds to load more than to repetitions, and this is one of the few ways to give it a lot of load safely.",
+      "steps": [
+        "Sit in the leg press with your back flat against the pad",
+        "Place only the balls of your feet on the bottom edge of the platform, heels hanging off",
+        "Release the catches and straighten your legs, keeping a small bend in the knees",
+        "Push the platform away by pointing your toes as far as they will go",
+        "Let your heels travel back toward you slowly until you feel the calves stretch"
+      ]
+    },
+    "ru": {
+      "purpose": "Использует жим ногами, чтобы нагрузить икры большим весом при поддержанной спине. Икра отзывается скорее на нагрузку, чем на число повторений, а это один из немногих способов дать ей много веса безопасно.",
+      "steps": [
+        "Сядьте в тренажёр, прижав спину к спинке",
+        "Поставьте только передние части стоп на нижний край платформы, пятки свисают",
+        "Снимите с предохранителей и выпрямите ноги, оставив лёгкий сгиб в коленях",
+        "Оттолкните платформу, вытянув носки настолько, насколько получается",
+        "Медленно дайте пяткам уйти назад до ощущения растяжения икр"
+      ]
+    }
+  },
+  "ea_horizontal_leg_press_calf_raise_single_leg": {
+    "en": {
+      "purpose": "One calf at a time, because calves are often noticeably uneven and a two-legged press hides it completely. Standing and walking are single-leg activities, so training them that way makes sense.",
+      "steps": [
+        "Sit in the leg press and place the ball of one foot on the bottom of the platform",
+        "Keep the other foot off the platform, resting to the side",
+        "Straighten the working leg with a small bend left in the knee",
+        "Push the platform away by extending the ankle fully",
+        "Lower slowly to a deep stretch, complete the set, then match it on the other leg"
+      ]
+    },
+    "ru": {
+      "purpose": "По одной икре, потому что икры часто заметно разные, а жим двумя ногами это полностью скрывает. Стояние и ходьба — движения на одной ноге, поэтому и тренировать логично так же.",
+      "steps": [
+        "Сядьте в тренажёр и поставьте переднюю часть одной стопы на низ платформы",
+        "Вторую ногу уберите с платформы, отставив в сторону",
+        "Выпрямите рабочую ногу, оставив лёгкий сгиб в колене",
+        "Оттолкните платформу, полностью разогнув голеностоп",
+        "Медленно опуститесь в глубокое растяжение, доделайте подход и повторите другой ногой"
+      ]
+    }
+  },
+  "ea_horizontal_leg_press_single_leg": {
+    "en": {
+      "purpose": "Pressing with one leg makes the weaker side carry its own load, which a two-legged press lets it avoid. It is also far gentler on the lower back than single-leg work standing up.",
+      "steps": [
+        "Sit in the machine with your back flat and place one foot in the centre of the platform",
+        "Rest the other foot on the floor or to the side, out of the way",
+        "Release the catches and take the weight on the working leg",
+        "Bend the knee to bring the platform in until it is near ninety degrees",
+        "Press back out without locking the knee, then complete the set and change legs"
+      ]
+    },
+    "ru": {
+      "purpose": "Жим одной ногой заставляет слабую сторону нести свой вес, чего она избегает при жиме двумя. И для поясницы это гораздо мягче, чем работа на одной ноге стоя.",
+      "steps": [
+        "Сядьте, прижав спину, и поставьте одну стопу в центр платформы",
+        "Вторую ногу уберите на пол или в сторону",
+        "Снимите с предохранителей и примите вес на рабочую ногу",
+        "Согните колено, подводя платформу примерно до прямого угла",
+        "Выжмите обратно, не выключая колено, доделайте подход и смените ногу"
+      ]
+    }
+  },
+  "ea_jumping_lunge": {
+    "en": {
+      "purpose": "Swapping legs in the air trains power and balance at once, and drives the heart rate up quickly. Demanding on the knees — build up with ordinary lunges first, and stop the set when the landings stop being quiet.",
+      "steps": [
+        "Start in a lunge with one foot forward, both knees bent to about ninety degrees",
+        "Keep your chest up and your stomach braced",
+        "Jump straight up and swap your legs in the air",
+        "Land softly in a lunge with the other foot forward, absorbing through the whole foot",
+        "Go straight into the next jump, keeping every landing controlled"
+      ]
+    },
+    "ru": {
+      "purpose": "Смена ног в прыжке тренирует мощность и равновесие одновременно и быстро поднимает пульс. Нагрузка на колени высокая — сначала освойте обычные выпады и заканчивайте подход, как только приземления перестают быть тихими.",
+      "steps": [
+        "Начните в выпаде, одна нога впереди, оба колена согнуты примерно до прямого угла",
+        "Грудь поднята, живот напряжён",
+        "Выпрыгните вверх и смените ноги в воздухе",
+        "Приземлитесь мягко в выпад с другой ногой впереди, гася удар всей стопой",
+        "Сразу переходите в следующий прыжок, контролируя каждое приземление"
+      ]
+    }
+  },
+  "ea_jumping_pistol_squat": {
+    "en": {
+      "purpose": "One of the hardest bodyweight movements there is — a single-leg squat with a jump out of the bottom. Attempt it only when a controlled pistol squat is already comfortable; this is a display of strength, not a way to build it.",
+      "steps": [
+        "Stand on one leg with the other extended straight out in front of you",
+        "Lower slowly into a full single-leg squat, keeping the free leg off the floor",
+        "Keep your chest up and your arms out in front for balance",
+        "Explode upward out of the bottom into a jump",
+        "Land on the same leg, absorb into the next squat, and repeat before changing sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Одно из самых сложных движений с весом тела — присед на одной ноге с выпрыгиванием из нижней точки. Браться стоит, только когда контролируемый пистолет уже даётся легко: это демонстрация силы, а не способ её построить.",
+      "steps": [
+        "Встаньте на одну ногу, вторую вытяните прямо перед собой",
+        "Медленно опуститесь в полный присед на одной ноге, не касаясь пола свободной",
+        "Грудь поднята, руки вытянуты вперёд для равновесия",
+        "Мощно выпрыгните из нижней точки",
+        "Приземлитесь на ту же ногу, погасите удар в присед и повторите, затем смените сторону"
+      ]
+    }
+  },
+  "ea_kettlebell_calf_raise": {
+    "en": {
+      "purpose": "The calf is the muscle that pushes you off the ground with every step, and it takes real load to grow. Holding kettlebells is the simplest way to add that load without a dedicated machine.",
+      "steps": [
+        "Stand with the balls of your feet on a step or a plate, heels hanging off the edge",
+        "Hold a kettlebell in each hand at your sides",
+        "Let your heels drop below the step until you feel the calves stretch",
+        "Push up onto your toes as high as you can and hold for a second",
+        "Lower slowly back into the stretch and repeat"
+      ]
+    },
+    "ru": {
+      "purpose": "Икра отталкивает вас от земли при каждом шаге, и для роста ей нужна настоящая нагрузка. Гири в руках — самый простой способ добавить её без отдельного тренажёра.",
+      "steps": [
+        "Встаньте передней частью стоп на ступеньку или блин, пятки свисают",
+        "Возьмите по гире в каждую руку, руки у боков",
+        "Опустите пятки ниже уровня опоры до ощущения растяжения икр",
+        "Поднимитесь на носки максимально высоко и задержитесь на секунду",
+        "Медленно опуститесь обратно в растяжение и повторите"
+      ]
+    }
+  },
+  "ea_kettlebell_glute_bridge": {
+    "en": {
+      "purpose": "Adds load to the basic bridge, which is what turns it from a warm-up into an exercise that actually builds the glutes. The kettlebell sits neatly in the hip crease, which most other weights do not.",
+      "steps": [
+        "Lie on your back with knees bent and feet flat, heels near your hips",
+        "Rest a kettlebell across your hip bones and hold it steady with both hands",
+        "Press your lower back into the floor and tuck your ribs down",
+        "Squeeze your glutes and lift your hips until your body is straight from knee to shoulder",
+        "Lower slowly until your hips just touch the floor, then repeat"
+      ]
+    },
+    "ru": {
+      "purpose": "Добавляет нагрузку к базовому мосту — именно это превращает его из разминки в упражнение, которое действительно растит ягодицы. Гиря удобно ложится в складку таза, чего не скажешь о большинстве других отягощений.",
+      "steps": [
+        "Лягте на спину, колени согнуты, стопы на полу, пятки близко к тазу",
+        "Положите гирю поперёк тазовых косточек и придерживайте её двумя руками",
+        "Прижмите поясницу к полу и опустите рёбра",
+        "Напрягите ягодицы и поднимите таз до прямой линии от колена до плеча",
+        "Медленно опуститесь почти до касания и повторите"
+      ]
+    }
+  },
+  "ea_kettlebell_hip_thrusts": {
+    "en": {
+      "purpose": "Thrusting from the floor with the weight on the hips is the most direct way to load the glutes there is, with almost nothing asked of the lower back. It is the exercise that most reliably grows them.",
+      "steps": [
+        "Sit on the floor with your knees bent and a kettlebell resting across your hips",
+        "Hold the bell steady with both hands and tuck your chin slightly",
+        "Press your feet into the floor and squeeze your glutes hard",
+        "Lift your hips until your thighs and torso form a straight line",
+        "Pause at the top for a second, then lower under control"
+      ]
+    },
+    "ru": {
+      "purpose": "Толчок тазом с весом на бёдрах — самый прямой способ нагрузить ягодицы, при котором от поясницы почти ничего не требуется. Именно это упражнение надёжнее всего их растит.",
+      "steps": [
+        "Сядьте на пол, колени согнуты, гиря лежит поперёк таза",
+        "Придерживайте гирю двумя руками, подбородок слегка подобран",
+        "Вдавите стопы в пол и жёстко напрягите ягодицы",
+        "Поднимите таз до прямой линии бёдер и корпуса",
+        "Задержитесь наверху на секунду и опуститесь под контролем"
+      ]
+    }
+  },
+  "ea_kettlebell_hip_thrusts_with_bench": {
+    "en": {
+      "purpose": "Raising the shoulders on a bench roughly doubles the range compared with thrusting from the floor, and the glute is worked hardest right at the top. This is the standard version once the floor one is easy.",
+      "steps": [
+        "Sit on the floor with your upper back resting against a bench, knees bent",
+        "Set a kettlebell across your hips and hold it with both hands",
+        "Plant your feet flat, roughly shoulder width apart",
+        "Drive through your heels to lift your hips until your body is straight from knee to shoulder",
+        "Lower until your hips are just above the floor, then press up again"
+      ]
+    },
+    "ru": {
+      "purpose": "Лопатки на скамье примерно удваивают амплитуду по сравнению с полом, и ягодица работает тяжелее всего именно в верхней точке. Это стандартный вариант, когда с пола стало легко.",
+      "steps": [
+        "Сядьте на пол, упершись верхом спины в скамью, колени согнуты",
+        "Положите гирю поперёк таза и удерживайте её двумя руками",
+        "Стопы поставьте на пол примерно на ширине плеч",
+        "Оттолкнитесь пятками и поднимите таз до прямой линии от колена до плеча",
+        "Опуститесь почти до пола и снова выжмите вверх"
+      ]
+    }
+  },
+  "ea_kettlebell_lateral_lunge": {
+    "en": {
+      "purpose": "Almost all training happens straight forwards and backwards; this one goes sideways. It loads the inner thigh and the side of the hip, and it is the direction most people are least prepared for when they slip or change direction.",
+      "steps": [
+        "Stand tall holding a kettlebell at your chest with both hands, feet together",
+        "Take a big step directly out to one side",
+        "Bend that knee and push your hips back, keeping the other leg completely straight",
+        "Lower until you feel a stretch along the inside of the straight leg, chest staying up",
+        "Push off the bent leg to return to standing, then step to the other side"
+      ]
+    },
+    "ru": {
+      "purpose": "Почти вся тренировка идёт вперёд и назад — это движение вбок. Нагружает внутреннюю поверхность бедра и боковую часть таза, а это как раз то направление, к которому большинство хуже всего готово при поскальзывании или смене направления.",
+      "steps": [
+        "Встаньте прямо, гиря у груди в двух руках, стопы вместе",
+        "Сделайте широкий шаг строго в сторону",
+        "Согните это колено и отведите таз назад, вторая нога остаётся полностью прямой",
+        "Опуститесь до растяжения по внутренней стороне прямой ноги, грудь поднята",
+        "Оттолкнитесь согнутой ногой и вернитесь, затем шагните в другую сторону"
+      ]
+    }
+  },
+  "ea_kettlebell_reverse_lunge": {
+    "en": {
+      "purpose": "Stepping back rather than forward keeps the front knee stable and shifts the work to the glute. Holding the bell at the chest keeps you upright, which most people find easier to control than a lunge with weights at the sides.",
+      "steps": [
+        "Hold a kettlebell at your chest with both hands and stand with feet hip width",
+        "Step one foot straight back and lower your back knee toward the floor",
+        "Keep your front shin close to vertical and your chest tall",
+        "Stop when both knees are at about ninety degrees",
+        "Push through the front heel to stand, then step back with the other leg"
+      ]
+    },
+    "ru": {
+      "purpose": "Шаг назад, а не вперёд, сохраняет устойчивость переднего колена и переносит работу на ягодицу. Гиря у груди держит корпус прямым — большинству это контролировать проще, чем выпад с весами по бокам.",
+      "steps": [
+        "Держите гирю у груди двумя руками, стопы на ширине таза",
+        "Шагните одной ногой назад и опустите заднее колено к полу",
+        "Голень передней ноги почти вертикальна, грудь поднята",
+        "Остановитесь, когда оба колена согнутся примерно до прямого угла",
+        "Оттолкнитесь пяткой передней ноги и встаньте, затем шагните назад другой ногой"
+      ]
+    }
+  },
+  "ea_kettlebell_seated_calf_raise": {
+    "en": {
+      "purpose": "Bending the knee takes the large calf muscle out of the movement and leaves the smaller one underneath doing the work. That deeper muscle is what supports the ankle, and standing raises barely reach it.",
+      "steps": [
+        "Sit on a bench with the balls of your feet on a plate or step, knees bent at ninety degrees",
+        "Rest a kettlebell on each knee, close to the joint",
+        "Let your heels drop toward the floor until you feel a stretch low in the calf",
+        "Press up onto your toes as high as the position allows",
+        "Hold the top for a second, then lower slowly"
+      ]
+    },
+    "ru": {
+      "purpose": "Согнутое колено выключает крупную икроножную мышцу и оставляет работу лежащей под ней камбаловидной. Именно эта глубокая мышца поддерживает голеностоп, а подъёмы стоя её почти не задевают.",
+      "steps": [
+        "Сядьте на скамью, передние части стоп на блине или ступеньке, колени согнуты под прямым углом",
+        "Положите по гире на каждое колено, ближе к суставу",
+        "Опустите пятки к полу до растяжения в нижней части икры",
+        "Поднимитесь на носки настолько высоко, насколько позволяет положение",
+        "Задержитесь наверху на секунду и медленно опуститесь"
+      ]
+    }
+  },
+  "ea_kettlebell_single_leg_calf_raise": {
+    "en": {
+      "purpose": "Your calves are almost never equally strong, and both-legs raises let the stronger one carry the difference for years. One leg at a time is how the weaker one catches up, and it matches how you actually walk.",
+      "steps": [
+        "Stand on one foot with the ball of that foot on a step, heel hanging off",
+        "Hold a kettlebell in the hand on the same side and steady yourself with the other",
+        "Let the heel drop below the step until the calf stretches",
+        "Press up onto the toes as high as you can and pause",
+        "Lower slowly, complete all reps, then match the number on the other leg"
+      ]
+    },
+    "ru": {
+      "purpose": "Икры почти никогда не одинаково сильные, а подъёмы на двух ногах позволяют сильной годами покрывать разницу. Работа по одной ноге — способ подтянуть слабую, и это соответствует тому, как вы на самом деле ходите.",
+      "steps": [
+        "Встаньте на одну стопу передней частью на ступеньку, пятка свисает",
+        "Гирю держите в руке той же стороны, второй придерживайтесь за опору",
+        "Опустите пятку ниже опоры до растяжения икры",
+        "Поднимитесь на носок максимально высоко и задержитесь",
+        "Медленно опуститесь, сделайте все повторения и столько же другой ногой"
+      ]
+    }
+  },
+  "ea_kettlebell_single_leg_deadlift": {
+    "en": {
+      "purpose": "Trains the hamstring and glute of one leg while your balance and your stomach work to keep you square. It transfers directly to picking things up off the floor, which is rarely done with both feet neatly planted.",
+      "steps": [
+        "Stand on one leg holding a kettlebell in the opposite hand",
+        "Keep a soft bend in the standing knee and lock your back flat",
+        "Hinge at the hip, letting the free leg extend straight behind you as a counterweight",
+        "Lower until the bell is near the floor and your body forms one long line",
+        "Squeeze the glute to return upright, then finish the set and switch sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Нагружает заднюю поверхность бедра и ягодицу одной ноги, пока равновесие и живот удерживают корпус ровно. Прямо переносится на подъём вещей с пола, который редко делается с аккуратно поставленными двумя стопами.",
+      "steps": [
+        "Встаньте на одну ногу, гиря в противоположной руке",
+        "Опорное колено слегка согнуто, спина зафиксирована прямой",
+        "Наклонитесь от таза, свободная нога вытягивается назад как противовес",
+        "Опуститесь, пока гиря не окажется у пола, а тело не составит одну длинную линию",
+        "Напрягите ягодицу и выпрямитесь, доделайте подход и смените сторону"
+      ]
+    }
+  },
+  "ea_kettlebell_single_leg_glute_bridge": {
+    "en": {
+      "purpose": "One leg doubles the load on the glute without needing any more weight, which makes it a genuinely hard exercise you can do on a floor with one bell. It also makes a side difference impossible to miss.",
+      "steps": [
+        "Lie on your back with one knee bent and that foot flat on the floor",
+        "Straighten the other leg or hold that knee to your chest",
+        "Rest a kettlebell on the hip of the working side and hold it in place",
+        "Drive through the planted heel to lift your hips until your body is straight",
+        "Lower slowly without letting your hips twist, then change legs"
+      ]
+    },
+    "ru": {
+      "purpose": "Одна нога удваивает нагрузку на ягодицу без добавления веса — получается по-настоящему тяжёлое упражнение, для которого нужен пол и одна гиря. И разницу между сторонами тут не пропустишь.",
+      "steps": [
+        "Лягте на спину, одно колено согнуто, стопа на полу",
+        "Вторую ногу выпрямите или подтяните колено к груди",
+        "Положите гирю на таз со стороны рабочей ноги и придерживайте её",
+        "Оттолкнитесь опорной пяткой и поднимите таз до прямой линии",
+        "Медленно опуститесь, не проворачивая таз, затем смените ногу"
+      ]
+    }
+  },
+  "ea_kettlebell_single_leg_hip_thrust": {
+    "en": {
+      "purpose": "The bench raises the shoulders for a longer range and one leg carries everything, which makes this one of the hardest glute exercises available without a barbell. Keeping the hips level is half the work.",
+      "steps": [
+        "Sit with your upper back against a bench and one foot planted, knee bent",
+        "Lift the other foot off the floor and hold that knee bent in the air",
+        "Rest a kettlebell across the hip of the working side",
+        "Drive through the planted heel until your body is straight from knee to shoulder",
+        "Lower under control, keeping the hips level, then swap legs"
+      ]
+    },
+    "ru": {
+      "purpose": "Скамья поднимает лопатки для большей амплитуды, а всю нагрузку несёт одна нога — это одно из самых тяжёлых упражнений на ягодицы без штанги. Удержание таза ровным — половина работы.",
+      "steps": [
+        "Сядьте, упершись верхом спины в скамью, одна стопа на полу, колено согнуто",
+        "Вторую стопу оторвите от пола и удерживайте колено согнутым на весу",
+        "Положите гирю поперёк таза со стороны рабочей ноги",
+        "Оттолкнитесь опорной пяткой до прямой линии от колена до плеча",
+        "Опуститесь под контролем, удерживая таз ровно, затем смените ногу"
+      ]
+    }
+  },
+  "ea_kettlebell_single_leg_romanian_deadlifts": {
+    "en": {
+      "purpose": "Focuses on the hamstring through a long stretch on one leg, with a straighter knee than a single-leg deadlift. It is the version to use when the hamstring rather than the glute is what you want to load.",
+      "steps": [
+        "Stand on one leg with a kettlebell in the opposite hand",
+        "Keep the standing knee almost straight, with only a small give",
+        "Push the hip back and lower your torso, free leg lifting behind you",
+        "Keep the bell close to the standing leg and your back flat",
+        "Stop at a deep hamstring stretch, return upright, then change sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Прицельно нагружает заднюю поверхность бедра длинным растяжением на одной ноге, при более прямом колене, чем в одноногой становой. Этот вариант выбирают, когда нужна именно задняя поверхность, а не ягодица.",
+      "steps": [
+        "Встаньте на одну ногу, гиря в противоположной руке",
+        "Опорное колено почти прямое, с минимальным сгибом",
+        "Отведите таз назад и опускайте корпус, свободная нога поднимается сзади",
+        "Гирю ведите близко к опорной ноге, спина прямая",
+        "Остановитесь на глубоком растяжении, выпрямитесь и смените сторону"
+      ]
+    }
+  },
+  "ea_kettlebell_staggered_deadlift": {
+    "en": {
+      "purpose": "Most of the load goes through the front leg while the back foot only balances, so you get the benefit of single-leg work without needing single-leg balance. A practical way to train each side when a full one-leg version is out of reach.",
+      "steps": [
+        "Stand with one foot forward and the other half a step back, that heel lifted",
+        "Hold a kettlebell in each hand in front of your thighs",
+        "Shift most of your weight onto the front foot",
+        "Hinge at the hips and lower the bells along the front leg, back flat",
+        "Drive through the front heel to stand, then swap the stance"
+      ]
+    },
+    "ru": {
+      "purpose": "Основная нагрузка идёт на переднюю ногу, а задняя стопа только удерживает равновесие — польза одноногой работы без требования к балансу. Практичный способ тренировать каждую сторону, когда полный одноногий вариант ещё недоступен.",
+      "steps": [
+        "Встаньте, одна стопа впереди, вторая на полшага назад с поднятой пяткой",
+        "Гири держите перед бёдрами",
+        "Перенесите основной вес на переднюю стопу",
+        "Наклонитесь от таза и опустите гири вдоль передней ноги, спина прямая",
+        "Оттолкнитесь пяткой передней ноги, встаньте и смените стойку"
+      ]
+    }
+  }
+}

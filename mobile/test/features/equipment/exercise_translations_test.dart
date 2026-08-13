@@ -194,18 +194,19 @@ void main() {
   });
 
   group('AssetEquipmentRepository.applyTranslations', () {
-    ExerciseItem sample() => const ExerciseItem(
+    ExerciseItem sample({String? purpose}) => ExerciseItem(
           id: 'squat',
           title: 'Barbell Squat',
           equipmentId: 'squat_rack',
-          muscles: ['quads', 'glutes'],
+          muscles: const ['quads', 'glutes'],
           difficulty: ExerciseDifficulty.intermediate,
           durationMinutes: 12,
           summary: 'Step one.',
-          steps: ['Step one.', 'Step two.'],
-          frames: ['assets/exercises/squat_0.jpg'],
-          primaryMuscles: ['quads'],
-          contraindications: ['knee'],
+          steps: const ['Step one.', 'Step two.'],
+          purpose: purpose,
+          frames: const ['assets/exercises/squat_0.jpg'],
+          primaryMuscles: const ['quads'],
+          contraindications: const ['knee'],
         );
 
     test('patches title, steps and summary from the overlay', () {
@@ -291,6 +292,48 @@ void main() {
     test('an empty overlay is a pass-through', () {
       final out = AssetEquipmentRepository.applyTranslations([sample()], {});
       expect(out.single.title, 'Barbell Squat');
+    });
+
+    test('the overlay purpose replaces the base one', () {
+      // Regression, 2026-08-13, caught at the Act gate. `purpose` was added
+      // to the model, written into BOTH asset files, and covered by a data
+      // ratchet asserting the two languages stay in step — and none of that
+      // touched the render path. `withText` copied `purpose` from the base
+      // row, so every Russian reader got the English paragraph under
+      // "Зачем это нужно" while the correct Russian sat unused in the overlay.
+      //
+      // Exactly the failure the steps fallback above was written for, one
+      // field later. The data being right is not evidence that the reader
+      // sees it.
+      final out = AssetEquipmentRepository.applyTranslations([
+        sample(purpose: 'Builds the legs.'),
+      ], {
+        'squat': {
+          'title': 'Приседания',
+          'steps': ['Шаг один.'],
+          'purpose': 'Развивает ноги.',
+        },
+      });
+      expect(out.single.purpose, 'Развивает ноги.');
+    });
+
+    test('an overlay without a purpose keeps the base one rather than blanking',
+        () {
+      // Same reasoning as the steps fallback: a half-written overlay must
+      // degrade to the wrong language, never to an empty section. The data
+      // ratchet is what keeps this branch unreachable in the shipped files.
+      for (final entry in <Map<String, Object>>[
+        {'title': 'Приседания', 'steps': ['Шаг.']},
+        {'title': 'Приседания', 'steps': ['Шаг.'], 'purpose': '   '},
+        {'title': 'Приседания', 'steps': <String>[]},
+      ]) {
+        final out = AssetEquipmentRepository.applyTranslations([
+          sample(purpose: 'Builds the legs.'),
+        ], {
+          'squat': entry,
+        });
+        expect(out.single.purpose, 'Builds the legs.', reason: 'for $entry');
+      }
     });
   });
 

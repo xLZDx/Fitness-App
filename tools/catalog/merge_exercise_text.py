@@ -47,6 +47,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -103,10 +104,21 @@ def _validate(batch: dict, en_by_id: dict, ru: dict) -> list[str]:
                     f"from step one, see the module docstring"
                 )
             steps = block.get("steps")
-            if not isinstance(steps, list) or len([s for s in steps if str(s).strip()]) < MIN_STEPS:
+            if not isinstance(steps, list) or len(steps) < MIN_STEPS:
                 problems.append(
                     f"{ex_id}/{lang}: fewer than {MIN_STEPS} steps -- a two-line "
                     f"instruction is not an instruction"
+                )
+            elif any(not str(s).strip() for s in steps):
+                # Counting only the non-blank entries would let
+                # ["", "step", "step", "step"] through: four entries, three of
+                # them real, validation satisfied. `summary` is then derived
+                # from index 0 below and written as the empty string, which is
+                # the exact B3 defect this tool exists to remove -- reported as
+                # success, because the count was met. Every entry must be real.
+                problems.append(
+                    f"{ex_id}/{lang}: a blank step -- summary is taken from "
+                    f"step one, so a blank entry writes an empty summary"
                 )
     return problems
 
@@ -158,13 +170,29 @@ def main() -> int:
     # Russian overlay is a dict at indent 1 with its keys sorted. Writing both
     # the same way would reformat 94,000 lines to change twenty, and a diff
     # nobody can read is a diff nobody reviews.
-    EN_PATH.write_text(
-        json.dumps(en, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
-    RU_PATH.write_text(
-        json.dumps(ru, ensure_ascii=False, indent=1, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    #
+    # Both are serialised and staged BEFORE either is replaced. A crash between
+    # two plain writes -- full disk, an antivirus lock on the second file, a
+    # Ctrl-C -- would leave English filled and Russian empty, and that state is
+    # not merely inconsistent, it is unrecoverable by this tool: re-running the
+    # same batch hits the "English text already present" refusal above, so
+    # finishing the job would need a hand-edit or a git checkout. Serialising
+    # first also means a broken value raises before anything on disk changes.
+    en_text = json.dumps(en, ensure_ascii=False, indent=2) + "\n"
+    ru_text = json.dumps(ru, ensure_ascii=False, indent=1, sort_keys=True) + "\n"
+    en_tmp = EN_PATH.with_suffix(EN_PATH.suffix + ".tmp")
+    ru_tmp = RU_PATH.with_suffix(RU_PATH.suffix + ".tmp")
+    try:
+        en_tmp.write_text(en_text, encoding="utf-8")
+        ru_tmp.write_text(ru_text, encoding="utf-8")
+        # Both complete files now exist on disk. os.replace is atomic per file;
+        # the pair is not, but the window is two renames of already-written
+        # bytes rather than two full serialisations plus two disk writes.
+        os.replace(en_tmp, EN_PATH)
+        os.replace(ru_tmp, RU_PATH)
+    finally:
+        for tmp in (en_tmp, ru_tmp):
+            tmp.unlink(missing_ok=True)
 
     remaining = sum(1 for row in en if _is_empty(row.get("steps")))
     print(f"written. exercises still without steps: {remaining}")
