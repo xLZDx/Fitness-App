@@ -1374,19 +1374,38 @@ class _SilhouettePainter extends CustomPainter {
     // and the head) and they are unioned into a single non-zero path, so what
     // is filled is one continuous silhouette with no seams where an arm meets
     // a shoulder.
-    final body = Path()..fillType = PathFillType.nonZero;
+    // UNION, not a path with many subpaths.
+    //
+    // The first version added each part as its own subpath under
+    // `PathFillType.nonZero`. That merges what is FILLED and does nothing to
+    // what is STROKED: `drawPath` outlines every subpath separately, so the
+    // seams where an arm enters a shoulder and a thigh enters the hip were all
+    // drawn. On a real camera at 0.28 fill the faint interior vanished and only
+    // that lattice remained — the figure read as a heap of overlapping
+    // quadrilaterals, which is worse than the sticks it replaced. Found by
+    // opening it on a phone; the emulator has no camera to show it, and every
+    // geometric test passed the whole time because the geometry was right.
+    //
+    // `Path.combine` resolves the overlaps into ONE outline, so the rim traces
+    // the body and nothing else.
+    var body = Path();
+    void merge(Path part) {
+      body = Path.combine(PathOperation.union, body, part);
+    }
+
     if (figure.torso.isNotEmpty) {
-      body.addPolygon([for (final p in figure.torso) place(p)], true);
+      merge(Path()..addPolygon([for (final p in figure.torso) place(p)], true));
     }
     for (final limb in figure.limbs) {
       if (limb.length < 3) continue;
-      body.addPolygon([for (final p in limb) place(p)], true);
+      merge(Path()..addPolygon([for (final p in limb) place(p)], true));
     }
     final head = figure.head;
     if (head != null) {
-      body.addOval(
-        Rect.fromCircle(center: place(head.$1), radius: head.$2 * scale),
-      );
+      merge(Path()
+        ..addOval(
+          Rect.fromCircle(center: place(head.$1), radius: head.$2 * scale),
+        ));
     }
 
     // Translucent fill, opaque rim. The rim is what the user actually lines
@@ -1394,13 +1413,18 @@ class _SilhouettePainter extends CustomPainter {
     // solid fill over a live camera would hide the person trying to match it —
     // the same reason the head used to be drawn as an outline rather than a
     // disc, kept now that the head is part of the filled body.
+    // 0.34, up from 0.28: measured on a phone against a white wall, where the
+    // interior was effectively invisible and the outline had to carry the whole
+    // shape on its own. Still translucent — a solid fill over a live camera
+    // would hide the person trying to match it, which is the reason the head
+    // used to be an empty circle.
     canvas.drawPath(
-        body, Paint()..color = colour.withValues(alpha: alpha * 0.28));
+        body, Paint()..color = colour.withValues(alpha: alpha * 0.34));
     canvas.drawPath(
       body,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = (limbWidth * 0.22).clamp(1.5, 5.0)
+        ..strokeWidth = (limbWidth * 0.22).clamp(2.0, 5.0)
         ..strokeJoin = StrokeJoin.round
         ..color = colour.withValues(alpha: alpha),
     );
