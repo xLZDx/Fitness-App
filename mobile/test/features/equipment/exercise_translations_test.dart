@@ -118,6 +118,53 @@ void main() {
       expect(broken, isEmpty);
     });
 
+    test('a purpose written in one language is written in both (B3)', () {
+      // `purpose` answers "what is this FOR", which `summary` structurally
+      // cannot: the test above pins it to step one. A row that gained the field
+      // in English only would show the heading to an English user and nothing
+      // to a Russian one — the exact half-filled state B3 exists to remove.
+      final enWithPurpose = {
+        for (final e in base)
+          if ((e['purpose'] as String? ?? '').trim().isNotEmpty) e['id'] as String
+      };
+      final ruWithPurpose = {
+        for (final entry in ru.entries)
+          if (((entry.value as Map)['purpose'] as String? ?? '').trim().isNotEmpty)
+            entry.key
+      };
+      expect(enWithPurpose.difference(ruWithPurpose), isEmpty,
+          reason: 'English purpose with no Russian one');
+      expect(ruWithPurpose.difference(enWithPurpose), isEmpty,
+          reason: 'Russian purpose with no English one');
+    });
+
+    test('a purpose is never just a copy of the first step (B3)', () {
+      // The failure this catches is a batch author filling the new field by
+      // pasting the instruction, which would put the same sentence on the card
+      // twice under two different headings and teach nobody anything.
+      final copies = <String>[];
+      for (final e in base) {
+        final purpose = (e['purpose'] as String? ?? '').trim();
+        if (purpose.isEmpty) continue;
+        final steps = (e['steps'] as List).cast<String>();
+        if (steps.isNotEmpty && purpose == steps.first.trim()) {
+          copies.add(e['id'] as String);
+        }
+      }
+      expect(copies, isEmpty);
+    });
+
+    test('every row that has a purpose also has real steps (B3)', () {
+      final orphans = [
+        for (final e in base)
+          if ((e['purpose'] as String? ?? '').trim().isNotEmpty &&
+              (e['steps'] as List).isEmpty)
+            e['id'] as String
+      ];
+      expect(orphans, isEmpty,
+          reason: 'a purpose with no technique is half an answer');
+    });
+
     test('no shipped entry carries a blank step', () {
       // This used to point at `barbell_squat_to_a_bench`, one row in the
       // pre-purchase catalog whose upstream source left an empty string in

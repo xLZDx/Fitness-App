@@ -8584,8 +8584,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Sit and rest your forearm along your thigh, palm facing up, wrist and hand hanging past the knee",
+    "steps": [
+      "Sit and rest your forearm along your thigh, palm facing up, wrist and hand hanging past the knee",
+      "Stand on one end of the band and hold the other end in that hand",
+      "Let the band pull your hand down until you feel a stretch through the underside of the forearm",
+      "Curl the hand upward by closing the wrist only — the forearm stays flat on the thigh",
+      "Lower under control and repeat, then switch arms"
+    ],
     "video": {
       "girl": "exercises/girl/Forearms/Band Wrist Curl Single Arm.mp4"
     },
@@ -8599,7 +8605,8 @@
       "elbow",
       "wrist"
     ],
-    "poseTargetId": "curl"
+    "poseTargetId": "curl",
+    "purpose": "Builds the wrist flexors one arm at a time, so a weaker side cannot hide behind a stronger one. Grip strength is what usually fails first on rows, deadlifts and carries, and a band loads the wrist without the joint stress of a heavy bar."
   },
   {
     "id": "ea_band_y_raise",
@@ -11331,8 +11338,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand holding the bar at arm's length, hands just outside the hips, feet hip-width",
+    "steps": [
+      "Stand holding the bar at arm's length, hands just outside the hips, feet hip-width",
+      "Push the hips back and slide the bar down the thighs to just above the knee, back flat, chest up",
+      "Drive the hips forward hard and shrug — the bar is thrown upward by the legs, not pulled by the arms",
+      "As it rises, drop under it and spin the elbows through to catch the bar on the front of the shoulders",
+      "Stand up out of the catch, then lower the bar back to the hang and reset before the next rep"
+    ],
     "video": {
       "girl": "exercises/girl/Powerlifting/Barbell Hang Clean.mp4",
       "men": "exercises/men/Powerlifting/Barbell Hang Clean.mp4"
@@ -11347,7 +11360,8 @@
     "contraindications": [
       "lower_back",
       "wrist"
-    ]
+    ],
+    "purpose": "Teaches the body to produce force fast rather than merely to lift a lot. Starting from the hang removes the floor pull, so the whole exercise is the hip snap — the same explosive extension behind a jump, a sprint start and a throw."
   },
   {
     "id": "ea_barbell_hip_thrust",
@@ -13156,8 +13170,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hold the bar at the front of the shoulders with a light load — this is a technique drill, not a strength lift",
+    "steps": [
+      "Hold the bar at the front of the shoulders with a light load — this is a technique drill, not a strength lift",
+      "Keep the bar path vertical and the torso upright throughout",
+      "Press yourself DOWN under the bar rather than pressing the bar up, dropping into a quarter squat",
+      "Lock the arms overhead at the same moment your hips stop descending",
+      "Stand up under control and reset; add weight only once the two happen together"
+    ],
     "video": {
       "girl": "exercises/girl/Powerlifting/Barbell Press Under.mp4",
       "men": "exercises/men/Powerlifting/Barbell Press Under.mp4"
@@ -13172,7 +13192,8 @@
     "contraindications": [
       "knee",
       "shoulder"
-    ]
+    ],
+    "purpose": "Drills the second half of a clean or snatch — the moment you stop pushing the bar up and start pushing yourself down under it. Most missed lifts are not a weak pull, they are a slow turnover, and this is how that gets faster."
   },
   {
     "id": "ea_barbell_pullover_to_triceps_extension",
@@ -24575,8 +24596,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Set the cable to the lowest pulley and take a straight bar with an overhand grip",
+    "steps": [
+      "Set the cable to the lowest pulley and take a straight bar with an overhand grip",
+      "Kneel or sit facing the machine and rest your forearms on a bench, hands past the edge, palms down",
+      "Let the cable pull your knuckles toward the floor as far as the wrist comfortably allows",
+      "Lift the knuckles toward the ceiling by extending the wrists only, forearms still on the bench",
+      "Pause at the top for a moment, then lower slowly"
+    ],
     "video": {
       "girl": "exercises/girl/Forearms/Cable Wrist Extension.mp4",
       "men": "exercises/men/Forearms/Cable Wrist Extension.mp4"
@@ -24590,7 +24617,8 @@
     },
     "contraindications": [
       "wrist"
-    ]
+    ],
+    "purpose": "Trains the top of the forearm — the side almost nothing else works. Keeping the extensors as strong as the flexors is what protects the outer elbow from the ache that comes from gripping all day, at the gym or at a keyboard."
   },
   {
     "id": "ea_cable_y_raise",
@@ -50765,8 +50793,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Sit and rest your forearm on your thigh, palm up, hand past the knee",
+    "steps": [
+      "Sit and rest your forearm on your thigh, palm up, hand past the knee",
+      "Hold the kettlebell by the handle and let it hang from the fingers",
+      "Open the fingers slightly and let the bell roll down to the fingertips",
+      "Roll it back into the palm, then curl the wrist upward as far as it goes",
+      "Lower under control, keeping the forearm still throughout"
+    ],
     "video": {
       "girl": "exercises/girl/Forearms/Kettlebell Wrist Curl.mp4",
       "men": "exercises/men/Forearms/Kettlebell Wrist Curl.mp4"
@@ -50782,7 +50816,8 @@
       "elbow",
       "wrist"
     ],
-    "poseTargetId": "curl"
+    "poseTargetId": "curl",
+    "purpose": "The same wrist flexion as a dumbbell curl, but the kettlebell's weight hangs below your hand, so the load pulls the wrist open through a longer range. Useful when your grip gives out before the muscle you were actually training."
   },
   {
     "id": "ea_kettlebell_wrist_extension",
@@ -50794,8 +50829,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Sit and rest your forearm on your thigh, palm facing DOWN, hand past the knee",
+    "steps": [
+      "Sit and rest your forearm on your thigh, palm facing DOWN, hand past the knee",
+      "Hold the kettlebell by the handle so it hangs below your hand",
+      "Let the weight lower your knuckles toward the floor as far as is comfortable",
+      "Raise the knuckles by extending the wrist, forearm pressed to the thigh",
+      "Use a lighter bell than you would for the curl — the extensors are the smaller muscles"
+    ],
     "video": {
       "girl": "exercises/girl/Forearms/Kettlebell Wrist Extension.mp4",
       "men": "exercises/men/Forearms/Kettlebell Wrist Extension.mp4"
@@ -50809,7 +50850,8 @@
     },
     "contraindications": [
       "wrist"
-    ]
+    ],
+    "purpose": "The opposite of the wrist curl, and the half most people skip. Balanced forearms keep the elbow quiet under heavy pressing and pulling, and this is the cheapest way to train the side that never gets worked by accident."
   },
   {
     "id": "ea_kipping_handstand_push_up",
@@ -56524,8 +56566,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand with the plate on the floor between your feet, held at its sides with both hands",
+    "steps": [
+      "Stand with the plate on the floor between your feet, held at its sides with both hands",
+      "Hinge at the hips with a flat back and grip the plate low",
+      "Drive through the floor and extend the hips hard, letting the plate float upward",
+      "Pull yourself under it and catch it at chest height with the elbows up",
+      "Lower it back to the floor under control rather than dropping it"
+    ],
     "video": {
       "girl": "exercises/girl/Powerlifting/Plate Clean.mp4",
       "men": "exercises/men/Powerlifting/Plate Clean.mp4"
@@ -56540,7 +56588,8 @@
     "contraindications": [
       "lower_back",
       "wrist"
-    ]
+    ],
+    "purpose": "The hip drive of a barbell clean with none of its technical cost. A plate is easier to hold, easier to bail, and lets you rehearse the explosive extension long before a loaded bar is a sensible idea."
   },
   {
     "id": "ea_plate_clean_and_press",
@@ -56550,8 +56599,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Start with the plate on the floor between your feet, gripped at the sides",
+    "steps": [
+      "Start with the plate on the floor between your feet, gripped at the sides",
+      "Hinge, then extend the hips explosively and catch the plate at chest height",
+      "Without resetting, brace the trunk and press the plate straight overhead",
+      "Keep the ribs down — the lower back should not arch to finish the press",
+      "Return the plate to the chest, then to the floor, and repeat"
+    ],
     "video": {
       "girl": "exercises/girl/Powerlifting/Plate Clean And Press.mp4",
       "men": "exercises/men/Powerlifting/Plate Clean And Press.mp4"
@@ -56568,7 +56623,8 @@
       "lower_back",
       "shoulder",
       "wrist"
-    ]
+    ],
+    "purpose": "One movement from the floor to overhead, so legs, trunk and shoulders have to hand the load off to each other without a pause. That handover is what makes it a conditioning exercise as much as a strength one."
   },
   {
     "id": "ea_plate_curl_to_overhead_press",
@@ -57690,8 +57746,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Hold the plate at chest height with both hands, feet shoulder-width",
+    "steps": [
+      "Hold the plate at chest height with both hands, feet shoulder-width",
+      "Squat down as deep as you can while keeping the chest tall and the heels down",
+      "Stand up out of the squat and, without pausing, use that momentum to press the plate overhead",
+      "Lock the arms out fully with the plate over the middle of your feet",
+      "Bring it back to the chest as you descend into the next rep"
+    ],
     "video": {
       "girl": "exercises/girl/Powerlifting/Plate Thruster.mp4",
       "men": "exercises/men/Powerlifting/Plate Thruster.mp4"
@@ -57702,7 +57764,8 @@
     "poster": {
       "girl": "assets/posters/girl/ea_plate_thruster.jpg",
       "men": "assets/posters/men/ea_plate_thruster.jpg"
-    }
+    },
+    "purpose": "A front squat and an overhead press joined into one rep, which is why it raises the heart rate faster than either alone. The legs finish the squat and the arms start the press at the same instant — that overlap is the whole point."
   },
   {
     "id": "ea_plate_wood_chopper",
@@ -61528,8 +61591,14 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "",
-    "steps": [],
+    "summary": "Stand over the bag with feet hip-width and grip it by the handles or hug it at the sides",
+    "steps": [
+      "Stand over the bag with feet hip-width and grip it by the handles or hug it at the sides",
+      "Hinge at the hips, keep the back flat, and pull the bag to the top of the thighs",
+      "Extend the hips hard and pull the bag up the body, keeping it in contact",
+      "Drop the elbows under and catch it high on the chest, hugging it tight",
+      "Lower it to the floor under control — resist the urge to let it drop and yank your back"
+    ],
     "video": {
       "girl": "exercises/girl/Powerlifting/Sandbag Cleans.mp4",
       "men": "exercises/men/Powerlifting/Sandbag Cleans.mp4"
@@ -61544,7 +61613,8 @@
     "contraindications": [
       "lower_back",
       "wrist"
-    ]
+    ],
+    "purpose": "A clean with a load that shifts while you lift it. The sand moves, so the trunk has to correct continuously — closer to carrying a person or a piece of furniture than any barbell lift will ever be."
   },
   {
     "id": "ea_scapula_push_up",

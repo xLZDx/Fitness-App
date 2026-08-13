@@ -1,0 +1,404 @@
+n,id,title,vendorGroup,muscles,equipmentLabel,hasVideo
+1,ea_abs_snails,Abs Snails,Abdominals,core,None (Bodyweight),True
+2,ea_barbell_landmine_side_bend,Barbell Landmine Side Bend,Abdominals,core,Landmine,True
+3,ea_barbell_situp,Barbell Situp,Abdominals,core,Barbell,True
+4,ea_cable_standing_crunch,Cable Standing Crunch,Abdominals,core,Cable Pulley Machine,True
+5,ea_copenhagen_plank,Copenhagen Plank,Abdominals,core,Bench,True
+6,ea_dragonfly,Dragonfly,Abdominals,core,Pull Up Bar,True
+7,ea_dumbbell_elbow_side_plank,Dumbbell Elbow Side Plank,Abdominals,core,Dumbbells,True
+8,ea_dumbbell_half_kneeling_wood_chopper,Dumbbell Half Kneeling Wood Chopper,Abdominals,core,Dumbbells,True
+9,ea_dumbbell_hand_side_plank,Dumbbell Hand Side Plank,Abdominals,core,Dumbbells,True
+10,ea_dumbbell_kneeling_wood_chopper,Dumbbell Kneeling Wood Chopper,Abdominals,core,Dumbbells,True
+11,ea_dumbbell_overhead_side_bend,Dumbbell Overhead Side Bend,Abdominals,core,Dumbbells,True
+12,ea_dumbbell_side_plank_up_down,Dumbbell Side Plank Up Down,Abdominals,core,Dumbbells,True
+13,ea_dumbbell_suitcase_crunch,Dumbbell Suitcase Crunch,Abdominals,core,Dumbbells,True
+14,ea_flat_knee_raise,Flat Knee Raise,Abdominals,core,None (Bodyweight),True
+15,ea_hanging_leg_raises,Hanging Leg Raises,Abdominals,core,Pull Up Bar,True
+16,ea_hold_the_world_med_ball,Hold the World Med Ball,Abdominals,core,Exercise Ball,True
+17,ea_l_sit_hold,L Sit Hold,Abdominals,core,Parallettes,True
+18,ea_landmine_hollow_hold,Landmine Hollow Hold,Abdominals,core,Landmine,True
+19,ea_landmine_kneeling_twist,Landmine Kneeling Twist,Abdominals,core,Landmine,True
+20,ea_landmine_oblique_twist,Landmine Oblique Twist,Abdominals,core,Landmine,True
+21,ea_landmine_russian_twist,Landmine Russian Twist,Abdominals,core,Landmine,True
+22,ea_long_lever_plank,Long Lever Plank,Abdominals,core,None (Bodyweight),True
+23,ea_med_ball_half_kneeling_wood_choppers,Med Ball Half Kneeling Wood Choppers,Abdominals,core,Exercise Ball,True
+24,ea_med_ball_toe_touches,Med Ball Toe Touches,Abdominals,core,Exercise Ball,True
+25,ea_medicine_ball_chest_throw_with_abs,Medicine Ball Chest Throw with Abs,Abdominals,core,Medicine Ball,True
+26,ea_medicine_ball_rotational_throw,Medicine Ball Rotational Throw,Abdominals,core,Medicine Ball,True
+27,ea_plate_hollow_hold,Plate Hollow Hold,Abdominals,core,Weight Plate,True
+28,ea_plate_pinch_grip_side_bend,Plate Pinch Grip Side Bend,Abdominals,core,Weight Plate,True
+29,ea_plate_russian_twist,Plate Russian Twist,Abdominals,core,Weight Plate,True
+30,ea_plate_situp,Plate Situp,Abdominals,core,Weight Plate,True
+31,ea_plate_standing_twist,Plate Standing Twist,Abdominals,core,Weight Plate,True
+32,ea_plate_wood_chopper,Plate Wood Chopper,Abdominals,core,Weight Plate,True
+33,ea_reverse_plank,Reverse Plank,Abdominals,core,None (Bodyweight),True
+34,ea_barbell_coan_deadlift,Barbell Coan Deadlift,Back,back,Barbell,True
+35,ea_barbell_reverse_deadlift,Barbell Reverse Deadlift,Back,back,Barbell,True
+36,ea_barbell_zercher_good_morning,Barbell Zercher Good Morning,Back,back,Barbell,True
+37,ea_cable_lat_prayer,Cable Lat Prayer,Back,back,Cable Pulley Machine,True
+38,ea_cable_pull_in_kneeling,Cable Pull in Kneeling,Back,back,Cable Pulley Machine,True
+39,ea_cable_silverback_shrug,Cable Silverback Shrug,Back,back,Cable Pulley Machine,True
+40,ea_dumbbell_alternating_pendlay_row,Dumbbell Alternating Pendlay Row,Back,back,Dumbbells,True
+41,ea_dumbbell_goblet_good_morning,Dumbbell Goblet Good Morning,Back,back,Dumbbells,True
+42,ea_dumbbell_knee_lawnmower_row,Dumbbell Knee Lawnmower Row,Back,back,Dumbbells,True
+43,ea_dumbbell_pendlay_row,Dumbbell Pendlay Row,Back,back,Dumbbells,True
+44,ea_kettlebell_gorilla_row,Kettlebell Gorilla Row,Back,back,Kettlebells,True
+45,ea_kettlebell_pullover,Kettlebell Pullover,Back,back,Kettlebells,True
+46,ea_kettlebell_row,Kettlebell Row,Back,back,Kettlebells,True
+47,ea_kettlebell_single_arm_row,Kettlebell Single Arm Row,Back,back,Kettlebells,True
+48,ea_kipping_pull_up,Kipping Pull Up,Back,back,Pull Up Bar,True
+49,ea_landmine_romanian_deadlift,Landmine Romanian Deadlift,Back,back,Landmine,True
+50,ea_lawnmower_row,Lawnmower Row,Back,back,Dumbbells,True
+51,ea_plate_alternating_deadstop_row,Plate Alternating Deadstop Row,Back,back,Weight Plate,True
+52,ea_plate_glute_bridge_to_pullover,Plate Glute Bridge to Pullover,Back,back,Weight Plate,True
+53,ea_plate_good_morning,Plate Good Morning,Back,back,Weight Plate,True
+54,ea_plate_pinch_grip_deadlift,Plate Pinch Grip Deadlift,Back,back,Weight Plate,True
+55,ea_plate_pinch_grip_row,Plate Pinch Grip Row,Back,back,Weight Plate,True
+56,ea_push_pull_chair_over_head_pull,Push Pull Chair Over Head Pull,Back,back,Machine,True
+57,ea_seated_row_machine_rows,Seated Row Machine Rows,Back,back,Machine,True
+58,ea_straight_arm_cable_lat_pull_down,Straight Arm Cable Lat Pull Down,Back,back,Cable Pulley Machine,True
+59,ea_suspension_trainer_with_grips_wide_grip_inverted_row_on_floor_1,Suspension Trainer with Grips Wide Grip Inverted Row on Floor_1,Back,back,Suspension Trainer,True
+60,ea_theraband_scapula_retraction,Theraband Scapula Retraction,Back,back,Resistance Band,True
+61,ea_weighted_back_extensions_on_hyperextension_bench,Weighted Back Extensions on Hyperextension Bench,Back,back,Bench,True
+62,ea_alternate_biceps_curl_resistance_band,Alternate Biceps Curl Resistance Band,Biceps,biceps,Resistance Band,True
+63,ea_alternate_biceps_curl_standing_dumbbells,Alternate Biceps Curl Standing Dumbbells,Biceps,biceps,Dumbbells,True
+64,ea_cable_twisting_biceps_curl,Cable Twisting Biceps Curl,Biceps,biceps,Cable Pulley Machine,True
+65,ea_dumbbell_seated_zottman_curl,Dumbbell Seated Zottman Curl,Biceps,biceps,Dumbbells,True
+66,ea_kettlebell_concentration_curl,Kettlebell Concentration Curl,Biceps,biceps,Kettlebells,True
+67,ea_kettlebell_curl,Kettlebell Curl,Biceps,biceps,Kettlebells,True
+68,ea_kettlebell_goblet_curl,Kettlebell Goblet Curl,Biceps,biceps,Kettlebells,True
+69,ea_kettlebell_preacher_curl,Kettlebell Preacher Curl,Biceps,biceps,Kettlebells,True
+70,ea_kettlebell_single_arm_curl,Kettlebell Single Arm Curl,Biceps,biceps,Kettlebells,True
+71,ea_landmine_bicep_curl,Landmine Bicep Curl,Biceps,biceps,Landmine,True
+72,ea_landmine_concentration_curl,Landmine Concentration Curl,Biceps,biceps,Landmine,True
+73,ea_plate_curl_to_overhead_press,Plate Curl to Overhead Press,Biceps,biceps,Weight Plate,True
+74,ea_reverse_curl_barbell,Reverse Curl Barbell,Biceps,biceps,Barbell,True
+75,ea_180_jump_turns,180 Jump Turns,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+76,ea_agility_ladder_advanced_hop_position,Agility Ladder Advanced Hop Position,Calisthenics-Cardio-Plyo-Functional,,Agility Ladder,True
+77,ea_agility_ladder_advanced_single_leg,Agility Ladder Advanced Single-leg,Calisthenics-Cardio-Plyo-Functional,,Agility Ladder,True
+78,ea_agility_ladder_advancing_laterally_switching_base,Agility Ladder Advancing Laterally Switching Base,Calisthenics-Cardio-Plyo-Functional,,Agility Ladder,True
+79,ea_agility_ladder_lateral_movement_in_in_out,Agility Ladder Lateral Movement in in Out,Calisthenics-Cardio-Plyo-Functional,,Agility Ladder,True
+80,ea_agility_ladder_lateral_movement_with_double_hop,Agility Ladder Lateral Movement with Double Hop,Calisthenics-Cardio-Plyo-Functional,,Agility Ladder,True
+81,ea_agility_ladder_skipping_1_touch,Agility Ladder Skipping 1 Touch,Calisthenics-Cardio-Plyo-Functional,,Agility Ladder,True
+82,ea_agility_ladder_skipping_2_touches,Agility Ladder Skipping 2 Touches,Calisthenics-Cardio-Plyo-Functional,,Agility Ladder,True
+83,ea_agility_ladder_in_in_out_out,Agility Ladder in in Out Out,Calisthenics-Cardio-Plyo-Functional,,Agility Ladder,True
+84,ea_agility_ladder_in_in_out_out_moving_laterally,Agility Ladder in in Out Out Moving Laterally,Calisthenics-Cardio-Plyo-Functional,,Agility Ladder,True
+85,ea_agility_ladder_in_in_out_out_with_knee_lift,Agility Ladder in in Out Out with Knee Lift,Calisthenics-Cardio-Plyo-Functional,,Agility Ladder,True
+86,ea_air_swing_running,Air Swing Running,Calisthenics-Cardio-Plyo-Functional,,Dip Bars,True
+87,ea_air_swing_side_to_side_swing,Air Swing Side to Side Swing,Calisthenics-Cardio-Plyo-Functional,,Dip Bars,True
+88,ea_air_swing_walking,Air Swing Walking,Calisthenics-Cardio-Plyo-Functional,,Dip Bars,True
+89,ea_arms_lateral_raise_and_rotation_up,Arms Lateral Raise and Rotation Up,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+90,ea_ball_slams,Ball Slams,Calisthenics-Cardio-Plyo-Functional,,Exercise Ball,True
+91,ea_band_squat_row,Band Squat Row,Calisthenics-Cardio-Plyo-Functional,,Resistance Band,True
+92,ea_barbell_jump_shrug,Barbell Jump Shrug,Calisthenics-Cardio-Plyo-Functional,,Barbell,True
+93,ea_battle_rope_alternating_arm_waves,Battle Rope Alternating Arm Waves,Calisthenics-Cardio-Plyo-Functional,,Battle Ropes,True
+94,ea_battle_rope_double_arm_slams,Battle Rope Double Arm Slams,Calisthenics-Cardio-Plyo-Functional,,Battle Ropes,True
+95,ea_bear_crawls,Bear Crawls,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+96,ea_box_sled_push,Box Sled Push,Calisthenics-Cardio-Plyo-Functional,,Sled,True
+97,ea_crawl_with_sled_drag,Crawl with Sled Drag,Calisthenics-Cardio-Plyo-Functional,,Sled,True
+98,ea_double_kettlebell_sled_push,Double Kettlebell Sled Push,Calisthenics-Cardio-Plyo-Functional,,Kettlebells,True
+99,ea_dumbbell_curl_press_extend,Dumbbell Curl Press Extend,Calisthenics-Cardio-Plyo-Functional,,Dumbbells,True
+100,ea_dumbbell_swing,Dumbbell Swing,Calisthenics-Cardio-Plyo-Functional,,Dumbbells,True
+101,ea_elbow_extension,Elbow-extension,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+102,ea_front_lever_raise,Front Lever Raise,Calisthenics-Cardio-Plyo-Functional,,Pull Up Bar,True
+103,ea_front_lever_raise_to_hold,Front Lever Raise to Hold,Calisthenics-Cardio-Plyo-Functional,,Pull Up Bar,True
+104,ea_gorilla_walk,Gorilla Walk,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+105,ea_hand_stand_hold,Hand Stand Hold,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+106,ea_headstand,Headstand,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+107,ea_heavy_bag_sled_drag,Heavy Bag Sled Drag,Calisthenics-Cardio-Plyo-Functional,,Sled,True
+108,ea_kettlebell_sled_drag,Kettlebell Sled Drag,Calisthenics-Cardio-Plyo-Functional,,Kettlebells,True
+109,ea_kettlebell_snatch,Kettlebell Snatch,Calisthenics-Cardio-Plyo-Functional,,Kettlebells,True
+110,ea_kettlebell_turkish_get_up,Kettlebell Turkish Get Up,Calisthenics-Cardio-Plyo-Functional,,Kettlebells,True
+111,ea_kettlebell_walkover_pushup,Kettlebell Walkover Pushup,Calisthenics-Cardio-Plyo-Functional,,Kettlebells,True
+112,ea_kettlebell_windmill,Kettlebell Windmill,Calisthenics-Cardio-Plyo-Functional,,Kettlebells,True
+113,ea_kipping_handstand_push_up,Kipping Handstand Push-up,Calisthenics-Cardio-Plyo-Functional,,Wall,True
+114,ea_landmine_alternating_lunge_and_twist,Landmine Alternating Lunge and Twist,Calisthenics-Cardio-Plyo-Functional,,Landmine,True
+115,ea_landmine_alternating_lunge_to_chest_press,Landmine Alternating Lunge to Chest Press,Calisthenics-Cardio-Plyo-Functional,,Landmine,True
+116,ea_landmine_rotational_lift_to_press,Landmine Rotational Lift to Press,Calisthenics-Cardio-Plyo-Functional,,Landmine,True
+117,ea_lateral_sled_drag,Lateral Sled Drag,Calisthenics-Cardio-Plyo-Functional,,Sled,True
+118,ea_low_box_lateral_runner,Low Box Lateral Runner,Calisthenics-Cardio-Plyo-Functional,,Plyo Box,True
+119,ea_low_box_quick_feet,Low Box Quick Feet,Calisthenics-Cardio-Plyo-Functional,,Plyo Box,True
+120,ea_low_rotational_med_ball_chops_quarter_squat_rotating_med_ball_left_and_ride_across_core,"Low Rotational Med Ball Chops (quarter Squat, Rotating Med Ball Left and Ride Across Core)",Calisthenics-Cardio-Plyo-Functional,,Exercise Ball,True
+121,ea_low_sled_push,Low Sled Push,Calisthenics-Cardio-Plyo-Functional,,Sled,True
+122,ea_lying_neck_curls,Lying Neck Curls,Calisthenics-Cardio-Plyo-Functional,,Bench,True
+123,ea_lying_neck_extension,Lying Neck Extension,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+124,ea_lying_on_side_arm_circle_warm_up,Lying on Side Arm Circle Warm Up,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+125,ea_med_ball_jumping_jacks,Med Ball Jumping Jacks,Calisthenics-Cardio-Plyo-Functional,,Exercise Ball,True
+126,ea_med_ball_side_wall_slams,Med Ball Side Wall Slams,Calisthenics-Cardio-Plyo-Functional,,Wall,True
+127,ea_med_ball_slam_burpees,Med Ball Slam Burpees,Calisthenics-Cardio-Plyo-Functional,,Exercise Ball,True
+128,ea_monkey_bar_swings,Monkey Bar Swings,Calisthenics-Cardio-Plyo-Functional,,Barbell,True
+129,ea_mountain_climber_jumps,Mountain Climber Jumps,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+130,ea_overhead_med_ball_throw,Overhead Med Ball Throw,Calisthenics-Cardio-Plyo-Functional,,Exercise Ball,True
+131,ea_pike_alternating_opposite_hip_taps,Pike Alternating Opposite Hip Taps,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+132,ea_pike_individual_alternating_arm_reaches,Pike Individual Alternating Arm Reaches,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+133,ea_pike_jacks_feet_kicking_in_and_out,Pike Jacks Feet Kicking in and Out,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+134,ea_pike_shoulder_taps,Pike Shoulder Taps,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+135,ea_plank_iytw,Plank IYTW,Calisthenics-Cardio-Plyo-Functional,,Dumbbells,True
+136,ea_plank_individual_arm_reach,Plank Individual Arm Reach,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+137,ea_plank_pushup,Plank Pushup,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+138,ea_plate_overhead_carry,Plate Overhead Carry,Calisthenics-Cardio-Plyo-Functional,,Weight Plate,True
+139,ea_pull_sled_or_dog_sled_push,Pull Sled or Dog Sled Push,Calisthenics-Cardio-Plyo-Functional,,Sled,True
+140,ea_pushup_to_renegade_row,Pushup to Renegade Row,Calisthenics-Cardio-Plyo-Functional,,Dumbbells,True
+141,ea_rebounder_high_knee_runs,Rebounder High Knee Runs,Calisthenics-Cardio-Plyo-Functional,,Mini Trampoline,True
+142,ea_rebounder_knee_jumps,Rebounder Knee Jumps,Calisthenics-Cardio-Plyo-Functional,,Mini Trampoline,True
+143,ea_rebounder_knee_pushes,Rebounder Knee Pushes,Calisthenics-Cardio-Plyo-Functional,,Mini Trampoline,True
+144,ea_rebounder_light_jumps,Rebounder Light Jumps,Calisthenics-Cardio-Plyo-Functional,,Mini Trampoline,True
+145,ea_rebounder_in_out_from_ground,Rebounder in & Out From Ground,Calisthenics-Cardio-Plyo-Functional,,Mini Trampoline,True
+146,ea_rebounder_in_out_jacks,Rebounder in & Out Jacks,Calisthenics-Cardio-Plyo-Functional,,Mini Trampoline,True
+147,ea_ring_dips,Ring Dips,Calisthenics-Cardio-Plyo-Functional,,Gymnastic Rings,True
+148,ea_single_kettlebell_sled_push,Single Kettlebell Sled Push,Calisthenics-Cardio-Plyo-Functional,,Kettlebells,True
+149,ea_skater_hops,Skater Hops,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+150,ea_sled_battle_rope_pull,Sled Battle Rope Pull,Calisthenics-Cardio-Plyo-Functional,,Battle Ropes,True
+151,ea_sled_drag_and_row,Sled Drag and Row,Calisthenics-Cardio-Plyo-Functional,,Sled,True
+152,ea_stepmill_machine_steps,Stepmill Machine Steps,Calisthenics-Cardio-Plyo-Functional,,Machine,True
+153,ea_tennis_forehand_ground_stroke,Tennis Forehand Ground Stroke,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+154,ea_the_wall_ball,The Wall Ball,Calisthenics-Cardio-Plyo-Functional,,Wall,True
+155,ea_treadmill_walk,Treadmill Walk,Calisthenics-Cardio-Plyo-Functional,,Treadmill,True
+156,ea_tyre_flip,Tyre Flip,Calisthenics-Cardio-Plyo-Functional,,Tyre,True
+157,ea_tyre_hammering,Tyre Hammering,Calisthenics-Cardio-Plyo-Functional,,Tyre,True
+158,ea_unilateral_box_jump,Unilateral Box Jump,Calisthenics-Cardio-Plyo-Functional,,Plyo Box,True
+159,ea_unilateral_box_jump_bilateral_deceleration,Unilateral Box Jump - Bilateral Deceleration,Calisthenics-Cardio-Plyo-Functional,,Plyo Box,True
+160,ea_unilateral_front_plank,Unilateral Front Plank,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+161,ea_unilateral_jumps,Unilateral Jumps,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+162,ea_unilateral_plank,Unilateral Plank,Calisthenics-Cardio-Plyo-Functional,,None (Bodyweight),True
+163,ea_band_pallof_press,Band Pallof Press,Chest,chest,Resistance Band,True
+164,ea_barbell_hooklying_bench_press,Barbell Hooklying Bench Press,Chest,chest,Barbell,True
+165,ea_barbell_hooklying_bench_press_close_elbows,Barbell Hooklying Bench Press Close Elbows,Chest,chest,Barbell,True
+166,ea_barbell_landmine_chest_press,Barbell Landmine Chest Press,Chest,chest,Landmine,True
+167,ea_barbell_larsen_bench_press,Barbell Larsen Bench Press,Chest,chest,Barbell,True
+168,ea_barbell_spoto_press,Barbell Spoto Press,Chest,chest,Barbell,True
+169,ea_cable_core_palloff_press,Cable Core Palloff Press,Chest,chest,Cable Pulley Machine,True
+170,ea_dumbbell_decline_close_neutral_grip_press,Dumbbell Decline Close Neutral Grip Press,Chest,chest,Dumbbells,True
+171,ea_dumbbell_hex_press,Dumbbell Hex Press,Chest,chest,Dumbbells,True
+172,ea_dumbbell_lying_on_floor_chest_press,Dumbbell Lying on Floor Chest Press,Chest,chest,Dumbbells,True
+173,ea_hold_the_world_med_ball_chest_press,Hold the World Med Ball Chest Press,Chest,chest,Exercise Ball,True
+174,ea_kettlebell_single_arm_chest_fly,Kettlebell Single Arm Chest Fly,Chest,chest,Kettlebells,True
+175,ea_kneeling_push_up,Kneeling Push-up,Chest,chest,None (Bodyweight),True
+176,ea_one_arm_push_up,One Arm Push Up,Chest,chest,None (Bodyweight),True
+177,ea_pec_deck_fly_machine_flies,Pec Deck Fly Machine Flies,Chest,chest,Machine,True
+178,ea_plate_deficit_pushup,Plate Deficit Pushup,Chest,chest,Weight Plate,True
+179,ea_plate_glute_bridge_to_chest_press,Plate Glute Bridge to Chest Press,Chest,chest,Weight Plate,True
+180,ea_plate_press,Plate Press,Chest,chest,Weight Plate,True
+181,ea_push_pull_front_handle_push,Push Pull Front Handle Push,Chest,chest,Machine,True
+182,ea_band_wrist_curl_single_arm,Band Wrist Curl Single Arm,Forearms,forearms,Resistance Band,True
+183,ea_cable_wrist_extension,Cable Wrist Extension,Forearms,forearms,Cable Pulley Machine,True
+184,ea_kettlebell_wrist_curl,Kettlebell Wrist Curl,Forearms,forearms,Kettlebells,True
+185,ea_kettlebell_wrist_extension,Kettlebell Wrist Extension,Forearms,forearms,Kettlebells,True
+186,ea_ankle_pumps,Ankle Pumps,Legs,quads,None (Bodyweight),True
+187,ea_band_hip_adduction,Band Hip Adduction,Legs,quads,Resistance Band,True
+188,ea_dumbbell_feet_elevated_figure_four_glute_bridge,Dumbbell Feet Elevated Figure Four Glute Bridge,Legs,quads,Dumbbells,True
+189,ea_dumbbell_goblet_reverse_lunge,Dumbbell Goblet Reverse Lunge,Legs,quads,Dumbbells,True
+190,ea_dumbbell_offset_squat,Dumbbell Offset Squat,Legs,quads,Dumbbells,True
+191,ea_dumbbell_single_leg_hip_thrust,Dumbbell Single Leg Hip Thrust,Legs,quads,Dumbbells,True
+192,ea_dumbbell_single_leg_single_arm_deadlift,Dumbbell Single Leg Single Arm Deadlift,Legs,quads,Dumbbells,True
+193,ea_dumbbell_staggered_deadlift,Dumbbell Staggered Deadlift,Legs,quads,Dumbbells,True
+194,ea_dumbbell_staggered_glute_bridge,Dumbbell Staggered Glute Bridge,Legs,quads,Dumbbells,True
+195,ea_dumbbell_staggered_hip_thrust,Dumbbell Staggered Hip Thrust,Legs,quads,Dumbbells,True
+196,ea_dumbbell_standing_hip_abduction,Dumbbell Standing Hip Abduction,Legs,quads,Dumbbells,True
+197,ea_frog_jumps,Frog Jumps,Legs,quads,None (Bodyweight),True
+198,ea_glute_bridge_bodyweight,Glute Bridge Bodyweight,Legs,quads,None (Bodyweight),True
+199,ea_good_mornings,Good Mornings,Legs,quads,None (Bodyweight),True
+200,ea_hip_thrust_in_smith_machine,Hip-thrust in Smith Machine,Legs,quads,Smith Machine,True
+201,ea_horizontal_leg_press,Horizontal Leg Press,Legs,quads,Machine,True
+202,ea_horizontal_leg_press_calf_raise,Horizontal Leg Press Calf Raise,Legs,quads,Machine,True
+203,ea_horizontal_leg_press_calf_raise_single_leg,Horizontal Leg Press Calf Raise Single Leg,Legs,quads,Machine,True
+204,ea_horizontal_leg_press_single_leg,Horizontal Leg Press Single Leg,Legs,quads,Machine,True
+205,ea_jumping_lunge,Jumping Lunge,Legs,quads,None (Bodyweight),True
+206,ea_jumping_pistol_squat,Jumping Pistol Squat,Legs,quads,None (Bodyweight),True
+207,ea_kettlebell_calf_raise,Kettlebell Calf Raise,Legs,quads,Kettlebells,True
+208,ea_kettlebell_glute_bridge,Kettlebell Glute Bridge,Legs,quads,Kettlebells,True
+209,ea_kettlebell_hip_thrusts,Kettlebell Hip Thrusts,Legs,quads,Kettlebells,True
+210,ea_kettlebell_hip_thrusts_with_bench,Kettlebell Hip Thrusts with Bench,Legs,quads,Kettlebells,True
+211,ea_kettlebell_lateral_lunge,Kettlebell Lateral Lunge,Legs,quads,Kettlebells,True
+212,ea_kettlebell_reverse_lunge,Kettlebell Reverse Lunge,Legs,quads,Kettlebells,True
+213,ea_kettlebell_seated_calf_raise,Kettlebell Seated Calf Raise,Legs,quads,Kettlebells,True
+214,ea_kettlebell_single_leg_calf_raise,Kettlebell Single Leg Calf Raise,Legs,quads,Kettlebells,True
+215,ea_kettlebell_single_leg_deadlift,Kettlebell Single Leg Deadlift,Legs,quads,Kettlebells,True
+216,ea_kettlebell_single_leg_glute_bridge,Kettlebell Single Leg Glute Bridge,Legs,quads,Kettlebells,True
+217,ea_kettlebell_single_leg_hip_thrust,Kettlebell Single Leg Hip Thrust,Legs,quads,Kettlebells,True
+218,ea_kettlebell_single_leg_romanian_deadlifts,Kettlebell Single Leg Romanian Deadlifts,Legs,quads,Kettlebells,True
+219,ea_kettlebell_staggered_deadlift,Kettlebell Staggered Deadlift,Legs,quads,Kettlebells,True
+220,ea_landmine_calf_raise,Landmine Calf Raise,Legs,quads,Landmine,True
+221,ea_landmine_curtsy_lunge,Landmine Curtsy Lunge,Legs,quads,Landmine,True
+222,ea_landmine_glute_kick_back,Landmine Glute Kick Back,Legs,quads,Landmine,True
+223,ea_landmine_goblet_curtsy_lunge,Landmine Goblet Curtsy Lunge,Legs,quads,Landmine,True
+224,ea_landmine_goblet_lateral_lunge,Landmine Goblet Lateral Lunge,Legs,quads,Landmine,True
+225,ea_landmine_hack_squat,Landmine Hack Squat,Legs,quads,Landmine,True
+226,ea_landmine_lateral_lunge,Landmine Lateral Lunge,Legs,quads,Landmine,True
+227,ea_landmine_lunge_to_overhead_press,Landmine Lunge to Overhead Press,Legs,quads,Landmine,True
+228,ea_landmine_squat_and_press,Landmine Squat and Press,Legs,quads,Landmine,True
+229,ea_lateral_band_walks,Lateral Band Walks,Legs,quads,Resistance Band,True
+230,ea_lateral_box_jump,Lateral Box Jump,Legs,quads,Plyo Box,True
+231,ea_med_ball_front_squat_raise,Med Ball Front Squat Raise,Legs,quads,Exercise Ball,True
+232,ea_medicine_ball_jumps,Medicine Ball Jumps,Legs,quads,Medicine Ball,True
+233,ea_multi_hip_adduction,Multi Hip Adduction,Legs,quads,Machine,True
+234,ea_narrow_stance_heels_elevated_dumbbell_goblet_squats,Narrow Stance Heels Elevated Dumbbell Goblet Squats,Legs,quads,Dumbbells,True
+235,ea_nordic_hamstring_curl_with_partner,Nordic Hamstring Curl with Partner,Legs,quads,A Partner,True
+236,ea_normal_squat_smith_machine,Normal Squat Smith Machine,Legs,quads,Smith Machine,True
+237,ea_pistol_squat_to_box,Pistol Squat to Box,Legs,quads,Plyo Box,True
+238,ea_plate_curtsy_lunge,Plate Curtsy Lunge,Legs,quads,Weight Plate,True
+239,ea_plate_deadlift,Plate Deadlift,Legs,quads,Weight Plate,True
+240,ea_plate_deficit_lunge,Plate Deficit Lunge,Legs,quads,Weight Plate,True
+241,ea_plate_forward_lunge,Plate Forward Lunge,Legs,quads,Weight Plate,True
+242,ea_plate_good_morning_anterior,Plate Good Morning Anterior,Legs,quads,Weight Plate,True
+243,ea_plate_lateral_lunge,Plate Lateral Lunge,Legs,quads,Weight Plate,True
+244,ea_plate_overhead_walking_lunge,Plate Overhead Walking Lunge,Legs,quads,Weight Plate,True
+245,ea_plate_single_leg_deadlift,Plate Single Leg Deadlift,Legs,quads,Weight Plate,True
+246,ea_plate_single_leg_pinch_grip_deadlift,Plate Single Leg Pinch Grip Deadlift,Legs,quads,Weight Plate,True
+247,ea_plate_squat_hold,Plate Squat Hold,Legs,quads,Weight Plate,True
+248,ea_plate_squat_hold_biceps_curl,Plate Squat Hold Biceps Curl,Legs,quads,Weight Plate,True
+249,ea_plate_squat_hold_reach,Plate Squat Hold Reach,Legs,quads,Weight Plate,True
+250,ea_plate_squat_reach,Plate Squat Reach,Legs,quads,Weight Plate,True
+251,ea_plate_staggered_deadlift,Plate Staggered Deadlift,Legs,quads,Weight Plate,True
+252,ea_plate_staggered_pinch_grip_deadlift,Plate Staggered Pinch Grip Deadlift,Legs,quads,Weight Plate,True
+253,ea_sissy_squat_bodyweight,Sissy Squat Bodyweight,Legs,quads,Bench,True
+254,ea_smith_machine_narrow_stance_heels_elevated_squats,Smith Machine Narrow Stance Heels Elevated Squats,Legs,quads,Smith Machine,True
+255,ea_standing_cable_hip_flexion,Standing Cable Hip Flexion,Legs,quads,Cable Pulley Machine,True
+256,ea_barbell_hang_clean,Barbell Hang Clean,Powerlifting,,Barbell,True
+257,ea_barbell_press_under,Barbell Press Under,Powerlifting,,Barbell,True
+258,ea_plate_clean,Plate Clean,Powerlifting,,Weight Plate,True
+259,ea_plate_clean_and_press,Plate Clean and Press,Powerlifting,,Weight Plate,True
+260,ea_plate_thruster,Plate Thruster,Powerlifting,,Weight Plate,True
+261,ea_sandbag_cleans,Sandbag Cleans,Powerlifting,,Sandbag,True
+262,ea_cable_30_degree_shrug,Cable 30 Degree Shrug,Shoulders,shoulders,Cable Pulley Machine,True
+263,ea_cable_face_pull_with_rope,Cable Face Pull with Rope,Shoulders,shoulders,Cable Pulley Machine,True
+264,ea_cable_single_arm_reverse_fly,Cable Single Arm Reverse Fly,Shoulders,shoulders,Cable Pulley Machine,True
+265,ea_dumbbell_alternating_arnold_press,Dumbbell Alternating Arnold Press,Shoulders,shoulders,Dumbbells,True
+266,ea_dumbbell_chest_supported_y_raise,Dumbbell Chest Supported Y Raise,Shoulders,shoulders,Dumbbells,True
+267,ea_dumbbell_laying_30_degree_shrug,Dumbbell Laying 30 Degree Shrug,Shoulders,shoulders,Dumbbells,True
+268,ea_dumbbell_laying_silverback_shrug,Dumbbell Laying Silverback Shrug,Shoulders,shoulders,Dumbbells,True
+269,ea_dumbbell_plank_pullthrough,Dumbbell Plank Pullthrough,Shoulders,shoulders,Dumbbells,True
+270,ea_dumbbell_shoulder_extension,Dumbbell Shoulder Extension,Shoulders,shoulders,Dumbbells,True
+271,ea_dumbbell_silverback_shrug,Dumbbell Silverback Shrug,Shoulders,shoulders,Dumbbells,True
+272,ea_dumbbell_single_arm_upright_row,Dumbbell Single Arm Upright Row,Shoulders,shoulders,Dumbbells,True
+273,ea_elevated_pike_shoulder_shrug,Elevated Pike Shoulder Shrug,Shoulders,shoulders,Plyo Box,True
+274,ea_kettlebell_front_raise,Kettlebell Front Raise,Shoulders,shoulders,Kettlebells,True
+275,ea_kettlebell_incline_shrug,Kettlebell Incline Shrug,Shoulders,shoulders,Kettlebells,True
+276,ea_kettlebell_long_lever_lateral_raise,Kettlebell Long Lever Lateral Raise,Shoulders,shoulders,Kettlebells,True
+277,ea_kettlebell_rear_delt_row,Kettlebell Rear Delt Row,Shoulders,shoulders,Kettlebells,True
+278,ea_kettlebell_shoulder_extension,Kettlebell Shoulder Extension,Shoulders,shoulders,Kettlebells,True
+279,ea_kettlebell_shrug,Kettlebell Shrug,Shoulders,shoulders,Kettlebells,True
+280,ea_kettlebell_silverback_shrug,Kettlebell Silverback Shrug,Shoulders,shoulders,Kettlebells,True
+281,ea_kettlebell_single_arm_lateral_raise,Kettlebell Single Arm Lateral Raise,Shoulders,shoulders,Kettlebells,True
+282,ea_kettlebell_single_arm_rear_delt_fly,Kettlebell Single Arm Rear Delt Fly,Shoulders,shoulders,Kettlebells,True
+283,ea_kettlebell_upright_row,Kettlebell Upright Row,Shoulders,shoulders,Kettlebells,True
+284,ea_landmine_alternating_single_arm_press,Landmine Alternating Single Arm Press,Shoulders,shoulders,Landmine,True
+285,ea_landmine_half_kneeling_single_arm_overhead_press,Landmine Half Kneeling Single Arm Overhead Press,Shoulders,shoulders,Landmine,True
+286,ea_landmine_kneeling_alternating_overhead_press,Landmine Kneeling Alternating Overhead Press,Shoulders,shoulders,Landmine,True
+287,ea_landmine_kneeling_overhead_press,Landmine Kneeling Overhead Press,Shoulders,shoulders,Landmine,True
+288,ea_landmine_lateral_raise,Landmine Lateral Raise,Shoulders,shoulders,Landmine,True
+289,ea_landmine_overhead_press,Landmine Overhead Press,Shoulders,shoulders,Landmine,True
+290,ea_landmine_seated_alternating_overhead_press,Landmine Seated Alternating Overhead Press,Shoulders,shoulders,Landmine,True
+291,ea_landmine_seated_overhead_press,Landmine Seated Overhead Press,Shoulders,shoulders,Landmine,True
+292,ea_landmine_seated_single_arm_overhead_press,Landmine Seated Single Arm Overhead Press,Shoulders,shoulders,Landmine,True
+293,ea_landmine_single_arm_push_press,Landmine Single Arm Push Press,Shoulders,shoulders,Landmine,True
+294,ea_landmine_single_arm_staggered_overhead_press,Landmine Single Arm Staggered Overhead Press,Shoulders,shoulders,Landmine,True
+295,ea_laying_lateral_raise,Laying Lateral Raise,Shoulders,shoulders,Dumbbells,True
+296,ea_plate_car_driver,Plate Car Driver,Shoulders,shoulders,Weight Plate,True
+297,ea_plate_full_front_raise,Plate Full Front Raise,Shoulders,shoulders,Weight Plate,True
+298,ea_plate_halo,Plate Halo,Shoulders,shoulders,Weight Plate,True
+299,ea_plate_internally_rotated_rear_delt_fly,Plate Internally Rotated Rear Delt Fly,Shoulders,shoulders,Weight Plate,True
+300,ea_plate_lateral_raise,Plate Lateral Raise,Shoulders,shoulders,Weight Plate,True
+301,ea_plate_overhead_press_to_tricep_extension,Plate Overhead Press to Tricep Extension,Shoulders,shoulders,Weight Plate,True
+302,ea_plate_overhead_shrug,Plate Overhead Shrug,Shoulders,shoulders,Weight Plate,True
+303,ea_plate_reach,Plate Reach,Shoulders,shoulders,Weight Plate,True
+304,ea_plate_rear_delt_fly,Plate Rear Delt Fly,Shoulders,shoulders,Weight Plate,True
+305,ea_seated_dumbbell_neutral_grip_front_raises,Seated Dumbbell Neutral Grip Front Raises,Shoulders,shoulders,Dumbbells,True
+306,ea_seated_dumbbell_neutral_grip_side_raises,Seated Dumbbell Neutral Grip Side Raises,Shoulders,shoulders,Dumbbells,True
+307,ea_suspension_trainer_with_grips_inverted_row_on_floor,Suspension Trainer with Grips Inverted Row on Floor,Shoulders,shoulders,Suspension Trainer,True
+308,ea_arms_behind_back_chest_stretch,Arms Behind Back Chest Stretch,Stretching - Mobility,,None (Bodyweight),True
+309,ea_arms_wide_chest_stretch,Arms Wide Chest Stretch,Stretching - Mobility,,None (Bodyweight),True
+310,ea_both_arms_behind_on_wall_biceps_stretch,Both Arms Behind on Wall Biceps Stretch,Stretching - Mobility,,Wall,True
+311,ea_bulgarian_split_squat_stretch,Bulgarian Split Squat Stretch,Stretching - Mobility,,Wall,True
+312,ea_calf_push_stretch_with_hands_against_wall_v_2,Calf Push Stretch with Hands Against Wall V.2,Stretching - Mobility,,Wall,True
+313,ea_calve_stretch_foot_on_wall,Calve Stretch Foot on Wall,Stretching - Mobility,,Wall,True
+314,ea_calve_stretch_from_wall_to_floor,Calve Stretch From Wall to Floor,Stretching - Mobility,,Wall,True
+315,ea_calves_stretch_on_step,Calves Stretch on Step,Stretching - Mobility,,Plyo Box,True
+316,ea_child_pose_lower_back_stretch,Child Pose Lower Back Stretch,Stretching - Mobility,,None (Bodyweight),True
+317,ea_cobra_stretch,Cobra Stretch,Stretching - Mobility,,None (Bodyweight),True
+318,ea_crescent_moon_pose_quad_stretch,Crescent Moon Pose Quad Stretch,Stretching - Mobility,,None (Bodyweight),True
+319,ea_crescent_moon_pose_quad_stretch_with_block,Crescent Moon Pose Quad Stretch with Block,Stretching - Mobility,,Yoga Block,True
+320,ea_cross_body_elbow_pull_shoulder_stretch,Cross Body Elbow Pull Shoulder Stretch,Stretching - Mobility,,None (Bodyweight),True
+321,ea_cross_body_shoulder_stretch,Cross Body Shoulder Stretch,Stretching - Mobility,,None (Bodyweight),True
+322,ea_foam_roller_back,Foam Roller Back,Stretching - Mobility,,Foam Roller,True
+323,ea_foam_roller_calves,Foam Roller Calves,Stretching - Mobility,,Foam Roller,True
+324,ea_foam_roller_lateral_quads,Foam Roller Lateral Quads,Stretching - Mobility,,Foam Roller,True
+325,ea_foam_roller_quads,Foam Roller Quads-,Stretching - Mobility,,Foam Roller,True
+326,ea_forearms_pull_with_opposite_hand_stretch,Forearms Pull with Opposite Hand Stretch,Stretching - Mobility,,None (Bodyweight),True
+327,ea_forearms_stretch_on_wall,Forearms Stretch on Wall,Stretching - Mobility,,Wall,True
+328,ea_forearms_stretch_on_wall_fingers_facing_down,Forearms Stretch on Wall Fingers Facing Down,Stretching - Mobility,,Wall,True
+329,ea_half_neck_rolls,Half Neck Rolls,Stretching - Mobility,,None (Bodyweight),True
+330,ea_hands_clapped_forearms_stretch,Hands Clapped Forearms Stretch,Stretching - Mobility,,None (Bodyweight),True
+331,ea_lats_stretch_elbow_on_wall,Lats Stretch Elbow on Wall,Stretching - Mobility,,Wall,True
+332,ea_lats_stretch_on_wall,Lats Stretch on Wall,Stretching - Mobility,,Wall,True
+333,ea_lying_bent_knee_cross_glutes_stretch,Lying Bent Knee Cross Glutes Stretch,Stretching - Mobility,,None (Bodyweight),True
+334,ea_lying_face_down_quadriceps_stretch,Lying Face Down Quadriceps Stretch,Stretching - Mobility,,None (Bodyweight),True
+335,ea_lying_knee_hugs_lower_back_stretch,Lying Knee Hugs Lower Back Stretch,Stretching - Mobility,,None (Bodyweight),True
+336,ea_lying_knee_pull_glutes_stretch,Lying Knee Pull Glutes Stretch,Stretching - Mobility,,None (Bodyweight),True
+337,ea_lying_knees_to_floor_lower_back_stretch,Lying Knees to Floor Lower Back Stretch,Stretching - Mobility,,None (Bodyweight),True
+338,ea_lying_single_leg_extended_on_wall_hamstrings_stretch,Lying Single Leg Extended on Wall Hamstrings Stretch,Stretching - Mobility,,Wall,True
+339,ea_revolved_head_to_knee,Revolved Head to Knee,Stretching - Mobility,,None (Bodyweight),True
+340,ea_seated_figure_four_with_twist_glute_stretch,Seated Figure Four with Twist Glute Stretch,Stretching - Mobility,,None (Bodyweight),True
+341,ea_seated_single_leg_toe_touch_hamstring_stretch,Seated Single Leg Toe Touch Hamstring Stretch,Stretching - Mobility,,None (Bodyweight),True
+342,ea_seated_toe_touch_hamstrings_stretch,Seated Toe Touch Hamstrings Stretch,Stretching - Mobility,,None (Bodyweight),True
+343,ea_side_bend_standing_lats_stretch,Side Bend Standing Lats Stretch,Stretching - Mobility,,None (Bodyweight),True
+344,ea_side_chest_stretch_on_wall,Side Chest Stretch on Wall,Stretching - Mobility,,Wall,True
+345,ea_single_arm_extended_pull_downwards_biceps_stretch,Single Arm Extended Pull Downwards Biceps Stretch,Stretching - Mobility,,None (Bodyweight),True
+346,ea_single_arm_palm_down_on_wall_biceps_stretch,Single Arm Palm Down on Wall Biceps Stretch,Stretching - Mobility,,Wall,True
+347,ea_single_arm_on_wall_side_biceps_stretch,Single Arm on Wall Side Biceps Stretch,Stretching - Mobility,,Wall,True
+348,ea_standing_straight_leg_hamstring_stretch,Standing Straight-leg Hamstring Stretch,Stretching - Mobility,,None (Bodyweight),True
+349,ea_band_lying_press_down,Band Lying Press Down,Triceps,triceps,Resistance Band,True
+350,ea_band_skullcrusher,Band Skullcrusher,Triceps,triceps,Resistance Band,True
+351,ea_band_triceps_pushdown_single_arm,Band Triceps Pushdown Single Arm,Triceps,triceps,Resistance Band,True
+352,ea_cable_cross_pushdown,Cable Cross Pushdown,Triceps,triceps,Cable Pulley Machine,True
+353,ea_dumbbell_skullcrusher,Dumbbell Skullcrusher,Triceps,triceps,Dumbbells,True
+354,ea_floor_tricep_dip,Floor Tricep Dip,Triceps,triceps,None (Bodyweight),True
+355,ea_kettlebell_decline_skull_crusher,Kettlebell Decline Skull Crusher,Triceps,triceps,Kettlebells,True
+356,ea_kettlebell_skull_crusher,Kettlebell Skull Crusher,Triceps,triceps,Kettlebells,True
+357,ea_kettlebell_standing_tricep_extension,Kettlebell Standing Tricep Extension,Triceps,triceps,Kettlebells,True
+358,ea_landmine_lying_tricep_extension,Landmine Lying Tricep Extension,Triceps,triceps,Landmine,True
+359,ea_plate_curl_to_overhead_press_to_tricep_extension,Plate Curl to Overhead Press to Tricep Extension,Triceps,triceps,Weight Plate,True
+360,ea_plate_overhead_tricep_extension,Plate Overhead Tricep Extension,Triceps,triceps,Weight Plate,True
+361,ea_tricep_rope_extension_on_crossover_machine,Tricep Rope Extension on Crossover Machine,Triceps,triceps,Machine,True
+362,ea_bow_pose,Bow Pose,Yoga,,None (Bodyweight),True
+363,ea_cat_pose,Cat Pose,Yoga,,None (Bodyweight),True
+364,ea_chair_pose,Chair Pose,Yoga,,None (Bodyweight),True
+365,ea_child_pose_arms_extended_left_right,Child Pose Arms Extended Left Right,Yoga,,None (Bodyweight),True
+366,ea_child_pose_arms_on_side,Child Pose Arms on Side,Yoga,,None (Bodyweight),True
+367,ea_child_pose_elbows_on_block,Child Pose Elbows on Block,Yoga,,Yoga Block,True
+368,ea_crescent_moon_pose,Crescent Moon Pose,Yoga,,None (Bodyweight),True
+369,ea_criss_cross_bow_tie_pose,Criss Cross Bow Tie Pose,Yoga,,None (Bodyweight),True
+370,ea_crow_pose,Crow Pose,Yoga,,None (Bodyweight),True
+371,ea_double_pigeon_pose,Double Pigeon Pose,Yoga,,None (Bodyweight),True
+372,ea_downward_dog_toe_to_heel,Downward Dog Toe to Heel,Yoga,,None (Bodyweight),True
+373,ea_downward_dog_with_fingers_facing_feet,Downward Dog with Fingers Facing Feet,Yoga,,None (Bodyweight),True
+374,ea_eagle_arms_chin_into_chest,Eagle Arms Chin Into Chest,Yoga,,None (Bodyweight),True
+375,ea_easy_pose_neck_stretch,Easy Pose Neck Stretch,Yoga,,None (Bodyweight),True
+376,ea_easy_seated_twist_pose,Easy Seated Twist Pose,Yoga,,None (Bodyweight),True
+377,ea_extended_side_angle_pose,Extended Side Angle Pose,Yoga,,None (Bodyweight),True
+378,ea_extended_side_angle_pose_with_block,Extended Side Angle Pose with Block,Yoga,,Yoga Block,True
+379,ea_gate_pose_rounding_spine_looking_up,Gate Pose Rounding Spine Looking Up,Yoga,,None (Bodyweight),True
+380,ea_gate_pose_variation_arm_extended_on_side,Gate Pose Variation Arm Extended on Side,Yoga,,None (Bodyweight),True
+381,ea_half_lotus,Half Lotus,Yoga,,None (Bodyweight),True
+382,ea_half_monkey_pose,Half Monkey Pose,Yoga,,None (Bodyweight),True
+383,ea_happy_baby,Happy Baby,Yoga,,None (Bodyweight),True
+384,ea_lord_of_the_dance,Lord of the Dance,Yoga,,None (Bodyweight),True
+385,ea_monkey_pose,Monkey Pose,Yoga,,None (Bodyweight),True
+386,ea_one_arm_cow_face_pose_easy,One Arm Cow Face Pose - Easy,Yoga,,None (Bodyweight),True
+387,ea_pigeon_glutes_stretch,Pigeon Glutes Stretch,Yoga,,None (Bodyweight),True
+388,ea_pigeon_pose,Pigeon Pose,Yoga,,None (Bodyweight),True
+389,ea_puppy_pose,Puppy Pose,Yoga,,None (Bodyweight),True
+390,ea_pyramid_pose_parsvottanasana,Pyramid Pose - Parsvottanasana,Yoga,,None (Bodyweight),True
+391,ea_pyramid_pose_blocks,Pyramid Pose Blocks,Yoga,,Yoga Block,True
+392,ea_pyramid_pose_calf_blocks,Pyramid Pose Calf Blocks,Yoga,,Yoga Block,True
+393,ea_pyramid_prayer,Pyramid Prayer,Yoga,,Bench,True
+394,ea_reclining_pigeon_pose,Reclining Pigeon Pose,Yoga,,None (Bodyweight),True
+395,ea_restful_cow_face_pose_legs,Restful Cow Face Pose Legs,Yoga,,None (Bodyweight),True
+396,ea_reverse_prayer,Reverse Prayer,Yoga,,None (Bodyweight),True
+397,ea_revolved_side_angle_pose_with_prayer_hands,Revolved Side Angle Pose with Prayer Hands,Yoga,,None (Bodyweight),True
+398,ea_revolved_side_angle_pose_with_prayer_hands_beginner,Revolved Side Angle Pose with Prayer Hands Beginner,Yoga,,None (Bodyweight),True
+399,ea_runners_lunge,Runners Lunge,Yoga,,None (Bodyweight),True
+400,ea_scorpion_twist_pose,Scorpion Twist Pose,Yoga,,None (Bodyweight),True
+401,ea_side_lying_parsva_savasana_variation,Side Lying Parsva Savasana Variation,Yoga,,None (Bodyweight),True
+402,ea_wild_thing_pose,Wild Thing Pose,Yoga,,None (Bodyweight),True
+403,ea_yoga_flow_sequences_sun_salutations,Yoga Flow Sequences Sun Salutations,Yoga,,None (Bodyweight),True

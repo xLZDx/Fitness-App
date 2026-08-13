@@ -15,6 +15,7 @@ class ExerciseItem {
     required this.durationMinutes,
     required this.summary,
     required this.steps,
+    this.purpose,
     this.videoUrl,
     this.video = const {},
     this.poster = const {},
@@ -114,6 +115,22 @@ class ExerciseItem {
   final int durationMinutes;
   final String summary;
   final List<String> steps;
+
+  /// Why anyone does this exercise — what it trains and what it carries over
+  /// to. Null for a row nobody has written it for yet.
+  ///
+  /// Not [summary], which cannot hold it: the catalogue's own invariant is that
+  /// `summary` is byte-identical to `steps.first`, because the Russian overlay
+  /// stores only `title` and `steps` and derives the summary from step one
+  /// (`test/features/equipment/exercise_translations_test.dart`). So the
+  /// catalogue had no field that answered "what is this FOR" and every screen
+  /// that wanted to say it had to repeat an instruction instead.
+  ///
+  /// Added by B3 (operator, 2026-08-13, asking for the steps AND "для чего это
+  /// нужно" for the 403 rows the purchased library delivered with both text
+  /// fields empty). Nullable and additive: 1,484 rows have no purpose written
+  /// yet and render exactly as they did.
+  final String? purpose;
 
   /// Where the instructional video lives, when a real clip exists.
   final String? videoUrl;
@@ -226,6 +243,13 @@ class ExerciseItem {
         durationMinutes: j['durationMinutes'] as int? ?? 10,
         summary: j['summary'] as String? ?? '',
         steps: parseSteps(j['steps']),
+        // Trimmed to null so an empty string written by a half-finished batch
+        // reads the same as "not written yet" — a card must not reserve space
+        // for a heading with nothing under it.
+        purpose: switch ((j['purpose'] as String?)?.trim()) {
+          null || '' => null,
+          final p => p,
+        },
         videoUrl: j['videoUrl'] as String?,
         video: Map<String, String>.unmodifiable(<String, String>{
           for (final e in (j['video'] as Map? ?? const {}).entries)
@@ -279,6 +303,7 @@ class ExerciseItem {
         durationMinutes: durationMinutes,
         summary: summary,
         steps: steps,
+        purpose: purpose,
         videoUrl: videoUrl,
         video: video,
         poster: poster,

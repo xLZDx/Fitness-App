@@ -878,6 +878,27 @@ class ExerciseStepsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // What the exercise is FOR, when someone has written it.
+          //
+          // Above the technique, not below it, because it answers the question
+          // a user asks first — "why would I do this one" — and because the
+          // catalogue had no field for it at all until B3: `summary` is a
+          // byte-identical copy of `steps.first` by construction, so every
+          // screen that wanted to say what an exercise trains could only repeat
+          // an instruction. Absent for the 1,484 rows nobody has written it for
+          // yet, and absent means absent: no heading over blank space, same
+          // rule as the missing-steps case below.
+          if (exercise.purpose case final purpose?) ...[
+            Text(l10n.equipmentWhyThisMatters,
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 4),
+            Text(purpose,
+                key: const Key('exercise-purpose'),
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(color: theme.colors.textSecondary)),
+            const SizedBox(height: 14),
+          ],
           Text(l10n.equipmentHowToDoIt,
               style: theme.textTheme.titleMedium
                   ?.copyWith(fontWeight: FontWeight.w700)),
