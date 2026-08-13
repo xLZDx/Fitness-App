@@ -271,6 +271,24 @@ final latestPoseFrameProvider = StateProvider<PoseFrame?>((_) => null);
 /// the wrong conclusion and worse than drawing nothing.
 final showSkeletonProvider = StateProvider<bool>((_) => false);
 
+/// Draw the user as a figure on a backdrop instead of showing the camera.
+///
+/// The camera keeps running — detection reads the image stream, not the
+/// preview. What changes is only what is put on screen: the room is replaced by
+/// a drawn scene and the body by an avatar built from the live pose.
+///
+/// Off by default, for the same reason the skeleton is: this decides what the
+/// user sees INSTEAD of the ground truth, and until it has been watched on a
+/// real phone the honest default is the picture that cannot be wrong about
+/// where the body is.
+///
+/// Two things had to exist before this could: `pose_avatar.dart`, so a body can
+/// be drawn from one believable side rather than from the far side's guesses,
+/// and the empty frame the detector now emits, so losing the person clears the
+/// figure. Without the second, this switch would replace an honest picture with
+/// a figure that freezes and keeps posing.
+final avatarModeProvider = StateProvider<bool>((_) => false);
+
 /// How well the CURRENT frame matches the target, or null when it cannot be
 /// judged. Drives the live outline colour, so the user can see themselves
 /// approaching the shape instead of finding out afterwards.
@@ -411,8 +429,18 @@ class FormFeedbackController extends Notifier<FormFeedback?> {
     // the frames worth LOOKING at are the ones the gate is about to reject.
     // Only while the overlay is on — otherwise this would notify a listener
     // thirty times a second for a picture nobody is drawing.
-    if (ref.read(showSkeletonProvider)) {
-      ref.read(latestPoseFrameProvider.notifier).state = frame;
+    // The avatar is drawn from this frame too, so it has to be published for
+    // either reader. Still gated rather than always on: with both off nothing
+    // draws a pose, and notifying a provider nobody reads thirty times a second
+    // is what this condition was added to stop.
+    if (ref.read(showSkeletonProvider) || ref.read(avatarModeProvider)) {
+      // A frame carrying no landmarks is the detector saying it looked and
+      // found nobody. Published as null rather than as itself, so the overlay
+      // CLEARS instead of holding the last live pose on screen as though it
+      // were current — the same reason the toggle drops the held frame when it
+      // is switched off.
+      ref.read(latestPoseFrameProvider.notifier).state =
+          frame.landmarks.isEmpty ? null : frame;
     }
     // Before the gate, on purpose: a frame the gate rejects is exactly the
     // frame whose coordinates are most worth knowing about. Gated with the

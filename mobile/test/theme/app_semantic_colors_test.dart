@@ -478,8 +478,29 @@ void main() {
     // Deliberately NOT a new literal: the first draft of that widget carried
     // its own `Colors.black.withValues(alpha: 0.42)` scrim, which would have
     // been a second answer to a question this file had already answered twice.
+    //
+    // 59 -> 64, 2026-08-13 (A2, avatar mode): five, all in
+    // `form_check_page.dart`, and all category one. Four are the avatar itself
+    // — the rim of its body, the glow and the core of its bones, and its joint
+    // dots — drawn on a body filled `0xE60A0912` over a backdrop whose lightest
+    // point is a dusk sky. That is the same choice `_SkeletonPainter` and
+    // `_SilhouettePainter` in this file already make for the same reason: a lit
+    // line on a dark figure has no semantic token because it is not text on a
+    // surface, it is the drawing.
+    //
+    // The fifth is `_AvatarCannotPlaceBody`'s message, white on
+    // `AppSemanticColors.cameraOverlay` — the token, not a literal, and the
+    // same pairing `coach_readiness_band.dart` uses two layers above it on this
+    // screen.
+    //
+    // What it is NOT: a foreground white on brand artwork. `onGradientInk` was
+    // considered first for the message and is `#0B0918` — near-black ink for
+    // LIGHT gradient artwork, which would be invisible here. Reaching for a
+    // token because it is a token, without reading its value, is the failure
+    // this ledger exists to make visible rather than the one it exists to
+    // prevent.
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 59, reason: 'per file: $whites');
+    expect(total, 64, reason: 'per file: $whites');
   });
 
   group('lerp', () {

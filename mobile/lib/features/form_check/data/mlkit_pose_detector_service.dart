@@ -113,10 +113,15 @@ class MlKitPoseDetectorService implements PoseDetectorService {
       final detector = _detector;
       if (detector == null) return; // stopped mid-frame
       final poses = await detector.processImage(inputImage);
-      if (poses.isEmpty) return;
-      final frame = _convert(poses.first, inputImage.metadata);
+      // The call succeeded, whatever it found. `_consecutiveFailures` counts
+      // frames lost to an unexpected error, and a frame with nobody in it was
+      // not lost — it was answered.
       _consecutiveFailures = 0;
-      _ctrl.add(frame);
+      if (poses.isEmpty) {
+        _ctrl.add(_emptyFrame(inputImage.metadata));
+        return;
+      }
+      _ctrl.add(_convert(poses.first, inputImage.metadata));
     } on PlatformException catch (e) {
       // The native detector rejected the call outright — a bad frame format,
       // a dead detector. This never recovers on the next frame, so surface it
@@ -213,25 +218,52 @@ class MlKitPoseDetectorService implements PoseDetectorService {
     );
   }
 
-  /// Builds the converter for one frame: the post-rotation frame size, plus the
-  /// space the raw values are actually in, measured rather than assumed.
+  /// "We looked at this frame and found nobody" — said as a frame, not as
+  /// silence.
+  ///
+  /// Returning early instead made that indistinguishable from "no frame has
+  /// been processed yet", and that difference IS tracking loss. Nothing
+  /// downstream was notified, so `latestPoseFrameProvider` kept the last live
+  /// pose and `poseGateVerdictProvider` kept the last verdict: the overlay went
+  /// on drawing a body that had left the room, and the gate went on reporting
+  /// about a frame from before it did.
+  ///
+  /// That was survivable only because the camera image sat underneath it — the
+  /// user was their own tracking indicator. This exists because the avatar mode
+  /// takes that indicator away, and a frozen figure over a still backdrop is
+  /// indistinguishable from a working one.
+  ///
+  /// Downstream needs no new vocabulary for it: `gatePose` finds none of the
+  /// joints a rule requires and already answers `missingJoints`, which
+  /// `cue_text.dart` already renders as an instruction to step back into view.
+  ///
+  /// Carries the aspect ratio because the gate's edge check is per-axis — an
+  /// empty frame still has to describe the space it found nothing in.
+  PoseFrame _emptyFrame(InputImageMetadata? metadata) => PoseFrame(
+        timestampMs: DateTime.now().millisecondsSinceEpoch,
+        landmarks: const {},
+        aspectRatio: _aspectFor(metadata),
+      );
+
+  /// Post-rotation frame size, in pixels.
+  ///
+  /// Shared by [_normaliserFor] and [_aspectFor] so the two cannot come to
+  /// different conclusions about which way round the frame is.
+  ///
+  /// ML Kit reports landmarks in the upright image, so a sensor mounted at 90°
+  /// or 270° means the frame the coordinates live in has the camera's width and
+  /// height swapped. Getting this backwards does not corrupt the angles — both
+  /// axes still share one divisor — but it does put the x bound in the wrong
+  /// place, which is the gate's edge check.
   ///
   /// Falls back to a square frame when metadata is absent, which cannot happen
   /// for a camera-stream image (`camera_session.dart` always supplies it) but is
   /// possible for an `InputImage` built from a file path. A square frame is the
   /// identity for the aspect correction, so the fallback degrades to "no
   /// horizontal correction" instead of to a wrong one.
-  PoseCoordinateNormaliser _normaliserFor(
-    mlkit.Pose pose,
-    InputImageMetadata? metadata,
-  ) {
+  (double, double) _frameSize(InputImageMetadata? metadata) {
     var w = metadata?.size.width ?? 1.0;
     var h = metadata?.size.height ?? 1.0;
-    // ML Kit reports landmarks in the upright image, so a sensor mounted at
-    // 90° or 270° means the frame the coordinates live in has the camera's
-    // width and height swapped. Getting this backwards does not corrupt the
-    // angles — both axes still share one divisor — but it does put the x bound
-    // in the wrong place, which is the gate's edge check.
     final rotation = metadata?.rotation;
     if (rotation == InputImageRotation.rotation90deg ||
         rotation == InputImageRotation.rotation270deg) {
@@ -239,10 +271,22 @@ class MlKitPoseDetectorService implements PoseDetectorService {
       w = h;
       h = swap;
     }
-    if (w <= 0 || h <= 0) {
-      w = 1.0;
-      h = 1.0;
-    }
+    if (w <= 0 || h <= 0) return (1.0, 1.0);
+    return (w, h);
+  }
+
+  double _aspectFor(InputImageMetadata? metadata) {
+    final (w, h) = _frameSize(metadata);
+    return w / h;
+  }
+
+  /// Builds the converter for one frame: the post-rotation frame size, plus the
+  /// space the raw values are actually in, measured rather than assumed.
+  PoseCoordinateNormaliser _normaliserFor(
+    mlkit.Pose pose,
+    InputImageMetadata? metadata,
+  ) {
+    final (w, h) = _frameSize(metadata);
     return PoseCoordinateNormaliser(
       space: detectCoordinateSpace(
         pose.landmarks.values.expand((lm) => [lm.x, lm.y]),

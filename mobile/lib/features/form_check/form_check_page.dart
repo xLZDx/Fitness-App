@@ -14,6 +14,7 @@ import '../../shared/widgets/glass.dart';
 import 'data/cue_text.dart';
 import 'data/form_classifier.dart';
 import 'data/mlkit_pose_detector_service.dart';
+import 'data/pose_avatar.dart';
 import 'data/pose_detector_service.dart';
 import 'data/pose_gate.dart';
 import 'data/pose_landmark.dart';
@@ -279,6 +280,22 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
         session.phase == RepPhase.top;
     _syncDemo(demonstrating);
 
+    // Two switches, one held frame. Dropping it on the way out of either mode
+    // stops a pose from a minute ago flashing over a live camera on the way
+    // back in — but only the mode being left gets to decide that, and only when
+    // nothing else is still drawing from it.
+    //
+    // Written once rather than as a condition in each callback: the first
+    // version had the avatar toggle check its neighbour and the skeleton toggle
+    // clear unconditionally, so turning the skeleton off blanked the avatar
+    // mid-set. A rule split across two call sites is a rule that drifts, which
+    // is exactly how that happened.
+    void dropHeldPoseIfUnwatched() {
+      if (!ref.read(showSkeletonProvider) && !ref.read(avatarModeProvider)) {
+        ref.read(latestPoseFrameProvider.notifier).state = null;
+      }
+    }
+
     return FrostedScaffold(
       appBar: GlassAppBar(
         title: AppLocalizations.of(context).formcheckFormCoach,
@@ -293,11 +310,22 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                 : Icons.accessibility_outlined,
             tooltip: AppLocalizations.of(context).formcheckShowSkeleton,
             onPressed: () {
-              final on = !ref.read(showSkeletonProvider);
-              ref.read(showSkeletonProvider.notifier).state = on;
-              // Drop the held frame on the way out, so switching back on
-              // cannot flash a pose from a minute ago over a live camera.
-              if (!on) ref.read(latestPoseFrameProvider.notifier).state = null;
+              ref.read(showSkeletonProvider.notifier).state =
+                  !ref.read(showSkeletonProvider);
+              dropHeldPoseIfUnwatched();
+            },
+          ),
+          AppIconButton(
+            icon: ref.watch(avatarModeProvider)
+                ? Icons.person
+                : Icons.person_outline,
+            tooltip: ref.watch(avatarModeProvider)
+                ? AppLocalizations.of(context).formcheckAvatarOff
+                : AppLocalizations.of(context).formcheckAvatarOn,
+            onPressed: () {
+              ref.read(avatarModeProvider.notifier).state =
+                  !ref.read(avatarModeProvider);
+              dropHeldPoseIfUnwatched();
             },
           ),
           AppIconButton(
@@ -387,6 +415,11 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                       const Center(
                         child: CircularProgressIndicator(color: Colors.white),
                       )
+                    // The camera keeps running either way — detection reads the
+                    // image stream, not this widget. What changes is only what
+                    // the user is shown in its place.
+                    else if (ref.watch(avatarModeProvider))
+                      const _AvatarBackdrop()
                     else
                       _CameraPreview(svc: svc),
                     // Everything below is a readout of a running camera. With
@@ -397,6 +430,11 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                       // Directly over the preview and under everything else:
                       // it is a picture of the camera's input, so it belongs
                       // against the input rather than on top of the verdicts.
+                      // Under the skeleton, which is a diagnostic drawn ON the
+                      // picture — and in avatar mode this IS the picture.
+                      const Positioned.fill(
+                        child: IgnorePointer(child: _PoseAvatar()),
+                      ),
                       const Positioned.fill(
                         child: IgnorePointer(child: _SkeletonOverlay()),
                       ),
@@ -710,6 +748,284 @@ class _SkeletonPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SkeletonPainter old) =>
+      old.frame.timestampMs != frame.timestampMs;
+}
+
+/// The scene the avatar stands in, in place of the room.
+///
+/// Painted rather than a bundled photograph, and that is a decision rather than
+/// a shortcut. A photograph costs three things this does not: a licence and a
+/// credit on the licences screen (the anatomy chart already carries both), a
+/// few hundred kilobytes in an APK where 8.1 MB of demo photographs were
+/// deleted in August for being dead weight, and a choice of image that belongs
+/// to whoever is designing the app, not to whoever is wiring the mode up.
+///
+/// It is also the seam: swapping this widget for an `Image.asset` is one file
+/// and one licence line, and nothing else on this page has to know.
+class _AvatarBackdrop extends StatelessWidget {
+  const _AvatarBackdrop();
+
+  @override
+  Widget build(BuildContext context) => const RepaintBoundary(
+        child: CustomPaint(
+          key: Key('form_check.backdrop'),
+          painter: _AvatarBackdropPainter(),
+          size: Size.infinite,
+        ),
+      );
+}
+
+class _AvatarBackdropPainter extends CustomPainter {
+  const _AvatarBackdropPainter();
+
+  // Dusk, because the figure is drawn as a dark body with a light skeleton and
+  // needs a ground that is neither. Over a bright scene the body disappears;
+  // over the app's own near-black the whole point of leaving the camera behind
+  // is lost.
+  static const _sky = Color(0xFF241A3A);
+  static const _horizonGlow = Color(0xFFE8925A);
+  static const _ground = Color(0xFF0B0A14);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final horizon = size.height * 0.62;
+
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF120E22), _sky, Color(0xFF6B3F52)],
+          stops: [0.0, 0.38, 1.0],
+        ).createShader(rect),
+    );
+
+    // A low sun behind where the body stands. Off-centre: dead centre would sit
+    // exactly behind the torso and be hidden by it for the whole set.
+    canvas.drawCircle(
+      Offset(size.width * 0.68, horizon),
+      size.height * 0.34,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            _horizonGlow.withValues(alpha: 0.55),
+            _horizonGlow.withValues(alpha: 0.0),
+          ],
+        ).createShader(
+          Rect.fromCircle(
+            center: Offset(size.width * 0.68, horizon),
+            radius: size.height * 0.34,
+          ),
+        ),
+    );
+
+    canvas.drawRect(
+      Rect.fromLTRB(0, horizon, size.width, size.height),
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [_ground.withValues(alpha: 0.86), _ground],
+        ).createShader(Rect.fromLTRB(0, horizon, size.width, size.height)),
+    );
+  }
+
+  // Nothing about it moves.
+  @override
+  bool shouldRepaint(_AvatarBackdropPainter old) => false;
+}
+
+/// The user, drawn as a figure instead of shown on camera.
+class _PoseAvatar extends ConsumerWidget {
+  const _PoseAvatar();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(avatarModeProvider)) return const SizedBox.shrink();
+    final frame = ref.watch(latestPoseFrameProvider);
+    // Null is the detector saying it cannot see anyone — see
+    // `mlkit_pose_detector_service.dart`'s empty frame. Drawing the last known
+    // pose here would be the one failure this mode cannot afford: with the
+    // camera image gone, a frozen figure and a tracking one look identical.
+    // The gate has already turned that frame into a cue on the strip above, so
+    // this draws nothing and lets the cue speak.
+    if (frame == null) return const SizedBox.shrink();
+
+    // Built here rather than inside the painter so this widget can tell the
+    // difference between "no body" and "a body I cannot place", and so the
+    // figure is built once per frame rather than once to ask and once to draw.
+    final figure = buildPoseAvatar(frame, build: ref.watch(silhouetteBuildProvider));
+
+    // A pose arrived and still produced no body. That combination is not
+    // hypothetical and it is not the detector failing: the avatar needs a
+    // shoulder AND a hip to have a spine to mirror about, while
+    // `SquatDepthClassifier.requiredLandmarks` needs neither — hips and knees
+    // only. So on a squat framed low, the gate reports `ok`, the counter counts
+    // reps, and this has nothing to draw. With the camera image gone, silence
+    // there is a blank scene over a coach that is working perfectly, which is
+    // indistinguishable from a broken one.
+    if (figure.torso.isEmpty) return const _AvatarCannotPlaceBody();
+
+    return RepaintBoundary(
+      child: CustomPaint(
+        key: const Key('form_check.avatar'),
+        painter: _PoseAvatarPainter(figure: figure, frame: frame),
+      ),
+    );
+  }
+}
+
+/// Says why the scene is empty while the coach is still running.
+class _AvatarCannotPlaceBody extends StatelessWidget {
+  const _AvatarCannotPlaceBody();
+
+  @override
+  Widget build(BuildContext context) => Center(
+        key: const Key('form_check.avatar_no_torso'),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: DecoratedBox(
+            // White on `cameraOverlay`, which is the sanctioned pattern on this
+            // screen and the token `coach_readiness_band.dart` already uses two
+            // layers above. Not a fresh black literal: the theme owns that
+            // number, and a second answer to a question already answered here
+            // is how the two drift.
+            decoration: BoxDecoration(
+              color: context.colors.cameraOverlay,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Text(
+                AppLocalizations.of(context).formcheckAvatarNoTorso,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  height: 1.35,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+}
+
+/// A dark body with a lit skeleton inside it.
+///
+/// Deliberately the inverse of [_SilhouettePainter], which draws a translucent
+/// shape for the user to stand INSIDE while the camera shows them through it.
+/// This one is not something to aim at — it is the user, so it is opaque, and
+/// the bones read as light because that is what distinguishes a body from a
+/// shadow on a dusk backdrop.
+class _PoseAvatarPainter extends CustomPainter {
+  const _PoseAvatarPainter({required this.figure, required this.frame});
+
+  /// Already built, by the widget above, which had to look at it anyway to
+  /// decide between drawing a body and explaining why it cannot.
+  final SilhouetteFigure figure;
+
+  /// Carried for its aspect ratio, which the projection needs, and its
+  /// timestamp, which is what makes one frame different from the last.
+  final PoseFrame frame;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // The same projection the skeleton uses, so the avatar lands exactly where
+    // the body is rather than being re-fitted to the panel. `fitSilhouette` is
+    // right for a target — a fixed shape centred in the box — and wrong here:
+    // scaling to the figure's own bounds every frame would make the avatar
+    // grow when the user raised their arms.
+    Offset place(Offset p) => projectLandmark(
+          p.dx,
+          p.dy,
+          frameAspect: frame.aspectRatio,
+          canvas: size,
+        );
+
+    // Read off the projection rather than recomputing its formula: two points
+    // exactly one unit apart in y come back exactly `scale` apart on screen.
+    // Duplicating `projectLandmark`'s arithmetic here is how the two would
+    // drift the next time it changes.
+    final scale = (place(const Offset(0, 1)) - place(Offset.zero)).distance;
+    final limbWidth = (figure.limbThickness * scale).clamp(4.0, 40.0);
+
+    // One body, unioned — the B4 lesson. Adding parts as separate subpaths
+    // strokes every internal seam, which is what made the target outline read
+    // as a lattice of quadrilaterals on a real phone.
+    var body = Path();
+    void merge(Path part) {
+      body = Path.combine(PathOperation.union, body, part);
+    }
+
+    merge(Path()..addPolygon([for (final p in figure.torso) place(p)], true));
+    for (final limb in figure.limbs) {
+      if (limb.length < 3) continue;
+      merge(Path()..addPolygon([for (final p in limb) place(p)], true));
+    }
+    final head = figure.head;
+    if (head != null) {
+      merge(Path()
+        ..addOval(
+          Rect.fromCircle(center: place(head.$1), radius: head.$2 * scale),
+        ));
+    }
+
+    canvas.drawPath(body, Paint()..color = const Color(0xE60A0912));
+    canvas.drawPath(
+      body,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = (limbWidth * 0.14).clamp(1.5, 4.0)
+        ..strokeJoin = StrokeJoin.round
+        ..color = Colors.white.withValues(alpha: 0.45),
+    );
+
+    // Every bone in ONE path, so the glow is a single blurred draw rather than
+    // one per limb. A blur is the most expensive thing on this canvas and this
+    // runs at the camera's frame rate.
+    final bones = Path();
+    for (final (a, b) in figure.segments) {
+      final pa = place(a);
+      final pb = place(b);
+      bones
+        ..moveTo(pa.dx, pa.dy)
+        ..lineTo(pb.dx, pb.dy);
+    }
+    final boneWidth = (limbWidth * 0.20).clamp(2.0, 6.0);
+
+    canvas.drawPath(
+      bones,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = boneWidth * 2.0
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, boneWidth * 1.4)
+        ..color = Colors.white.withValues(alpha: 0.45),
+    );
+    canvas.drawPath(
+      bones,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = boneWidth
+        ..strokeCap = StrokeCap.round
+        ..color = Colors.white.withValues(alpha: 0.95),
+    );
+
+    // Joints last, so an articulation reads as a bright point rather than as a
+    // thickening of the bone that runs through it.
+    final jointCore = Paint()..color = Colors.white;
+    for (final j in figure.joints) {
+      canvas.drawCircle(place(j), boneWidth * 0.62, jointCore);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_PoseAvatarPainter old) =>
       old.frame.timestampMs != frame.timestampMs;
 }
 
