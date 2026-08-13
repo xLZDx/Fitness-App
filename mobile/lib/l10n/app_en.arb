@@ -1676,6 +1676,14 @@
     }
   },
   "workoutsLogYourSet": "Log your set",
+  "workoutsSetUpYourSet": "Before the set",
+  "@workoutsSetUpYourSet": {
+    "description": "Title of the weight/reps sheet when it opens BEFORE the set, from the timer's Start button. The past-tense 'Log your set' is still used when the sheet opens after the fact."
+  },
+  "workoutsTargetReps": "Target reps",
+  "@workoutsTargetReps": {
+    "description": "Rep-count label before the set — a plan, not a count of what was done."
+  },
   "workoutsWeightKg": "Weight (kg)",
   "workoutsReps": "Reps",
   "workoutsLeaveBlankIfNoLoad": "Leave blank for body-weight or mobility work — an empty field is honest, a zero is not.",

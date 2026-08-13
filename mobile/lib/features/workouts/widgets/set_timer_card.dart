@@ -59,6 +59,9 @@ class SetTimerCard extends ConsumerWidget {
     final captured = await SetCaptureSheet.show(
       context,
       exerciseTitle: exercise.title,
+      // This is the one call site that opens the sheet before anything has
+      // happened; every other one opens it after.
+      planning: true,
     );
     if (captured != null) {
       ref.read(setLoadProvider(exercise.id).notifier).state = captured;

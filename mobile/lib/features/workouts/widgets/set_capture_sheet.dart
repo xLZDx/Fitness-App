@@ -37,6 +37,7 @@ class SetCaptureSheet extends StatefulWidget {
     required this.exerciseTitle,
     this.initialWeightKg,
     this.initialReps,
+    this.planning = false,
   });
 
   final String exerciseTitle;
@@ -46,11 +47,24 @@ class SetCaptureSheet extends StatefulWidget {
   final double? initialWeightKg;
   final int? initialReps;
 
+  /// Shown BEFORE the set rather than after it.
+  ///
+  /// B8 moved this sheet to the Start button, and the words did not move with
+  /// it: "Log your set" is past tense, on a screen that opens before a single
+  /// repetition has happened, asking for a rep count that has not happened
+  /// either. The mechanics are the operator's choice (2026-08-13, option 1 —
+  /// both fields stay here); this flag only makes the sheet say what it is.
+  ///
+  /// Not a second widget: the two moments differ by three strings and nothing
+  /// else, and a copy would drift the moment either gained a field.
+  final bool planning;
+
   static Future<SetCapture?> show(
     BuildContext context, {
     required String exerciseTitle,
     double? initialWeightKg,
     int? initialReps,
+    bool planning = false,
   }) {
     return showModalBottomSheet<SetCapture>(
       context: context,
@@ -60,6 +74,7 @@ class SetCaptureSheet extends StatefulWidget {
         exerciseTitle: exerciseTitle,
         initialWeightKg: initialWeightKg,
         initialReps: initialReps,
+        planning: planning,
       ),
     );
   }
@@ -121,7 +136,10 @@ class _SetCaptureSheetState extends State<SetCaptureSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.workoutsLogYourSet,
+            Text(
+                widget.planning
+                    ? l10n.workoutsSetUpYourSet
+                    : l10n.workoutsLogYourSet,
                 style: theme.textTheme.titleMedium
                     ?.copyWith(fontWeight: FontWeight.w800)),
             const SizedBox(height: 4),
@@ -156,7 +174,14 @@ class _SetCaptureSheetState extends State<SetCaptureSheet> {
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: InputDecoration(
-                      labelText: l10n.workoutsReps,
+                      // "Target reps" before the set, "Reps" after it. The
+                      // number is stored in the same field either way — the
+                      // operator chose to keep both questions here — so the
+                      // label is the only thing that can stop it reading as a
+                      // count of something already done.
+                      labelText: widget.planning
+                          ? l10n.workoutsTargetReps
+                          : l10n.workoutsReps,
                       border: const OutlineInputBorder(),
                     ),
                   ),
