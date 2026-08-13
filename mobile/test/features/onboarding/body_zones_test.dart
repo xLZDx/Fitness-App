@@ -69,6 +69,67 @@ void main() {
     });
   });
 
+  // B1. The priorities tab used to be chips only, while limitations got the
+  // figure. Same drawing, second zone map — so the same three faults that can
+  // hide in geometry are asserted again rather than assumed to be impossible.
+  group('the priorities figure', () {
+    const rendered = Size(190, 418);
+
+    Offset centreOf(FocusZone zone, {int shape = 0}) {
+      final r = kFocusZoneRects[zone]![shape];
+      return Offset(
+        r.center.dx * rendered.width / kBodyMapDesignSize.width,
+        r.center.dy * rendered.height / kBodyMapDesignSize.height,
+      );
+    }
+
+    test('every drawn zone is reachable by a tap at its own centre', () {
+      for (final zone in kFocusZoneRects.keys) {
+        expect(zoneAt(centreOf(zone), rendered, kFocusZoneRects), zone,
+            reason: '$zone could not be selected by tapping it');
+      }
+    });
+
+    test('the paired zones are reachable from either side', () {
+      for (final e in kFocusZoneRects.entries.where((e) => e.value.length > 1)) {
+        expect(zoneAt(centreOf(e.key, shape: 1), rendered, kFocusZoneRects),
+            e.key);
+      }
+    });
+
+    test('no two zones share pixels', () {
+      final rects = [
+        for (final entry in kFocusZoneRects.entries)
+          for (final r in entry.value) MapEntry(entry.key, r),
+      ];
+      for (var i = 0; i < rects.length; i++) {
+        for (var j = i + 1; j < rects.length; j++) {
+          expect(rects[i].value.overlaps(rects[j].value), isFalse,
+              reason: '${rects[i].key} overlaps ${rects[j].key}');
+        }
+      }
+    });
+
+    test('fullBody is the only zone without a place on the figure', () {
+      // "Everything" is not a location. Any OTHER zone missing here would be
+      // one the drawing silently cannot offer, which is a real gap.
+      expect(
+        FocusZone.values.toSet().difference(kFocusZoneRects.keys.toSet()),
+        {FocusZone.fullBody},
+      );
+    });
+
+    test('the two figures answer with their own vocabulary, not each other\'s',
+        () {
+      // Both maps live in the same design box. A tap that lands on "knee" in
+      // one must not be able to return a FocusZone in the other -- the generic
+      // hit test takes the map it is given and nothing else.
+      final onLegs = centreOf(FocusZone.legs);
+      expect(zoneAt(onLegs, rendered, kFocusZoneRects), FocusZone.legs);
+      expect(zoneAt(onLegs, rendered, kBodyZoneRects), isNot(FocusZone.legs));
+    });
+  });
+
   group('avoid and prioritise stay separate vocabularies', () {
     test('a focus zone is not an injury region and vice versa', () {
       // The reason the enums were not merged: neither list is a subset of the

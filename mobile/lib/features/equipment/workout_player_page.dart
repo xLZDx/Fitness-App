@@ -19,6 +19,7 @@ import '../workouts/state/workout_session_providers.dart';
 import '../workouts/widgets/difficulty_rating_sheet.dart';
 import '../workouts/widgets/plate_calculator.dart';
 import '../workouts/state/rest_timer_providers.dart';
+import '../workouts/state/set_timer_providers.dart';
 import '../workouts/widgets/rest_timer.dart';
 import '../workouts/widgets/set_capture_sheet.dart';
 import '../home/home_page.dart' show formatScheduleLabel;
@@ -255,18 +256,17 @@ class _MarkCompleteButton extends ConsumerWidget {
               ? already.exercises.first.sets.last
               : null;
 
-      // Asked BEFORE the write, so the first row that reaches Firestore
-      // already carries the numbers. Writing an empty row and filling it in
-      // afterwards would leave the progression engine reading a set with no
-      // load for as long as the sheet is open, and a dismissed sheet would
-      // leave it that way for good.
-      final captured = await SetCaptureSheet.show(
-        context,
-        exerciseTitle: exercise.title,
-        initialWeightKg: alreadySet?.weightKg,
-        initialReps: alreadySet?.reps,
-      );
-      if (!context.mounted) return;
+      // B8. No sheet here any more. The weight is collected when the set is
+      // STARTED (`SetTimerCard`), and only for movements that take one --
+      // operator, 2026-08-13: *"не спрашивать вес вообще если для упражнения
+      // вес не нужен"*. Finishing a press-up used to open a weight form and
+      // then a rating sheet back to back, and the only way through the first
+      // was Skip, every time.
+      //
+      // Whatever the timer collected wins; an exercise finished without ever
+      // starting the timer keeps whatever was already stored, which is what a
+      // re-tap on an already-logged exercise should do.
+      final captured = ref.read(setLoadProvider(exercise.id));
 
       // F3.4: one exercise, at most one set per session -- same shape the
       // F3.3 backfill produces (see backfill_workout_sessions.mjs's own
@@ -274,14 +274,13 @@ class _MarkCompleteButton extends ConsumerWidget {
       // repeat tap overwrites this one set rather than appending a second,
       // same behavior as the old WorkoutLogEntry.copyWith did.
       //
-      // `captured == null` (Skip) keeps the stored values, per
-      // SetCaptureSheet's own contract (set_capture_sheet.dart:171-174).
-      // `captured != null` (Save) uses exactly what was submitted, INCLUDING
-      // a null field the user cleared on purpose ("declined to say") -- a
-      // `captured?.weightKg ?? alreadySet?.weightKg` here would silently
-      // restore the old weight the moment the user tried to blank it out on
-      // a re-edit, contradicting the sheet's own "leave blank if no load"
-      // hint.
+      // `captured == null` (the timer was never started, or the movement takes
+      // no load) keeps the stored values. `captured != null` uses exactly what
+      // was submitted, INCLUDING a null field the user cleared on purpose
+      // ("declined to say") -- a `captured?.weightKg ?? alreadySet?.weightKg`
+      // here would silently restore the old weight the moment the user tried
+      // to blank it out, contradicting the sheet's own "leave blank if no
+      // load" hint.
       final weightKg = captured == null ? alreadySet?.weightKg : captured.weightKg;
       final reps = captured == null ? alreadySet?.reps : captured.reps;
       final sets = (weightKg != null || reps != null)
@@ -454,8 +453,16 @@ class _AddExerciseButton extends ConsumerWidget {
       final picked = await _ExercisePickerSheet.show(context, candidates);
       if (picked == null || !context.mounted) return;
 
-      final captured =
-          await SetCaptureSheet.show(context, exerciseTitle: picked.title);
+      // B8 applies here too. This one keeps its sheet — an exercise appended
+      // by hand is never "started", so there is no earlier moment to ask at —
+      // but it is skipped entirely for a movement that takes no load, which is
+      // the half of the complaint that was about press-ups and crunches.
+      final captured = exerciseUsesLoad(
+        equipmentId: picked.equipmentId,
+        isStretch: picked.isStretch,
+      )
+          ? await SetCaptureSheet.show(context, exerciseTitle: picked.title)
+          : null;
       if (!context.mounted) return;
 
       final sets = (captured?.weightKg != null || captured?.reps != null)

@@ -45,25 +45,67 @@ const Map<InjuryRegion, List<Rect>> kBodyZoneRects = {
   ],
 };
 
-/// The region a tap at [point] lands on, or null for a miss.
+/// Where each trainable zone sits on the same figure, in the same design box.
+///
+/// A second map rather than a reuse of [kBodyZoneRects]: the two questions do
+/// not share a vocabulary. Limitations are joints — a knee, a wrist, an ankle,
+/// each a small square where the joint is. Priorities are muscle groups — a
+/// chest, a set of glutes — which are broad areas and sit in different places.
+/// Mapping one onto the other would have put "back" on the neck's square and
+/// left legs unreachable.
+///
+/// [FocusZone.fullBody] is deliberately ABSENT. "Everything" is not a place on
+/// a drawing, and giving it one would mean either a rectangle that overlaps
+/// every other zone (so a tap answers a question the user did not pick — the
+/// exact fault the doc on [kBodyZoneRects] warns about) or an arbitrary patch
+/// that means nothing. It stays a chip, where it reads correctly.
+const Map<FocusZone, List<Rect>> kFocusZoneRects = {
+  FocusZone.shoulders: [
+    Rect.fromLTWH(17, 36, 18, 13),
+    Rect.fromLTWH(65, 36, 18, 13),
+  ],
+  FocusZone.chest: [Rect.fromLTWH(36, 40, 28, 18)],
+  FocusZone.arms: [
+    Rect.fromLTWH(13, 62, 18, 44),
+    Rect.fromLTWH(69, 62, 18, 44),
+  ],
+  FocusZone.back: [Rect.fromLTWH(36, 59, 28, 14)],
+  FocusZone.core: [Rect.fromLTWH(36, 74, 28, 22)],
+  FocusZone.glutes: [Rect.fromLTWH(34, 98, 32, 16)],
+  FocusZone.legs: [
+    Rect.fromLTWH(33, 116, 16, 80),
+    Rect.fromLTWH(51, 116, 16, 80),
+  ],
+};
+
+/// The zone a tap at [point] lands on, or null for a miss.
 ///
 /// [size] is the rendered size; the point is scaled back into the design box
 /// before testing, so the answer does not depend on how big the widget is.
 /// Pure, and separate from the widget, because "does tapping the knee select
 /// the knee" is the only question about this drawing worth asserting.
-InjuryRegion? bodyZoneAt(Offset point, Size size) {
+///
+/// Generic over the zone vocabulary so the limitations map and the priorities
+/// map get the same hit-testing, and a fix to it cannot land on one figure and
+/// miss the other.
+T? zoneAt<T>(Offset point, Size size, Map<T, List<Rect>> rects) {
   if (size.width <= 0 || size.height <= 0) return null;
   final p = Offset(
     point.dx * kBodyMapDesignSize.width / size.width,
     point.dy * kBodyMapDesignSize.height / size.height,
   );
-  for (final entry in kBodyZoneRects.entries) {
+  for (final entry in rects.entries) {
     for (final rect in entry.value) {
       if (rect.contains(p)) return entry.key;
     }
   }
   return null;
 }
+
+/// [zoneAt] against the limitations map. Kept as its own name because it is
+/// what the existing callers and their tests say.
+InjuryRegion? bodyZoneAt(Offset point, Size size) =>
+    zoneAt(point, size, kBodyZoneRects);
 
 /// A schematic figure whose regions can be tapped to mark a limitation.
 ///
@@ -72,15 +114,44 @@ InjuryRegion? bodyZoneAt(Offset point, Size size) {
 /// switch user, and anyone whose fingers are bigger than a 15pt square actually
 /// use. Making the drawing the sole way to answer would have made a safety
 /// question unanswerable for exactly the people most likely to have one.
-class BodyZoneMap extends StatelessWidget {
-  const BodyZoneMap({
+class BodyZoneMap<T> extends StatelessWidget {
+  /// The limitations figure — joints, written into [Injury.region].
+  static BodyZoneMap<InjuryRegion> limitations({
+    Key? key,
+    required Set<InjuryRegion> selected,
+    required ValueChanged<InjuryRegion> onToggle,
+  }) =>
+      BodyZoneMap<InjuryRegion>._(
+        key: key,
+        selected: selected,
+        onToggle: onToggle,
+        rects: kBodyZoneRects,
+      );
+
+  /// The priorities figure. Same drawing, different zones — see
+  /// [kFocusZoneRects] for why they are not the same map.
+  static BodyZoneMap<FocusZone> priorities({
+    Key? key,
+    required Set<FocusZone> selected,
+    required ValueChanged<FocusZone> onToggle,
+  }) =>
+      BodyZoneMap<FocusZone>._(
+        key: key,
+        selected: selected,
+        onToggle: onToggle,
+        rects: kFocusZoneRects,
+      );
+
+  const BodyZoneMap._({
     super.key,
     required this.selected,
     required this.onToggle,
+    required this.rects,
   });
 
-  final Set<InjuryRegion> selected;
-  final ValueChanged<InjuryRegion> onToggle;
+  final Set<T> selected;
+  final ValueChanged<T> onToggle;
+  final Map<T, List<Rect>> rects;
 
   @override
   Widget build(BuildContext context) {
@@ -93,12 +164,13 @@ class BodyZoneMap extends StatelessWidget {
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTapUp: (details) {
-              final zone = bodyZoneAt(details.localPosition, size);
+              final zone = zoneAt(details.localPosition, size, rects);
               if (zone != null) onToggle(zone);
             },
             child: CustomPaint(
-              painter: _BodyPainter(
+              painter: _BodyPainter<T>(
                 selected: selected,
+                rects: rects,
                 silhouette: theme.colors.surfaceInteractive,
                 outline: theme.colors.outline,
               ),
@@ -110,14 +182,16 @@ class BodyZoneMap extends StatelessWidget {
   }
 }
 
-class _BodyPainter extends CustomPainter {
+class _BodyPainter<T> extends CustomPainter {
   const _BodyPainter({
     required this.selected,
+    required this.rects,
     required this.silhouette,
     required this.outline,
   });
 
-  final Set<InjuryRegion> selected;
+  final Set<T> selected;
+  final Map<T, List<Rect>> rects;
   final Color silhouette;
   final Color outline;
 
@@ -144,7 +218,7 @@ class _BodyPainter extends CustomPainter {
     final sy = size.height / kBodyMapDesignSize.height;
     _paintFigure(canvas, sx, sy);
 
-    for (final entry in kBodyZoneRects.entries) {
+    for (final entry in rects.entries) {
       final isOn = selected.contains(entry.key);
       final fill = Paint()
         ..color = isOn
@@ -166,9 +240,13 @@ class _BodyPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_BodyPainter old) =>
+  bool shouldRepaint(_BodyPainter<T> old) =>
       old.selected.length != selected.length ||
       !old.selected.containsAll(selected) ||
+      // Switching tabs swaps the whole zone vocabulary under the same painter
+      // type. Without this the priorities figure could keep the limitations
+      // rectangles until something else forced a repaint.
+      !identical(old.rects, rects) ||
       old.silhouette != silhouette ||
       old.outline != outline;
 }

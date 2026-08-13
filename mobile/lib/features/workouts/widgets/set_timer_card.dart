@@ -9,6 +9,7 @@ import '../../../shared/widgets/glass.dart';
 import '../../equipment/data/equipment_models.dart';
 import '../data/set_session.dart';
 import '../state/set_timer_providers.dart';
+import 'set_capture_sheet.dart';
 
 /// The timed set: a ring, a clock, and three controls.
 ///
@@ -34,6 +35,34 @@ class SetTimerCard extends ConsumerWidget {
     if (first.isEmpty) return head;
     final sentence = first.split(RegExp(r'(?<=[.!?])\s')).first;
     return '$head $sentence';
+  }
+
+  /// Asks what is on the bar, if there is a bar.
+  ///
+  /// Never blocks the set. Dismissing the sheet is a real answer — "I would
+  /// rather not say" — and the set starts anyway; a timer that refuses to run
+  /// until a number is typed would be the same nuisance this gate exists to
+  /// remove, moved to the other end of the exercise. Only a movement that
+  /// takes no load skips the question entirely; see [exerciseUsesLoad] for why
+  /// that is a whitelist and not a list of bodyweight movements.
+  Future<void> _askLoadIfNeeded(BuildContext context, WidgetRef ref) async {
+    if (!exerciseUsesLoad(
+      equipmentId: exercise.equipmentId,
+      isStretch: exercise.isStretch,
+    )) {
+      return;
+    }
+    // Once per exercise per session: a five-set squat asks on set one, not on
+    // every set.
+    if (ref.read(setLoadProvider(exercise.id)) != null) return;
+
+    final captured = await SetCaptureSheet.show(
+      context,
+      exerciseTitle: exercise.title,
+    );
+    if (captured != null) {
+      ref.read(setLoadProvider(exercise.id).notifier).state = captured;
+    }
   }
 
   @override
@@ -159,20 +188,24 @@ class SetTimerCard extends ConsumerWidget {
                       ? Icons.pause_rounded
                       : Icons.play_arrow_rounded,
                   colour: colour,
-                  onTap: () {
-                    if (timer.isDone) {
-                      controller.reset();
-                      controller.start(plan,
-                          spokenIntro: _intro(context, plan));
-                    } else if (timer.running) {
+                  onTap: () async {
+                    if (timer.running) {
                       controller.pause();
-                    } else {
-                      controller.start(
-                        plan,
-                        spokenIntro:
-                            timer.isIdle ? _intro(context, plan) : null,
-                      );
+                      return;
                     }
+                    final restarting = timer.isDone;
+                    final fresh = restarting || timer.isIdle;
+                    // B8: asked HERE, before the first rep, and only when the
+                    // movement takes a weight. Only on a fresh set — resuming
+                    // from a pause must not re-open it, and the answer is
+                    // remembered for the rest of the exercise.
+                    if (fresh) await _askLoadIfNeeded(context, ref);
+                    if (!context.mounted) return;
+                    if (restarting) controller.reset();
+                    controller.start(
+                      plan,
+                      spokenIntro: fresh ? _intro(context, plan) : null,
+                    );
                   },
                 ),
               ),

@@ -191,6 +191,55 @@ void main() {
       });
     });
 
+    // B7. The test above switches the voice off BEFORE the set starts, which
+    // is the easy half. The operator's report was the other half: the button
+    // was pressed WHILE the coach was talking, and the sentence ran to its
+    // end. `setVoiceEnabledProvider` was read once, in `start()`, and nothing
+    // on that path ever called `stop()`.
+    test('switching the voice off mid-sentence stops the coach', () {
+      fakeAsync((async) {
+        final h = harness();
+        h.container
+            .read(setTimerProvider.notifier)
+            .start(quick, spokenIntro: 'Plank. Two sets.');
+        async.flushMicrotasks();
+        expect(h.voice.spoken, ['Plank. Two sets.']);
+        expect(h.voice.stopCalls, 0);
+
+        h.container.read(setVoiceEnabledProvider.notifier).state = false;
+        async.flushMicrotasks();
+        expect(h.voice.stopCalls, 1);
+      });
+    });
+
+    test('switching the voice back on does not stop anything', () {
+      // Only the OFF edge silences. An on-edge that called `stop()` would cut
+      // off the coach at the moment the user asked to hear it.
+      fakeAsync((async) {
+        final h = harness();
+        h.container.read(setTimerProvider.notifier).start(quick);
+        h.container.read(setVoiceEnabledProvider.notifier).state = false;
+        async.flushMicrotasks();
+        h.container.read(setVoiceEnabledProvider.notifier).state = true;
+        async.flushMicrotasks();
+        expect(h.voice.stopCalls, 1);
+      });
+    });
+
+    test('muting the cues silences the gong that is already sounding', () {
+      fakeAsync((async) {
+        final h = harness();
+        h.container.read(setTimerProvider.notifier).start(quick);
+        async.elapse(const Duration(seconds: 1));
+        expect(h.player.played, isNotEmpty);
+        expect(h.player.stopCalls, 0);
+
+        h.container.read(setCuesMutedProvider.notifier).state = true;
+        async.flushMicrotasks();
+        expect(h.player.stopCalls, 1);
+      });
+    });
+
     test('a muted coach stays muted even when asked directly', () {
       // `say` bypasses the cue gate but must not bypass mute — otherwise the
       // timer would talk over a user who silenced the form coach.

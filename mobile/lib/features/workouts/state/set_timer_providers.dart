@@ -7,6 +7,7 @@ import '../../form_check/state/form_check_providers.dart';
 import '../../profile/data/profile_models.dart';
 import '../../profile/state/profile_providers.dart';
 import '../data/cue_player.dart';
+import '../data/set_capture.dart';
 import '../data/set_session.dart';
 
 /// Where cues are played. Overridden in tests with [SilentCuePlayer].
@@ -26,6 +27,20 @@ final setCuesMutedProvider = StateProvider<bool>((_) => false);
 
 /// Whether the coach speaks the exercise before the set.
 final setVoiceEnabledProvider = StateProvider<bool>((_) => true);
+
+/// What the user said they are lifting for one exercise, keyed by exercise id.
+///
+/// B8. The weight used to be asked at the END of the exercise, in a sheet that
+/// appeared on every "mark complete" whether or not the movement involved a
+/// weight at all — followed immediately by a second sheet for the difficulty
+/// rating. Two modals to finish a press-up.
+///
+/// Operator, 2026-08-13: ask when Start is pressed, and only when the exercise
+/// takes a load. Holding the answer here rather than passing it down means the
+/// question is asked once per exercise per session: the timer collects it, the
+/// completion button spends it, and neither needs to know about the other.
+final setLoadProvider =
+    StateProvider.family<SetCapture?, String>((_, __) => null);
 
 /// The plan for [exercise], from what the intake said about experience.
 ///
@@ -52,13 +67,14 @@ SetPlan planFor(ExerciseItem? exercise, FitnessTier? tier) {
   // convenience — it wants a longer rest and one fewer set than a floor
   // exercise, or the timer is telling a lifter to start again before they have
   // put the bar down.
-  const loaded = {
-    'barbell', 'dumbbell', 'kettlebell', 'ez_curl_bar', 'smith_machine',
-    'squat_rack', 'bench_press', 'leg_press', 'lat_pulldown', 'cable_machine',
-    'weight_plates', 't_bar_row', 'seated_row_machine', 'hack_squat_machine',
-  };
-  if (exercise?.equipmentId != null &&
-      loaded.contains(exercise!.equipmentId)) {
+  //
+  // The id list moved to `set_capture.dart` as [kLoadedEquipmentIds]: "does
+  // this want a longer rest" and "should we ask what was lifted" are the same
+  // question, and two copies would have drifted.
+  if (exerciseUsesLoad(
+    equipmentId: exercise?.equipmentId,
+    isStretch: exercise?.isStretch ?? false,
+  )) {
     plan = plan.copyWith(
       workSeconds: (plan.workSeconds * 1.4).round(),
       restSeconds: plan.restSeconds < 60 ? 90 : plan.restSeconds,
@@ -119,6 +135,24 @@ class SetTimerController extends Notifier<SetTimerState> {
   @override
   SetTimerState build() {
     ref.onDispose(_stopClock);
+
+    // Both switches take effect NOW, not at the next set.
+    //
+    // Reading them only where sound is produced -- `start()` for the voice,
+    // `_play()` for the cues -- gates what is ABOUT to be played and leaves
+    // whatever is already sounding to run to its end. The spoken intro is a
+    // whole sentence, so switching the voice off mid-sentence changed nothing
+    // audible for several seconds, which is exactly what "the button does not
+    // react" looks like from the outside. The form coach has always done this
+    // correctly (`form_check_providers.dart`, the same `ref.listen` +
+    // `stop()` pair); the set timer never did.
+    ref.listen<bool>(setVoiceEnabledProvider, (_, enabled) {
+      if (!enabled) unawaited(ref.read(voiceCoachProvider).stop());
+    });
+    ref.listen<bool>(setCuesMutedProvider, (_, muted) {
+      if (muted) unawaited(ref.read(cuePlayerProvider).stop());
+    });
+
     return SetTimerState.idle;
   }
 

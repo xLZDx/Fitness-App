@@ -68,11 +68,30 @@ class _StepBodyState extends ConsumerState<StepBody> {
         ));
   }
 
+  /// Adds or removes [zone] from the priorities.
+  ///
+  /// Enum order, not tap order — the list is persisted and compared. Same rule
+  /// as the equipment chips in O4.
+  void _toggleFocus(FocusZone zone) {
+    final notifier = ref.read(questionnaireDraftProvider.notifier);
+    final current = ref.read(questionnaireDraftProvider).goals.focusZones;
+    final next = current.contains(zone)
+        ? (current.toSet()..remove(zone))
+        : (current.toSet()..add(zone));
+    notifier.updateGoals(
+      (g) => g.copyWith(
+        focusZones: [
+          for (final z in FocusZone.values)
+            if (next.contains(z)) z,
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final draft = ref.watch(questionnaireDraftProvider);
-    final notifier = ref.read(questionnaireDraftProvider.notifier);
     final regions =
         draft.health.injuries.map((i) => i.region).whereType<InjuryRegion>().toSet();
 
@@ -94,7 +113,7 @@ class _StepBodyState extends ConsumerState<StepBody> {
           Center(
             child: SizedBox(
               width: 190,
-              child: BodyZoneMap(
+              child: BodyZoneMap.limitations(
                 selected: regions,
                 onToggle: (r) => _toggleRegion(r, _regionLabel(l10n, r)),
               ),
@@ -118,21 +137,35 @@ class _StepBodyState extends ConsumerState<StepBody> {
             },
           ),
         ] else ...[
+          // Same figure as the limitations tab, per the operator: asking two
+          // questions about the body and drawing it for only one of them made
+          // the second look like a lesser question.
+          Center(
+            child: SizedBox(
+              width: 190,
+              child: BodyZoneMap.priorities(
+                selected: draft.goals.focusZones.toSet(),
+                onToggle: (z) => _toggleFocus(z),
+              ),
+            ),
+          ),
           FieldLabel(l10n.onbBodyFocusLabel),
           MultiChoiceChips<FocusZone>(
             options: FocusZone.values,
             labelOf: (z) => _focusLabel(l10n, z),
             values: draft.goals.focusZones.toSet(),
-            onChanged: (next) => notifier.updateGoals(
-              // Enum order, not tap order — this list is persisted and
-              // compared. Same rule as the equipment chips in O4.
-              (g) => g.copyWith(
-                focusZones: [
-                  for (final z in FocusZone.values)
-                    if (next.contains(z)) z,
-                ],
-              ),
-            ),
+            // Routed through the same toggle as the drawing, one zone at a
+            // time — same shape as the limitations tab above, so the two
+            // controls cannot disagree about what a tap means.
+            onChanged: (next) {
+              final current = draft.goals.focusZones.toSet();
+              for (final z in [
+                ...next.difference(current),
+                ...current.difference(next),
+              ]) {
+                _toggleFocus(z);
+              }
+            },
           ),
         ],
         const SizedBox(height: 8),

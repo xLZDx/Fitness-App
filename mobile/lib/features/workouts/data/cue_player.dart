@@ -10,6 +10,15 @@ import 'set_session.dart';
 /// without one.
 abstract class CuePlayer {
   Future<void> play(SetCue cue);
+
+  /// Silence whatever is sounding right now.
+  ///
+  /// [play] being gated on the mute flag is not the same thing: it decides
+  /// what the NEXT cue does and leaves the gong that is already ringing to
+  /// finish. A user who hits mute during the end gong hears the sound
+  /// continue and reads that as a dead button.
+  Future<void> stop();
+
   Future<void> dispose();
 }
 
@@ -66,6 +75,21 @@ class AssetCuePlayer implements CuePlayer {
   }
 
   @override
+  Future<void> stop() async {
+    // Every player, not just the last one used: three are held open at once
+    // (see the class doc), so a tick and a gong can be sounding together.
+    for (final p in _players.values) {
+      try {
+        await p.stop();
+      } catch (e) {
+        // Same reasoning as `play`: a phone with no audio route must not turn
+        // "be quiet" into a crash.
+        debugPrint('CuePlayer failed to stop: $e');
+      }
+    }
+  }
+
+  @override
   Future<void> dispose() async {
     for (final p in _players.values) {
       try {
@@ -82,8 +106,15 @@ class AssetCuePlayer implements CuePlayer {
 class SilentCuePlayer implements CuePlayer {
   final List<SetCue> played = [];
 
+  /// How many times the player was told to shut up. Counted rather than
+  /// ignored so a test can assert that muting actually reaches the speaker.
+  int stopCalls = 0;
+
   @override
   Future<void> play(SetCue cue) async => played.add(cue);
+
+  @override
+  Future<void> stop() async => stopCalls++;
 
   @override
   Future<void> dispose() async {}

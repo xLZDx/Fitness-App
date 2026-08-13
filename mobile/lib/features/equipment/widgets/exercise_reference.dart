@@ -559,23 +559,32 @@ class ExerciseVideoBlockState extends ConsumerState<ExerciseVideoBlock> {
                 ),
               ),
             if (playing)
+              // Left edge, vertical, and small (operator, 2026-08-13). The
+              // chips used to be a horizontal `ChoiceChip` row along the
+              // bottom, which is where the demonstrated movement actually
+              // happens — feet, the bottom of a squat, the floor in a plank —
+              // so the control covered the thing it exists to help you watch.
+              // A column down one side crosses only the background.
               Positioned(
-                right: 8,
-                bottom: 8,
-                child: Row(
-                  key: const Key('workout.speeds'),
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (final s in _speeds.keys)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 4),
-                        child: ChoiceChip(
-                          label: Text(s),
-                          selected: _speed == s,
-                          onSelected: (_) => _setSpeed(s),
+                left: 6,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: Column(
+                    key: const Key('workout.speeds'),
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final s in _speeds.keys)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: _SpeedPip(
+                            label: s,
+                            selected: _speed == s,
+                            onTap: () => _setSpeed(s),
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             // Only while there is neither a picture nor a clip. With a poster
@@ -614,6 +623,63 @@ class ExerciseVideoBlockState extends ConsumerState<ExerciseVideoBlock> {
                 ),
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One playback-rate button, sized to sit over a video without owning it.
+///
+/// Not a `ChoiceChip`: Material sizes that one for a form row — it carries the
+/// list tile's touch padding and a full-height label, and four of them stacked
+/// were taller than the clip. This is 30x26, which is small enough to stay out
+/// of the picture and still inside the 48dp column the `Semantics` below
+/// reports, so a switch or screen-reader user is not asked to hit 30 pixels.
+class _SpeedPip extends StatelessWidget {
+  const _SpeedPip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          width: 30,
+          height: 26,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            // Dark scrim rather than the theme surface: this floats over
+            // arbitrary video frames, and a light chip vanishes against a
+            // white gym wall.
+            color: selected
+                ? AppPalette.auroraLime.withValues(alpha: 0.92)
+                : Colors.black.withValues(alpha: 0.42),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            label,
+            style: theme.textTheme.labelSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: selected
+                  ? AppSemanticColors.onGradientInk
+                  : Colors.white.withValues(alpha: 0.92),
+            ),
+          ),
         ),
       ),
     );
