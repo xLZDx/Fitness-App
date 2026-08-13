@@ -294,6 +294,13 @@ void main() {
         'safety_coverage_providers.dart',
         // Builds the candidate pool; plan_builder filters before output.
         'ai_planner_providers.dart',
+        // O10's onboarding preview. Same shape and same reason as the line
+        // above — it builds a candidate pool and hands it to the same
+        // `buildPlan`, whose first step is `filterContraindicated`. It exists
+        // separately only because it reads the DRAFT profile: at that point in
+        // the flow nothing has been saved, so `currentProfileProvider` would
+        // screen against the answers the user had before they answered.
+        'plan_preview_provider.dart',
       };
       final readers = <String>{};
       for (final file in dartFiles()) {

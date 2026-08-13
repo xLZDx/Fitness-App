@@ -33,11 +33,20 @@ void main() {
   });
 
   group('an untouched draft', () {
-    test('answers nothing, on every section', () {
+    test('answers nothing, on every section that asks something', () {
+      // O10 added a screen that asks nothing: the preview. "Unanswered" is a
+      // category error for it, and reporting it as such would put "Skip" on
+      // the button that actually submits the questionnaire — so it is excluded
+      // here by name rather than by weakening the rule for the rest.
       for (final step in OnboardingStep.values) {
+        if (step == OnboardingStep.preview) continue;
         expect(isOnboardingStepAnswered(step, empty), isFalse,
             reason: step.name);
       }
+    });
+
+    test('the preview reports answered, because it asks nothing', () {
+      expect(isOnboardingStepAnswered(OnboardingStep.preview, empty), isTrue);
     });
   });
 
@@ -49,27 +58,27 @@ void main() {
     test('personal — a single field', () {
       final p = empty.copyWith(personal: const PersonalInfo(age: 31));
       expect(isOnboardingStepAnswered(OnboardingStep.personal, p), isTrue);
-      expect(isOnboardingStepAnswered(OnboardingStep.health, p), isFalse,
+      expect(isOnboardingStepAnswered(OnboardingStep.body, p), isFalse,
           reason: 'answering one section must not light up the others');
     });
 
-    test('health — one injury', () {
+    test('body — one injury', () {
       final p = empty.copyWith(
         health: const HealthHistory(
           injuries: [Injury(bodyPart: 'верх спины', type: 'strain')],
         ),
       );
-      expect(isOnboardingStepAnswered(OnboardingStep.health, p), isTrue);
+      expect(isOnboardingStepAnswered(OnboardingStep.body, p), isTrue);
     });
 
-    test('health — free text alone counts', () {
+    test('body — free text in the medical disclosure alone counts', () {
       // `otherConcerns` is the field the health screen's own text box writes.
       // Excluding it would show "Skip" to someone who had just typed a
       // paragraph about their back.
       final p = empty.copyWith(
         health: const HealthHistory(otherConcerns: 'shoulder clicks'),
       );
-      expect(isOnboardingStepAnswered(OnboardingStep.health, p), isTrue);
+      expect(isOnboardingStepAnswered(OnboardingStep.body, p), isTrue);
     });
 
     test('goal and level — the primary goal alone', () {
@@ -141,7 +150,7 @@ void main() {
         reason: '"no gym" is an answer; only null means unanswered',
       );
       expect(
-        isOnboardingStepAnswered(OnboardingStep.motivation,
+        isOnboardingStepAnswered(OnboardingStep.barriers,
             empty.copyWith(motivation: const MotivationPrefs(motivation: 'x'))),
         isTrue,
       );
@@ -173,6 +182,8 @@ void main() {
         goals: const FitnessGoals(strength: true),
         level: const FitnessLevel(frequencyPerWeek: 3),
         equipment: const EquipmentAccess(hasGymAccess: true),
+        // O5 added a screen, and "fully answered" has to mean all of them.
+        schedule: const TrainingSchedule(daysPerWeek: 3),
         health: const HealthHistory(otherConcerns: 'none'),
         motivation: const MotivationPrefs(motivation: 'x'),
         personal: const PersonalInfo(age: 31),

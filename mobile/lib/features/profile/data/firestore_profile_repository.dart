@@ -38,10 +38,24 @@ class FirestoreProfileRepository implements ProfileRepository {
     final level = (map['level'] as Map?) ?? const {};
     final lifestyle = (map['lifestyle'] as Map?) ?? const {};
     final equipment = (map['equipment'] as Map?) ?? const {};
+    final schedule = (map['schedule'] as Map?) ?? const {};
     final motivation = (map['motivation'] as Map?) ?? const {};
     return UserProfile(
       uid: uid,
       personal: PersonalInfo(
+        // O8 migration, in the one place profiles are read.
+        //
+        // Derived from the year the answer was GIVEN, not from today. A profile
+        // submitted in 2022 saying "30" means born around 1992; reading it in
+        // 2026 and subtracting from the current year would say 1996 and make
+        // the user four years younger every time the migration ran late.
+        // `completedAt` is that moment; a draft that has none has just been
+        // written, so this year is the right guess for it.
+        birthYear: personal['birthYear'] as int? ??
+            (personal['age'] is int
+                ? (completedAt?.year ?? DateTime.now().year) -
+                    (personal['age'] as int)
+                : null),
         age: personal['age'] as int?,
         gender: _enumByName(Gender.values, personal['gender']),
         heightCm: personal['heightCm'] as int?,
@@ -69,6 +83,10 @@ class FirestoreProfileRepository implements ProfileRepository {
         flexibility: goals['flexibility'] ?? false,
         generalFitness: goals['generalFitness'] ?? false,
         specificSport: goals['specificSport'] as String?,
+        focusZones: [
+          for (final z in (goals['focusZones'] as List?) ?? const [])
+            if (_enumByName(FocusZone.values, z) case final v?) v,
+        ],
       ),
       level: FitnessLevel(
         frequencyPerWeek: level['frequencyPerWeek'] as int?,
@@ -105,6 +123,17 @@ class FirestoreProfileRepository implements ProfileRepository {
         homeEquipment:
             List<String>.from(equipment['homeEquipment'] ?? const []),
       ),
+      schedule: TrainingSchedule(
+        daysPerWeek: schedule['daysPerWeek'] as int?,
+        sessionMinutes: schedule['sessionMinutes'] as int?,
+        // `List<int>.from` on a Firestore list, which arrives as List<dynamic>
+        // of num. Anything that is not an int is dropped rather than crashing
+        // the whole profile read for one bad weekday.
+        preferredWeekdays: [
+          for (final d in (schedule['preferredWeekdays'] as List?) ?? const [])
+            if (d is int) d,
+        ],
+      ),
       motivation: MotivationPrefs(
         motivation: motivation['motivation'] as String?,
         environments: ((motivation['environments'] as List?) ?? const [])
@@ -113,6 +142,10 @@ class FirestoreProfileRepository implements ProfileRepository {
             .toList(),
         preferredDuration: _enumByName(
             WorkoutDuration.values, motivation['preferredDuration']),
+        barriers: [
+          for (final b in (motivation['barriers'] as List?) ?? const [])
+            if (_enumByName(TrainingBarrier.values, b) case final v?) v,
+        ],
       ),
       completedAt: completedAt,
     );

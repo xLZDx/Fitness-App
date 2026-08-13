@@ -8,7 +8,14 @@ import '../../profile/data/profile_models.dart';
 /// silently, because both are ints in range.
 enum OnboardingStep {
   personal,
-  health,
+
+  /// Limitations AND priorities, one screen since O6.
+  ///
+  /// Replaced `health` rather than joining it: the medical questions did not
+  /// change and did not move out of the flow — they moved *under a disclosure*
+  /// on this screen. Two enum values for one screen would have left the next
+  /// reader guessing which one the flow uses, the same trap O3 removed.
+  body,
   /// Goal AND starting level, one screen since O3.
   ///
   /// Replaced the separate `goals` and `level` values rather than joining them:
@@ -19,7 +26,17 @@ enum OnboardingStep {
   goalAndLevel,
   lifestyle,
   equipment,
-  motivation,
+
+  /// O5. How often, how long, which days — what the user PLANS, as opposed to
+  /// [FitnessLevel.frequencyPerWeek], which is what they do today.
+  schedule,
+
+  /// O7. What gets in the way, as a closed set. Replaced `motivation`: that
+  /// screen's question was already this one, asked as free text.
+  barriers,
+
+  /// O10. Not a question — one real session built from the answers above.
+  preview,
 }
 
 /// The order the screens are shown in.
@@ -41,10 +58,15 @@ enum OnboardingStep {
 const List<OnboardingStep> kOnboardingOrder = [
   OnboardingStep.goalAndLevel,
   OnboardingStep.equipment,
-  OnboardingStep.health,
-  OnboardingStep.motivation,
+  // Straight after equipment, per the design's 3/9: place and kit, then when.
+  OnboardingStep.schedule,
+  OnboardingStep.body,
+  OnboardingStep.barriers,
   OnboardingStep.personal,
   OnboardingStep.lifestyle,
+  // Last, and only last: it previews the answers, so it has nothing to show
+  // until they exist.
+  OnboardingStep.preview,
 ];
 
 /// Whether the user has put anything into [step] yet.
@@ -73,13 +95,19 @@ bool isOnboardingStepAnswered(OnboardingStep step, UserProfile p) {
   switch (step) {
     case OnboardingStep.personal:
       final i = p.personal;
+      // `age` covers both since O8 — it is the birth year when there is one and
+      // the legacy stored age otherwise.
       return i.age != null ||
+          i.birthYear != null ||
           i.gender != null ||
           i.heightCm != null ||
           i.weightCurrentKg != null ||
           i.weightTargetKg != null ||
           i.activityLevel != null;
-    case OnboardingStep.health:
+    case OnboardingStep.body:
+      // Either tab counts, and so does anything in the medical disclosure —
+      // it is one screen, so one answer anywhere on it is a touch.
+      if (p.goals.focusZones.isNotEmpty) return true;
       final h = p.health;
       return h.conditions.isNotEmpty ||
           h.allergies.isNotEmpty ||
@@ -96,7 +124,18 @@ bool isOnboardingStepAnswered(OnboardingStep step, UserProfile p) {
       // would discard a choice the user just made.
       final g = p.goals;
       final l = p.level;
-      return g.hasAny ||
+      // Spelled out rather than `g.hasAny`, because since O6 `hasAny` also
+      // counts `focusZones` — and those are answered on the BODY screen.
+      // Reusing it here would mark this screen done because the user answered
+      // a different one, and the resume point would skip past it unseen.
+      return g.primary != null ||
+          g.weightLoss ||
+          g.muscleGain ||
+          g.endurance ||
+          g.strength ||
+          g.flexibility ||
+          g.generalFitness ||
+          (g.specificSport?.isNotEmpty ?? false) ||
           l.frequencyPerWeek != null ||
           l.currentExercises.isNotEmpty ||
           l.tier != null ||
@@ -119,11 +158,29 @@ bool isOnboardingStepAnswered(OnboardingStep step, UserProfile p) {
           e.available.isNotEmpty ||
           e.hasGymAccess != null ||
           e.homeEquipment.isNotEmpty;
-    case OnboardingStep.motivation:
+    case OnboardingStep.schedule:
+      final s = p.schedule;
+      return s.daysPerWeek != null ||
+          s.sessionMinutes != null ||
+          s.preferredWeekdays.isNotEmpty;
+    case OnboardingStep.preview:
+      // Always "answered", because it asks nothing. The flag drives the CTA's
+      // label, and offering to "Skip" the last screen would put the word on a
+      // button that actually submits the questionnaire.
+      //
+      // It also keeps `onboardingResumeIndex` honest: a preview can never be
+      // the first gap in the answers, so a returning user is never dropped onto
+      // it while a real question above is still blank.
+      return true;
+    case OnboardingStep.barriers:
       final m = p.motivation;
-      return (m.motivation?.isNotEmpty ?? false) ||
-          m.environments.isNotEmpty ||
-          m.preferredDuration != null;
+      // `preferredDuration` is deliberately NOT tested here since O5. It is no
+      // longer asked on this screen — it is derived from the schedule's
+      // `sessionMinutes` — so counting it would mark this step answered
+      // because the user filled in a different one.
+      return m.barriers.isNotEmpty ||
+          (m.motivation?.isNotEmpty ?? false) ||
+          m.environments.isNotEmpty;
   }
 }
 

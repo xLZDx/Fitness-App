@@ -72,13 +72,65 @@ class MainShell extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         extendBody: true,
-        body: child,
+        body: _AnnounceShellCanPop(
+          // Measured on the operator's S23 (2026-08-13): Back on a non-home
+          // tab threw the app out to the launcher on the FIRST press, while
+          // the PopScope above says it handles that case and the widget test
+          // driving `popRoute()` agreed. Both were right about Dart; Android
+          // was simply never asking Dart.
+          //
+          // `WidgetsApp` reports the framework's ability to handle Back to the
+          // platform via `SystemNavigator.setFrameworkHandlesBack`, driven by
+          // whatever `NavigationNotification` reached it LAST (app.dart:1367).
+          // The shell route's own notification carries `canHandlePop: true` —
+          // correct — but the ShellRoute's nested Navigator holds exactly one
+          // route (tabs replace each other with `go`), so it dispatches
+          // `canHandlePop: false`, which bubbles straight past this widget:
+          // `PopScope` registers a `PopEntry` on its route, it does not listen
+          // to notifications. Last word `false` -> Android keeps Back ->
+          // activity finishes without Dart ever being consulted.
+          //
+          // The fix is the same one `Navigator.build` applies to its own
+          // subtree (navigator.dart:5645-5659): intercept a `false` from below
+          // and re-dispatch `true` when THIS level can handle the pop.
+          canHandlePop: location != '/home',
+          child: child,
+        ),
         bottomNavigationBar: GlassNavBar(
           items: _itemsFor(AppLocalizations.of(context)),
           selectedIndex: selected,
           onSelect: (i) => context.go(_paths[i]),
         ),
       ),
+    );
+  }
+}
+
+/// Re-states a subtree's `NavigationNotification` as "this level can handle a
+/// pop" when the level below says it cannot.
+///
+/// A notification is a one-way message: the widget it passes through cannot
+/// amend it, only stop it and send a replacement. That is exactly what
+/// `Navigator` does for nested navigators, and what a shell that intercepts
+/// Back has to do for the navigator nested inside it — otherwise the inner
+/// navigator's `false` is the last thing the platform hears.
+class _AnnounceShellCanPop extends StatelessWidget {
+  const _AnnounceShellCanPop({required this.canHandlePop, required this.child});
+
+  final bool canHandlePop;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return NotificationListener<NavigationNotification>(
+      onNotification: (NavigationNotification notification) {
+        // Already `true`, or this level genuinely cannot help: let it pass
+        // unchanged, so an ancestor still gets its say.
+        if (notification.canHandlePop || !canHandlePop) return false;
+        const NavigationNotification(canHandlePop: true).dispatch(context);
+        return true;
+      },
+      child: child,
     );
   }
 }

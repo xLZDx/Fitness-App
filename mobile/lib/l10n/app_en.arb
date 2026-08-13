@@ -994,7 +994,100 @@
   "onbKitCameraScan": "I'll scan with the camera",
   "onbStepLifestyle": "Lifestyle",
   "onbStepEquipment": "Equipment",
-  "onbStepMotivation": "Motivation",
+  "onbStepSchedule": "Schedule",
+  "onbStepBody": "Your body",
+  "onbBodyTitle": "Anything to work around?",
+  "onbBodySubtitle": "What to avoid, and what to focus on",
+  "onbBodyTabLimits": "Limitations",
+  "onbBodyTabFocus": "Priorities",
+  "onbBodyLimitsLabel": "Areas to be careful with",
+  "onbBodyFocusLabel": "Areas to prioritise",
+  "onbBodyMedicalDisclosure": "More health details",
+  "bodyRegionNeck": "Neck",
+  "bodyRegionUpperBack": "Upper back",
+  "bodyRegionShoulder": "Shoulder",
+  "bodyRegionElbow": "Elbow",
+  "bodyRegionWrist": "Wrist",
+  "bodyRegionLowerBack": "Lower back",
+  "bodyRegionHip": "Hip",
+  "bodyRegionKnee": "Knee",
+  "bodyRegionAnkle": "Ankle",
+  "focusZoneChest": "Chest",
+  "focusZoneBack": "Back",
+  "focusZoneShoulders": "Shoulders",
+  "focusZoneArms": "Arms",
+  "focusZoneCore": "Core",
+  "focusZoneGlutes": "Glutes",
+  "focusZoneLegs": "Legs",
+  "focusZoneFullBody": "Full body",
+  "onbStepBarriers": "What gets in the way",
+  "onbStepPreview": "Your first session",
+  "onbPreviewTitle": "Here's your first session",
+  "onbPreviewSubtitle": "Built from your answers — it changes as you train",
+  "onbPreviewLength": "About {minutes} minutes",
+  "@onbPreviewLength": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "onbPreviewMinutes": "{minutes} min",
+  "@onbPreviewMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "onbPreviewEmpty": "Nothing in the catalogue fits what you've told us yet. Finish setting up and we'll keep looking.",
+  "onbPreviewUnavailable": "We couldn't build a session just now. Your answers are saved — finish, and we'll try again on the home screen.",
+  "onbBirthYear": "Year of birth",
+  "onbAgeApprox": "About {age} — we don't ask the month, so this can be a year out",
+  "@onbAgeApprox": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "onbBarriersTitle": "What gets in the way?",
+  "onbBarriersSubtitle": "So we know what to help with first",
+  "onbBarrierExerciseChoice": "Choosing exercises",
+  "onbBarrierMachineUse": "Using the machines",
+  "onbBarrierTechniqueDoubt": "Unsure about my form",
+  "onbBarrierTime": "Finding the time",
+  "onbBarrierConsistency": "Sticking with it",
+  "onbBarrierDiscomfort": "Pain or discomfort",
+  "onbBarrierNone": "Nothing, really",
+  "onbScheduleTitle": "When can you train?",
+  "onbScheduleSubtitle": "How often, how long, and on which days",
+  "onbScheduleDays": "Sessions per week",
+  "onbScheduleDaysValue": "{count}",
+  "@onbScheduleDaysValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onbScheduleLength": "How long is one session",
+  "onbScheduleMinutesValue": "{minutes} min",
+  "@onbScheduleMinutesValue": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "onbScheduleWeekdays": "Days that suit you (pick any)",
+  "weekdayMon": "Mon",
+  "weekdayTue": "Tue",
+  "weekdayWed": "Wed",
+  "weekdayThu": "Thu",
+  "weekdayFri": "Fri",
+  "weekdaySat": "Sat",
+  "weekdaySun": "Sun",
   "onbAge": "Age",
   "onbGender": "Gender",
   "onbGenderFemale": "Female",

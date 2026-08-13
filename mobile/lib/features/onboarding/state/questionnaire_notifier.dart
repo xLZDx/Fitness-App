@@ -49,6 +49,29 @@ class QuestionnaireDraft extends Notifier<UserProfile> {
   void updateMotivation(MotivationPrefs Function(MotivationPrefs) update) =>
       state = state.copyWith(motivation: update(state.motivation));
 
+  /// O5. Writes the schedule AND keeps [MotivationPrefs.preferredDuration] in
+  /// step with it.
+  ///
+  /// Session length is asked once, in minutes, on the schedule screen. The
+  /// coarse bucket is still read elsewhere (`suggestion_builder.dart:135`), so
+  /// it is derived here rather than asked a second time. Two controls for one
+  /// fact is how they end up disagreeing — the same reasoning that made
+  /// `hasGymAccess` derived in O4.
+  ///
+  /// The sync lives in the notifier, not in the widget, so it holds for every
+  /// caller and can be asserted without pumping a screen.
+  void updateSchedule(TrainingSchedule Function(TrainingSchedule) update) {
+    final next = update(state.schedule);
+    state = state.copyWith(
+      schedule: next,
+      motivation: next.sessionMinutes == null
+          // Nothing to derive from: leave whatever a pre-O5 profile already
+          // had rather than blanking a real answer.
+          ? state.motivation
+          : state.motivation.copyWith(preferredDuration: next.durationBucket),
+    );
+  }
+
   void reset() {
     final user = ref.read(authUserProvider).valueOrNull;
     state = UserProfile.empty(user?.uid ?? 'anonymous');

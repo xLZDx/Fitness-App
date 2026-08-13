@@ -237,15 +237,30 @@ class Injury {
 
 class PersonalInfo {
   const PersonalInfo({
-    this.age,
+    int? age,
+    this.birthYear,
     this.gender,
     this.heightCm,
     this.weightCurrentKg,
     this.weightTargetKg,
     this.activityLevel,
-  });
+  }) : _storedAge = age;
 
-  final int? age;
+  /// O8. The answer the screen now asks for.
+  ///
+  /// An age is a fact with a shelf life: stored once, it is wrong within a year
+  /// and silently wrong thereafter, and nothing in the app would ever notice. A
+  /// birth year does not go stale.
+  final int? birthYear;
+
+  /// The age written by a version of the app that predates [birthYear].
+  ///
+  /// Private and read only when [birthYear] is null, on the same principle as
+  /// `EquipmentAccess._storedGymAccess`: dropping it would have silently
+  /// un-answered the question for every existing profile, with nothing going
+  /// red.
+  final int? _storedAge;
+
   final Gender? gender;
   final int? heightCm;
   final double? weightCurrentKg;
@@ -253,6 +268,20 @@ class PersonalInfo {
   final ActivityLevel? activityLevel;
 
   static const empty = PersonalInfo();
+
+  /// Age in whole years as of [year], or the stored age for a profile that
+  /// predates [birthYear].
+  ///
+  /// Takes the year rather than reading the clock so the arithmetic can be
+  /// asserted without the answer changing on 1 January.
+  ///
+  /// **Accurate to ±1 year and the screen says so.** The month of birth has
+  /// never been asked, here or in any earlier version, so someone born in
+  /// December reads a year older than they are until their birthday. Rounding
+  /// that away silently would be a worse answer than admitting it.
+  int? ageAt(int year) => birthYear == null ? _storedAge : year - birthYear!;
+
+  int? get age => ageAt(DateTime.now().year);
 
   bool get isComplete =>
       age != null &&
@@ -263,6 +292,7 @@ class PersonalInfo {
 
   PersonalInfo copyWith({
     int? age,
+    int? birthYear,
     Gender? gender,
     int? heightCm,
     double? weightCurrentKg,
@@ -270,7 +300,11 @@ class PersonalInfo {
     ActivityLevel? activityLevel,
   }) =>
       PersonalInfo(
-        age: age ?? this.age,
+        // `_storedAge`, not `age`: the getter would hand back the DERIVED age
+        // and freeze it as a stored one, so an unrelated edit years later would
+        // quietly turn a birth year into a stale number.
+        age: age ?? _storedAge,
+        birthYear: birthYear ?? this.birthYear,
         gender: gender ?? this.gender,
         heightCm: heightCm ?? this.heightCm,
         weightCurrentKg: weightCurrentKg ?? this.weightCurrentKg,
@@ -394,6 +428,7 @@ class FitnessGoals {
     this.flexibility = false,
     this.generalFitness = false,
     this.specificSport,
+    this.focusZones = const [],
   });
 
   /// The ONE goal the user picked first, in the programme layer's own
@@ -419,10 +454,18 @@ class FitnessGoals {
   final bool generalFitness;
   final String? specificSport;
 
+  /// O6. The body areas the user wants prioritised, as a closed set.
+  ///
+  /// Lives beside the goals rather than in its own model because it answers the
+  /// same question at a finer grain — "what am I training for" — and every
+  /// reader that wants one will want the other.
+  final List<FocusZone> focusZones;
+
   static const empty = FitnessGoals();
 
   bool get hasAny =>
       primary != null ||
+      focusZones.isNotEmpty ||
       weightLoss ||
       muscleGain ||
       endurance ||
@@ -440,8 +483,10 @@ class FitnessGoals {
     bool? flexibility,
     bool? generalFitness,
     String? specificSport,
+    List<FocusZone>? focusZones,
   }) =>
       FitnessGoals(
+        focusZones: focusZones ?? this.focusZones,
         primary: primary ?? this.primary,
         weightLoss: weightLoss ?? this.weightLoss,
         muscleGain: muscleGain ?? this.muscleGain,
@@ -452,6 +497,15 @@ class FitnessGoals {
         specificSport: specificSport ?? this.specificSport,
       );
 }
+
+/// O6 — what the user wants worked on.
+///
+/// Deliberately NOT [InjuryRegion]. That enum answers "what must be avoided";
+/// this one answers "what to prioritise", and the two vocabularies genuinely
+/// differ: priorities have `core` and `fullBody`, limitations have `wrist` and
+/// `ankle`. Merging them would produce one enum in which half the values are
+/// meaningless from either side, and a picker that offers "train your wrist".
+enum FocusZone { chest, back, shoulders, arms, core, glutes, legs, fullBody }
 
 class FitnessLevel {
   const FitnessLevel({
@@ -599,16 +653,102 @@ class EquipmentAccess {
       );
 }
 
+/// O5 — how often, how long, and on which days the user PLANS to train.
+///
+/// Deliberately not folded into [FitnessLevel.frequencyPerWeek]. That field
+/// records how much the person trains *today*; this one records what they are
+/// signing up for. Merging them reads as tidier and destroys the only baseline
+/// a plan generator could measure a ramp against — after the merge there is no
+/// way to tell "trains twice a week, wants four" from "trains four already".
+class TrainingSchedule {
+  const TrainingSchedule({
+    this.daysPerWeek,
+    this.sessionMinutes,
+    this.preferredWeekdays = const [],
+  });
+
+  /// 2..6 on screen. Not validated here: the questionnaire is the only writer
+  /// and every answer in it is optional, so a range check in the model would
+  /// only be able to throw on data that already exists in Firestore.
+  final int? daysPerWeek;
+
+  /// Exact minutes (30/45/60/75/90), not a bucket.
+  ///
+  /// The bucket ([WorkoutDuration]) cannot express 45 minutes — `m30to45` and
+  /// `m45to60` both contain it — which is why the answer is stored in minutes
+  /// and the bucket is derived from it, rather than the other way round.
+  final int? sessionMinutes;
+
+  /// `DateTime.monday` .. `DateTime.sunday`.
+  final List<int> preferredWeekdays;
+
+  static const empty = TrainingSchedule();
+
+  /// [sessionMinutes] expressed in the coarse buckets the rest of the app
+  /// already reads (`suggestion_builder.dart:135`).
+  ///
+  /// Boundaries are inclusive at the top of each bucket, so a 45-minute answer
+  /// lands in `m30to45` rather than `m45to60`: the buckets are named for what
+  /// they contain, and 45 appears in both names.
+  WorkoutDuration? get durationBucket => switch (sessionMinutes) {
+        null => null,
+        final m when m < 15 => WorkoutDuration.under15,
+        final m when m <= 30 => WorkoutDuration.m15to30,
+        final m when m <= 45 => WorkoutDuration.m30to45,
+        final m when m <= 60 => WorkoutDuration.m45to60,
+        _ => WorkoutDuration.over60,
+      };
+
+  TrainingSchedule copyWith({
+    int? daysPerWeek,
+    int? sessionMinutes,
+    List<int>? preferredWeekdays,
+  }) =>
+      TrainingSchedule(
+        daysPerWeek: daysPerWeek ?? this.daysPerWeek,
+        sessionMinutes: sessionMinutes ?? this.sessionMinutes,
+        preferredWeekdays: preferredWeekdays ?? this.preferredWeekdays,
+      );
+}
+
+/// O7 — what gets in the way.
+///
+/// Replaces the free-text "what stops you" box with a closed set, because a
+/// sentence cannot be acted on: "не знаю какие упражнения выбрать" and "не
+/// понимаю как пользоваться тренажёрами" ask the app for two different things,
+/// and neither is reachable from a `String`.
+///
+/// [none] is mutually exclusive with the rest, and is a real answer rather than
+/// an empty selection — "nothing stops me" and "has not answered yet" mean
+/// different things to anything that decides what to offer.
+enum TrainingBarrier {
+  exerciseChoice,
+  machineUse,
+  techniqueDoubt,
+  time,
+  consistency,
+  discomfort,
+  none,
+}
+
 class MotivationPrefs {
   const MotivationPrefs({
     this.motivation,
     this.environments = const [],
     this.preferredDuration,
+    this.barriers = const [],
   });
 
   final String? motivation;
   final List<WorkoutEnvironment> environments;
+
+  /// Derived from `TrainingSchedule.sessionMinutes` since O5 — see
+  /// `QuestionnaireDraft.updateSchedule`. Still stored, because the readers of
+  /// the coarse bucket predate the schedule and should not have to change.
   final WorkoutDuration? preferredDuration;
+
+  /// O7. What the user says gets in their way, as a closed set.
+  final List<TrainingBarrier> barriers;
 
   static const empty = MotivationPrefs();
 
@@ -616,11 +756,13 @@ class MotivationPrefs {
     String? motivation,
     List<WorkoutEnvironment>? environments,
     WorkoutDuration? preferredDuration,
+    List<TrainingBarrier>? barriers,
   }) =>
       MotivationPrefs(
         motivation: motivation ?? this.motivation,
         environments: environments ?? this.environments,
         preferredDuration: preferredDuration ?? this.preferredDuration,
+        barriers: barriers ?? this.barriers,
       );
 }
 
@@ -633,6 +775,7 @@ class UserProfile {
     this.level = FitnessLevel.empty,
     this.lifestyle = Lifestyle.empty,
     this.equipment = EquipmentAccess.empty,
+    this.schedule = TrainingSchedule.empty,
     this.motivation = MotivationPrefs.empty,
     this.completedAt,
   });
@@ -644,6 +787,7 @@ class UserProfile {
   final FitnessLevel level;
   final Lifestyle lifestyle;
   final EquipmentAccess equipment;
+  final TrainingSchedule schedule;
   final MotivationPrefs motivation;
 
   /// Set when the user submits the questionnaire. `null` means draft only.
@@ -658,6 +802,10 @@ class UserProfile {
   Map<String, dynamic> toJson() => {
         'completedAt': completedAt?.toIso8601String(),
         'personal': {
+          'birthYear': personal.birthYear,
+          // Written as the DERIVED age, deliberately, exactly as `hasGymAccess`
+          // is: an export taken last month or a Cloud Function still reading
+          // this key gets a true answer rather than a stale one.
           'age': personal.age,
           'gender': personal.gender?.name,
           'heightCm': personal.heightCm,
@@ -675,6 +823,7 @@ class UserProfile {
           'flexibility': goals.flexibility,
           'generalFitness': goals.generalFitness,
           'specificSport': goals.specificSport,
+          'focusZones': goals.focusZones.map((z) => z.name).toList(),
         },
         'level': {
           'frequencyPerWeek': level.frequencyPerWeek,
@@ -700,10 +849,21 @@ class UserProfile {
           'hasGymAccess': equipment.hasGymAccess,
           'homeEquipment': equipment.homeEquipment,
         },
+        'schedule': {
+          'daysPerWeek': schedule.daysPerWeek,
+          'sessionMinutes': schedule.sessionMinutes,
+          'preferredWeekdays': schedule.preferredWeekdays,
+        },
         'motivation': {
           'motivation': motivation.motivation,
           'environments': motivation.environments.map((e) => e.name).toList(),
+          // Since O5 this is the bucket derived from `schedule.sessionMinutes`
+          // (kept in step by `QuestionnaireDraft.updateSchedule`). It is still
+          // written under its old key so readers that predate the schedule —
+          // an export taken last month, `suggestion_builder.dart:135` — keep
+          // getting an answer instead of a null.
           'preferredDuration': motivation.preferredDuration?.name,
+          'barriers': motivation.barriers.map((b) => b.name).toList(),
         },
       };
 
@@ -714,6 +874,7 @@ class UserProfile {
     FitnessLevel? level,
     Lifestyle? lifestyle,
     EquipmentAccess? equipment,
+    TrainingSchedule? schedule,
     MotivationPrefs? motivation,
     DateTime? completedAt,
   }) =>
@@ -725,6 +886,7 @@ class UserProfile {
         level: level ?? this.level,
         lifestyle: lifestyle ?? this.lifestyle,
         equipment: equipment ?? this.equipment,
+        schedule: schedule ?? this.schedule,
         motivation: motivation ?? this.motivation,
         completedAt: completedAt ?? this.completedAt,
       );

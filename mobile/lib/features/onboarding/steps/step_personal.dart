@@ -25,15 +25,35 @@ class StepPersonal extends ConsumerWidget {
           subtitle: AppLocalizations.of(context)
               .onboardingWeTailorYourPlanAroundThese,
         ),
-        FieldLabel(l10n.onbAge),
-        GlassTextField(
-          value: personal.age?.toString() ?? '',
-          keyboardType: TextInputType.number,
-          hint: '30',
+        // O8: the year of birth, on the same scale control as height and
+        // weight, replacing a number field that asked for an age. An age is
+        // true for one year; a birth year stays true. The scale also cannot
+        // produce the 300-year-old a text field accepts without complaint.
+        FieldLabel(l10n.onbBirthYear),
+        MeasureRuler(
+          key: const Key('onb.birthYearRuler'),
+          value: personal.birthYear?.toDouble(),
+          // The floor is a plausible oldest user rather than an arbitrary round
+          // number; the ceiling is "old enough to train", which the app has to
+          // assume anyway.
+          min: 1930,
+          max: (DateTime.now().year - 12).toDouble(),
+          majorEvery: 10,
           onChanged: (v) => notifier.updatePersonal(
-            (p) => p.copyWith(age: int.tryParse(v)),
+            (p) => p.copyWith(birthYear: v.round()),
           ),
         ),
+        // Stated, not hidden. The month has never been asked, so anyone born
+        // later in the year reads a year older until their birthday, and the
+        // person best placed to notice that is the one reading it.
+        if (personal.birthYear != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              l10n.onbAgeApprox(personal.age ?? 0),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
         FieldLabel(l10n.onbGender),
         SingleChoiceChips<Gender>(
           options: const [

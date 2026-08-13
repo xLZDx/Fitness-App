@@ -14,10 +14,12 @@ import 'state/questionnaire_notifier.dart';
 import 'widgets/ob_shell.dart';
 import 'steps/step_equipment.dart';
 import 'steps/step_goal_and_level.dart';
-import 'steps/step_health.dart';
+import 'steps/step_body.dart';
 import 'steps/step_lifestyle.dart';
-import 'steps/step_motivation.dart';
+import 'steps/step_barriers.dart';
 import 'steps/step_personal.dart';
+import 'steps/step_preview.dart';
+import 'steps/step_schedule.dart';
 
 class OnboardingPage extends ConsumerStatefulWidget {
   const OnboardingPage({super.key});
@@ -37,16 +39,20 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     switch (step) {
       case OnboardingStep.personal:
         return l10n.onbStepPersonal;
-      case OnboardingStep.health:
-        return l10n.onbStepHealth;
+      case OnboardingStep.body:
+        return l10n.onbStepBody;
       case OnboardingStep.goalAndLevel:
         return l10n.onbStepGoalAndLevel;
       case OnboardingStep.lifestyle:
         return l10n.onbStepLifestyle;
       case OnboardingStep.equipment:
         return l10n.onbStepEquipment;
-      case OnboardingStep.motivation:
-        return l10n.onbStepMotivation;
+      case OnboardingStep.schedule:
+        return l10n.onbStepSchedule;
+      case OnboardingStep.barriers:
+        return l10n.onbStepBarriers;
+      case OnboardingStep.preview:
+        return l10n.onbStepPreview;
     }
   }
 
@@ -54,16 +60,20 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     switch (step) {
       case OnboardingStep.personal:
         return const StepPersonal();
-      case OnboardingStep.health:
-        return const StepHealth();
+      case OnboardingStep.body:
+        return const StepBody();
       case OnboardingStep.goalAndLevel:
         return const StepGoalAndLevel();
       case OnboardingStep.lifestyle:
         return const StepLifestyle();
       case OnboardingStep.equipment:
         return const StepEquipment();
-      case OnboardingStep.motivation:
-        return const StepMotivation();
+      case OnboardingStep.schedule:
+        return const StepSchedule();
+      case OnboardingStep.barriers:
+        return const StepBarriers();
+      case OnboardingStep.preview:
+        return const StepPreview();
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -28,6 +29,58 @@ import 'package:fitness_app/shared/widgets/main_shell.dart';
 /// go_router 16.1.0 — the pushed page renders while the uri stays put), so
 /// pushed pages are asserted through rendered widgets, not through the uri.
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  // Minimal router with the app's exact shell shape (ShellRoute wrapping the
+  // real MainShell, tab paths replaced by `go`) plus one top-level detail
+  // route, so back-button semantics are tested without Firebase. Shared by
+  // both shell groups below.
+  GoRouter buildShellRouter() {
+    return GoRouter(
+      initialLocation: '/home',
+      routes: [
+        GoRoute(
+          path: '/detail',
+          builder: (_, __) =>
+              const Scaffold(body: Center(child: Text('detail-stub'))),
+        ),
+        ShellRoute(
+          builder: (context, state, child) => MainShell(child: child),
+          routes: [
+            for (final p in [
+              '/home',
+              '/scan',
+              '/workouts',
+              '/progress',
+              '/profile'
+            ])
+              GoRoute(
+                path: p,
+                builder: (_, __) =>
+                    Scaffold(body: Center(child: Text('stub-$p'))),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  String pathOf(GoRouter r) => r.routerDelegate.currentConfiguration.uri.path;
+
+  Future<GoRouter> pumpShell(WidgetTester tester) async {
+    final router = buildShellRouter();
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(
+      theme: AppTheme.dark(),
+      locale: kTestLocale,
+      localizationsDelegates: kTestLocalizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      routerConfig: router,
+    ));
+    await tester.pumpAndSettle();
+    return router;
+  }
+
   group('pushed detail pages (real app router)', () {
     // Same harness as app_router_test.dart.
     Widget buildApp({
@@ -147,41 +200,6 @@ void main() {
   });
 
   group('MainShell root back fallback', () {
-    // Minimal router with the app's exact shell shape (ShellRoute wrapping
-    // the real MainShell, tab paths replaced by `go`) plus one top-level
-    // detail route, so back-button semantics are tested without Firebase.
-    GoRouter buildShellRouter() {
-      return GoRouter(
-        initialLocation: '/home',
-        routes: [
-          GoRoute(
-            path: '/detail',
-            builder: (_, __) =>
-                const Scaffold(body: Center(child: Text('detail-stub'))),
-          ),
-          ShellRoute(
-            builder: (context, state, child) => MainShell(child: child),
-            routes: [
-              for (final p in [
-                '/home',
-                '/scan',
-                '/workouts',
-                '/progress',
-                '/profile'
-              ])
-                GoRoute(
-                  path: p,
-                  builder: (_, __) =>
-                      Scaffold(body: Center(child: Text('stub-$p'))),
-                ),
-            ],
-          ),
-        ],
-      );
-    }
-
-    String pathOf(GoRouter r) => r.routerDelegate.currentConfiguration.uri.path;
-
     testWidgets('system back on a non-home tab goes to /home, not out of app',
         (tester) async {
       final router = buildShellRouter();
@@ -263,6 +281,108 @@ void main() {
 
       // Third back: on /home it bubbles to the system.
       expect(await router.routerDelegate.popRoute(), isFalse);
+    });
+  });
+
+  // The group above drives `popRoute()` — the Dart side. It cannot see the
+  // case the operator actually hit on 2026-08-13: Android never asking Dart at
+  // all. What decides that is one platform message, so that message is what
+  // these tests assert.
+  //
+  // Measured before the fix: on a non-home tab the last value sent was
+  // `false`, and the S23 closed the app on the first Back press even though
+  // every `popRoute()` test above was green.
+  group('MainShell announces Back handling to the platform', () {
+    late List<bool> sent;
+
+    setUp(() async {
+      // Two preconditions, both of them real behaviour rather than test
+      // scaffolding, and each one silently swallows the message if unmet:
+      //
+      //  1. `SystemNavigator.setFrameworkHandlesBack` returns without touching
+      //     the channel off Android (system_navigator.dart:31-44). Nothing is
+      //     overridden here for it: `TestWidgetsFlutterBinding` already runs
+      //     every widget test as Android, and re-setting the same override
+      //     trips its own "a foundation debug variable was changed by the
+      //     test" invariant, which is checked before `tearDown` can undo it.
+      //  2. `WidgetsApp` refuses to talk to the engine while the app's
+      //     lifecycle state is still null — "avoid updating the engine when the
+      //     app isn't ready" (app.dart:1368-1372). A freshly-booted test
+      //     binding is exactly that state, so the lifecycle has to be resumed
+      //     BEFORE the app is pumped: `WidgetsApp.initState` reads the value
+      //     once and then only follows later changes.
+      await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .handlePlatformMessage(
+        'flutter/lifecycle',
+        const StringCodec().encodeMessage('AppLifecycleState.resumed'),
+        (_) {},
+      );
+      sent = <bool>[];
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform,
+              (MethodCall call) async {
+        if (call.method == 'SystemNavigator.setFrameworkHandlesBack') {
+          sent.add(call.arguments as bool);
+        }
+        return null;
+      });
+    });
+
+    tearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+
+    testWidgets('non-home tab: the last word to Android is "we handle Back"',
+        (tester) async {
+      final router = await pumpShell(tester);
+
+      router.go('/progress');
+      await tester.pumpAndSettle();
+      expect(pathOf(router), '/progress');
+
+      expect(sent, isNotEmpty,
+          reason: 'nothing was reported to the platform at all');
+      expect(sent.last, isTrue,
+          reason: 'the nested shell navigator holds one route and reports '
+              '`canHandlePop: false`; unless the shell restates that as '
+              '`true`, Android keeps Back and finishes the activity without '
+              'ever consulting the PopScope');
+    });
+
+    testWidgets('home tab: Android is told to keep Back', (tester) async {
+      final router = await pumpShell(tester);
+      expect(pathOf(router), '/home');
+
+      expect(sent, isNotEmpty);
+      expect(sent.last, isFalse,
+          reason: 'on /home the shell has nothing to pop, so Back must stay '
+              'the system\'s — this is what makes the app closable');
+    });
+
+    testWidgets('leaving and returning to /home flips the flag both ways',
+        (tester) async {
+      final router = await pumpShell(tester);
+
+      router.go('/workouts');
+      await tester.pumpAndSettle();
+      expect(sent.last, isTrue);
+
+      router.go('/home');
+      await tester.pumpAndSettle();
+      expect(sent.last, isFalse,
+          reason: 'stuck on `true` would leave the app unclosable from home');
+    });
+
+    testWidgets('a pushed detail page also reports handled', (tester) async {
+      final router = await pumpShell(tester);
+
+      router.push('/detail');
+      await tester.pumpAndSettle();
+      expect(find.text('detail-stub'), findsOneWidget);
+      expect(sent.last, isTrue,
+          reason: 'the root navigator can pop the pushed route; this case '
+              'already worked on the device and must not regress');
     });
   });
 }
