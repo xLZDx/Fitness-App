@@ -227,4 +227,49 @@ void main() {
       expect(replaceEntryExercise([bench], updated), [updated]);
     });
   });
+
+  // The day player's counterpart. Position identifies "the exercise being
+  // logged" only when there is exactly one; inside a scheduled day the tap can
+  // belong to exercise three, and `replaceEntryExercise` would have written it
+  // over exercise one.
+  group('upsertExerciseById', () {
+    const bench = WorkoutSessionExercise(exerciseId: 'bench', exerciseTitle: 'Bench');
+    const row = WorkoutSessionExercise(exerciseId: 'row', exerciseTitle: 'Row');
+    const ohp =
+        WorkoutSessionExercise(exerciseId: 'ohp', exerciseTitle: 'Overhead Press');
+
+    test('on an empty list, the update becomes the only entry', () {
+      expect(upsertExerciseById(const [], bench), [bench]);
+    });
+
+    test('an exercise the session has never seen is appended', () {
+      expect(upsertExerciseById([bench, row], ohp), [bench, row, ohp]);
+    });
+
+    test('updates in place by id, without moving it or touching its neighbours',
+        () {
+      final updatedRow = row.copyWith(sets: const [(weightKg: 60.0, reps: 5)]);
+      final out = upsertExerciseById([bench, row, ohp], updatedRow);
+      expect(out, [bench, updatedRow, ohp]);
+    });
+
+    test('the last exercise of a day updates without duplicating', () {
+      final rated = ohp.copyWith(difficulty: DifficultyRating.tooHard);
+      final out = upsertExerciseById([bench, row, ohp], rated);
+      expect(out, [bench, row, rated]);
+      expect(out.where((e) => e.exerciseId == 'ohp'), hasLength(1));
+    });
+
+    test('position is irrelevant -- index 0 is never assumed to be the target',
+        () {
+      final updatedBench = bench.copyWith(sets: const [(weightKg: 80.0, reps: 3)]);
+      // The distinguishing case against replaceEntryExercise: same input, but
+      // the exercise being written is not the one at index 0.
+      final byId = upsertExerciseById([bench, row], row.copyWith(
+          sets: const [(weightKg: 40.0, reps: 8)]));
+      expect(byId.first, bench, reason: 'exercise one must be left alone');
+      expect(upsertExerciseById([bench, row], updatedBench),
+          [updatedBench, row]);
+    });
+  });
 }

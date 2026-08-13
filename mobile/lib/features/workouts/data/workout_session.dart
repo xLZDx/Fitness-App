@@ -145,6 +145,36 @@ List<WorkoutSessionExercise> replaceEntryExercise(
   return [updated, ...exercises.skip(1)];
 }
 
+/// Replaces the exercise with the same `exerciseId` as [updated], or appends it
+/// if the session does not hold it yet.
+///
+/// The identity sibling of [replaceEntryExercise], for the case that function's
+/// own doc comment rules out. Position identifies the entry exercise only while
+/// the player can be entered on exactly one exercise per session. Opening a
+/// scheduled DAY breaks that: exercises two, three and four of the day are
+/// logged into the same session as exercise one, and `replaceEntryExercise`
+/// would write every one of them over index 0 — a four-exercise day would
+/// persist as a one-exercise session whose title kept changing.
+///
+/// `exerciseId` is a safe key here because no session holds the same exercise
+/// twice: `_fillDay` (`programme_schedule.dart`) never repeats one inside a
+/// day, and the player's own add-exercise picker excludes ids already present.
+/// If that ever stops being true this replaces the FIRST match, which is the
+/// same thing `replaceEntryExercise` does to index 0 — not a new failure mode,
+/// just a differently-keyed one.
+List<WorkoutSessionExercise> upsertExerciseById(
+  List<WorkoutSessionExercise> exercises,
+  WorkoutSessionExercise updated,
+) {
+  final at = exercises.indexWhere((e) => e.exerciseId == updated.exerciseId);
+  if (at < 0) return [...exercises, updated];
+  return [
+    ...exercises.take(at),
+    updated,
+    ...exercises.skip(at + 1),
+  ];
+}
+
 bool _listEquals<T>(List<T> a, List<T> b) {
   if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i++) {

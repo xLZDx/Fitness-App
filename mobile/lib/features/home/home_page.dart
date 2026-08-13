@@ -443,8 +443,12 @@ class _TodayHero extends ConsumerWidget {
             _AccentButton(
               label: l10n.homeStartWorkout,
               icon: Icons.play_arrow_rounded,
-              onTap: () =>
-                  GoRouter.of(context).push('/workout/${next.exerciseId}'),
+              // `?day=` is what turns this from "open exercise one" into
+              // "start today's workout": the player keys its log by the day
+              // instead of by this exercise, so all of the day's exercises
+              // land in ONE history entry and the strip can walk between them.
+              onTap: () => GoRouter.of(context)
+                  .push('/workout/${next.exerciseId}?day=${next.id}'),
             ),
         ],
       ),
@@ -896,7 +900,8 @@ class _UpcomingCard extends ConsumerWidget {
     final scheme = theme.colorScheme;
     return GlassCard(
       padding: const EdgeInsets.all(14),
-      onTap: () => GoRouter.of(context).push('/workout/${session.exerciseId}'),
+      onTap: () => GoRouter.of(context)
+          .push('/workout/${session.exerciseId}?day=${session.id}'),
       child: Row(
         children: [
           Container(

@@ -90,6 +90,19 @@
   "equipmentAbout": "Описание",
   "equipmentDemoUnavailable": "Демонстрация недоступна",
   "equipmentEquipment": "Тренажёр",
+  "equipmentDayProgress": "Упражнение {current} из {total}",
+  "@equipmentDayProgress": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "equipmentDayExercises": "Сегодня: {total} упражнений",
+  "@equipmentDayExercises": {
+    "placeholders": {
+      "total": { "type": "int" }
+    }
+  },
   "equipmentWhyThisMatters": "Зачем это нужно",
   "equipmentHowToDoIt": "Как выполнять",
   "equipmentMusclesWorked": "Работающие мышцы",

@@ -949,7 +949,8 @@ class _CurrentProgrammeCard extends ConsumerWidget {
             GlassCard(
               key: const Key('workouts.currentProgramme.continue'),
               padding: EdgeInsets.zero,
-              onTap: () => GoRouter.of(context).push('/workout/${next.exerciseId}'),
+              onTap: () => GoRouter.of(context)
+                  .push('/workout/${next.exerciseId}?day=${next.id}'),
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 14),

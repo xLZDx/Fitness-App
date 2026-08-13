@@ -273,8 +273,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/workout/:id',
+        // `?day=` is optional and carries the scheduled day this exercise was
+        // opened from. A query parameter rather than a second route, because
+        // every existing link — the scanner, the AI planner, a deep link from
+        // outside the app — stays valid and lands on exactly the page it
+        // always did, with the day simply absent.
         pageBuilder: (_, state) => _fadeThrough(
-          WorkoutPlayerPage(exerciseId: state.pathParameters['id']!),
+          WorkoutPlayerPage(
+            exerciseId: state.pathParameters['id']!,
+            dayId: state.uri.queryParameters['day'],
+          ),
         ),
       ),
       GoRoute(

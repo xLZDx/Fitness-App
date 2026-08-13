@@ -104,6 +104,19 @@
   "equipmentAbout": "About",
   "equipmentDemoUnavailable": "Demo unavailable",
   "equipmentEquipment": "Equipment",
+  "equipmentDayProgress": "Exercise {current} of {total}",
+  "@equipmentDayProgress": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "equipmentDayExercises": "Today: {total} exercises",
+  "@equipmentDayExercises": {
+    "placeholders": {
+      "total": { "type": "int" }
+    }
+  },
   "equipmentWhyThisMatters": "Why this matters",
   "equipmentHowToDoIt": "How to do it",
   "equipmentMusclesWorked": "Muscles worked",

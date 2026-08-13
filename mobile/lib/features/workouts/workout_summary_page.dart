@@ -288,8 +288,9 @@ class _NextWorkout extends ConsumerWidget {
         next.muscles.map((m) => CatalogLabels.muscle(l10n, m)).join(', ');
 
     return GlassCard(
-      onTap: () => GoRouter.of(context)
-          .push('/workout/${next.sessions.first.exerciseId}'),
+      onTap: () => GoRouter.of(context).push(
+          '/workout/${next.sessions.first.exerciseId}'
+          '?day=${next.sessions.first.id}'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,

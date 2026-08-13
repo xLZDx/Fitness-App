@@ -57,6 +57,47 @@ import 'widgets/muscle_map.dart';
 final _loggedEntryProvider =
     StateProvider.autoDispose.family<WorkoutSession?, String>((_, __) => null);
 
+/// The id a scheduled day's log is written under.
+///
+/// Deterministic, unlike the single-exercise case above, which mints
+/// `'<microseconds>_<exerciseId>'` once and then relies on the provider to hand
+/// it back. A day cannot rely on that. `_loggedEntryProvider` is `autoDispose`
+/// and scoped to the visit, so a day finished across two visits — interrupted,
+/// phone locked, app killed, opened again in the evening — has no id to hand
+/// back on the second one. A fresh timestamp there opens a SECOND row for a day
+/// that is supposed to be one workout, which is precisely what keying the
+/// session by the day was meant to stop. Derived from the day instead,
+/// `save()`'s `doc(id).set(...)` lands back on the same document however many
+/// times the page is rebuilt.
+String daySessionId(String dayId) => 'day_$dayId';
+
+/// The day's log as it currently stands: what this visit wrote, or what is
+/// already persisted when this visit has not written yet.
+///
+/// The fallback is not defensive padding. `save()` writes the whole document,
+/// so logging exercise three against an empty `already` would replace exercises
+/// one and two with three alone — a stable id with stale content is worse than
+/// the duplicate row it was meant to prevent. The case that needs it is
+/// finishing a day across two visits: on the second one the in-memory copy is
+/// gone by design and only the persisted session knows what the day holds.
+///
+/// It returns null both for "this day has nothing logged" and for "the stream
+/// has not delivered yet", and the caller has to tell those apart before
+/// writing — see `_MarkCompleteButton.onTap`, which waits rather than guess.
+///
+/// [watch] because the callers split: `build` must rebuild when the stream
+/// delivers, a tap callback must not subscribe.
+WorkoutSession? _daySession(WidgetRef ref, String dayId, {bool watch = false}) {
+  final live = watch
+      ? ref.watch(_loggedEntryProvider(dayId))
+      : ref.read(_loggedEntryProvider(dayId));
+  if (live != null) return live;
+  final id = daySessionId(dayId);
+  final stored =
+      watch ? ref.watch(workoutSessionsProvider) : ref.read(workoutSessionsProvider);
+  return stored.valueOrNull?.where((s) => s.id == id).firstOrNull;
+}
+
 /// Compound lifts get a longer rest window than accessories. Read off
 /// muscle tags so we don't have to maintain a parallel list.
 int _restSecondsFor(ExerciseItem item) {
@@ -81,9 +122,36 @@ int _restSecondsFor(ExerciseItem item) {
 // changed that by one line, because this branch never read them.
 
 class WorkoutPlayerPage extends ConsumerWidget {
-  const WorkoutPlayerPage({super.key, required this.exerciseId});
+  const WorkoutPlayerPage({
+    super.key,
+    required this.exerciseId,
+    this.dayId,
+  });
 
   final String exerciseId;
+
+  /// The scheduled day this visit belongs to, or null when the player was
+  /// opened on a single exercise (a scan, a deep link, the AI planner).
+  ///
+  /// Nullable rather than a second page, because the two differ in exactly two
+  /// things: whether the day strip is drawn, and what the session is keyed by.
+  /// Everything else on this 970-line page — the clip, the technique, the
+  /// timer, the rest, the rating — is identical, and a copy of it would have to
+  /// be kept identical by hand forever.
+  final String? dayId;
+
+  /// What the logged session is keyed by, and therefore what counts as ONE
+  /// workout.
+  ///
+  /// Inside a day this is the day, so exercises two, three and four write into
+  /// the session exercise one created instead of each starting their own. That
+  /// is the whole point of the gate: a four-exercise day was being recorded as
+  /// four separate workouts, which made every streak, count and weekly total
+  /// read four times too high.
+  ///
+  /// Outside a day it stays the exercise id — unchanged behaviour for the scan
+  /// and deep-link paths, which have no day to belong to.
+  String get _sessionKey => dayId ?? exerciseId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -150,6 +218,14 @@ class WorkoutPlayerPage extends ConsumerWidget {
           return SmoothScrollList(
             padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
             children: [
+              // Above the exercise, not below it: the first question someone
+              // who tapped a day has is "what am I doing today and where am I
+              // in it", and that has to be answerable without scrolling past
+              // a video.
+              if (dayId != null) ...[
+                _DayStrip(dayId: dayId!, currentExerciseId: exerciseId),
+                const SizedBox(height: 16),
+              ],
               ExerciseHero(exercise: item),
               const SizedBox(height: 16),
               // A clip or nothing. The two photograph fallbacks that used to sit
@@ -224,9 +300,17 @@ class WorkoutPlayerPage extends ConsumerWidget {
                 const RestTimer(),
               ],
               const SizedBox(height: 20),
-              _MarkCompleteButton(exercise: item),
+              _MarkCompleteButton(
+                exercise: item,
+                sessionKey: _sessionKey,
+                inDay: dayId != null,
+              ),
               const SizedBox(height: 12),
-              _AddExerciseButton(entryExercise: item),
+              _AddExerciseButton(
+                entryExercise: item,
+                sessionKey: _sessionKey,
+                inDay: dayId != null,
+              ),
               const SizedBox(height: 12),
               _ScheduleButton(exercise: item),
               const SizedBox(height: 12),
@@ -239,9 +323,156 @@ class WorkoutPlayerPage extends ConsumerWidget {
   }
 }
 
+/// The day this visit belongs to: where you are in it, and what is left.
+///
+/// Reads the plan from [scheduledSessionsProvider] and what has actually been
+/// logged from the session keyed by the day, so a tick means "this exercise is
+/// in today's record", not "you tapped it". Those differ — a tap that failed to
+/// save must not be shown as done.
+///
+/// Renders nothing at all when the day cannot be resolved (still streaming, or
+/// the day was cancelled from another device mid-workout). An empty box is the
+/// right answer there: the exercise below is still perfectly usable, and a
+/// spinner or an error card above it would suggest the workout itself is
+/// broken when it is not.
+class _DayStrip extends ConsumerWidget {
+  const _DayStrip({required this.dayId, required this.currentExerciseId});
+
+  final String dayId;
+  final String currentExerciseId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
+    final day = ref
+        .watch(scheduledSessionsProvider)
+        .valueOrNull
+        ?.where((s) => s.id == dayId)
+        .firstOrNull;
+    if (day == null) return const SizedBox.shrink();
+
+    final planned = day.exercises;
+    if (planned.length < 2) return const SizedBox.shrink();
+
+    final logged = _daySession(ref, dayId, watch: true);
+    final doneIds = {
+      for (final e in logged?.exercises ?? const []) e.exerciseId,
+    };
+    final position = planned.indexWhere((e) => e.exerciseId == currentExerciseId);
+
+    return GlassCard(
+      key: const Key('player.dayStrip'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            // `position + 1` only when the current exercise is actually part of
+            // the plan. It is not always: the add-exercise button can put an
+            // off-plan movement on screen inside a day, and "exercise 0 of 4"
+            // is worse than just naming the day's size.
+            position >= 0
+                ? l.equipmentDayProgress(position + 1, planned.length)
+                : l.equipmentDayExercises(planned.length),
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 10),
+          for (final (index, e) in planned.indexed) ...[
+            if (index > 0) const SizedBox(height: 2),
+            _DayStripRow(
+              title: e.exerciseTitle,
+              done: doneIds.contains(e.exerciseId),
+              current: e.exerciseId == currentExerciseId,
+              // Tapping the exercise you are already on would push a second
+              // copy of this page onto the stack, so it is inert.
+              onTap: e.exerciseId == currentExerciseId
+                  ? null
+                  : () => GoRouter.of(context)
+                      .replace('/workout/${e.exerciseId}?day=$dayId'),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DayStripRow extends StatelessWidget {
+  const _DayStripRow({
+    required this.title,
+    required this.done,
+    required this.current,
+    required this.onTap,
+  });
+
+  final String title;
+  final bool done;
+  final bool current;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final semantic = Theme.of(context).extension<AppSemanticColors>();
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        child: Row(
+          children: [
+            Icon(
+              done
+                  ? Icons.check_circle_rounded
+                  : current
+                      ? Icons.play_circle_fill_rounded
+                      : Icons.circle_outlined,
+              size: 20,
+              color: done
+                  ? semantic?.success ?? theme.colorScheme.primary
+                  : current
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.35),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: current ? FontWeight.w800 : FontWeight.w500,
+                  // Struck through rather than greyed out: a finished exercise
+                  // still has to be readable, because re-opening it to fix a
+                  // mistyped weight is a normal thing to want.
+                  decoration: done ? TextDecoration.lineThrough : null,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _MarkCompleteButton extends ConsumerWidget {
-  const _MarkCompleteButton({required this.exercise});
+  const _MarkCompleteButton({
+    required this.exercise,
+    required this.sessionKey,
+    required this.inDay,
+  });
   final ExerciseItem exercise;
+
+  /// See [WorkoutPlayerPage._sessionKey] — the day inside a day, the exercise
+  /// otherwise.
+  final String sessionKey;
+
+  /// Selects how this exercise is merged into the session. Inside a day it is
+  /// matched by `exerciseId`, because it may be exercise three of four and must
+  /// not overwrite exercise one.
+  final bool inDay;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -250,11 +481,54 @@ class _MarkCompleteButton extends ConsumerWidget {
     final loading = action.isLoading;
 
     Future<void> onTap() async {
-      final already = ref.read(_loggedEntryProvider(exercise.id));
+      var already = inDay
+          ? _daySession(ref, sessionKey)
+          : ref.read(_loggedEntryProvider(sessionKey));
+
+      // Nothing known about the day AND no snapshot has arrived yet: WAIT for
+      // one before writing.
+      //
+      // This is the cold-start race, and it is a data-loss bug rather than a
+      // cosmetic one. `save()` is `doc(id).set(...)` with no merge
+      // (`firestore_workout_session_repository.dart:61-63`), so a tap that
+      // lands before the first Firestore snapshot would build the day's
+      // document out of THIS exercise alone and overwrite the two already
+      // logged — silently, with "Logged! Nice work" on screen. The window is
+      // invisible on a warm start and entirely plausible on a cold one.
+      //
+      // Awaiting the stream rather than disabling the button: a disabled
+      // button that never re-enables (a history stream that errors) is its own
+      // silent failure, and the error path below already knows how to tell the
+      // user that saving did not happen.
+      if (inDay && already == null && !ref.read(workoutSessionsProvider).hasValue) {
+        try {
+          await ref.read(workoutSessionsProvider.future);
+        } catch (e) {
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  AppLocalizations.of(context).equipmentCouldNotSave('$e')),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          return;
+        }
+        if (!context.mounted) return;
+        already = _daySession(ref, sessionKey);
+      }
+      // Inside a day the row to re-edit is THIS exercise's, which is not
+      // necessarily the first one in the session — `.exercises.first` would
+      // have read exercise one's weight back onto exercise three.
+      final stored = already == null
+          ? null
+          : inDay
+              ? already.exercises
+                  .where((e) => e.exerciseId == exercise.id)
+                  .firstOrNull
+              : already.exercises.first;
       final alreadySet =
-          already != null && already.exercises.first.sets.isNotEmpty
-              ? already.exercises.first.sets.last
-              : null;
+          stored != null && stored.sets.isNotEmpty ? stored.sets.last : null;
 
       // B8. No sheet here any more. The weight is collected when the set is
       // STARTED (`SetTimerCard`), and only for movements that take one --
@@ -286,7 +560,7 @@ class _MarkCompleteButton extends ConsumerWidget {
       final sets = (weightKg != null || reps != null)
           ? [(weightKg: weightKg, reps: reps)]
           : const <SetCapture>[];
-      final exerciseEntry = (already?.exercises.first ??
+      final exerciseEntry = (stored ??
               WorkoutSessionExercise(
                 exerciseId: exercise.id,
                 exerciseTitle: exercise.title,
@@ -297,7 +571,11 @@ class _MarkCompleteButton extends ConsumerWidget {
       // the row instead of adding a second one for the same set.
       final entry = (already ??
               WorkoutSession(
-                id: '${DateTime.now().microsecondsSinceEpoch}_${exercise.id}',
+                // See `daySessionId` — a day's row must be findable again
+                // after the provider holding it has been disposed.
+                id: inDay
+                    ? daySessionId(sessionKey)
+                    : '${DateTime.now().microsecondsSinceEpoch}_$sessionKey',
                 title: exercise.title,
                 exercises: const [],
                 startedAt: DateTime.now(),
@@ -307,7 +585,15 @@ class _MarkCompleteButton extends ConsumerWidget {
         // has appended after index 0 -- `exercises: [exerciseEntry]` here
         // used to drop them the moment this entry exercise's set was
         // re-edited.
-        exercises: replaceEntryExercise(already?.exercises ?? const [], exerciseEntry),
+        //
+        // Inside a day, position no longer identifies "the exercise being
+        // logged": this can be exercise three, and index 0 belongs to exercise
+        // one. Keyed by id there, by position everywhere else — see
+        // `upsertExerciseById`'s doc comment for why both exist.
+        exercises: inDay
+            ? upsertExerciseById(already?.exercises ?? const [], exerciseEntry)
+            : replaceEntryExercise(
+                already?.exercises ?? const [], exerciseEntry),
         completedAt: DateTime.now(),
         status: WorkoutSessionStatus.completed,
         // `already?.durationMinutes` when a session already exists --
@@ -318,7 +604,19 @@ class _MarkCompleteButton extends ConsumerWidget {
         // exercise's set does not change how many exercises are in the
         // session). Falls back to this exercise's own duration only on the
         // very first tap, when no session exists yet.
-        durationMinutes: already?.durationMinutes ?? exercise.durationMinutes,
+        //
+        // Inside a day there is a third case the original two did not cover:
+        // this exercise may be NEW to an existing session (exercise two of the
+        // day, logged into the session exercise one opened). Then its minutes
+        // have to be added, exactly as `_AddExerciseButton` adds them — without
+        // this a four-exercise day would report the length of its first
+        // exercise. `stored != null` is the re-edit case and must add nothing,
+        // or every re-tap would inflate the number.
+        durationMinutes: already == null
+            ? exercise.durationMinutes
+            : (inDay && stored == null)
+                ? (already.durationMinutes ?? 0) + exercise.durationMinutes
+                : already.durationMinutes,
       );
       await ref.read(logSessionActionProvider.notifier).log(entry);
       if (!context.mounted) return;
@@ -348,7 +646,7 @@ class _MarkCompleteButton extends ConsumerWidget {
       ref
           .read(restTimerProvider.notifier)
           .start(Duration(seconds: _restSecondsFor(exercise)));
-      ref.read(_loggedEntryProvider(exercise.id).notifier).state = entry;
+      ref.read(_loggedEntryProvider(sessionKey).notifier).state = entry;
 
       // Ask for a 1-tap perceived-effort rating. Skipping is fine — the
       // rating is optional, and Freeletics' AI Coach reads a similar
@@ -361,19 +659,33 @@ class _MarkCompleteButton extends ConsumerWidget {
       );
       if (rating != null) {
         // Same replaceEntryExercise as above -- rating exercise #1 must not
-        // erase exercises #2+.
+        // erase exercises #2+. And inside a day the rating belongs to the
+        // exercise that was just finished, which `.first` would have pinned to
+        // exercise one: rating exercise three would have relabelled exercise
+        // one's difficulty and left three unrated.
+        final justLogged = inDay
+            ? entry.exercises
+                .firstWhere((e) => e.exerciseId == exercise.id)
+            : entry.exercises.first;
         final rated = entry.copyWith(
-          exercises: replaceEntryExercise(
-            entry.exercises,
-            entry.exercises.first.copyWith(difficulty: rating),
-          ),
+          exercises: inDay
+              ? upsertExerciseById(
+                  entry.exercises, justLogged.copyWith(difficulty: rating))
+              : replaceEntryExercise(
+                  entry.exercises, justLogged.copyWith(difficulty: rating)),
         );
         await ref.read(logSessionActionProvider.notifier).log(rated);
-        ref.read(_loggedEntryProvider(exercise.id).notifier).state = rated;
+        ref.read(_loggedEntryProvider(sessionKey).notifier).state = rated;
       }
     }
 
     return GlassCard(
+      // Keyed so a test can drive the write path rather than only the pure
+      // merge function beneath it. The invariant this gate exists for -- a day
+      // is ONE session -- lives in what this button assembles, not in
+      // `upsertExerciseById`, and a unit test of the latter passes happily
+      // while the former overwrites the day.
+      key: const Key('player.markComplete'),
       padding: EdgeInsets.zero,
       onTap: loading ? null : onTap,
       child: Container(
@@ -431,12 +743,30 @@ class _MarkCompleteButton extends ConsumerWidget {
 /// [SetCaptureSheet] / [DifficultyRatingSheet] flow [_MarkCompleteButton]
 /// already uses, so a second exercise is captured exactly like the first.
 class _AddExerciseButton extends ConsumerWidget {
-  const _AddExerciseButton({required this.entryExercise});
+  const _AddExerciseButton({
+    required this.entryExercise,
+    required this.sessionKey,
+    required this.inDay,
+  });
   final ExerciseItem entryExercise;
+
+  /// See [WorkoutPlayerPage._sessionKey]. Inside a day this is the day, so an
+  /// exercise added by hand joins the day's session rather than opening a
+  /// second one alongside it.
+  final String sessionKey;
+
+  /// See [_MarkCompleteButton.inDay]. Here it selects where the session is read
+  /// from: inside a day the persisted row counts, so the button stays available
+  /// on exercise two of a day whose first exercise was logged before the last
+  /// route replace — without it the button would vanish exactly when the
+  /// session it appends to does exist.
+  final bool inDay;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final already = ref.watch(_loggedEntryProvider(entryExercise.id));
+    final already = inDay
+        ? _daySession(ref, sessionKey, watch: true)
+        : ref.watch(_loggedEntryProvider(sessionKey));
     if (already == null) return const SizedBox.shrink();
 
     final action = ref.watch(logSessionActionProvider);
@@ -505,7 +835,7 @@ class _AddExerciseButton extends ConsumerWidget {
         );
         return;
       }
-      ref.read(_loggedEntryProvider(entryExercise.id).notifier).state = updated;
+      ref.read(_loggedEntryProvider(sessionKey).notifier).state = updated;
       // Same ordering as _MarkCompleteButton: persist THEN rest, never the
       // reverse.
       ref
@@ -546,11 +876,20 @@ class _AddExerciseButton extends ConsumerWidget {
                   Icon(Icons.add_circle_outline, color: theme.colorScheme.onSurface),
                   const SizedBox(width: 8),
                 ],
-                Text(
-                  AppLocalizations.of(context).equipmentAddAnotherExercise,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: theme.colorScheme.onSurface,
-                    fontWeight: FontWeight.w700,
+                // `Flexible`, so the label wraps on a narrow screen instead of
+                // overflowing the card. It really did overflow — by 31px at
+                // 400px wide, which is an ordinary phone. Nothing had caught it
+                // because this button only appears once a session exists, and
+                // until the day gate no test could reach that state. Wrapping
+                // rather than ellipsising: half a button label is not a label.
+                Flexible(
+                  child: Text(
+                    AppLocalizations.of(context).equipmentAddAnotherExercise,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.onSurface,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
