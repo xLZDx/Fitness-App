@@ -2,7 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/state/auth_providers.dart';
 import '../../equipment/data/equipment_models.dart';
+import '../../equipment/data/exercise_filter.dart';
 import '../../equipment/state/equipment_providers.dart';
+import '../../profile/data/profile_models.dart';
 import '../../workouts/data/scheduled_session.dart';
 import '../../workouts/state/scheduled_session_providers.dart';
 import '../data/mock_programme_repository.dart';
@@ -91,6 +93,13 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
         ));
       }
 
+      // B5a. Until now the enrolled programme was a verbatim copy of the
+      // template and the schedule was built from an injury-screened catalogue,
+      // so the 34-question profile changed nothing about what got scheduled:
+      // someone who answered "at home, bodyweight, three days" and enrolled in
+      // `strength_base` received four days a week of barbell work.
+      final profile = await ref.read(screeningProfileProvider.future);
+
       final programme = Programme(
         id: '${DateTime.now().microsecondsSinceEpoch}_${template.id}',
         templateId: template.id,
@@ -104,12 +113,19 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
         goal: template.goal,
         level: template.level,
         weeks: template.weeks,
-        daysPerWeek: template.daysPerWeek,
-        muscles: template.muscles,
+        // Both clamped/resolved onto the ROW rather than applied inside
+        // `buildProgrammeSchedule`, so the card's header and the sessions
+        // actually generated cannot disagree — and so `deriveProgrammeProgress`
+        // counts against the same number the schedule was built from.
+        daysPerWeek: programmeDaysPerWeek(template.daysPerWeek, profile),
+        muscles: programmeMuscles(template, profile),
         startedAt: DateTime.now(),
       );
 
-      final catalogue = await ref.read(safeCatalogProvider.future);
+      final catalogue = availableWith(
+        await ref.read(safeCatalogProvider.future),
+        profile?.equipment ?? EquipmentAccess.empty,
+      );
       final rows = buildProgrammeSchedule(
         programme: programme,
         catalogue: catalogue,
@@ -164,6 +180,64 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
       state = AsyncValue.error(e, st);
     }
   }
+}
+
+/// How many days a week this enrolment actually schedules.
+///
+/// One-way: the user's answer can only ever REDUCE the template's own figure.
+/// Scheduling five days for someone who told the questionnaire they have three
+/// writes three sessions a week they were never going to do — and an overdue
+/// count that climbs on its own is the fastest way to make a programme feel
+/// like a failure. Raising it is the opposite mistake: a 3-day beginner
+/// programme is 3 days by design, and someone with time for five did not ask
+/// for two extra days of it. They asked for this programme.
+///
+/// A null answer (the schedule screen skipped) leaves the template's figure
+/// alone — not answered is not "zero days".
+///
+/// The floor of 1 is not defensive padding: `TrainingSchedule.daysPerWeek` is
+/// deliberately unvalidated at the model (`profile_models.dart:673`, "the
+/// questionnaire is the only writer"), so a 0 written by hand into Firestore
+/// would otherwise reach `buildProgrammeSchedule` and produce an enrolment with
+/// no sessions at all, which looks exactly like a bug in the generator.
+int programmeDaysPerWeek(int templateDays, UserProfile? profile) {
+  final answered = profile?.schedule.daysPerWeek;
+  if (answered == null) return templateDays;
+  final wanted = answered < templateDays ? answered : templateDays;
+  return wanted < 1 ? 1 : wanted;
+}
+
+/// The muscles this enrolment targets: the template's own, or — only when the
+/// template names none — the ones the user's focus zones resolve to.
+///
+/// A template that names muscles wins outright. `hypertrophy` is chest, back,
+/// quads and hamstrings because that is the programme the user chose; unioning
+/// their focus zones into it would quietly turn it into a different programme
+/// while still calling itself hypertrophy. The full-body templates
+/// (`strength_base`, `gym_start`, `injury_comeback`) name nothing, and that is
+/// where an answer to "what do you want worked on" has somewhere to go —
+/// [FocusZone] was stored by the questionnaire and read by nothing at all until
+/// here (P4).
+///
+/// The result is written onto the [Programme] row, not applied inside the
+/// generator, because `Programme.muscles` is also what the card's subtitle
+/// reads (`programme.dart`). Resolving zones only inside the schedule would
+/// leave the card saying "full body" over a schedule that had quietly become
+/// arms-and-core.
+///
+/// [FocusZone.fullBody] contributes nothing (`focusZoneMuscles` returns the
+/// empty set for it), so selecting it alone leaves a full-body programme
+/// full-body — which is what the user asked for.
+List<String> programmeMuscles(ProgrammeTemplate template, UserProfile? profile) {
+  if (template.muscles.isNotEmpty) return template.muscles;
+  final zones = profile?.goals.focusZones ?? const <FocusZone>[];
+  final out = <String>[];
+  for (final zone in zones) {
+    for (final muscle in focusZoneMuscles(zone)) {
+      if (!out.contains(muscle)) out.add(muscle);
+    }
+  }
+  return out;
 }
 
 /// The day after the latest pending session already scheduled under

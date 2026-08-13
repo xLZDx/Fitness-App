@@ -105,6 +105,46 @@ void main() {
       expect(ids.toSet().length, greaterThan(1));
     });
 
+    test('a template with more muscles than weekly slots still reaches every '
+        'muscle, instead of dropping one forever', () {
+      // `hypertrophy` names four muscles and offers four days. A user who told
+      // the questionnaire they have three gets `daysPerWeek` clamped to three,
+      // and under `slot % muscles.length` the fourth muscle — hamstrings —
+      // would then never be scheduled in any week of the programme.
+      final programme = _programme(
+        weeks: 2,
+        daysPerWeek: 3,
+        muscles: ['chest', 'back', 'quads', 'hamstrings'],
+      );
+      final catalogue = [
+        _ex('c', muscles: ['chest']),
+        _ex('b', muscles: ['back']),
+        _ex('q', muscles: ['quads']),
+        _ex('h', muscles: ['hamstrings']),
+      ];
+      final rows =
+          buildProgrammeSchedule(programme: programme, catalogue: catalogue);
+      expect(rows.map((r) => r.exerciseId).toSet(), {'c', 'b', 'q', 'h'});
+    });
+
+    test('when muscles and weekly slots match, each slot keeps its own muscle '
+        'every week', () {
+      // The shipped templates are all in this shape, so the week-advancing
+      // index must reduce to the old behaviour for them.
+      final programme = _programme(
+        weeks: 3,
+        daysPerWeek: 2,
+        muscles: ['chest', 'back'],
+      );
+      final catalogue = [
+        _ex('c', muscles: ['chest']),
+        _ex('b', muscles: ['back']),
+      ];
+      final rows =
+          buildProgrammeSchedule(programme: programme, catalogue: catalogue);
+      expect(rows.map((r) => r.exerciseId), ['c', 'b', 'c', 'b', 'c', 'b']);
+    });
+
     test('generated ids are unique across the whole schedule', () {
       final programme = _programme(weeks: 4, daysPerWeek: 5, muscles: const []);
       final catalogue = [_ex('a'), _ex('b'), _ex('c')];

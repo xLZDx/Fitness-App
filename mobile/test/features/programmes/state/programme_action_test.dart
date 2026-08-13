@@ -5,6 +5,9 @@ import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
+import 'package:fitness_app/features/profile/data/mock_profile_repository.dart';
+import 'package:fitness_app/features/profile/data/profile_models.dart';
+import 'package:fitness_app/features/profile/state/profile_providers.dart';
 import 'package:fitness_app/features/programmes/data/mock_programme_repository.dart';
 import 'package:fitness_app/features/programmes/data/programme.dart';
 import 'package:fitness_app/features/programmes/data/programme_templates.dart';
@@ -30,17 +33,32 @@ ExerciseItem _ex(String id, {List<String> muscles = const []}) => ExerciseItem(
       steps: const [],
     );
 
+ExerciseItem _kit(String id, {String? label}) => ExerciseItem(
+      id: id,
+      title: id,
+      equipmentId: null,
+      equipmentLabel: label,
+      muscles: const [],
+      difficulty: ExerciseDifficulty.beginner,
+      durationMinutes: 20,
+      summary: '',
+      steps: const [],
+    );
+
 ProviderContainer _container({
   required MockProgrammeRepository programmeRepo,
   required MockScheduledSessionRepository sessionRepo,
   required List<ExerciseItem> catalogue,
   AuthUser? user,
+  MockProfileRepository? profileRepo,
 }) {
   return ProviderContainer(overrides: [
     programmeRepositoryProvider.overrideWithValue(programmeRepo),
     scheduledSessionRepositoryProvider.overrideWithValue(sessionRepo),
     authUserProvider.overrideWith((_) => Stream.value(user)),
     safeCatalogProvider.overrideWith((ref) async => catalogue),
+    if (profileRepo != null)
+      profileRepositoryProvider.overrideWithValue(profileRepo),
   ]);
 }
 
@@ -135,6 +153,202 @@ void main() {
       expect(first.status, ProgrammeStatus.abandoned);
       expect(first.endedAt, isNotNull);
       expect(second.status, ProgrammeStatus.active);
+    });
+  });
+
+  group('ProgrammeAction.enroll reads the questionnaire (B5a)', () {
+    /// Builds a container whose signed-in user already has [profile] stored.
+    Future<ProviderContainer> containerWithProfile({
+      required MockProgrammeRepository programmeRepo,
+      required MockScheduledSessionRepository sessionRepo,
+      required List<ExerciseItem> catalogue,
+      required UserProfile profile,
+    }) async {
+      final profileRepo = MockProfileRepository(latency: Duration.zero);
+      addTearDown(profileRepo.dispose);
+      await profileRepo.save(profile);
+      final container = _container(
+        programmeRepo: programmeRepo,
+        sessionRepo: sessionRepo,
+        catalogue: catalogue,
+        user: const AuthUser(uid: 'alice', displayName: 'Alice'),
+        profileRepo: profileRepo,
+      );
+      addTearDown(container.dispose);
+      await container.read(authUserProvider.future);
+      return container;
+    }
+
+    test('a home, bodyweight-only answer never schedules a barbell', () async {
+      final programmeRepo = MockProgrammeRepository(latency: Duration.zero);
+      addTearDown(programmeRepo.dispose);
+      final sessionRepo = MockScheduledSessionRepository(latency: Duration.zero);
+      addTearDown(sessionRepo.dispose);
+
+      final container = await containerWithProfile(
+        programmeRepo: programmeRepo,
+        sessionRepo: sessionRepo,
+        catalogue: [
+          _kit('pushup', label: 'None (Bodyweight)'),
+          _kit('press', label: 'Barbell'),
+        ],
+        profile: const UserProfile(
+          uid: 'alice',
+          equipment: EquipmentAccess(
+            location: TrainingLocation.home,
+            available: [EquipmentKind.bodyweight],
+          ),
+        ),
+      );
+
+      await container
+          .read(programmeActionProvider.notifier)
+          .enroll(programmeTemplates.first);
+
+      final rows = sessionRepo.cached('alice');
+      expect(rows, isNotEmpty);
+      expect(rows.every((r) => r.exerciseId == 'pushup'), isTrue,
+          reason: 'a barbell reached a user who owns none');
+    });
+
+    test('the schedule follows the days the user said they have', () async {
+      final programmeRepo = MockProgrammeRepository(latency: Duration.zero);
+      addTearDown(programmeRepo.dispose);
+      final sessionRepo = MockScheduledSessionRepository(latency: Duration.zero);
+      addTearDown(sessionRepo.dispose);
+
+      final template = programmeTemplates.first; // 4 days a week
+      final container = await containerWithProfile(
+        programmeRepo: programmeRepo,
+        sessionRepo: sessionRepo,
+        catalogue: [_kit('pushup', label: 'None (Bodyweight)')],
+        profile: const UserProfile(
+          uid: 'alice',
+          schedule: TrainingSchedule(daysPerWeek: 2),
+        ),
+      );
+
+      await container.read(programmeActionProvider.notifier).enroll(template);
+
+      // The stored row and the generated sessions must agree, which is why the
+      // clamp is applied to the Programme rather than inside the generator.
+      expect(programmeRepo.cached('alice').single.daysPerWeek, 2);
+      expect(sessionRepo.cached('alice'), hasLength(template.weeks * 2));
+    });
+
+    test('focus zones fill in a full-body template and show on the row',
+        () async {
+      final programmeRepo = MockProgrammeRepository(latency: Duration.zero);
+      addTearDown(programmeRepo.dispose);
+      final sessionRepo = MockScheduledSessionRepository(latency: Duration.zero);
+      addTearDown(sessionRepo.dispose);
+
+      // `strength_base` names no muscles, so the answer to "what do you want
+      // worked on" has somewhere to go.
+      expect(programmeTemplates.first.muscles, isEmpty);
+
+      final container = await containerWithProfile(
+        programmeRepo: programmeRepo,
+        sessionRepo: sessionRepo,
+        catalogue: [
+          _ex('crunch', muscles: ['core']),
+          _ex('curl', muscles: ['biceps']),
+        ],
+        profile: const UserProfile(
+          uid: 'alice',
+          goals: FitnessGoals(focusZones: [FocusZone.core]),
+        ),
+      );
+
+      await container
+          .read(programmeActionProvider.notifier)
+          .enroll(programmeTemplates.first);
+
+      expect(programmeRepo.cached('alice').single.muscles, ['core']);
+      expect(
+        sessionRepo.cached('alice').every((r) => r.exerciseId == 'crunch'),
+        isTrue,
+      );
+    });
+  });
+
+  group('programmeDaysPerWeek', () {
+    test('an unanswered schedule leaves the template alone', () {
+      expect(programmeDaysPerWeek(4, null), 4);
+      expect(programmeDaysPerWeek(4, const UserProfile(uid: 'a')), 4);
+    });
+
+    test('a lower answer wins', () {
+      expect(
+        programmeDaysPerWeek(4,
+            const UserProfile(uid: 'a', schedule: TrainingSchedule(daysPerWeek: 2))),
+        2,
+      );
+    });
+
+    test('a higher answer does not add days the programme never offered', () {
+      expect(
+        programmeDaysPerWeek(3,
+            const UserProfile(uid: 'a', schedule: TrainingSchedule(daysPerWeek: 6))),
+        3,
+      );
+    });
+
+    test('a zero written by hand still produces a programme, not an empty one',
+        () {
+      expect(
+        programmeDaysPerWeek(4,
+            const UserProfile(uid: 'a', schedule: TrainingSchedule(daysPerWeek: 0))),
+        1,
+      );
+    });
+  });
+
+  group('programmeMuscles', () {
+    test('a template that names muscles keeps them, whatever the user chose',
+        () {
+      final hypertrophy = findProgrammeTemplate('hypertrophy')!;
+      expect(
+        programmeMuscles(
+          hypertrophy,
+          const UserProfile(
+            uid: 'a',
+            goals: FitnessGoals(focusZones: [FocusZone.arms]),
+          ),
+        ),
+        hypertrophy.muscles,
+      );
+    });
+
+    test('a full-body template takes the user focus zones', () {
+      expect(
+        programmeMuscles(
+          findProgrammeTemplate('strength_base')!,
+          const UserProfile(
+            uid: 'a',
+            goals: FitnessGoals(focusZones: [FocusZone.arms, FocusZone.core]),
+          ),
+        ),
+        containsAll(['biceps', 'triceps', 'forearms', 'core']),
+      );
+    });
+
+    test('selecting fullBody leaves a full-body programme full-body', () {
+      expect(
+        programmeMuscles(
+          findProgrammeTemplate('strength_base')!,
+          const UserProfile(
+            uid: 'a',
+            goals: FitnessGoals(focusZones: [FocusZone.fullBody]),
+          ),
+        ),
+        isEmpty,
+      );
+    });
+
+    test('no profile leaves a full-body template full-body', () {
+      expect(programmeMuscles(findProgrammeTemplate('strength_base')!, null),
+          isEmpty);
     });
   });
 

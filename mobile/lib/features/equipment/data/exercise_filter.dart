@@ -261,6 +261,193 @@ List<ExerciseItem> safeFor(
   return filterContraindicated(exercises, profile.health.injuries);
 }
 
+/// The catalogue muscle tokens a questionnaire focus zone stands for.
+///
+/// [FocusZone] (`profile_models.dart`) is the vocabulary the user picks from;
+/// `ExerciseItem.muscles` is the vendor's. They are not the same list and never
+/// will be — "arms" is one chip and three tokens.
+///
+/// Deliberately the SAME grouping `kFilterMuscles` (`workouts_page.dart:76-84`)
+/// already uses for the Train tab's chips, rather than a second table saying
+/// the same thing. Two tables mapping one vocabulary onto another drift, and
+/// the day they drifted a user would see one set of exercises under "Arms" on
+/// one screen and a different set under "Arms" on another. They are not merged
+/// into one constant only because `WorkoutsFilter` is a UI enum that also
+/// carries `forYou` and `machines`, which are not muscles at all.
+///
+/// Measured against the shipped catalogue before this was written: the vendor
+/// tags exercises with exactly 15 muscle tokens, and every one of them appears
+/// below. No zone resolves to a token nothing is tagged with.
+///
+/// [FocusZone.fullBody] returns the empty set. "Everything" is the absence of a
+/// restriction, not a sixteenth muscle — and a caller that treated it as one
+/// would filter the catalogue down to nothing.
+Set<String> focusZoneMuscles(FocusZone zone) => switch (zone) {
+      FocusZone.chest => const {'chest'},
+      FocusZone.back => const {'back', 'lats', 'traps', 'lower_back'},
+      FocusZone.shoulders => const {'shoulders'},
+      FocusZone.arms => const {'biceps', 'triceps', 'forearms'},
+      FocusZone.core => const {'core'},
+      FocusZone.glutes => const {'glutes'},
+      FocusZone.legs => const {'quads', 'hamstrings', 'calves', 'adductors'},
+      FocusZone.fullBody => const {},
+    };
+
+/// Which vendor equipment labels each questionnaire chip covers.
+///
+/// The labels are the vendor's own free text, and there are 99 distinct values
+/// across the 1,887 shipped rows. Matching is EXACT on the lower-cased label,
+/// never by substring, for the same reason `_furnitureNotEquipment`
+/// (`equipment_models.dart:86`) is an exact set: a substring rule for
+/// [EquipmentKind.barbell] would match "bar" inside "Pull Up Bar" and quietly
+/// promise a home user a pull-up bar they never said they own. The one label
+/// that appears in both cases and letters ("Smith Machine" / "Smith machine",
+/// "Weight Plate" / "weight plate", "Ab Roller" / "Ab roller") is handled by
+/// lower-casing, not by a second entry.
+///
+/// [EquipmentKind.bodyweight] maps to nothing on purpose: an exercise that
+/// needs no equipment is admitted by [availableWith] unconditionally, before
+/// this table is ever consulted. [EquipmentKind.fullGym] is likewise absent —
+/// it short-circuits the whole filter.
+const Map<EquipmentKind, Set<String>> _kindLabels = {
+  EquipmentKind.dumbbells: {'dumbbells', 'dumbbell'},
+  EquipmentKind.barbell: {
+    'barbell',
+    'bar',
+    'ez bar',
+    'trap bar',
+    'fixed pole bar',
+    'weight plate',
+    // A landmine is a barbell in a pivot; without the bar there is nothing to
+    // put in it.
+    'landmine',
+  },
+  EquipmentKind.kettlebells: {'kettlebells'},
+  EquipmentKind.bands: {
+    'resistance band',
+    'loop resistance band',
+    'resistance cable',
+  },
+  // Gym apparatus that does not have the word "machine" in its label. Anything
+  // that DOES is caught by the substring rule in [_partCovered] instead.
+  EquipmentKind.machines: {
+    'sled',
+    'treadmill',
+    'airbike',
+    'ski ergometer',
+    'stationary exercise bike',
+    'hyperextension bench',
+  },
+};
+
+/// True when one comma-separated piece of an equipment label is covered by the
+/// kit the user says they have.
+///
+/// "machine" is matched as a SUBSTRING, and it is the only one that is. The
+/// asymmetry is deliberate and safe in a way the others are not: every label
+/// containing the word is a gym machine, so over-matching can only ever hit
+/// something [EquipmentKind.machines] genuinely covers. There are 30-odd such
+/// labels and the vendor adds more with every catalogue update; enumerating
+/// them would be a list that silently rots into under-matching, which fails in
+/// the direction of hiding exercises a gym user can do.
+bool _partCovered(String part, Set<EquipmentKind> kinds) {
+  final p = part.trim().toLowerCase();
+  if (p.isEmpty) return true;
+  if (kinds.contains(EquipmentKind.machines) && p.contains('machine')) {
+    return true;
+  }
+  for (final k in kinds) {
+    if (_kindLabels[k]?.contains(p) ?? false) return true;
+  }
+  return false;
+}
+
+/// Only the exercises the user can actually perform with what they told the
+/// questionnaire they have.
+///
+/// ## Why this runs before the schedule is generated, not inside it
+///
+/// Equipment is a hard constraint, not a preference. `buildProgrammeSchedule`
+/// relaxes a constraint rather than dropping a day when a slot has no
+/// candidates (`programme_schedule.dart`, the muscle fallback), which is right
+/// for a muscle — a chest day that becomes a general day is still a workout —
+/// and wrong for equipment: relaxing it hands a barbell bench press to someone
+/// who owns a resistance band. Filtering the catalogue BEFORE generation makes
+/// that structurally impossible instead of relying on the generator to
+/// remember, because the unavailable rows are not in the list it draws from.
+///
+/// ## What counts as available
+///
+/// * A gym answer — [TrainingLocation.gym], [TrainingLocation.mixed], or the
+///   [EquipmentKind.fullGym] chip — allows everything. A gym has the machines.
+/// * An exercise that needs nothing (`ExerciseItem.needsEquipment`) is always
+///   allowed. Anyone can do a push-up, whatever they ticked.
+/// * Otherwise every comma-separated part of the vendor's label must be
+///   covered by a chip the user selected. All parts, not any: "Barbell, Box"
+///   needs both.
+///
+/// ## "Nothing selected" is two different answers, and they are not the same
+///
+/// A profile with no location AND no chips has told us nothing, and returns
+/// everything untouched: "has not told us yet" is not "owns nothing", and
+/// reading it as the latter would generate a bodyweight-only programme for a
+/// gym member who skipped one screen — the null-means-two-things trap
+/// `screeningProfileProvider` (`equipment_providers.dart:44-64`) exists to
+/// avoid on the safety side.
+///
+/// But a profile that names [TrainingLocation.home] or
+/// [TrainingLocation.outdoor] and ticks no chips has answered, and its answer
+/// is "nothing" — so it gets bodyweight work only. Keying this on the chips
+/// alone was wrong in exactly the commonest real flow: the onboarding step
+/// counts as answered the moment a location is tapped (`step_answered.dart:157`,
+/// `e.location != null || ...`), the chips are never required, so tapping
+/// "Home" and pressing Next produced a profile the app calls answered — and a
+/// programme full of barbell work for someone who never claimed a barbell.
+///
+/// [EquipmentKind.cameraScan] is dropped before anything is matched, because it
+/// is an intention rather than a possession — required by that enum's own doc
+/// (`profile_models.dart:586-589`).
+///
+/// ## The 89 rows that contradict themselves
+///
+/// Measured on the shipped catalogue: 535 rows carry a "None"/"none"/"None
+/// (Bodyweight)" label, and 89 of those ALSO carry an `equipmentId` (27 of them
+/// `bench_press`). `needsEquipment` believes the id, so those rows arrive here
+/// claiming both. They are treated as needing the equipment: a label reading
+/// "None" on a row that names a bench press is the half more likely to be the
+/// data-entry mistake, and the cost of being wrong is a missing exercise rather
+/// than a user under a barbell they do not own.
+List<ExerciseItem> availableWith(
+  Iterable<ExerciseItem> exercises,
+  EquipmentAccess access,
+) {
+  final kinds =
+      access.available.where((k) => k != EquipmentKind.cameraScan).toSet();
+  final atGym = access.location == TrainingLocation.gym ||
+      access.location == TrainingLocation.mixed ||
+      kinds.contains(EquipmentKind.fullGym);
+  if (atGym) return exercises.toList(growable: false);
+  // Neither half of the question answered — see the doc above. With a location
+  // named, an empty chip list is the answer "nothing", and filtering proceeds.
+  if (access.location == null && kinds.isEmpty) {
+    return exercises.toList(growable: false);
+  }
+
+  return exercises.where((e) {
+    if (!e.needsEquipment) return true;
+    final label = e.equipmentLabel;
+    if (label == null || label.trim().isEmpty) return false;
+    final parts = label.split(',');
+    // The contradiction described above: the label says nothing is needed while
+    // an `equipmentId` names a machine. Believe the id.
+    if (e.equipmentId != null &&
+        parts.every((p) => p.trim().toLowerCase().startsWith('none'))) {
+      return false;
+    }
+    return parts.every((p) => _partCovered(p, kinds));
+  }).toList(growable: false);
+}
+
 /// Full pipeline: hide contraindicated exercises, then surface tier-fit ones
 /// first. Profile may be null (returns the input untouched, copied).
 ///

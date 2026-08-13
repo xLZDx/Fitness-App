@@ -18,6 +18,14 @@ import 'programme.dart';
 /// re-screens on read, defence in depth against a profile that changes after
 /// a row was written).
 ///
+/// [catalogue] is also expected to be narrowed to what the user can actually
+/// perform (`availableWith`, `exercise_filter.dart`). That filtering is done by
+/// the caller rather than here on purpose: this function RELAXES a constraint
+/// when a slot has no candidates — see the muscle fallback below — which is the
+/// right answer for a muscle and the wrong one for equipment. Handing it the
+/// narrowed list means the exercises the user cannot do are not in the pool it
+/// could fall back to.
+///
 /// ## Day spacing
 ///
 /// [Programme.daysPerWeek] slots are spread evenly across the 7-day week
@@ -29,9 +37,12 @@ import 'programme.dart';
 ///
 /// ## Exercise rotation
 ///
-/// A day-slot's target muscle (or the whole catalogue, when
-/// [ProgrammeTemplate.isFullBody] — see `programme_templates.dart`) cycles
-/// through candidates by `(week + slot)`, so a 10-week hypertrophy programme
+/// The day-slot's target muscle itself advances with the week, so a programme
+/// naming more muscles than it has weekly slots still reaches every one of them
+/// (see the expression below for what that fixes). Within a muscle — or the
+/// whole catalogue, when [ProgrammeTemplate.isFullBody], see
+/// `programme_templates.dart` — candidates cycle by `(week + slot)`, so a
+/// 10-week hypertrophy programme
 /// does not schedule the same chest exercise ten times: it is real variety
 /// bounded by what the catalogue actually offers for that muscle, not a
 /// promise of novelty this function cannot keep if the candidate list is
@@ -63,7 +74,17 @@ List<ScheduledSession> buildProgrammeSchedule({
       if (programme.muscles.isEmpty) {
         pool = fullBodyPool;
       } else {
-        final muscle = programme.muscles[slot % programme.muscles.length];
+        // Advances with the WEEK as well as the slot, so a programme with more
+        // named muscles than weekly slots still reaches all of them. `slot %
+        // muscles.length` did not: a 4-muscle template cut to 3 days a week
+        // (which B5a's `daysPerWeek` clamp can now do, when the user says they
+        // have three) would schedule muscles 0,1,2 every single week and never
+        // once schedule the fourth. Not "less often" — never. When slots and
+        // muscles are equal, as in every shipped template, this reduces to the
+        // old expression and nothing changes.
+        final muscle = programme
+            .muscles[(week * programme.daysPerWeek + slot) %
+                programme.muscles.length];
         pool = byMuscle[muscle] ?? fullBodyPool;
       }
       if (pool.isEmpty) continue;
