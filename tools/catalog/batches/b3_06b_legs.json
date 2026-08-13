@@ -1,0 +1,794 @@
+{
+  "ea_landmine_calf_raise": {
+    "en": {
+      "purpose": "Loads the calves through the shoulder rather than the hands, so grip never becomes the limit. Calves need heavy loads to grow and grip usually gives out long before they do.",
+      "steps": [
+        "Load one end of a barbell in the landmine and rest it on one shoulder",
+        "Stand with the balls of both feet on a plate or step, heels hanging off",
+        "Hold the bar steady with the hand on that side and stand tall",
+        "Let your heels drop below the step until the calves stretch",
+        "Press up onto your toes as high as you can, hold, then lower slowly"
+      ]
+    },
+    "ru": {
+      "purpose": "Нагружает икры через плечо, а не через кисти, поэтому хват никогда не становится ограничителем. Икрам для роста нужен большой вес, а хват обычно сдаёт задолго до них.",
+      "steps": [
+        "Вставьте один конец грифа в лендмайн и положите его на плечо",
+        "Встаньте передними частями стоп на блин или ступеньку, пятки свисают",
+        "Придерживайте гриф рукой с этой стороны, корпус прямой",
+        "Опустите пятки ниже опоры до растяжения икр",
+        "Поднимитесь на носки максимально высоко, задержитесь и медленно опуститесь"
+      ]
+    }
+  },
+  "ea_landmine_curtsy_lunge": {
+    "en": {
+      "purpose": "Stepping behind and across works the side of the hip, the muscle that keeps your knee tracking properly. Straight-ahead lunges never load it, which is why it stays weak in people who train legs regularly.",
+      "steps": [
+        "Stand facing away from the landmine with the loaded bar end at one shoulder",
+        "Step one foot back and across behind the other, like a curtsy",
+        "Bend both knees and lower until the back knee is near the floor",
+        "Keep your hips square and your chest up throughout",
+        "Push through the front heel to return, then finish the set and switch sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Шаг назад и накрест нагружает боковую часть таза — мышцу, которая удерживает колено на правильной траектории. Прямые выпады её не задействуют, поэтому она остаётся слабой даже у тех, кто регулярно тренирует ноги.",
+      "steps": [
+        "Встаньте спиной к лендмайну, нагруженный конец грифа у одного плеча",
+        "Шагните одной ногой назад и накрест за вторую, как в реверансе",
+        "Согните оба колена и опуститесь, пока заднее колено не окажется у пола",
+        "Таз держите ровно, грудь поднятой",
+        "Оттолкнитесь пяткой передней ноги, доделайте подход и смените сторону"
+      ]
+    }
+  },
+  "ea_landmine_glute_kick_back": {
+    "en": {
+      "purpose": "Isolates the glute at the end of the range, where it does the work of straightening the hip. Squats and lunges load it in the stretch, so this covers the half they leave out.",
+      "steps": [
+        "Stand facing the landmine and hook the loaded bar end behind one heel or ankle",
+        "Hold something stable in front of you for balance",
+        "Stand tall on the other leg with a soft knee",
+        "Push the working leg back and up, squeezing the glute at the top",
+        "Return under control without letting the back arch, then change legs"
+      ]
+    },
+    "ru": {
+      "purpose": "Изолирует ягодицу в конце амплитуды, где она разгибает таз. Приседания и выпады нагружают её в растяжении, так что это упражнение закрывает ту половину, которую они пропускают.",
+      "steps": [
+        "Встаньте лицом к лендмайну и заведите нагруженный конец грифа за пятку или щиколотку",
+        "Придержитесь за устойчивую опору перед собой",
+        "Встаньте прямо на второй ноге, колено слегка согнуто",
+        "Отведите рабочую ногу назад и вверх, сжимая ягодицу в верхней точке",
+        "Вернитесь под контролем, не прогибая поясницу, затем смените ногу"
+      ]
+    }
+  },
+  "ea_landmine_goblet_curtsy_lunge": {
+    "en": {
+      "purpose": "The curtsy step loads the side of the hip, and holding the bar at the chest keeps you upright so the pattern stays clean. Better balanced than the shoulder-loaded version, and easier to learn.",
+      "steps": [
+        "Stand facing away from the landmine and cup the loaded end at your chest with both hands",
+        "Step one foot back and across behind the other leg",
+        "Lower until both knees are bent and the back knee is near the floor",
+        "Keep the chest tall and the hips facing forward",
+        "Drive through the front heel to stand, then alternate sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Шаг накрест нагружает боковую часть таза, а гриф у груди держит корпус прямым, поэтому техника остаётся чистой. Сбалансированнее варианта с грифом на плече и осваивается легче.",
+      "steps": [
+        "Встаньте спиной к лендмайну и обхватите нагруженный конец двумя ладонями у груди",
+        "Шагните одной ногой назад и накрест за вторую",
+        "Опуститесь, пока оба колена не согнутся, а заднее не окажется у пола",
+        "Грудь поднята, таз развёрнут вперёд",
+        "Оттолкнитесь пяткой передней ноги и встаньте, чередуя стороны"
+      ]
+    }
+  },
+  "ea_landmine_goblet_lateral_lunge": {
+    "en": {
+      "purpose": "Trains stepping sideways under load, which almost no gym exercise does. It stretches the inner thigh of the straight leg and builds the hip of the bent one — both directly useful for changing direction without pulling something.",
+      "steps": [
+        "Cup the loaded bar end at your chest with both hands, feet together",
+        "Take a wide step directly out to one side",
+        "Sit the hips back and bend that knee, keeping the other leg straight",
+        "Lower until you feel the stretch along the inside of the straight leg",
+        "Push off the bent leg back to the middle, then step to the other side"
+      ]
+    },
+    "ru": {
+      "purpose": "Тренирует шаг в сторону под нагрузкой, чего почти не делает ни одно упражнение в зале. Растягивает внутреннюю поверхность прямой ноги и нагружает таз согнутой — и то и другое напрямую полезно при смене направления без травм.",
+      "steps": [
+        "Обхватите нагруженный конец грифа двумя ладонями у груди, стопы вместе",
+        "Сделайте широкий шаг строго в сторону",
+        "Отведите таз назад и согните это колено, вторая нога остаётся прямой",
+        "Опуститесь до растяжения по внутренней стороне прямой ноги",
+        "Оттолкнитесь согнутой ногой обратно в центр и шагните в другую сторону"
+      ]
+    }
+  },
+  "ea_landmine_hack_squat": {
+    "en": {
+      "purpose": "The bar's arc holds you steady, so you can sit into a deep squat with your torso upright and let the quadriceps take almost all of it. A way to train the front of the thigh hard without a squat rack.",
+      "steps": [
+        "Straddle the bar with the loaded end behind you, and grip it with both hands at your sides",
+        "Stand with your feet shoulder width apart and your chest up",
+        "Sit straight down, keeping the torso as upright as you can",
+        "Lower until your thighs are at least parallel to the floor",
+        "Drive up through the whole foot without letting your chest tip forward"
+      ]
+    },
+    "ru": {
+      "purpose": "Дуга грифа держит вас устойчиво, поэтому можно уйти в глубокий присед с прямым корпусом и отдать почти всю работу квадрицепсу. Способ тяжело нагрузить переднюю поверхность бедра без силовой рамы.",
+      "steps": [
+        "Встаньте над грифом так, чтобы нагруженный конец был сзади, и возьмитесь за него двумя руками у бёдер",
+        "Стопы на ширине плеч, грудь поднята",
+        "Опускайтесь строго вниз, удерживая корпус максимально вертикально",
+        "Опуститесь как минимум до параллели бёдер с полом",
+        "Встаньте, отталкиваясь всей стопой, не заваливая грудь вперёд"
+      ]
+    }
+  },
+  "ea_landmine_lateral_lunge": {
+    "en": {
+      "purpose": "Sideways movement under load, with the bar on the shoulder so the hands stay free. It builds the inner thigh and the side of the hip — the two areas that give out when you step sideways in a hurry.",
+      "steps": [
+        "Rest the loaded bar end on one shoulder and stand with feet together",
+        "Step wide to the side away from the loaded shoulder",
+        "Push the hips back and bend that knee, other leg straight",
+        "Lower until you feel a stretch on the inside of the straight leg",
+        "Push back to the middle, complete the set, then load the other shoulder"
+      ]
+    },
+    "ru": {
+      "purpose": "Движение вбок под нагрузкой, гриф на плече — руки остаются свободными. Развивает внутреннюю поверхность бедра и боковую часть таза, то есть ровно то, что подводит при резком шаге в сторону.",
+      "steps": [
+        "Положите нагруженный конец грифа на плечо, стопы вместе",
+        "Сделайте широкий шаг в сторону от нагруженного плеча",
+        "Отведите таз назад и согните это колено, вторая нога прямая",
+        "Опуститесь до растяжения по внутренней стороне прямой ноги",
+        "Вернитесь в центр, доделайте подход и переложите гриф на другое плечо"
+      ]
+    }
+  },
+  "ea_landmine_lunge_to_overhead_press": {
+    "en": {
+      "purpose": "One movement that loads legs and shoulders in sequence, so the heart rate climbs while both get trained. Useful when the session is short and you need the whole body covered.",
+      "steps": [
+        "Hold the loaded bar end at one shoulder, facing away from the anchor",
+        "Step back into a reverse lunge until the back knee nearly touches the floor",
+        "Drive through the front heel to stand back up",
+        "As you finish standing, press the bar up and forward to a straight arm",
+        "Bring the bar back to the shoulder and repeat, alternating legs"
+      ]
+    },
+    "ru": {
+      "purpose": "Одно движение нагружает последовательно ноги и плечи, поэтому пульс растёт, а тренируется и то и другое. Пригодится, когда времени мало, а закрыть нужно всё тело.",
+      "steps": [
+        "Держите нагруженный конец грифа у плеча, спиной к точке крепления",
+        "Шагните назад в обратный выпад, пока заднее колено почти не коснётся пола",
+        "Оттолкнитесь пяткой передней ноги и встаньте",
+        "В момент выпрямления выжмите гриф вверх и вперёд до прямой руки",
+        "Верните гриф к плечу и повторите, чередуя ноги"
+      ]
+    }
+  },
+  "ea_landmine_squat_and_press": {
+    "en": {
+      "purpose": "A squat that finishes as a press, so the leg drive carries into the shoulders. It teaches the whole body to work as one chain, which is what lifting anything heavy off the floor actually requires.",
+      "steps": [
+        "Cup the loaded bar end at your chest with both hands, standing away from the anchor",
+        "Set your feet shoulder width apart and brace your stomach",
+        "Squat until your thighs are about parallel with the floor",
+        "Drive up hard through your legs and let that momentum start the press",
+        "Finish with the bar pressed forward and up, then bring it back to your chest"
+      ]
+    },
+    "ru": {
+      "purpose": "Присед, переходящий в жим: усилие ног передаётся в плечи. Учит тело работать одной цепью — именно это и требуется, чтобы поднять что-то тяжёлое с пола.",
+      "steps": [
+        "Обхватите нагруженный конец грифа двумя ладонями у груди, стоя спиной к креплению",
+        "Стопы на ширине плеч, живот напряжён",
+        "Присядьте примерно до параллели бёдер с полом",
+        "Мощно оттолкнитесь ногами и передайте импульс в жим",
+        "Завершите жимом грифа вперёд и вверх, затем верните его к груди"
+      ]
+    }
+  },
+  "ea_lateral_band_walks": {
+    "en": {
+      "purpose": "Wakes up the muscle on the side of the hip that stops the knee collapsing inward. Doing a set of these before squatting or running noticeably changes how well the knees track.",
+      "steps": [
+        "Put a loop band around your legs just above the knees or around the ankles",
+        "Stand with feet hip width apart and bend into a quarter squat",
+        "Keep your chest up, your toes forward and the tension on the band",
+        "Step sideways with one foot, then follow with the other without letting them touch",
+        "Continue for the set distance, then walk back the other way"
+      ]
+    },
+    "ru": {
+      "purpose": "Включает мышцу сбоку таза, которая не даёт колену заваливаться внутрь. Подход перед приседаниями или бегом заметно меняет то, как идут колени.",
+      "steps": [
+        "Наденьте кольцевую ленту на ноги чуть выше коленей или на щиколотки",
+        "Встаньте, стопы на ширине таза, и опуститесь в четверть приседа",
+        "Грудь поднята, носки вперёд, лента всё время натянута",
+        "Сделайте шаг в сторону одной стопой, затем подтяните вторую, не сводя их вместе",
+        "Пройдите заданную дистанцию и вернитесь в другую сторону"
+      ]
+    }
+  },
+  "ea_lateral_box_jump": {
+    "en": {
+      "purpose": "Jumping sideways trains power in a direction almost no training covers, and teaches the knee and hip to absorb a landing off-centre. Start with a low box — the landing matters far more than the height.",
+      "steps": [
+        "Stand side-on to a low box with your feet hip width apart",
+        "Dip into a quarter squat and swing your arms back",
+        "Jump sideways onto the box, landing on both feet at once",
+        "Land softly with your knees bent and tracking over your toes",
+        "Step down carefully rather than jumping down, and reset before the next rep"
+      ]
+    },
+    "ru": {
+      "purpose": "Прыжок вбок тренирует мощность в направлении, которое почти не встречается в тренировках, и учит колено и таз гасить приземление не по центру. Начинайте с низкой тумбы — приземление важнее высоты.",
+      "steps": [
+        "Встаньте боком к низкой тумбе, стопы на ширине таза",
+        "Опуститесь в четверть приседа и отведите руки назад",
+        "Прыгните вбок на тумбу, приземляясь сразу на обе стопы",
+        "Приземляйтесь мягко, колени согнуты и идут по линии носков",
+        "Спускайтесь шагом, а не прыжком, и сделайте паузу перед следующим повторением"
+      ]
+    }
+  },
+  "ea_med_ball_front_squat_raise": {
+    "en": {
+      "purpose": "The ball held out in front acts as a counterweight, which lets most people squat deeper with a more upright back than they can empty-handed. A good way to open up squat depth before adding real load.",
+      "steps": [
+        "Hold a medicine ball at chest height with both hands, feet shoulder width apart",
+        "Squat down as deep as you can while keeping your chest tall",
+        "At the bottom, keep your heels down and your knees tracking over your toes",
+        "Stand up and, as you rise, raise the ball overhead with straight arms",
+        "Lower the ball to your chest and go straight into the next squat"
+      ]
+    },
+    "ru": {
+      "purpose": "Мяч перед собой работает противовесом, поэтому большинство приседает глубже и с более прямой спиной, чем без веса. Хороший способ раскрыть глубину приседа до добавления настоящей нагрузки.",
+      "steps": [
+        "Держите набивной мяч на уровне груди двумя руками, стопы на ширине плеч",
+        "Присядьте настолько глубоко, насколько получается, удерживая грудь поднятой",
+        "Внизу пятки прижаты к полу, колени идут по линии носков",
+        "Вставая, поднимите мяч над головой на прямых руках",
+        "Опустите мяч к груди и сразу переходите в следующий присед"
+      ]
+    }
+  },
+  "ea_medicine_ball_jumps": {
+    "en": {
+      "purpose": "Holding a ball while jumping adds load to the takeoff and to the landing, which builds the legs' ability to produce and absorb force quickly. Keep the sets short — this is power work, not conditioning.",
+      "steps": [
+        "Hold a medicine ball at your chest with both hands, feet hip width apart",
+        "Dip into a quarter squat, keeping the chest up",
+        "Jump straight up as high as you can, holding the ball still",
+        "Land softly on both feet with the knees bending to absorb the impact",
+        "Reset to a standing position before starting the next jump"
+      ]
+    },
+    "ru": {
+      "purpose": "Мяч в руках добавляет нагрузку и на отталкивание, и на приземление, развивая способность ног быстро создавать и гасить усилие. Подходы держите короткими: это работа на мощность, а не на выносливость.",
+      "steps": [
+        "Держите набивной мяч у груди двумя руками, стопы на ширине таза",
+        "Опуститесь в четверть приседа, грудь поднята",
+        "Выпрыгните вертикально вверх как можно выше, удерживая мяч неподвижно",
+        "Приземлитесь мягко на обе стопы, гася удар сгибанием коленей",
+        "Полностью выпрямитесь перед следующим прыжком"
+      ]
+    }
+  },
+  "ea_multi_hip_adduction": {
+    "en": {
+      "purpose": "Loads the inner thigh directly, which is hard to reach any other way. These muscles matter for groin injury prevention and for keeping the knee from drifting in, and they are almost always undertrained.",
+      "steps": [
+        "Set the machine so the pad sits against the inside of the working thigh",
+        "Stand or sit as the machine requires, holding the handles for support",
+        "Start with the leg out to the side, feeling a light stretch",
+        "Pull the leg in across the midline against the resistance",
+        "Return slowly to the stretched position, then set up for the other leg"
+      ]
+    },
+    "ru": {
+      "purpose": "Прямо нагружает внутреннюю поверхность бедра, до которой иначе добраться трудно. Эти мышцы важны для профилактики травм паха и для того, чтобы колено не уходило внутрь, и почти всегда недотренированы.",
+      "steps": [
+        "Настройте тренажёр так, чтобы валик упирался во внутреннюю поверхность рабочего бедра",
+        "Встаньте или сядьте, как требует конструкция, придерживаясь за ручки",
+        "Начните с отведённой в сторону ногой, ощущая лёгкое растяжение",
+        "Приведите ногу внутрь через среднюю линию, преодолевая сопротивление",
+        "Медленно вернитесь в растянутое положение, затем настройте для другой ноги"
+      ]
+    }
+  },
+  "ea_narrow_stance_heels_elevated_dumbbell_goblet_squats": {
+    "en": {
+      "purpose": "Raising the heels and narrowing the stance shifts almost everything onto the front of the thigh, and lets you stay upright at full depth. This is the squat variation for building the quadriceps specifically.",
+      "steps": [
+        "Place your heels on a small plate or wedge, feet close together",
+        "Hold a dumbbell vertically against your chest with both hands",
+        "Keep your chest tall and your elbows tucked in",
+        "Squat straight down as deep as you can control, knees travelling forward over the toes",
+        "Drive back up through the middle of the foot without leaning forward"
+      ]
+    },
+    "ru": {
+      "purpose": "Поднятые пятки и узкая стойка переносят почти всю нагрузку на переднюю поверхность бедра и позволяют остаться прямым на полной глубине. Это вариант приседа именно для развития квадрицепса.",
+      "steps": [
+        "Поставьте пятки на небольшой блин или клин, стопы близко друг к другу",
+        "Держите гантель вертикально у груди двумя руками",
+        "Грудь поднята, локти прижаты",
+        "Присядьте строго вниз настолько глубоко, насколько контролируете, колени идут вперёд за носки",
+        "Встаньте, отталкиваясь серединой стопы, не наклоняясь вперёд"
+      ]
+    }
+  },
+  "ea_nordic_hamstring_curl_with_partner": {
+    "en": {
+      "purpose": "The single most effective exercise there is for reducing hamstring injuries, which is why it is standard in football and sprint training. It loads the hamstring while it lengthens, which is exactly when tears happen.",
+      "steps": [
+        "Kneel on a mat with your ankles held firmly down by a partner",
+        "Keep your body straight from knees to shoulders and your stomach braced",
+        "Lower your torso toward the floor as slowly as you possibly can",
+        "Resist the whole way down — do not let yourself drop",
+        "Catch yourself with your hands and push back up to the start"
+      ]
+    },
+    "ru": {
+      "purpose": "Самое эффективное из существующих упражнений для снижения травм задней поверхности бедра — поэтому оно стандартно в футболе и спринте. Нагружает мышцу в момент удлинения, а именно тогда и происходят надрывы.",
+      "steps": [
+        "Встаньте на колени на коврик, партнёр надёжно удерживает ваши щиколотки",
+        "Тело прямое от коленей до плеч, живот напряжён",
+        "Опускайте корпус к полу настолько медленно, насколько возможно",
+        "Сопротивляйтесь всю дорогу вниз — не позволяйте себе упасть",
+        "Смягчите касание руками и оттолкнитесь обратно в исходное положение"
+      ]
+    }
+  },
+  "ea_normal_squat_smith_machine": {
+    "en": {
+      "purpose": "The fixed bar path removes the balance requirement, so you can push a squat closer to failure without a spotter. It is the safer choice for training alone, at the cost of not training balance itself.",
+      "steps": [
+        "Set the bar on your upper back and position your feet slightly in front of the bar",
+        "Stand with feet shoulder width apart and unlock the bar",
+        "Take a breath and brace your stomach",
+        "Squat down until your thighs are at least parallel with the floor",
+        "Drive up through the whole foot and re-lock the bar at the end of the set"
+      ]
+    },
+    "ru": {
+      "purpose": "Фиксированная траектория снимает требование к балансу, поэтому присед можно доводить ближе к отказу без страхующего. Более безопасный выбор для тренировки в одиночку — ценой того, что сам баланс не тренируется.",
+      "steps": [
+        "Положите гриф на верх спины и поставьте стопы чуть впереди грифа",
+        "Стопы на ширине плеч, снимите гриф с фиксаторов",
+        "Вдохните и напрягите живот",
+        "Присядьте как минимум до параллели бёдер с полом",
+        "Встаньте, отталкиваясь всей стопой, и зафиксируйте гриф в конце подхода"
+      ]
+    }
+  },
+  "ea_pistol_squat_to_box": {
+    "en": {
+      "purpose": "A single-leg squat with a box behind you, so the depth is set and there is somewhere to land if the leg gives out. It is how you build toward a full pistol squat without falling over learning it.",
+      "steps": [
+        "Stand on one leg in front of a box or bench, the other leg extended forward",
+        "Hold your arms out in front for balance",
+        "Sit back and down slowly until you touch the box with your backside",
+        "Do not relax onto it — keep the tension in the working leg",
+        "Stand back up on the same leg, then finish the set and switch"
+      ]
+    },
+    "ru": {
+      "purpose": "Присед на одной ноге с тумбой позади: глубина задана, и есть куда сесть, если нога не удержит. Так и строят путь к полному пистолету, не падая в процессе освоения.",
+      "steps": [
+        "Встаньте на одну ногу перед тумбой или скамьёй, вторую вытяните вперёд",
+        "Вытяните руки перед собой для равновесия",
+        "Медленно опускайтесь назад и вниз до касания тумбы тазом",
+        "Не расслабляйтесь на ней — сохраняйте напряжение в рабочей ноге",
+        "Встаньте на той же ноге, доделайте подход и смените сторону"
+      ]
+    }
+  },
+  "ea_plate_curtsy_lunge": {
+    "en": {
+      "purpose": "The crossing step loads the side of the hip, which straight lunges miss entirely. Holding a plate at the chest keeps you upright so the hips stay square and the pattern stays honest.",
+      "steps": [
+        "Hold a plate against your chest with both hands, feet hip width apart",
+        "Step one foot back and diagonally behind the other",
+        "Bend both knees and lower until the back knee nearly touches the floor",
+        "Keep your hips facing forward and your chest tall",
+        "Push through the front heel to return, alternating sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Шаг накрест нагружает боковую часть таза, которую прямые выпады не задействуют вовсе. Блин у груди держит корпус прямым, поэтому таз остаётся ровным, а движение — честным.",
+      "steps": [
+        "Прижмите блин к груди двумя руками, стопы на ширине таза",
+        "Шагните одной ногой назад и по диагонали за вторую",
+        "Согните оба колена и опуститесь, пока заднее почти не коснётся пола",
+        "Таз развёрнут вперёд, грудь поднята",
+        "Оттолкнитесь пяткой передней ноги, чередуя стороны"
+      ]
+    }
+  },
+  "ea_plate_deadlift": {
+    "en": {
+      "purpose": "Teaches the deadlift pattern with a load you can hold anywhere, and the plate's narrow shape lets you keep it close to your legs. Where a barbell drifts away, this one does not let you.",
+      "steps": [
+        "Stand a plate on its edge between your feet, feet hip width apart",
+        "Push your hips back and bend down to grip the top of the plate with both hands",
+        "Set your back flat, chest up and arms straight",
+        "Push the floor away with your legs and stand up, keeping the plate close to your body",
+        "Lower along the same path by pushing the hips back first, not by bending the back"
+      ]
+    },
+    "ru": {
+      "purpose": "Учит паттерну становой с весом, который можно держать где угодно, а узкая форма блина позволяет вести его вплотную к ногам. Там, где штанга уходит вперёд, блин этого не даёт.",
+      "steps": [
+        "Поставьте блин на ребро между стопами, ноги на ширине таза",
+        "Отведите таз назад и наклонитесь, взявшись за верх блина двумя руками",
+        "Спина прямая, грудь поднята, руки прямые",
+        "Оттолкнитесь ногами от пола и выпрямитесь, ведя блин близко к телу",
+        "Опустите по той же траектории, отводя сначала таз, а не сгибая спину"
+      ]
+    }
+  },
+  "ea_plate_deficit_lunge": {
+    "en": {
+      "purpose": "Standing on a plate lets the back knee travel below the front foot, adding range at the bottom of the lunge. That extra depth is where the glute of the front leg gets the most stretch and the most work.",
+      "steps": [
+        "Stand with your front foot on a raised plate or step, holding a plate at your chest",
+        "Step the other foot back and lower into a lunge",
+        "Let the back knee travel below the level of the front foot",
+        "Keep the front shin close to vertical and the chest tall",
+        "Push through the front heel to stand, then switch legs"
+      ]
+    },
+    "ru": {
+      "purpose": "Стойка на блине позволяет заднему колену опуститься ниже уровня передней стопы, добавляя амплитуду внизу выпада. Именно эта дополнительная глубина даёт ягодице передней ноги максимальное растяжение и максимальную работу.",
+      "steps": [
+        "Поставьте переднюю стопу на блин или ступеньку, блин держите у груди",
+        "Шагните второй ногой назад и опуститесь в выпад",
+        "Дайте заднему колену уйти ниже уровня передней стопы",
+        "Голень передней ноги почти вертикальна, грудь поднята",
+        "Оттолкнитесь пяткой передней ноги и встаньте, затем смените ногу"
+      ]
+    }
+  },
+  "ea_plate_forward_lunge": {
+    "en": {
+      "purpose": "Stepping forward loads the front of the thigh more than a reverse lunge does, and it trains the leg to absorb a step under load — which is what walking downhill and down stairs asks for.",
+      "steps": [
+        "Hold a plate against your chest with both hands, standing tall",
+        "Step one foot well forward and lower until both knees are near ninety degrees",
+        "Let the front heel land first and keep the shin close to vertical",
+        "Keep the chest up and avoid letting the front knee collapse inward",
+        "Push back off the front foot to standing, then step with the other leg"
+      ]
+    },
+    "ru": {
+      "purpose": "Шаг вперёд нагружает переднюю поверхность бедра сильнее, чем обратный выпад, и учит ногу гасить шаг под нагрузкой — именно это требуется при спуске с горы и по лестнице.",
+      "steps": [
+        "Прижмите блин к груди двумя руками, стоя прямо",
+        "Шагните одной ногой далеко вперёд и опуститесь, пока оба колена не согнутся примерно до прямого угла",
+        "Передняя стопа приземляется с пятки, голень почти вертикальна",
+        "Грудь держите поднятой, не позволяйте переднему колену заваливаться внутрь",
+        "Оттолкнитесь передней стопой обратно и шагните другой ногой"
+      ]
+    }
+  },
+  "ea_plate_good_morning_anterior": {
+    "en": {
+      "purpose": "Holding the plate out in front instead of at the chest makes the same hinge far harder on the back, because the weight sits further from your hips. Use a light plate — the leverage does the work here.",
+      "steps": [
+        "Hold a light plate with straight arms out in front of your chest",
+        "Stand with feet hip width apart and soften the knees",
+        "Push your hips straight back and lower your chest toward the floor",
+        "Keep the arms extended and the back completely flat",
+        "Stop at a strong hamstring stretch, then squeeze the glutes to stand"
+      ]
+    },
+    "ru": {
+      "purpose": "Блин на вытянутых руках делает тот же наклон гораздо тяжелее для спины, потому что вес находится дальше от таза. Берите лёгкий блин — здесь работает рычаг, а не масса.",
+      "steps": [
+        "Держите лёгкий блин на прямых руках перед грудью",
+        "Стопы на ширине таза, колени слегка согнуты",
+        "Отведите таз строго назад и опускайте грудь к полу",
+        "Руки остаются вытянутыми, спина полностью прямой",
+        "Остановитесь на сильном растяжении задней поверхности бедра и выпрямитесь ягодицами"
+      ]
+    }
+  },
+  "ea_plate_lateral_lunge": {
+    "en": {
+      "purpose": "Trains the sideways step under load, which almost nothing else in a gym does. It stretches the inner thigh of the straight leg while loading the hip of the bent one.",
+      "steps": [
+        "Hold a plate at your chest with both hands and stand with feet together",
+        "Take a wide step directly out to one side",
+        "Sit the hips back and bend that knee, keeping the trailing leg completely straight",
+        "Lower until you feel a stretch on the inside of the straight leg",
+        "Push off the bent leg to return to the middle, then step the other way"
+      ]
+    },
+    "ru": {
+      "purpose": "Тренирует шаг в сторону под нагрузкой, чего почти ничто в зале не делает. Растягивает внутреннюю поверхность прямой ноги и одновременно нагружает таз согнутой.",
+      "steps": [
+        "Держите блин у груди двумя руками, стопы вместе",
+        "Сделайте широкий шаг строго в сторону",
+        "Отведите таз назад и согните это колено, вторая нога полностью прямая",
+        "Опуститесь до растяжения по внутренней стороне прямой ноги",
+        "Оттолкнитесь согнутой ногой обратно в центр и шагните в другую сторону"
+      ]
+    }
+  },
+  "ea_plate_overhead_walking_lunge": {
+    "en": {
+      "purpose": "Holding a plate overhead while lunging forces the stomach and upper back to hold you upright — the moment they let go, the weight pulls you forward. It is a lunge, a shoulder hold and a brace test in one.",
+      "steps": [
+        "Press a plate overhead with straight arms and lock your ribs down",
+        "Step forward into a lunge until the back knee nearly touches the floor",
+        "Keep the plate directly above your shoulders throughout",
+        "Push through the front heel and step straight into the next lunge",
+        "Continue for the set distance, keeping the arms locked the whole way"
+      ]
+    },
+    "ru": {
+      "purpose": "Блин над головой в выпадах заставляет живот и верх спины удерживать вас прямо: стоит им отпустить, вес тянет вперёд. Это одновременно выпад, удержание над головой и проверка корпуса.",
+      "steps": [
+        "Выжмите блин над головой на прямых руках и зафиксируйте рёбра опущенными",
+        "Шагните вперёд в выпад, пока заднее колено почти не коснётся пола",
+        "Блин всё время держите строго над плечами",
+        "Оттолкнитесь пяткой передней ноги и сразу шагните в следующий выпад",
+        "Пройдите заданную дистанцию, не сгибая руки"
+      ]
+    }
+  },
+  "ea_plate_single_leg_deadlift": {
+    "en": {
+      "purpose": "Trains the hamstring, the glute and your balance on one leg, with a plate that stays close to the standing leg. Everyday lifting is rarely done on two evenly planted feet, and this is the version that matches it.",
+      "steps": [
+        "Stand on one leg holding a plate with both hands in front of your thigh",
+        "Keep a soft bend in the standing knee and lock the back flat",
+        "Hinge at the hip and let the free leg lift straight behind you",
+        "Lower the plate along the standing leg until your body forms one line",
+        "Squeeze the glute to stand tall, then finish the set and switch legs"
+      ]
+    },
+    "ru": {
+      "purpose": "Тренирует заднюю поверхность бедра, ягодицу и равновесие на одной ноге, а блин всё время идёт близко к опорной ноге. В быту вещи редко поднимают с двух ровно поставленных стоп — это тот вариант, что этому соответствует.",
+      "steps": [
+        "Встаньте на одну ногу, блин держите двумя руками перед бедром",
+        "Опорное колено слегка согнуто, спина зафиксирована прямой",
+        "Наклонитесь от таза, свободная нога поднимается прямо назад",
+        "Ведите блин вдоль опорной ноги, пока тело не составит одну линию",
+        "Напрягите ягодицу и выпрямитесь, доделайте подход и смените ногу"
+      ]
+    }
+  },
+  "ea_plate_single_leg_pinch_grip_deadlift": {
+    "en": {
+      "purpose": "Combines a single-leg hinge with a pinch grip, so balance, hamstring and grip all fail at different points and you find out which one gives first. Demanding, and best kept to low repetitions.",
+      "steps": [
+        "Stand on one leg with a plate on the floor beside the standing foot",
+        "Pinch the plate between your fingers and thumb with the opposite hand",
+        "Hinge at the hip, free leg lifting behind you, back flat",
+        "Stand up by squeezing the glute, keeping the plate hanging still",
+        "Lower it under control to the floor, then finish the set and switch sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Соединяет наклон на одной ноге со щипковым хватом: равновесие, задняя поверхность бедра и хват сдают в разные моменты, и становится видно, что откажет первым. Требовательное упражнение, лучше делать на малое число повторений.",
+      "steps": [
+        "Встаньте на одну ногу, блин лежит на полу рядом с опорной стопой",
+        "Зажмите блин пальцами противоположной руки",
+        "Наклонитесь от таза, свободная нога поднимается назад, спина прямая",
+        "Выпрямитесь усилием ягодицы, блин висит неподвижно",
+        "Опустите его на пол под контролем, доделайте подход и смените сторону"
+      ]
+    }
+  },
+  "ea_plate_squat_hold": {
+    "en": {
+      "purpose": "Holding the bottom of a squat under load builds the ability to stay in a position rather than move through it, which is a different quality and one that transfers to keeping your posture under fatigue.",
+      "steps": [
+        "Hold a plate against your chest with both hands, feet shoulder width apart",
+        "Squat down until your thighs are about parallel with the floor",
+        "Keep your chest up, your heels down and your knees over your toes",
+        "Hold that position for the set time, breathing normally",
+        "Stand up under control rather than collapsing out of the hold"
+      ]
+    },
+    "ru": {
+      "purpose": "Удержание нижней точки приседа под нагрузкой развивает способность оставаться в положении, а не проходить его. Это другое качество, и оно переносится на удержание осанки при утомлении.",
+      "steps": [
+        "Прижмите блин к груди двумя руками, стопы на ширине плеч",
+        "Присядьте примерно до параллели бёдер с полом",
+        "Грудь поднята, пятки прижаты, колени идут по линии носков",
+        "Удерживайте положение заданное время, дыша ровно",
+        "Встаньте под контролем, а не вываливаясь из удержания"
+      ]
+    }
+  },
+  "ea_plate_squat_hold_biceps_curl": {
+    "en": {
+      "purpose": "Curling while holding the bottom of a squat keeps the legs under constant tension while the arms work, so a single plate covers two jobs. Efficient, and it makes the squat hold considerably harder to keep clean.",
+      "steps": [
+        "Hold a plate at your chest and squat down to about parallel",
+        "Hold that depth with your chest up and heels planted",
+        "Extend your arms to lower the plate down in front of you",
+        "Curl it back to your chest without letting your torso tip forward",
+        "Continue curling for the set, then stand up out of the hold"
+      ]
+    },
+    "ru": {
+      "purpose": "Подъёмы на бицепс в нижней точке приседа держат ноги под постоянным напряжением, пока работают руки, — один блин закрывает две задачи. Эффективно, и удерживать присед чисто становится заметно тяжелее.",
+      "steps": [
+        "Держите блин у груди и присядьте примерно до параллели",
+        "Удерживайте эту глубину, грудь поднята, пятки прижаты",
+        "Выпрямите руки, опуская блин перед собой",
+        "Согните руки обратно к груди, не заваливая корпус вперёд",
+        "Продолжайте подъёмы весь подход, затем встаньте из удержания"
+      ]
+    }
+  },
+  "ea_plate_squat_hold_reach": {
+    "en": {
+      "purpose": "Reaching forward from the bottom of a squat pulls your balance toward your toes, so the legs and the stomach have to work harder to hold the position. A simple way to make a squat hold much more demanding without more weight.",
+      "steps": [
+        "Hold a plate at your chest and squat down to about parallel",
+        "Keep your heels flat and your chest tall in the hold",
+        "Push the plate straight out in front of you until the arms are extended",
+        "Hold it there without letting your heels lift or your back round",
+        "Draw it back to your chest and repeat for the set"
+      ]
+    },
+    "ru": {
+      "purpose": "Вынос блина вперёд из нижней точки приседа смещает баланс к носкам, поэтому ногам и животу приходится работать сильнее, чтобы удержать положение. Простой способ сильно усложнить удержание без добавления веса.",
+      "steps": [
+        "Держите блин у груди и присядьте примерно до параллели",
+        "Пятки прижаты к полу, грудь поднята",
+        "Вытолкните блин прямо перед собой до полного выпрямления рук",
+        "Удерживайте его так, не отрывая пятки и не круглая спину",
+        "Притяните обратно к груди и повторите весь подход"
+      ]
+    }
+  },
+  "ea_plate_squat_reach": {
+    "en": {
+      "purpose": "Adds an arm reach to each squat, so every repetition includes a moment where the load moves away from your body and your trunk has to hold it. It turns a plain squat into a whole-body exercise.",
+      "steps": [
+        "Hold a plate at your chest with both hands and stand with feet shoulder width",
+        "Squat down until your thighs are about parallel with the floor",
+        "At the bottom, push the plate straight out in front of you",
+        "Bring it back to your chest before you start standing",
+        "Stand up fully and repeat for the set"
+      ]
+    },
+    "ru": {
+      "purpose": "Добавляет вынос рук к каждому приседу, поэтому в каждом повторении есть момент, когда вес уходит от тела и корпус должен его удержать. Это превращает обычный присед в упражнение на всё тело.",
+      "steps": [
+        "Держите блин у груди двумя руками, стопы на ширине плеч",
+        "Присядьте примерно до параллели бёдер с полом",
+        "Внизу вытолкните блин прямо перед собой",
+        "Верните его к груди до того, как начнёте вставать",
+        "Полностью выпрямитесь и повторите"
+      ]
+    }
+  },
+  "ea_plate_staggered_deadlift": {
+    "en": {
+      "purpose": "Most of the weight goes through the front leg while the back foot only steadies you, so each side gets trained without needing single-leg balance. The practical way to even out a stronger and weaker leg.",
+      "steps": [
+        "Stand with one foot forward and the other half a step back with the heel raised",
+        "Hold a plate with both hands in front of your thighs",
+        "Put about eighty percent of your weight on the front foot",
+        "Hinge at the hips and lower the plate along the front leg with a flat back",
+        "Drive through the front heel to stand, then swap the stance"
+      ]
+    },
+    "ru": {
+      "purpose": "Основной вес идёт через переднюю ногу, а задняя стопа только придаёт устойчивость — каждая сторона тренируется без требований к одноногому балансу. Практичный способ выровнять сильную и слабую ногу.",
+      "steps": [
+        "Встаньте, одна стопа впереди, вторая на полшага назад с поднятой пяткой",
+        "Держите блин двумя руками перед бёдрами",
+        "Перенесите примерно восемьдесят процентов веса на переднюю стопу",
+        "Наклонитесь от таза и опустите блин вдоль передней ноги, спина прямая",
+        "Оттолкнитесь пяткой передней ноги, встаньте и смените стойку"
+      ]
+    }
+  },
+  "ea_plate_staggered_pinch_grip_deadlift": {
+    "en": {
+      "purpose": "The staggered stance loads one leg while the pinch grip loads the fingers, so this trains the hinge and the grip in the same set. Grip usually fails first, which makes it a natural way to cap the load.",
+      "steps": [
+        "Stand with one foot forward and the other half a step back, heel raised",
+        "Pinch a plate in each hand by the smooth outer face, arms hanging",
+        "Shift most of your weight onto the front foot",
+        "Hinge at the hips and lower the plates along the front leg, back flat",
+        "Stand back up through the front heel, then change the stance"
+      ]
+    },
+    "ru": {
+      "purpose": "Разножка нагружает одну ногу, а щипковый хват — пальцы: наклон и хват тренируются в одном подходе. Хват обычно сдаёт первым, и это естественным образом ограничивает вес.",
+      "steps": [
+        "Встаньте, одна стопа впереди, вторая на полшага назад с поднятой пяткой",
+        "Зажмите по блину в каждой руке за гладкую внешнюю сторону, руки опущены",
+        "Перенесите основной вес на переднюю стопу",
+        "Наклонитесь от таза и опустите блины вдоль передней ноги, спина прямая",
+        "Встаньте через пятку передней ноги и смените стойку"
+      ]
+    }
+  },
+  "ea_sissy_squat_bodyweight": {
+    "en": {
+      "purpose": "Loads the front of the thigh through a stretch almost nothing else reaches, by letting the knees travel far forward while the hips stay open. Build up slowly — the knees need time to adapt to this position.",
+      "steps": [
+        "Hold a bench or rail with one hand and stand tall with feet hip width",
+        "Rise onto the balls of your feet and keep your hips pushed forward",
+        "Let your knees travel forward as you lean your torso back in a straight line",
+        "Lower as far as you can control, keeping hips, chest and head aligned",
+        "Pull yourself back up using the front of the thighs, not by bending at the hips"
+      ]
+    },
+    "ru": {
+      "purpose": "Нагружает переднюю поверхность бедра в растяжении, до которого почти ничто не добирается: колени уходят далеко вперёд, а таз остаётся раскрытым. Наращивайте постепенно — коленям нужно время, чтобы адаптироваться к этому положению.",
+      "steps": [
+        "Придержитесь одной рукой за скамью или поручень, стопы на ширине таза",
+        "Поднимитесь на переднюю часть стоп и подайте таз вперёд",
+        "Пустите колени вперёд, отклоняя корпус назад одной прямой линией",
+        "Опуститесь настолько, насколько контролируете, сохраняя линию таз-грудь-голова",
+        "Поднимитесь силой передней поверхности бёдер, а не сгибанием в тазу"
+      ]
+    }
+  },
+  "ea_smith_machine_narrow_stance_heels_elevated_squats": {
+    "en": {
+      "purpose": "Narrow feet and raised heels point the work at the front of the thigh, and the fixed bar path lets you stay in that upright position without fighting for balance. The most direct quadriceps squat available.",
+      "steps": [
+        "Place a small plate or wedge under your heels and stand under the bar",
+        "Set your feet close together, slightly in front of the bar, and unlock it",
+        "Keep your chest tall and your torso as upright as the machine allows",
+        "Squat straight down as deep as you can control, knees travelling forward",
+        "Drive back up without letting your heels leave the wedge"
+      ]
+    },
+    "ru": {
+      "purpose": "Узкая постановка и поднятые пятки направляют работу на переднюю поверхность бедра, а фиксированная траектория позволяет держать это вертикальное положение, не борясь за равновесие. Самый прямой присед на квадрицепс из доступных.",
+      "steps": [
+        "Подложите небольшой блин или клин под пятки и встаньте под гриф",
+        "Стопы близко друг к другу, чуть впереди грифа, снимите его с фиксаторов",
+        "Грудь поднята, корпус настолько вертикально, насколько позволяет тренажёр",
+        "Присядьте строго вниз настолько глубоко, насколько контролируете, колени идут вперёд",
+        "Встаньте, не отрывая пятки от подставки"
+      ]
+    }
+  },
+  "ea_standing_cable_hip_flexion": {
+    "en": {
+      "purpose": "Trains the muscles that lift the knee, which running and sprinting depend on and which almost no gym exercise loads directly. Weakness there shows up as a stride that shortens when you get tired.",
+      "steps": [
+        "Attach an ankle strap to a low pulley and fasten it around one ankle",
+        "Stand facing away from the machine and hold something stable for balance",
+        "Stand tall on the other leg with the working leg slightly behind you",
+        "Drive the knee up and forward against the cable until the thigh is about parallel to the floor",
+        "Lower slowly back past the standing leg, then switch sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Тренирует мышцы, поднимающие колено, — от них зависит бег и спринт, и почти ни одно упражнение в зале не нагружает их напрямую. Слабость там проявляется как укорачивающийся шаг по мере утомления.",
+      "steps": [
+        "Прикрепите манжету к нижнему блоку и застегните её на щиколотке",
+        "Встаньте спиной к тренажёру и придержитесь за устойчивую опору",
+        "Стойте прямо на второй ноге, рабочая нога слегка отведена назад",
+        "Выведите колено вверх и вперёд против троса примерно до параллели бедра с полом",
+        "Медленно опустите ногу назад мимо опорной и смените сторону"
+      ]
+    }
+  }
+}

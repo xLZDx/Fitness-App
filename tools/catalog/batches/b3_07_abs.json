@@ -1,0 +1,728 @@
+{
+  "ea_abs_snails": {
+    "en": {
+      "purpose": "Rolling the hips up over the shoulders trains the lower part of the stomach through a much longer range than a crunch. It also teaches the spine to move one segment at a time instead of hinging in one place.",
+      "steps": [
+        "Lie on your back with your arms flat on the floor beside you, palms down",
+        "Lift your legs until your feet point at the ceiling",
+        "Press your lower back into the floor and squeeze your stomach",
+        "Curl your hips off the floor and roll your legs back over your chest",
+        "Lower slowly, one part of the spine at a time, until your hips touch down again"
+      ]
+    },
+    "ru": {
+      "purpose": "Подъём таза за плечи прорабатывает нижнюю часть живота в куда большей амплитуде, чем скручивание. Заодно учит позвоночник двигаться посегментно, а не складываться в одной точке.",
+      "steps": [
+        "Лягте на спину, руки вдоль тела ладонями вниз",
+        "Поднимите ноги так, чтобы стопы смотрели в потолок",
+        "Прижмите поясницу к полу и напрягите живот",
+        "Скрутите таз, отрывая его от пола, и уведите ноги за грудь",
+        "Опускайтесь медленно, позвонок за позвонком, пока таз не коснётся пола"
+      ]
+    }
+  },
+  "ea_barbell_landmine_side_bend": {
+    "en": {
+      "purpose": "Loads the muscles down the side of the trunk, which hold you upright when weight is on one side only. Strength there is what stops you tipping when you carry a heavy bag or a child on one hip.",
+      "steps": [
+        "Stand side-on to the landmine and hold the loaded bar end in the outside hand",
+        "Stand tall with your feet hip width apart and your free hand on your head",
+        "Keep both shoulders facing forward, not rotating",
+        "Bend sideways toward the weight, letting it travel down your leg",
+        "Pull yourself back upright using the opposite side, then swap sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Нагружает мышцы по боковой поверхности корпуса, которые держат вас прямо, когда вес только с одной стороны. Сила там не даёт заваливаться при переноске тяжёлой сумки или ребёнка на одном боку.",
+      "steps": [
+        "Встаньте боком к лендмайну и возьмите нагруженный конец грифа дальней рукой",
+        "Стойте прямо, стопы на ширине таза, свободная ладонь у головы",
+        "Оба плеча смотрят вперёд, без разворота",
+        "Наклонитесь вбок к весу, позволяя ему уйти вдоль ноги",
+        "Выпрямитесь усилием противоположной стороны и смените сторону"
+      ]
+    }
+  },
+  "ea_barbell_situp": {
+    "en": {
+      "purpose": "Adding a barbell turns the sit-up into a loaded exercise the stomach can actually be made stronger by, rather than a repetition-counting drill. Start far lighter than you expect.",
+      "steps": [
+        "Lie on your back with knees bent and feet anchored under something solid",
+        "Hold a light barbell across your upper chest or pressed overhead with straight arms",
+        "Brace your stomach and tuck your chin slightly",
+        "Curl up until your torso is upright, keeping the bar in the same position relative to your body",
+        "Lower slowly all the way back down under control"
+      ]
+    },
+    "ru": {
+      "purpose": "Штанга превращает подъём корпуса в упражнение, от которого живот действительно становится сильнее, а не в подсчёт повторений. Начинайте с веса гораздо меньшего, чем кажется нужным.",
+      "steps": [
+        "Лягте на спину, колени согнуты, стопы зафиксированы под опорой",
+        "Держите лёгкую штангу поперёк верха груди или выжатой над головой на прямых руках",
+        "Напрягите живот и слегка подберите подбородок",
+        "Поднимите корпус до вертикального положения, сохраняя гриф в том же положении относительно тела",
+        "Медленно опуститесь обратно под контролем"
+      ]
+    }
+  },
+  "ea_cable_standing_crunch": {
+    "en": {
+      "purpose": "A crunch you can add weight to a kilo at a time, which is what the stomach needs to get stronger — bodyweight crunches stop working once you can do fifty. Standing also keeps the neck out of it.",
+      "steps": [
+        "Attach a rope to a high pulley and kneel or stand facing away from the machine",
+        "Hold both ends beside your head with your elbows pointing down",
+        "Keep your hips still — they should not move at all",
+        "Crunch your ribs down toward your hips by rounding the upper back",
+        "Return slowly to upright, resisting the cable the whole way"
+      ]
+    },
+    "ru": {
+      "purpose": "Скручивание, к которому можно добавлять вес по килограмму, — именно это нужно животу, чтобы становиться сильнее: скручивания с весом тела перестают работать, когда вы делаете полсотни. Положение стоя заодно убирает нагрузку с шеи.",
+      "steps": [
+        "Закрепите канат на верхнем блоке и встаньте или встаньте на колени спиной к тренажёру",
+        "Держите оба конца у головы, локти направлены вниз",
+        "Таз держите неподвижно — он не должен двигаться вовсе",
+        "Скрутитесь, опуская рёбра к тазу за счёт округления верха спины",
+        "Медленно вернитесь в вертикальное положение, сопротивляясь тросу"
+      ]
+    }
+  },
+  "ea_copenhagen_plank": {
+    "en": {
+      "purpose": "One of the very few exercises that loads the inner thigh in a position it actually has to work in. It is used in football specifically because it lowers the rate of groin injuries.",
+      "steps": [
+        "Lie on your side and place the upper leg on a bench, ankle or knee supported",
+        "Prop yourself on the lower elbow, directly under your shoulder",
+        "Lift your hips until your body forms a straight line from head to feet",
+        "Squeeze the top leg down into the bench to hold yourself up",
+        "Hold for the set time, then lower under control and change sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Одно из очень немногих упражнений, нагружающих внутреннюю поверхность бедра в положении, где ей действительно приходится работать. В футболе его применяют именно потому, что оно снижает частоту травм паха.",
+      "steps": [
+        "Лягте на бок и положите верхнюю ногу на скамью, опираясь щиколоткой или коленом",
+        "Обопритесь на нижний локоть строго под плечом",
+        "Поднимите таз до прямой линии от головы до стоп",
+        "Прижимайте верхнюю ногу к скамье, удерживая себя в положении",
+        "Держите заданное время, опуститесь под контролем и смените сторону"
+      ]
+    }
+  },
+  "ea_dragonfly": {
+    "en": {
+      "purpose": "An advanced hold where the whole body lowers as one rigid line, which demands more from the stomach than any crunch can. Only worth attempting once hanging leg raises are easy and controlled.",
+      "steps": [
+        "Lie back on a bench and grip it firmly behind your head with both hands",
+        "Lift your legs and hips until your body is vertical, resting on your upper back",
+        "Squeeze your stomach and glutes so your body is one straight line",
+        "Lower that whole line slowly toward horizontal without bending at the hips",
+        "Stop before your back arches, then pull back up to vertical"
+      ]
+    },
+    "ru": {
+      "purpose": "Продвинутое движение, где всё тело опускается одной жёсткой линией и требует от живота больше, чем любое скручивание. Браться стоит, только когда подъёмы ног в висе даются легко и подконтрольно.",
+      "steps": [
+        "Лягте на скамью и крепко возьмитесь за неё двумя руками за головой",
+        "Поднимите ноги и таз до вертикального положения, опираясь на верх спины",
+        "Напрягите живот и ягодицы, тело — одна прямая линия",
+        "Медленно опускайте эту линию к горизонтали, не сгибаясь в тазу",
+        "Остановитесь до того, как прогнётся поясница, и вернитесь вверх"
+      ]
+    }
+  },
+  "ea_dumbbell_elbow_side_plank": {
+    "en": {
+      "purpose": "A side plank with weight added, which trains the side of the trunk to resist being bent sideways. That is the job those muscles do in real life, far more often than bending you sideways on purpose.",
+      "steps": [
+        "Lie on your side and prop up on the lower elbow, directly beneath your shoulder",
+        "Stack your feet and lift your hips until your body is a straight line",
+        "Hold a dumbbell on the top hip, or press it toward the ceiling with the free hand",
+        "Keep your hips high and square, not rolling forward or back",
+        "Hold for the set time, then lower and switch sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Боковая планка с весом тренирует боковую поверхность корпуса сопротивляться сгибанию вбок. В жизни эти мышцы именно этим и заняты — гораздо чаще, чем целенаправленным наклоном.",
+      "steps": [
+        "Лягте на бок и обопритесь на нижний локоть строго под плечом",
+        "Поставьте стопы одна на другую и поднимите таз до прямой линии тела",
+        "Положите гантель на верхнее бедро или выжимайте её вверх свободной рукой",
+        "Таз держите высоко и ровно, не заваливая вперёд или назад",
+        "Держите заданное время, опуститесь и смените сторону"
+      ]
+    }
+  },
+  "ea_dumbbell_half_kneeling_wood_chopper": {
+    "en": {
+      "purpose": "Trains rotation from a position where the hips cannot help, so the turn has to come from the trunk. Half kneeling also stretches the front of the down hip, which is short in most people who sit.",
+      "steps": [
+        "Kneel on one knee with the other foot forward, both at ninety degrees",
+        "Hold a dumbbell with both hands beside the hip of the down knee",
+        "Brace your stomach and squeeze the glute of the kneeling leg",
+        "Lift the weight diagonally across your body to above the opposite shoulder",
+        "Lower it slowly along the same line, then finish the set and switch sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Тренирует разворот из положения, где таз помочь не может, поэтому поворот идёт от корпуса. Стойка на одном колене заодно растягивает переднюю поверхность опорного бедра, укороченную у большинства сидящих.",
+      "steps": [
+        "Встаньте на одно колено, вторая стопа впереди, оба угла по девяносто градусов",
+        "Держите гантель двумя руками у бедра со стороны опорного колена",
+        "Напрягите живот и ягодицу опорной ноги",
+        "Поднимите вес по диагонали через тело вверх за противоположное плечо",
+        "Медленно опустите по той же линии, доделайте подход и смените сторону"
+      ]
+    }
+  },
+  "ea_dumbbell_hand_side_plank": {
+    "en": {
+      "purpose": "The straight-arm version adds a shoulder-stability demand on top of the side plank, so the shoulder has to hold a position while the trunk resists bending. Harder than the elbow version for most people.",
+      "steps": [
+        "Lie on your side and press up onto the lower hand, arm straight under your shoulder",
+        "Stack your feet and lift your hips into a straight line",
+        "Hold a dumbbell on the top hip or reach it toward the ceiling",
+        "Keep the supporting shoulder pushed away from your ear",
+        "Hold for the set time, lower under control, then swap sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Вариант на прямой руке добавляет к боковой планке требование к устойчивости плеча: плечо должно удерживать положение, пока корпус сопротивляется сгибанию. Для большинства это тяжелее, чем упор на локоть.",
+      "steps": [
+        "Лягте на бок и поднимитесь на нижнюю ладонь, рука прямая под плечом",
+        "Поставьте стопы одна на другую и поднимите таз в прямую линию",
+        "Положите гантель на верхнее бедро или вытяните её к потолку",
+        "Опорное плечо держите отведённым от уха",
+        "Держите заданное время, опуститесь под контролем и смените сторону"
+      ]
+    }
+  },
+  "ea_dumbbell_kneeling_wood_chopper": {
+    "en": {
+      "purpose": "Kneeling on both knees takes the legs out entirely, so every bit of the rotation comes from the trunk. It builds the diagonal strength used in throwing, swinging and turning quickly.",
+      "steps": [
+        "Kneel on both knees with your hips upright over them",
+        "Hold a dumbbell with both hands beside one hip",
+        "Brace your stomach and squeeze your glutes",
+        "Sweep the weight diagonally up and across to above the opposite shoulder",
+        "Return slowly along the same path, then repeat on the other side"
+      ]
+    },
+    "ru": {
+      "purpose": "Стойка на обоих коленях полностью убирает ноги, поэтому весь разворот идёт от корпуса. Развивает диагональную силу, которая используется в бросках, ударах и быстрых поворотах.",
+      "steps": [
+        "Встаньте на оба колена, таз прямо над ними",
+        "Держите гантель двумя руками у одного бедра",
+        "Напрягите живот и ягодицы",
+        "Проведите вес по диагонали вверх за противоположное плечо",
+        "Медленно вернитесь по той же траектории и повторите в другую сторону"
+      ]
+    }
+  },
+  "ea_dumbbell_overhead_side_bend": {
+    "en": {
+      "purpose": "With the arm overhead the side of the trunk is stretched before it contracts, which reaches further up the side than a normal side bend. Use a light weight — this is a long lever and it gets hard quickly.",
+      "steps": [
+        "Stand tall and press one dumbbell overhead with a straight arm",
+        "Place the free hand on your hip and set your feet hip width apart",
+        "Keep both shoulders facing forward and your ribs down",
+        "Bend sideways away from the raised arm, keeping it locked overhead",
+        "Return to upright using the stretched side, then swap arms"
+      ]
+    },
+    "ru": {
+      "purpose": "Рука над головой растягивает боковую поверхность корпуса до сокращения, поэтому нагрузка достаёт выше, чем при обычном наклоне вбок. Берите лёгкий вес — рычаг длинный, и тяжело становится быстро.",
+      "steps": [
+        "Встаньте прямо и выжмите одну гантель над головой на прямой руке",
+        "Свободную ладонь положите на пояс, стопы на ширине таза",
+        "Оба плеча смотрят вперёд, рёбра опущены",
+        "Наклонитесь вбок в сторону от поднятой руки, удерживая её выпрямленной над головой",
+        "Вернитесь в вертикальное положение усилием растянутой стороны и смените руку"
+      ]
+    }
+  },
+  "ea_dumbbell_side_plank_up_down": {
+    "en": {
+      "purpose": "Moving between elbow and hand in a side plank adds a shoulder-strength demand to a hold that is normally static. It also makes the trunk work harder, because the position keeps changing under it.",
+      "steps": [
+        "Start in a side plank on your lower elbow with your hips lifted",
+        "Hold a light dumbbell on the top hip or leave the top hand free",
+        "Press up onto the lower hand by straightening that arm",
+        "Lower back onto the elbow under control without letting the hips drop",
+        "Continue for the set, then change sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Переход между локтем и ладонью в боковой планке добавляет силовое требование к плечу в удержании, которое обычно статично. И корпусу тяжелее, потому что положение под ним постоянно меняется.",
+      "steps": [
+        "Примите боковую планку на нижнем локте с поднятым тазом",
+        "Положите лёгкую гантель на верхнее бедро или оставьте верхнюю руку свободной",
+        "Поднимитесь на нижнюю ладонь, выпрямив эту руку",
+        "Опуститесь обратно на локоть под контролем, не роняя таз",
+        "Продолжайте весь подход, затем смените сторону"
+      ]
+    }
+  },
+  "ea_dumbbell_suitcase_crunch": {
+    "en": {
+      "purpose": "Bringing the knees and chest together at once shortens the stomach from both ends, which loads it far more than lifting only the shoulders. Holding a dumbbell adds resistance to the top half.",
+      "steps": [
+        "Sit on the floor or a bench, leaning back slightly with your feet off the ground",
+        "Hold a dumbbell against your chest with both hands",
+        "Brace your stomach and keep your back straight, not rounded",
+        "Draw your knees toward your chest while curling your chest toward your knees",
+        "Extend both away from each other slowly without letting your feet touch down"
+      ]
+    },
+    "ru": {
+      "purpose": "Одновременное сведение коленей и груди укорачивает живот с обоих концов и нагружает его гораздо сильнее, чем подъём одних плеч. Гантель добавляет сопротивление верхней половине.",
+      "steps": [
+        "Сядьте на пол или скамью, слегка отклонитесь назад, стопы на весу",
+        "Прижмите гантель к груди двумя руками",
+        "Напрягите живот, спину держите прямой, а не круглой",
+        "Подтяните колени к груди, одновременно скручивая грудь к коленям",
+        "Медленно разведите их обратно, не опуская стопы на пол"
+      ]
+    }
+  },
+  "ea_flat_knee_raise": {
+    "en": {
+      "purpose": "The starting point for lower stomach work, and the first movement to master before hanging leg raises. It teaches the lower back to stay flat while the legs move, which is the whole point.",
+      "steps": [
+        "Lie flat on your back with your legs straight and arms by your sides",
+        "Press your lower back gently into the floor and keep it there",
+        "Draw both knees up toward your chest, keeping the back flat",
+        "Stop as soon as your lower back would start to lift off the floor",
+        "Lower the feet slowly toward the ground without touching down"
+      ]
+    },
+    "ru": {
+      "purpose": "Отправная точка для работы над низом живота и первое движение, которое стоит освоить до подъёмов ног в висе. Учит поясницу оставаться прижатой, пока двигаются ноги, — в этом весь смысл.",
+      "steps": [
+        "Лягте на спину, ноги прямые, руки вдоль тела",
+        "Мягко прижмите поясницу к полу и удерживайте её так",
+        "Подтяните оба колена к груди, сохраняя прижатую поясницу",
+        "Остановитесь, как только поясница начнёт отрываться от пола",
+        "Медленно опустите стопы к полу, не касаясь его"
+      ]
+    }
+  },
+  "ea_hanging_leg_raises": {
+    "en": {
+      "purpose": "The standard exercise for the lower stomach, and one of the few that loads it through a long range. Hanging also stretches the shoulders and builds grip, so you get three things from one movement.",
+      "steps": [
+        "Hang from a bar with an overhand grip, arms straight and shoulders active",
+        "Squeeze your glutes so your body stops swinging",
+        "Lift both legs together, curling your hips slightly up at the top",
+        "Raise as high as you can control — knees bent is fine at first",
+        "Lower slowly all the way down without letting momentum take over"
+      ]
+    },
+    "ru": {
+      "purpose": "Стандартное упражнение для низа живота и одно из немногих, которое нагружает его в большой амплитуде. Вис заодно растягивает плечи и развивает хват — три эффекта из одного движения.",
+      "steps": [
+        "Повисните на перекладине хватом сверху, руки прямые, плечи активны",
+        "Напрягите ягодицы, чтобы тело перестало раскачиваться",
+        "Поднимите обе ноги вместе, слегка подкручивая таз в верхней точке",
+        "Поднимайте настолько высоко, насколько контролируете — сначала можно с согнутыми коленями",
+        "Опускайте медленно до конца, не отдавая движение инерции"
+      ]
+    }
+  },
+  "ea_hold_the_world_med_ball": {
+    "en": {
+      "purpose": "Holding a ball out in front of you loads the stomach the way it actually works — resisting being pulled forward, rather than crunching. Simple, and much harder than it looks after thirty seconds.",
+      "steps": [
+        "Stand tall holding a medicine ball with both hands at chest height",
+        "Brace your stomach and pull your ribs down toward your hips",
+        "Extend your arms to hold the ball out in front of you at shoulder height",
+        "Do not let your lower back arch or your shoulders creep up",
+        "Hold for the set time, then bring the ball back to your chest"
+      ]
+    },
+    "ru": {
+      "purpose": "Мяч на вытянутых руках нагружает живот так, как он и работает: сопротивляется тяге вперёд, а не скручивается. Просто — и заметно тяжелее, чем выглядит, после тридцати секунд.",
+      "steps": [
+        "Встаньте прямо, держа набивной мяч двумя руками на уровне груди",
+        "Напрягите живот и подтяните рёбра к тазу",
+        "Выпрямите руки, удерживая мяч перед собой на уровне плеч",
+        "Не допускайте прогиба в пояснице и подъёма плеч",
+        "Держите заданное время, затем верните мяч к груди"
+      ]
+    }
+  },
+  "ea_l_sit_hold": {
+    "en": {
+      "purpose": "Holding the legs out straight while supporting your whole bodyweight on your hands is one of the hardest stomach exercises there is, and it builds shoulder strength at the same time. Start with bent knees.",
+      "steps": [
+        "Sit between two parallettes and grip one in each hand",
+        "Press down hard to lift your whole body off the floor, arms straight",
+        "Push your shoulders down away from your ears",
+        "Lift your legs until they are straight out in front, parallel to the floor",
+        "Hold for as long as your form stays clean, then lower under control"
+      ]
+    },
+    "ru": {
+      "purpose": "Удержание прямых ног на весу при опоре на руки — одно из самых тяжёлых упражнений на живот, и одновременно оно развивает силу плеч. Начинайте с согнутых коленей.",
+      "steps": [
+        "Сядьте между параллетсами и возьмитесь за них руками",
+        "С силой оттолкнитесь вниз, оторвав всё тело от пола, руки прямые",
+        "Опустите плечи вниз, подальше от ушей",
+        "Поднимите ноги прямо перед собой параллельно полу",
+        "Держите, пока техника остаётся чистой, затем опуститесь под контролем"
+      ]
+    }
+  },
+  "ea_landmine_hollow_hold": {
+    "en": {
+      "purpose": "The hollow hold is the position gymnasts use to teach the stomach to hold the ribs and hips together; adding a landmine gives it load, so it keeps working after the bodyweight version gets easy.",
+      "steps": [
+        "Lie on your back and hold the loaded bar end above your chest with both hands",
+        "Press your lower back flat into the floor",
+        "Lift your shoulders and legs a few centimetres off the ground",
+        "Keep the arms locked and your body in a shallow banana shape",
+        "Hold for the set time, breathing shallowly, then lower everything together"
+      ]
+    },
+    "ru": {
+      "purpose": "Полая позиция — то, чем гимнасты учат живот удерживать рёбра и таз вместе; лендмайн добавляет вес, поэтому упражнение продолжает работать, когда вариант с весом тела стал лёгким.",
+      "steps": [
+        "Лягте на спину и удерживайте нагруженный конец грифа над грудью двумя руками",
+        "Прижмите поясницу к полу",
+        "Оторвите плечи и ноги от пола на несколько сантиметров",
+        "Руки зафиксированы, тело — пологая дуга",
+        "Держите заданное время, дыша неглубоко, затем опустите всё одновременно"
+      ]
+    }
+  },
+  "ea_landmine_kneeling_twist": {
+    "en": {
+      "purpose": "Kneeling removes the legs, so the rotation is produced and controlled by the trunk alone. The landmine's arc means the resistance peaks at the sides, which is where the turn actually needs to be strong.",
+      "steps": [
+        "Kneel on both knees facing the landmine, holding the bar end with both hands at chest height",
+        "Straighten your arms so the bar is out in front of you",
+        "Squeeze your glutes and keep your hips completely still",
+        "Rotate the bar in an arc to one side, letting your ribs turn but not your hips",
+        "Bring it back through the middle and rotate to the other side"
+      ]
+    },
+    "ru": {
+      "purpose": "Стойка на коленях убирает ноги, поэтому разворот создаёт и контролирует один корпус. Дуга лендмайна даёт пик сопротивления по сторонам — там, где повороту и нужна сила.",
+      "steps": [
+        "Встаньте на оба колена лицом к лендмайну, держа конец грифа двумя руками у груди",
+        "Выпрямите руки, гриф перед вами",
+        "Напрягите ягодицы, таз держите полностью неподвижно",
+        "Проведите гриф по дуге в одну сторону, поворачивая рёбра, но не таз",
+        "Верните через центр и разверните в другую сторону"
+      ]
+    }
+  },
+  "ea_landmine_oblique_twist": {
+    "en": {
+      "purpose": "Trains the muscles that turn the trunk and, more importantly, the ones that stop it turning too far. Standing means the hips and legs participate, which is closer to how rotation happens in sport.",
+      "steps": [
+        "Stand facing the landmine holding the bar end with both hands at chest height",
+        "Extend your arms so the bar is in front of you, feet shoulder width apart",
+        "Brace your stomach and let your feet pivot slightly as you turn",
+        "Swing the bar in an arc down toward one hip, keeping the arms straight",
+        "Control it back through the middle and repeat to the other side"
+      ]
+    },
+    "ru": {
+      "purpose": "Тренирует мышцы, которые поворачивают корпус, и, что важнее, те, которые не дают ему повернуться слишком далеко. Положение стоя подключает таз и ноги, а это ближе к тому, как разворот происходит в спорте.",
+      "steps": [
+        "Встаньте лицом к лендмайну, держа конец грифа двумя руками у груди",
+        "Выпрямите руки, гриф перед вами, стопы на ширине плеч",
+        "Напрягите живот, стопам позвольте слегка проворачиваться при повороте",
+        "Проведите гриф по дуге вниз к одному бедру, руки остаются прямыми",
+        "Подконтрольно верните через центр и повторите в другую сторону"
+      ]
+    }
+  },
+  "ea_landmine_russian_twist": {
+    "en": {
+      "purpose": "A rotation done at speed with a fixed arc, which trains the trunk to change direction quickly. Keep the movement controlled at the ends — the injuries in twisting exercises happen at the extremes, not in the middle.",
+      "steps": [
+        "Stand facing the landmine with the bar end held at chest height in both hands",
+        "Push your arms out and set your feet a little wider than your shoulders",
+        "Rotate the bar down and across to one hip, pivoting the back foot",
+        "Reverse smoothly and swing it across to the opposite hip",
+        "Keep the arms straight and the movement controlled through both end positions"
+      ]
+    },
+    "ru": {
+      "purpose": "Разворот в темпе по фиксированной дуге, тренирующий способность корпуса быстро менять направление. В крайних точках движение должно быть подконтрольным: травмы в скручиваниях случаются на краях амплитуды, а не в середине.",
+      "steps": [
+        "Встаньте лицом к лендмайну, конец грифа у груди в двух руках",
+        "Выпрямите руки, стопы чуть шире плеч",
+        "Проведите гриф вниз и накрест к одному бедру, проворачивая заднюю стопу",
+        "Плавно смените направление и проведите к противоположному бедру",
+        "Руки держите прямыми, а движение подконтрольным в обеих крайних точках"
+      ]
+    }
+  },
+  "ea_long_lever_plank": {
+    "en": {
+      "purpose": "Walking the elbows further forward makes a plank dramatically harder without adding a second of time, because the lever gets longer. Twenty seconds of this beats two minutes of an ordinary plank.",
+      "steps": [
+        "Start in a forearm plank with your elbows under your shoulders",
+        "Walk your elbows forward, away from your body, a hand's length at a time",
+        "Stop where you can still keep your hips level and your back flat",
+        "Squeeze your glutes and stomach hard and keep breathing",
+        "Hold for the set time, then walk the elbows back before lowering"
+      ]
+    },
+    "ru": {
+      "purpose": "Вынос локтей вперёд делает планку резко тяжелее, не добавляя ни секунды времени, потому что удлиняется рычаг. Двадцать секунд такой планки полезнее двух минут обычной.",
+      "steps": [
+        "Примите планку на предплечьях, локти под плечами",
+        "Переставляйте локти вперёд от тела на ширину ладони за раз",
+        "Остановитесь там, где ещё удаётся держать таз ровно, а спину прямой",
+        "Жёстко напрягите ягодицы и живот и продолжайте дышать",
+        "Держите заданное время, затем верните локти назад и опуститесь"
+      ]
+    }
+  },
+  "ea_med_ball_half_kneeling_wood_choppers": {
+    "en": {
+      "purpose": "Rotation trained from a half-kneeling position, where the hips are locked and the turn has to come from the trunk. The kneeling leg also gets a stretch through the front of the hip.",
+      "steps": [
+        "Kneel on one knee with the other foot forward, both bent to ninety degrees",
+        "Hold a medicine ball with both hands beside the hip of the kneeling leg",
+        "Squeeze that glute and brace your stomach",
+        "Sweep the ball diagonally across and up above the opposite shoulder",
+        "Lower it slowly along the same path, then finish the set and switch"
+      ]
+    },
+    "ru": {
+      "purpose": "Разворот из положения на одном колене, где таз зафиксирован и поворот идёт от корпуса. Опорная нога заодно получает растяжение по передней поверхности бедра.",
+      "steps": [
+        "Встаньте на одно колено, вторая стопа впереди, оба угла по девяносто градусов",
+        "Держите набивной мяч двумя руками у бедра опорной ноги",
+        "Напрягите эту ягодицу и живот",
+        "Проведите мяч по диагонали вверх за противоположное плечо",
+        "Медленно опустите по той же траектории, доделайте подход и смените сторону"
+      ]
+    }
+  },
+  "ea_med_ball_toe_touches": {
+    "en": {
+      "purpose": "Reaching a ball toward your toes with the legs vertical works the upper stomach through a short, hard range. Keeping the legs still is what makes it work — if they swing, the stomach stops doing much.",
+      "steps": [
+        "Lie on your back and raise both legs so your feet point at the ceiling",
+        "Hold a medicine ball with both hands, arms extended above your chest",
+        "Press your lower back into the floor",
+        "Curl your shoulders up and reach the ball toward your toes",
+        "Lower slowly back to the floor, keeping your legs exactly where they were"
+      ]
+    },
+    "ru": {
+      "purpose": "Подъём мяча к стопам при вертикальных ногах нагружает верх живота в короткой и тяжёлой амплитуде. Работает это за счёт неподвижности ног: если они раскачиваются, живот почти перестаёт участвовать.",
+      "steps": [
+        "Лягте на спину и поднимите обе ноги так, чтобы стопы смотрели в потолок",
+        "Держите набивной мяч двумя руками, руки вытянуты над грудью",
+        "Прижмите поясницу к полу",
+        "Скрутитесь, поднимая плечи и вынося мяч к стопам",
+        "Медленно опуститесь на пол, ноги остаются точно на месте"
+      ]
+    }
+  },
+  "ea_medicine_ball_chest_throw_with_abs": {
+    "en": {
+      "purpose": "Throwing trains the stomach and chest to produce force fast, which no slow repetition can teach. Power is a separate quality from strength, and it is the one that fades first with age.",
+      "steps": [
+        "Sit or stand facing a wall or a partner, holding a medicine ball at your chest",
+        "Brace your stomach and set your ribs down",
+        "Push the ball explosively away from your chest with both hands",
+        "Follow through fully, letting the trunk contract as you throw",
+        "Catch or collect the ball, reset your position, and repeat"
+      ]
+    },
+    "ru": {
+      "purpose": "Броски учат живот и грудь создавать усилие быстро — этому не научит ни одно медленное повторение. Мощность — отдельное качество от силы, и именно она уходит первой с возрастом.",
+      "steps": [
+        "Сядьте или встаньте лицом к стене или партнёру, мяч у груди",
+        "Напрягите живот, рёбра опустите",
+        "Мощно вытолкните мяч от груди двумя руками",
+        "Доведите движение до конца, позволяя корпусу сократиться в момент броска",
+        "Поймайте или подберите мяч, вернитесь в исходное и повторите"
+      ]
+    }
+  },
+  "ea_medicine_ball_rotational_throw": {
+    "en": {
+      "purpose": "Trains rotation at full speed, which is how the trunk works in almost every sport — a golf swing, a punch, a throw. Slow twisting exercises build the strength; this teaches the body to use it quickly.",
+      "steps": [
+        "Stand side-on to a solid wall, about a metre away, holding a medicine ball",
+        "Set your feet shoulder width apart and bring the ball to the hip furthest from the wall",
+        "Rotate hard toward the wall, pivoting the back foot as you turn",
+        "Release the ball into the wall at chest height as your body faces it",
+        "Catch the rebound, reset to the far hip, and repeat before changing sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Тренирует разворот на полной скорости — именно так корпус работает почти в любом виде спорта: замах в гольфе, удар, бросок. Медленные скручивания строят силу, а это учит тело быстро ею пользоваться.",
+      "steps": [
+        "Встаньте боком к прочной стене примерно в метре от неё, мяч в руках",
+        "Стопы на ширине плеч, мяч отведите к дальнему от стены бедру",
+        "Мощно развернитесь к стене, проворачивая заднюю стопу",
+        "Отпустите мяч в стену на уровне груди в момент, когда корпус повернулся к ней",
+        "Поймайте отскок, вернитесь в исходное и повторите, затем смените сторону"
+      ]
+    }
+  },
+  "ea_plate_hollow_hold": {
+    "en": {
+      "purpose": "The hollow position teaches the stomach to hold the ribs and hips together against the floor, which is the foundation for every harder movement. The plate adds load so it keeps being useful.",
+      "steps": [
+        "Lie on your back holding a plate with straight arms above your chest",
+        "Press your lower back firmly into the floor",
+        "Lift your shoulder blades and your legs a few centimetres off the ground",
+        "Keep the arms overhead if you can do so without the back arching",
+        "Hold for the set time, then lower your legs and shoulders together"
+      ]
+    },
+    "ru": {
+      "purpose": "Полая позиция учит живот удерживать рёбра и таз прижатыми к полу — это основа для всех более сложных движений. Блин добавляет вес, поэтому упражнение не перестаёт быть полезным.",
+      "steps": [
+        "Лягте на спину, удерживая блин на прямых руках над грудью",
+        "Плотно прижмите поясницу к полу",
+        "Оторвите лопатки и ноги от пола на несколько сантиметров",
+        "Уведите руки за голову, если получается без прогиба в пояснице",
+        "Держите заданное время, затем одновременно опустите ноги и плечи"
+      ]
+    }
+  },
+  "ea_plate_pinch_grip_side_bend": {
+    "en": {
+      "purpose": "Trains the side of the trunk and the grip at the same time, which is exactly the combination that carrying something heavy in one hand demands. The pinch grip usually gives out first, and that is fine.",
+      "steps": [
+        "Stand tall pinching a plate by its smooth face in one hand",
+        "Put the other hand on your head and keep both shoulders facing forward",
+        "Let the plate pull you sideways, bending slowly toward that side",
+        "Go only as far as you can control without twisting",
+        "Pull back upright with the opposite side, then switch hands"
+      ]
+    },
+    "ru": {
+      "purpose": "Тренирует боковую поверхность корпуса и хват одновременно — ровно то сочетание, которого требует переноска тяжёлого в одной руке. Щипковый хват обычно сдаёт первым, и это нормально.",
+      "steps": [
+        "Встаньте прямо, зажав блин за гладкую сторону одной рукой",
+        "Вторую ладонь положите на голову, оба плеча смотрят вперёд",
+        "Дайте блину потянуть вас вбок, медленно наклоняясь в эту сторону",
+        "Наклоняйтесь только настолько, насколько контролируете, без разворота",
+        "Выпрямитесь усилием противоположной стороны и смените руку"
+      ]
+    }
+  },
+  "ea_plate_russian_twist": {
+    "en": {
+      "purpose": "Rotating while holding a leaned-back position works the sides of the stomach while the front holds you up. Move from the ribs, not the arms — swinging a plate side to side with the shoulders trains nothing.",
+      "steps": [
+        "Sit on the floor with knees bent, holding a plate with both hands",
+        "Lean back until you feel your stomach engage, keeping the back straight",
+        "Lift your feet off the floor if you can hold the position",
+        "Rotate your ribs to one side, bringing the plate beside your hip",
+        "Turn through the middle to the other side, keeping the movement controlled"
+      ]
+    },
+    "ru": {
+      "purpose": "Развороты в отклонённом положении нагружают боковые мышцы живота, пока передние удерживают корпус. Двигайте рёбрами, а не руками: перекладывание блина плечами из стороны в сторону не тренирует ничего.",
+      "steps": [
+        "Сядьте на пол, колени согнуты, блин держите двумя руками",
+        "Отклонитесь назад до включения живота, спина остаётся прямой",
+        "Оторвите стопы от пола, если удаётся удерживать положение",
+        "Разверните рёбра в одну сторону, подводя блин к бедру",
+        "Через центр разверните в другую сторону, сохраняя контроль"
+      ]
+    }
+  },
+  "ea_plate_situp": {
+    "en": {
+      "purpose": "A sit-up you can load, so the stomach keeps getting stronger instead of just doing more repetitions. Holding the plate at the chest keeps the weight close; holding it overhead makes it much harder.",
+      "steps": [
+        "Lie on your back with knees bent and feet flat on the floor",
+        "Hold a plate against your chest with both hands",
+        "Tuck your chin slightly and brace your stomach",
+        "Curl up one part of the spine at a time until your torso is upright",
+        "Lower slowly in the same order, resisting all the way down"
+      ]
+    },
+    "ru": {
+      "purpose": "Подъём корпуса, к которому можно добавлять вес, поэтому живот продолжает становиться сильнее, а не просто делает больше повторений. Блин у груди держит вес близко; над головой — заметно тяжелее.",
+      "steps": [
+        "Лягте на спину, колени согнуты, стопы на полу",
+        "Прижмите блин к груди двумя руками",
+        "Слегка подберите подбородок и напрягите живот",
+        "Скручивайтесь позвонок за позвонком, пока корпус не станет вертикально",
+        "Опускайтесь медленно в том же порядке, сопротивляясь до конца"
+      ]
+    }
+  },
+  "ea_plate_standing_twist": {
+    "en": {
+      "purpose": "Turning under a light load while standing trains the trunk to rotate over stable hips. Keep it light and controlled — speed and heavy weight together is the combination that hurts backs in twisting movements.",
+      "steps": [
+        "Stand with feet shoulder width apart holding a plate at chest height",
+        "Push the plate out until your arms are almost straight",
+        "Brace your stomach and keep your hips facing forward",
+        "Rotate your ribs and the plate to one side as far as is comfortable",
+        "Return through the middle and rotate to the other side"
+      ]
+    },
+    "ru": {
+      "purpose": "Повороты с небольшим весом стоя учат корпус разворачиваться над стабильным тазом. Держите вес малым, а движение подконтрольным: скорость вместе с большим весом — то самое сочетание, которое травмирует спину в скручиваниях.",
+      "steps": [
+        "Встаньте, стопы на ширине плеч, блин на уровне груди",
+        "Вытолкните блин вперёд почти до прямых рук",
+        "Напрягите живот, таз держите развёрнутым вперёд",
+        "Разверните рёбра и блин в одну сторону настолько, насколько комфортно",
+        "Вернитесь через центр и разверните в другую сторону"
+      ]
+    }
+  },
+  "ea_plate_wood_chopper": {
+    "en": {
+      "purpose": "A diagonal movement from low on one side to high on the other, which trains the trunk the way it works in throwing and swinging. Almost all gym work is straight up and down, and this is not.",
+      "steps": [
+        "Stand with feet shoulder width apart, holding a plate with both hands",
+        "Start with the plate low beside one hip, knees slightly bent",
+        "Sweep it diagonally up and across to above the opposite shoulder",
+        "Let your feet pivot and your hips turn as the plate travels",
+        "Lower it slowly along the same line, then do the whole set on the other side"
+      ]
+    },
+    "ru": {
+      "purpose": "Диагональное движение снизу с одной стороны вверх на другую тренирует корпус так, как он работает в бросках и ударах. Почти вся работа в зале идёт строго вверх-вниз, а это — нет.",
+      "steps": [
+        "Встаньте, стопы на ширине плеч, блин в двух руках",
+        "Начните с блином внизу у одного бедра, колени слегка согнуты",
+        "Проведите его по диагонали вверх за противоположное плечо",
+        "Позвольте стопам провернуться, а тазу — развернуться по ходу движения",
+        "Медленно опустите по той же линии, затем сделайте весь подход в другую сторону"
+      ]
+    }
+  },
+  "ea_reverse_plank": {
+    "en": {
+      "purpose": "The opposite of a normal plank: it loads the back of the body — glutes, hamstrings and the muscles between the shoulder blades. A direct counter to a day spent folded forward at a desk.",
+      "steps": [
+        "Sit on the floor with your legs straight and your hands behind your hips, fingers forward",
+        "Press through your hands and heels to lift your hips off the floor",
+        "Squeeze your glutes until your body forms a straight line from heels to shoulders",
+        "Open your chest and pull your shoulders down away from your ears",
+        "Hold for the set time, breathing steadily, then lower under control"
+      ]
+    },
+    "ru": {
+      "purpose": "Противоположность обычной планке: нагружает заднюю поверхность тела — ягодицы, заднюю поверхность бёдер и мышцы между лопатками. Прямой противовес дню, проведённому согнувшись за столом.",
+      "steps": [
+        "Сядьте на пол, ноги прямые, ладони на полу за тазом, пальцы вперёд",
+        "Оттолкнитесь ладонями и пятками, поднимая таз над полом",
+        "Напрягите ягодицы до прямой линии от пяток до плеч",
+        "Раскройте грудь, плечи опустите подальше от ушей",
+        "Держите заданное время, дыша ровно, затем опуститесь под контролем"
+      ]
+    }
+  }
+}

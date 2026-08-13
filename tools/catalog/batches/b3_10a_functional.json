@@ -1,0 +1,970 @@
+{
+  "ea_180_jump_turns": {
+    "en": {
+      "purpose": "Jumping and landing after a half turn trains the legs to absorb force while the body is rotating, which is when ankles and knees are most vulnerable. Practising it deliberately is cheaper than learning it by accident.",
+      "steps": [
+        "Stand with your feet hip width apart and your knees slightly bent",
+        "Swing your arms back and dip into a quarter squat",
+        "Jump up and turn one hundred and eighty degrees in the air",
+        "Land softly on both feet with the knees bent and tracking over the toes",
+        "Pause, reset, then jump back the other way"
+      ]
+    },
+    "ru": {
+      "purpose": "Прыжок с разворотом на полкруга учит ноги гасить усилие в момент вращения — именно тогда голеностоп и колено наиболее уязвимы. Отработать это осознанно дешевле, чем научиться случайно.",
+      "steps": [
+        "Встаньте, стопы на ширине таза, колени слегка согнуты",
+        "Отведите руки назад и опуститесь в четверть приседа",
+        "Выпрыгните вверх и развернитесь на сто восемьдесят градусов в воздухе",
+        "Приземлитесь мягко на обе стопы, колени согнуты и идут по линии носков",
+        "Сделайте паузу и прыгните обратно в другую сторону"
+      ]
+    }
+  },
+  "ea_agility_ladder_advanced_hop_position": {
+    "en": {
+      "purpose": "Trains the feet to move accurately at speed, which is what separates quick from merely fast. The ladder gives immediate feedback — if your feet are sloppy, you catch a rung.",
+      "steps": [
+        "Stand at one end of the ladder with your feet together and knees soft",
+        "Hop with both feet into the first square, landing on the balls of the feet",
+        "Immediately hop forward into the next square without pausing",
+        "Keep your chest up and use your arms to help the rhythm",
+        "Work the length of the ladder, then walk back and repeat"
+      ]
+    },
+    "ru": {
+      "purpose": "Учит стопы двигаться точно на скорости — именно это отличает быстрого от просто резвого. Лестница даёт мгновенную обратную связь: неаккуратная стопа сразу задевает перекладину.",
+      "steps": [
+        "Встаньте у края лестницы, стопы вместе, колени мягкие",
+        "Прыгните обеими стопами в первый квадрат, приземляясь на переднюю часть стоп",
+        "Сразу прыгайте вперёд в следующий квадрат без паузы",
+        "Грудь держите поднятой, помогайте себе руками для ритма",
+        "Пройдите всю лестницу, вернитесь шагом и повторите"
+      ]
+    }
+  },
+  "ea_agility_ladder_advanced_single_leg": {
+    "en": {
+      "purpose": "Hopping on one leg through the ladder builds the ankle stability that stops a rolled ankle when you land awkwardly. It also shows immediately which leg is less controlled.",
+      "steps": [
+        "Stand on one leg at the end of the ladder with the knee slightly bent",
+        "Hop forward into the first square, landing on the ball of that foot",
+        "Absorb the landing through the ankle and knee before the next hop",
+        "Continue down the ladder without putting the other foot down",
+        "Walk back and repeat on the other leg"
+      ]
+    },
+    "ru": {
+      "purpose": "Прыжки по лестнице на одной ноге развивают устойчивость голеностопа, которая не даёт подвернуть ногу при неудачном приземлении. И сразу видно, какая нога хуже контролируется.",
+      "steps": [
+        "Встаньте на одну ногу у края лестницы, колено слегка согнуто",
+        "Прыгните вперёд в первый квадрат на переднюю часть стопы",
+        "Погасите приземление голеностопом и коленом до следующего прыжка",
+        "Пройдите всю лестницу, не опуская вторую стопу",
+        "Вернитесь шагом и повторите на другой ноге"
+      ]
+    }
+  },
+  "ea_agility_ladder_advancing_laterally_switching_base": {
+    "en": {
+      "purpose": "Moving sideways while changing which foot leads trains the pattern used every time you shuffle to cover ground in a sport. Almost nothing in a normal gym session works this direction.",
+      "steps": [
+        "Stand side-on at one end of the ladder with your knees bent",
+        "Step the lead foot into the first square, then follow with the other",
+        "Step the lead foot out the far side, then bring the other out too",
+        "Switch which foot leads and continue moving sideways down the ladder",
+        "Work back the other way so both directions get equal time"
+      ]
+    },
+    "ru": {
+      "purpose": "Движение вбок со сменой ведущей ноги отрабатывает схему, которую вы используете при каждом приставном шаге в игре. Почти ничто в обычной тренировке в зале не работает в этом направлении.",
+      "steps": [
+        "Встаньте боком у края лестницы, колени согнуты",
+        "Поставьте ведущую стопу в первый квадрат, затем подставьте вторую",
+        "Выведите ведущую стопу наружу с дальней стороны, затем вторую",
+        "Смените ведущую ногу и продолжайте двигаться вбок по лестнице",
+        "Пройдите обратно в другую сторону, чтобы обе получили равное время"
+      ]
+    }
+  },
+  "ea_agility_ladder_in_in_out_out": {
+    "en": {
+      "purpose": "The foundational ladder pattern: two feet in, two feet out, repeated at speed. It teaches the feet to move in a rhythm the brain does not have to think about, which is what frees attention up in a game.",
+      "steps": [
+        "Stand at the end of the ladder facing down its length",
+        "Step the left foot into the first square, then the right",
+        "Step the left foot out to the left of the next square, then the right out to the right",
+        "Keep the rhythm even: in, in, out, out",
+        "Move down the whole ladder, then walk back and repeat"
+      ]
+    },
+    "ru": {
+      "purpose": "Базовая схема на лестнице: две стопы внутрь, две наружу, в темпе. Учит стопы двигаться в ритме, о котором не нужно думать, — именно это освобождает внимание в игре.",
+      "steps": [
+        "Встаньте у края лестницы лицом вдоль неё",
+        "Поставьте левую стопу в первый квадрат, затем правую",
+        "Выведите левую стопу влево от следующего квадрата, правую — вправо",
+        "Держите ровный ритм: внутрь, внутрь, наружу, наружу",
+        "Пройдите всю лестницу, вернитесь шагом и повторите"
+      ]
+    }
+  },
+  "ea_agility_ladder_in_in_out_out_moving_laterally": {
+    "en": {
+      "purpose": "The same in-in-out-out rhythm travelling sideways, which adds a direction almost no other training covers. Sideways speed is what most people lack, and it is trainable.",
+      "steps": [
+        "Stand side-on at the end of the ladder with your knees bent and chest up",
+        "Step the near foot into the square, then the far foot in beside it",
+        "Step the near foot out the other side, then the far foot out",
+        "Keep travelling sideways with the same four-count rhythm",
+        "Return down the ladder leading with the other side"
+      ]
+    },
+    "ru": {
+      "purpose": "Тот же ритм внутрь-внутрь-наружу-наружу, но с движением вбок — направление, которое почти не встречается в другой работе. Боковой скорости не хватает большинству, и она тренируема.",
+      "steps": [
+        "Встаньте боком у края лестницы, колени согнуты, грудь поднята",
+        "Поставьте ближнюю стопу в квадрат, затем дальнюю рядом",
+        "Выведите ближнюю стопу с другой стороны, затем дальнюю",
+        "Продолжайте двигаться вбок в том же ритме на четыре счёта",
+        "Пройдите обратно, ведя другой стороной"
+      ]
+    }
+  },
+  "ea_agility_ladder_in_in_out_out_with_knee_lift": {
+    "en": {
+      "purpose": "Adding a knee lift raises the demand on the hip flexors and on balance, so it becomes a conditioning drill as well as a footwork one. Good near the end of a warm-up when the heart rate should already be up.",
+      "steps": [
+        "Stand at the end of the ladder with your feet hip width apart",
+        "Step both feet into the first square in quick succession",
+        "As you step out to the sides, drive one knee up toward your chest",
+        "Land and repeat, alternating which knee lifts each time",
+        "Work the length of the ladder, then walk back and go again"
+      ]
+    },
+    "ru": {
+      "purpose": "Подъём колена повышает требования к сгибателям бедра и равновесию, поэтому упражнение становится ещё и кардио, а не только работой стоп. Хорошо в конце разминки, когда пульс уже должен быть поднят.",
+      "steps": [
+        "Встаньте у края лестницы, стопы на ширине таза",
+        "Быстро поставьте обе стопы в первый квадрат одну за другой",
+        "Выходя стопами в стороны, поднимите одно колено к груди",
+        "Приземлитесь и повторите, чередуя поднимаемое колено",
+        "Пройдите всю лестницу, вернитесь и повторите"
+      ]
+    }
+  },
+  "ea_agility_ladder_lateral_movement_in_in_out": {
+    "en": {
+      "purpose": "A three-count sideways pattern, which forces you to change the leading foot repeatedly instead of settling into one rhythm. That constant switching is closer to how sport actually moves.",
+      "steps": [
+        "Stand side-on at the end of the ladder with your weight on the balls of your feet",
+        "Step the lead foot in, then the trail foot in",
+        "Step the lead foot out the far side while the trail foot stays",
+        "Continue this three-count rhythm while travelling sideways",
+        "Repeat facing the other way so both sides lead"
+      ]
+    },
+    "ru": {
+      "purpose": "Боковая схема на три счёта, из-за которой ведущая нога постоянно меняется, вместо того чтобы уйти в один ритм. Эта постоянная смена ближе к реальному движению в игре.",
+      "steps": [
+        "Встаньте боком у края лестницы, вес на передней части стоп",
+        "Поставьте ведущую стопу внутрь, затем заднюю",
+        "Выведите ведущую стопу с дальней стороны, задняя остаётся",
+        "Продолжайте этот ритм на три счёта, двигаясь вбок",
+        "Повторите в другую сторону, чтобы вели обе ноги"
+      ]
+    }
+  },
+  "ea_agility_ladder_lateral_movement_with_double_hop": {
+    "en": {
+      "purpose": "Two-footed hops travelling sideways train the legs to load and release quickly from a stable base. It builds the elastic quality that makes changing direction feel light rather than laboured.",
+      "steps": [
+        "Stand side-on at the end of the ladder with the feet together",
+        "Hop sideways into the first square with both feet at once",
+        "Hop again immediately into the next square without a pause",
+        "Land on the balls of the feet and keep the knees soft throughout",
+        "Travel the whole ladder, then work back leading with the other side"
+      ]
+    },
+    "ru": {
+      "purpose": "Прыжки на двух ногах вбок учат ноги быстро загружаться и разгружаться с устойчивой опоры. Развивают упругость, благодаря которой смена направления ощущается лёгкой, а не натужной.",
+      "steps": [
+        "Встаньте боком у края лестницы, стопы вместе",
+        "Прыгните вбок в первый квадрат обеими стопами сразу",
+        "Сразу же прыгните в следующий квадрат без паузы",
+        "Приземляйтесь на переднюю часть стоп, колени всё время мягкие",
+        "Пройдите всю лестницу, затем обратно, ведя другой стороной"
+      ]
+    }
+  },
+  "ea_agility_ladder_skipping_1_touch": {
+    "en": {
+      "purpose": "One touch per square at speed is the simplest ladder drill and the best for building pure foot speed. Everything else on a ladder is a variation on being able to do this cleanly.",
+      "steps": [
+        "Stand at the end of the ladder on the balls of your feet",
+        "Run forward placing one foot in each square, one touch per square",
+        "Keep your steps short, quick and light",
+        "Pump your arms in time with your feet",
+        "Sprint the length of the ladder, walk back, and repeat"
+      ]
+    },
+    "ru": {
+      "purpose": "Одно касание на квадрат в темпе — самое простое упражнение на лестнице и лучшее для чистой скорости стоп. Всё остальное на лестнице — вариации того, что вы умеете делать это чисто.",
+      "steps": [
+        "Встаньте у края лестницы на переднюю часть стоп",
+        "Бегите вперёд, ставя по одной стопе в каждый квадрат",
+        "Шаги короткие, быстрые и лёгкие",
+        "Работайте руками в такт стопам",
+        "Пробегите всю лестницу, вернитесь шагом и повторите"
+      ]
+    }
+  },
+  "ea_agility_ladder_skipping_2_touches": {
+    "en": {
+      "purpose": "Two touches per square doubles the number of foot contacts, which is where foot speed is actually built. Harder to keep clean than one touch, and that difficulty is the point.",
+      "steps": [
+        "Stand at the end of the ladder with your knees soft",
+        "Run forward placing both feet inside each square before moving on",
+        "Keep the contacts light and the rhythm even",
+        "Stay tall with your chest up and your arms driving",
+        "Work the full length, then walk back and go again"
+      ]
+    },
+    "ru": {
+      "purpose": "Два касания на квадрат удваивают число контактов стопы с землёй — именно там и строится скорость стоп. Держать чисто сложнее, чем при одном касании, и в этой сложности весь смысл.",
+      "steps": [
+        "Встаньте у края лестницы, колени мягкие",
+        "Бегите вперёд, ставя обе стопы в каждый квадрат перед переходом дальше",
+        "Касания лёгкие, ритм ровный",
+        "Корпус прямой, грудь поднята, руки активно работают",
+        "Пройдите всю длину, вернитесь и повторите"
+      ]
+    }
+  },
+  "ea_air_swing_running": {
+    "en": {
+      "purpose": "Supporting your bodyweight on the bars while running in the air loads the shoulders and stomach continuously while the legs move. It builds the ability to hold a position while something else is happening.",
+      "steps": [
+        "Grip the dip bars and press up until your arms are straight",
+        "Push your shoulders down away from your ears and brace your stomach",
+        "Keeping the arms locked, drive one knee up toward your chest",
+        "Switch legs in a running rhythm without letting your body swing",
+        "Continue for the set time, then lower down under control"
+      ]
+    },
+    "ru": {
+      "purpose": "Удержание веса тела на брусьях с «бегом» в воздухе непрерывно нагружает плечи и живот, пока двигаются ноги. Развивает способность удерживать положение, когда происходит что-то ещё.",
+      "steps": [
+        "Возьмитесь за брусья и выжмите себя вверх до прямых рук",
+        "Опустите плечи от ушей и напрягите живот",
+        "Не сгибая руки, поднимите одно колено к груди",
+        "Меняйте ноги в беговом ритме, не раскачиваясь корпусом",
+        "Продолжайте заданное время, затем опуститесь под контролем"
+      ]
+    }
+  },
+  "ea_air_swing_side_to_side_swing": {
+    "en": {
+      "purpose": "Swinging the legs side to side while supported trains the stomach to control rotation, and the shoulders to stay solid while the load moves. Control matters far more than how far the legs travel.",
+      "steps": [
+        "Support yourself on the dip bars with your arms straight and shoulders down",
+        "Bring both legs together and brace your stomach hard",
+        "Swing both legs slowly to one side, keeping your torso still",
+        "Control the swing back through the middle to the other side",
+        "Continue for the set time without letting the shoulders shrug"
+      ]
+    },
+    "ru": {
+      "purpose": "Махи ногами из стороны в сторону в упоре учат живот контролировать разворот, а плечи — оставаться жёсткими, пока вес перемещается. Контроль здесь важнее амплитуды.",
+      "steps": [
+        "Зафиксируйтесь в упоре на брусьях, руки прямые, плечи опущены",
+        "Сведите ноги вместе и жёстко напрягите живот",
+        "Медленно уведите обе ноги в одну сторону, корпус остаётся неподвижным",
+        "Подконтрольно проведите их через центр в другую сторону",
+        "Продолжайте заданное время, не поднимая плечи"
+      ]
+    }
+  },
+  "ea_air_swing_walking": {
+    "en": {
+      "purpose": "The slowest of the supported leg movements, which makes it the place to start. Holding the support position itself is most of the benefit — the walking just keeps the stomach honest.",
+      "steps": [
+        "Press up on the dip bars until your arms are locked straight",
+        "Set your shoulders down and away from your ears",
+        "Lift one knee slowly and lower it, then the other",
+        "Keep the rhythm slow and deliberate, with no swinging",
+        "Continue for the set time, then step or lower down"
+      ]
+    },
+    "ru": {
+      "purpose": "Самое медленное из движений ногами в упоре — с него и стоит начинать. Основная польза в самом удержании упора, а «ходьба» просто не даёт животу расслабиться.",
+      "steps": [
+        "Выжмите себя на брусьях до полностью прямых рук",
+        "Опустите плечи вниз, подальше от ушей",
+        "Медленно поднимите одно колено и опустите, затем второе",
+        "Ритм медленный и осознанный, без раскачки",
+        "Продолжайте заданное время, затем опуститесь"
+      ]
+    }
+  },
+  "ea_arms_lateral_raise_and_rotation_up": {
+    "en": {
+      "purpose": "A warm-up that takes the shoulder through its full range with no load, which is exactly what it needs before pressing. Two minutes of this changes how the first heavy set feels.",
+      "steps": [
+        "Stand tall with your arms hanging by your sides",
+        "Raise both arms out to the sides until they are level with your shoulders",
+        "Rotate the palms to face upward, then continue lifting overhead",
+        "Reach as high as the shoulders comfortably allow",
+        "Reverse the whole path slowly and repeat for the set"
+      ]
+    },
+    "ru": {
+      "purpose": "Разминка, проводящая плечо через всю амплитуду без веса, — именно это ему и нужно перед жимами. Две минуты меняют ощущения от первого тяжёлого подхода.",
+      "steps": [
+        "Встаньте прямо, руки свободно опущены вдоль тела",
+        "Поднимите обе руки в стороны до уровня плеч",
+        "Разверните ладони вверх и продолжите подъём над головой",
+        "Поднимайте настолько высоко, насколько комфортно плечам",
+        "Медленно повторите весь путь в обратном порядке"
+      ]
+    }
+  },
+  "ea_ball_slams": {
+    "en": {
+      "purpose": "Throwing a ball into the ground as hard as you can trains the whole body to produce force fast, and it is one of the few exercises where you can go completely all out safely. Also a very effective way to raise the heart rate.",
+      "steps": [
+        "Stand with your feet shoulder width apart holding the ball at your chest",
+        "Raise the ball overhead, extending fully onto your toes",
+        "Brace your stomach and slam the ball down into the floor as hard as you can",
+        "Follow through by hinging at the hips, keeping your back flat",
+        "Pick the ball up and repeat immediately for the set"
+      ]
+    },
+    "ru": {
+      "purpose": "Бросок мяча в пол со всей силы учит всё тело выдавать усилие быстро, и это одно из немногих упражнений, где можно выложиться полностью безопасно. Заодно очень эффективно поднимает пульс.",
+      "steps": [
+        "Встаньте, стопы на ширине плеч, мяч у груди",
+        "Поднимите мяч над головой, полностью вытянувшись на носках",
+        "Напрягите живот и с максимальной силой бросьте мяч в пол",
+        "Доведите движение наклоном от таза, спина остаётся прямой",
+        "Поднимите мяч и сразу повторите"
+      ]
+    }
+  },
+  "ea_band_squat_row": {
+    "en": {
+      "purpose": "Puts a squat and a row into one movement, so legs and back are trained together and the heart rate stays up. A whole workout in one exercise when all you have is a band.",
+      "steps": [
+        "Anchor a band at chest height and hold an end in each hand, stepping back until it is tight",
+        "Stand with your feet shoulder width apart and your arms straight",
+        "Squat down until your thighs are about parallel to the floor",
+        "As you stand back up, pull both hands to your ribs, squeezing the shoulder blades",
+        "Extend the arms as you sink into the next squat"
+      ]
+    },
+    "ru": {
+      "purpose": "Объединяет присед и тягу в одно движение, поэтому ноги и спина тренируются вместе, а пульс держится. Полноценная тренировка в одном упражнении, когда из инвентаря только лента.",
+      "steps": [
+        "Закрепите ленту на высоте груди, возьмите по концу в руку и отойдите до натяжения",
+        "Стопы на ширине плеч, руки прямые",
+        "Присядьте примерно до параллели бёдер с полом",
+        "Вставая, подтяните обе кисти к рёбрам, сводя лопатки",
+        "Выпрямите руки, опускаясь в следующий присед"
+      ]
+    }
+  },
+  "ea_barbell_jump_shrug": {
+    "en": {
+      "purpose": "A partial version of the olympic pull that teaches the hips to extend explosively, without needing the technique a full clean demands. It is the most accessible way to train real power with a barbell.",
+      "steps": [
+        "Stand holding a barbell at arm's length in front of your thighs, feet hip width",
+        "Push your hips back until the bar is just above your knees, back flat",
+        "Drive your hips forward violently and extend your legs",
+        "Shrug your shoulders hard at the top and rise onto your toes",
+        "Let the bar lower back to the start and reset before the next repetition"
+      ]
+    },
+    "ru": {
+      "purpose": "Частичный вариант рывкового движения, который учит таз разгибаться взрывно, не требуя техники полного взятия на грудь. Самый доступный способ тренировать настоящую мощность со штангой.",
+      "steps": [
+        "Встаньте, штанга на прямых руках перед бёдрами, ноги на ширине таза",
+        "Отведите таз назад, пока гриф не окажется чуть выше коленей, спина прямая",
+        "Резко выведите таз вперёд и разогните ноги",
+        "Мощно пожмите плечами в верхней точке и поднимитесь на носки",
+        "Опустите гриф в исходное и сделайте паузу перед следующим повторением"
+      ]
+    }
+  },
+  "ea_battle_rope_alternating_arm_waves": {
+    "en": {
+      "purpose": "Raises the heart rate hard while putting almost no impact through the joints, which makes it useful for conditioning when knees or ankles are sore. The shoulders and stomach work continuously.",
+      "steps": [
+        "Hold one rope end in each hand and stand facing the anchor point",
+        "Set your feet shoulder width apart and sink into a quarter squat",
+        "Brace your stomach and keep your chest up",
+        "Whip one arm up and down, then the other, creating alternating waves",
+        "Keep the rhythm fast and continuous for the set time"
+      ]
+    },
+    "ru": {
+      "purpose": "Сильно поднимает пульс почти без ударной нагрузки на суставы, поэтому подходит для кардио, когда беспокоят колени или голеностоп. Плечи и живот работают непрерывно.",
+      "steps": [
+        "Возьмите по концу каната в каждую руку и встаньте лицом к точке крепления",
+        "Стопы на ширине плеч, опуститесь в четверть приседа",
+        "Напрягите живот, грудь держите поднятой",
+        "Резко поднимайте и опускайте одну руку, затем другую, создавая попеременные волны",
+        "Держите быстрый непрерывный ритм заданное время"
+      ]
+    }
+  },
+  "ea_battle_rope_double_arm_slams": {
+    "en": {
+      "purpose": "Both arms together means the whole body has to produce each wave, so this is closer to power work than the alternating version. Short, hard intervals suit it better than long sets.",
+      "steps": [
+        "Hold one rope end in each hand, facing the anchor, feet shoulder width apart",
+        "Raise both arms overhead, extending through your whole body",
+        "Slam both rope ends down toward the floor at the same time",
+        "Let your hips hinge back as the ropes come down, keeping the back flat",
+        "Drive back up immediately and repeat for the set time"
+      ]
+    },
+    "ru": {
+      "purpose": "Обе руки вместе означают, что каждую волну создаёт всё тело, поэтому это ближе к работе на мощность, чем попеременный вариант. Подходят короткие жёсткие интервалы, а не длинные подходы.",
+      "steps": [
+        "Возьмите по концу каната в руку, лицом к креплению, стопы на ширине плеч",
+        "Поднимите обе руки над головой, вытянувшись всем телом",
+        "Одновременно ударьте обоими концами каната в пол",
+        "На движении вниз отведите таз назад, спина остаётся прямой",
+        "Сразу поднимитесь обратно и повторите заданное время"
+      ]
+    }
+  },
+  "ea_bear_crawls": {
+    "en": {
+      "purpose": "Crawling on hands and feet with the knees just off the floor forces the stomach to hold the spine still while all four limbs move. It is a plank you travel in, and much harder than it looks.",
+      "steps": [
+        "Start on hands and knees with wrists under shoulders",
+        "Tuck your toes and lift your knees a few centimetres off the floor",
+        "Keep your back flat and your hips low, roughly level with your shoulders",
+        "Move the opposite hand and foot forward together, then the other pair",
+        "Travel for the set distance keeping the hips from swaying side to side"
+      ]
+    },
+    "ru": {
+      "purpose": "Передвижение на ладонях и стопах с коленями чуть над полом заставляет живот удерживать позвоночник неподвижным, пока двигаются все четыре конечности. Это планка, в которой вы перемещаетесь, и она куда тяжелее, чем выглядит.",
+      "steps": [
+        "Встаньте на четвереньки, запястья под плечами",
+        "Подверните пальцы стоп и оторвите колени на несколько сантиметров от пола",
+        "Спина прямая, таз низко, примерно на уровне плеч",
+        "Переставляйте вперёд разноимённые руку и ногу вместе, затем вторую пару",
+        "Пройдите заданное расстояние, не раскачивая таз из стороны в сторону"
+      ]
+    }
+  },
+  "ea_box_sled_push": {
+    "en": {
+      "purpose": "Pushing weight with no lowering phase means you can work extremely hard without the muscle damage that limits how often you train. The legs and lungs get everything; the next day costs nothing.",
+      "steps": [
+        "Load the sled and grip the high handles or the frame",
+        "Lean your body forward at about forty-five degrees with straight arms",
+        "Keep your back flat and your head in line with your spine",
+        "Drive through the balls of your feet with short powerful steps",
+        "Push for the set distance, then rest fully before the next run"
+      ]
+    },
+    "ru": {
+      "purpose": "Толкание веса без уступающей фазы позволяет работать предельно тяжело без повреждения мышц, которое ограничивает частоту тренировок. Ноги и лёгкие получают всё, а следующий день ничего не стоит.",
+      "steps": [
+        "Нагрузите сани и возьмитесь за высокие ручки или раму",
+        "Наклоните корпус вперёд примерно на сорок пять градусов, руки прямые",
+        "Спина прямая, голова на одной линии с позвоночником",
+        "Толкайтесь передней частью стоп короткими мощными шагами",
+        "Пройдите заданную дистанцию и полностью отдохните перед следующим проходом"
+      ]
+    }
+  },
+  "ea_crawl_with_sled_drag": {
+    "en": {
+      "purpose": "Combines a bear crawl with a load behind you, which turns a stomach exercise into full-body conditioning. Everything works at once, and it is over quickly, which is the appeal.",
+      "steps": [
+        "Attach a harness or strap from the sled around your waist",
+        "Get into a bear crawl position with knees just off the floor",
+        "Keep your back flat and your hips low",
+        "Crawl forward using opposite hand and foot together, dragging the sled behind",
+        "Cover the set distance, then rest before the next round"
+      ]
+    },
+    "ru": {
+      "purpose": "Соединяет медвежью походку с грузом позади, превращая упражнение на живот в кардио для всего тела. Работает всё сразу и заканчивается быстро — в этом и привлекательность.",
+      "steps": [
+        "Закрепите пояс или лямку от саней вокруг талии",
+        "Примите положение медвежьей походки, колени чуть над полом",
+        "Спина прямая, таз низко",
+        "Двигайтесь вперёд разноимёнными рукой и ногой, таща сани за собой",
+        "Пройдите заданное расстояние и отдохните перед следующим подходом"
+      ]
+    }
+  },
+  "ea_double_kettlebell_sled_push": {
+    "en": {
+      "purpose": "Pushing with a bell in each hand adds a grip and shoulder demand to a leg drill, so more of the body is involved. Useful when there is no proper sled but there are kettlebells and a smooth floor.",
+      "steps": [
+        "Place two kettlebells on the floor in front of you, handles forward",
+        "Get into a low athletic position with your hands on the bells",
+        "Keep your back flat and your arms firm",
+        "Drive forward with short steps, pushing the bells along the floor",
+        "Cover the set distance, then reset and repeat"
+      ]
+    },
+    "ru": {
+      "purpose": "Толчок с гирей в каждой руке добавляет к работе ног нагрузку на хват и плечи, поэтому включается больше тела. Пригодится, когда настоящих саней нет, а есть гири и гладкий пол.",
+      "steps": [
+        "Поставьте две гири на пол перед собой дужками вперёд",
+        "Примите низкое устойчивое положение, ладони на гирях",
+        "Спина прямая, руки жёсткие",
+        "Двигайтесь вперёд короткими шагами, толкая гири по полу",
+        "Пройдите заданное расстояние, вернитесь в исходное и повторите"
+      ]
+    }
+  },
+  "ea_dumbbell_curl_press_extend": {
+    "en": {
+      "purpose": "Three arm exercises chained without putting the weights down, so biceps, shoulders and triceps all get worked in one continuous set. Efficient when time is short and the weights are light.",
+      "steps": [
+        "Stand tall with a dumbbell in each hand, arms by your sides",
+        "Curl both dumbbells up to your shoulders",
+        "Press them straight overhead until the arms lock out",
+        "Bend the elbows to lower the weights behind your head, then extend back up",
+        "Lower to the shoulders and down to your sides — that is one repetition"
+      ]
+    },
+    "ru": {
+      "purpose": "Три упражнения на руки подряд без опускания гантелей: бицепс, плечи и трицепс работают одним непрерывным подходом. Эффективно, когда мало времени и вес небольшой.",
+      "steps": [
+        "Встаньте прямо, гантели в опущенных руках",
+        "Поднимите обе гантели к плечам",
+        "Выжмите их строго над головой до выпрямления рук",
+        "Согните локти, опуская гантели за голову, затем разогните обратно",
+        "Опустите к плечам и вниз к бокам — это одно повторение"
+      ]
+    }
+  },
+  "ea_dumbbell_swing": {
+    "en": {
+      "purpose": "Trains the hips to snap open explosively, which is the foundation of jumping, sprinting and lifting anything quickly. The weight is moved by the hips, not lifted by the arms — that distinction is the whole exercise.",
+      "steps": [
+        "Stand with feet slightly wider than your shoulders, a dumbbell held in both hands",
+        "Push your hips back and let the weight swing between your legs, back flat",
+        "Snap your hips forward hard and squeeze your glutes",
+        "Let that force swing the dumbbell up to about chest height — do not lift it with your arms",
+        "Let it fall back between the legs and go straight into the next repetition"
+      ]
+    },
+    "ru": {
+      "purpose": "Учит таз резко раскрываться — это основа прыжка, спринта и любого быстрого подъёма веса. Вес разгоняет таз, а не поднимают руки, и в этом различии всё упражнение.",
+      "steps": [
+        "Встаньте, стопы чуть шире плеч, гантель в двух руках",
+        "Отведите таз назад и пропустите вес между ног, спина прямая",
+        "Резко выведите таз вперёд и напрягите ягодицы",
+        "Пусть этот импульс поднимет гантель примерно до уровня груди — не тяните руками",
+        "Дайте ей упасть обратно между ног и сразу переходите к следующему повторению"
+      ]
+    }
+  },
+  "ea_elbow_extension": {
+    "en": {
+      "purpose": "A no-equipment movement for the back of the arm, useful as a warm-up before pressing or as a way to train the triceps when nothing is available. Light, and meant to be done for higher repetitions.",
+      "steps": [
+        "Stand or sit tall with your upper arms raised beside your head",
+        "Bend the elbows so your hands drop behind your neck",
+        "Keep the upper arms still and pointing at the ceiling",
+        "Straighten the elbows to extend your hands overhead, squeezing at the top",
+        "Lower slowly and repeat for the set"
+      ]
+    },
+    "ru": {
+      "purpose": "Движение без инвентаря для задней поверхности руки: годится как разминка перед жимами или как способ нагрузить трицепс, когда ничего нет. Лёгкое, рассчитано на большое число повторений.",
+      "steps": [
+        "Встаньте или сядьте прямо, плечи подняты вдоль головы",
+        "Согните локти, опустив кисти за шею",
+        "Плечи держите неподвижно, направленными в потолок",
+        "Разогните локти, вытягивая кисти над головой, и напрягите трицепс наверху",
+        "Медленно опустите и повторите"
+      ]
+    }
+  },
+  "ea_front_lever_raise": {
+    "en": {
+      "purpose": "One of the hardest bodyweight pulls there is: the lats and stomach have to hold the whole body horizontal from a bar. Work through tucked and one-leg progressions first — the full version takes months.",
+      "steps": [
+        "Hang from a bar with an overhand grip, arms straight and shoulders engaged",
+        "Squeeze your glutes and stomach so the body is one rigid line",
+        "Pull down on the bar with straight arms to raise your body toward horizontal",
+        "Tuck the knees or extend one leg to reduce the difficulty as needed",
+        "Lower under control back to the hang without swinging"
+      ]
+    },
+    "ru": {
+      "purpose": "Одно из самых сложных тяговых движений с весом тела: широчайшие и живот должны удерживать всё тело горизонтально на перекладине. Сначала осваивают варианты с подобранными коленями и одной ногой — полная версия занимает месяцы.",
+      "steps": [
+        "Повисните на перекладине хватом сверху, руки прямые, плечи включены",
+        "Напрягите ягодицы и живот, тело — одна жёсткая линия",
+        "Тяните перекладину вниз прямыми руками, поднимая тело к горизонтали",
+        "Подберите колени или вытяните одну ногу, чтобы облегчить положение",
+        "Опуститесь под контролем обратно в вис, без раскачки"
+      ]
+    }
+  },
+  "ea_front_lever_raise_to_hold": {
+    "en": {
+      "purpose": "Adds a static hold at the top of the raise, which is where the position is actually built. Holding is harder than passing through, and it is what turns the movement into strength rather than a trick.",
+      "steps": [
+        "Hang from a bar with straight arms and an active shoulder position",
+        "Brace your whole body into one rigid line",
+        "Pull down with straight arms to raise your body toward horizontal",
+        "Hold that position for as long as your line stays straight",
+        "Lower slowly to the hang and rest fully before the next attempt"
+      ]
+    },
+    "ru": {
+      "purpose": "Добавляет статическое удержание в верхней точке — именно там положение и строится. Держать тяжелее, чем проходить через точку, и именно это превращает движение в силу, а не в трюк.",
+      "steps": [
+        "Повисните на перекладине, руки прямые, плечи активны",
+        "Напрягите всё тело в одну жёсткую линию",
+        "Тяните прямыми руками вниз, поднимая тело к горизонтали",
+        "Удерживайте положение, пока линия тела остаётся прямой",
+        "Медленно опуститесь в вис и полностью отдохните перед следующей попыткой"
+      ]
+    }
+  },
+  "ea_gorilla_walk": {
+    "en": {
+      "purpose": "Moving in a deep squat with the hands reaching the floor opens the hips while the legs work, which makes it a warm-up and a conditioning drill at once. It also builds squat depth by spending time there.",
+      "steps": [
+        "Squat down deep with your feet wider than your shoulders",
+        "Place both hands on the floor in front of you",
+        "Keep your chest up and your heels down as much as you can",
+        "Move sideways or forward by stepping the feet and then the hands",
+        "Continue for the set distance, staying low the whole time"
+      ]
+    },
+    "ru": {
+      "purpose": "Передвижение в глубоком приседе с опорой на ладони раскрывает таз, пока работают ноги, — это одновременно разминка и кардио. Заодно наращивает глубину приседа за счёт времени, проведённого внизу.",
+      "steps": [
+        "Присядьте глубоко, стопы шире плеч",
+        "Поставьте обе ладони на пол перед собой",
+        "Грудь держите поднятой, пятки — прижатыми, насколько получается",
+        "Двигайтесь вбок или вперёд, переставляя стопы, а затем ладони",
+        "Продолжайте заданное расстояние, всё время оставаясь внизу"
+      ]
+    }
+  },
+  "ea_hand_stand_hold": {
+    "en": {
+      "purpose": "Builds shoulder strength and whole-body control in a way nothing else does, and it improves the sense of where your body is in space. Learn it against a wall first, and never on a hard floor without a plan for coming down.",
+      "steps": [
+        "Place your hands on the floor about shoulder width apart, a foot from a wall",
+        "Kick one leg up and then the other so your heels rest on the wall",
+        "Push the floor away, lock your elbows and squeeze your glutes and stomach",
+        "Stack your hips over your shoulders and look between your hands",
+        "Hold for as long as your line stays straight, then come down one leg at a time"
+      ]
+    },
+    "ru": {
+      "purpose": "Развивает силу плеч и контроль над всем телом так, как не делает ничто другое, и улучшает ощущение положения тела в пространстве. Сначала осваивайте у стены и никогда не вставайте на жёстком полу без плана выхода.",
+      "steps": [
+        "Поставьте ладони на пол на ширине плеч примерно в тридцати сантиметрах от стены",
+        "Забросьте одну ногу, затем вторую, пока пятки не коснутся стены",
+        "Отталкивайтесь от пола, выпрямите локти, напрягите ягодицы и живот",
+        "Выстройте таз над плечами и смотрите между ладонями",
+        "Держите, пока линия тела прямая, затем опуститесь по одной ноге"
+      ]
+    }
+  },
+  "ea_headstand": {
+    "en": {
+      "purpose": "An inversion that builds neck, shoulder and stomach control, and gives the same sense of orientation a handstand does with far less strength required. Take the weight on the arms, never on the head.",
+      "steps": [
+        "Kneel and place your forearms on the mat with the hands clasped",
+        "Set the crown of your head on the floor with the back of it against your hands",
+        "Press hard through the forearms so most of your weight is there, not on your head",
+        "Walk your feet in and lift the hips over your shoulders, then raise the legs",
+        "Hold with the body in one line, then lower one leg at a time under control"
+      ]
+    },
+    "ru": {
+      "purpose": "Перевёрнутое положение, развивающее контроль шеи, плеч и живота и дающее то же ощущение ориентации, что и стойка на руках, но требующее гораздо меньше силы. Вес держат руки, а не голова.",
+      "steps": [
+        "Встаньте на колени и поставьте предплечья на коврик, сцепив ладони",
+        "Поставьте макушку на пол так, чтобы затылок упирался в ладони",
+        "С силой давите предплечьями, чтобы основной вес был на них, а не на голове",
+        "Подшагните стопами и выведите таз над плечами, затем поднимите ноги",
+        "Держите тело одной линией, затем опустите по одной ноге под контролем"
+      ]
+    }
+  },
+  "ea_heavy_bag_sled_drag": {
+    "en": {
+      "purpose": "Dragging backwards loads the front of the thighs specifically, and because there is no lowering phase it is one of the few ways to train the knees hard without soreness. Often used in knee rehabilitation for exactly that reason.",
+      "steps": [
+        "Attach a strap from the bag or sled and hold one end in each hand",
+        "Face the load and lean back slightly with your arms straight",
+        "Keep your chest up and your stomach braced",
+        "Walk backwards with short steps, pulling the load toward you",
+        "Cover the set distance, then reset and go again"
+      ]
+    },
+    "ru": {
+      "purpose": "Протяжка спиной вперёд нагружает именно переднюю поверхность бёдер, и, поскольку уступающей фазы нет, это один из немногих способов тяжело нагрузить колени без крепатуры. Именно поэтому приём часто используют в реабилитации колена.",
+      "steps": [
+        "Закрепите лямку на мешке или санях и возьмите по концу в каждую руку",
+        "Встаньте лицом к грузу и слегка отклонитесь назад, руки прямые",
+        "Грудь поднята, живот напряжён",
+        "Идите назад короткими шагами, подтягивая груз к себе",
+        "Пройдите заданное расстояние, вернитесь и повторите"
+      ]
+    }
+  },
+  "ea_kettlebell_sled_drag": {
+    "en": {
+      "purpose": "A sled substitute using what most gyms already have. Dragging trains the legs and grip with no lowering phase, so you can add a lot of work without adding recovery cost.",
+      "steps": [
+        "Attach a strap or rope to a heavy kettlebell",
+        "Hold the other end in one or both hands and stand facing away from the bell",
+        "Lean forward slightly with your arms firm and your back flat",
+        "Walk forward with short, deliberate steps, dragging the bell behind you",
+        "Cover the set distance, then turn around and repeat"
+      ]
+    },
+    "ru": {
+      "purpose": "Замена саням из того, что есть почти в любом зале. Протяжка нагружает ноги и хват без уступающей фазы, поэтому объём можно добавить, не добавляя стоимости восстановления.",
+      "steps": [
+        "Прикрепите лямку или верёвку к тяжёлой гире",
+        "Возьмите второй конец одной или двумя руками и встаньте спиной к гире",
+        "Слегка наклонитесь вперёд, руки жёсткие, спина прямая",
+        "Идите вперёд короткими уверенными шагами, таща гирю за собой",
+        "Пройдите заданное расстояние, развернитесь и повторите"
+      ]
+    }
+  },
+  "ea_kettlebell_snatch": {
+    "en": {
+      "purpose": "Takes the bell from the floor to overhead in one movement, which trains power and conditioning at the same time. Technically demanding — learn the swing properly first, because the snatch is a swing that keeps going.",
+      "steps": [
+        "Stand with the bell on the floor between your feet and hinge to grip it with one hand",
+        "Swing it back between your legs, then snap your hips forward hard",
+        "Guide the bell up close to your body, keeping the arm relaxed",
+        "As it passes your head, punch your hand through so the bell rotates around the wrist rather than banging it",
+        "Lock the arm overhead, then guide the bell back down into the next swing"
+      ]
+    },
+    "ru": {
+      "purpose": "Поднимает гирю с пола в положение над головой одним движением, тренируя мощность и выносливость одновременно. Технически требовательно: сначала как следует освойте мах — рывок это мах, который продолжается.",
+      "steps": [
+        "Поставьте гирю на пол между стопами и наклонитесь, взявшись за неё одной рукой",
+        "Отправьте её назад между ног, затем резко выведите таз вперёд",
+        "Ведите гирю вверх близко к телу, рука остаётся расслабленной",
+        "Когда она проходит мимо головы, проденьте кисть вперёд, чтобы гиря обошла запястье, а не ударила по нему",
+        "Зафиксируйте руку над головой, затем верните гирю вниз в следующий мах"
+      ]
+    }
+  },
+  "ea_kettlebell_turkish_get_up": {
+    "en": {
+      "purpose": "Getting from lying to standing with a weight overhead trains shoulder stability, hip mobility and body control in one slow movement. It takes about half a minute per repetition, and it exposes every weak link you have.",
+      "steps": [
+        "Lie on your back and press the bell overhead with one arm, that knee bent",
+        "Roll onto the opposite forearm, then push up onto that hand",
+        "Lift your hips and sweep the straight leg back into a kneeling position",
+        "Bring your torso upright, then stand up, keeping the bell locked overhead throughout",
+        "Reverse every step exactly to return to lying, then change arms"
+      ]
+    },
+    "ru": {
+      "purpose": "Подъём из положения лёжа в стойку с весом над головой тренирует устойчивость плеча, подвижность таза и контроль тела в одном медленном движении. На повторение уходит около полуминуты, и оно вскрывает любое слабое звено.",
+      "steps": [
+        "Лягте на спину и выжмите гирю над головой одной рукой, одноимённое колено согнуто",
+        "Перекатитесь на противоположное предплечье, затем поднимитесь на эту ладонь",
+        "Поднимите таз и заведите прямую ногу назад в положение на колене",
+        "Выпрямите корпус и встаньте, всё время удерживая гирю над головой",
+        "Пройдите все шаги точно в обратном порядке до положения лёжа и смените руку"
+      ]
+    }
+  },
+  "ea_kettlebell_walkover_pushup": {
+    "en": {
+      "purpose": "Moving a hand onto and off a kettlebell between push-ups adds a shoulder-stability and anti-rotation demand to a familiar movement. It also increases the depth on one side each repetition.",
+      "steps": [
+        "Set a kettlebell on the floor and take a push-up position with one hand on it",
+        "Keep your feet wide and your body in a straight line",
+        "Lower into a push-up, then press back up",
+        "Walk the free hand over the bell and swap which hand is on it",
+        "Do another push-up and continue, alternating hands each repetition"
+      ]
+    },
+    "ru": {
+      "purpose": "Перестановка ладони на гирю и обратно между отжиманиями добавляет к знакомому движению требование к устойчивости плеча и сопротивлению развороту. Заодно увеличивает глубину с одной стороны в каждом повторении.",
+      "steps": [
+        "Поставьте гирю на пол и примите упор лёжа, одна ладонь на ней",
+        "Стопы расставьте шире, тело в прямой линии",
+        "Опуститесь в отжимание и отожмитесь обратно",
+        "Переставьте свободную ладонь через гирю и поменяйте опорную руку",
+        "Сделайте ещё одно отжимание и продолжайте, чередуя руки"
+      ]
+    }
+  },
+  "ea_kettlebell_windmill": {
+    "en": {
+      "purpose": "Holding a weight overhead while bending sideways to the floor demands shoulder stability, hip mobility and trunk strength together. Start with no weight at all — the position is the hard part, not the load.",
+      "steps": [
+        "Press a kettlebell overhead with one arm and turn both feet away from that side",
+        "Keep your eyes on the bell and your arm locked straight",
+        "Push your hips toward the loaded side and slide the free hand down your leg",
+        "Lower until that hand reaches the floor or as far as you can with a straight back",
+        "Return to standing along the same path, then finish the set and change sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Удержание веса над головой при наклоне вбок к полу требует одновременно устойчивости плеча, подвижности таза и силы корпуса. Начинайте вообще без веса: сложность в положении, а не в нагрузке.",
+      "steps": [
+        "Выжмите гирю над головой одной рукой и разверните обе стопы в противоположную сторону",
+        "Смотрите на гирю, рука зафиксирована прямой",
+        "Подайте таз в сторону нагруженной руки и скользите свободной ладонью вниз по ноге",
+        "Опуститесь, пока ладонь не коснётся пола или насколько позволяет прямая спина",
+        "Вернитесь по той же траектории, доделайте подход и смените сторону"
+      ]
+    }
+  },
+  "ea_kipping_handstand_push_up": {
+    "en": {
+      "purpose": "Uses a knee drive to help the arms press, which allows far more repetitions than a strict handstand push-up. It trains conditioning and rhythm, not raw pressing strength — learn the strict version first.",
+      "steps": [
+        "Kick up into a handstand with your heels resting against a wall",
+        "Lower under control until the top of your head touches the floor or a pad",
+        "Tuck your knees toward your chest",
+        "Drive the knees up hard and press with the arms at the same moment",
+        "Lock out overhead, reset your body line, and repeat"
+      ]
+    },
+    "ru": {
+      "purpose": "Использует мах коленями в помощь рукам, что позволяет сделать намного больше повторений, чем строгий вариант. Тренирует выносливость и ритм, а не чистую жимовую силу — сначала освойте строгий вариант.",
+      "steps": [
+        "Выйдите в стойку на руках, пятки опираются на стену",
+        "Опуститесь под контролем, пока макушка не коснётся пола или подкладки",
+        "Подтяните колени к груди",
+        "Резко выбросьте колени вверх и одновременно отожмитесь руками",
+        "Зафиксируйтесь наверху, восстановите линию тела и повторите"
+      ]
+    }
+  },
+  "ea_landmine_alternating_lunge_and_twist": {
+    "en": {
+      "purpose": "Combines a lunge with a rotation, so the legs work while the trunk turns under load. It trains the two things together, which is how the body actually moves outside a gym.",
+      "steps": [
+        "Hold the loaded bar end at chest height with both hands, standing away from the anchor",
+        "Step back into a reverse lunge with one leg",
+        "As you lower, rotate your ribs toward the front leg",
+        "Untwist as you drive through the front heel to stand",
+        "Repeat on the other leg, alternating throughout the set"
+      ]
+    },
+    "ru": {
+      "purpose": "Соединяет выпад с разворотом: ноги работают, пока корпус поворачивается под нагрузкой. Тренирует эти два качества вместе — именно так тело и двигается за пределами зала.",
+      "steps": [
+        "Держите нагруженный конец грифа двумя руками на уровне груди, стоя спиной к креплению",
+        "Шагните одной ногой назад в обратный выпад",
+        "Опускаясь, разверните рёбра в сторону передней ноги",
+        "Раскрутитесь, отталкиваясь пяткой передней ноги и вставая",
+        "Повторите другой ногой, чередуя весь подход"
+      ]
+    }
+  },
+  "ea_landmine_alternating_lunge_to_chest_press": {
+    "en": {
+      "purpose": "A lunge that finishes as a press, so the legs and the upper body are trained in one continuous movement. The heart rate rises quickly, which makes it a conditioning exercise as much as a strength one.",
+      "steps": [
+        "Hold the loaded bar end at one shoulder, facing away from the anchor",
+        "Step back into a reverse lunge until the back knee is near the floor",
+        "Drive through the front heel to stand back up",
+        "Press the bar forward and up to a straight arm as you finish standing",
+        "Return it to the shoulder, switch sides, and repeat"
+      ]
+    },
+    "ru": {
+      "purpose": "Выпад, переходящий в жим: ноги и верх тела тренируются одним непрерывным движением. Пульс растёт быстро, поэтому упражнение работает и как силовое, и как кардио.",
+      "steps": [
+        "Держите нагруженный конец грифа у одного плеча, спиной к креплению",
+        "Шагните назад в обратный выпад, пока заднее колено не окажется у пола",
+        "Оттолкнитесь пяткой передней ноги и встаньте",
+        "В момент выпрямления выжмите гриф вперёд и вверх до прямой руки",
+        "Верните к плечу, смените сторону и повторите"
+      ]
+    }
+  },
+  "ea_landmine_rotational_lift_to_press": {
+    "en": {
+      "purpose": "Takes the bar from low on one side to overhead on the other, which trains the diagonal chain from the hip through the trunk to the shoulder. That chain is what produces force in throwing and striking.",
+      "steps": [
+        "Stand side-on to the landmine and hold the loaded end low beside one hip",
+        "Bend your knees slightly and brace your stomach",
+        "Rotate and drive up through the hips, lifting the bar diagonally across your body",
+        "Finish by pressing it overhead on the opposite side",
+        "Reverse the path under control, then complete the set and change sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Проводит гриф снизу с одной стороны в положение над головой с другой, тренируя диагональную цепь от таза через корпус к плечу. Именно эта цепь создаёт усилие в бросках и ударах.",
+      "steps": [
+        "Встаньте боком к лендмайну, нагруженный конец внизу у одного бедра",
+        "Слегка согните колени и напрягите живот",
+        "Разворачиваясь и разгибая таз, поднимите гриф по диагонали через тело",
+        "Завершите жимом над головой с противоположной стороны",
+        "Верните по той же траектории под контролем, доделайте подход и смените сторону"
+      ]
+    }
+  },
+  "ea_lateral_sled_drag": {
+    "en": {
+      "purpose": "Dragging sideways loads the side of the hip, which almost no other loaded exercise reaches. That muscle is what keeps the knee tracking properly, and it is chronically undertrained.",
+      "steps": [
+        "Attach a strap to the sled and hold it with both hands",
+        "Stand side-on to the sled with your knees bent and chest up",
+        "Keep your feet pointing forward, not toward the sled",
+        "Step sideways with the lead foot and follow with the other, pulling the sled along",
+        "Cover the set distance, then turn around and lead with the other side"
+      ]
+    },
+    "ru": {
+      "purpose": "Протяжка вбок нагружает боковую часть таза, до которой почти не добирается ни одно другое упражнение с весом. Именно эта мышца удерживает колено на траектории, и она хронически недотренирована.",
+      "steps": [
+        "Прикрепите лямку к саням и возьмите её двумя руками",
+        "Встаньте боком к саням, колени согнуты, грудь поднята",
+        "Стопы направлены вперёд, а не в сторону саней",
+        "Шагните вбок ведущей стопой и подставьте вторую, протягивая сани",
+        "Пройдите заданное расстояние, развернитесь и ведите другой стороной"
+      ]
+    }
+  },
+  "ea_low_box_lateral_runner": {
+    "en": {
+      "purpose": "Quick sideways steps on and off a low box train the feet and the side of the hip to react fast. It raises the heart rate quickly and needs almost no space.",
+      "steps": [
+        "Stand side-on beside a low box with your knees bent",
+        "Step the near foot onto the box, then the other foot",
+        "Step down on the far side, one foot at a time, without pausing",
+        "Reverse immediately and travel back the other way",
+        "Keep the contacts light and quick for the set time"
+      ]
+    },
+    "ru": {
+      "purpose": "Быстрые боковые шаги на низкую тумбу и обратно учат стопы и боковую часть таза реагировать быстро. Пульс поднимается быстро, а места нужно совсем немного.",
+      "steps": [
+        "Встаньте боком у низкой тумбы, колени согнуты",
+        "Поставьте ближнюю стопу на тумбу, затем вторую",
+        "Сойдите с дальней стороны по одной стопе, без пауз",
+        "Сразу развернитесь и двигайтесь обратно",
+        "Держите касания лёгкими и быстрыми заданное время"
+      ]
+    }
+  }
+}

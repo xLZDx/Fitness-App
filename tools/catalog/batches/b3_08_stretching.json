@@ -1,0 +1,904 @@
+{
+  "ea_arms_behind_back_chest_stretch": {
+    "en": {
+      "purpose": "Opens the front of the chest and the shoulders, which shorten from hours of sitting with the arms in front of you. Doing it between sets of pressing keeps the shoulders from closing up during the session.",
+      "steps": [
+        "Stand tall and clasp your hands together behind your back",
+        "Straighten your arms and roll your shoulders back and down",
+        "Lift your hands away from your body until you feel the chest open",
+        "Keep your ribs down — do not arch your lower back to go further",
+        "Breathe slowly and hold for twenty to thirty seconds"
+      ]
+    },
+    "ru": {
+      "purpose": "Раскрывает переднюю поверхность груди и плечи, которые укорачиваются от часов сидения с руками перед собой. Растяжка между жимовыми подходами не даёт плечам зажаться прямо во время тренировки.",
+      "steps": [
+        "Встаньте прямо и сцепите руки за спиной",
+        "Выпрямите руки, плечи отведите назад и вниз",
+        "Поднимите кисти от тела до ощущения раскрытия груди",
+        "Рёбра держите опущенными — не прогибайте поясницу ради большей амплитуды",
+        "Дышите медленно и удерживайте двадцать-тридцать секунд"
+      ]
+    }
+  },
+  "ea_arms_wide_chest_stretch": {
+    "en": {
+      "purpose": "Stretches the chest with the arms out to the sides, which reaches the fibres a behind-the-back stretch misses. Useful before pressing, when the chest needs to be long rather than short and tight.",
+      "steps": [
+        "Stand tall with your feet hip width apart",
+        "Open both arms out wide to the sides at shoulder height, palms forward",
+        "Draw your shoulder blades together and press your chest forward",
+        "Keep your chin level and your ribs pulled down",
+        "Hold for twenty to thirty seconds, breathing into the chest"
+      ]
+    },
+    "ru": {
+      "purpose": "Растягивает грудь с разведёнными в стороны руками и достаёт до волокон, которые растяжка за спиной пропускает. Полезно перед жимами, когда груди нужно быть длинной, а не короткой и зажатой.",
+      "steps": [
+        "Встаньте прямо, стопы на ширине таза",
+        "Широко разведите руки в стороны на уровне плеч, ладони вперёд",
+        "Сведите лопатки и подайте грудь вперёд",
+        "Подбородок держите ровно, рёбра опущенными",
+        "Удерживайте двадцать-тридцать секунд, дыша в грудь"
+      ]
+    }
+  },
+  "ea_both_arms_behind_on_wall_biceps_stretch": {
+    "en": {
+      "purpose": "Stretches the biceps and the front of both shoulders at once, which is where tightness collects after pulling work or a day at a keyboard. The wall does the work, so you can relax into it.",
+      "steps": [
+        "Stand with your back to a wall, about half a step away",
+        "Place both palms flat on the wall behind you at hip height, fingers pointing down",
+        "Keep your arms straight and your chest lifted",
+        "Slowly bend your knees to lower your body until you feel the stretch through the biceps",
+        "Hold for twenty to thirty seconds without letting the shoulders shrug up"
+      ]
+    },
+    "ru": {
+      "purpose": "Растягивает бицепсы и переднюю поверхность обоих плеч одновременно — там и копится зажатость после тяг и дня за клавиатурой. Работу делает стена, поэтому в положении можно расслабиться.",
+      "steps": [
+        "Встаньте спиной к стене примерно в полушаге от неё",
+        "Поставьте обе ладони на стену за собой на высоте таза, пальцы вниз",
+        "Руки держите прямыми, грудь поднятой",
+        "Медленно сгибайте колени, опуская тело, до ощущения растяжения в бицепсах",
+        "Удерживайте двадцать-тридцать секунд, не поднимая плечи"
+      ]
+    }
+  },
+  "ea_bulgarian_split_squat_stretch": {
+    "en": {
+      "purpose": "Stretches the front of the back hip, which shortens in anyone who sits for a living and which limits how upright you can stand under a bar. This is the position that opens it.",
+      "steps": [
+        "Place the top of one foot on a bench behind you and step the other foot forward",
+        "Lower your back knee toward the floor with your torso upright",
+        "Squeeze the glute of the back leg to push the hip forward",
+        "Stop where you feel a stretch across the front of the back thigh, not in the knee",
+        "Hold for twenty to thirty seconds, then change legs"
+      ]
+    },
+    "ru": {
+      "purpose": "Растягивает переднюю поверхность задней ноги — она укорачивается у всех, кто сидит на работе, и ограничивает то, насколько прямо вы можете стоять под штангой. Это положение её раскрывает.",
+      "steps": [
+        "Положите подъём одной стопы на скамью позади, вторую ногу выставьте вперёд",
+        "Опустите заднее колено к полу, корпус остаётся прямым",
+        "Напрягите ягодицу задней ноги, подавая таз вперёд",
+        "Остановитесь на ощущении растяжения по передней поверхности задней ноги, а не в колене",
+        "Удерживайте двадцать-тридцать секунд и смените ногу"
+      ]
+    }
+  },
+  "ea_calf_push_stretch_with_hands_against_wall_v_2": {
+    "en": {
+      "purpose": "Stretches the large calf muscle with the knee straight, which is the one that limits ankle movement and, through it, squat depth. Tight calves are a very common reason heels lift in a squat.",
+      "steps": [
+        "Stand facing a wall and place both hands on it at shoulder height",
+        "Step one foot well back, keeping that leg completely straight",
+        "Press the back heel firmly into the floor with the toes pointing forward",
+        "Lean your hips toward the wall until you feel the calf stretch",
+        "Hold for thirty seconds, then swap legs"
+      ]
+    },
+    "ru": {
+      "purpose": "Растягивает крупную икроножную мышцу при прямом колене — именно она ограничивает подвижность голеностопа, а через него и глубину приседа. Зажатые икры — очень частая причина отрыва пяток в приседе.",
+      "steps": [
+        "Встаньте лицом к стене и поставьте обе ладони на неё на высоте плеч",
+        "Отставьте одну стопу далеко назад, эта нога остаётся полностью прямой",
+        "Плотно прижмите заднюю пятку к полу, носок смотрит вперёд",
+        "Подайте таз к стене до ощущения растяжения в икре",
+        "Удерживайте тридцать секунд и смените ногу"
+      ]
+    }
+  },
+  "ea_calve_stretch_foot_on_wall": {
+    "en": {
+      "purpose": "Putting the toes up the wall stretches the calf and the tissue under the foot at the same time, which is the combination that helps with heel pain from plantar fasciitis.",
+      "steps": [
+        "Stand facing a wall and place the ball of one foot against it, heel on the floor",
+        "Keep that leg straight and your toes pointing up the wall",
+        "Place your hands on the wall for support",
+        "Gently lean your hips and chest toward the wall until the calf stretches",
+        "Hold for thirty seconds, then change feet"
+      ]
+    },
+    "ru": {
+      "purpose": "Носок на стене растягивает икру и подошвенную фасцию одновременно — именно это сочетание помогает при боли в пятке от плантарного фасциита.",
+      "steps": [
+        "Встаньте лицом к стене и упритесь передней частью одной стопы в неё, пятка на полу",
+        "Эта нога остаётся прямой, пальцы направлены вверх по стене",
+        "Ладони поставьте на стену для опоры",
+        "Мягко подайте таз и грудь к стене до растяжения икры",
+        "Удерживайте тридцать секунд и смените стопу"
+      ]
+    }
+  },
+  "ea_calve_stretch_from_wall_to_floor": {
+    "en": {
+      "purpose": "Moves the stretch along the whole calf as the angle changes, so both the upper and lower parts get covered instead of only one. More thorough than holding a single position.",
+      "steps": [
+        "Place the ball of one foot against the wall with the heel on the floor",
+        "Straighten that leg and lean in until you feel the upper calf stretch",
+        "Hold there, then slide the foot down so the angle becomes shallower",
+        "Bend the knee slightly to move the stretch lower into the calf",
+        "Hold each position for twenty seconds, then swap legs"
+      ]
+    },
+    "ru": {
+      "purpose": "Смещает растяжение вдоль всей икры по мере изменения угла, поэтому прорабатывается и верхняя, и нижняя часть, а не одна. Тщательнее, чем удержание одного положения.",
+      "steps": [
+        "Упритесь передней частью одной стопы в стену, пятка на полу",
+        "Выпрямите эту ногу и наклонитесь до растяжения в верхней части икры",
+        "Задержитесь, затем сдвиньте стопу ниже, уменьшив угол",
+        "Слегка согните колено, смещая растяжение ниже по икре",
+        "Держите каждое положение по двадцать секунд, затем смените ногу"
+      ]
+    }
+  },
+  "ea_calves_stretch_on_step": {
+    "en": {
+      "purpose": "Letting the heel drop below a step uses gravity and your own bodyweight for the stretch, which reaches further than pushing against a wall. The easiest calf stretch to fit into a normal day.",
+      "steps": [
+        "Stand on a step with the balls of both feet on the edge, heels hanging off",
+        "Hold a rail or wall for balance",
+        "Let both heels sink slowly below the level of the step",
+        "Keep the legs straight to reach the upper calf, or bend the knees for the lower part",
+        "Hold for thirty seconds, then rise back up under control"
+      ]
+    },
+    "ru": {
+      "purpose": "Пятка, свисающая со ступеньки, использует силу тяжести и собственный вес — растяжение получается глубже, чем при упоре в стену. Самая простая растяжка икр, которую легко встроить в обычный день.",
+      "steps": [
+        "Встаньте на ступеньку передними частями обеих стоп, пятки свисают",
+        "Придержитесь за поручень или стену",
+        "Медленно опустите обе пятки ниже уровня ступеньки",
+        "Прямые ноги растягивают верх икры, согнутые колени — нижнюю часть",
+        "Удерживайте тридцать секунд и поднимитесь обратно под контролем"
+      ]
+    }
+  },
+  "ea_child_pose_lower_back_stretch": {
+    "en": {
+      "purpose": "Lengthens the lower back and the hips in a position that takes all the load off the spine, which is why it is the standard place to rest between harder movements or after a heavy session.",
+      "steps": [
+        "Kneel on the floor with your big toes together and knees apart",
+        "Sit your hips back toward your heels",
+        "Walk your hands forward and lower your chest between your thighs",
+        "Rest your forehead on the mat and let your shoulders relax",
+        "Breathe into your lower back and hold for thirty seconds or longer"
+      ]
+    },
+    "ru": {
+      "purpose": "Вытягивает поясницу и таз в положении, полностью снимающем нагрузку с позвоночника, — поэтому это стандартное место отдыха между тяжёлыми движениями или после нагрузочной тренировки.",
+      "steps": [
+        "Встаньте на колени, большие пальцы ног вместе, колени разведены",
+        "Отведите таз назад к пяткам",
+        "Переставьте ладони вперёд и опустите грудь между бёдрами",
+        "Положите лоб на коврик и расслабьте плечи",
+        "Дышите в поясницу и удерживайте тридцать секунд или дольше"
+      ]
+    }
+  },
+  "ea_cobra_stretch": {
+    "en": {
+      "purpose": "Extends the spine backwards, the opposite of the forward-folded position most people hold all day. It also stretches the front of the stomach and hips, which shorten from sitting.",
+      "steps": [
+        "Lie face down with your palms under your shoulders and elbows tucked in",
+        "Press the tops of your feet and your hips into the floor",
+        "Push through your hands to lift your chest, keeping your hips down",
+        "Go only as far as feels comfortable in the lower back — the elbows may stay bent",
+        "Hold for twenty seconds, breathing steadily, then lower down slowly"
+      ]
+    },
+    "ru": {
+      "purpose": "Разгибает позвоночник назад — противоположность согнутому вперёд положению, в котором большинство проводит весь день. Заодно растягивает переднюю поверхность живота и таза, укороченную от сидения.",
+      "steps": [
+        "Лягте лицом вниз, ладони под плечами, локти прижаты",
+        "Прижмите подъёмы стоп и таз к полу",
+        "Оттолкнитесь ладонями и поднимите грудь, не отрывая таз",
+        "Поднимайтесь настолько, насколько комфортно пояснице — локти могут остаться согнутыми",
+        "Удерживайте двадцать секунд, ровно дыша, затем медленно опуститесь"
+      ]
+    }
+  },
+  "ea_crescent_moon_pose_quad_stretch": {
+    "en": {
+      "purpose": "Stretches the front of the hip and thigh of the back leg at once, which is the pair that tightens from sitting and limits how far the hip can extend when you walk or run.",
+      "steps": [
+        "Kneel on one knee with the other foot forward, both bent to about ninety degrees",
+        "Squeeze the glute of the kneeling leg to push that hip forward",
+        "Raise both arms overhead and lengthen through your side",
+        "Keep your ribs down so the stretch stays in the hip, not the lower back",
+        "Hold for thirty seconds, then change sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Растягивает переднюю поверхность таза и бедра задней ноги одновременно — именно эта пара зажимается от сидения и ограничивает разгибание таза при ходьбе и беге.",
+      "steps": [
+        "Встаньте на одно колено, вторая стопа впереди, оба угла примерно по девяносто градусов",
+        "Напрягите ягодицу опорной ноги, подавая её таз вперёд",
+        "Поднимите обе руки над головой и вытянитесь по боку",
+        "Рёбра держите опущенными, чтобы растяжение осталось в тазу, а не в пояснице",
+        "Удерживайте тридцать секунд и смените сторону"
+      ]
+    }
+  },
+  "ea_crescent_moon_pose_quad_stretch_with_block": {
+    "en": {
+      "purpose": "The same hip and thigh stretch with a block under the hands, so you can hold the position without needing the balance the full version demands. The version to use while the hip is still tight.",
+      "steps": [
+        "Kneel on one knee with the other foot forward and a block beside the front foot",
+        "Rest one or both hands on the block to steady yourself",
+        "Push the hip of the kneeling leg forward by squeezing that glute",
+        "Keep your torso upright and your ribs pulled down",
+        "Hold for thirty seconds, then swap legs"
+      ]
+    },
+    "ru": {
+      "purpose": "То же растяжение таза и бедра, но с блоком под руками: положение можно удерживать, не требуя баланса полной версии. Этот вариант используют, пока таз ещё зажат.",
+      "steps": [
+        "Встаньте на одно колено, вторая стопа впереди, блок рядом с передней стопой",
+        "Обопритесь одной или обеими ладонями на блок для устойчивости",
+        "Подайте таз опорной ноги вперёд, напрягая её ягодицу",
+        "Корпус держите прямым, рёбра опущенными",
+        "Удерживайте тридцать секунд и смените ногу"
+      ]
+    }
+  },
+  "ea_cross_body_elbow_pull_shoulder_stretch": {
+    "en": {
+      "purpose": "Pulling by the elbow rather than the wrist keeps the pressure off the shoulder joint and puts the stretch where it belongs — across the back of the shoulder, which tightens after pressing and throwing.",
+      "steps": [
+        "Stand tall and bring one arm straight across your chest",
+        "Hook the opposite hand behind that elbow, not the forearm",
+        "Draw the arm gently across your body until you feel the back of the shoulder stretch",
+        "Keep both shoulders down and facing forward — do not rotate the torso",
+        "Hold for twenty to thirty seconds, then change arms"
+      ]
+    },
+    "ru": {
+      "purpose": "Тяга за локоть, а не за запястье, снимает давление с плечевого сустава и переносит растяжение туда, где оно нужно, — на заднюю поверхность плеча, которая зажимается после жимов и бросков.",
+      "steps": [
+        "Встаньте прямо и вынесите одну прямую руку поперёк груди",
+        "Зацепите противоположной ладонью за локоть, а не за предплечье",
+        "Мягко притяните руку через тело до растяжения задней поверхности плеча",
+        "Оба плеча держите опущенными и развёрнутыми вперёд, корпус не разворачивайте",
+        "Удерживайте двадцать-тридцать секунд и смените руку"
+      ]
+    }
+  },
+  "ea_cross_body_shoulder_stretch": {
+    "en": {
+      "purpose": "The simplest way to open the back of the shoulder, which is the area that closes up after a session of rows and pull-ups. Quick enough to do between sets.",
+      "steps": [
+        "Stand or sit tall with your shoulders level",
+        "Reach one arm straight across the front of your chest",
+        "Support it with the other forearm and draw it closer to your body",
+        "Keep the working shoulder pressed down, away from your ear",
+        "Hold for twenty seconds, then do the other side"
+      ]
+    },
+    "ru": {
+      "purpose": "Самый простой способ раскрыть заднюю поверхность плеча — участок, который зажимается после подхода тяг и подтягиваний. Достаточно быстро, чтобы делать между подходами.",
+      "steps": [
+        "Встаньте или сядьте прямо, плечи на одном уровне",
+        "Вынесите одну прямую руку поперёк груди",
+        "Поддержите её вторым предплечьем и притяните ближе к телу",
+        "Рабочее плечо держите опущенным, подальше от уха",
+        "Удерживайте двадцать секунд и сделайте другую сторону"
+      ]
+    }
+  },
+  "ea_foam_roller_back": {
+    "en": {
+      "purpose": "Rolling the upper back restores the extension that sitting takes away, which is what lets you hold a bar overhead or keep the chest up in a squat. Stay above the ribs — never roll the lower back.",
+      "steps": [
+        "Lie on your back with a foam roller across your upper back, below the shoulder blades",
+        "Support your head with your hands and lift your hips off the floor",
+        "Roll slowly up and down between the shoulder blades and the base of the neck",
+        "Pause on any tight spot and breathe for a few seconds",
+        "Stop at the bottom of the ribs — do not roll onto the lower back"
+      ]
+    },
+    "ru": {
+      "purpose": "Прокатка верха спины возвращает разгибание, которое отнимает сидение, — именно оно позволяет удержать штангу над головой и держать грудь в приседе. Работайте выше рёбер, поясницу катать нельзя.",
+      "steps": [
+        "Лягте на спину, положив ролл поперёк верха спины ниже лопаток",
+        "Поддержите голову руками и оторвите таз от пола",
+        "Медленно прокатывайтесь вверх-вниз между лопатками и основанием шеи",
+        "Останавливайтесь на зажатых участках и дышите несколько секунд",
+        "Остановитесь на уровне нижних рёбер — не заезжайте на поясницу"
+      ]
+    }
+  },
+  "ea_foam_roller_calves": {
+    "en": {
+      "purpose": "Tight calves limit how far the ankle bends, which shows up as heels lifting in a squat and as a shortened stride when running. Rolling them is faster than stretching at restoring that movement.",
+      "steps": [
+        "Sit on the floor with a foam roller under one calf and the other leg crossed over it",
+        "Press your hands into the floor to lift your hips",
+        "Roll slowly from just above the ankle to just below the knee",
+        "Stop on tight spots and rotate the leg in and out to reach the sides",
+        "Spend about a minute per leg, then switch"
+      ]
+    },
+    "ru": {
+      "purpose": "Зажатые икры ограничивают сгибание голеностопа — это проявляется отрывом пяток в приседе и укороченным шагом в беге. Прокатка возвращает подвижность быстрее, чем растяжка.",
+      "steps": [
+        "Сядьте на пол, ролл под одной икрой, вторая нога закинута сверху",
+        "Упритесь ладонями в пол и приподнимите таз",
+        "Медленно прокатывайтесь от места чуть выше щиколотки до места под коленом",
+        "Останавливайтесь на зажатых участках и разворачивайте ногу внутрь-наружу, чтобы достать боковые части",
+        "Уделите примерно минуту на ногу и смените сторону"
+      ]
+    }
+  },
+  "ea_foam_roller_lateral_quads": {
+    "en": {
+      "purpose": "The outside of the thigh gets tight in anyone who runs or cycles, and that tightness pulls on the outside of the knee. This is usually the most uncomfortable rolling there is, and often the most useful.",
+      "steps": [
+        "Lie on your side with a foam roller under the outside of one thigh",
+        "Support yourself on your forearm and the opposite foot",
+        "Roll slowly from just below the hip to just above the knee",
+        "Never roll directly over the knee or the hip bone",
+        "Pause on the tightest spots and breathe, then change sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Внешняя поверхность бедра зажимается у всех, кто бегает или крутит педали, и эта зажатость тянет за внешнюю сторону колена. Обычно это самая неприятная прокатка — и часто самая полезная.",
+      "steps": [
+        "Лягте на бок, ролл под внешней поверхностью одного бедра",
+        "Обопритесь на предплечье и противоположную стопу",
+        "Медленно прокатывайтесь от места под тазом до места над коленом",
+        "Никогда не катайтесь прямо по колену или тазовой кости",
+        "Останавливайтесь на самых зажатых участках и дышите, затем смените сторону"
+      ]
+    }
+  },
+  "ea_foam_roller_quads": {
+    "en": {
+      "purpose": "Rolling the front of the thigh before training helps the knee bend more freely, and after training it helps with the stiffness that follows heavy squatting. One of the few rolling spots that is easy to reach.",
+      "steps": [
+        "Lie face down with a foam roller under the front of both thighs",
+        "Support yourself on your forearms with your elbows under your shoulders",
+        "Roll slowly from just below the hips to just above the knees",
+        "Pause on tender areas and breathe until they ease",
+        "Roll one leg at a time if you want more pressure"
+      ]
+    },
+    "ru": {
+      "purpose": "Прокатка передней поверхности бедра перед тренировкой помогает колену свободнее сгибаться, а после — снимает скованность от тяжёлых приседаний. Одно из немногих мест, до которых легко добраться.",
+      "steps": [
+        "Лягте лицом вниз, ролл под передней поверхностью обоих бёдер",
+        "Обопритесь на предплечья, локти под плечами",
+        "Медленно прокатывайтесь от места под тазом до места над коленями",
+        "Останавливайтесь на болезненных участках и дышите, пока не отпустит",
+        "Для большего давления катайте по одной ноге"
+      ]
+    }
+  },
+  "ea_forearms_pull_with_opposite_hand_stretch": {
+    "en": {
+      "purpose": "Stretches the forearm muscles that grip all day, whether on a bar or a keyboard. Doing it regularly is one of the few things that genuinely helps with elbow pain from overuse.",
+      "steps": [
+        "Extend one arm straight out in front of you at shoulder height, palm down",
+        "Use the opposite hand to pull the fingers gently back toward you",
+        "Keep the extended elbow straight throughout",
+        "Hold, then turn the palm up and pull the fingers down for the other side of the forearm",
+        "Hold each position for twenty seconds, then change arms"
+      ]
+    },
+    "ru": {
+      "purpose": "Растягивает мышцы предплечья, которые держат хват весь день — что на грифе, что на клавиатуре. Регулярное выполнение — одно из немногого, что действительно помогает при боли в локте от перегрузки.",
+      "steps": [
+        "Вытяните одну руку прямо перед собой на уровне плеча ладонью вниз",
+        "Второй ладонью мягко потяните пальцы на себя",
+        "Локоть вытянутой руки держите прямым",
+        "Задержитесь, затем разверните ладонь вверх и потяните пальцы вниз — для другой стороны предплечья",
+        "Держите каждое положение двадцать секунд, затем смените руку"
+      ]
+    }
+  },
+  "ea_forearms_stretch_on_wall": {
+    "en": {
+      "purpose": "Uses the wall so you can stretch both forearms at once and control the intensity with your own bodyweight. Better than the hand-pull version when the forearms are properly tight.",
+      "steps": [
+        "Stand facing a wall and place both palms flat on it at chest height, fingers up",
+        "Keep your arms straight and your shoulders down",
+        "Step back slightly and press your palms into the wall",
+        "Lean away until you feel the stretch along the underside of both forearms",
+        "Hold for thirty seconds, breathing steadily"
+      ]
+    },
+    "ru": {
+      "purpose": "Стена позволяет растянуть оба предплечья сразу и регулировать усилие собственным весом. Лучше варианта с притягиванием рукой, когда предплечья действительно зажаты.",
+      "steps": [
+        "Встаньте лицом к стене и поставьте обе ладони на неё на высоте груди, пальцы вверх",
+        "Руки держите прямыми, плечи опущенными",
+        "Отступите немного назад и прижмите ладони к стене",
+        "Отклоняйтесь, пока не почувствуете растяжение по внутренней стороне обоих предплечий",
+        "Удерживайте тридцать секунд, ровно дыша"
+      ]
+    }
+  },
+  "ea_forearms_stretch_on_wall_fingers_facing_down": {
+    "en": {
+      "purpose": "Turning the fingers down reaches the muscles on the top of the forearm — the side connected to the outer elbow, which is where the ache from too much gripping usually settles.",
+      "steps": [
+        "Face a wall and place both palms on it with the fingers pointing straight down",
+        "Keep your arms straight and your elbows soft, not locked hard",
+        "Press the palms flat against the wall",
+        "Lean in gently until you feel the stretch across the top of the forearms",
+        "Hold for twenty to thirty seconds without forcing it"
+      ]
+    },
+    "ru": {
+      "purpose": "Пальцы вниз выводят растяжение на мышцы верхней части предплечья — ту сторону, что связана с внешним локтем, где обычно и оседает боль от избытка хвата.",
+      "steps": [
+        "Встаньте лицом к стене и поставьте обе ладони пальцами строго вниз",
+        "Руки прямые, локти мягкие, без жёсткого выключения",
+        "Прижмите ладони к стене",
+        "Мягко наклонитесь вперёд до растяжения по верхней стороне предплечий",
+        "Удерживайте двадцать-тридцать секунд, не форсируя"
+      ]
+    }
+  },
+  "ea_half_neck_rolls": {
+    "en": {
+      "purpose": "Releases the neck without taking it backwards, which is the direction that causes trouble. Half rolls are the safe version and still reach the muscles that stiffen from screens and from carrying stress.",
+      "steps": [
+        "Sit or stand tall with your shoulders relaxed and down",
+        "Drop your chin toward your chest",
+        "Roll your head slowly to one side until your ear moves toward that shoulder",
+        "Roll back through the middle to the other side, keeping the chin low the whole time",
+        "Never roll the head backwards; continue for the set time"
+      ]
+    },
+    "ru": {
+      "purpose": "Расслабляет шею, не уводя её назад — а именно это направление и создаёт проблемы. Полукруги безопасны и всё равно достают до мышц, которые каменеют от экранов и накопленного напряжения.",
+      "steps": [
+        "Сядьте или встаньте прямо, плечи расслаблены и опущены",
+        "Опустите подбородок к груди",
+        "Медленно перекатите голову в одну сторону, пока ухо не пойдёт к плечу",
+        "Перекатите обратно через центр в другую сторону, всё время удерживая подбородок низко",
+        "Никогда не запрокидывайте голову назад; продолжайте заданное время"
+      ]
+    }
+  },
+  "ea_hands_clapped_forearms_stretch": {
+    "en": {
+      "purpose": "Pressing the palms together and lowering them stretches both forearms and wrists evenly, which matters for anyone doing push-ups, front squats or handstands — all of which need the wrist to bend back.",
+      "steps": [
+        "Stand or sit tall and press your palms together in front of your chest",
+        "Keep the palms touching along their whole length",
+        "Lower the hands slowly toward your stomach, keeping the elbows out",
+        "Stop when you feel the stretch across the wrists and forearms",
+        "Hold for twenty to thirty seconds, breathing normally"
+      ]
+    },
+    "ru": {
+      "purpose": "Сжатые ладони, опускаемые вниз, растягивают оба предплечья и запястья равномерно — это важно для отжиманий, фронтальных приседов и стойки на руках, где запястье должно отгибаться назад.",
+      "steps": [
+        "Встаньте или сядьте прямо и сожмите ладони перед грудью",
+        "Ладони должны соприкасаться по всей длине",
+        "Медленно опускайте кисти к животу, локти держите разведёнными",
+        "Остановитесь на ощущении растяжения в запястьях и предплечьях",
+        "Удерживайте двадцать-тридцать секунд, дыша ровно"
+      ]
+    }
+  },
+  "ea_lats_stretch_elbow_on_wall": {
+    "en": {
+      "purpose": "The lats run from the arm to the lower back, so when they are tight they limit how far the arms go overhead. This stretch is often what makes an overhead press stop pinching.",
+      "steps": [
+        "Stand a step away from a wall and place one elbow on it at about head height",
+        "Step back and hinge at the hips so your chest drops toward the floor",
+        "Let your head sink between your arms and lengthen through the side",
+        "Breathe into the side of your ribs, where the stretch should be felt",
+        "Hold for thirty seconds, then change sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Широчайшие идут от руки к пояснице, поэтому в зажатом состоянии они ограничивают подъём рук над головой. Часто именно эта растяжка убирает зажим в жиме над головой.",
+      "steps": [
+        "Встаньте в шаге от стены и поставьте один локоть на неё примерно на высоте головы",
+        "Отступите назад и наклонитесь от таза, опуская грудь к полу",
+        "Дайте голове уйти между руками и вытянитесь по боку",
+        "Дышите в боковую часть рёбер — растяжение должно ощущаться там",
+        "Удерживайте тридцать секунд и смените сторону"
+      ]
+    }
+  },
+  "ea_lats_stretch_on_wall": {
+    "en": {
+      "purpose": "Reaching both hands to a wall and sitting the hips back stretches both lats at once. Quick, needs nothing, and it is the standard thing to do before any overhead lifting.",
+      "steps": [
+        "Stand facing a wall and place both hands on it at about head height",
+        "Walk your feet back until your arms are straight",
+        "Push your hips back and let your chest sink toward the floor",
+        "Keep your arms straight and your head between your upper arms",
+        "Hold for thirty seconds, breathing into the sides of your back"
+      ]
+    },
+    "ru": {
+      "purpose": "Обе ладони на стене и таз, отведённый назад, растягивают обе широчайшие сразу. Быстро, ничего не нужно, и это стандартная подготовка перед любой работой над головой.",
+      "steps": [
+        "Встаньте лицом к стене и поставьте обе ладони на неё примерно на высоте головы",
+        "Отойдите стопами назад до прямых рук",
+        "Отведите таз назад и опустите грудь к полу",
+        "Руки держите прямыми, голову — между плечами",
+        "Удерживайте тридцать секунд, дыша в боковые части спины"
+      ]
+    }
+  },
+  "ea_lying_bent_knee_cross_glutes_stretch": {
+    "en": {
+      "purpose": "Reaches the deep muscles at the back of the hip, which tighten from sitting and can press on the nerve that runs down the leg. One of the more effective positions for hip and lower back tightness.",
+      "steps": [
+        "Lie on your back with both knees bent and feet flat",
+        "Cross one ankle over the opposite knee to make a figure four",
+        "Reach through the gap and hold the back of the supporting thigh",
+        "Draw that leg toward your chest until you feel the stretch in the crossed hip",
+        "Hold for thirty seconds, keeping your head and shoulders on the floor, then swap"
+      ]
+    },
+    "ru": {
+      "purpose": "Достаёт до глубоких мышц задней поверхности таза, которые зажимаются от сидения и могут давить на нерв, идущий по ноге. Одно из самых действенных положений при зажатости таза и поясницы.",
+      "steps": [
+        "Лягте на спину, оба колена согнуты, стопы на полу",
+        "Закиньте одну лодыжку на противоположное колено, образуя четвёрку",
+        "Просуньте руку в образовавшийся промежуток и возьмитесь за заднюю поверхность опорного бедра",
+        "Притяните эту ногу к груди до растяжения в скрещённом бедре",
+        "Удерживайте тридцать секунд, не отрывая голову и плечи от пола, затем смените сторону"
+      ]
+    }
+  },
+  "ea_lying_face_down_quadriceps_stretch": {
+    "en": {
+      "purpose": "Stretches the front of the thigh with the hip flat on the floor, which stops you cheating by arching your back. That makes it a truer stretch than the standing version most people do.",
+      "steps": [
+        "Lie face down with your forehead resting on your free arm",
+        "Bend one knee and reach back to hold that ankle or foot",
+        "Draw the heel toward your backside, keeping the hip pressed into the floor",
+        "Stop as soon as you feel the front of the thigh stretch, not the knee",
+        "Hold for thirty seconds, then change legs"
+      ]
+    },
+    "ru": {
+      "purpose": "Растягивает переднюю поверхность бедра при прижатом к полу тазе, поэтому схитрить прогибом в пояснице не получится. Это более честная растяжка, чем стоя, как делает большинство.",
+      "steps": [
+        "Лягте лицом вниз, лоб на свободной руке",
+        "Согните одно колено и возьмитесь за эту щиколотку или стопу",
+        "Притяните пятку к тазу, удерживая бедро прижатым к полу",
+        "Остановитесь, как только почувствуете растяжение передней поверхности бедра, а не колена",
+        "Удерживайте тридцать секунд и смените ногу"
+      ]
+    }
+  },
+  "ea_lying_knee_hugs_lower_back_stretch": {
+    "en": {
+      "purpose": "Rounds the lower back gently in the safest possible position, which relieves the compression that builds up from standing, lifting and sitting. Usually the first thing that helps a stiff back in the morning.",
+      "steps": [
+        "Lie on your back with your legs straight",
+        "Draw both knees toward your chest and wrap your arms around them",
+        "Pull them in gently until your lower back rounds against the floor",
+        "Keep your head and shoulders relaxed on the ground",
+        "Hold for thirty seconds, breathing into the lower back"
+      ]
+    },
+    "ru": {
+      "purpose": "Мягко округляет поясницу в максимально безопасном положении, снимая сжатие, накопленное от стояния, подъёмов и сидения. Обычно это первое, что помогает скованной спине по утрам.",
+      "steps": [
+        "Лягте на спину, ноги прямые",
+        "Подтяните оба колена к груди и обхватите их руками",
+        "Мягко притяните их, пока поясница не округлится и не прижмётся к полу",
+        "Голова и плечи расслабленно лежат на полу",
+        "Удерживайте тридцать секунд, дыша в поясницу"
+      ]
+    }
+  },
+  "ea_lying_knee_pull_glutes_stretch": {
+    "en": {
+      "purpose": "Pulling one knee across the body reaches the outside of the hip, which is where tightness builds in runners and in anyone who sits with their legs crossed. Gentler than the figure-four version.",
+      "steps": [
+        "Lie on your back with your legs straight and arms out to the sides",
+        "Bend one knee and draw it up toward your chest",
+        "Use the opposite hand to guide that knee across your body toward the floor",
+        "Keep both shoulders flat on the ground as the knee crosses over",
+        "Hold for thirty seconds, then bring it back and change legs"
+      ]
+    },
+    "ru": {
+      "purpose": "Колено, притянутое поперёк тела, достаёт до внешней части таза, где копится зажатость у бегунов и у тех, кто сидит нога на ногу. Мягче варианта с четвёркой.",
+      "steps": [
+        "Лягте на спину, ноги прямые, руки разведены в стороны",
+        "Согните одно колено и подтяните его к груди",
+        "Противоположной рукой уведите это колено поперёк тела к полу",
+        "Оба плеча остаются прижатыми к полу, пока колено уходит вбок",
+        "Удерживайте тридцать секунд, вернитесь и смените ногу"
+      ]
+    }
+  },
+  "ea_lying_knees_to_floor_lower_back_stretch": {
+    "en": {
+      "purpose": "A gentle rotation of the spine that opens the lower back and the front of the chest at the same time. One of the safest ways to restore rotation, which the back loses faster than any other movement.",
+      "steps": [
+        "Lie on your back with your knees bent and your arms out wide",
+        "Keep your knees together and your feet on the floor",
+        "Let both knees fall slowly to one side toward the ground",
+        "Turn your head the opposite way and keep both shoulders on the floor",
+        "Hold for thirty seconds, then bring the knees through the middle to the other side"
+      ]
+    },
+    "ru": {
+      "purpose": "Мягкий разворот позвоночника, который одновременно раскрывает поясницу и переднюю поверхность груди. Один из самых безопасных способов вернуть ротацию — а спина теряет её быстрее любого другого движения.",
+      "steps": [
+        "Лягте на спину, колени согнуты, руки широко разведены",
+        "Колени держите вместе, стопы на полу",
+        "Медленно опустите оба колена в одну сторону к полу",
+        "Голову поверните в противоположную, оба плеча остаются на полу",
+        "Удерживайте тридцать секунд, затем через центр опустите колени в другую сторону"
+      ]
+    }
+  },
+  "ea_lying_single_leg_extended_on_wall_hamstrings_stretch": {
+    "en": {
+      "purpose": "The wall holds the leg for you, so the hamstring can relax into the stretch instead of working to hold the position. That makes it far more effective than reaching for your toes while standing.",
+      "steps": [
+        "Lie on your back beside a doorway or a wall corner",
+        "Raise one leg and rest it flat against the wall, keeping it as straight as you can",
+        "Let the other leg lie flat along the floor",
+        "Slide your hips closer to the wall to increase the stretch",
+        "Hold for thirty to sixty seconds, then change legs"
+      ]
+    },
+    "ru": {
+      "purpose": "Стена держит ногу за вас, поэтому задняя поверхность бедра может расслабиться в растяжении, а не работать на удержание положения. Это гораздо эффективнее, чем тянуться к носкам стоя.",
+      "steps": [
+        "Лягте на спину рядом с дверным проёмом или углом стены",
+        "Поднимите одну ногу и положите её на стену, стараясь держать прямой",
+        "Вторая нога лежит вытянутой на полу",
+        "Придвиньте таз ближе к стене, чтобы усилить растяжение",
+        "Удерживайте тридцать-шестьдесят секунд и смените ногу"
+      ]
+    }
+  },
+  "ea_revolved_head_to_knee": {
+    "en": {
+      "purpose": "Combines a hamstring stretch with a side bend, so the back of the leg and the whole side of the torso lengthen together. It reaches the space between the ribs, which almost nothing else does.",
+      "steps": [
+        "Sit with one leg straight out to the side and the other foot tucked toward your groin",
+        "Rest the same-side forearm on the straight leg",
+        "Reach the opposite arm overhead and over toward that foot",
+        "Turn your chest slightly upward rather than folding forward",
+        "Hold for thirty seconds, breathing into the top ribs, then switch sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Соединяет растяжку задней поверхности бедра с наклоном вбок: удлиняются и нога, и вся боковая поверхность корпуса. Достаёт до межрёберного пространства, до которого почти ничто другое не добирается.",
+      "steps": [
+        "Сядьте, одна нога вытянута в сторону, стопа второй подтянута к паху",
+        "Положите одноимённое предплечье на прямую ногу",
+        "Вытяните противоположную руку над головой в сторону этой стопы",
+        "Разворачивайте грудь слегка вверх, а не складывайтесь вперёд",
+        "Удерживайте тридцать секунд, дыша в верхние рёбра, затем смените сторону"
+      ]
+    }
+  },
+  "ea_seated_figure_four_with_twist_glute_stretch": {
+    "en": {
+      "purpose": "Adding a twist to the figure four reaches deeper into the back of the hip and stretches the lower back at the same time. Can be done in a chair, which makes it practical during a working day.",
+      "steps": [
+        "Sit tall on the floor or a chair and cross one ankle over the opposite knee",
+        "Let the crossed knee fall open to the side",
+        "Place the opposite hand on that knee and the other hand behind you",
+        "Turn your chest toward the crossed leg, lengthening as you go",
+        "Hold for thirty seconds, then unwind slowly and change sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Добавленный разворот в позе четвёрки достаёт глубже в заднюю часть таза и заодно растягивает поясницу. Можно делать на стуле, что делает упражнение практичным в рабочий день.",
+      "steps": [
+        "Сядьте прямо на пол или стул и закиньте одну лодыжку на противоположное колено",
+        "Позвольте скрещённому колену раскрыться в сторону",
+        "Противоположную ладонь положите на это колено, вторую — за спину",
+        "Разверните грудь в сторону скрещённой ноги, вытягиваясь по ходу движения",
+        "Удерживайте тридцать секунд, медленно раскрутитесь и смените сторону"
+      ]
+    }
+  },
+  "ea_seated_single_leg_toe_touch_hamstring_stretch": {
+    "en": {
+      "purpose": "One leg at a time lets you work on the tighter side without the looser one hiding it. Hamstring tightness is almost always uneven, and a two-leg stretch never shows you that.",
+      "steps": [
+        "Sit on the floor with one leg straight out and the other bent, foot to the inner thigh",
+        "Sit up tall and turn your chest toward the straight leg",
+        "Hinge forward from the hips, not by rounding your back",
+        "Reach toward the foot of the straight leg until you feel the stretch behind the thigh",
+        "Hold for thirty seconds, then change legs"
+      ]
+    },
+    "ru": {
+      "purpose": "Работа по одной ноге позволяет заняться более зажатой стороной, не давая свободной её прикрывать. Зажатость задней поверхности бедра почти всегда разная, а растяжка на двух ногах этого не показывает.",
+      "steps": [
+        "Сядьте на пол, одна нога вытянута, вторая согнута, стопа у внутренней поверхности бедра",
+        "Вытянитесь вверх и разверните грудь к прямой ноге",
+        "Наклоняйтесь от таза, а не за счёт округления спины",
+        "Тянитесь к стопе прямой ноги до растяжения задней поверхности бедра",
+        "Удерживайте тридцать секунд и смените ногу"
+      ]
+    }
+  },
+  "ea_seated_toe_touch_hamstrings_stretch": {
+    "en": {
+      "purpose": "The most familiar hamstring stretch there is. Done from the hips with a flat back it lengthens the hamstrings; done by rounding the back it mostly stretches the spine instead, which is not the point.",
+      "steps": [
+        "Sit on the floor with both legs straight out in front of you",
+        "Sit up tall and lengthen through the top of your head",
+        "Hinge forward from the hips, keeping your back as flat as you can",
+        "Reach toward your feet and stop where the stretch is felt behind the thighs",
+        "Hold for thirty seconds, breathing out as you settle deeper"
+      ]
+    },
+    "ru": {
+      "purpose": "Самая узнаваемая растяжка задней поверхности бедра. Наклон от таза с прямой спиной удлиняет мышцы бедра; наклон за счёт округления спины растягивает в основном позвоночник, а это не цель.",
+      "steps": [
+        "Сядьте на пол, обе ноги вытянуты вперёд",
+        "Вытянитесь вверх, удлиняясь через макушку",
+        "Наклоняйтесь от таза, сохраняя спину максимально прямой",
+        "Тянитесь к стопам и остановитесь там, где растяжение чувствуется под бёдрами",
+        "Удерживайте тридцать секунд, углубляясь на выдохе"
+      ]
+    }
+  },
+  "ea_side_bend_standing_lats_stretch": {
+    "en": {
+      "purpose": "Opens the whole side of the body from the hip to the hand, including the lats and the muscles between the ribs. Takes ten seconds and needs no equipment, which makes it easy to do often.",
+      "steps": [
+        "Stand tall with your feet hip width apart",
+        "Reach one arm straight overhead and hold the wrist with the other hand",
+        "Lengthen upward first, then bend to the opposite side",
+        "Keep both feet flat and your hips facing forward",
+        "Hold for twenty seconds, then come back up and do the other side"
+      ]
+    },
+    "ru": {
+      "purpose": "Раскрывает всю боковую поверхность тела от таза до кисти, включая широчайшие и межрёберные мышцы. Занимает десять секунд и не требует инвентаря, поэтому делать легко и часто.",
+      "steps": [
+        "Встаньте прямо, стопы на ширине таза",
+        "Вытяните одну руку над головой и возьмитесь за запястье второй рукой",
+        "Сначала вытянитесь вверх, затем наклонитесь в противоположную сторону",
+        "Обе стопы прижаты к полу, таз развёрнут вперёд",
+        "Удерживайте двадцать секунд, вернитесь и сделайте другую сторону"
+      ]
+    }
+  },
+  "ea_side_chest_stretch_on_wall": {
+    "en": {
+      "purpose": "Opens one side of the chest at a time, which lets you spend longer on the tighter side. Chest tightness is often asymmetric, especially in people who work at a desk with a mouse.",
+      "steps": [
+        "Stand beside a wall and place one palm flat on it behind you at shoulder height",
+        "Keep that arm straight and the shoulder pressed down",
+        "Turn your body slowly away from the wall",
+        "Stop when you feel the stretch across the front of the chest and shoulder",
+        "Hold for twenty to thirty seconds, then change sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Раскрывает одну сторону груди за раз, поэтому на более зажатой можно задержаться дольше. Зажатость груди часто асимметрична, особенно у тех, кто работает за столом с мышью.",
+      "steps": [
+        "Встаньте боком к стене и поставьте одну ладонь на неё позади себя на высоте плеча",
+        "Эта рука прямая, плечо прижато вниз",
+        "Медленно разворачивайте корпус от стены",
+        "Остановитесь на ощущении растяжения по передней поверхности груди и плеча",
+        "Удерживайте двадцать-тридцать секунд и смените сторону"
+      ]
+    }
+  },
+  "ea_single_arm_extended_pull_downwards_biceps_stretch": {
+    "en": {
+      "purpose": "Stretches the biceps and the front of the shoulder without needing a wall, so it can be done anywhere. Useful right after a session of curls or pulling, when that area is still shortened.",
+      "steps": [
+        "Stand tall and extend one arm straight down and slightly behind you",
+        "Turn the palm to face backwards and away from your body",
+        "Use the other hand to press gently down on that hand",
+        "Keep the elbow locked straight and the shoulder pulled down",
+        "Hold for twenty seconds, then change arms"
+      ]
+    },
+    "ru": {
+      "purpose": "Растягивает бицепс и переднюю часть плеча без опоры на стену, поэтому делать можно где угодно. Полезно сразу после подъёмов на бицепс или тяг, пока эта зона ещё укорочена.",
+      "steps": [
+        "Встаньте прямо и вытяните одну руку вниз и слегка назад",
+        "Разверните ладонь назад и от тела",
+        "Второй рукой мягко надавите на эту кисть вниз",
+        "Локоть держите выпрямленным, плечо опущенным",
+        "Удерживайте двадцать секунд и смените руку"
+      ]
+    }
+  },
+  "ea_single_arm_on_wall_side_biceps_stretch": {
+    "en": {
+      "purpose": "The wall lets you control the intensity precisely by turning your body, which makes it the best biceps stretch for an arm that is genuinely tight. Also opens the front of that shoulder.",
+      "steps": [
+        "Stand side-on to a wall and place one palm on it behind you at shoulder height",
+        "Straighten that arm fully with the thumb pointing down",
+        "Keep the shoulder pressed down away from your ear",
+        "Turn your chest slowly away from the wall until the biceps stretches",
+        "Hold for twenty to thirty seconds, then swap sides"
+      ]
+    },
+    "ru": {
+      "purpose": "Стена позволяет точно дозировать усилие разворотом корпуса, поэтому это лучшая растяжка бицепса для действительно зажатой руки. Заодно раскрывает переднюю часть этого плеча.",
+      "steps": [
+        "Встаньте боком к стене и поставьте одну ладонь на неё позади себя на высоте плеча",
+        "Полностью выпрямите эту руку, большой палец направлен вниз",
+        "Плечо держите опущенным, подальше от уха",
+        "Медленно разворачивайте грудь от стены до растяжения бицепса",
+        "Удерживайте двадцать-тридцать секунд и смените сторону"
+      ]
+    }
+  },
+  "ea_single_arm_palm_down_on_wall_biceps_stretch": {
+    "en": {
+      "purpose": "Turning the palm down changes which part of the biceps and forearm gets stretched, reaching fibres the thumb-down version misses. Worth doing both if the arm feels tight after heavy pulling.",
+      "steps": [
+        "Stand side-on to a wall and place one palm flat on it behind you, fingers pointing back",
+        "Keep the arm straight and at about shoulder height",
+        "Press the palm into the wall and keep the shoulder down",
+        "Rotate your torso away from the wall until you feel the stretch",
+        "Hold for twenty seconds, then change arms"
+      ]
+    },
+    "ru": {
+      "purpose": "Разворот ладони вниз меняет, какая часть бицепса и предплечья растягивается, и достаёт до волокон, которые вариант с большим пальцем вниз пропускает. После тяжёлых тяг стоит сделать оба.",
+      "steps": [
+        "Встаньте боком к стене и поставьте одну ладонь на неё позади себя пальцами назад",
+        "Рука прямая, примерно на высоте плеча",
+        "Прижмите ладонь к стене, плечо держите опущенным",
+        "Разверните корпус от стены до появления растяжения",
+        "Удерживайте двадцать секунд и смените руку"
+      ]
+    }
+  },
+  "ea_standing_straight_leg_hamstring_stretch": {
+    "en": {
+      "purpose": "A hamstring stretch that needs nothing at all and can be done anywhere, including between sets. Hinge from the hips rather than rounding the back — otherwise the stretch lands on the spine instead.",
+      "steps": [
+        "Stand tall and step one foot forward with the heel on the floor and toes up",
+        "Keep the front leg straight and soften the back knee",
+        "Push your hips back and hinge forward with a flat back",
+        "Rest your hands on the bent thigh for support",
+        "Hold for twenty to thirty seconds, then change legs"
+      ]
+    },
+    "ru": {
+      "purpose": "Растяжка задней поверхности бедра, для которой не нужно ничего и которую можно делать где угодно, в том числе между подходами. Наклоняйтесь от таза, а не округляя спину, иначе растяжение уйдёт в позвоночник.",
+      "steps": [
+        "Встаньте прямо и выставьте одну стопу вперёд на пятку, носок вверх",
+        "Передняя нога прямая, заднее колено слегка согнуто",
+        "Отведите таз назад и наклонитесь вперёд с прямой спиной",
+        "Обопритесь ладонями на согнутое бедро",
+        "Удерживайте двадцать-тридцать секунд и смените ногу"
+      ]
+    }
+  }
+}
