@@ -10,6 +10,7 @@ import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/demo_data_banner.dart';
 import '../../shared/widgets/glass.dart';
+import '../auth/state/auth_providers.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
 import 'data/photo_consent.dart';
@@ -188,15 +189,25 @@ Future<bool> _ensurePhotoConsent(BuildContext context, WidgetRef ref) async {
   // reading a provider through it after the sheet has been on screen is a read
   // across an async gap that throws if the page went away underneath.
   //
-  // The price of that, named here rather than left to be discovered: if the
-  // account changes while the sheet is open — a background sign-out, since a
-  // modal cannot be signed out of from inside — the answer is filed against
-  // the account that was signed in when the question appeared. The direction
-  // is the safe one. The new account's key stays unset, so the gate stays
-  // CLOSED for them and they are asked themselves; nobody inherits an answer
-  // they were never shown. What it costs is a repeated question and a
-  // misattributed flag, which is less than the second provider read after the
-  // gap that removing it would take — a read with its own way to fail.
+  // The account the store belongs to is compared against the account signed in
+  // after the sheet closes, and that comparison is the point of this paragraph.
+  //
+  // An earlier version of this comment argued the window was safe to leave
+  // open: if the account changes while the sheet is up — a background
+  // sign-out, since a modal cannot be signed out of from inside — the answer
+  // would be filed against whoever was signed in when the question appeared,
+  // and the new account, having no flag, would simply be asked themselves.
+  // That reasoning covered the half where nobody INHERITS an answer, and
+  // missed the half where somebody is GIVEN one: B taps "I agree" and A's key
+  // is what gets written, so A now carries an answer A was never shown. The
+  // gate exists to make that sentence impossible, and "the direction is safe"
+  // does not survive it.
+  //
+  // Worse, the caller would then walk on into the camera holding a controller
+  // resolved for A while B is signed in. Aborting here closes both: the flag
+  // is not written and `runPhotoCaptureFlow` returns without opening anything.
+  // B loses one tap and is asked again on their own account, which is the
+  // cost this trade was always supposed to be paying.
   PhotoConsentStore? store;
   var already = false;
   try {
@@ -220,10 +231,52 @@ Future<bool> _ensurePhotoConsent(BuildContext context, WidgetRef ref) async {
     // that did hold.
     debugPrint('progress photos: consent unreadable — ${e.runtimeType}: $e');
   }
+  // Compared BEFORE trusting `already`, not after — Codex caught the gap the
+  // post-sheet check above does not close. `store` was resolved across TWO
+  // awaits (`photoConsentStoreProvider.future`, then `isAccepted()`), and the
+  // account can change during either one. If it has, the answer — yes or no —
+  // belongs to whoever was signed in when the awaits started, not to whoever
+  // is signed in now, and returning `true` here would let B into the camera
+  // on A's consent while `controller` still points at A's repository.
+  //
+  // No sheet has been shown yet in this path, so there is nothing to discard
+  // but the stale resolution itself: abort, and a fresh call — the next time
+  // this function runs — resolves a store for whoever is actually signed in.
+  if (context.mounted &&
+      store != null &&
+      ref.read(authUserProvider).valueOrNull?.uid != store.uid) {
+    debugPrint(
+      'progress photos: account changed while consent was being resolved — '
+      'asking again',
+    );
+    return false;
+  }
   if (already) return true;
   if (!context.mounted) return false;
 
   if (!await PhotoConsentSheet.show(context)) return false;
+  if (!context.mounted) return false;
+  // Read AFTER the `context.mounted` guard, so this is a live ref, and read
+  // synchronously off the already-resolved `AsyncValue` rather than awaited —
+  // awaiting the stream here would reopen the very gap being closed. It cannot
+  // be loading at this point: `store` above only exists because
+  // `photoConsentStoreProvider` already awaited this same provider, and a
+  // resolved `StreamProvider` keeps its last value rather than returning to
+  // loading.
+  //
+  // Compared against `store.uid` and NOT against a second auth read taken
+  // before the sheet — see `PhotoConsentStore.uid` for why that ordering
+  // matters. `store` being null means the provider itself failed, in which
+  // case there is no answer to misfile and nothing to compare; that path keeps
+  // its old behaviour of letting the person who just agreed through.
+  final uidNow = ref.read(authUserProvider).valueOrNull?.uid;
+  if (store != null && uidNow != store.uid) {
+    debugPrint(
+      'progress photos: account changed while the consent sheet was open — '
+      'answer discarded',
+    );
+    return false;
+  }
   try {
     await store?.accept();
   } catch (e) {

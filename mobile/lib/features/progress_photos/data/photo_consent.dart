@@ -26,6 +26,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// person to sign in on a phone would find they had already agreed to
 /// something nobody had shown them.
 abstract class PhotoConsentStore {
+  /// Whose answer this store holds, or null when there is no account.
+  ///
+  /// On the interface rather than read off `authUserProvider` at the call
+  /// site, because this is the uid the write will actually use — comparing
+  /// anything else compares the wrong thing. The caller needs it to notice an
+  /// account change across the consent sheet, and reading auth directly there
+  /// was the first version: it can return null while the provider is still
+  /// loading, and the store below it resolves a moment later with a real uid,
+  /// so a first capture on a cold start would have compared null against
+  /// `alice` and thrown away an answer nobody changed.
+  String? get uid;
+
   Future<bool> isAccepted();
 
   /// Records the answer. Must leave [isAccepted] true for the rest of the
@@ -38,6 +50,7 @@ class PrefsPhotoConsentStore implements PhotoConsentStore {
   PrefsPhotoConsentStore({required this.uid, SharedPreferences? prefs})
       : _injected = prefs;
 
+  @override
   final String uid;
   final SharedPreferences? _injected;
 
@@ -67,7 +80,21 @@ class PrefsPhotoConsentStore implements PhotoConsentStore {
   @override
   Future<void> accept() async {
     _acceptedInSession = true;
-    await (await _prefs).setBool(key, true);
+    // `setBool` reports failure by RETURNING false, not by throwing, and the
+    // first draft awaited it for sequencing and dropped the answer. That is
+    // the one shape this file's whole failure policy is blind to: a write that
+    // quietly did not happen looks exactly like a write that did, so the
+    // caller's `catch` never runs, nothing is logged, and the user is asked
+    // again on next launch with no trace of why.
+    //
+    // Raised as an error rather than returned, because every caller of
+    // `accept` already has to handle the throwing case and none of them has
+    // anywhere to put a boolean. `_acceptedInSession` is set first and stays
+    // set, so this session still proceeds -- see the field's own note.
+    final written = await (await _prefs).setBool(key, true);
+    if (!written) {
+      throw StateError('progress photos: preferences refused to store $key');
+    }
   }
 }
 
@@ -83,6 +110,11 @@ class InMemoryPhotoConsentStore implements PhotoConsentStore {
   InMemoryPhotoConsentStore({bool accepted = false}) : _accepted = accepted;
 
   bool _accepted;
+
+  /// Nobody's: this is the signed-out store, and the whole point of it is that
+  /// there is no account for the answer to belong to.
+  @override
+  String? get uid => null;
 
   /// How many times [accept] was called. Lets a test tell "recorded once" from
   /// "recorded on every capture".

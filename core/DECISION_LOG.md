@@ -7212,3 +7212,160 @@ No unresolved disagreement on this gate — unlike R11f-1-fix, which closes with
 argued disagreement (the broad `catch (e)`, see that gate's own round 2 entry).
 
 ---
+
+## 2026-08-14 19:58 local (Europe/Chisinau) / 16:58 UTC — R11f-1-fix: the consent copy was false on Android, and nothing in Dart could have made it true
+
+### What triggered this
+
+The Codex consensus review of `b9b8e05` (R11f-1), run in the same late catch-up as P3's. It
+confirmed there is no bypass — `PhotoCaptureSheet.show` has exactly one call site and it sits
+behind `_ensurePhotoConsent(...) == true`, retakes included — and then returned a **release
+blocker** about the thing no Dart reviewer was looking at.
+
+**The blocker.** The sheet says "There is no copy on a server" and "there is no backup.
+Reinstalling the app, or losing its key, loses the photos - nobody can restore them for you."
+`AndroidManifest.xml` carried no `allowBackup`, no `dataExtractionRules` and no
+`fullBackupContent`, and there was no `res/xml` directory at all. Android Auto Backup is **on by
+default** and covers the app's data directory. Progress photos live under
+`getApplicationDocumentsDirectory()`, which on Android resolves to `PathUtils.getDataDirectory()`
+→ `context.getDir("flutter", MODE_PRIVATE)` → `app_flutter` (verified by extracting the string
+constants from `flutter.jar`, not from memory). So the encrypted envelopes were being copied to the
+user's Google Drive while the app told them, on the screen where they agreed, that no such copy
+existed.
+
+That the AES key lives in the Android Keystore and does not travel is a mitigation, not a defence:
+"no copy on a server" is a statement about where bytes go, and the bytes were going.
+
+### Decisions
+
+1. **Exclude the photo directory from backup, rather than rewrite the promise.** The alternative
+   Codex offered — disclose OS backup accurately in the copy — was rejected: the promise is the
+   product decision this whole gate exists to honour, and weakening it to match an accident of
+   platform defaults would be the second time this feature's copy was written to fit what the code
+   happened to do (the first was the individual-delete claim removed earlier the same day).
+   - `res/xml/backup_rules.xml` (`android:fullBackupContent`) for Android 11 and below.
+   - `res/xml/data_extraction_rules.xml` (`android:dataExtractionRules`) for 12+, with **both**
+     `<cloud-backup>` and `<device-transfer>`. Leaving out device-transfer would keep the promise
+     on one route and break it on the other, and would land undecryptable envelopes on a new phone
+     that the user cannot delete from a screen that will not list them.
+   - `domain="root" path="app_flutter/progress_photos"`, not `domain="file"` — the latter is
+     `getFilesDir()` and would have missed the directory entirely while looking correct.
+   - `android:allowBackup` deliberately untouched: this is an exclusion list, not a switch. Every
+     other part of the app still backs up.
+   - Verified against the **merged** manifest, not the source one:
+     `./gradlew :app:processDebugMainManifest` then grep — both attributes present at 19:40 local
+     / 16:40 UTC.
+2. **An account change while the sheet is open now discards the answer.** Codex REFINEd the
+   earlier reviewers here and was right. The old comment argued the window was safe because nobody
+   *inherits* an answer; it missed that somebody can be *given* one — B taps "I agree" and A's key
+   is written, so A carries an answer A was never shown, which is the single sentence the gate
+   exists to make impossible. Worse, the flow then walked into the camera holding a controller
+   resolved for A.
+   - *Why the uid and not a store identity check:* the uid is what the key is built from, so
+     comparing it compares the thing that actually goes wrong.
+   - *Why a synchronous `ref.read` of the already-resolved `AsyncValue`, behind `context.mounted`:*
+     awaiting the auth stream here would reopen the very gap being closed.
+   - *Compared against `store.uid`, not against a second `ref.read` taken before the sheet opened —
+     and this is a self-caught fix on the first version.* Wrote `uidAtAsk` from `ref.read` at the
+     top of the function, tried to write the review's own request that Codex would only check on
+     re-read, and caught it myself before sending the round: `authUserProvider` can still be
+     `AsyncLoading` at that point — a cold start where Photos is the first screen opened — so
+     `uidAtAsk` reads `null` while the store resolves a moment later with a real uid, and an
+     ordinary first capture would then look like an account change and throw away an answer nobody
+     changed. `PhotoConsentStore` now exposes its own `uid` (`null` for the signed-out in-memory
+     store), and the comparison uses that instead — it cannot exist before auth has resolved, so it
+     cannot go stale the same way. New test
+     `an account that merely finishes loading is not an account change`, mutation-proved against
+     the version above: reverting to the pre-sheet `ref.read` turns it red with the exact symptom
+     described.
+   - Direction: abort, not proceed. B loses one tap and is asked on their own account.
+3. **`setBool` returning false is now a failure.** It reports refusal by returning `false`, not by
+   throwing, so the old `await ... setBool(...)` discarded the only signal there was: the caller's
+   `catch` never ran, nothing was logged, and the user was asked again next launch with no trace
+   of why. Raised as a `StateError` because every caller already handles the throwing case and
+   none has anywhere to put a boolean; `_acceptedInSession` is still set first, so the failure
+   direction is unchanged.
+4. **The structural bypass test counts calls, not files.** It listed the file containing
+   `PhotoCaptureSheet.show`, so a second ungated call added to that same file — the one file most
+   likely to grow one — produced the same one-element list and the same green tick.
+
+### Not covered
+
+- **The window after consent.** The account can still change while the camera, review or details
+  sheet is open, and the save would go to the controller captured at the start of the flow. This
+  gate closes the consent window only. Closing the rest means re-checking at each step or binding
+  the flow to a uid end to end, which is a change to `runPhotoCaptureFlow`'s shape rather than a
+  guard added to it.
+- **The legacy `progress_photos.key.v1` preference.** On installs predating A2-sec it may still
+  hold an AES key in plain SharedPreferences, and the prefs file is **not** excluded from backup.
+  Left that way deliberately: backup rules exclude files, not keys, so reaching that one entry
+  would mean excluding every app setting from restore. With the ciphertext now excluded, a key
+  with nothing to open is not a disclosure. Named here so it is a decision, not an oversight.
+- **The backup exclusion is proved structurally, not behaviourally.** Only a device can prove a
+  backup did not happen. The test asserts the three files agree with each other, which catches the
+  realistic regression (one edited without the others); the merged manifest was checked by hand
+  once, here.
+- **`WorkoutSession.title`** is still serialized to Firestore while no reader uses it. Codex AGREEd
+  this is defensible to leave — `b9b8e05` does not touch the field — so it stays data-model debt.
+- **Individual photo delete still does not exist.** The false promise was removed from the copy
+  earlier today; the capability remains product debt.
+
+### Round 2 (final — Codex re-reviewed this fix)
+
+**NEEDS REVISION** on the first pass: the backup blocker closed cleanly and the sheet-open
+account-change guard closed cleanly, but Codex found a real gap the sheet-open fix did not cover.
+
+- **MAJOR, new** — `_ensurePhotoConsent` resolves the store and then awaits `isAccepted()` — TWO
+  awaits — before checking whether the account is still the one it started with. If Alice already
+  agreed on a previous visit and the account changes to Bob during either await, the fast
+  `if (already) return true` path had no check of any kind: it would return true on Alice's stored
+  answer, and the camera would open for Bob against a `controller` already captured for Alice back
+  at the top of `runPhotoCaptureFlow`. The sheet-open guard added in round 1 does not cover this —
+  it only compares after the sheet, and this path never shows a sheet at all.
+  - Fixed with a second, earlier check: right after the store resolves (successfully or not), the
+    live auth uid is compared against `store.uid` *before* `already` is trusted. A mismatch aborts
+    exactly like the sheet-open case — no answer is misfiled, the next call resolves a fresh store
+    for whoever is actually signed in.
+  - New store, `_SlowAcceptedStore`, built to make this provable: a real `PrefsPhotoConsentStore`'s
+    `isAccepted()` is a disk read that cannot be paused on demand, so the test fixture holds a
+    `Completer` open long enough to fire the account-change event from inside that exact window.
+  - **Mutation-proved**: disabling the new check (`if (false && context.mounted && ...)`) turns
+    the new test red with "the camera must not open for Bob on an answer Alice gave"; restored
+    immediately after.
+- **MINOR, unresolved — a real disagreement, stated rather than papered over.** Codex again asked
+  for the broad `catch (e)` in `_ensurePhotoConsent` to be narrowed to `on Exception`, so that a
+  genuine programming defect (`AssertionError`, `NoSuchMethodError`) would surface instead of being
+  read as "preferences unreadable". Round 1 already tested this exact tradeoff and rejected it:
+  narrowing the catch makes a `StateError` (an `Error`, not an `Exception`) propagate uncaught,
+  which aborts the WHOLE flow — no camera and no consent question — which is worse for the user
+  than being asked twice. `_BrokenConsentStore` pins that direction on purpose. Codex's suggestion
+  would require changing what a *real* failure throws (e.g. wrapping disk errors as a dedicated
+  operational exception type) rather than changing this catch alone, which is a larger change than
+  this gate's scope. Kept as designed. Recorded here as an open disagreement, not silently dropped,
+  per the standing rule that a finding is either fixed, or its rejection is argued and shown —
+  never just absent from the log.
+- **AGREE, everything else already closed**: the backup blocker, the sheet-open account-change
+  guard, the `setBool`-returns-false fix, the structural call-count test, `WorkoutSession.title`
+  left as out-of-scope debt.
+
+### Checks
+
+- `flutter test test/features/progress_photos/photo_consent_test.dart` — **17 passed** (12 before
+  this gate started; 16 after round 1).
+- **All three account-change guards mutation-proved**, not merely asserted:
+  - Disabling the sheet-open uid comparison outright (`if (false && uidNow != store.uid)`) turns
+    "an account change while the sheet is open discards the answer..." red with "Bob tapped agree;
+    Alice must not end up holding the answer".
+  - Reverting `store.uid` to the pre-sheet `ref.read` this entry describes above turns "an account
+    that merely finishes loading is not an account change" red with the exact false-abort symptom.
+  - Disabling the pre-`already` check turns "an account change WHILE an already-accepted store is
+    being read discards that answer too" red with "the camera must not open for Bob on an answer
+    Alice gave".
+  - All three guards restored from backup copies immediately after their mutation was confirmed.
+- `flutter test` — **2346 passed**, 0 failed (combined tree, both this gate and P3-fix present as
+  uncommitted changes — see the P3-fix entry's checks for the same caveat).
+- `flutter analyze` — 7 issues, unchanged baseline.
+- Merged manifest grep, quoted above.
+
+**Round 2 marked FINAL.** One real disagreement remains (the broad catch), argued and kept; no
+BLOCKER or unresolved MAJOR.
