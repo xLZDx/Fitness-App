@@ -12,6 +12,7 @@ import '../../../core/settings/state/settings_providers.dart';
 import '../../auth/state/auth_providers.dart';
 import '../data/aes_photo_cipher.dart';
 import '../data/local_progress_photos_repository.dart';
+import '../data/photo_consent.dart';
 import '../data/photo_directory.dart';
 import '../data/photo_key_store.dart';
 import '../data/photo_store.dart';
@@ -150,6 +151,20 @@ final progressPhotosStoreProvider = FutureProvider<PhotoStore?>((ref) async {
   final dir = await resolvePhotoDir(documents: documents, uid: uid);
   final key = await SecurePhotoKeyStore(uid: uid).loadOrCreate();
   return PhotoStore(dir: dir, cipher: AesPhotoCipher(key));
+});
+
+/// Where this account's answer to the consent gate lives.
+///
+/// Watches [authUserProvider] for the same reason the photo store does: a
+/// sign-out has to close the previous account's answer, not leave it standing
+/// for whoever signs in next. Signed out there is nothing to write to, and
+/// [InMemoryPhotoConsentStore] says so honestly instead of pretending a
+/// device-wide preference is an account's consent.
+final photoConsentStoreProvider =
+    FutureProvider<PhotoConsentStore>((ref) async {
+  final uid = (await ref.watch(authUserProvider.future))?.uid;
+  if (uid == null || uid.isEmpty) return InMemoryPhotoConsentStore();
+  return PrefsPhotoConsentStore(uid: uid);
 });
 
 /// The camera used for progress shots.

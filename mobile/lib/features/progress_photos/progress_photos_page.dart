@@ -12,11 +12,13 @@ import '../../shared/widgets/demo_data_banner.dart';
 import '../../shared/widgets/glass.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
+import 'data/photo_consent.dart';
 import 'data/photo_timeline.dart';
 import 'data/progress_photo.dart';
 import 'state/progress_photos_providers.dart';
 import 'widgets/photo_bitmap.dart';
 import 'widgets/photo_capture_sheet.dart';
+import 'widgets/photo_consent_sheet.dart';
 import 'widgets/photo_details_sheet.dart';
 import 'widgets/photo_review_screen.dart';
 
@@ -96,7 +98,7 @@ class ProgressPhotosPage extends ConsumerWidget {
   }
 }
 
-/// Shoot, look, describe, file.
+/// Ask first, then shoot, look, describe, file.
 ///
 /// The order is the design's (`ProgressPhotoModule:3909`) and each step earns
 /// its place: the angle is what makes two photos comparable, the review is the
@@ -120,6 +122,13 @@ Future<void> runPhotoCaptureFlow(BuildContext context, WidgetRef ref) async {
   // use-BuildContext-across-an-async-gap fault.
   final messenger = ScaffoldMessenger.of(context);
   final controller = ref.read(progressPhotosControllerProvider.notifier);
+
+  // The consent gate, and it has to be here rather than one step further in.
+  // `PhotoCaptureSheet` starts a real camera session and asks the OS for the
+  // camera permission in its own `initState`, so a gate placed inside it would
+  // be asking after the thing it is asking about had already happened.
+  if (!await _ensurePhotoConsent(context, ref)) return;
+  if (!context.mounted) return;
 
   try {
     while (true) {
@@ -163,6 +172,68 @@ Future<void> runPhotoCaptureFlow(BuildContext context, WidgetRef ref) async {
       SnackBar(content: Text(l10n.photosSaveFailed(e))),
     );
   }
+}
+
+/// True when the camera may be opened, asking if nobody has been asked yet.
+///
+/// Returns immediately for an account that has already agreed. The gate is a
+/// one-time consent, not a disclosure to re-read on every visit — what the
+/// user re-reads on every visit is `_PrivacyStrip` at the top of this page,
+/// which this gate deliberately does not replace. Replacing it was the reason
+/// R11f declined to build the prototype's version at all.
+Future<bool> _ensurePhotoConsent(BuildContext context, WidgetRef ref) async {
+  // The store is resolved BEFORE the sheet opens, and the answer is written
+  // through the object rather than through `ref`. Same reason `controller` is
+  // captured at the top of the flow above: this `ref` belongs to the page, and
+  // reading a provider through it after the sheet has been on screen is a read
+  // across an async gap that throws if the page went away underneath.
+  //
+  // The price of that, named here rather than left to be discovered: if the
+  // account changes while the sheet is open — a background sign-out, since a
+  // modal cannot be signed out of from inside — the answer is filed against
+  // the account that was signed in when the question appeared. The direction
+  // is the safe one. The new account's key stays unset, so the gate stays
+  // CLOSED for them and they are asked themselves; nobody inherits an answer
+  // they were never shown. What it costs is a repeated question and a
+  // misattributed flag, which is less than the second provider read after the
+  // gap that removing it would take — a read with its own way to fail.
+  PhotoConsentStore? store;
+  var already = false;
+  try {
+    final resolved = await ref.read(photoConsentStoreProvider.future);
+    store = resolved;
+    already = await resolved.isAccepted();
+  } catch (e) {
+    // Preferences that cannot be read must not open the camera on their own.
+    // Asking again costs one tap; the other direction costs a capture nobody
+    // agreed to, which no apology afterwards undoes.
+    //
+    // Caught wide, on purpose, and NOT narrowed to `on Exception`: the review
+    // suggested that and the suite proved it wrong. A store whose read throws
+    // `StateError` is an `Error`, not an `Exception`, and letting it past here
+    // would abort the whole flow — no camera AND no question, which is worse
+    // for the user than being asked twice. `photo_consent_test.dart`'s
+    // `_BrokenConsentStore` pins exactly that case.
+    //
+    // The runtime type is logged so a genuine defect is still distinguishable
+    // from unreadable preferences, which was the half of that review point
+    // that did hold.
+    debugPrint('progress photos: consent unreadable — ${e.runtimeType}: $e');
+  }
+  if (already) return true;
+  if (!context.mounted) return false;
+
+  if (!await PhotoConsentSheet.show(context)) return false;
+  try {
+    await store?.accept();
+  } catch (e) {
+    // The store marks itself accepted in memory before it writes, so this
+    // session proceeds regardless; a lost write costs one more tap next
+    // launch. Logged, because "the gate asked me twice" is otherwise an
+    // unexplainable symptom.
+    debugPrint('progress photos: consent not persisted — ${e.runtimeType}: $e');
+  }
+  return true;
 }
 
 /// How many photos the timeline shows before the user asks for more.

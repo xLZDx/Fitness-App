@@ -2099,5 +2099,11 @@
   "formcheckPrepLightSub": "No bright light directly behind you",
   "formcheckPrepClothing": "Clothing that contrasts",
   "formcheckPrepClothingSub": "Not white against a white wall",
-  "formcheckPrepOpenCamera": "Ready - open the camera"
+  "formcheckPrepOpenCamera": "Ready - open the camera",
+  "photosConsentTitle": "Before your first progress photo",
+  "photosConsentOnDevice": "The photo is encrypted on this phone. There is no copy on a server, and nothing here can share or export one.",
+  "photosConsentNoBackup": "Which also means there is no backup. Reinstalling the app, or losing its key, loses the photos - nobody can restore them for you.",
+  "photosConsentCamera": "The camera preview is not recorded. A picture exists only after you press the shutter.",
+  "photosConsentAccept": "I agree - open the camera",
+  "photosConsentDecline": "Not now"
 }

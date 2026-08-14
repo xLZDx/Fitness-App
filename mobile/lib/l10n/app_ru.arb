@@ -1169,5 +1169,11 @@
   "formcheckPrepLightSub": "Без яркого света прямо за спиной",
   "formcheckPrepClothing": "Контрастная одежда",
   "formcheckPrepClothingSub": "Не белое на белой стене",
-  "formcheckPrepOpenCamera": "Готово — включить камеру"
+  "formcheckPrepOpenCamera": "Готово — включить камеру",
+  "photosConsentTitle": "Перед первым фото прогресса",
+  "photosConsentOnDevice": "Фото шифруется на этом телефоне. Копии на сервере нет, и отсюда его нельзя ни отправить, ни выгрузить.",
+  "photosConsentNoBackup": "Из этого же следует, что резервной копии нет. Переустановка приложения или потеря ключа — и фото не восстановит никто.",
+  "photosConsentCamera": "Изображение с камеры не записывается. Снимок появляется только после нажатия затвора.",
+  "photosConsentAccept": "Принимаю — открыть камеру",
+  "photosConsentDecline": "Не сейчас"
 }

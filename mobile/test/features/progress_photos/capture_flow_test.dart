@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/core/camera/camera_session.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/features/progress_photos/data/photo_consent.dart';
 import 'package:fitness_app/features/progress_photos/data/progress_photo.dart';
 import 'package:fitness_app/features/progress_photos/progress_photos_page.dart';
 import 'package:fitness_app/features/progress_photos/state/progress_photos_providers.dart';
@@ -95,6 +96,11 @@ Future<void> _host(WidgetTester tester, _RecordingRepo repo) async {
     overrides: [
       progressPhotoCameraProvider.overrideWithValue(_SpySession()),
       progressPhotosRepositoryProvider.overrideWithValue(repo),
+      // An account that agreed on some earlier day. These tests are about the
+      // order of the capture steps, and the consent gate is a step before all
+      // of them — it has its own file (`photo_consent_test.dart`).
+      photoConsentStoreProvider.overrideWith(
+          (ref) async => InMemoryPhotoConsentStore(accepted: true)),
     ],
     child: MaterialApp(
       theme: AppTheme.dark(),
