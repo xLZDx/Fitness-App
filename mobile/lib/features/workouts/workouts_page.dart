@@ -944,6 +944,10 @@ class _CurrentProgrammeCard extends ConsumerWidget {
             style: theme.textTheme.bodySmall
                 ?.copyWith(color: theme.colors.textSecondary),
           ),
+          if (next != null) ...[
+            const SizedBox(height: 12),
+            _ProgrammeDayThumbs(session: next),
+          ],
           const SizedBox(height: 14),
           if (next != null)
             GlassCard(
@@ -964,14 +968,16 @@ class _CurrentProgrammeCard extends ConsumerWidget {
                   // Same "+N" as Home's tile, and for the same reason — see
                   // `home_page.dart`.
                   //
-                  // The label says how big the day is; the tap still opens
-                  // only its first exercise, and the player's add-exercise
-                  // button is how the rest get done. Seeding the player with a
-                  // whole planned day means changing what its "entry exercise"
-                  // is (`workout_player_page.dart:299-310`, `replaceEntryExercise`)
-                  // and that is its own gate. Written down here rather than
-                  // left to be discovered: an earlier revision of this comment
-                  // claimed the opposite of what the line below does.
+                  // The label says how big the day is, and since the player's
+                  // day gate the tap now delivers all of it: `?day=` below
+                  // makes the player key its log by the day and draw the day
+                  // strip, so the remaining exercises are reachable from
+                  // inside instead of needing the add-exercise button
+                  // (`workout_player_page.dart:60-72`, `daySessionId`).
+                  //
+                  // This comment previously said the opposite — that the tap
+                  // opened only the first exercise — which was true when it
+                  // was written and stopped being true one commit later.
                   '${resolveExerciseTitle(ref.watch(exerciseTitlesProvider), next.exerciseId, next.exerciseTitle)}${next.exerciseCount > 1 ? '  +${next.exerciseCount - 1}' : ''} →',
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: AppSemanticColors.onGradientInk,
@@ -990,6 +996,116 @@ class _CurrentProgrammeCard extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// The next session's exercises, as pictures.
+///
+/// B5c. The card named the programme, drew a progress bar and offered a CTA,
+/// and never showed a single movement — "Спина и бицепс" was a phrase you had
+/// to take on trust. The posters are already bundled and already cut from the
+/// clips (`ExerciseThumb`), so this costs no network, no new asset and no new
+/// widget.
+///
+/// The exercises come from the real scheduled day, not from the template: a
+/// [ProgrammeTemplate] carries goal, level, weeks, days and muscles and no
+/// exercises at all (`programme_templates.dart:33-53`), so there is nothing
+/// truthful to draw for a programme nobody has started yet.
+class _ProgrammeDayThumbs extends ConsumerWidget {
+  const _ProgrammeDayThumbs({required this.session});
+
+  final ScheduledSession session;
+
+  /// Past five the row reads as a texture rather than as exercises you can
+  /// recognise, which is the only reason to show pictures at all.
+  static const int _maxThumbs = 5;
+  static const double _size = 44;
+  static const double _gap = 8;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final planned = session.exercises;
+    if (planned.isEmpty) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+
+    // Measured rather than assumed. Five 44px tiles plus their gaps need 268px;
+    // this card has ~328px on a 400px phone but only ~248px on a 320px one, so
+    // a fixed five would overflow the narrow case — the same unbounded-Row
+    // mistake that had just put 31px of the player's button off-screen.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final fits = ((constraints.maxWidth + _gap) / (_size + _gap)).floor();
+        final room = fits.clamp(1, _maxThumbs);
+        // When something is being left out, the last slot goes to the count
+        // rather than to one more picture: "+3" is information, a sixth tile
+        // that silently stands for four exercises is not.
+        //
+        // The count is of ALL exercises not drawn, injury-screened or not —
+        // the same unfiltered basis as the CTA's own "+N" above
+        // (`next.exerciseCount - 1`). A "+N" that quietly excluded screened
+        // exercises would make two numbers on one card disagree.
+        final hidden = planned.length - room;
+        final shown = hidden > 0 ? planned.take(room - 1) : planned.take(room);
+        final remainder = planned.length - shown.length;
+
+        return Row(
+          key: const Key('workouts.currentProgramme.thumbs'),
+          children: [
+            for (final e in shown) ...[
+              Builder(builder: (context) {
+                final resolved =
+                    ref.watch(exerciseResolutionProvider(e.exerciseId));
+                // A tile still resolving is NOT the same as a tile with no
+                // clip, and ExerciseThumb's gradient fallback means the
+                // latter (`exercise_thumb.dart:15-19`). Handing it a null
+                // while the catalogue is still loading would flash "no
+                // demonstration filmed" at every exercise and then swap in
+                // the poster — a wrong statement, briefly, on every open.
+                if (resolved.isLoading) {
+                  return _ThumbPlaceholder(size: _size);
+                }
+                // `visible`, not `exercise`. An exercise the user's own injury
+                // list contraindicates must not have its picture on screen;
+                // null falls through to the gradient tile, which carries
+                // nothing about the movement. The slot survives, so the day's
+                // size stays honest instead of the row quietly shrinking and
+                // mis-stating how long the day is.
+                return ExerciseThumb(
+                  exercise: resolved.valueOrNull?.visible,
+                  size: _size,
+                );
+              }),
+              const SizedBox(width: _gap),
+            ],
+            if (remainder > 0)
+              Text(
+                '+$remainder',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: theme.colors.textSecondary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// A tile whose exercise has not resolved yet. Deliberately says nothing:
+/// neither a poster nor the gradient that means "no clip filmed".
+class _ThumbPlaceholder extends StatelessWidget {
+  const _ThumbPlaceholder({required this.size});
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(size * 0.31),
+          color: Theme.of(context).colors.surfaceInteractive,
+        ),
+      );
 }
 
 /// One enrollable programme. The header wash comes from the programme's goal

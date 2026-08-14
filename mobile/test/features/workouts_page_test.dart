@@ -9,8 +9,12 @@ import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/equipment/data/asset_equipment_repository.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
+import 'package:fitness_app/features/equipment/widgets/exercise_thumb.dart';
 import 'package:fitness_app/features/programmes/data/programme.dart';
 import 'package:fitness_app/features/programmes/state/programme_providers.dart';
+import 'package:fitness_app/features/workouts/data/scheduled_session.dart';
+import 'package:fitness_app/features/workouts/data/workout_session.dart';
+import 'package:fitness_app/features/workouts/state/scheduled_session_providers.dart';
 import 'package:fitness_app/features/workouts/workouts_page.dart';
 import 'package:fitness_app/shared/widgets/aurora_background.dart';
 import 'package:fitness_app/shared/widgets/smooth_scroll_list.dart';
@@ -376,6 +380,163 @@ void main() {
 
       expect(find.byKey(const Key('workouts.currentProgramme')), findsOneWidget);
       expect(find.textContaining('Week 2 of 8'), findsOneWidget);
+    });
+
+    // B5c. The card named a programme and drew a bar; it never showed a single
+    // movement, so what the week actually contains had to be taken on trust.
+    group('the current-programme card shows the next day as pictures', () {
+      Programme active() => Programme(
+            id: 'prog_1',
+            templateId: 'strength_base',
+            title: 'Силовая база',
+            goal: ProgrammeGoal.strength,
+            level: ExerciseDifficulty.intermediate,
+            weeks: 8,
+            daysPerWeek: 4,
+            startedAt: DateTime.now().subtract(const Duration(days: 8)),
+          );
+
+      ScheduledSession dayOf(List<String> ids) => ScheduledSession(
+            id: 'day_1',
+            exerciseId: ids.first,
+            exerciseTitle: ids.first,
+            scheduledFor: DateTime.now().add(const Duration(hours: 2)),
+            durationMinutes: 40,
+            programmeId: 'prog_1',
+            extraExercises: [
+              for (final id in ids.skip(1))
+                WorkoutSessionExercise(exerciseId: id, exerciseTitle: id),
+            ],
+          );
+
+      ExerciseItem item(String id) => ExerciseItem.fromJson({
+            'id': id,
+            'title': id,
+            'durationMinutes': 10,
+            'difficulty': 'beginner',
+            'muscles': const ['quadriceps'],
+            'steps': const ['a', 'b', 'c'],
+          });
+
+      Future<void> pumpCard(
+        WidgetTester tester, {
+        required List<String> ids,
+        Set<String> injured = const {},
+        Size size = const Size(400, 1400),
+        double textScale = 1.0,
+      }) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        final programme = active();
+        final router = GoRouter(
+          initialLocation: '/workouts',
+          routes: [
+            GoRoute(path: '/workouts', builder: (_, __) => const WorkoutsPage()),
+          ],
+        );
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              equipmentRepositoryProvider.overrideWithValue(_seededRepo()),
+              activeProgrammeProvider.overrideWithValue(programme),
+              activeProgrammeProgressProvider.overrideWithValue(
+                deriveProgrammeProgress(programme, const []),
+              ),
+              upcomingSessionsProvider.overrideWithValue([dayOf(ids)]),
+              // Overridden directly so the test states the safety verdict it
+              // is testing, instead of building an injury profile and hoping
+              // the catalogue produces the verdict by side effect.
+              exerciseResolutionProvider.overrideWith((ref, id) async =>
+                  injured.contains(id)
+                      ? ExerciseResolution.hiddenForInjury(item(id))
+                      : ExerciseResolution.found(item(id))),
+            ],
+            child: MaterialApp.router(
+              theme: AppTheme.light(),
+              locale: kTestLocale,
+              localizationsDelegates: kTestLocalizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              routerConfig: router,
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.linear(textScale)),
+                child: child ?? const SizedBox.shrink(),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      final thumbs = find.descendant(
+        of: find.byKey(const Key('workouts.currentProgramme.thumbs')),
+        matching: find.byType(ExerciseThumb),
+      );
+
+      testWidgets('one tile per exercise of the day', (tester) async {
+        await pumpCard(tester, ids: ['squat', 'row', 'press']);
+
+        expect(thumbs, findsNWidgets(3));
+        expect(
+          tester.widgetList<ExerciseThumb>(thumbs).map((t) => t.exercise?.id),
+          ['squat', 'row', 'press'],
+        );
+      });
+
+      testWidgets('a contraindicated exercise keeps its slot but loses its '
+          'picture', (tester) async {
+        // The safety rule, at the one place it is easiest to break by accident:
+        // a thumbnail is a picture of the movement, so drawing one for an
+        // exercise the user must not do surfaces exactly what the filter
+        // exists to withhold. The slot stays so the day's size is still
+        // honest -- silently dropping it would under-report the day.
+        await pumpCard(tester, ids: ['squat', 'row', 'press'], injured: {'row'});
+
+        expect(thumbs, findsNWidgets(3), reason: 'the day is still three long');
+        expect(
+          tester.widgetList<ExerciseThumb>(thumbs).map((t) => t.exercise?.id),
+          ['squat', null, 'press'],
+          reason: 'the contraindicated exercise must reach the tile as null',
+        );
+      });
+
+      testWidgets('a long day is counted, not crammed, and never overflows',
+          (tester) async {
+        // 320px wide: the narrow phone where a fixed five tiles would not fit.
+        // The previous gate shipped a real 31px overflow from an unbounded Row,
+        // so this asserts the absence of one rather than assuming it.
+        await pumpCard(
+          tester,
+          ids: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+          size: const Size(320, 1400),
+        );
+
+        expect(tester.takeException(), isNull);
+        final drawn = tester.widgetList<ExerciseThumb>(thumbs).length;
+        expect(drawn, lessThan(7), reason: 'seven tiles cannot fit 320px');
+        expect(find.text('+${7 - drawn}'), findsOneWidget,
+            reason: 'what is left out has to be stated, not dropped');
+      });
+
+      testWidgets('nor at 320dp with the largest text size', (tester) async {
+        // The convention this card already has for its header chips
+        // (`workouts/programme_card_chip_overflow_test.dart` — 320dp AND
+        // textScale 1.6). The tiles are fixed-size but the "+N" beside them is
+        // text, so it grows with the setting and the row has to still fit.
+        await pumpCard(
+          tester,
+          ids: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+          size: const Size(320, 1400),
+          textScale: 1.6,
+        );
+
+        expect(tester.takeException(), isNull);
+        expect(find.byKey(const Key('workouts.currentProgramme.thumbs')),
+            findsOneWidget);
+      });
     });
 
     testWidgets('the goal filter narrows the template list', (tester) async {
