@@ -68,7 +68,23 @@ if (hasRealSigningConfig) {
 
 android {
     namespace = "com.fitnessapp.fitness_app"
-    compileSdk = flutter.compileSdkVersion
+    // P1. Pinned, not `flutter.compileSdkVersion`, for the same reason as
+    // `ndkVersion` below: the Flutter SDK's default resolves to 35 here, and
+    // two plugins compile against 36 — `flutter_secure_storage` and
+    // `flutter_tts`. Every release build printed the mismatch, ending in
+    // Gradle's own instruction to set this value:
+    //
+    //   Your project is configured to compile against Android SDK 35, but the
+    //   following plugin(s) require to be compiled against a higher Android
+    //   SDK version: - flutter_secure_storage compiles against Android SDK 36
+    //   - flutter_tts compiles against Android SDK 36
+    //
+    // Raising compileSdk is not the same as raising `targetSdk` (still
+    // `flutter.targetSdkVersion` below): compileSdk decides which APIs the
+    // code may reference and is backward compatible, while targetSdk changes
+    // the runtime behaviour Android applies to the app. Only the first one is
+    // needed to clear this, so only the first one moves.
+    compileSdk = 36
     // 20 of our plugins now require NDK 27. flutter.ndkVersion still
     // resolves to the SDK default (older) — pin explicitly so the
     // build doesn't print 20 warning lines on every run.
