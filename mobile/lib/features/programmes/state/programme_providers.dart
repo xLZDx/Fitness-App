@@ -52,7 +52,8 @@ final activeProgrammeProvider = Provider<Programme?>((ref) {
 final activeProgrammeProgressProvider = Provider<ProgrammeProgress?>((ref) {
   final programme = ref.watch(activeProgrammeProvider);
   if (programme == null) return null;
-  final scheduled = ref.watch(scheduledSessionsProvider).valueOrNull ?? const [];
+  final scheduled =
+      ref.watch(scheduledSessionsProvider).valueOrNull ?? const [];
   return deriveProgrammeProgress(programme, scheduled);
 });
 
@@ -87,10 +88,12 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
 
       final current = ref.read(activeProgrammeProvider);
       if (current != null) {
-        await repo.save(user.uid, current.copyWith(
-          status: ProgrammeStatus.abandoned,
-          endedAt: DateTime.now(),
-        ));
+        await repo.save(
+            user.uid,
+            current.copyWith(
+              status: ProgrammeStatus.abandoned,
+              endedAt: DateTime.now(),
+            ));
       }
 
       // B5a. Until now the enrolled programme was a verbatim copy of the
@@ -189,12 +192,101 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
         durationMinutes: exercise.durationMinutes,
         programmeId: programme.id,
       );
-      await ref.read(scheduledSessionRepositoryProvider).save(user.uid, session);
+      await ref
+          .read(scheduledSessionRepositoryProvider)
+          .save(user.uid, session);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
   }
+}
+
+/// How long a questionnaire-built programme runs.
+///
+/// **A stated default, not a derivation.** The questionnaire never asks how
+/// many weeks someone wants (`step_schedule.dart` asks days per week, session
+/// length and which weekdays — not duration), so there is no answer to read.
+/// Eight weeks is the length of two of the six shipped templates and sits
+/// inside their 4..10 range (`programme_templates.dart:57-98`). Inventing a
+/// goal-dependent duration here — twelve for muscle, four for a comeback —
+/// would be methodology this project has no source for, dressed up as
+/// personalisation.
+const int kProfileProgrammeWeeks = 8;
+
+/// The days-per-week a questionnaire-built programme falls back to when the
+/// schedule screen was skipped. Three is the shipped beginner cadence
+/// (`gym_start`, `injury_comeback`).
+const int kProfileProgrammeDaysPerWeek = 3;
+
+/// A programme assembled from the questionnaire alone, expressed as a
+/// [ProgrammeTemplate] so it can go through the exact same [enroll] path a
+/// chosen template does.
+///
+/// The alternative was a second enrolment action that builds a [Programme]
+/// directly. It was rejected: `enroll` is where the weekday resolution, the
+/// days-per-week reconciliation, the muscle resolution, the injury-screened
+/// catalogue and the abandon-the-previous-one step all live, and a parallel
+/// path would have to reproduce every one of them — or quietly not, which is
+/// how the two would drift.
+///
+/// What each field reads, and why:
+///
+/// * **goal** — `goals.primary`, the question that literally asks it. Falls
+///   back to [ProgrammeGoal.form] (general form) when unanswered, because a
+///   programme has to have one and "general" is the only honest answer to a
+///   question nobody answered.
+/// * **level** — `level.tier`. [FitnessTier.never] maps to `beginner` rather
+///   than getting its own tier: the catalogue has three difficulties, and
+///   "never trained" belongs in the gentlest of them. An unanswered tier also
+///   lands on `beginner` — the safe direction, since the opposite error puts
+///   someone who never said into advanced work.
+/// * **daysPerWeek** — `schedule.daysPerWeek`. Passing it as the template's own
+///   figure makes [programmeDaysPerWeek]'s min() a no-op rather than a special
+///   case, and [programmeDayOffsets] still narrows it to the weekdays actually
+///   ticked.
+/// * **muscles** — deliberately left empty. That is [ProgrammeTemplate]'s
+///   full-body sentinel, and it is precisely the condition under which
+///   [programmeMuscles] resolves the user's focus zones. Reading `focusZones`
+///   here as well would be the same derivation written twice.
+///
+/// [weeks] is the one field with no answer behind it — see
+/// [kProfileProgrammeWeeks].
+ProgrammeTemplate programmeFromProfile(UserProfile? profile) {
+  final tier = profile?.level.tier;
+  return ProgrammeTemplate(
+    id: kProfileProgrammeId,
+    goal: profile?.goals.primary ?? ProgrammeGoal.form,
+    level: switch (tier) {
+      FitnessTier.advanced => ExerciseDifficulty.advanced,
+      FitnessTier.intermediate => ExerciseDifficulty.intermediate,
+      FitnessTier.beginner ||
+      FitnessTier.never ||
+      null =>
+        ExerciseDifficulty.beginner,
+    },
+    weeks: kProfileProgrammeWeeks,
+    daysPerWeek: profile?.schedule.daysPerWeek ?? kProfileProgrammeDaysPerWeek,
+  );
+}
+
+/// Whether the questionnaire holds enough to build a programme FROM.
+///
+/// The gate on the entry point, not on [programmeFromProfile] — that function
+/// is total by design, every field has a documented fallback. But offering
+/// "build one from my answers" to someone who answered nothing would hand them
+/// a generic 8-week, 3-day, full-body programme under a label claiming it came
+/// from answers they never gave. The templates are the honest path there.
+///
+/// Any ONE of the four inputs the builder actually reads is enough — a person
+/// who only said "I train Mon/Wed/Fri" still gets a schedule that is genuinely
+/// theirs.
+bool canBuildProgrammeFromProfile(UserProfile? profile) {
+  if (profile == null) return false;
+  return profile.goals.hasAny ||
+      profile.level.tier != null ||
+      profile.schedule.daysPerWeek != null ||
+      profile.schedule.preferredWeekdays.isNotEmpty;
 }
 
 /// How many days a week this enrolment actually schedules.
@@ -243,7 +335,8 @@ int programmeDaysPerWeek(int templateDays, UserProfile? profile) {
 /// [FocusZone.fullBody] contributes nothing (`focusZoneMuscles` returns the
 /// empty set for it), so selecting it alone leaves a full-body programme
 /// full-body — which is what the user asked for.
-List<String> programmeMuscles(ProgrammeTemplate template, UserProfile? profile) {
+List<String> programmeMuscles(
+    ProgrammeTemplate template, UserProfile? profile) {
   if (template.muscles.isNotEmpty) return template.muscles;
   final zones = profile?.goals.focusZones ?? const <FocusZone>[];
   final out = <String>[];
@@ -273,7 +366,9 @@ DateTime nextProgrammeSlot(
   for (final s in existing) {
     if (s.programmeId != programmeId) continue;
     if (s.status != ScheduledSessionStatus.pending) continue;
-    if (latest == null || s.scheduledFor.isAfter(latest)) latest = s.scheduledFor;
+    if (latest == null || s.scheduledFor.isAfter(latest)) {
+      latest = s.scheduledFor;
+    }
   }
   final base = latest != null && latest.isAfter(n) ? latest : n;
   return base.add(const Duration(days: 1));

@@ -52,6 +52,21 @@ class ProgrammeTemplate {
   bool get isFullBody => muscles.isEmpty;
 }
 
+/// The id a questionnaire-built programme carries in place of a template's.
+///
+/// Not in [programmeTemplates] — it is not something anyone browses to; it is
+/// the id stamped on a [Programme] assembled by `programmeFromProfile`
+/// (`programme_providers.dart`). It lives here rather than beside that builder
+/// because [ProgrammeLabels] has to match on it, and a data-layer label table
+/// reaching into a state file to learn an id is the wrong direction.
+///
+/// Deliberately NOT expressed as a null `Programme.templateId`: that field is
+/// non-nullable and drives the "is this the programme I am already on"
+/// comparisons (`workouts_page.dart:1132`, `:1293`), so making it nullable
+/// would push a null check into every one of those call sites to say what one
+/// sentinel says once.
+const String kProfileProgrammeId = 'from_answers';
+
 const List<ProgrammeTemplate> programmeTemplates = [
   ProgrammeTemplate(
     id: 'strength_base',

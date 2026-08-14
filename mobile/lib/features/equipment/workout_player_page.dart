@@ -8,6 +8,7 @@ import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../form_check/state/form_check_providers.dart';
+import '../programmes/data/programme_labels.dart';
 import '../programmes/state/programme_providers.dart';
 import 'widgets/exercise_reference.dart';
 import '../workouts/data/progression.dart';
@@ -93,8 +94,9 @@ WorkoutSession? _daySession(WidgetRef ref, String dayId, {bool watch = false}) {
       : ref.read(_loggedEntryProvider(dayId));
   if (live != null) return live;
   final id = daySessionId(dayId);
-  final stored =
-      watch ? ref.watch(workoutSessionsProvider) : ref.read(workoutSessionsProvider);
+  final stored = watch
+      ? ref.watch(workoutSessionsProvider)
+      : ref.read(workoutSessionsProvider);
   return stored.valueOrNull?.where((s) => s.id == id).firstOrNull;
 }
 
@@ -178,8 +180,8 @@ class WorkoutPlayerPage extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      AppLocalizations.of(context).equipmentHiddenForInjury(
-                          resolution.exercise!.title),
+                      AppLocalizations.of(context)
+                          .equipmentHiddenForInjury(resolution.exercise!.title),
                       style: theme.textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
@@ -209,11 +211,8 @@ class WorkoutPlayerPage extends ConsumerWidget {
           // the user has not said or has said they would rather not — in which
           // case there is nothing to infer from, and the model falls back to
           // whichever clip exists.
-          final body = ExerciseItem.bodyForGender(ref
-              .watch(currentProfileProvider)
-              .valueOrNull
-              ?.personal
-              .gender);
+          final body = ExerciseItem.bodyForGender(
+              ref.watch(currentProfileProvider).valueOrNull?.personal.gender);
           final demoVideo = item.playableVideoFor(body) ?? item.videoUrl;
           return SmoothScrollList(
             padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
@@ -359,7 +358,8 @@ class _DayStrip extends ConsumerWidget {
     final doneIds = {
       for (final e in logged?.exercises ?? const []) e.exerciseId,
     };
-    final position = planned.indexWhere((e) => e.exerciseId == currentExerciseId);
+    final position =
+        planned.indexWhere((e) => e.exerciseId == currentExerciseId);
 
     return GlassCard(
       key: const Key('player.dayStrip'),
@@ -500,7 +500,9 @@ class _MarkCompleteButton extends ConsumerWidget {
       // button that never re-enables (a history stream that errors) is its own
       // silent failure, and the error path below already knows how to tell the
       // user that saving did not happen.
-      if (inDay && already == null && !ref.read(workoutSessionsProvider).hasValue) {
+      if (inDay &&
+          already == null &&
+          !ref.read(workoutSessionsProvider).hasValue) {
         try {
           await ref.read(workoutSessionsProvider.future);
         } catch (e) {
@@ -555,7 +557,8 @@ class _MarkCompleteButton extends ConsumerWidget {
       // here would silently restore the old weight the moment the user tried
       // to blank it out, contradicting the sheet's own "leave blank if no
       // load" hint.
-      final weightKg = captured == null ? alreadySet?.weightKg : captured.weightKg;
+      final weightKg =
+          captured == null ? alreadySet?.weightKg : captured.weightKg;
       final reps = captured == null ? alreadySet?.reps : captured.reps;
       final sets = (weightKg != null || reps != null)
           ? [(weightKg: weightKg, reps: reps)]
@@ -664,8 +667,7 @@ class _MarkCompleteButton extends ConsumerWidget {
         // exercise one: rating exercise three would have relabelled exercise
         // one's difficulty and left three unrated.
         final justLogged = inDay
-            ? entry.exercises
-                .firstWhere((e) => e.exerciseId == exercise.id)
+            ? entry.exercises.firstWhere((e) => e.exerciseId == exercise.id)
             : entry.exercises.first;
         final rated = entry.copyWith(
           exercises: inDay
@@ -706,12 +708,14 @@ class _MarkCompleteButton extends ConsumerWidget {
                 height: 18,
                 child: CircularProgressIndicator(
                   strokeWidth: 2.4,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppSemanticColors.onGradientInk),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                      AppSemanticColors.onGradientInk),
                 ),
               ),
               const SizedBox(width: 10),
             ] else ...[
-              const Icon(Icons.check_rounded, color: AppSemanticColors.onGradientInk),
+              const Icon(Icons.check_rounded,
+                  color: AppSemanticColors.onGradientInk),
               const SizedBox(width: 8),
             ],
             Text(
@@ -775,10 +779,8 @@ class _AddExerciseButton extends ConsumerWidget {
 
     Future<void> onTap() async {
       final exclude = already.exercises.map((e) => e.exerciseId).toSet();
-      final catalog =
-          await ref.read(safeCatalogProvider.future);
-      final candidates =
-          catalog.where((e) => !exclude.contains(e.id)).toList();
+      final catalog = await ref.read(safeCatalogProvider.future);
+      final candidates = catalog.where((e) => !exclude.contains(e.id)).toList();
       if (!context.mounted) return;
       final picked = await _ExercisePickerSheet.show(context, candidates);
       if (picked == null || !context.mounted) return;
@@ -809,7 +811,9 @@ class _AddExerciseButton extends ConsumerWidget {
         context,
         exerciseTitle: picked.title,
       );
-      if (rating != null) newExercise = newExercise.copyWith(difficulty: rating);
+      if (rating != null) {
+        newExercise = newExercise.copyWith(difficulty: rating);
+      }
       if (!context.mounted) return;
 
       final updated = already.copyWith(
@@ -820,7 +824,8 @@ class _AddExerciseButton extends ConsumerWidget {
         // ignored the addition entirely whenever `durationMinutes` was
         // already non-null -- i.e. always, since `already` is a session that
         // has already completed once.
-        durationMinutes: (already.durationMinutes ?? 0) + picked.durationMinutes,
+        durationMinutes:
+            (already.durationMinutes ?? 0) + picked.durationMinutes,
       );
       await ref.read(logSessionActionProvider.notifier).log(updated);
       if (!context.mounted) return;
@@ -828,8 +833,8 @@ class _AddExerciseButton extends ConsumerWidget {
       if (newState.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                AppLocalizations.of(context).equipmentCouldNotSave(newState.error ?? '')),
+            content: Text(AppLocalizations.of(context)
+                .equipmentCouldNotSave(newState.error ?? '')),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -843,8 +848,8 @@ class _AddExerciseButton extends ConsumerWidget {
           .start(Duration(seconds: _restSecondsFor(picked)));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-              AppLocalizations.of(context).equipmentLoggedNiceWork(picked.title)),
+          content: Text(AppLocalizations.of(context)
+              .equipmentLoggedNiceWork(picked.title)),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -873,7 +878,8 @@ class _AddExerciseButton extends ConsumerWidget {
                   ),
                   const SizedBox(width: 10),
                 ] else ...[
-                  Icon(Icons.add_circle_outline, color: theme.colorScheme.onSurface),
+                  Icon(Icons.add_circle_outline,
+                      color: theme.colorScheme.onSurface),
                   const SizedBox(width: 8),
                 ],
                 // `Flexible`, so the label wraps on a narrow screen instead of
@@ -935,8 +941,7 @@ class _ExercisePickerSheet extends StatelessWidget {
       builder: (_, controller) => Container(
         decoration: BoxDecoration(
           color: theme.scaffoldBackgroundColor,
-          borderRadius:
-              const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
         child: Column(
@@ -951,8 +956,8 @@ class _ExercisePickerSheet extends StatelessWidget {
             Expanded(
               child: candidates.isEmpty
                   ? Center(
-                      child: Text(
-                          AppLocalizations.of(context).equipmentNoOtherExercises))
+                      child: Text(AppLocalizations.of(context)
+                          .equipmentNoOtherExercises))
                   : ListView.builder(
                       controller: controller,
                       itemCount: candidates.length,
@@ -1075,9 +1080,9 @@ class _ScheduleButton extends ConsumerWidget {
         data: (_) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)
-                  .equipmentScheduledFor(exercise.title,
-                      formatScheduleLabel(AppLocalizations.of(context), when))),
+              content: Text(AppLocalizations.of(context).equipmentScheduledFor(
+                  exercise.title,
+                  formatScheduleLabel(AppLocalizations.of(context), when))),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -1132,7 +1137,6 @@ class _ScheduleButton extends ConsumerWidget {
       ),
     );
   }
-
 }
 
 /// Gate P: "add this exercise to my programme" — the button R11d's own doc
@@ -1172,8 +1176,17 @@ class _AddToProgrammeButton extends ConsumerWidget {
         data: (_) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
+              // `Programme.title` is the raw stored id, not a display name —
+              // B2a made it a fallback and moved the real names into the ARB
+              // files behind `ProgrammeLabels` (`programme_providers.dart:119-125`).
+              // This was the one reader left holding the raw value, so the
+              // snackbar has been reading "Added to strength_base". B5d-2's
+              // sentinel would have turned that into "Added to from_answers",
+              // which is what made it visible.
               content: Text(AppLocalizations.of(context)
-                  .programmeAddedToSchedule(programme.title)),
+                  .programmeAddedToSchedule(ProgrammeLabels.title(
+                      AppLocalizations.of(context), programme.templateId,
+                      stored: programme.title))),
               behavior: SnackBarBehavior.floating,
             ),
           );

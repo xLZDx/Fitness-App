@@ -9,6 +9,10 @@ import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/equipment/workout_player_page.dart';
+import 'package:fitness_app/features/programmes/data/programme.dart';
+import 'package:fitness_app/features/programmes/data/programme_templates.dart';
+import 'package:fitness_app/features/programmes/state/programme_providers.dart';
+import 'package:fitness_app/features/workouts/data/mock_scheduled_session_repository.dart';
 import 'package:fitness_app/features/workouts/data/mock_workout_session_repository.dart';
 import 'package:fitness_app/features/workouts/data/scheduled_session.dart';
 import 'package:fitness_app/features/workouts/data/workout_session.dart';
@@ -80,6 +84,8 @@ Widget _app(
   // snapshot back and reproduce the cold-start race.
   Stream<List<WorkoutSession>>? history,
   MockWorkoutSessionRepository? repo,
+  Programme? programme,
+  MockScheduledSessionRepository? sessionRepo,
 }) =>
     ProviderScope(
       overrides: [
@@ -96,6 +102,10 @@ Widget _app(
         scheduledSessionsProvider.overrideWith((_) => Stream.value(days)),
         workoutSessionsProvider
             .overrideWith((_) => history ?? Stream.value(logged)),
+        if (programme != null)
+          activeProgrammeProvider.overrideWithValue(programme),
+        if (sessionRepo != null)
+          scheduledSessionRepositoryProvider.overrideWithValue(sessionRepo),
       ],
       child: MaterialApp(
         theme: AppTheme.dark(),
@@ -306,6 +316,41 @@ void main() {
       containsAll(const ['ea_air_squat', 'ea_row']),
       reason: 'the wait exists so that both exercises survive',
     );
+  });
+
+  testWidgets('"added to" names the programme, never its stored id', (t) async {
+    // B5d-2's Act review. `Programme.title` holds the raw id, not a display
+    // name (B2a) — so this snackbar had been reading "Added to strength_base",
+    // and a questionnaire-built programme would have made it "Added to
+    // from_answers". Pinned with the sentinel because that is the id whose
+    // leak is least excusable, but the fix and this guard cover every
+    // programme.
+    await tall(t);
+    final sessionRepo = MockScheduledSessionRepository(latency: Duration.zero);
+    addTearDown(sessionRepo.dispose);
+
+    await t.pumpWidget(_app(
+      const WorkoutPlayerPage(exerciseId: 'ea_row'),
+      sessionRepo: sessionRepo,
+      programme: Programme(
+        id: 'p1',
+        templateId: kProfileProgrammeId,
+        title: kProfileProgrammeId,
+        goal: ProgrammeGoal.form,
+        level: ExerciseDifficulty.beginner,
+        weeks: 8,
+        daysPerWeek: 3,
+        startedAt: DateTime.utc(2026, 8, 1),
+      ),
+    ));
+    await t.pumpAndSettle();
+
+    await t.tap(find.byKey(const Key('player.addToProgramme')));
+    await t.pumpAndSettle();
+
+    expect(find.text('Added to My programme'), findsOneWidget);
+    expect(find.textContaining('from_answers'), findsNothing,
+        reason: 'the raw stored id reached the user');
   });
 
   test('a day logs under an id derived from the day, not from the clock', () {

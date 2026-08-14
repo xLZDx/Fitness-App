@@ -236,13 +236,7 @@ List<int> programmeDayOffsets({
   required int daysPerWeek,
   required List<int> preferredWeekdays,
 }) {
-  if (preferredWeekdays.isEmpty) return _spreadDays(daysPerWeek);
-
-  // `DateTime.monday`..`DateTime.sunday` are 1..7. Anything outside that is
-  // not a weekday the questionnaire could have written, so it is dropped
-  // rather than wrapped into a wrong day.
-  final wanted = preferredWeekdays.where((d) => d >= 1 && d <= 7).toSet().toList()
-    ..sort();
+  final wanted = _namedWeekdays(preferredWeekdays);
   if (wanted.isEmpty) return _spreadDays(daysPerWeek);
 
   final offsets = wanted
@@ -252,6 +246,37 @@ List<int> programmeDayOffsets({
   return offsets.length <= daysPerWeek
       ? offsets
       : offsets.take(daysPerWeek).toList();
+}
+
+/// The weekdays [preferredWeekdays] actually names, deduplicated and sorted.
+///
+/// `DateTime.monday`..`DateTime.sunday` are 1..7. Anything outside that is not
+/// a weekday the questionnaire could have written, so it is dropped rather
+/// than wrapped into a wrong day — `TrainingSchedule.preferredWeekdays` is
+/// deliberately unvalidated at the model (`profile_models.dart:683`), so a
+/// hand-written 9 would otherwise become a real day nobody asked for.
+List<int> _namedWeekdays(List<int> preferredWeekdays) =>
+    preferredWeekdays.where((d) => d >= 1 && d <= 7).toSet().toList()..sort();
+
+/// How many sessions a week [programmeDayOffsets] will schedule, without
+/// needing a start date.
+///
+/// Exists so a screen can state the cadence BEFORE enrolment — the card that
+/// offers a questionnaire-built programme (`workouts_page.dart`) has to name a
+/// number, and the alternative was doing this arithmetic a second time in the
+/// widget, where it could drift from the generator's.
+///
+/// Date-independent by construction: [programmeDayOffsets] maps each named
+/// weekday to exactly one offset and then truncates to [daysPerWeek], so the
+/// COUNT depends only on how many weekdays were named — which day the
+/// programme starts on moves the offsets, never how many there are.
+int programmeScheduledDays({
+  required int daysPerWeek,
+  required List<int> preferredWeekdays,
+}) {
+  final wanted = _namedWeekdays(preferredWeekdays).length;
+  if (wanted == 0) return _spreadDays(daysPerWeek).length;
+  return wanted <= daysPerWeek ? wanted : daysPerWeek;
 }
 
 /// Evenly spaced day-of-week offsets (0 = start day) for [count] sessions in

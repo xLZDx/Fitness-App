@@ -10,6 +10,7 @@ import 'package:fitness_app/features/equipment/data/asset_equipment_repository.d
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/equipment/widgets/exercise_thumb.dart';
+import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/programmes/data/programme.dart';
 import 'package:fitness_app/features/programmes/state/programme_providers.dart';
 import 'package:fitness_app/features/workouts/data/scheduled_session.dart';
@@ -380,6 +381,144 @@ void main() {
 
       expect(find.byKey(const Key('workouts.currentProgramme')), findsOneWidget);
       expect(find.textContaining('Week 2 of 8'), findsOneWidget);
+    });
+
+    // B5d-2. The catalogue was the only way in: a user who had answered 34
+    // questions still had to pick one of six templates and hope it matched.
+    group('the build-from-answers card', () {
+      /// Pumps the Programs tab with [profile] as the stored questionnaire.
+      ///
+      /// `screeningProfileProvider` is overridden rather than seeded through a
+      /// profile repository for the same reason the current-programme tests
+      /// override `activeProgrammeProvider` directly: a broadcast-stream mock
+      /// is a hang risk in a widget test, and what is under test here is the
+      /// card, not how the profile was loaded.
+      Future<void> pumpWith(WidgetTester tester, UserProfile? profile) async {
+        final router = GoRouter(
+          initialLocation: '/workouts',
+          routes: [
+            GoRoute(path: '/workouts', builder: (_, __) => const WorkoutsPage()),
+          ],
+        );
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              equipmentRepositoryProvider.overrideWithValue(_seededRepo()),
+              screeningProfileProvider.overrideWith((ref) async => profile),
+            ],
+            child: MaterialApp.router(
+              theme: AppTheme.light(),
+              locale: kTestLocale,
+              localizationsDelegates: kTestLocalizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              routerConfig: router,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('is absent when the questionnaire holds nothing to build from',
+          (tester) async {
+        await pumpWith(tester, const UserProfile(uid: 'alice'));
+
+        expect(find.byKey(const Key('programme.fromAnswers')), findsNothing);
+        // The templates are still the way in, so the tab is not left empty.
+        expect(find.text('Strength base'), findsOneWidget);
+      });
+
+      testWidgets('is absent for a signed-out user', (tester) async {
+        await pumpWith(tester, null);
+        expect(find.byKey(const Key('programme.fromAnswers')), findsNothing);
+      });
+
+      testWidgets('appears once the questionnaire has answers, and states the '
+          'cadence it will actually build', (tester) async {
+        await pumpWith(
+          tester,
+          const UserProfile(
+            uid: 'alice',
+            goals: FitnessGoals(primary: ProgrammeGoal.muscle),
+            level: FitnessLevel(tier: FitnessTier.advanced),
+            // Four days asked for, three weekdays ticked: the card must say
+            // three, because three is what the enrolment will generate.
+            schedule:
+                TrainingSchedule(daysPerWeek: 4, preferredWeekdays: [1, 3, 5]),
+          ),
+        );
+
+        expect(find.byKey(const Key('programme.fromAnswers')), findsOneWidget);
+        final card = find.byKey(const Key('programme.fromAnswers'));
+        expect(find.descendant(of: card, matching: find.text('Muscle')),
+            findsOneWidget);
+        expect(
+            find.descendant(of: card, matching: find.text('Advanced')),
+            findsOneWidget);
+        expect(
+          find.descendant(
+              of: card, matching: find.textContaining('3 days/week')),
+          findsOneWidget,
+          reason: 'the card promised a cadence the schedule would not deliver',
+        );
+        expect(
+          find.descendant(of: card, matching: find.textContaining('8 weeks')),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('survives a goal-filter tap, since it is not one of the '
+          'filtered templates', (tester) async {
+        await pumpWith(
+          tester,
+          const UserProfile(
+            uid: 'alice',
+            goals: FitnessGoals(primary: ProgrammeGoal.muscle),
+          ),
+        );
+        expect(find.byKey(const Key('programme.fromAnswers')), findsOneWidget);
+
+        // Scoped to the filter row on purpose: 'Strength' is also the goal
+        // chip printed on the `strength_base` card, so an unscoped
+        // `find.text` matches two widgets and `_tapChip` throws on the
+        // ambiguity rather than tapping the wrong one.
+        final filterChip =
+            find.descendant(of: _chipRow, matching: find.text('Strength'));
+        await tester.ensureVisible(filterChip);
+        await tester.pumpAndSettle();
+        await tester.tap(filterChip);
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(const Key('programme.fromAnswers')), findsOneWidget);
+        expect(find.text('Hypertrophy'), findsNothing,
+            reason: 'the goal filter itself stopped working');
+      });
+
+      testWidgets('at 320dp with large text the card lays out without overflow',
+          (tester) async {
+        // The three chips are a Wrap for exactly this case — the template
+        // cards' own header chips clipped here before Bug 5.
+        tester.view.physicalSize = const Size(320, 1400);
+        tester.view.devicePixelRatio = 1.0;
+        tester.platformDispatcher.textScaleFactorTestValue = 1.6;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+          tester.platformDispatcher.clearTextScaleFactorTestValue();
+        });
+
+        await pumpWith(
+          tester,
+          const UserProfile(
+            uid: 'alice',
+            goals: FitnessGoals(primary: ProgrammeGoal.weightLoss),
+            level: FitnessLevel(tier: FitnessTier.beginner),
+            schedule: TrainingSchedule(daysPerWeek: 4),
+          ),
+        );
+
+        expect(find.byKey(const Key('programme.fromAnswers')), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
     });
 
     // B5c. The card named a programme and drew a bar; it never showed a single

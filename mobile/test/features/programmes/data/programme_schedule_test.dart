@@ -405,4 +405,70 @@ void main() {
       );
     });
   });
+
+  group('programmeScheduledDays (B5d-2)', () {
+    test('no named weekdays leaves the count answer alone', () {
+      expect(
+        programmeScheduledDays(daysPerWeek: 4, preferredWeekdays: const []),
+        4,
+      );
+    });
+
+    test('fewer named days than asked for wins', () {
+      expect(
+        programmeScheduledDays(
+            daysPerWeek: 5, preferredWeekdays: const [2, 6]),
+        2,
+      );
+    });
+
+    test('more named days than asked for keeps the count answer', () {
+      expect(
+        programmeScheduledDays(
+            daysPerWeek: 3, preferredWeekdays: const [1, 2, 3, 4, 5]),
+        3,
+      );
+    });
+
+    test('weekdays outside 1..7 do not inflate the count', () {
+      // Same rule as `programmeDayOffsets`: `preferredWeekdays` is unvalidated
+      // at the model, so a hand-written 9 must not become a day.
+      expect(
+        programmeScheduledDays(
+            daysPerWeek: 4, preferredWeekdays: const [1, 9, 0, 1]),
+        1,
+      );
+    });
+
+    test('agrees with the generator on every start weekday', () {
+      // This is the whole reason the function exists: the card states a
+      // cadence BEFORE enrolment, when there is no start date yet. If the two
+      // could ever disagree, the card would promise a number the schedule then
+      // does not deliver.
+      const cases = [
+        (4, <int>[]),
+        (4, [1, 3, 5]),
+        (2, [1, 2, 3, 4, 5]),
+        (3, [7]),
+        (5, [1, 9, 3]),
+        (1, <int>[]),
+      ];
+      for (final (days, weekdays) in cases) {
+        for (var startDay = 1; startDay <= 7; startDay++) {
+          // 2026-06-01 is a Monday, so this walks every weekday as a start.
+          final startedOn = DateTime(2026, 6, startDay);
+          expect(
+            programmeScheduledDays(
+                daysPerWeek: days, preferredWeekdays: weekdays),
+            programmeDayOffsets(
+              startedOn: startedOn,
+              daysPerWeek: days,
+              preferredWeekdays: weekdays,
+            ).length,
+            reason: 'days=$days weekdays=$weekdays start=$startedOn',
+          );
+        }
+      }
+    });
+  });
 }

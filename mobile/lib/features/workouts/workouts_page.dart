@@ -15,6 +15,7 @@ import '../form_check/state/form_check_providers.dart';
 import '../personalisation/state/personalisation_providers.dart';
 import '../programmes/data/programme.dart';
 import '../programmes/data/programme_labels.dart';
+import '../programmes/data/programme_schedule.dart';
 import '../programmes/data/programme_templates.dart';
 import '../programmes/state/programme_providers.dart';
 import '../subscription/data/subscription_models.dart';
@@ -293,7 +294,8 @@ class _SubTabToggle extends StatelessWidget {
                         ? l.workoutsSubTabPrograms
                         : l.workoutsSubTabLibrary,
                     style: theme.textTheme.labelLarge?.copyWith(
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                      fontWeight:
+                          isSelected ? FontWeight.w700 : FontWeight.w600,
                       color: isSelected
                           ? AppSemanticColors.onGradientInk
                           : theme.colorScheme.onSurface,
@@ -362,8 +364,8 @@ class _LibraryTabState extends ConsumerState<_LibraryTab> {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 280),
                     curve: Curves.easeOutCubic,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(22),
                       gradient: selected
@@ -414,8 +416,8 @@ class _LibraryTabState extends ConsumerState<_LibraryTab> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton.icon(
-                      onPressed: () => ref
-                          .invalidate(_filteredExercisesProvider(_selected)),
+                      onPressed: () =>
+                          ref.invalidate(_filteredExercisesProvider(_selected)),
                       icon: const Icon(Icons.refresh_rounded, size: 18),
                       label: Text(AppLocalizations.of(context).errorRetry),
                     ),
@@ -769,6 +771,11 @@ class _ProgramsTabState extends ConsumerState<_ProgramsTab> {
       children: [
         const _CurrentProgrammeCard(),
         const SizedBox(height: 18),
+        // Above the goal filter, not inside the filtered list: this offer is
+        // not one of the six programmes being filtered, and a chip tap must
+        // not make it disappear. It hides itself when the questionnaire has
+        // nothing to build from.
+        const _BuildFromAnswersCard(),
         SizedBox(
           height: 40,
           child: ListView.separated(
@@ -819,7 +826,8 @@ class _ProgramsTabState extends ConsumerState<_ProgramsTab> {
         ),
         const SizedBox(height: 18),
         if (templates.isEmpty)
-          GlassCard(child: Text(l.workoutsEmptyFiltered(_goalLabel(l, _goalFilter!))))
+          GlassCard(
+              child: Text(l.workoutsEmptyFiltered(_goalLabel(l, _goalFilter!))))
         else
           for (var i = 0; i < templates.length; i++) ...[
             _ProgrammeTemplateCard(template: templates[i]),
@@ -934,7 +942,8 @@ class _CurrentProgrammeCard extends ConsumerWidget {
               value: progress.fraction,
               minHeight: 4,
               backgroundColor: theme.colors.surfaceInteractive,
-              valueColor: AlwaysStoppedAnimation<Color>(theme.colors.accentPrimary),
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(theme.colors.accentPrimary),
             ),
           ),
           const SizedBox(height: 8),
@@ -1108,6 +1117,166 @@ class _ThumbPlaceholder extends StatelessWidget {
       );
 }
 
+/// Enrols in [template]: confirms the switch when another programme is active,
+/// then reports the outcome.
+///
+/// Top-level rather than a method on [_ProgrammeTemplateCard] since B5d-2,
+/// because the card offering a questionnaire-built programme runs the exact
+/// same flow. The only thing that differed between the two was which template
+/// went in, and a second copy would have been the place where one of them
+/// quietly stopped confirming the switch.
+Future<void> _startProgramme(
+  BuildContext context,
+  WidgetRef ref,
+  Programme? active,
+  ProgrammeTemplate template,
+) async {
+  final l = AppLocalizations.of(context);
+  if (active != null && active.templateId != template.id) {
+    final confirmed = await _ConfirmSwitchSheet.show(
+      context,
+      ProgrammeLabels.title(l, active.templateId, stored: active.title),
+    );
+    if (confirmed != true || !context.mounted) return;
+  }
+  await ref.read(programmeActionProvider.notifier).enroll(template);
+  if (!context.mounted) return;
+  final state = ref.read(programmeActionProvider);
+  state.when(
+    data: (_) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(l.programmeEnrolled(ProgrammeLabels.title(l, template.id))),
+      behavior: SnackBarBehavior.floating,
+    )),
+    // Same reason as the list card above: `'$e'` put the raw Firestore
+    // error in front of the user. The action is retryable and the snackbar
+    // is where the retry belongs, so it carries one instead of the
+    // exception text.
+    error: (e, _) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(l.errorServiceUnavailable),
+      behavior: SnackBarBehavior.floating,
+      // `active: null` deliberately: the switch-confirmation sheet was
+      // already answered on the first attempt, and asking again on a retry
+      // of the same action would be a second dialog for one decision.
+      action: SnackBarAction(
+        label: l.errorRetry,
+        onPressed: () => _startProgramme(context, ref, null, template),
+      ),
+    )),
+    loading: () {},
+  );
+}
+
+/// B5d-2. The offer to skip the catalogue entirely and have the programme
+/// assembled from the questionnaire the user already filled in.
+///
+/// Sits above the template list rather than inside it: it is not a seventh
+/// template to compare against the other six, it is the alternative to
+/// comparing them at all. Hidden outright when the questionnaire holds nothing
+/// this can read ([canBuildProgrammeFromProfile]) — offering "built from your
+/// answers" to someone who answered nothing would deliver a generic programme
+/// under a label that is simply untrue.
+class _BuildFromAnswersCard extends ConsumerWidget {
+  const _BuildFromAnswersCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(screeningProfileProvider).valueOrNull;
+    if (!canBuildProgrammeFromProfile(profile)) return const SizedBox.shrink();
+
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final template = programmeFromProfile(profile);
+    final active = ref.watch(activeProgrammeProvider);
+    final loading = ref.watch(programmeActionProvider).isLoading;
+    final isCurrent = active != null &&
+        active.templateId == kProfileProgrammeId &&
+        active.status == ProgrammeStatus.active;
+
+    // The cadence the enrolment will actually produce, not the raw answer:
+    // naming three weekdays while answering "four days a week" builds a
+    // three-day programme (`programmeDayOffsets`), and this line has to say
+    // the number the user will get.
+    final days = programmeScheduledDays(
+      daysPerWeek: programmeDaysPerWeek(template.daysPerWeek, profile),
+      preferredWeekdays: profile?.schedule.preferredWeekdays ?? const [],
+    );
+    final hue = _goalHue(template.goal);
+
+    // The spacing below belongs to the card, not to the list around it — a
+    // gap left behind by a hidden widget is the usual way "conditionally
+    // rendered" turns into "mysterious blank strip".
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: GlassCard(
+        key: const Key('programme.fromAnswers'),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.auto_awesome, size: 18, color: hue),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l.programmeBuildFromAnswers,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              l.programmeBuildFromAnswersHint,
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colors.textSecondary),
+            ),
+            const SizedBox(height: 10),
+            // Wrap, not Row: three content-sized chips at 320dp with the text
+            // size Android's accessibility settings reach is what clipped the
+            // template cards' header (Bug 5, `_ProgrammeTemplateCard`). Here they
+            // move to a second line instead.
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _TemplateChip(_goalLabel(l, template.goal)),
+                _TemplateChip(CatalogLabels.difficulty(l, template.level)),
+                _TemplateChip(
+                    l.programmeWeeksAndDaysPerWeek(template.weeks, days)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            GlassCard(
+              padding: EdgeInsets.zero,
+              onTap: loading || isCurrent
+                  ? null
+                  : () => _startProgramme(context, ref, active, template),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: isCurrent
+                      ? null
+                      : Border.all(color: theme.colors.outline, width: 1.5),
+                  color: isCurrent ? theme.colors.surfaceInteractive : null,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  isCurrent ? l.programmeContinue : l.programmeStart,
+                  style: theme.textTheme.labelMedium
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// One enrollable programme. The header wash comes from the programme's goal
 /// ([_goalHue]); it used to rotate through [AppPalette.tileGradients] by list
 /// position, which is what made a card change colour when the list was
@@ -1116,51 +1285,15 @@ class _ProgrammeTemplateCard extends ConsumerWidget {
   const _ProgrammeTemplateCard({required this.template});
   final ProgrammeTemplate template;
 
-  Future<void> _start(BuildContext context, WidgetRef ref, Programme? active) async {
-    final l = AppLocalizations.of(context);
-    if (active != null && active.templateId != template.id) {
-      final confirmed = await _ConfirmSwitchSheet.show(
-        context,
-        ProgrammeLabels.title(l, active.templateId, stored: active.title),
-      );
-      if (confirmed != true || !context.mounted) return;
-    }
-    await ref.read(programmeActionProvider.notifier).enroll(template);
-    if (!context.mounted) return;
-    final state = ref.read(programmeActionProvider);
-    state.when(
-      data: (_) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(
-            l.programmeEnrolled(ProgrammeLabels.title(l, template.id))),
-        behavior: SnackBarBehavior.floating,
-      )),
-      // Same reason as the list card above: `'$e'` put the raw Firestore
-      // error in front of the user. The action is retryable and the snackbar
-      // is where the retry belongs, so it carries one instead of the
-      // exception text.
-      error: (e, _) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(l.errorServiceUnavailable),
-        behavior: SnackBarBehavior.floating,
-        // `active: null` deliberately: the switch-confirmation sheet was
-        // already answered on the first attempt, and asking again on a retry
-        // of the same action would be a second dialog for one decision.
-        action: SnackBarAction(
-          label: l.errorRetry,
-          onPressed: () => _start(context, ref, null),
-        ),
-      )),
-      loading: () {},
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final active = ref.watch(activeProgrammeProvider);
     final loading = ref.watch(programmeActionProvider).isLoading;
-    final isCurrent =
-        active != null && active.templateId == template.id && active.status == ProgrammeStatus.active;
+    final isCurrent = active != null &&
+        active.templateId == template.id &&
+        active.status == ProgrammeStatus.active;
     final muscleLabel = template.isFullBody
         ? l.programmeFullBody
         : template.muscles.map((m) => CatalogLabels.muscle(l, m)).join(', ');
@@ -1177,7 +1310,8 @@ class _ProgrammeTemplateCard extends ConsumerWidget {
             height: 76,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(18)),
               // 0.20 -> 0.08 are the prototype's own `${p.color}33` and
               // `${p.color}15` (`App.tsx:4795`), read as alpha.
               gradient: LinearGradient(
@@ -1238,7 +1372,7 @@ class _ProgrammeTemplateCard extends ConsumerWidget {
                   padding: EdgeInsets.zero,
                   onTap: loading || isCurrent
                       ? null
-                      : () => _start(context, ref, active),
+                      : () => _startProgramme(context, ref, active, template),
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -1338,7 +1472,8 @@ class _ConfirmSwitchSheet extends StatelessWidget {
     return Padding(
       // Bottom derived, not a flat 24: the Cancel/Start row sat under the
       // gesture indicator on the operator's phone.
-      padding: EdgeInsets.fromLTRB(16, 24, 16, sheetBottomInset(context, base: 24)),
+      padding:
+          EdgeInsets.fromLTRB(16, 24, 16, sheetBottomInset(context, base: 24)),
       child: GlassCard(
         floating: true,
         padding: const EdgeInsets.all(20),
