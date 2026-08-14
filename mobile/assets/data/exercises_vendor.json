@@ -4278,7 +4278,10 @@
     "equipmentLabel": "None",
     "poster": {
       "girl": "assets/posters/girl/ea_armless_prayer_stretch.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_arms_behind_back_chest_stretch",
@@ -5389,7 +5392,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_back_and_shoulder_stretch.jpg",
       "men": "assets/posters/men/ea_back_and_shoulder_stretch.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_back_extension_machine",
@@ -5623,7 +5629,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_back_squeeze.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_back_stretch_dynamic",
@@ -5740,7 +5749,8 @@
       "men": "assets/posters/men/ea_backhand_raise.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -6278,7 +6288,8 @@
       "men": "assets/posters/men/ea_band_bent_over_row.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -6399,7 +6410,8 @@
       "girl": "assets/posters/girl/ea_band_close_grip_row.jpg"
     },
     "contraindications": [
-      "elbow"
+      "elbow",
+      "upper_back"
     ]
   },
   {
@@ -6720,7 +6732,8 @@
       "girl": "assets/posters/girl/ea_band_face_pull.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -6799,7 +6812,8 @@
       "girl": "assets/posters/girl/ea_band_front_face_pull.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -6951,7 +6965,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ]
   },
   {
@@ -7261,7 +7276,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_incline_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_band_incline_t_raise",
@@ -7574,7 +7592,8 @@
       "men": "assets/posters/men/ea_band_kneeling_single_arm_high_row.jpg"
     },
     "contraindications": [
-      "knee"
+      "knee",
+      "upper_back"
     ]
   },
   {
@@ -7801,7 +7820,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "girl": "assets/posters/girl/ea_band_lying_reverse_grip_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_band_pallof_press",
@@ -8113,7 +8135,8 @@
       "girl": "assets/posters/girl/ea_band_reverse_fly.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -8191,7 +8214,10 @@
     "equipmentLabel": "Bench",
     "poster": {
       "girl": "assets/posters/girl/ea_band_rotating_hammer_grip_incline_bench_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_band_seated_lateral_raise",
@@ -8581,7 +8607,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "purpose": "Puts a squat and a row into one movement, so legs and back are trained together and the heart rate stays up. A whole workout in one exercise when all you have is a band."
   },
@@ -8660,7 +8687,8 @@
       "girl": "assets/posters/girl/ea_band_standing_rear_delt_row.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -8958,7 +8986,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ]
   },
   {
@@ -8997,7 +9026,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ]
   },
   {
@@ -9320,7 +9350,8 @@
     },
     "contraindications": [
       "lower_back",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -9361,7 +9392,8 @@
       "men": "assets/posters/men/ea_barbell_bent_over_row_pronated_grip.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -9402,7 +9434,8 @@
       "men": "assets/posters/men/ea_barbell_bent_over_row_supinated_grip.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -10020,6 +10053,7 @@
       "hip",
       "knee",
       "lower_back",
+      "upper_back",
       "wrist"
     ],
     "poseTargetId": "squat"
@@ -10495,7 +10529,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ]
   },
   {
@@ -11093,7 +11128,8 @@
       "ankle",
       "hip",
       "knee",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -11406,7 +11442,8 @@
       "ankle",
       "hip",
       "knee",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -11529,7 +11566,8 @@
     },
     "contraindications": [
       "hip",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "poseTargetId": "hinge"
   },
@@ -11947,7 +11985,8 @@
       "ankle",
       "knee",
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ],
     "purpose": "A partial version of the olympic pull that teaches the hips to extend explosively, without needing the technique a full clean demands. It is the most accessible way to train real power with a barbell."
   },
@@ -12302,7 +12341,10 @@
     "equipmentLabel": "Landmine",
     "poster": {
       "men": "assets/posters/men/ea_barbell_long_landmine_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_barbell_low_bar_squat",
@@ -12505,7 +12547,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_lying_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_barbell_lying_triceps_extension",
@@ -12656,7 +12701,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_meadows_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_barbell_muscle_clean",
@@ -12706,6 +12754,7 @@
     },
     "contraindications": [
       "lower_back",
+      "upper_back",
       "wrist"
     ]
   },
@@ -12966,7 +13015,8 @@
     "contraindications": [
       "lower_back",
       "neck",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -13014,7 +13064,8 @@
       "hip",
       "knee",
       "lower_back",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -13176,7 +13227,8 @@
       "men": "assets/posters/men/ea_barbell_pendlay_row.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -13225,6 +13277,7 @@
     },
     "contraindications": [
       "lower_back",
+      "upper_back",
       "wrist"
     ]
   },
@@ -13274,6 +13327,7 @@
     },
     "contraindications": [
       "lower_back",
+      "upper_back",
       "wrist"
     ]
   },
@@ -13520,7 +13574,8 @@
       "men": "assets/posters/men/ea_barbell_push_bent_over_row.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -13608,7 +13663,8 @@
       "men": "assets/posters/men/ea_barbell_rack_pull.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -13645,7 +13701,8 @@
       "men": "assets/posters/men/ea_barbell_rear_delt_raise.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -13927,7 +13984,8 @@
       "men": "assets/posters/men/ea_barbell_reverse_grip_bent_over_row.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -14121,7 +14179,8 @@
     },
     "contraindications": [
       "hip",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -14380,7 +14439,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ]
   },
   {
@@ -14544,7 +14604,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ]
   },
   {
@@ -16125,7 +16186,8 @@
       "men": "assets/posters/men/ea_barbell_underhand_bent_over_row.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -16242,7 +16304,8 @@
     },
     "contraindications": [
       "neck",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -16281,7 +16344,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ]
   },
   {
@@ -16468,7 +16532,8 @@
     },
     "contraindications": [
       "hip",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "poseTargetId": "hinge",
     "purpose": "Holding the bar in the crooks of your elbows puts the load in front of you, so the whole back has to work far harder to keep you from folding. Brutal for the upper back and the brace, and it teaches an honest hinge fast."
@@ -17403,7 +17468,8 @@
       "men": "assets/posters/men/ea_bent_over_barbell_row.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -17442,7 +17508,8 @@
     },
     "contraindications": [
       "lower_back",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -17520,7 +17587,8 @@
       "men": "assets/posters/men/ea_bent_over_row_resistance_band.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -17600,7 +17668,8 @@
       "men": "assets/posters/men/ea_bent_over_row_with_bar.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -18417,7 +18486,8 @@
     },
     "contraindications": [
       "lower_back",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -18910,6 +18980,7 @@
       "elbow",
       "knee",
       "shoulder",
+      "upper_back",
       "wrist"
     ],
     "poseTargetId": "pushup"
@@ -19118,7 +19189,8 @@
       "hip",
       "knee",
       "lower_back",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -19680,7 +19752,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_standing_around_world_wall_supported.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_bodyweight_standing_back_stretch",
@@ -19915,7 +19990,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ]
   },
   {
@@ -20322,7 +20398,10 @@
       "girl": "assets/posters/girl/ea_bow_pose.jpg",
       "men": "assets/posters/men/ea_bow_pose.jpg"
     },
-    "purpose": "Opens the entire front of the body at once — hips, stomach, chest and shoulders — which is the whole surface that shortens from sitting. One of the strongest counters to a desk-bound day."
+    "purpose": "Opens the entire front of the body at once — hips, stomach, chest and shoulders — which is the whole surface that shortens from sitting. One of the strongest counters to a desk-bound day.",
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_box_jump",
@@ -21384,7 +21463,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_butt_kick_with_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_butt_kicks",
@@ -21565,7 +21647,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ],
     "purpose": "A shrug angled forward instead of straight up, which puts the work into the part of the trapezius that runs down between the shoulder blades rather than the part that already gets used all day. That lower section is what holds the shoulder blades in place."
   },
@@ -21802,7 +21885,8 @@
       "men": "assets/posters/men/ea_cable_bent_over_reverse_grip_row.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -21843,7 +21927,8 @@
       "men": "assets/posters/men/ea_cable_bent_over_row.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -22098,7 +22183,8 @@
       "men": "assets/posters/men/ea_cable_face_pull_with_rope.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ],
     "purpose": "One of the few exercises that trains the small muscles at the back of the shoulder, which get outnumbered by everything that presses. Doing these regularly is what keeps a heavy bench-press habit from slowly closing your shoulders forward."
   },
@@ -22449,7 +22535,10 @@
     "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_low_seated_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_cable_lying_extension_pullover_with_cables_attachment",
@@ -22792,7 +22881,8 @@
       "men": "assets/posters/men/ea_cable_one_arm_bent_over_row.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -23105,7 +23195,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_cable_palm_rotational_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_cable_preacher_curl",
@@ -23409,7 +23502,8 @@
       "men": "assets/posters/men/ea_cable_rear_delt_fly.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -23447,7 +23541,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_cable_rear_drive.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_cable_rear_drive_bent_arm",
@@ -23484,7 +23581,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_cable_rear_drive_bent_arm.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_cable_rear_pulldown",
@@ -23599,7 +23699,8 @@
       "men": "assets/posters/men/ea_cable_reverse_fly_on_crossover.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -23677,7 +23778,10 @@
     "equipmentLabel": "Lat Pull Down Machine (Cable)",
     "poster": {
       "men": "assets/posters/men/ea_cable_reverse_grip_straight_back_seated_high_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_cable_reverse_grip_triceps_push_down_straight_bar_on_crossover",
@@ -23831,7 +23935,10 @@
     "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_seated_on_floor_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_cable_seated_one_arm_alternate_row",
@@ -23869,7 +23976,10 @@
     "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_seated_one_arm_alternate_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_cable_seated_rear_lateral_raise",
@@ -23947,7 +24057,10 @@
     "equipmentLabel": "Lat Pull Down Machine (Cable)",
     "poster": {
       "men": "assets/posters/men/ea_cable_seated_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_cable_seated_supine_grip_row",
@@ -23986,7 +24099,10 @@
     "equipmentLabel": "Lat Pull Down Machine (Cable)",
     "poster": {
       "men": "assets/posters/men/ea_cable_seated_supine_grip_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_cable_silverback_shrug",
@@ -24018,7 +24134,8 @@
       "men": "assets/posters/men/ea_cable_silverback_shrug.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "purpose": "A shrug done leaning forward against a cable, which points the work at the middle traps between the shoulder blades rather than the tops of the shoulders. That middle section is what holds your posture up all day."
   },
@@ -24050,7 +24167,8 @@
       "girl": "assets/posters/girl/ea_cable_single_arm_reverse_fly.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ],
     "purpose": "Works the rear shoulder one side at a time against constant cable tension, so it keeps pulling at the end of the range where a dumbbell version has nothing left. That end position is where the rear shoulder actually needs the work."
   },
@@ -24819,7 +24937,8 @@
       "men": "assets/posters/men/ea_cable_underhand_pulldown_wide_grips.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -24894,7 +25013,8 @@
     },
     "contraindications": [
       "neck",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -24936,7 +25056,8 @@
     },
     "contraindications": [
       "neck",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -26800,7 +26921,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_chest_pull_back.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_chest_raise_and_rotate",
@@ -27380,7 +27504,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_circle_elbow_arm.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_circles_knee_stretch",
@@ -27841,6 +27968,7 @@
       "elbow",
       "lower_back",
       "shoulder",
+      "upper_back",
       "wrist"
     ],
     "poseTargetId": "pushup"
@@ -27888,6 +28016,7 @@
       "elbow",
       "lower_back",
       "shoulder",
+      "upper_back",
       "wrist"
     ],
     "poseTargetId": "pushup"
@@ -27934,7 +28063,8 @@
       "men": "assets/posters/men/ea_cobra_side_ab_stretch.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -27965,7 +28095,8 @@
       "men": "assets/posters/men/ea_cobra_stretch.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "purpose": "Extends the spine backwards, the opposite of the forward-folded position most people hold all day. It also stretches the front of the stomach and hips, which shorten from sitting."
   },
@@ -28009,7 +28140,8 @@
       "men": "assets/posters/men/ea_cobra_yoga_pose_hold.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -28609,7 +28741,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_criss_cross_arms_lift.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_criss_cross_bow_tie_pose",
@@ -28906,7 +29041,10 @@
     "equipmentLabel": "Yoga Mat",
     "poster": {
       "men": "assets/posters/men/ea_cross_over_shoulder_stretch.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_crossed_arms_front_leg_kick",
@@ -31585,7 +31723,8 @@
       "men": "assets/posters/men/ea_dumbbell_alternating_pendlay_row.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "purpose": "Each rep starts from the floor with no momentum carried over, so the back has to produce the whole pull from a standstill. Alternating arms lets you hold the bent-over position longer without your lower back giving out first."
   },
@@ -31623,7 +31762,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_armpit_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_dumbbell_arnold_press_version_2",
@@ -31776,7 +31918,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_around_the_world.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_dumbbell_bar_grip_sumo_squat",
@@ -32052,7 +32197,8 @@
     },
     "contraindications": [
       "lower_back",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -32093,7 +32239,8 @@
       "men": "assets/posters/men/ea_dumbbell_bent_over_reverse_row.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -32454,7 +32601,8 @@
       "men": "assets/posters/men/ea_dumbbell_chest_supported_lateral_raises.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -33231,7 +33379,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ]
   },
   {
@@ -33641,6 +33790,7 @@
     "contraindications": [
       "lower_back",
       "neck",
+      "upper_back",
       "wrist"
     ]
   },
@@ -34248,7 +34398,8 @@
       "ankle",
       "hip",
       "knee",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -34455,7 +34606,8 @@
     },
     "contraindications": [
       "hip",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "poseTargetId": "hinge",
     "purpose": "The gentlest way to learn the hip hinge — the movement underneath every deadlift, swing and row. Holding a weight at the chest gives you something to counterbalance against, so the pattern is easier to feel than with a bar on the back."
@@ -34853,7 +35005,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_hammer_grip_incline_bench_two_arm_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_dumbbell_hammer_preacher_curl_simultaneous_arms",
@@ -35833,7 +35988,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_incline_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_dumbbell_incline_shrug",
@@ -35870,7 +36028,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ]
   },
   {
@@ -36241,7 +36400,10 @@
       "girl": "assets/posters/girl/ea_dumbbell_knee_lawnmower_row.jpg",
       "men": "assets/posters/men/ea_dumbbell_knee_lawnmower_row.jpg"
     },
-    "purpose": "Pulling on a diagonal from a low knee to the ribs works the back the way you actually use it — with some rotation, not in a straight line. It builds the connection between the lat and the opposite hip that carries into throwing and swinging."
+    "purpose": "Pulling on a diagonal from a low knee to the ribs works the back the way you actually use it — with some rotation, not in a straight line. It builds the connection between the lat and the opposite hip that carries into throwing and swinging.",
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_dumbbell_kneeling_arnold_press",
@@ -36472,7 +36634,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ],
     "purpose": "Lying on an incline changes the direction of the load, so the shrug pulls the shoulder blades down and back instead of straight up. That is the direction that helps posture rather than the one that builds a thicker neck."
   },
@@ -36507,7 +36670,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ],
     "purpose": "A face-down shrug that targets the middle of the trapezius — the section between the shoulder blades that holds them against the ribs. Weak there is why shoulders drift forward and why heavy pulling feels unstable."
   },
@@ -36932,7 +37096,8 @@
       "men": "assets/posters/men/ea_dumbbell_lying_rear_delt_row.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -37546,7 +37711,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_one_arm_row_rack_support.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_dumbbell_one_arm_seated_neutral_wrist_curl",
@@ -38132,7 +38300,8 @@
       "men": "assets/posters/men/ea_dumbbell_pendlay_row.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "purpose": "Resetting on the floor between every rep removes the bounce, so each pull is pure back strength from a dead stop. It carries over directly to the first inch of a deadlift, which is where most people are weakest."
   },
@@ -38741,7 +38910,8 @@
       "men": "assets/posters/men/ea_dumbbell_rear_delt_row.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -38779,7 +38949,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ]
   },
   {
@@ -38942,7 +39113,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbell_renegade_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_dumbbell_reverse_fly",
@@ -38979,7 +39153,8 @@
       "men": "assets/posters/men/ea_dumbbell_reverse_fly.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -40118,7 +40293,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ]
   },
   {
@@ -40399,6 +40575,7 @@
     "contraindications": [
       "elbow",
       "shoulder",
+      "upper_back",
       "wrist"
     ],
     "poseTargetId": "pushup"
@@ -40476,7 +40653,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ],
     "purpose": "A bent-over shrug with no bench, so your back has to hold the position while the middle trapezius does the work. Harder on the lower back than the supported version, and better for learning to hold a hinge."
   },
@@ -40792,7 +40970,8 @@
     },
     "contraindications": [
       "neck",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ],
     "purpose": "Builds the side of the shoulder and the upper trapezius together. Using one arm lets the elbow travel on the path your own shoulder prefers, which is what makes this safer than the two-handed barbell version many people find pinching."
   },
@@ -41580,7 +41759,8 @@
       "men": "assets/posters/men/ea_dumbbell_standing_behind_back_shoulders_press.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -43358,7 +43538,8 @@
       "men": "assets/posters/men/ea_dumbbells_bent_over_row.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -43397,7 +43578,8 @@
       "men": "assets/posters/men/ea_dumbbells_bent_over_row_pronated_grip.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -43440,6 +43622,7 @@
     },
     "contraindications": [
       "elbow",
+      "upper_back",
       "wrist"
     ],
     "poseTargetId": "pushup"
@@ -43478,7 +43661,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_dumbbells_single_arm_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_dumbbells_triceps_kick_back_both_arms",
@@ -43846,6 +44032,7 @@
     },
     "contraindications": [
       "elbow",
+      "upper_back",
       "wrist"
     ]
   },
@@ -44025,7 +44212,8 @@
     "contraindications": [
       "lower_back",
       "neck",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ],
     "purpose": "With your feet raised and hips high, your own bodyweight loads the shoulders — the closest most people get to overhead pressing without a weight. It also trains the shoulder blades to move properly under load, which matters before any handstand work."
   },
@@ -44187,7 +44375,8 @@
       "men": "assets/posters/men/ea_exercise_ball_back_stretch.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -44897,7 +45086,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_extension_of_arms_in_vertical_stretch.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_ez_bar_biceps_curl_close_grip",
@@ -45559,7 +45751,10 @@
     "equipmentLabel": "Fixed Pole Bar",
     "poster": {
       "men": "assets/posters/men/ea_fixed_bar_stretch.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_flat_bench_cable_fly",
@@ -46195,7 +46390,8 @@
       "ankle",
       "hip",
       "knee",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -46237,7 +46433,8 @@
       "ankle",
       "hip",
       "knee",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -46499,7 +46696,8 @@
     },
     "contraindications": [
       "hip",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "poseTargetId": "hinge"
   },
@@ -46534,7 +46732,8 @@
     },
     "contraindications": [
       "hip",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "poseTargetId": "hinge",
     "purpose": "The bodyweight hip hinge — the movement pattern under every deadlift, row and kettlebell swing. Learning it without a load is what stops a rounded back from becoming a habit once weight is added."
@@ -46577,7 +46776,8 @@
     },
     "contraindications": [
       "hip",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "poseTargetId": "hinge"
   },
@@ -46619,7 +46819,8 @@
     },
     "contraindications": [
       "hip",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "poseTargetId": "hinge"
   },
@@ -46661,7 +46862,8 @@
     },
     "contraindications": [
       "hip",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "poseTargetId": "hinge"
   },
@@ -47694,7 +47896,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_hammer_strength_plate_loaded_high_row_alternate_arms.jpg",
       "men": "assets/posters/men/ea_hammer_strength_plate_loaded_high_row_alternate_arms.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_hammer_strength_plate_loaded_high_row_both_arms",
@@ -47732,7 +47937,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_hammer_strength_plate_loaded_high_row_both_arms.jpg",
       "men": "assets/posters/men/ea_hammer_strength_plate_loaded_high_row_both_arms.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_hammer_strength_plate_loaded_high_row_single_arm",
@@ -47770,7 +47978,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_hammer_strength_plate_loaded_high_row_single_arm.jpg",
       "men": "assets/posters/men/ea_hammer_strength_plate_loaded_high_row_single_arm.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_hammer_strength_plate_loaded_combination_iso_lateral_chest_chest_press",
@@ -49265,7 +49476,10 @@
     "equipmentLabel": "Smith Machine",
     "poster": {
       "men": "assets/posters/men/ea_inverted_rows_on_smith_machine.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_iron_cross_stretch",
@@ -49684,7 +49898,8 @@
     "contraindications": [
       "ankle",
       "knee",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -49727,7 +49942,8 @@
     },
     "contraindications": [
       "ankle",
-      "knee"
+      "knee",
+      "upper_back"
     ]
   },
   {
@@ -50206,7 +50422,10 @@
       "girl": "assets/posters/girl/ea_kettlebell_gorilla_row.jpg",
       "men": "assets/posters/men/ea_kettlebell_gorilla_row.jpg"
     },
-    "purpose": "Two bells on the floor let one side stay planted while the other rows, so you get a heavy back pull plus an anti-rotation job for the stomach. The wide stance keeps your lower back out of it more than a standard bent-over row does."
+    "purpose": "Two bells on the floor let one side stay planted while the other rows, so you get a heavy back pull plus an anti-rotation job for the stomach. The wide stance keeps your lower back out of it more than a standard bent-over row does.",
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_kettlebell_half_kneeling_shoulder_press",
@@ -50348,7 +50567,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ],
     "purpose": "The incline angle lets the shoulder blades move down as well as back, which is the direction that supports the shoulder joint. Straight-up shrugs only train one of those and are far more common than they need to be."
   },
@@ -50559,7 +50779,8 @@
       "men": "assets/posters/men/ea_kettlebell_rear_delt_row.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ],
     "purpose": "A row with the elbows flared wide, which pulls the work off the lats and onto the rear shoulders and upper back. Those are the muscles that balance out a chest-heavy training week."
   },
@@ -50628,7 +50849,10 @@
       "girl": "assets/posters/girl/ea_kettlebell_row.jpg",
       "men": "assets/posters/men/ea_kettlebell_row.jpg"
     },
-    "purpose": "The basic back builder with two bells: the handles sit low, so the range is longer than with dumbbells and the lats get more stretch at the bottom of each pull."
+    "purpose": "The basic back builder with two bells: the handles sit low, so the range is longer than with dumbbells and the lats get more stretch at the bottom of each pull.",
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_kettlebell_seated_calf_raise",
@@ -50764,7 +50988,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ],
     "purpose": "The straightforward way to build the upper trapezius, the muscle that carries any load hanging from your hands. Kettlebells sit closer to the body than dumbbells, so heavy sets stay easier to control."
   },
@@ -50799,7 +51024,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ],
     "purpose": "Bent forward, the shrug pulls the blades together rather than up, so it builds the middle back that holds your posture. This is the version to do if your upper traps are already tight from stress or desk work."
   },
@@ -50981,7 +51207,8 @@
       "men": "assets/posters/men/ea_kettlebell_single_arm_rear_delt_fly.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ],
     "purpose": "Works the back of one shoulder while the stomach stops the torso from twisting toward the weight. That anti-twist job is what a two-arm fly never trains, and it is why this feels harder than the weight suggests."
   },
@@ -51014,7 +51241,10 @@
       "girl": "assets/posters/girl/ea_kettlebell_single_arm_row.jpg",
       "men": "assets/posters/men/ea_kettlebell_single_arm_row.jpg"
     },
-    "purpose": "One arm at a time gives the shoulder blade room to travel further, so each lat gets a longer range than a two-handed row allows. It also shows you plainly which side is weaker."
+    "purpose": "One arm at a time gives the shoulder blade room to travel further, so each lat gets a longer range than a two-handed row allows. It also shows you plainly which side is weaker.",
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_kettlebell_single_leg_calf_raise",
@@ -52113,7 +52343,8 @@
     },
     "contraindications": [
       "neck",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ],
     "purpose": "Trains the side of the shoulder and the upper trapezius together in one pull. Keep the elbows below shoulder height — going higher is what turns this exercise into shoulder pain for a lot of people."
   },
@@ -53526,7 +53757,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_landmine_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_landmine_russian_twist",
@@ -54256,7 +54490,10 @@
       "girl": "assets/posters/girl/ea_lawnmower_row.jpg",
       "men": "assets/posters/men/ea_lawnmower_row.jpg"
     },
-    "purpose": "Named for the motion of starting a mower, and useful for the same reason: it trains a pull that involves the whole body turning slightly, which is how you actually pull things in life rather than in a gym."
+    "purpose": "Named for the motion of starting a mower, and useful for the same reason: it trains a pull that involves the whole body turning slightly, which is how you actually pull things in life rather than in a gym.",
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_laying_lateral_raise",
@@ -56414,7 +56651,8 @@
       "ankle",
       "hip",
       "knee",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "purpose": "The ball held out in front acts as a counterweight, which lets most people squat deeper with a more upright back than they can empty-handed. A good way to open up squat depth before adding real load."
   },
@@ -58467,6 +58705,7 @@
     "contraindications": [
       "elbow",
       "shoulder",
+      "upper_back",
       "wrist"
     ],
     "poseTargetId": "pushup"
@@ -58541,7 +58780,10 @@
       "girl": "assets/posters/girl/ea_plate_alternating_deadstop_row.jpg",
       "men": "assets/posters/men/ea_plate_alternating_deadstop_row.jpg"
     },
-    "purpose": "Every rep starts from a full stop on the floor, so nothing is carried over from the last one — the back does all of it. Alternating sides keeps the total time bent over manageable."
+    "purpose": "Every rep starts from a full stop on the floor, so nothing is carried over from the last one — the back does all of it. Alternating sides keeps the total time bent over manageable.",
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_plate_car_driver",
@@ -59063,7 +59305,8 @@
     },
     "contraindications": [
       "hip",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "poseTargetId": "hinge",
     "purpose": "Teaches the hip hinge with a load you can hold anywhere, which makes it the version to practise at home. Holding the plate at the chest rather than a bar on the back keeps the spine loaded far more gently."
@@ -59099,7 +59342,8 @@
     },
     "contraindications": [
       "hip",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "poseTargetId": "hinge",
     "purpose": "Holding the plate out in front instead of at the chest makes the same hinge far harder on the back, because the weight sits further from your hips. Use a light plate — the leverage does the work here."
@@ -59197,7 +59441,8 @@
       "men": "assets/posters/men/ea_plate_internally_rotated_rear_delt_fly.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ],
     "purpose": "Turning the thumbs down aims the work squarely at the rear shoulder and takes the middle back out of it. Use light plates — this position is unforgiving of weight, and the point is placement, not load."
   },
@@ -59371,7 +59616,8 @@
     "contraindications": [
       "lower_back",
       "neck",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ],
     "purpose": "Shrugging with the arms overhead trains the lower trapezius, the part that pulls the shoulder blades down. Strength there is what makes overhead pressing feel stable instead of pinched."
   },
@@ -59512,7 +59758,10 @@
       "girl": "assets/posters/girl/ea_plate_pinch_grip_row.jpg",
       "men": "assets/posters/men/ea_plate_pinch_grip_row.jpg"
     },
-    "purpose": "A back row and a grip test in one: the pinch hold fails long before the back does, so every rep is fighting to keep hold. Best used late in a session when heavy rowing is already done."
+    "purpose": "A back row and a grip test in one: the pinch hold fails long before the back does, so every rep is fighting to keep hold. Best used late in a session when heavy rowing is already done.",
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_plate_pinch_grip_side_bend",
@@ -59640,7 +59889,8 @@
       "men": "assets/posters/men/ea_plate_rear_delt_fly.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ],
     "purpose": "Works the back of the shoulders, the muscles that pull the shoulders back and undo the forward rounding that comes with pressing and desk work. Light weight and a full squeeze matter far more than load here."
   },
@@ -60366,7 +60616,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_prone_bench_row_barbell_pronate_grip.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_prone_bench_row_barbell_reverse_grip",
@@ -60402,7 +60655,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_prone_bench_row_barbell_reverse_grip.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_prone_bench_row_dumbbells",
@@ -60438,7 +60694,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_prone_bench_row_dumbbells.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_prone_bench_row_dumbbells_pronated_grip",
@@ -60474,7 +60733,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_prone_bench_row_dumbbells_pronated_grip.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_prone_bench_row_dumbbells_supinated_grip",
@@ -60510,7 +60772,10 @@
     "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_prone_bench_row_dumbbells_supinated_grip.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_prone_front_raises_barbell_on_bench",
@@ -60622,7 +60887,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_pull_apart_cable_resistance_band.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_pull_sled_or_dog_sled_push",
@@ -61036,7 +61304,10 @@
       "men": "assets/posters/men/ea_pushup_to_renegade_row.jpg"
     },
     "poseTargetId": "pushup",
-    "purpose": "A push and a pull in the same repetition, with the stomach working the whole time to stop the hips rotating. One of the most efficient upper-body exercises there is when time is short."
+    "purpose": "A push and a pull in the same repetition, with the stomach working the whole time to stop the hips rotating. One of the most efficient upper-body exercises there is when time is short.",
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_pyramid_pose_parsvottanasana",
@@ -61561,7 +61832,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_resistance_band_cable_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_resistance_band_assisted_front_rack_stretch",
@@ -61844,7 +62118,8 @@
       "men": "assets/posters/men/ea_resistance_band_face_pull.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -62617,7 +62892,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_resistance_band_pull_apart.jpg",
       "men": "assets/posters/men/ea_resistance_band_pull_apart.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_resistance_band_reverse_hyper_with_stability_ball_on_flat_bench",
@@ -63151,7 +63429,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_resistance_band_standing_single_arm_shoulder_extension.jpg",
       "men": "assets/posters/men/ea_resistance_band_standing_single_arm_shoulder_extension.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_resistance_band_standing_single_arm_shoulder_flexion",
@@ -63263,7 +63544,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_resistance_bands_facepull.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_restful_cow_face_pose_legs",
@@ -64124,6 +64408,7 @@
     },
     "contraindications": [
       "elbow",
+      "upper_back",
       "wrist"
     ],
     "poseTargetId": "pushup"
@@ -64233,7 +64518,10 @@
     "equipmentLabel": "Cable Row Machine",
     "poster": {
       "men": "assets/posters/men/ea_seated_cable_row_v_bar_machine.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_seated_calf_machine",
@@ -64524,7 +64812,8 @@
       "men": "assets/posters/men/ea_seated_dumbbell_rear_delt_fly.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -64884,7 +65173,10 @@
     "equipmentLabel": "Cable Row Machine",
     "poster": {
       "men": "assets/posters/men/ea_seated_normal_grip_row_machine.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_seated_resistance_band_cable_rows",
@@ -64921,7 +65213,10 @@
     "equipmentLabel": "Resistance Band",
     "poster": {
       "men": "assets/posters/men/ea_seated_resistance_band_cable_rows.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_seated_row_machine_rows",
@@ -64952,7 +65247,10 @@
       "girl": "assets/posters/girl/ea_seated_row_machine_rows.jpg",
       "men": "assets/posters/men/ea_seated_row_machine_rows.jpg"
     },
-    "purpose": "The machine supports your chest and lower back, so you can pull heavy without your spine having to hold the position. This is usually the safest heavy row available, and the one to choose when the lower back is already tired."
+    "purpose": "The machine supports your chest and lower back, so you can pull heavy without your spine having to hold the position. This is usually the safest heavy row available, and the one to choose when the lower back is already tired.",
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_seated_shoulder_flexor_depressor_retractor_stretch",
@@ -65350,7 +65648,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_shoulder_circle.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_shoulder_extension",
@@ -65938,7 +66239,10 @@
     "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "men": "assets/posters/men/ea_single_arm_cable_row_left.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_single_arm_cable_row_right",
@@ -65975,7 +66279,10 @@
     "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "men": "assets/posters/men/ea_single_arm_cable_row_right.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_single_arm_extended_pull_downwards_biceps_stretch",
@@ -66139,7 +66446,10 @@
     "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "men": "assets/posters/men/ea_single_arm_standing_low_cable_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_single_dumbbell_biceps_curls",
@@ -66562,7 +66872,10 @@
     "equipmentLabel": "Ski Ergometer",
     "poster": {
       "men": "assets/posters/men/ea_ski_ergometer_cross_country_ski_alternating_arm_pull.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_ski_ergometer_cross_country_ski_alternating_arm_pulls",
@@ -66600,7 +66913,10 @@
     "equipmentLabel": "Ski Ergometer",
     "poster": {
       "girl": "assets/posters/girl/ea_ski_ergometer_cross_country_ski_alternating_arm_pulls.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_ski_ergometer_cross_country_ski_basic_pull",
@@ -66640,7 +66956,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_ski_ergometer_cross_country_ski_basic_pull.jpg",
       "men": "assets/posters/men/ea_ski_ergometer_cross_country_ski_basic_pull.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_ski_ergometer_cross_country_ski_face_biceps_curl_pull",
@@ -66814,7 +67133,8 @@
     },
     "contraindications": [
       "knee",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -66901,7 +67221,8 @@
       "men": "assets/posters/men/ea_ski_ergometer_cross_country_ski_reverse_fly_pull.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -67232,7 +67553,10 @@
       "girl": "assets/posters/girl/ea_sled_drag_and_row.jpg",
       "men": "assets/posters/men/ea_sled_drag_and_row.jpg"
     },
-    "purpose": "Combines walking with a load and a rowing pull, so legs and back work in the same set. Because nothing is lowered under load, it can be repeated often without accumulating soreness."
+    "purpose": "Combines walking with a load and a rowing pull, so legs and back work in the same set. Because nothing is lowered under load, it can be repeated often without accumulating soreness.",
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_smith_machine_bulgarian_split_squat",
@@ -68625,7 +68949,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_standing_swimmer.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_standing_toe_touch",
@@ -69017,7 +69344,8 @@
       "men": "assets/posters/men/ea_straight_bar_cable_row_close_grip.jpg"
     },
     "contraindications": [
-      "elbow"
+      "elbow",
+      "upper_back"
     ]
   },
   {
@@ -69056,7 +69384,10 @@
     "equipmentLabel": "Cable Row Machine",
     "poster": {
       "men": "assets/posters/men/ea_straight_bar_cable_row_normal_grip.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_sumo_squat_in_between_legs_resistance_band",
@@ -69353,6 +69684,7 @@
     "contraindications": [
       "elbow",
       "shoulder",
+      "upper_back",
       "wrist"
     ],
     "poseTargetId": "pushup"
@@ -69435,7 +69767,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_suspension_trainer_with_grips_bent_knee_inverted_row.jpg",
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_bent_knee_inverted_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_suspension_trainer_with_grips_chest_fly",
@@ -69603,7 +69938,8 @@
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_face_pull.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -69812,7 +70148,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_suspension_trainer_with_grips_high_row.jpg",
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_high_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_suspension_trainer_with_grips_hip_bridge",
@@ -69896,7 +70235,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_suspension_trainer_with_grips_inverted_row.jpg",
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_inverted_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_suspension_trainer_with_grips_inverted_row_arm_twist",
@@ -69937,7 +70279,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_suspension_trainer_with_grips_inverted_row_arm_twist.jpg",
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_inverted_row_arm_twist.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_suspension_trainer_with_grips_inverted_row_on_floor",
@@ -69968,7 +70313,10 @@
       "girl": "assets/posters/girl/ea_suspension_trainer_with_grips_inverted_row_on_floor.jpg",
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_inverted_row_on_floor.jpg"
     },
-    "purpose": "A pull where your own body is the weight and your feet set the difficulty, so it scales from very easy to very hard without changing equipment. It builds the upper back and rear shoulders that balance out pressing."
+    "purpose": "A pull where your own body is the weight and your feet set the difficulty, so it scales from very easy to very hard without changing equipment. It builds the upper back and rear shoulders that balance out pressing.",
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_suspension_trainer_with_grips_knee_tuck_row",
@@ -70009,7 +70357,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_suspension_trainer_with_grips_knee_tuck_row.jpg",
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_knee_tuck_row.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_suspension_trainer_with_grips_leg_curl",
@@ -70311,7 +70662,8 @@
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_rear_delt_row.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -70487,7 +70839,8 @@
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_single_arm_rear_delt_row.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -70730,7 +71083,10 @@
       "girl": "assets/posters/girl/ea_suspension_trainer_with_grips_wide_grip_inverted_row_on_floor_1.jpg",
       "men": "assets/posters/men/ea_suspension_trainer_with_grips_wide_grip_inverted_row_on_floor_1.jpg"
     },
-    "purpose": "A row where your own body is the weight, so you can make it as easy or as hard as you need just by moving your feet. The wide grip aims the work at the upper back and rear shoulders, the muscles that pull the shoulders back."
+    "purpose": "A row where your own body is the weight, so you can make it as easy or as hard as you need just by moving your feet. The wide grip aims the work at the upper back and rear shoulders, the muscles that pull the shoulders back.",
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_svend_press_decline_bench",
@@ -71025,7 +71381,8 @@
     },
     "contraindications": [
       "lower_back",
-      "neck"
+      "neck",
+      "upper_back"
     ]
   },
   {
@@ -71602,7 +71959,10 @@
     "equipmentLabel": "None (Bodyweight)",
     "poster": {
       "men": "assets/posters/men/ea_upper_back_stretch.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_upright_row_barbell",
@@ -71641,7 +72001,8 @@
     },
     "contraindications": [
       "neck",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -71681,7 +72042,8 @@
     },
     "contraindications": [
       "neck",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -71721,7 +72083,8 @@
     },
     "contraindications": [
       "neck",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -71761,7 +72124,8 @@
     },
     "contraindications": [
       "neck",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -71799,7 +72163,10 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_upward_rotation_bent_arms.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_v_bar_lat_pull_down",

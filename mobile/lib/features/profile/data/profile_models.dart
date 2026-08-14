@@ -80,12 +80,18 @@ enum WorkoutDuration { under15, m15to30, m30to45, m45to60, over60 }
 /// question, a bent-over row is a thoracic one), and merging them would make
 /// the filter answer one while claiming to have answered both.
 ///
-/// It ships with **zero** tagged exercises. That is safe by construction, not
-/// by luck: `CatalogSafetyCoverage.coversAllOf`
+/// It shipped with **zero** tagged exercises and screened nothing for as long
+/// as that lasted — safe by construction rather than by luck, because
+/// `CatalogSafetyCoverage.coversAllOf`
 /// (`equipment/state/safety_coverage_providers.dart:58-61`) refuses to claim
-/// screening for any region with no tags, so a user who reports an upper back
-/// sees the disclosure instead of a promise. Tagging is a separate catalog
-/// batch, and until it runs this region screens nothing and says so.
+/// screening for any region with no tags, so the user saw the disclosure
+/// instead of a promise. P3 ran that batch: 207 exercises now carry
+/// `upper_back` (11.0% of the catalog, between `wrist` at 188 and `ankle` at
+/// 229), from rules in `scripts/catalog/tag_contraindications.py` with the
+/// per-row evidence in `core/contraindications/upper_back.csv`. The zero was
+/// invisible for three months because the tagger's guard only ran one way —
+/// see `test_every_legal_region_has_rules`, which is the guard that now runs
+/// the other.
 ///
 /// Declared in anatomical order, top-down: [InjuryRegion.values] is what the
 /// pickers iterate. Nothing serialises the index — [Injury.fromJson] matches

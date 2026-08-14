@@ -10,13 +10,18 @@ import 'package:fitness_app/features/profile/data/profile_models.dart';
 /// How many exercises in the shipped catalog must carry a contraindication
 /// tag. Raised by each tagging batch, never lowered.
 ///
-/// It is 0 because that is what the catalog measures: the legacy list carried
-/// the only 144 tagged exercises in the product and was deleted in `0c4bf24`,
-/// which no test noticed. A ratchet pinned at 0 is not a formality — the two
-/// assertions below pin it from both sides, so tagging the very first exercise
-/// turns this file red until the number here is raised to match. That is the
-/// point: the count can never drift from the code again in either direction.
-const int kSafetyCoverageFloor = 1435;
+/// It is whatever the catalog measures: the legacy list carried the only 144
+/// tagged exercises in the product and was deleted in `0c4bf24`, which no test
+/// noticed. The two assertions below pin it from both sides, so tagging even
+/// one more exercise turns this file red until the number here is raised to
+/// match. That is the point: the count can never drift from the code again in
+/// either direction.
+///
+/// 1435 -> 1515 (P3): the `upper_back` batch tagged 207 exercises, of which 80
+/// carried no tag at all before. The other 127 already had one for another
+/// region — this floor counts ROWS with at least one tag, not tags, so a batch
+/// raises it by less than it tags whenever it lands on already-tagged rows.
+const int kSafetyCoverageFloor = 1515;
 
 ExerciseItem _ex(String id, {List<String> contraindications = const []}) =>
     ExerciseItem(
@@ -168,6 +173,12 @@ void main() {
         InjuryRegion.wrist: 188, // S3b-3
         InjuryRegion.elbow: 371, // S3b-3
         InjuryRegion.neck: 117, // S3b-3
+        // The ninth and last region to be batched. It had been selectable on
+        // the body diagram since 2026-08-12 and screening nothing, because the
+        // tagger had no rule key for it and no guard read a legal-but-ruleless
+        // region as wrong — `test_every_legal_region_has_rules`
+        // (`scripts/catalog/test_tag_contraindications.py`) is what now does.
+        InjuryRegion.upperBack: 207, // P3
       };
       final raw = File('assets/data/exercises_vendor.json').readAsStringSync();
       final catalog = (jsonDecode(raw) as List)

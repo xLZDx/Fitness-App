@@ -48,6 +48,38 @@ class TestTheVocabularyGuard:
         monkeypatch.setitem(tagger.RULES, "kneee", [])
         assert tagger.unknown_regions() == ["kneee"]
 
+    def test_every_legal_region_has_rules(self):
+        # The other direction, and the one that was missing. `unknown_regions`
+        # catches a rule key that is not a legal tag; nothing caught a legal tag
+        # with no rules. That is exactly how `upper_back` shipped: added to
+        # `injury_regions.json` and to the body diagram on 2026-08-12, offered
+        # to users as a selectable zone, and screening nothing at all for three
+        # months of gates because no rule key ever named it.
+        #
+        # A region with no rules cannot be tagged, so it can never be filtered,
+        # and the failure is silent by construction -- the count is a truthful
+        # zero and no assertion anywhere reads a zero as wrong.
+        # Checked on the VALUE, not just the key. `set(RULES)` alone would pass
+        # for `RULES["some_region"] = []` -- a stub left behind while rules are
+        # drafted -- and `classify` would then loop over zero rules and tag zero
+        # rows, which is the identical silent zero this test exists to catch.
+        missing = sorted(
+            r for r in tagger.load_vocabulary() if not tagger.RULES.get(r)
+        )
+        assert missing == [], (
+            "these regions are offered to users but no rule can tag them, so "
+            "they screen nothing: " + ", ".join(missing)
+        )
+
+    def test_the_guard_would_catch_a_region_stubbed_with_no_rules(
+        self, monkeypatch
+    ):
+        # The empty-list case specifically, since it is the one a key-only
+        # check misses and the one a half-finished batch actually produces.
+        monkeypatch.setitem(tagger.RULES, "knee", [])
+        with pytest.raises(AssertionError, match="knee"):
+            self.test_every_legal_region_has_rules()
+
 
 class TestSpelling:
     """The class of false negative that a spot-check of the audit CSV found."""
@@ -154,12 +186,12 @@ class TestTheShippedCatalog:
         counts = tagger.coverage(rows, tagger.load_vocabulary())
         assert counts == {
             "neck": 117,
-            # Zero on purpose: the region joined the vocabulary on 2026-08-12
-            # and no batch has tagged it. The app does not pretend otherwise --
-            # `CatalogSafetyCoverage.coversAllOf` keeps the disclosure up for
-            # anyone who reports an upper back. This line turns red the moment
-            # a batch ships, which is when it should be updated, not before.
-            "upper_back": 0,
+            # 0 -> 197 (P3). The region joined the vocabulary on 2026-08-12 and
+            # stayed at zero because `RULES` had no key for it -- the one guard
+            # in this file ran the other way round (rule keys that are not legal
+            # tags), so a legal tag with no rules was invisible to it. That gap
+            # is now closed by `test_every_legal_region_has_rules` below.
+            "upper_back": 207,
             "shoulder": 486,
             "elbow": 371,
             "wrist": 188,

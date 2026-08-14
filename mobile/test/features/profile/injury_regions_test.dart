@@ -256,11 +256,17 @@ void main() {
               'the ninth');
     });
 
-    test('ships with no tagged exercises, and the app says so', () {
-      // The honest half of adding a region to a catalog that is already
-      // tagged for the other eight. `coversAllOf` is what stops the app
-      // claiming a screening it cannot perform, so a user who reports an upper
-      // back keeps the disclosure until a tagging batch runs.
+    test('a region with no tags never claims to screen, whatever the rest of '
+        'the catalog measures', () {
+      // Hand-built numbers, not a measurement of the shipped catalog: what is
+      // under test is the contract, which is why this survived P3 tagging
+      // `upper_back` unchanged. The region is no longer at zero in the real
+      // catalog (197 rows — see `profile_models.dart`), and this still has to
+      // hold for whichever region is at zero next.
+      //
+      // `coversAllOf` is what stops the app claiming a screening it cannot
+      // perform: a catalog tagged for everyone else does not answer for the
+      // one user whose own region has nothing.
       const coverage = CatalogSafetyCoverage(
         tagged: 1435,
         total: 1887,

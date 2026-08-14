@@ -318,6 +318,93 @@ RULES: dict[str, list[Rule]] = {
              "table top", "tabletop"],
         ),
     ],
+    # P3. The ninth region, and the last to get rules -- it shipped with zero
+    # tags while the other eight carried 117..816, which made it the one zone
+    # on the body diagram that could be selected and then screened nothing.
+    #
+    # Thoracic spine and scapula, which is a different question from `neck`
+    # (an overhead press is a neck question, a bent-over row is a thoracic
+    # one -- `profile_models.dart` makes the same distinction and refuses to
+    # merge the two). Where they genuinely overlap -- a loaded shrug is both
+    # -- both rules fire, which is correct: the tags are independent and a
+    # user reports one region or the other, not a winner between them.
+    "upper_back": [
+        Rule(
+            # The core of it. Horizontal pulling is scapular retraction under
+            # load, which is exactly what a rhomboid or mid-trap strain will
+            # not tolerate.
+            "thoracic_horizontal_pull",
+            # "band pull" is deliberately absent. It was in the first draft and
+            # the dry run caught it doing the opposite of what this ruleset
+            # says: it matched "Band Pull Up" (primaryMuscles `lats`) — a
+            # pull-up, which the `thoracic_trap_primary` note below explicitly
+            # rules out — while the pull-apart it was meant for is already
+            # caught by "pull apart" on its own.
+            ["row", "face pull", "rear delt", "reverse fly", "reverse flye",
+             "pull apart", "scapular", "scap retraction",
+             "seal row", "pendlay"],
+        ),
+        Rule(
+            # A bar resting across the upper traps and rear delts, or a load
+            # held with the thoracic spine braced against it.
+            "thoracic_axial_load",
+            ["back squat", "front squat", "overhead squat", "zercher",
+             "good morning", "yoke", "safety bar"],
+        ),
+        Rule(
+            # Same movements `neck_trap_load` names, and deliberately a
+            # separate rule: the traps span both regions and a shrug loads
+            # each of them, so one shared tag would have to pick a region to
+            # lie about.
+            #
+            # UNGATED, unlike its neck twin, and the first draft's gate is why
+            # this comment exists. Gated on `muscles=["traps","back"]` it
+            # silently dropped 9 of the catalog's 25 shrugs -- every one with
+            # an empty `primaryMuscles` and the generic secondary
+            # `muscles: ["shoulders"]`, which `known()` hands to the gate as
+            # real evidence that then fails to intersect. The same "Silverback
+            # Shrug" movement fired for its barbell and cable variants and not
+            # for its dumbbell and kettlebell ones, decided by nothing but
+            # which body-region word the vendor happened to type.
+            #
+            # The gate was never earning anything here: unlike "press" or
+            # "curl", none of these words names a second movement in another
+            # part of the body. A shrug is a shrug.
+            "thoracic_trap_load",
+            ["shrug", "upright row", "farmer", "farmers walk", "rack pull"],
+        ),
+        Rule(
+            # Loaded thoracic extension. The lumbar-dominant ones
+            # (hyperextension, superman) stay with `lower_back`; what is
+            # listed here arches specifically through the mid-back.
+            "thoracic_extension",
+            ["cobra", "upward dog", "upward facing dog", "camel", "wheel pose",
+             "backbend", "bow pose", "sphinx", "thread the needle"],
+        ),
+        Rule(
+            # The muscle constraint IS the rule, same shape the `["*"]` form
+            # exists for: the vendor naming traps as the primary mover is
+            # direct evidence the movement loads this region, whatever it is
+            # called.
+            #
+            # `lats` is not a reason on its own -- 118 rows carry it and most
+            # are pulldowns and pull-ups, whose scapular load is real but whose
+            # blanket removal would leave an upper-back user with almost no
+            # back work at all. That is the "does not lean all the way" line in
+            # this file's own header.
+            #
+            # It is NOT an exclusion, and the first draft of this comment said
+            # it was, which was a promise the code does not keep: the test is
+            # "does traps appear", not "does traps appear and lats not". One
+            # row carries both -- `ea_cable_underhand_pulldown_wide_grips`,
+            # `primaryMuscles: ["lats", "traps"]` -- and it is tagged, on the
+            # strength of the traps. That is the intended reading; the wrong
+            # half was the word "excluded".
+            "thoracic_trap_primary",
+            ["*"],
+            muscles=["traps"],
+        ),
+    ],
     "neck": [
         Rule(
             "neck_flexion_load",
