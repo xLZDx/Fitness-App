@@ -140,16 +140,34 @@ android {
     }
 
     buildTypes {
+        // P2. `debug` and `release` used to share `applicationId`, which had
+        // two costs. First, once a real signing key exists (see
+        // `hasRealSigningConfig` below), Android's own signature check
+        // blocks a debug install from landing over a release one -- but the
+        // failure the operator would see for that is a bare
+        // "INSTALL_FAILED_UPDATE_INCOMPATIBLE" from `adb`/`flutter run`,
+        // which explains nothing. Second, and worse, BEFORE that key
+        // existed -- every debug build shipped this way until R0 -- nothing
+        // stopped a same-signature debug build silently overwriting a
+        // same-signature release install's SharedPreferences.
+        //
+        // `applicationIdSuffix` here is the fix, not the signing key: it
+        // gives every debug build its own package id
+        // (`com.fitnessapp.fitness_app.sptr.debug`), so `flutter run` and a
+        // sideloaded release build are two DIFFERENT apps to the OS
+        // regardless of which key either is signed with. `release` keeps
+        // the bare id untouched -- that is the one `wear/build.gradle.kts`
+        // pairs against (`applicationId` there "MUST equal the phone
+        // module's"), so changing it would have silently unpaired the
+        // watch, which is the opposite of what this gate is for.
+        debug {
+            applicationIdSuffix ".debug"
+        }
         release {
             // Real signing when key.properties exists (see the comment
             // above `keystorePropertiesFile`); the original debug-signed
             // fallback otherwise, so this build never breaks for lack of a
-            // key nobody has generated yet. C0's tier-override guard
-            // documented exactly why this distinction matters: debug and
-            // release currently share `applicationId`, so a debug-signed
-            // "release" installs as an UPDATE over a debug install and
-            // inherits its SharedPreferences — this is the change that
-            // finally makes the two different installs.
+            // key nobody has generated yet.
             signingConfig = hasRealSigningConfig
                 ? signingConfigs.release
                 : signingConfigs.debug

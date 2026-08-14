@@ -7493,3 +7493,52 @@ touched.
   rows still lack `purpose`, no per-photo delete yet.
 - Full notes text: `D:\Temp\claude\d--Repo\408a2c25-3825-4de7-a233-b3b57d0c18ad\scratchpad\release_notes.txt`
   (scratchpad, not committed — the notes themselves live in the Firebase release, quoted above).
+
+---
+
+## 2026-08-14 23:10 local (Europe/Chisinau) / 20:10 UTC — Two test devices named for good, mid-gate note
+
+Operator, mid-GO: "С8" = Samsung Galaxy S8 (adb model `SM_G950F`) is always online, use it by
+default for any on-device verification without asking. "С23" = Samsung Galaxy S23, the operator's
+daily phone; always cross-check there too, but it is not guaranteed connected. Saved as
+`project_fitness_app_test_devices.md` in the auto-memory index so future sessions stop re-asking
+which phone to use.
+
+---
+
+## 2026-08-14 23:40 local (Europe/Chisinau) / 20:40 UTC — P2: applicationId debug/release split, and a live Firebase config gap it exposed
+
+**What was decided.** `debug` gets `applicationIdSuffix ".debug"` (`mobile/android/app/build.gradle`,
+`buildTypes.debug`); `release` is untouched — `wear/build.gradle.kts:20`'s own comment says its
+`applicationId` "MUST equal the phone module's", so anything that moved the release id would have
+silently unpaired the watch, which is the one failure mode this gate exists to avoid. Before this,
+`debug` and `release` shared one `applicationId`; once real signing went live (R0, `key.properties`
+now exists), that already blocked a debug install landing over a release one with a bare
+`INSTALL_FAILED_UPDATE_INCOMPATIBLE` from `adb`, and before R0 nothing stopped a same-signature
+debug build silently overwriting a release install's `SharedPreferences`. The suffix makes them two
+different apps to the OS regardless of which key either is signed with, and turns the opaque
+install failure into two coexisting apps instead.
+
+**What broke, and what fixed it.** First `gradlew.bat :app:assembleDebug` failed:
+`Execution failed for task ':app:processDebugGoogleServices'. > No matching client found for
+package name 'com.fitnessapp.fitness_app.sptr.debug'` — `google-services.json` only had client
+entries for the two pre-existing package names (`com.fitnessapp.fitness_app`,
+`com.fitnessapp.fitness_app.sptr`), not the new debug-suffixed one. Registered a third Firebase
+Android app via `firebase apps:create android "Fitness App (debug)" --package-name
+com.fitnessapp.fitness_app.sptr.debug --project fitness-app-korostelev` (app id
+`1:988522745882:android:7c05c915aa42410ec201a3`), then `firebase apps:sdkconfig ANDROID
+<that id>` to pull the merged three-client config over `mobile/android/app/google-services.json`.
+Verified the merge kept the other two clients byte-identical (`client_info`/`oauth_client` for
+`com.fitnessapp.fitness_app` and `com.fitnessapp.fitness_app.sptr` unchanged) before writing it.
+Re-ran `gradlew.bat :app:assembleDebug -q` — `BUILD SUCCESSFUL`.
+
+**Why register a new Firebase app instead of reverting the suffix.** The alternative was excluding
+`debug` from `google-services` processing, which would have broken Firebase Auth/Firestore/FCM in
+every dev build — worse than the problem. Registering a project app for a package name is additive
+and reversible (nothing about the other two apps changed), so it stayed inside the P2 GO rather
+than needing a fresh one.
+
+**Checks.** `gradlew.bat :app:assembleDebug -q` — `BUILD SUCCESSFUL` (second attempt, after the
+Firebase app registration). Confirmed via `adb shell dumpsys package com.fitnessapp.fitness_app.sptr`
+on S8 that the existing installed release (versionCode 2374) is untouched by this change — only a
+future debug install would land under the new `.sptr.debug` id.
