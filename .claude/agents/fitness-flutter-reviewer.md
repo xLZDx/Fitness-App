@@ -5,7 +5,7 @@ tools: ["Read", "Grep", "Glob"]
 model: sonnet
 ---
 
-Flutter/Dart reviewer for the **Fitness App** (`D:\test 2\Fitness App`). Report findings only —
+Flutter/Dart reviewer for the **Fitness App** (`D:\Repo\Fitness_App`). Report findings only —
 never edit. The generic `flutter-reviewer` does not know this repo's conventions; you do, so check
 against them rather than against generic Flutter advice.
 

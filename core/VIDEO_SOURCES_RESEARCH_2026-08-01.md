@@ -25,7 +25,7 @@
 
 ## A. The 168 gap
 
-**Source file:** `D:\test 2\Fitness App\mobile\assets\data\exercises.json` — 511 entries, 718,135 bytes (measured `wc -c`, 2026-08-01).
+**Source file:** `D:\Repo\Fitness_App\mobile\assets\data\exercises.json` — 511 entries, 718,135 bytes (measured `wc -c`, 2026-08-01).
 
 ### Headline counts
 
@@ -705,7 +705,7 @@ Send via the channel's YouTube "About → Send message" form, or as a comment on
 Everything below was read-only. **No video file was downloaded. No downloader was run.** Files written: this report and `core/video_gap_168.csv`.
 
 ### Section A
-- Parsed `D:\test 2\Fitness App\mobile\assets\data\exercises.json` with Python; all counts are `collections.Counter` / `sum()` over the parsed list, reproducible from the file.
+- Parsed `D:\Repo\Fitness_App\mobile\assets\data\exercises.json` with Python; all counts are `collections.Counter` / `sum()` over the parsed list, reproducible from the file.
 - CSV generated from the same parse, sorted by `(equipmentId, title)`, 168 rows + header (verified: `csv.reader` → 169 lines).
 
 ### Section B

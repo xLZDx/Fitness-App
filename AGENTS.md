@@ -7,7 +7,7 @@ everyone else, and for the parts that apply regardless of which agent is reading
 ## Build / test / run
 
 ```powershell
-cd "D:\test 2\Fitness App\mobile"
+cd "D:\Repo\Fitness_App\mobile"
 flutter analyze
 flutter test
 ```
@@ -25,7 +25,7 @@ have been told not to run the one suite that can see the device, on the grounds 
 exist. `CLAUDE.md` had it right the whole time, which is how the contradiction was found.)*
 
 ```powershell
-cd "D:\test 2\Fitness App"
+cd "D:\Repo\Fitness_App"
 .\scripts\dev\debug_daemon.ps1     # captures logs/errors/touches/screencaps to logs/sessions/<latest>/
 ```
 
@@ -62,7 +62,7 @@ genuinely high-stakes (payments, auth, injury filtering, a migration) and an out
 change the outcome.
 
 **Roster source:** the machine-wide agents (`security-reviewer`, `database-reviewer`, etc.) and
-skills come from `D:\test 2\agents-skills-repo`, installed into `~/.claude/agents/` and
+skills come from `D:\Repo\agents-skills-repo`, installed into `~/.claude/agents/` and
 `~/.claude/skills/` per that repo's own README — add or update an agent there, not inside this
 project. **`/rosetta`** is available as an on-demand deep-workflow mode (Prepare → Research → Plan →
 Act → Validate) for larger tasks; it composes with the cadence below, it does not replace it —

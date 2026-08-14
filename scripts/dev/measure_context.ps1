@@ -56,7 +56,7 @@ function Measure-FileSet {
 # read on demand here. Counting it as always-on overstates the tax, so it is its own layer.
 $alwaysOn = @(
     (Join-Path $env:USERPROFILE '.claude\CLAUDE.md'),
-    'D:\test 2\CLAUDE.md',
+    'D:\Repo\CLAUDE.md',
     (Join-Path $RepoRoot 'CLAUDE.md')
 )
 $agentEntry = @(

@@ -5,7 +5,7 @@ Phase 4A shipped the local-first foundation (mock checkout + 14-day
 trial); Phase 4B replaces the mock with real Stripe billing wired
 through `users/{uid}/subscription/main` via a webhook.
 
-## Deploy steps (run from `D:\test 2\Fitness App`)
+## Deploy steps (run from `D:\Repo\Fitness_App`)
 
 These commands need your terminal because they write secrets to Google
 Secret Manager and your Firebase auth.
@@ -13,7 +13,7 @@ Secret Manager and your Firebase auth.
 ### 1. Install Functions dependencies
 
 ```powershell
-cd "D:\test 2\Fitness App\functions"
+cd "D:\Repo\Fitness_App\functions"
 npm install
 ```
 
@@ -21,7 +21,7 @@ npm install
 
 ### 2. Set the four Functions secrets
 
-From the project root (`D:\test 2\Fitness App`):
+From the project root (`D:\Repo\Fitness_App`):
 
 ```powershell
 firebase functions:secrets:set STRIPE_SECRET_KEY
@@ -184,7 +184,7 @@ back into chat — I'll wire it into the right config file.
 ### 3. Initialise Cloud Functions in this repo
 
 I'll do this for you once Blaze is live. The actual commands I'll run
-from inside `D:\test 2\Fitness App`:
+from inside `D:\Repo\Fitness_App`:
 
 ```
 firebase init functions          # TypeScript, no ESLint, no install yet
@@ -221,7 +221,7 @@ slot stays empty for now; we set it after the first deploy in step 5.
 
 ### 5. After my code lands — deploy and configure the webhook
 
-1. `firebase deploy --only functions` from `D:\test 2\Fitness App`.
+1. `firebase deploy --only functions` from `D:\Repo\Fitness_App`.
 2. Copy the deployed `stripeWebhook` URL from the deploy output (looks
    like `https://us-central1-traidingbot-b4061.cloudfunctions.net/stripeWebhook`).
 3. Stripe dashboard → Developers → Webhooks → Add endpoint:

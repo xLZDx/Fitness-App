@@ -7369,3 +7369,44 @@ account-change guard closed cleanly, but Codex found a real gap the sheet-open f
 
 **Round 2 marked FINAL.** One real disagreement remains (the broad catch), argued and kept; no
 BLOCKER or unresolved MAJOR.
+
+---
+
+## 2026-08-14 21:33 local (Europe/Chisinau) / 18:33 UTC — Finished the D:\test 2 -> D:\Repo path rewrite left over in 20 files
+
+The project-tree move to `D:\Repo` happened under an earlier operator GO (see this project's
+`CLAUDE.md` header note). That rewrite covered code and config at the time; 20 files still carried
+the old `D:\test 2\Fitness App` / `D:\test 2\CLAUDE.md` / `D:\test 2\agents-skills-repo` path in
+prose, comments, and hardcoded script roots, sitting as uncommitted changes across this whole
+session's other gates (P3-fix, R11f-1-fix).
+
+### What was done
+
+Read every one of the 20 diffs by hand (`git diff -- <files>`, three batches) before staging —
+each hunk is a pure `D:\test 2` -> `D:\Repo` (or the `agents-skills-repo` / global `CLAUDE.md`
+equivalent) path substitution, nothing else. Two categories:
+
+- **Docs/plans/handoffs** (`AGENTS.md`, `CLAUDE.md`, `core/*.md`, `core/plans/*.md`): every `cd`
+  example and prose reference. A resume-prompt telling the next session to `cd` into a path that no
+  longer exists is a broken instruction, not a cosmetic one.
+- **Tooling scripts** (`scripts/l10n/*.py`'s `ROOT`, `scripts/dev/measure_context.ps1`'s
+  `$alwaysOn`, `mobile/test/_g12b_board.dart`'s `_out` and `workingDirectory`): read at runtime, so
+  left stale they would silently point at a non-existent directory or silently skip a token count,
+  not fail loud.
+
+One commit, not folded into P3-fix or R11f-1-fix above: every file's only diff is this
+substitution, and mixing it into either gate's already-fully-cited plan block would have attributed
+an unrelated concern to a mechanism it has nothing to do with.
+
+### Not covered
+
+Nothing else in this commit. Verified per-file before staging, not assumed from the migration
+note's own description of what it was supposed to cover.
+
+### Checks
+
+- All 20 diffs read by hand; no unrelated content, no secrets, no logic change.
+- No `flutter test`/`pytest` surface affected: none of the 20 files is exercised by either suite
+  (`_g12b_board.dart` is a manual golden-screenshot harness, leading underscore, not part of
+  `flutter test`'s run).
+- `git status` after staging: exactly these 20 files, confirmed via `git diff --cached --stat`.

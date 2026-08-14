@@ -42,7 +42,7 @@ The script prints the redeploy command.
 ### 3. Generate iOS scaffold
 
 ```pwsh
-cd "D:\test 2\Fitness App\mobile"
+cd "D:\Repo\Fitness_App\mobile"
 flutter create -i swift --platforms=ios .
 ```
 Then apply the Info.plist keys + entitlements from

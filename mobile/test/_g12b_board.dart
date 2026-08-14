@@ -27,7 +27,7 @@ import 'package:fitness_app/features/equipment/widgets/exercise_thumb.dart';
 import 'package:fitness_app/features/workouts/widgets/plate_calculator.dart';
 import 'package:fitness_app/features/workouts/widgets/warmup_calculator.dart';
 
-const _out = r'D:\test 2\Fitness App\core\screenshots';
+const _out = r'D:\Repo\Fitness_App\core\screenshots';
 
 Widget _board() => SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -127,7 +127,7 @@ Future<void> _shoot(WidgetTester t, String name, Brightness b) async {
     final data = await image.toByteData(format: ui.ImageByteFormat.png);
     Directory(_out).createSync(recursive: true);
     final rev = Process.runSync('git', ['describe', '--always', '--dirty'],
-            workingDirectory: r'D:\test 2\Fitness App')
+            workingDirectory: r'D:\Repo\Fitness_App')
         .stdout
         .toString()
         .trim();

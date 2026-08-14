@@ -1,6 +1,6 @@
 # Session handoff — Fitness App (paste this whole file as the prompt)
 
-You are picking up mid-stream on `D:\test 2\Fitness App`. Read this file fully before touching
+You are picking up mid-stream on `D:\Repo\Fitness_App`. Read this file fully before touching
 anything — it replaces re-discovering repo state via Glob/Grep. **Do not start any state-changing
 action; the operator has not given a `GO` for new work yet.** Report back what you see, ask what's
 next.
@@ -35,18 +35,18 @@ complete rationale; short version:
   `scripts/dev/measure_context.ps1` (tracks AI-context token cost, appends to
   `core/context_baseline.csv`).
 - **G6 + Rosetta follow-up**: deduplicated rules between `~/.claude/CLAUDE.md` (global) and
-  `D:\test 2\CLAUDE.md` (volume) — they were BOTH loaded every turn with 24 duplicated rule
+  `D:\Repo\CLAUDE.md` (volume) — they were BOTH loaded every turn with 24 duplicated rule
   sections. Volume file now points at global instead of mirroring. Then found + removed 2 more
   redundant rules from global itself (GRAB-FIRST + 10-MINUTE-SSH-TIMEOUT — verified the trading-bot
   project's own CLAUDE.md already had fuller versions; RunPod/AWS-spot mentioned there were never
   actually used anywhere, grepped to confirm). **Result: always-on context 50,694 -> 36,372 est.
   tokens/turn (-28%).**
-- **CRITICAL: neither global (`~/.claude/CLAUDE.md`) nor volume (`D:\test 2\CLAUDE.md`) is under
+- **CRITICAL: neither global (`~/.claude/CLAUDE.md`) nor volume (`D:\Repo\CLAUDE.md`) is under
   git.** Both are plain directories, not repos. The ONLY rollback path is the backup files sitting
   next to them:
   - `C:\Users\koros\.claude\CLAUDE.md.bak-20260728-g6` (pre-G6 dedup state)
   - `C:\Users\koros\.claude\CLAUDE.md.bak-20260728-ab-pre` (pre-A+B-cleanup state, post-G6)
-  - `D:\test 2\CLAUDE.md.bak-20260728-g6` (pre-G6 dedup state)
+  - `D:\Repo\CLAUDE.md.bak-20260728-g6` (pre-G6 dedup state)
   - `C:\Users\koros\.claude\skills\fitness-app-helper\SKILL.md.bak-20260728` (pre-resync — that
     global skill had drifted badly: claimed 7 features when there are 33, referenced
     `mobile/integration_test/` which doesn't exist, cited a stale test-pass count, etc.)
@@ -83,7 +83,7 @@ the analyze-clean overclaim).**
 ### 4. Unrelated commits from a parallel operator initiative (already reviewed, fine)
 
 `2f22181` and `61afd9b` wire this repo into a separate cross-project initiative
-(`D:\test 2\agents-skills-repo` roster + an on-demand `/rosetta` workflow for Copilot/Codex). Not
+(`D:\Repo\agents-skills-repo` roster + an on-demand `/rosetta` workflow for Copilot/Codex). Not
 part of this session's own work, but checked: the referenced path is real, the new
 `.github/prompts/rosetta.prompt.md` content doesn't contradict anything here. No action needed.
 

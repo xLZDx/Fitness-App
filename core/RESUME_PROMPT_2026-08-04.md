@@ -1,6 +1,6 @@
 # Resume prompt — Fitness App audit remediation, paste this as the first message in a new session
 
-You are continuing work on `D:\test 2\Fitness App` (Flutter + Firebase fitness
+You are continuing work on `D:\Repo\Fitness_App` (Flutter + Firebase fitness
 app) exclusively. Per the operator's One-Session-One-Project rule, do not
 read, edit, or run anything belonging to another project this session.
 
@@ -117,7 +117,7 @@ with zero video coverage — `recumbent_bike`, `glute_kickback_machine`,
 earlier gate; the operator explicitly deferred the decision ("потом будем
 решать" — later, we'll decide). Do not pick an option without being asked.
 
-## Standing rules that apply here (already in `~/.claude/CLAUDE.md` + `D:\test 2\CLAUDE.md`, restated because this is the part that's easy to drop across a session boundary)
+## Standing rules that apply here (already in `~/.claude/CLAUDE.md` + `D:\Repo\CLAUDE.md`, restated because this is the part that's easy to drop across a session boundary)
 
 - Approval is ONLY the literal word `GO` / `ГО`, optionally with a gate name.
   A separate `push` authorizes pushing and nothing else.

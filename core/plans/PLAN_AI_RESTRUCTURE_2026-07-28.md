@@ -30,7 +30,7 @@ an absolute billing number.
 | File | Lines | Est. tokens | Share |
 |---|---:|---:|---:|
 | `C:\Users\koros\.claude\CLAUDE.md` | 1,459 | 25,106 | 49.0% |
-| `D:\test 2\CLAUDE.md` | 1,401 | 24,816 | 48.4% |
+| `D:\Repo\CLAUDE.md` | 1,401 | 24,816 | 48.4% |
 | `Fitness App\CLAUDE.md` | 58 | 772 | 1.5% |
 | `Fitness App\AGENTS.md` | 53 | 593 | 1.2% |
 
@@ -181,7 +181,7 @@ contradictions left behind.
 
 ### G6 outcome — the actual token win
 
-`D:\test 2\CLAUDE.md` and `~/.claude/CLAUDE.md` are **both** loaded into every session's system
+`D:\Repo\CLAUDE.md` and `~/.claude/CLAUDE.md` are **both** loaded into every session's system
 prompt. 24 rule headings existed in both, occupying **923 of the volume file's 1,401 lines** — so
 ~22 MANDATORY rules were sent to the model twice per turn while carrying the same meaning once.
 
@@ -192,7 +192,7 @@ effectively two competing versions of several rules, which is worse than either 
 **What changed.** The volume file now carries a pointer index naming the shared rules, plus only
 what is genuinely volume-specific: the agent routing table, Agents-First routing, Aider
 configuration, Approval Gate, Git Lifecycle, Release Manager, project bootstrap. Two shared rules
-were **kept verbatim** in the volume file because they carry `D:\test 2`-specific tooling detail
+were **kept verbatim** in the volume file because they carry `D:\Repo`-specific tooling detail
 absent from global — Windows Script File Encoding (sanitizer + verifier script paths) and Diagram
 Generation Defaults (BPMN reference implementation paths).
 
@@ -208,11 +208,11 @@ MANDATORY-titled rules unreachable**.
 | File | Before | After | Delta |
 |---|---:|---:|---:|
 | `~/.claude/CLAUDE.md` | 25,106 tok | 25,464 tok | +358 (the amendment) |
-| `D:\test 2\CLAUDE.md` | 24,816 tok | 10,967 tok | **-13,849** |
+| `D:\Repo\CLAUDE.md` | 24,816 tok | 10,967 tok | **-13,849** |
 | `Fitness App/CLAUDE.md` | 772 tok | 578 tok | -194 |
 | **ALWAYS-ON total** | **50,694** | **37,010** | **-13,684 (-27%)** |
 
-> **Not under version control.** `D:\test 2` is not a git repository, so neither CLAUDE.md change is
+> **Not under version control.** `D:\Repo` is not a git repository, so neither CLAUDE.md change is
 > committed anywhere. The `.bak-20260728-g6` files beside each are the only rollback path — do not
 > delete them until the new arrangement has been lived with for a few sessions.
 
@@ -270,7 +270,7 @@ cut. **0 of 34 MANDATORY-titled rules lost.** A content-loss sweep additionally 
 >60-char line from the pre-edit backup is either still present verbatim or traceable to one of the
 two known cuts.
 
-`~/.claude` is also not a git repository — same situation as `D:\test 2`. The `.bak-20260728-ab-pre`
+`~/.claude` is also not a git repository — same situation as `D:\Repo`. The `.bak-20260728-ab-pre`
 file is the only rollback path for this edit.
 
 **Measured result:**

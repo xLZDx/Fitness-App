@@ -53,7 +53,7 @@ In the Firebase console:
 3. App nickname: `Fitness App (Android)`.
 4. **Debug signing certificate SHA-1**: open a terminal and run:
    ```powershell
-   cd "D:\test 2\Fitness App\mobile"
+   cd "D:\Repo\Fitness_App\mobile"
    $env:JAVA_HOME = "C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot"
    & "$env:JAVA_HOME\bin\keytool.exe" -list -v `
        -keystore "$env:USERPROFILE\.android\debug.keystore" `
@@ -63,7 +63,7 @@ In the Firebase console:
    Copy the **SHA1** fingerprint into the Firebase form.
 5. Download the generated `google-services.json` and put it at:
    ```
-   D:\test 2\Fitness App\mobile\android\app\google-services.json
+   D:\Repo\Fitness_App\mobile\android\app\google-services.json
    ```
    (already in `.gitignore`, will not be committed)
 
@@ -90,7 +90,7 @@ firebase login
 Then from the project:
 
 ```powershell
-cd "D:\test 2\Fitness App\mobile"
+cd "D:\Repo\Fitness_App\mobile"
 flutterfire configure
 ```
 
@@ -98,7 +98,7 @@ This generates `lib/firebase_options.dart` with the right config for Android (an
 
 ## 5. Flip the providers
 
-Open `D:\test 2\Fitness App\mobile\lib\main.dart` and change `runApp` to initialise Firebase + override the two repository providers:
+Open `D:\Repo\Fitness_App\mobile\lib\main.dart` and change `runApp` to initialise Firebase + override the two repository providers:
 
 ```dart
 import 'package:firebase_core/firebase_core.dart';

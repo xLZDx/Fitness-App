@@ -8,7 +8,7 @@ The full "is it actually done?" sequence for this repo. Run **all** applicable s
 ## 1. Static + unit/widget
 
 ```powershell
-cd "D:\test 2\Fitness App\mobile"
+cd "D:\Repo\Fitness_App\mobile"
 flutter analyze
 flutter test
 ```

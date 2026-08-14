@@ -1,4 +1,4 @@
-> **Inherits global rules from `D:\test 2\CLAUDE.md`** — approval gate, no-guessing, regression
+> **Inherits global rules from `D:\Repo\CLAUDE.md`** — approval gate, no-guessing, regression
 > tests, git lifecycle (including todo-in-commits), shell pre-approval. Read that file too.
 
 # Fitness App — router

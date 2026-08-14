@@ -1,6 +1,6 @@
 # Session handoff — Fitness App (paste this whole file as the prompt)
 
-You are picking up mid-stream on `D:\test 2\Fitness App`. Read this file fully before touching
+You are picking up mid-stream on `D:\Repo\Fitness_App`. Read this file fully before touching
 anything. The big investigation from earlier in this file is **RESOLVED** — read "What was found
 and fixed" below, then go straight to "What to do next" at the bottom.
 

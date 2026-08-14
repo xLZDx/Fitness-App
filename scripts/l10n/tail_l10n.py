@@ -16,7 +16,7 @@ import json
 import re
 from pathlib import Path
 
-ROOT = Path('D:/test 2/Fitness App/mobile')
+ROOT = Path('D:/Repo/Fitness_App/mobile')
 ARB_EN = ROOT / 'lib' / 'l10n' / 'app_en.arb'
 ARB_RU = ROOT / 'lib' / 'l10n' / 'app_ru.arb'
 
