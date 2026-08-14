@@ -1,0 +1,56 @@
+id,title,vendorGroup,primaryMuscles,muscles
+ea_alternate_arm_leg_plank,Alternate Arm Leg Plank,Abdominals,glutes;shoulders,glutes;lower_back;shoulders
+ea_alternate_arm_leg_plank_hold,Alternate Arm Leg Plank Hold,Abdominals,glutes;shoulders,glutes;lower_back;shoulders
+ea_alternate_arm_leg_plank_rest_pause,Alternate Arm Leg Plank Rest Pause,Abdominals,shoulders,lower_back;shoulders
+ea_alternate_leg_raise,Alternate Leg Raise,Abdominals,lower_back;quads,core;lower_back;quads
+ea_alternate_superman,Alternate Superman,Back,glutes,glutes;hamstrings;shoulders
+ea_alternating_superman,Alternating Superman,Back,glutes,glutes;hamstrings;shoulders
+ea_around_the_world_superman_hold,Around the World Superman Hold,Back,glutes,glutes;hamstrings;shoulders
+ea_assisted_chin_up_on_a_bench,Assisted Chin-up on a Bench,Back,biceps,biceps;forearms;shoulders
+ea_band_horizontal_shrug,Band Horizontal Shrug,Shoulders,traps,shoulders;traps
+ea_band_incline_row,Band Incline Row,Shoulders,traps,biceps;shoulders;traps
+ea_barbell_back_wide_shrug,Barbell Back Wide Shrug,Shoulders,traps,shoulders;traps
+ea_barbell_back_wide_shrugs,Barbell Back Wide Shrugs,Shoulders,traps,shoulders;traps
+ea_barbell_bent_over_reverse_raise_skier,Barbell Bent Over Reverse Raise (skier),Shoulders,traps,core;lower_back;traps
+ea_barbell_deadlift_360_degrees,Barbell Deadlift 360 Degrees,Back,glutes;hamstrings;quads,glutes;hamstrings;lower_back;quads;traps
+ea_barbell_deadlift_high_pull,Barbell Deadlift High Pull,Back,adductors;glutes;quads;shoulders,adductors;glutes;hamstrings;lower_back;quads;shoulders;traps
+ea_barbell_decline_shrug,Barbell Decline Shrug,Shoulders,traps,traps
+ea_barbell_jm_bench_press,Barbell JM Bench Press,Chest,triceps,chest;shoulders;triceps
+ea_barbell_overhead_shrug,Barbell Overhead Shrug,Shoulders,traps,shoulders;traps
+ea_barbell_shrugs,Barbell Shrugs,Shoulders,traps,traps
+ea_barbell_silverback_shrug,Barbell Silverback Shrug,Shoulders,traps,shoulders;traps
+ea_barbell_single_leg_deadlift,Barbell Single Leg Deadlift,Back,glutes;hamstrings,glutes;hamstrings;lower_back
+ea_barbell_sumo_deadlift,Barbell Sumo Deadlift,Back,glutes;hamstrings;quads,adductors;glutes;hamstrings;lower_back;quads
+ea_barbell_wide_grip_upright_row,Barbell Wide Grip Upright Row,Back,shoulders,shoulders;traps
+ea_barbell_wide_shrug,Barbell Wide Shrug,Shoulders,traps,shoulders;traps
+ea_body_up,Body-up,Triceps,shoulders,glutes;lower_back;shoulders
+ea_cable_rear_drive,Cable Rear Drive,Triceps,shoulders;traps,shoulders;traps;triceps
+ea_cable_rear_drive_bent_arm,Cable Rear Drive Bent Arm,Shoulders,traps,shoulders;traps;triceps
+ea_cable_reverse_fly_on_crossover,Cable Reverse Fly on Crossover,Shoulders,traps,shoulders;traps
+ea_climber_a_padded_stool_supported,Climber a Padded Stool Supported,Chest,shoulders,chest;shoulders;triceps
+ea_crab_twist_toe_touch,Crab Twist Toe Touch,Abdominals,glutes;hamstrings;shoulders,glutes;hamstrings;shoulders;triceps
+ea_dumbbell_bent_arm_pullover,Dumbbell Bent Arm Pullover,Back,chest,chest;shoulders;triceps
+ea_dumbbell_chest_supported_lateral_raises,Dumbbell Chest Supported Lateral Raises,Shoulders,lats;traps,lats;shoulders;traps;triceps
+ea_dumbbell_decline_shrug,Dumbbell Decline Shrug,Shoulders,traps,shoulders;traps
+ea_dumbbell_farmer_walks,Dumbbell Farmer Walks,Legs,forearms;shoulders;traps,forearms;shoulders;traps
+ea_dumbbell_incline_alternate_press,Dumbbell Incline Alternate Press,Chest,shoulders,shoulders;triceps
+ea_dumbbell_incline_bench_press,Dumbbell Incline Bench Press,Chest,shoulders,shoulders;triceps
+ea_dumbbell_incline_shrug,Dumbbell Incline Shrug,Shoulders,traps,shoulders;traps
+ea_dumbbell_rear_full_shrugs,Dumbbell Rear Full Shrugs,Shoulders,traps,shoulders;traps
+ea_dumbbell_reverse_fly,Dumbbell Reverse Fly,Shoulders,traps,traps
+ea_dumbbell_romanian_deadlift,Dumbbell Romanian Deadlift,Back,glutes;hamstrings,glutes;hamstrings;lower_back;quads
+ea_dumbbell_shrugs,Dumbbell Shrugs,Shoulders,traps,shoulders;traps
+ea_dumbbell_side_plank_with_rear_fly,Dumbbell Side Plank with Rear Fly,Abdominals,shoulders;traps,shoulders;traps
+ea_dumbbell_standing_single_arm_cross_raise,Dumbbell Standing Single Arm Cross Raise,Chest,shoulders,shoulders
+ea_good_morning_resistance_band,Good Morning Resistance Band,Back,glutes;hamstrings,core;glutes;hamstrings;lower_back
+ea_kettlebell_sumo_deadlift,Kettlebell Sumo Deadlift,Back,adductors;glutes;quads,adductors;glutes;hamstrings;lower_back;quads
+ea_kettlebell_sumo_deadlift_with_high_pull,Kettlebell Sumo Deadlift with High Pull,Back,adductors;glutes;quads;shoulders,adductors;glutes;hamstrings;lower_back;quads;shoulders;traps
+ea_pike_push_up,Pike Push Up,Triceps,shoulders,chest;shoulders;triceps
+ea_resistance_band_face_pull,Resistance Band Face Pull,Shoulders,traps,biceps;forearms;traps
+ea_resistance_band_lying_hyperextension_abduction,Resistance Band Lying Hyperextension Abduction,Back,glutes,core;glutes;lower_back
+ea_romanian_deadlift_barbell,Romanian Deadlift Barbell,Back,glutes;hamstrings,adductors;glutes;hamstrings;lower_back
+ea_shoulder_circle,Shoulder Circle,Shoulders,traps,shoulders;traps
+ea_single_kettlebell_deadlift,Single Kettlebell Deadlift,Back,glutes;hamstrings;quads,forearms;glutes;hamstrings;lower_back;quads
+ea_suspension_trainer_with_grips_face_pull,Suspension Trainer with Grips Face Pull,Shoulders,traps,forearms;shoulders;traps
+ea_trap_bar_shrug,Trap Bar Shrug,Shoulders,traps,forearms;shoulders;traps
+ea_upright_row_barbell,Upright Row Barbell,Back,shoulders,biceps;shoulders;traps

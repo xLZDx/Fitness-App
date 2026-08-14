@@ -16,7 +16,7 @@ from pathlib import Path
 import pytest
 
 import build_vendor_catalog
-from build_vendor_catalog import CURATED, merge_rows
+from build_vendor_catalog import CURATED, combine_muscles, merge_rows
 
 ROOT = Path(__file__).resolve().parents[2]
 SHIPPED = ROOT / "mobile" / "assets" / "data" / "exercises_vendor.json"
@@ -66,6 +66,28 @@ class TestFieldsWeDoNotProduce:
         on_disk = generated("ea_plank", tips=["Brace the core"])
         merged, _ = merge_rows([generated("ea_plank")], [on_disk])
         assert merged[0]["tips"] == ["Brace the core"]
+
+
+class TestCombineMuscles:
+    def test_a_muscle_named_in_both_columns_appears_once(self):
+        # H5's live bug: the vendor sheet lists "Core" as both primary and
+        # secondary target for plenty of rows, and a plain concatenation
+        # wrote it twice -- `muscles: ["core", "core"]`.
+        assert combine_muscles(["core"], "Core") == ["core"]
+
+    def test_a_real_secondary_muscle_still_lands(self):
+        assert combine_muscles(["core"], "Shoulders") == ["core", "shoulders"]
+
+    def test_primary_order_leads_regardless_of_secondary_order(self):
+        assert combine_muscles(["lower_back", "core"], "Quadriceps, Core") == [
+            "lower_back",
+            "core",
+            "quads",
+        ]
+
+    def test_no_secondary_value_leaves_primary_untouched(self):
+        assert combine_muscles(["core"], None) == ["core"]
+        assert combine_muscles(["core"], "") == ["core"]
 
 
 class TestCuratedFields:

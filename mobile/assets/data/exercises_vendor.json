@@ -117,8 +117,7 @@
     "equipmentId": null,
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -200,8 +199,7 @@
       "hamstrings",
       "glutes",
       "calves",
-      "lower_back",
-      "glutes"
+      "lower_back"
     ],
     "primaryMuscles": [
       "quads",
@@ -519,7 +517,6 @@
     "equipmentId": "back_extension",
     "muscles": [
       "core",
-      "core",
       "lower_back"
     ],
     "primaryMuscles": [
@@ -557,7 +554,6 @@
     "equipmentId": "back_extension",
     "muscles": [
       "lower_back",
-      "core",
       "core",
       "glutes"
     ],
@@ -958,7 +954,6 @@
     "equipmentId": "ab_wheel",
     "muscles": [
       "core",
-      "core",
       "lower_back"
     ],
     "primaryMuscles": [
@@ -1000,7 +995,6 @@
     "title": "AB Wheel Pulses",
     "equipmentId": "ab_wheel",
     "muscles": [
-      "core",
       "core"
     ],
     "primaryMuscles": [
@@ -1112,7 +1106,6 @@
     "title": "Abdominal Crunches",
     "equipmentId": null,
     "muscles": [
-      "core",
       "core"
     ],
     "primaryMuscles": [
@@ -1153,7 +1146,6 @@
     "title": "Abdominal Crunches Machine",
     "equipmentId": "ab_crunch_machine",
     "muscles": [
-      "core",
       "core"
     ],
     "primaryMuscles": [
@@ -1194,7 +1186,6 @@
     "title": "Abdominal Crunches with Hold",
     "equipmentId": null,
     "muscles": [
-      "core",
       "core"
     ],
     "primaryMuscles": [
@@ -2443,8 +2434,7 @@
     "muscles": [
       "quads",
       "glutes",
-      "adductors",
-      "glutes"
+      "adductors"
     ],
     "primaryMuscles": [
       "quads",
@@ -2519,8 +2509,7 @@
     "muscles": [
       "core",
       "lower_back",
-      "quads",
-      "core"
+      "quads"
     ],
     "primaryMuscles": [
       "core",
@@ -2562,8 +2551,7 @@
     "muscles": [
       "lower_back",
       "quads",
-      "core",
-      "lower_back"
+      "core"
     ],
     "primaryMuscles": [
       "lower_back",
@@ -2652,8 +2640,7 @@
     "muscles": [
       "lower_back",
       "core",
-      "quads",
-      "lower_back"
+      "quads"
     ],
     "primaryMuscles": [
       "lower_back",
@@ -2696,8 +2683,7 @@
     "muscles": [
       "lower_back",
       "core",
-      "quads",
-      "lower_back"
+      "quads"
     ],
     "primaryMuscles": [
       "lower_back",
@@ -2738,7 +2724,6 @@
     "title": "Alternate Oblique Crunch",
     "equipmentId": null,
     "muscles": [
-      "core",
       "core"
     ],
     "primaryMuscles": [
@@ -2953,8 +2938,7 @@
     "muscles": [
       "lower_back",
       "core",
-      "quads",
-      "lower_back"
+      "quads"
     ],
     "primaryMuscles": [
       "lower_back",
@@ -3204,8 +3188,7 @@
     "muscles": [
       "core",
       "lower_back",
-      "quads",
-      "lower_back"
+      "quads"
     ],
     "primaryMuscles": [
       "core",
@@ -3463,7 +3446,6 @@
       "core",
       "lower_back",
       "quads",
-      "lower_back",
       "shoulders"
     ],
     "primaryMuscles": [
@@ -6299,7 +6281,6 @@
     "equipmentId": "resistance_bands",
     "muscles": [
       "core",
-      "core",
       "lower_back"
     ],
     "primaryMuscles": [
@@ -6661,8 +6642,7 @@
     "equipmentId": "bench_press",
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -7399,7 +7379,6 @@
     "title": "Band Kneeling Crunch",
     "equipmentId": "resistance_bands",
     "muscles": [
-      "core",
       "core",
       "lower_back"
     ],
@@ -8341,7 +8320,6 @@
     "title": "Band Side Bend",
     "equipmentId": "resistance_bands",
     "muscles": [
-      "core",
       "core",
       "lower_back"
     ],
@@ -10509,7 +10487,6 @@
     "title": "Barbell Decline Shrug",
     "equipmentId": "bench_press",
     "muscles": [
-      "traps",
       "traps"
     ],
     "primaryMuscles": [
@@ -13008,8 +12985,7 @@
     "equipmentId": "barbell",
     "muscles": [
       "traps",
-      "shoulders",
-      "traps"
+      "shoulders"
     ],
     "primaryMuscles": [
       "traps"
@@ -13099,7 +13075,6 @@
     "title": "Barbell Palm Down Wrist Curl Over a Bench",
     "equipmentId": "bench_press",
     "muscles": [
-      "forearms",
       "forearms"
     ],
     "primaryMuscles": [
@@ -14366,7 +14341,6 @@
     "equipmentId": "bench_press",
     "muscles": [
       "core",
-      "core",
       "lower_back"
     ],
     "primaryMuscles": [
@@ -14405,7 +14379,6 @@
     "equipmentId": "barbell",
     "muscles": [
       "core",
-      "core",
       "lower_back"
     ],
     "primaryMuscles": [
@@ -14443,7 +14416,6 @@
     "title": "Barbell Shrugs",
     "equipmentId": "barbell",
     "muscles": [
-      "traps",
       "traps"
     ],
     "primaryMuscles": [
@@ -14483,7 +14455,6 @@
     "title": "Barbell Side Bends",
     "equipmentId": "barbell",
     "muscles": [
-      "core",
       "core",
       "lower_back"
     ],
@@ -15792,7 +15763,6 @@
     "title": "Barbell Standing Twist",
     "equipmentId": "barbell",
     "muscles": [
-      "core",
       "core",
       "lower_back"
     ],
@@ -17374,8 +17344,7 @@
     "equipmentId": null,
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -17410,8 +17379,7 @@
     "equipmentId": "stability_ball",
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -18244,8 +18212,7 @@
     "muscles": [
       "lower_back",
       "glutes",
-      "shoulders",
-      "lower_back"
+      "shoulders"
     ],
     "primaryMuscles": [
       "lower_back",
@@ -18285,8 +18252,7 @@
     "muscles": [
       "lower_back",
       "glutes",
-      "shoulders",
-      "lower_back"
+      "shoulders"
     ],
     "primaryMuscles": [
       "lower_back",
@@ -19777,7 +19743,6 @@
     "equipmentId": null,
     "muscles": [
       "shoulders",
-      "traps",
       "traps"
     ],
     "primaryMuscles": [
@@ -20013,7 +19978,6 @@
     "equipmentId": null,
     "muscles": [
       "traps",
-      "shoulders",
       "shoulders"
     ],
     "primaryMuscles": [
@@ -23608,7 +23572,6 @@
     "muscles": [
       "traps",
       "triceps",
-      "traps",
       "shoulders"
     ],
     "primaryMuscles": [
@@ -24775,7 +24738,6 @@
     "equipmentId": "cable_machine",
     "muscles": [
       "core",
-      "core",
       "shoulders"
     ],
     "primaryMuscles": [
@@ -24810,7 +24772,6 @@
     "title": "Cable Twist (up-down)",
     "equipmentId": "cable_machine",
     "muscles": [
-      "core",
       "core",
       "shoulders"
     ],
@@ -28205,8 +28166,7 @@
     "equipmentId": null,
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -28323,7 +28283,6 @@
     "equipmentId": null,
     "muscles": [
       "core",
-      "lower_back",
       "lower_back",
       "hamstrings"
     ],
@@ -29259,8 +29218,7 @@
     "equipmentId": null,
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -29300,8 +29258,7 @@
     "equipmentId": null,
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -29342,7 +29299,6 @@
     "title": "Crunch (legs on Stability Ball)",
     "equipmentId": "stability_ball",
     "muscles": [
-      "core",
       "core"
     ],
     "primaryMuscles": [
@@ -29383,8 +29339,7 @@
     "equipmentId": "bosu_ball",
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -29425,8 +29380,7 @@
     "equipmentId": "stability_ball",
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -29466,8 +29420,7 @@
     "equipmentId": null,
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -29508,8 +29461,7 @@
     "equipmentId": null,
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -29550,8 +29502,7 @@
     "equipmentId": null,
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -29592,8 +29543,7 @@
     "equipmentId": null,
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -29633,8 +29583,7 @@
     "equipmentId": "medicine_ball",
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -29843,8 +29792,7 @@
     "equipmentId": null,
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -29879,8 +29827,7 @@
     "equipmentId": null,
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -30504,7 +30451,6 @@
     "muscles": [
       "core",
       "shoulders",
-      "core",
       "lower_back"
     ],
     "primaryMuscles": [
@@ -31447,8 +31393,7 @@
     "muscles": [
       "core",
       "shoulders",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -31947,8 +31892,7 @@
     "muscles": [
       "shoulders",
       "traps",
-      "chest",
-      "traps"
+      "chest"
     ],
     "primaryMuscles": [
       "shoulders",
@@ -35616,8 +35560,7 @@
     "equipmentId": "bench_press",
     "muscles": [
       "shoulders",
-      "chest",
-      "shoulders"
+      "chest"
     ],
     "primaryMuscles": [
       "shoulders",
@@ -36469,8 +36412,7 @@
     "equipmentId": "dumbbell",
     "muscles": [
       "shoulders",
-      "triceps",
-      "shoulders"
+      "triceps"
     ],
     "primaryMuscles": [
       "shoulders"
@@ -38057,7 +37999,6 @@
     "title": "Dumbbell Over Bench Reverse Wrist Curl",
     "equipmentId": "bench_press",
     "muscles": [
-      "forearms",
       "forearms"
     ],
     "primaryMuscles": [
@@ -38096,7 +38037,6 @@
     "title": "Dumbbell Over Bench Wrist Curl",
     "equipmentId": "bench_press",
     "muscles": [
-      "forearms",
       "forearms"
     ],
     "primaryMuscles": [
@@ -39181,7 +39121,6 @@
     "title": "Dumbbell Reverse Fly",
     "equipmentId": "bench_press",
     "muscles": [
-      "traps",
       "traps"
     ],
     "primaryMuscles": [
@@ -39346,7 +39285,6 @@
     "equipmentId": "bench_press",
     "muscles": [
       "biceps",
-      "biceps",
       "forearms"
     ],
     "primaryMuscles": [
@@ -39465,7 +39403,6 @@
     "title": "Dumbbell Russian Twist with Legs Floor Off",
     "equipmentId": "dumbbell",
     "muscles": [
-      "core",
       "core",
       "lower_back"
     ],
@@ -40600,7 +40537,6 @@
     "equipmentId": "dumbbell",
     "muscles": [
       "shoulders",
-      "traps",
       "traps"
     ],
     "primaryMuscles": [
@@ -41786,8 +41722,7 @@
     "muscles": [
       "shoulders",
       "traps",
-      "triceps",
-      "traps"
+      "triceps"
     ],
     "primaryMuscles": [
       "shoulders",
@@ -42628,8 +42563,7 @@
     "equipmentId": "dumbbell",
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core",
@@ -43299,7 +43233,6 @@
     "title": "Dumbbell Upright Shoulder External Rotatio",
     "equipmentId": "dumbbell",
     "muscles": [
-      "shoulders",
       "shoulders"
     ],
     "primaryMuscles": [
@@ -43333,7 +43266,6 @@
     "title": "Dumbbell Upright Shoulder External Rotation",
     "equipmentId": "dumbbell",
     "muscles": [
-      "shoulders",
       "shoulders"
     ],
     "primaryMuscles": [
@@ -48617,7 +48549,6 @@
     "equipmentId": "cable_machine",
     "muscles": [
       "core",
-      "core",
       "lower_back"
     ],
     "primaryMuscles": [
@@ -48775,7 +48706,6 @@
     "title": "High Resistance Band Kneeling Crunch",
     "equipmentId": "resistance_bands",
     "muscles": [
-      "core",
       "core",
       "lower_back"
     ],
@@ -49556,8 +49486,7 @@
     "equipmentId": null,
     "muscles": [
       "lower_back",
-      "glutes",
-      "lower_back"
+      "glutes"
     ],
     "primaryMuscles": [
       "lower_back",
@@ -52621,8 +52550,7 @@
     "equipmentId": null,
     "muscles": [
       "lower_back",
-      "glutes",
-      "lower_back"
+      "glutes"
     ],
     "primaryMuscles": [
       "lower_back",
@@ -55000,7 +54928,6 @@
     "title": "Long Arm Crunches",
     "equipmentId": null,
     "muscles": [
-      "core",
       "core"
     ],
     "primaryMuscles": [
@@ -55766,7 +55693,6 @@
     "title": "Lying Abs Resistance Band",
     "equipmentId": "resistance_bands",
     "muscles": [
-      "core",
       "core"
     ],
     "primaryMuscles": [
@@ -55840,7 +55766,6 @@
     "title": "Lying Bench External Shoulder Rotation",
     "equipmentId": "bench_press",
     "muscles": [
-      "shoulders",
       "shoulders"
     ],
     "primaryMuscles": [
@@ -55874,7 +55799,6 @@
     "title": "Lying Bench Internal Rotation Stretch",
     "equipmentId": "bench_press",
     "muscles": [
-      "shoulders",
       "shoulders"
     ],
     "primaryMuscles": [
@@ -55939,7 +55863,6 @@
     "muscles": [
       "lower_back",
       "glutes",
-      "lower_back",
       "core"
     ],
     "primaryMuscles": [
@@ -56242,7 +56165,6 @@
     "title": "Lying Leg Raise",
     "equipmentId": null,
     "muscles": [
-      "core",
       "core",
       "lower_back"
     ],
@@ -57590,7 +57512,6 @@
     "title": "Oblique Crunch",
     "equipmentId": null,
     "muscles": [
-      "core",
       "core",
       "lower_back"
     ],
@@ -60617,8 +60538,7 @@
       "lats",
       "lower_back",
       "core",
-      "glutes",
-      "lower_back"
+      "glutes"
     ],
     "primaryMuscles": [
       "lats",
@@ -61503,7 +61423,6 @@
     "title": "Raised Leg Crunch",
     "equipmentId": null,
     "muscles": [
-      "core",
       "core"
     ],
     "primaryMuscles": [
@@ -63392,7 +63311,6 @@
     "equipmentId": "resistance_bands",
     "muscles": [
       "shoulders",
-      "shoulders",
       "traps"
     ],
     "primaryMuscles": [
@@ -63694,7 +63612,6 @@
     "title": "Reverse Crunch",
     "equipmentId": null,
     "muscles": [
-      "core",
       "core"
     ],
     "primaryMuscles": [
@@ -63734,7 +63651,6 @@
     "title": "Reverse Crunch with Kick Out",
     "equipmentId": null,
     "muscles": [
-      "core",
       "core"
     ],
     "primaryMuscles": [
@@ -64344,7 +64260,6 @@
     "equipmentId": null,
     "muscles": [
       "core",
-      "core",
       "lower_back"
     ],
     "primaryMuscles": [
@@ -64490,7 +64405,6 @@
     "title": "Scissors Kick",
     "equipmentId": null,
     "muscles": [
-      "core",
       "core",
       "lower_back"
     ],
@@ -64926,7 +64840,6 @@
     "title": "Seated Floor Crunches",
     "equipmentId": null,
     "muscles": [
-      "core",
       "core"
     ],
     "primaryMuscles": [
@@ -64966,8 +64879,7 @@
     "equipmentId": "bench_press",
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -66090,7 +66002,6 @@
     "equipmentId": null,
     "muscles": [
       "core",
-      "core",
       "shoulders"
     ],
     "primaryMuscles": [
@@ -66131,7 +66042,6 @@
     "title": "Side Plank with Hip Lift",
     "equipmentId": null,
     "muscles": [
-      "core",
       "core",
       "shoulders"
     ],
@@ -68253,7 +68163,6 @@
     "equipmentId": "cable_machine",
     "muscles": [
       "core",
-      "core",
       "lower_back",
       "glutes"
     ],
@@ -68448,7 +68357,6 @@
     "equipmentId": "adjustable_bench",
     "muscles": [
       "calves",
-      "calves",
       "hamstrings"
     ],
     "primaryMuscles": [
@@ -68559,7 +68467,6 @@
     "title": "Standing Lateral Stretch",
     "equipmentId": null,
     "muscles": [
-      "core",
       "core"
     ],
     "primaryMuscles": [
@@ -68630,7 +68537,6 @@
     "title": "Standing Oblique Crunch",
     "equipmentId": null,
     "muscles": [
-      "core",
       "core",
       "lower_back",
       "shoulders",
@@ -68930,8 +68836,7 @@
     "equipmentId": null,
     "muscles": [
       "core",
-      "traps",
-      "core"
+      "traps"
     ],
     "primaryMuscles": [
       "core"
@@ -69346,7 +69251,6 @@
     "title": "Straight Bar Cable Pull Down",
     "equipmentId": "lat_pulldown",
     "muscles": [
-      "lats",
       "lats",
       "traps",
       "core",
@@ -72211,8 +72115,7 @@
     "equipmentId": null,
     "muscles": [
       "shoulders",
-      "traps",
-      "shoulders"
+      "traps"
     ],
     "primaryMuscles": [
       "shoulders",
@@ -72288,8 +72191,7 @@
     "equipmentId": null,
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -72329,8 +72231,7 @@
     "equipmentId": null,
     "muscles": [
       "core",
-      "lower_back",
-      "core"
+      "lower_back"
     ],
     "primaryMuscles": [
       "core"
@@ -72884,7 +72785,6 @@
     "title": "Wrist Curl Barbell",
     "equipmentId": "bench_press",
     "muscles": [
-      "forearms",
       "forearms"
     ],
     "primaryMuscles": [
@@ -72924,7 +72824,6 @@
     "title": "Wrist Curl Dumbbell",
     "equipmentId": "bench_press",
     "muscles": [
-      "forearms",
       "forearms"
     ],
     "primaryMuscles": [

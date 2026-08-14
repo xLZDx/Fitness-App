@@ -237,6 +237,25 @@ def split_muscles(value) -> list[str]:
     return out
 
 
+def combine_muscles(primary: list[str], secondary_value) -> list[str]:
+    """`primary` first, then whatever `secondary_value` adds that `primary`
+    doesn't already name.
+
+    H5. The vendor sheet often lists the same muscle as both primary AND
+    secondary target (e.g. "Core" in both columns); `split_muscles` dedupes
+    each column on its own but a plain concatenation of the two still wrote
+    it twice, producing rows like `muscles: ["core", "core"]`. A caller
+    reading `muscles` to learn what is worked beyond `primaryMuscles` got a
+    false second core entry instead of nothing -- a wrong answer, not a
+    missing one.
+    """
+    out = list(primary)
+    for tag in split_muscles(secondary_value):
+        if tag not in out:
+            out.append(tag)
+    return out
+
+
 def build() -> list[dict]:
     with zipfile.ZipFile(BUNDLE_ZIP) as z:
         members = {i.filename: i.file_size for i in z.infolist() if not i.is_dir()}
@@ -261,8 +280,8 @@ def build() -> list[dict]:
     seen_ids: set[str] = set()
     for norm_key, e in by_stem.items():
         m = meta.get(norm_key, {})
-        muscles = split_muscles(m.get("primary")) + split_muscles(m.get("secondary"))
         primary = split_muscles(m.get("primary"))
+        muscles = combine_muscles(primary, m.get("secondary"))
         if not muscles:
             muscles = list(GROUP_MUSCLES.get(e["group"], []))
         exercise_id = slug(e["stem"])

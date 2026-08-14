@@ -7560,3 +7560,52 @@ the exercise name..."), using `tester.ensureSemantics()` + `find.bySemanticsLabe
 reverted the `Semantics` wrap, re-ran the single test, it failed with `Bad state: Finder returned
 no matching elements` on the expected label lookup; restored, full `workouts_page_test.dart` green
 (31 tests). `flutter analyze` on the touched file: no issues.
+
+---
+
+## 2026-08-15 00:20 local (Europe/Chisinau) / 21:20 UTC — H5: the generator bug behind the duplicate `muscles`, and why the rest stayed a findings list, not a rewrite
+
+**The plan's own two descriptions of H5 pointed at different bugs, and I trusted the wrong one at
+first.** My prior-session working note guessed H5 meant `set(muscles) == set(primaryMuscles)`
+(87 rows). Re-reading the actual source this session — `core/DECISION_LOG.md:6309-6312` and
+`:6334-6337`, the "two Paloff-presses filed under Chest" example — the "89 самопротиворечивых
+строк" phrase names a `vendorGroup` vs `primaryMuscles` mismatch (a categorisation contradiction),
+not the `muscles`/`primaryMuscles` overlap I'd assumed. Neither DECISION_LOG entry ties a script or
+a persisted list to that count; B3 appears to have found it by hand while writing purpose text, so
+there was never a reproducible definition to inherit. I did not invent one to force a "89" match —
+picking a number to hit a number would be exactly the kind of guessing the No-Guessing rule exists
+to stop.
+
+**What I did fix, with a verified root cause.** `scripts/catalog/build_vendor_catalog.py:264`
+built `muscles` as `split_muscles(primary) + split_muscles(secondary)` — each half deduped on its
+own, but the concatenation was not, so a muscle the vendor sheet names in *both* columns (a common
+pattern — "Core" as both primary and secondary target) landed twice: `muscles: ["core", "core"]`.
+Extracted the fix into `combine_muscles(primary, secondary_value)`, a small pure function, with 4
+new unit tests in `scripts/catalog/test_build_vendor_catalog.py` (`TestCombineMuscles`) proving the
+same-muscle-in-both-columns case, a genuine second muscle still landing, primary's order leading,
+and the no-secondary-value case. Then applied the equivalent dedup directly to the shipped
+`mobile/assets/data/exercises_vendor.json` (re-running the full vendor import needs the vendor zip
++ Excel metadata this environment does not have) — 101 rows changed, verified programmatically that
+every non-`muscles` field is byte-identical before/after and the row count stayed 1887. Zero
+functional impact either way: `Rule.known()` (`scripts/catalog/tag_contraindications.py`) never
+reads `muscles` when `primaryMuscles` is non-empty, so this is a data-hygiene fix, not a behaviour
+change.
+
+**What I did NOT fix, and why.** The real "contradictory muscle group" (vendorGroup categorisation
+disagreeing with the exercise's actual target, the Paloff-press-in-Chest case) needs a human,
+exercise-by-exercise judgement call the same way B3's `purpose` text did — auto-relabeling a
+vendorGroup or a muscle tag on a guess risks shipping a wrong claim, which is worse than the
+current merely-imprecise one. Computed a candidate list with a broadened, more honest version of
+the generator's own `GROUP_MUSCLES` fallback map (added the muscles the narrow single-tag version
+was missing — e.g. `Legs` now checks against hamstrings/glutes/calves/adductors too, not only
+quads) and persisted it — per Audit / Review Findings Persistence — at
+`core/plans/H5_MUSCLE_GROUP_CANDIDATES_2026-08-14.csv` (55 rows: id, title, vendorGroup,
+primaryMuscles, muscles). This is a candidate list for a future reviewer, not an auto-fix list —
+several entries are legitimate boundary cases (e.g. `Band Horizontal Shrug` under `Shoulders` with
+`primaryMuscles: traps` — traps sit in the shoulder girdle but the app's own vocabulary tags them
+separately), not errors.
+
+**Checks.** `python -m pytest scripts/catalog` — 185 passed (was 181 before this gate's 4 new
+tests). `flutter test` — full suite re-run after the catalog data edit: 2349 passed, 0 failed (no
+regression; the data change touches no Dart code path that compares `muscles` for exact duplicate
+count).
