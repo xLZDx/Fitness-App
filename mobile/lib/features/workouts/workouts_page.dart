@@ -1099,10 +1099,24 @@ class _ProgrammeDayThumbs extends ConsumerWidget {
                 // nothing about the movement. The slot survives, so the day's
                 // size stays honest instead of the row quietly shrinking and
                 // mis-stating how long the day is.
-                return ExerciseThumb(
-                  exercise: resolved.valueOrNull?.visible,
-                  size: _size,
-                );
+                final visible = resolved.valueOrNull?.visible;
+                final thumb = ExerciseThumb(exercise: visible, size: _size);
+                // H4. This row has no text label per tile -- only the
+                // trailing "+N" count is real text -- so a screen reader had
+                // nothing to say for any of these pictures. Labelled only
+                // when the name is known: a hidden-for-injury or
+                // still-resolving slot keeps `_ThumbPlaceholder`'s own
+                // choice to say nothing, made for the same reason -- a name
+                // announced for a picture that is not really there would be
+                // a wrong statement, not a missing one.
+                return visible == null
+                    ? thumb
+                    : Semantics(
+                        label: visible.title,
+                        image: true,
+                        excludeSemantics: true,
+                        child: thumb,
+                      );
               }),
               const SizedBox(width: _gap),
             ],

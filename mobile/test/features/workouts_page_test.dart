@@ -811,6 +811,25 @@ void main() {
         );
       });
 
+      testWidgets(
+          'H4: a screen reader hears the exercise name per tile, and stays '
+          'silent for the one withheld for injury', (tester) async {
+        final handle = tester.ensureSemantics();
+        await pumpCard(tester,
+            ids: ['squat', 'row', 'press'], injured: {'row'});
+
+        // `item()` seeds `title: id`, so the label is the id itself here.
+        expect(tester.getSemantics(find.bySemanticsLabel('squat')).label,
+            'squat');
+        expect(tester.getSemantics(find.bySemanticsLabel('press')).label,
+            'press');
+        // The withheld tile must not announce the name it isn't showing a
+        // picture of -- same reason `_ThumbPlaceholder` stays silent while
+        // loading, applied to the exercise this slot is hiding.
+        expect(find.bySemanticsLabel('row'), findsNothing);
+        handle.dispose();
+      });
+
       testWidgets('a long day is counted, not crammed, and never overflows',
           (tester) async {
         // 320px wide: the narrow phone where a fixed five tiles would not fit.

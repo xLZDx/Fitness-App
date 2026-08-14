@@ -7542,3 +7542,21 @@ than needing a fresh one.
 Firebase app registration). Confirmed via `adb shell dumpsys package com.fitnessapp.fitness_app.sptr`
 on S8 that the existing installed release (versionCode 2374) is untouched by this change — only a
 future debug install would land under the new `.sptr.debug` id.
+
+---
+
+## 2026-08-14 23:55 local (Europe/Chisinau) / 20:55 UTC — H4: exercise thumbnails now name themselves to a screen reader
+
+`_ProgrammeDayThumbs` (`mobile/lib/features/workouts/workouts_page.dart`) drew a bare `Row` of
+`ExerciseThumb` tiles with no adjacent text — a screen reader had nothing to say for any of them.
+Wrapped each tile in `Semantics(label: <title>, image: true, excludeSemantics: true)` when the
+resolved exercise is visible; left the tile unwrapped (silent) when it is hidden for an injury or
+still resolving, matching `_ThumbPlaceholder`'s own existing choice to say nothing rather than
+announce a name for a picture that is not really shown — a name announced for a withheld picture
+would be a wrong statement, not a missing one.
+
+**Checks.** New test in `mobile/test/features/workouts_page_test.dart` ("H4: a screen reader hears
+the exercise name..."), using `tester.ensureSemantics()` + `find.bySemanticsLabel`. Mutation-proved:
+reverted the `Semantics` wrap, re-ran the single test, it failed with `Bad state: Finder returned
+no matching elements` on the expected label lookup; restored, full `workouts_page_test.dart` green
+(31 tests). `flutter analyze` on the touched file: no issues.
