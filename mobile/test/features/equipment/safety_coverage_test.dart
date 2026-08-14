@@ -17,11 +17,23 @@ import 'package:fitness_app/features/profile/data/profile_models.dart';
 /// match. That is the point: the count can never drift from the code again in
 /// either direction.
 ///
-/// 1435 -> 1515 (P3): the `upper_back` batch tagged 207 exercises, of which 80
-/// carried no tag at all before. The other 127 already had one for another
+/// 1435 -> 1525 (P3): the `upper_back` batch tagged 264 exercises, of which 90
+/// carried no tag at all before. The other 174 already had one for another
 /// region — this floor counts ROWS with at least one tag, not tags, so a batch
 /// raises it by less than it tags whenever it lands on already-tagged rows.
-const int kSafetyCoverageFloor = 1515;
+///
+/// 1525 -> 1524 (P3, Codex round-2 fix): the one deliberate exception to
+/// "never lowered". `Rear Deltoid Stretch` lost its `upper_back` tag when the
+/// word list that had produced it ("rear deltoid" -> "rear deltoid fly")
+/// was narrowed to stop tagging a passive stretch as a loaded pull, and it
+/// carried no other region's tag, so it dropped out of the floor entirely.
+/// The two rows the same fix newly tagged (`Bent Over Twist`,
+/// `Cable Assisted Inverse Leg Curl`) already carried a tag for another
+/// region, so they do not offset it here — see `byRegion` below, where both
+/// counts move. A LOWER number reached by naming the exact row and the exact
+/// reason is the rule working, not the rule breaking; what it guards against
+/// is a number moving with no entry here to say why.
+const int kSafetyCoverageFloor = 1524;
 
 ExerciseItem _ex(String id, {List<String> contraindications = const []}) =>
     ExerciseItem(
@@ -178,7 +190,7 @@ void main() {
         // tagger had no rule key for it and no guard read a legal-but-ruleless
         // region as wrong — `test_every_legal_region_has_rules`
         // (`scripts/catalog/test_tag_contraindications.py`) is what now does.
-        InjuryRegion.upperBack: 207, // P3
+        InjuryRegion.upperBack: 265, // P3, then the Codex round-2 fix (+2/-1)
       };
       final raw = File('assets/data/exercises_vendor.json').readAsStringSync();
       final catalog = (jsonDecode(raw) as List)

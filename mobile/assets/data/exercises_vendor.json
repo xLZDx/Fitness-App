@@ -5307,6 +5307,7 @@
     "contraindications": [
       "elbow",
       "shoulder",
+      "upper_back",
       "wrist"
     ]
   },
@@ -9064,7 +9065,8 @@
     },
     "contraindications": [
       "neck",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ],
     "poseTargetId": "overhead_press"
   },
@@ -9104,7 +9106,8 @@
       "girl": "assets/posters/girl/ea_barbell_behind_the_back_push_press_single_arm_balance.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ],
     "poseTargetId": "overhead_press"
   },
@@ -9147,7 +9150,8 @@
     },
     "contraindications": [
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ]
   },
   {
@@ -9310,7 +9314,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ]
   },
   {
@@ -9636,7 +9641,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -9682,7 +9688,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "lunge"
   },
@@ -9726,7 +9733,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "lunge"
   },
@@ -9770,7 +9778,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "lunge"
   },
@@ -9814,7 +9823,8 @@
     },
     "contraindications": [
       "ankle",
-      "knee"
+      "knee",
+      "upper_back"
     ]
   },
   {
@@ -10259,7 +10269,8 @@
     },
     "contraindications": [
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "lunge"
   },
@@ -11037,7 +11048,8 @@
     },
     "contraindications": [
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "lunge"
   },
@@ -11220,7 +11232,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -11265,7 +11278,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -11308,7 +11322,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -11351,7 +11366,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -11394,7 +11410,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -12032,7 +12049,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -12119,7 +12137,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ]
   },
   {
@@ -12302,7 +12321,8 @@
     },
     "contraindications": [
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "lunge"
   },
@@ -12387,7 +12407,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -12431,7 +12452,8 @@
     },
     "contraindications": [
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "lunge"
   },
@@ -12473,7 +12495,8 @@
     },
     "contraindications": [
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "lunge"
   },
@@ -12799,7 +12822,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -12841,7 +12865,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -13185,7 +13210,8 @@
     },
     "contraindications": [
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "lunge"
   },
@@ -13617,7 +13643,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -13744,7 +13771,8 @@
     },
     "contraindications": [
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "lunge"
   },
@@ -13787,7 +13815,8 @@
     },
     "contraindications": [
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "lunge"
   },
@@ -14365,7 +14394,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_seated_twist.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_barbell_seated_twist_on_exercise_ball",
@@ -14401,7 +14433,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_seated_twist_on_exercise_ball.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_barbell_shrugs",
@@ -14477,7 +14512,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_side_bends.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_barbell_side_split_squat",
@@ -14518,7 +14556,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "lunge"
   },
@@ -14562,7 +14601,8 @@
     },
     "contraindications": [
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "lunge"
   },
@@ -14729,7 +14769,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "lunge"
   },
@@ -14892,6 +14933,7 @@
     "contraindications": [
       "lower_back",
       "shoulder",
+      "upper_back",
       "wrist"
     ]
   },
@@ -15210,7 +15252,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "lunge"
   },
@@ -15289,7 +15332,8 @@
       "ankle",
       "hip",
       "knee",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -15333,7 +15377,8 @@
       "ankle",
       "hip",
       "knee",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -15377,7 +15422,8 @@
       "ankle",
       "hip",
       "knee",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ],
     "poseTargetId": "squat"
   },
@@ -15617,7 +15663,8 @@
       "men": "assets/posters/men/ea_barbell_standing_leg_calf_raises.jpg"
     },
     "contraindications": [
-      "ankle"
+      "ankle",
+      "upper_back"
     ],
     "poseTargetId": "calf_raise"
   },
@@ -15774,7 +15821,10 @@
     "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_barbell_standing_twist.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_barbell_standing_wide_grip_biceps_curls",
@@ -15895,7 +15945,8 @@
     },
     "contraindications": [
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "poseTargetId": "lunge"
   },
@@ -15939,7 +15990,8 @@
     },
     "contraindications": [
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ]
   },
   {
@@ -17548,7 +17600,8 @@
     },
     "contraindications": [
       "lower_back",
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -17629,7 +17682,8 @@
       "men": "assets/posters/men/ea_bent_over_twist.jpg"
     },
     "contraindications": [
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -21725,7 +21779,8 @@
       "men": "assets/posters/men/ea_cable_assisted_inverse_leg_curl.jpg"
     },
     "contraindications": [
-      "knee"
+      "knee",
+      "upper_back"
     ]
   },
   {
@@ -31380,7 +31435,10 @@
       "girl": "assets/posters/girl/ea_dragonfly.jpg",
       "men": "assets/posters/men/ea_dragonfly.jpg"
     },
-    "purpose": "An advanced hold where the whole body lowers as one rigid line, which demands more from the stomach than any crunch can. Only worth attempting once hanging leg raises are easy and controlled."
+    "purpose": "An advanced hold where the whole body lowers as one rigid line, which demands more from the stomach than any crunch can. Only worth attempting once hanging leg raises are easy and controlled.",
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_dumbbell_ab_crunch",
@@ -45636,7 +45694,8 @@
       "ankle",
       "hip",
       "knee",
-      "lower_back"
+      "lower_back",
+      "upper_back"
     ]
   },
   {
@@ -45963,7 +46022,10 @@
       "girl": "assets/posters/girl/ea_foam_roller_back.jpg",
       "men": "assets/posters/men/ea_foam_roller_back.jpg"
     },
-    "purpose": "Rolling the upper back restores the extension that sitting takes away, which is what lets you hold a bar overhead or keep the chest up in a squat. Stay above the ribs — never roll the lower back."
+    "purpose": "Rolling the upper back restores the extension that sitting takes away, which is what lets you hold a bar overhead or keep the chest up in a squat. Stay above the ribs — never roll the lower back.",
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_foam_roller_calves",
@@ -47075,7 +47137,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_gym_rowing_machine_fast_speed.jpg",
       "men": "assets/posters/men/ea_gym_rowing_machine_fast_speed.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_gym_rowing_machine_normal_speed",
@@ -47120,7 +47185,10 @@
     "poster": {
       "girl": "assets/posters/girl/ea_gym_rowing_machine_normal_speed.jpg",
       "men": "assets/posters/men/ea_gym_rowing_machine_normal_speed.jpg"
-    }
+    },
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_gym_rowing_machine_sprint_speed",
@@ -47168,7 +47236,8 @@
     },
     "contraindications": [
       "ankle",
-      "knee"
+      "knee",
+      "upper_back"
     ]
   },
   {
@@ -57511,7 +57580,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ],
     "purpose": "The fixed bar path removes the balance requirement, so you can push a squat closer to failure without a spotter. It is the safer choice for training alone, at the cost of not training balance itself."
   },
@@ -61539,7 +61609,8 @@
       "men": "assets/posters/men/ea_rear_deltoid_fly_cable_resistance_band.jpg"
     },
     "contraindications": [
-      "shoulder"
+      "shoulder",
+      "upper_back"
     ]
   },
   {
@@ -61572,7 +61643,8 @@
     "equipmentLabel": "Yoga Mat",
     "poster": {
       "men": "assets/posters/men/ea_rear_deltoid_stretch.jpg"
-    }
+    },
+    "contraindications": []
   },
   {
     "id": "ea_rebounder_high_knee_runs",
@@ -67598,7 +67670,8 @@
     "contraindications": [
       "ankle",
       "hip",
-      "knee"
+      "knee",
+      "upper_back"
     ]
   },
   {
@@ -67637,7 +67710,8 @@
       "men": "assets/posters/men/ea_smith_machine_calf_raise.jpg"
     },
     "contraindications": [
-      "ankle"
+      "ankle",
+      "upper_back"
     ]
   },
   {
@@ -71292,7 +71366,10 @@
       "girl": "assets/posters/girl/ea_theraband_scapula_retraction.jpg",
       "men": "assets/posters/men/ea_theraband_scapula_retraction.jpg"
     },
-    "purpose": "A light movement for the muscles between the shoulder blades, which get long and weak from hours at a keyboard. Doing it often matters more than doing it heavy — it is a posture exercise, not a strength one."
+    "purpose": "A light movement for the muscles between the shoulder blades, which get long and weak from hours at a keyboard. Doing it often matters more than doing it heavy — it is a posture exercise, not a strength one.",
+    "contraindications": [
+      "upper_back"
+    ]
   },
   {
     "id": "ea_trap_bar_deadlift",

@@ -132,6 +132,60 @@ class TestTheMuscleGate:
         assert not fires("Donkey Kicks Bodyweight", "ankle", ["glutes"])
 
 
+class TestTheMuscleOnlyRules:
+    """`["*"]` rules, where the muscle list is the whole of the evidence."""
+
+    def test_a_primary_trap_mover_is_an_upper_back_contraindication(self):
+        assert fires("Some Movement Nobody Named A Rule After", "upper_back",
+                     ["traps"])
+
+    def test_a_secondary_trap_mention_alone_is_not(self):
+        # The asymmetry with every word-matched rule, pinned so it cannot be
+        # "tidied up" into consistency later. `Rule.known()` accepts a
+        # secondary list, and routing `["*"]` rules through it reads like the
+        # obvious cleanup -- it is not. It would tag "Barbell Seated Military
+        # Press" and "Dumbbell Lying External Shoulder Rotation" as upper-back
+        # contraindications on the strength of a secondary `traps` mention,
+        # and neither loads the upper back. A word match plus thin muscle
+        # evidence is a movement we recognise; thin evidence alone is not.
+        # `row()`'s own `muscles` kwarg fills `primaryMuscles`, which is
+        # exactly the field this test needs to be EMPTY -- the first draft
+        # passed `muscles=[...]` there and the row it built had no secondary
+        # list at all, so the assertion held for the wrong reason: there was
+        # no evidence to admit, not evidence correctly excluded. Built by hand
+        # instead, secondary-only, the way `Rule.known()` actually receives it.
+        r = row("Barbell Seated Military Press")
+        r["muscles"] = ["shoulders", "traps"]
+        assert r["primaryMuscles"] == []
+        assert tagger.classify(r, "upper_back") is None
+
+    def test_a_star_rule_compiles_no_pattern(self):
+        # `normalise("*")` is empty, so compiling one yields `\\b()(s|es)?\\b`
+        # -- a pattern that matches at every word boundary. It was harmless
+        # only because `classify` never reaches `match` for these rules, which
+        # is a guarantee about one call site, not about the class.
+        star = [
+            rule
+            for rules in tagger.RULES.values()
+            for rule in rules
+            if rule.words == ["*"]
+        ]
+        assert star, "the case this test pins no longer exists"
+        for rule in star:
+            assert rule._pattern is None, rule.name
+            with pytest.raises(ValueError, match="classify"):
+                rule.match(row("anything at all"))
+
+    def test_a_regex_metacharacter_in_a_word_is_a_literal(self):
+        # `normalise` strips metacharacters before `re.escape` can ever see
+        # one, so this passes either way today. It fails the day a word list
+        # reaches the pattern without `normalise` -- which is the only reason
+        # `re.escape` is in the constructor at all.
+        rule = tagger.Rule("literal", ["a+b"])
+        assert rule.match(row("Machine A+B Press")) is not None
+        assert rule.match(row("Machine AAB Press")) is None
+
+
 class TestApplying:
     def test_it_is_additive_across_regions(self):
         rows = [row("Barbell Squat", ["quads"])]
@@ -159,6 +213,54 @@ class TestApplying:
         assert "contraindications" not in rows[0]
 
 
+class TestRetractingStaleTags:
+    """`apply_tags` only ever adds. This is the half that removes.
+
+    Found live, not designed up front: narrowing `upper_back`'s "rear
+    deltoid" token to "rear deltoid fly" (P3-fix) stopped matching "Rear
+    Deltoid Stretch", and the tag that a PREVIOUS `--write` had put on that
+    row simply stayed in the catalog -- nothing had ever taken a tag away
+    before. `test_the_rules_still_produce_what_the_catalog_carries` is what
+    caught it, by comparing exact ID sets rather than counts.
+    """
+
+    def test_a_tag_the_current_rules_no_longer_produce_is_removed(self):
+        rows = [row("Rear Deltoid Stretch", contraindications=["upper_back"])]
+        changed = tagger.retract_stale_tags(rows, "upper_back", tagger.tag(
+            rows, "upper_back"
+        ))
+        assert changed == 1
+        assert "upper_back" not in rows[0]["contraindications"]
+
+    def test_a_tag_the_current_rules_still_produce_is_left_alone(self):
+        rows = [row("Cable Face Pull", contraindications=["upper_back"])]
+        changed = tagger.retract_stale_tags(rows, "upper_back", tagger.tag(
+            rows, "upper_back"
+        ))
+        assert changed == 0
+        assert rows[0]["contraindications"] == ["upper_back"]
+
+    def test_it_never_touches_another_regions_tag(self):
+        rows = [row("Rear Deltoid Stretch",
+                     contraindications=["neck", "upper_back"])]
+        tagger.retract_stale_tags(rows, "upper_back", tagger.tag(
+            rows, "upper_back"
+        ))
+        assert rows[0]["contraindications"] == ["neck"]
+
+    def test_an_emptied_row_is_left_without_the_key_style_list(self):
+        # Not the same guarantee `test_an_untagged_row_is_left_without_the_key`
+        # pins -- this row DID carry the key, and it keeps carrying it, empty,
+        # once the last tag is gone. That is `apply_tags`'s own choice
+        # (`current.append` always leaves the key even from `[]`), reused here
+        # rather than special-cased.
+        rows = [row("Rear Deltoid Stretch", contraindications=["upper_back"])]
+        tagger.retract_stale_tags(rows, "upper_back", tagger.tag(
+            rows, "upper_back"
+        ))
+        assert rows[0]["contraindications"] == []
+
+
 class TestTheShippedCatalog:
     @pytest.fixture(scope="class")
     def rows(self):
@@ -179,6 +281,64 @@ class TestTheShippedCatalog:
             tags = r.get("contraindications") or []
             assert tags == sorted(set(tags)), r["id"]
 
+    def test_the_rules_still_produce_what_the_catalog_carries(self, rows):
+        # The outcome check, and the only one of the three guards in this file
+        # that a rule going inert cannot walk past. `unknown_regions` compares
+        # names. `test_every_legal_region_has_rules` compares a list length --
+        # replacing `RULES["upper_back"]` with a single rule matching nothing
+        # leaves it green, because one is not zero. Both are structural, and a
+        # ruleset is not a structure, it is a result.
+        #
+        # This one re-derives every region from the live rules against the
+        # shipped catalog and demands the committed artifact back, exactly.
+        # A rule silently stops matching -> red. Someone hand-edits a tag into
+        # the JSON -> red. A word list gains a token and nobody regenerates ->
+        # red.
+        #
+        # Compared by the exact set of ROW IDS, not by count. A count is what
+        # the first draft of this test compared, and a count cannot see one
+        # row swapped for another: drop a real match and pick up an unrelated
+        # false one and the total holds even though the rules no longer
+        # reproduce the artifact for a single row of it. `test_the_batches_
+        # shipped_so_far` below pins the same numbers from the artifact's
+        # side and would stay green through all of this, because it never
+        # runs a rule.
+        for region in tagger.load_vocabulary():
+            committed_ids = {
+                r["id"] for r in rows if region in (r.get("contraindications") or [])
+            }
+            live_ids = {entry["id"] for entry in tagger.tag(rows, region)}
+            assert live_ids == committed_ids, (
+                f"{region}: the rules no longer reproduce the shipped tags -- "
+                f"missing {sorted(committed_ids - live_ids)[:5]}, "
+                f"extra {sorted(live_ids - committed_ids)[:5]}. Regenerate with "
+                "`python scripts/catalog/tag_contraindications.py --region "
+                f"{region} --write` and update both ratchets, or find out what "
+                "stopped matching"
+            )
+        assert all(
+            any(region in (r.get("contraindications") or []) for r in rows)
+            for region in tagger.load_vocabulary()
+        ), "a region tags nothing at all"
+
+    def test_an_inert_ruleset_turns_the_outcome_check_red(
+        self, rows, monkeypatch
+    ):
+        # The mutation, kept rather than performed once and described in a
+        # commit message. Swap the whole `upper_back` ruleset for one rule that
+        # matches nothing: the list is still non-empty, so
+        # `test_every_legal_region_has_rules` stays green, and the shipped
+        # artifact is untouched, so `test_the_batches_shipped_so_far` stays
+        # green too. Only the outcome check notices.
+        monkeypatch.setitem(
+            tagger.RULES,
+            "upper_back",
+            [tagger.Rule("inert", ["zzzz nonexistent movement"])],
+        )
+        assert tagger.RULES["upper_back"], "the mutation must stay non-empty"
+        with pytest.raises(AssertionError, match="no longer reproduce"):
+            self.test_the_rules_still_produce_what_the_catalog_carries(rows)
+
     def test_the_batches_shipped_so_far(self, rows):
         # Mirrors the Dart ratchet in safety_coverage_test.dart. Two sides,
         # because the Python writer and the Dart reader can disagree and the
@@ -186,12 +346,18 @@ class TestTheShippedCatalog:
         counts = tagger.coverage(rows, tagger.load_vocabulary())
         assert counts == {
             "neck": 117,
-            # 0 -> 197 (P3). The region joined the vocabulary on 2026-08-12 and
-            # stayed at zero because `RULES` had no key for it -- the one guard
-            # in this file ran the other way round (rule keys that are not legal
-            # tags), so a legal tag with no rules was invisible to it. That gap
-            # is now closed by `test_every_legal_region_has_rules` below.
-            "upper_back": 207,
+            # 0 -> 264 -> 265 (P3, then the Codex round-2 fix). The region
+            # joined the vocabulary on 2026-08-12 and stayed at zero because
+            # `RULES` had no key for it -- the one guard in this file ran the
+            # other way round (rule keys that are not legal tags), so a legal
+            # tag with no rules was invisible to it. That gap is now closed by
+            # `test_every_legal_region_has_rules`. The second move added a
+            # "bar behind your neck" phrase (+2: `Bent Over Twist`, `Cable
+            # Assisted Inverse Leg Curl`) and narrowed "rear deltoid" to "rear
+            # deltoid fly" so it stopped catching a stretch (-1:
+            # `Rear Deltoid Stretch`, retracted by `retract_stale_tags` rather
+            # than left stale in the catalog).
+            "upper_back": 265,
             "shoulder": 486,
             "elbow": 371,
             "wrist": 188,
