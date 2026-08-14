@@ -8,6 +8,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
+import '../../shared/widgets/experimental_banner.dart';
 import '../../shared/widgets/glass.dart';
 import '../form_check/data/mlkit_pose_detector_service.dart';
 import '../form_check/data/pose_detector_service.dart';
@@ -138,6 +139,11 @@ class _PosturePageState extends ConsumerState<PosturePage>
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
+          // A1. Above the intro, not folded into it: `ML_STRATEGY` puts posture
+          // closest to medical advice of anything in the product
+          // (`ML_STRATEGY_2026-08-11.md:203-209`), and a qualification a reader
+          // has to find inside a paragraph of description is one they can miss.
+          ExperimentalBanner(message: l10n.experimentalPosture),
           GlassCard(
             child: Text(
               l10n.postureIntro,

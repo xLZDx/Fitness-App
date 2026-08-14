@@ -10,6 +10,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
+import '../../shared/widgets/experimental_banner.dart';
 import '../../shared/widgets/glass.dart';
 import 'data/cue_text.dart';
 import 'data/form_classifier.dart';
@@ -346,6 +347,14 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
           ? ListView(
               padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
               children: [
+                // A1. Here as well as on the live screen, and deliberately not
+                // only there: the summary is where the rep count stops being a
+                // number ticking on a preview and becomes a result the user
+                // reads as what they did. That is the strongest version of the
+                // claim, so it is the one that most needs qualifying.
+                ExperimentalBanner(
+                    message:
+                        AppLocalizations.of(context).experimentalFormCoach),
                 _SetSummaryCard(
                   session: session,
                   onReset: () => ref
@@ -369,6 +378,10 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
           : ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
+          // A1. Above the upgrade card on purpose: what the coach can and
+          // cannot tell you is not a detail below the offer to pay for it.
+          ExperimentalBanner(
+              message: AppLocalizations.of(context).experimentalFormCoach),
           if (!isPremium && ref.watch(entitlementResolvedProvider)) ...[
             _UpgradeCard(),
             const SizedBox(height: 16),

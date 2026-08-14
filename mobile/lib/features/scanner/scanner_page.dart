@@ -15,6 +15,7 @@ import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../equipment/state/equipment_providers.dart';
 import '../../shared/widgets/app_buttons.dart';
+import '../../shared/widgets/experimental_banner.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/shell_insets.dart';
 import '../visual_equipment/data/live_recognition.dart';
@@ -545,8 +546,11 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
             // the pixel budget only lifts them where the bar would otherwise
             // eat the controls.
             final minFrac = frac(_kScanSheetHead + _kScanSheetDragStrip, 0.24);
-            final restFrac =
-                frac(_kScanSheetHead + _kScanSheetRestingPeek, 0.34);
+            final restFrac = frac(
+                _kScanSheetHead +
+                    _kScanSheetRestingPeek +
+                    _kScanSheetBannerAllowance,
+                0.34);
             return DraggableScrollableSheet(
             initialChildSize: restFrac,
             minChildSize: minFrac,
@@ -857,7 +861,25 @@ const double _kScanSheetHead = 8 + 4 + 12 + 68 + 6 + 18 + 12;
 const double _kScanSheetDragStrip = 72;
 
 /// How much of the answer sits under the head when the sheet is at rest.
+///
+/// A1 note: the disclosure banner is now the first thing in this list, so this
+/// budget alone no longer describes what is visible — the banner eats into it
+/// before the answer starts. [_kScanSheetBannerAllowance] is added at the call
+/// site so the answer keeps the visibility this number was chosen for.
 const double _kScanSheetRestingPeek = 150;
+
+/// Room for the experimental disclosure that now precedes the answer.
+///
+/// An allowance, not a measurement: the banner is two text lines at default
+/// scale and grows with the user's text size, so no constant can be exactly
+/// right. It is sized for the default case, which is the one where a too-small
+/// value would silently push the scan result under the fold.
+///
+/// The cost is a slightly taller sheet at rest, i.e. slightly less viewfinder.
+/// That is the deliberate trade: this screen's job is aiming, but a disclosure
+/// the user must drag to discover is not a disclosure, and an answer they must
+/// drag to discover is not an answer either. Both fit instead.
+const double _kScanSheetBannerAllowance = 96;
 
 /// The pull-up sheet holding everything that is not the viewfinder.
 class _ScanSheet extends StatelessWidget {
@@ -912,7 +934,16 @@ class _ScanSheet extends StatelessWidget {
               // Was a flat `110`, which was a guess at the bar's height and
               // ignored the gesture inset underneath it entirely.
               padding: EdgeInsets.fromLTRB(12, 0, 12, bottomInset + 12),
-              children: children,
+              children: [
+                // A1. In the sheet rather than over the viewfinder: the claim
+                // this qualifies is "that machine is a lat pulldown", and the
+                // sheet is where it is made. A permanent band across a camera
+                // whose whole job is aiming would be read once and then be in
+                // the way for every scan after.
+                ExperimentalBanner(
+                    message: AppLocalizations.of(context).experimentalScanner),
+                ...children,
+              ],
             ),
           ),
         ],
