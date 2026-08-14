@@ -18,6 +18,7 @@ import 'package:fitness_app/features/workouts/data/workout_session.dart';
 import 'package:fitness_app/features/workouts/state/scheduled_session_providers.dart';
 import 'package:fitness_app/features/workouts/workouts_page.dart';
 import 'package:fitness_app/shared/widgets/aurora_background.dart';
+import 'package:fitness_app/shared/widgets/glass.dart';
 import 'package:fitness_app/shared/widgets/smooth_scroll_list.dart';
 
 AssetEquipmentRepository _seededRepo() {
@@ -87,16 +88,16 @@ Widget _harness(AssetEquipmentRepository repo) {
       GoRoute(path: '/workouts', builder: (_, __) => const WorkoutsPage()),
       GoRoute(
         path: '/workout/:id',
-        builder: (_, state) =>
-            Scaffold(body: Center(child: Text('player_${state.pathParameters['id']}'))),
+        builder: (_, state) => Scaffold(
+            body: Center(child: Text('player_${state.pathParameters['id']}'))),
       ),
       // Both stubs, so the test can tell WHICH of the two screens the list
       // opens rather than passing on either.
       GoRoute(
         path: '/exercise/:id',
         builder: (_, state) => Scaffold(
-            body: Center(
-                child: Text('exercise_${state.pathParameters['id']}'))),
+            body:
+                Center(child: Text('exercise_${state.pathParameters['id']}'))),
       ),
     ],
   );
@@ -129,7 +130,8 @@ final Finder _chipRow = find.byWidgetPredicate(
 /// Library filter chips/list must switch to it first — the chip row and
 /// exercise list this whole file already tested did not move or change,
 /// they just live behind a tap now.
-Future<void> _pumpLibrary(WidgetTester tester, AssetEquipmentRepository repo) async {
+Future<void> _pumpLibrary(
+    WidgetTester tester, AssetEquipmentRepository repo) async {
   await tester.pumpWidget(_harness(repo));
   await tester.pumpAndSettle();
   await tester.tap(find.text('Library'));
@@ -176,9 +178,23 @@ void main() {
     });
 
     test('every muscle chip filters on tags the catalog vocabulary uses', () {
-      const vocab = {'adductors', 'back', 'biceps', 'calves', 'chest', 'core',
-          'forearms', 'glutes', 'hamstrings', 'lats', 'lower_back', 'quads',
-          'shoulders', 'traps', 'triceps'};
+      const vocab = {
+        'adductors',
+        'back',
+        'biceps',
+        'calves',
+        'chest',
+        'core',
+        'forearms',
+        'glutes',
+        'hamstrings',
+        'lats',
+        'lower_back',
+        'quads',
+        'shoulders',
+        'traps',
+        'triceps'
+      };
       for (final entry in kFilterMuscles.entries) {
         expect(vocab, containsAll(entry.value),
             reason: '${entry.key} filters on a tag no exercise carries');
@@ -337,7 +353,8 @@ void main() {
       expect(find.byKey(const Key('workouts.currentProgramme')), findsNothing);
     });
 
-    testWidgets('an active programme shows the current-programme card with '
+    testWidgets(
+        'an active programme shows the current-programme card with '
         'its title and week', (tester) async {
       final programme = Programme(
         id: 'prog_1',
@@ -379,7 +396,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byKey(const Key('workouts.currentProgramme')), findsOneWidget);
+      expect(
+          find.byKey(const Key('workouts.currentProgramme')), findsOneWidget);
       expect(find.textContaining('Week 2 of 8'), findsOneWidget);
     });
 
@@ -397,7 +415,8 @@ void main() {
         final router = GoRouter(
           initialLocation: '/workouts',
           routes: [
-            GoRoute(path: '/workouts', builder: (_, __) => const WorkoutsPage()),
+            GoRoute(
+                path: '/workouts', builder: (_, __) => const WorkoutsPage()),
           ],
         );
         await tester.pumpWidget(
@@ -418,7 +437,8 @@ void main() {
         await tester.pumpAndSettle();
       }
 
-      testWidgets('is absent when the questionnaire holds nothing to build from',
+      testWidgets(
+          'is absent when the questionnaire holds nothing to build from',
           (tester) async {
         await pumpWith(tester, const UserProfile(uid: 'alice'));
 
@@ -432,7 +452,8 @@ void main() {
         expect(find.byKey(const Key('programme.fromAnswers')), findsNothing);
       });
 
-      testWidgets('appears once the questionnaire has answers, and states the '
+      testWidgets(
+          'appears once the questionnaire has answers, and states the '
           'cadence it will actually build', (tester) async {
         await pumpWith(
           tester,
@@ -451,8 +472,7 @@ void main() {
         final card = find.byKey(const Key('programme.fromAnswers'));
         expect(find.descendant(of: card, matching: find.text('Muscle')),
             findsOneWidget);
-        expect(
-            find.descendant(of: card, matching: find.text('Advanced')),
+        expect(find.descendant(of: card, matching: find.text('Advanced')),
             findsOneWidget);
         expect(
           find.descendant(
@@ -466,7 +486,8 @@ void main() {
         );
       });
 
-      testWidgets('survives a goal-filter tap, since it is not one of the '
+      testWidgets(
+          'survives a goal-filter tap, since it is not one of the '
           'filtered templates', (tester) async {
         await pumpWith(
           tester,
@@ -518,6 +539,151 @@ void main() {
 
         expect(find.byKey(const Key('programme.fromAnswers')), findsOneWidget);
         expect(tester.takeException(), isNull);
+      });
+    });
+
+    // B5d-3. Six programmes sat in the order they happen to occupy in
+    // `programmeTemplates`, so someone who had answered the questionnaire still
+    // had to read all six and work out which was theirs.
+    group('templates are ranked as recommendations', () {
+      Future<void> pumpWith(WidgetTester tester, UserProfile? profile) async {
+        final router = GoRouter(
+          initialLocation: '/workouts',
+          routes: [
+            GoRoute(
+                path: '/workouts', builder: (_, __) => const WorkoutsPage()),
+          ],
+        );
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              equipmentRepositoryProvider.overrideWithValue(_seededRepo()),
+              screeningProfileProvider.overrideWith((ref) async => profile),
+            ],
+            child: MaterialApp.router(
+              theme: AppTheme.light(),
+              locale: kTestLocale,
+              localizationsDelegates: kTestLocalizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              routerConfig: router,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      /// Template card titles in the order they are laid out on screen.
+      List<String> renderedOrder(WidgetTester tester) {
+        final cards = find.byWidgetPredicate((w) =>
+            w is GlassCard &&
+            w.key is ValueKey<String> &&
+            (w.key as ValueKey<String>)
+                .value
+                .startsWith('programme.template.'));
+        final ids = tester
+            .widgetList<GlassCard>(cards)
+            .map((w) => (w.key as ValueKey<String>).value)
+            .toList();
+        // Laid out top-to-bottom, so tree order is visual order here.
+        return ids;
+      }
+
+      testWidgets(
+          'an unanswered questionnaire leaves the catalogue order and '
+          'claims nothing', (tester) async {
+        await pumpWith(tester, const UserProfile(uid: 'alice'));
+
+        expect(renderedOrder(tester).first, 'programme.template.strength_base');
+        expect(find.byKey(const Key('programme.bestMatch')), findsNothing);
+        expect(find.byKey(const Key('programme.fitReason')), findsNothing);
+      });
+
+      testWidgets('the best-fitting programme moves to the top and says why',
+          (tester) async {
+        await pumpWith(
+          tester,
+          const UserProfile(
+            uid: 'alice',
+            goals: FitnessGoals(
+                primary: ProgrammeGoal.muscle, focusZones: [FocusZone.arms]),
+            level: FitnessLevel(tier: FitnessTier.intermediate),
+            schedule: TrainingSchedule(daysPerWeek: 3),
+          ),
+        );
+
+        expect(
+            renderedOrder(tester).first, 'programme.template.shoulders_arms');
+        // Exactly one badge — two "best" cards is not a recommendation.
+        expect(find.byKey(const Key('programme.bestMatch')), findsOneWidget);
+        expect(
+          find.text('Matches your goal, level, schedule, focus areas'),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets(
+          'a single answer ranks by that answer alone, without '
+          'claiming the others', (tester) async {
+        await pumpWith(
+          tester,
+          const UserProfile(
+            uid: 'alice',
+            goals: FitnessGoals(primary: ProgrammeGoal.comeback),
+          ),
+        );
+
+        expect(
+            renderedOrder(tester).first, 'programme.template.injury_comeback');
+        expect(find.text('Matches your goal'), findsOneWidget);
+        // Scoped to the reason lines: the build-from-answers card's own hint
+        // legitimately contains the word "level", and an unscoped finder
+        // catches that instead of what is under test.
+        for (final text in tester
+            .widgetList<Text>(find.byKey(const Key('programme.fitReason')))) {
+          expect(text.data, 'Matches your goal',
+              reason: 'claimed a match on a question that was never answered');
+        }
+      });
+
+      testWidgets('no badge when two programmes fit equally well',
+          (tester) async {
+        // Answering only "three days a week" matches every 3-day template.
+        // The app has no basis for calling one of them best, so it says so by
+        // not saying anything.
+        await pumpWith(
+          tester,
+          const UserProfile(
+            uid: 'alice',
+            schedule: TrainingSchedule(daysPerWeek: 3),
+          ),
+        );
+
+        expect(find.byKey(const Key('programme.bestMatch')), findsNothing);
+        expect(find.byKey(const Key('programme.fitReason')), findsWidgets,
+            reason: 'the matches themselves are still worth showing');
+      });
+
+      testWidgets('ranking stays inside the goal filter the user set',
+          (tester) async {
+        await pumpWith(
+          tester,
+          const UserProfile(
+            uid: 'alice',
+            goals: FitnessGoals(primary: ProgrammeGoal.muscle),
+            schedule: TrainingSchedule(daysPerWeek: 3),
+          ),
+        );
+
+        final chip =
+            find.descendant(of: _chipRow, matching: find.text('Strength'));
+        await tester.ensureVisible(chip);
+        await tester.pumpAndSettle();
+        await tester.tap(chip);
+        await tester.pumpAndSettle();
+
+        // A goal chip is the user narrowing the catalogue by hand; ranking
+        // must not pull a better-fitting programme back across it.
+        expect(renderedOrder(tester), ['programme.template.strength_base']);
       });
     });
 
@@ -573,7 +739,8 @@ void main() {
         final router = GoRouter(
           initialLocation: '/workouts',
           routes: [
-            GoRoute(path: '/workouts', builder: (_, __) => const WorkoutsPage()),
+            GoRoute(
+                path: '/workouts', builder: (_, __) => const WorkoutsPage()),
           ],
         );
         await tester.pumpWidget(
@@ -625,14 +792,16 @@ void main() {
         );
       });
 
-      testWidgets('a contraindicated exercise keeps its slot but loses its '
+      testWidgets(
+          'a contraindicated exercise keeps its slot but loses its '
           'picture', (tester) async {
         // The safety rule, at the one place it is easiest to break by accident:
         // a thumbnail is a picture of the movement, so drawing one for an
         // exercise the user must not do surfaces exactly what the filter
         // exists to withhold. The slot stays so the day's size is still
         // honest -- silently dropping it would under-report the day.
-        await pumpCard(tester, ids: ['squat', 'row', 'press'], injured: {'row'});
+        await pumpCard(tester,
+            ids: ['squat', 'row', 'press'], injured: {'row'});
 
         expect(thumbs, findsNWidgets(3), reason: 'the day is still three long');
         expect(

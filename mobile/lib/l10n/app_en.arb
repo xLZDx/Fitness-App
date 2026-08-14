@@ -2007,6 +2007,19 @@
   "programmeInjuryComeback": "Coming back after a break",
   "programmeShouldersArms": "Shoulders and arms",
   "programmeFromAnswers": "My programme",
+  "programmeRecommended": "Best match",
+  "programmeFitGoal": "goal",
+  "programmeFitLevel": "level",
+  "programmeFitSchedule": "schedule",
+  "programmeFitZones": "focus areas",
+  "programmeFitMatches": "Matches your {what}",
+  "@programmeFitMatches": {
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
   "programmeBuildFromAnswers": "Build from my answers",
   "programmeBuildFromAnswersHint": "Goal, level, days and focus areas — taken from what you already told us. No template to pick.",
   "programmeCurrentProgramme": "Current programme",

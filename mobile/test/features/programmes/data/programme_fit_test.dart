@@ -1,0 +1,213 @@
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:fitness_app/features/equipment/data/equipment_models.dart';
+import 'package:fitness_app/features/profile/data/profile_models.dart';
+import 'package:fitness_app/features/programmes/data/programme.dart';
+import 'package:fitness_app/features/programmes/data/programme_fit.dart';
+import 'package:fitness_app/features/programmes/data/programme_templates.dart';
+
+/// B5d-3 — the six templates ordered by how well they answer the questionnaire.
+///
+/// What is worth pinning is not that a sort runs. It is the three ways this
+/// could quietly lie to a user: claiming a match against a question they never
+/// answered, reordering a catalogue on the strength of nothing, and reshuffling
+/// between builds so the "best" programme is whichever one was drawn last.
+
+ProgrammeTemplate _t(
+  String id, {
+  ProgrammeGoal goal = ProgrammeGoal.form,
+  ExerciseDifficulty level = ExerciseDifficulty.beginner,
+  int daysPerWeek = 3,
+  List<String> muscles = const [],
+}) =>
+    ProgrammeTemplate(
+      id: id,
+      goal: goal,
+      level: level,
+      weeks: 8,
+      daysPerWeek: daysPerWeek,
+      muscles: muscles,
+    );
+
+void main() {
+  group('programmeFit', () {
+    test('an unanswered question is never a match', () {
+      // The failure this rules out: a card claiming "matches your goal" to
+      // someone who never named one.
+      final fit = programmeFit(_t('a'), const UserProfile(uid: 'alice'));
+      expect(fit.goal, isFalse);
+      expect(fit.level, isFalse);
+      expect(fit.schedule, isFalse);
+      expect(fit.zones, isFalse);
+      expect(fit.hasAny, isFalse);
+    });
+
+    test('a null profile matches nothing', () {
+      expect(programmeFit(_t('a'), null).hasAny, isFalse);
+    });
+
+    test('goal and level match only on an exact answer', () {
+      const profile = UserProfile(
+        uid: 'alice',
+        goals: FitnessGoals(primary: ProgrammeGoal.strength),
+        level: FitnessLevel(tier: FitnessTier.intermediate),
+      );
+
+      final exact = programmeFit(
+          _t('a',
+              goal: ProgrammeGoal.strength,
+              level: ExerciseDifficulty.intermediate),
+          profile);
+      expect(exact.goal, isTrue);
+      expect(exact.level, isTrue);
+
+      // Adjacent tiers are NOT a half-match: how far outside their level it is
+      // safe to put someone is a training decision, and the wrong direction of
+      // that guess puts a beginner into advanced work.
+      final adjacent = programmeFit(
+          _t('b',
+              goal: ProgrammeGoal.muscle, level: ExerciseDifficulty.advanced),
+          profile);
+      expect(adjacent.goal, isFalse);
+      expect(adjacent.level, isFalse);
+    });
+
+    test('"never trained" reads as beginner, matching the enrol path', () {
+      final fit = programmeFit(
+        _t('a', level: ExerciseDifficulty.beginner),
+        const UserProfile(
+            uid: 'alice', level: FitnessLevel(tier: FitnessTier.never)),
+      );
+      expect(fit.level, isTrue);
+    });
+
+    test(
+        'schedule fits when the programme asks for no more days than the user '
+        'has', () {
+      const profile =
+          UserProfile(uid: 'alice', schedule: TrainingSchedule(daysPerWeek: 4));
+
+      expect(programmeFit(_t('a', daysPerWeek: 3), profile).schedule, isTrue);
+      expect(programmeFit(_t('b', daysPerWeek: 4), profile).schedule, isTrue);
+      // Five days for someone with four schedules a session a week they will
+      // not do — the same asymmetry `programmeDaysPerWeek` applies on enrol.
+      expect(programmeFit(_t('c', daysPerWeek: 5), profile).schedule, isFalse);
+    });
+
+    test('a zone matches only a programme that names muscles', () {
+      const profile = UserProfile(
+        uid: 'alice',
+        goals: FitnessGoals(focusZones: [FocusZone.arms]),
+      );
+
+      expect(
+        programmeFit(_t('named', muscles: const ['biceps', 'triceps']), profile)
+            .zones,
+        isTrue,
+      );
+      // A full-body programme would match every zone trivially, and "matches
+      // your focus areas" on a programme targeting nothing in particular is
+      // noise dressed as a recommendation.
+      expect(programmeFit(_t('fullbody'), profile).zones, isFalse);
+      // A zone the programme does not cover is not a match either.
+      expect(
+        programmeFit(_t('legs', muscles: const ['quads']), profile).zones,
+        isFalse,
+      );
+    });
+
+    test('score counts matched dimensions and nothing else', () {
+      final fit = programmeFit(
+        _t('a',
+            goal: ProgrammeGoal.muscle,
+            level: ExerciseDifficulty.advanced,
+            daysPerWeek: 3,
+            muscles: const ['chest']),
+        const UserProfile(
+          uid: 'alice',
+          goals: FitnessGoals(
+              primary: ProgrammeGoal.muscle, focusZones: [FocusZone.chest]),
+          level: FitnessLevel(tier: FitnessTier.advanced),
+          schedule: TrainingSchedule(daysPerWeek: 5),
+        ),
+      );
+      expect(fit.score, 4);
+    });
+  });
+
+  group('rankTemplates', () {
+    test('leaves the catalogue alone when there is nothing to rank by', () {
+      // Reordering on the strength of nothing and calling it a recommendation
+      // is indistinguishable, from outside, from a real one.
+      for (final profile in [null, const UserProfile(uid: 'alice')]) {
+        expect(
+          rankTemplates(programmeTemplates, profile)
+              .map((r) => r.template.id)
+              .toList(),
+          programmeTemplates.map((t) => t.id).toList(),
+          reason: 'profile: $profile',
+        );
+      }
+    });
+
+    test('puts the best-fitting programme first', () {
+      // `shoulders_arms` is the only shipped template that is muscle-goal AND
+      // 3-day AND names arm muscles; `hypertrophy` shares the goal but asks
+      // for four days.
+      final ranked = rankTemplates(
+        programmeTemplates,
+        const UserProfile(
+          uid: 'alice',
+          goals: FitnessGoals(
+              primary: ProgrammeGoal.muscle, focusZones: [FocusZone.arms]),
+          level: FitnessLevel(tier: FitnessTier.intermediate),
+          schedule: TrainingSchedule(daysPerWeek: 3),
+        ),
+      );
+
+      expect(ranked.first.template.id, 'shoulders_arms');
+      expect(ranked.first.fit.score, 4);
+      // Scores must never increase down the list.
+      for (var i = 1; i < ranked.length; i++) {
+        expect(ranked[i].fit.score, lessThanOrEqualTo(ranked[i - 1].fit.score),
+            reason: 'position $i outscores the one above it');
+      }
+    });
+
+    test('equal scores keep catalogue order', () {
+      // `List.sort` is not stable in Dart, so this is the guard against the
+      // "best" programme being whichever one the sort happened to leave on top.
+      //
+      // Deliberately NOT phrased as "the same answer on repeated runs", which
+      // is what this test said first: for a fixed input and comparator
+      // `List.sort` is deterministic, so an UNSTABLE sort would return the same
+      // wrong order every time too. Repeating the call would have looked like
+      // proof and been none. What proves it is comparing one score bucket
+      // against the catalogue's own order.
+      const profile = UserProfile(
+        uid: 'alice',
+        schedule: TrainingSchedule(daysPerWeek: 3),
+      );
+      final ranked = rankTemplates(programmeTemplates, profile);
+
+      // Ties have to exist in the fixture, or the claim is untested.
+      expect(ranked.map((r) => r.fit.score).toSet().length,
+          lessThan(programmeTemplates.length),
+          reason: 'no ties in the fixture — the stability claim is untested');
+
+      final threeDay = ranked
+          .where((r) => r.fit.score == 1)
+          .map((r) => r.template.id)
+          .toList();
+      expect(threeDay.length, greaterThan(1),
+          reason: 'a bucket of one cannot show an ordering');
+      final catalogueOrder =
+          programmeTemplates.map((t) => t.id).where(threeDay.contains).toList();
+      expect(threeDay, catalogueOrder);
+    });
+
+    test('an empty list ranks to an empty list', () {
+      expect(rankTemplates(const [], const UserProfile(uid: 'a')), isEmpty);
+    });
+  });
+}

@@ -14,6 +14,7 @@ import '../equipment/state/equipment_providers.dart';
 import '../form_check/state/form_check_providers.dart';
 import '../personalisation/state/personalisation_providers.dart';
 import '../programmes/data/programme.dart';
+import '../programmes/data/programme_fit.dart';
 import '../programmes/data/programme_labels.dart';
 import '../programmes/data/programme_schedule.dart';
 import '../programmes/data/programme_templates.dart';
@@ -762,9 +763,17 @@ class _ProgramsTabState extends ConsumerState<_ProgramsTab> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final templates = _goalFilter == null
+    final filtered = _goalFilter == null
         ? programmeTemplates
         : programmeTemplates.where((t) => t.goal == _goalFilter).toList();
+    // B5d-3. Ranked, not merely listed: the six programmes were in the order
+    // they happen to sit in `programmeTemplates`, so a user who had answered
+    // the questionnaire still had to read all six and work out which one was
+    // theirs. Ranking happens INSIDE the current filter — a goal chip is the
+    // user narrowing the catalogue by hand, and reordering across a filter
+    // they set would be overruling them.
+    final profile = ref.watch(screeningProfileProvider).valueOrNull;
+    final templates = rankTemplates(filtered, profile);
 
     return SmoothScrollList(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 110),
@@ -830,7 +839,19 @@ class _ProgramsTabState extends ConsumerState<_ProgramsTab> {
               child: Text(l.workoutsEmptyFiltered(_goalLabel(l, _goalFilter!))))
         else
           for (var i = 0; i < templates.length; i++) ...[
-            _ProgrammeTemplateCard(template: templates[i]),
+            _ProgrammeTemplateCard(
+              template: templates[i].template,
+              fit: templates[i].fit,
+              // The badge marks ONE card, and only when it actually leads on
+              // fit. First position alone is not enough — with no answers
+              // every score is 0 and the top card is just the first in the
+              // catalogue, and a tie means the app has no basis for calling
+              // either one best.
+              best: i == 0 &&
+                  templates[i].fit.hasAny &&
+                  (templates.length == 1 ||
+                      templates[1].fit.score < templates[0].fit.score),
+            ),
             const SizedBox(height: 16),
           ],
       ],
@@ -1277,13 +1298,47 @@ class _BuildFromAnswersCard extends ConsumerWidget {
   }
 }
 
+/// The matched dimensions of [fit], in a fixed order.
+///
+/// Fixed rather than "strongest first" because the four are unweighted
+/// ([ProgrammeFit.score]) — there is no strongest. A stable order also means
+/// two cards showing the same two matches read identically instead of
+/// implying a difference that is not there.
+///
+/// **Constraint on adding a locale.** The caller joins these with a literal
+/// `', '` into `programmeFitMatches`, so each fragment must be written to fit
+/// that sentence in its own language — the Russian ones are already in the
+/// dative case the "Подходит по …" frame requires. A language whose list
+/// convention differs (a required final conjunction, a different separator)
+/// cannot be served by this join and needs `Intl` list formatting instead.
+/// Correct for the two shipped locales; flagged here rather than pre-solved,
+/// because building for a third locale that does not exist yet would be
+/// guessing at its grammar.
+List<String> _fitReasons(AppLocalizations l, ProgrammeFit fit) => [
+      if (fit.goal) l.programmeFitGoal,
+      if (fit.level) l.programmeFitLevel,
+      if (fit.schedule) l.programmeFitSchedule,
+      if (fit.zones) l.programmeFitZones,
+    ];
+
 /// One enrollable programme. The header wash comes from the programme's goal
 /// ([_goalHue]); it used to rotate through [AppPalette.tileGradients] by list
 /// position, which is what made a card change colour when the list was
 /// filtered. `index` went with it — it had no other reader.
 class _ProgrammeTemplateCard extends ConsumerWidget {
-  const _ProgrammeTemplateCard({required this.template});
+  const _ProgrammeTemplateCard({
+    required this.template,
+    this.fit = const ProgrammeFit(),
+    this.best = false,
+  });
   final ProgrammeTemplate template;
+
+  /// B5d-3: which of the user's answers this programme lines up with. Empty by
+  /// default so a card rendered outside the ranked list simply shows no claim.
+  final ProgrammeFit fit;
+
+  /// Whether this is the single best-fitting card in the list as shown.
+  final bool best;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1348,6 +1403,25 @@ class _ProgrammeTemplateCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (best) ...[
+                  Container(
+                    key: const Key('programme.bestMatch'),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(99),
+                      color: hue.withValues(alpha: 0.16),
+                    ),
+                    child: Text(
+                      l.programmeRecommended,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: hue,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                ],
                 Text(
                   ProgrammeLabels.title(l, template.id),
                   style: theme.textTheme.titleMedium
@@ -1361,6 +1435,19 @@ class _ProgrammeTemplateCard extends ConsumerWidget {
                   style: theme.textTheme.bodySmall
                       ?.copyWith(color: theme.colors.textSecondary),
                 ),
+                // Named dimensions, not a percentage: these are four booleans,
+                // and "87% match" would claim a precision they do not have.
+                // Naming them is also the only form the user can check against
+                // what they actually answered.
+                if (fit.hasAny)
+                  Text(
+                    l.programmeFitMatches(_fitReasons(l, fit).join(', ')),
+                    key: const Key('programme.fitReason'),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: hue,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 Text(
                   l.programmeWeeksAndDaysPerWeek(
                       template.weeks, template.daysPerWeek),
