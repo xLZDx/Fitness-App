@@ -100,8 +100,21 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
       // `strength_base` received four days a week of barbell work.
       final profile = await ref.read(screeningProfileProvider.future);
 
+      final startedAt = DateTime.now();
+      // B5d. Resolved BEFORE the row is built, because the row's own
+      // `daysPerWeek` has to be the number of days actually scheduled: naming
+      // three weekdays while answering "four days a week" produces a
+      // three-day programme, and `deriveProgrammeProgress` counts completions
+      // against this field. A four claiming a three-day schedule would report
+      // progress the user can never reach.
+      final dayOffsets = programmeDayOffsets(
+        startedOn: startedAt,
+        daysPerWeek: programmeDaysPerWeek(template.daysPerWeek, profile),
+        preferredWeekdays: profile?.schedule.preferredWeekdays ?? const [],
+      );
+
       final programme = Programme(
-        id: '${DateTime.now().microsecondsSinceEpoch}_${template.id}',
+        id: '${startedAt.microsecondsSinceEpoch}_${template.id}',
         templateId: template.id,
         // B2a. The stored title is a FALLBACK, not what the UI shows: every
         // screen resolves the name from `templateId` through
@@ -117,9 +130,9 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
         // `buildProgrammeSchedule`, so the card's header and the sessions
         // actually generated cannot disagree — and so `deriveProgrammeProgress`
         // counts against the same number the schedule was built from.
-        daysPerWeek: programmeDaysPerWeek(template.daysPerWeek, profile),
+        daysPerWeek: dayOffsets.length,
         muscles: programmeMuscles(template, profile),
-        startedAt: DateTime.now(),
+        startedAt: startedAt,
       );
 
       final catalogue = availableWith(
@@ -130,6 +143,7 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
         programme: programme,
         catalogue: catalogue,
         sessionMinutes: profile?.schedule.sessionMinutes,
+        preferredWeekdays: profile?.schedule.preferredWeekdays ?? const [],
       );
 
       await repo.save(user.uid, programme);

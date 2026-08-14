@@ -252,5 +252,157 @@ void main() {
       final rows = buildProgrammeSchedule(programme: programme, catalogue: catalogue);
       expect(rows.map((r) => r.id).toSet(), hasLength(rows.length));
     });
+
+    // B5d. The questionnaire asks which weekdays the user trains and, until
+    // this, nothing in the scheduling path read the answer.
+    test('sessions land on the weekdays the user actually picked', () {
+      // 2026-01-01 is a Thursday. Asking for Mon/Wed/Fri must produce those
+      // weekdays, not three days measured from Thursday.
+      final rows = buildProgrammeSchedule(
+        programme: _programme(
+            weeks: 2, daysPerWeek: 3, startedAt: DateTime(2026, 1, 1)),
+        catalogue: [_ex('a'), _ex('b'), _ex('c')],
+        preferredWeekdays: const [
+          DateTime.monday,
+          DateTime.wednesday,
+          DateTime.friday,
+        ],
+      );
+
+      expect(rows, hasLength(6));
+      expect(
+        rows.map((r) => r.scheduledFor.weekday).toSet(),
+        {DateTime.monday, DateTime.wednesday, DateTime.friday},
+      );
+    });
+
+    test('naming no weekdays keeps the old even spread', () {
+      // Every enrolment made before this parameter existed was built this way,
+      // and "not answered" must not silently become a different schedule.
+      final withNone = buildProgrammeSchedule(
+        programme: _programme(weeks: 1, daysPerWeek: 3),
+        catalogue: [_ex('a'), _ex('b'), _ex('c')],
+      );
+      final withEmpty = buildProgrammeSchedule(
+        programme: _programme(weeks: 1, daysPerWeek: 3),
+        catalogue: [_ex('a'), _ex('b'), _ex('c')],
+        preferredWeekdays: const [],
+      );
+
+      expect(withEmpty.map((r) => r.scheduledFor),
+          withNone.map((r) => r.scheduledFor));
+    });
+
+    test('fewer named days than the count answer shortens the week', () {
+      // The named days win: putting someone on a weekday they were shown and
+      // did not tick is the one outcome that reads as the app overriding them.
+      final rows = buildProgrammeSchedule(
+        programme: _programme(
+            weeks: 2, daysPerWeek: 4, startedAt: DateTime(2026, 1, 1)),
+        catalogue: [_ex('a'), _ex('b')],
+        preferredWeekdays: const [DateTime.tuesday, DateTime.saturday],
+      );
+
+      expect(rows, hasLength(4), reason: 'two days a week for two weeks');
+      expect(rows.map((r) => r.scheduledFor.weekday).toSet(),
+          {DateTime.tuesday, DateTime.saturday});
+    });
+
+    test('more named days than the count answer keeps the count', () {
+      final rows = buildProgrammeSchedule(
+        programme: _programme(
+            weeks: 1, daysPerWeek: 2, startedAt: DateTime(2026, 1, 1)),
+        catalogue: [_ex('a'), _ex('b')],
+        preferredWeekdays: const [
+          DateTime.monday,
+          DateTime.tuesday,
+          DateTime.wednesday,
+          DateTime.thursday,
+        ],
+      );
+
+      expect(rows, hasLength(2));
+    });
+
+    test('every week keeps the same weekdays, across a clock change', () {
+      // A year-long span so a DST transition falls inside it on any host that
+      // has one (this project's own zone, Europe/Chisinau, does). The rows are
+      // built from calendar parts precisely because
+      // `startedAt.add(Duration(days: n))` moves the absolute instant by n*24h
+      // and does not correct for DST, which drifts a near-midnight programme
+      // onto the wrong weekday partway through.
+      final rows = buildProgrammeSchedule(
+        programme: _programme(
+          weeks: 52,
+          daysPerWeek: 2,
+          // 23:30 local: the hour where a one-hour shift changes the date.
+          startedAt: DateTime(2026, 1, 1, 23, 30),
+        ),
+        catalogue: [_ex('a'), _ex('b')],
+        preferredWeekdays: const [DateTime.tuesday, DateTime.saturday],
+      );
+
+      expect(rows, hasLength(104));
+      expect(
+        rows.map((r) => r.scheduledFor.weekday).toSet(),
+        {DateTime.tuesday, DateTime.saturday},
+        reason: 'not one of 104 sessions may drift onto another weekday',
+      );
+    });
+
+    test('a weekday outside 1..7 is dropped, not wrapped into a wrong day', () {
+      // The model does not validate this field (`profile_models.dart`), so a
+      // value written by hand into Firestore can reach here. Wrapping it with
+      // a modulo would schedule a real day the user never asked for.
+      final rows = buildProgrammeSchedule(
+        programme: _programme(
+            weeks: 1, daysPerWeek: 3, startedAt: DateTime(2026, 1, 1)),
+        catalogue: [_ex('a')],
+        preferredWeekdays: const [DateTime.monday, 0, 9],
+      );
+
+      expect(rows.map((r) => r.scheduledFor.weekday).toSet(),
+          {DateTime.monday});
+    });
+  });
+
+  group('programmeDayOffsets', () {
+    test('offsets are measured from the day the programme starts', () {
+      // Thursday start, Friday wanted -> tomorrow, not "day 5 of the week".
+      expect(
+        programmeDayOffsets(
+          startedOn: DateTime(2026, 1, 1),
+          daysPerWeek: 1,
+          preferredWeekdays: const [DateTime.friday],
+        ),
+        [1],
+      );
+    });
+
+    test('the start weekday itself is offset zero, not seven', () {
+      expect(
+        programmeDayOffsets(
+          startedOn: DateTime(2026, 1, 1),
+          daysPerWeek: 1,
+          preferredWeekdays: const [DateTime.thursday],
+        ),
+        [0],
+      );
+    });
+
+    test('duplicates collapse instead of double-booking a day', () {
+      expect(
+        programmeDayOffsets(
+          startedOn: DateTime(2026, 1, 1),
+          daysPerWeek: 3,
+          preferredWeekdays: const [
+            DateTime.monday,
+            DateTime.monday,
+            DateTime.friday,
+          ],
+        ),
+        hasLength(2),
+      );
+    });
   });
 }

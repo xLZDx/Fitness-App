@@ -236,6 +236,76 @@ void main() {
       expect(sessionRepo.cached('alice'), hasLength(template.weeks * 2));
     });
 
+    // B5d. `preferredWeekdays` was written by the questionnaire
+    // (`step_schedule.dart`) and read by nothing in the scheduling path: the
+    // generator spread days evenly, so someone who ticked Monday, Wednesday
+    // and Friday got three days measured from whichever weekday they happened
+    // to enrol on.
+    test('the schedule lands on the weekdays the user ticked', () async {
+      final programmeRepo = MockProgrammeRepository(latency: Duration.zero);
+      addTearDown(programmeRepo.dispose);
+      final sessionRepo = MockScheduledSessionRepository(latency: Duration.zero);
+      addTearDown(sessionRepo.dispose);
+
+      final template = programmeTemplates.first; // 4 days a week
+      final container = await containerWithProfile(
+        programmeRepo: programmeRepo,
+        sessionRepo: sessionRepo,
+        catalogue: [_kit('pushup', label: 'None (Bodyweight)')],
+        profile: const UserProfile(
+          uid: 'alice',
+          schedule: TrainingSchedule(
+            daysPerWeek: 3,
+            preferredWeekdays: [
+              DateTime.monday,
+              DateTime.wednesday,
+              DateTime.friday,
+            ],
+          ),
+        ),
+      );
+
+      await container.read(programmeActionProvider.notifier).enroll(template);
+
+      final rows = sessionRepo.cached('alice');
+      expect(rows, isNotEmpty);
+      expect(
+        rows.map((r) => r.scheduledFor.weekday).toSet(),
+        {DateTime.monday, DateTime.wednesday, DateTime.friday},
+        reason: 'no session may land on a weekday the user did not tick',
+      );
+    });
+
+    test('ticking fewer weekdays than days-per-week shortens the programme row '
+        'too, not just the schedule', () async {
+      // The two must agree: `deriveProgrammeProgress` measures completions
+      // against `Programme.daysPerWeek`, so a row claiming four days over a
+      // two-day schedule would show progress the user can never finish.
+      final programmeRepo = MockProgrammeRepository(latency: Duration.zero);
+      addTearDown(programmeRepo.dispose);
+      final sessionRepo = MockScheduledSessionRepository(latency: Duration.zero);
+      addTearDown(sessionRepo.dispose);
+
+      final template = programmeTemplates.first; // 4 days a week
+      final container = await containerWithProfile(
+        programmeRepo: programmeRepo,
+        sessionRepo: sessionRepo,
+        catalogue: [_kit('pushup', label: 'None (Bodyweight)')],
+        profile: const UserProfile(
+          uid: 'alice',
+          schedule: TrainingSchedule(
+            daysPerWeek: 4,
+            preferredWeekdays: [DateTime.tuesday, DateTime.saturday],
+          ),
+        ),
+      );
+
+      await container.read(programmeActionProvider.notifier).enroll(template);
+
+      expect(programmeRepo.cached('alice').single.daysPerWeek, 2);
+      expect(sessionRepo.cached('alice'), hasLength(template.weeks * 2));
+    });
+
     test('focus zones fill in a full-body template and show on the row',
         () async {
       final programmeRepo = MockProgrammeRepository(latency: Duration.zero);

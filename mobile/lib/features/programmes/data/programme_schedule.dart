@@ -62,6 +62,7 @@ List<ScheduledSession> buildProgrammeSchedule({
   required Programme programme,
   required List<ExerciseItem> catalogue,
   int? sessionMinutes,
+  List<int> preferredWeekdays = const [],
 }) {
   if (catalogue.isEmpty || programme.weeks <= 0 || programme.daysPerWeek <= 0) {
     return const [];
@@ -75,13 +76,24 @@ List<ScheduledSession> buildProgrammeSchedule({
   }
   final fullBodyPool = [...catalogue]..sort((a, b) => a.id.compareTo(b.id));
 
-  final dayOffsets = _spreadDays(programme.daysPerWeek);
+  final dayOffsets = programmeDayOffsets(
+    startedOn: programme.startedAt,
+    daysPerWeek: programme.daysPerWeek,
+    preferredWeekdays: preferredWeekdays,
+  );
+  // The number of sessions in a week is however many days there are to put
+  // them on, which is NOT always `programme.daysPerWeek`: naming fewer
+  // weekdays than the count answer shortens the week (see
+  // [programmeDayOffsets]). Iterating to `daysPerWeek` against a shorter list
+  // would index past its end.
+  final slotsPerWeek = dayOffsets.length;
+  if (slotsPerWeek == 0) return const [];
   final rows = <ScheduledSession>[];
   var seq = 0;
   final nowMicros = DateTime.now().microsecondsSinceEpoch;
 
   for (var week = 0; week < programme.weeks; week++) {
-    for (var slot = 0; slot < programme.daysPerWeek; slot++) {
+    for (var slot = 0; slot < slotsPerWeek; slot++) {
       List<ExerciseItem> pool;
       if (programme.muscles.isEmpty) {
         pool = fullBodyPool;
@@ -95,8 +107,7 @@ List<ScheduledSession> buildProgrammeSchedule({
         // muscles are equal, as in every shipped template, this reduces to the
         // old expression and nothing changes.
         final muscle = programme
-            .muscles[(week * programme.daysPerWeek + slot) %
-                programme.muscles.length];
+            .muscles[(week * slotsPerWeek + slot) % programme.muscles.length];
         pool = byMuscle[muscle] ?? fullBodyPool;
       }
       if (pool.isEmpty) continue;
@@ -107,8 +118,26 @@ List<ScheduledSession> buildProgrammeSchedule({
         targetMinutes: sessionMinutes ?? kDefaultSessionMinutes,
       );
       final exercise = picked.first;
-      final date = programme.startedAt
-          .add(Duration(days: week * 7 + dayOffsets[slot]));
+      // Built from calendar parts, NOT `startedAt.add(Duration(days: n))`.
+      // `add` moves the absolute instant by exactly n*24h and does not correct
+      // for DST, so a programme started near midnight drifts onto the wrong
+      // calendar day — and therefore the wrong WEEKDAY — the moment a clock
+      // change falls inside its span. That was survivable while days were
+      // merely "evenly spread"; now that the user names the weekdays, it would
+      // break the one guarantee this gate exists to make. Same reason
+      // `programme.dart:215-221` keys its day buckets in UTC.
+      //
+      // Overflow past the end of a month is normalised by the constructor, and
+      // the time of day is carried over so a session keeps the hour it was
+      // enrolled at.
+      final start = programme.startedAt;
+      final date = DateTime(
+        start.year,
+        start.month,
+        start.day + week * 7 + dayOffsets[slot],
+        start.hour,
+        start.minute,
+      );
 
       rows.add(ScheduledSession(
         id: '${nowMicros}_${seq}_${exercise.id}',
@@ -164,6 +193,65 @@ List<ExerciseItem> _fillDay(
     minutes += next.durationMinutes;
   }
   return picked;
+}
+
+/// Which days of the week this programme's sessions land on, as offsets from
+/// [startedOn] (0 = the start day itself).
+///
+/// B5d. The questionnaire asks which weekdays the user trains
+/// (`step_schedule.dart:82-89`, stored as `TrainingSchedule.preferredWeekdays`)
+/// and, until this function existed, nothing in the scheduling path ever read
+/// the answer: [_spreadDays] laid sessions out evenly and a user who said
+/// "Monday, Wednesday, Friday" was given Monday, Wednesday, Thursday — or any
+/// other three days, depending only on which weekday they happened to enrol.
+/// Asking a question and then visibly ignoring the answer is worse than not
+/// asking it.
+///
+/// When the user named no days, nothing changes: the even spread is still the
+/// best available guess and is what every existing enrolment was built with.
+///
+/// ## When the two answers disagree
+///
+/// The questionnaire also asks how many days a week (`daysPerWeek`), so a user
+/// can say "four days" and then tick three weekdays. The named days win, and
+/// the programme becomes a three-day one:
+///
+/// - Naming a weekday is the more specific answer. Scheduling someone on a day
+///   they were shown and did not tick is the one outcome that reads as the app
+///   overriding them, which is exactly the complaint this gate is closing.
+/// - The opposite error is milder and self-correcting: a day short is one tap
+///   on the player's add-exercise button, or an untouched extra rest day.
+///
+/// More named days than [daysPerWeek] keeps the count answer and takes the
+/// [daysPerWeek] days that come soonest after [startedOn] — sorted by distance
+/// from the start day, which is only Monday-to-Sunday order when the programme
+/// happens to start on a Monday.
+///
+/// The caller must keep `Programme.daysPerWeek` equal to this list's length —
+/// `deriveProgrammeProgress` counts completed sessions against that number, so
+/// a programme claiming four days a week over a three-day schedule would
+/// report progress it can never reach.
+List<int> programmeDayOffsets({
+  required DateTime startedOn,
+  required int daysPerWeek,
+  required List<int> preferredWeekdays,
+}) {
+  if (preferredWeekdays.isEmpty) return _spreadDays(daysPerWeek);
+
+  // `DateTime.monday`..`DateTime.sunday` are 1..7. Anything outside that is
+  // not a weekday the questionnaire could have written, so it is dropped
+  // rather than wrapped into a wrong day.
+  final wanted = preferredWeekdays.where((d) => d >= 1 && d <= 7).toSet().toList()
+    ..sort();
+  if (wanted.isEmpty) return _spreadDays(daysPerWeek);
+
+  final offsets = wanted
+      .map((weekday) => (weekday - startedOn.weekday + 7) % 7)
+      .toList()
+    ..sort();
+  return offsets.length <= daysPerWeek
+      ? offsets
+      : offsets.take(daysPerWeek).toList();
 }
 
 /// Evenly spaced day-of-week offsets (0 = start day) for [count] sessions in
