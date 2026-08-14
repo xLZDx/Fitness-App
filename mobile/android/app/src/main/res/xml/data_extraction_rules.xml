@@ -9,7 +9,7 @@
   the consent copy is about. `device-transfer` is the phone-to-phone copy, and
   leaving it out would keep the promise on one route while breaking it on the
   other: the photos would arrive on the new device as envelopes whose key
-  never left the old phone's Keystore -- undecryptable files the user cannot
+  never left the old phone's Keystore - undecryptable files the user cannot
   delete from a screen that will not list them, which is worse than not
   transferring them at all.
 -->

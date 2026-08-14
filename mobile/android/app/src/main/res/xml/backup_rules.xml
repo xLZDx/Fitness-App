@@ -15,13 +15,13 @@
   Android resolves to `PathUtils.getDataDirectory()`, which is
   `context.getDir("flutter", MODE_PRIVATE)`, and `getDir` prefixes `app_`. It
   sits directly under the app data root, which is what `domain="root"` means
-  here -- `domain="file"` is `getFilesDir()` and would miss it entirely.
+  here - `domain="file"` is `getFilesDir()` and would miss it entirely.
 
   Deliberately NOT excluded: the Flutter `SharedPreferences` file. It holds the
   consent flag, which is harmless to restore, and on installs that predate
   A2-sec it may still hold the legacy `progress_photos.key.v1` AES key. A key
   with no ciphertext to open is not a disclosure, and excluding the whole prefs
-  file to reach one entry would throw away every app setting on restore --
+  file to reach one entry would throw away every app setting on restore -
   backup rules exclude files, not keys.
 
   Everything else in the app stays backed up. This is an exclusion list, not a

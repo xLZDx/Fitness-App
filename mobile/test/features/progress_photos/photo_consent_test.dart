@@ -673,6 +673,30 @@ void main() {
       expect('<exclude $excluded'.allMatches(post12).length, 2,
           reason: 'one exclusion per section, not one shared by both');
     });
+
+    test('neither res/xml file has a double-hyphen inside its comment',
+        () {
+      // Found live, not designed up front: shipped once with `--` used as a
+      // prose dash inside both files' header comments (the ASCII-dash
+      // convention `.ps1`/`.bat` files use, applied here by habit) and the
+      // Android build failed at `:app:mergeReleaseResources` --
+      // `javax.xml.stream.XMLStreamException: The string "--" is not
+      // permitted within comments`. Every other check in this file reads
+      // Dart's own string content and would stay green; only a real Gradle
+      // build surfaces this, which is exactly why it needs a permanent,
+      // cheap, non-Gradle guard instead of relying on remembering the rule.
+      const dir = 'android/app/src/main/res/xml';
+      for (final name in ['backup_rules.xml', 'data_extraction_rules.xml']) {
+        final text = File('$dir/$name').readAsStringSync();
+        final start = text.indexOf('<!--') + '<!--'.length;
+        final end = text.indexOf('-->');
+        expect(start, greaterThan('<!--'.length - 1), reason: name);
+        expect(end, greaterThan(start), reason: name);
+        expect(text.substring(start, end), isNot(contains('--')),
+            reason: '$name: XML forbids "--" anywhere inside a comment, not '
+                'just at the delimiters');
+      }
+    });
   });
 }
 

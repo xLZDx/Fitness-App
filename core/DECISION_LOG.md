@@ -7410,3 +7410,59 @@ note's own description of what it was supposed to cover.
   (`_g12b_board.dart` is a manual golden-screenshot harness, leading underscore, not part of
   `flutter test`'s run).
 - `git status` after staging: exactly these 20 files, confirmed via `git diff --cached --stat`.
+
+---
+
+## 2026-08-14 22:06 local (Europe/Chisinau) / 19:06 UTC — Release build failed: XML forbids "--" inside comments, and only a real Gradle build catches it
+
+### What happened
+
+First release-build attempt since R11f-1-fix (`scripts/dev/build_release.ps1 -Distribute`, git
+`4071655`) failed at `:app:mergeReleaseResources` / `:app:parseReleaseLocalResources`:
+
+```
+[Fatal Error] backup_rules.xml:18:10: The string "--" is not permitted within comments.
+javax.xml.stream.XMLStreamException: ParseError at [row,col]:[12,41]
+  Message: The string "--" is not permitted within comments.
+```
+
+Both new `res/xml` files from R11f-1-fix (`backup_rules.xml`, `data_extraction_rules.xml`) used
+`--` as a prose dash inside their header comments -- the ASCII-dash convention this codebase's own
+CLAUDE.md mandates for `.ps1`/`.bat`/`.cmd` files, applied here by habit even though these are XML.
+The XML spec forbids the two-hyphen sequence anywhere inside a comment body, not just at the
+delimiters, and neither `flutter analyze` nor `flutter test` compiles Android resources -- only a
+real `gradlew assembleRelease` (which this build script runs) reaches the XML parser that enforces
+it. Both files had passed every check run on them across two full Codex consensus loops.
+
+### Fix
+
+- Replaced both `--` occurrences with a single ` - ` in `backup_rules.xml`
+  (`res/xml/backup_rules.xml:18,24`) and the one in `data_extraction_rules.xml`
+  (`res/xml/data_extraction_rules.xml:12`). Verified with `grep -n -- '--'` against both files: only
+  the legitimate `<!--` / `-->` delimiters remain.
+- New permanent guard: `photo_consent_test.dart`'s `'neither res/xml file has a double-hyphen
+  inside its comment'` extracts the substring between the first `<!--` and the first `-->` in each
+  file and asserts it contains no `--`. Mutation-proved: reintroducing one `--` turns it red with
+  the exact XML parser's own wording; restored after.
+- Chose a cheap Dart-level string check over a full XML parse (e.g. Python's `xml.dom.minidom`)
+  because `minidom` is lenient about the double-hyphen rule and would not have caught this --
+  checked directly before deciding, not assumed.
+
+### Why this is a real gap, not just an unlucky one-off
+
+Every other check this project runs on Android XML — `flutter analyze`, `flutter test`, the
+manifest-attribute checks already in this same test — reads Dart string content and would have
+stayed green through this exact defect. `gradlew assembleRelease` is the only thing in this
+project's toolchain that actually invokes an XML-comment-aware parser on these two files, and it
+had never been run since they were written across two Codex rounds and one prior full `flutter
+test` pass. The new guard closes that specific hole without needing a Gradle invocation on every
+commit.
+
+### Checks
+
+- `grep -n -- '--'` on both `res/xml/*.xml` files: only `<!--`/`-->` remain.
+- `flutter test test/features/progress_photos/photo_consent_test.dart` -- 18 passed (17 before this
+  fix).
+- New test mutation-proved: reintroducing `--` in `backup_rules.xml` turns it red with the file
+  name and the XML-comment reason; restored immediately after.
+- Actual Gradle build re-attempted after this fix -- see the next log entry for its outcome.
