@@ -7466,3 +7466,30 @@ commit.
 - New test mutation-proved: reintroducing `--` in `backup_rules.xml` turns it red with the file
   name and the XML-comment reason; restored immediately after.
 - Actual Gradle build re-attempted after this fix -- see the next log entry for its outcome.
+
+---
+
+## 2026-08-14 22:15 local (Europe/Chisinau) / 19:15 UTC — Build 1.0.0 (2397) distributed to the tester
+
+Closing step of the run per "Ship the Build to the Tester, With Real Release Notes". No code
+touched.
+
+- Push: `origin/master` = `f6b2eb4` = HEAD, no divergence.
+- Build: `scripts/dev/build_release.ps1 -Distribute`, retried once after the `res/xml` comment fix
+  (previous log entry). Second attempt: Gradle `assembleRelease` succeeded in 387.2s, arm64 split
+  105 MB.
+- Distribution confirmed by Firebase's own output, not by exit code alone:
+  `uploaded new release 1.0.0 (2397) successfully!`, `added release notes successfully`,
+  `distributed to testers/groups successfully`.
+- Release: `https://console.firebase.google.com/project/fitness-app-korostelev/appdistribution/app/android:com.fitnessapp.fitness_app.sptr/releases/6spap8a5uoudg`
+- Release notes covered 28 commits since the last distributed build (1.0.0/2367, `c0e1d48`,
+  2026-08-13): programme generation now reads the questionnaire, "Build from my answers",
+  template fit-ranking, multi-exercise scheduled days opening as one session, History showing one
+  card per workout, 403 catalog exercises got a purpose/technique writeup, the upper-back injury
+  filter now screens something, the progress-photos consent gate, the Android Auto Backup
+  exclusion fix, Form Coach silhouette/avatar/experimental-labelling changes, and several small
+  fixes (sound, speed control, weight-sheet tense, English-default localisation). Named
+  what's still not done: template card order does not yet weigh equipment/injuries, 1484 catalog
+  rows still lack `purpose`, no per-photo delete yet.
+- Full notes text: `D:\Temp\claude\d--Repo\408a2c25-3825-4de7-a233-b3b57d0c18ad\scratchpad\release_notes.txt`
+  (scratchpad, not committed — the notes themselves live in the Firebase release, quoted above).
