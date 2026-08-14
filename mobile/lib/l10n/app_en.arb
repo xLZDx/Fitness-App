@@ -2022,6 +2022,7 @@
   "programmeFitLevel": "level",
   "programmeFitSchedule": "schedule",
   "programmeFitZones": "focus areas",
+  "programmeFitEquipment": "equipment",
   "programmeFitMatches": "Matches your {what}",
   "@programmeFitMatches": {
     "placeholders": {

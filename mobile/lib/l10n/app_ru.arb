@@ -1137,6 +1137,7 @@
   "programmeFitLevel": "уровню",
   "programmeFitSchedule": "расписанию",
   "programmeFitZones": "выбранным зонам",
+  "programmeFitEquipment": "вашему оборудованию",
   "programmeFitMatches": "Подходит по {what}",
   "programmeBuildFromAnswers": "Собрать по моим ответам",
   "programmeBuildFromAnswersHint": "Цель, уровень, дни и зоны — из того, что вы уже рассказали. Шаблон выбирать не нужно.",

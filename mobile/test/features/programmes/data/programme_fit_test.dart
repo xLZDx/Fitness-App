@@ -29,6 +29,15 @@ ProgrammeTemplate _t(
       muscles: muscles,
     );
 
+ExerciseItem _ex(String id, List<String> muscles) => ExerciseItem.fromJson({
+      'id': id,
+      'title': id,
+      'durationMinutes': 10,
+      'difficulty': 'beginner',
+      'muscles': muscles,
+      'steps': const ['a'],
+    });
+
 void main() {
   group('programmeFit', () {
     test('an unanswered question is never a match', () {
@@ -116,6 +125,55 @@ void main() {
       );
     });
 
+    test('no catalogue passed in is never an equipment match', () {
+      // Same "unanswered = no claim" contract as the other four dimensions —
+      // the caller has not resolved a catalogue yet, so there is nothing to
+      // check the template against.
+      final fit = programmeFit(
+        _t('a', muscles: const ['chest']),
+        const UserProfile(uid: 'alice'),
+      );
+      expect(fit.equipment, isFalse);
+    });
+
+    test('a full-body template never claims an equipment match', () {
+      // Same reasoning as the zones exclusion above: a full-body template
+      // draws from the whole catalogue (`buildProgrammeSchedule`'s
+      // `fullBodyPool`), so it would find something there almost by
+      // construction — a claim every template can trivially earn is noise,
+      // not a recommendation.
+      final fit = programmeFit(
+        _t('a'), // isFullBody
+        const UserProfile(uid: 'alice'),
+        catalogue: [_ex('e1', const ['chest'])],
+      );
+      expect(fit.equipment, isFalse);
+    });
+
+    test('equipment fits when every named muscle has real support', () {
+      final fit = programmeFit(
+        _t('a', muscles: const ['chest', 'back']),
+        const UserProfile(uid: 'alice'),
+        catalogue: [_ex('e1', const ['chest']), _ex('e2', const ['back'])],
+      );
+      expect(fit.equipment, isTrue);
+    });
+
+    test('one unsupported muscle is enough to fail the equipment dimension',
+        () {
+      // `every`, not `any`: `buildProgrammeSchedule` silently falls back to
+      // the whole catalogue for a muscle it cannot fill, which is the right
+      // answer for scheduling and the wrong one for claiming a match — the
+      // template's own split (chest/back) would quietly become chest/generic.
+      final fit = programmeFit(
+        _t('a', muscles: const ['chest', 'back']),
+        const UserProfile(uid: 'alice'),
+        // Only 'chest' has support; nothing trains 'back'.
+        catalogue: [_ex('e1', const ['chest'])],
+      );
+      expect(fit.equipment, isFalse);
+    });
+
     test('score counts matched dimensions and nothing else', () {
       final fit = programmeFit(
         _t('a',
@@ -132,6 +190,26 @@ void main() {
         ),
       );
       expect(fit.score, 4);
+    });
+
+    test('a catalogue that covers every named muscle adds a fifth point',
+        () {
+      final fit = programmeFit(
+        _t('a',
+            goal: ProgrammeGoal.muscle,
+            level: ExerciseDifficulty.advanced,
+            daysPerWeek: 3,
+            muscles: const ['chest']),
+        const UserProfile(
+          uid: 'alice',
+          goals: FitnessGoals(
+              primary: ProgrammeGoal.muscle, focusZones: [FocusZone.chest]),
+          level: FitnessLevel(tier: FitnessTier.advanced),
+          schedule: TrainingSchedule(daysPerWeek: 5),
+        ),
+        catalogue: [_ex('e1', const ['chest'])],
+      );
+      expect(fit.score, 5);
     });
   });
 
@@ -208,6 +286,33 @@ void main() {
 
     test('an empty list ranks to an empty list', () {
       expect(rankTemplates(const [], const UserProfile(uid: 'a')), isEmpty);
+    });
+
+    test('the catalogue reaches every template it ranks, not just the first',
+        () {
+      // `shoulders_arms` and `hypertrophy` both target `ProgrammeGoal.muscle`
+      // (B5d-3's own fixture note above), so a catalogue that only supports
+      // one of their muscle sets has to separate them — proves `catalogue`
+      // is threaded per-template through `rankTemplates`, not applied once.
+      final ranked = rankTemplates(
+        programmeTemplates,
+        const UserProfile(
+          uid: 'alice',
+          goals: FitnessGoals(primary: ProgrammeGoal.muscle),
+        ),
+        catalogue: [
+          _ex('e1', const ['shoulders']),
+          _ex('e2', const ['biceps']),
+          _ex('e3', const ['triceps']),
+          // Nothing trains chest/back/quads/hamstrings — `hypertrophy` keeps
+          // its goal match but not an equipment one.
+        ],
+      );
+      final byId = {for (final r in ranked) r.template.id: r.fit};
+      expect(byId['shoulders_arms']!.equipment, isTrue);
+      expect(byId['hypertrophy']!.equipment, isFalse);
+      expect(byId['shoulders_arms']!.score, byId['hypertrophy']!.score + 1,
+          reason: 'the equipment point is what should separate them');
     });
   });
 }

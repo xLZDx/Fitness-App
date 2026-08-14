@@ -10,6 +10,7 @@ import '../../shared/widgets/shell_insets.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../equipment/data/catalog_labels.dart';
 import '../equipment/data/equipment_models.dart';
+import '../equipment/data/exercise_filter.dart' show availableWith;
 import '../equipment/state/equipment_providers.dart';
 import '../form_check/state/form_check_providers.dart';
 import '../personalisation/state/personalisation_providers.dart';
@@ -772,8 +773,44 @@ class _ProgramsTabState extends ConsumerState<_ProgramsTab> {
     // theirs. Ranking happens INSIDE the current filter — a goal chip is the
     // user narrowing the catalogue by hand, and reordering across a filter
     // they set would be overruling them.
-    final profile = ref.watch(screeningProfileProvider).valueOrNull;
-    final templates = rankTemplates(filtered, profile);
+    final profileAsync = ref.watch(screeningProfileProvider);
+    if (profileAsync.hasError) {
+      // Act-gate review (H2): `.valueOrNull` alone reads a genuine fetch
+      // error the same as "still loading" or "no profile yet" — the
+      // template list quietly falls back to unranked with nothing to show a
+      // Firestore/auth failure ever happened. Logged, not surfaced in the
+      // UI: `enroll()` re-reads this same provider fresh at press time
+      // (`programme_providers.dart:141-144`) and would raise there for real,
+      // so this is an observability gap for ranking, not a data-safety one.
+      debugPrint(
+        'screeningProfileProvider error in ProgramsTab ranking: '
+        '${profileAsync.error}',
+      );
+    }
+    final profile = profileAsync.valueOrNull;
+    // H2. The same filtered pool `enroll` actually schedules from — injury
+    // screening then equipment — so ranking cannot claim an equipment fit
+    // that the real schedule would then contradict. Left null (no claim,
+    // same as every other dimension in `ProgrammeFit`) while
+    // `safeCatalogProvider` is still loading, and — same reasoning —
+    // whenever the equipment question itself has never been answered:
+    // `EquipmentAccess.empty`'s `hasGymAccess` is null exactly when nobody
+    // has, and computing a fit against the unasked default would claim an
+    // answer the user never gave.
+    final safeCatalogueAsync = ref.watch(safeCatalogProvider);
+    if (safeCatalogueAsync.hasError) {
+      debugPrint(
+        'safeCatalogProvider error in ProgramsTab ranking: '
+        '${safeCatalogueAsync.error}',
+      );
+    }
+    final safeCatalogue = safeCatalogueAsync.valueOrNull;
+    final equipmentAnswered = profile?.equipment.hasGymAccess != null;
+    final availableCatalogue = safeCatalogue == null || !equipmentAnswered
+        ? null
+        : availableWith(safeCatalogue, profile!.equipment);
+    final templates =
+        rankTemplates(filtered, profile, catalogue: availableCatalogue);
 
     return SmoothScrollList(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 110),
@@ -1314,7 +1351,7 @@ class _BuildFromAnswersCard extends ConsumerWidget {
 
 /// The matched dimensions of [fit], in a fixed order.
 ///
-/// Fixed rather than "strongest first" because the four are unweighted
+/// Fixed rather than "strongest first" because the five are unweighted
 /// ([ProgrammeFit.score]) — there is no strongest. A stable order also means
 /// two cards showing the same two matches read identically instead of
 /// implying a difference that is not there.
@@ -1333,6 +1370,7 @@ List<String> _fitReasons(AppLocalizations l, ProgrammeFit fit) => [
       if (fit.level) l.programmeFitLevel,
       if (fit.schedule) l.programmeFitSchedule,
       if (fit.zones) l.programmeFitZones,
+      if (fit.equipment) l.programmeFitEquipment,
     ];
 
 /// One enrollable programme. The header wash comes from the programme's goal

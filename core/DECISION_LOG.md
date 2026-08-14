@@ -7639,3 +7639,64 @@ removed the `PhotoDeleteSheet.show` gate, re-ran the file, all 3 tests failed (2
 1 on the confirm sheet never appearing); restored, all 3 green again. `flutter test
 test/features/progress_photos/ test/features/workouts_page_test.dart` — 140 passed, 0 failed.
 `flutter analyze lib/features/progress_photos/` — no issues.
+
+---
+
+## 2026-08-15 00:08 local (Europe/Chisinau) / 21:08 UTC — H2: programme ranking now scores equipment/injury fit, and what the Act-gate review found
+
+`PLAN_BUGS_2026-08-13.md:264-267` named the gap: template ranking (B5d-3) already weighs
+goal/level/schedule/zones, but never checks whether the user can actually DO a template's
+exercises — `enroll` screens by injury then equipment before scheduling, ranking did not.
+
+**What shipped.** `ProgrammeFit` (`programme_fit.dart`) gets a fifth dimension, `equipment`:
+`_equipmentFit` returns true only when every muscle the template names has at least one exercise
+in a caller-supplied `catalogue`, false for full-body templates (which draw from the whole
+catalogue and would pass almost by construction — same reasoning the pre-existing `zones`
+dimension already applies) and false when no catalogue is passed in (same "unanswered = no claim"
+contract as the other four). `programmeFit`/`rankTemplates` both take an optional `catalogue`
+parameter rather than resolving one internally, because the function is synchronous and both
+`safeCatalogProvider` and the equipment/injury filter are async — the caller (`workouts_page.dart`,
+`_ProgramsTabState`) resolves the catalogue once for the whole template list, using the exact same
+pool `enroll` schedules from (`safeCatalogProvider` then `availableWith`), so ranking cannot claim
+a fit that the real schedule would then contradict.
+
+**Act-gate review (Rosetta mode, two agents, bundled per Group A).** `flutter-reviewer`: 0
+BLOCKER, 0 MAJOR, 4 MINOR, 2 NIT, verdict APPROVE — confirmed the `every`-not-`any` semantics
+against `buildProgrammeSchedule`'s real per-muscle fallback, and confirmed `availableWith` is
+equipment-only (injury screening is `safeCatalogProvider`'s own `safeFor` call, upstream).
+`silent-failure-hunter`: 2 MAJOR, 1 MINOR — both agents found the same underlying fact
+(`ref.watch(provider).valueOrNull` collapses a genuine `AsyncError` into the same branch as
+"still loading"/"unanswered", with zero logging) but disagreed on severity; silent-failure-hunter
+called it MAJOR for compounding across two adjacent reads (the new `safeCatalogProvider` read at
+the same call site as a pre-existing, identically-shaped `screeningProfileProvider` read),
+flutter-reviewer called the same fact MINOR since it doesn't affect what `enroll()` actually
+schedules — `enroll` re-reads `safeCatalogProvider.future` fresh via a real `await`, so a genuine
+fetch failure surfaces for real at the one point it would cost the user something; ranking-time
+silence only costs a missing equipment badge. Cross-checked every citation from both reports
+against the real files (`equipment_providers.dart:316-320`, `workouts_page.dart:776/786`,
+`programme_providers.dart:141-144`, `exercise_filter.dart:256-262,420-449`,
+`programme_fit.dart:74-80,133-137,157-161`) before accepting any of them — all resolved as
+described, no confabulations.
+
+**What was fixed, and what was left as documented-but-unchanged.** Added `debugPrint` on the error
+branch for both the `screeningProfileProvider` and `safeCatalogProvider` reads in
+`workouts_page.dart`, matching the project's existing swallow-and-log pattern
+(`equipment_providers.dart:128-135`) — cheap, in-scope (both reads directly feed the H2 ranking
+output and now sit beside each other in the same block), and closes the "zero observability"
+complaint both reviewers raised without touching UI behavior. Did NOT rebuild the fold to
+distinguish error from loading at the UI level: both reviewers said the existing collapse is a
+pre-existing, systemic pattern (three more `.valueOrNull ?? []` call sites elsewhere use the same
+shape) rather than a regression this gate introduced, and reworking it here would be exactly the
+kind of scope creep "Act" already forbids — logged as a separate cleanup candidate, not built.
+Fixed two stale doc comments that still said "four" dimensions after this diff made it five
+(`programme_fit.dart`'s class doc, `workouts_page.dart`'s `_fitReasons` doc). Left `rankTemplates`'
+behavior unchanged for the `profile == null` + `catalogue != null` edge case flutter-reviewer named
+(MINOR-3) — equipment can score even without a profile, which is correct (equipment doesn't need
+questionnaire answers, only a template and a catalogue) — and instead corrected the doc comment
+that implied otherwise; the case is unreachable in production today since the only caller gates
+`availableCatalogue` on `profile != null`.
+
+**Checks.** `flutter test test/features/programmes/ test/features/workouts_page_test.dart` — 124
+passed, 0 failed, both before and after the fixes above. Full suite after fixes: `flutter analyze`
+— 7 issues, unchanged pre-existing baseline, 0 new. `flutter test` (whole project) — 2358 passed,
+0 failed.
