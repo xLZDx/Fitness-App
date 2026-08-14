@@ -1007,6 +1007,12 @@
   "progressphotosAngleCustom": "Другой",
   "progressphotosMonthCount": "{count, plural, one{{count} снимок} few{{count} снимка} many{{count} снимков} other{{count} снимка}}",
   "progressphotosDelete": "Удалить снимок",
+  "progressphotosDeleteConfirmTitle": "Удалить этот снимок?",
+  "progressphotosDeleteConfirmBody": "Это необратимо. Резервной копии, из которой можно восстановить снимок, нет нигде.",
+  "progressphotosDeleteFailed": "Снимок не удалён: {arg0}",
+  "@progressphotosDeleteFailed": {
+    "placeholders": { "arg0": { "type": "Object" } }
+  },
   "progressphotosStaysOnPhone": "Зашифровано на этом телефоне. Копии на сервере нет, и поделиться отсюда нельзя.",
   "progressphotosUnreadable": "Этот снимок не удалось показать.",
   "progressphotosShowMore": "{count, plural, one{Показать ещё {count} снимок} few{Показать ещё {count} снимка} many{Показать ещё {count} снимков} other{Показать ещё {count} снимка}}",
@@ -1173,7 +1179,7 @@
   "photosConsentTitle": "Перед первым фото прогресса",
   "photosConsentOnDevice": "Фото шифруется на этом телефоне. Копии на сервере нет, и отсюда его нельзя ни отправить, ни выгрузить.",
   "photosConsentNoBackup": "Из этого же следует, что резервной копии нет. Переустановка приложения или потеря ключа — и фото не восстановит никто.",
-  "photosConsentCamera": "Изображение с камеры не записывается. Снимок появляется только после нажатия затвора.",
+  "photosConsentCamera": "Изображение с камеры не записывается. Снимок появляется только после нажатия затвора, и любой снимок можно удалить в любой момент.",
   "photosConsentAccept": "Принимаю — открыть камеру",
   "photosConsentDecline": "Не сейчас"
 }

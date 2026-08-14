@@ -1791,6 +1791,12 @@
     }
   },
   "progressphotosDelete": "Delete photo",
+  "progressphotosDeleteConfirmTitle": "Delete this photo?",
+  "progressphotosDeleteConfirmBody": "This can't be undone. There is no backup anywhere else to restore it from.",
+  "progressphotosDeleteFailed": "The photo was not deleted: {arg0}",
+  "@progressphotosDeleteFailed": {
+    "placeholders": { "arg0": { "type": "Object" } }
+  },
   "progressphotosStaysOnPhone": "Encrypted on this phone. There is no server copy, and no way to share one from here.",
   "progressphotosUnreadable": "This photo could not be displayed.",
   "progressphotosShowMore": "{count, plural, =1{Show 1 older photo} other{Show {count} older photos}}",
@@ -2103,7 +2109,7 @@
   "photosConsentTitle": "Before your first progress photo",
   "photosConsentOnDevice": "The photo is encrypted on this phone. There is no copy on a server, and nothing here can share or export one.",
   "photosConsentNoBackup": "Which also means there is no backup. Reinstalling the app, or losing its key, loses the photos - nobody can restore them for you.",
-  "photosConsentCamera": "The camera preview is not recorded. A picture exists only after you press the shutter.",
+  "photosConsentCamera": "The camera preview is not recorded. A picture exists only after you press the shutter, and you can delete any photo at any time.",
   "photosConsentAccept": "I agree - open the camera",
   "photosConsentDecline": "Not now"
 }

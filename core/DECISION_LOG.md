@@ -7609,3 +7609,33 @@ separately), not errors.
 tests). `flutter test` — full suite re-run after the catalog data edit: 2349 passed, 0 failed (no
 regression; the data change touches no Dart code path that compares `muscles` for exact duplicate
 count).
+
+---
+
+## 2026-08-15 00:45 local (Europe/Chisinau) / 21:45 UTC — H6: progress-photo delete, wired end to end
+
+`ProgressPhotosController.delete` (`state/progress_photos_providers.dart:335`) has existed since
+before this gate and nothing called it — `PhotoConsentSheet`'s own doc comment named the gap and
+said not to restore the consent copy's delete clause until it was closed.
+
+**What shipped.** `PhotoDeleteSheet` (new,
+`mobile/lib/features/progress_photos/widgets/photo_delete_sheet.dart`), same bottom-sheet shape as
+`PhotoConsentSheet`, accept button in `AppButtonTone.destructive`. `_PhotoTile` in
+`progress_photos_page.dart` now wraps its tile in a `GestureDetector(onLongPress: ...)` calling the
+new top-level `runPhotoDeleteFlow(context, ref, photo)` — same top-level-function shape as
+`runPhotoCaptureFlow`, directly testable without pumping the grid. On a confirmed delete that fails,
+a snackbar says so (`progressphotosDeleteFailed`), mirroring `runPhotoCaptureFlow`'s existing
+failure path rather than swallowing it. Three new ARB keys in both `app_en.arb`/`app_ru.arb`:
+`progressphotosDeleteConfirmTitle`, `progressphotosDeleteConfirmBody`,
+`progressphotosDeleteFailed`. Restored the consent copy's third line — `photosConsentCamera` now
+ends "...and you can delete any photo at any time" again, in both locales — since the control it
+promises now exists. Updated `PhotoConsentSheet`'s doc comment to record that H6 closed the gap
+instead of leaving the "do not restore" note stale.
+
+**Checks.** New `mobile/test/features/progress_photos/delete_flow_test.dart` (3 tests: confirm
+deletes, cancel leaves it alone, a failed delete shows a snackbar) — mirrors `capture_flow_test.dart`'s
+harness (`_RecordingRepo` fake, top-level flow function driven from a bare button). Mutation-proved:
+removed the `PhotoDeleteSheet.show` gate, re-ran the file, all 3 tests failed (2 on a missing key,
+1 on the confirm sheet never appearing); restored, all 3 green again. `flutter test
+test/features/progress_photos/ test/features/workouts_page_test.dart` — 140 passed, 0 failed.
+`flutter analyze lib/features/progress_photos/` — no issues.

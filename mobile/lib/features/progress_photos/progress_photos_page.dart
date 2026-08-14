@@ -20,6 +20,7 @@ import 'state/progress_photos_providers.dart';
 import 'widgets/photo_bitmap.dart';
 import 'widgets/photo_capture_sheet.dart';
 import 'widgets/photo_consent_sheet.dart';
+import 'widgets/photo_delete_sheet.dart';
 import 'widgets/photo_details_sheet.dart';
 import 'widgets/photo_review_screen.dart';
 
@@ -289,6 +290,33 @@ Future<bool> _ensurePhotoConsent(BuildContext context, WidgetRef ref) async {
   return true;
 }
 
+/// Long-press a tile, confirm, gone. The only way to remove a photo — see
+/// `PhotoConsentSheet`'s doc comment for why the consent copy can promise
+/// this again as of H6.
+///
+/// Top-level for the same reason as [runPhotoCaptureFlow]: directly callable
+/// from a test without pumping a whole grid, and nothing here reads the
+/// widget it was called from.
+Future<void> runPhotoDeleteFlow(
+  BuildContext context,
+  WidgetRef ref,
+  ProgressPhoto photo,
+) async {
+  final l10n = AppLocalizations.of(context);
+  final messenger = ScaffoldMessenger.of(context);
+
+  if (!await PhotoDeleteSheet.show(context)) return;
+  if (!context.mounted) return;
+
+  await ref.read(progressPhotosControllerProvider.notifier).delete(photo.id);
+  final state = ref.read(progressPhotosControllerProvider);
+  if (state.hasError) {
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.progressphotosDeleteFailed(state.error!))),
+    );
+  }
+}
+
 /// How many photos the timeline shows before the user asks for more.
 ///
 /// Ten rows of three. Enough that the first screen and a scroll or two are
@@ -504,26 +532,30 @@ class _PhotoTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          _PhotoImage(photo: photo),
-          Positioned(
-            left: 6,
-            right: 6,
-            bottom: 6,
-            child: Text(
-              DateFormat.MMMd(l10n.localeName).format(photo.takenAt),
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppSemanticColors.onGradientInk,
-                    fontWeight: FontWeight.w700,
-                  ),
+    return GestureDetector(
+      key: const Key('photos.tile.longPress'),
+      onLongPress: () => runPhotoDeleteFlow(context, ref, photo),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _PhotoImage(photo: photo),
+            Positioned(
+              left: 6,
+              right: 6,
+              bottom: 6,
+              child: Text(
+                DateFormat.MMMd(l10n.localeName).format(photo.takenAt),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: AppSemanticColors.onGradientInk,
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

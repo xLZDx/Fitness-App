@@ -37,18 +37,21 @@ import '../../../shared/widgets/app_buttons.dart';
 /// Nothing here claims the photos are analysed, scored or compared by anything
 /// off the phone, because nothing does that.
 ///
-/// ## What it deliberately does NOT say
+/// ## The delete clause, and why it left and came back
 ///
 /// The third line ended "...and you can delete any photo at any time" until
-/// the gate's own review checked it against the build. It is not true today:
-/// `ProgressPhotosController.delete` exists
-/// (`state/progress_photos_providers.dart:335-344`) and no widget calls it,
-/// `_PhotoTile` has no tap or long-press, and the `progressphotosDelete`
-/// string sits in both ARB files with zero readers. A consent screen that
-/// promises a control the build does not have is the exact failure this whole
-/// gate exists to prevent, so the clause was removed rather than the missing
-/// screen quietly added — wiring delete is a feature, and this gate is not it.
-/// Do not restore the sentence before the button exists.
+/// a gate review checked it against the build and found it false:
+/// `ProgressPhotosController.delete` existed
+/// (`state/progress_photos_providers.dart:335-344`) but no widget called it —
+/// `_PhotoTile` had no tap or long-press, and `progressphotosDelete` sat in
+/// both ARB files with zero readers. A consent screen that promises a control
+/// the build does not have is the exact failure this screen exists to
+/// prevent, so the clause was removed rather than the missing screen quietly
+/// added. H6 wired it: `_PhotoTile.onLongPress` opens `PhotoDeleteSheet`,
+/// which calls the same controller method. The clause is back in
+/// `photosConsentCamera` now that it is true again — if delete is ever
+/// removed or gated again, remove the clause with it rather than leaving a
+/// promise the build no longer keeps.
 class PhotoConsentSheet extends StatelessWidget {
   const PhotoConsentSheet({super.key});
 
