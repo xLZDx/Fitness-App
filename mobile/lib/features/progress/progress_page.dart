@@ -101,8 +101,8 @@ class ProgressPage extends ConsumerWidget {
               ),
             )
           else
-            for (final log in logs.take(5)) ...[
-              _RecentLogCard(log: log),
+            for (final session in bySession(logs).take(5)) ...[
+              _RecentLogCard(session: session),
               const SizedBox(height: 10),
             ],
         ],
@@ -116,6 +116,35 @@ class ProgressPage extends ConsumerWidget {
 /// log-entry view carries one exercise with no set collection.
 List<WorkoutSession> _sessionsOf(WidgetRef ref) =>
     ref.watch(workoutSessionsProvider).valueOrNull ?? const [];
+
+/// Recent activity, grouped into one entry per WORKOUT instead of one per
+/// exercise.
+///
+/// `workoutSessionHistoryProvider` emits a row per exercise on purpose, and
+/// that is right for every other consumer: recovery, progression and personal
+/// records are all keyed by `exerciseId` and need the exercises apart. This
+/// list is the one reader that does not. A scheduled day of four exercises is
+/// one thing the user did; shown as four rows it reads as four separate
+/// workouts AND fills every slot of a five-card list, so the rest of the
+/// history disappears behind a single day.
+///
+/// Grouping happens here rather than in the provider precisely because the
+/// other consumers must keep seeing the rows.
+///
+/// Order follows the first row seen for each session, so whatever order the
+/// provider produced survives and nothing is re-sorted behind its back.
+@visibleForTesting
+List<List<WorkoutLogEntry>> bySession(List<WorkoutLogEntry> logs) {
+  final order = <String>[];
+  final grouped = <String, List<WorkoutLogEntry>>{};
+  for (final log in logs) {
+    grouped.putIfAbsent(log.sessionId, () {
+      order.add(log.sessionId);
+      return <WorkoutLogEntry>[];
+    }).add(log);
+  }
+  return [for (final id in order) grouped[id]!];
+}
 
 /// A section heading, in the page's existing style.
 class _Heading extends StatelessWidget {
@@ -711,13 +740,20 @@ class _BarChart extends StatelessWidget {
 }
 
 class _RecentLogCard extends ConsumerWidget {
-  const _RecentLogCard({required this.log});
-  final WorkoutLogEntry log;
+  const _RecentLogCard({required this.session});
+
+  /// Every row of one workout, in the order the session lists them. Never
+  /// empty: [bySession] only opens a group when it has a row to put in it.
+  final List<WorkoutLogEntry> session;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    // Every row of a session carries that session's own date and duration
+    // (`asLogEntries` copies both onto each), so reading them off the first
+    // row is the whole workout's date and length, not the first exercise's.
+    final log = session.first;
     return GlassCard(
       padding: const EdgeInsets.all(14),
       child: Row(
@@ -740,14 +776,33 @@ class _RecentLogCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  resolveExerciseTitle(ref.watch(exerciseTitlesProvider),
-                      log.exerciseId, log.exerciseTitle),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w700),
-                ),
+                Builder(builder: (context) {
+                  final first = resolveExerciseTitle(
+                      ref.watch(exerciseTitlesProvider),
+                      log.exerciseId,
+                      log.exerciseTitle);
+                  return Text(
+                    // A multi-exercise workout is named by the exercise it
+                    // opened with plus a bare "+3", the same shape Home already
+                    // uses for a scheduled day (`home_page.dart:927-934`) and
+                    // for the same stated reason: "3 exercises" needs a Russian
+                    // plural form for 1, 3 and 5, and this row has room for
+                    // neither the string nor the mistake.
+                    //
+                    // The alternative — a generic "Workout" — was rejected: the
+                    // first exercise is the only thing the app actually knows
+                    // about a day (a `ScheduledSession` carries no name of its
+                    // own), and replacing a true name with a generic one would
+                    // make the list less informative, not more honest.
+                    session.length > 1
+                        ? '$first  +${session.length - 1}'
+                        : first,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  );
+                }),
                 const SizedBox(height: 2),
                 Text(
                   AppLocalizations.of(context).notificationsMin(
