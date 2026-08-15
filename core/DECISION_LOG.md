@@ -9955,3 +9955,38 @@ model, and this entry exists so nobody later assumes the branch carries a Codex 
 Two items on it are still open decisions and are NOT settled by having been pushed:
 the personalisation ranking direction (Gate H), and the stance-independence prerequisite blocking
 Gate E part 2.
+
+---
+
+## 2026-08-15 — `formcoach/gates-a-c` merged and pushed to `master`; session-wide child-agent hook added
+
+`master` fast-forwarded `5b7c9ac..4d8e681` (11 commits, same range described in the entry above)
+and pushed to `origin/master`. No merge commit — the branch was already a direct descendant of
+`master`, so `git merge --ff-only` applied cleanly. This is what lands the expert-team pack
+(`.claude/agents/*`, `.claude/skills/fitness-*`, `.claude/policies/fitness-*`,
+`.claude/hooks/validate_fitness_child_agent.py`, `core/agent-engine-v2.3.1/`) in the project's main
+working copy instead of only the worktree it was built in.
+
+**Pre-merge conflict, resolved by stash-and-verify, not by overwrite.** `master` had 3 files
+overlapping paths the branch also touched:
+`mobile/lib/features/form_check/widgets/coach_readiness_band.dart` (tracked, modified),
+`mobile/test/features/form_check/coach_top_strip_test.dart` (tracked, modified), and
+`mobile/test/features/form_check/coach_single_status_test.dart` (untracked). All three were parked
+with `git stash push -u` before the merge rather than merged/overwritten blind.
+
+After the fast-forward landed, each stashed file was diffed against the branch's committed version
+at the same path rather than assumed safe to drop. All three showed the same shape: the stashed
+copy was an earlier, less complete draft of the *same* work the branch already finished — e.g.
+`coach_top_strip_test.dart` stash version (158 lines, 6 cases) is a strict subset of the branch's
+version (213 lines, 8 cases, plus `_armedProvider`/`avatarModeProvider` overrides the stash draft
+never added); `coach_readiness_band.dart` stash version (100 lines) predates the branch's rewrite
+(259 lines). Nothing in the stash was unique. The stash was dropped (`ea25c25`) rather than popped.
+
+**Hook wiring added:** `.claude/settings.json` (new file, this commit) wires
+`validate_fitness_child_agent.py` as a session-wide `PreToolUse`/`Agent` hook. This is
+defense-in-depth, not a replacement — `fitness-recommendation-orchestrator.md` already wires the
+same hook via subagent frontmatter (documented Claude Code mechanism, scoped to that agent's own
+active lifetime). The settings.json wiring covers delegation attempts session-wide, including
+outside that one agent. Verified functionally before commit: allowed `subagent_type` → exit 0,
+unknown `subagent_type` → exit 2 deny, non-`Agent` tool call → exit 0, all through the exact
+interpreter path (`C:/Python314/python.exe`) the config declares.
