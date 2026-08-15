@@ -5,6 +5,7 @@ import '../../equipment/state/equipment_providers.dart';
 import '../../workouts/state/workout_session_providers.dart';
 import '../data/fitness_model.dart';
 import '../data/for_you_ranker.dart';
+import '../data/volume_ledger.dart';
 
 /// Live FitnessProfile derived from the user's logs + the catalog's
 /// muscle map. Recomputed when either dependency changes.
@@ -38,14 +39,55 @@ final fitnessProfileProvider = FutureProvider<FitnessProfile>((ref) async {
 /// never disposed. Composing the two providers here removes the key entirely.
 final rankedForYouProvider = FutureProvider<List<ExerciseItem>>((ref) async {
   final candidates = await ref.watch(forYouExercisesProvider.future);
-  final profile = ref.watch(fitnessProfileProvider).valueOrNull;
-  // Cold start: no logs, no model, nothing to personalise from. The filtered
-  // order is the honest answer, not a made-up one.
-  if (profile == null) return candidates;
+  // Cold start: nothing trained, so nothing is neglected more than anything
+  // else. The filtered order is the honest answer, not a made-up one.
+  final deficit = await ref.watch(weeklyVolumeDeficitProvider.future);
+  if (deficit.isEmpty) return candidates;
   final logs = ref.watch(workoutSessionHistoryProvider);
   final recent = logs
       .where((l) => DateTime.now().difference(l.completedAt).inDays < 7)
       .map((l) => l.exerciseId)
       .toSet();
-  return rankForYou(candidates, profile: profile, recentExerciseIds: recent);
+  return rankForYou(candidates, deficit: deficit, recentExerciseIds: recent);
+});
+
+/// How far short of its weekly set target each muscle group is, 0..1.
+///
+/// The one input selection is allowed to have. Built from sessions rather than
+/// from the log-entry view, because that view keeps `sets.last` and drops
+/// `sets.length` — the count is the whole measure.
+final weeklyVolumeDeficitProvider =
+    FutureProvider<Map<String, double>>((ref) async {
+  // `.future`, not `.valueOrNull`. Reading the value would return null while
+  // the stream is still loading, which this provider cannot distinguish from
+  // "this user has trained nothing" — and the two produce opposite feeds. The
+  // first draft did exactly that, so every cold open showed the unpersonalised
+  // catalogue order for one frame and then reshuffled under the user's thumb.
+  final sessions = await ref.watch(workoutSessionsProvider.future);
+
+  final repo = ref.watch(equipmentRepositoryProvider);
+  final allEquipment = await repo.listEquipment();
+  final exercises = <ExerciseItem>[
+    ...await repo.bodyweightExercises(),
+    for (final eq in allEquipment) ...await repo.exercisesFor(eq.id),
+  ];
+
+  final byId = <String, ExerciseMuscles>{
+    for (final ex in exercises)
+      ex.id: (primary: ex.primaryMuscles, secondary: ex.muscles),
+  };
+  // Every muscle the catalogue names, not only the ones already trained: a
+  // group with no entry in the ledger is the maximum deficit, and reading the
+  // vocabulary off the ledger would drop exactly those.
+  final allMuscles = <String>{
+    for (final ex in exercises) ...ex.primaryMuscles,
+    for (final ex in exercises) ...ex.muscles,
+  };
+
+  final volume = weeklyVolume(
+    sessions,
+    musclesByExerciseId: byId,
+    now: DateTime.now(),
+  );
+  return volumeDeficit(volume, allMuscles);
 });

@@ -1,7 +1,7 @@
 import '../../cycle_aware/data/cycle_phase.dart';
 import '../../equipment/data/equipment_models.dart';
 import '../../equipment/data/exercise_filter.dart';
-import '../../personalisation/data/fitness_model.dart';
+import '../../personalisation/data/volume_ledger.dart';
 import '../../profile/data/profile_models.dart';
 import '../../recovery/data/deload_detector.dart';
 import 'workout_plan.dart';
@@ -9,7 +9,7 @@ import 'workout_plan.dart';
 /// Pure plan-builder. Combines:
 ///   - 34Q intake (reported injuries → contraindication tags)
 ///   - candidate exercise pool (free + premium catalog)
-///   - personalisation profile (per-muscle Bayesian fitness scores)
+///   - weekly per-muscle set deficit (what has been trained least)
 ///   - deload verdict (auto-pulls intensity if signals fire)
 ///   - optional cycle-phase hint (intensity multiplier)
 ///
@@ -19,7 +19,7 @@ import 'workout_plan.dart';
 GeneratedPlan buildPlan({
   required List<ExerciseItem> candidatePool,
   required Iterable<Injury> reportedInjuries,
-  required FitnessProfile profile,
+  required Map<String, double> deficit,
   required DeloadVerdict deload,
   CyclePhase? cyclePhase,
   int targetMinutes = 45,
@@ -34,19 +34,36 @@ GeneratedPlan buildPlan({
   // 2. Score each remaining exercise by adaptive priority; novelty is broken
   //    by insertion order.
   //
-  //    This used to spell the formula out — `1.0 - profile.averageFor(...)` —
-  //    which made it a second, independent copy of the For-You ranker's
-  //    ranking direction, on a surface no document about that ranking
-  //    mentions. Whoever changed one would have left this one ranking the
-  //    other way. Both now read the single definition, which is also where the
-  //    disagreement about which way is correct is recorded.
+  //    Priority is the weekly SET DEFICIT of the muscles the exercise is for,
+  //    not an inverted difficulty rating. The old expression asked "what did
+  //    this person find hard" and used the answer to decide what to show them
+  //    more of; this asks "what have they trained least", which is the
+  //    question the plan is actually trying to answer and the one a difficulty
+  //    rating was never evidence about.
   final scored = [
-    for (final ex in safe)
+    for (var i = 0; i < safe.length; i++)
       (
-        ex: ex,
-        priority: profile.adaptivePriorityFor(ex.muscles),
+        ex: safe[i],
+        priority: exercisePriority(
+          (primary: safe[i].primaryMuscles, secondary: safe[i].muscles),
+          deficit,
+        ),
+        i: i,
       ),
-  ]..sort((a, b) => b.priority.compareTo(a.priority));
+  ]..sort((a, b) {
+      // Unattributed exercises last, in catalogue order. 182 rows carry no
+      // muscle tag; when they scored mid-range they tied with every untrained
+      // muscle and a greedy top-N could fill a whole session from them while
+      // the rationale claimed the plan came from the user's own history.
+      if (a.priority == null || b.priority == null) {
+        if (a.priority == null && b.priority == null) return a.i.compareTo(b.i);
+        return a.priority == null ? 1 : -1;
+      }
+      final byPriority = b.priority!.compareTo(a.priority!);
+      // Explicit index tie-break: `List.sort` is not stable in Dart, and the
+      // comment here used to claim novelty was "broken by insertion order".
+      return byPriority != 0 ? byPriority : a.i.compareTo(b.i);
+    });
 
   // 3. Greedy fill to the target duration cap (with a small safety
   //    buffer so we don't overshoot).
@@ -81,14 +98,26 @@ GeneratedPlan buildPlan({
   if (injuryList.isNotEmpty) {
     final filteredOut = candidatePool.length - safe.length;
     if (filteredOut > 0) {
+      // "injuries", not "conditions". `filterContraindicated` is passed
+      // `injuryList` and nothing else; `HealthHistory.conditions` is a
+      // separate field that reaches no filter at all. Claiming otherwise
+      // told a user with diabetes and hypertension that both had been
+      // screened for, which is the one direction a safety claim must never
+      // be wrong in.
       reasons.add(
           'Filtered out $filteredOut exercise(s) that conflict with '
-          'your reported conditions.');
+          'an injury you reported.');
     }
   }
   if (reasons.isEmpty) {
-    reasons.add('Built from your latest difficulty ratings — '
-        'weakest muscle groups first.');
+    // This used to read "Built from your latest difficulty ratings — weakest
+    // muscle groups first", and both halves were wrong. The builder never read
+    // a difficulty rating for ordering, and "weakest" was a claim about
+    // strength that nothing here measures. It now says what the code does.
+    reasons.add(deficit.isEmpty
+        ? 'A starting session from your available equipment — '
+            'log a few workouts and this will follow what you train least.'
+        : 'Ordered by the muscle groups you have trained least this week.');
   }
 
   return GeneratedPlan(

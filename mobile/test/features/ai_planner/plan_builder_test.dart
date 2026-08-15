@@ -3,13 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitness_app/features/ai_planner/data/plan_builder.dart';
 import 'package:fitness_app/features/cycle_aware/data/cycle_phase.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
-import 'package:fitness_app/features/personalisation/data/fitness_model.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/recovery/data/deload_detector.dart';
 
 ExerciseItem _ex(
   String id, {
   List<String> muscles = const [],
+  List<String> primary = const [],
   List<String> contra = const [],
   int minutes = 10,
 }) =>
@@ -17,6 +17,7 @@ ExerciseItem _ex(
       id: id,
       title: id,
       equipmentId: null,
+      primaryMuscles: primary,
       muscles: muscles,
       difficulty: ExerciseDifficulty.intermediate,
       durationMinutes: minutes,
@@ -36,20 +37,36 @@ void main() {
     test('drops contraindicated exercises from the pool', () {
       final pool = [
         _ex('squat', muscles: ['quads']),
-        _ex('overhead-press',
-            muscles: ['shoulders'],
-            contra: ['shoulder']),
+        _ex('overhead-press', muscles: ['shoulders'], contra: ['shoulder']),
       ];
       final plan = buildPlan(
         candidatePool: pool,
         reportedInjuries: const [
           Injury(bodyPart: 'shoulder', type: 'impingement'),
         ],
-        profile: FitnessProfile.empty,
+        deficit: const <String, double>{},
         deload: _noDeload,
       );
       expect(plan.exercises.map((e) => e.id), ['squat']);
       expect(plan.rationale, contains('Filtered out 1'));
+    });
+
+    test('the filter claim names injuries, which is all it screened', () {
+      // `filterContraindicated` is passed the injury list and nothing else.
+      // The string used to say "your reported conditions", which told a user
+      // who had entered diabetes and hypertension that both had been screened
+      // for. `HealthHistory.conditions` reaches no filter at all.
+      final plan = buildPlan(
+        candidatePool: [
+          _ex('a'),
+          _ex('press', contra: ['shoulder']),
+        ],
+        reportedInjuries: const [Injury(bodyPart: 'shoulder', type: 'strain')],
+        deficit: const <String, double>{},
+        deload: _noDeload,
+      );
+      expect(plan.rationale, contains('an injury you reported'));
+      expect(plan.rationale, isNot(contains('condition')));
     });
 
     test('respects target minutes (greedy fill)', () {
@@ -61,7 +78,7 @@ void main() {
       final plan = buildPlan(
         candidatePool: pool,
         reportedInjuries: const [],
-        profile: FitnessProfile.empty,
+        deficit: const <String, double>{},
         deload: _noDeload,
         targetMinutes: 30,
       );
@@ -79,7 +96,7 @@ void main() {
       final plan = buildPlan(
         candidatePool: [_ex('squat', muscles: ['quads'])],
         reportedInjuries: const [],
-        profile: FitnessProfile.empty,
+        deficit: const <String, double>{},
         deload: deload,
       );
       expect(plan.title, 'Deload day');
@@ -96,7 +113,7 @@ void main() {
       final plan = buildPlan(
         candidatePool: [_ex('squat', muscles: ['quads'])],
         reportedInjuries: const [],
-        profile: FitnessProfile.empty,
+        deficit: const <String, double>{},
         deload: deload,
         cyclePhase: CyclePhase.luteal,
       );
@@ -111,11 +128,91 @@ void main() {
       final plan = buildPlan(
         candidatePool: pool,
         reportedInjuries: const [],
-        profile: FitnessProfile.empty,
+        deficit: const <String, double>{},
         deload: _noDeload,
         targetMinutes: 999,
       );
       expect(plan.exercises.length, 6);
+    });
+  });
+
+  group('the plan is ordered by what has been trained least', () {
+    // Every case above passes an EMPTY deficit, so until this group existed
+    // the ordering — the thing the builder is for — had no coverage at all.
+    // That is how the previous signal could be inverted without a red test.
+
+    test('the biggest deficit is picked first', () {
+      final plan = buildPlan(
+        candidatePool: [
+          _ex('bench', primary: ['chest']),
+          _ex('row', primary: ['back']),
+        ],
+        reportedInjuries: const [],
+        deficit: const {'chest': 0.1, 'back': 0.9},
+        deload: _noDeload,
+        targetMinutes: 10,
+      );
+      expect(plan.exercises.map((e) => e.id), ['row']);
+    });
+
+    test('and the reverse, so the order is read and not fixed', () {
+      final plan = buildPlan(
+        candidatePool: [
+          _ex('bench', primary: ['chest']),
+          _ex('row', primary: ['back']),
+        ],
+        reportedInjuries: const [],
+        deficit: const {'chest': 0.9, 'back': 0.1},
+        deload: _noDeload,
+        targetMinutes: 10,
+      );
+      expect(plan.exercises.map((e) => e.id), ['bench']);
+    });
+
+    test('an untagged exercise cannot displace a tagged one', () {
+      // 182 catalogue rows carry no muscle tag. When they scored mid-range
+      // they tied with every untrained muscle and this greedy fill could take
+      // the whole session from them, while the rationale claimed the plan came
+      // from the user's own history.
+      final plan = buildPlan(
+        candidatePool: [
+          _ex('untagged-1'),
+          _ex('untagged-2'),
+          _ex('row', primary: ['back']),
+        ],
+        reportedInjuries: const [],
+        // Deliberately small: even a nearly-met muscle outranks no signal.
+        deficit: const {'back': 0.05},
+        deload: _noDeload,
+        targetMinutes: 10,
+      );
+      expect(plan.exercises.map((e) => e.id), ['row']);
+    });
+
+    test('the cold-start rationale does not claim a history it has not got',
+        () {
+      final cold = buildPlan(
+        candidatePool: [_ex('a', primary: ['chest'])],
+        reportedInjuries: const [],
+        deficit: const {},
+        deload: _noDeload,
+      );
+      final warm = buildPlan(
+        candidatePool: [_ex('a', primary: ['chest'])],
+        reportedInjuries: const [],
+        deficit: const {'chest': 0.8},
+        deload: _noDeload,
+      );
+
+      expect(cold.rationale, contains('starting session'));
+      expect(warm.rationale, contains('trained least'));
+      // The claim this replaces. The builder never read a rating to order
+      // anything, and "weakest" is a statement about strength that nothing
+      // here measures.
+      for (final r in [cold.rationale, warm.rationale]) {
+        expect(r, isNot(contains('rating')));
+        expect(r, isNot(contains('weakest')));
+      }
     });
   });
 }

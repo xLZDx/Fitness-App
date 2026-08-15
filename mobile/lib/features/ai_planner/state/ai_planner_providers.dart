@@ -12,7 +12,7 @@ import '../data/workout_plan.dart';
 /// Live generated plan for the signed-in user. Reads:
 ///   - candidate exercise pool from the equipment repository
 ///   - reported injuries from the user's profile
-///   - personalisation profile (Bayesian)
+///   - weekly per-muscle set deficit (what has been trained least)
 ///   - deload verdict (recovery signals)
 ///
 /// Returns null while any dependency is still loading.
@@ -21,9 +21,8 @@ final generatedPlanProvider = FutureProvider<GeneratedPlan?>((ref) async {
   if (user == null) return null;
   final profile = await ref.watch(currentProfileProvider.future);
   if (profile == null) return null;
-  final fitness =
-      await ref.watch(fitnessProfileProvider.future);
   final deload = ref.watch(deloadVerdictProvider);
+  final deficit = await ref.watch(weeklyVolumeDeficitProvider.future);
 
   // Build the candidate pool from the catalog. Limit to body-weight +
   // every available equipment so the planner doesn't propose machines
@@ -38,7 +37,7 @@ final generatedPlanProvider = FutureProvider<GeneratedPlan?>((ref) async {
   return buildPlan(
     candidatePool: pool,
     reportedInjuries: profile.health.injuries,
-    profile: fitness,
+    deficit: deficit,
     deload: deload,
   );
 });

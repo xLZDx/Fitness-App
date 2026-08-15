@@ -26,8 +26,12 @@ import 'questionnaire_notifier.dart';
 final onboardingPlanPreviewProvider =
     FutureProvider.autoDispose<GeneratedPlan>((ref) async {
   final draft = ref.watch(questionnaireDraftProvider);
-  final fitness = await ref.watch(fitnessProfileProvider.future);
   final deload = ref.watch(deloadVerdictProvider);
+  // A brand-new user has no training history, so every muscle is at maximum
+  // deficit and the ordering carries no information. That is the honest state
+  // for a preview built before the first session, and it is why this screen
+  // must not claim the plan was personalised from past work.
+  final deficit = await ref.watch(weeklyVolumeDeficitProvider.future);
 
   final repo = ref.watch(equipmentRepositoryProvider);
   final allEquipment = await repo.listEquipment();
@@ -42,7 +46,7 @@ final onboardingPlanPreviewProvider =
     // tapping the body map, which is what makes the preview reflect the
     // limitations screen rather than ignore it.
     reportedInjuries: draft.health.injuries,
-    profile: fitness,
+    deficit: deficit,
     deload: deload,
     targetMinutes: draft.schedule.sessionMinutes ?? 45,
   );

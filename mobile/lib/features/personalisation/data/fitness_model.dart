@@ -12,14 +12,16 @@ import '../../workouts/data/workout_log.dart';
 /// Higher score → user is comfortable. Lower score → the user has been
 /// reporting this group as too hard.
 ///
-/// What the ranker DOES with that is deliberately not asserted here. This
-/// comment used to finish "ranker upweights novel / progression-worthy
-/// options … lower score → ranker downweights to give the muscle group
-/// recovery time", which is the exact opposite of what
-/// [FitnessProfile.adaptivePriorityFor] has always computed. A reader had no
-/// way to tell which of the two was the intent and which was the bug. See that
-/// method: the disagreement is real, it is a product decision, and it is
-/// recorded there in one place instead of being asserted differently in three.
+/// **This score does not decide what to train.** It once did, through
+/// `adaptivePriorityFor`, and the direction was argued over at length — this
+/// comment asserted one answer while the code computed the other. The argument
+/// was the wrong one: a difficulty rating is evidence about how a dose landed,
+/// and no sign convention turns it into evidence about which muscle has been
+/// neglected. Those are different questions with different observables.
+///
+/// Selection reads `volume_ledger.dart` — sets actually performed. This score
+/// keeps the job it can do, which is telling `progression.dart` whether to
+/// move the load.
 ///
 /// Initialising with `(good=2, total=4)` (Beta(2,2) prior) gives a
 /// neutral 0.5 starting score so brand-new users aren't biased.
@@ -89,29 +91,20 @@ class FitnessProfile {
     return sum / list.length;
   }
 
-  /// How strongly an exercise working [muscles] should be surfaced, 0..1.
+  /// **Withdrawn 2026-08-15.** This class no longer answers "what should be
+  /// trained next".
   ///
-  /// **One definition.** This arithmetic was written out twice — in
-  /// `for_you_ranker.dart` and again in `ai_planner/data/plan_builder.dart` —
-  /// and the second copy is not referenced by any document that discusses the
-  /// first. A change made to one would have silently left the other ranking the
-  /// opposite way, on a surface nobody was looking at.
+  /// `adaptivePriorityFor` returned `1 - averageFor(muscles)`, turning a
+  /// post-set difficulty rating into a targeting decision: a muscle the user
+  /// kept reporting as too hard was surfaced more. The direction was argued
+  /// over for a long time and the argument was the wrong one — a difficulty
+  /// rating is evidence about TOLERANCE, and no sign convention makes it
+  /// evidence about what has been neglected.
   ///
-  /// **The direction is contested and has NOT been changed here.** What ships,
-  /// and what this returns, is `1 - score`: a muscle group the user keeps
-  /// rating "too hard" is surfaced MORE, on the reading that you are weakest at
-  /// what you struggle with and weakness is what training should attack.
-  ///
-  /// The file that DEFINES the score says the opposite, in four places: tooEasy
-  /// means "we should push harder here", tooHard means "we should back off
-  /// here", and — directly about this function — "Lower score → ranker
-  /// downweights to give the muscle group recovery time".
-  ///
-  /// Both are coherent training philosophies, which is why this is a decision
-  /// and not a defect to be quietly fixed. It is recorded rather than resolved
-  /// so that whoever settles it does so on purpose and in one place.
-  double adaptivePriorityFor(Iterable<String> muscles) =>
-      1.0 - averageFor(muscles);
+  /// Targeting now comes from `volume_ledger.dart`, which counts sets actually
+  /// performed. Difficulty keeps the job it can do: `progression.dart` reads it
+  /// to adjust the load. The method is deleted rather than deprecated because
+  /// a deprecated ranking signal is one import away from being a live one.
 }
 
 /// Pure builder: replays the user's logs into a [FitnessProfile].

@@ -10075,3 +10075,86 @@ and keeping the measure separate from its first consumer is what lets the measur
 its own terms.
 
 Not pushed.
+
+---
+
+## 2026-08-15 — Gate L: the deficit becomes the signal, and the rating stops choosing
+
+**Operator decision 1, second half.** Gate K built the measure and deliberately left it unconsumed.
+This gate makes it the only input to selection and deletes the old one.
+
+### What was removed, and why deleted rather than deprecated
+
+`FitnessProfile.adaptivePriorityFor` returned `1 - averageFor(muscles)` and was the sole ranking
+input for both consumers. It is deleted. A deprecated ranking signal is one import away from being a
+live one, and the whole content of the decision is that the two signals must not meet.
+
+`FitnessProfile` itself stays. It still answers the question it can answer — whether to move the
+load — which `progression.dart` reads. The class doc now says so in the first line: **this score
+does not decide what to train.**
+
+### The seam is the call signature
+
+`rankForYou` and `buildPlan` used to take a `FitnessProfile`, which is built entirely from difficulty
+ratings. They now take `Map<String, double> deficit`, which no rating can reach. Re-introducing the
+coupling requires changing a public signature — a deliberate act, not an edit inside a function
+body. `difficulty_does_not_target_test.dart` asserts this as a compiling call rather than a comment.
+
+That file replaces `adaptive_priority_direction_test.dart`, and the assertion changed shape:
+from "the direction is X" to "no difficulty history changes the order at all". Strictly stronger,
+and it cannot be satisfied by flipping a sign — which was the failure mode the old test allowed.
+
+### Two claims the code had outgrown
+
+FACT: `app_en.arb` told the user their rating made "the recommended-for-you feed adjust to keep the
+challenge right where it should be". FACT: `plan_builder.dart` closed with "Built from your latest
+difficulty ratings — weakest muscle groups first". Neither was true after this gate, and the second
+was not true before it either — the builder never read a rating for ordering, and "weakest" is a
+claim about strength that nothing in the app measures. Both fixed in EN and RU, with a test that
+asserts the rationale contains neither `rating` nor `weakest`.
+
+This is the third instance this session of the same class: the claim layer outrunning the mechanism
+layer. It is being fixed at each site rather than noted.
+
+### `.future`, not `.valueOrNull`
+
+`weeklyVolumeDeficitProvider` first read `ref.watch(workoutSessionsProvider).valueOrNull` and
+returned an empty map on null. That conflates "still loading" with "has trained nothing", and the
+two produce opposite feeds — every cold open would have shown the unpersonalised catalogue order for
+one frame and then reshuffled under the user's thumb. Now awaits `.future`.
+
+### The wiring test was measuring through the wrong view
+
+`ranked_feed_wiring_test.dart` injected `WorkoutLogEntry` rows at `workoutSessionHistoryProvider`,
+which is DERIVED. Since the feed now orders by set count and `asLogEntries` is exactly the function
+that drops set count, the old fixture shape could not express the input the feature reads — the two
+volume tests went red for a correct reason. Rewritten to override the session stream, which is both
+the real source and a single override: the history view, the profile and the novelty set all derive
+from it. Two cases added that the log-entry shape made unexpressible: a session outside the window
+stops counting, and three one-set sessions equal one three-set session.
+
+### Verification, and two mutations that survived the first pass
+
+Full suite 2451 passed / 0 failed. `flutter analyze` clean (four pre-existing `unnecessary_type_check`
+warnings unrelated to this gate).
+
+Ten mutations, all caught after two fixes. The two that initially SURVIVED are the useful part:
+
+1. **Deleting the index tie-break changed nothing.** The test used 30 items; `List.sort` runs a
+   stable insertion sort below a length threshold of 32, so the assertion was satisfied by an
+   implementation detail rather than by the code under test. Raised to 64, where the dual-pivot
+   quicksort path takes over. UNKNOWN → FACT only because the mutation was run; reading the test
+   would not have shown it.
+2. **Deleting the primary/secondary de-duplication guard changed nothing.** No fixture had a muscle
+   in both lists. A catalogue row naming glutes as both primary and secondary would have inflated it
+   by 1.5x. Fixture and test added.
+
+Both are the same failure this session keeps finding in the app itself: the test checked the file
+rather than the behaviour.
+
+### Not in this gate
+
+`exercise_filter.dart:91-92` stale claim, `cleanReps` over-crediting silhouette-missed reps,
+`AiCoachSource.exercise` dead branch. Queued, none blocking.
+
+Not pushed.

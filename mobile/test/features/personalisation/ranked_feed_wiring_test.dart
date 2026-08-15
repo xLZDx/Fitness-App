@@ -5,7 +5,7 @@ import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/data/equipment_repository.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/personalisation/state/personalisation_providers.dart';
-import 'package:fitness_app/features/workouts/data/workout_log.dart';
+import 'package:fitness_app/features/workouts/data/workout_session.dart';
 import 'package:fitness_app/features/workouts/state/workout_session_providers.dart';
 
 /// The personalisation layer has to actually reach a screen.
@@ -19,11 +19,21 @@ import 'package:fitness_app/features/workouts/state/workout_session_providers.da
 /// `for_you_ranker_test.dart` already covers. What they pin is that the output
 /// depends on the user, because that is the property the feature exists for
 /// and the one that was silently absent.
+///
+/// **Rewritten 2026-08-15.** The fixtures used to be `WorkoutLogEntry` rows
+/// injected at `workoutSessionHistoryProvider`, which is a DERIVED view. The
+/// feed now orders by weekly set count, and `asLogEntries` — the function that
+/// builds that view — keeps `sets.last` and drops `sets.length`. So the old
+/// fixture shape could not express the input the feature reads. Overriding the
+/// session stream instead is both the real source and one override rather than
+/// two: the history view, the fitness profile and the novelty set all derive
+/// from it.
 
 ExerciseItem ex(String id, List<String> muscles) => ExerciseItem(
       id: id,
       title: id,
       equipmentId: null,
+      primaryMuscles: muscles,
       muscles: muscles,
       difficulty: ExerciseDifficulty.beginner,
       durationMinutes: 5,
@@ -37,35 +47,45 @@ final _catalog = [
   ex('back_a', const ['back']),
 ];
 
-/// A COMPLETED AND RATED session.
+/// A COMPLETED session carrying [sets] sets of one exercise.
 ///
-/// The rating is not decoration: `buildProfile` skips every log whose
-/// difficulty is null, so an unrated workout teaches the model nothing. That
-/// is a defensible design — a log with no rating carries no information about
-/// how hard the work was — but it means the feed only personalises for someone
-/// who answers the sheet that appears on "Mark complete". A fixture without it
-/// produces an empty profile, the ranker returns its input untouched, and a
-/// test written that way passes for the wrong reason.
-WorkoutLogEntry log(String exerciseId,
-        {int daysAgo = 2,
-        DifficultyRating rating = DifficultyRating.tooEasy}) =>
-    WorkoutLogEntry(
-      id: 'log_$exerciseId$daysAgo',
-      exerciseId: exerciseId,
-      exerciseTitle: exerciseId,
-      completedAt: DateTime.now().subtract(Duration(days: daysAgo)),
-      durationMinutes: 30,
-      difficulty: rating,
-    );
+/// The set count is the whole fixture. A session with an empty `sets` list
+/// contributes no volume — correctly, since no set was performed — so a
+/// fixture that omits it produces an all-maximum deficit, every exercise ties,
+/// and the test passes on the cold-start path instead of the one it names.
+WorkoutSession session(
+  String exerciseId, {
+  int daysAgo = 2,
+  int sets = 3,
+}) {
+  final at = DateTime.now().subtract(Duration(days: daysAgo));
+  return WorkoutSession(
+    id: 'session_${exerciseId}_$daysAgo',
+    title: exerciseId,
+    startedAt: at,
+    completedAt: at,
+    status: WorkoutSessionStatus.completed,
+    durationMinutes: 30,
+    exercises: [
+      WorkoutSessionExercise(
+        exerciseId: exerciseId,
+        exerciseTitle: exerciseId,
+        sets: [
+          for (var i = 0; i < sets; i++) (weightKg: 20.0, reps: 10),
+        ],
+      ),
+    ],
+  );
+}
 
 /// Serves the same three exercises the feed is overridden with.
 ///
 /// Needed as well as the feed override, and the reason is the point of the
-/// test: `fitnessProfileProvider` builds its muscle map from the REPOSITORY,
-/// not from the feed. Without this the profile came back null, the ranker
-/// returned its input untouched, and the first draft of these tests passed the
-/// "no history" case and failed the two that matter — which is exactly what a
-/// wiring bug looks like from the outside.
+/// test: the deficit provider builds its muscle map and its muscle VOCABULARY
+/// from the REPOSITORY, not from the feed. Without this there are no known
+/// muscles, every deficit map is empty, the ranker returns its input untouched,
+/// and the two tests that matter fail while the cold-start one passes — which
+/// is exactly what a wiring bug looks like from the outside.
 class _FakeRepo implements EquipmentRepository {
   @override
   Future<List<EquipmentItem>> listEquipment() async => const [];
@@ -80,15 +100,11 @@ class _FakeRepo implements EquipmentRepository {
   Future<List<ExerciseItem>> bodyweightExercises() async => _catalog;
 }
 
-ProviderContainer _container(List<WorkoutLogEntry> logs) {
+ProviderContainer _container(List<WorkoutSession> sessions) {
   final c = ProviderContainer(overrides: [
     forYouExercisesProvider.overrideWith((_) async => _catalog),
     equipmentRepositoryProvider.overrideWithValue(_FakeRepo()),
-    // F3.3 read-convergence: personalisation_providers.dart now reads
-    // workoutSessionHistoryProvider (derived from workout_sessions), not
-    // workoutLogsProvider -- override the same List<WorkoutLogEntry> shape
-    // one level down the new pipeline instead of faking a session stream.
-    workoutSessionHistoryProvider.overrideWith((_) => logs),
+    workoutSessionsProvider.overrideWith((_) => Stream.value(sessions)),
   ]);
   addTearDown(c.dispose);
   return c;
@@ -96,10 +112,9 @@ ProviderContainer _container(List<WorkoutLogEntry> logs) {
 
 void main() {
   test('with no history the filtered order is kept', () async {
-    // Cold start. Inventing an order from nothing would be a guess dressed as
-    // personalisation.
+    // Cold start. Every muscle is equally untrained, so there is nothing to
+    // order by — inventing one would be a guess dressed as personalisation.
     final c = _container(const []);
-    await c.read(fitnessProfileProvider.future);
     final feed = await c.read(rankedForYouProvider.future);
     expect(feed.map((e) => e.id), _catalog.map((e) => e.id));
   });
@@ -107,11 +122,10 @@ void main() {
   test('training one muscle group pushes it down the feed', () async {
     // The whole promise: what you have been doing least comes first.
     final c = _container([
-      log('chest_a'),
-      log('chest_a', daysAgo: 3),
-      log('chest_a', daysAgo: 4),
+      session('chest_a'),
+      session('chest_a', daysAgo: 3),
+      session('chest_a', daysAgo: 4),
     ]);
-    await c.read(fitnessProfileProvider.future);
     final feed = await c.read(rankedForYouProvider.future);
 
     expect(feed, hasLength(_catalog.length), reason: 'nothing may be dropped');
@@ -123,23 +137,53 @@ void main() {
   test('two different histories produce two different feeds', () async {
     // The property that was missing. Before the wiring this passed trivially
     // for the wrong reason: both were the catalog order.
-    Future<List<String>> feedFor(List<WorkoutLogEntry> logs) async {
-      final c = _container(logs);
-      await c.read(fitnessProfileProvider.future);
+    Future<List<String>> feedFor(List<WorkoutSession> sessions) async {
+      final c = _container(sessions);
       return (await c.read(rankedForYouProvider.future))
           .map((e) => e.id)
           .toList();
     }
 
-    final chest = await feedFor([log('chest_a'), log('chest_a', daysAgo: 5)]);
-    final legs = await feedFor([log('legs_a'), log('legs_a', daysAgo: 5)]);
+    final chest =
+        await feedFor([session('chest_a'), session('chest_a', daysAgo: 5)]);
+    final legs =
+        await feedFor([session('legs_a'), session('legs_a', daysAgo: 5)]);
     expect(chest, isNot(legs));
   });
 
   test('the ranked feed is the same set, only reordered', () async {
-    final c = _container([log('legs_a')]);
-    await c.read(fitnessProfileProvider.future);
+    final c = _container([session('legs_a')]);
     final feed = await c.read(rankedForYouProvider.future);
     expect(feed.map((e) => e.id).toSet(), _catalog.map((e) => e.id).toSet());
+  });
+
+  test('a session outside the window stops counting', () async {
+    // The window is what makes the deficit a CURRENT measure rather than a
+    // lifetime tally. Without it a muscle trained hard once, a year ago, stays
+    // at the bottom of the feed forever.
+    final stale = _container([session('chest_a', daysAgo: 30, sets: 20)]);
+    final feed = await stale.read(rankedForYouProvider.future);
+    expect(feed.map((e) => e.id), _catalog.map((e) => e.id),
+        reason: 'a month-old session leaves every muscle equally neglected, '
+            'which is the cold-start order');
+  });
+
+  test('sets, not sessions, are what count', () async {
+    // Three one-set sessions and one three-set session are the same volume.
+    // The old log-entry view could not tell them apart at all: it kept
+    // `sets.last`, so both read as a single row per session and the
+    // three-session fixture would have looked like three times the work.
+    Future<List<String>> feedFor(List<WorkoutSession> sessions) async =>
+        (await _container(sessions).read(rankedForYouProvider.future))
+            .map((e) => e.id)
+            .toList();
+
+    final spread = await feedFor([
+      session('chest_a', daysAgo: 1, sets: 1),
+      session('chest_a', daysAgo: 2, sets: 1),
+      session('chest_a', daysAgo: 3, sets: 1),
+    ]);
+    final oneGo = await feedFor([session('chest_a', daysAgo: 1, sets: 3)]);
+    expect(spread, oneGo);
   });
 }

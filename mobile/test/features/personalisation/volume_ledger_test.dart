@@ -48,6 +48,10 @@ const _muscles = <String, ExerciseMuscles>{
   'row': (primary: ['back'], secondary: ['biceps']),
   'squat': (primary: ['quads'], secondary: ['glutes']),
   'untagged': (primary: [], secondary: []),
+  // A real catalogue shape: 'glutes' appears in BOTH lists. Rows written by
+  // different hands do this, and it is not a data error — a hip thrust really
+  // is a glute movement that also uses the glutes as support.
+  'thrust': (primary: ['glutes'], secondary: ['glutes', 'hamstrings']),
 };
 
 const _allMuscles = ['chest', 'back', 'quads', 'triceps', 'shoulders', 'biceps',
@@ -79,6 +83,22 @@ void main() {
       expect(v['triceps']!.sets, lessThan(v['chest']!.sets),
           reason: 'counting a secondary as a full set is the error this '
               'replaces — a bench press is not four sets of triceps work');
+    });
+
+    test('a muscle listed as both primary and secondary is credited once', () {
+      // Found by mutation: deleting the de-duplication guard changed nothing,
+      // because no fixture had a muscle in both lists. Without the guard a
+      // catalogue row that names glutes twice inflates them by 1.5x, and the
+      // feed then reports a muscle as nearly done on work that was counted and
+      // then counted again.
+      final v = _volume([
+        _session('s1', _now.subtract(const Duration(days: 1)), [('thrust', 4)]),
+      ]);
+
+      expect(v['glutes']!.sets, 4.0,
+          reason: 'the primary weight, not primary + secondary');
+      expect(v['hamstrings']!.sets, 4.0 * kSecondaryMuscleWeight,
+          reason: 'the genuinely-secondary muscle is unaffected');
     });
 
     test('frequency is counted separately from volume', () {

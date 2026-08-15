@@ -12,7 +12,7 @@ import '../equipment/widgets/exercise_thumb.dart';
 /// "AI workout generator" page. Surfaces the [GeneratedPlan] from the
 /// pure builder. Reads:
 ///   - injury list (from profile)
-///   - personalisation profile (from logs + difficulty ratings)
+///   - weekly per-muscle set deficit (from logged sessions)
 ///   - deload verdict
 class AiPlannerPage extends ConsumerWidget {
   const AiPlannerPage({super.key});
