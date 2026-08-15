@@ -10774,3 +10774,93 @@ work is a broken recommendation. No further change. Basis: **FACT**, verified at
 
 Full suite **2593 passed / 0 failed** (2586 before). `flutter analyze lib/ test/` reports the same
 7 pre-existing issues, none in files touched here.
+
+## 2026-08-16 — Independent review round, and what it found
+
+Three read-only reviewers were run in parallel over the branch (R3 routing: the safety layer, the
+programme/recovery/counter work, and the tests themselves). Round 1 was independent — none was shown
+another's opinion. Every finding below was re-verified against the source before acting; none was
+taken on the reviewer's word.
+
+### BLOCKER — a scheduled session could offer "Start workout" for work the app refuses
+
+FACT. `session_screening_providers.dart:67` and `:113` both asked
+`ExerciseResolution.hiddenForInjury`, which since Gate N answers exactly one member of `BlockReason`.
+Everything else the eligibility layer can say — a screening answer, a movement restriction,
+post-operative restrictions, a clinician's instruction — was invisible to it. So a user who became
+blocked AFTER scheduling a session saw an unstruck day on Home with a live CTA, and kept receiving
+the OS reminder for it. The player refuses correctly on the next screen
+(`workout_player_page.dart:203`), so this was a misrepresentation rather than a way through — the app
+telling somebody a session is available while its own boundary has withdrawn it.
+
+`ScreenedSession.hiddenExerciseIds` / `hiddenForInjury` are now `withheldExerciseIds` /
+`hasWithheldExercise`, both loops test `resolution.withheldFor.isNotEmpty`, and Home's hero CTA and
+tile label read the same question. Equipment cannot strike a day: `screenOne` deliberately leaves it
+out of the context it evaluates, so a day is never withheld for kit the user does not own.
+
+**Evidence.** `session_screening_test.dart`: a clinician's advice strikes both exercises of the day
+and `hiddenEntirely`; an unanswered screen does the same; the reminder is cancelled for a non-injury
+block. Two existing fixtures had to change with it — `profile: null` used to stand in for "nothing
+wrong with this user", which since Gate M means the PAR-Q+ is unanswered and the whole person is
+blocked. Those now spell out a cleared screen, and the unscreened case has a test of its own saying
+so.
+
+### MAJOR — the ranker guard compared ids, and the doc comment called it a property of the type
+
+FACT. `programme_builder.dart` accepted the ranker's list when its length and id SET matched. A
+ranker returning freshly built `ExerciseItem`s carrying the right ids and forged
+`contraindications` passed, and those forged objects were what the builder then planned, validated
+and scheduled — so `validateProgramme`'s `ineligibleExerciseIncluded` check would have been
+re-reading the ranker's own fields instead of the catalogue row. Not reachable from the shipped
+`rank` closure, which filters and reorders real pool elements; entirely reachable from the ML ranker
+the comment above it anticipates.
+
+`_isPermutationOf` compares by `identical`. A ranker may hand back the objects it was given, in any
+order, and nothing else.
+
+**Evidence.** `programme_builder_test.dart`, *a ranker that FORGES a row with the right id is
+ignored*: asserts no scheduled exercise carries the forged tag AND that every one is `identical` to
+a catalogue object. Mutation verified — restoring the id-set check turns it red.
+
+### MINOR — `volumeOutOfBand` could not fire for half the roles it documents
+
+FACT. Frequency and volume iterated one set, `declaredRoles ∩ frequencyRoles ∩ trainable`. With the
+default `frequencyRoles = kPrimaryStrengthRoles` that excluded both core roles, so their weekly sets
+were unbounded whatever was programmed — against a fault documented as "weekly programmed sets for a
+role fall outside the configured band". Frequency stays scoped to `frequencyRoles`, because a spec
+that schedules core once a week is making a choice; volume is now asked of every declared, trainable
+role.
+
+**Evidence.** A spec with one core slot at 99 sets against a 1–10 band now reports
+`volumeOutOfBand` for `coreAntiExtension`. The shipped specs are unaffected — all 119 programme
+tests stayed green through the change, which is the measurement that the bands were already right
+rather than an assumption that they were.
+
+### MAJOR — two paywall tests proved presence, not wiring
+
+FACT. *"no hardcoded plan CTA literal"* asserted each `l10n.sub*` symbol appears somewhere in the
+file. Swapping two `cta:` lines between plan cards keeps every assertion true while the Member card
+offers "Become a Supporter". The test now walks from each `tier:` line to the first `cta:` after it —
+the pairing itself. Mutation verified.
+
+*"the paywall does not sell a body-composition feature"* forbade the symbol `l10n.subFeatureBodyComp`
+only, so pasting the sentence back as a raw literal would have sold the retracted feature again with
+the test green. It now bans the PHRASE from the page source in both languages, and the l10n key is
+deleted from both `.arb` files so the symbol no longer compiles either.
+
+### MINOR — a tautology
+
+`expect(const WorkoutPlayerPage(...), isA<WorkoutPlayerPage>())` passes against
+`class WorkoutPlayerPage extends ExercisePage`, which is precisely the collapse the test's own
+comment says it guards. Mutual exclusion added in both directions.
+
+### Reported and NOT acted on
+
+The test reviewer left nine files unexamined and said so rather than clearing them; the programme
+reviewer left four claims unreached. Both are recorded here as **not cleared, not examined** rather
+than folded into a pass. A review that stops early is a smaller review, not a cleaner one.
+
+### Verification
+
+Full suite **2599 passed / 0 failed** (2593 before). `flutter analyze lib/ test/` reports the same
+7 pre-existing issues, none in files touched here.

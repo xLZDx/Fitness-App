@@ -83,10 +83,51 @@ void main() {
     // method that was never written. A line on a price card is a promise; this
     // is the one that had nothing behind it.
     test('the paywall does not sell a body-composition feature', () {
+      // Checked as a PROMISE, not as a symbol. The first version of this test
+      // only forbade `l10n.subFeatureBodyComp,`, so pasting the sentence back
+      // as a raw literal would have sold the retracted feature again with the
+      // test still green. The l10n key is gone from both .arb files as well,
+      // so the symbol no longer compiles either.
+      final source = File('lib/features/subscription/subscription_page.dart')
+          .readAsStringSync()
+          .toLowerCase();
+      for (final banned in const ['body comp', 'состав тела', 'bodycomp']) {
+        expect(source.contains(banned), isFalse,
+            reason: 'put "$banned" back only together with a feature that '
+                'does it');
+      }
+      for (final arb in const ['en', 'ru']) {
+        expect(File('lib/l10n/app_$arb.arb').readAsStringSync(),
+            isNot(contains('subFeatureBodyComp')),
+            reason: 'a key nothing may use is a key waiting to be used');
+      }
+    });
+
+    /// Presence is not wiring. The CTA test above proves each symbol appears
+    /// somewhere in the file; swapping two of them between plan cards keeps
+    /// every one of those assertions true while the Member card offers
+    /// "Become a Supporter". This walks from each `tier:` line to the first
+    /// `cta:` after it, which is the pairing itself.
+    test('each plan card carries the CTA of its own tier', () {
       final source = File('lib/features/subscription/subscription_page.dart')
           .readAsStringSync();
-      expect(source.contains('l10n.subFeatureBodyComp,'), isFalse,
-          reason: 'put it back only together with a feature that does it');
+      const expected = {
+        'SubscriptionTier.free': 'l10n.subStayMember',
+        'SubscriptionTier.standard': 'l10n.subBecomeSupporter',
+        'SubscriptionTier.celebrityTrainer': 'l10n.subBecomeSustainer',
+      };
+      for (final e in expected.entries) {
+        final at = source.indexOf('tier: ${e.key},');
+        expect(at, isNot(-1), reason: '${e.key} names no plan card');
+        // The card's own CTA is the FIRST one after its tier line. Swapping
+        // two `cta:` lines between cards moves each away from its tier and
+        // fails here, while every presence check above stays green.
+        final cta = source.indexOf('cta: ', at);
+        expect(cta, isNot(-1), reason: '${e.key} has no CTA after it');
+        expect(source.startsWith('cta: ${e.value},', cta), isTrue,
+            reason: '${e.key} is paired with '
+                '${source.substring(cta, cta + 40).split(String.fromCharCode(10)).first}');
+      }
     });
   });
 

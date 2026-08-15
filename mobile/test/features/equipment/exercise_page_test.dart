@@ -184,7 +184,13 @@ void main() {
     // Cheap, and it is the thing a future refactor is most likely to undo:
     // collapsing one back into the other and leaving a single screen doing
     // both jobs again.
+    //
+    // `isA<X>()` on an instance of X is a tautology and passed happily against
+    // `class WorkoutPlayerPage extends ExercisePage` — the exact collapse this
+    // is here to catch. Mutual exclusion is the property that is not free.
     expect(const ExercisePage(exerciseId: 'x'), isA<ExercisePage>());
     expect(const WorkoutPlayerPage(exerciseId: 'x'), isA<WorkoutPlayerPage>());
+    expect(const WorkoutPlayerPage(exerciseId: 'x'), isNot(isA<ExercisePage>()));
+    expect(const ExercisePage(exerciseId: 'x'), isNot(isA<WorkoutPlayerPage>()));
   });
 }

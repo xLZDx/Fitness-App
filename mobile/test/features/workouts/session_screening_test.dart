@@ -10,6 +10,8 @@ import 'package:fitness_app/features/equipment/data/asset_equipment_repository.d
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
+import 'package:fitness_app/features/safety/data/health_flags.dart';
+import 'package:fitness_app/features/safety/data/par_q.dart';
 import 'package:fitness_app/features/workouts/data/mock_scheduled_session_repository.dart';
 import 'package:fitness_app/features/workouts/data/scheduled_session.dart';
 import 'package:fitness_app/features/workouts/data/workout_session.dart';
@@ -57,9 +59,47 @@ const _rack = EquipmentItem(
   description: 'd',
 );
 
+/// A PAR-Q+ every answer of which is "no".
+///
+/// Explicit in every fixture below, because since Gate M an unanswered screen
+/// blocks the whole person — so a profile that simply omits it is testing the
+/// screening gate, not the injury filter. The unscreened case has its own test.
+const _cleared = {
+  ParQQuestion.heartConditionOrHighBloodPressure: false,
+  ParQQuestion.chestPain: false,
+  ParQQuestion.dizzinessOrLossOfConsciousness: false,
+  ParQQuestion.otherChronicCondition: false,
+  ParQQuestion.prescribedMedication: false,
+  ParQQuestion.musculoskeletalProblem: false,
+  ParQQuestion.medicallySupervisedOnly: false,
+};
+
 const _injured = UserProfile(
   uid: 'u1',
-  health: HealthHistory(injuries: [Injury(bodyPart: 'knee', type: 'strain')]),
+  health: HealthHistory(
+    screening: _cleared,
+    injuries: [Injury(bodyPart: 'knee', type: 'strain')],
+  ),
+);
+
+/// Cleared screen, no injuries: nothing about this user withholds anything.
+const _healthy = UserProfile(
+  uid: 'u1',
+  health: HealthHistory(screening: _cleared),
+);
+
+/// Cleared screen, no injuries, and a clinician who said not to exercise.
+///
+/// The reason the widened check exists: `BlockReason.clinicianAdvice` is not
+/// an injury, and the old `hiddenForInjury` question could not see it.
+const _advisedAgainst = UserProfile(
+  uid: 'u1',
+  health: HealthHistory(
+    screening: _cleared,
+    flags: HealthFlags(
+      clinicianAdvice: ClinicianExerciseAdvice.advisedAgainstExercise,
+    ),
+  ),
 );
 
 class _RecordingNotifications implements NotificationService {
@@ -170,23 +210,61 @@ void main() {
       await sessions.save('u1', dayWithSquatSecond(soon));
       final screened = await screenedFrom(container());
       expect(screened, hasLength(1));
-      expect(screened.single.hiddenExerciseIds, {'squat'});
-      expect(screened.single.hiddenForInjury, isTrue);
+      expect(screened.single.withheldExerciseIds, {'squat'});
+      expect(screened.single.hasWithheldExercise, isTrue);
     });
 
     test('the safe exercises of that day are not marked', () async {
       await sessions.save('u1', dayWithSquatSecond(soon));
       final screened = await screenedFrom(container());
-      expect(screened.single.hiddenExerciseIds, isNot(contains('row')));
+      expect(screened.single.withheldExerciseIds, isNot(contains('row')));
       expect(screened.single.hiddenEntirely, isFalse,
           reason: 'one bad exercise must not strike out the whole day');
     });
 
     test('a day with no injured exercise is not flagged', () async {
       await sessions.save('u1', dayWithSquatSecond(soon));
+      final screened = await screenedFrom(container(profile: _healthy));
+      expect(screened.single.withheldExerciseIds, isEmpty);
+      expect(screened.single.hasWithheldExercise, isFalse);
+    });
+
+    test('a clinician saying no strikes the whole day, injuries or not',
+        () async {
+      // The BLOCKER this rename fixes. The loop asked
+      // `ExerciseResolution.hiddenForInjury`, which since Gate N answers one
+      // member of `BlockReason` — so a user whose clinician advised against
+      // exercise, whose screening had just blocked them, or who was still
+      // under post-operative restrictions saw an unstruck day with a live
+      // "Start workout" button over work the player refuses on the next
+      // screen.
+      await sessions.save('u1', dayWithSquatSecond(soon));
+      final screened = await screenedFrom(container(profile: _advisedAgainst));
+      expect(screened.single.hasWithheldExercise, isTrue);
+      expect(screened.single.withheldExerciseIds, {'row', 'squat'},
+          reason: 'a whole-person block is about the person, not the movement');
+      expect(screened.single.hiddenEntirely, isTrue);
+    });
+
+    test('an unanswered screen withholds the day as well', () async {
+      // Fail-closed, and the reason the fixtures above spell out a cleared
+      // PAR-Q: a profile that simply omits it is not a neutral fixture.
+      await sessions.save('u1', dayWithSquatSecond(soon));
       final screened = await screenedFrom(container(profile: null));
-      expect(screened.single.hiddenExerciseIds, isEmpty);
-      expect(screened.single.hiddenForInjury, isFalse);
+      expect(screened.single.hasWithheldExercise, isTrue);
+      expect(screened.single.hiddenEntirely, isTrue);
+    });
+
+    test('a reminder is cancelled for a non-injury block too', () async {
+      await sessions.save('u1', dayWithSquatSecond(soon));
+      final c = container(profile: _advisedAgainst);
+      final sub = c.listen(scheduledSessionsProvider, (_, __) {});
+      addTearDown(sub.close);
+      await c.read(scheduledSessionsProvider.future);
+      final cancelled =
+          await c.read(sessionReminderReconcilerProvider).reconcile();
+      expect(cancelled, 1);
+      expect(notifications.cancelled, contains('s1'));
     });
 
     test('the reminder is cancelled when the second exercise conflicts',
@@ -211,7 +289,7 @@ void main() {
       await sessions.save('u1', _session('s1', 'squat', soon));
       final c = container();
       final screened = await screenedFrom(c);
-      expect(screened.single.hiddenForInjury, isTrue);
+      expect(screened.single.hasWithheldExercise, isTrue);
     });
 
     test('and is flagged rather than deleted', () async {
@@ -227,14 +305,18 @@ void main() {
       await sessions.save('u1', _session('s2', 'row', soon));
       final c = container();
       final screened = await screenedFrom(c);
-      expect(screened.single.hiddenForInjury, isFalse);
+      expect(screened.single.hasWithheldExercise, isFalse);
     });
 
-    test('nothing is flagged for a user with no injuries', () async {
+    test('nothing is flagged for a cleared user with no injuries', () async {
+      // `profile: null` used to stand in for "nothing wrong with this user".
+      // Since Gate M it means the PAR-Q+ has not been answered, which blocks
+      // the whole person — so the fixture that says "no injuries" now has to
+      // say "and screened clear", or it is testing the other gate.
       await sessions.save('u1', _session('s1', 'squat', soon));
-      final c = container(profile: null);
+      final c = container(profile: _healthy);
       final screened = await screenedFrom(c);
-      expect(screened.single.hiddenForInjury, isFalse);
+      expect(screened.single.hasWithheldExercise, isFalse);
     });
   });
 

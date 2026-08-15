@@ -289,6 +289,29 @@ class ProgrammeBuildRequest {
 }
 
 /// Builds, then validates. Returns [ProgrammeRefused] if either stage fails.
+/// Whether [candidate] holds exactly the objects in [original], reordered.
+///
+/// Identity, deliberately: `ExerciseItem` has no value equality, and even if it
+/// did, "equal to a catalogue row" is a weaker statement than "is the catalogue
+/// row". The whole point of the check is that a ranker cannot introduce an
+/// object the eligibility layer never saw.
+bool _isPermutationOf(List<ExerciseItem> candidate, List<ExerciseItem> original) {
+  if (candidate.length != original.length) return false;
+  final remaining = List<ExerciseItem>.of(original);
+  for (final e in candidate) {
+    var found = false;
+    for (var i = 0; i < remaining.length; i++) {
+      if (identical(remaining[i], e)) {
+        remaining.removeAt(i);
+        found = true;
+        break;
+      }
+    }
+    if (!found) return false;
+  }
+  return remaining.isEmpty;
+}
+
 ProgrammeBuildResult buildProgramme(ProgrammeBuildRequest request) {
   final spec = request.spec;
 
@@ -337,9 +360,15 @@ ProgrammeBuildResult buildProgramme(ProgrammeBuildRequest request) {
     // A ranker that adds, drops or substitutes is ignored rather than obeyed.
     // Its job is order; anything else is the safety boundary moving, and the
     // deterministic list is what the programme is built from.
-    final sameSet = out.length == entry.value.length &&
-        out.map((e) => e.id).toSet().containsAll(entry.value.map((e) => e.id));
-    ranked[entry.key] = sameSet ? out : entry.value;
+    //
+    // Compared by IDENTITY, not by id. An id-set check accepts a list of
+    // freshly built `ExerciseItem`s carrying the right ids and forged
+    // `contraindications` / `equipmentId` — and those forged objects are what
+    // the rest of this function would then plan, validate and schedule, so
+    // `validateProgramme` would be re-checking the ranker's own fields instead
+    // of the catalogue row. A ranker may hand back the objects it was given,
+    // in whatever order it likes, and nothing else.
+    ranked[entry.key] = _isPermutationOf(out, entry.value) ? out : entry.value;
   }
 
   final sessions = <PlannedSession>[];
@@ -441,9 +470,18 @@ List<ProgrammeFinding> validateProgramme(
   for (final s in sessions) {
     (byWeek[s.week] ??= []).add(s);
   }
-  final checkedRoles = spec.declaredRoles
-      .intersection(spec.frequencyRoles)
-      .intersection(trainableRoles ?? spec.declaredRoles);
+  final trainable = trainableRoles ?? spec.declaredRoles;
+  // Frequency is asked only of the roles the spec names, because a spec that
+  // schedules a core slot once a week is making a deliberate choice.
+  final frequencyChecked =
+      spec.declaredRoles.intersection(spec.frequencyRoles).intersection(trainable);
+  // Volume is asked of EVERY declared, trainable role. The two used to share
+  // one set, so `volumeOutOfBand` could not fire for a role outside
+  // `frequencyRoles` — with the default `kPrimaryStrengthRoles` that is both
+  // core roles, whose weekly sets were therefore never bounded at all. A fault
+  // documented as "weekly programmed sets fall outside the configured band"
+  // has to mean every role that has weekly programmed sets.
+  final volumeChecked = spec.declaredRoles.intersection(trainable);
   for (final week in byWeek.entries) {
     final frequency = <MovementRole, int>{};
     final volume = <MovementRole, int>{};
@@ -464,12 +502,14 @@ List<ProgrammeFinding> validateProgramme(
         frequency[r] = (frequency[r] ?? 0) + 1;
       }
     }
-    for (final role in checkedRoles) {
+    for (final role in frequencyChecked) {
       final f = frequency[role] ?? 0;
       if (f < spec.minWeeklyFrequencyPerRole) {
         findings.add(ProgrammeFinding(ProgrammeFault.frequencyBelowTarget,
             role: role, detail: 'week ${week.key}: $f'));
       }
+    }
+    for (final role in volumeChecked) {
       final v = volume[role] ?? 0;
       if (v < spec.minWeeklySetsPerRole || v > spec.maxWeeklySetsPerRole) {
         findings.add(ProgrammeFinding(ProgrammeFault.volumeOutOfBand,

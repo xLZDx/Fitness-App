@@ -443,22 +443,30 @@ class _TodayHero extends ConsumerWidget {
           ],
           const SizedBox(height: 12),
           Text(
-            screened.hiddenForInjury
-                ? l10n.equipmentScheduledHiddenForInjury
+            screened.hasWithheldExercise
+                ? l10n.homeSessionWithheld
                 : l10n.homeTodayDigest(
                     digest.exerciseCount, digest.totalMinutes),
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: screened.hiddenForInjury
+              color: screened.hasWithheldExercise
                   ? theme.colorScheme.error
                   : colors.textSecondary,
             ),
           ),
           const SizedBox(height: 16),
-          // The CTA is withheld when the day's first exercise is hidden for a
-          // logged contraindication. Injury screening is a safety rule, not a
-          // display filter (`core/CONVENTIONS.md`); a "Start workout" button
-          // that opens work the screening just removed would defeat it.
-          if (!screened.hiddenForInjury)
+          // The CTA is withheld when any of the day's exercises is. Screening
+          // is a safety rule, not a display filter (`core/CONVENTIONS.md`);
+          // a "Start workout" button that opens work the eligibility layer
+          // just removed would defeat it.
+          //
+          // `hasWithheldExercise`, not the old `hiddenForInjury`: that asked
+          // one member of `BlockReason`, so a user whose PAR-Q answers, a
+          // clinician's instruction or post-operative restrictions had just
+          // blocked them still saw a live button over a session the player
+          // refuses on the next screen. The reason belongs where it can be
+          // read in full, which is that screen — this card says the day is
+          // withheld and points at it.
+          if (!screened.hasWithheldExercise)
             _AccentButton(
               label: l10n.homeStartWorkout,
               icon: Icons.play_arrow_rounded,
@@ -961,13 +969,13 @@ class _UpcomingCard extends ConsumerWidget {
                         ?.copyWith(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 2),
                 Text(
-                  screened.hiddenForInjury
-                      ? l10n.equipmentScheduledHiddenForInjury
+                  screened.hasWithheldExercise
+                      ? l10n.homeSessionWithheld
                       : AppLocalizations.of(context).notificationsMin(
                           formatScheduleLabel(l10n, session.scheduledFor),
                           session.durationMinutes),
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: screened.hiddenForInjury
+                    color: screened.hasWithheldExercise
                         ? scheme.error
                         : theme.colors.textSecondary,
                   ),

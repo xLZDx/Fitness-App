@@ -172,14 +172,16 @@ class SubscriptionPage extends ConsumerWidget {
                 l10n.subFeatureAllSupporter,
                 l10n.subFeatureCelebrity,
                 l10n.subFeatureFormCoach,
-                // `subFeatureBodyComp` — "Body comp + advanced analytics" —
-                // was sold here with nothing behind it: the whole feature was
-                // `navyBodyFatPercent`, a pure formula with no capture, no
-                // storage, no screen and no caller. The photo-silhouette
-                // method its data class named did not exist in any form.
-                // Removed rather than built: an on-device body-fat estimate
-                // from a photograph is a health claim, and shipping one to
-                // clear a paywall line is the wrong order to do it in.
+                // A fourth line was sold here with nothing behind it: the
+                // whole feature was `navyBodyFatPercent`, a pure formula with
+                // no capture, no storage, no screen and no caller, and the
+                // photo-silhouette method its data class named did not exist
+                // in any form. Removed rather than built — an on-device
+                // body-fat estimate from a photograph is a health claim, and
+                // shipping one to clear a price-card line is the wrong order
+                // to do it in. See the 2026-08-15 DECISION_LOG entry; the
+                // phrase itself is deliberately not repeated here, because
+                // `subscription_page_test.dart` bans it from this file.
                 l10n.subFeatureDonorWall,
               ],
               currentTier: tier,

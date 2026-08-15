@@ -23,30 +23,41 @@ import 'scheduled_session_providers.dart';
 class ScreenedSession {
   const ScreenedSession({
     required this.session,
-    required this.hiddenExerciseIds,
+    required this.withheldExerciseIds,
   });
 
   final ScheduledSession session;
 
-  /// Which of the day's exercises now conflict with a logged injury.
+  /// Which of the day's exercises the eligibility layer now withholds.
   ///
   /// A set rather than a single flag since B5b: a day holds several exercises,
   /// and screening only `session.exerciseId` — which is what this did — left
   /// exercises two onward unscreened on every surface that renders a scheduled
   /// day. The set is what lets the UI strike the offending row instead of
   /// striking the whole day or, worse, none of it.
-  final Set<String> hiddenExerciseIds;
+  ///
+  /// **Every** withholding reason, not only an injury. Until this was fixed
+  /// the loop below asked `ExerciseResolution.hiddenForInjury`, which since
+  /// Gate N answers exactly one member of `BlockReason` — so a user newly
+  /// blocked by their own screening answers, a movement restriction, a
+  /// clinician's instruction or post-operative restrictions saw an unstruck
+  /// session with a live "Start workout" button for work the player would
+  /// refuse the moment they tapped it. Equipment is not a factor here:
+  /// `screenOne` deliberately leaves it out of the context it evaluates, so a
+  /// day is never struck for kit the user does not own.
+  final Set<String> withheldExerciseIds;
 
-  /// True when ANY exercise of the day conflicts.
+  /// True when ANY exercise of the day is withheld.
   ///
   /// Any, not all, and the day is flagged rather than dropped — the same
   /// choice this provider already made for the single-exercise case. A day
   /// containing one exercise the user must not do is a day they need to look
   /// at, even if the other three are fine.
-  bool get hiddenForInjury => hiddenExerciseIds.isNotEmpty;
+  bool get hasWithheldExercise => withheldExerciseIds.isNotEmpty;
 
   /// True when nothing in the day is left to do.
-  bool get hiddenEntirely => hiddenExerciseIds.length == session.exerciseCount;
+  bool get hiddenEntirely =>
+      withheldExerciseIds.length == session.exerciseCount;
 }
 
 /// [upcomingSessionsProvider], with each session's exercise re-resolved
@@ -60,13 +71,16 @@ final screenedUpcomingSessionsProvider =
   final upcoming = ref.watch(upcomingSessionsProvider);
   final out = <ScreenedSession>[];
   for (final session in upcoming) {
-    final hidden = <String>{};
+    final withheld = <String>{};
     for (final exercise in session.exercises) {
       final resolution = await ref
           .watch(exerciseResolutionProvider(exercise.exerciseId).future);
-      if (resolution.hiddenForInjury) hidden.add(exercise.exerciseId);
+      if (resolution.withheldFor.isNotEmpty) {
+        withheld.add(exercise.exerciseId);
+      }
     }
-    out.add(ScreenedSession(session: session, hiddenExerciseIds: hidden));
+    out.add(
+        ScreenedSession(session: session, withheldExerciseIds: withheld));
   }
   return List.unmodifiable(out);
 });
@@ -105,7 +119,7 @@ class SessionReminderReconciler {
       for (final exercise in session.exercises) {
         final resolution = await _ref
             .read(exerciseResolutionProvider(exercise.exerciseId).future);
-        if (resolution.hiddenForInjury) {
+        if (resolution.withheldFor.isNotEmpty) {
           conflicts = true;
           break;
         }

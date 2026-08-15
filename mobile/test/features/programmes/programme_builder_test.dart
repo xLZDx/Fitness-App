@@ -299,6 +299,54 @@ void main() {
       expect(ids, isNot(contains('smuggled')));
     });
 
+    test('a ranker that FORGES a row with the right id is ignored', () {
+      // The hole an id-set check leaves. A ranker returns the same number of
+      // rows carrying the same ids, so length and id set both match — and
+      // every field on them is its own invention. Those objects are what the
+      // rest of the builder would plan, validate and schedule, so
+      // `validateProgramme` would be re-checking the ranker's forged
+      // `contraindications` instead of the catalogue row.
+      var forgedSeen = false;
+      final built = buildProgramme(_request(
+        // The same list the identity assertion below compares against — the
+        // helper builds a fresh one per call otherwise.
+        catalogue: catalogue,
+        safety: _cleared(
+            injuries: const [Injury(bodyPart: 'knee', type: 'strain')]),
+        rank: (role, pool) => [
+          for (final e in pool)
+            () {
+              forgedSeen = true;
+              return ExerciseItem(
+                id: e.id,
+                title: e.title,
+                equipmentId: e.equipmentId,
+                muscles: e.muscles,
+                primaryMuscles: e.primaryMuscles,
+                difficulty: e.difficulty,
+                durationMinutes: e.durationMinutes,
+                summary: e.summary,
+                steps: e.steps,
+                // The forgery: a row the knee injury should have removed,
+                // wearing the id of one that survived it.
+                contraindications: const ['knee'],
+              );
+            }(),
+        ],
+      ));
+
+      expect(forgedSeen, isTrue, reason: 'the ranker must actually have run');
+      expect(built, isA<ProgrammeBuilt>());
+      for (final session in (built as ProgrammeBuilt).sessions) {
+        for (final e in session.exercises) {
+          expect(e.exercise.contraindications, isNot(contains('knee')),
+              reason: '${e.exercise.id}: a forged row reached the programme');
+          expect(catalogue.any((c) => identical(c, e.exercise)), isTrue,
+              reason: '${e.exercise.id} is not the catalogue object');
+        }
+      }
+    });
+
     test('a ranker that DROPS the pool is ignored', () {
       final built = buildProgramme(_request(rank: (role, pool) => const []));
       expect(built, isA<ProgrammeBuilt>(),
@@ -307,6 +355,42 @@ void main() {
   });
 
   group('the validator can say no', () {
+    test('weekly sets are bounded for a role outside frequencyRoles too', () {
+      // `volumeOutOfBand` is documented as "weekly programmed sets for a role
+      // fall outside the configured band". It used to iterate the same set as
+      // the frequency check — `declaredRoles ∩ frequencyRoles ∩ trainable` —
+      // so with the default `kPrimaryStrengthRoles` neither core role's volume
+      // was bounded at all, whatever was programmed.
+      const spec = ProgrammeSpec(
+        id: 'test',
+        sessions: [
+          SessionSpec(name: 'A', slots: [MovementRole.coreAntiExtension]),
+        ],
+        setsPerSlot: 99,
+        minWeeklySetsPerRole: 1,
+        maxWeeklySetsPerRole: 10,
+        minSurvivingPrimaryRoles: 0,
+      );
+      final request = ProgrammeBuildRequest(
+        spec: spec,
+        catalogue: catalogue,
+        safety: _cleared(),
+        weeks: 1,
+        daysPerWeek: 1,
+      );
+      final built = buildProgramme(request);
+      final findings = built is ProgrammeBuilt
+          ? built.adaptations
+          : (built as ProgrammeRefused).findings;
+      // 99 sets of core in one week, against a band of 1..10.
+      expect(findings.map((f) => f.fault),
+          contains(ProgrammeFault.volumeOutOfBand));
+      expect(
+          findings.where((f) => f.fault == ProgrammeFault.volumeOutOfBand).map(
+              (f) => f.role),
+          contains(MovementRole.coreAntiExtension));
+    });
+
     test('an ineligible exercise inserted after construction is caught', () {
       // The check that must never fire in production, proved to fire when the
       // thing it guards against happens. This is how an AI review that edits a
