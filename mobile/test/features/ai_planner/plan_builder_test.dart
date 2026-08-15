@@ -7,7 +7,6 @@ import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/ai_planner/data/workout_plan.dart';
 import 'package:fitness_app/features/recovery/data/deload_detector.dart';
 import 'package:fitness_app/features/safety/data/eligibility.dart';
-import 'package:fitness_app/features/safety/data/health_flags.dart';
 import 'package:fitness_app/features/safety/data/par_q.dart';
 
 ExerciseItem _ex(
@@ -128,21 +127,57 @@ void main() {
       expect(plan.rationale, contains('Recovery'));
     });
 
-    test('cycle phase composes with deload factor', () {
+    test('a cycle self-report caps, and the calendar phase does not', () {
+      // Rewritten in Gate O. This case asserted `0.7 * 0.9 = 0.63` — the deload
+      // factor MULTIPLIED by the luteal phase's multiplier, which is exactly
+      // the behaviour that turned a calendar day into a prescription. The phase
+      // no longer multiplies anything.
       const deload = DeloadVerdict(
         shouldDeload: true,
         reasons: [],
         suggestedVolumeFactor: 0.7,
       );
-      final plan = _plan(buildPlan(
+      final withPhaseOnly = _plan(buildPlan(
         candidatePool: [_ex('squat', muscles: ['quads'])],
         deficit: const <String, double>{},
         deload: deload,
         safety: _cleared,
-        cyclePhase: CyclePhase.luteal,
+        cycle: const CycleEstimated(CyclePhase.luteal),
       ));
-      // 0.7 * 0.9 = 0.63 — clamps not exceeded.
-      expect(plan.intensityFactor, closeTo(0.63, 0.01));
+      expect(withPhaseOnly.intensityFactor, closeTo(0.7, 0.0001),
+          reason: 'the deload factor, untouched by the calendar');
+      expect(withPhaseOnly.rationale, contains('By your calendar'),
+          reason: 'the estimate is still SAID, it just decides nothing');
+
+      final withReport = _plan(buildPlan(
+        candidatePool: [_ex('squat', muscles: ['quads'])],
+        deficit: const <String, double>{},
+        deload: _noDeload,
+        safety: _cleared,
+        cycle: const CycleEstimated(CyclePhase.luteal),
+        cycleSelfReport: CycleSelfReport.significantSymptoms,
+      ));
+      expect(withReport.intensityFactor, closeTo(0.7, 0.0001));
+      expect(withReport.title, 'Easy session');
+    });
+
+    test('the calendar cannot raise the factor in any phase', () {
+      // The mutation that matters. Before Gate O, ovulatory multiplied by 1.10.
+      const hot = DeloadVerdict(
+        shouldDeload: false,
+        reasons: [],
+        suggestedVolumeFactor: 1.0,
+      );
+      for (final phase in CyclePhase.values) {
+        final plan = _plan(buildPlan(
+          candidatePool: [_ex('squat', muscles: ['quads'])],
+          deficit: const <String, double>{},
+          deload: hot,
+          safety: _cleared,
+          cycle: CycleEstimated(phase),
+        ));
+        expect(plan.intensityFactor, closeTo(1.0, 0.0001), reason: phase.name);
+      }
     });
 
     test('caps at 6 exercises even if duration allows more', () {

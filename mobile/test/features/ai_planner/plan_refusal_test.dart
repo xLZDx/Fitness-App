@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitness_app/features/ai_planner/data/plan_builder.dart';
 import 'package:fitness_app/features/ai_planner/data/workout_plan.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
-import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/recovery/data/deload_detector.dart';
 import 'package:fitness_app/features/safety/data/eligibility.dart';
 import 'package:fitness_app/features/safety/data/health_flags.dart';

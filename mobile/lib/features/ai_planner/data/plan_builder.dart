@@ -1,11 +1,8 @@
 import '../../cycle_aware/data/cycle_phase.dart';
 import '../../equipment/data/equipment_models.dart';
-import '../../equipment/data/exercise_filter.dart';
 import '../../personalisation/data/volume_ledger.dart';
-import '../../profile/data/profile_models.dart';
 import '../../recovery/data/deload_detector.dart';
 import '../../safety/data/eligibility.dart';
-import '../../safety/data/par_q.dart';
 import 'workout_plan.dart';
 
 /// Pure plan-builder. Combines:
@@ -14,7 +11,8 @@ import 'workout_plan.dart';
 ///   - candidate exercise pool (free + premium catalog)
 ///   - weekly per-muscle set deficit (what has been trained least)
 ///   - deload verdict (auto-pulls intensity if signals fire)
-///   - optional cycle-phase hint (intensity multiplier)
+///   - the cycle state (a NOTE) and the user's own self-report (the only
+///     cycle input that changes a dose — see `cycle_phase.dart`)
 ///
 /// Returns [PlanReady] with a single-day plan of 4–6 exercises ordered by
 /// priority, or [PlanRefused]. No I/O; all inputs are passed in by the caller.
@@ -31,7 +29,8 @@ PlanOutcome buildPlan({
   required Map<String, double> deficit,
   required DeloadVerdict deload,
   required SafetyContext safety,
-  CyclePhase? cyclePhase,
+  CycleState cycle = const CycleUnknown(CycleUnavailable.notTracked),
+  CycleSelfReport? cycleSelfReport,
   int targetMinutes = 45,
 }) {
   // 0. The floor. Before any pool is read, any deficit consulted, any
@@ -105,14 +104,16 @@ PlanOutcome buildPlan({
   //    multiplicatively. Floor at 0.5, ceiling at 1.10, lowered to
   //    `safety.intensityCeiling` when the screen could not clear the user.
   var factor = deload.suggestedVolumeFactor;
-  if (cyclePhase != null) {
-    factor *= hintFor(cyclePhase).intensityFactor;
-  }
+  // Gate O: the calendar phase no longer multiplies anything. What the user
+  // says they feel does, and only downwards.
+  final cycleAdjustment = adjustmentFor(cycleSelfReport);
   // `?? 1.10` is the planner's own ceiling, unchanged. The screen only ever
   // LOWERS it — a verdict that raised the ceiling would be a safety type
   // prescribing more work, which is not a thing this file will let it do.
-  final screened = safety.intensityCeiling;
-  final ceiling = screened != null && screened < 1.10 ? screened : 1.10;
+  var ceiling = 1.10;
+  for (final opinion in [safety.intensityCeiling, cycleAdjustment.intensityCeiling]) {
+    if (opinion != null && opinion < ceiling) ceiling = opinion;
+  }
   factor = factor.clamp(0.5, ceiling).toDouble();
 
   // 5. Compose rationale string for transparency.
@@ -131,8 +132,13 @@ PlanOutcome buildPlan({
     reasons.add('Recovery signals are firing — intensity pulled to '
         '${(factor * 100).round()}%.');
   }
-  if (cyclePhase != null) {
-    reasons.add(hintFor(cyclePhase).headline);
+  if (cycleAdjustment.rationale.isNotEmpty) {
+    reasons.add(cycleAdjustment.rationale);
+  }
+  if (cycle.phase case final phase?) {
+    // A note, not a prescription. It says where the calendar puts them and
+    // that nothing was changed because of it.
+    reasons.add(noteFor(phase).body);
   }
   for (final advisory in safety.advisories) {
     // Stated, not skipped. A restriction the catalogue carries no tag for
@@ -172,7 +178,7 @@ PlanOutcome buildPlan({
         ? 'Reduced session'
         : deload.shouldDeload
             ? 'Deload day'
-            : cyclePhase == CyclePhase.menstrual
+            : cycleSelfReport == CycleSelfReport.significantSymptoms
                 ? 'Easy session'
                 : 'Adaptive session',
     estimatedMinutes: minutes,

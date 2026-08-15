@@ -10364,3 +10364,75 @@ Two pre-existing tests were rewritten rather than deleted, and the reasons are t
 `allergies` is stored context and is NOT a safety input. Food and drug allergies do not have exercise
 consequences this app can determine, and inventing one would be the pharmacology this gate refuses.
 Recorded rather than quietly dropped.
+
+---
+
+## 2026-08-15 — Gate O: a calendar estimate may prompt, it may not prescribe
+
+**Operator decision 4** — rework, not delete.
+
+### The defect, stated precisely
+
+FACT: `hintFor(CyclePhase.ovulatory)` returned `intensityFactor: 1.10` and the headline
+*"Peak performance day. PR attempts welcome."* FACT: `buildPlan` multiplied the prescribed factor by
+it. So a calendar day produced a 10% load increase and an invitation to attempt a personal record,
+for a person the app has never measured.
+
+FACT: nothing in production ever passed `cyclePhase`, so the feature was dead. That is why this is a
+rework rather than an incident.
+
+### Decision — the phase produces a note, the self-report produces the dose
+
+**Reason.** Two independent problems, and only one of them is wording. The input is an ESTIMATE:
+cycle day is counted forward from a typed date, and ovulation timing varies within the same person.
+And the evidence does not support the claim: McNulty et al., *Sports Medicine* 50 (2020), the largest
+synthesis of menstrual-cycle effects on exercise performance, reports trivial average effects with
+very large between-individual variation and rates the evidence low quality. Trivial-on-average with
+enormous variance is the worst possible shape for a deterministic per-user prescription — the mean
+says do nothing and the variance says you cannot predict the exception.
+
+**Decision.** `CycleSelfReport` — what the user says they feel today — is the only cycle input that
+changes a prescription, because it is the only one that is an observation rather than an inference.
+The same split Gate L made between a difficulty rating and a volume deficit, for the same reason.
+
+**Failure behaviour.** `CycleAdjustment.intensityCeiling` is a CAP and is ≤ 1.0 in every state. There
+is no path by which this feature tells anyone to lift more. A signal this uncertain may reduce a dose
+— the cost of being wrong is an easy session — and may not raise one.
+
+**Evidence.** `cycle_phase_test.dart`: *the calendar cannot raise a load, in any state* asserts no
+phase carries a multiplier at all; *no note claims a performance peak* names the four exact banned
+phrases; `plan_builder_test.dart` loops every phase against a factor of 1.0 and asserts it stays 1.0.
+
+### Decision — out-of-range input gets no phase
+
+`phaseFor` returned `CyclePhase.luteal` for `cycleDay < 1` — a fabricated normal answer for input
+that is not a day. `estimatePhase` now returns `CycleUnknown` for a day below 1, a day past the
+cycle length, and a cycle length outside 21–35 (outside that the textbook mid-cycle assumption is not
+a worse estimate, it is not an estimate). Irregular cycles likewise.
+
+The reasons are distinguishable values, because "we do not know" and "this does not apply to you"
+call for different words.
+
+### Decision — pregnancy is an applicability flag, not a medical state
+
+One value, `CycleUnavailable.notApplicable`, covering pregnancy, postpartum and any other reason the
+user chooses not to give. Splitting it into medical categories would make this app hold a pregnancy
+status and reason about it, which is a different product with a different regulatory position. What
+it needs to know is whether cycle-derived suggestions are valid, and that is a yes/no. It wins over
+every other input.
+
+### `intensityFactor` — removed, not retained
+
+`PhaseHint.intensityFactor`, `preferredTags` and `deprioritisedTags` are gone rather than zeroed.
+A retained field is one edit away from being live again, and the test that would have protected a
+zeroed constant is a test on a number rather than on a shape.
+
+### Verification
+
+Full suite 2545 passed / 0 failed (2531 after Gate N). `flutter analyze` clean.
+
+`cycle_phase_test.dart` was rewritten. The version it replaces asserted that day 14 yields ovulatory
+and that ovulatory carries 1.10 — both true of the code, and neither a property worth protecting:
+the first is arithmetic and the second was the defect.
+
+Not pushed.
