@@ -3,9 +3,13 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
+import '../ai_coach/ai_coach_context.dart';
+import '../ai_coach/ai_coach_sheet.dart';
+import 'data/equipment_models.dart';
 import 'widgets/exercise_reference.dart';
 
 /// What an exercise IS, with nothing about a workout in progress.
@@ -50,6 +54,8 @@ class ExercisePage extends ConsumerWidget {
                 children: [
                   ...exerciseReferenceSections(context, item, body),
                   const SizedBox(height: 20),
+                  _ExerciseCoachEntry(exercise: item),
+                  const SizedBox(height: 20),
                   AppPrimaryButton(
                     key: const Key('exercise.start'),
                     onPressed: () =>
@@ -61,6 +67,67 @@ class ExercisePage extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// The AI coach, asked about a MOVEMENT rather than a machine.
+///
+/// `AiCoachSource.exercise` existed from the day the enum was written and had
+/// no caller: both production entry points (`equipment_detail_page.dart`,
+/// `scanner_page.dart`) pass `AiCoachSource.equipment`, so the second branch of
+/// every switch in `buildCoachPrompt` — including the one that tells the model
+/// to explain how to judge a starting load instead of naming a weight — was
+/// reachable only from its own tests. A prompt no screen can ask is not a
+/// feature, it is a claim.
+///
+/// It sits inside [ExerciseResolutionView]'s builder deliberately. That builder
+/// runs only for an exercise the eligibility layer allows, so an exercise
+/// withheld for an injury, a screening answer or a clinician's instruction has
+/// no coach entry point either — the refusal card is the whole screen. The
+/// safety boundary is the widget tree here, not a check this widget performs
+/// and could forget.
+class _ExerciseCoachEntry extends StatelessWidget {
+  const _ExerciseCoachEntry({required this.exercise});
+
+  final ExerciseItem exercise;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    return GlassCard(
+      key: const Key('exercise.ai-coach'),
+      onTap: () => AiCoachSheet.show(
+        context,
+        source: AiCoachSource.exercise,
+        subjectId: exercise.id,
+        subjectName: exercise.title,
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.auto_awesome),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.aiCoachButton,
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                Text(
+                  l10n.aiCoachButtonHintExercise,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colors.textSecondary),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right_rounded),
+        ],
       ),
     );
   }

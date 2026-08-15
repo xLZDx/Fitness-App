@@ -672,8 +672,9 @@ enum RepVerdict {
   faulted,
 
   /// A repetition finished and nothing was entitled to judge it: no silhouette
-  /// was being scored, and no active rule can fault a rep. Said out loud rather
-  /// than dressed as a pass.
+  /// was being scored and no active rule can fault a rep, or the lifter was
+  /// not visible for enough of the repetition to have been watched at all.
+  /// Said out loud rather than dressed as a pass.
   notEvaluated,
 }
 
@@ -756,6 +757,13 @@ class RepSessionState {
   RepVerdict get lastRepVerdict {
     if (reps.isEmpty) return RepVerdict.none;
     if (!lastRepEvaluated) return RepVerdict.notEvaluated;
+    // Rules being active is not the same as the rules having seen anything.
+    // A repetition performed half out of frame produces no signal, so no rule
+    // runs on those frames and the severity map comes back empty — which is
+    // the value a faultless repetition also produces.
+    if (!reps.last.isObservedAt(_minObservedRatio)) {
+      return RepVerdict.notEvaluated;
+    }
     if (lastRepMissedTarget == true) return RepVerdict.faulted;
     return reps.last.isClean ? RepVerdict.clean : RepVerdict.faulted;
   }
@@ -775,10 +783,25 @@ class RepSessionState {
         RepVerdict.faulted => false,
       };
 
-  int get cleanReps => reps.where((r) => r.isClean).length;
+  int get cleanReps => reps
+      .where((r) => r.isObservedAt(_minObservedRatio) && r.isClean)
+      .length;
 
-  int get sloppyReps => reps.length - cleanReps;
+  int get sloppyReps => reps
+      .where((r) => r.isObservedAt(_minObservedRatio) && !r.isClean)
+      .length;
+
+  /// Repetitions that finished with too little of them visible to judge.
+  ///
+  /// Counted separately rather than folded into [sloppyReps]: the app has no
+  /// grounds to call these bad either.
+  int get unobservedReps =>
+      reps.where((r) => !r.isObservedAt(_minObservedRatio)).length;
 }
+
+/// Mirrors [RepCounterConfig.minObservedRatio]. The session summary reads
+/// [RepQuality] records it did not build and has no counter to ask.
+const double _minObservedRatio = 0.5;
 
 /// Drives rep counting off the same frame stream as [FormFeedbackController]:
 /// per frame, run the active rules, fold them into the rep counter, and offer

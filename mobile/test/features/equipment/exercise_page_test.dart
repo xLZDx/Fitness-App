@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +9,10 @@ import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/exercise_page.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
+import 'package:fitness_app/features/ai_coach/ai_coach_context.dart';
 import 'package:fitness_app/features/equipment/workout_player_page.dart';
+import 'package:fitness_app/features/safety/data/eligibility.dart';
+import 'package:fitness_app/features/safety/data/par_q.dart';
 
 /// R3.2 — the half of the split that is a page rather than a move.
 ///
@@ -96,6 +101,83 @@ void main() {
     expect(find.textContaining('Air Squat'), findsWidgets);
     expect(find.byKey(const Key('exercise.start')), findsNothing,
         reason: 'nothing to start when the exercise is withheld');
+  });
+
+  testWidgets('a screening refusal is named, not disguised as a 404',
+      (t) async {
+    // Withheld for something other than an injury used to fall past the
+    // injury branch into "we couldn't find that exercise" — a second copy of
+    // the same lie, told for a different reason.
+    t.view.physicalSize = const Size(400, 1600);
+    t.view.devicePixelRatio = 1.0;
+    addTearDown(t.view.resetPhysicalSize);
+    addTearDown(t.view.resetDevicePixelRatio);
+
+    await t.pumpWidget(_page(
+      const ExercisePage(exerciseId: 'ea_air_squat'),
+      resolution: ExerciseResolution.withheld(_item, const [
+        EligibilityReason(BlockReason.screening,
+            question: ParQQuestion.chestPain),
+      ]),
+    ));
+    await t.pumpAndSettle();
+
+    expect(find.byKey(const Key('exercise.withheld')), findsOneWidget);
+    expect(find.text("We couldn't find that exercise."), findsNothing);
+    expect(find.byKey(const Key('exercise.ai-coach')), findsNothing,
+        reason: 'no coach entry point for work the app is refusing');
+  });
+
+  testWidgets('the AI coach can be asked about a movement', (t) async {
+    // `AiCoachSource.exercise` had no production caller: the prompt branch for
+    // a movement — the one that tells the model to teach a load judgement
+    // instead of naming a weight — was reachable only from its own tests.
+    t.view.physicalSize = const Size(400, 2400);
+    t.view.devicePixelRatio = 1.0;
+    addTearDown(t.view.resetPhysicalSize);
+    addTearDown(t.view.resetDevicePixelRatio);
+
+    await t.pumpWidget(_page(const ExercisePage(exerciseId: 'ea_air_squat')));
+    await t.pumpAndSettle();
+
+    expect(find.byKey(const Key('exercise.ai-coach')), findsOneWidget);
+  });
+
+  test('every AiCoachSource is passed by some screen in lib/', () {
+    // Measured, not declared. A hand-written list of "sources we route" would
+    // pass on the day it was written and rot exactly like the dead branch it
+    // replaces, so this reads the source tree: for each enum value, some file
+    // under lib/ other than the enum's own must name it.
+    final files = Directory('lib')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.dart'))
+        .where((f) =>
+            !f.path.split(Platform.pathSeparator).join('/').endsWith(
+                'features/ai_coach/ai_coach_context.dart'))
+        .toList();
+    expect(files, isNotEmpty, reason: 'run me from mobile/');
+
+    // Comments do not count. The first version of this test matched the
+    // doc comment on `_ExerciseCoachEntry` — which names the enum value while
+    // explaining that it had no caller — and so passed against a build where
+    // the entry point had been mutated away.
+    String code(File f) => f
+        .readAsLinesSync()
+        .map((l) => l.trimLeft().startsWith('//') ? '' : l)
+        .join('\n');
+
+    for (final source in AiCoachSource.values) {
+      final needle = 'AiCoachSource.${source.name}';
+      final callers = files
+          .where((f) => code(f).contains(needle))
+          .map((f) => f.path)
+          .toList();
+      expect(callers, isNotEmpty,
+          reason: '$needle has no caller: buildCoachPrompt has a branch for '
+              'it that no screen can reach, which is a claim and not a '
+              'feature');
+    }
   });
 
   test('both screens exist and are distinct types', () {

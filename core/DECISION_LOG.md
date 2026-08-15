@@ -10531,3 +10531,75 @@ including adversarial profiles (unscreened, knee, shoulder, clinician-advised-ag
 no-equipment) and the ranker-tampering cases. `test/features/programmes/` 119 passed.
 
 Not pushed.
+
+## 2026-08-15 — Four claims that were not true of the code
+
+**Basis: FACT unless marked.**
+
+Four separate defects with one shape: a name, a comment or an enum branch asserted a behaviour the
+code did not have, and nothing failed when it did not.
+
+### `acceptNext7Days` was documented as idempotent and was not
+
+`recovery_providers.dart` said *"Idempotent on reload because the action just rescales the
+durations"*. Rescaling is what makes it not idempotent: 45 → 22 → 11 → 5. The safeguard the comment
+named — the banner hides once the verdict clears — is a property of one widget and survives neither
+a retry after a partial failure, nor an offline replay, nor the same account on a second device.
+
+`ScheduledSession.deloadFactor` (nullable, additive, absence = never deloaded, so no migration runs)
+records what was applied and the action skips a row that carries one. The same write also replaced
+the user's `notes` with the string `'Auto-deload week'`, which nothing reads — deleting what
+somebody typed to say something the marker now says without destroying anything.
+
+**Evidence.** `recovery_providers_test.dart`: three presses leave 60 → 30, `notes` intact, and a
+legacy row with no `deloadFactor` key reads back null.
+
+### `cleanReps` counted reps the app never saw
+
+`rep_counter.dart` returned early for a frame whose joints fall under `minLikelihood` — so no rule
+ran, no severity was recorded, and `maxSeverity == 0`, which is the value a faultless rep produces.
+A lifter half out of frame was told their set was clean.
+
+`RepQuality` now counts observed and missed frames, and the outcome is three-way:
+`cleanReps + sloppyReps + unobservedReps == repCount`, always. `RepSessionState.lastRepVerdict`
+returns the existing `RepVerdict.notEvaluated` for an unobserved rep — the state that already
+existed for "no active rule could judge this" now also covers "nothing was visible to judge".
+
+`minObservedRatio = 0.5` is a `PRODUCT_HEURISTIC`. A record with no frame accounting at all is
+treated as observed, so sessions recorded before this change are not retroactively reclassified.
+
+**Evidence.** `rep_counter_test.dart`: *a rep the app could not see is not a clean rep* drives a rep
+with every non-load-bearing frame replaced by an unreadable one — which frames are load-bearing is
+measured by a probe counter rather than hard-coded — and asserts `cleanReps == 0`, `sloppyReps == 0`,
+`unobservedReps == 1`, while `rep.isClean` is still true. That last assertion is the point: silence
+is not the same question as visibility.
+
+### `AiCoachSource.exercise` had no caller
+
+Both production entry points (`equipment_detail_page.dart:116`, `scanner_page.dart:1424`) pass
+`AiCoachSource.equipment`. The second branch of every switch in `buildCoachPrompt` — including the
+one that tells the model to teach a load judgement instead of naming a weight, written in Gate I —
+was reachable only from its own tests.
+
+`ExercisePage` now offers the coach for a movement. It sits inside `ExerciseResolutionView`'s
+builder, which runs only for an exercise the eligibility layer allows: an exercise withheld for an
+injury or a screening answer has no coach entry point, and that is the widget tree rather than a
+check this widget performs and could forget.
+
+**Evidence.** `exercise_page_test.dart`: *every AiCoachSource is passed by some screen in lib/*
+scans the source tree with comments stripped. Mutating the new call site back to
+`AiCoachSource.equipment` turns it red — verified, twice: the first version of the test matched the
+doc comment that names the value while explaining it had no caller, and passed against the mutant.
+
+### The exercise page told a withheld user the exercise did not exist
+
+`ExerciseResolutionView` handled `hiddenForInjury` and then fell through to *"We couldn't find that
+exercise."* for every other withholding reason — a screening answer, a movement restriction, a
+clinician's instruction. The player had been fixed in Gate N; the reference page had not, and it is
+the one the Train tab links to.
+
+### Verification
+
+Full suite **2579 passed / 0 failed** (2571 after Gate P). `flutter analyze` clean of new issues
+(5 pre-existing warnings in `subscription_providers.dart`, `progression.dart` and three
+`*_providers.dart` files, untouched here).

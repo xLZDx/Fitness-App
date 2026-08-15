@@ -24,10 +24,15 @@ final deloadVerdictProvider = Provider<DeloadVerdict>((ref) {
 });
 
 /// Imperative controller for "accept deload" — halves the next 7 days
-/// of pending sessions' duration in place. Idempotent on reload because
-/// the action just rescales the durations; pressing twice in 7 days
-/// would shrink them again, which the UI prevents by hiding the action
-/// once the verdict clears (no longer two-of-three signals firing).
+/// of pending sessions' duration in place.
+///
+/// Idempotent because each rescaled row records the factor it already
+/// carries and is skipped on any later pass. The previous version claimed
+/// idempotence from the fact that it "just rescales the durations", which
+/// is what makes it NOT idempotent: 45 → 22 → 11 → 5. The safeguard named
+/// there — the UI hides the action once the verdict clears — is a property
+/// of one widget, not of the write, and does not survive a retry after a
+/// partial failure or the same account on two devices.
 final deloadActionProvider =
     NotifierProvider<DeloadAction, AsyncValue<void>>(DeloadAction.new);
 
@@ -50,10 +55,15 @@ class DeloadAction extends Notifier<AsyncValue<void>> {
         if (s.status != ScheduledSessionStatus.pending) continue;
         if (s.scheduledFor.isBefore(now)) continue;
         if (s.scheduledFor.isAfter(cutoff)) continue;
+        // Already deloaded. Rescaling it again would compound.
+        if (s.deloadFactor != null) continue;
         final scaled = (s.durationMinutes * factor).round().clamp(5, 240);
+        // `notes` is the user's field. The old write replaced whatever they
+        // had typed with 'Auto-deload week' — data loss to say something the
+        // `deloadFactor` marker now says without destroying anything.
         await repo.save(
           user.uid,
-          s.copyWith(durationMinutes: scaled, notes: 'Auto-deload week'),
+          s.copyWith(durationMinutes: scaled, deloadFactor: factor),
         );
       }
       state = const AsyncValue.data(null);

@@ -34,6 +34,7 @@ import '../../workouts/state/offline_video_providers.dart';
 import '../data/catalog_labels.dart';
 import '../../form_check/state/form_check_providers.dart';
 import '../../profile/state/profile_providers.dart';
+import '../../safety/widgets/eligibility_notice.dart';
 import '../data/equipment_models.dart';
 import '../state/equipment_providers.dart';
 import 'exercise_thumb.dart';
@@ -1135,6 +1136,23 @@ class ExerciseResolutionView extends ConsumerWidget {
                           style: theme.textTheme.bodyMedium),
                     ],
                   ),
+                ),
+              );
+            }
+            // Withheld for something other than an injury — a screening
+            // answer, a movement restriction, a clinician's instruction. This
+            // used to fall through to the branch below and tell the user the
+            // exercise did not exist, which is both false and unactionable:
+            // the one thing they could do about it is the one thing the
+            // message hid from them.
+            if (resolution.withheldFor.isNotEmpty) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
+                child: EligibilityNotice(
+                  key: const Key('exercise.withheld'),
+                  reasons: resolution.withheldFor,
+                  onReviewProfile: () =>
+                      GoRouter.of(context).push('/onboarding'),
                 ),
               );
             }

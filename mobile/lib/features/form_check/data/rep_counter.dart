@@ -97,6 +97,7 @@ class RepCounterConfig {
     this.bottomEnter = -0.04,
     this.minRepDurationMs = 600,
     this.minLikelihood = 0.5,
+    this.minObservedRatio = 0.5,
   });
 
   /// Signal at or below this counts as standing at the top.
@@ -136,6 +137,17 @@ class RepCounterConfig {
   /// means the joint is occluded and its position is being inferred.
   final double minLikelihood;
 
+  /// How much of a repetition has to have been actually visible before its
+  /// quality record is allowed to say anything.
+  ///
+  /// Frames whose joints fall under [minLikelihood] yield no signal, so no
+  /// rule runs on them and nothing can be recorded against the rep. With the
+  /// old two-way split that silence was indistinguishable from a rep nobody
+  /// complained about, and a lifter who walked half out of frame was told
+  /// their form was clean. 0.5 is a `PRODUCT_HEURISTIC`: below half the frames
+  /// seen, the honest answer is that the app did not watch the rep.
+  final double minObservedRatio;
+
   /// The thresholds must form a strictly increasing ladder, otherwise the
   /// hysteresis bands overlap and the machine can skip a phase.
   bool get isOrdered =>
@@ -150,6 +162,8 @@ class RepQuality {
     required this.endMs,
     required this.peakSignal,
     required this.severityByRule,
+    this.observedFrames = 0,
+    this.missedFrames = 0,
   });
 
   /// 1-based position in the set.
@@ -164,6 +178,31 @@ class RepQuality {
   /// Worst severity each rule reached at any point during this rep.
   final Map<String, int> severityByRule;
 
+  /// Frames during this rep that produced a usable signal.
+  final int observedFrames;
+
+  /// Frames during this rep that did not: a joint missing, or below
+  /// [RepCounterConfig.minLikelihood]. No rule ran on these.
+  final int missedFrames;
+
+  /// Share of this rep the app could actually see, or null when the rep
+  /// predates frame accounting (a hand-built [RepQuality] with both counts at
+  /// their defaults).
+  double? get observedRatio {
+    final total = observedFrames + missedFrames;
+    if (total == 0) return null;
+    return observedFrames / total;
+  }
+
+  /// Whether enough of the rep was visible for its silence to mean anything.
+  ///
+  /// True for a record with no frame accounting at all, because the alternative
+  /// is retroactively marking every rep from an older session unobserved.
+  bool isObservedAt(double minRatio) {
+    final ratio = observedRatio;
+    return ratio == null || ratio >= minRatio;
+  }
+
   int get durationMs => endMs - startMs;
 
   /// Worst severity from any rule during the rep. 0 when nothing fired.
@@ -176,6 +215,9 @@ class RepQuality {
   }
 
   /// A rep nothing complained about.
+  ///
+  /// Silence only. Whether the app was in a position to complain is
+  /// [isObservedAt] — read [RepCounter.cleanReps], which asks both.
   bool get isClean => maxSeverity == 0;
 
   /// Rules that fired a nudge or a stop, for the post-set summary.
@@ -248,6 +290,8 @@ class RepCounter {
   int _repStartMs = 0;
   double _peakSignal = double.negativeInfinity;
   double? _lastSignal;
+  int _observedFrames = 0;
+  int _missedFrames = 0;
 
   /// Accepted reps so far.
   int get repCount => _reps.length;
@@ -257,9 +301,26 @@ class RepCounter {
   /// Quality record per accepted rep, oldest first.
   List<RepQuality> get reps => List.unmodifiable(_reps);
 
-  int get cleanReps => _reps.where((r) => r.isClean).length;
+  /// Reps that were watched and drew no complaint.
+  ///
+  /// Was `_reps.where((r) => r.isClean)`, which counted a rep the app never
+  /// saw as a good one: unusable frames return early from [update], so no rule
+  /// runs, no severity is recorded, and `maxSeverity == 0` — the same value a
+  /// clean rep produces. [unobservedReps] is now its own outcome.
+  int get cleanReps => _reps
+      .where((r) => r.isObservedAt(config.minObservedRatio) && r.isClean)
+      .length;
 
-  int get sloppyReps => _reps.length - cleanReps;
+  /// Reps that were watched and did draw a complaint.
+  int get sloppyReps => _reps
+      .where((r) => r.isObservedAt(config.minObservedRatio) && !r.isClean)
+      .length;
+
+  /// Reps that finished with too little of them visible to judge.
+  ///
+  /// `cleanReps + sloppyReps + unobservedReps == repCount`, always.
+  int get unobservedReps =>
+      _reps.where((r) => !r.isObservedAt(config.minObservedRatio)).length;
 
   /// Last usable signal value, or null if no frame has been accepted yet.
   /// Exposed for debugging and threshold tuning.
@@ -282,8 +343,13 @@ class RepCounter {
   }) {
     final s = _signal(frame, config.minLikelihood);
     // Unusable frame: missing or low-confidence joints. Change nothing —
-    // holding the previous phase is strictly better than guessing.
-    if (s == null) return null;
+    // holding the previous phase is strictly better than guessing. It is
+    // counted, though: a rep made mostly of these frames was not observed,
+    // and used to be reported as clean because nothing had complained.
+    if (s == null) {
+      if (_phase != RepPhase.top) _missedFrames++;
+      return null;
+    }
     _lastSignal = s;
 
     if (!_armed) {
@@ -295,6 +361,7 @@ class RepCounter {
     // this very frame is accumulated by _beginRep instead, so nothing is
     // double-counted and nothing is missed.
     if (_phase != RepPhase.top) {
+      _observedFrames++;
       _accumulate(feedback);
       if (s > _peakSignal) _peakSignal = s;
     }
@@ -352,6 +419,8 @@ class RepCounter {
     _repStartMs = timestampMs;
     _peakSignal = signal;
     _severity.clear();
+    _observedFrames = 1;
+    _missedFrames = 0;
     _accumulate(fb);
   }
 
@@ -375,6 +444,8 @@ class RepCounter {
       endMs: timestampMs,
       peakSignal: _peakSignal,
       severityByRule: Map<String, int>.unmodifiable(_severity),
+      observedFrames: _observedFrames,
+      missedFrames: _missedFrames,
     );
     _reps.add(quality);
     _phase = RepPhase.top;
@@ -402,6 +473,8 @@ class RepCounter {
     _severity.clear();
     _repStartMs = 0;
     _peakSignal = double.negativeInfinity;
+    _observedFrames = 0;
+    _missedFrames = 0;
   }
 
   RepEvent _phaseEvent() => RepEvent(

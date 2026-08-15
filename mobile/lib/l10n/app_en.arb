@@ -840,6 +840,7 @@
   "equipmentNoCuratedYet": "No curated exercises for this machine yet — ask the AI coach below for ideas.",
   "aiCoachButton": "AI coach",
   "aiCoachButtonHint": "Technique, mistakes and where to start on this machine",
+  "aiCoachButtonHintExercise": "Technique, cues and the mistakes people make on this movement",
   "aiCoachTitle": "AI coach — {arg0}",
   "@aiCoachTitle": {
     "placeholders": {

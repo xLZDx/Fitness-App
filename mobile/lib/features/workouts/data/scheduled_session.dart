@@ -16,6 +16,7 @@ class ScheduledSession {
     this.notes,
     this.programmeId,
     this.extraExercises = const [],
+    this.deloadFactor,
   });
 
   final String id;
@@ -73,6 +74,21 @@ class ScheduledSession {
   /// migration that has not run, onto documents that already exist.
   final List<WorkoutSessionExercise> extraExercises;
 
+  /// The factor an accepted deload already applied to [durationMinutes], or
+  /// null for a session no deload has touched.
+  ///
+  /// This field is what makes "accept deload" idempotent. It used to be
+  /// asserted in a comment — *"Idempotent on reload because the action just
+  /// rescales the durations"* — which is the opposite of what rescaling does:
+  /// a second pass multiplied 45 → 22 → 11, and the UI hiding the button once
+  /// the verdict cleared is a hope about the UI, not a property of the write.
+  /// A row that carries a factor is skipped, so pressing twice, retrying after
+  /// a partial failure, or two devices racing all land on the same durations.
+  ///
+  /// Nullable and additive, like [programmeId]: absence in the stored document
+  /// IS "never deloaded", so no migration has to run over existing rows.
+  final double? deloadFactor;
+
   /// Every exercise of this day, in order, starting with [exerciseId].
   ///
   /// The API every new reader should use. Never empty: a scheduled day always
@@ -96,6 +112,7 @@ class ScheduledSession {
     String? notes,
     String? programmeId,
     List<WorkoutSessionExercise>? extraExercises,
+    double? deloadFactor,
   }) =>
       ScheduledSession(
         id: id ?? this.id,
@@ -107,6 +124,7 @@ class ScheduledSession {
         notes: notes ?? this.notes,
         programmeId: programmeId ?? this.programmeId,
         extraExercises: extraExercises ?? this.extraExercises,
+        deloadFactor: deloadFactor ?? this.deloadFactor,
       );
 
   Map<String, dynamic> toJson() => {
@@ -124,6 +142,7 @@ class ScheduledSession {
         if (programmeId != null) 'programmeId': programmeId,
         if (extraExercises.isNotEmpty)
           'extraExercises': extraExercises.map((e) => e.toJson()).toList(),
+        if (deloadFactor != null) 'deloadFactor': deloadFactor,
       };
 
   factory ScheduledSession.fromJson(Map<String, dynamic> j) {
@@ -156,6 +175,7 @@ class ScheduledSession {
           .map((e) =>
               WorkoutSessionExercise.fromJson(Map<String, dynamic>.from(e)))
           .toList(),
+      deloadFactor: (j['deloadFactor'] as num?)?.toDouble(),
     );
   }
 
@@ -171,12 +191,13 @@ class ScheduledSession {
           other.status == status &&
           other.notes == notes &&
           other.programmeId == programmeId &&
+          other.deloadFactor == deloadFactor &&
           _sameExercises(other.extraExercises, extraExercises);
 
   @override
   int get hashCode => Object.hash(id, exerciseId, exerciseTitle, scheduledFor,
       durationMinutes, status, notes, programmeId,
-      Object.hashAll(extraExercises));
+      Object.hash(deloadFactor, Object.hashAll(extraExercises)));
 }
 
 /// Element-wise, order-sensitive. Two days holding the same exercises in a

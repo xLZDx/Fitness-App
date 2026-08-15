@@ -398,6 +398,7 @@
   "equipmentNoCuratedYet": "Для этого тренажёра пока нет подобранных упражнений — спросите AI-тренера ниже.",
   "aiCoachButton": "AI-тренер",
   "aiCoachButtonHint": "Техника, ошибки и с чего начать на этом тренажёре",
+  "aiCoachButtonHintExercise": "Техника, подсказки и типичные ошибки в этом движении",
   "aiCoachTitle": "AI-тренер — {arg0}",
   "aiCoachThinking": "Думаю…",
   "aiCoachFailed": "Тренер недоступен: {arg0}",

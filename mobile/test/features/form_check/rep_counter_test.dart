@@ -86,6 +86,35 @@ List<RepEvent> drive(
 FormFeedback fb(int severity, {String rule = 'squat.depth'}) =>
     FormFeedback(rule: rule, severity: severity, cueKey: FormCueKey.values[severity]);
 
+/// Feeds one repetition with every frame that is not load-bearing replaced by
+/// an unreadable one.
+///
+/// Which frames are load-bearing is measured rather than hard-coded: a throwaway
+/// counter runs the rep first and records the indices that produced an event.
+/// The rep therefore still completes — the state machine sees every threshold
+/// crossing — while the frames in between, the ones the rules would have run
+/// on, are gone. That is the real-world case: the lifter drifts out of frame
+/// mid-rep and stands back up.
+void driveMostlyBlind(RepCounter counter, List<PoseFrame> frames) {
+  final probe = RepCounter(config: counter.config);
+  final loadBearing = <int>{};
+  for (var i = 0; i < frames.length; i++) {
+    final wasArmed = probe.isArmed;
+    final event = probe.update(frames[i]);
+    // Arming produces no event and is still load-bearing: a counter that never
+    // saw the lifter standing up will not start a rep at all.
+    if (event != null || probe.isArmed != wasArmed) loadBearing.add(i);
+  }
+  for (var i = 0; i < frames.length; i++) {
+    counter.update(
+      loadBearing.contains(i)
+          ? frames[i]
+          : frameAt(0.0, frames[i].timestampMs, likelihood: 0.1),
+      feedback: [fb(0)],
+    );
+  }
+}
+
 void main() {
   group('squatDepthSignal', () {
     test('reads hip-minus-knee in the same sign convention as the rule', () {
@@ -374,6 +403,53 @@ void main() {
       expect(counter.reps[1].isClean, isTrue);
       expect(counter.cleanReps, 1);
       expect(counter.sloppyReps, 1);
+    });
+
+    test('a rep the app could not see is not a clean rep', () {
+      // The defect: unusable frames return early from `update`, so no rule
+      // runs and the severity map stays empty — the same state a faultless rep
+      // produces. `cleanReps` counted it as good news.
+      final counter = RepCounter();
+      driveMostlyBlind(counter, repFrames(startMs: 0));
+      expect(counter.repCount, 1, reason: 'the rep itself still happened');
+      expect(counter.cleanReps, 0);
+      expect(counter.sloppyReps, 0, reason: 'it was not bad either');
+      expect(counter.unobservedReps, 1);
+
+      final rep = counter.reps.single;
+      expect(rep.missedFrames, greaterThan(rep.observedFrames));
+      expect(rep.observedRatio, lessThan(0.5));
+      expect(rep.isClean, isTrue,
+          reason: 'nothing complained — which is exactly why isClean alone '
+              'must not be what the count reads');
+    });
+
+    test('the three outcomes always add up to the rep count', () {
+      final counter = RepCounter();
+      drive(counter, repFrames(startMs: 0), feedback: [fb(0)]);
+      drive(counter, repFrames(startMs: 1400), feedback: [fb(2)]);
+      driveMostlyBlind(counter, repFrames(startMs: 2800));
+      expect(counter.repCount, 3);
+      expect(counter.cleanReps + counter.sloppyReps + counter.unobservedReps,
+          counter.repCount);
+      expect(counter.cleanReps, 1);
+      expect(counter.sloppyReps, 1);
+      expect(counter.unobservedReps, 1);
+    });
+
+    test('a hand-built quality record with no frame accounting still counts',
+        () {
+      // Records that predate frame accounting must not be retroactively
+      // reclassified as unobserved.
+      const legacy = RepQuality(
+        index: 1,
+        startMs: 0,
+        endMs: 1200,
+        peakSignal: 0.0,
+        severityByRule: <String, int>{},
+      );
+      expect(legacy.observedRatio, isNull);
+      expect(legacy.isObservedAt(0.5), isTrue);
     });
 
     test('records depth and duration', () {
