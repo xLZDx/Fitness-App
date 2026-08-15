@@ -10,7 +10,10 @@ import '../../workouts/state/scheduled_session_providers.dart';
 import '../data/mock_programme_repository.dart';
 import '../data/programme.dart';
 import '../data/programme_repository.dart';
+import '../../safety/state/eligibility_providers.dart';
+import '../data/programme_builder.dart';
 import '../data/programme_schedule.dart';
+import '../data/programme_specs.dart';
 import '../data/programme_templates.dart';
 
 /// Persistence provider for programme enrolments. Default is the in-memory
@@ -138,16 +141,70 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
         startedAt: startedAt,
       );
 
-      final catalogue = availableWith(
-        await ref.read(safeCatalogProvider.future),
-        profile?.equipment ?? EquipmentAccess.empty,
-      );
-      final rows = buildProgrammeSchedule(
-        programme: programme,
-        catalogue: catalogue,
-        sessionMinutes: profile?.schedule.sessionMinutes,
-        preferredWeekdays: profile?.schedule.preferredWeekdays ?? const [],
-      );
+      final safeCatalogue = await ref.read(safeCatalogProvider.future);
+
+      // Gate P. A template with a declared role structure is built by
+      // `buildProgramme`, which fills MOVEMENT ROLES and validates the result;
+      // one without falls back to the muscle-pool scheduler.
+      //
+      // The split is not a migration half-done — it is which programmes the
+      // sequential filler was actually wrong for. `strength_base`,
+      // `gym_start` and `injury_comeback` name no muscles, so their pool was
+      // the whole catalogue in alphabetical order and `_fillDay` walked
+      // consecutive entries: 32 sessions of yoga poses and sit-ups under a
+      // strength title. `shred_endurance` and `shoulders_arms` name muscles
+      // and draw from a muscle pool, which is a weaker guarantee than a role
+      // structure but not the same defect.
+      final spec = programmeSpecFor(template.id,
+          daysPerWeek: programme.daysPerWeek);
+      List<ScheduledSession> rows;
+      if (spec != null) {
+        final safety = await ref.read(safetyContextProvider.future);
+        final focus = programme.muscles.toSet();
+        final built = buildProgramme(ProgrammeBuildRequest(
+          spec: spec,
+          catalogue: safeCatalogue,
+          safety: safety,
+          weeks: programme.weeks,
+          daysPerWeek: programme.daysPerWeek,
+          // Personalisation, and the only door it comes through: the answer to
+          // "what do you want worked on" ORDERS the candidates for each role.
+          //
+          // It used to select them — `programme.muscles` was the pool key — and
+          // a role structure cannot work that way: a user who asks for core
+          // work still needs a squat in the squat slot. Preferring rather than
+          // filtering keeps their answer and keeps the programme a programme.
+          rank: focus.isEmpty
+              ? null
+              : (role, pool) => [
+                    ...pool.where((e) =>
+                        e.primaryMuscles.any(focus.contains) ||
+                        e.muscles.any(focus.contains)),
+                    ...pool.where((e) => !(e.primaryMuscles.any(focus.contains) ||
+                        e.muscles.any(focus.contains))),
+                  ],
+        ));
+        switch (built) {
+          case ProgrammeRefused(:final findings):
+            // Explicit, not a fabricated plan. `enrol` reports it through the
+            // action's own error state, which the card already renders.
+            throw ProgrammeNotViable(findings);
+          case ProgrammeBuilt(:final sessions):
+            rows = scheduleFromPlan(
+              programme: programme,
+              plan: sessions,
+              dayOffsets: dayOffsets,
+            );
+        }
+      } else {
+        rows = buildProgrammeSchedule(
+          programme: programme,
+          catalogue: availableWith(
+              safeCatalogue, profile?.equipment ?? EquipmentAccess.empty),
+          sessionMinutes: profile?.schedule.sessionMinutes,
+          preferredWeekdays: profile?.schedule.preferredWeekdays ?? const [],
+        );
+      }
 
       await repo.save(user.uid, programme);
       final sessionRepo = ref.read(scheduledSessionRepositoryProvider);

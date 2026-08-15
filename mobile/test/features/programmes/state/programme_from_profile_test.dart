@@ -12,6 +12,10 @@ import 'package:fitness_app/features/programmes/data/mock_programme_repository.d
 import 'package:fitness_app/features/programmes/data/programme.dart';
 import 'package:fitness_app/features/programmes/data/programme_templates.dart';
 import 'package:fitness_app/features/programmes/state/programme_providers.dart';
+import 'package:fitness_app/features/safety/data/eligibility.dart';
+import 'package:fitness_app/features/safety/data/health_flags.dart';
+import 'package:fitness_app/features/safety/data/par_q.dart';
+import 'package:fitness_app/features/safety/state/eligibility_providers.dart';
 import 'package:fitness_app/features/workouts/data/mock_scheduled_session_repository.dart';
 import 'package:fitness_app/features/workouts/state/scheduled_session_providers.dart';
 
@@ -24,9 +28,10 @@ import 'package:fitness_app/features/workouts/state/scheduled_session_providers.
 /// between the builder and what the user ends up with, and the builder can be
 /// perfectly right while any of them drops its answer on the floor.
 
-ExerciseItem _ex(String id, {List<String> muscles = const []}) => ExerciseItem(
+ExerciseItem _ex(String id, {List<String> muscles = const [], String? title}) =>
+    ExerciseItem(
       id: id,
-      title: id,
+      title: title ?? id,
       equipmentId: null,
       muscles: muscles,
       difficulty: ExerciseDifficulty.beginner,
@@ -34,6 +39,31 @@ ExerciseItem _ex(String id, {List<String> muscles = const []}) => ExerciseItem(
       summary: '',
       steps: const [],
     );
+
+/// One candidate for every movement role a template programme declares.
+///
+/// Gate P: enrolling in a template builds by role and refuses rather than
+/// fabricating, so a two-row fixture produces no programme at all.
+List<ExerciseItem> _roleCatalogue() => [
+      _ex('sq', title: 'Bodyweight Squat', muscles: const ['quads']),
+      _ex('sq2', title: 'Goblet Squat', muscles: const ['quads']),
+      _ex('hi', title: 'Romanian Deadlift', muscles: const ['hamstrings']),
+      _ex('hi2', title: 'Glute Bridge', muscles: const ['glutes']),
+      _ex('hp', title: 'Push Up', muscles: const ['chest']),
+      _ex('hp2', title: 'Bench Press', muscles: const ['chest']),
+      _ex('vp', title: 'Overhead Press', muscles: const ['shoulders']),
+      _ex('vp2', title: 'Push Press', muscles: const ['shoulders']),
+      _ex('hl', title: 'Bent Over Row', muscles: const ['back']),
+      _ex('hl2', title: 'Seated Row', muscles: const ['back']),
+      _ex('vl', title: 'Pull Up', muscles: const ['back']),
+      _ex('vl2', title: 'Lat Pulldown', muscles: const ['back']),
+      _ex('sl', title: 'Walking Lunge', muscles: const ['quads']),
+      _ex('sl2', title: 'Bulgarian Split Squat', muscles: const ['quads']),
+      _ex('ce', title: 'Front Plank', muscles: const ['core']),
+      _ex('ce2', title: 'Hollow Hold', muscles: const ['core']),
+      _ex('cr', title: 'Russian Twist', muscles: const ['core']),
+      _ex('cr2', title: 'Cable Woodchop', muscles: const ['core']),
+    ];
 
 void main() {
   group('programmeFromProfile', () {
@@ -156,8 +186,21 @@ void main() {
             (_) => Stream.value(const AuthUser(uid: 'alice', displayName: 'A'))),
         safeCatalogProvider.overrideWith((ref) async =>
             catalogue ??
-            [_ex('a', muscles: ['chest']), _ex('b', muscles: ['back'])]),
+            _roleCatalogue()),
         profileRepositoryProvider.overrideWithValue(profileRepo),
+        // Gate P/N. Enrolling in a TEMPLATE now runs the eligibility layer and
+        // the role builder; an unscreened profile blocks all training. These
+        // cases are about `programmeFromProfile`, so the screening is cleared
+        // and the rest of the context still comes from the seeded profile.
+        safetyContextProvider.overrideWith((ref) async {
+          final p = await ref.watch(screeningProfileProvider.future);
+          return SafetyContext(
+            screening: screen({for (final q in ParQQuestion.values) q: false}),
+            injuries: p?.health.injuries ?? const [],
+            health: p?.health.flags ?? HealthFlags.empty,
+            equipment: p?.equipment,
+          );
+        }),
       ]);
       addTearDown(container.dispose);
       await container.read(authUserProvider.future);

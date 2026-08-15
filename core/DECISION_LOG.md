@@ -10436,3 +10436,98 @@ and that ovulatory carries 1.10 — both true of the code, and neither a propert
 the first is arithmetic and the second was the defect.
 
 Not pushed.
+
+## 2026-08-15 — Gate P: a programme is constructed, validated, and allowed to be refused
+
+**Basis: FACT unless marked.**
+
+### The defect
+
+`buildProgrammeSchedule` in `programme_schedule.dart` filled each day with `_fillDay`, which walked
+the muscle-filtered catalogue in order and took the next N rows. Two consequences, both shipped:
+
+- the exercise CONTENT of a "Strength Base" day was whatever the catalogue happened to list first
+  for those muscle tags — the programme's name and its contents were unrelated;
+- nothing could fail. A day with four biceps curls and a day with a squat, a press, a row and a
+  plank were the same object to the code, so no state existed in which the app could say a
+  programme could not be built for this person.
+
+### Decision — movement role, derived, null-honest
+
+Measured on `assets/data/exercises_vendor.json`: 1,887 rows; the fields present are `id`, `title`,
+`equipmentId`, `equipmentLabel`, `muscles`, `primaryMuscles`, `difficulty`, `durationMinutes`,
+`summary`, `steps`, `video`, `isStretch`, `vendorGroup`, `poster`. There is **no** `movementRole`
+and no `pattern` field. A role-driven programme therefore needs either a tagging pass writing a new
+field into 1,887 rows, or a deterministic derivation from the fields that exist.
+
+`movement_role.dart` is the second, with the precedent of `scripts/catalog/tag_contraindications.py`
+— rules over the vendor's own words that a reviewer can disagree with row by row, not a clinical
+judgement. `movementRoleOf` returns **null** for a row it cannot classify, and a null is not dropped
+into the nearest slot: an unclassified row is ineligible for every role slot. A programme that fills
+its horizontal-pull slot with an unrecognised row has not met the requirement, it has hidden that it
+did not.
+
+Order is load-bearing and tested: mobility first (a "squat pose" is yoga), single-leg before squat
+(a "split squat" is not a squat), vertical before horizontal pressing (both say "press").
+
+### Decision — an unfillable role is an adaptation; a collapsed structure is a refusal
+
+Measured against the shipped catalogue after `eligibleExercises`:
+
+| injury | effect on the role pools |
+|---|---|
+| knee | **all 95** squat candidates removed, 112 of 135 single-leg removed |
+| shoulder | **all 86** vertical-push removed, 168 of 172 horizontal-push, 38 of 46 vertical-pull |
+
+The first draft treated an empty role pool as a build failure, which meant a knee injury refused the
+whole programme. That is fail-closed in the wrong place: the person can still hinge, pull, press and
+carry. `ProgrammeFault.roleUnfillable` is now an **adaptation reported on a successful build**, and
+the refusal is `structureNotViable` — fewer than `minSurvivingPrimaryRoles` primary patterns survive,
+at which point what remains is not the programme that was named.
+
+### Decision — the validator can reject, and did
+
+`validateProgramme` checks empty sessions, within-session repeats, duplicate sessions, weekly
+frequency per role against `minWeeklyFrequencyPerRole`, and weekly **sets** (not cards) against a
+band. It rejected two specs written in this gate before either shipped:
+
+- 2 days/week: seven patterns twice a week is arithmetically impossible in two sessions. The answer
+  was not to lower the rule but to declare a narrower programme — `_twiceWeekly` trains squat, hinge
+  and horizontal pull on both days.
+- 3 days/week: the first `_beginnerFullBody` session C was single-leg/push/pull/core, leaving squat
+  and hinge at 1×/week. Session C now carries squat and hinge.
+
+A validator that never rejected anything would have been the same defect in a new file.
+
+### Decision — personalisation is a permutation, never a membership change
+
+`ProgrammeBuildRequest.rank` may reorder a role's eligible pool. The builder checks the returned
+list against the input by length and id set; a ranker that adds, drops or substitutes is **ignored**
+and the deterministic order is used. This is the structural form of "AI may personalise among safe
+options and may not define the safety boundary" — the ranker is handed a pool that
+`eligibleExercises` has already filtered, and cannot put anything back.
+
+Focus zones (`programme.muscles`) moved from *selection* to *preference* for this reason: with roles,
+a muscle list cannot choose the pool without breaking the pattern requirement.
+
+### Decision — the safety gate runs before construction, not after
+
+`buildProgramme` returns `ProgrammeRefused([blockedBySafety])` when `safety.allowsAnyTraining` is
+false, before it looks at the catalogue. Enrolment surfaces that as `ProgrammeNotViable`. There is
+no path that produces a schedule for a person the Gate M/N layer has blocked.
+
+### Scope — which templates are built and which are not
+
+`programmeSpecs` declares `strength_base`, `hypertrophy`, `gym_start`, `injury_comeback`. A template
+with no spec (`shred_endurance`, `shoulders_arms`) still uses `buildProgrammeSchedule`. That is
+stated rather than hidden: those two are **not** role-constructed yet, and claiming otherwise would
+be the §"do not claim a feature works because helper functions exist" failure.
+
+### Verification
+
+Full suite **2571 passed / 0 failed** (2545 after Gate O). `flutter analyze` clean.
+`programme_builder_test.dart` — 26 tests, loading the real 1,887-row asset rather than a fixture,
+including adversarial profiles (unscreened, knee, shoulder, clinician-advised-against, post-surgical,
+no-equipment) and the ranker-tampering cases. `test/features/programmes/` 119 passed.
+
+Not pushed.

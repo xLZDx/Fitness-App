@@ -12,6 +12,10 @@ import 'package:fitness_app/features/programmes/data/mock_programme_repository.d
 import 'package:fitness_app/features/programmes/data/programme.dart';
 import 'package:fitness_app/features/programmes/data/programme_templates.dart';
 import 'package:fitness_app/features/programmes/state/programme_providers.dart';
+import 'package:fitness_app/features/safety/data/eligibility.dart';
+import 'package:fitness_app/features/safety/data/health_flags.dart';
+import 'package:fitness_app/features/safety/data/par_q.dart';
+import 'package:fitness_app/features/safety/state/eligibility_providers.dart';
 import 'package:fitness_app/features/workouts/data/mock_scheduled_session_repository.dart';
 import 'package:fitness_app/features/workouts/data/scheduled_session.dart';
 import 'package:fitness_app/features/workouts/state/scheduled_session_providers.dart';
@@ -22,16 +26,54 @@ import 'package:fitness_app/features/workouts/state/scheduled_session_providers.
 /// generation logic; this is what proves the two repository writes actually
 /// land together, for the current user, using the real (overridden) catalogue.
 
-ExerciseItem _ex(String id, {List<String> muscles = const []}) => ExerciseItem(
+ExerciseItem _ex(String id,
+        {List<String> muscles = const [], String? title, String? label}) =>
+    ExerciseItem(
       id: id,
-      title: id,
+      title: title ?? id,
       equipmentId: null,
+      equipmentLabel: label,
       muscles: muscles,
       difficulty: ExerciseDifficulty.beginner,
       durationMinutes: 20,
       summary: '',
       steps: const [],
     );
+
+/// A catalogue with one candidate for every movement role `strength_base`
+/// declares.
+///
+/// Gate P. Enrolment now builds `strength_base` through `buildProgramme`, which
+/// fills MOVEMENT ROLES and refuses rather than fabricating a plan when it
+/// cannot. A two-row fixture of `_ex('a')` and `_ex('b')` satisfies no role at
+/// all, so every case in this file — all of them about the two repository
+/// writes landing together, not about programme structure — started coming
+/// back as `ProgrammeNotViable`.
+///
+/// Titles, not ids, because that is what `movementRoleOf` reads.
+List<ExerciseItem> _roleCatalogue(
+        {List<ExerciseItem> extra = const [], String? label}) =>
+    [
+      _ex('sq', title: 'Bodyweight Squat', muscles: const ['quads'], label: label),
+      _ex('sq2', title: 'Goblet Squat', muscles: const ['quads'], label: label),
+      _ex('hi', title: 'Romanian Deadlift', muscles: const ['hamstrings'], label: label),
+      _ex('hi2', title: 'Glute Bridge', muscles: const ['glutes'], label: label),
+      _ex('hp', title: 'Push Up', muscles: const ['chest'], label: label),
+      _ex('hp2', title: 'Bench Press', muscles: const ['chest'], label: label),
+      _ex('vp', title: 'Overhead Press', muscles: const ['shoulders'], label: label),
+      _ex('vp2', title: 'Push Press', muscles: const ['shoulders'], label: label),
+      _ex('hl', title: 'Bent Over Row', muscles: const ['back'], label: label),
+      _ex('hl2', title: 'Seated Row', muscles: const ['back'], label: label),
+      _ex('vl', title: 'Pull Up', muscles: const ['back'], label: label),
+      _ex('vl2', title: 'Lat Pulldown', muscles: const ['back'], label: label),
+      _ex('sl', title: 'Walking Lunge', muscles: const ['quads'], label: label),
+      _ex('sl2', title: 'Bulgarian Split Squat', muscles: const ['quads'], label: label),
+      _ex('ce', title: 'Front Plank', muscles: const ['core'], label: label),
+      _ex('ce2', title: 'Hollow Hold', muscles: const ['core'], label: label),
+      _ex('cr', title: 'Russian Twist', muscles: const ['core'], label: label),
+      _ex('cr2', title: 'Cable Woodchop', muscles: const ['core'], label: label),
+      ...extra,
+    ];
 
 ExerciseItem _kit(String id, {String? label}) => ExerciseItem(
       id: id,
@@ -57,6 +99,23 @@ ProviderContainer _container({
     scheduledSessionRepositoryProvider.overrideWithValue(sessionRepo),
     authUserProvider.overrideWith((_) => Stream.value(user)),
     safeCatalogProvider.overrideWith((ref) async => catalogue),
+    // Gate P/N. Enrolment runs through the eligibility layer, and an
+    // unscreened profile blocks all training — correctly, and it is what every
+    // case here started returning. The screening is cleared so these cases
+    // keep testing what they name (the two repository writes, the weekday
+    // placement, the equipment answer), while the EQUIPMENT half of the
+    // context is still read from the seeded profile so
+    // `a home, bodyweight-only answer never schedules a barbell` still tests
+    // the thing it is about.
+    safetyContextProvider.overrideWith((ref) async {
+      final profile = await ref.watch(screeningProfileProvider.future);
+      return SafetyContext(
+        screening: screen({for (final q in ParQQuestion.values) q: false}),
+        injuries: profile?.health.injuries ?? const [],
+        health: profile?.health.flags ?? HealthFlags.empty,
+        equipment: profile?.equipment,
+      );
+    }),
     if (profileRepo != null)
       profileRepositoryProvider.overrideWithValue(profileRepo),
   ]);
@@ -74,7 +133,7 @@ void main() {
       final container = _container(
         programmeRepo: programmeRepo,
         sessionRepo: sessionRepo,
-        catalogue: [_ex('a', muscles: ['chest']), _ex('b', muscles: ['back'])],
+        catalogue: _roleCatalogue(),
         user: const AuthUser(uid: 'alice', displayName: 'Alice'),
       );
       addTearDown(container.dispose);
@@ -110,7 +169,7 @@ void main() {
       final container = _container(
         programmeRepo: programmeRepo,
         sessionRepo: sessionRepo,
-        catalogue: [_ex('a')],
+        catalogue: _roleCatalogue(),
         user: null,
       );
       addTearDown(container.dispose);
@@ -136,7 +195,7 @@ void main() {
       final container = _container(
         programmeRepo: programmeRepo,
         sessionRepo: sessionRepo,
-        catalogue: [_ex('a', muscles: ['chest'])],
+        catalogue: _roleCatalogue(),
         user: const AuthUser(uid: 'alice', displayName: 'Alice'),
       );
       addTearDown(container.dispose);
@@ -188,10 +247,14 @@ void main() {
       final container = await containerWithProfile(
         programmeRepo: programmeRepo,
         sessionRepo: sessionRepo,
-        catalogue: [
-          _kit('pushup', label: 'None (Bodyweight)'),
-          _kit('press', label: 'Barbell'),
-        ],
+        // A role-complete bodyweight catalogue plus one barbell row. The
+        // programme now needs candidates for every declared movement role, and
+        // the assertion below is still the one that matters: the barbell must
+        // not be scheduled for someone who owns none.
+        catalogue: _roleCatalogue(
+          label: 'None (Bodyweight)',
+          extra: [_kit('press', label: 'Barbell')],
+        ),
         profile: const UserProfile(
           uid: 'alice',
           equipment: EquipmentAccess(
@@ -207,7 +270,13 @@ void main() {
 
       final rows = sessionRepo.cached('alice');
       expect(rows, isNotEmpty);
-      expect(rows.every((r) => r.exerciseId == 'pushup'), isTrue,
+      final scheduledIds = {
+        for (final r in rows) ...[
+          r.exerciseId,
+          ...r.extraExercises.map((e) => e.exerciseId),
+        ],
+      };
+      expect(scheduledIds, isNot(contains('press')),
           reason: 'a barbell reached a user who owns none');
     });
 
@@ -221,7 +290,7 @@ void main() {
       final container = await containerWithProfile(
         programmeRepo: programmeRepo,
         sessionRepo: sessionRepo,
-        catalogue: [_kit('pushup', label: 'None (Bodyweight)')],
+        catalogue: _roleCatalogue(label: 'None (Bodyweight)'),
         profile: const UserProfile(
           uid: 'alice',
           schedule: TrainingSchedule(daysPerWeek: 2),
@@ -251,7 +320,7 @@ void main() {
       final container = await containerWithProfile(
         programmeRepo: programmeRepo,
         sessionRepo: sessionRepo,
-        catalogue: [_kit('pushup', label: 'None (Bodyweight)')],
+        catalogue: _roleCatalogue(label: 'None (Bodyweight)'),
         profile: const UserProfile(
           uid: 'alice',
           schedule: TrainingSchedule(
@@ -290,7 +359,7 @@ void main() {
       final container = await containerWithProfile(
         programmeRepo: programmeRepo,
         sessionRepo: sessionRepo,
-        catalogue: [_kit('pushup', label: 'None (Bodyweight)')],
+        catalogue: _roleCatalogue(label: 'None (Bodyweight)'),
         profile: const UserProfile(
           uid: 'alice',
           schedule: TrainingSchedule(
@@ -320,10 +389,15 @@ void main() {
       final container = await containerWithProfile(
         programmeRepo: programmeRepo,
         sessionRepo: sessionRepo,
-        catalogue: [
-          _ex('crunch', muscles: ['core']),
-          _ex('curl', muscles: ['biceps']),
-        ],
+        // Two candidates for one role, one of them tagged with the focus
+        // zone. Gate P changed what a focus zone DOES: it used to pick the
+        // pool, which a role structure cannot support — someone who asks for
+        // core work still needs a squat in the squat slot. It now orders the
+        // candidates within each role, so the assertion below is that the
+        // focus-tagged one comes first, not that it is the only one.
+        catalogue: _roleCatalogue(extra: [
+          _ex('core_squat', title: 'Wall Sit', muscles: const ['core']),
+        ]),
         profile: const UserProfile(
           uid: 'alice',
           goals: FitnessGoals(focusZones: [FocusZone.core]),
@@ -335,10 +409,14 @@ void main() {
           .enroll(programmeTemplates.first);
 
       expect(programmeRepo.cached('alice').single.muscles, ['core']);
-      expect(
-        sessionRepo.cached('alice').every((r) => r.exerciseId == 'crunch'),
-        isTrue,
-      );
+      final scheduled = {
+        for (final r in sessionRepo.cached('alice')) ...[
+          r.exerciseId,
+          ...r.extraExercises.map((e) => e.exerciseId),
+        ],
+      };
+      expect(scheduled, contains('core_squat'),
+          reason: 'the focus zone must reach the selection, not merely the row');
     });
   });
 
@@ -432,7 +510,7 @@ void main() {
       final container = _container(
         programmeRepo: programmeRepo,
         sessionRepo: sessionRepo,
-        catalogue: [_ex('a', muscles: ['chest'])],
+        catalogue: _roleCatalogue(),
         user: const AuthUser(uid: 'alice', displayName: 'Alice'),
       );
       addTearDown(container.dispose);
@@ -467,7 +545,7 @@ void main() {
       final container = _container(
         programmeRepo: programmeRepo,
         sessionRepo: sessionRepo,
-        catalogue: [_ex('a')],
+        catalogue: _roleCatalogue(),
         user: const AuthUser(uid: 'alice', displayName: 'Alice'),
       );
       addTearDown(container.dispose);

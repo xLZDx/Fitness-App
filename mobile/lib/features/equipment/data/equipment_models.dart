@@ -24,6 +24,7 @@ class ExerciseItem {
     this.primaryMuscles = const [],
     this.contraindications = const [],
     this.isStretch = false,
+    this.vendorGroup,
     this.poseTargetId,
   });
 
@@ -51,6 +52,20 @@ class ExerciseItem {
   /// категорий"*. They were there — the list had thirteen chips and none of
   /// them was this one.
   final bool isStretch;
+
+  /// The purchased library's own category for this row.
+  ///
+  /// Twelve values across all 1,887 rows — `Legs`, `Shoulders`,
+  /// `Calisthenics-Cardio-Plyo-Functional`, `Abdominals`, `Back`, `Chest`,
+  /// `Stretching - Mobility`, `Biceps`, `Triceps`, `Yoga`, `Powerlifting`,
+  /// `Forearms`. Present in the asset since the library landed and, until Gate
+  /// P, parsed by nothing.
+  ///
+  /// Read by `movementRoleOf` (`programmes/data/movement_role.dart`), which
+  /// needs it to tell a shoulder press from a bench press when the title says
+  /// only "press". Nullable because a hand-written or generated row may not
+  /// carry one.
+  final String? vendorGroup;
 
   final String id;
   final String title;
@@ -266,6 +281,7 @@ class ExerciseItem {
         contraindications:
             List<String>.from(j['contraindications'] as List? ?? const []),
         isStretch: j['isStretch'] as bool? ?? false,
+        vendorGroup: j['vendorGroup'] as String?,
         poseTargetId: j['poseTargetId'] as String?,
       );
 
@@ -321,6 +337,7 @@ class ExerciseItem {
         primaryMuscles: primaryMuscles,
         contraindications: contraindications,
         isStretch: isStretch,
+        vendorGroup: vendorGroup,
         poseTargetId: poseTargetId,
       );
 }

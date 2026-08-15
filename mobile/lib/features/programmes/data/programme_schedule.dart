@@ -2,6 +2,7 @@ import '../../equipment/data/equipment_models.dart';
 import '../../workouts/data/scheduled_session.dart';
 import '../../workouts/data/workout_session.dart' show WorkoutSessionExercise;
 import 'programme.dart';
+import 'programme_builder.dart';
 
 /// Turns an enrolment into the rows [ScheduledSessionRepository] actually
 /// stores. Pure — no I/O, no id-collision handling — so it is testable
@@ -286,4 +287,57 @@ int programmeScheduledDays({
 List<int> _spreadDays(int count) {
   final n = count > 7 ? 7 : count;
   return List<int>.generate(n, (i) => (i * 7 / n).floor());
+}
+
+/// Turns a role-built plan into the rows the scheduled-session repository
+/// stores.
+///
+/// Gate P. `buildProgrammeSchedule` decides WHAT to train and WHEN in one pass;
+/// this only does the when, because `buildProgramme` has already done the what
+/// and done it against a spec. Splitting them is what lets the structural rules
+/// be tested without a calendar and the calendar rules without a catalogue.
+///
+/// Day placement is identical to `buildProgrammeSchedule`'s and for the same
+/// reason: built from calendar PARTS, never `add(Duration(days:))`, so a clock
+/// change inside the programme's span cannot move a session onto the wrong
+/// weekday.
+List<ScheduledSession> scheduleFromPlan({
+  required Programme programme,
+  required List<PlannedSession> plan,
+  required List<int> dayOffsets,
+}) {
+  if (plan.isEmpty || dayOffsets.isEmpty) return const [];
+  final rows = <ScheduledSession>[];
+  final nowMicros = DateTime.now().microsecondsSinceEpoch;
+  var seq = 0;
+
+  for (final session in plan) {
+    if (session.exercises.isEmpty) continue;
+    final offset = dayOffsets[session.dayIndex % dayOffsets.length];
+    final start = programme.startedAt;
+    final date = DateTime(
+      start.year,
+      start.month,
+      start.day + session.week * 7 + offset,
+      start.hour,
+      start.minute,
+    );
+    final first = session.exercises.first.exercise;
+    rows.add(ScheduledSession(
+      id: '${nowMicros}_${seq}_${first.id}',
+      exerciseId: first.id,
+      exerciseTitle: first.title,
+      extraExercises: [
+        for (final e in session.exercises.skip(1))
+          WorkoutSessionExercise(
+              exerciseId: e.exercise.id, exerciseTitle: e.exercise.title),
+      ],
+      scheduledFor: date,
+      durationMinutes: session.exercises
+          .fold<int>(0, (sum, e) => sum + e.exercise.durationMinutes),
+      programmeId: programme.id,
+    ));
+    seq++;
+  }
+  return rows;
 }
