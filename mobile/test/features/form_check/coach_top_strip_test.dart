@@ -49,7 +49,9 @@ Widget _harness(ProviderContainer container, {double width = 360}) =>
                   right: 12,
                   top: 12,
                   child: CoachTopStrip(
-                    session: const RepSessionState(),
+                    session: RepSessionState(
+                      isArmed: container.read(_armedProvider),
+                    ),
                     showRepCount: container.read(_showRepCountProvider),
                   ),
                 ),
@@ -64,15 +66,21 @@ Widget _harness(ProviderContainer container, {double width = 360}) =>
 /// page's own derivation, which needs a selected exercise and a live camera.
 final _showRepCountProvider = Provider<bool>((_) => true);
 
+/// Same trick for the counter's armed flag, which now decides whether the band
+/// carries the "stand tall to start counting" instruction.
+final _armedProvider = Provider<bool>((_) => false);
+
 ProviderContainer _container({
   PoseGateVerdict verdict = PoseGateVerdict.lowConfidence,
   bool showRepCount = true,
+  bool armed = false,
   double? match,
 }) {
   final c = ProviderContainer(overrides: [
     poseGateVerdictProvider.overrideWith((_) => verdict),
     coachInitialPhaseProvider.overrideWithValue(CoachPhase.qualityCheck),
     _showRepCountProvider.overrideWithValue(showRepCount),
+    _armedProvider.overrideWithValue(armed),
     if (match != null) poseMatchProvider.overrideWith((_) => match),
   ]);
   addTearDown(c.dispose);
@@ -139,9 +147,9 @@ void main() {
         reason: 'a RenderFlex overflow here means a readout is off-screen');
   });
 
-  testWidgets('mid-set there is no band, and the counter keeps its place',
-      (tester) async {
-    final c = _container(verdict: PoseGateVerdict.ok);
+  testWidgets('mid-set, with nothing to instruct, there is no band and the '
+      'counter keeps its place', (tester) async {
+    final c = _container(verdict: PoseGateVerdict.ok, armed: true);
     c.read(coachPhaseControllerProvider.notifier).start();
 
     await tester.pumpWidget(_harness(c));
@@ -154,5 +162,47 @@ void main() {
     final count = tester.getRect(find.byKey(const Key('form_check.rep_count')));
     expect(count.top, lessThan(60),
         reason: 'rep count fell down the screen when the band left: $count');
+  });
+
+  testWidgets('mid-set, an unarmed counter is still explained — in the band, '
+      'and only there', (tester) async {
+    // The `armed: false` half of the case above, and the reason this test was
+    // rewritten rather than left alone. "stand tall to start counting" used to
+    // live inside the rep badge, where it sat directly above the band's own
+    // "Ready. Start when you are." — the screen saying it was waiting for the
+    // user and that it was not, eight pixels apart. It moved into the band, so
+    // the two can no longer both be rendered; a frozen `0` mid-set must still
+    // say why, which is what `RepSessionState.isArmed` was added for.
+    final c = _container(verdict: PoseGateVerdict.ok);
+    c.read(coachPhaseControllerProvider.notifier).start();
+
+    await tester.pumpWidget(_harness(c));
+    await tester.pump();
+
+    final inBand = find.descendant(
+      of: find.byKey(const Key('coach.readinessBand')),
+      matching: find.byKey(const Key('form_check.waiting_for_top')),
+    );
+    expect(inBand, findsOneWidget);
+    // And nowhere else: one message, one place.
+    expect(find.byKey(const Key('form_check.waiting_for_top')), findsOneWidget);
+  });
+
+  testWidgets('a movement that counts nothing is never told to stand tall',
+      (tester) async {
+    // `showRepCountFor` refuses this movement, so "stand tall to start
+    // counting" is an instruction to reach a number that was never going to
+    // appear. The badge is replaced by the "counting is off" chip; the
+    // instruction must not survive alongside it.
+    await tester.pumpWidget(_harness(_container(
+      verdict: PoseGateVerdict.ok,
+      showRepCount: false,
+    )));
+    await tester.pump();
+
+    expect(find.byKey(const Key('form_check.waiting_for_top')), findsNothing);
+    expect(
+        find.byKey(const Key('form_check.rep_count_not_tracked')), findsOneWidget,
+        reason: 'positive control: this really is the not-counted branch');
   });
 }

@@ -45,13 +45,31 @@ void main() {
     expect(find.textContaining('outside the frame'), findsOneWidget);
   });
 
-  testWidgets('a body the detector is only guessing at reads as "no body"',
+  testWidgets('a body the detector is only guessing at names the likely cause',
       (tester) async {
     await tester
         .pumpWidget(_harness(_container(PoseGateVerdict.lowConfidence)));
     await tester.pump();
 
-    expect(find.textContaining('Step into frame'), findsOneWidget);
+    // Was "Step into frame so your whole body is visible", from the coarse
+    // `CoachBlocker` mapping — which is what the band said while the cue card
+    // below it carried the precise sentence. This band is now the only voice,
+    // so it carries `poseGateHint`'s verdict-specific text instead: low
+    // confidence is usually darkness or motion blur, and telling someone to
+    // step into a frame they are already standing in is the wrong correction.
+    expect(find.textContaining('Too dark or too blurry'), findsOneWidget);
+    expect(find.textContaining('Step into frame'), findsNothing);
+  });
+
+  testWidgets('a missing joint still reads as "step into frame"',
+      (tester) async {
+    // The verdict the coarse mapping was actually right for, kept as a control
+    // so the change above cannot be mistaken for "the band stopped saying it".
+    await tester
+        .pumpWidget(_harness(_container(PoseGateVerdict.missingJoints)));
+    await tester.pump();
+
+    expect(find.textContaining('full body'), findsOneWidget);
   });
 
   testWidgets('a sensor bug is never presented as something to fix by moving',

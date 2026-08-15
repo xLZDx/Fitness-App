@@ -499,8 +499,29 @@ void main() {
     // token because it is a token, without reading its value, is the failure
     // this ledger exists to make visible rather than the one it exists to
     // prevent.
+    //
+    // 64 -> 61, 2026-08-15 (form coach Gate A): the fifth decrease, and the
+    // first caused by deleting a whole surface rather than retinting one.
+    // `form_check_page.dart` 21 -> 18, all three in `_AvatarCannotPlaceBody`:
+    // its `color: Colors.white` message and the two
+    // `Colors.white.withValues(alpha: 0.18)` that drew its box. The widget is
+    // gone because its message moved into `CoachReadinessBand`, which is now
+    // the screen's single instruction surface — the box existed only so the
+    // avatar could announce its own failure, which is exactly the second
+    // opinion that gate removed.
+    //
+    // Note the direction this proves: the entry directly above added five for
+    // A2 and claimed the fifth was category one, "the same pairing
+    // coach_readiness_band.dart uses two layers above it on this screen". It
+    // was — and being the same pairing two layers apart is what made it a
+    // duplicate surface. The ledger recorded the addition honestly and still
+    // could not see that; only the screenshot of four simultaneous messages
+    // could. Worth remembering before the next "same pairing, so it is fine".
+    //
+    // `coach_readiness_band.dart` stays at 2: it absorbed the message but not
+    // a literal, because that pairing was already the one it used.
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 64, reason: 'per file: $whites');
+    expect(total, 61, reason: 'per file: $whites');
   });
 
   group('lerp', () {

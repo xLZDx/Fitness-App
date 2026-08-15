@@ -9091,3 +9091,194 @@ both gate hooks while providing no actual review.
 The single method rule worth carrying: every defect this gate found in its own work was found by
 mutation, never by re-reading — four separate assertions looked correct and could not fail. If
 deleting the feature under test leaves the test green, the test proves nothing about it.
+
+## 2026-08-15 13:40 local (Europe/Chisinau) / 10:40 UTC — Form coach Gate A: one instruction surface, and the avatar's scene stops being shared
+
+### What prompted it
+
+Operator sent four screenshots from a real phone plus a 10-second reference video
+(`сделай_анимацию (1).mp4`, 1280x720, 24 fps) with the verdict: *"это точно не похоже на то что
+мы обсуждали"*. Extracted 20 frames at 2 fps and read them. The reference shows one figure: a
+photoreal dusk scene, the body as a dark silhouette, a full glowing skeleton drawn ON that body
+and tracking it through a squat, and minimal chrome — one instruction line top-left, `reps 0`
+top-right, one hint at the bottom when there is something to say.
+
+The app showed something else. Screenshot 4 (avatar mode on) carried four messages at once:
+`stand tall to start counting` inside the rep badge, `Ready. Start when you are.` in the band
+below it, `Can't place your torso — step back so your shoulders and hips are both in view`
+across the middle, and `Ready - do a rep.` at the bottom — over a full-height target outline and
+a violet diagnostic skeleton, on a flat three-stop gradient.
+
+### The diagnosis, stated precisely
+
+Not four bugs. Four widgets each reading a different signal and each rendering what its own
+signal said, all of them locally correct:
+
+- `CoachReadinessBand` read `blockerFor(verdict)` (`coach_readiness_band.dart:33-42`)
+- `_CueCard` read `PoseGateVerdict.isScorable` (`form_check_page.dart:1412`, pre-change)
+- `_AvatarCannotPlaceBody` read `buildPoseAvatar`'s shoulder-and-hip requirement
+  (`pose_avatar.dart:146-149`)
+- `_RepBadge` read `RepSessionState.isArmed` (`form_check_page.dart:1239-1241`, pre-change)
+
+The gate can legitimately answer `ok` on a frame the avatar cannot draw: `SquatDepthClassifier
+.requiredLandmarks` is hips and knees, while a spine needs a shoulder. That asymmetry is
+documented in `pose_avatar.dart:874-881` and was already known — what was missing is that nothing
+decided which of the four surfaces should speak.
+
+### What was built
+
+1. `avatarFigureProvider` + `avatarCannotPlaceBodyProvider` (`form_check_providers.dart`) — the
+   live figure is derived once, so "is there a body to draw" has exactly one answer instead of
+   being the private opinion of the widget that paints it.
+2. `CoachReadinessBand` became the single instruction surface, with an explicit priority order:
+   gate blocker > avatar-cannot-place > counter-not-armed > ready/checking. The absorbed messages
+   kept their original keys, so existing tests find them in their new home. (The first two rungs
+   were the other way round until Codex round 1 — see the Codex section below for why the order
+   was inverted.)
+3. `_CueCard` was reduced to what only it can say — the verdict on a finished repetition. Its gate
+   hint and its `Ready - do a rep.` branch were both duplicates of the band and are gone. The card
+   is not rendered at all while the band reports a blocker.
+4. `_AvatarCannotPlaceBody` deleted; `_RepBadge`'s second line deleted.
+5. `_Silhouette` and `_SkeletonOverlay` no longer paint in avatar mode. The target outline is
+   fitted to the PANEL (`fitSilhouette`) while the avatar is placed where the body is — together
+   they are two human figures at unrelated scales in one box.
+
+### A hole found in my own design, mid-build
+
+The first version still allowed two messages: once a rep had finished but the set had not been
+started, the band would say `Ready. Start when you are.` while the card said `Clean rep`.
+Fixed with `repVerdictShowing`, which silences only the band's informational rungs — a blocker
+still outranks a verdict, and the page stops rendering the card in that case.
+
+### The first test of this was a decoy, and was rewritten
+
+`coach_single_status_test.dart` originally asserted the invariant in a `for` loop inside one
+`testWidgets`, re-pumping the page against ten fresh containers. It passed. Instrumenting it
+showed why: `frame=false, reps=0, verdict=ok` on all ten iterations — after the first
+`pumpWidget` no pose ever reached the tree again, so it was asserting "at most one message" over
+ten copies of an idle screen. It passed with the fix reverted, which is the definition of a test
+that proves nothing.
+
+Rewritten as ten generated `testWidgets` cases, each with a positive control
+(`latestPoseFrameProvider` non-null) that fails loudly if poses stop flowing. The invariant is
+also asserted structurally on the two SURFACES (`coach.readinessBand`, `form_check.cue_card`)
+rather than only on a hand-maintained list of message keys, which would go stale the moment a
+message is added.
+
+### Mutation proof
+
+Each fix was disabled in turn and the suite re-run, per "prove it by mutation":
+
+| Mutation | Test failures |
+|---|---|
+| M1 cue card stops yielding to a blocking band | 3 |
+| M2 band stops carrying "stand tall to start counting" | 1 |
+| M3 target outline drawn over the avatar again | 1 |
+| M4 diagnostic skeleton drawn over the avatar again | 2 |
+
+All four restored afterwards; `git diff --stat` confirmed only the intended three files changed.
+
+### State
+
+`flutter test` (whole suite, not the gate's directory) — **2390 passed, 0 failed**.
+`flutter analyze lib test` — 7 issues, every one pre-existing and in a file this gate does not
+touch (`subscription_providers`, three `workouts` providers, `progression.dart`, `_mockups.dart`,
+`exercise_thumb_test.dart`). Verified by path against the gate's own changed-file list.
+
+Mutation, five in total — the four above plus M5, "match not cleared on an unscorable frame",
+which turns the new readout test red on its own. All five restored afterwards.
+
+Not pushed. Gates B, C and D of the extended GO (`GO A-Д`) follow.
+
+### Operator input received mid-gate, parked for Gate D
+
+Ten photoreal backgrounds supplied (`D:\Downloads\Video\Gemini_Generated_Image_*.png`), with the
+request to pick one at random each time. Inspected, not used — Gate D is outside the current GO.
+Three findings that Gate D must answer: they are 2816x1536 landscape against a 9:16 portrait
+panel (a cover fit keeps only the middle ~31%); several are bright where the body's feet land, so
+a white skeleton over sand, snow or pale water will have to earn its contrast; and 84 MB of
+source needs re-encoding — roughly 2.5-5 MB for ten at 1080x1920 WebP, in a project that has
+already deleted 8.1 MB of demo photographs as dead weight. Licensing is not a concern: the
+operator generated them.
+
+### Codex review, three rounds
+
+Round 1 returned three MAJOR and one MINOR. Each was checked against the cited line before being
+accepted; none was a confabulation, and all four were real:
+
+1. `form_check.phase` was an uncounted fourth status surface — the rep badge's second line
+   rendered whenever the counter was armed, and neither the invariant test's key list nor its
+   surface list knew about it. Fixed by `showPhase: !instructing`; the NUMBER stays, because it
+   is a count that was earned rather than an instruction competing with the band.
+2. The avatar rung outranked the gate. `pose_avatar.dart` drops landmarks outside its coordinate
+   contract, so a frame arriving in the WRONG UNITS produces no torso — and the screen answered a
+   sensor fault with "step back so your shoulders and hips are both in view", which no amount of
+   stepping back fixes. The two rungs were swapped and the band now renders `poseGateHint`'s
+   verdict-specific text rather than the coarse `CoachBlocker` mapping.
+3. Target grading continued while the target was hidden, so avatar mode could fail a rep against a
+   shape the user was never shown. The target is now treated as absent at the single point where
+   it is read for scoring.
+4. "Stand tall to start counting" was spoken while paused, when following it cannot arm anything.
+
+Round 2 returned AGREE on all four and one new MAJOR, also verified and also real: the match
+readout. `poseMatchProvider` was written on every scored frame and cleared exactly once, at page
+mount (`form_check_page.dart:121`), so the last good percentage survived everything after it. The
+defect is BROADER than Codex framed it — it described the avatar toggle, but the unscorable early
+return at `form_check_providers.dart:680` reaches it with no avatar involved at all, which is why
+the clear was put at the two points where "nothing to score" is decided rather than behind another
+condition in the widget that draws it. Pinned by `a match percentage does not outlive the frames
+it was measured on`, mutation M5.
+
+Round 2's NIT was correct too: this file and the band's own class documentation still described
+the pre-round-1 rung order. Both corrected.
+
+Round 3 did not happen. The account hit its usage limit — `ERROR: You've hit your usage limit
+[...] try again at Aug 20th, 2026 5:32 PM` — which the catalog session's handoff had warned about
+hours earlier. The receipt records `ok: false`, the fail-open policy applies, and the gate is not
+blocked. What is NOT claimed: consensus. Three rounds were attempted, two returned, and the third
+returned nothing, so this gate goes to commit with its last round unanswered and that stated
+rather than implied.
+
+The handoff's own advice for exactly this situation was to compensate with mutation testing
+rather than to shrug, so round 3's two open questions were answered by measurement:
+
+- **Does clearing on every unscorable frame make the readout flicker?** `evaluateGated` has no
+  hysteresis — the verdict is per frame — so yes, on a borderline view it will. That is the
+  honest behaviour and not the defect: the defect was a number that stopped moving while
+  claiming to be live. What must hold is that the number and the instruction are never on
+  screen together, and that is now pinned by `a view that flickers never puts a percentage
+  beside an instruction`, driven by alternating scorable/unscorable frames with positive
+  controls on both sides so it cannot pass on a screen that shows neither.
+- **Should `_peakMatchThisRep` follow the clear?** No. It resets at the rep boundaries
+  (`form_check_providers.dart:813`, `:865`, `:917`) because it is what a REP is judged on;
+  erasing it because one frame mid-rep was unreadable would fail a repetition for a dropped
+  camera frame. It is deliberately not tied to the readout, which reports the current frame.
+
+Re-running mutation M5 after the flicker test existed kills **two** tests rather than one.
+
+### A cross-session finding that did not survive checking
+
+The concurrent catalog session closed with a handoff (`5b7c9ac`) carrying a BLOCKER and a MAJOR
+against `coach_single_status_test.dart`: that `avatarCannotPlaceBodyProvider`,
+`coachStatusHasRepVerdict`, `coach.ready`, `coach.checking` and `form_check.cue_card` exist
+nowhere but the test, making its assertions false-green.
+
+Both are false, and for a structural reason worth recording. That session ran its grep in the main
+working tree, which held three of this gate's six files; `form_check_providers.dart` and
+`form_check_page.dart` — where all five symbols are defined and assigned — exist only in the
+worktree the gate moved to precisely to stop the two sessions colliding. Re-run in
+`_wt-formcoach`, every one of the five resolves to production code. `form_check.ready` genuinely
+is absent, because this gate renamed that key to `coach.ready`.
+
+The handoff did the right thing — it cross-checked before relaying, and said so. The isolation
+that made its evidence incomplete is the same isolation that kept the two gates from corrupting
+each other's index, and the trade was worth it. Recorded because a future reader finding that
+handoff will otherwise believe a defect was shipped.
+
+### A failing test outside the gate's own directory
+
+The handoff also reported `app_semantic_colors_test.dart` failing on its hardcoded-white ratchet,
+attributed to unstaged edits under `mobile/lib` — this gate's. True, and it would have been missed:
+the gate had only ever run `test/features/form_check/`, which does not contain it. Deleting
+`_AvatarCannotPlaceBody` removed three `Colors.white` literals, so the ledger moves 64 -> 61 with
+its reasoning written in the file's own idiom. Full-suite runs, not scoped ones, from here on.

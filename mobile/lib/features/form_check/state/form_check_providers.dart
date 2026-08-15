@@ -8,6 +8,7 @@ import '../../profile/state/profile_providers.dart';
 import '../data/coach_phases.dart';
 import '../data/form_classifier.dart';
 import '../data/measured_rep_configs.dart';
+import '../data/pose_avatar.dart';
 import '../data/pose_detector_service.dart';
 import '../data/pose_gate.dart';
 import '../data/pose_landmark.dart';
@@ -289,6 +290,43 @@ final showSkeletonProvider = StateProvider<bool>((_) => false);
 /// a figure that freezes and keeps posing.
 final avatarModeProvider = StateProvider<bool>((_) => false);
 
+/// The live body as a drawable figure, or null when there is nothing to draw.
+///
+/// Built here rather than inside the painting widget so that ONE answer to
+/// "can the avatar be drawn" exists. It used to be computed inside
+/// `_PoseAvatar`, which meant the widget was the only thing in the app that
+/// knew the figure had failed — so it had to announce that failure itself, in
+/// its own centred box, while the status band two layers above went on saying
+/// "Ready. Start when you are." off the gate's separate opinion. Two surfaces,
+/// two verdicts, both on screen at once; see [avatarCannotPlaceBodyProvider].
+///
+/// Null when the mode is off or no pose has arrived. A pose that arrives and
+/// yields no torso returns the empty figure rather than null, because those two
+/// states want different things said about them.
+final avatarFigureProvider = Provider<SilhouetteFigure?>((ref) {
+  if (!ref.watch(avatarModeProvider)) return null;
+  final frame = ref.watch(latestPoseFrameProvider);
+  if (frame == null) return null;
+  return buildPoseAvatar(frame, build: ref.watch(silhouetteBuildProvider));
+});
+
+/// A pose arrived, the mode is on, and it still yields no body to draw.
+///
+/// This is not the detector failing and it is not the user being absent — both
+/// of those clear [latestPoseFrameProvider] and are already explained by the
+/// gate. It is the narrower case the avatar alone can hit: `buildSilhouette`
+/// needs a shoulder AND a hip to have a spine to mirror about, while
+/// `SquatDepthClassifier.requiredLandmarks` needs neither. On a squat framed
+/// low the gate says `ok`, the counter counts, and there is nothing to paint.
+///
+/// With the camera image replaced by a drawn scene, an unexplained empty scene
+/// is indistinguishable from a crash — so this drives the status band rather
+/// than being swallowed.
+final avatarCannotPlaceBodyProvider = Provider<bool>((ref) {
+  final figure = ref.watch(avatarFigureProvider);
+  return figure != null && figure.torso.isEmpty;
+});
+
 /// How well the CURRENT frame matches the target, or null when it cannot be
 /// judged. Drives the live outline colour, so the user can see themselves
 /// approaching the shape instead of finding out afterwards.
@@ -495,6 +533,16 @@ final voiceMutedProvider = StateProvider<bool>((_) => false);
 /// was added to remove.
 final voiceErrorProvider = StateProvider<String?>((_) => null);
 
+/// Whether the cue card has a verdict on a finished repetition to show.
+///
+/// A free function rather than a getter on [RepSessionState] because it is a
+/// statement about what the SCREEN will render, not about the set: the card
+/// shows a rejection or a rep's quality and nothing else, so "has a verdict" is
+/// exactly "one of those two is non-null". The status band asks this to know
+/// whether its own informational rungs should stay quiet.
+bool coachStatusHasRepVerdict(RepSessionState s) =>
+    s.lastReject != null || s.lastRepClean != null;
+
 /// Snapshot of the current set: how many reps, where in the movement, and
 /// the quality record for each rep completed so far.
 class RepSessionState {
@@ -615,6 +663,24 @@ class RepSessionController extends Notifier<RepSessionState> {
     return const RepSessionState();
   }
 
+  /// Publish this frame's match percentage, INCLUDING when there isn't one.
+  ///
+  /// The readout is a live number, and until now it was only ever written —
+  /// never cleared, except once when the page mounts. So the last scorable
+  /// frame's percentage stayed on screen through everything that followed: an
+  /// unusable view, a withdrawn target, a switch into avatar mode. A frozen
+  /// "87%" beside "Step into frame so your whole body is visible" is the same
+  /// two-voices defect this gate exists to close, made worse by a stale number
+  /// being indistinguishable from a live one.
+  ///
+  /// Codex raised it against the avatar toggle. The toggle is not needed: any
+  /// route to a frame with nothing to score reaches it, which is why the clear
+  /// sits at the two points where "nothing to score" is DECIDED rather than
+  /// behind one more condition in the widget that draws it.
+  void _publishMatch(double? match) {
+    ref.read(poseMatchProvider.notifier).state = match;
+  }
+
   void _onFrame(PoseFrame frame) {
     _retirePoseError(ref);
     final counter = _counter;
@@ -629,18 +695,39 @@ class RepSessionController extends Notifier<RepSessionState> {
     // counter and it must not reach the voice coach. This single early return
     // is what stops a selfie of a face from producing six reps and an endless
     // repeated safety warning.
-    if (!result.scorable) return;
+    if (!result.scorable) {
+      _publishMatch(null);
+      return;
+    }
 
     // How close to the target shape this frame got. The readout on screen is
     // live and updates every frame; what the REP is judged on is the peak,
     // because a squat passes through the bottom for a fraction of a second and
     // the question is "did they reach it", not "are they in it right now".
-    final target = ref.read(poseTargetProvider);
-    double? match;
-    if (target != null) {
-      match = poseMatchScore(frame, target);
-      ref.read(poseMatchProvider.notifier).state = match;
-    }
+    // No target while the avatar is on, and this is a scoring decision rather
+    // than a drawing one.
+    //
+    // Avatar mode replaces the camera with a scene and the body with a figure
+    // built from the live pose. It cannot show the target: that outline is
+    // fitted to the PANEL while the avatar is placed where the body actually
+    // is, so drawing both puts two human figures at unrelated scales in one
+    // box — which is what the operator's fourth screenshot shows and what
+    // `_Silhouette` now refuses to do.
+    //
+    // Withdrawing the picture and keeping the grading would fail a rep for
+    // missing a shape the user was never shown (`lastRepMissedTarget` ->
+    // `lastRepClean` false -> a red cue card). `_SilhouettePainter`'s own doc
+    // says the drawn target is what makes the score legitimate; the same
+    // sentence read backwards says an undrawn target makes it illegitimate.
+    // Codex raised this against Gate A and it was right.
+    //
+    // So in avatar mode the coach still counts reps and still runs every
+    // per-frame rule — it simply stops judging against a silhouette, and the
+    // match readout goes with it.
+    final target =
+        ref.read(avatarModeProvider) ? null : ref.read(poseTargetProvider);
+    final match = target == null ? null : poseMatchScore(frame, target);
+    _publishMatch(match);
 
     // Paused, or finished. One guard, and it sits HERE rather than at the top
     // of the method on purpose: everything above is a readout of the live

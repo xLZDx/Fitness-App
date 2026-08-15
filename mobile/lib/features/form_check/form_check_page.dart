@@ -15,9 +15,7 @@ import '../../shared/widgets/glass.dart';
 import 'data/cue_text.dart';
 import 'data/form_classifier.dart';
 import 'data/mlkit_pose_detector_service.dart';
-import 'data/pose_avatar.dart';
 import 'data/pose_detector_service.dart';
-import 'data/pose_gate.dart';
 import 'data/pose_landmark.dart';
 import 'data/pose_projection.dart';
 import 'data/pose_silhouette.dart';
@@ -267,7 +265,13 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     final session = ref.watch(repSessionControllerProvider);
     final showRepCount = showRepCountFor(ref.watch(selectedExerciseProvider));
     final muted = ref.watch(voiceMutedProvider);
-    final gateVerdict = ref.watch(poseGateVerdictProvider);
+    // Whether the strip above is currently telling the user that the coach
+    // cannot see them. Computed once, here, and consumed by the two surfaces
+    // that must not talk over it — which is the whole of the fix: the page
+    // decides who speaks, instead of each widget deciding for itself from its
+    // own private signal and all of them deciding "me".
+    final instructing = ref.watch(avatarCannotPlaceBodyProvider) ||
+        ref.watch(coachSessionProvider).blocker != CoachBlocker.none;
     // Either the camera never opened, or the native detector died mid-stream.
     // Both mean "no reps will be counted", so both belong in the same slot.
     final failure = _startError ?? ref.watch(poseErrorProvider);
@@ -474,17 +478,23 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                           showRepCount: showRepCount,
                         ),
                       ),
-                      Positioned(
-                        left: 12,
-                        right: 12,
-                        bottom: 12,
-                        child: _CueCard(
-                          feedback: session.lastRepCue,
-                          clean: session.lastRepClean,
-                          gateVerdict: gateVerdict,
-                          reject: session.lastReject,
+                      // Silent while the strip above is telling the user the
+                      // coach cannot see them. A verdict on the last rep is
+                      // still true in that moment and is still the wrong thing
+                      // to read: the question on screen has become "why has it
+                      // stopped", and answering a different one underneath is
+                      // how three messages ended up disagreeing in one frame.
+                      if (!instructing)
+                        Positioned(
+                          left: 12,
+                          right: 12,
+                          bottom: 12,
+                          child: _CueCard(
+                            feedback: session.lastRepCue,
+                            clean: session.lastRepClean,
+                            reject: session.lastReject,
+                          ),
                         ),
-                      ),
                     ],
                   ],
                 ),
@@ -703,6 +713,14 @@ class _SkeletonOverlay extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (!ref.watch(showSkeletonProvider)) return const SizedBox.shrink();
+    // Never over the avatar. The avatar IS a skeleton — a lit one, inside the
+    // body it belongs to — so drawing this on top adds a second, thinner,
+    // differently-coloured copy of the same joints half a pixel away from the
+    // first. On a real phone that read as a tracking failure rather than as a
+    // diagnostic: two skeletons that never quite agree look like one skeleton
+    // that cannot hold still. The toggle still governs the camera view, which
+    // is the view the diagnostic was built for.
+    if (ref.watch(avatarModeProvider)) return const SizedBox.shrink();
     final frame = ref.watch(latestPoseFrameProvider);
     if (frame == null) return const SizedBox.shrink();
     return CustomPaint(
@@ -866,20 +884,22 @@ class _PoseAvatar extends ConsumerWidget {
     // this draws nothing and lets the cue speak.
     if (frame == null) return const SizedBox.shrink();
 
-    // Built here rather than inside the painter so this widget can tell the
-    // difference between "no body" and "a body I cannot place", and so the
-    // figure is built once per frame rather than once to ask and once to draw.
-    final figure = buildPoseAvatar(frame, build: ref.watch(silhouetteBuildProvider));
+    // Read, not built. The figure is derived once in `avatarFigureProvider`, so
+    // that the status band above and this painter cannot reach different
+    // conclusions about whether there is a body — which is precisely what
+    // happened while this widget owned the answer and announced it in its own
+    // centred box.
+    final figure = ref.watch(avatarFigureProvider);
+    if (figure == null) return const SizedBox.shrink();
 
-    // A pose arrived and still produced no body. That combination is not
-    // hypothetical and it is not the detector failing: the avatar needs a
-    // shoulder AND a hip to have a spine to mirror about, while
+    // A pose arrived and still produced no body: the avatar needs a shoulder
+    // AND a hip to have a spine to mirror about, while
     // `SquatDepthClassifier.requiredLandmarks` needs neither — hips and knees
-    // only. So on a squat framed low, the gate reports `ok`, the counter counts
-    // reps, and this has nothing to draw. With the camera image gone, silence
-    // there is a blank scene over a coach that is working perfectly, which is
-    // indistinguishable from a broken one.
-    if (figure.torso.isEmpty) return const _AvatarCannotPlaceBody();
+    // only. So on a squat framed low the gate reports `ok`, the counter counts
+    // reps, and this has nothing to draw. Saying so is the status band's job
+    // now (`avatarCannotPlaceBodyProvider`); here it is simply nothing to
+    // paint.
+    if (figure.torso.isEmpty) return const SizedBox.shrink();
 
     return RepaintBoundary(
       child: CustomPaint(
@@ -888,44 +908,6 @@ class _PoseAvatar extends ConsumerWidget {
       ),
     );
   }
-}
-
-/// Says why the scene is empty while the coach is still running.
-class _AvatarCannotPlaceBody extends StatelessWidget {
-  const _AvatarCannotPlaceBody();
-
-  @override
-  Widget build(BuildContext context) => Center(
-        key: const Key('form_check.avatar_no_torso'),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: DecoratedBox(
-            // White on `cameraOverlay`, which is the sanctioned pattern on this
-            // screen and the token `coach_readiness_band.dart` already uses two
-            // layers above. Not a fresh black literal: the theme owns that
-            // number, and a second answer to a question already answered here
-            // is how the two drift.
-            decoration: BoxDecoration(
-              color: context.colors.cameraOverlay,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Text(
-                AppLocalizations.of(context).formcheckAvatarNoTorso,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  height: 1.35,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
 }
 
 /// A dark body with a lit skeleton inside it.
@@ -1124,7 +1106,7 @@ class _StartFailure extends StatelessWidget {
 ///
 /// Public so the arrangement can be pumped without a camera. [ScanTopBar] is
 /// public for the same reason and after the same class of bug.
-class CoachTopStrip extends StatelessWidget {
+class CoachTopStrip extends ConsumerWidget {
   const CoachTopStrip({
     super.key,
     required this.session,
@@ -1135,7 +1117,14 @@ class CoachTopStrip extends StatelessWidget {
   final bool showRepCount;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Whether the band below is about to report something blocking. The rep
+    // badge's second line yields to it: "reps — ready" under the counter,
+    // directly above "Step into frame so your whole body is visible", is the
+    // same two-voices defect this gate exists to remove, one surface further
+    // out than the first pass looked.
+    final instructing = ref.watch(avatarCannotPlaceBodyProvider) ||
+        ref.watch(coachSessionProvider).blocker != CoachBlocker.none;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -1150,7 +1139,7 @@ class CoachTopStrip extends StatelessWidget {
           children: [
             Flexible(
               child: showRepCount
-                  ? _RepBadge(session: session)
+                  ? _RepBadge(session: session, showPhase: !instructing)
                   : const _RepCountNotTrackedBadge(),
             ),
             const SizedBox(width: 8),
@@ -1160,9 +1149,22 @@ class CoachTopStrip extends StatelessWidget {
         const SizedBox(height: 8),
         // Below the readouts, not beside them: it is an instruction, and the
         // numbers above it are what the instruction is about. Removes itself
-        // once the set is running — an instruction band mid-rep competes with
-        // the cue card.
-        const IgnorePointer(child: CoachReadinessBand()),
+        // once the set is running and there is nothing left to instruct — an
+        // instruction band mid-rep competes with the cue card.
+        //
+        // Both flags are computed here rather than inside the band, because
+        // this is the widget that already holds the rep session and sits under
+        // the provider scope. The band stays renderable on its own.
+        IgnorePointer(
+          child: CoachReadinessBand(
+            avatarCannotPlaceBody: ref.watch(avatarCannotPlaceBodyProvider),
+            // Only when a count is actually being kept. On a movement
+            // `showRepCountFor` refuses, "stand tall to start counting" is an
+            // instruction to reach a number that was never going to appear.
+            waitingForTop: showRepCount && !session.isArmed,
+            repVerdictShowing: coachStatusHasRepVerdict(session),
+          ),
+        ),
       ],
     );
   }
@@ -1206,8 +1208,17 @@ class _RepCountNotTrackedBadge extends StatelessWidget {
 /// text on the screen — mid-set, at arm's length, this is the only thing the
 /// user can actually read.
 class _RepBadge extends StatelessWidget {
-  const _RepBadge({required this.session});
+  const _RepBadge({required this.session, this.showPhase = true});
   final RepSessionState session;
+
+  /// Whether to draw the phase line under the number.
+  ///
+  /// False while the status band is reporting that the coach cannot see the
+  /// user. The phase is a readout of the counter rather than an instruction, so
+  /// it does not belong in the band's priority ladder — but "ready" sitting
+  /// under the count while the band says the body is out of frame is still two
+  /// things being said at once, and the count is the half that can wait.
+  final bool showPhase;
 
   @override
   Widget build(BuildContext context) {
@@ -1231,21 +1242,15 @@ class _RepBadge extends StatelessWidget {
               height: 1.0,
             ),
           ),
-          const SizedBox(height: 2),
-          // Before the counter has seen the lifter standing it will not start
-          // a lap, so the number cannot move however hard the user works. Say
-          // what is being waited for; the phase word ("ready") was true and
-          // useless, because it looks identical to a counter that has died.
-          if (!session.isArmed)
-            Text(
-              AppLocalizations.of(context).formcheckWaitingForTop,
-              key: const Key('form_check.waiting_for_top'),
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: AppPalette.auroraPeach,
-                fontWeight: FontWeight.w700,
-              ),
-            )
-          else
+          // Only once the counter has armed. Before that the badge is the
+          // number and nothing else: what is being waited for is said once, by
+          // the status band, because it is a statement about whether the coach
+          // is ready rather than about the set. Saying it here as well put
+          // "stand tall to start counting" directly above "Ready. Start when
+          // you are." — the screen telling the user both that it was waiting
+          // for them and that it was not.
+          if (session.isArmed && showPhase) ...[
+            const SizedBox(height: 2),
             Text(
               AppLocalizations.of(context).formcheckReps(
                   repPhaseText(AppLocalizations.of(context), session.phase)),
@@ -1255,6 +1260,7 @@ class _RepBadge extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
+          ],
         ],
       ),
     );
@@ -1374,7 +1380,6 @@ class _CueCard extends StatelessWidget {
   const _CueCard({
     this.feedback,
     this.clean,
-    this.gateVerdict = PoseGateVerdict.ok,
     this.reject,
   });
 
@@ -1398,26 +1403,10 @@ class _CueCard extends StatelessWidget {
 
   final FormFeedback? feedback;
 
-  /// Why the last frame was unscorable. Drives the placeholder text, so
-  /// "step back" and "too dark to read your position" are told apart instead
-  /// of both showing the same generic line.
-  final PoseGateVerdict gateVerdict;
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    // A blocked frame always wins the card: whatever the last rep scored, the
-    // user needs to know the coach cannot currently see them.
-    if (!gateVerdict.isScorable) {
-      final hint = poseGateHint(l10n, gateVerdict);
-      return _band(
-        theme,
-        Colors.white.withValues(alpha: 0.18),
-        hint.isEmpty ? l10n.formcheckStandBackSoYourFullBody : hint,
-        const Key('form_check.gate_hint'),
-      );
-    }
 
     // An attempt that was started and discarded. It produced no count, and
     // silence here is what makes that look like the detector losing the body.
@@ -1433,16 +1422,16 @@ class _CueCard extends StatelessWidget {
       );
     }
 
-    // Nothing finished yet. Say so rather than showing a colour that would be
-    // read as a verdict on a rep that has not happened.
-    if (clean == null) {
-      return _band(
-        theme,
-        Colors.white.withValues(alpha: 0.18),
-        l10n.formcheckReadyPrompt,
-        const Key('form_check.ready'),
-      );
-    }
+    // Nothing has finished yet, so this card has nothing to be a verdict on and
+    // renders nothing at all.
+    //
+    // It used to say "Ready - do a rep." here. That is not a verdict on a
+    // repetition, it is a statement that the coach is ready — which the status
+    // band above says, in its own words, from a different signal, at the same
+    // time. Two "ready" sentences at opposite ends of the preview, and on the
+    // frame the operator screenshotted, a third message between them saying the
+    // body could not be found at all.
+    if (clean == null) return const SizedBox.shrink();
 
     // Two colours, one per repetition. Red carries the one cue; green says the
     // rep was clean and says it in three words, because a green banner that
@@ -1461,8 +1450,15 @@ class _CueCard extends StatelessWidget {
     );
   }
 
+  /// The card itself carries a key as well as the message inside it.
+  ///
+  /// So that "at most one surface is speaking" can be asserted structurally,
+  /// on the two surfaces, rather than by enumerating every message key either
+  /// of them might contain. An enumeration goes stale the moment a message is
+  /// added — which is exactly how a screen grows a second voice back.
   Widget _band(ThemeData theme, Color colour, String text, Key key) =>
       Container(
+        key: const Key('form_check.cue_card'),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: colour,
@@ -1544,6 +1540,15 @@ class _Silhouette extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Not in avatar mode. This outline is a TARGET: a fixed shape fitted to the
+    // panel with `fitSilhouette`, for the user to walk into while the camera
+    // shows them through it. The avatar is the opposite — the user's own body,
+    // placed where the detector says the body is. Drawn together they are two
+    // human figures at two unrelated scales in the same box, and the operator's
+    // screenshot shows what that looks like: a full-height ghost standing
+    // through a message explaining that no body could be found at all.
+    if (ref.watch(avatarModeProvider)) return const SizedBox.shrink();
+
     final target = ref.watch(poseTargetProvider);
     final pair = ref.watch(poseDemoProvider);
     final build = ref.watch(silhouetteBuildProvider);
@@ -1781,6 +1786,11 @@ class _MatchReadout extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Nothing to report while the avatar is on: there is no target being
+    // scored against there, so `poseMatchProvider` simply holds whatever the
+    // last camera-mode frame left in it. A percentage that stopped moving is
+    // worse than no percentage — it looks like a live number that has frozen.
+    if (ref.watch(avatarModeProvider)) return const SizedBox.shrink();
     final match = ref.watch(poseMatchProvider);
     if (match == null) return const SizedBox.shrink();
     final pct = (match * 100).round();
