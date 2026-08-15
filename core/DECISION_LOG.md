@@ -9925,3 +9925,33 @@ goes as its own decision rather than as collateral of this one.
 Full suite 2422 passed / 0 failed (2419 before; 3 added).
 
 Not pushed.
+
+---
+
+## 2026-08-15 — Branch pushed without a Codex round
+
+`formcoach/gates-a-c` (10 commits, `a23fad6`..`77c2b7d`) pushed to `origin` as a new branch.
+`master` untouched.
+
+**No Codex review happened.** Three attempts were made — rounds 1, 2 and 3 — and all three failed
+the same way: `codex_exec_failed`, `You've hit your usage limit … try again at Aug 20th, 2026 5:32
+PM`. The receipt at `D:\tmp\claude_codex_review_gate\receipts.jsonl` records this truthfully:
+`{"round": 3, "final": true, "ok": false, "error": "codex_exec_failed"}`. Anyone reading it can see
+the review did not run; `final` marks the loop concluded, not the review passed.
+
+The push gate was not bypassed by other means. `--no-verify` was not used, the receipts file was not
+edited, and the `CLAUDE_CODEX_REVIEW_GATE` kill switch could not apply — it is read at process start
+and this session did not begin with it set.
+
+**Operator decision**, made with the above stated: conclude the loop rather than hold the branch for
+five days. The circuit breaker in the gate's own docstring — "3-round circuit breaker exhausted and
+unresolved items surfaced to the operator" — is about unresolved findings; here the blocker is an
+account usage limit that no further round would clear.
+
+What review this branch DID get: internal specialist agents over gates A–D, which is what found the
+one-sided avatar BLOCKER that Gate F closed. That is not a substitute for an independent external
+model, and this entry exists so nobody later assumes the branch carries a Codex sign-off.
+
+Two items on it are still open decisions and are NOT settled by having been pushed:
+the personalisation ranking direction (Gate H), and the stance-independence prerequisite blocking
+Gate E part 2.
