@@ -128,7 +128,7 @@ repository**, in the operator's `Downloads`. Same class of risk as the 2026-08-0
 
 | # | Item | Status |
 |---|---|---|
-| **S1** | `mobile/lib/features/insurance/` — dead code designing the sharing of adherence-derived eligibility with a carrier, recorded in Gate J as prohibited by a 15 April 2026 Play policy | **Awaiting operator GO.** Deletion tripped the shell safety gate; the command was not reformulated |
+| **S1** | `mobile/lib/features/insurance/` — dead code designing the sharing of adherence-derived eligibility with a carrier, recorded in Gate J as prohibited by a 15 April 2026 Play policy | **Closed 2026-08-16.** Deleted under an explicit operator GO after the shell safety gate blocked the first attempt |
 | **S2** | **R5** — the device-local claim is absolute in the policy, and `firestore_profile_repository.dart:74` still parses a populated legacy `health` block | **UNKNOWN.** `legal_text.py`'s own evidence header records that H1b cleared the 14 documents that had one and a read-only query returned zero. Re-running it needs production Firestore |
 | **S3** | **R8 / R9 / R11** from Gate J | **UNKNOWN.** Deferred without recording what they are. Needs the original review artefact |
 | **S4** | The 2026-08-16 review round left 9 test files and 4 programme claims unexamined | not cleared, not examined |
@@ -183,7 +183,7 @@ repository**, in the operator's `Downloads`. Same class of risk as the 2026-08-0
 | MK.1 Live Form Coach with voice | voice grammar and form check, separately | a state machine listening to voice while the classifiers run | ~5d |
 | MK.2 Goal photo → programme | the `GoalPhotoRequest` envelope | the Cloud Function calling Claude Vision | ~5d + ~$2/mo |
 | MK.3 Cycle-aware | **shipped in Gate O** | an onboarding opt-in question | ~1d |
-| MK.4 Insurance attestations | the `qualifiesFor` predicate | see **S1** — proposed for deletion rather than construction | — |
+| MK.4 Insurance attestations | nothing — the model layer was deleted 2026-08-16 | picking this up means designing a prohibited data flow from scratch; the Play policy is the reason, not the effort | — |
 | MK.5 White-label SDK | config + JWT envelope | the SDK package and partner SSO function | ~60d + a hire |
 | MK.6 Body comp | the Navy formula | the photo-silhouette estimator; the paywall line is retracted | ~20d + a TFLite model |
 | MK.7 Recovery as a workout | **the model was deleted as dead** | scheduling UI, and the model again | ~5d |
@@ -196,7 +196,7 @@ repository**, in the operator's `Downloads`. Same class of risk as the 2026-08-0
 
 | Gate | Work | Acceptance |
 |---|---|---|
-| **G1** | Delete `mobile/lib/features/insurance/` and its test | needs an operator **GO** (the shell gate blocked it) |
+| ~~**G1**~~ | ~~Delete `mobile/lib/features/insurance/` and its test~~ | **Done 2026-08-16.** No consumer existed in `lib/`; suite 2596 green after removal |
 | **G2** | Run `flutter build apk --release` and `--split-per-abi`; record size and versions | the build passes; the size lands in `PRODUCTION_MANIFEST` |
 | **G3** | Create 5 Stripe price IDs, run `setup_stripe_secrets.ps1` | operator, ~10 min in the dashboard |
 | **G4** | Settle R5: either an evidential read-only Firestore query, or soften the absolute wording in `legal_text.py` | policy and code agree |

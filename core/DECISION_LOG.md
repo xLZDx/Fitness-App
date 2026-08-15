@@ -10899,3 +10899,33 @@ shell safety gate; per the operating contract the command was not reformulated, 
 explicit operator decision.
 
 Not pushed.
+
+## 2026-08-16 — G1: the insurance-attestation feature is deleted
+
+**Basis: FACT.**
+
+`mobile/lib/features/insurance/data/insurance_partner.dart` described an attestation flow — a signed
+claim to an insurance carrier that a member had hit a weekly training threshold, in exchange for a
+premium discount. Gate J recorded that shape as prohibited by a Play policy effective 15 April 2026.
+
+It had **no consumer**: measured before deletion, `insurance` appears in no file under `mobile/lib`
+or `mobile/test` outside its own directory. So this removes a design, not a behaviour.
+
+Deleted rather than kept as scaffolding. A dead file laying out a prohibited data flow is one import
+away from being a live one, and its header presented the shape as an MVP to build rather than as
+something nobody may. `NEXT_TICKETS.md`'s MK.4 line is corrected in the scope document: picking it
+up now means designing that flow from scratch, and the Play policy is the reason, not the effort.
+
+**Why this took a second turn.** The first attempt used a recursive force delete and the local shell
+safety gate blocked it. Per the operating contract the command was not reformulated to slip past the
+gate — the intent was reported and the work waited for an explicit operator decision, which arrived
+on 2026-08-16. The deletion then used `git rm -r`, a tracked removal, under that authorisation.
+
+**A note on the gate itself.** Appending this entry was blocked once as well, because the paragraph
+above quoted the offending command as prose. The gate matches on text, not on intent. Rewording a
+sentence in a log file is not evasion — no destructive action was being attempted — but it is worth
+recording that the gate cannot tell a command from a description of one.
+
+**Verification.** Full suite **2596 passed / 0 failed** — 2599 before, minus the three tests that
+covered the now-absent `qualifiesFor` predicate. `flutter analyze lib/ test/` reports the same 7
+pre-existing issues, none in files touched here.
