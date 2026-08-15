@@ -1,487 +1,488 @@
 id,title,region,rule,matched,primaryMuscles,vendorGroup,already
-ea_archer_pull_up,Archer Pull Up,shoulder,shoulder_overhead_pull,pull up,"lats,biceps",Back,False
-ea_archer_push_up,Archer Push Up,shoulder,shoulder_pressing,push up,"chest,triceps",Chest,False
-ea_arms_lateral_raise_and_rotation_up,Arms Lateral Raise and Rotation Up,shoulder,shoulder_abduction,lateral raise,,Calisthenics-Cardio-Plyo-Functional,False
-ea_arnold_press_cable_resistance_band_standing,Arnold Press Cable Resistance Band Standing,shoulder,shoulder_overhead,arnold,shoulders,Shoulders,False
-ea_arnold_press_dumbbell,Arnold Press Dumbbell,shoulder,shoulder_overhead,arnold,,Shoulders,False
-ea_assisted_chin_up_normal_width_reverse_grip,Assisted Chin Up Normal Width Reverse Grip,shoulder,shoulder_overhead_pull,chin up,lats,Back,False
-ea_assisted_chin_up_reverse_close_grip,Assisted Chin Up Reverse Close Grip,shoulder,shoulder_overhead_pull,chin up,lats,Back,False
-ea_assisted_chin_up_reverse_wide_grip,Assisted Chin Up Reverse Wide Grip,shoulder,shoulder_overhead_pull,chin up,lats,Back,False
-ea_assisted_chin_up_on_a_bench,Assisted Chin-up on a Bench,shoulder,shoulder_overhead_pull,chin up,biceps,Back,False
-ea_assisted_close_grip_underhand_chin_up,Assisted Close Grip Underhand Chin Up,shoulder,shoulder_overhead_pull,chin up,lats,Back,False
-ea_assisted_parallel_close_grip_pull_up,Assisted Parallel Close Grip Pull Up,shoulder,shoulder_overhead_pull,pull up,lats,Back,False
-ea_assisted_pull_up,Assisted Pull Up,shoulder,shoulder_overhead_pull,pull up,lats,Back,False
-ea_assisted_pull_up_close_grip,Assisted Pull Up Close Grip,shoulder,shoulder_overhead_pull,pull up,lats,Back,False
-ea_assisted_pull_up_normal_grip,Assisted Pull Up Normal Grip,shoulder,shoulder_overhead_pull,pull up,lats,Back,False
-ea_assisted_pull_up_wide_grip,Assisted Pull Up Wide Grip,shoulder,shoulder_overhead_pull,pull up,lats,Back,False
-ea_assisted_weighted_push_up,Assisted Weighted Push Up,shoulder,shoulder_pressing,push up,chest,Chest,False
-ea_backhand_raise,Backhand Raise,shoulder,shoulder_abduction,raise,"shoulders,traps",Shoulders,False
-ea_band_assisted_chin_up_from_knee,Band Assisted Chin Up (from Knee),shoulder,shoulder_overhead_pull,chin up,lats,Back,False
-ea_band_behind_neck_shoulder_press,Band Behind Neck Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_band_bench_press,Band Bench Press,shoulder,shoulder_pressing,bench press,chest,Chest,False
-ea_band_chest_fly,Band Chest Fly,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_band_cross_body_one_arm_chest_press,Band Cross Body One Arm Chest Press,shoulder,shoulder_pressing,chest press,chest,Chest,False
-ea_band_face_pull,Band Face Pull,shoulder,shoulder_abduction,face pull,"traps,shoulders",Shoulders,False
-ea_band_fixed_back_underhand_pulldown,Band Fixed Back Underhand Pulldown,shoulder,shoulder_overhead_pull,pulldown,lats,Back,False
-ea_band_front_face_pull,Band Front Face Pull,shoulder,shoulder_abduction,face pull,"shoulders,traps",Shoulders,False
-ea_band_front_raise,Band Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,False
-ea_band_high_fly,Band High Fly,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_band_incline_bench_press,Band Incline Bench Press,shoulder,shoulder_pressing,bench press,chest,Chest,False
-ea_band_incline_fly,Band Incline Fly,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_band_incline_hammer_press,Band Incline Hammer Press,shoulder,shoulder_pressing,press,chest,Chest,False
-ea_band_incline_palms_back_press,Band Incline Palms Back Press,shoulder,shoulder_pressing,press,chest,Chest,False
-ea_band_incline_t_raise,Band Incline T Raise,shoulder,shoulder_abduction,raise,shoulders,Shoulders,False
-ea_band_incline_y_raise,Band Incline Y Raise,shoulder,shoulder_abduction,raise,shoulders,Shoulders,False
-ea_band_kneeling_lat_pulldown,Band Kneeling Lat Pulldown,shoulder,shoulder_overhead_pull,lat pulldown,lats,Back,False
-ea_band_low_alternate_chest_press,Band Low Alternate Chest Press,shoulder,shoulder_pressing,chest press,chest,Chest,False
-ea_band_low_chest_fly,Band Low Chest Fly,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_band_low_chest_press,Band Low Chest Press,shoulder,shoulder_pressing,chest press,chest,Chest,False
-ea_band_lying_press_down,Band Lying Press Down,shoulder,shoulder_pressing,press,,Triceps,False
-ea_band_pallof_press,Band Pallof Press,shoulder,shoulder_pressing,press,,Chest,False
-ea_band_palloff_press,Band Palloff Press,shoulder,shoulder_pressing,press,chest,Chest,False
-ea_band_pull_up,Band Pull Up,shoulder,shoulder_overhead_pull,pull up,lats,Back,False
-ea_band_push_up,Band Push-up,shoulder,shoulder_pressing,push up,chest,Chest,False
-ea_band_reverse_fly,Band Reverse Fly,shoulder,shoulder_abduction,reverse fly,shoulders,Shoulders,False
-ea_band_seated_lateral_raise,Band Seated Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,False
-ea_band_seated_neutral_grip_shoulders_press,Band Seated Neutral Grip Shoulders Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,False
-ea_band_seated_shoulder_press,Band Seated Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_band_single_arm_overhead_press,Band Single Arm Overhead Press,shoulder,shoulder_overhead,overhead,shoulders,Shoulders,False
-ea_band_single_arm_pec_fly,Band Single Arm Pec Fly,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_band_standing_rear_delt_row,Band Standing Rear Delt Row,shoulder,shoulder_abduction,rear delt,shoulders,Shoulders,False
-ea_band_y_raise,Band Y Raise,shoulder,shoulder_abduction,raise,shoulders,Shoulders,False
-ea_barbell_behind_neck_push_press,Barbell Behind Neck Push Press,shoulder,shoulder_overhead,push press,,Shoulders,False
-ea_barbell_behind_the_back_push_press_single_arm_balance,Barbell Behind the Back Push Press Single Arm Balance,shoulder,shoulder_overhead,push press,shoulders,Shoulders,False
-ea_barbell_bench_press,Barbell Bench Press,shoulder,shoulder_pressing,bench press,chest,Chest,False
-ea_barbell_bench_press_decline,Barbell Bench Press Decline,shoulder,shoulder_pressing,bench press,chest,Chest,False
-ea_barbell_bench_press_incline,Barbell Bench Press Incline,shoulder,shoulder_pressing,bench press,chest,Chest,False
-ea_barbell_bent_over_reverse_raise_skier,Barbell Bent Over Reverse Raise (skier),shoulder,shoulder_abduction,raise,traps,Shoulders,False
-ea_barbell_clean_and_jerk,Barbell Clean and Jerk,shoulder,shoulder_overhead,jerk,"quads,glutes,shoulders",Powerlifting,False
-ea_barbell_clean_and_jerk_split_squat,Barbell Clean and Jerk Split Squat,shoulder,shoulder_overhead,jerk,"quads,glutes,shoulders",Powerlifting,False
-ea_barbell_clean_and_press,Barbell Clean and Press,shoulder,shoulder_pressing,press,"shoulders,quads,glutes",Powerlifting,False
-ea_barbell_close_grip_press,Barbell Close Grip Press,shoulder,shoulder_pressing,press,triceps,Triceps,False
-ea_barbell_floor_chest_press,Barbell Floor Chest Press,shoulder,shoulder_pressing,chest press,chest,Chest,False
-ea_barbell_hooklying_bench_press,Barbell Hooklying Bench Press,shoulder,shoulder_pressing,bench press,,Chest,False
-ea_barbell_hooklying_bench_press_close_elbows,Barbell Hooklying Bench Press Close Elbows,shoulder,shoulder_pressing,bench press,,Chest,False
-ea_barbell_incline_shoulders_press,Barbell Incline Shoulders Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,False
-ea_barbell_incline_shoulders_press_inside_squat_cage,Barbell Incline Shoulders Press (inside Squat Cage),shoulder,shoulder_pressing,press,shoulders,Shoulders,False
-ea_barbell_inclined_bench_press,Barbell Inclined Bench Press,shoulder,shoulder_pressing,bench press,,Chest,False
-ea_barbell_jm_bench_press,Barbell JM Bench Press,shoulder,shoulder_pressing,bench press,triceps,Chest,False
-ea_barbell_landmine_chest_press,Barbell Landmine Chest Press,shoulder,shoulder_pressing,chest press,,Chest,False
-ea_barbell_larsen_bench_press,Barbell Larsen Bench Press,shoulder,shoulder_pressing,bench press,,Chest,False
-ea_barbell_overhead_lunges,Barbell Overhead Lunges,shoulder,shoulder_overhead,overhead,"quads,glutes,shoulders",Legs,False
-ea_barbell_overhead_shrug,Barbell Overhead Shrug,shoulder,shoulder_overhead,overhead,traps,Shoulders,False
-ea_barbell_overhead_squat,Barbell Overhead Squat,shoulder,shoulder_overhead,overhead,"quads,glutes,shoulders",Legs,False
-ea_barbell_pause_incline_bench_press,Barbell Pause Incline Bench Press,shoulder,shoulder_pressing,bench press,,Chest,False
-ea_barbell_power_jerk,Barbell Power Jerk,shoulder,shoulder_overhead,jerk,"shoulders,quads,glutes",Powerlifting,False
-ea_barbell_power_snatch,Barbell Power Snatch,shoulder,shoulder_overhead,snatch,"quads,glutes,hamstrings,shoulders",Powerlifting,False
-ea_barbell_press_under,Barbell Press Under,shoulder,shoulder_pressing,press,,Powerlifting,False
-ea_barbell_pullover_to_triceps_extension,Barbell Pullover to Triceps Extension,shoulder,shoulder_overhead_pull,pullover,"chest,back",Chest,False
-ea_barbell_rear_delt_raise,Barbell Rear Delt Raise,shoulder,shoulder_abduction,rear delt,shoulders,Shoulders,False
-ea_barbell_reverse_close_grip_bench_press,Barbell Reverse Close Grip Bench Press,shoulder,shoulder_pressing,bench press,"triceps,chest",Chest,False
-ea_barbell_reverse_grip_bench_press,Barbell Reverse Grip Bench Press,shoulder,shoulder_pressing,bench press,"chest,triceps",Chest,False
-ea_barbell_seated_behind_neck_military_press,Barbell Seated Behind Neck Military Press,shoulder,shoulder_overhead,military,shoulders,Shoulders,False
-ea_barbell_seated_military_press,Barbell Seated Military Press,shoulder,shoulder_overhead,military,,Shoulders,False
-ea_barbell_seated_overhead_press,Barbell Seated Overhead Press,shoulder,shoulder_overhead,overhead,shoulders,Shoulders,False
-ea_barbell_seated_overhead_triceps_press,Barbell Seated Overhead Triceps Press,shoulder,shoulder_overhead,overhead,triceps,Triceps,False
-ea_barbell_smith_chest_press,Barbell Smith Chest Press,shoulder,shoulder_pressing,chest press,chest,Chest,False
-ea_barbell_snatch,Barbell Snatch,shoulder,shoulder_overhead,snatch,"shoulders,quads,glutes",Powerlifting,False
-ea_barbell_snatch_balance,Barbell Snatch Balance,shoulder,shoulder_overhead,snatch,"shoulders,quads,glutes",Powerlifting,False
-ea_barbell_snatch_deadlift_close_grip,Barbell Snatch Deadlift Close Grip,shoulder,shoulder_overhead,snatch,"quads,glutes,lower_back",Back,False
-ea_barbell_snatch_deadlift_wide_grip,Barbell Snatch Deadlift Wide Grip,shoulder,shoulder_overhead,snatch,"quads,glutes,lower_back",Back,False
-ea_barbell_snatch_from_blocks,Barbell Snatch From Blocks,shoulder,shoulder_overhead,snatch,"shoulders,quads,glutes",Powerlifting,False
-ea_barbell_snatch_pull,Barbell Snatch Pull,shoulder,shoulder_overhead,snatch,"quads,glutes",Powerlifting,False
-ea_barbell_split_jerk,Barbell Split Jerk,shoulder,shoulder_overhead,jerk,"shoulders,quads,glutes",Powerlifting,False
-ea_barbell_spoto_press,Barbell Spoto Press,shoulder,shoulder_pressing,press,,Chest,False
-ea_barbell_standing_close_grip_military_press,Barbell Standing Close Grip Military Press,shoulder,shoulder_overhead,military,shoulders,Shoulders,False
-ea_barbell_standing_military_press,Barbell Standing Military Press,shoulder,shoulder_overhead,military,"shoulders,triceps",Shoulders,False
-ea_barbell_standing_overhead_triceps_extension,Barbell Standing Overhead Triceps Extension,shoulder,shoulder_overhead,overhead,triceps,Triceps,False
-ea_barbell_standing_shoulder_press,Barbell Standing Shoulder Press,shoulder,shoulder_overhead,shoulder press,"shoulders,triceps",Shoulders,False
-ea_barbell_standing_wide_grip_military_press,Barbell Standing Wide Grip Military Press,shoulder,shoulder_overhead,military,"shoulders,triceps",Shoulders,False
-ea_barbell_wide_bench_press,Barbell Wide Bench Press,shoulder,shoulder_pressing,bench press,chest,Chest,False
-ea_barbell_wide_grip_upright_row,Barbell Wide Grip Upright Row,shoulder,shoulder_abduction,upright row,shoulders,Back,False
-ea_barbell_z_press,Barbell Z Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,False
-ea_behind_neck_press_resistance_band_cable,Behind Neck Press Resistance Band Cable,shoulder,shoulder_pressing,press,shoulders,Shoulders,False
-ea_bench_dip_knees_bent,Bench Dip (knees Bent),shoulder,shoulder_pressing,dip,triceps,Triceps,False
-ea_bench_dip_on_floor,Bench Dip on Floor,shoulder,shoulder_pressing,dip,triceps,Triceps,False
-ea_bench_pull_ups,Bench Pull-ups,shoulder,shoulder_overhead_pull,pull ups,"back,biceps",Back,False
-ea_bench_triceps_dip_leg_curls,Bench Triceps Dip Leg Curls,shoulder,shoulder_pressing,dip,triceps,Triceps,False
-ea_bench_triceps_dip_straight_legs,Bench Triceps Dip Straight Legs,shoulder,shoulder_pressing,dip,triceps,Triceps,False
-ea_bent_over_rear_delt_fly_dumbbell,Bent Over Rear Delt Fly Dumbbell,shoulder,shoulder_abduction,rear delt,shoulders,Shoulders,False
-ea_bent_over_rear_deltoid_fly_resistance_band,Bent Over Rear Deltoid Fly Resistance Band,shoulder,shoulder_abduction,fly,shoulders,Shoulders,False
-ea_biceps_curl_to_shoulder_press_resistance_band,Biceps Curl to Shoulder Press Resistance Band,shoulder,shoulder_overhead,shoulder press,"biceps,shoulders",Biceps,False
-ea_bodyweight_bent_over_rear_delt_fly,Bodyweight Bent Over Rear Delt Fly,shoulder,shoulder_abduction,rear delt,shoulders,Shoulders,False
-ea_bodyweight_full_squat_with_overhead_front_raise,Bodyweight Full Squat with Overhead Front Raise,shoulder,shoulder_overhead,overhead,"quads,shoulders,glutes",Calisthenics-Cardio-Plyo-Functional,False
-ea_bodyweight_full_squat_with_overhead_press,Bodyweight Full Squat with Overhead Press,shoulder,shoulder_overhead,overhead,"quads,glutes,shoulders",Legs,False
-ea_bodyweight_kneeling_push_up_row,Bodyweight Kneeling Push-up Row,shoulder,shoulder_pressing,push up,"chest,triceps,back",Yoga,False
-ea_bodyweight_overhead_squat,Bodyweight Overhead Squat,shoulder,shoulder_overhead,overhead,"quads,shoulders,glutes",Legs,False
-ea_bodyweight_overhead_triceps_extension,Bodyweight Overhead Triceps Extension,shoulder,shoulder_overhead,overhead,triceps,Triceps,False
-ea_bodyweight_rear_lunge_front_raise,Bodyweight Rear Lunge Front Raise,shoulder,shoulder_abduction,front raise,"quads,shoulders,glutes",Legs,False
-ea_bodyweight_standing_fly,Bodyweight Standing Fly,shoulder,shoulder_abduction,fly,"chest,shoulders",Chest,False
-ea_bodyweight_standing_military_press,Bodyweight Standing Military Press,shoulder,shoulder_overhead,military,shoulders,Shoulders,False
-ea_bodyweight_standing_military_press_wall_supported,Bodyweight Standing Military Press Wall Supported,shoulder,shoulder_overhead,military,shoulders,Shoulders,False
-ea_bodyweight_standing_triangle_fly,Bodyweight Standing Triangle Fly,shoulder,shoulder_abduction,fly,"chest,shoulders",Calisthenics-Cardio-Plyo-Functional,False
-ea_bodyweight_svend_press,Bodyweight Svend Press,shoulder,shoulder_pressing,press,chest,Chest,False
-ea_cable_bar_lateral_pulldown,Cable Bar Lateral Pulldown,shoulder,shoulder_overhead_pull,pulldown,lats,Back,False
-ea_cable_bench_fly_press,Cable Bench Fly Press,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_cable_bent_over_one_arm_lateral_raise,Cable Bent Over One Arm Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,False
-ea_cable_close_grip_front_lat_pulldown,Cable Close Grip Front Lat Pulldown,shoulder,shoulder_overhead_pull,lat pulldown,lats,Back,False
-ea_cable_core_palloff_press,Cable Core Palloff Press,shoulder,shoulder_pressing,press,,Chest,False
-ea_cable_face_pull_with_rope,Cable Face Pull with Rope,shoulder,shoulder_abduction,face pull,,Shoulders,False
-ea_cable_front_raises_straight_bar,Cable Front Raises Straight Bar,shoulder,shoulder_abduction,front raises,shoulders,Shoulders,False
-ea_cable_lateral_raises,Cable Lateral Raises,shoulder,shoulder_abduction,lateral raises,shoulders,Shoulders,False
-ea_cable_leaning_lateral_raise,Cable Leaning Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,False
-ea_cable_low_fly,Cable Low Fly,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_cable_lying_extension_pullover_with_cables_attachment,Cable Lying Extension Pullover (with Cables Attachment),shoulder,shoulder_overhead_pull,pullover,"lats,triceps",Back,False
-ea_cable_lying_fly,Cable Lying Fly,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_cable_middle_fly,Cable Middle Fly,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_cable_one_arm_chest_fly_bent,Cable One Arm Chest Fly Bent,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_cable_one_arm_front_raise,Cable One Arm Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,False
-ea_cable_one_arm_lat_pulldown,Cable One Arm Lat Pulldown,shoulder,shoulder_overhead_pull,lat pulldown,lats,Back,False
-ea_cable_overhead_curl,Cable Overhead Curl,shoulder,shoulder_overhead,overhead,biceps,Biceps,False
-ea_cable_overhead_extension_rope,Cable Overhead Extension Rope,shoulder,shoulder_overhead,overhead,triceps,Triceps,False
-ea_cable_pulldown,Cable Pulldown,shoulder,shoulder_overhead_pull,pulldown,lats,Back,False
-ea_cable_pulldown_pro_lat_bar,Cable Pulldown (pro Lat Bar),shoulder,shoulder_overhead_pull,pulldown,lats,Back,False
-ea_cable_rear_delt_fly,Cable Rear Delt Fly,shoulder,shoulder_abduction,rear delt,,Shoulders,False
-ea_cable_rear_pulldown,Cable Rear Pulldown,shoulder,shoulder_overhead_pull,pulldown,lats,Back,False
-ea_cable_reverse_fly_on_crossover,Cable Reverse Fly on Crossover,shoulder,shoulder_abduction,reverse fly,traps,Shoulders,False
-ea_cable_seated_rear_lateral_raise,Cable Seated Rear Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,False
-ea_cable_single_arm_reverse_fly,Cable Single Arm Reverse Fly,shoulder,shoulder_abduction,reverse fly,,Shoulders,False
-ea_cable_straight_arm_pulldown,Cable Straight Arm Pulldown,shoulder,shoulder_overhead_pull,pulldown,lats,Back,False
-ea_cable_triceps_overhead_extension_ez_bar,Cable Triceps Overhead Extension (ez Bar),shoulder,shoulder_overhead,overhead,triceps,Triceps,False
-ea_cable_twin_handle_parallel_grip_lat_pulldown,Cable Twin Handle Parallel Grip Lat Pulldown,shoulder,shoulder_overhead_pull,lat pulldown,lats,Back,False
-ea_cable_twisting_overhead_press,Cable Twisting Overhead Press,shoulder,shoulder_overhead,overhead,"shoulders,core",Calisthenics-Cardio-Plyo-Functional,False
-ea_cable_underhand_pulldown_wide_grips,Cable Underhand Pulldown Wide Grips,shoulder,shoulder_overhead_pull,pulldown,"lats,traps",Back,False
-ea_cable_upright_row_with_ez_bar,Cable Upright Row with EZ Bar,shoulder,shoulder_abduction,upright row,shoulders,Shoulders,False
-ea_cable_upright_row_with_straight_bar,Cable Upright Row with Straight Bar,shoulder,shoulder_abduction,upright row,"shoulders,traps",Shoulders,False
-ea_cable_y_raise,Cable Y Raise,shoulder,shoulder_abduction,raise,shoulders,Shoulders,False
-ea_chair_triceps_dips,Chair Triceps Dips,shoulder,shoulder_pressing,dips,triceps,Triceps,False
-ea_chest_bench_press_correct_stance,Chest Bench Press Correct Stance,shoulder,shoulder_pressing,bench press,,Chest,False
-ea_chest_dip,Chest Dip,shoulder,shoulder_pressing,dip,chest,Chest,False
-ea_chest_dip_on_dip_station,Chest Dip (on Dip Station),shoulder,shoulder_pressing,dip,chest,Chest,False
-ea_chest_dip_machine,Chest Dip Machine,shoulder,shoulder_pressing,dip,chest,Chest,False
-ea_chest_dip_on_bench,Chest Dip on Bench,shoulder,shoulder_pressing,dip,chest,Chest,False
-ea_chest_dip_weighted,Chest Dip Weighted,shoulder,shoulder_pressing,dip,chest,Chest,False
-ea_chest_dip_weighted_slow,Chest Dip Weighted Slow,shoulder,shoulder_pressing,dip,chest,Chest,False
-ea_chest_dip_with_pause_bodyweight,Chest Dip with Pause Bodyweight,shoulder,shoulder_pressing,dip,chest,Chest,False
-ea_chest_fly_low_to_high_resistance_band,Chest Fly Low to High Resistance Band,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_chest_fly_side_step,Chest Fly Side Step,shoulder,shoulder_abduction,fly,"chest,quads",Calisthenics-Cardio-Plyo-Functional,False
-ea_chest_press_front_resistance_band,Chest Press Front Resistance Band,shoulder,shoulder_pressing,chest press,chest,Chest,False
-ea_chest_press_high_to_low_cable_resistance_band,Chest Press High to Low Cable Resistance Band,shoulder,shoulder_pressing,chest press,chest,Chest,False
-ea_chest_press_low_to_high_resistance_band,Chest Press Low to High Resistance Band,shoulder,shoulder_pressing,chest press,chest,Chest,False
-ea_chest_press_machine,Chest Press Machine,shoulder,shoulder_pressing,chest press,chest,Chest,False
-ea_chest_raise_and_rotate,Chest Raise and Rotate,shoulder,shoulder_abduction,raise,"shoulders,chest",Calisthenics-Cardio-Plyo-Functional,False
-ea_chest_tap_push_up,Chest Tap Push Up,shoulder,shoulder_pressing,push up,"chest,shoulders,triceps",Chest,False
-ea_chin_up,Chin Up,shoulder,shoulder_overhead_pull,chin up,"biceps,back",Back,False
-ea_chin_up_reverse_close_grip,Chin Up Reverse Close Grip,shoulder,shoulder_overhead_pull,chin up,"biceps,back",Back,False
-ea_chin_up_reverse_normal_grip,Chin Up Reverse Normal Grip,shoulder,shoulder_overhead_pull,chin up,"biceps,back",Back,False
-ea_chin_up_reverse_wide_grip,Chin Up Reverse Wide Grip,shoulder,shoulder_overhead_pull,chin up,"biceps,back",Back,False
-ea_chin_ups_narrow_parallel_grip,Chin Ups (narrow Parallel Grip),shoulder,shoulder_overhead_pull,chin ups,"biceps,back",Back,False
-ea_chin_up_isometric_and_negative,Chin-up (isometric and Negative),shoulder,shoulder_overhead_pull,chin up,"biceps,back",Back,False
-ea_clap_push_ups,Clap Push Ups,shoulder,shoulder_pressing,push ups,"chest,shoulders,triceps",Chest,False
-ea_clock_push_ups,Clock Push Ups,shoulder,shoulder_pressing,push ups,"chest,triceps",Chest,False
-ea_close_grip_barbell_bench_press,Close Grip Barbell Bench Press,shoulder,shoulder_pressing,bench press,"chest,triceps",Chest,False
-ea_close_grip_push_up,Close Grip Push Up,shoulder,shoulder_pressing,push up,"triceps,chest",Chest,False
-ea_cobra_full_push_up,Cobra Full Push Up,shoulder,shoulder_pressing,push up,"chest,shoulders,triceps",Yoga,False
-ea_cobra_push_up,Cobra Push Up,shoulder,shoulder_pressing,push up,"chest,shoulders,triceps",Yoga,False
-ea_commando_pull_up,Commando Pull-up,shoulder,shoulder_overhead_pull,pull up,"back,biceps",Back,False
-ea_crunch_hands_overhead,Crunch (hands Overhead),shoulder,shoulder_overhead,overhead,core,Abdominals,False
-ea_decline_chair_push_up_diamond,Decline Chair Push Up Diamond,shoulder,shoulder_pressing,push up,"chest,triceps",Triceps,False
-ea_decline_diamond_pike_push_up,Decline Diamond Pike Push-up,shoulder,shoulder_overhead,pike,"shoulders,triceps",Triceps,False
-ea_decline_kneeling_push_up,Decline Kneeling Push Up,shoulder,shoulder_pressing,push up,"chest,triceps",Chest,False
-ea_decline_kneeling_push_up_on_box,Decline Kneeling Push Up on Box,shoulder,shoulder_pressing,push up,"chest,triceps",Chest,False
-ea_decline_push_up,Decline Push Up,shoulder,shoulder_pressing,push up,"chest,triceps",Chest,False
-ea_decline_push_up_against_wall,Decline Push Up Against Wall,shoulder,shoulder_pressing,push up,"chest,triceps",Chest,False
-ea_deep_push_up,Deep Push-up,shoulder,shoulder_pressing,push up,"chest,shoulders",Chest,False
-ea_diamond_push_up,Diamond Push Up,shoulder,shoulder_pressing,push up,"triceps,chest",Triceps,False
-ea_diamond_push_up_on_knees,Diamond Push-up (on Knees),shoulder,shoulder_pressing,push up,"triceps,chest",Triceps,False
-ea_dip_leg_raise_on_couch,Dip Leg Raise on Couch,shoulder,shoulder_pressing,dip,triceps,Triceps,False
-ea_dip_on_floor_with_chair,Dip on Floor with Chair,shoulder,shoulder_pressing,dip,triceps,Triceps,False
-ea_dips_between_chairs,Dips Between Chairs,shoulder,shoulder_pressing,dips,"chest,triceps",Triceps,False
-ea_dumbbell_alternate_bench_press_high_start,Dumbbell Alternate Bench Press (high Start),shoulder,shoulder_pressing,bench press,chest,Chest,False
-ea_dumbbell_alternate_shoulder_press,Dumbbell Alternate Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_dumbbell_alternate_side_press,Dumbbell Alternate Side Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,False
-ea_dumbbell_alternating_arnold_press,Dumbbell Alternating Arnold Press,shoulder,shoulder_overhead,arnold,,Shoulders,False
-ea_dumbbell_arnold_press_version_2,Dumbbell Arnold Press (version 2),shoulder,shoulder_overhead,arnold,shoulders,Shoulders,False
-ea_dumbbell_arnold_press_seated,Dumbbell Arnold Press Seated,shoulder,shoulder_overhead,arnold,shoulders,Shoulders,False
-ea_dumbbell_around_pullover,Dumbbell Around Pullover,shoulder,shoulder_overhead_pull,pullover,chest,Chest,False
-ea_dumbbell_bench_press,Dumbbell Bench Press,shoulder,shoulder_pressing,bench press,chest,Chest,False
-ea_dumbbell_bench_seated_press,Dumbbell Bench Seated Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,False
-ea_dumbbell_bent_arm_lateral_raise,Dumbbell Bent Arm Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,False
-ea_dumbbell_bent_arm_pullover,Dumbbell Bent Arm Pullover,shoulder,shoulder_overhead_pull,pullover,chest,Back,False
-ea_dumbbell_bent_over_face_pull,Dumbbell Bent Over Face Pull,shoulder,shoulder_abduction,face pull,"shoulders,traps",Shoulders,False
-ea_dumbbell_bicep_curl_to_shoulder_press,Dumbbell Bicep Curl to Shoulder Press,shoulder,shoulder_overhead,shoulder press,"biceps,shoulders",Shoulders,False
-ea_dumbbell_biceps_curl_with_overhead_extension_on_stability_ball,Dumbbell Biceps Curl with Overhead Extension on Stability Ball,shoulder,shoulder_overhead,overhead,"biceps,triceps",Biceps,False
-ea_dumbbell_chest_press_decline,Dumbbell Chest Press Decline,shoulder,shoulder_pressing,chest press,chest,Chest,False
-ea_dumbbell_chest_press_flat,Dumbbell Chest Press Flat,shoulder,shoulder_pressing,chest press,chest,Chest,False
-ea_dumbbell_chest_press_incline_bench,Dumbbell Chest Press Incline Bench,shoulder,shoulder_pressing,chest press,,Chest,False
-ea_dumbbell_chest_supported_lateral_raises,Dumbbell Chest Supported Lateral Raises,shoulder,shoulder_abduction,lateral raises,"traps,lats",Shoulders,False
-ea_dumbbell_chest_supported_y_raise,Dumbbell Chest Supported Y Raise,shoulder,shoulder_abduction,raise,,Shoulders,False
-ea_dumbbell_close_grip_shoulder_press_sit_up,Dumbbell Close Grip Shoulder Press Sit Up,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_dumbbell_cuban_press_version_2,Dumbbell Cuban Press (version 2),shoulder,shoulder_pressing,press,shoulders,Shoulders,False
-ea_dumbbell_curl_press_extend,Dumbbell Curl Press Extend,shoulder,shoulder_pressing,press,,Calisthenics-Cardio-Plyo-Functional,False
-ea_dumbbell_decline_alternate_bench_press,Dumbbell Decline Alternate Bench Press,shoulder,shoulder_pressing,bench press,chest,Chest,False
-ea_dumbbell_decline_bench_press,Dumbbell Decline Bench Press,shoulder,shoulder_pressing,bench press,chest,Chest,False
-ea_dumbbell_decline_close_neutral_grip_press,Dumbbell Decline Close Neutral Grip Press,shoulder,shoulder_pressing,press,,Chest,False
-ea_dumbbell_decline_fly,Dumbbell Decline Fly,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_dumbbell_decline_hammer_press,Dumbbell Decline Hammer Press,shoulder,shoulder_pressing,press,chest,Chest,False
-ea_dumbbell_decline_one_arm_hammer_press,Dumbbell Decline One Arm Hammer Press,shoulder,shoulder_pressing,press,chest,Chest,False
-ea_dumbbell_decline_overhead_sit_up,Dumbbell Decline Overhead Sit-up,shoulder,shoulder_overhead,overhead,core,Abdominals,False
-ea_dumbbell_decline_twist_fly,Dumbbell Decline Twist Fly,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_dumbbell_face_down_lying_shoulder_press,Dumbbell Face Down Lying Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_dumbbell_floor_fly,Dumbbell Floor Fly,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_dumbbell_fly_flat_bench,Dumbbell Fly Flat Bench,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_dumbbell_fly_flat_bench_slow,Dumbbell Fly Flat Bench Slow,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_dumbbell_fly_incline_bench,Dumbbell Fly Incline Bench,shoulder,shoulder_abduction,fly,,Chest,False
-ea_dumbbell_front_raise,Dumbbell Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,False
-ea_dumbbell_front_raise_version_2,Dumbbell Front Raise (version 2),shoulder,shoulder_abduction,front raise,shoulders,Shoulders,False
-ea_dumbbell_half_kneeling_military_press,Dumbbell Half Kneeling Military Press,shoulder,shoulder_overhead,military,shoulders,Shoulders,False
-ea_dumbbell_hex_press,Dumbbell Hex Press,shoulder,shoulder_pressing,press,,Chest,False
-ea_dumbbell_incline_alternate_press,Dumbbell Incline Alternate Press,shoulder,shoulder_pressing,press,shoulders,Chest,False
-ea_dumbbell_incline_bench_press,Dumbbell Incline Bench Press,shoulder,shoulder_pressing,bench press,shoulders,Chest,False
-ea_dumbbell_incline_fly,Dumbbell Incline Fly,shoulder,shoulder_abduction,fly,,Chest,False
-ea_dumbbell_incline_fly_on_exercise_ball,Dumbbell Incline Fly on Exercise Ball,shoulder,shoulder_abduction,fly,,Chest,False
-ea_dumbbell_incline_front_raise,Dumbbell Incline Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,False
-ea_dumbbell_incline_hammer_shoulder_press,Dumbbell Incline Hammer Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_dumbbell_incline_lying_front_raise,Dumbbell Incline Lying Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,False
-ea_dumbbell_incline_one_arm_lateral_raise,Dumbbell Incline One Arm Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,False
-ea_dumbbell_incline_one_arm_press,Dumbbell Incline One Arm Press,shoulder,shoulder_pressing,press,,Chest,False
-ea_dumbbell_incline_palms_back_press,Dumbbell Incline Palms Back Press,shoulder,shoulder_pressing,press,,Chest,False
-ea_dumbbell_incline_rear_lateral_raise,Dumbbell Incline Rear Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,False
-ea_dumbbell_incline_squeeze_press,Dumbbell Incline Squeeze Press,shoulder,shoulder_pressing,press,,Chest,False
-ea_dumbbell_incline_svend_close_grip_press,Dumbbell Incline Svend Close Grip Press,shoulder,shoulder_pressing,press,,Chest,False
-ea_dumbbell_incline_twisted_fly,Dumbbell Incline Twisted Fly,shoulder,shoulder_abduction,fly,,Chest,False
-ea_dumbbell_kneeling_arnold_press,Dumbbell Kneeling Arnold Press,shoulder,shoulder_overhead,arnold,shoulders,Shoulders,False
-ea_dumbbell_lateral_to_front_raise,Dumbbell Lateral to Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,False
-ea_dumbbell_leaning_fly,Dumbbell Leaning Fly,shoulder,shoulder_abduction,fly,shoulders,Shoulders,False
-ea_dumbbell_lunge_to_overhead_press,Dumbbell Lunge to Overhead Press,shoulder,shoulder_overhead,overhead,"quads,glutes,shoulders",Legs,False
-ea_dumbbell_lying_on_floor_chest_press,Dumbbell Lying on Floor Chest Press,shoulder,shoulder_pressing,chest press,,Chest,False
-ea_dumbbell_lying_one_arm_rear_lateral_raise,Dumbbell Lying One Arm Rear Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,False
-ea_dumbbell_lying_rear_delt_row,Dumbbell Lying Rear Delt Row,shoulder,shoulder_abduction,rear delt,"lats,shoulders",Shoulders,False
-ea_dumbbell_lying_rear_lateral_raise,Dumbbell Lying Rear Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,False
-ea_dumbbell_one_arm_floor_fly,Dumbbell One Arm Floor Fly,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_dumbbell_one_arm_floor_press,Dumbbell One Arm Floor Press,shoulder,shoulder_pressing,press,chest,Chest,False
-ea_dumbbell_one_arm_front_raise,Dumbbell One Arm Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,False
-ea_dumbbell_one_arm_lateral_raise,Dumbbell One Arm Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,False
-ea_dumbbell_one_arm_low_fly,Dumbbell One Arm Low Fly,shoulder,shoulder_abduction,fly,shoulders,Shoulders,False
-ea_dumbbell_one_arm_shoulder_press_version_2,Dumbbell One Arm Shoulder Press (version 2),shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_dumbbell_one_arm_snatch,Dumbbell One Arm Snatch,shoulder,shoulder_overhead,snatch,"shoulders,quads,glutes",Powerlifting,False
-ea_dumbbell_one_arm_wide_grip_bench_press,Dumbbell One Arm Wide Grip Bench Press,shoulder,shoulder_pressing,bench press,chest,Chest,False
-ea_dumbbell_overhead_extension_seated,Dumbbell Overhead Extension Seated,shoulder,shoulder_overhead,overhead,triceps,Triceps,False
-ea_dumbbell_overhead_extension_standing,Dumbbell Overhead Extension Standing,shoulder,shoulder_overhead,overhead,triceps,Triceps,False
-ea_dumbbell_overhead_lunge,Dumbbell Overhead Lunge,shoulder,shoulder_overhead,overhead,"quads,glutes",Legs,False
-ea_dumbbell_overhead_side_bend,Dumbbell Overhead Side Bend,shoulder,shoulder_overhead,overhead,,Abdominals,False
-ea_dumbbell_overhead_sit_up,Dumbbell Overhead Sit-up,shoulder,shoulder_overhead,overhead,core,Abdominals,False
-ea_dumbbell_press_squat,Dumbbell Press Squat,shoulder,shoulder_pressing,press,"quads,shoulders,glutes",Legs,False
-ea_dumbbell_pullover,Dumbbell Pullover,shoulder,shoulder_overhead_pull,pullover,"chest,lats",Back,False
-ea_dumbbell_pullover_version_2,Dumbbell Pullover (version 2),shoulder,shoulder_overhead_pull,pullover,"chest,lats",Back,False
-ea_dumbbell_pullover_hip_extension_on_exercise_ball,Dumbbell Pullover Hip Extension on Exercise Ball,shoulder,shoulder_overhead_pull,pullover,"chest,lats,glutes,hamstrings",Calisthenics-Cardio-Plyo-Functional,False
-ea_dumbbell_pullover_on_floor,Dumbbell Pullover on Floor,shoulder,shoulder_overhead_pull,pullover,"chest,lats",Back,False
-ea_dumbbell_push_press,Dumbbell Push Press,shoulder,shoulder_overhead,push press,"shoulders,quads",Shoulders,False
-ea_dumbbell_rear_delt_row,Dumbbell Rear Delt Row,shoulder,shoulder_abduction,rear delt,"shoulders,traps",Shoulders,False
-ea_dumbbell_rear_lateral_raise,Dumbbell Rear Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,False
-ea_dumbbell_reverse_fly,Dumbbell Reverse Fly,shoulder,shoulder_abduction,reverse fly,traps,Shoulders,False
-ea_dumbbell_scott_press,Dumbbell Scott Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,False
-ea_dumbbell_scott_press_360_degrees,Dumbbell Scott Press (360 Degrees),shoulder,shoulder_pressing,press,shoulders,Shoulders,False
-ea_dumbbell_seated_alternate_front_raise,Dumbbell Seated Alternate Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,False
-ea_dumbbell_seated_alternate_press,Dumbbell Seated Alternate Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,False
-ea_dumbbell_seated_alternate_shoulder_press,Dumbbell Seated Alternate Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_dumbbell_seated_front_raise,Dumbbell Seated Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,False
-ea_dumbbell_seated_lateral_raise,Dumbbell Seated Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,False
-ea_dumbbell_seated_on_exercise_ball_shoulder_press,Dumbbell Seated on Exercise Ball Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_dumbbell_seated_reverse_close_grip_press,Dumbbell Seated Reverse Close Grip Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,False
-ea_dumbbell_seated_shoulder_press,Dumbbell Seated Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_dumbbell_seated_shoulder_press_parallel_grip,Dumbbell Seated Shoulder Press Parallel Grip,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_dumbbell_side_lying_one_hand_raise,Dumbbell Side Lying One Hand Raise,shoulder,shoulder_abduction,raise,shoulders,Shoulders,False
-ea_dumbbell_side_plank_with_rear_fly,Dumbbell Side Plank with Rear Fly,shoulder,shoulder_abduction,fly,"shoulders,traps",Abdominals,False
-ea_dumbbell_single_arm_floor_press,Dumbbell Single Arm Floor Press,shoulder,shoulder_pressing,press,chest,Chest,False
-ea_dumbbell_single_arm_floor_press_from_close_elbow,Dumbbell Single Arm Floor Press From Close Elbow,shoulder,shoulder_pressing,press,chest,Chest,False
-ea_dumbbell_single_arm_overhead_carry,Dumbbell Single Arm Overhead Carry,shoulder,shoulder_overhead,overhead,shoulders,Calisthenics-Cardio-Plyo-Functional,False
-ea_dumbbell_single_arm_overhead_lunge,Dumbbell Single Arm Overhead Lunge,shoulder,shoulder_overhead,overhead,"quads,shoulders,glutes",Legs,False
-ea_dumbbell_single_arm_underhand_front_raise,Dumbbell Single Arm Underhand Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,False
-ea_dumbbell_single_arm_upright_row,Dumbbell Single Arm Upright Row,shoulder,shoulder_abduction,upright row,,Shoulders,False
-ea_dumbbell_squats_to_shoulder_press,Dumbbell Squats to Shoulder Press,shoulder,shoulder_overhead,shoulder press,"quads,shoulders",Legs,False
-ea_dumbbell_standing_alternate_overhead_press,Dumbbell Standing Alternate Overhead Press,shoulder,shoulder_overhead,overhead,shoulders,Shoulders,False
-ea_dumbbell_standing_alternate_raise,Dumbbell Standing Alternate Raise,shoulder,shoulder_abduction,raise,shoulders,Shoulders,False
-ea_dumbbell_standing_alternate_vertical_front_raises,Dumbbell Standing Alternate Vertical Front Raises,shoulder,shoulder_abduction,front raises,shoulders,Shoulders,False
-ea_dumbbell_standing_behind_back_shoulders_press,Dumbbell Standing Behind Back Shoulders Press,shoulder,shoulder_pressing,press,"shoulders,traps",Shoulders,False
-ea_dumbbell_standing_curl_arnold_press,Dumbbell Standing Curl Arnold Press,shoulder,shoulder_overhead,arnold,shoulders,Shoulders,False
-ea_dumbbell_standing_front_raise_above_head,Dumbbell Standing Front Raise Above Head,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,False
-ea_dumbbell_standing_overhead_press,Dumbbell Standing Overhead Press,shoulder,shoulder_overhead,overhead,shoulders,Shoulders,False
-ea_dumbbell_standing_palms_in_press,Dumbbell Standing Palms in Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,False
-ea_dumbbell_standing_single_arm_cross_raise,Dumbbell Standing Single Arm Cross Raise,shoulder,shoulder_abduction,raise,shoulders,Chest,False
-ea_dumbbell_svend_press,Dumbbell Svend Press,shoulder,shoulder_pressing,press,chest,Chest,False
-ea_dumbbell_tate_press,Dumbbell Tate Press,shoulder,shoulder_pressing,press,triceps,Triceps,False
-ea_dumbbell_w_press,Dumbbell W Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,False
-ea_elevated_pike_shoulder_shrug,Elevated Pike Shoulder Shrug,shoulder,shoulder_overhead,pike,,Shoulders,False
-ea_elevated_push_up,Elevated Push Up,shoulder,shoulder_pressing,push up,chest,Chest,False
-ea_explosive_push_ups,Explosive Push Ups,shoulder,shoulder_pressing,push ups,"chest,triceps",Chest,False
-ea_ez_bar_overhead_extensions_standing,Ez Bar Overhead Extensions Standing,shoulder,shoulder_overhead,overhead,triceps,Triceps,False
-ea_ez_bar_seated_close_grip_shoulder_press,Ez Bar Seated Close Grip Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_ez_bar_standing_front_raise,EZ Bar Standing Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,False
-ea_ez_barbell_anti_gravity_press,EZ Barbell Anti Gravity Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,False
-ea_flat_bench_cable_fly,Flat Bench Cable Fly,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_floor_cable_resistance_band_press,Floor Cable Resistance Band Press,shoulder,shoulder_pressing,press,chest,Chest,False
-ea_floor_tricep_dip,Floor Tricep Dip,shoulder,shoulder_pressing,dip,,Triceps,False
-ea_front_lever_raise,Front Lever Raise,shoulder,shoulder_abduction,raise,,Calisthenics-Cardio-Plyo-Functional,False
-ea_front_lever_raise_to_hold,Front Lever Raise to Hold,shoulder,shoulder_abduction,raise,,Calisthenics-Cardio-Plyo-Functional,False
-ea_front_raise_resistance_bands,Front Raise Resistance Bands,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,False
-ea_front_raises_barbell,Front Raises Barbell,shoulder,shoulder_abduction,front raises,shoulders,Shoulders,False
-ea_full_planche_push_up,Full Planche Push Up,shoulder,shoulder_pressing,push up,"shoulders,chest",Chest,False
-ea_hammer_strength_mts_iso_lateral_decline_press_alternate_arms,Hammer Strength MTS Iso-lateral Decline Press Alternate Arms,shoulder,shoulder_pressing,decline press,chest,Chest,False
-ea_hammer_strength_mts_iso_lateral_decline_press_alternating_arms,Hammer Strength MTS Iso-lateral Decline Press Alternating Arms,shoulder,shoulder_pressing,decline press,chest,Chest,False
-ea_hammer_strength_mts_iso_lateral_decline_press_both_arms,Hammer Strength MTS Iso-lateral Decline Press Both Arms,shoulder,shoulder_pressing,decline press,chest,Chest,False
-ea_hammer_strength_mts_iso_lateral_decline_press_single_arm,Hammer Strength MTS Iso-lateral Decline Press Single Arm,shoulder,shoulder_pressing,decline press,chest,Chest,False
-ea_hammer_strength_plate_loaded_combination_iso_lateral_chest_chest_press,Hammer Strength Plate-loaded Combination Iso-lateral Chest - Chest Press,shoulder,shoulder_pressing,chest press,chest,Chest,False
-ea_hammer_strength_plate_loaded_combination_iso_lateral_chest_chest_press_alternate_arm,Hammer Strength Plate-loaded Combination Iso-lateral Chest - Chest Press Alternate Arm,shoulder,shoulder_pressing,chest press,chest,Chest,False
-ea_hammer_strength_plate_loaded_combination_iso_lateral_chest_chest_press_alternating_arms,Hammer Strength Plate-loaded Combination Iso-lateral Chest - Chest Press_alternating Arms,shoulder,shoulder_pressing,chest press,chest,Chest,False
-ea_hammer_strength_plate_loaded_combination_iso_lateral_chest_chest_press_single_arm,Hammer Strength Plate-loaded Combination Iso-lateral Chest - Chest Press_single Arm,shoulder,shoulder_pressing,chest press,chest,Chest,False
-ea_handstand_push_on_chair,Handstand Push on Chair,shoulder,shoulder_overhead,handstand,"shoulders,triceps",Shoulders,False
-ea_hold_the_world_med_ball_chest_press,Hold the World Med Ball Chest Press,shoulder,shoulder_pressing,chest press,,Chest,False
-ea_incline_bench_cable_fly,Incline Bench Cable Fly,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_incline_diamond_push_up_on_bench,Incline Diamond Push Up on Bench,shoulder,shoulder_pressing,push up,"triceps,chest",Triceps,False
-ea_incline_lateral_raises_dumbbell,Incline Lateral Raises Dumbbell,shoulder,shoulder_abduction,lateral raises,shoulders,Shoulders,False
-ea_incline_push_ups_on_chair,Incline Push Ups on Chair,shoulder,shoulder_pressing,push ups,triceps,Triceps,False
-ea_incline_push_up_on_box,Incline Push-up (on Box),shoulder,shoulder_pressing,push up,chest,Chest,False
-ea_iso_lateral_shoulder_press_alternate_arms,Iso Lateral Shoulder Press Alternate Arms,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_iso_lateral_shoulder_press_both_arms,Iso Lateral Shoulder Press Both Arms,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_iso_lateral_shoulder_press_single_arm,Iso Lateral Shoulder Press Single Arm,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_jump_rope_face_pull,Jump Rope Face Pull,shoulder,shoulder_abduction,face pull,"traps,shoulders",Shoulders,False
-ea_kettlebell_front_raise,Kettlebell Front Raise,shoulder,shoulder_abduction,front raise,,Shoulders,False
-ea_kettlebell_half_kneeling_shoulder_press,Kettlebell Half Kneeling Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_kettlebell_kneeling_one_arm_shoulder_press,Kettlebell Kneeling One Arm Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_kettlebell_long_lever_lateral_raise,Kettlebell Long Lever Lateral Raise,shoulder,shoulder_abduction,lateral raise,,Shoulders,False
-ea_kettlebell_pullover,Kettlebell Pullover,shoulder,shoulder_overhead_pull,pullover,,Back,False
-ea_kettlebell_rear_delt_row,Kettlebell Rear Delt Row,shoulder,shoulder_abduction,rear delt,,Shoulders,False
-ea_kettlebell_seesaw_press,Kettlebell Seesaw Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,False
-ea_kettlebell_single_arm_chest_fly,Kettlebell Single Arm Chest Fly,shoulder,shoulder_abduction,fly,,Chest,False
-ea_kettlebell_single_arm_clean_and_press,Kettlebell Single Arm Clean and Press,shoulder,shoulder_pressing,press,"shoulders,quads,glutes",Calisthenics-Cardio-Plyo-Functional,False
-ea_kettlebell_single_arm_lateral_raise,Kettlebell Single Arm Lateral Raise,shoulder,shoulder_abduction,lateral raise,,Shoulders,False
-ea_kettlebell_single_arm_rear_delt_fly,Kettlebell Single Arm Rear Delt Fly,shoulder,shoulder_abduction,rear delt,,Shoulders,False
-ea_kettlebell_single_leg_glute_bridge_pullover,Kettlebell Single Leg Glute Bridge Pullover,shoulder,shoulder_overhead_pull,pullover,"glutes,chest",Calisthenics-Cardio-Plyo-Functional,False
-ea_kettlebell_situp_press,Kettlebell Situp Press,shoulder,shoulder_pressing,press,"core,shoulders",Abdominals,False
-ea_kettlebell_snatch,Kettlebell Snatch,shoulder,shoulder_overhead,snatch,,Calisthenics-Cardio-Plyo-Functional,False
-ea_kettlebell_standing_bottoms_up_one_arm_shoulder_press,Kettlebell Standing Bottoms-up One Arm Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_kettlebell_strict_press,Kettlebell Strict Press,shoulder,shoulder_pressing,press,shoulders,Calisthenics-Cardio-Plyo-Functional,False
-ea_kettlebell_upright_row,Kettlebell Upright Row,shoulder,shoulder_abduction,upright row,,Shoulders,False
-ea_kipping_handstand_push_up,Kipping Handstand Push-up,shoulder,shoulder_overhead,handstand,,Calisthenics-Cardio-Plyo-Functional,False
-ea_kipping_pull_up,Kipping Pull Up,shoulder,shoulder_overhead_pull,pull up,,Back,False
-ea_kneeling_push_up,Kneeling Push-up,shoulder,shoulder_pressing,push up,,Chest,False
-ea_landmine_alternating_lunge_to_chest_press,Landmine Alternating Lunge to Chest Press,shoulder,shoulder_pressing,chest press,,Calisthenics-Cardio-Plyo-Functional,False
-ea_landmine_alternating_single_arm_press,Landmine Alternating Single Arm Press,shoulder,shoulder_pressing,press,,Shoulders,False
-ea_landmine_chest_press,Landmine Chest Press,shoulder,shoulder_pressing,chest press,"chest,shoulders",Chest,False
-ea_landmine_half_kneeling_single_arm_overhead_press,Landmine Half Kneeling Single Arm Overhead Press,shoulder,shoulder_overhead,overhead,,Shoulders,False
-ea_landmine_kneeling_alternating_overhead_press,Landmine Kneeling Alternating Overhead Press,shoulder,shoulder_overhead,overhead,,Shoulders,False
-ea_landmine_kneeling_overhead_press,Landmine Kneeling Overhead Press,shoulder,shoulder_overhead,overhead,,Shoulders,False
-ea_landmine_lateral_raise,Landmine Lateral Raise,shoulder,shoulder_abduction,lateral raise,,Shoulders,False
-ea_landmine_lunge_to_overhead_press,Landmine Lunge to Overhead Press,shoulder,shoulder_overhead,overhead,,Legs,False
-ea_landmine_overhead_press,Landmine Overhead Press,shoulder,shoulder_overhead,overhead,,Shoulders,False
-ea_landmine_rotational_lift_to_press,Landmine Rotational Lift to Press,shoulder,shoulder_pressing,press,,Calisthenics-Cardio-Plyo-Functional,False
-ea_landmine_seated_alternating_overhead_press,Landmine Seated Alternating Overhead Press,shoulder,shoulder_overhead,overhead,,Shoulders,False
-ea_landmine_seated_overhead_press,Landmine Seated Overhead Press,shoulder,shoulder_overhead,overhead,,Shoulders,False
-ea_landmine_seated_single_arm_overhead_press,Landmine Seated Single Arm Overhead Press,shoulder,shoulder_overhead,overhead,,Shoulders,False
-ea_landmine_single_arm_push_press,Landmine Single Arm Push Press,shoulder,shoulder_overhead,push press,,Shoulders,False
-ea_landmine_single_arm_staggered_overhead_press,Landmine Single Arm Staggered Overhead Press,shoulder,shoulder_overhead,overhead,,Shoulders,False
-ea_lateral_raise_bodyweight,Lateral Raise Bodyweight,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,False
-ea_lateral_raise_to_shoulder_press_resistance_band_cable,Lateral Raise to Shoulder Press Resistance Band Cable,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_lateral_raises_dumbbell,Lateral Raises Dumbbell,shoulder,shoulder_abduction,lateral raises,shoulders,Shoulders,False
-ea_lateral_raises_dumbbell_seated_with_swing,Lateral Raises Dumbbell Seated with Swing,shoulder,shoulder_abduction,lateral raises,shoulders,Shoulders,False
-ea_lateral_raises_on_cable_machine,Lateral Raises on Cable Machine,shoulder,shoulder_abduction,lateral raises,shoulders,Shoulders,False
-ea_laying_lateral_raise,Laying Lateral Raise,shoulder,shoulder_abduction,lateral raise,,Shoulders,False
-ea_leaning_dumbbell_lateral_raise,Leaning Dumbbell Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,False
-ea_low_cable_overhead_flyes,Low Cable Overhead Flyes,shoulder,shoulder_overhead,overhead,shoulders,Shoulders,False
-ea_lying_lateral_raises_bodyweight,Lying Lateral Raises Bodyweight,shoulder,shoulder_abduction,lateral raises,shoulders,Shoulders,False
-ea_machine_chest_press_decline,Machine Chest Press Decline,shoulder,shoulder_pressing,chest press,chest,Chest,False
-ea_machine_chest_press_incline,Machine Chest Press Incline,shoulder,shoulder_pressing,chest press,chest,Chest,False
-ea_machine_fly,Machine Fly,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_machine_lateral_raise,Machine Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,False
-ea_military_press_bodyweight,Military Press Bodyweight,shoulder,shoulder_overhead,military,shoulders,Shoulders,False
-ea_modified_hindu_push_up,Modified Hindu Push Up,shoulder,shoulder_pressing,push up,"chest,shoulders,triceps",Yoga,False
-ea_normal_push_up,Normal Push-up,shoulder,shoulder_pressing,push up,chest,Chest,False
-ea_one_arm_push_up,One Arm Push Up,shoulder,shoulder_pressing,push up,,Chest,False
-ea_one_arm_reverse_dumbbell_fly,One Arm Reverse Dumbbell Fly,shoulder,shoulder_abduction,fly,shoulders,Shoulders,False
-ea_overhead_extension_resistance_band_both_arms,Overhead Extension Resistance Band Both Arms,shoulder,shoulder_overhead,overhead,triceps,Triceps,False
-ea_overhead_med_ball_throw,Overhead Med Ball Throw,shoulder,shoulder_overhead,overhead,,Calisthenics-Cardio-Plyo-Functional,False
-ea_overhead_triceps_stretch_side_angle,Overhead Triceps Stretch Side Angle,shoulder,shoulder_overhead,overhead,triceps,Stretching - Mobility,False
-ea_pec_deck_fly_machine,Pec Deck Fly Machine,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_pec_deck_fly_machine_flies,Pec Deck Fly Machine Flies,shoulder,shoulder_abduction,fly,,Chest,False
-ea_pike_alternating_opposite_hip_taps,Pike Alternating Opposite Hip Taps,shoulder,shoulder_overhead,pike,,Calisthenics-Cardio-Plyo-Functional,False
-ea_pike_individual_alternating_arm_reaches,Pike Individual Alternating Arm Reaches,shoulder,shoulder_overhead,pike,,Calisthenics-Cardio-Plyo-Functional,False
-ea_pike_jacks_feet_kicking_in_and_out,Pike Jacks Feet Kicking in and Out,shoulder,shoulder_overhead,pike,,Calisthenics-Cardio-Plyo-Functional,False
-ea_pike_push_up,Pike Push Up,shoulder,shoulder_overhead,pike,shoulders,Triceps,False
-ea_pike_shoulder_taps,Pike Shoulder Taps,shoulder,shoulder_overhead,pike,,Calisthenics-Cardio-Plyo-Functional,False
-ea_plank_reverse_fly_with_bottle,Plank Reverse Fly with Bottle,shoulder,shoulder_abduction,reverse fly,shoulders,Shoulders,False
-ea_plate_clean_and_press,Plate Clean and Press,shoulder,shoulder_pressing,press,,Powerlifting,False
-ea_plate_curl_to_overhead_press,Plate Curl to Overhead Press,shoulder,shoulder_overhead,overhead,,Biceps,False
-ea_plate_curl_to_overhead_press_to_tricep_extension,Plate Curl to Overhead Press to Tricep Extension,shoulder,shoulder_overhead,overhead,,Triceps,False
-ea_plate_front_raise,Plate Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,False
-ea_plate_full_front_raise,Plate Full Front Raise,shoulder,shoulder_abduction,front raise,,Shoulders,False
-ea_plate_glute_bridge_to_chest_press,Plate Glute Bridge to Chest Press,shoulder,shoulder_pressing,chest press,,Chest,False
-ea_plate_glute_bridge_to_pullover,Plate Glute Bridge to Pullover,shoulder,shoulder_overhead_pull,pullover,,Back,False
-ea_plate_internally_rotated_rear_delt_fly,Plate Internally Rotated Rear Delt Fly,shoulder,shoulder_abduction,rear delt,,Shoulders,False
-ea_plate_lateral_raise,Plate Lateral Raise,shoulder,shoulder_abduction,lateral raise,,Shoulders,False
-ea_plate_overhead_carry,Plate Overhead Carry,shoulder,shoulder_overhead,overhead,,Calisthenics-Cardio-Plyo-Functional,False
-ea_plate_overhead_press_to_tricep_extension,Plate Overhead Press to Tricep Extension,shoulder,shoulder_overhead,overhead,,Shoulders,False
-ea_plate_overhead_shrug,Plate Overhead Shrug,shoulder,shoulder_overhead,overhead,,Shoulders,False
-ea_plate_overhead_tricep_extension,Plate Overhead Tricep Extension,shoulder,shoulder_overhead,overhead,,Triceps,False
-ea_plate_overhead_walking_lunge,Plate Overhead Walking Lunge,shoulder,shoulder_overhead,overhead,,Legs,False
-ea_plate_press,Plate Press,shoulder,shoulder_pressing,press,,Chest,False
-ea_plate_rear_delt_fly,Plate Rear Delt Fly,shoulder,shoulder_abduction,rear delt,,Shoulders,False
-ea_prone_front_raises_barbell_on_bench,Prone Front Raises Barbell on Bench,shoulder,shoulder_abduction,front raises,shoulders,Shoulders,False
-ea_prone_front_raises_dumbbell_on_bench,Prone Front Raises Dumbbell on Bench,shoulder,shoulder_abduction,front raises,shoulders,Shoulders,False
-ea_pull_up_normal_grip,Pull Up Normal Grip,shoulder,shoulder_overhead_pull,pull up,"lats,biceps",Back,False
-ea_pull_up_wide_grip,Pull Up Wide Grip,shoulder,shoulder_overhead_pull,pull up,"lats,biceps",Back,False
-ea_pull_up_wide_grip_front_view,Pull Up Wide Grip Front View,shoulder,shoulder_overhead_pull,pull up,"lats,biceps",Back,False
-ea_push_up_and_rotation,Push Up and Rotation,shoulder,shoulder_pressing,push up,"chest,shoulders",Chest,False
-ea_push_up_plus,Push Up Plus,shoulder,shoulder_pressing,push up,"chest,shoulders",Chest,False
-ea_push_ups_bodyweight,Push Ups Bodyweight,shoulder,shoulder_pressing,push ups,chest,Chest,False
-ea_rear_deltoid_fly_cable_resistance_band,Rear Deltoid Fly Cable Resistance Band,shoulder,shoulder_abduction,fly,shoulders,Shoulders,False
-ea_resistance_band_assisted_push_up,Resistance Band Assisted Push-up,shoulder,shoulder_pressing,push up,chest,Chest,False
-ea_resistance_band_cross_body_single_straight_arm_supinated_pulldown,Resistance Band Cross Body Single Straight Arm Supinated Pulldown,shoulder,shoulder_overhead_pull,pulldown,lats,Back,False
-ea_resistance_band_face_pull,Resistance Band Face Pull,shoulder,shoulder_abduction,face pull,traps,Shoulders,False
-ea_resistance_band_kneeling_cross_body_single_straight_arm_supinated_pulldown,Resistance Band Kneeling Cross Body Single Straight Arm Supinated Pulldown,shoulder,shoulder_overhead_pull,pulldown,lats,Back,False
-ea_reverse_machine_fly,Reverse Machine Fly,shoulder,shoulder_abduction,fly,shoulders,Shoulders,False
-ea_ring_dips,Ring Dips,shoulder,shoulder_pressing,dips,,Calisthenics-Cardio-Plyo-Functional,False
-ea_seated_dumbbell_neutral_grip_front_raises,Seated Dumbbell Neutral Grip Front Raises,shoulder,shoulder_abduction,front raises,,Shoulders,False
-ea_seated_dumbbell_neutral_grip_side_raises,Seated Dumbbell Neutral Grip Side Raises,shoulder,shoulder_abduction,raises,,Shoulders,False
-ea_seated_dumbbell_one_arm_shoulder_press,Seated Dumbbell One Arm Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_seated_dumbbell_rear_delt_fly,Seated Dumbbell Rear Delt Fly,shoulder,shoulder_abduction,rear delt,shoulders,Shoulders,False
-ea_seated_shoulder_press_barbell,Seated Shoulder Press Barbell,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_side_lateral_raise_resistance_band,Side Lateral Raise Resistance Band,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,False
-ea_side_to_side_push_up,Side to Side Push Up,shoulder,shoulder_pressing,push up,"chest,triceps",Chest,False
-ea_single_arm_overhead_extension_resistance_band,Single Arm Overhead Extension Resistance Band,shoulder,shoulder_overhead,overhead,triceps,Triceps,False
-ea_ski_ergometer_cross_country_ski_flyes,Ski Ergometer Cross Country Ski Flyes,shoulder,shoulder_abduction,flyes,chest,Calisthenics-Cardio-Plyo-Functional,False
-ea_ski_ergometer_cross_country_ski_kneeling_reverse_fly_pull,Ski Ergometer Cross Country Ski Kneeling Reverse Fly Pull,shoulder,shoulder_abduction,reverse fly,"traps,shoulders",Calisthenics-Cardio-Plyo-Functional,False
-ea_ski_ergometer_cross_country_ski_pullover_pull,Ski Ergometer Cross Country Ski Pullover Pull,shoulder,shoulder_overhead_pull,pullover,"lats,shoulders",Calisthenics-Cardio-Plyo-Functional,False
-ea_ski_ergometer_cross_country_ski_reverse_fly_pull,Ski Ergometer Cross Country Ski Reverse Fly Pull,shoulder,shoulder_abduction,reverse fly,"lats,traps,shoulders",Calisthenics-Cardio-Plyo-Functional,False
-ea_smith_machine_press_decline,Smith Machine Press Decline,shoulder,shoulder_pressing,press,chest,Chest,False
-ea_smith_machine_press_flat,Smith Machine Press Flat,shoulder,shoulder_pressing,press,chest,Chest,False
-ea_smith_machine_press_incline,Smith Machine Press Incline,shoulder,shoulder_pressing,press,chest,Chest,False
-ea_smith_machine_shoulder_press,Smith Machine Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_standing_arnold_press_dumbbell,Standing Arnold Press Dumbbell,shoulder,shoulder_overhead,arnold,shoulders,Shoulders,False
-ea_standing_dumbbell_alternate_shoulder_press,Standing Dumbbell Alternate Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_standing_front_raise_dumbbell,Standing Front Raise Dumbbell,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,False
-ea_standing_shoulder_press_dumbbell,Standing Shoulder Press Dumbbell,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_standing_y_raise,Standing Y Raise,shoulder,shoulder_abduction,raise,shoulders,Shoulders,False
-ea_supine_push_up,Supine Push Up,shoulder,shoulder_pressing,push up,"traps,shoulders",Back,False
-ea_suspension_trainer_with_grips_chest_fly,Suspension Trainer with Grips Chest Fly,shoulder,shoulder_abduction,fly,chest,Chest,False
-ea_suspension_trainer_with_grips_chin_up,Suspension Trainer with Grips Chin-up,shoulder,shoulder_overhead_pull,chin up,"biceps,lats",Back,False
-ea_suspension_trainer_with_grips_decline_push_up,Suspension Trainer with Grips Decline Push-up,shoulder,shoulder_pressing,push up,chest,Chest,False
-ea_suspension_trainer_with_grips_face_pull,Suspension Trainer with Grips Face Pull,shoulder,shoulder_abduction,face pull,traps,Shoulders,False
-ea_suspension_trainer_with_grips_front_raise,Suspension Trainer with Grips Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,False
-ea_suspension_trainer_with_grips_pike,Suspension Trainer with Grips Pike,shoulder,shoulder_overhead,pike,core,Calisthenics-Cardio-Plyo-Functional,False
-ea_suspension_trainer_with_grips_pull_up,Suspension Trainer with Grips Pull-up,shoulder,shoulder_overhead_pull,pull up,lats,Back,False
-ea_suspension_trainer_with_grips_push_up_to_side_plank,Suspension Trainer with Grips Push-up to Side Plank,shoulder,shoulder_pressing,push up,"chest,shoulders,core",Chest,False
-ea_suspension_trainer_with_grips_rear_delt_row,Suspension Trainer with Grips Rear Delt Row,shoulder,shoulder_abduction,rear delt,"shoulders,traps",Shoulders,False
-ea_suspension_trainer_with_grips_reverse_push_up,Suspension Trainer with Grips Reverse Push-up,shoulder,shoulder_pressing,push up,"chest,triceps",Chest,False
-ea_suspension_trainer_with_grips_single_arm_rear_delt_row,Suspension Trainer with Grips Single Arm Rear Delt Row,shoulder,shoulder_abduction,rear delt,"shoulders,traps",Shoulders,False
-ea_suspension_trainer_with_grips_split_fly,Suspension Trainer with Grips Split Fly,shoulder,shoulder_abduction,fly,shoulders,Shoulders,False
-ea_svend_press_decline_bench,Svend Press Decline Bench,shoulder,shoulder_pressing,press,chest,Chest,False
-ea_svend_press_flat_bench,Svend Press Flat Bench,shoulder,shoulder_pressing,press,chest,Chest,False
-ea_svend_press_incline_bench,Svend Press Incline Bench,shoulder,shoulder_pressing,press,chest,Chest,False
-ea_triceps_dip_machine,Triceps Dip Machine,shoulder,shoulder_pressing,dip,triceps,Triceps,False
-ea_upright_row_barbell,Upright Row Barbell,shoulder,shoulder_abduction,upright row,shoulders,Back,False
-ea_upright_row_cable_resistance_band,Upright Row Cable Resistance Band,shoulder,shoulder_abduction,upright row,shoulders,Shoulders,False
-ea_upright_row_dumbbell,Upright Row Dumbbell,shoulder,shoulder_abduction,upright row,shoulders,Shoulders,False
-ea_upright_row_ez_bar,Upright Row Ez Bar,shoulder,shoulder_abduction,upright row,shoulders,Shoulders,False
-ea_weighted_standing_shoulder_press_with_plate,Weighted Standing Shoulder Press with Plate,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
-ea_wide_push_ups_bodyweight,Wide Push Ups Bodyweight,shoulder,shoulder_pressing,push ups,chest,Chest,False
+ea_archer_pull_up,Archer Pull Up,shoulder,shoulder_overhead_pull,pull up,"lats,biceps",Back,True
+ea_archer_push_up,Archer Push Up,shoulder,shoulder_pressing,push up,"chest,triceps",Chest,True
+ea_arms_lateral_raise_and_rotation_up,Arms Lateral Raise and Rotation Up,shoulder,shoulder_abduction,lateral raise,,Calisthenics-Cardio-Plyo-Functional,True
+ea_arnold_press_cable_resistance_band_standing,Arnold Press Cable Resistance Band Standing,shoulder,shoulder_overhead,arnold,shoulders,Shoulders,True
+ea_arnold_press_dumbbell,Arnold Press Dumbbell,shoulder,shoulder_overhead,arnold,,Shoulders,True
+ea_assisted_chin_up_normal_width_reverse_grip,Assisted Chin Up Normal Width Reverse Grip,shoulder,shoulder_overhead_pull,chin up,lats,Back,True
+ea_assisted_chin_up_reverse_close_grip,Assisted Chin Up Reverse Close Grip,shoulder,shoulder_overhead_pull,chin up,lats,Back,True
+ea_assisted_chin_up_reverse_wide_grip,Assisted Chin Up Reverse Wide Grip,shoulder,shoulder_overhead_pull,chin up,lats,Back,True
+ea_assisted_chin_up_on_a_bench,Assisted Chin-up on a Bench,shoulder,shoulder_overhead_pull,chin up,biceps,Back,True
+ea_assisted_close_grip_underhand_chin_up,Assisted Close Grip Underhand Chin Up,shoulder,shoulder_overhead_pull,chin up,lats,Back,True
+ea_assisted_parallel_close_grip_pull_up,Assisted Parallel Close Grip Pull Up,shoulder,shoulder_overhead_pull,pull up,lats,Back,True
+ea_assisted_pull_up,Assisted Pull Up,shoulder,shoulder_overhead_pull,pull up,lats,Back,True
+ea_assisted_pull_up_close_grip,Assisted Pull Up Close Grip,shoulder,shoulder_overhead_pull,pull up,lats,Back,True
+ea_assisted_pull_up_normal_grip,Assisted Pull Up Normal Grip,shoulder,shoulder_overhead_pull,pull up,lats,Back,True
+ea_assisted_pull_up_wide_grip,Assisted Pull Up Wide Grip,shoulder,shoulder_overhead_pull,pull up,lats,Back,True
+ea_assisted_weighted_push_up,Assisted Weighted Push Up,shoulder,shoulder_pressing,push up,chest,Chest,True
+ea_backhand_raise,Backhand Raise,shoulder,shoulder_abduction,raise,"shoulders,traps",Shoulders,True
+ea_band_assisted_chin_up_from_knee,Band Assisted Chin Up (from Knee),shoulder,shoulder_overhead_pull,chin up,lats,Back,True
+ea_band_behind_neck_shoulder_press,Band Behind Neck Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_band_bench_press,Band Bench Press,shoulder,shoulder_pressing,bench press,chest,Chest,True
+ea_band_chest_fly,Band Chest Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_band_cross_body_one_arm_chest_press,Band Cross Body One Arm Chest Press,shoulder,shoulder_pressing,chest press,chest,Chest,True
+ea_band_face_pull,Band Face Pull,shoulder,shoulder_abduction,face pull,"traps,shoulders",Shoulders,True
+ea_band_fixed_back_underhand_pulldown,Band Fixed Back Underhand Pulldown,shoulder,shoulder_overhead_pull,pulldown,lats,Back,True
+ea_band_front_face_pull,Band Front Face Pull,shoulder,shoulder_abduction,face pull,"shoulders,traps",Shoulders,True
+ea_band_front_raise,Band Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,True
+ea_band_high_fly,Band High Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_band_incline_bench_press,Band Incline Bench Press,shoulder,shoulder_pressing,bench press,chest,Chest,True
+ea_band_incline_fly,Band Incline Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_band_incline_hammer_press,Band Incline Hammer Press,shoulder,shoulder_pressing,press,chest,Chest,True
+ea_band_incline_palms_back_press,Band Incline Palms Back Press,shoulder,shoulder_pressing,press,chest,Chest,True
+ea_band_incline_t_raise,Band Incline T Raise,shoulder,shoulder_abduction,raise,shoulders,Shoulders,True
+ea_band_incline_y_raise,Band Incline Y Raise,shoulder,shoulder_abduction,raise,shoulders,Shoulders,True
+ea_band_kneeling_lat_pulldown,Band Kneeling Lat Pulldown,shoulder,shoulder_overhead_pull,lat pulldown,lats,Back,True
+ea_band_low_alternate_chest_press,Band Low Alternate Chest Press,shoulder,shoulder_pressing,chest press,chest,Chest,True
+ea_band_low_chest_fly,Band Low Chest Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_band_low_chest_press,Band Low Chest Press,shoulder,shoulder_pressing,chest press,chest,Chest,True
+ea_band_lying_press_down,Band Lying Press Down,shoulder,shoulder_pressing,press,,Triceps,True
+ea_band_pallof_press,Band Pallof Press,shoulder,shoulder_pressing,press,,Chest,True
+ea_band_palloff_press,Band Palloff Press,shoulder,shoulder_pressing,press,chest,Chest,True
+ea_band_pull_up,Band Pull Up,shoulder,shoulder_overhead_pull,pull up,lats,Back,True
+ea_band_push_up,Band Push-up,shoulder,shoulder_pressing,push up,chest,Chest,True
+ea_band_reverse_fly,Band Reverse Fly,shoulder,shoulder_abduction,reverse fly,shoulders,Shoulders,True
+ea_band_seated_lateral_raise,Band Seated Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,True
+ea_band_seated_neutral_grip_shoulders_press,Band Seated Neutral Grip Shoulders Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,True
+ea_band_seated_shoulder_press,Band Seated Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_band_single_arm_overhead_press,Band Single Arm Overhead Press,shoulder,shoulder_overhead,overhead,shoulders,Shoulders,True
+ea_band_single_arm_pec_fly,Band Single Arm Pec Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_band_standing_rear_delt_row,Band Standing Rear Delt Row,shoulder,shoulder_abduction,rear delt,shoulders,Shoulders,True
+ea_band_y_raise,Band Y Raise,shoulder,shoulder_abduction,raise,shoulders,Shoulders,True
+ea_barbell_behind_neck_push_press,Barbell Behind Neck Push Press,shoulder,shoulder_overhead,push press,,Shoulders,True
+ea_barbell_behind_the_back_push_press_single_arm_balance,Barbell Behind the Back Push Press Single Arm Balance,shoulder,shoulder_overhead,push press,shoulders,Shoulders,True
+ea_barbell_bench_press,Barbell Bench Press,shoulder,shoulder_pressing,bench press,chest,Chest,True
+ea_barbell_bench_press_decline,Barbell Bench Press Decline,shoulder,shoulder_pressing,bench press,chest,Chest,True
+ea_barbell_bench_press_incline,Barbell Bench Press Incline,shoulder,shoulder_pressing,bench press,chest,Chest,True
+ea_barbell_bent_over_reverse_raise_skier,Barbell Bent Over Reverse Raise (skier),shoulder,shoulder_abduction,raise,traps,Shoulders,True
+ea_barbell_clean_and_jerk,Barbell Clean and Jerk,shoulder,shoulder_overhead,jerk,"quads,glutes,shoulders",Powerlifting,True
+ea_barbell_clean_and_jerk_split_squat,Barbell Clean and Jerk Split Squat,shoulder,shoulder_overhead,jerk,"quads,glutes,shoulders",Powerlifting,True
+ea_barbell_clean_and_press,Barbell Clean and Press,shoulder,shoulder_pressing,press,"shoulders,quads,glutes",Powerlifting,True
+ea_barbell_close_grip_press,Barbell Close Grip Press,shoulder,shoulder_pressing,press,triceps,Triceps,True
+ea_barbell_floor_chest_press,Barbell Floor Chest Press,shoulder,shoulder_pressing,chest press,chest,Chest,True
+ea_barbell_hooklying_bench_press,Barbell Hooklying Bench Press,shoulder,shoulder_pressing,bench press,,Chest,True
+ea_barbell_hooklying_bench_press_close_elbows,Barbell Hooklying Bench Press Close Elbows,shoulder,shoulder_pressing,bench press,,Chest,True
+ea_barbell_incline_shoulders_press,Barbell Incline Shoulders Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,True
+ea_barbell_incline_shoulders_press_inside_squat_cage,Barbell Incline Shoulders Press (inside Squat Cage),shoulder,shoulder_pressing,press,shoulders,Shoulders,True
+ea_barbell_inclined_bench_press,Barbell Inclined Bench Press,shoulder,shoulder_pressing,bench press,,Chest,True
+ea_barbell_jm_bench_press,Barbell JM Bench Press,shoulder,shoulder_pressing,bench press,triceps,Chest,True
+ea_barbell_landmine_chest_press,Barbell Landmine Chest Press,shoulder,shoulder_pressing,chest press,,Chest,True
+ea_barbell_larsen_bench_press,Barbell Larsen Bench Press,shoulder,shoulder_pressing,bench press,,Chest,True
+ea_barbell_overhead_lunges,Barbell Overhead Lunges,shoulder,shoulder_overhead,overhead,"quads,glutes,shoulders",Legs,True
+ea_barbell_overhead_shrug,Barbell Overhead Shrug,shoulder,shoulder_overhead,overhead,traps,Shoulders,True
+ea_barbell_overhead_squat,Barbell Overhead Squat,shoulder,shoulder_overhead,overhead,"quads,glutes,shoulders",Legs,True
+ea_barbell_pause_incline_bench_press,Barbell Pause Incline Bench Press,shoulder,shoulder_pressing,bench press,,Chest,True
+ea_barbell_power_jerk,Barbell Power Jerk,shoulder,shoulder_overhead,jerk,"shoulders,quads,glutes",Powerlifting,True
+ea_barbell_power_snatch,Barbell Power Snatch,shoulder,shoulder_overhead,snatch,"quads,glutes,hamstrings,shoulders",Powerlifting,True
+ea_barbell_press_under,Barbell Press Under,shoulder,shoulder_pressing,press,,Powerlifting,True
+ea_barbell_pullover_to_triceps_extension,Barbell Pullover to Triceps Extension,shoulder,shoulder_overhead_pull,pullover,"chest,back",Chest,True
+ea_barbell_rear_delt_raise,Barbell Rear Delt Raise,shoulder,shoulder_abduction,rear delt,shoulders,Shoulders,True
+ea_barbell_reverse_close_grip_bench_press,Barbell Reverse Close Grip Bench Press,shoulder,shoulder_pressing,bench press,"triceps,chest",Chest,True
+ea_barbell_reverse_grip_bench_press,Barbell Reverse Grip Bench Press,shoulder,shoulder_pressing,bench press,"chest,triceps",Chest,True
+ea_barbell_seated_behind_neck_military_press,Barbell Seated Behind Neck Military Press,shoulder,shoulder_overhead,military,shoulders,Shoulders,True
+ea_barbell_seated_military_press,Barbell Seated Military Press,shoulder,shoulder_overhead,military,,Shoulders,True
+ea_barbell_seated_overhead_press,Barbell Seated Overhead Press,shoulder,shoulder_overhead,overhead,shoulders,Shoulders,True
+ea_barbell_seated_overhead_triceps_press,Barbell Seated Overhead Triceps Press,shoulder,shoulder_overhead,overhead,triceps,Triceps,True
+ea_barbell_smith_chest_press,Barbell Smith Chest Press,shoulder,shoulder_pressing,chest press,chest,Chest,True
+ea_barbell_snatch,Barbell Snatch,shoulder,shoulder_overhead,snatch,"shoulders,quads,glutes",Powerlifting,True
+ea_barbell_snatch_balance,Barbell Snatch Balance,shoulder,shoulder_overhead,snatch,"shoulders,quads,glutes",Powerlifting,True
+ea_barbell_snatch_deadlift_close_grip,Barbell Snatch Deadlift Close Grip,shoulder,shoulder_overhead,snatch,"quads,glutes,lower_back",Back,True
+ea_barbell_snatch_deadlift_wide_grip,Barbell Snatch Deadlift Wide Grip,shoulder,shoulder_overhead,snatch,"quads,glutes,lower_back",Back,True
+ea_barbell_snatch_from_blocks,Barbell Snatch From Blocks,shoulder,shoulder_overhead,snatch,"shoulders,quads,glutes",Powerlifting,True
+ea_barbell_snatch_pull,Barbell Snatch Pull,shoulder,shoulder_overhead,snatch,"quads,glutes",Powerlifting,True
+ea_barbell_split_jerk,Barbell Split Jerk,shoulder,shoulder_overhead,jerk,"shoulders,quads,glutes",Powerlifting,True
+ea_barbell_spoto_press,Barbell Spoto Press,shoulder,shoulder_pressing,press,,Chest,True
+ea_barbell_standing_close_grip_military_press,Barbell Standing Close Grip Military Press,shoulder,shoulder_overhead,military,shoulders,Shoulders,True
+ea_barbell_standing_military_press,Barbell Standing Military Press,shoulder,shoulder_overhead,military,"shoulders,triceps",Shoulders,True
+ea_barbell_standing_overhead_triceps_extension,Barbell Standing Overhead Triceps Extension,shoulder,shoulder_overhead,overhead,triceps,Triceps,True
+ea_barbell_standing_shoulder_press,Barbell Standing Shoulder Press,shoulder,shoulder_overhead,shoulder press,"shoulders,triceps",Shoulders,True
+ea_barbell_standing_wide_grip_military_press,Barbell Standing Wide Grip Military Press,shoulder,shoulder_overhead,military,"shoulders,triceps",Shoulders,True
+ea_barbell_wide_bench_press,Barbell Wide Bench Press,shoulder,shoulder_pressing,bench press,chest,Chest,True
+ea_barbell_wide_grip_upright_row,Barbell Wide Grip Upright Row,shoulder,shoulder_abduction,upright row,shoulders,Back,True
+ea_barbell_z_press,Barbell Z Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,True
+ea_behind_neck_press_resistance_band_cable,Behind Neck Press Resistance Band Cable,shoulder,shoulder_pressing,press,shoulders,Shoulders,True
+ea_bench_dip_knees_bent,Bench Dip (knees Bent),shoulder,shoulder_pressing,dip,triceps,Triceps,True
+ea_bench_dip_on_floor,Bench Dip on Floor,shoulder,shoulder_pressing,dip,triceps,Triceps,True
+ea_bench_pull_ups,Bench Pull-ups,shoulder,shoulder_overhead_pull,pull ups,"back,biceps",Back,True
+ea_bench_triceps_dip_leg_curls,Bench Triceps Dip Leg Curls,shoulder,shoulder_pressing,dip,triceps,Triceps,True
+ea_bench_triceps_dip_straight_legs,Bench Triceps Dip Straight Legs,shoulder,shoulder_pressing,dip,triceps,Triceps,True
+ea_bent_over_rear_delt_fly_dumbbell,Bent Over Rear Delt Fly Dumbbell,shoulder,shoulder_abduction,rear delt,shoulders,Shoulders,True
+ea_bent_over_rear_deltoid_fly_resistance_band,Bent Over Rear Deltoid Fly Resistance Band,shoulder,shoulder_abduction,fly,shoulders,Shoulders,True
+ea_biceps_curl_to_shoulder_press_resistance_band,Biceps Curl to Shoulder Press Resistance Band,shoulder,shoulder_overhead,shoulder press,"biceps,shoulders",Biceps,True
+ea_bodyweight_bent_over_rear_delt_fly,Bodyweight Bent Over Rear Delt Fly,shoulder,shoulder_abduction,rear delt,shoulders,Shoulders,True
+ea_bodyweight_full_squat_with_overhead_front_raise,Bodyweight Full Squat with Overhead Front Raise,shoulder,shoulder_overhead,overhead,"quads,shoulders,glutes",Calisthenics-Cardio-Plyo-Functional,True
+ea_bodyweight_full_squat_with_overhead_press,Bodyweight Full Squat with Overhead Press,shoulder,shoulder_overhead,overhead,"quads,glutes,shoulders",Legs,True
+ea_bodyweight_kneeling_push_up_row,Bodyweight Kneeling Push-up Row,shoulder,shoulder_pressing,push up,"chest,triceps,back",Yoga,True
+ea_bodyweight_overhead_squat,Bodyweight Overhead Squat,shoulder,shoulder_overhead,overhead,"quads,shoulders,glutes",Legs,True
+ea_bodyweight_overhead_triceps_extension,Bodyweight Overhead Triceps Extension,shoulder,shoulder_overhead,overhead,triceps,Triceps,True
+ea_bodyweight_rear_lunge_front_raise,Bodyweight Rear Lunge Front Raise,shoulder,shoulder_abduction,front raise,"quads,shoulders,glutes",Legs,True
+ea_bodyweight_standing_fly,Bodyweight Standing Fly,shoulder,shoulder_abduction,fly,"chest,shoulders",Chest,True
+ea_bodyweight_standing_military_press,Bodyweight Standing Military Press,shoulder,shoulder_overhead,military,shoulders,Shoulders,True
+ea_bodyweight_standing_military_press_wall_supported,Bodyweight Standing Military Press Wall Supported,shoulder,shoulder_overhead,military,shoulders,Shoulders,True
+ea_bodyweight_standing_triangle_fly,Bodyweight Standing Triangle Fly,shoulder,shoulder_abduction,fly,"chest,shoulders",Calisthenics-Cardio-Plyo-Functional,True
+ea_bodyweight_svend_press,Bodyweight Svend Press,shoulder,shoulder_pressing,press,chest,Chest,True
+ea_cable_bar_lateral_pulldown,Cable Bar Lateral Pulldown,shoulder,shoulder_overhead_pull,pulldown,lats,Back,True
+ea_cable_bench_fly_press,Cable Bench Fly Press,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_cable_bent_over_one_arm_lateral_raise,Cable Bent Over One Arm Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,True
+ea_cable_close_grip_front_lat_pulldown,Cable Close Grip Front Lat Pulldown,shoulder,shoulder_overhead_pull,lat pulldown,lats,Back,True
+ea_cable_core_palloff_press,Cable Core Palloff Press,shoulder,shoulder_pressing,press,,Chest,True
+ea_cable_face_pull_with_rope,Cable Face Pull with Rope,shoulder,shoulder_abduction,face pull,,Shoulders,True
+ea_cable_front_raises_straight_bar,Cable Front Raises Straight Bar,shoulder,shoulder_abduction,front raises,shoulders,Shoulders,True
+ea_cable_lateral_raises,Cable Lateral Raises,shoulder,shoulder_abduction,lateral raises,shoulders,Shoulders,True
+ea_cable_leaning_lateral_raise,Cable Leaning Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,True
+ea_cable_low_fly,Cable Low Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_cable_lying_extension_pullover_with_cables_attachment,Cable Lying Extension Pullover (with Cables Attachment),shoulder,shoulder_overhead_pull,pullover,"lats,triceps",Back,True
+ea_cable_lying_fly,Cable Lying Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_cable_middle_fly,Cable Middle Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_cable_one_arm_chest_fly_bent,Cable One Arm Chest Fly Bent,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_cable_one_arm_front_raise,Cable One Arm Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,True
+ea_cable_one_arm_lat_pulldown,Cable One Arm Lat Pulldown,shoulder,shoulder_overhead_pull,lat pulldown,lats,Back,True
+ea_cable_overhead_curl,Cable Overhead Curl,shoulder,shoulder_overhead,overhead,biceps,Biceps,True
+ea_cable_overhead_extension_rope,Cable Overhead Extension Rope,shoulder,shoulder_overhead,overhead,triceps,Triceps,True
+ea_cable_pulldown,Cable Pulldown,shoulder,shoulder_overhead_pull,pulldown,lats,Back,True
+ea_cable_pulldown_pro_lat_bar,Cable Pulldown (pro Lat Bar),shoulder,shoulder_overhead_pull,pulldown,lats,Back,True
+ea_cable_rear_delt_fly,Cable Rear Delt Fly,shoulder,shoulder_abduction,rear delt,,Shoulders,True
+ea_cable_rear_pulldown,Cable Rear Pulldown,shoulder,shoulder_overhead_pull,pulldown,lats,Back,True
+ea_cable_reverse_fly_on_crossover,Cable Reverse Fly on Crossover,shoulder,shoulder_abduction,reverse fly,traps,Shoulders,True
+ea_cable_seated_rear_lateral_raise,Cable Seated Rear Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,True
+ea_cable_single_arm_reverse_fly,Cable Single Arm Reverse Fly,shoulder,shoulder_abduction,reverse fly,,Shoulders,True
+ea_cable_straight_arm_pulldown,Cable Straight Arm Pulldown,shoulder,shoulder_overhead_pull,pulldown,lats,Back,True
+ea_cable_triceps_overhead_extension_ez_bar,Cable Triceps Overhead Extension (ez Bar),shoulder,shoulder_overhead,overhead,triceps,Triceps,True
+ea_cable_twin_handle_parallel_grip_lat_pulldown,Cable Twin Handle Parallel Grip Lat Pulldown,shoulder,shoulder_overhead_pull,lat pulldown,lats,Back,True
+ea_cable_twisting_overhead_press,Cable Twisting Overhead Press,shoulder,shoulder_overhead,overhead,"shoulders,core",Calisthenics-Cardio-Plyo-Functional,True
+ea_cable_underhand_pulldown_wide_grips,Cable Underhand Pulldown Wide Grips,shoulder,shoulder_overhead_pull,pulldown,"lats,traps",Back,True
+ea_cable_upright_row_with_ez_bar,Cable Upright Row with EZ Bar,shoulder,shoulder_abduction,upright row,shoulders,Shoulders,True
+ea_cable_upright_row_with_straight_bar,Cable Upright Row with Straight Bar,shoulder,shoulder_abduction,upright row,"shoulders,traps",Shoulders,True
+ea_cable_y_raise,Cable Y Raise,shoulder,shoulder_abduction,raise,shoulders,Shoulders,True
+ea_chair_triceps_dips,Chair Triceps Dips,shoulder,shoulder_pressing,dips,triceps,Triceps,True
+ea_chest_bench_press_correct_stance,Chest Bench Press Correct Stance,shoulder,shoulder_pressing,bench press,,Chest,True
+ea_chest_dip,Chest Dip,shoulder,shoulder_pressing,dip,chest,Chest,True
+ea_chest_dip_on_dip_station,Chest Dip (on Dip Station),shoulder,shoulder_pressing,dip,chest,Chest,True
+ea_chest_dip_machine,Chest Dip Machine,shoulder,shoulder_pressing,dip,chest,Chest,True
+ea_chest_dip_on_bench,Chest Dip on Bench,shoulder,shoulder_pressing,dip,chest,Chest,True
+ea_chest_dip_weighted,Chest Dip Weighted,shoulder,shoulder_pressing,dip,chest,Chest,True
+ea_chest_dip_weighted_slow,Chest Dip Weighted Slow,shoulder,shoulder_pressing,dip,chest,Chest,True
+ea_chest_dip_with_pause_bodyweight,Chest Dip with Pause Bodyweight,shoulder,shoulder_pressing,dip,chest,Chest,True
+ea_chest_fly_low_to_high_resistance_band,Chest Fly Low to High Resistance Band,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_chest_fly_side_step,Chest Fly Side Step,shoulder,shoulder_abduction,fly,"chest,quads",Calisthenics-Cardio-Plyo-Functional,True
+ea_chest_press_front_resistance_band,Chest Press Front Resistance Band,shoulder,shoulder_pressing,chest press,chest,Chest,True
+ea_chest_press_high_to_low_cable_resistance_band,Chest Press High to Low Cable Resistance Band,shoulder,shoulder_pressing,chest press,chest,Chest,True
+ea_chest_press_low_to_high_resistance_band,Chest Press Low to High Resistance Band,shoulder,shoulder_pressing,chest press,chest,Chest,True
+ea_chest_press_machine,Chest Press Machine,shoulder,shoulder_pressing,chest press,chest,Chest,True
+ea_chest_raise_and_rotate,Chest Raise and Rotate,shoulder,shoulder_abduction,raise,"shoulders,chest",Calisthenics-Cardio-Plyo-Functional,True
+ea_chest_tap_push_up,Chest Tap Push Up,shoulder,shoulder_pressing,push up,"chest,shoulders,triceps",Chest,True
+ea_chin_up,Chin Up,shoulder,shoulder_overhead_pull,chin up,"biceps,back",Back,True
+ea_chin_up_reverse_close_grip,Chin Up Reverse Close Grip,shoulder,shoulder_overhead_pull,chin up,"biceps,back",Back,True
+ea_chin_up_reverse_normal_grip,Chin Up Reverse Normal Grip,shoulder,shoulder_overhead_pull,chin up,"biceps,back",Back,True
+ea_chin_up_reverse_wide_grip,Chin Up Reverse Wide Grip,shoulder,shoulder_overhead_pull,chin up,"biceps,back",Back,True
+ea_chin_ups_narrow_parallel_grip,Chin Ups (narrow Parallel Grip),shoulder,shoulder_overhead_pull,chin ups,"biceps,back",Back,True
+ea_chin_up_isometric_and_negative,Chin-up (isometric and Negative),shoulder,shoulder_overhead_pull,chin up,"biceps,back",Back,True
+ea_clap_push_ups,Clap Push Ups,shoulder,shoulder_pressing,push ups,"chest,shoulders,triceps",Chest,True
+ea_clock_push_ups,Clock Push Ups,shoulder,shoulder_pressing,push ups,"chest,triceps",Chest,True
+ea_close_grip_barbell_bench_press,Close Grip Barbell Bench Press,shoulder,shoulder_pressing,bench press,"chest,triceps",Chest,True
+ea_close_grip_push_up,Close Grip Push Up,shoulder,shoulder_pressing,push up,"triceps,chest",Chest,True
+ea_cobra_full_push_up,Cobra Full Push Up,shoulder,shoulder_pressing,push up,"chest,shoulders,triceps",Yoga,True
+ea_cobra_push_up,Cobra Push Up,shoulder,shoulder_pressing,push up,"chest,shoulders,triceps",Yoga,True
+ea_commando_pull_up,Commando Pull-up,shoulder,shoulder_overhead_pull,pull up,"back,biceps",Back,True
+ea_crunch_hands_overhead,Crunch (hands Overhead),shoulder,shoulder_overhead,overhead,core,Abdominals,True
+ea_decline_chair_push_up_diamond,Decline Chair Push Up Diamond,shoulder,shoulder_pressing,push up,"chest,triceps",Triceps,True
+ea_decline_diamond_pike_push_up,Decline Diamond Pike Push-up,shoulder,shoulder_overhead,pike,"shoulders,triceps",Triceps,True
+ea_decline_kneeling_push_up,Decline Kneeling Push Up,shoulder,shoulder_pressing,push up,"chest,triceps",Chest,True
+ea_decline_kneeling_push_up_on_box,Decline Kneeling Push Up on Box,shoulder,shoulder_pressing,push up,"chest,triceps",Chest,True
+ea_decline_push_up,Decline Push Up,shoulder,shoulder_pressing,push up,"chest,triceps",Chest,True
+ea_decline_push_up_against_wall,Decline Push Up Against Wall,shoulder,shoulder_pressing,push up,"chest,triceps",Chest,True
+ea_deep_push_up,Deep Push-up,shoulder,shoulder_pressing,push up,"chest,shoulders",Chest,True
+ea_diamond_push_up,Diamond Push Up,shoulder,shoulder_pressing,push up,"triceps,chest",Triceps,True
+ea_diamond_push_up_on_knees,Diamond Push-up (on Knees),shoulder,shoulder_pressing,push up,"triceps,chest",Triceps,True
+ea_dip_leg_raise_on_couch,Dip Leg Raise on Couch,shoulder,shoulder_pressing,dip,triceps,Triceps,True
+ea_dip_on_floor_with_chair,Dip on Floor with Chair,shoulder,shoulder_pressing,dip,triceps,Triceps,True
+ea_dips_between_chairs,Dips Between Chairs,shoulder,shoulder_pressing,dips,"chest,triceps",Triceps,True
+ea_dumbbell_alternate_bench_press_high_start,Dumbbell Alternate Bench Press (high Start),shoulder,shoulder_pressing,bench press,chest,Chest,True
+ea_dumbbell_alternate_shoulder_press,Dumbbell Alternate Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_dumbbell_alternate_side_press,Dumbbell Alternate Side Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,True
+ea_dumbbell_alternating_arnold_press,Dumbbell Alternating Arnold Press,shoulder,shoulder_overhead,arnold,,Shoulders,True
+ea_dumbbell_arnold_press_version_2,Dumbbell Arnold Press (version 2),shoulder,shoulder_overhead,arnold,shoulders,Shoulders,True
+ea_dumbbell_arnold_press_seated,Dumbbell Arnold Press Seated,shoulder,shoulder_overhead,arnold,shoulders,Shoulders,True
+ea_dumbbell_around_pullover,Dumbbell Around Pullover,shoulder,shoulder_overhead_pull,pullover,chest,Chest,True
+ea_dumbbell_bench_press,Dumbbell Bench Press,shoulder,shoulder_pressing,bench press,chest,Chest,True
+ea_dumbbell_bench_seated_press,Dumbbell Bench Seated Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,True
+ea_dumbbell_bent_arm_lateral_raise,Dumbbell Bent Arm Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,True
+ea_dumbbell_bent_arm_pullover,Dumbbell Bent Arm Pullover,shoulder,shoulder_overhead_pull,pullover,chest,Back,True
+ea_dumbbell_bent_over_face_pull,Dumbbell Bent Over Face Pull,shoulder,shoulder_abduction,face pull,"shoulders,traps",Shoulders,True
+ea_dumbbell_bicep_curl_to_shoulder_press,Dumbbell Bicep Curl to Shoulder Press,shoulder,shoulder_overhead,shoulder press,"biceps,shoulders",Shoulders,True
+ea_dumbbell_biceps_curl_with_overhead_extension_on_stability_ball,Dumbbell Biceps Curl with Overhead Extension on Stability Ball,shoulder,shoulder_overhead,overhead,"biceps,triceps",Biceps,True
+ea_dumbbell_chest_press_decline,Dumbbell Chest Press Decline,shoulder,shoulder_pressing,chest press,chest,Chest,True
+ea_dumbbell_chest_press_flat,Dumbbell Chest Press Flat,shoulder,shoulder_pressing,chest press,chest,Chest,True
+ea_dumbbell_chest_press_incline_bench,Dumbbell Chest Press Incline Bench,shoulder,shoulder_pressing,chest press,,Chest,True
+ea_dumbbell_chest_supported_lateral_raises,Dumbbell Chest Supported Lateral Raises,shoulder,shoulder_abduction,lateral raises,"traps,lats",Shoulders,True
+ea_dumbbell_chest_supported_y_raise,Dumbbell Chest Supported Y Raise,shoulder,shoulder_abduction,raise,,Shoulders,True
+ea_dumbbell_close_grip_shoulder_press_sit_up,Dumbbell Close Grip Shoulder Press Sit Up,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_dumbbell_cuban_press_version_2,Dumbbell Cuban Press (version 2),shoulder,shoulder_pressing,press,shoulders,Shoulders,True
+ea_dumbbell_curl_press_extend,Dumbbell Curl Press Extend,shoulder,shoulder_pressing,press,,Calisthenics-Cardio-Plyo-Functional,True
+ea_dumbbell_decline_alternate_bench_press,Dumbbell Decline Alternate Bench Press,shoulder,shoulder_pressing,bench press,chest,Chest,True
+ea_dumbbell_decline_bench_press,Dumbbell Decline Bench Press,shoulder,shoulder_pressing,bench press,chest,Chest,True
+ea_dumbbell_decline_close_neutral_grip_press,Dumbbell Decline Close Neutral Grip Press,shoulder,shoulder_pressing,press,,Chest,True
+ea_dumbbell_decline_fly,Dumbbell Decline Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_dumbbell_decline_hammer_press,Dumbbell Decline Hammer Press,shoulder,shoulder_pressing,press,chest,Chest,True
+ea_dumbbell_decline_one_arm_hammer_press,Dumbbell Decline One Arm Hammer Press,shoulder,shoulder_pressing,press,chest,Chest,True
+ea_dumbbell_decline_overhead_sit_up,Dumbbell Decline Overhead Sit-up,shoulder,shoulder_overhead,overhead,core,Abdominals,True
+ea_dumbbell_decline_twist_fly,Dumbbell Decline Twist Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_dumbbell_face_down_lying_shoulder_pres,Dumbbell Face Down Lying Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
+ea_dumbbell_face_down_lying_shoulder_press,Dumbbell Face Down Lying Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_dumbbell_floor_fly,Dumbbell Floor Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_dumbbell_fly_flat_bench,Dumbbell Fly Flat Bench,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_dumbbell_fly_flat_bench_slow,Dumbbell Fly Flat Bench Slow,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_dumbbell_fly_incline_bench,Dumbbell Fly Incline Bench,shoulder,shoulder_abduction,fly,,Chest,True
+ea_dumbbell_front_raise,Dumbbell Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,True
+ea_dumbbell_front_raise_version_2,Dumbbell Front Raise (version 2),shoulder,shoulder_abduction,front raise,shoulders,Shoulders,True
+ea_dumbbell_half_kneeling_military_press,Dumbbell Half Kneeling Military Press,shoulder,shoulder_overhead,military,shoulders,Shoulders,True
+ea_dumbbell_hex_press,Dumbbell Hex Press,shoulder,shoulder_pressing,press,,Chest,True
+ea_dumbbell_incline_alternate_press,Dumbbell Incline Alternate Press,shoulder,shoulder_pressing,press,shoulders,Chest,True
+ea_dumbbell_incline_bench_press,Dumbbell Incline Bench Press,shoulder,shoulder_pressing,bench press,shoulders,Chest,True
+ea_dumbbell_incline_fly,Dumbbell Incline Fly,shoulder,shoulder_abduction,fly,,Chest,True
+ea_dumbbell_incline_fly_on_exercise_ball,Dumbbell Incline Fly on Exercise Ball,shoulder,shoulder_abduction,fly,,Chest,True
+ea_dumbbell_incline_front_raise,Dumbbell Incline Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,True
+ea_dumbbell_incline_hammer_shoulder_press,Dumbbell Incline Hammer Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_dumbbell_incline_lying_front_raise,Dumbbell Incline Lying Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,True
+ea_dumbbell_incline_one_arm_lateral_raise,Dumbbell Incline One Arm Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,True
+ea_dumbbell_incline_one_arm_press,Dumbbell Incline One Arm Press,shoulder,shoulder_pressing,press,,Chest,True
+ea_dumbbell_incline_palms_back_press,Dumbbell Incline Palms Back Press,shoulder,shoulder_pressing,press,,Chest,True
+ea_dumbbell_incline_rear_lateral_raise,Dumbbell Incline Rear Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,True
+ea_dumbbell_incline_squeeze_press,Dumbbell Incline Squeeze Press,shoulder,shoulder_pressing,press,,Chest,True
+ea_dumbbell_incline_svend_close_grip_press,Dumbbell Incline Svend Close Grip Press,shoulder,shoulder_pressing,press,,Chest,True
+ea_dumbbell_incline_twisted_fly,Dumbbell Incline Twisted Fly,shoulder,shoulder_abduction,fly,,Chest,True
+ea_dumbbell_kneeling_arnold_press,Dumbbell Kneeling Arnold Press,shoulder,shoulder_overhead,arnold,shoulders,Shoulders,True
+ea_dumbbell_lateral_to_front_raise,Dumbbell Lateral to Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,True
+ea_dumbbell_leaning_fly,Dumbbell Leaning Fly,shoulder,shoulder_abduction,fly,shoulders,Shoulders,True
+ea_dumbbell_lunge_to_overhead_press,Dumbbell Lunge to Overhead Press,shoulder,shoulder_overhead,overhead,"quads,glutes,shoulders",Legs,True
+ea_dumbbell_lying_on_floor_chest_press,Dumbbell Lying on Floor Chest Press,shoulder,shoulder_pressing,chest press,,Chest,True
+ea_dumbbell_lying_one_arm_rear_lateral_raise,Dumbbell Lying One Arm Rear Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,True
+ea_dumbbell_lying_rear_delt_row,Dumbbell Lying Rear Delt Row,shoulder,shoulder_abduction,rear delt,"lats,shoulders",Shoulders,True
+ea_dumbbell_lying_rear_lateral_raise,Dumbbell Lying Rear Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,True
+ea_dumbbell_one_arm_floor_fly,Dumbbell One Arm Floor Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_dumbbell_one_arm_floor_press,Dumbbell One Arm Floor Press,shoulder,shoulder_pressing,press,chest,Chest,True
+ea_dumbbell_one_arm_front_raise,Dumbbell One Arm Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,True
+ea_dumbbell_one_arm_lateral_raise,Dumbbell One Arm Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,True
+ea_dumbbell_one_arm_low_fly,Dumbbell One Arm Low Fly,shoulder,shoulder_abduction,fly,shoulders,Shoulders,True
+ea_dumbbell_one_arm_shoulder_press_version_2,Dumbbell One Arm Shoulder Press (version 2),shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_dumbbell_one_arm_snatch,Dumbbell One Arm Snatch,shoulder,shoulder_overhead,snatch,"shoulders,quads,glutes",Powerlifting,True
+ea_dumbbell_one_arm_wide_grip_bench_press,Dumbbell One Arm Wide Grip Bench Press,shoulder,shoulder_pressing,bench press,chest,Chest,True
+ea_dumbbell_overhead_extension_seated,Dumbbell Overhead Extension Seated,shoulder,shoulder_overhead,overhead,triceps,Triceps,True
+ea_dumbbell_overhead_extension_standing,Dumbbell Overhead Extension Standing,shoulder,shoulder_overhead,overhead,triceps,Triceps,True
+ea_dumbbell_overhead_lunge,Dumbbell Overhead Lunge,shoulder,shoulder_overhead,overhead,"quads,glutes",Legs,True
+ea_dumbbell_overhead_side_bend,Dumbbell Overhead Side Bend,shoulder,shoulder_overhead,overhead,,Abdominals,True
+ea_dumbbell_overhead_sit_up,Dumbbell Overhead Sit-up,shoulder,shoulder_overhead,overhead,core,Abdominals,True
+ea_dumbbell_press_squat,Dumbbell Press Squat,shoulder,shoulder_pressing,press,"quads,shoulders,glutes",Legs,True
+ea_dumbbell_pullover,Dumbbell Pullover,shoulder,shoulder_overhead_pull,pullover,"chest,lats",Back,True
+ea_dumbbell_pullover_version_2,Dumbbell Pullover (version 2),shoulder,shoulder_overhead_pull,pullover,"chest,lats",Back,True
+ea_dumbbell_pullover_hip_extension_on_exercise_ball,Dumbbell Pullover Hip Extension on Exercise Ball,shoulder,shoulder_overhead_pull,pullover,"chest,lats,glutes,hamstrings",Calisthenics-Cardio-Plyo-Functional,True
+ea_dumbbell_pullover_on_floor,Dumbbell Pullover on Floor,shoulder,shoulder_overhead_pull,pullover,"chest,lats",Back,True
+ea_dumbbell_push_press,Dumbbell Push Press,shoulder,shoulder_overhead,push press,"shoulders,quads",Shoulders,True
+ea_dumbbell_rear_delt_row,Dumbbell Rear Delt Row,shoulder,shoulder_abduction,rear delt,"shoulders,traps",Shoulders,True
+ea_dumbbell_rear_lateral_raise,Dumbbell Rear Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,True
+ea_dumbbell_reverse_fly,Dumbbell Reverse Fly,shoulder,shoulder_abduction,reverse fly,traps,Shoulders,True
+ea_dumbbell_scott_press,Dumbbell Scott Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,True
+ea_dumbbell_scott_press_360_degrees,Dumbbell Scott Press (360 Degrees),shoulder,shoulder_pressing,press,shoulders,Shoulders,True
+ea_dumbbell_seated_alternate_front_raise,Dumbbell Seated Alternate Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,True
+ea_dumbbell_seated_alternate_press,Dumbbell Seated Alternate Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,True
+ea_dumbbell_seated_alternate_shoulder_press,Dumbbell Seated Alternate Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_dumbbell_seated_front_raise,Dumbbell Seated Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,True
+ea_dumbbell_seated_lateral_raise,Dumbbell Seated Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,True
+ea_dumbbell_seated_on_exercise_ball_shoulder_press,Dumbbell Seated on Exercise Ball Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_dumbbell_seated_reverse_close_grip_press,Dumbbell Seated Reverse Close Grip Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,True
+ea_dumbbell_seated_shoulder_press,Dumbbell Seated Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_dumbbell_seated_shoulder_press_parallel_grip,Dumbbell Seated Shoulder Press Parallel Grip,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_dumbbell_side_lying_one_hand_raise,Dumbbell Side Lying One Hand Raise,shoulder,shoulder_abduction,raise,shoulders,Shoulders,True
+ea_dumbbell_side_plank_with_rear_fly,Dumbbell Side Plank with Rear Fly,shoulder,shoulder_abduction,fly,"shoulders,traps",Abdominals,True
+ea_dumbbell_single_arm_floor_press,Dumbbell Single Arm Floor Press,shoulder,shoulder_pressing,press,chest,Chest,True
+ea_dumbbell_single_arm_floor_press_from_close_elbow,Dumbbell Single Arm Floor Press From Close Elbow,shoulder,shoulder_pressing,press,chest,Chest,True
+ea_dumbbell_single_arm_overhead_carry,Dumbbell Single Arm Overhead Carry,shoulder,shoulder_overhead,overhead,shoulders,Calisthenics-Cardio-Plyo-Functional,True
+ea_dumbbell_single_arm_overhead_lunge,Dumbbell Single Arm Overhead Lunge,shoulder,shoulder_overhead,overhead,"quads,shoulders,glutes",Legs,True
+ea_dumbbell_single_arm_underhand_front_raise,Dumbbell Single Arm Underhand Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,True
+ea_dumbbell_single_arm_upright_row,Dumbbell Single Arm Upright Row,shoulder,shoulder_abduction,upright row,,Shoulders,True
+ea_dumbbell_squats_to_shoulder_press,Dumbbell Squats to Shoulder Press,shoulder,shoulder_overhead,shoulder press,"quads,shoulders",Legs,True
+ea_dumbbell_standing_alternate_overhead_press,Dumbbell Standing Alternate Overhead Press,shoulder,shoulder_overhead,overhead,shoulders,Shoulders,True
+ea_dumbbell_standing_alternate_raise,Dumbbell Standing Alternate Raise,shoulder,shoulder_abduction,raise,shoulders,Shoulders,True
+ea_dumbbell_standing_alternate_vertical_front_raises,Dumbbell Standing Alternate Vertical Front Raises,shoulder,shoulder_abduction,front raises,shoulders,Shoulders,True
+ea_dumbbell_standing_behind_back_shoulders_press,Dumbbell Standing Behind Back Shoulders Press,shoulder,shoulder_pressing,press,"shoulders,traps",Shoulders,True
+ea_dumbbell_standing_curl_arnold_press,Dumbbell Standing Curl Arnold Press,shoulder,shoulder_overhead,arnold,shoulders,Shoulders,True
+ea_dumbbell_standing_front_raise_above_head,Dumbbell Standing Front Raise Above Head,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,True
+ea_dumbbell_standing_overhead_press,Dumbbell Standing Overhead Press,shoulder,shoulder_overhead,overhead,shoulders,Shoulders,True
+ea_dumbbell_standing_palms_in_press,Dumbbell Standing Palms in Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,True
+ea_dumbbell_standing_single_arm_cross_raise,Dumbbell Standing Single Arm Cross Raise,shoulder,shoulder_abduction,raise,shoulders,Chest,True
+ea_dumbbell_svend_press,Dumbbell Svend Press,shoulder,shoulder_pressing,press,chest,Chest,True
+ea_dumbbell_tate_press,Dumbbell Tate Press,shoulder,shoulder_pressing,press,triceps,Triceps,True
+ea_dumbbell_w_press,Dumbbell W Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,True
+ea_elevated_pike_shoulder_shrug,Elevated Pike Shoulder Shrug,shoulder,shoulder_overhead,pike,,Shoulders,True
+ea_elevated_push_up,Elevated Push Up,shoulder,shoulder_pressing,push up,chest,Chest,True
+ea_explosive_push_ups,Explosive Push Ups,shoulder,shoulder_pressing,push ups,"chest,triceps",Chest,True
+ea_ez_bar_overhead_extensions_standing,Ez Bar Overhead Extensions Standing,shoulder,shoulder_overhead,overhead,triceps,Triceps,True
+ea_ez_bar_seated_close_grip_shoulder_press,Ez Bar Seated Close Grip Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_ez_bar_standing_front_raise,EZ Bar Standing Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,True
+ea_ez_barbell_anti_gravity_press,EZ Barbell Anti Gravity Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,True
+ea_flat_bench_cable_fly,Flat Bench Cable Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_floor_cable_resistance_band_press,Floor Cable Resistance Band Press,shoulder,shoulder_pressing,press,chest,Chest,True
+ea_floor_tricep_dip,Floor Tricep Dip,shoulder,shoulder_pressing,dip,,Triceps,True
+ea_front_lever_raise,Front Lever Raise,shoulder,shoulder_abduction,raise,,Calisthenics-Cardio-Plyo-Functional,True
+ea_front_lever_raise_to_hold,Front Lever Raise to Hold,shoulder,shoulder_abduction,raise,,Calisthenics-Cardio-Plyo-Functional,True
+ea_front_raise_resistance_bands,Front Raise Resistance Bands,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,True
+ea_front_raises_barbell,Front Raises Barbell,shoulder,shoulder_abduction,front raises,shoulders,Shoulders,True
+ea_full_planche_push_up,Full Planche Push Up,shoulder,shoulder_pressing,push up,"shoulders,chest",Chest,True
+ea_hammer_strength_mts_iso_lateral_decline_press_alternate_arms,Hammer Strength MTS Iso-lateral Decline Press Alternate Arms,shoulder,shoulder_pressing,decline press,chest,Chest,True
+ea_hammer_strength_mts_iso_lateral_decline_press_alternating_arms,Hammer Strength MTS Iso-lateral Decline Press Alternating Arms,shoulder,shoulder_pressing,decline press,chest,Chest,True
+ea_hammer_strength_mts_iso_lateral_decline_press_both_arms,Hammer Strength MTS Iso-lateral Decline Press Both Arms,shoulder,shoulder_pressing,decline press,chest,Chest,True
+ea_hammer_strength_mts_iso_lateral_decline_press_single_arm,Hammer Strength MTS Iso-lateral Decline Press Single Arm,shoulder,shoulder_pressing,decline press,chest,Chest,True
+ea_hammer_strength_plate_loaded_combination_iso_lateral_chest_chest_press,Hammer Strength Plate-loaded Combination Iso-lateral Chest - Chest Press,shoulder,shoulder_pressing,chest press,chest,Chest,True
+ea_hammer_strength_plate_loaded_combination_iso_lateral_chest_chest_press_alternate_arm,Hammer Strength Plate-loaded Combination Iso-lateral Chest - Chest Press Alternate Arm,shoulder,shoulder_pressing,chest press,chest,Chest,True
+ea_hammer_strength_plate_loaded_combination_iso_lateral_chest_chest_press_alternating_arms,Hammer Strength Plate-loaded Combination Iso-lateral Chest - Chest Press_alternating Arms,shoulder,shoulder_pressing,chest press,chest,Chest,True
+ea_hammer_strength_plate_loaded_combination_iso_lateral_chest_chest_press_single_arm,Hammer Strength Plate-loaded Combination Iso-lateral Chest - Chest Press_single Arm,shoulder,shoulder_pressing,chest press,chest,Chest,True
+ea_handstand_push_on_chair,Handstand Push on Chair,shoulder,shoulder_overhead,handstand,"shoulders,triceps",Shoulders,True
+ea_hold_the_world_med_ball_chest_press,Hold the World Med Ball Chest Press,shoulder,shoulder_pressing,chest press,,Chest,True
+ea_incline_bench_cable_fly,Incline Bench Cable Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_incline_diamond_push_up_on_bench,Incline Diamond Push Up on Bench,shoulder,shoulder_pressing,push up,"triceps,chest",Triceps,True
+ea_incline_lateral_raises_dumbbell,Incline Lateral Raises Dumbbell,shoulder,shoulder_abduction,lateral raises,shoulders,Shoulders,True
+ea_incline_push_ups_on_chair,Incline Push Ups on Chair,shoulder,shoulder_pressing,push ups,triceps,Triceps,True
+ea_incline_push_up_on_box,Incline Push-up (on Box),shoulder,shoulder_pressing,push up,chest,Chest,True
+ea_iso_lateral_shoulder_press_alternate_arms,Iso Lateral Shoulder Press Alternate Arms,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_iso_lateral_shoulder_press_both_arms,Iso Lateral Shoulder Press Both Arms,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_iso_lateral_shoulder_press_single_arm,Iso Lateral Shoulder Press Single Arm,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_jump_rope_face_pull,Jump Rope Face Pull,shoulder,shoulder_abduction,face pull,"traps,shoulders",Shoulders,True
+ea_kettlebell_front_raise,Kettlebell Front Raise,shoulder,shoulder_abduction,front raise,,Shoulders,True
+ea_kettlebell_half_kneeling_shoulder_press,Kettlebell Half Kneeling Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_kettlebell_kneeling_one_arm_shoulder_press,Kettlebell Kneeling One Arm Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_kettlebell_long_lever_lateral_raise,Kettlebell Long Lever Lateral Raise,shoulder,shoulder_abduction,lateral raise,,Shoulders,True
+ea_kettlebell_pullover,Kettlebell Pullover,shoulder,shoulder_overhead_pull,pullover,,Back,True
+ea_kettlebell_rear_delt_row,Kettlebell Rear Delt Row,shoulder,shoulder_abduction,rear delt,,Shoulders,True
+ea_kettlebell_seesaw_press,Kettlebell Seesaw Press,shoulder,shoulder_pressing,press,shoulders,Shoulders,True
+ea_kettlebell_single_arm_chest_fly,Kettlebell Single Arm Chest Fly,shoulder,shoulder_abduction,fly,,Chest,True
+ea_kettlebell_single_arm_clean_and_press,Kettlebell Single Arm Clean and Press,shoulder,shoulder_pressing,press,"shoulders,quads,glutes",Calisthenics-Cardio-Plyo-Functional,True
+ea_kettlebell_single_arm_lateral_raise,Kettlebell Single Arm Lateral Raise,shoulder,shoulder_abduction,lateral raise,,Shoulders,True
+ea_kettlebell_single_arm_rear_delt_fly,Kettlebell Single Arm Rear Delt Fly,shoulder,shoulder_abduction,rear delt,,Shoulders,True
+ea_kettlebell_single_leg_glute_bridge_pullover,Kettlebell Single Leg Glute Bridge Pullover,shoulder,shoulder_overhead_pull,pullover,"glutes,chest",Calisthenics-Cardio-Plyo-Functional,True
+ea_kettlebell_situp_press,Kettlebell Situp Press,shoulder,shoulder_pressing,press,"core,shoulders",Abdominals,True
+ea_kettlebell_snatch,Kettlebell Snatch,shoulder,shoulder_overhead,snatch,,Calisthenics-Cardio-Plyo-Functional,True
+ea_kettlebell_standing_bottoms_up_one_arm_shoulder_press,Kettlebell Standing Bottoms-up One Arm Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_kettlebell_strict_press,Kettlebell Strict Press,shoulder,shoulder_pressing,press,shoulders,Calisthenics-Cardio-Plyo-Functional,True
+ea_kettlebell_upright_row,Kettlebell Upright Row,shoulder,shoulder_abduction,upright row,,Shoulders,True
+ea_kipping_handstand_push_up,Kipping Handstand Push-up,shoulder,shoulder_overhead,handstand,,Calisthenics-Cardio-Plyo-Functional,True
+ea_kipping_pull_up,Kipping Pull Up,shoulder,shoulder_overhead_pull,pull up,,Back,True
+ea_kneeling_push_up,Kneeling Push-up,shoulder,shoulder_pressing,push up,,Chest,True
+ea_landmine_alternating_lunge_to_chest_press,Landmine Alternating Lunge to Chest Press,shoulder,shoulder_pressing,chest press,,Calisthenics-Cardio-Plyo-Functional,True
+ea_landmine_alternating_single_arm_press,Landmine Alternating Single Arm Press,shoulder,shoulder_pressing,press,,Shoulders,True
+ea_landmine_chest_press,Landmine Chest Press,shoulder,shoulder_pressing,chest press,"chest,shoulders",Chest,True
+ea_landmine_half_kneeling_single_arm_overhead_press,Landmine Half Kneeling Single Arm Overhead Press,shoulder,shoulder_overhead,overhead,,Shoulders,True
+ea_landmine_kneeling_alternating_overhead_press,Landmine Kneeling Alternating Overhead Press,shoulder,shoulder_overhead,overhead,,Shoulders,True
+ea_landmine_kneeling_overhead_press,Landmine Kneeling Overhead Press,shoulder,shoulder_overhead,overhead,,Shoulders,True
+ea_landmine_lateral_raise,Landmine Lateral Raise,shoulder,shoulder_abduction,lateral raise,,Shoulders,True
+ea_landmine_lunge_to_overhead_press,Landmine Lunge to Overhead Press,shoulder,shoulder_overhead,overhead,,Legs,True
+ea_landmine_overhead_press,Landmine Overhead Press,shoulder,shoulder_overhead,overhead,,Shoulders,True
+ea_landmine_rotational_lift_to_press,Landmine Rotational Lift to Press,shoulder,shoulder_pressing,press,,Calisthenics-Cardio-Plyo-Functional,True
+ea_landmine_seated_alternating_overhead_press,Landmine Seated Alternating Overhead Press,shoulder,shoulder_overhead,overhead,,Shoulders,True
+ea_landmine_seated_overhead_press,Landmine Seated Overhead Press,shoulder,shoulder_overhead,overhead,,Shoulders,True
+ea_landmine_seated_single_arm_overhead_press,Landmine Seated Single Arm Overhead Press,shoulder,shoulder_overhead,overhead,,Shoulders,True
+ea_landmine_single_arm_push_press,Landmine Single Arm Push Press,shoulder,shoulder_overhead,push press,,Shoulders,True
+ea_landmine_single_arm_staggered_overhead_press,Landmine Single Arm Staggered Overhead Press,shoulder,shoulder_overhead,overhead,,Shoulders,True
+ea_lateral_raise_bodyweight,Lateral Raise Bodyweight,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,True
+ea_lateral_raise_to_shoulder_press_resistance_band_cable,Lateral Raise to Shoulder Press Resistance Band Cable,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_lateral_raises_dumbbell,Lateral Raises Dumbbell,shoulder,shoulder_abduction,lateral raises,shoulders,Shoulders,True
+ea_lateral_raises_dumbbell_seated_with_swing,Lateral Raises Dumbbell Seated with Swing,shoulder,shoulder_abduction,lateral raises,shoulders,Shoulders,True
+ea_lateral_raises_on_cable_machine,Lateral Raises on Cable Machine,shoulder,shoulder_abduction,lateral raises,shoulders,Shoulders,True
+ea_laying_lateral_raise,Laying Lateral Raise,shoulder,shoulder_abduction,lateral raise,,Shoulders,True
+ea_leaning_dumbbell_lateral_raise,Leaning Dumbbell Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,True
+ea_low_cable_overhead_flyes,Low Cable Overhead Flyes,shoulder,shoulder_overhead,overhead,shoulders,Shoulders,True
+ea_lying_lateral_raises_bodyweight,Lying Lateral Raises Bodyweight,shoulder,shoulder_abduction,lateral raises,shoulders,Shoulders,True
+ea_machine_chest_press_decline,Machine Chest Press Decline,shoulder,shoulder_pressing,chest press,chest,Chest,True
+ea_machine_chest_press_incline,Machine Chest Press Incline,shoulder,shoulder_pressing,chest press,chest,Chest,True
+ea_machine_fly,Machine Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_machine_lateral_raise,Machine Lateral Raise,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,True
+ea_military_press_bodyweight,Military Press Bodyweight,shoulder,shoulder_overhead,military,shoulders,Shoulders,True
+ea_modified_hindu_push_up,Modified Hindu Push Up,shoulder,shoulder_pressing,push up,"chest,shoulders,triceps",Yoga,True
+ea_normal_push_up,Normal Push-up,shoulder,shoulder_pressing,push up,chest,Chest,True
+ea_one_arm_push_up,One Arm Push Up,shoulder,shoulder_pressing,push up,,Chest,True
+ea_one_arm_reverse_dumbbell_fly,One Arm Reverse Dumbbell Fly,shoulder,shoulder_abduction,fly,shoulders,Shoulders,True
+ea_overhead_extension_resistance_band_both_arms,Overhead Extension Resistance Band Both Arms,shoulder,shoulder_overhead,overhead,triceps,Triceps,True
+ea_overhead_med_ball_throw,Overhead Med Ball Throw,shoulder,shoulder_overhead,overhead,,Calisthenics-Cardio-Plyo-Functional,True
+ea_overhead_triceps_stretch_side_angle,Overhead Triceps Stretch Side Angle,shoulder,shoulder_overhead,overhead,triceps,Stretching - Mobility,True
+ea_pec_deck_fly_machine,Pec Deck Fly Machine,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_pec_deck_fly_machine_flies,Pec Deck Fly Machine Flies,shoulder,shoulder_abduction,fly,,Chest,True
+ea_pike_alternating_opposite_hip_taps,Pike Alternating Opposite Hip Taps,shoulder,shoulder_overhead,pike,,Calisthenics-Cardio-Plyo-Functional,True
+ea_pike_individual_alternating_arm_reaches,Pike Individual Alternating Arm Reaches,shoulder,shoulder_overhead,pike,,Calisthenics-Cardio-Plyo-Functional,True
+ea_pike_jacks_feet_kicking_in_and_out,Pike Jacks Feet Kicking in and Out,shoulder,shoulder_overhead,pike,,Calisthenics-Cardio-Plyo-Functional,True
+ea_pike_push_up,Pike Push Up,shoulder,shoulder_overhead,pike,shoulders,Triceps,True
+ea_pike_shoulder_taps,Pike Shoulder Taps,shoulder,shoulder_overhead,pike,,Calisthenics-Cardio-Plyo-Functional,True
+ea_plank_reverse_fly_with_bottle,Plank Reverse Fly with Bottle,shoulder,shoulder_abduction,reverse fly,shoulders,Shoulders,True
+ea_plate_clean_and_press,Plate Clean and Press,shoulder,shoulder_pressing,press,,Powerlifting,True
+ea_plate_curl_to_overhead_press,Plate Curl to Overhead Press,shoulder,shoulder_overhead,overhead,,Biceps,True
+ea_plate_curl_to_overhead_press_to_tricep_extension,Plate Curl to Overhead Press to Tricep Extension,shoulder,shoulder_overhead,overhead,,Triceps,True
+ea_plate_front_raise,Plate Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,True
+ea_plate_full_front_raise,Plate Full Front Raise,shoulder,shoulder_abduction,front raise,,Shoulders,True
+ea_plate_glute_bridge_to_chest_press,Plate Glute Bridge to Chest Press,shoulder,shoulder_pressing,chest press,,Chest,True
+ea_plate_glute_bridge_to_pullover,Plate Glute Bridge to Pullover,shoulder,shoulder_overhead_pull,pullover,,Back,True
+ea_plate_internally_rotated_rear_delt_fly,Plate Internally Rotated Rear Delt Fly,shoulder,shoulder_abduction,rear delt,,Shoulders,True
+ea_plate_lateral_raise,Plate Lateral Raise,shoulder,shoulder_abduction,lateral raise,,Shoulders,True
+ea_plate_overhead_carry,Plate Overhead Carry,shoulder,shoulder_overhead,overhead,,Calisthenics-Cardio-Plyo-Functional,True
+ea_plate_overhead_press_to_tricep_extension,Plate Overhead Press to Tricep Extension,shoulder,shoulder_overhead,overhead,,Shoulders,True
+ea_plate_overhead_shrug,Plate Overhead Shrug,shoulder,shoulder_overhead,overhead,,Shoulders,True
+ea_plate_overhead_tricep_extension,Plate Overhead Tricep Extension,shoulder,shoulder_overhead,overhead,,Triceps,True
+ea_plate_overhead_walking_lunge,Plate Overhead Walking Lunge,shoulder,shoulder_overhead,overhead,,Legs,True
+ea_plate_press,Plate Press,shoulder,shoulder_pressing,press,,Chest,True
+ea_plate_rear_delt_fly,Plate Rear Delt Fly,shoulder,shoulder_abduction,rear delt,,Shoulders,True
+ea_prone_front_raises_barbell_on_bench,Prone Front Raises Barbell on Bench,shoulder,shoulder_abduction,front raises,shoulders,Shoulders,True
+ea_prone_front_raises_dumbbell_on_bench,Prone Front Raises Dumbbell on Bench,shoulder,shoulder_abduction,front raises,shoulders,Shoulders,True
+ea_pull_up_normal_grip,Pull Up Normal Grip,shoulder,shoulder_overhead_pull,pull up,"lats,biceps",Back,True
+ea_pull_up_wide_grip,Pull Up Wide Grip,shoulder,shoulder_overhead_pull,pull up,"lats,biceps",Back,True
+ea_pull_up_wide_grip_front_view,Pull Up Wide Grip Front View,shoulder,shoulder_overhead_pull,pull up,"lats,biceps",Back,True
+ea_push_up_and_rotation,Push Up and Rotation,shoulder,shoulder_pressing,push up,"chest,shoulders",Chest,True
+ea_push_up_plus,Push Up Plus,shoulder,shoulder_pressing,push up,"chest,shoulders",Chest,True
+ea_push_ups_bodyweight,Push Ups Bodyweight,shoulder,shoulder_pressing,push ups,chest,Chest,True
+ea_rear_deltoid_fly_cable_resistance_band,Rear Deltoid Fly Cable Resistance Band,shoulder,shoulder_abduction,fly,shoulders,Shoulders,True
+ea_resistance_band_assisted_push_up,Resistance Band Assisted Push-up,shoulder,shoulder_pressing,push up,chest,Chest,True
+ea_resistance_band_cross_body_single_straight_arm_supinated_pulldown,Resistance Band Cross Body Single Straight Arm Supinated Pulldown,shoulder,shoulder_overhead_pull,pulldown,lats,Back,True
+ea_resistance_band_face_pull,Resistance Band Face Pull,shoulder,shoulder_abduction,face pull,traps,Shoulders,True
+ea_resistance_band_kneeling_cross_body_single_straight_arm_supinated_pulldown,Resistance Band Kneeling Cross Body Single Straight Arm Supinated Pulldown,shoulder,shoulder_overhead_pull,pulldown,lats,Back,True
+ea_reverse_machine_fly,Reverse Machine Fly,shoulder,shoulder_abduction,fly,shoulders,Shoulders,True
+ea_ring_dips,Ring Dips,shoulder,shoulder_pressing,dips,,Calisthenics-Cardio-Plyo-Functional,True
+ea_seated_dumbbell_neutral_grip_front_raises,Seated Dumbbell Neutral Grip Front Raises,shoulder,shoulder_abduction,front raises,,Shoulders,True
+ea_seated_dumbbell_neutral_grip_side_raises,Seated Dumbbell Neutral Grip Side Raises,shoulder,shoulder_abduction,raises,,Shoulders,True
+ea_seated_dumbbell_one_arm_shoulder_press,Seated Dumbbell One Arm Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_seated_dumbbell_rear_delt_fly,Seated Dumbbell Rear Delt Fly,shoulder,shoulder_abduction,rear delt,shoulders,Shoulders,True
+ea_seated_shoulder_press_barbell,Seated Shoulder Press Barbell,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_side_lateral_raise_resistance_band,Side Lateral Raise Resistance Band,shoulder,shoulder_abduction,lateral raise,shoulders,Shoulders,True
+ea_side_to_side_push_up,Side to Side Push Up,shoulder,shoulder_pressing,push up,"chest,triceps",Chest,True
+ea_single_arm_overhead_extension_resistance_band,Single Arm Overhead Extension Resistance Band,shoulder,shoulder_overhead,overhead,triceps,Triceps,True
+ea_ski_ergometer_cross_country_ski_flyes,Ski Ergometer Cross Country Ski Flyes,shoulder,shoulder_abduction,flyes,chest,Calisthenics-Cardio-Plyo-Functional,True
+ea_ski_ergometer_cross_country_ski_kneeling_reverse_fly_pull,Ski Ergometer Cross Country Ski Kneeling Reverse Fly Pull,shoulder,shoulder_abduction,reverse fly,"traps,shoulders",Calisthenics-Cardio-Plyo-Functional,True
+ea_ski_ergometer_cross_country_ski_pullover_pull,Ski Ergometer Cross Country Ski Pullover Pull,shoulder,shoulder_overhead_pull,pullover,"lats,shoulders",Calisthenics-Cardio-Plyo-Functional,True
+ea_ski_ergometer_cross_country_ski_reverse_fly_pull,Ski Ergometer Cross Country Ski Reverse Fly Pull,shoulder,shoulder_abduction,reverse fly,"lats,traps,shoulders",Calisthenics-Cardio-Plyo-Functional,True
+ea_smith_machine_press_decline,Smith Machine Press Decline,shoulder,shoulder_pressing,press,chest,Chest,True
+ea_smith_machine_press_flat,Smith Machine Press Flat,shoulder,shoulder_pressing,press,chest,Chest,True
+ea_smith_machine_press_incline,Smith Machine Press Incline,shoulder,shoulder_pressing,press,chest,Chest,True
+ea_smith_machine_shoulder_press,Smith Machine Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_standing_arnold_press_dumbbell,Standing Arnold Press Dumbbell,shoulder,shoulder_overhead,arnold,shoulders,Shoulders,True
+ea_standing_dumbbell_alternate_shoulder_press,Standing Dumbbell Alternate Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_standing_front_raise_dumbbell,Standing Front Raise Dumbbell,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,True
+ea_standing_shoulder_press_dumbbell,Standing Shoulder Press Dumbbell,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_standing_y_raise,Standing Y Raise,shoulder,shoulder_abduction,raise,shoulders,Shoulders,True
+ea_supine_push_up,Supine Push Up,shoulder,shoulder_pressing,push up,"traps,shoulders",Back,True
+ea_suspension_trainer_with_grips_chest_fly,Suspension Trainer with Grips Chest Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
+ea_suspension_trainer_with_grips_chin_up,Suspension Trainer with Grips Chin-up,shoulder,shoulder_overhead_pull,chin up,"biceps,lats",Back,True
+ea_suspension_trainer_with_grips_decline_push_up,Suspension Trainer with Grips Decline Push-up,shoulder,shoulder_pressing,push up,chest,Chest,True
+ea_suspension_trainer_with_grips_face_pull,Suspension Trainer with Grips Face Pull,shoulder,shoulder_abduction,face pull,traps,Shoulders,True
+ea_suspension_trainer_with_grips_front_raise,Suspension Trainer with Grips Front Raise,shoulder,shoulder_abduction,front raise,shoulders,Shoulders,True
+ea_suspension_trainer_with_grips_pike,Suspension Trainer with Grips Pike,shoulder,shoulder_overhead,pike,core,Calisthenics-Cardio-Plyo-Functional,True
+ea_suspension_trainer_with_grips_pull_up,Suspension Trainer with Grips Pull-up,shoulder,shoulder_overhead_pull,pull up,lats,Back,True
+ea_suspension_trainer_with_grips_push_up_to_side_plank,Suspension Trainer with Grips Push-up to Side Plank,shoulder,shoulder_pressing,push up,"chest,shoulders,core",Chest,True
+ea_suspension_trainer_with_grips_rear_delt_row,Suspension Trainer with Grips Rear Delt Row,shoulder,shoulder_abduction,rear delt,"shoulders,traps",Shoulders,True
+ea_suspension_trainer_with_grips_reverse_push_up,Suspension Trainer with Grips Reverse Push-up,shoulder,shoulder_pressing,push up,"chest,triceps",Chest,True
+ea_suspension_trainer_with_grips_single_arm_rear_delt_row,Suspension Trainer with Grips Single Arm Rear Delt Row,shoulder,shoulder_abduction,rear delt,"shoulders,traps",Shoulders,True
+ea_suspension_trainer_with_grips_split_fly,Suspension Trainer with Grips Split Fly,shoulder,shoulder_abduction,fly,shoulders,Shoulders,True
+ea_svend_press_decline_bench,Svend Press Decline Bench,shoulder,shoulder_pressing,press,chest,Chest,True
+ea_svend_press_flat_bench,Svend Press Flat Bench,shoulder,shoulder_pressing,press,chest,Chest,True
+ea_svend_press_incline_bench,Svend Press Incline Bench,shoulder,shoulder_pressing,press,chest,Chest,True
+ea_triceps_dip_machine,Triceps Dip Machine,shoulder,shoulder_pressing,dip,triceps,Triceps,True
+ea_upright_row_barbell,Upright Row Barbell,shoulder,shoulder_abduction,upright row,shoulders,Back,True
+ea_upright_row_cable_resistance_band,Upright Row Cable Resistance Band,shoulder,shoulder_abduction,upright row,shoulders,Shoulders,True
+ea_upright_row_dumbbell,Upright Row Dumbbell,shoulder,shoulder_abduction,upright row,shoulders,Shoulders,True
+ea_upright_row_ez_bar,Upright Row Ez Bar,shoulder,shoulder_abduction,upright row,shoulders,Shoulders,True
+ea_weighted_standing_shoulder_press_with_plate,Weighted Standing Shoulder Press with Plate,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
+ea_wide_push_ups_bodyweight,Wide Push Ups Bodyweight,shoulder,shoulder_pressing,push ups,chest,Chest,True

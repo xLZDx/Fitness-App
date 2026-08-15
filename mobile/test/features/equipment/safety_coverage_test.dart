@@ -33,7 +33,16 @@ import 'package:fitness_app/features/profile/data/profile_models.dart';
 /// counts move. A LOWER number reached by naming the exact row and the exact
 /// reason is the rule working, not the rule breaking; what it guards against
 /// is a number moving with no entry here to say why.
-const int kSafetyCoverageFloor = 1524;
+/// 1524 -> 1525 (full-catalog content audit, 2026-08-15). No rule changed and
+/// no batch shipped. `Dumbbell Face Down Lying Shoulder Pres` had that typo in
+/// its title, so the `shoulder_overhead` rule never matched its "shoulder
+/// press" phrase and the row carried no tag at all. Correcting the spelling as
+/// part of a copy audit made
+/// the existing rule match, and the row was tagged through the normal
+/// `--region shoulder --write` path. Worth leaving here as the reason the
+/// number moved without a batch: the rules read the vendor's own text, so a
+/// misspelt title fails open and hides nothing from anybody.
+const int kSafetyCoverageFloor = 1525;
 
 ExerciseItem _ex(String id, {List<String> contraindications = const []}) =>
     ExerciseItem(
@@ -179,7 +188,7 @@ void main() {
       const batched = {
         InjuryRegion.knee: 362, // S3b-1
         InjuryRegion.lowerBack: 312, // S3b-2
-        InjuryRegion.shoulder: 486, // S3b-2
+        InjuryRegion.shoulder: 487, // S3b-2, +1 from a title typo fix (2026-08-15)
         InjuryRegion.hip: 404, // S3b-3
         InjuryRegion.ankle: 229, // S3b-3
         InjuryRegion.wrist: 188, // S3b-3

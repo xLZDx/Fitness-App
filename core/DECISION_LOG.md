@@ -7700,3 +7700,613 @@ that implied otherwise; the case is unreachable in production today since the on
 passed, 0 failed, both before and after the fixes above. Full suite after fixes: `flutter analyze`
 — 7 issues, unchanged pre-existing baseline, 0 new. `flutter test` (whole project) — 2358 passed,
 0 failed.
+
+---
+
+## 2026-08-15 — 403-exercise `purpose`/`steps` content remediation (B3 audit round 1+2)
+
+### Trigger — external ACE/NASM-lens professional audit of the B3 `purpose` texts
+
+Operator commissioned an outside audit of `H3_PURPOSE_REVIEW_2026-08-15.html` (the 403 rows in
+`mobile/assets/data/exercises_vendor.json` that carry a B3-authored `purpose` field): 15 P0 / 48
+P1 / 97 P2 / 243 PASS. Operator instruction, verbatim: *"вот посмотри и переделай если согласен с
+предложением по каждому отдельному случаю и дай новый переделанный файл на диск для проверки"*.
+
+### Evidence — every P0 cross-checked against the live file before any edit
+
+Empiricism over Poetry applied to an external audit, same bar as an internal agent: no fix on the
+audit's word alone. Own pattern-scan run across all 403 `purpose`/`steps` texts for the same issue
+classes (absolute/superlative claims, "flat back" hip-hinge cueing) surfaced 8 more instances the
+audit itself missed.
+
+### Decision — fixed 23 `purpose` rewrites + 60 `steps` rewrites, agreed with the audit
+
+Full detail + per-case reasoning in `core/plans/CARD_403_CONTENT_REMEDIATION_2026-08-15.md`.
+Headline fixes: `ea_headstand`'s Purpose/Steps self-contradiction ("never on the head" vs. Steps
+resting the head on the floor); 14 more absolute-safety-claim Purpose rewrites; 60 "flat back"→
+"neutral spine" Steps rewrites, excluding 4 rows where "flat" correctly means "back flat against a
+support surface" (`ea_barbell_hooklying_bench_press`, `ea_landmine_hollow_hold`,
+`ea_horizontal_leg_press_calf_raise`, `ea_horizontal_leg_press_single_leg`).
+
+### Refusal — rejected the "Sled" naming-mismatch finding for 3 cards
+
+Audit read `ea_single_kettlebell_sled_push` / `ea_double_kettlebell_sled_push` / `ea_box_sled_push`
+as a title/equipment mismatch. Checked `equipmentId`/`equipmentLabel` against every other
+"Sled"-labelled card in the catalog: this is an established compound-name convention (tool +
+movement pattern) used consistently elsewhere (`weight_plates`/`punching_bag`/`weighted_sled` all
+label as "Sled" too), and the kettlebell card's own purpose text already says "when there is no
+proper sled." Not renamed — reaffirmed by the round-2 re-audit below as the correct call.
+
+### Evidence — self-caught scope-creep, reverted before commit
+
+First version of the fix script (`apply_purpose_fixes.py`) applied the "flat back"→"neutral spine"
+Steps rewrite to all 1887 catalog rows instead of only the 403 B3-authored rows (missing
+`purpose`-field guard). Caught before commit, disclosed to operator, reverted
+(`git restore -- mobile/assets/data/exercises_vendor.json`) and rerun correctly scoped.
+
+### Trigger — external round-2 re-audit of the REV2 remediation
+
+External tool re-verified the fix (79 cards changed = 23 Purpose + 60 Steps, 60/64 flat-back hits
+fixed correctly, 4 legitimately retained) and reaffirmed the "Sled" naming disagreement above as
+correct. Found: a documentation overclaim in the CARD (said "all 15 P0" Purpose texts were fixed;
+actually 13/15 — `ea_single_kettlebell_sled_push` / `ea_double_kettlebell_sled_push` never got a
+Purpose rewrite because their P0 finding was the naming question, which was rejected, not fixed);
+1 remaining real P0 (`ea_box_sled_push` Step 1 said "Load the sled..." while the card is a box
+push); 52 P1 + 82 P2 items not yet dispositioned; the full 1484-row (no-`purpose`) catalog audit
+still needs the actual local JSON file, which the external tool did not have.
+
+### Decision — fixed the 1 remaining P0, corrected the doc overclaim
+
+`ea_box_sled_push` Step 1: "Load the sled and grip the high handles or the frame" → "Load the box
+and grip the high handles or the frame". `CARD_403_CONTENT_REMEDIATION_2026-08-15.md` corrected
+from "all 15 P0" to "13 of the 15 P0 items" with the reason spelled out.
+
+### Evidence — real regression caught by the existing test suite, not by either audit
+
+`flutter test` failed `exercise_translations_test.dart:106-119` ("summary is always the first
+step" — the Russian overlay derives its summary from `steps[0]`, so a desync here would silently
+break the Russian side too). 7 rows had `steps[0]` rewritten by this pass without `summary` kept in
+sync: `ea_box_sled_push` (the P0 fix above) plus 6 flat-back→neutral-spine rewrites that happened
+to land on step one (`ea_kettlebell_rear_delt_row`, `ea_kettlebell_silverback_shrug`,
+`ea_kettlebell_single_arm_rear_delt_fly`, `ea_plate_internally_rotated_rear_delt_fly`,
+`ea_plate_pinch_grip_row`, `ea_plate_rear_delt_fly`). Resynced `summary` to the new `steps[0]` for
+all 7. `flutter test test/features/equipment/ test/assets/bundled_assets_test.dart` — the full set
+of tests that reference `exercises_vendor.json` (grepped, 14 files) — now passes clean (317/317).
+
+Two full, unfiltered `flutter test` runs each showed exactly 1 failure, but in
+`blur_budget_test.dart` / `floating_sheet_test.dart` / `glass_card_test.dart` /
+`glass_nav_bar_test.dart` / `widget_test.dart` — none of which reference `exercises_vendor.json`
+— with a different specific test failing between the two runs. Read as pre-existing,
+order-dependent full-suite flakiness unrelated to this text-only content edit; not investigated
+further in this pass.
+
+### Refusal — did not attempt the 52 P1 / 82 P2 items in this pass, and did not start the
+1484-row full-catalog audit
+
+Both are real, scoped, sized work (see `core/plans/CARD_FULL_CATALOG_AUDIT_2026-08-15.md` for the
+1484-row scope with 3 size options). Neither has an operator GO yet. Recommendation given to
+operator: hold H3 (writing `purpose` for the 1484 rows that don't have one) until the P1 batch is
+dispositioned.
+
+### State at end of this entry
+
+`mobile/assets/data/exercises_vendor.json` and both `core/plans/CARD_*.md` files are edited but
+**uncommitted** — pending operator review of `core/plans/H3_PURPOSE_REVIEW_2026-08-15_REV2.html`
+(which does not yet reflect the `ea_box_sled_push` fix) and a GO to commit.
+
+---
+
+## 2026-08-15 — full-catalog (1887) content remediation, audit round 3
+
+### Trigger — operator supplied a real full-catalog audit package
+
+`D:\Downloads\SPTR_FULL_CATALOG_1887_AUDIT_PACKAGE_2026-08-15.zip`, an external ACE/NASM-lens
+pattern audit that this time *did* have the local JSON (the round-2 tool did not, which is why
+it could only cover the 403 rows with a `purpose`). Scope: all 1887 rows. Result:
+1 P0 / 149 P1 / 369 P2 / 1368 PASS — **519 flagged rows, 609 individual issues**. It also carries
+round 2's still-open 52 P1 / 82 P2 forward as its own `PRIOR_REAUDIT` issue class (135 rows).
+
+This is Option 3 of the three sizes proposed in `CARD_FULL_CATALOG_AUDIT_2026-08-15.md`, supplied
+pre-made rather than commissioned.
+
+### Evidence — the audit's own claims were verified before any of them were acted on
+
+Per Empiricism over Poetry, no finding was applied on the audit's word. Every issue class was
+re-derived against the real file text first. That measurement found real false-positive classes in
+the audit's own pattern detection, which were **rejected with a cited reason, not "fixed"**:
+
+- `SPINE_CUE` — 23 of 224 flag "straight back" used as a *direction of travel* ("push your hips
+  straight back", "extend your leg straight back"), not a spine-posture cue. The audit's matcher
+  doesn't distinguish word order.
+- `KNEE_TOE_RULE` — 11 of 15 use "knee tracking over your toes", which is the NASM-aligned
+  *alignment* cue, not the rigid prohibition the audit was looking for. Only 4 were genuinely
+  restrictive ("must not go past your toes").
+- `FORCED_ROM` — a subset was already hedged ("as far as you can control", "...comfortably").
+- `SUPERLATIVE_CLAIM` — 21 of 23 were already relative/qualified; several are this session's own
+  round-1 fixes being re-flagged by keyword match.
+- `DUPLICATE_STEPS` — all 91 rejected as a class. Clustered every one by exact-Steps match across
+  the catalog: each is a legitimate multi-camera-angle / POV video variant sharing one instruction
+  set ("Barbell Deadlift" / "(front POV)" / "(side POV)" / "(360 Degrees)"), a convention used
+  consistently across the whole video library. Not content corruption.
+
+### Evidence — the audit also *under*-detected, in one class, materially
+
+Running the `SPINE_CUE` rewrite across all 1887 rows rather than only the audit's 224 flagged rows
+surfaced **37 more genuine instances the audit missed entirely**, plus **5 more surface-contact
+exclusions** (back pressed flat against a floor/bench/wall — a correct, different cue, same
+exclusion class as the 4 already known from round 1). Worth remembering for the next audit round:
+this vendor's pattern coverage is good but not exhaustive; re-deriving across the full file is
+cheap and caught ~16% more.
+
+### Decision — how the 519 were split, and what each half got
+
+**Mechanical classes** (whole catalog, one script, every write guarded by an exact-old-text match
+that aborts before `json.dump` on any mismatch): `SPINE_CUE` 229 rows, `FORCED_ROM` 57,
+`VAGUE_HOLD` 10, `JOINT_LOCK` 6, `KNEE_TOE_RULE` 4, `LOWER_ABS_TERM` 3, `MEDICAL_CLAIM` 2,
+`MALFORMED_STEP` 2, `EQUIPMENT_TEXT_CONFLICT` 1, `ABSOLUTE_SAFETY` 1. Plus 3 real title typos
+found incidentally while clustering `DUPLICATE_STEPS` (confirmed against a correctly-spelled
+sibling in the same cluster), and 3 `difficulty` reclassifications (`ea_headstand`
+beginner to advanced — a head-balance inversion tagged beginner is a real safety-classification
+defect, not a wording nit).
+
+**Judgment classes** — the 89 unique `PRIOR_REAUDIT` IDs not already covered above. Dispatched to
+4 parallel general-purpose agents, each given the real current `purpose`/`steps` text plus the
+specific round-2 finding, required to return exact verbatim old/new pairs or reject with a reason.
+**Why this and not by hand:** 89 independent single-card wording judgments with no cross-card
+dependency is exactly the shape that parallelises safely, and each agent's output is *verifiable*
+— the required-verbatim-`old` contract means a wrong or hallucinated claim about the file cannot
+be applied. **Why this and not trusted directly:** it wasn't. Every proposed edit was re-verified
+against the live file by the same abort-on-mismatch script used for the mechanical pass, which
+caught one real mismatch (`ea_tyre_hammering`, a trailing period the agent added that the file
+doesn't have) and refused to write anything until it was corrected. Result: **57 fixed (59 edits),
+32 rejected**.
+
+### Refusal — did not fabricate text to paper over missing schema fields
+
+Several round-2 findings ask for `difficulty=Advanced` **plus** prerequisite / regression /
+wall-or-spotter / exit guidance, or safety-region tags, on `ea_headstand`, `ea_crow_pose`,
+`ea_monkey_pose`, `ea_wild_thing_pose`. There is no `prerequisites`, `regressions` or `safetyTags`
+field on an exercise row — this is a schema change, not a text edit. The `difficulty` half (a real
+existing field) was applied; the rest was **not** simulated by writing an invented "prerequisite"
+sentence into `purpose`. Logged as a genuine follow-up candidate, not silently dropped.
+
+Also refused: extending this into H3 (writing `purpose` for the 1484 rows that lack one). Still no
+GO, still the right order — close P0/P1 before adding 1484 new rows of text to audit.
+
+### Evidence — own bug caught before commit: RU overlay silently reformatted
+
+The `MALFORMED_STEP` fix had to split a step in `exercises_vendor.ru.json` too (the EN/RU
+step-count invariant is test-enforced). My script wrote it back with `json.dump(..., indent=2)`,
+but that file's actual format is **1-space** indentation — so a 2-record content change produced a
+**54,116-line diff** across the whole file. Caught by comparing the two versions at the *parsed
+data* level rather than the text level, which showed only the 2 intended records actually
+differed. Fixed by reloading pristine content from `git show HEAD:...` and rewriting with
+`indent=1`; diff is now 6 lines. **Generalisable:** never assume a JSON file's indent — read the
+existing bytes first. A reformat-the-world diff also hides real changes inside it, which is the
+worse failure than the noise.
+
+### Evidence — summary/steps[0] invariant broke twice more, caught both times by the tests
+
+Same failure mode as round 1 (`exercise_translations_test.dart:106-119`, `summary` must equal
+`steps[0]` verbatim): 7 rows after the mechanical pass, then 2 more after the `PRIOR_REAUDIT`
+batch (`ea_dumbbell_half_kneeling_wood_chopper`, `ea_med_ball_half_kneeling_wood_choppers`).
+Resynced each time. This has now happened in every single batch that touched step one — any future
+pass editing `steps[0]` should resync `summary` *in the same script*, not discover it via the test
+afterwards.
+
+### Evidence — tests
+
+`flutter test test/features/equipment/ test/assets/bundled_assets_test.dart` (every test that
+references `exercises_vendor.json`): **317/317**, re-run after each of the four edit batches.
+Full unfiltered `flutter test`: **2358 tests, clean** — which also settles round 1's open question:
+the two earlier full-suite runs that each showed 1 failure in `blur_budget_test` /
+`floating_sheet_test` / `glass_card_test` were pre-existing order-dependent flakiness, not
+anything this content work introduced.
+
+### State
+
+**433 rows** of `exercises_vendor.json` changed across all three rounds this session, plus 2
+records in `exercises_vendor.ru.json`. Review artifact:
+`core/plans/FULL_CATALOG_REVIEW_2026-08-15_REV2.html` — all 1887 cards, the 433 changed ones
+tagged **Revised**. Both `core/plans/CARD_*.md` cards updated to closed status.
+
+Committed under the operator's autonomous GO (2026-08-15, "ГО на все автономно"). **Not
+pushed** — a push needs its own literal `push` GO, and additionally waits on the Codex
+consensus loop's FINAL round.
+
+*(Amended in place, 2026-08-15, and the amendment is itself worth recording: I ran a
+speculative `sed` against this append-only file to annotate this paragraph, it matched a
+line it should not have, and it left a broken half-sentence here. Restored to the original
+wording by hand. Do not run pattern substitutions against `DECISION_LOG.md` — it is
+append-only, and a superseding entry belongs at the end, not stitched into an old one. The
+counts in this entry, 433 English rows and 2 Russian, were accurate when written and are
+superseded by the Codex round-1 entry immediately below: 449 and 426.)*
+
+---
+
+## 2026-08-15 — Codex round 1 on the full-catalog pass: six findings, all six real
+
+### Evidence — the review that caught what two content audits structurally could not
+
+Codex reviewed the uncommitted diff and returned 5 MAJOR + 1 NIT. Every one was
+cross-checked against the real files before being acted on, per Empiricism over Poetry.
+**All six CONFIRMED. Zero confabulations** — each cited file and line said what Codex
+claimed it said. That is a better hit rate than either external content audit in this
+session, and the reason is structural: both of those audits reviewed the English review
+page, so nothing in either of them could ever notice that the Russian side had not moved.
+
+### Decision — the Russian overlay was the real defect, and it was shipping
+
+`ea_low_sled_push` in Russian still read *«Тяжело для квадрицепса и полностью безопасно»* —
+"completely safe", the single strongest claim this entire audit exists to remove — while
+the English row had already been corrected. `ea_heavy_bag_sled_drag` still framed the
+movement as knee rehabilitation with no clinician caveat. 433 English rows had changed;
+exactly 2 Russian records had been touched. Russian-speaking users were being served the
+un-remediated copy.
+
+**Why it was missed:** the first pass treated the Russian overlay as a step-count
+constraint (the EN/RU step-count invariant is test-enforced, so a structural split had to
+be mirrored) and never as a *content* constraint, because no test compares MEANING across
+the two files and no audit had read the Russian side. Both files passed every test the
+whole time. The lesson worth keeping: a test-enforced invariant on shape gives false
+confidence about content, and a translation overlay is a second copy of every claim.
+
+**Fix:** measured the true gap at 468 out-of-sync strings (403 changed step strings across
+380 ids, plus 65 changed purposes with a Russian counterpart). Re-derived by 6 parallel
+drafting agents, each shown `en_old` / `en_new` / `ru_current` and told to make the
+MINIMAL edit carrying the new meaning rather than retranslate. Verified programmatically
+before applying: identity matched on `(id, field, index)`, and the live Russian value had
+to still equal the `ru_current` the agent was shown, or the apply aborts wholesale.
+459 changed, 9 already correct. Verified after: zero Russian purposes claim absolute
+safety; the one remaining rehab mention mirrors the English clinician caveat.
+
+Also decided: the overlay's own `summary` field is **dead data** —
+`asset_equipment_repository.dart:172` derives summary from `steps.first` — so all 122
+Russian summary values were restored to their HEAD content rather than resynced. Writing
+them would have doubled the diff with changes nothing reads.
+
+### Refusal — did NOT hand-write contraindication tags, and tested the reason first
+
+Codex was right that `contraindications` exists, is live, and was empty on the movements
+this pass reclassified as advanced (`exercise_filter.dart:38` — an empty list passes every
+injury screen). It was also right that the previous log entry overclaimed on two counts:
+that the difficulty half had been applied (true for `ea_headstand` only) and that no
+safety-tag schema field existed (false). Both corrected in the card.
+
+The tags were still not written by hand. `scripts/catalog/tag_contraindications.py`
+generates that field from deterministic word rules, and its `retract_stale_tags()` removes
+any tag the current rules do not produce. This was **tested, not assumed**: the 7 rows were
+hand-tagged, and `test_tag_contraindications.py::test_the_rules_still_produce_what_the_catalog_carries`
+went red on the spot. Hand tags would have been silently retracted by the next tagger run,
+leaving a catalog that looks screened and isn't — worse than leaving it visibly untagged.
+The correct route is a rule change plus the per-region hide-rate report the script's own
+documentation requires, which has catalog-wide blast radius on the filter deciding what an
+injured user sees. That is its own gate. Reverted; named as follow-up in the card.
+
+### Evidence — a spelling mistake had been disabling an injury filter
+
+Falls out of the above and neither audit nor Codex had it. One of the three title typos
+fixed earlier in this pass, `Dumbbell Face Down Lying Shoulder Pres` → `Press`, made the
+existing `shoulder_overhead` rule match, on its "shoulder press" phrase, a row it had
+never matched. That exercise had
+shipped **never being screened for a shoulder injury, purely because its title was
+misspelt**. Tagged through the canonical `--region shoulder --write` path (1 row), both
+ratchets raised in the same change: `kSafetyCoverageFloor` 1524 → 1525 and `shoulder`
+486 → 487, each with a comment saying why the number moved without a batch.
+
+**Generalisable, and the reason this is logged rather than just fixed:** the tagger reads
+the vendor's own free text, so a typo fails OPEN — it hides nothing from nobody, silently,
+and no test can see it because the rules and the catalog agree perfectly on the wrong
+answer. `ea_hand_stand_hold` is the same bug still live: the `shoulder_overhead` rule
+lists "handstand" and the title says "Hand Stand", so the phrase never matches. Worth a
+deliberate sweep for near-miss titles, not just this one fix.
+
+### Decision — two audit classes had been silently skipped, and the card had claimed otherwise
+
+`BEHIND_NECK` (5 rows) and `UPRIGHT_ROW` (9 rows) appeared in the card's own pattern
+breakdown and were then never dispositioned in either direction, while the card described
+the pass as complete. The unfixed rows are the smaller half of that; the card asserting
+completeness is the part worth recording. 22 substitutions applied, each `old` verified as
+a unique verbatim match. Behind-neck cards now cue a controlled comfortable range, name the
+front-of-body variant, and cue stopping if the shoulder pinches; upright rows no longer
+impose a universal shoulder-height cutoff nor claim that exceeding it causes pain.
+`POSTURE_CAUSAL` / `NECK_SPECIALIZED` / `TOO_FEW_STEPS` reviewed the same way: 10 fixed,
+3 rejected with reasons.
+
+Smaller confirmations, all real: `ea_plate_overhead_shrug` had its `JOINT_LOCK` fix applied
+to step 1 but not to `summary`/`steps[0]`, which still said "lock your arms straight" — the
+most prominent text on the card. 10 steps had been left starting with a lowercase letter by
+this pass's own replacements. One pre-existing `stright` typo sat in a line this pass
+touched.
+
+### Evidence — tests
+
+Full unfiltered `flutter test`: **2358/2358**.
+`scripts/catalog/test_tag_contraindications.py`: **36/36**.
+
+### State
+
+449 English rows and 426 Russian rows changed. Review artifact regenerated:
+`core/plans/FULL_CATALOG_REVIEW_2026-08-15_REV2.html`, 1887 cards, the 449 tagged
+**Revised**. Prepared under the operator's autonomous GO (2026-08-15); NOT yet committed at
+the time this entry was written, and not pushed. Codex round 2 caught this entry claiming
+otherwise — an entry written ahead of the action it describes is a small lie that a later
+reader has no way to detect. Write the log in the same breath as staging the commit, never
+before. Push additionally waits on Codex's FINAL round.
+
+---
+
+## 2026-08-15 — Codex round 2: the ordering bug, and where the scope line was drawn
+
+### Evidence — round 2 returned 10 items and all 10 were real, again
+
+Two rounds, sixteen findings, zero confabulations. Worth recording as a fact about this
+reviewer rather than a compliment: Codex's citations have been accurate enough that the
+cross-check step has never once caught it inventing a line. That does not remove the
+cross-check — it is what makes the cross-check cheap.
+
+Round 2 AGREED on four earlier items, REFINED two, DISAGREED on one, and added four new
+findings.
+
+### Evidence — the Russian parity fix was itself incomplete, by an ordering bug
+
+Codex disagreed that Russian parity was done, and was right. The Russian payload was
+snapshotted from the diff BEFORE the `BEHIND_NECK` / `UPRIGHT_ROW` / `POSTURE_CAUSAL`
+English edits were applied, so those 26 later strings had no Russian counterpart at all.
+
+**The mechanism is worth keeping, because it will recur:** derive-a-payload-then-keep-editing
+leaves the payload stale, and nothing downstream notices, because the only cross-file
+invariant under test is step COUNT, which a text edit never moves. The correct habit is to
+derive the translation payload as the LAST step before applying it, or to re-derive and
+diff before declaring parity. Re-derived; 441 Russian rows now changed, up from 426.
+
+### Decision — two behind-neck cards were contradicting their own safety fallback
+
+`ea_barbell_behind_neck_push_press` and `ea_barbell_seated_behind_neck_military_press`
+offered a front-rack alternative in step 1 ("otherwise rest the bar across the front of
+your shoulders") and then, on the return, ordered the bar back down *behind the neck*. A
+user who took the safer option was being told to undo it. Return cues now preserve
+whichever position was chosen. The other three behind-neck cards were already
+position-agnostic — Codex named exactly the two that were not, which is the kind of
+precision that makes a finding cheap to act on.
+
+### Decision — where the scope line was drawn on lock cues, and why it is drawn there
+
+Four records this diff had already touched still positively cued locking a joint
+(`ea_kettlebell_windmill`, `ea_plate_overhead_walking_lunge` ×2, `ea_plate_thruster`,
+`ea_push_pull_front_handle_push`). Fixed — leaving a lock cue in a row this pass edited is
+simply inconsistent.
+
+Codex's suggested fix also said to rescan the whole catalog. That scan was run: roughly
+**30 more rows** carry positive "lock the arms/elbows" instructions in records this diff
+never touched. They were **not** fixed here. Extending a commit from 4 rows to 34 on a
+reviewer's suggestion, unsupervised and overnight, is scope creep however good the
+suggestion is — the audit's own `JOINT_LOCK` class named 6 rows and never flagged these,
+so nobody has reviewed the judgment call on them. Recorded as a named follow-up gate in
+the card, and put to Codex explicitly in round 3 as a line it can dispute rather than one
+decided unilaterally.
+
+### Evidence — a blanket fix created its own defect, and the second fix was not blanket
+
+The mechanical Russian pass introduced 58 instances of «настолько … , насколько вы можете
+контролировать» — a calque leaving `контролировать` without an object. Self-inflicted by
+substituting one fixed phrase everywhere. The repair deliberately did NOT do the same
+thing again with a better phrase: each instance was rephrased in context, with an explicit
+instruction to watch for sentences that already contained «контроль» so the word would not
+repeat awkwardly. Verified 0 remaining.
+
+### Refusal-adjacent — accepted a reviewer's reframing rather than defending the original
+
+Codex refined the contraindications refusal to: not a blocker for this commit, but a
+**mandatory pre-release safety gate** rather than a closed item. Adopted verbatim, on the
+reasoning it gave — shipping movements newly reclassified as advanced while they still
+pass every injury screen is the wrong order. The card now words it that way.
+
+### Evidence — two NITs, one of which was a process fault not a typo
+
+The rule that fired on the `Pres` → `Press` typo fix is `shoulder_overhead` matching its
+"shoulder press" phrase, not `shoulder_pressing` as first written — verified against
+`core/contraindications/shoulder.csv` (`rule=shoulder_overhead, matched=shoulder press,
+already=False`), corrected in all four places it was cited.
+
+The second is the one worth keeping: the previous log entry stated this work was
+"committed" while `git status` showed the entire change set unstaged. An entry written
+ahead of the action it describes is undetectable to a later reader — the log's whole value
+is that it is trustworthy about what actually happened. Corrected in place with the reason
+left visible rather than quietly overwritten. Related, same turn: a speculative `sed`
+against this append-only file matched a line it should not have and left a broken
+half-sentence. Both point the same way — **do not pattern-substitute into `DECISION_LOG.md`,
+and do not write an entry before the thing it describes has happened.**
+
+### Evidence — tests
+
+Full unfiltered `flutter test`: **2358/2358**.
+`scripts/catalog/test_tag_contraindications.py`: **36/36**.
+`summary == steps[0]` holds on all 1887 rows; EN/RU step counts match on all 1887.
+
+### State
+
+449 English rows and 441 Russian rows changed. Review artifact regenerated at
+`core/plans/FULL_CATALOG_REVIEW_2026-08-15_REV2.html`. Codex round 3 then found two further real
+defects and returned "do not commit yet" — see the next entry.
+
+---
+
+## 2026-08-15 — Codex round 3: the same ordering bug one level up, and a blanket fix that broke a card
+
+### Evidence — round 3 returned "do not commit yet", and was right twice
+
+Fourteen items: eight AGREE confirming earlier fixes, one accepted deferral, and two new
+MAJOR defects plus three smaller ones. Both MAJORs were real. Sixteen findings over three
+rounds, still zero confabulations.
+
+### Evidence — the Russian parity fix was incomplete for a SECOND time, same bug, one level up
+
+Round 2's fix had a filter: skip any string already present in the first payload, on the
+assumption a string is derived once. Strings edited **twice** on the English side — once by
+the mechanical pass, again by the judgment pass — were therefore skipped as "already
+covered" while their Russian still reflected the *intermediate* English. Every id Codex
+named (`ea_kettlebell_upright_row`, `ea_bow_pose`, `ea_dumbbell_shoulder_extension`,
+`ea_half_neck_rolls`, `ea_lying_neck_curls`, `ea_lying_neck_extension`,
+`ea_pigeon_glutes_stretch`, `ea_plate_rear_delt_fly`) was in that set.
+
+**The fix that finally holds, and the general form of the lesson:** stop tracking *what has
+been derived* and start comparing *what the source says now*. The check is: for every
+payload item ever built, does its recorded `en_new` still equal the current English? That
+finds staleness however many times a string was touched, and does not care about
+bookkeeping. 18 found, 8 needing a real rewrite, 10 English-capitalisation-only changes
+that Russian is indifferent to. Bookkeeping-based invalidation failed twice here; content
+comparison worked the first time.
+
+### Decision — a blanket substitution broke a card whose whole point was the phrase it removed
+
+`ea_flat_knee_raise` is the best finding of all three rounds and it is a defect this pass
+introduced. The spine rewrite left step 3 saying "keeping the spine neutral" while step 2
+says "Press your lower back gently into the floor and keep it there" and the purpose says
+teaching the lower back to stay flat against the floor **is the whole point**. A missed
+surface-contact exclusion. Fixed in both languages; exclusion list now 10.
+
+**Why this is recorded and not just fixed:** the exclusion list for a blanket substitution
+is never finished by construction. A pattern broad enough to be worth automating will
+eventually land on a row where the phrase it replaces was the correct one, and no test can
+see it, because the result is grammatical, plausible, and internally consistent with
+nothing except its own neighbours. The only reliable check is reading the surrounding
+steps — which means every future blanket text pass should sample-read neighbours of the
+rows it changes, not just verify that the substitution applied.
+
+### Evidence — the repeated-formulation mistake, repeated
+
+Round 2 flagged 58 instances of a calque my blanket Russian substitution created. The fix
+introduced 23 instances of a *different* repeated formulation, which round 3 then flagged.
+Same error one level up: replacing one fixed phrase with another fixed phrase. Now rewritten
+with varied, sentence-appropriate wording; verified zero instances of either construction.
+
+Also fixed: two rows reading "as far as you can control while maintaining control" (the
+qualifier sat in a different clause than the pattern matched, so the already-qualified
+exclusion missed them), and two pre-existing typos in touched lines — "your eight forefoot"
+→ "right", "muscles topull" → "to pull". The Russian for the first already read «правой
+стопы», which independently confirms "eight" was a corruption of "right".
+
+And, for the second time, a card claiming the work was "committed" while `git status`
+showed it unstaged — I had fixed that in `DECISION_LOG.md` in round 2 and then repeated it
+in both `core/plans/CARD_*.md`. The habit, not the instance, is the thing to fix: **write
+status as of now, not as of the intended next step.**
+
+### Decision — where the lock-cue scope line sits, and Codex accepted it
+
+Codex's round-2 suggestion to rescan the catalog for positive lock cues was run: ~30 more
+rows outside this diff carry them, none flagged by the audit's own 6-row `JOINT_LOCK`
+class. They were not fixed here — extending a commit from 4 rows to 34 on a reviewer's
+suggestion, unsupervised and overnight, is unreviewed scope creep. Put to Codex explicitly
+as a line it could dispute; it accepted the deferral given the follow-up gate is named in
+the card. Recorded because a scope refusal that a reviewer has explicitly signed off on is
+worth more later than one asserted unilaterally.
+
+### Evidence — tests
+
+Full unfiltered `flutter test`: **2358/2358**.
+`scripts/catalog/test_tag_contraindications.py`: **36/36**.
+`summary == steps[0]` on all 1887 rows; EN/RU step counts match on all 1887; zero Russian
+purposes claiming absolute safety; zero remaining calque instances; no Russian string whose
+English moved after it was last derived.
+
+### State
+
+449 English rows and 441 Russian rows changed. Codex round 4 then found four more, all
+real, all pre-existing rather than introduced by this pass — see the next entry.
+**Not pushed** — a push needs its own literal `push` GO. Two follow-up gates are named in
+`core/plans/CARD_FULL_CATALOG_AUDIT_2026-08-15.md`: rule-generated contraindication tags
+(a pre-release safety gate, not an optional cleanup) and the catalog-wide lock-cue sweep.
+
+---
+
+## 2026-08-15 — Codex rounds 4 and 5: pre-existing catalog defects, and where the diff stops growing
+
+### Evidence — round 4 confirmed every round-3 fix, then found four more real defects
+
+Eight AGREE on the prior fixes, and four new items — all confirmed against the files. Five
+rounds, ~45 findings, still zero confabulations. What changed in round 4 is the *character*
+of the findings: they were no longer defects this pass introduced, but pre-existing vendor
+text errors sitting in rows this pass happened to touch.
+
+- `ea_dumbbell_single_leg_calf_raise_wall_support` lifts the right leg and balances on the
+  left, then cued pressing through the **right** forefoot.
+- `ea_dumbbell_single_leg_squat_with_support_pistol` lifts and extends the right leg
+  forward, then bends the right knee and presses through the right heel — a pistol squat
+  extends the *non*-working leg.
+- `ea_dumbbell_standing_single_leg_calf_raise` said to press through the left heel in order
+  to raise that same heel. Mechanically impossible.
+- Both wrist-**extension** rows said to lift the weight "by **flexing** your wrists". The
+  Russian was already correct («Разогните запястья»), so the translation had silently
+  fixed an English defect — the reverse of this whole exercise's usual direction.
+
+All fixed, in both languages where the Russian mirrored the error.
+
+### Loud self-correction — I created half of the first one, and my evidence for it was circular
+
+The original text read "your **eight** forefoot" — a corruption. I resolved it to "right"
+in round 3, and told Codex the Russian «правой стопы» *independently confirmed* that
+reading. **That reasoning was circular and I should not have offered it.** The Russian
+overlay is a translation OF this English; it cannot be an independent witness to it. A
+translator faced with the same corrupted word guessed the same way I did, which is
+correlation, not corroboration.
+
+The correct resolution comes from the movement: the working leg is the one you balance on,
+and step 1 says that is the left. Fixed to "left forefoot". The general lesson, worth more
+than the fix: **a derived artifact is never evidence for the thing it was derived from.**
+Ask what the source of a confirmation actually is before citing it.
+
+### Decision — generalise the class instead of waiting for round 6 to find the next instance
+
+Rather than fix four instances and hand the diff back, both defect classes were scanned for
+across the whole changed set: (a) a row that lifts one leg and then cues work through that
+same side, (b) any "press through the heel … to raise the heel" construction anywhere in
+the catalog. Both return zero remaining instances. Fixing the instance a reviewer names and
+stopping there guarantees another round; fixing the class ends it.
+
+### Decision — where the diff stops growing, and why that line is here
+
+Rounds 4 and 5 were increasingly surfacing pre-existing vendor text quality rather than
+anything this pass did. Those are genuine problems and a much larger body of work than a
+copy-safety remediation — unscoped, unreviewed, and not something to assemble overnight
+into an ever-growing commit while the operator is asleep.
+
+The line drawn, and put to Codex explicitly rather than asserted: **fix everything this
+pass introduced or made worse; record everything else as a named follow-up gate.** This is
+the same treatment Codex had already accepted for the ~30 untouched lock cues. The commit
+is local and fully reversible; the push is separately gated and needs the operator's own
+instruction, so nothing leaves this machine on this decision.
+
+Follow-up gates now recorded in `core/plans/CARD_FULL_CATALOG_AUDIT_2026-08-15.md`:
+rule-generated contraindication tags (a **pre-release** safety gate, not a cleanup), the
+catalog-wide lock-cue sweep, a near-miss title sweep, and pre-existing instruction defects
+(left/right, mechanical impossibilities, title/step contradictions) beyond the rows this
+pass touched.
+
+### Evidence — tests, final
+
+Full unfiltered `flutter test`: **2358/2358**.
+`scripts/catalog/test_tag_contraindications.py`: **36/36**.
+`summary == steps[0]` on all 1887 rows; EN/RU step counts match on all 1887; zero Russian
+purposes claiming absolute safety; zero calque instances; zero remaining working-leg or
+press-the-heel-to-raise-it contradictions in the changed set.
+
+### Evidence — round 5 held nothing back on content, and caught two audit-trail slips
+
+Round 5 confirmed all five fixes and stated plainly that no shipping-content regression
+introduced by this pass remains, and that pre-existing vendor copy can stay in the
+follow-up gates — i.e. it accepted the scope line. It held the commit only for two
+audit-trail inaccuracies, both correct: this log still carried the superseded
+"right forefoot / the Russian confirms it" reasoning with no superseding entry yet (this
+entry is that entry), and every card and log line said 441 Russian rows when a parsed
+comparison against HEAD gives 441. Recounted and corrected in all three files.
+
+Worth noting what that second one is: the review caught a **documentation** number being
+one off, in a diff of nearly 900 changed rows, on the fifth pass. That is the point at
+which a review has stopped finding defects and started finding bookkeeping — a reasonable
+signal that the loop is done.
+
+### State
+
+449 English rows and 441 Russian rows changed. Committed under the operator's autonomous GO
+of 2026-08-15. **Not pushed** — that needs its own literal `push` GO.

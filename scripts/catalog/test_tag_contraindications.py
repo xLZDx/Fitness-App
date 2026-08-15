@@ -358,7 +358,16 @@ class TestTheShippedCatalog:
             # `Rear Deltoid Stretch`, retracted by `retract_stale_tags` rather
             # than left stale in the catalog).
             "upper_back": 265,
-            "shoulder": 486,
+            # 486 -> 487 (full-catalog content audit, 2026-08-15). No rule
+            # changed. `Dumbbell Face Down Lying Shoulder Pres` had shipped
+            # with that typo in its title, so the `shoulder_overhead` rule
+            # never matched its "shoulder press" phrase and the row was never
+            # screened for a shoulder injury. Correcting the spelling as part
+            # of the copy audit made the existing rule match it, and
+            # `--region shoulder --write` tagged it. A tag gained by fixing a
+            # typo is worth noting: the rules can only be as good as the text
+            # they read, and a misspelt title fails open.
+            "shoulder": 487,
             "elbow": 371,
             "wrist": 188,
             "lower_back": 312,
