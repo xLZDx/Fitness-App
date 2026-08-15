@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../ai_planner/data/workout_plan.dart';
+import '../../safety/widgets/safety_refusal_card.dart';
 import '../state/plan_preview_provider.dart';
 import '../widgets/inputs.dart';
 
@@ -51,10 +52,28 @@ class StepPreview extends ConsumerWidget {
             key: const Key('onb.preview.unavailable'),
             text: l10n.onbPreviewUnavailable,
           ),
-          data: (p) => _planBody(context, l10n, p),
+          data: (outcome) => _outcomeBody(context, l10n, outcome),
         ),
       ],
     );
+  }
+
+  /// Gate M. The preview is a plan-producing surface like any other, so it
+  /// gets the same floor: if the screening cannot clear the user, the last
+  /// screen of onboarding says so instead of showing them a session.
+  ///
+  /// There is no "answer the screening" button here because this IS the
+  /// questionnaire — the user is standing on the form, and a button that
+  /// scrolls them back to a step they can already reach is noise.
+  Widget _outcomeBody(
+      BuildContext context, AppLocalizations l10n, PlanOutcome outcome) {
+    if (outcome case PlanRefused(:final reasons)) {
+      return SafetyRefusalCard(
+        key: const Key('onb.preview.refused'),
+        reasons: reasons,
+      );
+    }
+    return _planBody(context, l10n, (outcome as PlanReady).plan);
   }
 
   Widget _planBody(

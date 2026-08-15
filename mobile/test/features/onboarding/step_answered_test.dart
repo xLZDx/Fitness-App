@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/features/onboarding/data/step_answered.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
+import 'package:fitness_app/features/safety/data/par_q.dart';
 import 'package:fitness_app/features/programmes/data/programme.dart'
     show ProgrammeGoal;
 
@@ -184,13 +185,43 @@ void main() {
         equipment: const EquipmentAccess(hasGymAccess: true),
         // O5 added a screen, and "fully answered" has to mean all of them.
         schedule: const TrainingSchedule(daysPerWeek: 3),
-        health: const HealthHistory(otherConcerns: 'none'),
+        health: HealthHistory(
+          otherConcerns: 'none',
+          // Gate M added a screen, and "fully answered" has to mean all of
+          // them — including the one whose definition of answered is stricter
+          // than every other step's.
+          screening: {for (final q in ParQQuestion.values) q: false},
+        ),
         motivation: const MotivationPrefs(motivation: 'x'),
         personal: const PersonalInfo(age: 31),
         lifestyle: const Lifestyle(sleepHoursPerNight: 7),
       );
       expect(onboardingResumeIndex(full), kOnboardingOrder.length - 1,
           reason: 'so they land on Done rather than being bounced out');
+    });
+
+    test('a half-finished screening brings the user back to it', () {
+      // The departure from "touched, not complete", asserted where it bites.
+      // Six of seven answered is the state `screen()` blocks on, so resuming
+      // past it would drop the user on a preview that tells them to go and
+      // finish a screen the flow just walked them through.
+      final answered = ParQQuestion.values.toList()..removeLast();
+      final full = empty.copyWith(
+        goals: const FitnessGoals(strength: true),
+        level: const FitnessLevel(frequencyPerWeek: 3),
+        equipment: const EquipmentAccess(hasGymAccess: true),
+        schedule: const TrainingSchedule(daysPerWeek: 3),
+        health: HealthHistory(
+          otherConcerns: 'none',
+          screening: {for (final q in answered) q: false},
+        ),
+        motivation: const MotivationPrefs(motivation: 'x'),
+        personal: const PersonalInfo(age: 31),
+        lifestyle: const Lifestyle(sleepHoursPerNight: 7),
+      );
+
+      expect(kOnboardingOrder[onboardingResumeIndex(full)],
+          OnboardingStep.screening);
     });
 
     test('the index is always renderable', () {

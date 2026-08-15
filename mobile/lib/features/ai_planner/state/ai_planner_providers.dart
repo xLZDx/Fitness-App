@@ -6,22 +6,27 @@ import '../../equipment/state/equipment_providers.dart';
 import '../../personalisation/state/personalisation_providers.dart';
 import '../../profile/state/profile_providers.dart';
 import '../../recovery/state/recovery_providers.dart';
+import '../../safety/state/safety_providers.dart';
 import '../data/plan_builder.dart';
 import '../data/workout_plan.dart';
 
-/// Live generated plan for the signed-in user. Reads:
+/// Live plan outcome for the signed-in user. Reads:
+///   - the pre-exercise screening verdict (whether a plan may be produced)
 ///   - candidate exercise pool from the equipment repository
 ///   - reported injuries from the user's profile
 ///   - weekly per-muscle set deficit (what has been trained least)
 ///   - deload verdict (recovery signals)
 ///
-/// Returns null while any dependency is still loading.
-final generatedPlanProvider = FutureProvider<GeneratedPlan?>((ref) async {
+/// Returns null while any dependency is still loading. Null means LOADING and
+/// nothing else — a refusal comes back as [PlanRefused], which is why Gate M
+/// made the outcome a sealed type instead of leaning on this null.
+final generatedPlanProvider = FutureProvider<PlanOutcome?>((ref) async {
   final user = ref.watch(authUserProvider).valueOrNull;
   if (user == null) return null;
   final profile = await ref.watch(currentProfileProvider.future);
   if (profile == null) return null;
   final deload = ref.watch(deloadVerdictProvider);
+  final safety = await ref.watch(safetyVerdictProvider.future);
   final deficit = await ref.watch(weeklyVolumeDeficitProvider.future);
 
   // Build the candidate pool from the catalog. Limit to body-weight +
@@ -39,5 +44,6 @@ final generatedPlanProvider = FutureProvider<GeneratedPlan?>((ref) async {
     reportedInjuries: profile.health.injuries,
     deficit: deficit,
     deload: deload,
+    safety: safety,
   );
 });

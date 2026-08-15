@@ -1,4 +1,5 @@
 import '../../profile/data/profile_models.dart';
+import '../../safety/data/par_q.dart';
 
 /// The seven questionnaire sections, named rather than numbered.
 ///
@@ -35,6 +36,10 @@ enum OnboardingStep {
   /// screen's question was already this one, asked as free text.
   barriers,
 
+  /// Gate M. The PAR-Q+ pre-exercise screen — the only step whose answers can
+  /// stop the app producing a workout at all.
+  screening,
+
   /// O10. Not a question — one real session built from the answers above.
   preview,
 }
@@ -64,6 +69,12 @@ const List<OnboardingStep> kOnboardingOrder = [
   OnboardingStep.barriers,
   OnboardingStep.personal,
   OnboardingStep.lifestyle,
+  // Immediately before the preview, because the preview is the first screen in
+  // this flow that produces a workout, and this is the gate on producing one.
+  // Placing it first instead would ask the medical questions before the user
+  // knows what the app is — a conversion cost with no safety benefit, since
+  // nothing between here and there generates anything.
+  OnboardingStep.screening,
   // Last, and only last: it previews the answers, so it has nothing to show
   // until they exist.
   OnboardingStep.preview,
@@ -163,6 +174,17 @@ bool isOnboardingStepAnswered(OnboardingStep step, UserProfile p) {
       return s.daysPerWeek != null ||
           s.sessionMinutes != null ||
           s.preferredWeekdays.isNotEmpty;
+    case OnboardingStep.screening:
+      // The one step where this asks "complete", not "touched", and the
+      // departure from the rule above is deliberate.
+      //
+      // Everywhere else a partial answer is a real way to use the screen and
+      // "touched" is what the CTA label needs. Here a partial answer is
+      // exactly the state `screen()` refuses on, so reporting it as answered
+      // would let `onboardingResumeIndex` walk a returning user straight past
+      // the screen that is blocking them, to a preview that tells them to go
+      // and finish it. Six of seven is not answered.
+      return ParQQuestion.values.every(p.health.screening.containsKey);
     case OnboardingStep.preview:
       // Always "answered", because it asks nothing. The flag drives the CTA's
       // label, and offering to "Skip" the last screen would put the word on a

@@ -62,19 +62,29 @@ void main() {
   /// without looking, which is how a real failure gets waved through.
   final total = kOnboardingOrder.length;
 
-  testWidgets('the counter matches the flow, and is not the design\'s 9',
+  testWidgets('the counter is derived from the flow, not typed in',
       (tester) async {
     // The design hard-codes `TOTAL_OB_STEPS = 9` (`App.tsx:1202`) for a flow
-    // this app does not render. A bar that fills to 1/9 over fewer screens
-    // would misreport how much is left, which is the one job a progress bar
-    // has. The second assertion is the one with teeth: the first would pass
-    // even if somebody had copied 9 across AND padded the flow to match.
+    // this app does not render. A bar that fills to 1/9 over a different
+    // number of screens would misreport how much is left, which is the one job
+    // a progress bar has.
+    //
+    // This used to assert that `1/9` appears NOWHERE, on the reasoning that
+    // only a copied constant could produce a 9. Gate M added the screening
+    // screen and the flow reached nine on its own, at which point that
+    // assertion contradicted the one above it. It was a proxy that held only
+    // by arithmetic coincidence, and the coincidence ran out.
+    //
+    // What it was reaching for is asserted directly instead: the denominator
+    // tracks the flow and the numerator is the only part that moves.
     await tester.pumpWidget(_harness(empty));
     await tester.pumpAndSettle();
-
     expect(find.text('1/$total'), findsOneWidget);
-    expect(find.text('1/9'), findsNothing,
-        reason: 'the flow has $total screens, not the prototype\'s 9');
+
+    await tester.tap(find.byKey(const Key('onboarding.cta')));
+    await tester.pumpAndSettle();
+    expect(find.text('2/$total'), findsOneWidget,
+        reason: 'the numerator moves and the denominator does not');
   });
 
   testWidgets('the first step offers no back chevron', (tester) async {

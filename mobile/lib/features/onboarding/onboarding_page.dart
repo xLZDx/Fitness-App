@@ -19,6 +19,7 @@ import 'steps/step_lifestyle.dart';
 import 'steps/step_barriers.dart';
 import 'steps/step_personal.dart';
 import 'steps/step_preview.dart';
+import 'steps/step_screening.dart';
 import 'steps/step_schedule.dart';
 
 class OnboardingPage extends ConsumerStatefulWidget {
@@ -51,6 +52,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         return l10n.onbStepSchedule;
       case OnboardingStep.barriers:
         return l10n.onbStepBarriers;
+      case OnboardingStep.screening:
+        return l10n.safetyScreeningTitle;
       case OnboardingStep.preview:
         return l10n.onbStepPreview;
     }
@@ -72,6 +75,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         return const StepSchedule();
       case OnboardingStep.barriers:
         return const StepBarriers();
+      case OnboardingStep.screening:
+        return const StepScreening();
       case OnboardingStep.preview:
         return const StepPreview();
     }

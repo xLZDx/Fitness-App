@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../helpers/test_app.dart';
 
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/features/safety/data/par_q.dart';
+import 'package:fitness_app/features/safety/state/safety_providers.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
@@ -51,6 +53,13 @@ Widget _buildApp({
   List<Programme>? programmes,
   AuthUser? user,
   List<ExerciseItem>? catalog,
+  /// Gate M. The home Suggestions section refuses when the pre-exercise screen
+  /// cannot clear the user, and an unscreened profile is blocked — so a
+  /// harness that says nothing about screening renders a refusal instead of
+  /// the section under test. Defaulting to `clear` here keeps every existing
+  /// case about what it was about; `an unscreened user gets the refusal, not
+  /// an empty state` covers the other side deliberately.
+  SafetyVerdict? safety,
 }) {
   final router = GoRouter(
     initialLocation: '/home',
@@ -88,6 +97,8 @@ Widget _buildApp({
       // from provider through card to navigation.
       if (catalog != null)
         forYouExercisesProvider.overrideWith((_) async => catalog),
+      safetyVerdictProvider.overrideWith((_) async =>
+          safety ?? screen({for (final q in ParQQuestion.values) q: false})),
     ],
     child: MaterialApp.router(
       theme: AppTheme.light(),
@@ -221,6 +232,28 @@ void main() {
         scrollable: find.byType(Scrollable).first,
       );
       expect(find.byKey(const Key('suggestions-empty')), findsOneWidget);
+    });
+
+    testWidgets('an unscreened user gets the refusal, not an empty state',
+        (tester) async {
+      // The other side of the default above, and the point of Gate M: the
+      // section that would have said "nothing to suggest right now" says the
+      // real reason instead. `homeSuggestionsEmpty` is a true statement about
+      // the catalogue and a false one about why this user has no session.
+      await _setLargeSurface(tester);
+      await tester.pumpWidget(_buildApp(
+        catalog: [_ex('push-up', 'Push-up', const ['chest'])],
+        safety: kUnscreened,
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('home.suggestions.refused')),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.byKey(const Key('home.suggestions.refused')), findsOneWidget);
+      expect(find.byKey(const Key('suggestions-empty')), findsNothing);
     });
 
     testWidgets('the quick-scan card navigates to /scan', (tester) async {

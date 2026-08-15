@@ -6,6 +6,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
+import '../safety/widgets/safety_refusal_card.dart';
+import 'data/workout_plan.dart';
 import 'state/ai_planner_providers.dart';
 import '../equipment/widgets/exercise_thumb.dart';
 
@@ -43,8 +45,8 @@ class AiPlannerPage extends ConsumerWidget {
               tint: theme.colorScheme.error,
               child: Text(AppLocalizations.of(context).aiplannerCouldNotGenerate(e)),
             ),
-            data: (plan) {
-              if (plan == null) {
+            data: (outcome) {
+              if (outcome == null) {
                 return GlassCard(
                   child: Text(
                     AppLocalizations.of(context).aiplannerSignInAndCompleteOnboardingTo,
@@ -52,6 +54,16 @@ class AiPlannerPage extends ConsumerWidget {
                   ),
                 );
               }
+              // The screening floor. Rendered instead of a plan, not above one:
+              // a refusal shown next to a workout is a workout.
+              if (outcome case PlanRefused(:final reasons)) {
+                return SafetyRefusalCard(
+                  reasons: reasons,
+                  onOpenScreening: () =>
+                      GoRouter.of(context).push('/onboarding'),
+                );
+              }
+              final plan = (outcome as PlanReady).plan;
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

@@ -10158,3 +10158,92 @@ rather than the behaviour.
 `AiCoachSource.exercise` dead branch. Queued, none blocking.
 
 Not pushed.
+
+---
+
+## 2026-08-15 — Gate M: the state in which this app declines
+
+**Operator decision 3**, with its cost stated and accepted: a screen that can refuse costs onboarding
+conversion. Before this gate there was no such state anywhere in the product. Every path that could
+produce a session produced one, and `HealthHistory` was full of answers nothing read.
+
+### The instrument, and the two places this departs from it
+
+The seven questions are the PAR-Q+ general health questions (CSEP, `eparmedx.com`, 2024 revision) —
+a published instrument with a documented decision rule, not questions this app invented. Two
+departures, both recorded at the point of departure in `par_q.dart`:
+
+1. PAR-Q+ routes any YES to its follow-up pages. This app does not implement those pages, so it
+   cannot reach the instrument's own clearance for those users. It says so and caps intensity
+   instead of claiming a clearance it did not perform.
+2. `chestPain` blocks outright. PAR-Q+ routes it to the follow-up; this is a PRODUCT decision,
+   because the cost of being wrong is asymmetric and the follow-up pages do not exist here.
+
+`kBlockingQuestions` has two members and a test asserts the count. A screen that blocks on
+everything is one users learn to lie to, and one lie makes every other answer worthless.
+
+### Fail-closed, and why it is the opposite of every other field here
+
+A question with no entry produces `blocked`, not a pass. Every other optional field in this
+questionnaire defaults harmlessly — an unanswered goal is "no preference", an unanswered injury is
+"none". An unanswered "does your chest hurt" is not "no". Treating silence as clearance would make
+the screen decorative, and a decorative safety screen is worse than none because the product then
+truthfully says it screens.
+
+Same rule at the two providers: a signed-out user and a still-loading profile both get `kUnscreened`.
+`_readScreening` drops unknown question names and non-bool values rather than coercing them — the
+tolerant direction everywhere else in that reader is the unsafe direction here.
+
+### Medications are never classified
+
+`par_q.dart` reads no free text. Deciding that "metoprolol" is a beta blocker, that a beta blocker
+caps heart rate, and that the plan should change is clinical reasoning done by string matching: wrong
+in both directions, and silent. Q5 asks the user instead, which is the instrument's own method.
+
+### Refusal is a type, not a null
+
+`buildPlan` returns sealed `PlanOutcome` = `PlanReady | PlanRefused`. A nullable `GeneratedPlan?`
+would not have worked — `generatedPlanProvider` already returns null for "loading", and overloading
+that is how a refusal renders as a spinner. `safety` is a required parameter with no default,
+because either default is a decision that belongs at the call site.
+
+Reachability, not files: the floor is enforced at every surface that produces a session **today** —
+`generatedPlanProvider`, `onboardingPlanPreviewProvider`, and the home Suggestions section. Home is
+gated at the render site rather than inside `buildSuggestions`, because returning an empty list there
+would have rendered `homeSuggestionsEmpty` — "nothing to suggest right now", a true statement about
+the catalogue and a false one about this user.
+
+### A regression the tests caught before it shipped
+
+`intensityCeiling` first returned `1.0` for a clear screen. The planner's own ceiling is 1.10, so a
+clean bill of health silently capped the user BELOW where they were before this gate existed. It is
+now `double?`, null meaning "no opinion". A safety type that cannot express "no opinion" keeps making
+that mistake.
+
+### Verification
+
+Full suite 2484 passed / 0 failed (2451 before Gate M; 33 added). `flutter analyze` clean.
+
+Sixteen mutations. Fifteen caught on the first pass, including the one that matters most — treating
+an unanswered question as a "no" turns 5 red. The survivor: coercing a non-bool stored value to a
+bool changed nothing, because no fixture carried a junk value; a string `"yes"` would have been
+written back as the answer "no". Test added, mutation now caught.
+
+Two tests changed for reasons worth recording rather than editing away:
+
+- `onboarding_shell_test.dart` asserted `1/9` appears NOWHERE, to prove the counter was not the
+  prototype's hard-coded 9. Gate M's screen brought the flow to nine of its own accord, and the
+  assertion contradicted the one above it. It was a proxy true only by arithmetic coincidence;
+  replaced by asserting the denominator tracks the flow while the numerator moves.
+- `OnboardingStep.screening` reports "answered" only when all seven are answered, departing from that
+  file's own "touched, not complete" rule. Six of seven is the state `screen()` blocks on, so the
+  resume point would have walked a returning user past the screen that was blocking them.
+
+### Not in this gate
+
+Programmes, recovery workouts, scheduled sessions and direct catalogue browse are NOT gated. Each
+needs its own refusal surface, and a silently-empty list is the same failure class this gate exists
+to remove. Programmes are Gate P and will carry it; the other three are recorded here rather than
+half-done.
+
+Not pushed.

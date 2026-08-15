@@ -14,6 +14,9 @@ import '../moments/data/moment.dart';
 import '../moments/state/moment_providers.dart';
 import '../moments/widgets/day3_welcome_modal.dart';
 import '../recovery/widgets/deload_banner.dart';
+import '../safety/data/par_q.dart';
+import '../safety/state/safety_providers.dart';
+import '../safety/widgets/safety_refusal_card.dart';
 import '../equipment/data/catalog_labels.dart';
 import '../equipment/state/equipment_providers.dart';
 import '../programmes/data/programme_labels.dart';
@@ -143,6 +146,22 @@ class _HomePageState extends ConsumerState<HomePage> {
           const SizedBox(height: 28),
           _SectionHeader(l10n.homeSectionSuggestions),
           const SizedBox(height: 14),
+          // Gate M's floor on the surface a user actually lands on.
+          //
+          // `buildSuggestions` is a second workout-producing path, and gating
+          // it by returning an empty list would have rendered as
+          // `homeSuggestionsEmpty` — "nothing to suggest right now", which is
+          // a different and untrue reason. The verdict is read here, where the
+          // section is drawn, because that is where the wrong message would
+          // have been shown.
+          if (ref.watch(safetyVerdictProvider).valueOrNull
+              case final v? when v.decision == SafetyDecision.blocked)
+            SafetyRefusalCard(
+              key: const Key('home.suggestions.refused'),
+              reasons: v.reasons,
+              onOpenScreening: () => GoRouter.of(context).push('/onboarding'),
+            )
+          else
           ...ref.watch(suggestionsProvider).when(
                 loading: () => const [_SuggestionsPlaceholder()],
                 error: (e, _) =>

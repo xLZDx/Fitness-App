@@ -6,6 +6,7 @@ import '../../equipment/data/equipment_models.dart';
 import '../../equipment/state/equipment_providers.dart';
 import '../../personalisation/state/personalisation_providers.dart';
 import '../../recovery/state/recovery_providers.dart';
+import '../../safety/state/safety_providers.dart';
 import 'questionnaire_notifier.dart';
 
 /// O10 — the preview at the end of onboarding, built by the REAL generator.
@@ -24,9 +25,13 @@ import 'questionnaire_notifier.dart';
 /// thing O5's screen is actually used for: a 30-minute answer must not preview
 /// an hour.
 final onboardingPlanPreviewProvider =
-    FutureProvider.autoDispose<GeneratedPlan>((ref) async {
+    FutureProvider.autoDispose<PlanOutcome>((ref) async {
   final draft = ref.watch(questionnaireDraftProvider);
   final deload = ref.watch(deloadVerdictProvider);
+  // The DRAFT verdict, not the saved one: at this point in the flow the
+  // answers exist only in the draft, and screening the stored profile would
+  // refuse the preview to a first-run user who has just answered everything.
+  final safety = ref.watch(draftSafetyVerdictProvider);
   // A brand-new user has no training history, so every muscle is at maximum
   // deficit and the ordering carries no information. That is the honest state
   // for a preview built before the first session, and it is why this screen
@@ -48,6 +53,7 @@ final onboardingPlanPreviewProvider =
     reportedInjuries: draft.health.injuries,
     deficit: deficit,
     deload: deload,
+    safety: safety,
     targetMinutes: draft.schedule.sessionMinutes ?? 45,
   );
 });

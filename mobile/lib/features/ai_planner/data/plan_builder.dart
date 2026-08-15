@@ -4,26 +4,43 @@ import '../../equipment/data/exercise_filter.dart';
 import '../../personalisation/data/volume_ledger.dart';
 import '../../profile/data/profile_models.dart';
 import '../../recovery/data/deload_detector.dart';
+import '../../safety/data/par_q.dart';
 import 'workout_plan.dart';
 
 /// Pure plan-builder. Combines:
+///   - the pre-exercise screening verdict (can a plan be produced at all)
 ///   - 34Q intake (reported injuries → contraindication tags)
 ///   - candidate exercise pool (free + premium catalog)
 ///   - weekly per-muscle set deficit (what has been trained least)
 ///   - deload verdict (auto-pulls intensity if signals fire)
 ///   - optional cycle-phase hint (intensity multiplier)
 ///
-/// Returns a single-day [GeneratedPlan] with 4–6 exercises ordered by
-/// priority. No I/O; all inputs are passed in by the caller. The page
-/// or background scheduler resolves the providers and feeds them here.
-GeneratedPlan buildPlan({
+/// Returns [PlanReady] with a single-day plan of 4–6 exercises ordered by
+/// priority, or [PlanRefused]. No I/O; all inputs are passed in by the caller.
+/// The page or background scheduler resolves the providers and feeds them here.
+///
+/// [safety] is required and has no default. A default would be a decision
+/// about what happens to a caller that forgot to screen, and the only two
+/// candidates are "block everyone who has not been wired up yet" (breaks every
+/// existing call site silently) and "let them through" (which is the bug this
+/// gate exists to remove). Making it required moves that decision to each call
+/// site, where the compiler asks about it once.
+PlanOutcome buildPlan({
   required List<ExerciseItem> candidatePool,
   required Iterable<Injury> reportedInjuries,
   required Map<String, double> deficit,
   required DeloadVerdict deload,
+  required SafetyVerdict safety,
   CyclePhase? cyclePhase,
   int targetMinutes = 45,
 }) {
+  // 0. The floor. Before any pool is read, any deficit consulted, any
+  //    exercise scored — because a refusal that depends on the catalogue
+  //    having loaded is a refusal that can be raced.
+  if (!safety.allowsTraining) {
+    return PlanRefused(List.unmodifiable(safety.reasons));
+  }
+
   final injuryList = reportedInjuries.toList();
 
   // 1. Filter for safety. Reuse the existing pure exercise filter so
@@ -79,15 +96,31 @@ GeneratedPlan buildPlan({
   }
 
   // 4. Apply intensity factor — recovery + cycle phase compose
-  //    multiplicatively. Floor at 0.5, ceiling at 1.10.
+  //    multiplicatively. Floor at 0.5, ceiling at 1.10, lowered to
+  //    `safety.intensityCeiling` when the screen could not clear the user.
   var factor = deload.suggestedVolumeFactor;
   if (cyclePhase != null) {
     factor *= hintFor(cyclePhase).intensityFactor;
   }
-  factor = factor.clamp(0.5, 1.10).toDouble();
+  // `?? 1.10` is the planner's own ceiling, unchanged. The screen only ever
+  // LOWERS it — a verdict that raised the ceiling would be a safety type
+  // prescribing more work, which is not a thing this file will let it do.
+  final screened = safety.intensityCeiling;
+  final ceiling = screened != null && screened < 1.10 ? screened : 1.10;
+  factor = factor.clamp(0.5, ceiling).toDouble();
 
   // 5. Compose rationale string for transparency.
   final reasons = <String>[];
+  if (safety.decision == SafetyDecision.restricted) {
+    // First, and unconditionally. A user the screen could not clear must not
+    // have to read past a deload note to find out that the app has not
+    // cleared them — and this line must not be the one that gets dropped
+    // because some other reason fired.
+    reasons.add('Your health screening answers mean this app has not cleared '
+        'you for unrestricted exercise, so intensity is capped at '
+        '${((safety.intensityCeiling ?? 1.0) * 100).round()}%. Talk to a doctor or a '
+        'qualified exercise professional before training harder.');
+  }
   if (deload.shouldDeload) {
     reasons.add('Recovery signals are firing — intensity pulled to '
         '${(factor * 100).round()}%.');
@@ -120,15 +153,17 @@ GeneratedPlan buildPlan({
         : 'Ordered by the muscle groups you have trained least this week.');
   }
 
-  return GeneratedPlan(
-    title: deload.shouldDeload
-        ? 'Deload day'
-        : cyclePhase == CyclePhase.menstrual
-            ? 'Easy session'
-            : 'Adaptive session',
+  return PlanReady(GeneratedPlan(
+    title: safety.decision == SafetyDecision.restricted
+        ? 'Reduced session'
+        : deload.shouldDeload
+            ? 'Deload day'
+            : cyclePhase == CyclePhase.menstrual
+                ? 'Easy session'
+                : 'Adaptive session',
     estimatedMinutes: minutes,
     exercises: List.unmodifiable(picked),
     intensityFactor: factor,
     rationale: reasons.join(' '),
-  );
+  ));
 }

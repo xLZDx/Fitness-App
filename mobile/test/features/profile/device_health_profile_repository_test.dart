@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitness_app/features/profile/data/device_health_profile_repository.dart';
 import 'package:fitness_app/features/profile/data/local_sensitive_store.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
+import 'package:fitness_app/features/safety/data/par_q.dart';
 import 'package:fitness_app/features/profile/data/profile_repository.dart';
 import 'package:fitness_app/features/profile/data/sensitive_profile.dart';
 
@@ -58,6 +59,15 @@ UserProfile _withHealth(String uid) => UserProfile(
         injuries: [Injury(bodyPart: 'knee', type: 'ligament')],
         bloodPressure: BloodPressure.high,
         otherConcerns: 'dizzy on standing',
+        // Gate M. Screening answers are the same category of data as the rest
+        // of this block -- "my doctor said I may only exercise supervised" is
+        // a health disclosure -- so they must ride device-local with it and
+        // not be a new field that quietly restarts the server exposure this
+        // whole class exists to end.
+        screening: {
+          ParQQuestion.chestPain: true,
+          ParQQuestion.medicallySupervisedOnly: false,
+        },
       ),
       lifestyle: const Lifestyle(
         smoking: SmokingHabit.regular,
@@ -81,12 +91,14 @@ void main() {
       expect(sent.health.injuries, isEmpty);
       expect(sent.health.bloodPressure, isNull);
       expect(sent.health.otherConcerns, isNull);
+      expect(sent.health.screening, isEmpty);
       // And the same through the serializer, which is what actually reaches
       // Firestore -- a model field cleared but still serialised would not be.
       final json = sent.toJson()['health'] as Map<String, dynamic>;
       expect(json['medications'], isEmpty);
       expect(json['bloodPressure'], isNull);
       expect(json['otherConcerns'], isNull);
+      expect(json['screening'], isEmpty);
     });
 
     /// `Lifestyle.copyWith` cannot clear a nullable field: `smoking ??

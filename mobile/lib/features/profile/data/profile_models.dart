@@ -8,6 +8,14 @@
 // is no cycle to reason about. Checked before adding, not assumed.
 import '../../programmes/data/programme.dart' show ProgrammeGoal;
 
+// The second import, added in Gate M for `HealthHistory.screening`. Same check
+// as above: `safety/data/par_q.dart` imports nothing at all, so the direction
+// profile -> safety cannot become a cycle. The answers live on the profile
+// rather than in their own store because they are exactly the kind of data
+// `SensitiveProfile` exists to keep off the server, and a second store would
+// have needed the same treatment written twice.
+import '../../safety/data/par_q.dart' show ParQQuestion;
+
 enum Gender { male, female, nonBinary, preferNotToSay }
 
 enum ActivityLevel { sedentary, moderatelyActive, active, veryActive }
@@ -342,6 +350,7 @@ class HealthHistory {
     this.recentSurgeries = const [],
     this.bloodPressure,
     this.otherConcerns,
+    this.screening = const {},
   });
 
   final List<String> conditions;
@@ -352,6 +361,12 @@ class HealthHistory {
   final List<String> recentSurgeries;
   final BloodPressure? bloodPressure;
   final String? otherConcerns;
+
+  /// PAR-Q+ answers, by question. A question with no entry is UNANSWERED, and
+  /// `screen()` treats that as blocking — see `par_q.dart`. Do not "fix" a
+  /// missing key by defaulting it to false anywhere; that is the one change
+  /// that turns the screen back into decoration.
+  final Map<ParQQuestion, bool> screening;
 
   static const empty = HealthHistory();
 
@@ -370,6 +385,9 @@ class HealthHistory {
         'recentSurgeries': recentSurgeries,
         'bloodPressure': bloodPressure?.name,
         'otherConcerns': otherConcerns,
+        'screening': {
+          for (final e in screening.entries) e.key.name: e.value,
+        },
       };
 
   /// Tolerant by design: a document written before a field existed, or by
@@ -388,7 +406,25 @@ class HealthHistory {
         recentSurgeries: List<String>.from(j['recentSurgeries'] ?? const []),
         bloodPressure: _enumByNameOrNull(BloodPressure.values, j['bloodPressure']),
         otherConcerns: j['otherConcerns'] as String?,
+        screening: _readScreening(j['screening']),
       );
+
+  /// Unknown keys and non-bool values are DROPPED, not coerced.
+  ///
+  /// A question this build does not know about cannot be answered by this
+  /// build, and a value that is not a bool is not an answer. Both cases come
+  /// back as "unanswered", which blocks — the tolerant direction everywhere
+  /// else in this reader is the unsafe direction here.
+  static Map<ParQQuestion, bool> _readScreening(Object? raw) {
+    if (raw is! Map) return const {};
+    final out = <ParQQuestion, bool>{};
+    for (final entry in raw.entries) {
+      final q = _enumByNameOrNull(ParQQuestion.values, entry.key);
+      final v = entry.value;
+      if (q != null && v is bool) out[q] = v;
+    }
+    return Map.unmodifiable(out);
+  }
 
   /// True when nothing was ever answered. Used to decide whether a locally
   /// stored block should win over whatever the server still holds.
@@ -400,7 +436,8 @@ class HealthHistory {
       physicalLimitations.isEmpty &&
       recentSurgeries.isEmpty &&
       bloodPressure == null &&
-      (otherConcerns == null || otherConcerns!.isEmpty);
+      (otherConcerns == null || otherConcerns!.isEmpty) &&
+      screening.isEmpty;
 
   HealthHistory copyWith({
     List<String>? conditions,
@@ -411,6 +448,7 @@ class HealthHistory {
     List<String>? recentSurgeries,
     BloodPressure? bloodPressure,
     String? otherConcerns,
+    Map<ParQQuestion, bool>? screening,
   }) =>
       HealthHistory(
         conditions: conditions ?? this.conditions,
@@ -421,6 +459,7 @@ class HealthHistory {
         recentSurgeries: recentSurgeries ?? this.recentSurgeries,
         bloodPressure: bloodPressure ?? this.bloodPressure,
         otherConcerns: otherConcerns ?? this.otherConcerns,
+        screening: screening ?? this.screening,
       );
 }
 
