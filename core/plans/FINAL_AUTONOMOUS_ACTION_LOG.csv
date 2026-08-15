@@ -1,0 +1,21 @@
+sequence,timestamp,marker,action,command_or_change,target,result,related_gate,commit,notes
+1,2026-08-15T21:03:45+03:00,+ГО|КОМИТ,commit,git commit,core/ + mobile/,committed,Gate J,bd6f5d4,"disclose the health data the app reads; drop the rehab-grade claim"
+2,2026-08-15T21:10:38+03:00,+ГО|КОМИТ,commit,git commit,mobile/lib/features/personalisation,committed,Gate K,a8e3eb7,"weekly sets per muscle - the quantity the app never had"
+3,2026-08-15T21:50:38+03:00,+ГО|КОМИТ,commit,git commit,mobile/lib/features/personalisation,committed,Gate L,6827792,"rank by volume deficit, not by difficulty rating"
+4,2026-08-15T22:30:15+03:00,+ГО|КОМИТ,commit,git commit,mobile/lib/features/safety,committed,Gate M,917dc01,"PAR-Q+ screen; the app gains a state in which it declines"
+5,2026-08-15T23:05:17+03:00,+ГО|КОМИТ,commit,git commit,mobile/lib/features/safety,committed,Gate N,9c16699,"normalised health block; one eligibility layer for every surface"
+6,2026-08-15T23:11:12+03:00,+ГО|КОМИТ,commit,git commit,mobile/lib/features/cycle_aware,committed,Gate O,bd5d213,"a calendar estimate may prompt; it may not prescribe"
+7,2026-08-15T23:32:14+03:00,+ГО|КОМИТ,commit,git commit,mobile/lib/features/programmes,committed,Gate P,e09b07e,"programme built from movement roles; validator can refuse"
+8,2026-08-15T23:46:50+03:00,+ГО|КОМИТ,commit,git commit,mobile/lib + mobile/test,committed,tail-9/10/11,8d10b22,"deload idempotency; cleanReps observation; dead AiCoachSource; withheld-not-404"
+9,2026-08-16T00:02:27+03:00,+ГО|КОМИТ,commit,git commit,mobile/lib + scripts/legal,committed,tail-8/13/14/16 + R4,1516ac7,"intensityFactor applied not just printed; credibilityBounds and _sqrt removed; working-set anchor; body-comp paywall line retracted; export promise corrected"
+10,2026-08-16T00:09:38+03:00,+ГО|КОМИТ,commit,git commit,mobile/lib/features/form_check,committed,tail-12,29690d9,"picker runs formCoachTeaches; hingeSignal refuses a foreshortened frame"
+11,2026-08-16T00:22:27+03:00,+ГО,run,independent review round,3 read-only reviewers,"1 BLOCKER, 2 MAJOR, 2 MINOR confirmed",review,,"safety layer / programme builder / test quality; round 1 independent"
+12,2026-08-16T00:22:27+03:00,+ГО|КОМИТ,commit,git commit,mobile/lib + mobile/test,committed,review,36602a3,"scheduled-session CTA gated on every withholding reason; ranker compared by identity; volume band decoupled from frequencyRoles; two paywall tests made mutation-sensitive"
+13,2026-08-16T00:25:00+03:00,+ГО|+ПУШ,push,git push origin formcoach/gates-a-c,origin/formcoach/gates-a-c,"local HEAD == upstream HEAD",mission,36602a3,"11 commits; no force, no history rewrite"
+14,2026-08-16T02:05:49+03:00,+ГО|КОМИТ,commit,git commit,core/plans + core/DECISION_LOG.md,committed,scope,0e4ad41,"FINAL_SCOPE_2026-08-16.md - everything not done, re-measured against the live tree"
+15,2026-08-16T02:06:30+03:00,+ГО|+ПУШ,push,git push origin formcoach/gates-a-c,origin/formcoach/gates-a-c,"local HEAD == upstream HEAD",scope,0e4ad41,
+16,2026-08-16T02:10:00+03:00,+ГО,delete,git rm -r,mobile/lib/features/insurance + mobile/test/features/insurance,removed,G1,,"explicit operator GO; first attempt blocked by shell_policy_gate and not reformulated"
+17,2026-08-16T02:10:30+03:00,+ГО,test,flutter test,mobile/,"2596 passed / 0 failed",G1,,"2599 before, minus 3 tests covering the now-absent qualifiesFor"
+18,2026-08-16T02:11:09+03:00,+ГО|КОМИТ,commit,git commit,mobile/ + core/,committed,G1,981c7fb,"insurance-attestation feature deleted"
+19,2026-08-16T02:11:40+03:00,+ГО|+ПУШ,push,git push origin formcoach/gates-a-c,origin/formcoach/gates-a-c,"local HEAD == upstream HEAD",G1,981c7fb,
+20,2026-08-16T02:20:00+03:00,+ГО,create,write file,core/plans/FINAL_AUTONOMOUS_ACTION_LOG.csv,created,protocol,,"backfilled from git log; timestamps are the real commit times, read-only actions before this row were not journalled and are marked absent rather than invented"

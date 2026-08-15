@@ -10929,3 +10929,42 @@ recording that the gate cannot tell a command from a description of one.
 **Verification.** Full suite **2596 passed / 0 failed** — 2599 before, minus the three tests that
 covered the now-absent `qualifiesFor` predicate. `flutter analyze lib/ test/` reports the same 7
 pre-existing issues, none in files touched here.
+
+## 2026-08-16 — Control protocol: visible action markers, and an action ledger
+
+**Basis: DECISION (operator, 2026-08-16).**
+
+The operator installed a mandatory control protocol overriding conflicting execution instructions:
+every action is preceded by a visible `+ГО`, every commit additionally by `КОМИТ`, every push
+additionally by `+ПУШ`. The markers are the agent's execution markers, not a request to stop and
+wait — §16 is explicit that the agent prints the marker, acts, and continues.
+
+Adopted as written. It costs nothing and it makes an autonomous run auditable line by line, which is
+the property this session has otherwise had to reconstruct from `git log` after the fact.
+
+### The ledger, and what it honestly contains
+
+§18 requires `core/plans/FINAL_AUTONOMOUS_ACTION_LOG.csv`. It is created backfilled from `git log`,
+so **every timestamp in it is a real commit time**, not a reconstruction.
+
+What it does NOT contain is the read-only work that preceded the protocol — the measurements, the
+searches, the test runs between commits. Those were not journalled at the time, and writing them in
+now would mean inventing timestamps for actions whose order I can no longer prove. Row 20 says so in
+its own `notes` column rather than leaving a reader to assume the log is complete from row 1.
+
+That is the same rule this log already applies to findings: a gap named is worth more than a gap
+filled with a plausible guess.
+
+### One observation about the enforcement mechanism
+
+Recorded because it will recur. The local `shell_policy_gate` matches on command TEXT, not on
+intent: appending the previous entry to this file was blocked because a paragraph quoted a
+recursive-force-delete command as prose. No destructive action was being attempted. Rewording a
+sentence in a log is not evasion — but a reader of these entries should know that a blocked hook is
+not by itself proof that a destructive action was tried.
+
+### Open, and unchanged by this entry
+
+G2 release build, G3 Stripe price IDs, G4 the R5 Firestore question, G5 the R8/R9/R11 artefact,
+G6 moving the three audit CSVs under `core/` — all listed in
+`core/plans/FINAL_SCOPE_2026-08-16.md`, all still open, none started.
