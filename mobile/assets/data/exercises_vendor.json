@@ -1780,7 +1780,7 @@
       "girl": "assets/posters/girl/ea_agility_ladder_skipping_1_touch.jpg",
       "men": "assets/posters/men/ea_agility_ladder_skipping_1_touch.jpg"
     },
-    "purpose": "One touch per square at speed is the simplest ladder drill and one of the most effective for building pure foot speed. Everything else on a ladder is a variation on being able to do this cleanly."
+    "purpose": "One touch per square at speed is the simplest ladder drill and a simple, effective way to build pure foot speed. Everything else on a ladder is a variation on being able to do this cleanly."
   },
   {
     "id": "ea_agility_ladder_skipping_2_touches",
@@ -2609,7 +2609,7 @@
     "steps": [
       "Lie down on your hips with your arms resting on the floor by your side and your legs extended forward",
       "Raise your upper back, bring your elbows under the shoulders, and bear weight on your forearms with your palms down",
-      "Alternately raise and lower your legs to your maximum range while keeping them straight"
+      "Alternately raise and lower your legs as high as you can control while keeping them straight and your hips level"
     ],
     "video": {
       "girl": "exercises/girl/Abdominals/Alternate Leg Raise from Reverse Plank Position.mp4",
@@ -4896,9 +4896,9 @@
     ],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "Kneel on the platform pad of an assisted chin-up machine and grasp the handles with a reverse grip (palms facing you) at shoulder-width apart",
+    "summary": "Kneel on the platform pad of an assisted chin-up machine and grasp the handles with an underhand grip (palms facing you), hands close together, just inside shoulder-width apart",
     "steps": [
-      "Kneel on the platform pad of an assisted chin-up machine and grasp the handles with a reverse grip (palms facing you) at shoulder-width apart",
+      "Kneel on the platform pad of an assisted chin-up machine and grasp the handles with an underhand grip (palms facing you), hands close together, just inside shoulder-width apart",
       "Begin the movement by pulling your body upward until your chin is above the bar",
       "Slowly lower your body back to the starting position with control, fully extending your arms",
       "Repeat the movement for the desired number of repetitions, maintaining proper form throughout the exercise"
@@ -6907,7 +6907,7 @@
     "contraindications": [
       "hip"
     ],
-    "purpose": "Trains the inner thigh, which almost nothing else in a normal programme reaches. Weak adductors are a common source of groin strains and of a knee that drifts inward under load."
+    "purpose": "Trains the inner thigh, which most programmes otherwise skip. Weak adductors are a common source of groin strains and of a knee that drifts inward under load."
   },
   {
     "id": "ea_band_horizontal_shrug",
@@ -12410,7 +12410,7 @@
     "steps": [
       "Stand with your feet shoulder-width apart, holding a barbell across your upper back. Grip the bar with your hands shoulder-width apart, and keep your elbows pointing forward",
       "Step forward with your right leg, lowering your body until your right thigh is parallel to the floor and your left knee nearly touches the floor",
-      "Push through your front heel to return to the starting position. Repeat the movement with the same leg"
+      "Push off your front foot and bring your back leg through to step into the next lunge, alternating legs as you travel forward for the desired distance or number of repetitions"
     ],
     "video": {
       "girl": "exercises/girl/Legs/Barbell Lunge.mp4",
@@ -12733,7 +12733,7 @@
     "steps": [
       "Begin in a squatted position with your feet hip-width apart, holding a barbell with an overhand grip (palms facing your body), hands slightly wider than shoulder-width apart. The barbell should be resting on the floor",
       "Explosively extend your hips and knees while pulling the barbell up towards your chest, keeping it close to your body. As the barbell passes your knees, shrug your shoulders and continue to pull the barbell upward",
-      "Quickly rotate your elbows under the bar and catch it in a front rack position with your elbows pointing forward. Stand up straight to complete the lift",
+      "Continue pulling the bar upward with your arms and shrug through to full extension, finishing with the bar at shoulder height without dropping back into a squat to catch it. Stand up straight to complete the lift",
       "Lower the barbell back to the starting position with control. Repeat for the desired number of repetitions"
     ],
     "video": {
@@ -21541,7 +21541,7 @@
     "steps": [
       "Stand with your feet shoulder-width apart and your arms relaxed by your sides",
       "Begin by jogging in place, lifting your heels towards your buttocks with each step",
-      "Alternate lifting your right and left heels in a quick, continuous motion, keeping your knees pointing down. Swing your arms naturally with each step, allowing them to move opposite to your legs for balance",
+      "Alternate lifting your right and left heels in a slow, controlled motion, keeping your knees pointing down. Swing your arms naturally with each step, allowing them to move opposite to your legs for balance",
       "Maintain a steady pace for the desired duration or number of repetitions"
     ],
     "video": {
@@ -21552,7 +21552,7 @@
     "tips": [
       "Keep your upper body upright and avoid leaning forward to maintain proper form",
       "Engage your core to support balance and stability throughout the exercise",
-      "Focus on a quick, light motion with each heel lift to effectively engage your hamstrings"
+      "Focus on a slow, controlled heel lift to keep the hamstrings working through the whole range"
     ],
     "equipmentLabel": "None",
     "poster": {
@@ -25148,7 +25148,7 @@
     "contraindications": [
       "wrist"
     ],
-    "purpose": "Trains the top of the forearm — the side almost nothing else works. Keeping the extensors as strong as the flexors is what protects the outer elbow from the ache that comes from gripping all day, at the gym or at a keyboard."
+    "purpose": "Trains the top of the forearm — a side most grip and pressing exercises leave undertrained. Keeping the extensors as strong as the flexors is what protects the outer elbow from the ache that comes from gripping all day, at the gym or at a keyboard."
   },
   {
     "id": "ea_cable_y_raise",
@@ -28789,7 +28789,7 @@
       "girl": "assets/posters/girl/ea_criss_cross_bow_tie_pose.jpg",
       "men": "assets/posters/men/ea_criss_cross_bow_tie_pose.jpg"
     },
-    "purpose": "Crossing the arms behind the back opens both shoulders in a direction almost nothing else reaches. It targets exactly the tightness that comes from spending the day with the arms in front of you."
+    "purpose": "Crossing the arms behind the back opens both shoulders in a direction most shoulder stretches skip. It targets exactly the tightness that comes from spending the day with the arms in front of you."
   },
   {
     "id": "ea_criss_cross_elbow_to_knee",
@@ -29212,7 +29212,11 @@
       "girl": "assets/posters/girl/ea_crow_pose.jpg",
       "men": "assets/posters/men/ea_crow_pose.jpg"
     },
-    "purpose": "The first arm balance most people learn, and it builds real wrist, shoulder and stomach strength. Almost everyone falls forward the first several times — put a cushion in front of you and expect it."
+    "purpose": "The first arm balance most people learn, and it builds real wrist, shoulder and stomach strength. Almost everyone falls forward the first several times — put a cushion in front of you and expect it.",
+    "contraindications": [
+      "shoulder",
+      "wrist"
+    ]
   },
   {
     "id": "ea_crunch_arms_straight",
@@ -30477,7 +30481,7 @@
       "Exhale as you pull the handle down and across your body, and inhale as you return to the starting position",
       "Use a lighter weight if needed to ensure proper form and gradually increase the resistance as you get stronger"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable Pulley Machine",
     "poster": {
       "men": "assets/posters/men/ea_diagonal_chop_cable.jpg"
     }
@@ -32641,7 +32645,7 @@
     "contraindications": [
       "shoulder"
     ],
-    "purpose": "Lying face down takes the lower back out of it entirely, so the small muscles between and below the shoulder blades have to lift the weight themselves. Raising the arms in a Y is the shape that reaches the lower trapezius, which almost nothing else does."
+    "purpose": "Lying face down takes the lower back out of it entirely, so the small muscles between and below the shoulder blades have to lift the weight themselves. Raising the arms in a Y is the shape that reaches the lower trapezius, which most raises leave undertrained."
   },
   {
     "id": "ea_dumbbell_close_grip_shoulder_press_sit_up",
@@ -40255,7 +40259,7 @@
       "girl": "assets/posters/girl/ea_dumbbell_shoulder_extension.jpg",
       "men": "assets/posters/men/ea_dumbbell_shoulder_extension.jpg"
     },
-    "purpose": "Taking the arms behind the body works the back of the shoulder and the lats through a range that many other shoulder movements do not reach. It also stretches the front of the shoulders as the arms travel back."
+    "purpose": "Taking the arms behind the body works the back of the shoulder and the lats through a range many pressing and pulling movements skip. It also stretches the front of the shoulders as the arms travel back."
   },
   {
     "id": "ea_dumbbell_shrugs",
@@ -45991,7 +45995,7 @@
       "girl": "assets/posters/girl/ea_foam_roller_calves.jpg",
       "men": "assets/posters/men/ea_foam_roller_calves.jpg"
     },
-    "purpose": "Tight calves limit how far the ankle bends, which shows up as heels lifting in a squat and as a shortened stride when running. Rolling them is faster than stretching at restoring that movement."
+    "purpose": "Tight calves limit how far the ankle bends, which shows up as heels lifting in a squat and as a shortened stride when running. Rolling them is a quick way to work on restoring that movement."
   },
   {
     "id": "ea_foam_roller_lateral_quads",
@@ -46107,7 +46111,7 @@
       "girl": "assets/posters/girl/ea_forearms_stretch_on_wall.jpg",
       "men": "assets/posters/men/ea_forearms_stretch_on_wall.jpg"
     },
-    "purpose": "Uses the wall so you can stretch both forearms at once and control the intensity with your own bodyweight. Better than the hand-pull version when the forearms are properly tight."
+    "purpose": "Uses the wall so you can stretch both forearms at once and control the intensity with your own bodyweight. A useful option when the forearms are properly tight and need more load than the hand-pull version gives."
   },
   {
     "id": "ea_forearms_stretch_on_wall_fingers_facing_down",
@@ -46508,7 +46512,7 @@
       "girl": "assets/posters/girl/ea_gate_pose_rounding_spine_looking_up.jpg",
       "men": "assets/posters/men/ea_gate_pose_rounding_spine_looking_up.jpg"
     },
-    "purpose": "A side bend from a kneeling position that opens the ribs and the side of the waist, plus the inner thigh of the extended leg. It reaches the breathing muscles between the ribs more directly than most stretches do."
+    "purpose": "A side bend from a kneeling position that opens the ribs and the side of the waist, plus the inner thigh of the extended leg. It reaches the breathing muscles between the ribs directly."
   },
   {
     "id": "ea_gate_pose_variation_arm_extended_on_side",
@@ -48242,7 +48246,7 @@
       "girl": "assets/posters/girl/ea_hand_stand_hold.jpg",
       "men": "assets/posters/men/ea_hand_stand_hold.jpg"
     },
-    "purpose": "Builds shoulder strength and whole-body control in a way few other holds match, and it improves the sense of where your body is in space. Learn it against a wall first, and never on a hard floor without a plan for coming down."
+    "purpose": "Builds shoulder strength and whole-body control, and improves the sense of where your body is in space. Learn it against a wall first, and never on a hard floor without a plan for coming down."
   },
   {
     "id": "ea_hands_clapped_forearms_stretch",
@@ -52952,7 +52956,7 @@
     "contraindications": [
       "shoulder"
     ],
-    "purpose": "The landmine presses on an arc rather than straight overhead, which most shoulders tolerate far better than a vertical press. Alternating arms means your stomach has to resist being pulled sideways with every repetition."
+    "purpose": "The landmine presses on an arc rather than straight overhead, which many shoulders find more comfortable than a strict vertical press. Alternating arms means your stomach has to resist being pulled sideways with every repetition."
   },
   {
     "id": "ea_landmine_bicep_curl",
@@ -55088,7 +55092,7 @@
       "girl": "assets/posters/girl/ea_low_box_quick_feet.jpg",
       "men": "assets/posters/men/ea_low_box_quick_feet.jpg"
     },
-    "purpose": "Tapping the box as fast as possible trains pure foot speed and the ability to change contact quickly. It is short, simple, and one of the best things to do at the end of a warm-up."
+    "purpose": "Tapping the box as fast as possible trains pure foot speed and the ability to change contact quickly. It is short, simple, and a good way to finish a warm-up."
   },
   {
     "id": "ea_low_cable_overhead_flyes",
@@ -57431,7 +57435,7 @@
       "men": "assets/posters/men/ea_nordic_hamstring_curl_with_partner.jpg"
     },
     "poseTargetId": "curl",
-    "purpose": "One of the most effective exercises for reducing hamstring injuries, which is why it is standard in football and sprint training. It loads the hamstring while it lengthens, which is exactly when tears happen."
+    "purpose": "A hamstring exercise with strong evidence behind it for reducing injury risk, which is why it is standard in football and sprint training. It loads the hamstring while it lengthens, which is exactly when tears happen."
   },
   {
     "id": "ea_normal_push_up",
@@ -59476,7 +59480,7 @@
       "knee"
     ],
     "poseTargetId": "lunge",
-    "purpose": "Trains the sideways step under load, which almost nothing else in a gym does. It stretches the inner thigh of the straight leg while loading the hip of the bent one."
+    "purpose": "Trains the sideways step under load, which most gym exercises skip. It stretches the inner thigh of the straight leg while loading the hip of the bent one."
   },
   {
     "id": "ea_plate_lateral_raise",
@@ -59542,7 +59546,7 @@
     "contraindications": [
       "shoulder"
     ],
-    "purpose": "Walking with a weight locked overhead demands that the shoulders stay stable and the ribs stay down for the whole distance. It exposes a weak brace faster than almost any other exercise."
+    "purpose": "Walking with a weight locked overhead demands that the shoulders stay stable and the ribs stay down for the whole distance. It exposes a weak brace quickly."
   },
   {
     "id": "ea_plate_overhead_press_to_tricep_extension",
@@ -60300,7 +60304,7 @@
       "girl": "assets/posters/girl/ea_plate_thruster.jpg",
       "men": "assets/posters/men/ea_plate_thruster.jpg"
     },
-    "purpose": "A front squat and an overhead press joined into one rep, which is why it raises the heart rate faster than either alone. The legs finish the squat and the arms start the press at the same instant — that overlap is the whole point."
+    "purpose": "A front squat and an overhead press joined into one rep, which is why it raises the heart rate quickly. The legs finish the squat and the arms start the press at the same instant — that overlap is the whole point."
   },
   {
     "id": "ea_plate_wood_chopper",
@@ -61075,7 +61079,7 @@
       "girl": "assets/posters/girl/ea_puppy_pose.jpg",
       "men": "assets/posters/men/ea_puppy_pose.jpg"
     },
-    "purpose": "Stretches the shoulders and the upper back with the hips staying high, so the lower back is not involved. The best shape for opening overhead range if the lower back does not tolerate a deep fold."
+    "purpose": "Stretches the shoulders and the upper back with the hips staying high, so the lower back is not involved. A useful shape for opening overhead range if the lower back does not tolerate a deep fold."
   },
   {
     "id": "ea_push_pull_chair_over_head_pull",
@@ -64006,7 +64010,7 @@
       "girl": "assets/posters/girl/ea_revolved_head_to_knee.jpg",
       "men": "assets/posters/men/ea_revolved_head_to_knee.jpg"
     },
-    "purpose": "Combines a hamstring stretch with a side bend, so the back of the leg and the whole side of the torso lengthen together. It reaches the space between the ribs, which almost nothing else does."
+    "purpose": "Combines a hamstring stretch with a side bend, so the back of the leg and the whole side of the torso lengthen together. It reaches the space between the ribs, which most seated stretches skip."
   },
   {
     "id": "ea_revolved_side_angle_pose_with_prayer_hands",
@@ -66752,7 +66756,7 @@
       "hip",
       "knee"
     ],
-    "purpose": "Loads the front of the thigh through a stretch almost nothing else reaches, by letting the knees travel far forward while the hips stay open. Build up slowly — the knees need time to adapt to this position."
+    "purpose": "Loads the front of the thigh through a stretch most squats skip, by letting the knees travel far forward while the hips stay open. Build up slowly — the knees need time to adapt to this position."
   },
   {
     "id": "ea_situps",
@@ -71742,7 +71746,7 @@
       "girl": "assets/posters/girl/ea_tyre_hammering.jpg",
       "men": "assets/posters/men/ea_tyre_hammering.jpg"
     },
-    "purpose": "Swinging a hammer trains rotational power and grip endurance while raising the heart rate hard. It is one of the few conditioning exercises that improves a genuinely useful skill at the same time."
+    "purpose": "Swinging a hammer trains rotational power and grip endurance while raising the heart rate hard. It is one of the few conditioning exercises that improves a genuinely useful skill at the same time. Wear eye protection, keep the area around the tyre clear of people, and hold the hammer with a firm, controlled grip — the head can rebound unpredictably off the tyre."
   },
   {
     "id": "ea_unilateral_box_jump",
@@ -72748,7 +72752,12 @@
       "girl": "assets/posters/girl/ea_wild_thing_pose.jpg",
       "men": "assets/posters/men/ea_wild_thing_pose.jpg"
     },
-    "purpose": "A large chest and shoulder opener done from a side plank, which also asks the glutes to hold the hips high. It is the most extended front-body position in common practice — go into it warm, never cold."
+    "purpose": "A large chest and shoulder opener done from a side plank, which also asks the glutes to hold the hips high. It is the most extended front-body position in common practice — go into it warm, never cold.",
+    "contraindications": [
+      "lower_back",
+      "shoulder",
+      "wrist"
+    ]
   },
   {
     "id": "ea_wind_wipers",

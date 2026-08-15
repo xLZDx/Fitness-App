@@ -42,7 +42,18 @@ import 'package:fitness_app/features/profile/data/profile_models.dart';
 /// `--region shoulder --write` path. Worth leaving here as the reason the
 /// number moved without a batch: the rules read the vendor's own text, so a
 /// misspelt title fails open and hides nothing from anybody.
-const int kSafetyCoverageFloor = 1525;
+///
+/// 1525 -> 1527 (Gate E, 2026-08-15), and this one IS a rule change. `Crow Pose`
+/// and `Wild Thing Pose` are the only two `advanced` poses in the catalog that
+/// carried no tag in any region: an arm balance holds bodyweight through an
+/// extended wrist and a supporting shoulder, and no rule stood for that
+/// mechanism — `wrist_weight_bearing` covered handstand, plank and bear crawl
+/// but had no word reaching either title, and `shoulder_overhead` is the
+/// pressing mechanism, not this one. Three rules changed: "crow"/"wild thing"
+/// into `wrist_weight_bearing`, a new `shoulder_loaded_arm_balance`, and "wild
+/// thing" into `lumbar_extension` for the backbend. Found by an audit asking
+/// why an advanced pose was screening nobody.
+const int kSafetyCoverageFloor = 1527;
 
 ExerciseItem _ex(String id, {List<String> contraindications = const []}) =>
     ExerciseItem(
@@ -187,11 +198,20 @@ void main() {
       // red until it is.
       const batched = {
         InjuryRegion.knee: 362, // S3b-1
-        InjuryRegion.lowerBack: 312, // S3b-2
-        InjuryRegion.shoulder: 487, // S3b-2, +1 from a title typo fix (2026-08-15)
+        // +1 (Gate E): "wild thing" joins `lumbar_extension` -- the pose is a
+        // backbend entered from a side plank, the same mechanism as cobra.
+        InjuryRegion.lowerBack: 313, // S3b-2
+        // +1 from a title typo fix, then +2 (Gate E) from the new
+        // `shoulder_loaded_arm_balance` rule: Crow Pose and Wild Thing Pose are
+        // `advanced` and were carrying no tags at all, because holding
+        // bodyweight on a supporting shoulder is not the pressing mechanism the
+        // existing rules stand for.
+        InjuryRegion.shoulder: 489, // S3b-2
         InjuryRegion.hip: 404, // S3b-3
         InjuryRegion.ankle: 229, // S3b-3
-        InjuryRegion.wrist: 188, // S3b-3
+        // +2 (Gate E): the same two arm balances, added to
+        // `wrist_weight_bearing` alongside handstand/plank/bear crawl.
+        InjuryRegion.wrist: 190, // S3b-3
         InjuryRegion.elbow: 371, // S3b-3
         InjuryRegion.neck: 117, // S3b-3
         // The ninth and last region to be batched. It had been selectable on

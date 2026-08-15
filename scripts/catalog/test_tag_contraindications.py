@@ -367,10 +367,28 @@ class TestTheShippedCatalog:
             # `--region shoulder --write` tagged it. A tag gained by fixing a
             # typo is worth noting: the rules can only be as good as the text
             # they read, and a misspelt title fails open.
-            "shoulder": 487,
+            # 487 -> 489 (Gate E, 2026-08-15). New `shoulder_loaded_arm_balance`
+            # rule, +2: `Crow Pose`, `Wild Thing Pose`. Both are `advanced` and
+            # both were carrying NO tags in any region -- an arm balance holds
+            # bodyweight on a supporting shoulder, which no existing rule stood
+            # for: `shoulder_overhead` is the pressing mechanism and its words
+            # do not appear in either title. Kept as its own rule rather than
+            # folded into `shoulder_overhead` so a reviewer can drop these two
+            # rows without touching the 487 the pressing rules carry.
+            "shoulder": 489,
             "elbow": 371,
-            "wrist": 188,
-            "lower_back": 312,
+            # 188 -> 190 (Gate E, 2026-08-15). Same two rows, same reason:
+            # "crow" and "wild thing" added to `wrist_weight_bearing`, whose
+            # mechanism (bodyweight through an extended wrist) already covered
+            # handstand, plank and bear crawl and simply had no word that
+            # reached these two titles.
+            "wrist": 190,
+            # 312 -> 313 (Gate E, 2026-08-15). "wild thing" added to
+            # `lumbar_extension`: the pose lifts the hips and opens the front of
+            # the body from a side plank, which is spinal extension under
+            # bodyweight -- the same mechanism as cobra, entered from the side.
+            # Crow is deliberately NOT here: it rounds rather than extends.
+            "lower_back": 313,
             "hip": 404,
             "knee": 362,
             "ankle": 229,

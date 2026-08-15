@@ -209,9 +209,13 @@ RULES: dict[str, list[Rule]] = {
              "jackknife", "roll-up", "roll up"],
         ),
         Rule(
+            # "wild thing" joins the backbends: the pose lifts the hips and
+            # opens the whole front of the body from a side plank, which is
+            # spinal extension under bodyweight -- the same mechanism as cobra,
+            # just entered from the side.
             "lumbar_extension",
             ["hyperextension", "back extension", "superman", "cobra",
-             "bird dog", "good morning"],
+             "bird dog", "good morning", "wild thing"],
         ),
         Rule(
             "lumbar_bent_over",
@@ -245,6 +249,17 @@ RULES: dict[str, list[Rule]] = {
             "shoulder_overhead_pull",
             ["pull-up", "pull up", "chin-up", "chin up", "lat pulldown",
              "pulldown", "pullover"],
+        ),
+        Rule(
+            # Separate from `shoulder_overhead` on purpose: an arm balance
+            # loads the shoulder through a straight or bent supporting arm
+            # while the bodyweight sits on it, which is not the overhead
+            # pressing mechanism the other rule stands for. Naming it its own
+            # mechanism keeps the audit trail reviewable -- someone disagreeing
+            # with these two rows can drop this rule without touching the 480+
+            # rows `shoulder_overhead` and `shoulder_pressing` carry.
+            "shoulder_loaded_arm_balance",
+            ["crow", "wild thing"],
         ),
     ],
     "hip": [
@@ -298,10 +313,15 @@ RULES: dict[str, list[Rule]] = {
     ],
     "wrist": [
         Rule(
+            # "crow" and "wild thing" are the arm balances the vendor ships:
+            # both put full or near-full bodyweight through an extended wrist,
+            # which is the same mechanism as a handstand, and neither title
+            # contains any word this rule already had. Found 2026-08-15 by an
+            # audit asking why two `advanced` poses carried no tags at all.
             "wrist_weight_bearing",
             ["push-up", "push up", "plank", "handstand", "burpee",
              "mountain climber", "bear crawl", "dip", "crab", "downward dog",
-             "table top", "tabletop"],
+             "table top", "tabletop", "crow", "wild thing"],
         ),
         Rule(
             # Bare "grip" is gone. It matched 124 of this rule's 177 rows and

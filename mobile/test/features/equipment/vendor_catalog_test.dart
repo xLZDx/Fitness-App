@@ -288,4 +288,120 @@ void main() {
       }
     });
   });
+
+  group('a title that claims a distinction, and the steps that must carry it',
+      () {
+    // The vendor shipped whole clusters of exercises whose Steps text is
+    // byte-identical to a differently-named sibling. Most are harmless -- a
+    // camera angle, a plural, a synonym. Four were not: the title promised a
+    // grip, a tempo, a travel pattern or a lift that the Steps then described
+    // as something else, so a user following the instructions did a different
+    // exercise from the one they chose.
+    //
+    // Pinned per pair rather than as a blanket "no two rows share Steps",
+    // because sharing Steps is legitimate for the POV variants and a blanket
+    // rule would have to whitelist them all.
+    ExerciseItem byId(String id) => parsed.firstWhere((e) => e.id == id);
+
+    test('a close grip is described as close, not as shoulder-width', () {
+      final close = byId('ea_assisted_close_grip_underhand_chin_up');
+      final normal = byId('ea_assisted_chin_up_normal_width_reverse_grip');
+      expect(close.steps, isNot(equals(normal.steps)),
+          reason: 'the close-grip variant repeated its sibling verbatim');
+      expect(close.steps.first.toLowerCase(), contains('close together'));
+    });
+
+    test('the slow variant is described as slow, not as quick', () {
+      final slow = byId('ea_butt_kicks_slow');
+      expect(slow.steps.join(' ').toLowerCase(), contains('slow'));
+      expect(slow.steps.join(' ').toLowerCase(),
+          isNot(contains('quick, continuous')),
+          reason: 'the Slow variant told the user to move quickly');
+      expect(slow.steps, isNot(equals(byId('ea_butt_kicks').steps)));
+    });
+
+    test('a travelling lunge travels; the on-the-spot one does not', () {
+      final walking = byId('ea_barbell_lunges');
+      final onSpot = byId('ea_barbell_lunges_on_the_spot');
+      expect(walking.steps, isNot(equals(onSpot.steps)));
+      expect(walking.steps.join(' ').toLowerCase(), contains('travel'));
+      expect(onSpot.steps.join(' ').toLowerCase(),
+          contains('return to the starting position'));
+    });
+
+    test('a muscle clean does not describe a power clean catch', () {
+      // Different lifts: a muscle clean pulls through to the shoulder with no
+      // re-bend under the bar; a power clean drops under it into a front rack.
+      // Identical Steps meant one of the two was simply wrong.
+      final muscle = byId('ea_barbell_muscle_clean');
+      final power = byId('ea_barbell_power_clean');
+      expect(muscle.steps, isNot(equals(power.steps)));
+      expect(muscle.steps.join(' ').toLowerCase(),
+          isNot(contains('rotate your elbows under the bar')));
+      expect(power.steps.join(' ').toLowerCase(),
+          contains('rotate your elbows under the bar'));
+    });
+  });
+
+  group('safety wording the audit found missing', () {
+    ExerciseItem byId(String id) => parsed.firstWhere((e) => e.id == id);
+
+    test('an advanced arm balance names every joint it loads', () {
+      // `contraindications` is what `filterContraindicated` reads to keep an
+      // exercise away from an injured user. These two were the only `advanced`
+      // poses in the catalog carrying no tag in any region, so the filter had
+      // nothing to act on for either.
+      //
+      // Asserted as the EXACT set, not `contains('wrist')`: a weaker check
+      // passes with the shoulder and lower-back tags deleted, which is most of
+      // what this fix added. The tags are generated — `scripts/catalog/
+      // tag_contraindications.py`, rules `wrist_weight_bearing`,
+      // `shoulder_loaded_arm_balance` and `lumbar_extension` — so the order
+      // here is the tagger's sorted output, and changing the rules without
+      // regenerating turns this red alongside the Python outcome check.
+      final crow = byId('ea_crow_pose');
+      expect(crow.difficulty, ExerciseDifficulty.advanced);
+      expect(crow.contraindications, ['shoulder', 'wrist']);
+
+      // Wild Thing adds the lower back: it is a backbend, entered from a side
+      // plank. Crow rounds rather than extends, which is why it is not here.
+      final wild = byId('ea_wild_thing_pose');
+      expect(wild.difficulty, ExerciseDifficulty.advanced);
+      expect(wild.contraindications, ['lower_back', 'shoulder', 'wrist']);
+    });
+
+    test('a maximum-range cue is qualified by what the user can control', () {
+      final e = byId('ea_alternate_leg_raise_from_reverse_plank_position');
+      final text = e.steps.join(' ').toLowerCase();
+      expect(text, isNot(contains('to your maximum range')));
+      expect(text, contains('as high as you can control'));
+    });
+
+    test('swinging a hammer requires eye protection, not suggests it', () {
+      // The first version of this fix said "wear eye protection IF AVAILABLE",
+      // which reads as permission to swing a sledgehammer at a tyre without
+      // any — on the same card that warns the head rebounds unpredictably.
+      // Conditional framing is asserted against, not just the presence of the
+      // words, because the weak version contained them too.
+      final text = byId('ea_tyre_hammering').purpose!.toLowerCase();
+      expect(text, contains('eye protection'));
+      expect(text, contains('clear'));
+      for (final hedge in ['if available', 'if possible', 'ideally', 'where possible']) {
+        expect(text, isNot(contains(hedge)),
+            reason: 'eye protection is hedged with "$hedge"');
+      }
+    });
+
+    test('an equipmentId never ships without a label to show for it', () {
+      // `exercise_reference.dart` renders `equipmentLabel ?? "Bodyweight"`,
+      // and `filterByEquipmentAccess` drops a row whose label reads "none"
+      // while its id names a machine. Either way the row is wrong in the UI.
+      // Scoped to the one row this gate fixed; the remaining 77 are tracked
+      // in core/DECISION_LOG.md as a separate, larger data-quality item.
+      final e = byId('ea_diagonal_chop_cable');
+      expect(e.equipmentId, 'cable_machine');
+      expect(e.equipmentLabel, isNotNull);
+      expect(e.equipmentLabel!.toLowerCase(), isNot(startsWith('none')));
+    });
+  });
 }

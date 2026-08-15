@@ -184,6 +184,7 @@ ea_close_grip_push_up,Close Grip Push Up,shoulder,shoulder_pressing,push up,"tri
 ea_cobra_full_push_up,Cobra Full Push Up,shoulder,shoulder_pressing,push up,"chest,shoulders,triceps",Yoga,True
 ea_cobra_push_up,Cobra Push Up,shoulder,shoulder_pressing,push up,"chest,shoulders,triceps",Yoga,True
 ea_commando_pull_up,Commando Pull-up,shoulder,shoulder_overhead_pull,pull up,"back,biceps",Back,True
+ea_crow_pose,Crow Pose,shoulder,shoulder_loaded_arm_balance,crow,,Yoga,False
 ea_crunch_hands_overhead,Crunch (hands Overhead),shoulder,shoulder_overhead,overhead,core,Abdominals,True
 ea_decline_chair_push_up_diamond,Decline Chair Push Up Diamond,shoulder,shoulder_pressing,push up,"chest,triceps",Triceps,True
 ea_decline_diamond_pike_push_up,Decline Diamond Pike Push-up,shoulder,shoulder_overhead,pike,"shoulders,triceps",Triceps,True
@@ -227,7 +228,7 @@ ea_dumbbell_decline_hammer_press,Dumbbell Decline Hammer Press,shoulder,shoulder
 ea_dumbbell_decline_one_arm_hammer_press,Dumbbell Decline One Arm Hammer Press,shoulder,shoulder_pressing,press,chest,Chest,True
 ea_dumbbell_decline_overhead_sit_up,Dumbbell Decline Overhead Sit-up,shoulder,shoulder_overhead,overhead,core,Abdominals,True
 ea_dumbbell_decline_twist_fly,Dumbbell Decline Twist Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
-ea_dumbbell_face_down_lying_shoulder_pres,Dumbbell Face Down Lying Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,False
+ea_dumbbell_face_down_lying_shoulder_pres,Dumbbell Face Down Lying Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
 ea_dumbbell_face_down_lying_shoulder_press,Dumbbell Face Down Lying Shoulder Press,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
 ea_dumbbell_floor_fly,Dumbbell Floor Fly,shoulder,shoulder_abduction,fly,chest,Chest,True
 ea_dumbbell_fly_flat_bench,Dumbbell Fly Flat Bench,shoulder,shoulder_abduction,fly,chest,Chest,True
@@ -486,3 +487,4 @@ ea_upright_row_dumbbell,Upright Row Dumbbell,shoulder,shoulder_abduction,upright
 ea_upright_row_ez_bar,Upright Row Ez Bar,shoulder,shoulder_abduction,upright row,shoulders,Shoulders,True
 ea_weighted_standing_shoulder_press_with_plate,Weighted Standing Shoulder Press with Plate,shoulder,shoulder_overhead,shoulder press,shoulders,Shoulders,True
 ea_wide_push_ups_bodyweight,Wide Push Ups Bodyweight,shoulder,shoulder_pressing,push ups,chest,Chest,True
+ea_wild_thing_pose,Wild Thing Pose,shoulder,shoulder_loaded_arm_balance,wild thing,,Yoga,False

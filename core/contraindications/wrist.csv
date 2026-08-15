@@ -1,189 +1,191 @@
 id,title,region,rule,matched,primaryMuscles,vendorGroup,already
-ea_ab_wheel_plank,Ab Wheel Plank,wrist,wrist_weight_bearing,plank,core,Yoga,False
-ea_alternate_arm_leg_plank,Alternate Arm Leg Plank,wrist,wrist_weight_bearing,plank,"shoulders,glutes",Abdominals,False
-ea_alternate_arm_leg_plank_hold,Alternate Arm Leg Plank Hold,wrist,wrist_weight_bearing,plank,"shoulders,glutes",Abdominals,False
-ea_alternate_arm_leg_plank_rest_pause,Alternate Arm Leg Plank Rest Pause,wrist,wrist_weight_bearing,plank,shoulders,Abdominals,False
-ea_alternate_leg_raise_from_reverse_plank_position,Alternate Leg Raise From Reverse Plank Position,wrist,wrist_weight_bearing,plank,"lower_back,core,quads",Abdominals,False
-ea_alternate_single_leg_raises_plank,Alternate Single Leg Raises Plank,wrist,wrist_weight_bearing,plank,glutes,Legs,False
-ea_alternating_leg_downward_dog,Alternating Leg Downward Dog,wrist,wrist_weight_bearing,downward dog,"hamstrings,glutes,shoulders",Yoga,False
-ea_alternating_plank_lunge,Alternating Plank Lunge,wrist,wrist_weight_bearing,plank,"core,quads",Abdominals,False
-ea_archer_push_up,Archer Push Up,wrist,wrist_weight_bearing,push up,"chest,triceps",Chest,False
-ea_arms_lateral_raise_and_rotation_up,Arms Lateral Raise and Rotation Up,wrist,wrist_forearm_primary,rotation,,Calisthenics-Cardio-Plyo-Functional,False
-ea_assisted_weighted_push_up,Assisted Weighted Push Up,wrist,wrist_weight_bearing,push up,chest,Chest,False
-ea_band_push_up,Band Push-up,wrist,wrist_weight_bearing,push up,chest,Chest,False
-ea_band_wrist_curl_single_arm,Band Wrist Curl Single Arm,wrist,wrist_loaded_grip,wrist curl,,Forearms,False
-ea_barbell_clean_and_jerk,Barbell Clean and Jerk,wrist,wrist_loaded_grip,clean,"quads,glutes,shoulders",Powerlifting,False
-ea_barbell_clean_and_jerk_split_squat,Barbell Clean and Jerk Split Squat,wrist,wrist_loaded_grip,clean,"quads,glutes,shoulders",Powerlifting,False
-ea_barbell_clean_and_press,Barbell Clean and Press,wrist,wrist_loaded_grip,clean,"shoulders,quads,glutes",Powerlifting,False
-ea_barbell_clean_deadlift,Barbell Clean Deadlift,wrist,wrist_loaded_grip,clean,"quads,glutes,hamstrings",Powerlifting,False
-ea_barbell_clean_grip_front_squat,Barbell Clean Grip Front Squat,wrist,wrist_loaded_grip,clean,"quads,glutes",Legs,False
-ea_barbell_clean_pull,Barbell Clean Pull,wrist,wrist_loaded_grip,clean,"quads,glutes,hamstrings",Powerlifting,False
-ea_barbell_front_rack_lunge,Barbell Front Rack Lunge,wrist,wrist_loaded_grip,front rack,"quads,glutes",Legs,False
-ea_barbell_full_clean,Barbell Full Clean,wrist,wrist_loaded_grip,clean,"quads,glutes,hamstrings",Powerlifting,False
-ea_barbell_hang_clean,Barbell Hang Clean,wrist,wrist_loaded_grip,hang,,Powerlifting,False
-ea_barbell_muscle_clean,Barbell Muscle Clean,wrist,wrist_loaded_grip,clean,"quads,glutes,hamstrings,traps,shoulders",Powerlifting,False
-ea_barbell_palm_down_wrist_curl_over_a_bench,Barbell Palm Down Wrist Curl Over a Bench,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,False
-ea_barbell_power_clean,Barbell Power Clean,wrist,wrist_loaded_grip,clean,"quads,glutes,hamstrings,traps,shoulders",Powerlifting,False
-ea_barbell_power_clean_from_blocks,Barbell Power Clean From Blocks,wrist,wrist_loaded_grip,clean,"quads,glutes,hamstrings,traps,shoulders",Powerlifting,False
-ea_barbell_power_snatch,Barbell Power Snatch,wrist,wrist_loaded_grip,snatch,"quads,glutes,hamstrings,shoulders",Powerlifting,False
-ea_barbell_snatch,Barbell Snatch,wrist,wrist_loaded_grip,snatch,"shoulders,quads,glutes",Powerlifting,False
-ea_barbell_snatch_balance,Barbell Snatch Balance,wrist,wrist_loaded_grip,snatch,"shoulders,quads,glutes",Powerlifting,False
-ea_barbell_snatch_deadlift_close_grip,Barbell Snatch Deadlift Close Grip,wrist,wrist_loaded_grip,snatch,"quads,glutes,lower_back",Back,False
-ea_barbell_snatch_deadlift_wide_grip,Barbell Snatch Deadlift Wide Grip,wrist,wrist_loaded_grip,snatch,"quads,glutes,lower_back",Back,False
-ea_barbell_snatch_from_blocks,Barbell Snatch From Blocks,wrist,wrist_loaded_grip,snatch,"shoulders,quads,glutes",Powerlifting,False
-ea_barbell_snatch_pull,Barbell Snatch Pull,wrist,wrist_loaded_grip,snatch,"quads,glutes",Powerlifting,False
-ea_barbell_split_clean,Barbell Split Clean,wrist,wrist_loaded_grip,clean,"shoulders,quads,glutes",Powerlifting,False
-ea_barbell_standing_back_wrist_curl,Barbell Standing Back Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,False
-ea_barbell_wrist_curl_on_knees,Barbell Wrist Curl on Knees,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,False
-ea_barbell_wrist_curl_wide_legs,Barbell Wrist Curl Wide Legs,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,False
-ea_barbell_wrist_extension_on_knees,Barbell Wrist Extension on Knees,wrist,wrist_forearm_primary,extension,,Forearms,False
-ea_bear_crawls,Bear Crawls,wrist,wrist_weight_bearing,bear crawls,,Calisthenics-Cardio-Plyo-Functional,False
-ea_bench_dip_knees_bent,Bench Dip (knees Bent),wrist,wrist_weight_bearing,dip,triceps,Triceps,False
-ea_bench_dip_on_floor,Bench Dip on Floor,wrist,wrist_weight_bearing,dip,triceps,Triceps,False
-ea_bench_reverse_plank_hold,Bench Reverse Plank Hold,wrist,wrist_weight_bearing,plank,"triceps,shoulders",Yoga,False
-ea_bench_triceps_dip_leg_curls,Bench Triceps Dip Leg Curls,wrist,wrist_weight_bearing,dip,triceps,Triceps,False
-ea_bench_triceps_dip_straight_legs,Bench Triceps Dip Straight Legs,wrist,wrist_weight_bearing,dip,triceps,Triceps,False
-ea_body_saw_plank,Body Saw Plank,wrist,wrist_weight_bearing,plank,shoulders,Yoga,False
-ea_bodyweight_kneeling_push_up_row,Bodyweight Kneeling Push-up Row,wrist,wrist_weight_bearing,push up,"chest,triceps,back",Yoga,False
-ea_bridge_mountain_climber_cross_body,Bridge - Mountain Climber (cross Body),wrist,wrist_weight_bearing,mountain climber,core,Abdominals,False
-ea_burpee,Burpee,wrist,wrist_weight_bearing,burpee,"quads,glutes,chest,shoulders",Calisthenics-Cardio-Plyo-Functional,False
-ea_burpee_squat,Burpee Squat,wrist,wrist_weight_bearing,burpee,"quads,glutes",Legs,False
-ea_cable_reverse_curl,Cable Reverse Curl,wrist,wrist_loaded_grip,reverse curl,biceps,Biceps,False
-ea_cable_wrist_curl,Cable Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,False
-ea_cable_wrist_extension,Cable Wrist Extension,wrist,wrist_forearm_primary,extension,,Forearms,False
-ea_chair_triceps_dips,Chair Triceps Dips,wrist,wrist_weight_bearing,dips,triceps,Triceps,False
-ea_chest_dip,Chest Dip,wrist,wrist_weight_bearing,dip,chest,Chest,False
-ea_chest_dip_on_dip_station,Chest Dip (on Dip Station),wrist,wrist_weight_bearing,dip,chest,Chest,False
-ea_chest_dip_machine,Chest Dip Machine,wrist,wrist_weight_bearing,dip,chest,Chest,False
-ea_chest_dip_on_bench,Chest Dip on Bench,wrist,wrist_weight_bearing,dip,chest,Chest,False
-ea_chest_dip_weighted,Chest Dip Weighted,wrist,wrist_weight_bearing,dip,chest,Chest,False
-ea_chest_dip_weighted_slow,Chest Dip Weighted Slow,wrist,wrist_weight_bearing,dip,chest,Chest,False
-ea_chest_dip_with_pause_bodyweight,Chest Dip with Pause Bodyweight,wrist,wrist_weight_bearing,dip,chest,Chest,False
-ea_chest_tap_push_up,Chest Tap Push Up,wrist,wrist_weight_bearing,push up,"chest,shoulders,triceps",Chest,False
-ea_clap_push_ups,Clap Push Ups,wrist,wrist_weight_bearing,push ups,"chest,shoulders,triceps",Chest,False
-ea_clock_push_ups,Clock Push Ups,wrist,wrist_weight_bearing,push ups,"chest,triceps",Chest,False
-ea_close_grip_push_up,Close Grip Push Up,wrist,wrist_weight_bearing,push up,"triceps,chest",Chest,False
-ea_cobra_full_push_up,Cobra Full Push Up,wrist,wrist_weight_bearing,push up,"chest,shoulders,triceps",Yoga,False
-ea_cobra_push_up,Cobra Push Up,wrist,wrist_weight_bearing,push up,"chest,shoulders,triceps",Yoga,False
-ea_copenhagen_plank,Copenhagen Plank,wrist,wrist_weight_bearing,plank,,Abdominals,False
-ea_crab_pose,Crab Pose,wrist,wrist_weight_bearing,crab,"glutes,hamstrings,shoulders",Yoga,False
-ea_crab_twist_toe_touch,Crab Twist Toe Touch,wrist,wrist_weight_bearing,crab,"glutes,hamstrings,shoulders",Abdominals,False
-ea_dead_hang_stretch,Dead Hang Stretch,wrist,wrist_loaded_grip,dead hang,"lower_back,back,shoulders",Stretching - Mobility,False
-ea_decline_chair_push_up_diamond,Decline Chair Push Up Diamond,wrist,wrist_weight_bearing,push up,"chest,triceps",Triceps,False
-ea_decline_diamond_pike_push_up,Decline Diamond Pike Push-up,wrist,wrist_weight_bearing,push up,"shoulders,triceps",Triceps,False
-ea_decline_kneeling_push_up,Decline Kneeling Push Up,wrist,wrist_weight_bearing,push up,"chest,triceps",Chest,False
-ea_decline_kneeling_push_up_on_box,Decline Kneeling Push Up on Box,wrist,wrist_weight_bearing,push up,"chest,triceps",Chest,False
-ea_decline_push_up,Decline Push Up,wrist,wrist_weight_bearing,push up,"chest,triceps",Chest,False
-ea_decline_push_up_against_wall,Decline Push Up Against Wall,wrist,wrist_weight_bearing,push up,"chest,triceps",Chest,False
-ea_deep_push_up,Deep Push-up,wrist,wrist_weight_bearing,push up,"chest,shoulders",Chest,False
-ea_diamond_push_up,Diamond Push Up,wrist,wrist_weight_bearing,push up,"triceps,chest",Triceps,False
-ea_diamond_push_up_on_knees,Diamond Push-up (on Knees),wrist,wrist_weight_bearing,push up,"triceps,chest",Triceps,False
-ea_dip_leg_raise_on_couch,Dip Leg Raise on Couch,wrist,wrist_weight_bearing,dip,triceps,Triceps,False
-ea_dip_on_floor_with_chair,Dip on Floor with Chair,wrist,wrist_weight_bearing,dip,triceps,Triceps,False
-ea_dips_between_chairs,Dips Between Chairs,wrist,wrist_weight_bearing,dips,"chest,triceps",Triceps,False
-ea_downward_dog_sprint,Downward Dog Sprint,wrist,wrist_weight_bearing,downward dog,,Calisthenics-Cardio-Plyo-Functional,False
-ea_downward_dog_toe_to_heel,Downward Dog Toe to Heel,wrist,wrist_weight_bearing,downward dog,,Yoga,False
-ea_downward_dog_with_fingers_facing_feet,Downward Dog with Fingers Facing Feet,wrist,wrist_weight_bearing,downward dog,,Yoga,False
-ea_dumbbell_curl_press_extend,Dumbbell Curl Press Extend,wrist,wrist_forearm_primary,curl,,Calisthenics-Cardio-Plyo-Functional,False
-ea_dumbbell_elbow_side_plank,Dumbbell Elbow Side Plank,wrist,wrist_weight_bearing,plank,,Abdominals,False
-ea_dumbbell_farmer_walks,Dumbbell Farmer Walks,wrist,wrist_loaded_grip,farmer,"forearms,traps,shoulders",Legs,False
-ea_dumbbell_front_rack_lunge,Dumbbell Front Rack Lunge,wrist,wrist_loaded_grip,front rack,"quads,glutes",Legs,False
-ea_dumbbell_hand_side_plank,Dumbbell Hand Side Plank,wrist,wrist_weight_bearing,plank,,Abdominals,False
-ea_dumbbell_hang_power_clean,Dumbbell Hang Power Clean,wrist,wrist_loaded_grip,hang,"shoulders,quads,glutes",Powerlifting,False
-ea_dumbbell_kneeling_hold_to_stand_clean_grip,Dumbbell Kneeling Hold to Stand Clean Grip,wrist,wrist_loaded_grip,clean,"quads,glutes",Legs,False
-ea_dumbbell_lying_pronation_rotation_on_floor,Dumbbell Lying Pronation Rotation on Floor,wrist,wrist_forearm_primary,rotation,forearms,Forearms,False
-ea_dumbbell_one_arm_reverse_wrist_curl,Dumbbell One Arm Reverse Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,False
-ea_dumbbell_one_arm_seated_neutral_wrist_curl,Dumbbell One Arm Seated Neutral Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,False
-ea_dumbbell_one_arm_snatch,Dumbbell One Arm Snatch,wrist,wrist_loaded_grip,snatch,"shoulders,quads,glutes",Powerlifting,False
-ea_dumbbell_one_arm_wrist_curl,Dumbbell One Arm Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,False
-ea_dumbbell_over_bench_reverse_wrist_curl,Dumbbell Over Bench Reverse Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,False
-ea_dumbbell_over_bench_wrist_curl,Dumbbell Over Bench Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,False
-ea_dumbbell_plank_pullthrough,Dumbbell Plank Pullthrough,wrist,wrist_weight_bearing,plank,,Shoulders,False
-ea_dumbbell_reverse_wrist_curl,Dumbbell Reverse Wrist Curl,wrist,wrist_loaded_grip,wrist curl,,Forearms,False
-ea_dumbbell_seated_neutral_wrist_curl,Dumbbell Seated Neutral Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,False
-ea_dumbbell_side_plank_up_down,Dumbbell Side Plank Up Down,wrist,wrist_weight_bearing,plank,,Abdominals,False
-ea_dumbbell_side_plank_with_rear_fly,Dumbbell Side Plank with Rear Fly,wrist,wrist_weight_bearing,plank,"shoulders,traps",Abdominals,False
-ea_dumbbell_standing_reverse_curl,Dumbbell Standing Reverse Curl,wrist,wrist_loaded_grip,reverse curl,biceps,Biceps,False
-ea_dumbbell_standing_wrist_curl,Dumbbell Standing Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,False
-ea_dumbbells_plank_to_alternating_row,Dumbbells Plank to Alternating Row,wrist,wrist_weight_bearing,plank,"lats,core",Back,False
-ea_dumbell_burpee,Dumbell Burpee,wrist,wrist_weight_bearing,burpee,"quads,shoulders",Calisthenics-Cardio-Plyo-Functional,False
-ea_easy_seated_twist_pose,Easy Seated Twist Pose,wrist,wrist_forearm_primary,twist,,Yoga,False
-ea_elbow_extension_and_supination_pronation_forearm_stretch,Elbow Extension and Supination Pronation Forearm Stretch,wrist,wrist_forearm_primary,extension,forearms,Stretching - Mobility,False
-ea_elbow_lift_reverse_push_up,Elbow Lift Reverse Push Up,wrist,wrist_weight_bearing,push up,traps,Back,False
-ea_elbow_push_plank_up,Elbow Push Plank Up,wrist,wrist_weight_bearing,plank,,Abdominals,False
-ea_elbow_extension,Elbow-extension,wrist,wrist_forearm_primary,extension,,Calisthenics-Cardio-Plyo-Functional,False
-ea_elbow_up_and_down_dynamic_plank,Elbow-up and Down Dynamic Plank,wrist,wrist_weight_bearing,plank,,Abdominals,False
-ea_elevated_push_up,Elevated Push Up,wrist,wrist_weight_bearing,push up,chest,Chest,False
-ea_explosive_push_ups,Explosive Push Ups,wrist,wrist_weight_bearing,push ups,"chest,triceps",Chest,False
-ea_extension_and_inclination_neck_stretch,Extension and Inclination Neck Stretch,wrist,wrist_forearm_primary,extension,,Stretching - Mobility,False
-ea_ez_bar_seated_wrist_curl,EZ Bar Seated Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,False
-ea_floor_tricep_dip,Floor Tricep Dip,wrist,wrist_weight_bearing,dip,,Triceps,False
-ea_full_planche_push_up,Full Planche Push Up,wrist,wrist_weight_bearing,push up,"shoulders,chest",Chest,False
-ea_half_burpees,Half Burpees,wrist,wrist_weight_bearing,burpees,"quads,glutes",Calisthenics-Cardio-Plyo-Functional,False
-ea_hammer_curl_resistance_band_simultaneous,Hammer Curl Resistance Band Simultaneous,wrist,wrist_forearm_primary,curl,"biceps,forearms",Biceps,False
-ea_handstand_push_on_chair,Handstand Push on Chair,wrist,wrist_weight_bearing,handstand,"shoulders,triceps",Shoulders,False
-ea_high_plank,High Plank,wrist,wrist_weight_bearing,plank,core,Yoga,False
-ea_incline_diamond_push_up_on_bench,Incline Diamond Push Up on Bench,wrist,wrist_weight_bearing,push up,"triceps,chest",Triceps,False
-ea_incline_push_ups_on_chair,Incline Push Ups on Chair,wrist,wrist_weight_bearing,push ups,triceps,Triceps,False
-ea_incline_push_up_on_box,Incline Push-up (on Box),wrist,wrist_weight_bearing,push up,chest,Chest,False
-ea_kettlebell_single_arm_clean_and_press,Kettlebell Single Arm Clean and Press,wrist,wrist_loaded_grip,clean,"shoulders,quads,glutes",Calisthenics-Cardio-Plyo-Functional,False
-ea_kettlebell_snatch,Kettlebell Snatch,wrist,wrist_loaded_grip,snatch,,Calisthenics-Cardio-Plyo-Functional,False
-ea_kettlebell_wrist_curl,Kettlebell Wrist Curl,wrist,wrist_loaded_grip,wrist curl,,Forearms,False
-ea_kettlebell_wrist_extension,Kettlebell Wrist Extension,wrist,wrist_forearm_primary,extension,,Forearms,False
-ea_kipping_handstand_push_up,Kipping Handstand Push-up,wrist,wrist_weight_bearing,handstand,,Calisthenics-Cardio-Plyo-Functional,False
-ea_kneeling_push_up,Kneeling Push-up,wrist,wrist_weight_bearing,push up,,Chest,False
-ea_landmine_alternating_lunge_and_twist,Landmine Alternating Lunge and Twist,wrist,wrist_forearm_primary,twist,,Calisthenics-Cardio-Plyo-Functional,False
-ea_long_lever_plank,Long Lever Plank,wrist,wrist_weight_bearing,plank,,Abdominals,False
-ea_lying_neck_curls,Lying Neck Curls,wrist,wrist_forearm_primary,curls,,Calisthenics-Cardio-Plyo-Functional,False
-ea_lying_neck_extension,Lying Neck Extension,wrist,wrist_forearm_primary,extension,,Calisthenics-Cardio-Plyo-Functional,False
-ea_med_ball_slam_burpees,Med Ball Slam Burpees,wrist,wrist_weight_bearing,burpees,,Calisthenics-Cardio-Plyo-Functional,False
-ea_modified_hindu_push_up,Modified Hindu Push Up,wrist,wrist_weight_bearing,push up,"chest,shoulders,triceps",Yoga,False
-ea_mountain_climber_jumps,Mountain Climber Jumps,wrist,wrist_weight_bearing,mountain climber,,Calisthenics-Cardio-Plyo-Functional,False
-ea_mountain_climbers,Mountain Climbers,wrist,wrist_weight_bearing,mountain climbers,core,Abdominals,False
-ea_normal_push_up,Normal Push-up,wrist,wrist_weight_bearing,push up,chest,Chest,False
-ea_one_arm_push_up,One Arm Push Up,wrist,wrist_weight_bearing,push up,,Chest,False
-ea_pike_push_up,Pike Push Up,wrist,wrist_weight_bearing,push up,shoulders,Triceps,False
-ea_plank_cross_knee_drive,Plank Cross Knee Drive,wrist,wrist_weight_bearing,plank,core,Abdominals,False
-ea_plank_individual_arm_reach,Plank Individual Arm Reach,wrist,wrist_weight_bearing,plank,,Calisthenics-Cardio-Plyo-Functional,False
-ea_plank_iytw,Plank IYTW,wrist,wrist_weight_bearing,plank,,Calisthenics-Cardio-Plyo-Functional,False
-ea_plank_jack,Plank Jack,wrist,wrist_weight_bearing,plank,core,Abdominals,False
-ea_plank_knee_tucks,Plank Knee Tucks,wrist,wrist_weight_bearing,plank,core,Abdominals,False
-ea_plank_lunges,Plank Lunges,wrist,wrist_weight_bearing,plank,"core,lower_back,quads",Calisthenics-Cardio-Plyo-Functional,False
-ea_plank_on_elbows,Plank on Elbows,wrist,wrist_weight_bearing,plank,core,Abdominals,False
-ea_plank_pushup,Plank Pushup,wrist,wrist_weight_bearing,plank,,Calisthenics-Cardio-Plyo-Functional,False
-ea_plank_reach_through,Plank Reach Through,wrist,wrist_weight_bearing,plank,core,Abdominals,False
-ea_plank_reverse_fly_with_bottle,Plank Reverse Fly with Bottle,wrist,wrist_weight_bearing,plank,shoulders,Shoulders,False
-ea_plank_shoulder_taps,Plank Shoulder Taps,wrist,wrist_weight_bearing,plank,core,Calisthenics-Cardio-Plyo-Functional,False
-ea_plate_clean,Plate Clean,wrist,wrist_loaded_grip,clean,,Powerlifting,False
-ea_plate_clean_and_press,Plate Clean and Press,wrist,wrist_loaded_grip,clean,,Powerlifting,False
-ea_push_up_and_rotation,Push Up and Rotation,wrist,wrist_weight_bearing,push up,"chest,shoulders",Chest,False
-ea_push_up_plus,Push Up Plus,wrist,wrist_weight_bearing,push up,"chest,shoulders",Chest,False
-ea_push_ups_bodyweight,Push Ups Bodyweight,wrist,wrist_weight_bearing,push ups,chest,Chest,False
-ea_resistance_band_assisted_front_rack_stretch,Resistance Band Assisted Front Rack Stretch,wrist,wrist_loaded_grip,front rack,shoulders,Stretching - Mobility,False
-ea_resistance_band_assisted_push_up,Resistance Band Assisted Push-up,wrist,wrist_weight_bearing,push up,chest,Chest,False
-ea_resistance_band_side_plank_glute_raise,Resistance Band Side Plank Glute Raise,wrist,wrist_weight_bearing,plank,glutes,Legs,False
-ea_reverse_curl_barbell,Reverse Curl Barbell,wrist,wrist_loaded_grip,reverse curl,,Biceps,False
-ea_reverse_plank,Reverse Plank,wrist,wrist_weight_bearing,plank,,Abdominals,False
-ea_ring_dips,Ring Dips,wrist,wrist_weight_bearing,dips,,Calisthenics-Cardio-Plyo-Functional,False
-ea_sandbag_cleans,Sandbag Cleans,wrist,wrist_loaded_grip,cleans,,Powerlifting,False
-ea_scapula_push_up,Scapula Push Up,wrist,wrist_weight_bearing,push up,traps,Yoga,False
-ea_scorpion_twist_pose,Scorpion Twist Pose,wrist,wrist_forearm_primary,twist,,Yoga,False
-ea_seated_figure_four_with_twist_glute_stretch,Seated Figure Four with Twist Glute Stretch,wrist,wrist_forearm_primary,twist,,Stretching - Mobility,False
-ea_side_plank,Side Plank,wrist,wrist_weight_bearing,plank,core,Abdominals,False
-ea_side_plank_oblique_crunch,Side Plank Oblique Crunch,wrist,wrist_weight_bearing,plank,core,Abdominals,False
-ea_side_plank_with_hip_lift,Side Plank with Hip Lift,wrist,wrist_weight_bearing,plank,core,Yoga,False
-ea_side_to_side_push_up,Side to Side Push Up,wrist,wrist_weight_bearing,push up,"chest,triceps",Chest,False
-ea_spider_plank,Spider Plank,wrist,wrist_weight_bearing,plank,core,Abdominals,False
-ea_supine_push_up,Supine Push Up,wrist,wrist_weight_bearing,push up,"traps,shoulders",Back,False
-ea_suspension_trainer_with_grips_decline_push_up,Suspension Trainer with Grips Decline Push-up,wrist,wrist_weight_bearing,push up,chest,Chest,False
-ea_suspension_trainer_with_grips_mountain_climber,Suspension Trainer with Grips Mountain Climber,wrist,wrist_weight_bearing,mountain climber,"core,lower_back",Calisthenics-Cardio-Plyo-Functional,False
-ea_suspension_trainer_with_grips_push_up_to_side_plank,Suspension Trainer with Grips Push-up to Side Plank,wrist,wrist_weight_bearing,push up,"chest,shoulders,core",Chest,False
-ea_suspension_trainer_with_grips_reverse_push_up,Suspension Trainer with Grips Reverse Push-up,wrist,wrist_weight_bearing,push up,"chest,triceps",Chest,False
-ea_triceps_dip_machine,Triceps Dip Machine,wrist,wrist_weight_bearing,dip,triceps,Triceps,False
-ea_unilateral_front_plank,Unilateral Front Plank,wrist,wrist_weight_bearing,plank,,Calisthenics-Cardio-Plyo-Functional,False
-ea_unilateral_plank,Unilateral Plank,wrist,wrist_weight_bearing,plank,,Calisthenics-Cardio-Plyo-Functional,False
-ea_wide_push_ups_bodyweight,Wide Push Ups Bodyweight,wrist,wrist_weight_bearing,push ups,chest,Chest,False
-ea_wrist_curl_barbell,Wrist Curl Barbell,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,False
-ea_wrist_curl_dumbbell,Wrist Curl Dumbbell,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,False
-ea_wrist_extension_barbell,Wrist Extension Barbell,wrist,wrist_forearm_primary,extension,,Forearms,False
-ea_wrist_extension_dumbbell,Wrist Extension Dumbbell,wrist,wrist_forearm_primary,extension,,Forearms,False
+ea_ab_wheel_plank,Ab Wheel Plank,wrist,wrist_weight_bearing,plank,core,Yoga,True
+ea_alternate_arm_leg_plank,Alternate Arm Leg Plank,wrist,wrist_weight_bearing,plank,"shoulders,glutes",Abdominals,True
+ea_alternate_arm_leg_plank_hold,Alternate Arm Leg Plank Hold,wrist,wrist_weight_bearing,plank,"shoulders,glutes",Abdominals,True
+ea_alternate_arm_leg_plank_rest_pause,Alternate Arm Leg Plank Rest Pause,wrist,wrist_weight_bearing,plank,shoulders,Abdominals,True
+ea_alternate_leg_raise_from_reverse_plank_position,Alternate Leg Raise From Reverse Plank Position,wrist,wrist_weight_bearing,plank,"lower_back,core,quads",Abdominals,True
+ea_alternate_single_leg_raises_plank,Alternate Single Leg Raises Plank,wrist,wrist_weight_bearing,plank,glutes,Legs,True
+ea_alternating_leg_downward_dog,Alternating Leg Downward Dog,wrist,wrist_weight_bearing,downward dog,"hamstrings,glutes,shoulders",Yoga,True
+ea_alternating_plank_lunge,Alternating Plank Lunge,wrist,wrist_weight_bearing,plank,"core,quads",Abdominals,True
+ea_archer_push_up,Archer Push Up,wrist,wrist_weight_bearing,push up,"chest,triceps",Chest,True
+ea_arms_lateral_raise_and_rotation_up,Arms Lateral Raise and Rotation Up,wrist,wrist_forearm_primary,rotation,,Calisthenics-Cardio-Plyo-Functional,True
+ea_assisted_weighted_push_up,Assisted Weighted Push Up,wrist,wrist_weight_bearing,push up,chest,Chest,True
+ea_band_push_up,Band Push-up,wrist,wrist_weight_bearing,push up,chest,Chest,True
+ea_band_wrist_curl_single_arm,Band Wrist Curl Single Arm,wrist,wrist_loaded_grip,wrist curl,,Forearms,True
+ea_barbell_clean_and_jerk,Barbell Clean and Jerk,wrist,wrist_loaded_grip,clean,"quads,glutes,shoulders",Powerlifting,True
+ea_barbell_clean_and_jerk_split_squat,Barbell Clean and Jerk Split Squat,wrist,wrist_loaded_grip,clean,"quads,glutes,shoulders",Powerlifting,True
+ea_barbell_clean_and_press,Barbell Clean and Press,wrist,wrist_loaded_grip,clean,"shoulders,quads,glutes",Powerlifting,True
+ea_barbell_clean_deadlift,Barbell Clean Deadlift,wrist,wrist_loaded_grip,clean,"quads,glutes,hamstrings",Powerlifting,True
+ea_barbell_clean_grip_front_squat,Barbell Clean Grip Front Squat,wrist,wrist_loaded_grip,clean,"quads,glutes",Legs,True
+ea_barbell_clean_pull,Barbell Clean Pull,wrist,wrist_loaded_grip,clean,"quads,glutes,hamstrings",Powerlifting,True
+ea_barbell_front_rack_lunge,Barbell Front Rack Lunge,wrist,wrist_loaded_grip,front rack,"quads,glutes",Legs,True
+ea_barbell_full_clean,Barbell Full Clean,wrist,wrist_loaded_grip,clean,"quads,glutes,hamstrings",Powerlifting,True
+ea_barbell_hang_clean,Barbell Hang Clean,wrist,wrist_loaded_grip,hang,,Powerlifting,True
+ea_barbell_muscle_clean,Barbell Muscle Clean,wrist,wrist_loaded_grip,clean,"quads,glutes,hamstrings,traps,shoulders",Powerlifting,True
+ea_barbell_palm_down_wrist_curl_over_a_bench,Barbell Palm Down Wrist Curl Over a Bench,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,True
+ea_barbell_power_clean,Barbell Power Clean,wrist,wrist_loaded_grip,clean,"quads,glutes,hamstrings,traps,shoulders",Powerlifting,True
+ea_barbell_power_clean_from_blocks,Barbell Power Clean From Blocks,wrist,wrist_loaded_grip,clean,"quads,glutes,hamstrings,traps,shoulders",Powerlifting,True
+ea_barbell_power_snatch,Barbell Power Snatch,wrist,wrist_loaded_grip,snatch,"quads,glutes,hamstrings,shoulders",Powerlifting,True
+ea_barbell_snatch,Barbell Snatch,wrist,wrist_loaded_grip,snatch,"shoulders,quads,glutes",Powerlifting,True
+ea_barbell_snatch_balance,Barbell Snatch Balance,wrist,wrist_loaded_grip,snatch,"shoulders,quads,glutes",Powerlifting,True
+ea_barbell_snatch_deadlift_close_grip,Barbell Snatch Deadlift Close Grip,wrist,wrist_loaded_grip,snatch,"quads,glutes,lower_back",Back,True
+ea_barbell_snatch_deadlift_wide_grip,Barbell Snatch Deadlift Wide Grip,wrist,wrist_loaded_grip,snatch,"quads,glutes,lower_back",Back,True
+ea_barbell_snatch_from_blocks,Barbell Snatch From Blocks,wrist,wrist_loaded_grip,snatch,"shoulders,quads,glutes",Powerlifting,True
+ea_barbell_snatch_pull,Barbell Snatch Pull,wrist,wrist_loaded_grip,snatch,"quads,glutes",Powerlifting,True
+ea_barbell_split_clean,Barbell Split Clean,wrist,wrist_loaded_grip,clean,"shoulders,quads,glutes",Powerlifting,True
+ea_barbell_standing_back_wrist_curl,Barbell Standing Back Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,True
+ea_barbell_wrist_curl_on_knees,Barbell Wrist Curl on Knees,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,True
+ea_barbell_wrist_curl_wide_legs,Barbell Wrist Curl Wide Legs,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,True
+ea_barbell_wrist_extension_on_knees,Barbell Wrist Extension on Knees,wrist,wrist_forearm_primary,extension,,Forearms,True
+ea_bear_crawls,Bear Crawls,wrist,wrist_weight_bearing,bear crawls,,Calisthenics-Cardio-Plyo-Functional,True
+ea_bench_dip_knees_bent,Bench Dip (knees Bent),wrist,wrist_weight_bearing,dip,triceps,Triceps,True
+ea_bench_dip_on_floor,Bench Dip on Floor,wrist,wrist_weight_bearing,dip,triceps,Triceps,True
+ea_bench_reverse_plank_hold,Bench Reverse Plank Hold,wrist,wrist_weight_bearing,plank,"triceps,shoulders",Yoga,True
+ea_bench_triceps_dip_leg_curls,Bench Triceps Dip Leg Curls,wrist,wrist_weight_bearing,dip,triceps,Triceps,True
+ea_bench_triceps_dip_straight_legs,Bench Triceps Dip Straight Legs,wrist,wrist_weight_bearing,dip,triceps,Triceps,True
+ea_body_saw_plank,Body Saw Plank,wrist,wrist_weight_bearing,plank,shoulders,Yoga,True
+ea_bodyweight_kneeling_push_up_row,Bodyweight Kneeling Push-up Row,wrist,wrist_weight_bearing,push up,"chest,triceps,back",Yoga,True
+ea_bridge_mountain_climber_cross_body,Bridge - Mountain Climber (cross Body),wrist,wrist_weight_bearing,mountain climber,core,Abdominals,True
+ea_burpee,Burpee,wrist,wrist_weight_bearing,burpee,"quads,glutes,chest,shoulders",Calisthenics-Cardio-Plyo-Functional,True
+ea_burpee_squat,Burpee Squat,wrist,wrist_weight_bearing,burpee,"quads,glutes",Legs,True
+ea_cable_reverse_curl,Cable Reverse Curl,wrist,wrist_loaded_grip,reverse curl,biceps,Biceps,True
+ea_cable_wrist_curl,Cable Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,True
+ea_cable_wrist_extension,Cable Wrist Extension,wrist,wrist_forearm_primary,extension,,Forearms,True
+ea_chair_triceps_dips,Chair Triceps Dips,wrist,wrist_weight_bearing,dips,triceps,Triceps,True
+ea_chest_dip,Chest Dip,wrist,wrist_weight_bearing,dip,chest,Chest,True
+ea_chest_dip_on_dip_station,Chest Dip (on Dip Station),wrist,wrist_weight_bearing,dip,chest,Chest,True
+ea_chest_dip_machine,Chest Dip Machine,wrist,wrist_weight_bearing,dip,chest,Chest,True
+ea_chest_dip_on_bench,Chest Dip on Bench,wrist,wrist_weight_bearing,dip,chest,Chest,True
+ea_chest_dip_weighted,Chest Dip Weighted,wrist,wrist_weight_bearing,dip,chest,Chest,True
+ea_chest_dip_weighted_slow,Chest Dip Weighted Slow,wrist,wrist_weight_bearing,dip,chest,Chest,True
+ea_chest_dip_with_pause_bodyweight,Chest Dip with Pause Bodyweight,wrist,wrist_weight_bearing,dip,chest,Chest,True
+ea_chest_tap_push_up,Chest Tap Push Up,wrist,wrist_weight_bearing,push up,"chest,shoulders,triceps",Chest,True
+ea_clap_push_ups,Clap Push Ups,wrist,wrist_weight_bearing,push ups,"chest,shoulders,triceps",Chest,True
+ea_clock_push_ups,Clock Push Ups,wrist,wrist_weight_bearing,push ups,"chest,triceps",Chest,True
+ea_close_grip_push_up,Close Grip Push Up,wrist,wrist_weight_bearing,push up,"triceps,chest",Chest,True
+ea_cobra_full_push_up,Cobra Full Push Up,wrist,wrist_weight_bearing,push up,"chest,shoulders,triceps",Yoga,True
+ea_cobra_push_up,Cobra Push Up,wrist,wrist_weight_bearing,push up,"chest,shoulders,triceps",Yoga,True
+ea_copenhagen_plank,Copenhagen Plank,wrist,wrist_weight_bearing,plank,,Abdominals,True
+ea_crab_pose,Crab Pose,wrist,wrist_weight_bearing,crab,"glutes,hamstrings,shoulders",Yoga,True
+ea_crab_twist_toe_touch,Crab Twist Toe Touch,wrist,wrist_weight_bearing,crab,"glutes,hamstrings,shoulders",Abdominals,True
+ea_crow_pose,Crow Pose,wrist,wrist_weight_bearing,crow,,Yoga,False
+ea_dead_hang_stretch,Dead Hang Stretch,wrist,wrist_loaded_grip,dead hang,"lower_back,back,shoulders",Stretching - Mobility,True
+ea_decline_chair_push_up_diamond,Decline Chair Push Up Diamond,wrist,wrist_weight_bearing,push up,"chest,triceps",Triceps,True
+ea_decline_diamond_pike_push_up,Decline Diamond Pike Push-up,wrist,wrist_weight_bearing,push up,"shoulders,triceps",Triceps,True
+ea_decline_kneeling_push_up,Decline Kneeling Push Up,wrist,wrist_weight_bearing,push up,"chest,triceps",Chest,True
+ea_decline_kneeling_push_up_on_box,Decline Kneeling Push Up on Box,wrist,wrist_weight_bearing,push up,"chest,triceps",Chest,True
+ea_decline_push_up,Decline Push Up,wrist,wrist_weight_bearing,push up,"chest,triceps",Chest,True
+ea_decline_push_up_against_wall,Decline Push Up Against Wall,wrist,wrist_weight_bearing,push up,"chest,triceps",Chest,True
+ea_deep_push_up,Deep Push-up,wrist,wrist_weight_bearing,push up,"chest,shoulders",Chest,True
+ea_diamond_push_up,Diamond Push Up,wrist,wrist_weight_bearing,push up,"triceps,chest",Triceps,True
+ea_diamond_push_up_on_knees,Diamond Push-up (on Knees),wrist,wrist_weight_bearing,push up,"triceps,chest",Triceps,True
+ea_dip_leg_raise_on_couch,Dip Leg Raise on Couch,wrist,wrist_weight_bearing,dip,triceps,Triceps,True
+ea_dip_on_floor_with_chair,Dip on Floor with Chair,wrist,wrist_weight_bearing,dip,triceps,Triceps,True
+ea_dips_between_chairs,Dips Between Chairs,wrist,wrist_weight_bearing,dips,"chest,triceps",Triceps,True
+ea_downward_dog_sprint,Downward Dog Sprint,wrist,wrist_weight_bearing,downward dog,,Calisthenics-Cardio-Plyo-Functional,True
+ea_downward_dog_toe_to_heel,Downward Dog Toe to Heel,wrist,wrist_weight_bearing,downward dog,,Yoga,True
+ea_downward_dog_with_fingers_facing_feet,Downward Dog with Fingers Facing Feet,wrist,wrist_weight_bearing,downward dog,,Yoga,True
+ea_dumbbell_curl_press_extend,Dumbbell Curl Press Extend,wrist,wrist_forearm_primary,curl,,Calisthenics-Cardio-Plyo-Functional,True
+ea_dumbbell_elbow_side_plank,Dumbbell Elbow Side Plank,wrist,wrist_weight_bearing,plank,,Abdominals,True
+ea_dumbbell_farmer_walks,Dumbbell Farmer Walks,wrist,wrist_loaded_grip,farmer,"forearms,traps,shoulders",Legs,True
+ea_dumbbell_front_rack_lunge,Dumbbell Front Rack Lunge,wrist,wrist_loaded_grip,front rack,"quads,glutes",Legs,True
+ea_dumbbell_hand_side_plank,Dumbbell Hand Side Plank,wrist,wrist_weight_bearing,plank,,Abdominals,True
+ea_dumbbell_hang_power_clean,Dumbbell Hang Power Clean,wrist,wrist_loaded_grip,hang,"shoulders,quads,glutes",Powerlifting,True
+ea_dumbbell_kneeling_hold_to_stand_clean_grip,Dumbbell Kneeling Hold to Stand Clean Grip,wrist,wrist_loaded_grip,clean,"quads,glutes",Legs,True
+ea_dumbbell_lying_pronation_rotation_on_floor,Dumbbell Lying Pronation Rotation on Floor,wrist,wrist_forearm_primary,rotation,forearms,Forearms,True
+ea_dumbbell_one_arm_reverse_wrist_curl,Dumbbell One Arm Reverse Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,True
+ea_dumbbell_one_arm_seated_neutral_wrist_curl,Dumbbell One Arm Seated Neutral Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,True
+ea_dumbbell_one_arm_snatch,Dumbbell One Arm Snatch,wrist,wrist_loaded_grip,snatch,"shoulders,quads,glutes",Powerlifting,True
+ea_dumbbell_one_arm_wrist_curl,Dumbbell One Arm Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,True
+ea_dumbbell_over_bench_reverse_wrist_curl,Dumbbell Over Bench Reverse Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,True
+ea_dumbbell_over_bench_wrist_curl,Dumbbell Over Bench Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,True
+ea_dumbbell_plank_pullthrough,Dumbbell Plank Pullthrough,wrist,wrist_weight_bearing,plank,,Shoulders,True
+ea_dumbbell_reverse_wrist_curl,Dumbbell Reverse Wrist Curl,wrist,wrist_loaded_grip,wrist curl,,Forearms,True
+ea_dumbbell_seated_neutral_wrist_curl,Dumbbell Seated Neutral Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,True
+ea_dumbbell_side_plank_up_down,Dumbbell Side Plank Up Down,wrist,wrist_weight_bearing,plank,,Abdominals,True
+ea_dumbbell_side_plank_with_rear_fly,Dumbbell Side Plank with Rear Fly,wrist,wrist_weight_bearing,plank,"shoulders,traps",Abdominals,True
+ea_dumbbell_standing_reverse_curl,Dumbbell Standing Reverse Curl,wrist,wrist_loaded_grip,reverse curl,biceps,Biceps,True
+ea_dumbbell_standing_wrist_curl,Dumbbell Standing Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,True
+ea_dumbbells_plank_to_alternating_row,Dumbbells Plank to Alternating Row,wrist,wrist_weight_bearing,plank,"lats,core",Back,True
+ea_dumbell_burpee,Dumbell Burpee,wrist,wrist_weight_bearing,burpee,"quads,shoulders",Calisthenics-Cardio-Plyo-Functional,True
+ea_easy_seated_twist_pose,Easy Seated Twist Pose,wrist,wrist_forearm_primary,twist,,Yoga,True
+ea_elbow_extension_and_supination_pronation_forearm_stretch,Elbow Extension and Supination Pronation Forearm Stretch,wrist,wrist_forearm_primary,extension,forearms,Stretching - Mobility,True
+ea_elbow_lift_reverse_push_up,Elbow Lift Reverse Push Up,wrist,wrist_weight_bearing,push up,traps,Back,True
+ea_elbow_push_plank_up,Elbow Push Plank Up,wrist,wrist_weight_bearing,plank,,Abdominals,True
+ea_elbow_extension,Elbow-extension,wrist,wrist_forearm_primary,extension,,Calisthenics-Cardio-Plyo-Functional,True
+ea_elbow_up_and_down_dynamic_plank,Elbow-up and Down Dynamic Plank,wrist,wrist_weight_bearing,plank,,Abdominals,True
+ea_elevated_push_up,Elevated Push Up,wrist,wrist_weight_bearing,push up,chest,Chest,True
+ea_explosive_push_ups,Explosive Push Ups,wrist,wrist_weight_bearing,push ups,"chest,triceps",Chest,True
+ea_extension_and_inclination_neck_stretch,Extension and Inclination Neck Stretch,wrist,wrist_forearm_primary,extension,,Stretching - Mobility,True
+ea_ez_bar_seated_wrist_curl,EZ Bar Seated Wrist Curl,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,True
+ea_floor_tricep_dip,Floor Tricep Dip,wrist,wrist_weight_bearing,dip,,Triceps,True
+ea_full_planche_push_up,Full Planche Push Up,wrist,wrist_weight_bearing,push up,"shoulders,chest",Chest,True
+ea_half_burpees,Half Burpees,wrist,wrist_weight_bearing,burpees,"quads,glutes",Calisthenics-Cardio-Plyo-Functional,True
+ea_hammer_curl_resistance_band_simultaneous,Hammer Curl Resistance Band Simultaneous,wrist,wrist_forearm_primary,curl,"biceps,forearms",Biceps,True
+ea_handstand_push_on_chair,Handstand Push on Chair,wrist,wrist_weight_bearing,handstand,"shoulders,triceps",Shoulders,True
+ea_high_plank,High Plank,wrist,wrist_weight_bearing,plank,core,Yoga,True
+ea_incline_diamond_push_up_on_bench,Incline Diamond Push Up on Bench,wrist,wrist_weight_bearing,push up,"triceps,chest",Triceps,True
+ea_incline_push_ups_on_chair,Incline Push Ups on Chair,wrist,wrist_weight_bearing,push ups,triceps,Triceps,True
+ea_incline_push_up_on_box,Incline Push-up (on Box),wrist,wrist_weight_bearing,push up,chest,Chest,True
+ea_kettlebell_single_arm_clean_and_press,Kettlebell Single Arm Clean and Press,wrist,wrist_loaded_grip,clean,"shoulders,quads,glutes",Calisthenics-Cardio-Plyo-Functional,True
+ea_kettlebell_snatch,Kettlebell Snatch,wrist,wrist_loaded_grip,snatch,,Calisthenics-Cardio-Plyo-Functional,True
+ea_kettlebell_wrist_curl,Kettlebell Wrist Curl,wrist,wrist_loaded_grip,wrist curl,,Forearms,True
+ea_kettlebell_wrist_extension,Kettlebell Wrist Extension,wrist,wrist_forearm_primary,extension,,Forearms,True
+ea_kipping_handstand_push_up,Kipping Handstand Push-up,wrist,wrist_weight_bearing,handstand,,Calisthenics-Cardio-Plyo-Functional,True
+ea_kneeling_push_up,Kneeling Push-up,wrist,wrist_weight_bearing,push up,,Chest,True
+ea_landmine_alternating_lunge_and_twist,Landmine Alternating Lunge and Twist,wrist,wrist_forearm_primary,twist,,Calisthenics-Cardio-Plyo-Functional,True
+ea_long_lever_plank,Long Lever Plank,wrist,wrist_weight_bearing,plank,,Abdominals,True
+ea_lying_neck_curls,Lying Neck Curls,wrist,wrist_forearm_primary,curls,,Calisthenics-Cardio-Plyo-Functional,True
+ea_lying_neck_extension,Lying Neck Extension,wrist,wrist_forearm_primary,extension,,Calisthenics-Cardio-Plyo-Functional,True
+ea_med_ball_slam_burpees,Med Ball Slam Burpees,wrist,wrist_weight_bearing,burpees,,Calisthenics-Cardio-Plyo-Functional,True
+ea_modified_hindu_push_up,Modified Hindu Push Up,wrist,wrist_weight_bearing,push up,"chest,shoulders,triceps",Yoga,True
+ea_mountain_climber_jumps,Mountain Climber Jumps,wrist,wrist_weight_bearing,mountain climber,,Calisthenics-Cardio-Plyo-Functional,True
+ea_mountain_climbers,Mountain Climbers,wrist,wrist_weight_bearing,mountain climbers,core,Abdominals,True
+ea_normal_push_up,Normal Push-up,wrist,wrist_weight_bearing,push up,chest,Chest,True
+ea_one_arm_push_up,One Arm Push Up,wrist,wrist_weight_bearing,push up,,Chest,True
+ea_pike_push_up,Pike Push Up,wrist,wrist_weight_bearing,push up,shoulders,Triceps,True
+ea_plank_cross_knee_drive,Plank Cross Knee Drive,wrist,wrist_weight_bearing,plank,core,Abdominals,True
+ea_plank_individual_arm_reach,Plank Individual Arm Reach,wrist,wrist_weight_bearing,plank,,Calisthenics-Cardio-Plyo-Functional,True
+ea_plank_iytw,Plank IYTW,wrist,wrist_weight_bearing,plank,,Calisthenics-Cardio-Plyo-Functional,True
+ea_plank_jack,Plank Jack,wrist,wrist_weight_bearing,plank,core,Abdominals,True
+ea_plank_knee_tucks,Plank Knee Tucks,wrist,wrist_weight_bearing,plank,core,Abdominals,True
+ea_plank_lunges,Plank Lunges,wrist,wrist_weight_bearing,plank,"core,lower_back,quads",Calisthenics-Cardio-Plyo-Functional,True
+ea_plank_on_elbows,Plank on Elbows,wrist,wrist_weight_bearing,plank,core,Abdominals,True
+ea_plank_pushup,Plank Pushup,wrist,wrist_weight_bearing,plank,,Calisthenics-Cardio-Plyo-Functional,True
+ea_plank_reach_through,Plank Reach Through,wrist,wrist_weight_bearing,plank,core,Abdominals,True
+ea_plank_reverse_fly_with_bottle,Plank Reverse Fly with Bottle,wrist,wrist_weight_bearing,plank,shoulders,Shoulders,True
+ea_plank_shoulder_taps,Plank Shoulder Taps,wrist,wrist_weight_bearing,plank,core,Calisthenics-Cardio-Plyo-Functional,True
+ea_plate_clean,Plate Clean,wrist,wrist_loaded_grip,clean,,Powerlifting,True
+ea_plate_clean_and_press,Plate Clean and Press,wrist,wrist_loaded_grip,clean,,Powerlifting,True
+ea_push_up_and_rotation,Push Up and Rotation,wrist,wrist_weight_bearing,push up,"chest,shoulders",Chest,True
+ea_push_up_plus,Push Up Plus,wrist,wrist_weight_bearing,push up,"chest,shoulders",Chest,True
+ea_push_ups_bodyweight,Push Ups Bodyweight,wrist,wrist_weight_bearing,push ups,chest,Chest,True
+ea_resistance_band_assisted_front_rack_stretch,Resistance Band Assisted Front Rack Stretch,wrist,wrist_loaded_grip,front rack,shoulders,Stretching - Mobility,True
+ea_resistance_band_assisted_push_up,Resistance Band Assisted Push-up,wrist,wrist_weight_bearing,push up,chest,Chest,True
+ea_resistance_band_side_plank_glute_raise,Resistance Band Side Plank Glute Raise,wrist,wrist_weight_bearing,plank,glutes,Legs,True
+ea_reverse_curl_barbell,Reverse Curl Barbell,wrist,wrist_loaded_grip,reverse curl,,Biceps,True
+ea_reverse_plank,Reverse Plank,wrist,wrist_weight_bearing,plank,,Abdominals,True
+ea_ring_dips,Ring Dips,wrist,wrist_weight_bearing,dips,,Calisthenics-Cardio-Plyo-Functional,True
+ea_sandbag_cleans,Sandbag Cleans,wrist,wrist_loaded_grip,cleans,,Powerlifting,True
+ea_scapula_push_up,Scapula Push Up,wrist,wrist_weight_bearing,push up,traps,Yoga,True
+ea_scorpion_twist_pose,Scorpion Twist Pose,wrist,wrist_forearm_primary,twist,,Yoga,True
+ea_seated_figure_four_with_twist_glute_stretch,Seated Figure Four with Twist Glute Stretch,wrist,wrist_forearm_primary,twist,,Stretching - Mobility,True
+ea_side_plank,Side Plank,wrist,wrist_weight_bearing,plank,core,Abdominals,True
+ea_side_plank_oblique_crunch,Side Plank Oblique Crunch,wrist,wrist_weight_bearing,plank,core,Abdominals,True
+ea_side_plank_with_hip_lift,Side Plank with Hip Lift,wrist,wrist_weight_bearing,plank,core,Yoga,True
+ea_side_to_side_push_up,Side to Side Push Up,wrist,wrist_weight_bearing,push up,"chest,triceps",Chest,True
+ea_spider_plank,Spider Plank,wrist,wrist_weight_bearing,plank,core,Abdominals,True
+ea_supine_push_up,Supine Push Up,wrist,wrist_weight_bearing,push up,"traps,shoulders",Back,True
+ea_suspension_trainer_with_grips_decline_push_up,Suspension Trainer with Grips Decline Push-up,wrist,wrist_weight_bearing,push up,chest,Chest,True
+ea_suspension_trainer_with_grips_mountain_climber,Suspension Trainer with Grips Mountain Climber,wrist,wrist_weight_bearing,mountain climber,"core,lower_back",Calisthenics-Cardio-Plyo-Functional,True
+ea_suspension_trainer_with_grips_push_up_to_side_plank,Suspension Trainer with Grips Push-up to Side Plank,wrist,wrist_weight_bearing,push up,"chest,shoulders,core",Chest,True
+ea_suspension_trainer_with_grips_reverse_push_up,Suspension Trainer with Grips Reverse Push-up,wrist,wrist_weight_bearing,push up,"chest,triceps",Chest,True
+ea_triceps_dip_machine,Triceps Dip Machine,wrist,wrist_weight_bearing,dip,triceps,Triceps,True
+ea_unilateral_front_plank,Unilateral Front Plank,wrist,wrist_weight_bearing,plank,,Calisthenics-Cardio-Plyo-Functional,True
+ea_unilateral_plank,Unilateral Plank,wrist,wrist_weight_bearing,plank,,Calisthenics-Cardio-Plyo-Functional,True
+ea_wide_push_ups_bodyweight,Wide Push Ups Bodyweight,wrist,wrist_weight_bearing,push ups,chest,Chest,True
+ea_wild_thing_pose,Wild Thing Pose,wrist,wrist_weight_bearing,wild thing,,Yoga,False
+ea_wrist_curl_barbell,Wrist Curl Barbell,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,True
+ea_wrist_curl_dumbbell,Wrist Curl Dumbbell,wrist,wrist_loaded_grip,wrist curl,forearms,Forearms,True
+ea_wrist_extension_barbell,Wrist Extension Barbell,wrist,wrist_forearm_primary,extension,,Forearms,True
+ea_wrist_extension_dumbbell,Wrist Extension Dumbbell,wrist,wrist_forearm_primary,extension,,Forearms,True

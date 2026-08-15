@@ -8380,7 +8380,301 @@ consensus both times, no findings) before this commit.
 
 ### State
 
-1 of 199 confirmed-real rows fixed and committed. Not pushed — needs a literal `push` GO.
-198 rows remain: 149 P2 + 49 P1 unresolved, need individual authored fixes (not a bulk
-patch). 1484 no-purpose rows' posters remain visually unverified beyond file-existence
-(1752/1752 files present).
+1 of 199 confirmed-real rows fixed, committed (`372144f`), and pushed (`origin/master ==
+372144f`). 198 rows remained: 149 P2 + 49 P1, plus a generated review page
+(`core/plans/GATE_C_CONFIRMED_FINDINGS_REVIEW_2026-08-15.html`, 198 cards) — see the
+2026-08-15 12:11 entry below for a correction to this count.
+
+## 2026-08-15 12:11 local / 09:11 UTC — Refusal + correction: SPINE_CUE (29/29) and other
+Gate C "confirmed" findings are themselves miscalibrated; my own re-audit repeated the
+original ChatGPT audit's failure mode
+
+### What happened
+
+Operator pasted back the full `GATE_C_CONFIRMED_FINDINGS_REVIEW_2026-08-15.html` review page
+plus an extensive, citation-backed critique disputing a large share of the 198 "confirmed
+real" findings from Gates A/B/C. Spot-checked the four most concrete, independently
+checkable claims against the live catalog and confirmed all four:
+
+1. **SPINE_CUE, all 29 REAL entries — confirmed FALSE POSITIVE, all 29.** My classifier
+   matched the substring `"straight back"` with no directional-context check. Read the
+   matched context for all 29: every one is `<body part> + "straight back"` describing a
+   limb moving straight backward (`"Push your hips straight back"`,
+   `"extending it straight back"`, `"Sweep both arms straight back"`,
+   `"Bend the elbows straight back"`) — not a single instance is the spine-posture cue
+   ("keep your back straight/flat") the finding claims to detect. Same bug class as the
+   original audit: phrase-matching without checking what the phrase is actually attached to.
+   25 of these 29 cards have SPINE_CUE as their *only* confirmed issue and drop entirely to
+   PASS; 4 more (`ea_dumbbell_goblet_reverse_lunge`, `ea_kettlebell_reverse_lunge`,
+   `ea_dumbbell_shoulder_extension`, `ea_pigeon_pose`) keep other confirmed issues
+   (PRIOR_REAUDIT / SUPERLATIVE_CLAIM) and stay flagged, just without SPINE_CUE.
+2. **`ea_diagonal_chop_cable` EQUIPMENT_TEXT_CONFLICT — confirmed mislabeled.**
+   `equipmentId: "cable_machine"` is correctly set; only `equipmentLabel` is `None`. This is
+   a missing-metadata gap, not a text/equipment conflict — operator's proposed
+   `EQUIPMENT_METADATA_MISSING` code fits the actual data better than the code I used.
+3. **`ea_major_groups_muscle_body` — confirmed data-quality anomaly, not a normal content
+   fix target.** `muscles: []`, `primaryMuscles: []`, `equipmentId: None`, single step that
+   is a generic standing-posture description unrelated to a "major muscle groups" title.
+   `muscles`/`primaryMuscles` are empty on zero other rows checked in this pass and the single
+   step is a generic standing-posture sentence with no muscle-group content — matches
+   operator's quarantine-not-fix framing rather than a normal content-authoring gap.
+4. **DUPLICATE_STEPS example (`ea_barbell_muscle_clean` vs `ea_barbell_power_clean`) —
+   confirmed real defect.** All 4 steps are byte-identical between the two rows, but a
+   muscle clean and a power clean are different lifts (muscle clean finishes with locked-out
+   arms, no re-bend under the bar; power clean racks the bar in a full front-rack catch) —
+   supports treating at least this instance as a genuine content defect, not a legitimate
+   shared-variant duplicate.
+
+### Loud self-correction
+
+My own Gate A/B/C re-verification pass — built specifically to catch the original ChatGPT
+audit's confabulation — repeated the same failure mode on at least one full issue category
+(SPINE_CUE, 29/29) via unqualified substring matching with no proximity/subject check. The
+198-card "confirmed real" count reported to the operator and shipped in the HTML review page
+was overstated by at least 25 (SPINE_CUE-only drops) before any of the remaining disputed
+categories (DUPLICATE_STEPS retriage, SUPERLATIVE_CLAIM split, UPRIGHT_ROW/BEHIND_NECK
+reclassification, PRIOR_REAUDIT restructuring, individual Nordic Hamstring Curl / Half Neck
+Rolls / Dumbbell Lying Chest Press disputes) have been re-checked.
+
+### Refusal
+
+Declining to bulk-regenerate the HTML review page or apply any further catalog edits until a
+full, per-category re-verification pass (operator-proposed "Gate E") re-checks every
+remaining disputed category with the same evidence discipline used above, and the operator
+gives an explicit GO on the resulting corrected list. No further edits to
+`exercises_vendor.json` beyond the already-pushed P0 fix have been made.
+
+### State (superseded by Gate E completion below)
+
+## 2026-08-15 ~13:30 local / ~10:30 UTC — Gate E complete: full per-category re-verification
+of the 224 REAL findings across 199 flagged cards (operator GO "ГО")
+
+### Method
+
+Same evidence discipline as the SPINE_CUE correction above, applied to every remaining
+category. For DUPLICATE_STEPS (91 rows, 42 clusters of identical Steps text), clustered by
+exact Steps match, classified each cluster by whether the title difference denotes a real
+technique distinction reflected (or contradicted) in the Steps text, vs. a POV/camera-angle
+variant, vs. a plural/typo/synonym near-duplicate. For PRIOR_REAUDIT (55 rows: 24 overlapping
+other codes already covered below, 31 standalone), read the live `purpose` text for every
+standalone row against the specific trigger word/phrase cited in the original Gate A
+verification note. For UPRIGHT_ROW (9) / BEHIND_NECK (5) / NECK_SPECIALIZED (3) /
+MEDICAL_CLAIM (2), checked whether the comfort/pain-stop/conservative-progression qualifier
+the finding claims is missing is already present in Steps/Purpose. For SUPERLATIVE_CLAIM
+(23), located the exact matched phrase and checked whether it is actually a comparative claim
+between this exercise and other exercises, vs. programming-timing advice ("best used late in
+a session") or a self-referential form cue (mis-triggered by the same substring-without-
+context bug as SPINE_CUE).
+
+### Findings
+
+- **SPINE_CUE (29) — all 29 FALSE_POSITIVE**, per the correction above.
+- **UPRIGHT_ROW (9) — all 9 FALSE_POSITIVE.** Every one of the 9 already contains
+  `"...only as high as stays comfortable for your shoulders...Stop earlier if you feel
+  pinching or pain in the shoulder"` (verified via direct substring search across all 9
+  Steps texts) — the finding's own stated concern ("rigid height or pain claims should be
+  avoided") is already addressed in the live text.
+- **BEHIND_NECK (5) — all 5 FALSE_POSITIVE.** Same pattern: all 5 already contain
+  `"...only as far as your shoulders comfortably allow...If that position is not
+  comfortable, pull the bar down to the front of your chest instead...stop the pull if you
+  feel pinching or pain..."`.
+- **NECK_SPECIALIZED (3) — all 3 FALSE_POSITIVE.** All 3 (`ea_lying_neck_curls`,
+  `ea_lying_neck_extension`, `ea_half_neck_rolls`) already contain conservative-progression
+  language ("very light loads and very slow movement", "start with no weight at all") and a
+  symptom-stop cue ("stop at the first sign of discomfort, especially anything sharp,
+  radiating or numb" / "Work only in a comfortable, symptom-free range").
+- **MEDICAL_CLAIM (2) — both FALSE_POSITIVE.** `ea_dumbbell_lying_on_floor_chest_press`:
+  "If your shoulder is sore, keep the range comfortable and get it assessed **rather than
+  relying on this to fix it**" -- explicitly disclaims a therapeutic promise, the opposite
+  of what the finding claims. `ea_heavy_bag_sled_drag`: "any rehab use should be **led by a
+  clinician, not read off this page**" -- same pattern.
+- **POSTURE_CAUSAL (3) — all 3 FALSE_POSITIVE.** All 3 (`ea_cobra_stretch`,
+  `ea_crescent_moon_pose_quad_stretch`, `ea_bow_pose`) mention a lifestyle cause (sitting/
+  desk-bound) as descriptive rationale for why a muscle group is commonly tight, but none
+  claims the single exercise "corrects" or "reverses" it -- the finding's actual two-part
+  definition requires attribution AND an implied single-exercise cure; only the first half
+  is present, and on its own that is standard, defensible content framing.
+- **PRIOR_REAUDIT (55) — 24 overlap with other codes (resolved via those codes' Gate E
+  status above), 31 standalone: 28 FALSE_POSITIVE, 3 REAL.** All 28 standalone false
+  positives matched a bare trigger word (`sitting`, `desk`, `posture`, `heal`, `best `,
+  `one of the`) in a sentence that was either (a) describing exercise SETUP mechanics (e.g.
+  `ea_dumbbell_seated_zottman_curl`: "Sitting removes the leg drive" -- describes why the
+  exercise is done seated, not a lifestyle-cause claim), (b) programming-timing advice
+  (`ea_plate_pinch_grip_row`, `ea_med_ball_slam_burpees`: "Best used..." -- describes WHEN
+  in a session, not exercise-vs-exercise superiority), (c) a plain substring match inside an
+  unrelated word (`ea_calve_stretch_foot_on_wall`: `heal` matched inside `"health
+  professional"`), or (d) hedged, non-curative lifestyle rationale identical in kind to the
+  POSTURE_CAUSAL false positives above. The 3 REAL standalone findings are not
+  phrase-pattern matches at all -- they are genuine missing-field checks:
+  `ea_crow_pose` and `ea_wild_thing_pose` (both `difficulty: advanced`) have
+  `contraindications: None`; checked catalog-wide, only 3 of 8 `advanced`-difficulty
+  exercises have `contraindications` populated at all, so this is a systemic gap, not
+  isolated to these two. `ea_tyre_hammering` (a weighted-hammer striking exercise) has zero
+  eye/hand-protection or clear-space safety language anywhere in Purpose/Steps -- confirmed
+  by direct read of both fields.
+- **SUPERLATIVE_CLAIM (23) reclassified into the operator-proposed taxonomy**: 4
+  FALSE_POSITIVE (`ea_battle_rope_double_arm_slams`, `ea_kneeling_push_up`, `ea_frog_jumps`,
+  `ea_lying_knees_to_floor_lower_back_stretch` -- matched phrase compares interval lengths,
+  form quality, or a self-check heuristic, not this exercise vs. other exercises), 1
+  SAFETY-MEDICAL_CAUSAL_CLAIM (`ea_nordic_hamstring_curl_with_partner` -- "one of the most
+  effective exercises for reducing hamstring injuries"; operator cited a BJSM meta-analysis
+  (RR ~0.49) supporting the underlying claim as evidence-backed, not false, but it is still
+  an unqualified superlative that should be softened rather than left as-is or deleted), 2
+  STYLE_HYPERBOLE (`ea_low_box_quick_feet`, `ea_puppy_pose` -- vague enthusiasm, no specific
+  measurable claim), 16 PERFORMANCE_CLAIM (genuine unqualified comparative/exclusivity
+  training claims, e.g. `ea_cable_wrist_extension`: "the side almost nothing else works" --
+  needs softening, not removal).
+- **DUPLICATE_STEPS (91 rows, 42 clusters) reclassified**: 24 rows / 10 clusters
+  LEGITIMATE_VARIANT (POV/camera-angle-only naming, e.g. the 4-way `Barbell Deadlift`/`360
+  Degrees`/`front POV`/`side POV` cluster -- no action needed). 59 rows / 28 clusters
+  DEDUP_CANDIDATE (near-identical/typo/redundant naming across what is very likely the same
+  catalog entry duplicated, e.g. `ea_dumbbell_external_rotatio` vs.
+  `ea_dumbbell_external_rotation` -- titles are LITERALLY identical, only the id has a typo
+  -- or the `(2)`-suffixed `ea_in_and_out_squats_jump_bodyweight_2`, a standard
+  data-entry-duplicate marker) -- this is a product/data decision (merge, alias, or delete
+  one of each pair), not a copy defect, and is not bundled into the confirmed-defect count
+  below. 8 rows / 4 clusters REAL_DEFECT, each with a title-vs-Steps contradiction:
+  `ea_assisted_close_grip_underhand_chin_up` (claims close grip, Steps say shoulder-width),
+  `ea_butt_kicks_slow` (claims slow tempo, Steps say "quick, continuous motion"),
+  `ea_barbell_lunges` (generic name but Steps describe the stationary "on the spot" pattern,
+  not a distinct walking-lunge default), `ea_barbell_muscle_clean` vs.
+  `ea_barbell_power_clean` (previously confirmed: different lifts, identical Steps is wrong
+  for one of them).
+- **EQUIPMENT_TEXT_CONFLICT (1) reclassified as METADATA_DEFECT** per the earlier
+  correction (`ea_diagonal_chop_cable`: `equipmentId` correct, only `equipmentLabel` null).
+- **TOO_FEW_STEPS (1) reclassified as DATA_QUALITY_QUARANTINE** per the earlier correction
+  (`ea_major_groups_muscle_body`: empty `muscles`/`primaryMuscles`, `equipmentId: None`,
+  single generic step unrelated to the title).
+- **FORCED_ROM (1) — confirmed REAL**, unchanged from the original verification
+  (`ea_alternate_leg_raise_from_reverse_plank_position`: "to your maximum range" with no
+  qualifier anywhere nearby).
+- **BOX_SLED_STEP_IMAGE (1) — already fixed and pushed**, commit `372144f`.
+
+### Corrected final numbers
+
+Of the 199 originally-flagged cards (1 P0 already fixed + 198 P1/P2):
+
+| Bucket | Cards | Meaning |
+|---|---|---|
+| Drop to PASS | 107 | every finding on the card was FALSE_POSITIVE/LEGITIMATE_VARIANT/already-fixed |
+| Dedup/alias decision only | 59 | card's only open item is a DUPLICATE_STEPS product/data decision, not a copy defect |
+| Confirmed action item | 33 | card has >=1 genuine CONTENT_DEFECT/METADATA_DEFECT/PERFORMANCE_CLAIM/etc. needing an actual fix |
+
+Full itemized reclassification (224 rows, one per finding, with `gate_e_label` +
+`gate_e_note` evidence columns) persisted to
+`D:/Downloads/SPTR_FULL_CATALOG_1887_GATE_E_RECLASSIFIED_2026-08-15.csv` per the Audit /
+Review Findings Persistence rule.
+
+### Refusal (still standing)
+
+No edits to `exercises_vendor.json` beyond the already-pushed P0 fix, and the HTML review
+page has not been regenerated. Both wait on the operator's decision about how to handle the
+33 confirmed action items and the 59 dedup candidates (product decision: merge/alias/delete
+vs. leave as separate catalog rows).
+
+### State
+
+199 originally-flagged cards resolved to: 107 PASS, 59 dedup-decision-only, 33 confirmed
+action items (of which 1, the P0, is already fixed and pushed). No further catalog edits.
+No push pending (decision-log-only entry, pre-approved append).
+
+## 2026-08-15 12:44 local / 09:44 UTC — Gate E remediation: 28 of the 33 confirmed action
+items fixed in the catalog, EN + RU, with per-defect regression tests (operator GO "ГО 1")
+
+### What was applied
+
+28 cards, 29 field edits, in `mobile/assets/data/exercises_vendor.json` and the matching
+26 edits in `mobile/assets/data/exercises_vendor.ru.json`:
+
+- **4 title-vs-Steps contradictions** (the `REAL_DEFECT` subset of DUPLICATE_STEPS). Each
+  pair had byte-identical Steps under two titles that promise different movements; the
+  edit went to whichever side of the pair was factually wrong, so the pair now differs
+  (verified: all 4 pairs `steps` lists now unequal). `ea_assisted_close_grip_underhand_chin_up`
+  — Steps said shoulder-width under a "Close Grip" title, now "hands close together, just
+  inside shoulder-width". `ea_butt_kicks_slow` — Steps said "quick, continuous motion"
+  under a "Slow" title, now "slow, controlled motion". `ea_barbell_lunges` — Steps
+  described the stationary pattern identical to its "on the Spot" sibling, now describes a
+  travelling lunge. `ea_barbell_muscle_clean` — Steps described a power clean's front-rack
+  catch ("rotate your elbows under the bar"), now describes the muscle clean's straight-arm
+  finish with no re-bend under the bar.
+- **1 FORCED_ROM cue** (`ea_alternate_leg_raise_from_reverse_plank_position`): "to your
+  maximum range" → "as high as you can control ... and your hips level".
+- **3 metadata gaps**: `ea_crow_pose` and `ea_wild_thing_pose` (both `difficulty:
+  advanced`) had `contraindications: null`, now `['wrist','shoulder']` and
+  `['wrist','shoulder','lower_back']` — this field is what `filterContraindicated` reads to
+  keep an exercise away from an injured user, so null meant the filter had nothing to act
+  on. `ea_diagonal_chop_cable` `equipmentLabel` `"None"` → `"Cable Pulley Machine"` (the
+  dominant label among the other 65 `cable_machine` rows).
+- **1 missing safety warning** (`ea_tyre_hammering`): added clear-space, eye-protection and
+  controlled-grip language to `purpose`; previously the card had none anywhere.
+- **19 SUPERLATIVE_CLAIM softenings**: each unqualified exclusivity/comparative claim
+  rewritten to a defensible relative statement, keeping the specific mechanism sentence
+  intact. E.g. "the side almost nothing else works" → "a side most grip and pressing
+  exercises leave undertrained"; "One of the most effective exercises for reducing
+  hamstring injuries" → "A hamstring exercise with strong evidence behind it for reducing
+  injury risk" (operator's BJSM meta-analysis citation supports the underlying claim, so
+  the fix softens the superlative rather than deleting the claim).
+
+Русский оверлей обновлён теми же 26 правками — the RU file mirrors EN steps 1:1 and a
+standing test asserts step-count parity, so leaving it stale would have shipped Russian
+text describing the OLD (wrong) movement while the English described the corrected one.
+Verified the 5 changed RU step indices matched their EN counterparts before writing, and
+matched each rewritten step's trailing punctuation to its siblings in the same list.
+
+**One more instance of the same defect, found while checking the RU mirror**: the catalog
+also carries a `tips` array (1480 EN rows have one) that the earlier audit never examined
+and that no Dart file reads — dormant data, but wrong data. `ea_butt_kicks_slow`'s third
+tip read "Focus on a **quick**, light motion with each heel lift", contradicting both its
+"Slow" title and the step just corrected above. Fixed in EN and RU. Not a scope expansion:
+it is the same defect on the same card, and leaving it would have made the card
+self-contradictory in a different field. The other four fixed cards' tips were read and are
+consistent with their corrected steps.
+
+### Tests
+
+8 new tests in `mobile/test/features/equipment/vendor_catalog_test.dart`, in two new
+groups: "a title that claims a distinction, and the steps that must carry it" (4 tests, one
+per fixed pair, each asserting the two siblings' Steps differ AND that the specific
+distinguishing phrase is present) and "safety wording the audit found missing" (4 tests:
+contraindications non-empty on both advanced poses, the ROM qualifier present and the old
+unqualified phrase absent, the hammer clear-space wording present, and
+`ea_diagonal_chop_cable` carrying a non-"none" label alongside its `equipmentId`).
+
+**Mutation-verified**, per "Every Commit Carries a Test"'s "deleting the feature must make
+the test fail": reverted 3 of the fixes (`ea_barbell_muscle_clean` step, `ea_crow_pose`
+contraindications, `ea_tyre_hammering` purpose) and re-ran — 3 tests failed, each on its
+own fix, with the expected message. Restored, 25/25 pass.
+
+Full suite: 2351 passed / 7 failed. The 7 are in `test/widgets/glass_nav_bar_test.dart` and
+`test/widget_test.dart`, both of which pass standalone WITH these changes applied
+(re-verified) — parallel-run flakiness, not a regression; neither touches catalog data.
+
+### Newly discovered, deliberately NOT fixed (out of the approved scope)
+
+**363 rows carry the literal string `"None"` in `equipmentLabel`, not a real null.** 78 of
+those also have a real `equipmentId` (25 `bench_press`, 19 `cable_machine`, and 18 others),
+which is a live contradiction with two user-visible consequences:
+`exercise_reference.dart:314` renders `equipmentLabel ?? l10n.exerciseBodyweight` — the
+null-coalescing never fires on the string `"None"`, so those cards display the literal word
+"None" instead of the localized equipment name; and `exercise_filter.dart:442-446`
+explicitly drops a row whose label starts with "none" while its id names a machine, so
+those 78 are excluded from equipment-filtered results despite being correctly linked.
+`ea_diagonal_chop_cable` was fixed because it was in the approved 33; the other 77
+contradictory rows and the 285 genuinely-bodyweight ones were left alone. This needs its
+own gate and its own GO — it is a data-migration decision (normalize `"None"` → real null,
+or backfill real labels for the 78), not a copy fix.
+
+**`ea_major_groups_muscle_body` still untouched** — the DATA_QUALITY_QUARANTINE case
+(`muscles: []`, `primaryMuscles: []`, `equipmentId: null`, one generic standing-posture step
+unrelated to its title). Rewriting it would invent content; quarantining or deleting it is
+an operator decision.
+
+**The 59 DEDUP_CANDIDATE cards** remain as they are — a merge/alias/delete product decision,
+explicitly outside "ГО 1".
+
+### State
+
+33 confirmed action items: 1 fixed previously (P0, `372144f`), 28 fixed here, 4 resolved as
+the sibling side of the 4 pairs above, 1 (`ea_major_groups_muscle_body`) deliberately open
+pending an operator decision. Not pushed — needs a literal `push` GO, and per "No push, no
+build, before Codex's FINAL round" also needs the Codex loop to reach FINAL first.
