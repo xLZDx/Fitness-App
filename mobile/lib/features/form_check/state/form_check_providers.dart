@@ -631,8 +631,37 @@ final voiceErrorProvider = StateProvider<String?>((_) => null);
 /// shows a rejection or a rep's quality and nothing else, so "has a verdict" is
 /// exactly "one of those two is non-null". The status band asks this to know
 /// whether its own informational rungs should stay quiet.
+/// Asks [RepVerdict], not [RepSessionState.lastRepClean]. `lastRepClean` is
+/// null for two different situations and the card renders only one of them as
+/// nothing: "no rep yet" draws nothing, "not evaluated" draws a band. Reading
+/// the boolean here would leave the band above believing the card was silent
+/// while it was speaking, which is how a screen grows a second voice — the
+/// defect this predicate was written to prevent.
 bool coachStatusHasRepVerdict(RepSessionState s) =>
-    s.lastReject != null || s.lastRepClean != null;
+    s.lastReject != null || s.lastRepVerdict != RepVerdict.none;
+
+/// What the coach may say about the repetition that just finished.
+///
+/// [notEvaluated] is the state this enum exists for. Before it, the screen had
+/// no way to distinguish "watched it and found nothing wrong" from "was in no
+/// position to find anything wrong", and rendered both as a green *rep clean* —
+/// so a set performed badly, in the shipped default configuration, came back
+/// eight-for-eight faultless.
+enum RepVerdict {
+  /// No repetition has finished yet. The card draws nothing.
+  none,
+
+  /// Judged, and it held up.
+  clean,
+
+  /// Judged, and it did not.
+  faulted,
+
+  /// A repetition finished and nothing was entitled to judge it: no silhouette
+  /// was being scored, and no active rule can fault a rep. Said out loud rather
+  /// than dressed as a pass.
+  notEvaluated,
+}
 
 /// Snapshot of the current set: how many reps, where in the movement, and
 /// the quality record for each rep completed so far.
@@ -644,6 +673,7 @@ class RepSessionState {
     this.lastRepCue,
     this.lastRepPeakMatch,
     this.lastRepMissedTarget,
+    this.lastRepEvaluated = false,
     this.isArmed = false,
     this.lastReject,
   });
@@ -673,6 +703,22 @@ class RepSessionState {
   /// no target to reach, or nothing to measure against it.
   final bool? lastRepMissedTarget;
 
+  /// Whether ANYTHING was in a position to fail the repetition just finished.
+  ///
+  /// False means the coach watched a rep it had no way to judge: no silhouette
+  /// was being scored, and no active rule is entitled to fault one. It is not a
+  /// verdict and must never be rendered as one.
+  ///
+  /// This exists because the two silences are identical from the outside.
+  /// "Every rule stayed quiet" and "no rule was allowed to speak" both produce
+  /// an empty fault list, and [lastRepClean] used to answer `true` to both. In
+  /// the shipped default — avatar mode on, squat selected — the silhouette is
+  /// withdrawn (`_onFrame`, the `avatarModeProvider` read) and the only active
+  /// rule is `SquatDepthClassifier`, which is severity 0 in every arm. So every
+  /// repetition came back faultless, which is the defect recorded at
+  /// `repCompleted` below and reported by the operator once already.
+  final bool lastRepEvaluated;
+
   final int repCount;
   final RepPhase phase;
   final List<RepQuality> reps;
@@ -687,16 +733,33 @@ class RepSessionState {
   /// A coach watches the rep and then says one thing. This is that.
   final FormFeedback? lastRepCue;
 
-  /// Whether the rep just finished was a good one. Null before the first rep.
+  /// What the coach is entitled to say about the repetition just finished.
+  ///
+  /// Four states, because there are four situations and the previous `bool?`
+  /// could express only three. The one it could not express is the one that was
+  /// shipping: a repetition finished, and nothing was in a position to judge it.
+  /// That was rendered as [RepVerdict.clean].
+  RepVerdict get lastRepVerdict {
+    if (reps.isEmpty) return RepVerdict.none;
+    if (!lastRepEvaluated) return RepVerdict.notEvaluated;
+    if (lastRepMissedTarget == true) return RepVerdict.faulted;
+    return reps.last.isClean ? RepVerdict.clean : RepVerdict.faulted;
+  }
+
+  /// Whether the rep just finished was a good one.
+  ///
+  /// Null when there is no answer — either no repetition has finished, or one
+  /// has and nothing could judge it. Callers that need to tell those two apart
+  /// must read [lastRepVerdict]; this getter deliberately refuses to guess.
   ///
   /// Missing the silhouette counts as a fault in its own right: the per-frame
   /// rules can all be quiet — most of them are, deliberately — while the body
   /// never went near the target shape.
-  bool? get lastRepClean {
-    if (reps.isEmpty) return null;
-    if (lastRepMissedTarget == true) return false;
-    return reps.last.isClean;
-  }
+  bool? get lastRepClean => switch (lastRepVerdict) {
+        RepVerdict.none || RepVerdict.notEvaluated => null,
+        RepVerdict.clean => true,
+        RepVerdict.faulted => false,
+      };
 
   int get cleanReps => reps.where((r) => r.isClean).length;
 
@@ -891,6 +954,15 @@ class RepSessionController extends Notifier<RepSessionState> {
     final peak = _peakMatchThisRep;
     final judged = target != null && peak != null;
     final missed = judged && peak < kPoseMatchPassing;
+    // ...and when the silhouette is not being scored either, SOMETHING has to
+    // have been entitled to disagree, or there is no verdict to give. Squat in
+    // the shipped default is exactly that case: avatar mode withdraws the
+    // target, and `SquatDepthClassifier` is severity 0 in every arm. Asking the
+    // rules whether they may fault at all is the difference between "nothing
+    // was wrong" and "nothing could have been found wrong"; the screen renders
+    // the second as `RepVerdict.notEvaluated` rather than as a pass.
+    final evaluated =
+        judged || ref.read(activeClassifiersProvider).any((c) => c.canFault);
     var cue = _worstThisRep;
     if (missed) {
       cue = FormFeedback(
@@ -911,6 +983,7 @@ class RepSessionController extends Notifier<RepSessionState> {
       lastRepCue: cue,
       lastRepPeakMatch: peak,
       lastRepMissedTarget: judged ? missed : null,
+      lastRepEvaluated: evaluated,
     );
 
     // At most one utterance per completed repetition. The coach's own gate
@@ -939,6 +1012,10 @@ class RepSessionController extends Notifier<RepSessionState> {
         lastRepCue: state.lastRepCue,
         lastRepPeakMatch: state.lastRepPeakMatch,
         lastRepMissedTarget: state.lastRepMissedTarget,
+        // Carried for the same reason as the rest: dropping it would silently
+        // rewrite a verdict that HAD been earned into "nothing could judge it"
+        // on the next phase change, which is under a second later.
+        lastRepEvaluated: state.lastRepEvaluated,
       );
 
   /// An attempt that started and was thrown away.
@@ -979,6 +1056,7 @@ class RepSessionController extends Notifier<RepSessionState> {
       lastRepCue: state.lastRepCue,
       lastRepPeakMatch: state.lastRepPeakMatch,
       lastRepMissedTarget: state.lastRepMissedTarget,
+      lastRepEvaluated: state.lastRepEvaluated,
     );
 
     if (cue != null) {

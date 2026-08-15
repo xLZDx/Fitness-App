@@ -30,6 +30,9 @@ import 'unscorable_frame_test.dart' show oneSquat;
 /// and must keep passing when the rules change underneath it.
 class _AlwaysFaults implements FormClassifier {
   @override
+  bool get canFault => true;
+
+  @override
   String get rule => 'test.always';
 
   @override
@@ -46,6 +49,31 @@ class _AlwaysFaults implements FormClassifier {
         severity: 2,
         cueKey: FormCueKey.pushupAlignSagging,
       );
+}
+
+/// Entitled to fault a repetition, and never does.
+///
+/// The distinction the verdict turns on: this produces the same empty fault
+/// list as a rule that is forbidden to complain, and must produce the opposite
+/// verdict. Without this double, a test asserting `notEvaluated` would also
+/// pass if `canFault` were ignored entirely and every rep became "not judged".
+class _CouldFaultButDoesNot implements FormClassifier {
+  @override
+  bool get canFault => true;
+
+  @override
+  String get rule => 'test.entitled';
+
+  @override
+  Set<LandmarkType> get requiredLandmarks => const {
+        LandmarkType.leftHip,
+        LandmarkType.rightHip,
+        LandmarkType.leftKnee,
+        LandmarkType.rightKnee,
+      };
+
+  @override
+  FormFeedback? evaluate(PoseFrame frame) => null;
 }
 
 Future<(MockVoiceCoach, RepSessionState, int)> runReps(int reps) async {
@@ -104,9 +132,20 @@ void main() {
     expect(state.lastRepClean, isFalse);
   });
 
-  test('a clean set says nothing and shows green', () async {
-    // With no faulting rule the coach has nothing to say, and the card must
-    // report a clean rep rather than staying blank.
+  test('a rep nothing was allowed to judge is not reported as clean', () async {
+    // This test used to be called "a clean set says nothing and shows green"
+    // and asserted `lastRepClean` was `true`. It was asserting the defect.
+    //
+    // The configuration below — the squat rule, which is severity 0 in every
+    // arm and answers `canFault` with false, and no target to score against —
+    // is precisely the shipped default once avatar mode became the main view.
+    // Nothing here is in a position to fail a repetition, so "no fault was
+    // found" is not a finding. The screen said "Clean rep" anyway, which is the
+    // defect the operator reported as "все повторения правильные даже если я
+    // неправильно делаю" and which this test held the door open for.
+    //
+    // What is still worth pinning from the original is the voice: a rule that
+    // only reports must not speak. That assertion stays.
     final svc = MockPoseDetectorService(oneSquat(0));
     final coach = MockVoiceCoach();
     final container = ProviderContainer(overrides: [
@@ -127,8 +166,76 @@ void main() {
     expect(state.repCount, greaterThan(0));
     expect(coach.spoken, isEmpty,
         reason: 'the squat-depth rule reports and never warns');
-    expect(state.lastRepClean, isTrue);
+    expect(state.lastRepVerdict, RepVerdict.notEvaluated,
+        reason: 'no target was scored and no active rule may fault a rep, '
+            'so there is no verdict to give');
+    expect(state.lastRepClean, isNull,
+        reason: 'the boolean must refuse to answer rather than guess "clean"');
     expect(state.lastRepCue, isNull);
+    await svc.dispose();
+  });
+
+  test('a rule that COULD have faulted and did not gives a clean rep', () async {
+    // The positive control for the test above, and the reason `canFault` is a
+    // property of the rule rather than a reading of its output. Both this test
+    // and that one produce an empty fault list; only the entitlement differs,
+    // and that difference is the whole verdict.
+    final svc = MockPoseDetectorService(oneSquat(0));
+    final coach = MockVoiceCoach();
+    final container = ProviderContainer(overrides: [
+      poseDetectorServiceProvider.overrideWithValue(svc),
+      voiceCoachProvider.overrideWithValue(coach),
+      activeClassifiersProvider.overrideWithValue([_CouldFaultButDoesNot()]),
+      poseTargetProvider.overrideWithValue(null),
+    ]);
+    addTearDown(container.dispose);
+
+    container.read(repSessionControllerProvider);
+    await svc.start();
+    await pumpEventQueue();
+
+    final state = container.read(repSessionControllerProvider);
+    expect(state.repCount, greaterThan(0));
+    expect(state.lastRepVerdict, RepVerdict.clean);
+    expect(state.lastRepClean, isTrue);
+    await svc.dispose();
+  });
+
+  test('the shipped default configuration does not mark every rep clean',
+      () async {
+    // The acceptance test for the whole finding, written to the DEFAULT state:
+    // no override of `avatarModeProvider`, no override of the rule set. Avatar
+    // mode is on, so the silhouette is withdrawn; squat is selected, so the one
+    // active rule cannot fault. Before the fix this asserted `true`.
+    //
+    // Deliberately overriding as little as possible: the detector has to be a
+    // mock because there is no camera, and everything else is left at whatever
+    // a real first launch would produce. A version of this test that pinned the
+    // providers by hand would stop tracking the default the day it changed,
+    // which is exactly how this defect reached a phone.
+    final svc = MockPoseDetectorService(oneSquat(0));
+    final coach = MockVoiceCoach();
+    final container = ProviderContainer(overrides: [
+      poseDetectorServiceProvider.overrideWithValue(svc),
+      voiceCoachProvider.overrideWithValue(coach),
+    ]);
+    addTearDown(container.dispose);
+
+    expect(container.read(avatarModeProvider), isTrue,
+        reason: 'this test is about the DEFAULT; if the default changes, the '
+            'test must be re-read rather than silently pass for a new reason');
+    expect(container.read(selectedExerciseProvider), FormExercise.squat);
+
+    container.read(repSessionControllerProvider);
+    await svc.start();
+    await pumpEventQueue();
+
+    final state = container.read(repSessionControllerProvider);
+    expect(state.repCount, greaterThan(0),
+        reason: 'the fixture must actually complete a repetition, or the '
+            'assertion below passes for the wrong reason');
+    expect(state.lastRepClean, isNot(isTrue));
+    expect(state.lastRepVerdict, RepVerdict.notEvaluated);
     await svc.dispose();
   });
 

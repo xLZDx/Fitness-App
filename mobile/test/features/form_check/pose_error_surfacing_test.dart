@@ -70,6 +70,9 @@ class _FailingVoiceCoach implements VoiceCoach {
 /// thresholds.
 class _AlwaysFaults implements FormClassifier {
   @override
+  bool get canFault => true;
+
+  @override
   String get rule => 'test.always';
 
   @override

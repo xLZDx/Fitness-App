@@ -9489,3 +9489,140 @@ Stated in the pubspec because every other image directory there has one and sile
 an oversight.
 
 Not pushed.
+
+---
+
+## 2026-08-15 — Gate B, part 2: the coordinate question is closed, and the answer is "not broken"
+
+The probe built in `6f3a962` was read off a real device. Galaxy S23 (`SM_S918B`), debug build
+`745b917`, one session of squats, 84 accumulated reports in logcat between 16:50 and 16:52 local
+(13:50-13:52 UTC).
+
+### The measurement
+
+The final accumulated line, over 1892 frames and 21583 trusted landmark samples:
+
+```
+all      x -0.266..1.711   y -0.241..3.021   (bound 0.667)
+trusted  x -0.079..1.078   y -0.241..1.029   -> OUT OF CONTRACT
+```
+
+Read alone, that indicts the conversion: trusted landmarks — the ones ML Kit says are inside the
+frame — sit outside it. The verdict flips the other way once the session is read from the start
+rather than from the end.
+
+```
+n=1    trusted x 0.071..0.580  y 0.631..0.914  -> in contract
+n=305  trusted x 0.005..0.611  y 0.523..0.974  -> in contract
+n=306  trusted x -0.030..0.611 y 0.503..0.974  -> OUT OF CONTRACT
+```
+
+**305 consecutive frames in contract kills the broken-conversion hypothesis.** An x divided by the
+width instead of the height reads near 1.0 on the FIRST frame; this reads 0.580 against a bound of
+0.667. A systematic scale error cannot land inside the bound 305 times and then start missing.
+
+The verdict flipped on a trusted x of −0.030 — a 3% overshoot past the left edge — while the
+maximum was still 0.611, comfortably inside. Every later excursion moves continuously frame to
+frame at ~20 Hz (x max 0.611 → 0.665 → 0.688 → 1.032; y min 0.299 → 0.013 → −0.042 → −0.080).
+Nothing steps. That is a body entering the frame and passing beyond its edges, not a coordinate
+system changing.
+
+### What this settles
+
+The R0 line `x -0.466..1.968 (bound 0.667)`, `y -2.173..3.015` is BlazePose extrapolating joints
+past the frame edge. **The thresholds in `pose_gate.dart`, `rep_counter.dart` and
+`form_classifier.dart` are not invalidated.** That was the entire risk this gate existed to
+resolve, and it is retired.
+
+Corroborating fact worth keeping: `likelihood` is ML Kit's `getInFrameLikelihood()`
+(`PoseDetector.java:97` in `google_mlkit_pose_detection-0.14.0`), and the filter is not degenerate
+— roughly 11.4 of 33 landmarks per frame clear 0.7. But it is looser at the frame edge than the
+probe assumed: the model keeps calling a landmark "in frame" while extrapolating it slightly
+outside. That is why `trustedOutOfContract` fired at all.
+
+### What is NOT claimed
+
+- The conversion is not proven *correct*, only not wrong in the way that mattered. An error
+  smaller than the frame would not show in this measurement.
+- One device, one session. The Galaxy S8 was not measured.
+- **A defect in the instrument, found by using it:** the extents are a session high-water mark, so
+  a single 3% edge overshoot latches `OUT OF CONTRACT` permanently and the verdict stops describing
+  the present. It answered the question it was built for and became noise immediately after. If it
+  is kept, it should report the fraction of frames out of contract, not a latched min/max.
+
+---
+
+## 2026-08-15 — Gate E, part 1: a repetition nothing could judge is no longer reported as clean
+
+Found by an R3 agent review of gates A-D, requested by the operator. Five specialists, one
+independent round. This is the finding that mattered; every load-bearing `file:line` below was
+re-read against the tree before being accepted.
+
+### The defect, which was mine
+
+Seven links, all present in the shipped default:
+
+1. `avatarModeProvider` defaults to `true` (Gate C, `8261329`).
+2. `RepSessionController._onFrame`: `target = avatarMode ? null : poseTarget` — always null.
+3. `judged = target != null && peak != null` — always false.
+4. `lastRepMissedTarget = judged ? missed : null` — always null.
+5. `lastRepClean` fell through to `reps.last.isClean`.
+6. `RepQuality.isClean` is `maxSeverity == 0` (`rep_counter.dart:179`).
+7. Squat, the default exercise, is coached by `SquatDepthClassifier` alone, which returns
+   severity 0 in every arm by deliberate decision.
+
+So every repetition came back faultless, for every user, on first launch. The same failure the
+code already records at `repCompleted` in the operator's own words: *"все повторения правильные
+даже если я неправильно делаю"*. The silhouette match was introduced to fix precisely that, and
+Gate C disabled the silhouette without noticing it was the only judge left.
+
+Line 2 was written in Gate A and was correct then: scoring a user against a shape they were never
+shown is unfair, which is why avatar mode withdraws the target — an objection Codex raised against
+Gate A and won. It was inert while avatar mode was an opt-in. Gate C armed it. I verified the
+suite was green after flipping the default; I did not verify that a judge survived the flip.
+
+### The fix
+
+`FormClassifier.canFault` — required, not defaulted, so a new rule cannot inherit someone else's
+answer. Two of the three shipped rules answer `false`: they report a measurement at severity 0 and
+are forbidden to raise an alarm, for reasons written at each. `PushupAlignmentClassifier` answers
+`true` and keeps its severity 2 by operator decision of this date.
+
+`RepVerdict` replaces `bool?`. Four states because there are four situations, and the one the
+boolean could not express is the one that was shipping: a repetition finished and nothing was in a
+position to judge it. `notEvaluated` is rendered as its own band — "Counted, but not graded." —
+rather than as the green pass.
+
+`coachStatusHasRepVerdict` was moved off `lastRepClean != null` in the same change. Without that it
+would have read the new "not evaluated" state as *silence* and let the status band speak over a
+card that was speaking — the two-voices defect Gate A exists to remove, re-entered through the
+back door.
+
+### A test was guarding the defect
+
+`one_cue_per_rep_test.dart` carried a test named *"a clean set says nothing and shows green"* which
+asserted `lastRepClean` was `true` in exactly this configuration: the squat rule, no target. It
+did not fail to catch the defect — it required it.
+
+Worse than the false-green class the catalog handoff warned about, and the same lesson: the name
+read like a feature. Rewritten to assert `RepVerdict.notEvaluated`, keeping the one thing it was
+genuinely pinning (a reporting rule must not speak).
+
+Three tests now cover this, with a double `_CouldFaultButDoesNot` — entitled to fault, never does —
+because "no fault found" and "no fault possible" produce the same empty list and must produce
+opposite verdicts. The default-configuration test overrides nothing but the detector, and asserts
+the default is still `true` so that a future flip forces a re-read instead of passing for a new
+reason.
+
+Both directions mutation-verified:
+
+| mutation | imitates | result |
+|---|---|---|
+| `evaluated = true` | the shipped defect | 2 red — both new defect tests |
+| `evaluated = false` | a "fix" that grades nothing | 4 red — silhouette scoring protected |
+
+### State
+
+Full suite green. `flutter analyze lib test` — 7 issues, all pre-existing, none in a touched file.
+
+Not pushed.

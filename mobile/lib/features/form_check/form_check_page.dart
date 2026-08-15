@@ -499,7 +499,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                           bottom: 12,
                           child: _CueCard(
                             feedback: session.lastRepCue,
-                            clean: session.lastRepClean,
+                            verdict: session.lastRepVerdict,
                             reject: session.lastReject,
                           ),
                         ),
@@ -1386,8 +1386,8 @@ class _UpgradeCard extends StatelessWidget {
 
 class _CueCard extends StatelessWidget {
   const _CueCard({
+    required this.verdict,
     this.feedback,
-    this.clean,
     this.reject,
   });
 
@@ -1399,15 +1399,17 @@ class _CueCard extends StatelessWidget {
   /// misleading the user about what it saw.
   final RepRejectReason? reject;
 
-  /// Whether the last completed repetition was faultless. Null before the
-  /// first one finishes.
+  /// What the coach is entitled to say about the last completed repetition.
   ///
-  /// This card is now a **verdict on a repetition**, not a readout of the
-  /// current frame. Green when the rep was clean, red when it was not, and it
-  /// changes once per rep. It used to re-render whatever the latest frame
-  /// produced — several times a second, cycling between messages for the whole
-  /// movement.
-  final bool? clean;
+  /// This card is a **verdict on a repetition**, not a readout of the current
+  /// frame. Green when the rep was clean, red when it was not, and it changes
+  /// once per rep. It used to re-render whatever the latest frame produced —
+  /// several times a second, cycling between messages for the whole movement.
+  ///
+  /// A [RepVerdict] rather than a `bool?` because a boolean could not carry the
+  /// case that was actually shipping: a repetition finished with nothing in a
+  /// position to judge it, and the card painted that green.
+  final RepVerdict verdict;
 
   final FormFeedback? feedback;
 
@@ -1439,12 +1441,26 @@ class _CueCard extends StatelessWidget {
     // time. Two "ready" sentences at opposite ends of the preview, and on the
     // frame the operator screenshotted, a third message between them saying the
     // body could not be found at all.
-    if (clean == null) return const SizedBox.shrink();
+    if (verdict == RepVerdict.none) return const SizedBox.shrink();
+
+    // A repetition nothing was allowed to judge. Said plainly, in its own
+    // colour, because the alternative shipped and was worse than silence: the
+    // card painted it the same green as a rep the coach had actually watched
+    // and approved, so a set performed badly came back faultless and the user
+    // had no way to know the coach was not looking.
+    if (verdict == RepVerdict.notEvaluated) {
+      return _band(
+        theme,
+        AppPalette.auroraViolet.withValues(alpha: 0.92),
+        l10n.formcheckRepNotEvaluated,
+        const Key('form_check.rep_not_evaluated'),
+      );
+    }
 
     // Two colours, one per repetition. Red carries the one cue; green says the
     // rep was clean and says it in three words, because a green banner that
     // explains itself at length is just noise wearing a friendly colour.
-    if (clean!) {
+    if (verdict == RepVerdict.clean) {
       return _band(theme, AppPalette.auroraTeal.withValues(alpha: 0.92),
           l10n.formcheckRepClean, const Key('form_check.rep_clean'));
     }

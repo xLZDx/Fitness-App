@@ -63,6 +63,9 @@ class _FaultsFirst implements FormClassifier {
   int frames;
 
   @override
+  bool get canFault => true;
+
+  @override
   String get rule => 'test.first';
 
   @override

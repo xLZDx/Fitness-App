@@ -957,6 +957,10 @@
   "formcheckReadyPrompt": "Ready - do a rep.",
   "formcheckRepClean": "Clean rep",
   "formcheckRepFaulted": "Something was off on that rep.",
+  "formcheckRepNotEvaluated": "Counted, but not graded.",
+  "@formcheckRepNotEvaluated": {
+    "description": "Shown when a repetition finished and nothing was entitled to judge it - no silhouette was being scored and no active rule can fault a rep. It replaces the green 'Clean rep' banner that used to be shown in that situation, which told the user their form had been approved when it had never been examined."
+  },
   "formcheckExerciseSquat": "Squat",
   "formcheckExercisePushup": "Push-up",
   "formcheckExerciseDeadlift": "Deadlift",

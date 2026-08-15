@@ -81,6 +81,23 @@ abstract class FormClassifier {
   /// sanity checks belong to the frame, not to the rule.
   Set<LandmarkType> get requiredLandmarks;
 
+  /// Whether this rule is entitled to fault a repetition at all.
+  ///
+  /// Required, not defaulted, because the honest answer differs per rule and a
+  /// default would let a new rule inherit someone else's. Two of the three
+  /// shipped rules answer `false`: they report a measurement at severity 0 and
+  /// are explicitly forbidden from raising an alarm, for reasons written at
+  /// each of them.
+  ///
+  /// It exists because "no rule complained" and "no rule was allowed to
+  /// complain" are the same silence, and the coach used to render both as a
+  /// green *rep clean*. With the silhouette withdrawn in avatar mode and squat
+  /// coached only by a severity-0 rule, every repetition came back faultless —
+  /// the same defect the operator reported once before as *"все повторения
+  /// правильные даже если я неправильно делаю"*. A verdict needs to know
+  /// whether anything was in a position to disagree with it.
+  bool get canFault;
+
   FormFeedback? evaluate(PoseFrame frame);
 }
 
@@ -118,6 +135,10 @@ class SquatDepthClassifier implements FormClassifier {
         LandmarkType.leftKnee,
         LandmarkType.rightKnee,
       };
+
+  /// False: every arm of [evaluate] returns severity 0, deliberately.
+  @override
+  bool get canFault => false;
 
   @override
   FormFeedback? evaluate(PoseFrame frame) {
@@ -185,6 +206,11 @@ class DeadliftHipHingeClassifier implements FormClassifier {
         LandmarkType.leftKnee,
       };
 
+  /// False: this rule reports hinge depth and is entitled to warn about
+  /// nothing, for the reason set out above.
+  @override
+  bool get canFault => false;
+
   @override
   FormFeedback? evaluate(PoseFrame frame) {
     final shoulder = frame.landmarks[LandmarkType.leftShoulder];
@@ -217,6 +243,12 @@ class PushupAlignmentClassifier implements FormClassifier {
         LandmarkType.leftHip,
         LandmarkType.leftAnkle,
       };
+
+  /// True, and the only rule that answers so: it reaches severity 2 and is
+  /// therefore the one shipped rule that can both fail a repetition and be
+  /// spoken aloud.
+  @override
+  bool get canFault => true;
 
   @override
   FormFeedback? evaluate(PoseFrame frame) {

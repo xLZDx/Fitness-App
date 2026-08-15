@@ -473,6 +473,7 @@
   "formcheckReadyPrompt": "Готово — сделайте повторение.",
   "formcheckRepClean": "Чистое повторение",
   "formcheckRepFaulted": "В этом повторении что-то было не так.",
+  "formcheckRepNotEvaluated": "Засчитано, но не оценено.",
   "formcheckExerciseSquat": "Присед",
   "formcheckExercisePushup": "Отжимание",
   "formcheckExerciseDeadlift": "Становая",
