@@ -9,9 +9,17 @@ import '../../workouts/data/workout_log.dart';
 ///   - justRight → +0.5 to "good"
 ///   - tooHard   → +0    (we should back off here)
 ///
-/// Higher score → user is comfortable; ranker upweights novel /
-/// progression-worthy options. Lower score → ranker downweights to
-/// give the muscle group recovery time.
+/// Higher score → user is comfortable. Lower score → the user has been
+/// reporting this group as too hard.
+///
+/// What the ranker DOES with that is deliberately not asserted here. This
+/// comment used to finish "ranker upweights novel / progression-worthy
+/// options … lower score → ranker downweights to give the muscle group
+/// recovery time", which is the exact opposite of what
+/// [FitnessProfile.adaptivePriorityFor] has always computed. A reader had no
+/// way to tell which of the two was the intent and which was the bug. See that
+/// method: the disagreement is real, it is a product decision, and it is
+/// recorded there in one place instead of being asserted differently in three.
 ///
 /// Initialising with `(good=2, total=4)` (Beta(2,2) prior) gives a
 /// neutral 0.5 starting score so brand-new users aren't biased.
@@ -80,6 +88,30 @@ class FitnessProfile {
     }
     return sum / list.length;
   }
+
+  /// How strongly an exercise working [muscles] should be surfaced, 0..1.
+  ///
+  /// **One definition.** This arithmetic was written out twice — in
+  /// `for_you_ranker.dart` and again in `ai_planner/data/plan_builder.dart` —
+  /// and the second copy is not referenced by any document that discusses the
+  /// first. A change made to one would have silently left the other ranking the
+  /// opposite way, on a surface nobody was looking at.
+  ///
+  /// **The direction is contested and has NOT been changed here.** What ships,
+  /// and what this returns, is `1 - score`: a muscle group the user keeps
+  /// rating "too hard" is surfaced MORE, on the reading that you are weakest at
+  /// what you struggle with and weakness is what training should attack.
+  ///
+  /// The file that DEFINES the score says the opposite, in four places: tooEasy
+  /// means "we should push harder here", tooHard means "we should back off
+  /// here", and — directly about this function — "Lower score → ranker
+  /// downweights to give the muscle group recovery time".
+  ///
+  /// Both are coherent training philosophies, which is why this is a decision
+  /// and not a defect to be quietly fixed. It is recorded rather than resolved
+  /// so that whoever settles it does so on purpose and in one place.
+  double adaptivePriorityFor(Iterable<String> muscles) =>
+      1.0 - averageFor(muscles);
 }
 
 /// Pure builder: replays the user's logs into a [FitnessProfile].

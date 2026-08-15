@@ -9841,3 +9841,50 @@ Full suite 2414 passed / 0 failed, unchanged by this gate. `flutter analyze` rep
 touched file.
 
 Not pushed.
+
+---
+
+## 2026-08-15 — Gate H: the personalisation ranking has one definition, and an open decision
+
+**Decision:** consolidate, document, pin. Do **not** change the direction.
+
+### The duplication (fixed)
+
+`1.0 - profile.averageFor(muscles)` was written out twice — `for_you_ranker.dart:25` and
+`ai_planner/data/plan_builder.dart:41`. The v2.3.1 audit's RE-B01 cites only the first. A migration
+scoped from its `findings.json` would have flipped one surface and left the other ranking the
+opposite way, on a surface no document about this ranking mentions. Both now call
+`FitnessProfile.adaptivePriorityFor`.
+
+### The direction (NOT fixed — operator decision required)
+
+FACT: the definition and the implementation state opposite intents.
+
+`fitness_model.dart` says, in four places: tooEasy → "we should push harder here"; tooHard → "we
+should back off here"; "Higher score → user is comfortable; ranker upweights"; and — directly about
+the ranker — "Lower score → ranker downweights to give the muscle group recovery time".
+
+`for_you_ranker.dart` said the opposite — "muscles the user is weakest in surface higher … the
+Freeletics-style adaptive loop the assessment calls for" — and it is what ships, in both copies.
+
+DECISION (operator's, pending): these are two coherent training philosophies, not a typo.
+"Back off what you found too hard" and "attack what you are weakest at" are both real positions, and
+the score itself is built from difficulty ratings rather than from a strength measure, so neither
+reading is forced by the data.
+
+INFERENCE, offered rather than acted on: the evidence leans toward the model file. It is the file
+that defines what the number means, it says so four times, and one of those four is a statement
+about this exact function. The failure mode also points the same way — a user who repeatedly reports
+leg work as too hard currently receives MORE leg work, which in a fitness app is an injury path
+rather than a merely suboptimal ranking. That is the reading that is safe when uncertain, but it is
+still a product call and it has not been made here.
+
+What changed instead: the class comment no longer asserts the direction it does not implement, and
+`adaptive_priority_direction_test.dart` states the live direction as a named, contested assertion.
+Mutation: flipping `1.0 - averageFor` to `averageFor` turns exactly one test red — the one that
+names the decision. The other five are neutral to the direction by construction, since `1 - 0.5`
+is `0.5`.
+
+Full suite 2419 passed / 0 failed (2414 before; 5 added). `flutter analyze` clean on touched files.
+
+Not pushed.

@@ -20,9 +20,9 @@ List<ExerciseItem> rankForYou(
   if (profile.byMuscle.isEmpty) return List.unmodifiable(candidates);
 
   double priority(ExerciseItem ex) {
-    final muscleScore = profile.averageFor(ex.muscles);
-    // Invert: weaker muscle group = higher priority.
-    var p = 1.0 - muscleScore;
+    // The direction of this ranking is defined once, in `fitness_model.dart`,
+    // and it is contested — read `adaptivePriorityFor` before changing it here.
+    var p = profile.adaptivePriorityFor(ex.muscles);
     // Lightly upweight novel exercises (not in the last-7 list).
     if (!recentExerciseIds.contains(ex.id)) {
       p += 0.05;

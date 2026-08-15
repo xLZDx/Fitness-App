@@ -31,14 +31,20 @@ GeneratedPlan buildPlan({
   //    injury — the entire moat.
   final safe = filterContraindicated(candidatePool, injuryList);
 
-  // 2. Score each remaining exercise by adaptive priority. The fitness
-  //    profile gives weakest-muscle-first ranking; novelty is broken by
-  //    insertion order.
+  // 2. Score each remaining exercise by adaptive priority; novelty is broken
+  //    by insertion order.
+  //
+  //    This used to spell the formula out — `1.0 - profile.averageFor(...)` —
+  //    which made it a second, independent copy of the For-You ranker's
+  //    ranking direction, on a surface no document about that ranking
+  //    mentions. Whoever changed one would have left this one ranking the
+  //    other way. Both now read the single definition, which is also where the
+  //    disagreement about which way is correct is recorded.
   final scored = [
     for (final ex in safe)
       (
         ex: ex,
-        priority: 1.0 - profile.averageFor(ex.muscles),
+        priority: profile.adaptivePriorityFor(ex.muscles),
       ),
   ]..sort((a, b) => b.priority.compareTo(a.priority));
 
