@@ -91,8 +91,19 @@ bool formCoachSupports(String? poseTargetId) {
   if (poseTargetId == null) return false;
   final e = kPosePatternToExercise[poseTargetId];
   if (e == null) return false;
-  return poseTargetsFor(e) != null && countsRepsFor(e);
+  return formCoachTeaches(e);
 }
+
+/// The same question asked about a [FormExercise] rather than a catalogue tag.
+///
+/// Extracted because the Form Coach's own exercise picker offered all eight
+/// values while every other surface — the Train tab's chip, the exercise page,
+/// the player — asked [formCoachSupports] first. Selecting `pushup` there gave
+/// a silhouette and a counter that never moved, and `deadlift` gave no shape at
+/// all: the screen the feature is named after was the one place its own support
+/// gate did not run.
+bool formCoachTeaches(FormExercise e) =>
+    poseTargetsFor(e) != null && countsRepsFor(e);
 
 /// The two ends of [e]'s movement, or null when nothing is authored.
 ///

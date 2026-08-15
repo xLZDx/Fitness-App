@@ -71,14 +71,48 @@ double? curlSignal(PoseFrame f, double minLikelihood) {
   return (elbow.$2 - wrist.$2) / torso;
 }
 
+/// The shoulder-to-shoulder distance, or null when a shoulder is unusable.
+///
+/// The one body length a hinge does not shorten. Used as the reference that
+/// tells a foreshortened torso from a folded one — see [hingeSignal].
+double? _shoulderWidth(PoseFrame f, double minLikelihood) {
+  final a = f.landmarks[LandmarkType.leftShoulder];
+  final b = f.landmarks[LandmarkType.rightShoulder];
+  if (a == null || b == null) return null;
+  if (a.likelihood < minLikelihood || b.likelihood < minLikelihood) return null;
+  return _dist((a.x, a.y), (b.x, b.y));
+}
+
 /// Hinge: how upright the torso is, 1.0 standing and 0.0 folded to horizontal.
 ///
 /// Vertical extent of the torso over its true length — a pure ratio, so it
 /// says "how far through the hinge" without caring about body size, camera
 /// distance, or where in the frame the lifter stands.
+///
+/// ## Why it refuses a front-on frame
+///
+/// Both halves of that ratio are measured on the image. Filmed from the side a
+/// hinge rotates the torso across the frame, the numerator collapses and the
+/// denominator does not, and the signal says what it should. Filmed from the
+/// FRONT the same hinge rotates the torso AWAY from the camera: the numerator
+/// and the denominator foreshorten together, the ratio stays near 1.0, and the
+/// signal reports a lifter standing bolt upright while they are folded to
+/// horizontal. Not noise — a confident wrong answer, which is worse.
+///
+/// [_shoulderWidth] is the discriminator because it is the one length a hinge
+/// does not change. Side-on it is small and the torso towers over it; front-on
+/// it is large, and a foreshortened torso falls below it. So when the torso is
+/// shorter than the shoulders are wide, the camera is not in a position to see
+/// this movement and the answer is null.
+///
+/// Null, not a guess. The rep counter holds its phase on a null frame and
+/// counts it as unobserved, so a hinge performed front-on produces a rep that
+/// reports as unjudged rather than as clean — which is the true statement.
 double? hingeSignal(PoseFrame f, double minLikelihood) {
   final torso = _torso(f, minLikelihood);
   if (torso == null) return null;
+  final shoulders = _shoulderWidth(f, minLikelihood);
+  if (shoulders != null && torso < shoulders) return null;
   final sh = _mid(f, LandmarkType.leftShoulder, LandmarkType.rightShoulder,
       minLikelihood);
   final hip =

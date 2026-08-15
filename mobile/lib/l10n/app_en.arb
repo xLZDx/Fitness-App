@@ -968,6 +968,8 @@
   "@formcheckRepNotEvaluated": {
     "description": "Shown when a repetition finished and nothing was entitled to judge it - no silhouette was being scored and no active rule can fault a rep. It replaces the green 'Clean rep' banner that used to be shown in that situation, which told the user their form had been approved when it had never been examined."
   },
+  "formcheckExerciseNotTaught": "Not taught yet",
+  "formcheckNotTaughtHint": "Greyed-out movements have no shape to stand in or no way to count a rep yet. The coach will not pretend to judge them.",
   "formcheckExerciseSquat": "Squat",
   "formcheckExercisePushup": "Push-up",
   "formcheckExerciseDeadlift": "Deadlift",

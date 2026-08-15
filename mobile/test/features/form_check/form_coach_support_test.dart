@@ -102,4 +102,39 @@ void main() {
       expect(item.poseTargetId, 'squat');
     });
   });
+
+  /// The Form Coach's own picker was the one surface that did not ask.
+  ///
+  /// Every other entry point — the Train tab's `formCoach` chip, the exercise
+  /// page, the player — gates on `formCoachSupports`. `_ExercisePicker`
+  /// offered all eight `FormExercise` values, so selecting the push-up there
+  /// produced a silhouette over a counter that cannot move, and the deadlift
+  /// produced no shape at all.
+  group('formCoachTeaches', () {
+    test('agrees with formCoachSupports for every tagged pattern', () {
+      kPosePatternToExercise.forEach((tag, e) {
+        expect(formCoachTeaches(e), formCoachSupports(tag), reason: tag);
+      });
+    });
+
+    test('refuses exactly the movements with no shape or no countable rep',
+        () {
+      for (final e in FormExercise.values) {
+        final teaches = formCoachTeaches(e);
+        expect(teaches, poseTargetsFor(e) != null && countsRepsFor(e),
+            reason: e.name);
+      }
+      expect(formCoachTeaches(FormExercise.pushup), isFalse);
+      expect(formCoachTeaches(FormExercise.deadlift), isFalse);
+      expect(formCoachTeaches(FormExercise.squat), isTrue);
+    });
+
+    test('at least one movement is offered and at least one is refused', () {
+      // Both halves matter. All-refused would make the picker empty with a
+      // hint and no way in; all-offered would make the gate untestable from
+      // the screen and is how the bypass survived.
+      expect(FormExercise.values.where(formCoachTeaches), isNotEmpty);
+      expect(FormExercise.values.where((e) => !formCoachTeaches(e)), isNotEmpty);
+    });
+  });
 }

@@ -35,7 +35,69 @@ PoseFrame frameOf(PoseTarget t,
   return PoseFrame(timestampMs: 0, landmarks: marks);
 }
 
+/// A body facing the camera: shoulders and hips separated across the frame.
+///
+/// [torsoLength] is the SHOULDER-TO-HIP distance as it appears on the image.
+/// A hinge performed front-on rotates the torso away from the lens, so that
+/// number shrinks while the real torso does not — which is the whole problem.
+PoseFrame frontOnFrame({
+  required double torsoLength,
+  double shoulderWidth = 0.20,
+}) {
+  PoseLandmark lm(LandmarkType t, double x, double y) =>
+      PoseLandmark(type: t, x: x, y: y, likelihood: 0.95);
+  const shY = 0.30;
+  final hipY = shY + torsoLength;
+  return PoseFrame(timestampMs: 0, landmarks: {
+    LandmarkType.leftShoulder:
+        lm(LandmarkType.leftShoulder, 0.5 - shoulderWidth / 2, shY),
+    LandmarkType.rightShoulder:
+        lm(LandmarkType.rightShoulder, 0.5 + shoulderWidth / 2, shY),
+    LandmarkType.leftHip:
+        lm(LandmarkType.leftHip, 0.5 - shoulderWidth / 3, hipY),
+    LandmarkType.rightHip:
+        lm(LandmarkType.rightHip, 0.5 + shoulderWidth / 3, hipY),
+  });
+}
+
 void main() {
+  group('the hinge refuses a camera that cannot see it', () {
+    test('standing front-on still reads, because nothing is foreshortened',
+        () {
+      final s = hingeSignal(frontOnFrame(torsoLength: 0.30), 0.5);
+      expect(s, isNotNull);
+      expect(s, closeTo(1.0, 0.05), reason: 'upright');
+    });
+
+    test('folded front-on returns null instead of reporting upright', () {
+      // The defect. Filmed from the front, a hinge shortens the numerator and
+      // the denominator together: the ratio stays near 1.0 and the signal
+      // claims a lifter folded to horizontal is standing bolt upright. Not
+      // noise — a confident wrong answer.
+      final folded = frontOnFrame(torsoLength: 0.06);
+      expect(hingeSignal(folded, 0.5), isNull);
+
+      // And the proof that the old definition would have lied rather than
+      // simply been noisy: the ratio it computed is still ~1.0.
+      final sh = folded.landmarks[LandmarkType.leftShoulder]!;
+      final hip = folded.landmarks[LandmarkType.leftHip]!;
+      expect((hip.y - sh.y) / 0.06, closeTo(1.0, 0.01));
+    });
+
+    test('and the sit-up inherits the same refusal', () {
+      expect(situpSignal(frontOnFrame(torsoLength: 0.06), 0.5), isNull);
+    });
+
+    test('a side-on frame is unaffected at any depth of hinge', () {
+      // Shoulders at one x, which is what a side-on body looks like and what
+      // every authored target here is. The guard must never fire on it.
+      for (final t in [hingeTopTarget, hingeBottomTarget]) {
+        expect(hingeSignal(frameOf(t), 0.5), isNotNull, reason: '$t');
+      }
+    });
+  });
+
+
   // The property that makes these different from `squatDepthSignal`, whose
   // thresholds are fractions of the FRAME and therefore change when the user
   // steps back. Every signal below divides by a length measured on the same

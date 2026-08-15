@@ -1521,17 +1521,50 @@ class _ExercisePicker extends ConsumerWidget {
           FormExercise.situp => l10n.formcheckExerciseSitup,
           FormExercise.overheadPress => l10n.formcheckExerciseOverheadPress,
         };
-    return Wrap(
-      spacing: 8,
+    // Every other surface asks `formCoachSupports` before offering a movement
+    // — the Train tab's chip, the exercise page, the player. This picker did
+    // not, so the screen the feature is named after was the one place its own
+    // support gate never ran: `pushup` drew a silhouette over a counter that
+    // cannot move, and `deadlift` had no shape to stand in at all.
+    //
+    // Disabled rather than hidden. A movement missing from the list reads as
+    // "this app does not know about push-ups"; a movement greyed out with a
+    // reason reads as what is true, and is the only version that tells the
+    // user why the list is short.
+    final unsupported =
+        FormExercise.values.where((e) => !formCoachTeaches(e)).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final e in FormExercise.values)
-          ChoiceChip(
-            key: Key('form_check.exercise.${e.name}'),
-            label: Text(label(e)),
-            selected: e == selected,
-            onSelected: (_) =>
-                ref.read(selectedExerciseProvider.notifier).state = e,
+        Wrap(
+          spacing: 8,
+          children: [
+            for (final e in FormExercise.values)
+              if (formCoachTeaches(e))
+                ChoiceChip(
+                  key: Key('form_check.exercise.${e.name}'),
+                  label: Text(label(e)),
+                  selected: e == selected,
+                  onSelected: (_) =>
+                      ref.read(selectedExerciseProvider.notifier).state = e,
+                )
+              else
+                ChoiceChip(
+                  key: Key('form_check.exercise.${e.name}'),
+                  label: Text('${label(e)} · ${l10n.formcheckExerciseNotTaught}'),
+                  selected: false,
+                  onSelected: null,
+                ),
+          ],
+        ),
+        if (unsupported.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            l10n.formcheckNotTaughtHint,
+            key: const Key('form_check.not-taught-hint'),
+            style: Theme.of(context).textTheme.bodySmall,
           ),
+        ],
       ],
     );
   }

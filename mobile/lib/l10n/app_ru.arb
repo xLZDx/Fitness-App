@@ -481,6 +481,8 @@
   "formcheckRepClean": "Чистое повторение",
   "formcheckRepFaulted": "В этом повторении что-то было не так.",
   "formcheckRepNotEvaluated": "Засчитано, но не оценено.",
+  "formcheckExerciseNotTaught": "Пока не разобрано",
+  "formcheckNotTaughtHint": "Для затемнённых движений ещё нет ни силуэта, ни способа считать повторы. Тренер не станет делать вид, что оценивает их.",
   "formcheckExerciseSquat": "Присед",
   "formcheckExercisePushup": "Отжимание",
   "formcheckExerciseDeadlift": "Становая",

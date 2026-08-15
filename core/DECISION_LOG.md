@@ -10710,3 +10710,67 @@ here to avoid. Basis: **UNKNOWN** — they need the original review artefact.
 
 Full suite **2586 passed / 0 failed** (2579 before). `flutter analyze lib/ test/` reports 7 issues,
 all pre-existing and none in files touched here.
+
+## 2026-08-16 — The Form Coach's own screen did not run its own gate
+
+**Basis: FACT unless marked.**
+
+### The picker offered eight movements and the coach can judge six
+
+`formCoachSupports` exists so that no surface offers a movement the coach cannot score: the Train
+tab's `formCoach` chip asks it (`workouts_page.dart:185`), the exercise page asks it
+(`exercise_reference.dart:1085`), the player asks it (`workout_player_page.dart:293`).
+`_ExercisePicker` in `form_check_page.dart` iterated `FormExercise.values` and asked nothing — so
+the screen the feature is named after was the one place its own gate did not run.
+
+Selecting `pushup` there drew a silhouette over a counter that cannot move (both targets are
+authored; the only available signal is hip-versus-knee height, which does not track a push-up).
+Selecting `deadlift` drew no shape at all — `poseTargetProvider` returns null for it.
+
+`formCoachTeaches(FormExercise)` is the same question asked about the enum rather than a catalogue
+tag, and `formCoachSupports` now delegates to it. Unsupported chips are **disabled with the reason
+next to them**, not hidden: a movement missing from the list reads as "this app has never heard of
+push-ups", and a greyed one with a note is the only version that tells the user why the list is
+short.
+
+**Evidence.** `form_coach_support_test.dart`: `formCoachTeaches` agrees with `formCoachSupports` for
+every tagged pattern; refuses exactly the movements with no shape or no countable rep; and asserts
+at least one is offered AND at least one is refused — all-offered is how the bypass survived.
+
+### `hingeSignal` reported "standing upright" for a lifter folded to horizontal
+
+Both halves of the hinge ratio are measured on the image. Filmed from the side, a hinge rotates the
+torso across the frame: the numerator collapses, the denominator does not, and the number means what
+it says. Filmed from the FRONT the torso rotates AWAY from the lens, numerator and denominator
+foreshorten together, and the ratio stays at ~1.0 — a confident wrong answer, which is worse than
+noise. `situpSignal` shares the definition and inherited it.
+
+Shoulder width is the discriminator, because it is the one body length a hinge does not change.
+Side-on it is small and the torso towers over it; front-on it is large, and a foreshortened torso
+falls below it. When the torso is shorter than the shoulders are wide, `hingeSignal` returns
+**null**.
+
+Null and not a guess, and this is where it composes with the rep-counter change committed earlier
+today: the counter holds its phase on a null frame and counts it as unobserved, so a hinge performed
+front-on now yields a repetition reported as *unjudged* rather than as *clean*. Fail-closed end to
+end, without a stance discriminator this file is not in a position to write.
+
+**Evidence.** `rep_signals_test.dart`, *the hinge refuses a camera that cannot see it*: standing
+front-on still reads 1.0; folded front-on returns null, and the same case asserts that the OLD ratio
+would have been ~1.0 — proof the previous behaviour was a lie rather than a wobble; the sit-up
+inherits the refusal; and every authored side-on target still produces a signal, so the guard cannot
+fire on the framing the coach actually instructs.
+
+### Equipment propagation — audited, already closed
+
+Checked all six surfaces named in the Gate N note. `forYouExercisesProvider`, the AI planner
+(`ai_planner_providers.dart:29`), and the programme builder (`programme_providers.dart:162`) each
+read `safetyContextProvider`, which carries `EquipmentAccess`, and run it through
+`eligibleExercises`. `safeCatalogProvider` and `screenOne` deliberately do NOT filter on equipment,
+and both say why: browsing a leg press you do not own is information, being handed it as today's
+work is a broken recommendation. No further change. Basis: **FACT**, verified at each call site.
+
+### Verification
+
+Full suite **2593 passed / 0 failed** (2586 before). `flutter analyze lib/ test/` reports the same
+7 pre-existing issues, none in files touched here.
