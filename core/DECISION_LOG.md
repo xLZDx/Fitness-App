@@ -10864,3 +10864,38 @@ than folded into a pass. A review that stops early is a smaller review, not a cl
 
 Full suite **2599 passed / 0 failed** (2593 before). `flutter analyze lib/ test/` reports the same
 7 pre-existing issues, none in files touched here.
+
+## 2026-08-16 — One scope document, measured rather than remembered
+
+`core/plans/FINAL_SCOPE_2026-08-16.md` collects everything not done or not finished across the
+plan files, the bug list, the catalogue audits and the remainder of this session's mission.
+
+**Why it is a file and not a chat answer.** Every figure in it rests on three CSVs that live in the
+operator's `Downloads` directory, outside the repository — the same persistence risk that cost this
+project 131 unpersisted findings on 2026-08-04. Answering in a transcript would have added a second
+copy of that risk on top of the first. Moving the CSVs themselves is gate **G6** in the document.
+
+**Everything was re-measured on 2026-08-16 against the live tree**, not carried forward. That was
+not ceremony: six items in `PLAN_BUGS_2026-08-13.md` are closed and the file still lists them open —
+`compileSdk` is already 36, debug already carries `applicationIdSuffix ".debug"`, all three
+experimental banners are wired, photo deletion is wired to `_PhotoTile.onLongPress`. A scope built
+by reading those files would have proposed work that is already merged.
+
+The document says so about itself: items B4–B11 come from plan files and were NOT re-verified, and
+it tells the reader to check each against code first, because three of their neighbours were stale.
+
+**The catalogue numbers, re-measured today and unchanged since 2026-08-15:** 1484 of 1887 rows carry
+no `purpose` and no visual verification; 1368 were never flagged and never read; 127 RU rows break
+the `summary == steps[0]` invariant that EN holds on all 1887; 355 cards share a `summary` with
+another and 224 of those were never flagged; 1877 of 1887 are `difficulty: beginner`, so any
+selection by level is fiction; 1112 rows have a men-only clip and 123 a girl-only one.
+
+**Three UNKNOWNs are recorded as UNKNOWN.** R5 needs production Firestore this session cannot reach;
+R8/R9/R11 were deferred by Gate J without recording what they are; the 2026-08-16 review round left
+nine test files and four programme claims unexamined. None was rounded into a pass.
+
+`lib/features/insurance/` is listed as gate G1 and remains in the tree. Deleting it tripped the
+shell safety gate; per the operating contract the command was not reformulated, and it waits for an
+explicit operator decision.
+
+Not pushed.
