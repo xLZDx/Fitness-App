@@ -25,10 +25,13 @@ String _joinTags(List<String> values) => values.join(', ');
 /// the user actually said, and `Injury.region` stays null, which already means
 /// "nobody has mapped this yet" rather than "screened and safe".
 ///
-/// **This does not make anything safer today, and should not be sold as if it
-/// did.** `exercise_filter.dart` currently screens 0 of 1,887 exercises because
-/// the catalogue carries no contraindication tags. The change makes the data
-/// worth having by the time those tags exist.
+/// When this was written the change made nothing safer: `exercise_filter.dart`
+/// screened 0 of 1,887 exercises because the catalogue carried no
+/// contraindication tags, and the point was to make the data worth having by
+/// the time they existed. They exist now — every [InjuryRegion] carries a
+/// count, pinned by `kSafetyCoverageFloor` — so a parsed injury does reach a
+/// filter that can fire. An unparsed one still does not, which is why
+/// `Injury.region` stays null rather than being guessed.
 ///
 /// [previous] is the list being edited. Since O6 an injury can carry a
 /// [InjuryRegion] that was set by tapping the body map, and that region is not

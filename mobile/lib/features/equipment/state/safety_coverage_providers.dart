@@ -17,11 +17,19 @@ import 'equipment_providers.dart';
 /// every surface, removes nothing, and reports zero hidden exercises — a
 /// truthful zero for entirely the wrong reason.
 ///
-/// That is the catalog's actual state. `safetyCoverage()` measures 0 of 1,887,
-/// while eight places in the product told users their injuries were being
-/// screened for. A filter that cannot fire is not a bug in the filter, so
-/// nothing errored and nothing went red; the legacy catalog carrying the only
-/// tagged exercises was deleted and no test noticed.
+/// That WAS the catalog's actual state when this file was written:
+/// `safetyCoverage()` measured 0 of 1,887, while eight places in the product
+/// told users their injuries were being screened for. A filter that cannot
+/// fire is not a bug in the filter, so nothing errored and nothing went red;
+/// the legacy catalog carrying the only tagged exercises was deleted and no
+/// test noticed.
+///
+/// The tagging batches have since landed and every region carries a count.
+/// This provider is not therefore obsolete: it is what makes the claim true
+/// BECAUSE it is measured, and it is the thing that would notice if a future
+/// catalogue swap silently dropped the tags again. The live number lives in
+/// `kSafetyCoverageFloor` and nowhere else — a figure repeated in prose is a
+/// figure that cannot be raised by the batch that changes it.
 ///
 /// Every claim about injury filtering now reads this. One measurement with one
 /// meaning, rather than eight surfaces each deciding for themselves.

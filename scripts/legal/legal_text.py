@@ -209,8 +209,12 @@ require. Those are outside this app's control and cannot be deleted from here.
 
 ## Your rights
 
-**Export** -- Settings, then "Export your data". You get everything, in a \
-machine-readable file.
+**Export** -- Settings, then "Export your data". You get your profile, your \
+health answers, your whole workout history, your schedule and the details of \
+every progress photo, in a machine-readable file. The one thing it does not \
+carry is the progress-photo images themselves: they are encrypted with a key \
+that does not leave your device, so the export lists each photo and says so \
+in the file rather than shipping bytes nothing could open.
 
 **Deletion** -- Settings, then "Delete account". This cancels any active \
 subscription, erases every document under your account, and then deletes the \
@@ -362,8 +366,13 @@ Stripe хранит собственные платёжные записи ст�
 
 ## Ваши права
 
-**Выгрузка** -- «Настройки», затем «Выгрузить мои данные». Вы получаете всё, \
-в машиночитаемом файле.
+**Выгрузка** -- «Настройки», затем «Выгрузить мои данные». В машиночитаемом \
+файле вы получаете профиль, ответы о здоровье, всю историю тренировок, \
+расписание и сведения о каждой фотографии прогресса. Единственное, чего в \
+файле нет, -- сами изображения: они зашифрованы ключом, который не покидает \
+ваше устройство, поэтому выгрузка перечисляет каждую фотографию и прямо \
+сообщает об этом, а не кладёт внутрь байты, которые всё равно никто не \
+откроет.
 
 **Удаление** -- «Настройки», затем «Удалить аккаунт». Это отменяет активную \
 подписку, стирает все документы вашей учётной записи, а затем удаляет саму \

@@ -1,40 +1,28 @@
 import 'dart:math' as math;
 
-/// MK.6 — Continuous body comp via phone camera.
+/// The US Navy circumference formula, and nothing else.
 ///
-/// On-device photo + height + weight → estimate body-fat %. Uses
-/// silhouette ratios from a single front-facing photo. Not a clinical
-/// measurement; surfaced as "trend" not "ground truth". The estimate
-/// stays on-device; only the trend point lands server-side, encrypted.
-class BodyCompEstimate {
-  const BodyCompEstimate({
-    required this.takenAt,
-    required this.heightCm,
-    required this.weightKg,
-    required this.bodyFatPercent,
-    required this.method,
-    this.confidence,
-  });
-
-  final DateTime takenAt;
-  final double heightCm;
-  final double weightKg;
-  final double bodyFatPercent;
-  final BodyCompMethod method;
-
-  /// 0..1, model-reported confidence. Drop estimates below 0.5 in the
-  /// trend chart so noise doesn't move the line.
-  final double? confidence;
-}
-
-enum BodyCompMethod { photoSilhouette, navy, manual }
-
-/// US Navy body-fat formula. Pure helper for the [BodyCompMethod.navy]
-/// fallback when photos aren't available.
+/// ## What used to be here
+///
+/// A `BodyCompEstimate` record and a `BodyCompMethod.photoSilhouette` value,
+/// under a header that read *"MK.6 — Continuous body comp via phone camera.
+/// On-device photo + height + weight -> estimate body-fat %"*. None of it
+/// existed: no capture, no model, no storage, no screen, and no caller for the
+/// data class. The subscription page nonetheless listed "Body comp + advanced
+/// analytics" as a paid feature.
+///
+/// The claim has been removed from the paywall. What is kept is the one thing
+/// that was real — a pure, tested formula — and it is kept without a type
+/// around it implying a pipeline that was never built.
+///
+/// US Navy body-fat formula.
 ///
 /// Uses cm. Returns 0 when inputs are out of expected range.
 /// Source formula: U.S. Navy Bureau of Medicine, BUMED Instruction
 /// 6110.1 — circumference method.
+///
+/// Currently has no production caller. That is stated rather than hidden: it
+/// is a helper waiting for a feature, not a feature.
 double navyBodyFatPercent({
   required double heightCm,
   required double waistCm,

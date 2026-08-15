@@ -89,15 +89,17 @@ List<ExerciseItem> filterContraindicated(
 /// removes nothing, and reports a truthful zero for the wrong reason.
 ///
 /// Measured on the shipped catalog the day this was written: 0 of 1,887
-/// exercises carry a single tag, while eight places in the product told the
+/// exercises carried a single tag, while eight places in the product told the
 /// user their injuries were being filtered for. Nothing in the code could have
 /// reported that, because a filter that cannot fire is not a bug in the
 /// filter. This is the number that reports it.
 ///
-/// Read today by the coverage-floor test in
-/// `test/features/equipment/safety_coverage_test.dart`. The honesty banner and
-/// the tagging work's ratchet are meant to read the same function rather than
-/// each counting "covered" slightly differently — neither exists yet.
+/// That is history now — the tagging batches landed, and the live number is
+/// pinned from both sides by `kSafetyCoverageFloor` in
+/// `test/features/equipment/safety_coverage_test.dart`, which is deliberately
+/// the only place a count is written down. Restating it in prose here is what
+/// made this paragraph wrong for months: a comment cannot be raised by a
+/// tagging batch, and nothing goes red when it stops being true.
 typedef SafetyCoverage = ({int tagged, int total});
 
 SafetyCoverage safetyCoverage(Iterable<ExerciseItem> exercises) {
@@ -115,11 +117,16 @@ SafetyCoverage safetyCoverage(Iterable<ExerciseItem> exercises) {
 /// ## Why the total is not enough
 ///
 /// [safetyCoverage] answers "can the filter fire at all", which was the right
-/// question while the answer was zero. It becomes the wrong one the moment
-/// S3b's first batch lands: 50 tagged knees make `tagged > 0` true for
+/// question while the answer was zero. It became the wrong one the moment the
+/// first tagging batch landed: 50 tagged knees make `tagged > 0` true for
 /// everybody, including a user whose only injury is a shoulder and for whom
-/// coverage is still 0 of 1,887. The honesty banner would disarm and the app
+/// coverage would still be zero. The honesty banner would disarm and the app
 /// would resume telling them their injuries were screened for.
+///
+/// Every [InjuryRegion] now carries a non-zero count, so no user is in that
+/// position today — but the per-region shape is what has to be asked, because
+/// "no region is empty" is a fact about this catalogue and not a property of
+/// the code.
 ///
 /// A claim about screening is only ever true per injury, so this is the shape
 /// the claim has to be evaluated against.

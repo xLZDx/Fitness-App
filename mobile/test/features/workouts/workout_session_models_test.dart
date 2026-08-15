@@ -151,6 +151,52 @@ void main() {
       durationMinutes: 45,
     );
 
+    test('a back-off scheme reports the top set, not the last one', () {
+      // The anchor used to be `sets.last`. For a ramp that is the working set
+      // and for a top-set-and-back-off it is the lightest thing the user did —
+      // and `progression.dart` reads these rows to decide the next load, so it
+      // would have walked the weight down a set scheme nobody showed it.
+      final backOff = WorkoutSession(
+        id: 's_backoff',
+        title: 'Squat day',
+        exercises: const [
+          WorkoutSessionExercise(
+            exerciseId: 'squat',
+            exerciseTitle: 'Squat',
+            sets: [
+              (weightKg: 100.0, reps: 3),
+              (weightKg: 85.0, reps: 8),
+              (weightKg: 85.0, reps: 8),
+            ],
+          ),
+        ],
+        startedAt: DateTime.utc(2026, 8, 6, 9),
+      );
+      final row = backOff.asLogEntries().single;
+      expect(row.weightKg, 100.0);
+      expect(row.repsCompleted, 3);
+    });
+
+    test('a bodyweight exercise reports its best set rather than nothing', () {
+      // No set carries a weight, so the comparison falls through to reps
+      // instead of discarding every candidate.
+      final bw = WorkoutSession(
+        id: 's_bw',
+        title: 'Calisthenics',
+        exercises: const [
+          WorkoutSessionExercise(
+            exerciseId: 'pushup',
+            exerciseTitle: 'Push Up',
+            sets: [(weightKg: null, reps: 12), (weightKg: null, reps: 20)],
+          ),
+        ],
+        startedAt: DateTime.utc(2026, 8, 6, 9),
+      );
+      final row = bw.asLogEntries().single;
+      expect(row.weightKg, isNull);
+      expect(row.repsCompleted, 20);
+    });
+
     test('emits one row per exercise, not just the first', () {
       final rows = multi.asLogEntries();
       expect(rows, hasLength(2));
@@ -164,12 +210,12 @@ void main() {
           reason: 'two rows sharing an id would upsert onto each other');
     });
 
-    test('each row carries its OWN exercise\'s last set and difficulty, not '
+    test('each row carries its OWN exercise\'s working set and difficulty, not '
         "the first exercise's", () {
       final rows = multi.asLogEntries();
       final bench = rows.firstWhere((r) => r.exerciseId == 'bench');
       final ohp = rows.firstWhere((r) => r.exerciseId == 'ohp');
-      expect(bench.weightKg, 65.0, reason: 'the LAST set, not the first');
+      expect(bench.weightKg, 65.0, reason: 'the heaviest set, not the first');
       expect(bench.difficulty, DifficultyRating.justRight);
       expect(ohp.weightKg, 30.0);
       expect(ohp.difficulty, DifficultyRating.tooEasy);

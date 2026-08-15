@@ -127,6 +127,61 @@ void main() {
       expect(plan.rationale, contains('Recovery'));
     });
 
+    test('the factor shortens the session it is printed over', () {
+      // The defect this replaces: the factor was computed after the greedy
+      // fill, so the screen said "intensity 50%" above exactly the session a
+      // well-recovered user was handed. A number about a prescription has to
+      // be a property of the prescription.
+      final pool = [
+        for (var i = 0; i < 8; i++) _ex('e$i', muscles: ['m$i'], minutes: 10),
+      ];
+      const halved = DeloadVerdict(
+        shouldDeload: true,
+        reasons: ['Recovery is low'],
+        suggestedVolumeFactor: 0.5,
+      );
+
+      final full = _plan(buildPlan(
+        candidatePool: pool,
+        deficit: const <String, double>{},
+        deload: _noDeload,
+        safety: _cleared,
+        targetMinutes: 60,
+      ));
+      final reduced = _plan(buildPlan(
+        candidatePool: pool,
+        deficit: const <String, double>{},
+        deload: halved,
+        safety: _cleared,
+        targetMinutes: 60,
+      ));
+
+      expect(reduced.intensityFactor, closeTo(0.5, 0.0001));
+      expect(reduced.estimatedMinutes, lessThan(full.estimatedMinutes),
+          reason: 'half the volume has to be half the session');
+      expect(reduced.exercises.length, lessThan(full.exercises.length));
+      expect(reduced.estimatedMinutes,
+          lessThanOrEqualTo((full.estimatedMinutes * 0.6).ceil()));
+    });
+
+    test('a low factor over a short target still produces a session', () {
+      // The floor. Scaling a 15-minute target by 0.5 without one leaves 8
+      // minutes, which no exercise fits into — an empty plan with no reason
+      // attached, which is the shape Gate M exists to prevent.
+      final plan = _plan(buildPlan(
+        candidatePool: [_ex('squat', muscles: ['quads'], minutes: 10)],
+        deficit: const <String, double>{},
+        deload: const DeloadVerdict(
+          shouldDeload: true,
+          reasons: ['Recovery is low'],
+          suggestedVolumeFactor: 0.5,
+        ),
+        safety: _cleared,
+        targetMinutes: 15,
+      ));
+      expect(plan.exercises, isNotEmpty);
+    });
+
     test('a cycle self-report caps, and the calendar phase does not', () {
       // Rewritten in Gate O. This case asserted `0.7 * 0.9 = 0.63` — the deload
       // factor MULTIPLIED by the luteal phase's multiplier, which is exactly

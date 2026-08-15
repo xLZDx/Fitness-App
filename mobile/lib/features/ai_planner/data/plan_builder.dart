@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import '../../cycle_aware/data/cycle_phase.dart';
 import '../../equipment/data/equipment_models.dart';
 import '../../personalisation/data/volume_ledger.dart';
@@ -87,22 +89,15 @@ PlanOutcome buildPlan({
       return byPriority != 0 ? byPriority : a.i.compareTo(b.i);
     });
 
-  // 3. Greedy fill to the target duration cap (with a small safety
-  //    buffer so we don't overshoot).
-  final picked = <ExerciseItem>[];
-  var minutes = 0;
-  for (final entry in scored) {
-    if (minutes + entry.ex.durationMinutes > targetMinutes + 5) {
-      continue;
-    }
-    picked.add(entry.ex);
-    minutes += entry.ex.durationMinutes;
-    if (picked.length >= 6) break;
-  }
-
-  // 4. Apply intensity factor — recovery + cycle phase compose
-  //    multiplicatively. Floor at 0.5, ceiling at 1.10, lowered to
+  // 3. Decide the factor — recovery + cycle self-report + the screening
+  //    ceiling. Floor at 0.5, ceiling at 1.10, lowered to
   //    `safety.intensityCeiling` when the screen could not clear the user.
+  //
+  //    This used to run AFTER the session was filled, which is why it did
+  //    nothing: the greedy fill spent the full `targetMinutes` budget, and the
+  //    factor was carried to the screen and rendered as "intensity 80%" over a
+  //    session identical to the one a well-recovered user got. The number was
+  //    true about what the app had decided and false about what it handed over.
   var factor = deload.suggestedVolumeFactor;
   // Gate O: the calendar phase no longer multiplies anything. What the user
   // says they feel does, and only downwards.
@@ -115,6 +110,26 @@ PlanOutcome buildPlan({
     if (opinion != null && opinion < ceiling) ceiling = opinion;
   }
   factor = factor.clamp(0.5, ceiling).toDouble();
+
+  // 4. Greedy fill, against a budget the factor has already shrunk (with the
+  //    same small buffer so we don't overshoot). A 0.5 factor now produces
+  //    roughly half a session rather than a full one with a smaller number
+  //    printed above it.
+  //
+  //    The 10-minute floor is what stops a low factor over a short target
+  //    from producing an empty plan — which would be a refusal with no
+  //    reason attached, the failure mode Gate M exists to end.
+  final budget = math.max(10, (targetMinutes * factor).round());
+  final picked = <ExerciseItem>[];
+  var minutes = 0;
+  for (final entry in scored) {
+    if (minutes + entry.ex.durationMinutes > budget + 5) {
+      continue;
+    }
+    picked.add(entry.ex);
+    minutes += entry.ex.durationMinutes;
+    if (picked.length >= 6) break;
+  }
 
   // 5. Compose rationale string for transparency.
   final reasons = <String>[];

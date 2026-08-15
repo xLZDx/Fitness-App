@@ -313,16 +313,43 @@ class WorkoutSession {
 /// is, in whatever reads [WorkoutLogEntry.sessionId] rather than counting
 /// rows (`deriveProgress`, `deriveWeekTotals` -- see their own doc comments).
 ///
-/// Each exercise contributes its LAST set's weight/reps, same simplification
-/// [WorkoutLogEntry]'s one-weight-one-reps shape already made for the
-/// single-exercise case -- now applied per exercise instead of applied once
-/// and then discarding every exercise after the first.
+/// Each exercise contributes its WORKING set -- the heaviest one it holds,
+/// ties broken by reps -- collapsed into the one-weight-one-reps shape
+/// [WorkoutLogEntry] carries.
+///
+/// It used to contribute `sets.last`, which is the same set today (the player
+/// writes at most one per exercise, see F3.4 in `workout_player_page.dart`)
+/// and stops being the same one the moment multi-set capture lands. "Last" is
+/// only the working set for a ramp; for a top-set-and-back-off it is the
+/// lightest thing the user did, and `progression.dart` -- which reads these
+/// rows to decide the next load -- would have walked the weight down a set
+/// scheme it was never shown. Heaviest is order-independent, so no assumption
+/// about how the player happens to append is baked into the read.
 ///
 /// A session with zero exercises (should not happen, but [exercises] is not
 /// guaranteed non-empty by the type) still contributes one placeholder row --
 /// the same fallback `asLogEntryView()` used -- so a session that is
 /// `completed` always counts toward the streak/total it earned by being
 /// marked complete at all.
+/// The set that represents the exercise: heaviest, ties broken by reps.
+///
+/// Null-weight sets (bodyweight work, or a set logged without a load) sort
+/// below any weighted one and are compared on reps between themselves, so a
+/// bodyweight exercise still contributes its best set rather than nothing.
+SetCapture? _workingSet(List<SetCapture> sets) {
+  SetCapture? best;
+  for (final s in sets) {
+    if (best == null) {
+      best = s;
+      continue;
+    }
+    final w = s.weightKg ?? -1;
+    final bw = best.weightKg ?? -1;
+    if (w > bw || (w == bw && (s.reps ?? 0) > (best.reps ?? 0))) best = s;
+  }
+  return best;
+}
+
 extension WorkoutSessionLogView on WorkoutSession {
   List<WorkoutLogEntry> asLogEntries() {
     if (exercises.isEmpty) {
@@ -342,7 +369,7 @@ extension WorkoutSessionLogView on WorkoutSession {
       for (var i = 0; i < exercises.length; i++)
         () {
           final exercise = exercises[i];
-          final set = exercise.sets.isNotEmpty ? exercise.sets.last : null;
+          final set = _workingSet(exercise.sets);
           return WorkoutLogEntry(
             // Plain `id` for the single-exercise case -- the common one,
             // and every row this app has ever written before R11e -- so a

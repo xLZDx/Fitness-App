@@ -84,6 +84,25 @@ void main() {
     });
   });
 
+  /// R4. The policy said "You get everything, in a machine-readable file" /
+  /// «Вы получаете всё», while `data_export.dart` deliberately excludes the
+  /// encrypted progress-photo bytes and prints a line inside the export saying
+  /// so. A promise about a data-subject right is not a place to round up.
+  group('the export promise matches what the export produces', () {
+    test('neither locale promises the file contains everything', () {
+      expect(_arb('en'), isNot(contains('you get everything')));
+      expect(_arb('ru'), isNot(contains('вы получаете всё')));
+    });
+
+    test('and both name the exclusion', () {
+      // The words the exclusion has to reach the user in. `data_export.dart`
+      // says "Progress photo image data is not included in this export."
+      expect(_arb('en'), contains('does not '));
+      expect(_arb('en'), contains('progress-photo images'));
+      expect(_arb('ru'), contains('сами изображения'));
+    });
+  });
+
   test('every declared health permission is a type the app requests', () {
     // `READ_HEART_RATE` sat here unused. Play's Health Connect access review
     // rejects a declaration for a data type with no demonstrated in-app use,

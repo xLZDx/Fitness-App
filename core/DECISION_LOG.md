@@ -10603,3 +10603,110 @@ the one the Train tab links to.
 Full suite **2579 passed / 0 failed** (2571 after Gate P). `flutter analyze` clean of new issues
 (5 pre-existing warnings in `subscription_providers.dart`, `progression.dart` and three
 `*_providers.dart` files, untouched here).
+
+## 2026-08-15 — Numbers that were shown but not applied, and claims sold on a price card
+
+**Basis: FACT unless marked.**
+
+### `intensityFactor` was rendered and never used
+
+`buildPlan` computed the factor at step 4, AFTER the greedy fill at step 3 had already spent the
+full `targetMinutes` budget. `ai_planner_page.dart:102` printed it as *"45 min · intensity 60%"*
+over a session identical to the one a well-recovered user was handed. The number was true about
+what the app had decided and false about what it gave.
+
+The factor is now decided first and the fill runs against `targetMinutes * factor`, floored at 10
+minutes so a low factor over a short target cannot produce an empty plan — a refusal with no reason
+attached, which is the shape Gate M exists to prevent.
+
+**Evidence.** `plan_builder_test.dart`: *the factor shortens the session it is printed over* builds
+the same pool twice and asserts the 0.5 session is shorter in both minutes and exercise count;
+*a low factor over a short target still produces a session* pins the floor.
+
+### `credibilityBounds` and a square root that did not converge
+
+`fitness_model.dart` carried a 95% interval documented as *"used to fade in the model only after
+enough evidence accumulates"*. Nothing called it and there was no fade-in anywhere.
+
+Under it sat a hand-rolled `_sqrt` — six Newton-Raphson iterations seeded at `x / 2`, with the
+comment *"6 iterations is plenty for our precision"*. It does not converge for small inputs, which
+are the only ones it had: for a variance of 0.0025 it returned 0.0543 against a true 0.05, an 8.6%
+error that grows as the input shrinks, inside the one function whose job was to say how confident to
+be. Both deleted. `dart:math` has had `sqrt` all along.
+
+The same file's header claimed the score *"keeps the job it can do, which is telling
+`progression.dart` whether to move the load"*. `progression.dart` does not import it and reads
+`DifficultyRating` off the last logs directly; `fitnessProfileProvider` has no watcher. The file is
+kept and tested, and now says it is unconsumed. The claim was the defect.
+
+### `sets.last` was the wrong anchor for a set scheme it never saw
+
+`WorkoutSession.asLogEntries` collapsed each exercise to its LAST set. That is the working set for a
+ramp and the lightest thing the user did for a top-set-and-back-off — and `progression.dart` reads
+these rows to choose the next load, so it would have walked the weight down a scheme nobody showed
+it. Today the player writes at most one set per exercise (F3.4), so this changes no current
+behaviour; it stops being latent the moment multi-set capture lands.
+
+The anchor is now the heaviest set, ties broken by reps, with null weights sorting below any
+weighted set and compared on reps between themselves so bodyweight work still contributes its best
+set. Order-independent, so no assumption about how the player appends is baked into the read.
+
+### A paywall line with nothing behind it
+
+`subFeatureBodyComp` — "Body comp + advanced analytics" — was listed on the Sustainer tier.
+Everything under `features/body_comp/` was `navyBodyFatPercent`, a pure formula with no capture, no
+storage, no screen and no caller, plus a `BodyCompEstimate` naming a `photoSilhouette` method that
+was never written. Removed from the price card rather than built: an on-device body-fat estimate
+from a photograph is a health claim, and shipping one to clear a paywall line is the wrong order.
+
+`recovery_workout/data/recovery_block.dart` went the same way — a file whose header announced
+*"Recovery as a first-class workout … the user can schedule + log just like a strength workout"*,
+with no consumer in `lib/` or `test/`.
+
+### R4 — the policy promised an export the export does not produce
+
+FACT: `legal_text.py` said *"You get everything, in a machine-readable file"* / «Вы получаете всё»,
+while `data_export.dart:14-21` deliberately excludes the encrypted progress-photo bytes and prints
+*"Progress photo image data is not included in this export."* inside the export itself. A promise
+about a data-subject right is not a place to round up. Both locales now name what the file carries
+and what it does not, and why.
+
+### Stale coverage claims, corrected
+
+Four doc comments still said the catalogue screened **0 of 1,887** exercises — `exercise_filter.dart`
+(twice), `safety_coverage_providers.dart`, `step_health.dart`. Measured today: 1,527 rows tagged,
+every one of the nine `InjuryRegion` values non-zero (shoulder 489, hip 404, elbow 371, knee 362,
+lower_back 313, upper_back 265, ankle 229, wrist 190, neck 117). The live number lives in
+`kSafetyCoverageFloor` and now nowhere else — restating a count in prose is what let these rot for
+months, because a comment cannot be raised by the batch that changes it and nothing goes red when it
+stops being true.
+
+### Examined and left alone
+
+**Streak semantics.** `deriveProgress` counts consecutive calendar days with any workout, and every
+surface labels it in days (`homeStreakDays` "{count}d", `progressStatDays` "day streak"). `_dayOf`
+buckets to UTC midnight, so the day arithmetic is DST-safe — the hazard `programme_schedule.dart`
+had to solve is already solved here. A programme prescribing 3–4 days a week can never raise this
+number, which is a product tension rather than a false statement; no change made, because inventing
+one would be worse than naming it.
+
+**R5.** Gate J recorded the device-local claim as absolute in the notice and conditional in the code
+for dormant pre-2026-08-06 accounts. `firestore_profile_repository.dart:74` does still parse a
+populated `health` block for legacy documents — but `legal_text.py`'s own evidence header records
+that H1b cleared the 14 documents that had one and a read-only query returned zero still carrying
+it. Re-running that query needs production Firestore access, which this session does not have.
+Basis: **UNKNOWN**, not fixed and not dismissed.
+
+**R7.** `lib/features/insurance/insurance_partner.dart` designs sharing adherence-derived eligibility
+with a carrier, which Gate J recorded as prohibited by a 15 April 2026 Play policy. It is dead —
+no consumer in `lib/`. Deleting it tripped the shell safety gate (recursive force delete), and per
+the operating contract the command was not reformulated. **Awaiting operator authorisation.**
+
+**R8, R9, R11.** Gate J listed these as deferred without recording what they are. No description
+exists in this log, and inventing findings to fill three slots is the failure mode this section is
+here to avoid. Basis: **UNKNOWN** — they need the original review artefact.
+
+### Verification
+
+Full suite **2586 passed / 0 failed** (2579 before). `flutter analyze lib/ test/` reports 7 issues,
+all pre-existing and none in files touched here.

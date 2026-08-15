@@ -19,9 +19,14 @@ import '../../workouts/data/workout_log.dart';
 /// and no sign convention turns it into evidence about which muscle has been
 /// neglected. Those are different questions with different observables.
 ///
-/// Selection reads `volume_ledger.dart` — sets actually performed. This score
-/// keeps the job it can do, which is telling `progression.dart` whether to
-/// move the load.
+/// Selection reads `volume_ledger.dart` — sets actually performed.
+///
+/// **Nothing consumes this today.** The paragraph above used to end "this score
+/// keeps the job it can do, which is telling `progression.dart` whether to move
+/// the load", and `progression.dart` does not import this file: it reads
+/// `DifficultyRating` off the last logs directly. `fitnessProfileProvider` has
+/// no watcher either. Kept, tested and stated as unconsumed rather than
+/// described as load-bearing — the claim was the defect, not the code.
 ///
 /// Initialising with `(good=2, total=4)` (Beta(2,2) prior) gives a
 /// neutral 0.5 starting score so brand-new users aren't biased.
@@ -40,32 +45,19 @@ class MuscleFitness {
 
   double get score => total <= 0 ? 0.5 : good / total;
 
-  /// 95% credibility bounds — lo / hi. Used to fade in the model only
-  /// after enough evidence accumulates.
-  ({double lo, double hi}) credibilityBounds() {
-    if (total < 4) {
-      // No data — return wide bound centred on neutral.
-      return (lo: 0.10, hi: 0.90);
-    }
-    // Approximate Beta(good, total-good) 95% interval via Normal.
-    final mean = score;
-    final variance = (mean * (1 - mean)) / (total + 1);
-    final stddev = _sqrt(variance);
-    return (
-      lo: (mean - 1.96 * stddev).clamp(0, 1),
-      hi: (mean + 1.96 * stddev).clamp(0, 1),
-    );
-  }
-}
-
-double _sqrt(double x) {
-  if (x <= 0) return 0;
-  // Newton-Raphson 6 iterations is plenty for our precision.
-  var g = x / 2;
-  for (var i = 0; i < 6; i++) {
-    g = 0.5 * (g + x / g);
-  }
-  return g;
+  // `credibilityBounds()` was here, and with it a hand-rolled `_sqrt`.
+  //
+  // Both are deleted rather than fixed. The method's own documentation said it
+  // was "used to fade in the model only after enough evidence accumulates" and
+  // nothing called it — there was no fade-in, in this file or anywhere else.
+  //
+  // The `_sqrt` under it was wrong as well, which is the part worth recording:
+  // six Newton-Raphson iterations seeded at `x / 2` do not converge for small
+  // inputs, and small inputs are the only ones this had. For a variance of
+  // 0.0025 it returned 0.0543 against a true 0.05 — an 8.6% error, growing as
+  // the input shrinks, in an interval whose whole purpose was to say how
+  // confident to be. "6 iterations is plenty for our precision" was an
+  // assertion nobody had measured, and `dart:math` has had `sqrt` all along.
 }
 
 /// Aggregate state: one entry per muscle group the user has ever logged.

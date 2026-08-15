@@ -75,6 +75,19 @@ void main() {
       expect(source.contains('l10n.subBecomeSupporter'), isTrue);
       expect(source.contains('l10n.subBecomeSustainer'), isTrue);
     });
+
+    // The paywall listed "Body comp + advanced analytics" on the Sustainer
+    // tier. Everything that existed under `features/body_comp/` was
+    // `navyBodyFatPercent` — a pure formula with no capture, no storage, no
+    // screen and no caller — plus a data class naming a photo-silhouette
+    // method that was never written. A line on a price card is a promise; this
+    // is the one that had nothing behind it.
+    test('the paywall does not sell a body-composition feature', () {
+      final source = File('lib/features/subscription/subscription_page.dart')
+          .readAsStringSync();
+      expect(source.contains('l10n.subFeatureBodyComp,'), isFalse,
+          reason: 'put it back only together with a feature that does it');
+    });
   });
 
   group('SubscriptionPeriod labels', () {

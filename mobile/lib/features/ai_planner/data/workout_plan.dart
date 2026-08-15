@@ -47,8 +47,16 @@ class GeneratedPlan {
   final int estimatedMinutes;
   final List<ExerciseItem> exercises;
 
-  /// Effective intensity vs baseline (0.5..1.1). Lower when recovery
-  /// signals (deload, cycle phase, low compliance) suggest it.
+  /// Effective volume vs baseline (0.5..1.1), and the budget this session was
+  /// actually built against.
+  ///
+  /// Load-bearing, not decorative: `buildPlan` multiplies the target duration
+  /// by it BEFORE filling the session. It used to be computed afterwards and
+  /// only rendered, so a user under a deload was shown "intensity 60%" over
+  /// exactly the session a well-recovered user got.
+  ///
+  /// Lowered by a deload verdict, by the screening ceiling, and by what the
+  /// user says they feel today. The calendar cannot move it — see Gate O.
   final double intensityFactor;
 
   /// Why this plan was selected (read out by the page so users trust it).
