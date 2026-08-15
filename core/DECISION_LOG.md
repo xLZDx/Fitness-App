@@ -8310,3 +8310,77 @@ signal that the loop is done.
 
 449 English rows and 441 Russian rows changed. Committed under the operator's autonomous GO
 of 2026-08-15. **Not pushed** — that needs its own literal `push` GO.
+
+---
+
+## 2026-08-15 09:30–11:42 local / 06:30–08:42 UTC — Independent re-verification of the
+## ChatGPT-produced 1887-exercise audit package; one confirmed P0 fix applied
+
+### What was reviewed
+
+An external (ChatGPT-produced) audit package delivered outside this repo
+(`D:/Downloads/SPTR_FULL_CATALOG_1887_*`, 2026-08-15) claimed 519 flagged exercises
+(P0 1 / P1 149 / P2 369) against the full 1887-row `exercises_vendor.json`. Every one of
+its 609 individual findings was cross-checked against the live catalog file, not accepted
+on the report's word — per this machine's Empiricism-over-Poetry rule.
+
+### Evidence — the package was ~50% confabulated
+
+- 305/609 findings (50%) were false positives: the claimed phrase/pattern was absent from
+  the real Steps/Purpose text. Three whole categories were 100% false (`KNEE_TOE_RULE` 15/15,
+  `JOINT_LOCK` 6/6, `VAGUE_HOLD` 10/10); `SPINE_CUE` (the largest category) was 87% false
+  (195/224) and `FORCED_ROM` 98% false (65/66) — in most cases the real text already
+  contained the *correct* wording the audit was recommending (e.g. flagging "flat back" on
+  text that already said "neutral spine").
+- 135 `PRIOR_REAUDIT` findings referenced an earlier REV2 round. That source
+  (`D:/Downloads/SPTR_H3_REV2_ACTION_REGISTER_2026-08-15.md`) was located; its 135-card id
+  set matched the audit's PRIOR_REAUDIT set exactly (0 diff). Checked all 191 of its
+  individual requirements against current text: 80 were already resolved live (requested
+  wording already present verbatim), 55 genuinely still open.
+- Final independently-confirmed count: **P0 1 / P1 49 / P2 149 / PASS 1688** (199 flagged,
+  not 519). Persisted at `D:/Downloads/SPTR_FULL_CATALOG_1887_FINAL_VERIFIED_2026-08-15.csv`
+  (per-exercise) and `..._FINAL_ISSUES_2026-08-15.csv` (per-finding, with citation).
+
+### Refusal — did not bulk-apply the package's `proposed_steps`/`proposed_purpose`
+
+Checked quality before applying, as planned, and found the proposed-fix columns unsafe to
+apply mechanically:
+- 125/194 `proposed_purpose` diffs were placeholder-to-placeholder pairs (no real content).
+- Of the rest, at least 41/69 were generic templated boilerplate ("Trains the back and
+  trunk muscles through the X movement...") that would have **downgraded** specific,
+  well-written existing copy — not fixed anything.
+- The package's own `original_steps` column (meant to be a verbatim baseline) mismatched
+  the live file for 50/199 confirmed-real rows — meaning `proposed_steps` for those was a
+  diff against a stale base and would corrupt independently-already-edited live text.
+  Of the 16 rows with a genuine `proposed_steps` diff, only 2 had a matching baseline.
+- Even one of those 2 "safe" rows (`ea_sissy_squat_bodyweight`) contained a text-merge bug
+  ("...without compensation control, keeping hips...").
+
+Conclusion: this package cannot be used as a mechanical patch source. Applying it wholesale
+would have shipped broken/downgraded copy across most of the 199 confirmed rows. Ruled out
+as a remediation method for this catalog; any future remediation of the remaining 198 rows
+needs individual authored rewrites, not this package's `proposed_*` columns.
+
+### What was actually applied
+
+Only the single verified-safe P0 (`ea_box_sled_push`): `steps`, `summary` (mirrors
+`steps[0]`, a catalog-wide invariant verified on all 1887 rows), and `equipmentLabel`
+("Sled" → "Box", matching the poster images, `equipmentId: "plyo_box"`, and the label
+already used by other `plyo_box` rows) — the equipment-identity conflict was real
+(`equipmentLabel` said Sled while `equipmentId`, poster and Steps all said box).
+`purpose` was left untouched — its proposed replacement was the same generic-boilerplate
+pattern rejected above.
+
+Backed up pre-edit file to `D:/Downloads/exercises_vendor.json.bak_pre_gate_c_2026-08-15`
+before writing. First write attempt converted the whole file's line endings LF→CRLF (Python
+text-mode default on Windows) and was reverted/rewritten with `newline='\n'` — verified via
+`diff` that the final change touches only this one entry (`git diff --stat`: 7 insertions,
+7 deletions, 1 file). Codex reviewed the uncommitted diff twice (round 1 + `--final`,
+consensus both times, no findings) before this commit.
+
+### State
+
+1 of 199 confirmed-real rows fixed and committed. Not pushed — needs a literal `push` GO.
+198 rows remain: 149 P2 + 49 P1 unresolved, need individual authored fixes (not a bulk
+patch). 1484 no-purpose rows' posters remain visually unverified beyond file-existence
+(1752/1752 files present).

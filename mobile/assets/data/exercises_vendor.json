@@ -20517,13 +20517,13 @@
     "primaryMuscles": [],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "Load the box and grip the high handles or the frame",
+    "summary": "Place both hands firmly on the box or block at about chest height",
     "steps": [
-      "Load the box and grip the high handles or the frame",
-      "Lean your body forward at about forty-five degrees with straight arms",
-      "Keep your spine neutral and your head in line with your spine",
-      "Drive through the balls of your feet with short powerful steps",
-      "Push for the set distance, then rest fully before the next run"
+      "Place both hands firmly on the box or block at about chest height",
+      "Lean your body forward with straight but not forcefully locked arms and brace your trunk",
+      "Maintain a stable, neutral spine with your head in line with your torso",
+      "Drive the box forward with short, powerful steps while keeping the whole foot controlled against the floor",
+      "Push for the set distance, then stop under control and rest before the next effort"
     ],
     "video": {
       "girl": "exercises/girl/Calisthenics-Cardio-Plyo-Functional/Box Sled Push.mp4",
@@ -20531,7 +20531,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Calisthenics-Cardio-Plyo-Functional",
-    "equipmentLabel": "Sled",
+    "equipmentLabel": "Box",
     "poster": {
       "girl": "assets/posters/girl/ea_box_sled_push.jpg",
       "men": "assets/posters/men/ea_box_sled_push.jpg"
