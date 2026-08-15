@@ -10014,3 +10014,64 @@ eligibility, which a 15 April 2026 Play policy prohibits — dormant, no call si
 MAJOR or below, none blocking submission, all recorded for the next gate.
 
 Not pushed.
+
+---
+
+## 2026-08-15 — Gate K: weekly sets per muscle, the quantity the app never had
+
+**Operator decision 1, first half.** Four independent specialist reviews reached the same conclusion
+and it is stronger than either side of the original argument: a difficulty rating is a **tolerance**
+signal and belongs to dose control; "what should I train next" is a **volume deficit** question,
+observable without any rating. Settling the sign of `1 - score` was the wrong question — this
+removes the question.
+
+### What was missing, and why it was not a migration
+
+FACT: `WorkoutSessionExercise.sets` is a real list, so the counts exist. FACT:
+`WorkoutSession.asLogEntries` keeps `sets.last` and drops `sets.length`, and every analytic in the
+app reads through that view — `buildProfile`, `detectDeload`, `buildSuggestions`, `deriveRecovery`.
+So a five-set session and a one-set session are the same row everywhere. `volume_ledger.dart` reads
+`WorkoutSession` directly; nothing about the schema changed.
+
+### Why deficit rather than a corrected rating
+
+Two defects in the old signal, only one of which a sign change would have fixed.
+
+1. It read a tolerance answer as a targeting answer.
+2. It was a closed loop — the ranking chose what was shown, which chose what was rated, which
+   updated the ranking. A muscle could stay top-ranked indefinitely on evidence the ranking itself
+   generated.
+
+Deficit inverts the second by construction: **training a muscle lowers its own priority**, so the
+system self-corrects. `volume_ledger_test.dart` pins that property directly, and pins that no
+difficulty rating moves priority in either direction — the separation IS the decision.
+
+### Numbers, labelled
+
+`kSecondaryMuscleWeight = 0.5` — `PRODUCT_HEURISTIC`, no evidence exists for a precise figure. The
+error it replaces is counting a supporting muscle as a full set; zero would hide real work. Owner
+unassigned, and `fitness-prescription-reference` §10 requires one — the absence is recorded, not
+papered over.
+
+`kWeeklySetTarget = 10.0` — a population reference from ACSM's 2026 position stand, applied here
+only to **order** muscles by shortfall. A monotone transform, so the ordering is identical for any
+positive target and nothing gates on the value.
+
+### Null is not neutral
+
+`exercisePriority` returns null for an exercise with no muscle attribution. 182 catalogue rows carry
+no muscle tag; scoring them at the mid-point put them in the same tie class as every unrated muscle,
+from which `buildPlan`'s greedy top-N could take an entire session while claiming the plan was built
+from difficulty ratings.
+
+### Verification
+
+Full suite 2442 passed / 0 failed (2427 before; 15 added). Mutation, three ways: counting rows
+instead of sets turns 6 red; weighting a secondary as a full set turns 1 red; scoring an
+unattributed exercise as neutral turns 1 red. Restore verified green. `flutter analyze` clean.
+
+**Nothing consumes this yet** — deliberately. Wiring it into the ranker and the planner is Gate L,
+and keeping the measure separate from its first consumer is what lets the measure be argued with on
+its own terms.
+
+Not pushed.
