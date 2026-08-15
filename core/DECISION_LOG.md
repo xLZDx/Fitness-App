@@ -9799,3 +9799,45 @@ is the opposite of the stance-independence decision this work is under. Stance-i
 is a prerequisite for that gate, not a follow-up to it.
 
 Not pushed.
+
+---
+
+## 2026-08-15 — Gate G: five stale or duplicated statements, corrected
+
+Small, and grouped because they share a failure mode: each is a place where the
+repository says something that is no longer true, or says the same true thing twice.
+
+**`core/CODEMAP.md`** told every reader the injury filter "currently gates **nothing** … 0 of 1,887".
+FACT: `kSafetyCoverageFloor = 1527` in `mobile/test/features/equipment/safety_coverage_test.dart:56`,
+a ratchet, so 1,527 of 1,887 exercises carry a contraindication tag and the filter removes rows on
+every surface. The claim was true when written and had been false for a long time. This was the
+repository's loudest stale claim and it was not in the v2.3.1 pack's finding register either.
+
+**`coachIsInstructingProvider`** now owns the "is the coach about to instruct" expression, which was
+written out twice — `form_check_page.dart:281` and `:1134`. The comment above the first copy said the
+fix was that "the page decides who speaks, instead of each widget deciding for itself from its own
+private signal". Two copies of the deciding expression ARE two private signals; they merely agreed.
+The next blocking condition would have had to be added in both places, and finding only one brings
+the two-voices defect back.
+
+**`_AvatarBackdrop`** carried two doc comments stacked on top of each other — the painted-gradient
+rationale from before 2026-08-15 sitting above the photograph rationale that replaced it, with the
+first still opening "Painted rather than a bundled photograph" over a widget that renders
+`Image.asset`. The stale block is gone.
+
+**The backdrop's `errorBuilder`** returned `SizedBox.shrink()` silently. Ten backdrops are picked
+from at random, so a dropped or misnamed asset fails on roughly one launch in ten and is
+indistinguishable from a design choice. It now reports which asset failed. The fallback is unchanged
+— the layer beneath is already a usable ground.
+
+**`projectLandmark`'s `mirror` parameter** is unwired and stays. It was flagged as dead code; it is
+not dead, it is undecided, and the code now says so. It could not have been decided before today:
+the avatar was drawn by mirroring one side of the body, so it was bilaterally symmetric and a
+left/right flip was invisible by construction. Gate F makes it observable. The comment also records
+that this is two measurements and not one — the skeleton over a camera preview the platform may
+already have mirrored, and the avatar over a photograph with no preview behind it.
+
+Full suite 2414 passed / 0 failed, unchanged by this gate. `flutter analyze` reports nothing in any
+touched file.
+
+Not pushed.

@@ -44,5 +44,19 @@ Offset projectLandmark(
   // opposite way to the body is unusable. Whether the platform has already done
   // it is a per-device question, which is why this is a parameter and not an
   // assumption baked into the maths.
+  //
+  // UNWIRED, deliberately: no production caller passes it, and it is left here
+  // rather than deleted because the question it answers is open, not because it
+  // is dead. It could not have been answered before 2026-08-15 — the avatar was
+  // drawn by mirroring one side of the body, so it was bilaterally symmetric
+  // and a left/right flip was invisible by construction. Now that each limb is
+  // drawn from its own observation, one look at the device settles it: raise
+  // one hand, and see whether the figure raises the hand on the same side the
+  // user perceives.
+  //
+  // Do not wire it on inference. The answer differs between the two surfaces —
+  // the skeleton drawn over a camera preview the platform may already have
+  // mirrored, and the avatar drawn over a photograph with no preview behind it
+  // at all — so it is two measurements, not one.
   return Offset(mirror ? canvas.width - px : px, py);
 }

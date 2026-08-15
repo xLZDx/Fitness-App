@@ -401,6 +401,20 @@ final avatarCannotPlaceBodyProvider = Provider<bool>((ref) {
   return figure != null && figure.torso.isEmpty;
 });
 
+/// Whether the coach is about to tell the user to do something, so everything
+/// else on the page should get out of the way.
+///
+/// One expression, in one place. It was written out twice — in the page's build
+/// and again in the rep badge's — and the comment above the first copy said the
+/// fix was that "the page decides who speaks, instead of each widget deciding
+/// for itself from its own private signal". Two copies of the deciding
+/// expression are two private signals; they simply agreed. The next person to
+/// add a blocking condition would have had to find both, and the failure when
+/// they found one is the two-voices defect coming back.
+final coachIsInstructingProvider = Provider<bool>((ref) =>
+    ref.watch(avatarCannotPlaceBodyProvider) ||
+    ref.watch(coachSessionProvider).blocker != CoachBlocker.none);
+
 /// How well the CURRENT frame matches the target, or null when it cannot be
 /// judged. Drives the live outline colour, so the user can see themselves
 /// approaching the shape instead of finding out afterwards.

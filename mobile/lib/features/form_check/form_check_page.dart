@@ -1,7 +1,7 @@
 import 'dart:async' show TimeoutException;
 
 import 'package:camera/camera.dart';
-import 'package:flutter/foundation.dart' show mapEquals;
+import 'package:flutter/foundation.dart' show debugPrint, mapEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -278,8 +278,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     // that must not talk over it — which is the whole of the fix: the page
     // decides who speaks, instead of each widget deciding for itself from its
     // own private signal and all of them deciding "me".
-    final instructing = ref.watch(avatarCannotPlaceBodyProvider) ||
-        ref.watch(coachSessionProvider).blocker != CoachBlocker.none;
+    final instructing = ref.watch(coachIsInstructingProvider);
     // Either the camera never opened, or the native detector died mid-stream.
     // Both mean "no reps will be counted", so both belong in the same slot.
     final failure = _startError ?? ref.watch(poseErrorProvider);
@@ -798,17 +797,6 @@ class _SkeletonPainter extends CustomPainter {
       old.frame.timestampMs != frame.timestampMs;
 }
 
-/// The scene the avatar stands in, in place of the room.
-///
-/// Painted rather than a bundled photograph, and that is a decision rather than
-/// a shortcut. A photograph costs three things this does not: a licence and a
-/// credit on the licences screen (the anatomy chart already carries both), a
-/// few hundred kilobytes in an APK where 8.1 MB of demo photographs were
-/// deleted in August for being dead weight, and a choice of image that belongs
-/// to whoever is designing the app, not to whoever is wiring the mode up.
-///
-/// It is also the seam: swapping this widget for an `Image.asset` is one file
-/// and one licence line, and nothing else on this page has to know.
 /// The scene the avatar stands in.
 ///
 /// A photograph since 2026-08-15, chosen at random from ten each time the coach
@@ -851,7 +839,18 @@ class _AvatarBackdrop extends ConsumerWidget {
               // A missing or corrupt asset must not take the whole coach down
               // with it: the layer under this one is already a usable ground,
               // and the figure is what the user came for.
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              //
+              // Reported, though, rather than absorbed. Ten backdrops are
+              // declared in `pubspec.yaml` and picked from at random, so a
+              // dropped or misnamed one fails on roughly one launch in ten and
+              // looks exactly like a design choice from the outside. Without
+              // this line the only evidence would be a user saying the
+              // background "sometimes" goes plain.
+              errorBuilder: (_, error, __) {
+                debugPrint('coach backdrop failed to load: '
+                    '${ref.read(coachBackdropProvider)}: $error');
+                return const SizedBox.shrink();
+              },
             ),
             const DecoratedBox(
               key: Key('form_check.backdrop_scrim'),
@@ -1131,8 +1130,7 @@ class CoachTopStrip extends ConsumerWidget {
     // directly above "Step into frame so your whole body is visible", is the
     // same two-voices defect this gate exists to remove, one surface further
     // out than the first pass looked.
-    final instructing = ref.watch(avatarCannotPlaceBodyProvider) ||
-        ref.watch(coachSessionProvider).blocker != CoachBlocker.none;
+    final instructing = ref.watch(coachIsInstructingProvider);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
