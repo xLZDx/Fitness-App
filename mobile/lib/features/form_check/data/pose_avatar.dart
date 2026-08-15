@@ -82,9 +82,20 @@ const _rightChain = <LandmarkType>[
 ///
 /// The bound matters because the app has measured itself outside it:
 /// `form_check_page.dart`'s coordinate diagnostic recorded
-/// `x -0.466..1.968 (bound 0.667)`, `y -2.173..3.015` on a real phone, and that
-/// defect is still open. Until it is closed, this is what stops those frames
-/// from being drawn as a shredded figure.
+/// `x -0.466..1.968 (bound 0.667)`, `y -2.173..3.015` on a real phone.
+///
+/// That is NOT a conversion defect, and the sentence here used to say it was.
+/// Reading the same session from its start, the first 305 frames were entirely
+/// in contract (`x 0.005..0.611` against the 0.667 bound); the verdict flipped
+/// on frame 306 at `x = -0.030`, three percent past the left edge, and every
+/// later excursion is continuous frame to frame. A mis-scaled axis would have
+/// been wrong on frame one. Those coordinates are BlazePose extrapolating
+/// joints past the frame edge, which is documented behaviour and which the
+/// user's own body produces the moment a hand leaves the shot.
+///
+/// So this bound is not a workaround for a broken conversion. It is what stops
+/// a legitimately extrapolated joint — a real ankle below the bottom of the
+/// picture — from being drawn as a shredded figure.
 ///
 /// Half a unit of slack still admits the legitimate case BlazePose is
 /// documented to produce — a joint extrapolated just past the frame edge, which
@@ -113,10 +124,23 @@ SilhouetteFigure buildPoseAvatar(
   return buildSilhouette(target, build: build);
 }
 
-/// Picks the more believable side of [frame] and returns it in the shape
-/// [buildSilhouette] reads — always keyed by the LEFT landmark types, because
-/// that is the side the authored targets use and the side that function looks
-/// for.
+/// Reports [frame] as the body [buildSilhouette] draws, keeping the detector's
+/// own left and right apart wherever both of them can be believed.
+///
+/// This used to pick ONE side and re-key it onto the left, on the reasoning
+/// that an authored target is a mid-line side view and the live body should
+/// look like one. That is true of a body standing side-on and false of a body
+/// standing face-on, and the app ships face-on by default: the operator raised
+/// one arm and the figure raised two, because the side that was dropped was
+/// then reinvented by mirroring the side that was kept. Which arm "worked"
+/// changed with body position for the same reason — it was whichever side won
+/// the pick that frame.
+///
+/// Both sides are now reported under their own keys when both carry a torso.
+/// `buildSilhouette` needs no mode flag to tell the two apart: the presence of
+/// a right-keyed shoulder and hip IS the signal, and it degrades continuously
+/// back to the mirrored figure as a turning body brings its shoulders into
+/// line.
 ///
 /// Returns null when neither side carries a torso, which is the only part that
 /// is not optional: without a shoulder and a hip there is no spine, no axis to
@@ -125,24 +149,35 @@ PoseTarget? avatarTargetFrom(
   PoseFrame frame, {
   double minLikelihood = 0.5,
 }) {
-  final chain = _betterSide(frame, minLikelihood);
-  if (chain == null) return null;
+  final leftOk = _hasTorso(frame, _leftChain, minLikelihood);
+  final rightOk = _hasTorso(frame, _rightChain, minLikelihood);
+  if (!leftOk && !rightOk) return null;
 
   final joints = <LandmarkType, (double, double)>{};
-  for (var i = 0; i < chain.length; i++) {
-    final lm = frame.landmarks[chain[i]];
-    if (lm == null) continue;
-    if (lm.likelihood < minLikelihood) continue;
-    if (!_drawable(lm, frame.aspectRatio)) continue;
-    // Re-keyed onto the left side regardless of which side it came from: this
-    // is a mid-line side view now, exactly like an authored target, and
-    // `buildSilhouette` mirrors it back out to both sides itself.
-    joints[_leftChain[i]] = (lm.x, lm.y);
+  void collect(List<LandmarkType> chain, List<LandmarkType> keys) {
+    for (var i = 0; i < chain.length; i++) {
+      final lm = frame.landmarks[chain[i]];
+      if (lm == null) continue;
+      if (lm.likelihood < minLikelihood) continue;
+      if (!_drawable(lm, frame.aspectRatio)) continue;
+      joints[keys[i]] = (lm.x, lm.y);
+    }
   }
 
-  // The torso is the one hard requirement. A partial limb is dropped by
-  // `buildSilhouette` on its own ("a partial limb is worse than none"); a
-  // missing torso has to stop us here.
+  if (leftOk && rightOk) {
+    collect(_leftChain, _leftChain);
+    collect(_rightChain, _rightChain);
+  } else {
+    // Only one side is believable. Re-keyed onto the left, which makes this a
+    // mid-line figure exactly like an authored target, and `buildSilhouette`
+    // mirrors it back out to both sides itself. Drawing a lone half-body would
+    // be the honest reading of the data and an unusable picture.
+    collect(leftOk ? _leftChain : _rightChain, _leftChain);
+  }
+
+  // The torso is the one hard requirement, and `_hasTorso` has already proved
+  // it for whichever side got collected. A partial limb is dropped by
+  // `buildSilhouette` on its own ("a partial limb is worse than none").
   if (!joints.containsKey(LandmarkType.leftShoulder) ||
       !joints.containsKey(LandmarkType.leftHip)) {
     return null;
@@ -151,42 +186,24 @@ PoseTarget? avatarTargetFrom(
   return PoseTarget(id: 'live', joints: joints, bones: const []);
 }
 
-/// Which side to believe: the one whose torso is confident, and then whose
-/// whole chain is.
+/// Whether this side carries a shoulder and a hip worth drawing.
 ///
-/// Summed likelihood rather than a count of present joints. A side with all six
-/// joints reported at 0.3 apiece is the detector guessing a limb it cannot see;
-/// a side with four joints at 0.9 is one it can. Counting would prefer the
-/// first.
-List<LandmarkType>? _betterSide(PoseFrame frame, double minLikelihood) {
-  double score(List<LandmarkType> chain) {
-    final shoulder = frame.landmarks[chain[0]];
-    final hip = frame.landmarks[chain[3]];
-    // No torso, no side. Returning a negative rather than zero so a side
-    // without one always loses to a side with one, even a faint one.
-    if (shoulder == null || hip == null) return -1;
-    if (shoulder.likelihood < minLikelihood ||
-        hip.likelihood < minLikelihood) {
-      return -1;
-    }
-    if (!_drawable(shoulder, frame.aspectRatio) ||
-        !_drawable(hip, frame.aspectRatio)) {
-      return -1;
-    }
-    var total = 0.0;
-    for (final t in chain) {
-      final lm = frame.landmarks[t];
-      if (lm == null) continue;
-      if (!_drawable(lm, frame.aspectRatio)) continue;
-      total += lm.likelihood;
-    }
-    return total;
+/// Both, or neither: a spine needs two ends. The likelihood floor and the
+/// coordinate bound are the same ones the joints themselves face, so a torso
+/// that passes here cannot be dropped by [_drawable] afterwards.
+bool _hasTorso(
+  PoseFrame frame,
+  List<LandmarkType> chain,
+  double minLikelihood,
+) {
+  final shoulder = frame.landmarks[chain[0]];
+  final hip = frame.landmarks[chain[3]];
+  if (shoulder == null || hip == null) return false;
+  if (shoulder.likelihood < minLikelihood || hip.likelihood < minLikelihood) {
+    return false;
   }
-
-  final left = score(_leftChain);
-  final right = score(_rightChain);
-  if (left < 0 && right < 0) return null;
-  return right > left ? _rightChain : _leftChain;
+  return _drawable(shoulder, frame.aspectRatio) &&
+      _drawable(hip, frame.aspectRatio);
 }
 
 /// Is this coordinate close enough to the contract to put in a filled outline.

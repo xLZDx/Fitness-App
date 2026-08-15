@@ -9728,3 +9728,74 @@ The eval harness, runtime JSON, contract and audit documents are committed under
 project 131 unpersisted findings on 2026-08-04.
 
 Not pushed.
+
+---
+
+## 2026-08-15 — Gate F: the avatar reads both sides of the body
+
+**Decision:** `avatarTargetFrom` reports the detector's left and right under their own keys whenever
+both carry a torso, and `buildSilhouette` draws each limb from its own observation instead of
+hanging one chain off both sides. Chosen over the stance discriminator with hysteresis that was
+planned for this, which is no longer needed.
+
+### The defect
+
+Reported from the device, not found in review: standing in front of the phone and raising ONE arm
+drew TWO raised arms; raising the other arm did nothing; which arm "worked" changed with body
+position.
+
+One cause explains all three. `avatarTargetFrom` picked a single side per frame by summed
+likelihood and re-keyed it onto the left (`pose_avatar.dart`), and `pose_silhouette.dart`'s
+`limbPair` then hung that one chain off both sides. So the figure was bilaterally symmetric by
+construction, built from whichever side won that frame's comparison — and the losing side was not
+dropped, it was overwritten with a copy of the winner. Gate C made avatar mode the default view, so
+this was shipping to every user on first launch.
+
+### Why there is no stance discriminator
+
+The planned fix branched on a geometric stance test and needed hysteresis, because a hard switch
+between "mirrored" and "two-sided" flips the figure frame to frame near the boundary — the flicker
+class Gate A existed to remove.
+
+There is no boundary. The offset applied to each side is now whatever the observation falls SHORT
+of a body's width (`sWiden`, `hWiden`), so it decays to zero exactly as the real shoulder separation
+reaches full width, and grows to the full build width as a turning body brings its shoulders into
+line. Face-on, every joint is drawn where the detector saw it; side-on, the two chains coincide and
+the arithmetic reproduces the old mirrored figure exactly. Every angle between is a blend. A body
+turning on the spot is drawn rotating rather than flipping, with no state to hold and nothing to
+flicker across.
+
+### Why the authored targets cannot regress
+
+FACT: `pose_target.dart` contains zero right-keyed joints — `grep -c "LandmarkType.right"` returns
+0. Every shipped target is therefore a mid-line side view that takes the mirrored path by
+construction, not by a flag someone could set wrongly. `two_sided_avatar_test.dart` asserts the
+absence rather than trusting it, so authoring a right-keyed joint fails the suite that protects
+this.
+
+### Verification
+
+- Full suite 2414 passed / 0 failed (2406 before; this gate adds 8).
+- The 40 existing avatar, silhouette and demo tests passed **unchanged** — the continuity property
+  above, measured rather than argued.
+- Mutation, both directions. Restoring the mirror in `limbPair` (`draw(right, …)` → `draw(left, …)`):
+  4 of 8 red. Restoring the one-sided source in `avatarTargetFrom`: 6 of 8 red.
+- `flutter analyze`: no issue in any touched file.
+
+### Also in this commit
+
+`pose_avatar.dart:83-87` claimed the coordinate defect measured on the phone was "still open". Gate
+B closed it by measurement — the first 305 frames of that session were in contract and the verdict
+flipped on frame 306 at `x = -0.030`, so those readings are BlazePose extrapolation, not a broken
+conversion. The comment now says what the measurement showed.
+
+### Not done, and why
+
+Gate E part 2 — giving avatar mode back a verdict source — was next in the agreed order and is
+**deferred**. `poseMatchScore` is invariant to translation and scale but NOT to viewpoint
+(`pose_target.dart:505-509`), and every authored target is a side view. Restoring the score in the
+default face-on view would fail correct repetitions for the stance the operator actually uses, which
+is the opposite of the stance-independence decision this work is under. Stance-independent scoring
+is a prerequisite for that gate, not a follow-up to it.
+
+Not pushed.

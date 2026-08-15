@@ -252,9 +252,22 @@ SilhouetteFigure buildSilhouette(
     return j == null ? null : Offset(j.$1, j.$2);
   }
 
-  final shoulder = at(LandmarkType.leftShoulder);
-  final hip = at(LandmarkType.leftHip);
-  if (shoulder == null || hip == null) {
+  // Left keys carry two different meanings, and which one applies is decided by
+  // the DATA rather than by a mode flag.
+  //
+  // An authored target is one-sided: it is a side view drawn about the body's
+  // mid-line, so `leftShoulder` IS the mid-line and both drawn sides come from
+  // mirroring it. `pose_target.dart` contains no right-keyed joint at all, so
+  // every authored target takes that path by construction and cannot regress
+  // through the branch below.
+  //
+  // A live avatar built from a body facing the camera is two-sided: the
+  // detector saw both shoulders in different places, and mirroring one of them
+  // is what drew two raised arms when the user raised one. There the left key
+  // means the actual left shoulder and the mid-line is the midpoint.
+  final lShoulder = at(LandmarkType.leftShoulder);
+  final lHip = at(LandmarkType.leftHip);
+  if (lShoulder == null || lHip == null) {
     return const SilhouetteFigure(
       segments: [],
       torso: [],
@@ -263,6 +276,12 @@ SilhouetteFigure buildSilhouette(
       limbThickness: 0,
     );
   }
+  final rShoulder = at(LandmarkType.rightShoulder);
+  final rHip = at(LandmarkType.rightHip);
+  final twoSided = rShoulder != null && rHip != null;
+
+  final shoulder = twoSided ? (lShoulder + rShoulder) / 2 : lShoulder;
+  final hip = twoSided ? (lHip + rHip) / 2 : lHip;
 
   final spine = shoulder - hip;
   final torso = spine.distance;
@@ -281,6 +300,34 @@ SilhouetteFigure buildSilhouette(
 
   final sHalf = build.shoulderHalfWidth * torso;
   final hHalf = build.hipHalfWidth * torso;
+
+  /// Signed distance from [centre] along the across-axis: how far to one side
+  /// of the body a point sits, positive towards the drawn left.
+  double acrossOf(Offset p, Offset centre) {
+    final d = p - centre;
+    return d.dx * across.dx + d.dy * across.dy;
+  }
+
+  // Which way round the observation is. A one-sided target has its chain ON the
+  // mid-line, so this is 0 and the `>= 0` picks +1 — the side the old code
+  // always drew the left limb on. Nothing about the authored figures moves.
+  final leftSign = acrossOf(lShoulder, shoulder) >= 0 ? 1.0 : -1.0;
+
+  // How much the figure has to be widened beyond what was observed to still
+  // read as a body, and this is what makes the two paths meet continuously
+  // instead of snapping between them.
+  //
+  // Facing the camera, the shoulders are already the width of a person, so this
+  // is ~0 and every joint is drawn where the detector actually saw it. Turned
+  // side-on, the two shoulders collapse onto each other, this grows to the full
+  // build width, and the figure becomes the mirrored one the side view needs.
+  // Every angle between the two is a blend of the two, so a user turning on the
+  // spot sees the drawing rotate rather than flip — the flicker class Gate A
+  // existed to remove, avoided here by having no threshold to flicker across.
+  final sObs = twoSided ? acrossOf(lShoulder, shoulder).abs() : 0.0;
+  final hObs = twoSided ? acrossOf(lHip, hip).abs() : 0.0;
+  final sWiden = sHalf > sObs ? sHalf - sObs : 0.0;
+  final hWiden = hHalf > hObs ? hHalf - hObs : 0.0;
 
   final segments = <(Offset, Offset)>[];
   final joints = <Offset>[];
@@ -323,10 +370,13 @@ SilhouetteFigure buildSilhouette(
     return [...left, ...right.reversed];
   }
 
-  final leftShoulder = shoulder + across * sHalf;
-  final rightShoulder = shoulder - across * sHalf;
-  final leftHip = hip + across * hHalf;
-  final rightHip = hip - across * hHalf;
+  // Observed position, widened outward. One-sided, `lShoulder` is the mid-line
+  // and `sWiden` is the whole build half-width, so these are exactly the four
+  // synthesised corners the authored figures have always had.
+  final leftShoulder = lShoulder + across * (leftSign * sWiden);
+  final rightShoulder = (rShoulder ?? shoulder) - across * (leftSign * sWiden);
+  final leftHip = lHip + across * (leftSign * hWiden);
+  final rightHip = (rHip ?? hip) - across * (leftSign * hWiden);
 
   // B4: six points, not four. A shoulders-to-hips quad has straight sides and
   // reads as a box; a real trunk narrows at the waist and that single pair of
@@ -334,7 +384,13 @@ SilhouetteFigure buildSilhouette(
   // top, down the right, across the bottom, up the left — anything else and
   // the polygon crosses itself.
   final waistCentre = hip + spine * 0.45;
-  final waistHalf = (sHalf + hHalf) * 0.5 * 0.82;
+  // Measured off the corners actually drawn, not off the build alone, so a
+  // narrow body seen face-on does not get a waist wider than its shoulders.
+  // One-sided these are `sHalf` and `hHalf` and the number is unchanged.
+  final waistHalf = (acrossOf(leftShoulder, shoulder).abs() +
+          acrossOf(leftHip, hip).abs()) *
+      0.5 *
+      0.82;
   final leftWaist = waistCentre + across * waistHalf;
   final rightWaist = waistCentre - across * waistHalf;
   final trunk = <Offset>[
@@ -347,27 +403,40 @@ SilhouetteFigure buildSilhouette(
   ];
   joints.addAll([leftShoulder, rightShoulder, leftHip, rightHip]);
 
-  /// Hangs one chain of joints off both sides of the body.
+  /// Draws the body's two matching limbs, each from its own observation where
+  /// there is one.
   ///
-  /// The offset tapers along the chain — an arm leaves the shoulder at the
-  /// shoulder's width and converges as it descends, which is what arms do.
+  /// This used to take a single chain and hang it off both sides, which is
+  /// right for a one-sided authored figure and wrong for a live body facing the
+  /// camera. On a real phone it meant raising one arm drew TWO raised arms, and
+  /// raising the other drew nothing — the detector's own left and right were
+  /// never both read, so one of them was always being invented from the other.
+  ///
+  /// The offset still tapers along the chain — an arm leaves the shoulder at the
+  /// shoulder's width and converges as it descends, which is what arms do — but
+  /// it is now only the WIDENING, so it vanishes as the real separation grows.
   void limbPair(
-    List<LandmarkType> chain,
-    double half,
+    List<LandmarkType> leftChain,
+    List<LandmarkType> rightChain,
+    double widen,
     List<double> taper,
     List<double> girth,
   ) {
-    final points = <Offset>[];
-    for (final t in chain) {
-      final p = at(t);
-      if (p == null) return; // a partial limb is worse than none
-      points.add(p);
+    List<Offset>? resolve(List<LandmarkType> chain) {
+      final points = <Offset>[];
+      for (final t in chain) {
+        final p = at(t);
+        if (p == null) return null; // a partial limb is worse than none
+        points.add(p);
+      }
+      return points;
     }
-    for (final sign in const [1.0, -1.0]) {
+
+    void draw(List<Offset> points, double sign) {
       final placed = <Offset>[];
       Offset? previous;
       for (var i = 0; i < points.length; i++) {
-        final p = points[i] + across * (sign * half * taper[i]);
+        final p = points[i] + across * (sign * widen * taper[i]);
         if (previous != null) segments.add((previous, p));
         joints.add(p);
         placed.add(p);
@@ -380,6 +449,40 @@ SilhouetteFigure buildSilhouette(
       ]);
       if (outline.isNotEmpty) limbs.add(outline);
     }
+
+    final left = resolve(leftChain);
+    final right = resolve(rightChain);
+
+    // Both seen: each limb is drawn where it was seen. This is the case that
+    // was broken, and it is the case the default view is in.
+    if (left != null && right != null) {
+      draw(left, leftSign);
+      draw(right, -leftSign);
+      return;
+    }
+
+    final only = left ?? right;
+    if (only == null) return;
+
+    if (!twoSided) {
+      // One-sided figure: the chain is the mid-line and both limbs come from
+      // mirroring it. Every authored target lands here, unchanged.
+      draw(only, 1.0);
+      draw(only, -1.0);
+      return;
+    }
+
+    // Two-sided torso, but only one of this pair survived — the far limb was
+    // occluded, or the detector's confidence in it fell below the floor. Its
+    // partner is reflected across the spine rather than translated, because
+    // here the chain is off the mid-line and translating it would stack both
+    // limbs on the same side of the body.
+    final mirrored = [
+      for (final p in only) p - across * (2 * acrossOf(p, hip)),
+    ];
+    final sign = identical(only, left) ? leftSign : -leftSign;
+    draw(only, sign);
+    draw(mirrored, -sign);
   }
 
   // `girth` is the half-width at each joint, as a multiple of the build's own
@@ -391,7 +494,12 @@ SilhouetteFigure buildSilhouette(
       LandmarkType.leftElbow,
       LandmarkType.leftWrist,
     ],
-    sHalf,
+    const [
+      LandmarkType.rightShoulder,
+      LandmarkType.rightElbow,
+      LandmarkType.rightWrist,
+    ],
+    sWiden,
     const [0.85, 0.72, 0.62],
     const [0.46, 0.36, 0.26],
   );
@@ -401,7 +509,12 @@ SilhouetteFigure buildSilhouette(
       LandmarkType.leftKnee,
       LandmarkType.leftAnkle,
     ],
-    hHalf,
+    const [
+      LandmarkType.rightHip,
+      LandmarkType.rightKnee,
+      LandmarkType.rightAnkle,
+    ],
+    hWiden,
     const [1.0, 0.86, 0.74],
     const [0.62, 0.44, 0.30],
   );
