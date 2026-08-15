@@ -9015,3 +9015,32 @@ someone else's draft.
 The second one is the same class of defect this gate has now hit repeatedly — an assertion that
 cannot fail. Worth mutation-testing rather than re-reading: delete the widget under test and
 confirm the assertion goes red.
+
+### Catalog description coverage measured and persisted
+
+`core/plans/CATALOG_DESCRIPTION_COVERAGE_2026-08-15.md` records how much of the catalog actually
+has a description and how much of it has been checked. Headline figures, all machine-measured
+against the staged tree:
+
+- `purpose` is absent on **1484 of 1887** rows (78.6%), identically in EN and RU. Exactly 403
+  rows carry one, and exactly 403 carry `visual_status = PASS` — the authored, proofread part of
+  the catalog is 403 rows; the other 1484 are raw vendor rows nobody has written a "why" for and
+  nobody has checked artwork against text for.
+- Confirmed wrong and still open: **5** — `ea_major_groups_muscle_body` plus the four
+  pre-existing defects already listed above.
+- **1368 of 1887 (72.5%) were never flagged by a detector and never read card by card.** Their
+  defect rate is unknown and is reported as unknown: the 519 flagged cards are not a random
+  sample, and the detectors that selected them have a demonstrated ~50% false-positive rate, so
+  extrapolating the Gate E hit rate onto the remainder would be unsound in both directions.
+- 355 cards share a `summary` with another card, and **224 of those were never flagged at all**
+  — the single largest population no gate has ever looked at.
+
+Deliberately not counted as wrong descriptions: the 83 cards with byte-identical `steps`. The
+largest cluster is one deadlift shot from four camera angles, where the text is right and the
+cards are redundant. Gate E already split that population into 59 dedup candidates and 24
+legitimate variants; it is a catalog-structure problem, tracked separately.
+
+One risk named in the report and worth repeating here: the three CSVs the Gate E counts derive
+from live in the operator's `Downloads` directory, outside the repository. That is the same
+persistence failure class as the 2026-08-04 loss of 131 unpersisted findings. Moving them under
+`core/` needs its own gate.
