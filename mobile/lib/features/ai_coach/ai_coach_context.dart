@@ -102,9 +102,25 @@ String buildCoachPrompt(AiCoachContext ctx) {
     AiCoachSource.equipment => 'The user is standing at the machine:',
     AiCoachSource.exercise => 'The user is about to perform the exercise:',
   };
+  // No number the app cannot check.
+  //
+  // This asked for "a starting load cue" until 2026-08-15, and a cloud model
+  // answered it with a weight — for a person whose strength the app has never
+  // measured, in prose nothing validates. `ai_coach_service.dart` guards only
+  // against an empty answer. A validator is not the fix either: there is no
+  // reference to validate a starting load AGAINST, which is exactly why this
+  // could not be made correct while it stayed a number.
+  //
+  // The guidance itself is kept — a beginner asking how to start does need an
+  // answer — but as a method they apply to themselves rather than a figure
+  // handed down. Sets and reps stay: those are bounded by convention and a
+  // wrong rep count is a wasted set, where a wrong load is an injury.
   final third = switch (ctx.source) {
-    AiCoachSource.equipment => 'A sensible beginner volume (sets x reps or minutes).',
-    AiCoachSource.exercise => 'A sensible beginner volume (sets x reps) and a starting load cue.',
+    AiCoachSource.equipment =>
+      'A sensible beginner volume (sets x reps or minutes).',
+    AiCoachSource.exercise => 'A sensible beginner volume (sets x reps), and '
+        'how to judge a starting load for themselves — never a specific '
+        'weight in kg or lb, which you cannot know for this person.',
   };
   return '''
 You are a concise, safety-first gym coach. $subject

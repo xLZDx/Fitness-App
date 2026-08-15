@@ -89,6 +89,41 @@ void main() {
       expect(buildCoachPrompt(_ctx()), contains('stop on sharp pain'));
     });
 
+    test('it does not ask the model for a weight it cannot know', () {
+      // RE-B02. The prompt asked for "a starting load cue" and nothing
+      // validated the answer — `ai_coach_service.dart` guards only against an
+      // empty one. A cloud model naming a starting weight for a beginner whose
+      // strength the app has never measured is an injury path, and there is no
+      // reference in the app to validate such a number against, so it cannot
+      // be checked after the fact either.
+      final prompt = buildCoachPrompt(_ctx(source: AiCoachSource.exercise));
+
+      expect(prompt, isNot(contains('starting load cue')));
+      expect(prompt, contains('never a specific weight'),
+          reason: 'the instruction has to be IN the prompt: removing the '
+              'request alone leaves a model free to volunteer a number');
+    });
+
+    test('but it still tells the user how to pick one', () {
+      // The fix is not "say nothing about load". A beginner asking how to
+      // start does need an answer; it has to be a method they apply to
+      // themselves rather than a figure handed down.
+      expect(
+        buildCoachPrompt(_ctx(source: AiCoachSource.exercise)),
+        contains('how to judge a starting load'),
+      );
+    });
+
+    test('sets and reps are deliberately kept', () {
+      // Bounded by convention, and a wrong rep count is a wasted set where a
+      // wrong load is an injury. If this ever needs to go too, it goes as its
+      // own decision rather than as collateral of the one above.
+      expect(buildCoachPrompt(_ctx(source: AiCoachSource.exercise)),
+          contains('sets x reps'));
+      expect(buildCoachPrompt(_ctx(source: AiCoachSource.equipment)),
+          contains('sets x reps or minutes'));
+    });
+
     test('a Cyrillic subject name survives into the prompt', () {
       // Carried over from the old location. Worth keeping separately from the
       // "names the subject" case: the interesting failure is an encoding one,

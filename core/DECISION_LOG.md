@@ -9888,3 +9888,40 @@ is `0.5`.
 Full suite 2419 passed / 0 failed (2414 before; 5 added). `flutter analyze` clean on touched files.
 
 Not pushed.
+
+---
+
+## 2026-08-15 — Gate I: the AI coach stops naming a weight (RE-B02)
+
+**Decision:** remove the numeric load request from the prompt; keep the load guidance as a method.
+Chosen over the finding's own prescribed action ("remove numeric prescription authority") on one
+side and over adding a validator on the other.
+
+### Verified, not relayed
+
+FACT: `ai_coach_context.dart:107` asked a cloud model for "a sensible beginner volume (sets x reps)
+and a starting load cue". FACT: the only check on the reply is an empty-answer guard,
+`ai_coach_service.dart:36`. FACT: the repository already has the re-validation pattern one file
+away — `ai_exercise_generator.dart:19` re-validates its own model output — so its absence here is an
+omission rather than a missing capability.
+
+### Why not a validator
+
+There is nothing to validate against. The app has never measured this user's strength, so no
+deterministic rule can say whether "start with 40 kg" is safe for them. That is why this could not
+be made correct while it remained a number, and it is the substance behind the pack's blunter
+"remove numeric prescription authority".
+
+### Why not silence
+
+A beginner asking how to start does need an answer. The prompt now asks for *how to judge* a
+starting load rather than what it is, and states the prohibition explicitly rather than merely
+dropping the request — a model left to fill the gap will volunteer a number.
+
+Sets and reps are deliberately kept, and there is a test saying so. They are bounded by convention,
+and a wrong rep count is a wasted set where a wrong load is an injury. If that has to go too, it
+goes as its own decision rather than as collateral of this one.
+
+Full suite 2422 passed / 0 failed (2419 before; 3 added).
+
+Not pushed.
