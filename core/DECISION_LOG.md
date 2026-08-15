@@ -9955,3 +9955,62 @@ model, and this entry exists so nobody later assumes the branch carries a Codex 
 Two items on it are still open decisions and are NOT settled by having been pushed:
 the personalisation ranking direction (Gate H), and the stance-independence prerequisite blocking
 Gate E part 2.
+
+---
+
+## 2026-08-15 — Gate J: the two store-release blockers
+
+Found by the 14-agent expert-pack review, verified independently before acting. Both are disclosure
+failures, not code failures — which is why neither was catchable by reading either half alone.
+
+### R1 — an entire health data source was undisclosed
+
+FACT: `AndroidManifest.xml` declared seven Health Connect permissions; `platform_health_service.dart`
+reads steps, active calories, resting heart rate, sleep and HRV from Health Connect / Apple Health
+and writes a workout back; `main.dart` binds it in production. FACT: `scripts/legal/legal_text.py` —
+the single source of the in-app pages AND the public URLs the Play listing links to — contained
+**zero** mentions. The three matches in the `.arb` were UI strings ("Get Health Connect"), not legal
+text.
+
+Both locales now carry a Health Connect / Apple Health section naming each metric read, the one
+written, that the readings never leave the device, and how revoking works.
+
+### R2 — a therapeutic-quality claim the app's own Terms contradict
+
+FACT: `aboutWeReANonprofitFitnessOrg` promised "rehab-grade exercise guidance" / "руководство по
+упражнениям реабилитационного уровня" in both locales, while the Terms in the same corpus say "The
+exercise library has not been reviewed by a physiotherapist" and `tag_contraindications.py`'s own
+header says "Nobody with a licence has looked at these, and the app must not say otherwise."
+Rehabilitation is an explicit medical purpose under MDR 2017/745 Art. 2(1). Replaced with what is
+true: careful, injury-aware guidance.
+
+### R6 — a permission with no consumer
+
+FACT: `READ_HEART_RATE` was declared and never requested — `healthReadTypes` asks for
+`RESTING_HEART_RATE` and `HEART_RATE_VARIABILITY_*` only. Removed. It is a Play access-review
+rejection class on its own, and it granted continuous heart-rate history the app never reads.
+
+### Why the test is the deliverable
+
+`health_disclosure_test.dart` holds the code and the policy against each other, which is the only
+angle from which either blocker was visible. It asserts every type in `healthReadTypes` /
+`healthWriteTypes` is named in **both** locales, that every manifest health permission maps to a
+requested type, and that no user-facing string claims a therapeutic grade — with a control asserting
+the honest half of the contradiction is still present, so the claim test cannot pass by the corpus
+being emptied. Assertions run against the generated `.arb`, not the Python source, so an edit that
+is never rebuilt fails here instead of shipping.
+
+Mutation, both directions: restoring `READ_HEART_RATE` turns it red; deleting the disclosure
+paragraphs and rebuilding turns it red. Restore verified green.
+
+Full suite 2427 passed / 0 failed (2422 before; 5 added). `flutter analyze` clean on touched files.
+
+### Not in this gate
+
+R4 (the policy promises a complete export; `data_export.dart` excludes photo bytes and says so
+itself), R5 (the device-local claim is absolute in the notice, conditional in the code for dormant
+pre-2026-08-06 accounts), R7 (`insurance_partner.dart` designs the use of health data for insurance
+eligibility, which a 15 April 2026 Play policy prohibits — dormant, no call site), R8, R9, R11. All
+MAJOR or below, none blocking submission, all recorded for the next gate.
+
+Not pushed.

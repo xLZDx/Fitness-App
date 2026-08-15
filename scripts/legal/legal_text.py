@@ -158,6 +158,18 @@ that other people may be in the frame.
 Progress photos are different: they stay on your phone. There is no \
 server-side storage for them at all.
 
+**Health Connect and Apple Health.** If you connect them, the app reads five \
+things: steps, active calories burned, resting heart rate, sleep, and heart \
+rate variability. It writes one thing back: a workout entry when you finish a \
+session, so your other apps know you trained.
+
+Those readings never leave your phone. They are held in memory while the app \
+is open, shown to you on the home screen, and used to judge whether to suggest \
+an easier week. They are not written to this app's servers, not included in \
+your account, and not sent to any AI model. Nothing is read until you grant \
+the permission, and revoking it in Health Connect or Apple Health stops the \
+reading immediately -- the app keeps working without it.
+
 **Crash reports.** When the app crashes, Firebase Crashlytics receives the \
 device model, the OS version and the stack trace. It is switched off in \
 development builds.
@@ -294,6 +306,19 @@ Fitness App делает и поддерживает один независим
 
 С фотографиями прогресса иначе: они остаются на телефоне. Серверного \
 хранилища для них нет вообще.
+
+**Health Connect и Apple Health.** Если вы их подключите, приложение читает \
+пять показателей: шаги, активные калории, пульс покоя, сон и вариабельность \
+сердечного ритма. Записывает обратно одно: запись о тренировке по завершении \
+занятия, чтобы другие ваши приложения знали, что вы тренировались.
+
+Эти показания не покидают телефон. Они держатся в памяти, пока приложение \
+открыто, показываются вам на главном экране и используются, чтобы решить, не \
+предложить ли неделю полегче. Они не пишутся на серверы этого приложения, не \
+входят в вашу учётную запись и не отправляются ни в одну модель ИИ. Ничего не \
+читается, пока вы не дали разрешение, а отзыв доступа в Health Connect или \
+Apple Health немедленно прекращает чтение -- приложение продолжает работать и \
+без него.
 
 **Отчёты о сбоях.** При падении приложения Firebase Crashlytics получает \
 модель устройства, версию ОС и трассировку стека. В отладочных сборках это \
