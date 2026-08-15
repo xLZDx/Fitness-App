@@ -4896,9 +4896,9 @@
     ],
     "difficulty": "beginner",
     "durationMinutes": 10,
-    "summary": "Kneel on the platform pad of an assisted chin-up machine and grasp the handles with an underhand grip (palms facing you), hands close together, just inside shoulder-width apart",
+    "summary": "Kneel on the platform pad of an assisted chin-up machine and grasp the handles with an underhand grip (palms facing you), hands positioned close together, clearly narrower than shoulder-width apart",
     "steps": [
-      "Kneel on the platform pad of an assisted chin-up machine and grasp the handles with an underhand grip (palms facing you), hands close together, just inside shoulder-width apart",
+      "Kneel on the platform pad of an assisted chin-up machine and grasp the handles with an underhand grip (palms facing you), hands positioned close together, clearly narrower than shoulder-width apart",
       "Begin the movement by pulling your body upward until your chin is above the bar",
       "Slowly lower your body back to the starting position with control, fully extending your arms",
       "Repeat the movement for the desired number of repetitions, maintaining proper form throughout the exercise"
@@ -12733,7 +12733,7 @@
     "steps": [
       "Begin in a squatted position with your feet hip-width apart, holding a barbell with an overhand grip (palms facing your body), hands slightly wider than shoulder-width apart. The barbell should be resting on the floor",
       "Explosively extend your hips and knees while pulling the barbell up towards your chest, keeping it close to your body. As the barbell passes your knees, shrug your shoulders and continue to pull the barbell upward",
-      "Continue pulling the bar upward with your arms and shrug through to full extension, finishing with the bar at shoulder height without dropping back into a squat to catch it. Stand up straight to complete the lift",
+      "As the bar reaches its highest point, whip your elbows around and under it and catch it in a front rack position across the front of your shoulders. Stay standing tall as you do it — a muscle clean never re-bends the knees to drop under the bar, which is what makes it a muscle clean and limits how much you can load",
       "Lower the barbell back to the starting position with control. Repeat for the desired number of repetitions"
     ],
     "video": {
@@ -13259,7 +13259,7 @@
     "steps": [
       "Begin in a squatted position with your feet hip-width apart, holding a barbell with an overhand grip (palms facing your body), hands slightly wider than shoulder-width apart. The barbell should be resting on the floor",
       "Explosively extend your hips and knees while pulling the barbell up towards your chest, keeping it close to your body. As the barbell passes your knees, shrug your shoulders and continue to pull the barbell upward",
-      "Quickly rotate your elbows under the bar and catch it in a front rack position with your elbows pointing forward. Stand up straight to complete the lift",
+      "As the bar reaches its highest point, pull yourself under it, re-bending your knees into a partial squat as you rotate your elbows around the bar, and catch it in a front rack position with your elbows pointing forward. Stand up out of the catch to complete the lift",
       "Lower the barbell back to the starting position with control. Repeat for the desired number of repetitions"
     ],
     "video": {
@@ -46111,7 +46111,7 @@
       "girl": "assets/posters/girl/ea_forearms_stretch_on_wall.jpg",
       "men": "assets/posters/men/ea_forearms_stretch_on_wall.jpg"
     },
-    "purpose": "Uses the wall so you can stretch both forearms at once and control the intensity with your own bodyweight. A useful option when the forearms are properly tight and need more load than the hand-pull version gives."
+    "purpose": "Uses the wall so you can stretch both forearms at once and control the intensity with your own bodyweight. A useful option when the forearms are properly tight and you want to set the pressure by how far you lean away."
   },
   {
     "id": "ea_forearms_stretch_on_wall_fingers_facing_down",
@@ -57435,7 +57435,7 @@
       "men": "assets/posters/men/ea_nordic_hamstring_curl_with_partner.jpg"
     },
     "poseTargetId": "curl",
-    "purpose": "A hamstring exercise with strong evidence behind it for reducing injury risk, which is why it is standard in football and sprint training. It loads the hamstring while it lengthens, which is exactly when tears happen."
+    "purpose": "A hamstring exercise with strong evidence behind it for reducing hamstring injuries, which is why it is standard in football and sprint training. It loads the hamstring while it lengthens, which is when many hamstring strains happen."
   },
   {
     "id": "ea_normal_push_up",
@@ -71727,9 +71727,9 @@
     "primaryMuscles": [],
     "difficulty": "intermediate",
     "durationMinutes": 10,
-    "summary": "Stand with the tyre in front of you and your feet shoulder width apart",
+    "summary": "Put on eye protection and make sure nobody is standing near the tyre, then stand with the tyre in front of you and your feet shoulder width apart",
     "steps": [
-      "Stand with the tyre in front of you and your feet shoulder width apart",
+      "Put on eye protection and make sure nobody is standing near the tyre, then stand with the tyre in front of you and your feet shoulder width apart",
       "Hold the hammer with one hand near the head and the other at the end",
       "Raise it overhead, letting the top hand slide down toward the bottom one",
       "Swing down hard, rotating your trunk and hinging at the hips",
@@ -71746,7 +71746,7 @@
       "girl": "assets/posters/girl/ea_tyre_hammering.jpg",
       "men": "assets/posters/men/ea_tyre_hammering.jpg"
     },
-    "purpose": "Swinging a hammer trains rotational power and grip endurance while raising the heart rate hard. It is one of the few conditioning exercises that improves a genuinely useful skill at the same time. Wear eye protection, keep the area around the tyre clear of people, and hold the hammer with a firm, controlled grip — the head can rebound unpredictably off the tyre."
+    "purpose": "Swinging a hammer trains rotational power and grip endurance while raising the heart rate hard. It is one of the few conditioning exercises that improves a genuinely useful skill at the same time."
   },
   {
     "id": "ea_unilateral_box_jump",

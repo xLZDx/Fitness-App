@@ -329,17 +329,70 @@ void main() {
           contains('return to the starting position'));
     });
 
-    test('a muscle clean does not describe a power clean catch', () {
-      // Different lifts: a muscle clean pulls through to the shoulder with no
-      // re-bend under the bar; a power clean drops under it into a front rack.
-      // Identical Steps meant one of the two was simply wrong.
+    test('the muscle clean stays tall; the power clean pulls under', () {
+      // BOTH lifts finish with the bar racked on the front of the shoulders —
+      // that is not the difference, and an earlier version of this fix got it
+      // backwards by rewriting the muscle clean to stop at shoulder height with
+      // no rack, which describes a high pull and is a different exercise again.
+      // The actual distinction is the receive: a muscle clean turns the elbows
+      // over while standing tall and never re-bends the knees, which is why it
+      // is a technique/strength drill and caps the load; a power clean pulls
+      // under the bar into a partial squat.
       final muscle = byId('ea_barbell_muscle_clean');
       final power = byId('ea_barbell_power_clean');
+      final m = muscle.steps.join(' ').toLowerCase();
+      final p = power.steps.join(' ').toLowerCase();
+
       expect(muscle.steps, isNot(equals(power.steps)));
-      expect(muscle.steps.join(' ').toLowerCase(),
-          isNot(contains('rotate your elbows under the bar')));
-      expect(power.steps.join(' ').toLowerCase(),
-          contains('rotate your elbows under the bar'));
+
+      // Both rack it.
+      expect(m, contains('front rack'));
+      expect(p, contains('front rack'));
+
+      // Only the muscle clean forbids the re-bend, and says so. Asserted in
+      // BOTH directions: without the negative half, a later edit could add
+      // "never re-bends the knees" to the power clean — a direct contradiction
+      // of its own next clause — and the suite would stay green.
+      expect(m, contains('never re-bends the knees'));
+      expect(p, isNot(contains('never re-bends the knees')));
+
+      // Only the power clean describes pulling under into one.
+      expect(p, contains('pull yourself under'));
+      expect(p, contains('partial squat'));
+      expect(m, isNot(contains('pull yourself under')));
+      expect(m, isNot(contains('partial squat')));
+
+      // The Russian overlay is what a Russian-speaking user actually reads, and
+      // the standing RU tests check coverage, step count and Cyrillic titles —
+      // none of which notices the RU steps describing the wrong lift. Reverting
+      // either RU correction alone left the whole suite green until this ran.
+      final ru = (jsonDecode(
+              File('assets/data/exercises_vendor.ru.json').readAsStringSync())
+          as Map).cast<String, dynamic>();
+      String ruSteps(String id) =>
+          ((ru[id] as Map)['steps'] as List).join(' ').toLowerCase();
+      final mRu = ruSteps('ea_barbell_muscle_clean');
+      final pRu = ruSteps('ea_barbell_power_clean');
+
+      // Matched on stems, not on whole words: Russian declines, so
+      // `contains('фронтальную стойку')` passes only for the accusative that
+      // happens to be written today and fails on a legitimate rewording in the
+      // genitive. A mutation run proved that — reverting the RU muscle clean to
+      // a power-clean description made this fail on the CASE of "стойка"
+      // rather than on the missing distinction, which is the right verdict for
+      // the wrong reason.
+      expect(mRu, contains('фронтальн'));
+      expect(pRu, contains('фронтальн'));
+      expect(pRu, contains('полуприсед'));
+      expect(mRu, isNot(contains('полуприсед')));
+
+      // The muscle clean's defining cue is a NEGATION — "колени не сгибаются
+      // повторно". A stem check for 'повторн' alone stays green if the "не" is
+      // deleted, which inverts the cue into a description of the power clean
+      // while the test still passes. Matched as one expression so the negation
+      // cannot be dropped independently of the verb it negates. `\w` is ASCII
+      // in Dart, so the verb ending is spelled out as a Cyrillic class.
+      expect(mRu, matches(RegExp(r'не\s+сгиба[а-яё]*\s+повторн')));
     });
   });
 
@@ -377,19 +430,114 @@ void main() {
       expect(text, contains('as high as you can control'));
     });
 
-    test('swinging a hammer requires eye protection, not suggests it', () {
-      // The first version of this fix said "wear eye protection IF AVAILABLE",
-      // which reads as permission to swing a sledgehammer at a tyre without
-      // any — on the same card that warns the head rebounds unpredictably.
-      // Conditional framing is asserted against, not just the presence of the
-      // words, because the weak version contained them too.
-      final text = byId('ea_tyre_hammering').purpose!.toLowerCase();
-      expect(text, contains('eye protection'));
-      expect(text, contains('clear'));
+    test('swinging a hammer requires eye protection, in the steps', () {
+      // Two earlier versions of this fix were wrong in different ways. The
+      // first said "wear eye protection IF AVAILABLE" — permission to swing a
+      // sledgehammer without any, on the same card that warns the head
+      // rebounds unpredictably. The second dropped the hedge but left the
+      // instruction in `purpose`, which renders under the "Why this matters"
+      // heading in de-emphasised `textSecondary` ABOVE the numbered steps
+      // (`exercise_reference.dart`) — a benefit paragraph is the one place a
+      // user mid-workout will not read as an instruction. It belongs in step 1,
+      // before the stance cue, because putting on goggles is a pre-swing
+      // action.
+      final e = byId('ea_tyre_hammering');
+      final first = e.steps.first.toLowerCase();
+      expect(first, contains('eye protection'));
+      expect(first, contains('nobody is standing near'));
+      // `summary` is a byte-identical copy of `steps.first` catalog-wide.
+      expect(e.summary, e.steps.first);
+      // Asserted against, not just absent by luck: the hedged version
+      // contained the words "eye protection" too and would pass a presence
+      // check.
       for (final hedge in ['if available', 'if possible', 'ideally', 'where possible']) {
-        expect(text, isNot(contains(hedge)),
+        expect(first, isNot(contains(hedge)),
             reason: 'eye protection is hedged with "$hedge"');
       }
+      // And it is no longer duplicated back into the benefit paragraph.
+      expect(e.purpose!.toLowerCase(), isNot(contains('eye protection')));
+
+      // The same relocation was made in the Russian overlay, and nothing else
+      // in the suite would notice it being reverted: the standing RU tests
+      // check coverage, step counts and Cyrillic titles, none of which cares
+      // WHICH step carries the PPE cue. Without this, a Russian-speaking user
+      // could lose the eye-protection instruction with the suite still green.
+      final ruTyre = ((jsonDecode(
+                  File('assets/data/exercises_vendor.ru.json').readAsStringSync())
+              as Map)['ea_tyre_hammering'] as Map)
+          .cast<String, dynamic>();
+      final ruFirst = (ruTyre['steps'] as List).first as String;
+      expect(ruFirst.toLowerCase(), contains('защитные очки'));
+      expect(ruFirst.toLowerCase(), contains('никого нет'));
+      expect(ruTyre['summary'], ruFirst);
+      expect((ruTyre['purpose'] as String).toLowerCase(),
+          isNot(contains('защитные очки')));
+      // The English half of this test has guarded against hedges since the
+      // first version — "wear eye protection IF AVAILABLE" was the original
+      // defect. The Russian half checked only WHERE the cue lives, so
+      // "по возможности наденьте защитные очки" would have passed: the same
+      // defect, reintroduced in the language the English guard cannot see.
+      for (final hedge in [
+        'по возможности',
+        'при возможности',
+        'если возможно',
+        'если есть',
+        'желательно'
+      ]) {
+        expect(ruFirst.toLowerCase(), isNot(contains(hedge)),
+            reason: 'RU eye protection is hedged with "$hedge"');
+      }
+    });
+
+    test('a benefit paragraph never contradicts the steps beneath it', () {
+      // This log's own rule, written one gate earlier: a prose edit to this
+      // catalog ships with an assertion that fails when the edit is reverted,
+      // or it does not ship. Three prose fixes then shipped without one, which
+      // is what this covers. All three were introduced BY a previous fix — the
+      // failure mode here is not the vendor data, it is rewriting.
+      final ru = (jsonDecode(
+              File('assets/data/exercises_vendor.ru.json').readAsStringSync())
+          as Map).cast<String, dynamic>();
+      String ruPurpose(String id) =>
+          ((ru[id] as Map)['purpose'] as String).toLowerCase();
+
+      // 1. The wall forearm stretch. `purpose` said the intensity is set by
+      // how far you "lean in" while step 4 says "Lean away" — opposite
+      // directions on one card. Asserted as agreement between the two fields
+      // rather than as a fixed string, so a legitimate rewording still passes
+      // and only a contradiction fails.
+      final fore = byId('ea_forearms_stretch_on_wall');
+      final foreSteps = fore.steps.join(' ').toLowerCase();
+      expect(foreSteps, contains('lean away'));
+      expect(fore.purpose!.toLowerCase(), contains('lean away'));
+      expect(fore.purpose!.toLowerCase(), isNot(contains('lean in')));
+      expect(ruPurpose('ea_forearms_stretch_on_wall'),
+          contains('отклоняетесь'));
+      expect(ruPurpose('ea_forearms_stretch_on_wall'),
+          isNot(contains('наклоняетесь')));
+
+      // 2. The plate lateral lunge. EN loads the HIP MUSCLES of the bent leg;
+      // the RU overlay said "hip JOINT", on a card carrying the `hip`
+      // contraindication, and the fix for that then left "мышцы таза
+      // согнутой" — an adjective with no noun. Both failures are asserted
+      // against: no joint, and the noun present.
+      final lungeRu = ruPurpose('ea_plate_lateral_lunge');
+      expect(lungeRu, contains('мышцы'));
+      expect(lungeRu, isNot(contains('сустав')));
+      expect(lungeRu, contains('согнутой ноги'));
+
+      // 3. The Nordic hamstring curl. Two opposite failures on one sentence:
+      // an earlier "softening" edit BROADENED the medical claim from hamstring
+      // injuries to injury risk generally, and the restored text then asserted
+      // one settled tear mechanism. Both directions are pinned.
+      final nordic = byId('ea_nordic_hamstring_curl_with_partner');
+      final np = nordic.purpose!.toLowerCase();
+      expect(np, contains('reducing hamstring injuries'));
+      expect(np, isNot(contains('reducing injury risk')));
+      expect(np, isNot(contains('exactly when')));
+      final nordicRu = ruPurpose('ea_nordic_hamstring_curl_with_partner');
+      expect(nordicRu, contains('задней поверхности бедра'));
+      expect(nordicRu, isNot(contains('ровно тогда')));
     });
 
     test('an equipmentId never ships without a label to show for it', () {

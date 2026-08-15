@@ -8420,10 +8420,17 @@ checkable claims against the live catalog and confirmed all four:
    operator's quarantine-not-fix framing rather than a normal content-authoring gap.
 4. **DUPLICATE_STEPS example (`ea_barbell_muscle_clean` vs `ea_barbell_power_clean`) —
    confirmed real defect.** All 4 steps are byte-identical between the two rows, but a
-   muscle clean and a power clean are different lifts (muscle clean finishes with locked-out
-   arms, no re-bend under the bar; power clean racks the bar in a full front-rack catch) —
-   supports treating at least this instance as a genuine content defect, not a legitimate
-   shared-variant duplicate.
+   muscle clean and a power clean are different lifts — supports treating at least this
+   instance as a genuine content defect, not a legitimate shared-variant duplicate.
+
+   **The parenthetical that stood here was itself wrong and is struck.** It read: *"muscle
+   clean finishes with locked-out arms, no re-bend under the bar; power clean racks the bar
+   in a full front-rack catch"*. Both lifts rack the bar in the front rack; the rack is not
+   the difference. The difference is the receive — a muscle clean turns the elbows over
+   while standing tall and never re-bends the knees, a power clean pulls under into a
+   partial squat. That error propagated into the first remediation attempt and into a test
+   that asserted it; both are corrected in the 12:44 entry below. Left visible rather than
+   silently rewritten, because it is the origin of the mistake.
 
 ### Loud self-correction
 
@@ -8594,16 +8601,15 @@ items fixed in the catalog, EN + RU, with per-defect regression tests (operator 
   inside shoulder-width". `ea_butt_kicks_slow` — Steps said "quick, continuous motion"
   under a "Slow" title, now "slow, controlled motion". `ea_barbell_lunges` — Steps
   described the stationary pattern identical to its "on the Spot" sibling, now describes a
-  travelling lunge. `ea_barbell_muscle_clean` — Steps described a power clean's front-rack
-  catch ("rotate your elbows under the bar"), now describes the muscle clean's straight-arm
-  finish with no re-bend under the bar.
+  travelling lunge. `ea_barbell_muscle_clean` / `ea_barbell_power_clean` — see the Codex
+  correction below; the first attempt at this pair was wrong and both sides were rewritten.
 - **1 FORCED_ROM cue** (`ea_alternate_leg_raise_from_reverse_plank_position`): "to your
   maximum range" → "as high as you can control ... and your hips level".
 - **3 metadata gaps**: `ea_crow_pose` and `ea_wild_thing_pose` (both `difficulty:
-  advanced`) had `contraindications: null`, now `['wrist','shoulder']` and
-  `['wrist','shoulder','lower_back']` — this field is what `filterContraindicated` reads to
-  keep an exercise away from an injured user, so null meant the filter had nothing to act
-  on. `ea_diagonal_chop_cable` `equipmentLabel` `"None"` → `"Cable Pulley Machine"` (the
+  advanced`) had `contraindications: null` — this field is what `filterContraindicated`
+  reads to keep an exercise away from an injured user, so null meant the filter had nothing
+  to act on. Populated via the tagger, not by hand — see the Codex correction below.
+  `ea_diagonal_chop_cable` `equipmentLabel` `"None"` → `"Cable Pulley Machine"` (the
   dominant label among the other 65 `cable_machine` rows).
 - **1 missing safety warning** (`ea_tyre_hammering`): added clear-space, eye-protection and
   controlled-grip language to `purpose`; previously the card had none anywhere.
@@ -8672,9 +8678,340 @@ an operator decision.
 **The 59 DEDUP_CANDIDATE cards** remain as they are — a merge/alias/delete product decision,
 explicitly outside "ГО 1".
 
+### Codex review: two of these "fixes" were themselves wrong
+
+Codex ran twice on the uncommitted diff and returned findings both times. Every one was
+cross-checked against the real file before being accepted; all were confirmed. Two are worth
+recording in full, because both are the SAME failure mode this whole gate exists to correct
+— fixing a defect by introducing a different one.
+
+**1. The muscle clean rewrite was wrong, and the new test entrenched it.** The first attempt
+rewrote `ea_barbell_muscle_clean` step 2 to finish "with the bar at shoulder height without
+dropping back into a squat to catch it" — and the accompanying test asserted the phrase
+"rotate your elbows under the bar" must NOT appear. That describes a **high pull**, a third
+exercise again. Both a muscle clean and a power clean finish with the bar racked on the front
+of the shoulders; the rack is not the difference. The difference is the receive: a muscle
+clean turns the elbows over while standing tall and never re-bends the knees (which is what
+caps the load and makes it a technique drill), while a power clean pulls under the bar into a
+partial squat. Corrected by rewriting BOTH sides — the power clean's own step never mentioned
+pulling under either, so distinguishing the pair required touching both — and by rewriting the
+test to assert that both contain "front rack", only the muscle clean contains "never re-bends
+the knees", and only the power clean contains "pull yourself under" + "partial squat".
+
+**2. `contraindications` is a GENERATED field and must not be hand-edited.**
+`scripts/catalog/tag_contraindications.py` derives every tag from deterministic rules over
+the vendor's own text, and `scripts/catalog/test_tag_contraindications.py` guards the result
+two ways: a sorted/unique invariant, and an outcome check whose own comment says "Someone
+hand-edits a tag into the JSON -> red". The hand-written `['wrist','shoulder']` failed the
+sorted check immediately (`assert ['wrist','shoulder'] == ['shoulder','wrist']`), and only
+these 2 rows out of 1887 violated it. Worse, `retract_stale_tags` would have **silently
+removed** both hand-added tags on the next tagger run for those regions — the safety fix
+would have evaporated with nothing failing.
+
+Root cause of missing this: the Flutter suite was run, the Python suite for the catalog
+scripts never was. It is a separate `pytest` invocation and nothing in the Flutter run
+reaches it.
+
+Redone properly — three rule changes, each named for the mechanism it stands for:
+`"crow"` and `"wild thing"` added to the existing `wrist_weight_bearing` (bodyweight through
+an extended wrist — the same mechanism as its existing handstand/plank/bear-crawl words,
+which simply had no word that reached either title); a new `shoulder_loaded_arm_balance` rule
+kept separate from `shoulder_overhead` so a reviewer can drop these two rows without
+disturbing the 487 the pressing rules carry; and `"wild thing"` added to `lumbar_extension`,
+since the pose is a backbend entered from a side plank — the same mechanism as cobra. Crow is
+deliberately NOT in the lumbar rule: it rounds rather than extends. Regenerated through
+`--region {wrist,shoulder,lower_back} --write`, which produced exactly the 2/2/1 intended
+rows and no collateral. All four ratchets updated in the same change, each with the reason
+the number moved: the Python count table, the Dart `batched` map, and
+`kSafetyCoverageFloor` 1525 → 1527.
+
+Also from Codex, both confirmed and fixed: the eye-protection cue said "wear eye protection
+**if available**", which reads as permission to swing a sledgehammer without any on a card
+that also warns the head rebounds unpredictably — now unconditional, and the test asserts
+against the hedge words themselves (`if available`, `if possible`, `ideally`, `where
+possible`), since the weak version contained the phrase "eye protection" too and passed. And
+the contraindications test only asserted `contains('wrist')`, which would still pass with the
+newly-added `shoulder` and `lower_back` tags deleted — now asserts the exact sorted set.
+
+### Correction to the count reported above
+
+An earlier version of this entry said "1 fixed previously (P0) + 28 fixed here + 4 sibling +
+1 open", which totals 34 against a stated 33. Codex caught the arithmetic. Recomputed from
+the Gate E CSV: the P0 (`ea_box_sled_push`) is labelled FIXED and is **not** one of the 33.
+The correct split is **29 edited + 3 sibling-resolved + 1 open = 33**. It is 29, not 28,
+because `ea_barbell_power_clean` moved from the sibling column into the edited column when
+the muscle-clean correction required rewriting both sides.
+
 ### State
 
-33 confirmed action items: 1 fixed previously (P0, `372144f`), 28 fixed here, 4 resolved as
-the sibling side of the 4 pairs above, 1 (`ea_major_groups_muscle_body`) deliberately open
-pending an operator decision. Not pushed — needs a literal `push` GO, and per "No push, no
-build, before Codex's FINAL round" also needs the Codex loop to reach FINAL first.
+33 confirmed action items: **29 edited here**, 3 resolved as the untouched side of a pair
+whose partner was rewritten (`ea_assisted_chin_up_normal_width_reverse_grip`,
+`ea_barbell_lunges_on_the_spot`, `ea_butt_kicks`), 1 (`ea_major_groups_muscle_body`)
+deliberately open pending an operator decision. The P0 fixed earlier (`372144f`) is separate
+from these 33. Not pushed — needs a literal `push` GO, and per "No push, no build, before
+Codex's FINAL round" also needs the Codex loop to reach FINAL first.
+
+### Newly found, NOT fixed — the tagger fails open on a spelling variant
+
+`ea_hand_stand_hold` carries no contraindication tag in any region, despite "handstand" being
+a word in BOTH `wrist_weight_bearing` and `shoulder_overhead`. Its title is spelled "Hand
+Stand Hold" — two words — so the compiled `\b(handstand)(s|es)?\b` pattern never matches. This
+is the same class of bug the file already documents for `\b` and underscores, and it fails in
+the direction the tagger's own docstring calls the one that hurts someone. `ea_monkey_pose`
+and `ea_tyre_flip` are also `advanced` with no tags at all. Not fixed here: correcting the
+word list changes tags on rows that were never part of the audited 33, and choosing tag sets
+for three unreviewed exercises is a safety decision that needs its own GO.
+
+### A concurrent session committed this work mid-flight; this is the correction
+
+At 13:14:19 local / 10:14:19 UTC another Claude session working on the form-coach gates found
+this work uncommitted in the tree, obtained an operator GO, and committed it as `68b7dad`
+("chore(catalog): land Gate E re-verification and its confirmed content fixes") so its own
+gates could start from a clean tree. Its commit message states plainly that it did not
+re-verify the findings and that it was committing a prior session's on-disk state — that part
+is accurate and honestly recorded.
+
+What it could not know is that the state it captured was mid-correction. `68b7dad` therefore
+contains:
+
+- the **wrong** `ea_barbell_muscle_clean` step ("finishing with the bar at shoulder height"),
+  which describes a barbell high pull, not a muscle clean; and
+- a green regression test asserting that the muscle clean must NOT contain "rotate your elbows
+  under the bar" — i.e. a test actively protecting the wrong description.
+
+This commit is the correction, and it is deliberately a follow-up rather than an amend:
+`68b7dad` is a legitimate commit by another session, and rewriting it would rewrite someone
+else's work. Both lifts are now described correctly and the test asserts the real distinction
+(both rack the bar; only the muscle clean forbids the knee re-bend; only the power clean pulls
+under into a partial squat).
+
+### Test state, measured properly this time
+
+`flutter test --machine`, failures enumerated from `testDone.result != "success"`:
+**2659 of 2660 pass.** The single failure is
+`test/theme/app_semantic_colors_test.dart :: the hardcoded whites that survived G1.2b stay
+accounted for` — a ratchet on hardcoded white colours in `mobile/lib/` that has dropped 64 → 61
+because the concurrent session removed three of them in `form_check_page.dart` and
+`coach_readiness_band.dart` and has not lowered the ratchet yet. No change in this commit
+touches any file under `mobile/lib/`, so it cannot be the cause.
+
+An earlier entry in this log claimed the full suite's 7-then-5 failures were parallel-run
+flakiness unrelated to the catalog edits. **That claim was wrong twice over** and is corrected
+here:
+
+1. **The attribution method was broken.** `flutter test | tail -N` prints
+   `MM:SS +<passed> -<failed>: <suite>: <test>`, where `-<failed>` is a RUNNING TOTAL, not a
+   property of the named suite. `widget_test.dart` sorts last, so `tail` always lands on it.
+   Compounding it, `test/widgets/app_buttons_test.dart` contains a negative control that
+   deliberately throws `BoxConstraints forces an infinite width` and dumps a ~150-frame stack
+   **while passing** — that stack filled most of the tail window. Two files were blamed that
+   never failed. Correct method: `flutter test --machine`, then read `testDone` events whose
+   `result != "success"`.
+2. **One failure genuinely WAS caused by these catalog edits** — the `kSafetyCoverageFloor`
+   ratchet at 1525 against an actual 1527 after the contraindication batch. Codex flagged the
+   red suite as a BLOCKER and was right; the "unrelated flakiness" reply was wrong. It is fixed
+   (floor raised to 1527, in this commit alongside the data that moved it).
+
+The genuinely intermittent failures were real but environmental: `AppTheme` sets
+`splashFactory: InkSparkle.splashFactory` (`mobile/lib/core/theme/app_theme.dart:196`, the only
+`splashFactory` reference in the repo), and `InkSparkle` reads `shaders/ink_sparkle.frag` from
+the asset bundle on the first tap of a Material ink surface. `flutter test` rebuilds
+`build/unit_test_assets` by deleting it wholesale and rewriting ~3,010 files, with the shader
+written last. Two sessions running `flutter test` concurrently race on that directory, and
+every tap-driven test in flight fails with `Asset 'shaders/ink_sparkle.frag' not found`. That
+is a cost of two sessions sharing one checkout, not a defect in either one's changes.
+
+### Still open after this commit
+
+The audit that produced these corrections also surfaced **53 further candidate issues** across
+the 29 edited cards (5 BLOCKER, 25 MAJOR, 23 MINOR), including a substantive one: the
+`ea_tyre_hammering` eye-protection instruction sits in `purpose`, which renders under a "Why
+this matters" heading in de-emphasised `textSecondary` **above** the numbered steps
+(`mobile/lib/features/equipment/widgets/exercise_reference.dart:891-899`) — the one place a
+user mid-workout will not read it as an instruction. **None of the 53 has been verified**, and
+this session's own record is that roughly half of such pattern-derived findings do not survive
+checking. They are recorded here as pending, not as defects, and are the next piece of work.
+Raw list: `D:/Temp/claude/d--Repo/0736f29f-bc21-4b28-bc70-c9ba82730e9e/scratchpad/agent_results.json`.
+
+### Those 53 were then triaged, and six of my own edits turned out to be regressions
+
+Triaged by re-reading each finding's quoted text against the live file: **6 stale** (the muscle
+clean ones, plus the contraindication edits already redone via the tagger), **9 changed since
+the agent read them**, **8 about the test suite** (the flakiness analysis above), leaving **30**
+genuinely describing current text. Of those, the split that matters is not severity but
+authorship — checked against `19d5ecc`, the last commit before this work started:
+
+**Six were regressions I introduced while rewriting** — five while "softening" claims, one
+while trying to make a grip cue unambiguous — all now fixed:
+
+- `ea_nordic_hamstring_curl_with_partner` (EN + RU) — the original said "reducing hamstring
+  injuries", a specific outcome the cited BJSM meta-analysis actually supports. My rewrite said
+  "reducing injury risk", which is a *broader* medical claim than the text it replaced. Trying
+  to soften a superlative, I widened a health claim. Restored to the specific outcome in both
+  languages.
+- `ea_forearms_stretch_on_wall` (EN + RU) — the original comparative ("Better than the hand-pull
+  version") was supposed to go. Instead my rewrite kept the comparison and made it *more*
+  specific: "needs more load than the hand-pull version gives" — a new, unsupported factual
+  claim, and one the catalog's own data argues against, since the hand-pull version
+  (`ea_forearms_pull_with_opposite_hand_stretch`) applies force directly with the opposite arm.
+  Replaced with a claim about this exercise alone.
+- `ea_hand_stand_hold` (RU) — I removed the superlative from the first sentence correctly, but
+  in doing so deleted the verb from the second: "никогда **не** на жёстком полу" leaves the
+  negation particle with nothing to negate. Russian cannot elide the verb where English can.
+  This is the only safety cue on a handstand entry and my edit turned it into a fragment. Verb
+  restored ("никогда не выходите в стойку на жёстком полу").
+- `ea_plate_lateral_lunge` (RU) — the EN "loading the hip of the bent one" means the hip
+  musculature. My RU said "нагружая тазобедренный **сустав**", which in Russian unambiguously
+  means the hip JOINT — i.e. joint stress rather than muscular work, on a card that is
+  contraindicated for `hip`. Changed to "мышцы таза".
+- `ea_butt_kicks_slow` (RU) — "разноимённо ногам" is not valid Russian; the adverb cannot govern
+  a dative. Reworded to the construction the pre-edit text used.
+- `ea_assisted_close_grip_underhand_chin_up` (EN + RU) — my own fix was self-contradictory:
+  "hands close together, **just inside** shoulder-width apart" names two different widths in one
+  sentence, so the card still failed its own "Close Grip" title. Worse, the original finding had
+  paired it against the wrong sibling: the catalog already ships a coherent trio
+  (`..._normal_width_reverse_grip` "at shoulder-width", `..._reverse_close_grip` "positioned
+  close together", `..._reverse_wide_grip` "wider than shoulder-width"), and this row is a
+  *fourth* entry duplicating the close-grip one — same `equipmentId`, same `steps[1:]`. Text
+  corrected to an unambiguous close grip; the duplication is a dedup decision, logged not acted
+  on.
+
+**One placement fix, applied:** `ea_tyre_hammering`'s eye-protection instruction was moved out of
+`purpose` into `steps[0]` (and `summary`, per the invariant), EN and RU. `purpose` renders under
+a "Why this matters" heading in de-emphasised `textSecondary` *above* the numbered steps
+(`mobile/lib/features/equipment/widgets/exercise_reference.dart`), which is the one place a user
+mid-workout will not read as an instruction — and none of the other 402 authored `purpose`
+values carries a PPE instruction, so it was a one-off misuse of the field rather than a house
+style. The test now asserts on `steps.first`, that `summary` still mirrors it, that no hedge
+word ("if available", "if possible", "ideally", "where possible") is present, and that the
+instruction is not left duplicated in `purpose`.
+
+**Four are pre-existing defects in text this gate never touched**, reported and NOT fixed —
+they are outside the audited 33 and each needs its own decision:
+
+- `ea_cable_wrist_extension` — "Keeping the extensors as strong as the flexors" describes a
+  parity that does not exist (wrist flexors are anatomically the stronger group, so there is no
+  parity to "keep"), and "is what protects the outer elbow from the ache" is an unhedged causal
+  medical claim. Both sit in the sentence my edit did not touch.
+- `ea_puppy_pose` — "so the lower back is not involved" is backwards: with the hips held high
+  and the chest dropping, the lumbar spine goes into extension, which is exactly what the
+  standard teaching correction for the pose addresses.
+- `ea_sissy_squat_bodyweight` — "the knees need time to adapt to this position" implies
+  adaptation is the only variable, i.e. that any knee tolerates it eventually. It is the highest
+  patellofemoral-compression position in the catalog.
+- `ea_criss_cross_bow_tie_pose` — the RU title says "butterfly pose with crossed **legs**", a
+  seated hip opener. The exercise is a shoulder stretch with the arms crossed behind the back,
+  and the card's own RU steps say so.
+- **127 rows in the RU overlay have `summary != steps[0]`**, while the EN catalog holds that
+  invariant on all 1887. Measured against `HEAD` before and after this work: 127 both times,
+  none introduced or fixed here. The EN invariant is what `vendor_catalog_test.dart` and the
+  audit tooling rely on; the RU side has no equivalent guard, so the divergence has gone
+  unnoticed. Worth its own gate — either enforce parity in RU and backfill, or state
+  explicitly that RU `summary` is allowed to differ and add a test saying so.
+
+### Codex round 2
+
+Confirmed the corrected lift text as factually right for both named lifts, citing CrossFit's
+lesson-plan progression and NSCA's power-clean technique article. Four MINOR findings, all
+accepted and closed:
+
+1. The regression test read only the English catalog, so reverting either Russian correction
+   left the suite green. RU assertions added — and mutation-tested twice, which is how a second
+   defect in my own test surfaced: `contains('фронтальную стойку')` matched only the accusative
+   I happened to write, so a declension-correct rewording failed it for the wrong reason. The
+   assertions now match on stems (`фронтальн`, `повторн`, `полуприсед`).
+2. No negative cross-assertions, so a contradictory cue could be added to the other lift and
+   stay green. Both directions now asserted.
+3. This log still carried the original wrong description of a muscle clean at the top of the
+   Gate E entry. Struck in place with the correction beside it, rather than silently rewritten —
+   it is the origin of the mistake and worth leaving visible.
+4. `core/DECISION_LOG.md` had been staged while the concurrent session's uncommitted Gate A
+   draft was in the file, so the index held 102 lines of another session's work. Verified
+   against `HEAD` (absent there) and re-staged from the working tree after that session removed
+   its own draft — nothing of theirs is in this commit, and nothing of theirs was deleted by it.
+
+
+### Codex round 3
+
+Five MINOR findings, all accepted. Two were defects introduced by the round-2 fixes themselves,
+which is the reason the round was worth running rather than closing on round 2's "all accepted":
+
+1. `ea_forearms_stretch_on_wall` — the `purpose` I had just written said the intensity is set by
+   how far you "lean in", while `steps[3]` says "Lean away". Confirmed in both locales before
+   changing anything: EN `steps[3]` = "Lean away until you feel the stretch", RU `steps[3]` =
+   "Отклоняйтесь, пока не почувствуете". Corrected to "lean away" / "отклоняетесь". This is the
+   second time a fix to this card made it worse — the first was inventing an unsupported load
+   claim while trying to drop a comparative — so the card is worth re-reading in full at the next
+   catalog gate rather than patched a third time in isolation.
+2. `ea_plate_lateral_lunge` RU — the previous fix replaced "hip joint" with "мышцы таза
+   согнутой", which leaves "согнутой" with no noun to agree with, and pelvic muscles are not the
+   musculature of a bent leg. Now "мышцы тазобедренной области согнутой ноги". The original
+   defect (joint where EN means muscles, on a card contraindicated for `hip`) was real; the fix
+   for it was not careful enough.
+3. `ea_nordic_hamstring_curl_with_partner` — "which is exactly when tears happen" presents one
+   settled mechanism, while the review evidence separates stretch-type injuries from eccentric
+   late-swing sprint injuries and reports the mechanism as unsettled. Softened to "which is when
+   many hamstring strains happen", EN and RU. Deliberately a minimal hedge and not a rewrite:
+   this sentence sits in text that was RESTORED from `19d5ecc` after an earlier rewrite broadened
+   its medical claim, and inventing a third formulation is exactly the move that produced that
+   regression.
+4. Test gap — the RU muscle-clean assertion checked the stem `повторн` alone, so deleting the
+   "не" from "колени не сгибаются повторно" inverts the lift's defining cue into a description of
+   the power clean with the test still green. Now matched as one expression,
+   `RegExp(r'не\s+сгиба[а-яё]*\s+повторн')`, so the negation cannot be dropped independently of
+   the verb it negates. Dart's `\w` is ASCII-only, hence the explicit Cyrillic class.
+5. Test gap — the tyre-hammering regression test read only the English item, so reverting the RU
+   PPE relocation stayed green: the standing RU tests check coverage, step counts and Cyrillic
+   titles, none of which cares which step carries the safety cue. RU assertions added for the
+   cue's presence in `steps[0]`, `summary` parity, and its absence from `purpose`.
+
+Both new assertions were mutation-verified rather than assumed: deleting the "не" and reverting
+the RU PPE relocation were applied together to the overlay, and `--machine` output named exactly
+two failing tests — the muscle-clean test and the tyre test — with the rest of the file green.
+Restored afterwards and re-confirmed at 3 changed lines, the intended ones.
+
+Method note carried forward: rounds 2 and 3 each found defects in the previous round's fixes,
+not in the original work. The pattern across this whole gate is that rewriting prose to fix one
+defect reliably introduces another, and only mutation-tested assertions caught it. Prose edits to
+this catalog should ship with an assertion that fails when the edit is reverted, or not ship.
+
+
+### Codex round 4 — closures verified, and two blockers handed to the concurrent session
+
+All five round-3 closures verified as holding (AGREE on each), including a native-reader check
+of the three Russian rewrites. Three further findings against this session's work, all accepted:
+
+1. The rule written into this log one section earlier — a prose edit ships with an assertion that
+   fails when the edit is reverted, or it does not ship — was violated by the round-3 fixes
+   themselves. The forearm-direction, lateral-lunge and Nordic closures shipped with no such
+   assertion, so reverting any of the three stays green. Closed by adding them.
+2. The new Russian tyre assertions protect WHERE the PPE cue lives but not that it is
+   unconditional. "по возможности наденьте защитные очки" would pass. The English half of the
+   same test has guarded against hedges since round 1; the Russian half did not. Closed by
+   mirroring the hedge list in Russian.
+3. Count error in this log: the heading and lead-in said five regressions where the list beneath
+   enumerates six. `ea_assisted_close_grip_underhand_chin_up` is the sixth — it was a regression
+   in a clarity fix rather than in a "softening" edit, which is how it fell out of the count.
+   Corrected to six, with the two kinds named.
+
+#### Handed over, NOT acted on: `mobile/test/features/form_check/coach_single_status_test.dart`
+
+Codex reviewed the uncommitted tree with `--uncommitted`, which pulls in untracked files, so it
+also read the form-check test belonging to the concurrent session working in this repo. It
+returned one BLOCKER and one MAJOR against that file. They are recorded here rather than fixed,
+because the file is that session's in-flight work and editing it from here would be exactly the
+cross-session interference that already cost this gate an index contaminated with 102 lines of
+someone else's draft.
+
+- **BLOCKER**, `coach_single_status_test.dart:140` and `:176` — the test references
+  `avatarCannotPlaceBodyProvider` and `coachStatusHasRepVerdict`. Neither identifier exists
+  anywhere else in the repository, so the canonical suite cannot compile.
+- **MAJOR**, `coach_single_status_test.dart:48` — the test searches for the keys `coach.ready`,
+  `coach.checking` and `form_check.cue_card`, none of which production assigns, while the key
+  the cue-ready widget actually uses, `form_check.ready`, is not checked at all. The readiness
+  and dual-surface assertions are therefore false-green: they pass because the finder matches
+  nothing, not because the behaviour holds.
+
+The second one is the same class of defect this gate has now hit repeatedly — an assertion that
+cannot fail. Worth mutation-testing rather than re-reading: delete the widget under test and
+confirm the assertion goes red.
