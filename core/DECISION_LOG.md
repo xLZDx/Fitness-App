@@ -9626,3 +9626,105 @@ Both directions mutation-verified:
 Full suite green. `flutter analyze lib test` — 7 issues, all pre-existing, none in a touched file.
 
 Not pushed.
+
+---
+
+## 2026-08-15 — the v2.3.1 expert-team pack is installed, project-scoped, without its installer
+
+The operator supplied `fitnessapp-expert-team-recommendation-engine-v2.3.1.zip` and asked for it to
+be checked, reviewed and installed in full. It is not application code: it is 29 agent definitions,
+7 skills, 4 policies and a delegation hook that change how the assistant itself operates, plus an
+audit of this repository and an eval harness.
+
+### Provenance: genuine
+
+All 131 manifest entries hash-match. The pack anchors itself to
+`5b7c9acc7acdd00db502e1934afd2c75983eaeb9` and claims the repo is `xLZDx/Fitness-App`; both are
+exactly true — that SHA is this repository's `origin/master` and the cited file exists at it. This
+was built against today's state of this repo, not from a template.
+
+### Safety: clean, and in one place better than clean
+
+No network access anywhere. No `eval`, `exec`, `os.system`, or credential reads. The only
+`subprocess` calls are the pack invoking its own hook for self-tests. No text instructs the
+assistant to relax a rule, claim precedence over `CLAUDE.md`, auto-commit, auto-push, or disable a
+hook. Its own `01_MULTI_AGENT_WORKFLOW.md:20-21` restates the operator's contract verbatim —
+*"10. Local commit / 11. STOP; push needs separate explicit authorization"*.
+
+Clinical content is hedged and honestly labelled: every rule in `safety_rules.v1.json` and
+`medication_effects.v1.json` carries `CLINICAL_SIGNOFF_REQUIRED`, and both files declare themselves
+`ENGINEERING_BASELINE_NOT_CLINICALLY_SIGNED_OFF`. All 29 agents are read-only.
+
+### Its audit of this repo: 96 of 99 claims true
+
+Verified claim by claim against `master`. All 39 cited paths exist; every cited symbol exists;
+constants match line for line. Its three BLOCKERs are all real and all still unfixed, the loudest
+being the personalisation sign inversion: `fitness_model.dart:12-14` documents *"Lower score →
+ranker downweights to give the muscle group recovery time"* while `for_you_ranker.dart:74-75`
+computes `1.0 - muscleScore`, so a muscle group the user just rated **too hard** is surfaced more.
+
+Two corrections to the pack, recorded so they are not inherited:
+
+- The inversion has a second copy at `plan_builder.dart:41` that the register never cites.
+- One claim is false: `00_G0:233` says progression results are all rounded to 2.5 kg; Rule 5
+  (`progression.dart:95-101`) returns `lastKg` unrounded.
+
+And one finding that belongs to this repo rather than to the pack: `core/CODEMAP.md:87` still states
+the injury filter *"gates nothing … 0 of 1,887"*. The catalog carries 1,527 tagged rows of 1,887,
+with a ratchet test pinning the number. The documentation is stale; the filter works. Left
+unchanged here because correcting it is not this gate.
+
+### `install.py` was not run
+
+`INSTALL/install.py:22` uses `r"^---\n..."` — in a raw string that is an escaped backslash followed
+by `n`, so it matches a literal `\n` sequence and never a newline. Confirmed against the file's
+bytes. `re.match` returns `None` and line 24 raises.
+
+The position of the crash is what makes it dangerous: it dies at step 4 of 6, after the global
+agents, global skills, hook and policies are already on disk, and before the five hook self-tests
+and the `INSTALL PASS` line. Running it installs a **fail-closed delegation hook that has never been
+validated**, silently. The same regex is correct in `evals/run_static_gates.py:18`, so this is a
+transcription slip.
+
+Files were placed by hand instead, the interpreter pinned as step 4 intended, and the five
+self-tests run manually — all pass.
+
+### Project-scoped, not global — against the installer's own justification
+
+`install.py` writes to `~/.claude/` citing "repository AGENTS.md convention". `AGENTS.md:64-67`
+says the opposite of what it is cited for: the machine-wide roster comes from
+`D:\Repo\agents-skills-repo` and agents should be added *there*, not in this project. That repo's
+README then rules these out as well — it is *"project-agnostic … no binding to any specific
+project"*, and these 29 are bound to this app. The existing project-scoped agent
+`fitness-flutter-reviewer.md` already lives in `.claude/agents/` under version control, which is
+the precedent followed here. A global install would also have taken the machine-wide roster from
+25 to 55 agents in every unrelated repository.
+
+### The interpreter pin, and the one edit made
+
+The hook shipped with `command: python3`. On this machine that resolves to the Microsoft Store
+alias in `WindowsApps`, not an interpreter. The orchestrator frontmatter is pinned to
+`C:/Python314/python.exe`. That single line is the only edit to any shipped file; everything else is
+byte-identical to the archive.
+
+### Verification
+
+- Hook self-tests, the step the installer never reaches: 5/5 pass — allowed child, unknown child,
+  missing child type, non-Agent tool, and malformed JSON failing closed.
+- Pack static gates: `PASS — 29 agents, 7 skills, runtime JSON valid, tool topology valid`.
+- Reference policy gate: 33/33. Safety evals against the reference adapter: 33/33.
+- **None of that is an app pass**, and the pack says so itself: *"The runner does not pretend to test
+  the app without the app."* The real adapter deliberately raises until a runtime seam exists.
+
+### What was not installed
+
+The recommendation engine. `mobile/lib/features/recommendation/` and its 17 files do not exist and
+building them is a multi-gate programme (`04_GATE_PLAN.md`), not part of an installation. The pack's
+own verdict is the right one: *"Do not build a second recommendation stack … migrate existing
+consumers one by one."*
+
+The eval harness, runtime JSON, contract and audit documents are committed under
+`core/agent-engine-v2.3.1/` rather than left in `Downloads` — the same failure class that cost this
+project 131 unpersisted findings on 2026-08-04.
+
+Not pushed.

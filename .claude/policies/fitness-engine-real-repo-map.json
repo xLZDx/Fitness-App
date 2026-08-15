@@ -1,0 +1,42 @@
+{
+  "repository": "xLZDx/Fitness-App",
+  "branch": "master",
+  "audited_remote_head": "5b7c9acc7acdd00db502e1934afd2c75983eaeb9",
+  "local_worktree_verified": false,
+  "source_of_truth_order": [
+    "current code",
+    "current tests",
+    "current gate/state docs",
+    "older descriptive docs"
+  ],
+  "important_paths": {
+    "profile": "mobile/lib/features/profile/data/profile_models.dart",
+    "screening_provider": "mobile/lib/features/equipment/state/equipment_providers.dart",
+    "exercise_filter": "mobile/lib/features/equipment/data/exercise_filter.dart",
+    "home_suggestions": "mobile/lib/features/home/state/suggestion_providers.dart",
+    "home_builder": "mobile/lib/features/home/data/suggestion_builder.dart",
+    "personalisation_model": "mobile/lib/features/personalisation/data/fitness_model.dart",
+    "personalisation_ranker": "mobile/lib/features/personalisation/data/for_you_ranker.dart",
+    "ai_planner_provider": "mobile/lib/features/ai_planner/state/ai_planner_providers.dart",
+    "ai_planner_builder": "mobile/lib/features/ai_planner/data/plan_builder.dart",
+    "programme_fit": "mobile/lib/features/programmes/data/programme_fit.dart",
+    "programme_schedule": "mobile/lib/features/programmes/data/programme_schedule.dart",
+    "programme_provider": "mobile/lib/features/programmes/state/programme_providers.dart",
+    "workout_session": "mobile/lib/features/workouts/data/workout_session.dart",
+    "set_capture": "mobile/lib/features/workouts/data/set_capture.dart",
+    "progression": "mobile/lib/features/workouts/data/progression.dart",
+    "recovery": "mobile/lib/features/recovery/data/deload_detector.dart",
+    "health": "mobile/lib/core/health/health_models.dart",
+    "ai_coach": "mobile/lib/features/ai_coach/ai_coach_context.dart",
+    "scanner_outcome": "mobile/lib/features/visual_equipment/data/scan_outcome.dart",
+    "form_gate": "mobile/lib/features/form_check/data/pose_gate.dart"
+  },
+  "known_blockers": [
+    "RE-B01",
+    "RE-B02",
+    "RE-B03"
+  ],
+  "remote_g0_reverified": true,
+  "remote_g0_reverified_date": "2026-08-15",
+  "remote_g0_reverified_commit": "5b7c9acc7acdd00db502e1934afd2c75983eaeb9"
+}

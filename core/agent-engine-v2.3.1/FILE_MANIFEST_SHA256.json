@@ -1,0 +1,657 @@
+[
+  {
+    "path": "INSTALL/Fitness-App/.claude/hooks/validate_fitness_child_agent.py",
+    "bytes": 1395,
+    "sha256": "2d963ac6df83a2a76d54d10f4bfe60d4655faebac588cb590890b19402d19e02"
+  },
+  {
+    "path": "INSTALL/Fitness-App/.claude/policies/fitness-agent-engine-ownership.json",
+    "bytes": 21624,
+    "sha256": "1defa8c933daf6a70d1ede8b24e1ef3301affde7ef0393244b76267c588965fc"
+  },
+  {
+    "path": "INSTALL/Fitness-App/.claude/policies/fitness-child-agents.json",
+    "bytes": 999,
+    "sha256": "416e735f41c1a3526434e943d5141a1c4edaf3e729d9fe4363e8527be29295a2"
+  },
+  {
+    "path": "INSTALL/Fitness-App/.claude/policies/fitness-engine-real-repo-map.json",
+    "bytes": 2008,
+    "sha256": "279b4e10d1082b1ac2d39d544262fea52ce9688582a1e984aa59034c16df1d65"
+  },
+  {
+    "path": "INSTALL/Fitness-App/.claude/policies/fitness-recommendation-gates.json",
+    "bytes": 4934,
+    "sha256": "589508966a82b81ba80bc39b5ae1ab4381f506eb706916f64fdb74df94c13d4d"
+  },
+  {
+    "path": "INSTALL/README.md",
+    "bytes": 1562,
+    "sha256": "88e93acc52b739c5a3f6a96162b0b947699ac71b984cf7fd0cdcae34d4ddc0d0"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/adaptive-training-coach.md",
+    "bytes": 2229,
+    "sha256": "5fa92c6735e097e48b412893eb678af1668bce9a655cfe20a7d83c847815f65a"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/behavior-adherence-coach.md",
+    "bytes": 2037,
+    "sha256": "18bba21aa59399a418ade7b9deb1347f5935fca9eb9804af3ffd7478f86a1edf"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/biomechanics-technique-analyst.md",
+    "bytes": 2121,
+    "sha256": "b6ec53af733a792760f758ab4cb88c998ec7765b3395fe15cd2963f6e52544c8"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/body-recomposition-coach.md",
+    "bytes": 2376,
+    "sha256": "996e75e8439aa65ac0f986a5c395a6fbe189df444f8ce593d2c4c47493942a32"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/calisthenics-bodyweight-coach.md",
+    "bytes": 1837,
+    "sha256": "a35d677ca6530f5be089508b5a40c84cbd015754ce5114b0cc74628877238b9c"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/chronic-condition-exercise-specialist.md",
+    "bytes": 2299,
+    "sha256": "3bcb5f5952b181e6837319e0ef9b3c7ca179ff7409f231446b0a4f6355394dbc"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/clinical-safety-gate.md",
+    "bytes": 2557,
+    "sha256": "269e4fc139d96c5d47aa709d648a0d16b4b2c8416b05ba1431c322fe37048154"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/endurance-conditioning-coach.md",
+    "bytes": 2161,
+    "sha256": "233c3a399c41fb1cce84776c66398844a4050154b576c8fd57c75f97a45595d5"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/evidence-guideline-reviewer.md",
+    "bytes": 2049,
+    "sha256": "4dd88ae96334d263eb413c27845bbaff979cfce2119c6458fe507879b93844d3"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/exercise-ontology-curator.md",
+    "bytes": 2351,
+    "sha256": "7362001c8a111176fbf62dad804ad13b98766989678c6bf17c088af7823c8930"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/fitness-data-scientist.md",
+    "bytes": 2458,
+    "sha256": "555016afe751ed9164032db85b52009195d09b4240e90605f708c90197b6e896"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/fitness-recommendation-orchestrator.md",
+    "bytes": 4311,
+    "sha256": "91c51670f9460387461eb3ebd5290917c0ebede7c885929722d3606c08605895"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/functional-mixed-modal-coach.md",
+    "bytes": 2380,
+    "sha256": "741301c9e1274ddebbd93d6c6bfc7f810f55f0177799a83b079a54d897585660"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/general-fitness-coach.md",
+    "bytes": 1956,
+    "sha256": "e0e1a613e1a1b20ff5616b72c879ea5e60aac1b896f6e9df8f7f9064fed07c55"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/hypertrophy-bodybuilding-coach.md",
+    "bytes": 2162,
+    "sha256": "f31ae89f5c4a162bccb68944ae51c237af698efcdc5714a5888e10838bf140da"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/massage-soft-tissue-specialist.md",
+    "bytes": 2124,
+    "sha256": "9ed791203ce86cefbafefdc363b84077c4100cde8547f12be4a418e8cd1696be"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/mobility-flexibility-coach.md",
+    "bytes": 1927,
+    "sha256": "67991e784e9778616d6b64b5ad4a32ebb2efa049b73162e680c466e3331a9ee6"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/musculoskeletal-physiotherapist.md",
+    "bytes": 2404,
+    "sha256": "2400453b213651c07e2bfe7341b55ac54538988c2e0bd02b33fc212e7696f2b4"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/older-adult-functional-coach.md",
+    "bytes": 2202,
+    "sha256": "ce4b423da8ca148f57e87d253ba14f31472d702218567c9de76deb495eca7cd3"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/pregnancy-postpartum-coach.md",
+    "bytes": 2375,
+    "sha256": "ab631d5dd368c6e25003838473b049706c756a0fac0bbeb3933b83f8838c5a0e"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/recommendation-adversary.md",
+    "bytes": 2395,
+    "sha256": "0b45fff647d26c848789887fa789d31ff92d9b5ae6f16e63fdc470f18646b512"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/recommendation-engine-architect.md",
+    "bytes": 2715,
+    "sha256": "a0e3b7d6fc8e65450e72378d72a3135a3aa6681610bc9b5e0590bf1aa7a4787a"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/recovery-sleep-coach.md",
+    "bytes": 2040,
+    "sha256": "7ca72b151e486b36432e75a33defa47686c0b94c5e540ffe4d9987877fde1b33"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/regulatory-compliance-reviewer.md",
+    "bytes": 1972,
+    "sha256": "1a99ed22494f9bf4b2561a2483ef43b2f864928d15131f3c460868c8ce75719f"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/running-coach.md",
+    "bytes": 1973,
+    "sha256": "87b393b797c4d467fb8f957131149b4bce4089cff92aa5db50f97778da1d1b1f"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/sport-performance-coach.md",
+    "bytes": 2599,
+    "sha256": "c9540e68e47566cca5a3e2876b39c915ba141f91a7f988217e4134dec939657e"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/sports-nutrition-dietitian.md",
+    "bytes": 2512,
+    "sha256": "5cb727aaa64eff8a8ef2ead8c5e853a64feaaf0128f3f12dd95a7be9161a2b86"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/strength-power-coach.md",
+    "bytes": 2070,
+    "sha256": "d022353530348c95a0b82a5e7b6402199e6f3147c6e4beea9cc4ff29b76ea4dc"
+  },
+  {
+    "path": "INSTALL/global_claude/agents/youth-adolescent-coach.md",
+    "bytes": 2362,
+    "sha256": "f99a47e26c448c96e4685e2680a2db103b99d076996905a9a61ce5d62f8eaa8f"
+  },
+  {
+    "path": "INSTALL/global_claude/skills/fitness-clinical-reference/SKILL.md",
+    "bytes": 8875,
+    "sha256": "78c63329d6ba19cd196f088c910d74b3bf0469e535025d800e7a631ce58b94c5"
+  },
+  {
+    "path": "INSTALL/global_claude/skills/fitness-core-policy/SKILL.md",
+    "bytes": 6932,
+    "sha256": "12220f6a8266751b4601441611e14c876989cbc0b2aba513e29b40df54cc712a"
+  },
+  {
+    "path": "INSTALL/global_claude/skills/fitness-evidence-rules/SKILL.md",
+    "bytes": 2647,
+    "sha256": "aace6900b8287e020eca1c7e8f05ce67aa719687229ba71c564f6f6208acbae2"
+  },
+  {
+    "path": "INSTALL/global_claude/skills/fitness-intake-contract/SKILL.md",
+    "bytes": 6236,
+    "sha256": "5f5fddc7ab72be5c0666d6ad070a479fa9136eec79c515812071c19cff00114c"
+  },
+  {
+    "path": "INSTALL/global_claude/skills/fitness-prescription-reference/SKILL.md",
+    "bytes": 8036,
+    "sha256": "30f15a2e09935256407ef040225ec3c1e0cd4c0c569117881398d87eb2bdf5dd"
+  },
+  {
+    "path": "INSTALL/global_claude/skills/fitness-recommendation-engine-contract/SKILL.md",
+    "bytes": 6695,
+    "sha256": "67868931bd3c1b70519379d27786a069231c97d44632dbd03a1dddb5a13b8249"
+  },
+  {
+    "path": "INSTALL/global_claude/skills/fitness-regulatory-reference/SKILL.md",
+    "bytes": 3066,
+    "sha256": "0d9aa3a820830496c95b7718c6427f763422cce264d83d04b2442bf83873ed6d"
+  },
+  {
+    "path": "INSTALL/install.py",
+    "bytes": 4767,
+    "sha256": "bda867fb732c43f4f1a541242a35b1e826545ec2c784be3b3a30c9ffb1f82e87"
+  },
+  {
+    "path": "README.md",
+    "bytes": 1275,
+    "sha256": "0d73ba3b2b4b7b363403f20a21cdbc832965d71e0b3d016ea671b45fd959b3c6"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/adaptive-training-coach.md",
+    "bytes": 2229,
+    "sha256": "5fa92c6735e097e48b412893eb678af1668bce9a655cfe20a7d83c847815f65a"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/behavior-adherence-coach.md",
+    "bytes": 2037,
+    "sha256": "18bba21aa59399a418ade7b9deb1347f5935fca9eb9804af3ffd7478f86a1edf"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/biomechanics-technique-analyst.md",
+    "bytes": 2121,
+    "sha256": "b6ec53af733a792760f758ab4cb88c998ec7765b3395fe15cd2963f6e52544c8"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/body-recomposition-coach.md",
+    "bytes": 2376,
+    "sha256": "996e75e8439aa65ac0f986a5c395a6fbe189df444f8ce593d2c4c47493942a32"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/calisthenics-bodyweight-coach.md",
+    "bytes": 1837,
+    "sha256": "a35d677ca6530f5be089508b5a40c84cbd015754ce5114b0cc74628877238b9c"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/chronic-condition-exercise-specialist.md",
+    "bytes": 2299,
+    "sha256": "3bcb5f5952b181e6837319e0ef9b3c7ca179ff7409f231446b0a4f6355394dbc"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/clinical-safety-gate.md",
+    "bytes": 2557,
+    "sha256": "269e4fc139d96c5d47aa709d648a0d16b4b2c8416b05ba1431c322fe37048154"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/endurance-conditioning-coach.md",
+    "bytes": 2161,
+    "sha256": "233c3a399c41fb1cce84776c66398844a4050154b576c8fd57c75f97a45595d5"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/evidence-guideline-reviewer.md",
+    "bytes": 2049,
+    "sha256": "4dd88ae96334d263eb413c27845bbaff979cfce2119c6458fe507879b93844d3"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/exercise-ontology-curator.md",
+    "bytes": 2351,
+    "sha256": "7362001c8a111176fbf62dad804ad13b98766989678c6bf17c088af7823c8930"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/fitness-data-scientist.md",
+    "bytes": 2458,
+    "sha256": "555016afe751ed9164032db85b52009195d09b4240e90605f708c90197b6e896"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/fitness-recommendation-orchestrator.md",
+    "bytes": 4311,
+    "sha256": "91c51670f9460387461eb3ebd5290917c0ebede7c885929722d3606c08605895"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/functional-mixed-modal-coach.md",
+    "bytes": 2380,
+    "sha256": "741301c9e1274ddebbd93d6c6bfc7f810f55f0177799a83b079a54d897585660"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/general-fitness-coach.md",
+    "bytes": 1956,
+    "sha256": "e0e1a613e1a1b20ff5616b72c879ea5e60aac1b896f6e9df8f7f9064fed07c55"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/hypertrophy-bodybuilding-coach.md",
+    "bytes": 2162,
+    "sha256": "f31ae89f5c4a162bccb68944ae51c237af698efcdc5714a5888e10838bf140da"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/massage-soft-tissue-specialist.md",
+    "bytes": 2124,
+    "sha256": "9ed791203ce86cefbafefdc363b84077c4100cde8547f12be4a418e8cd1696be"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/mobility-flexibility-coach.md",
+    "bytes": 1927,
+    "sha256": "67991e784e9778616d6b64b5ad4a32ebb2efa049b73162e680c466e3331a9ee6"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/musculoskeletal-physiotherapist.md",
+    "bytes": 2404,
+    "sha256": "2400453b213651c07e2bfe7341b55ac54538988c2e0bd02b33fc212e7696f2b4"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/older-adult-functional-coach.md",
+    "bytes": 2202,
+    "sha256": "ce4b423da8ca148f57e87d253ba14f31472d702218567c9de76deb495eca7cd3"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/pregnancy-postpartum-coach.md",
+    "bytes": 2375,
+    "sha256": "ab631d5dd368c6e25003838473b049706c756a0fac0bbeb3933b83f8838c5a0e"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/recommendation-adversary.md",
+    "bytes": 2395,
+    "sha256": "0b45fff647d26c848789887fa789d31ff92d9b5ae6f16e63fdc470f18646b512"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/recommendation-engine-architect.md",
+    "bytes": 2715,
+    "sha256": "a0e3b7d6fc8e65450e72378d72a3135a3aa6681610bc9b5e0590bf1aa7a4787a"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/recovery-sleep-coach.md",
+    "bytes": 2040,
+    "sha256": "7ca72b151e486b36432e75a33defa47686c0b94c5e540ffe4d9987877fde1b33"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/regulatory-compliance-reviewer.md",
+    "bytes": 1972,
+    "sha256": "1a99ed22494f9bf4b2561a2483ef43b2f864928d15131f3c460868c8ce75719f"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/running-coach.md",
+    "bytes": 1973,
+    "sha256": "87b393b797c4d467fb8f957131149b4bce4089cff92aa5db50f97778da1d1b1f"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/sport-performance-coach.md",
+    "bytes": 2599,
+    "sha256": "c9540e68e47566cca5a3e2876b39c915ba141f91a7f988217e4134dec939657e"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/sports-nutrition-dietitian.md",
+    "bytes": 2512,
+    "sha256": "5cb727aaa64eff8a8ef2ead8c5e853a64feaaf0128f3f12dd95a7be9161a2b86"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/strength-power-coach.md",
+    "bytes": 2070,
+    "sha256": "d022353530348c95a0b82a5e7b6402199e6f3147c6e4beea9cc4ff29b76ea4dc"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/agents/youth-adolescent-coach.md",
+    "bytes": 2362,
+    "sha256": "f99a47e26c448c96e4685e2680a2db103b99d076996905a9a61ce5d62f8eaa8f"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/hooks/validate_fitness_child_agent.py",
+    "bytes": 1395,
+    "sha256": "2d963ac6df83a2a76d54d10f4bfe60d4655faebac588cb590890b19402d19e02"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/policies/fitness-agent-engine-ownership.json",
+    "bytes": 21624,
+    "sha256": "1defa8c933daf6a70d1ede8b24e1ef3301affde7ef0393244b76267c588965fc"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/policies/fitness-child-agents.json",
+    "bytes": 999,
+    "sha256": "416e735f41c1a3526434e943d5141a1c4edaf3e729d9fe4363e8527be29295a2"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/policies/fitness-engine-real-repo-map.json",
+    "bytes": 2162,
+    "sha256": "6904036196bbe4b7a05f042d8967f2bbe1dbb4f1f387f68b2a738282a9989726"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/policies/fitness-recommendation-gates.json",
+    "bytes": 4934,
+    "sha256": "589508966a82b81ba80bc39b5ae1ab4381f506eb706916f64fdb74df94c13d4d"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/skills/fitness-clinical-reference/SKILL.md",
+    "bytes": 8875,
+    "sha256": "78c63329d6ba19cd196f088c910d74b3bf0469e535025d800e7a631ce58b94c5"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/skills/fitness-core-policy/SKILL.md",
+    "bytes": 6932,
+    "sha256": "12220f6a8266751b4601441611e14c876989cbc0b2aba513e29b40df54cc712a"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/skills/fitness-evidence-rules/SKILL.md",
+    "bytes": 2647,
+    "sha256": "aace6900b8287e020eca1c7e8f05ce67aa719687229ba71c564f6f6208acbae2"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/skills/fitness-intake-contract/SKILL.md",
+    "bytes": 6236,
+    "sha256": "5f5fddc7ab72be5c0666d6ad070a479fa9136eec79c515812071c19cff00114c"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/skills/fitness-prescription-reference/SKILL.md",
+    "bytes": 8036,
+    "sha256": "30f15a2e09935256407ef040225ec3c1e0cd4c0c569117881398d87eb2bdf5dd"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/skills/fitness-recommendation-engine-contract/SKILL.md",
+    "bytes": 6695,
+    "sha256": "67868931bd3c1b70519379d27786a069231c97d44632dbd03a1dddb5a13b8249"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/.claude/skills/fitness-regulatory-reference/SKILL.md",
+    "bytes": 3066,
+    "sha256": "0d9aa3a820830496c95b7718c6427f763422cce264d83d04b2442bf83873ed6d"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/CHANGELOG_V2.2_TO_V2.3.md",
+    "bytes": 945,
+    "sha256": "f6d9ac746e8756923f9d9b8ab3b5d2fd97816fcbc0e9064ebad92fba0c22013d"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/CHANGELOG_V2.3_TO_V2.3.1.md",
+    "bytes": 861,
+    "sha256": "09210e65b0c0b5061c3cd0218856b2c5188d774d814cd771cf7b8abbbd8109cb"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/CLAUDE_CODE_COMPATIBILITY.md",
+    "bytes": 2143,
+    "sha256": "c6d608883f57924e615cc4690baa592bdc749f5430e38d2cee55f8ce24b85c75"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/EVIDENCE_REGISTRY.md",
+    "bytes": 6250,
+    "sha256": "fb5c96f2ec569f20f327f5b95950a56377978a22e291c33345e229c2a5aa794d"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/GOVERNANCE_OWNERSHIP.md",
+    "bytes": 2534,
+    "sha256": "a8d4c2fc066f35f446315280a537af13f9527b8defa54b6f1fc3722095680d93"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/MIGRATION_FROM_V1.md",
+    "bytes": 2322,
+    "sha256": "4e91c98864021d262d80d59e9d8ce31d172f255e442d7c590dbc6e54f981ab7a"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/README.md",
+    "bytes": 5488,
+    "sha256": "dac0c17a7435ec300002119bccd2631987a4d596c8eae5c4348c03751a0dbe15"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/REVIEW_V2.1_TO_V2.2.md",
+    "bytes": 7411,
+    "sha256": "d37827a880be9d376389afbcd78426d16058d1096057d4458c96e49a202c8444"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/REVIEW_V2_TO_V2.1.md",
+    "bytes": 8893,
+    "sha256": "ab72311383c4dcad37f0987787a66436e3fa36ccbd03c4e98f270f7a1b96cf00"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/ROUTING_MATRIX.md",
+    "bytes": 2922,
+    "sha256": "50b344fe0fca4489109b20a6082a0bd777ab07e72a7db922258dce324d3d2d29"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/RUNTIME_SAFETY_PROMPT.md",
+    "bytes": 6648,
+    "sha256": "17271916ad25072c49c3593d635a126341e76d2e5fa58077a275285c0228a071"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/SAFETY_EVAL_CASES.md",
+    "bytes": 4348,
+    "sha256": "91542b3874b092d65067b2efa3b9eb309d5ea1f99657dcbed8124fc02bbe7bc0"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/evals/README.md",
+    "bytes": 1762,
+    "sha256": "c3c81d8ab1f5a4aec32a1721ea1cc88e2a75f9629824a6444119172eba938add"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/evals/adapters/__init__.py",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/evals/adapters/app_adapter_template.py",
+    "bytes": 486,
+    "sha256": "c7ea7819bec3e734be6a267a01a8a9b3fd77f018b1c7cead7ccf5daa7f4120ff"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/evals/adapters/reference_policy_adapter.py",
+    "bytes": 8466,
+    "sha256": "ef46370385275599ac3755ff0f8a53512760bf56a31fcb18986b98d8410e735d"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/evals/cases.jsonl",
+    "bytes": 8197,
+    "sha256": "adca21adc2377619410086fe7cd069115d5b345bcf185447ab3ab1188f665841"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/evals/run_reference_policy_gate.py",
+    "bytes": 681,
+    "sha256": "91375ba906ef59589fca0defdbc1beac4e08f0557176edd406c1465e60ebfe3a"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/evals/run_safety_evals.py",
+    "bytes": 4538,
+    "sha256": "502aa1b4a3fce001a2f04bfeaf567acdad365da94a70230719ebcfb35f43c688"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/evals/run_static_gates.py",
+    "bytes": 7621,
+    "sha256": "0502401979e07252156c1deef775d2f0a70d1911ac40a06a67f15c6b29b88817"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/manifest.json",
+    "bytes": 3672,
+    "sha256": "b6b0d1533d2f2409cd05fd94a6b18c098b49063ec92952174276b32bcd0d1a11"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/runtime/medication_effects.v1.json",
+    "bytes": 4881,
+    "sha256": "1079d9438f32c820a9435f665c611a373642f4feedf8d83f45647d1ceadcf9eb"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/runtime/recommendation_contract.schema.json",
+    "bytes": 1145,
+    "sha256": "48db6d6e021860cff9c1a68071983675c6724cafe655c7332d0700a94d3475f7"
+  },
+  {
+    "path": "agents_v2.3.1_integrated/runtime/safety_rules.v1.json",
+    "bytes": 4087,
+    "sha256": "244b2f3e01381c86262f279f582d80b4caf587eeef5a3aa3646bdaa8e3ee1c52"
+  },
+  {
+    "path": "g0.5_agent_engine_contract/00_AGENT_ENGINE_CONTRACT.md",
+    "bytes": 6234,
+    "sha256": "45c66c1bdd87dcac3f34c174a5b679aba3df0b96f6b013264f914b8c2fae6857"
+  },
+  {
+    "path": "g0.5_agent_engine_contract/01_MULTI_AGENT_WORKFLOW.md",
+    "bytes": 1799,
+    "sha256": "123f505236341271b358522e4bfc1c694402fd05c5609b7c2717fdcb145e5f40"
+  },
+  {
+    "path": "g0.5_agent_engine_contract/02_GATE_REVIEW_MATRIX.md",
+    "bytes": 3656,
+    "sha256": "fb40388c2f3665b9ca2de28349284c6e9b2fa1f2016a3da86c208027696a2c04"
+  },
+  {
+    "path": "g0.5_agent_engine_contract/03_CONFLICT_VETO_POLICY.md",
+    "bytes": 1571,
+    "sha256": "09efbf7e55dca870327ebfe6970ea91a694d4a78bcb25e0d893a08a453a5cd46"
+  },
+  {
+    "path": "g0.5_agent_engine_contract/04_ARTIFACT_CONTRACTS.md",
+    "bytes": 1068,
+    "sha256": "e53edb1f91c8bf038fc0411e3f78570aeddb852738afca9e6eacfca1c22dab02"
+  },
+  {
+    "path": "g0.5_agent_engine_contract/05_REAL_REPO_BINDING.md",
+    "bytes": 915,
+    "sha256": "c89361c5a64cd3f72ad4476bc61a806ad239cec7dfcc62ffc34895a721ffc889"
+  },
+  {
+    "path": "g0.5_agent_engine_contract/06_DEPLOYMENT_MAP.md",
+    "bytes": 1432,
+    "sha256": "f2695f9f67ad299cc12608a6557185a420fb3378a67d8d6bbc7bc4cf4d0b97cc"
+  },
+  {
+    "path": "g0.5_agent_engine_contract/07_G0_REMOTE_VERIFICATION.md",
+    "bytes": 1006,
+    "sha256": "7ea58b71b5ffce0ffd89af3130886af1200081fe8357bc7d96e595e0ef4d337e"
+  },
+  {
+    "path": "g0.5_agent_engine_contract/agent_engine_ownership.json",
+    "bytes": 21624,
+    "sha256": "893bb6667d912f60683c06f4a1fcb91a51b5c17b268adb031359ff2895dd2316"
+  },
+  {
+    "path": "g0.5_agent_engine_contract/gate_review_matrix.json",
+    "bytes": 4934,
+    "sha256": "589508966a82b81ba80bc39b5ae1ab4381f506eb706916f64fdb74df94c13d4d"
+  },
+  {
+    "path": "g0.5_agent_engine_contract/real_repo_map.json",
+    "bytes": 2162,
+    "sha256": "6904036196bbe4b7a05f042d8967f2bbe1dbb4f1f387f68b2a738282a9989726"
+  },
+  {
+    "path": "manifest.json",
+    "bytes": 509,
+    "sha256": "0685774fa8cfcdccbd86bd60e93db3e51b98c2e0476977773ec414ade3c86995"
+  },
+  {
+    "path": "recommendation_engine_v1.1_real_repo/00_G0_REAL_REPO_AUDIT.md",
+    "bytes": 12057,
+    "sha256": "7a33f19bffe9190762db9d55a9a45e4e2b25d3c9e78c3d6026bc2a60949118f3"
+  },
+  {
+    "path": "recommendation_engine_v1.1_real_repo/01_IMPLEMENTATION_MAP.md",
+    "bytes": 8354,
+    "sha256": "ed10b3cd0d047c6a9ce08c48f8fde580531ae1d1ac61ecbe89103c0916dddc26"
+  },
+  {
+    "path": "recommendation_engine_v1.1_real_repo/02_FINDINGS_REGISTER.md",
+    "bytes": 7925,
+    "sha256": "14c71c6f5b4cedf604b6413f66a6c28f81924958e301ec4febdc7a7959f45a1e"
+  },
+  {
+    "path": "recommendation_engine_v1.1_real_repo/03_DATA_CONTRACT_AND_MIGRATION.md",
+    "bytes": 3488,
+    "sha256": "cb74eb55f8b31307e376b2ec61408ffab91318931cb84904f4e4e0d3699c2cbb"
+  },
+  {
+    "path": "recommendation_engine_v1.1_real_repo/04_GATE_PLAN.md",
+    "bytes": 4958,
+    "sha256": "62fe26a6a0111f94c87c5663f27b338d1d2d20be30c98c725734168dd4ff0bce"
+  },
+  {
+    "path": "recommendation_engine_v1.1_real_repo/05_TEST_MATRIX.md",
+    "bytes": 3356,
+    "sha256": "faa333f6727f4887766c82c7c62babec9cfb96c6b134c17f6e2a93d319a04967"
+  },
+  {
+    "path": "recommendation_engine_v1.1_real_repo/06_G1_CLAUDE_CODE_PROMPT.md",
+    "bytes": 2717,
+    "sha256": "1971b1482e1cfe454f7f11e5dc79b8fef4a84f82408cd9153a65d883567b9b83"
+  },
+  {
+    "path": "recommendation_engine_v1.1_real_repo/README.md",
+    "bytes": 2014,
+    "sha256": "49c9f547e6b39d118a9628935be7c5693cb36af49ee687cfdb494bf8a1153ddc"
+  },
+  {
+    "path": "recommendation_engine_v1.1_real_repo/findings.json",
+    "bytes": 8944,
+    "sha256": "e49f716fbd4b13a97efc1b8a755d3b655bcf34644ec74e2e8e9dbdc043fd38a0"
+  },
+  {
+    "path": "recommendation_engine_v1.1_real_repo/implementation_map.json",
+    "bytes": 1464,
+    "sha256": "e5b8ac9ff0e9ba645bc9b66841e3df235a0af8f2758ad49eb6ac953a51caf3db"
+  }
+]

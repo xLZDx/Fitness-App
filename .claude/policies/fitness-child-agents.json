@@ -1,0 +1,33 @@
+{
+  "version": "2.2",
+  "allowed_subagent_types": [
+    "adaptive-training-coach",
+    "behavior-adherence-coach",
+    "biomechanics-technique-analyst",
+    "body-recomposition-coach",
+    "calisthenics-bodyweight-coach",
+    "chronic-condition-exercise-specialist",
+    "clinical-safety-gate",
+    "endurance-conditioning-coach",
+    "evidence-guideline-reviewer",
+    "exercise-ontology-curator",
+    "fitness-data-scientist",
+    "functional-mixed-modal-coach",
+    "general-fitness-coach",
+    "hypertrophy-bodybuilding-coach",
+    "massage-soft-tissue-specialist",
+    "mobility-flexibility-coach",
+    "musculoskeletal-physiotherapist",
+    "older-adult-functional-coach",
+    "pregnancy-postpartum-coach",
+    "recommendation-adversary",
+    "recommendation-engine-architect",
+    "recovery-sleep-coach",
+    "regulatory-compliance-reviewer",
+    "running-coach",
+    "sport-performance-coach",
+    "sports-nutrition-dietitian",
+    "strength-power-coach",
+    "youth-adolescent-coach"
+  ]
+}

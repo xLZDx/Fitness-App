@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Fitness-App Recommendation Contract v2.2",
+  "type": "object",
+  "required": ["status", "safety_state", "constraints_applied", "recommendation", "calculation_trace", "stop_conditions", "confidence"],
+  "properties": {
+    "status": {"enum": ["OK", "INSUFFICIENT_DATA", "BLOCKED", "REFER"]},
+    "safety_state": {"enum": ["S0_EMERGENCY", "S1_CLEARANCE_REQUIRED", "S2_RESTRICTED", "S3_ROUTINE"]},
+    "inputs_used": {
+      "type": "object",
+      "properties": {
+        "verified": {"type": "array"},
+        "self_reported": {"type": "array"},
+        "inferred": {"type": "array"}
+      }
+    },
+    "constraints_applied": {"type": "array"},
+    "recommendation": {"type": "array"},
+    "calculation_trace": {"type": "array"},
+    "progression_rule": {},
+    "regression_rule": {},
+    "stop_conditions": {"type": "array"},
+    "confidence": {"enum": ["high", "medium", "low"]},
+    "evidence_notes": {"type": "array"},
+    "handoffs": {"type": "array"},
+    "flags": {"type": "array"},
+    "user_facing_text": {"type": "string"}
+  },
+  "additionalProperties": true
+}

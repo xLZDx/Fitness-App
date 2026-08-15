@@ -1,0 +1,19 @@
+# Gate review matrix
+
+Only the named mandatory agents are required by default. Conditional agents are routed when the changed surface/context applies.
+
+| Gate | Purpose | Mandatory experts | Conditional experts |
+|---|---|---|---|
+| **G0** | real repo audit | — | — |
+| **G0.5** | agent-engine ownership contract | `fitness-recommendation-orchestrator`, `recommendation-engine-architect`, `recommendation-adversary` | — |
+| **G1** | contracts + RecommendationContext | `recommendation-engine-architect`, `fitness-data-scientist`, `recommendation-adversary` | — |
+| **G2** | unified Safety + Eligibility | `clinical-safety-gate`, `exercise-ontology-curator`, `recommendation-engine-architect`, `evidence-guideline-reviewer`, `recommendation-adversary` | `musculoskeletal-physiotherapist`, `older-adult-functional-coach`, `youth-adolescent-coach`, `pregnancy-postpartum-coach`, `chronic-condition-exercise-specialist`, `adaptive-training-coach`, `regulatory-compliance-reviewer` |
+| **G3** | Home + AI Planner + onboarding convergence | `recommendation-engine-architect`, `exercise-ontology-curator`, `behavior-adherence-coach`, `recommendation-adversary` | `clinical-safety-gate`, `general-fitness-coach` |
+| **G4** | personalisation semantics | `fitness-data-scientist`, `behavior-adherence-coach`, `recovery-sleep-coach`, `recommendation-engine-architect`, `recommendation-adversary` | `strength-power-coach`, `hypertrophy-bodybuilding-coach`, `endurance-conditioning-coach` |
+| **G5** | workout/performed-set data evolution | `recommendation-engine-architect`, `fitness-data-scientist`, `recommendation-adversary` | `strength-power-coach`, `hypertrophy-bodybuilding-coach` |
+| **G6** | Prescription + Load + Progression | `recommendation-engine-architect`, `evidence-guideline-reviewer`, `fitness-data-scientist`, `recommendation-adversary` | `general-fitness-coach`, `strength-power-coach`, `hypertrophy-bodybuilding-coach`, `endurance-conditioning-coach`, `running-coach`, `calisthenics-bodyweight-coach`, `mobility-flexibility-coach`, `sport-performance-coach`, `functional-mixed-modal-coach`, `biomechanics-technique-analyst`, `clinical-safety-gate`, `musculoskeletal-physiotherapist` |
+| **G7** | programme/session prescription | `recommendation-engine-architect`, `exercise-ontology-curator`, `behavior-adherence-coach`, `recommendation-adversary` | `clinical-safety-gate`, `general-fitness-coach`, `strength-power-coach`, `hypertrophy-bodybuilding-coach`, `endurance-conditioning-coach`, `running-coach`, `calisthenics-bodyweight-coach`, `mobility-flexibility-coach`, `sport-performance-coach`, `functional-mixed-modal-coach`, `special-population-specialists` |
+| **G8** | recovery vs adherence separation | `recovery-sleep-coach`, `behavior-adherence-coach`, `fitness-data-scientist`, `evidence-guideline-reviewer`, `recommendation-engine-architect`, `recommendation-adversary` | `sports-nutrition-dietitian`, `pregnancy-postpartum-coach`, `chronic-condition-exercise-specialist` |
+| **G9** | AI boundary | `recommendation-engine-architect`, `clinical-safety-gate`, `regulatory-compliance-reviewer`, `recommendation-adversary` | — |
+| **G10** | Scanner + Form Check context | `biomechanics-technique-analyst`, `exercise-ontology-curator`, `fitness-data-scientist`, `recommendation-engine-architect`, `recommendation-adversary` | `clinical-safety-gate`, `regulatory-compliance-reviewer` |
+| **G11** | final release audit | `recommendation-engine-architect`, `clinical-safety-gate`, `evidence-guideline-reviewer`, `fitness-data-scientist`, `recommendation-adversary`, `regulatory-compliance-reviewer` | `all_impacted_domain_specialists` |

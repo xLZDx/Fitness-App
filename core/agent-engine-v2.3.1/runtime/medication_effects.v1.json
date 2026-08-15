@@ -1,0 +1,130 @@
+{
+  "schema_version": "1.0",
+  "policy_version": "2026-08-15",
+  "purpose": "Map VERIFIED medication/exercise-effect classes to product behavior. This file never maps raw drug names to classes.",
+  "rules": [
+    {
+      "effect_tag": "hr_response_blunted_or_altered",
+      "affected_metrics": [
+        "generic_target_hr",
+        "age_predicted_hr_zones"
+      ],
+      "fallback_metrics": [
+        "rpe",
+        "talk_test",
+        "pace",
+        "power"
+      ],
+      "allow_individualized_hr_target_if": [
+        "clinician_or_exercise_test_target_supplied"
+      ],
+      "forbidden_actions": [
+        "infer_drug_class_from_name",
+        "change_medication_dose",
+        "change_medication_timing"
+      ],
+      "rule_kind": "PRODUCT_BEHAVIOR_FROM_VERIFIED_EFFECT_TAG",
+      "source_requirement": "verified medication terminology/pharmacology source plus clinical-owner review",
+      "owner_status": "CLINICAL_SIGNOFF_REQUIRED"
+    },
+    {
+      "effect_tag": "orthostatic_or_postexercise_hypotension_risk",
+      "product_actions": [
+        "gradual_cooldown",
+        "gradual_position_changes",
+        "symptom_stop_rules"
+      ],
+      "forbidden_actions": [
+        "change_medication_dose",
+        "change_medication_timing"
+      ],
+      "rule_kind": "PRODUCT_BEHAVIOR_FROM_VERIFIED_EFFECT_TAG",
+      "source_requirement": "verified medication terminology/pharmacology source plus clinical-owner review",
+      "owner_status": "CLINICAL_SIGNOFF_REQUIRED"
+    },
+    {
+      "effect_tag": "hypoglycemia_risk_with_exercise",
+      "product_actions": [
+        "require_existing_diabetes_exercise_action_plan_for_individualized_medication_or_glucose_decisions",
+        "surface_hypoglycemia_stop_rules"
+      ],
+      "forbidden_actions": [
+        "change_insulin_or_drug_dose",
+        "change_medication_timing",
+        "change_injection_site"
+      ],
+      "rule_kind": "PRODUCT_BEHAVIOR_FROM_VERIFIED_EFFECT_TAG",
+      "source_requirement": "verified medication terminology/pharmacology source plus clinical-owner review",
+      "owner_status": "CLINICAL_SIGNOFF_REQUIRED"
+    },
+    {
+      "effect_tag": "dehydration_or_electrolyte_risk",
+      "product_actions": [
+        "hydration_heat_caution",
+        "symptom_monitoring"
+      ],
+      "forbidden_actions": [
+        "change_medication_dose",
+        "change_medication_timing"
+      ],
+      "rule_kind": "PRODUCT_BEHAVIOR_FROM_VERIFIED_EFFECT_TAG",
+      "source_requirement": "verified medication terminology/pharmacology source plus clinical-owner review",
+      "owner_status": "CLINICAL_SIGNOFF_REQUIRED"
+    },
+    {
+      "effect_tag": "bleeding_or_bruising_risk",
+      "product_actions": [
+        "route_collision_fall_soft_tissue_decisions_to_clinician_owned_policy"
+      ],
+      "forbidden_actions": [
+        "change_medication_dose",
+        "change_medication_timing"
+      ],
+      "rule_kind": "PRODUCT_BEHAVIOR_FROM_VERIFIED_EFFECT_TAG",
+      "source_requirement": "verified medication terminology/pharmacology source plus clinical-owner review",
+      "owner_status": "CLINICAL_SIGNOFF_REQUIRED"
+    },
+    {
+      "effect_tag": "balance_or_alertness_impairment",
+      "product_actions": [
+        "increase_fall_risk_caution",
+        "reduce_environmental_complexity_when_needed"
+      ],
+      "rule_kind": "PRODUCT_BEHAVIOR_FROM_VERIFIED_EFFECT_TAG",
+      "source_requirement": "verified medication terminology/pharmacology source plus clinical-owner review",
+      "owner_status": "CLINICAL_SIGNOFF_REQUIRED"
+    },
+    {
+      "effect_tag": "thermoregulation_or_hr_effect",
+      "product_actions": [
+        "prefer_rpe_symptom_based_control_in_heat",
+        "avoid_unsupported_hr_assumptions"
+      ],
+      "rule_kind": "PRODUCT_BEHAVIOR_FROM_VERIFIED_EFFECT_TAG",
+      "source_requirement": "verified medication terminology/pharmacology source plus clinical-owner review",
+      "owner_status": "CLINICAL_SIGNOFF_REQUIRED"
+    },
+    {
+      "effect_tag": "myopathy_or_rhabdo_signal_relevance",
+      "product_actions": [
+        "severe_muscle_symptoms_plus_dark_urine_trigger_urgent_path"
+      ],
+      "forbidden_actions": [
+        "tell_user_to_stop_medication"
+      ],
+      "rule_kind": "PRODUCT_BEHAVIOR_FROM_VERIFIED_EFFECT_TAG",
+      "source_requirement": "verified medication terminology/pharmacology source plus clinical-owner review",
+      "owner_status": "CLINICAL_SIGNOFF_REQUIRED"
+    }
+  ],
+  "unknown_or_unverified_behavior": {
+    "never": [
+      "guess_class",
+      "guess_exercise_effect",
+      "silently_treat_as_empty"
+    ],
+    "if_request_depends_on_medication_sensitive_metric": "use_nonaffected_metric_or_return_normalization_gap",
+    "otherwise": "continue_only_if_other_safety_inputs_allow_and_flag_medication_normalization_gap"
+  },
+  "release_status": "ENGINEERING_BASELINE_NOT_CLINICALLY_SIGNED_OFF"
+}

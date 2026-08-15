@@ -1,0 +1,198 @@
+[
+  {
+    "id": "RE-B01",
+    "severity": "BLOCKER",
+    "title": "Personalisation sign inversion",
+    "evidence": [
+      "mobile/lib/features/personalisation/data/fitness_model.dart",
+      "mobile/lib/features/personalisation/data/for_you_ranker.dart"
+    ],
+    "finding": "tooHard lowers score, while the ranker gives lower score higher priority. This contradicts fitness_model.dart's stated recovery/downweight semantics.",
+    "required_action": "Do not migrate this formula into Recommendation Engine. Split tolerance/recovery signal from training priority and add regression tests."
+  },
+  {
+    "id": "RE-B02",
+    "severity": "BLOCKER",
+    "title": "LLM owns unvalidated starting-load guidance",
+    "evidence": [
+      "mobile/lib/features/ai_coach/ai_coach_context.dart",
+      "mobile/lib/features/ai_coach/ai_coach_service.dart"
+    ],
+    "finding": "Cloud AI is explicitly asked for beginner volume and an exercise starting-load cue, with no deterministic prescription validator.",
+    "required_action": "Remove numeric prescription authority from AI Coach before Recommendation Engine release."
+  },
+  {
+    "id": "RE-B03",
+    "severity": "BLOCKER",
+    "title": "Clinical safety inputs are collected but not generally enforced",
+    "evidence": [
+      "mobile/lib/features/profile/data/profile_models.dart",
+      "mobile/lib/features/equipment/data/exercise_filter.dart"
+    ],
+    "finding": "HealthHistory contains conditions, medications, limitations, surgeries, blood pressure and concerns; production recommendation safety primarily screens Injury objects.",
+    "required_action": "Add a centralized SafetyGate. Raw medication strings may not be classified by model memory."
+  },
+  {
+    "id": "RE-H01",
+    "severity": "HIGH",
+    "title": "AI Planner / onboarding preview ignore equipment availability",
+    "evidence": [
+      "mobile/lib/features/ai_planner/state/ai_planner_providers.dart",
+      "mobile/lib/features/onboarding/state/plan_preview_provider.dart",
+      "mobile/lib/features/ai_planner/data/plan_builder.dart"
+    ],
+    "finding": "Candidate pools include bodyweight plus every equipment's exercises. buildPlan filters injuries but does not consume EquipmentAccess/location.",
+    "required_action": "Route through centralized eligibility before ranking."
+  },
+  {
+    "id": "RE-H02",
+    "severity": "HIGH",
+    "title": "Home Suggestions ignore EquipmentAccess",
+    "evidence": [
+      "mobile/lib/features/home/state/suggestion_providers.dart",
+      "mobile/lib/features/equipment/state/equipment_providers.dart"
+    ],
+    "finding": "Home uses forYouExercisesProvider; it injury-screens and tier-sorts but does not apply availableWith(profile.equipment).",
+    "required_action": "Use Recommendation Engine eligible candidates."
+  },
+  {
+    "id": "RE-H03",
+    "severity": "HIGH",
+    "title": "Exact-kg progression is a hard-coded heuristic",
+    "evidence": [
+      "mobile/lib/features/workouts/data/progression.dart",
+      "mobile/lib/features/equipment/workout_player_page.dart"
+    ],
+    "finding": "UI directly surfaces kg from fixed -5%, +5%, +2.5/+1.25 rules, default 8 reps and default compound=true.",
+    "required_action": "Replace with load/progression engine using history quality, target effort, load context, staleness and equipment increments."
+  },
+  {
+    "id": "RE-H04",
+    "severity": "HIGH",
+    "title": "Isolation increment is destroyed by rounding grid",
+    "evidence": [
+      "mobile/lib/features/workouts/data/progression.dart"
+    ],
+    "finding": "The 1.25kg isolation increment is passed through a global nearest-2.5kg rounder.",
+    "required_action": "Rounding must be equipment-context-specific and applied after a valid target is calculated."
+  },
+  {
+    "id": "RE-H05",
+    "severity": "HIGH",
+    "title": "Legacy history view loses set-level information",
+    "evidence": [
+      "mobile/lib/features/workouts/data/workout_session.dart",
+      "mobile/lib/features/workouts/state/workout_session_providers.dart"
+    ],
+    "finding": "asLogEntries emits one compatibility row per exercise using only its last set. A progression engine cannot infer full performance from this view.",
+    "required_action": "New engine reads WorkoutSession / per-set data directly."
+  },
+  {
+    "id": "RE-H06",
+    "severity": "HIGH",
+    "title": "Performed-set model lacks effort and load context",
+    "evidence": [
+      "mobile/lib/features/workouts/data/set_capture.dart",
+      "mobile/lib/features/workouts/data/workout_session.dart"
+    ],
+    "finding": "SetCapture only stores weightKg/reps; no RIR/RPE, equipment instance/load context, or recommendation link.",
+    "required_action": "Add backward-compatible performed-set/context fields in a dedicated migration gate."
+  },
+  {
+    "id": "RE-H07",
+    "severity": "HIGH",
+    "title": "Programme schedule is exercise-duration rotation, not prescription",
+    "evidence": [
+      "mobile/lib/features/programmes/data/programme_schedule.dart",
+      "mobile/lib/features/workouts/data/scheduled_session.dart"
+    ],
+    "finding": "The schedule stores exercises and duration but no sets/reps/effort/load prescription; current rows use uniform 10-minute exercise durations per generator comments.",
+    "required_action": "Add an optional prescription snapshot to scheduled sessions without breaking old documents."
+  },
+  {
+    "id": "RE-H08",
+    "severity": "HIGH",
+    "title": "Recovery detector conflates adherence with physiological recovery",
+    "evidence": [
+      "mobile/lib/features/recovery/data/deload_detector.dart",
+      "mobile/lib/features/recovery/state/recovery_providers.dart"
+    ],
+    "finding": "Missed scheduled sessions are one of the deload signals; HRV is not currently wired; a fixed 0.5 factor scales scheduled duration.",
+    "required_action": "Split readiness/recovery from adherence and from dose adaptation."
+  },
+  {
+    "id": "RE-M01",
+    "severity": "MEDIUM",
+    "title": "Set timer presets can be mistaken for prescription",
+    "evidence": [
+      "mobile/lib/features/workouts/data/set_session.dart",
+      "mobile/lib/features/workouts/state/set_timer_providers.dart"
+    ],
+    "finding": "Tier-based fixed work/rest/set presets are useful timer defaults but are not goal-specific training prescription.",
+    "required_action": "Keep as UX preset or make it consume engine prescription; label policy class explicitly."
+  },
+  {
+    "id": "RE-M02",
+    "severity": "MEDIUM",
+    "title": "Loaded-equipment whitelist is incomplete by construction",
+    "evidence": [
+      "mobile/lib/features/workouts/data/set_capture.dart"
+    ],
+    "finding": "exerciseUsesLoad uses a fixed whitelist; unknown equipment defaults to no load capture.",
+    "required_action": "Move load semantics to exercise/equipment recommendation metadata while retaining conservative fallback."
+  },
+  {
+    "id": "RE-M03",
+    "severity": "MEDIUM",
+    "title": "Documentation drift",
+    "evidence": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "core/CODEMAP.md",
+      "core/CONVENTIONS.md"
+    ],
+    "finding": "Historical counts/capabilities differ across docs; current code must be source of truth for implementation.",
+    "required_action": "Update CODEMAP/CONVENTIONS in the same commit when Recommendation Engine feature is added."
+  },
+  {
+    "id": "RE-K01",
+    "severity": "KEEP",
+    "title": "Cold-start safety screening is fail-closed",
+    "evidence": [
+      "mobile/lib/features/equipment/state/equipment_providers.dart"
+    ],
+    "finding": "screeningProfileProvider awaits auth and profile instead of treating AsyncLoading as no profile.",
+    "required_action": "Reuse this pattern in RecommendationContext."
+  },
+  {
+    "id": "RE-K02",
+    "severity": "KEEP",
+    "title": "Sensitive health profile is device-local",
+    "evidence": [
+      "mobile/lib/main.dart"
+    ],
+    "finding": "DeviceHealthProfileRepository merges local sensitive data with Firestore profile.",
+    "required_action": "Engine consumes merged provider; never bypass it with direct Firestore reads."
+  },
+  {
+    "id": "RE-K03",
+    "severity": "KEEP",
+    "title": "Scanner has explicit uncertainty states",
+    "evidence": [
+      "mobile/lib/features/visual_equipment/data/scan_outcome.dart",
+      "mobile/lib/features/visual_equipment/data/visual_equipment_match.dart"
+    ],
+    "finding": "The scanner distinguishes alternatives/unknown/failure and deliberately distrusts high-confidence offline results.",
+    "required_action": "Preserve source/outcome in RecommendationContext."
+  },
+  {
+    "id": "RE-K04",
+    "severity": "KEEP",
+    "title": "Form Check says cannot-tell instead of inventing faults",
+    "evidence": [
+      "mobile/lib/features/form_check/data/pose_gate.dart"
+    ],
+    "finding": "Pose gate separates unscorable frames from bad form.",
+    "required_action": "Use only validated observable signals; no diagnosis/injury-risk claims."
+  }
+]

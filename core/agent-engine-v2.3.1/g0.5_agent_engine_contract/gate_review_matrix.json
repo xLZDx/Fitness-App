@@ -1,0 +1,181 @@
+{
+  "G0": {
+    "name": "real repo audit",
+    "status": "DONE_READ_ONLY",
+    "mandatory_agents": []
+  },
+  "G0.5": {
+    "name": "agent-engine ownership contract",
+    "status": "THIS_BUNDLE",
+    "mandatory_agents": [
+      "fitness-recommendation-orchestrator",
+      "recommendation-engine-architect",
+      "recommendation-adversary"
+    ]
+  },
+  "G1": {
+    "name": "contracts + RecommendationContext",
+    "mandatory_agents": [
+      "recommendation-engine-architect",
+      "fitness-data-scientist",
+      "recommendation-adversary"
+    ]
+  },
+  "G2": {
+    "name": "unified Safety + Eligibility",
+    "mandatory_agents": [
+      "clinical-safety-gate",
+      "exercise-ontology-curator",
+      "recommendation-engine-architect",
+      "evidence-guideline-reviewer",
+      "recommendation-adversary"
+    ],
+    "conditional_agents": [
+      "musculoskeletal-physiotherapist",
+      "older-adult-functional-coach",
+      "youth-adolescent-coach",
+      "pregnancy-postpartum-coach",
+      "chronic-condition-exercise-specialist",
+      "adaptive-training-coach",
+      "regulatory-compliance-reviewer"
+    ]
+  },
+  "G3": {
+    "name": "Home + AI Planner + onboarding convergence",
+    "mandatory_agents": [
+      "recommendation-engine-architect",
+      "exercise-ontology-curator",
+      "behavior-adherence-coach",
+      "recommendation-adversary"
+    ],
+    "conditional_agents": [
+      "clinical-safety-gate",
+      "general-fitness-coach"
+    ]
+  },
+  "G4": {
+    "name": "personalisation semantics",
+    "mandatory_agents": [
+      "fitness-data-scientist",
+      "behavior-adherence-coach",
+      "recovery-sleep-coach",
+      "recommendation-engine-architect",
+      "recommendation-adversary"
+    ],
+    "conditional_agents": [
+      "strength-power-coach",
+      "hypertrophy-bodybuilding-coach",
+      "endurance-conditioning-coach"
+    ]
+  },
+  "G5": {
+    "name": "workout/performed-set data evolution",
+    "mandatory_agents": [
+      "recommendation-engine-architect",
+      "fitness-data-scientist",
+      "recommendation-adversary"
+    ],
+    "conditional_agents": [
+      "strength-power-coach",
+      "hypertrophy-bodybuilding-coach"
+    ]
+  },
+  "G6": {
+    "name": "Prescription + Load + Progression",
+    "mandatory_agents": [
+      "recommendation-engine-architect",
+      "evidence-guideline-reviewer",
+      "fitness-data-scientist",
+      "recommendation-adversary"
+    ],
+    "conditional_agents": [
+      "general-fitness-coach",
+      "strength-power-coach",
+      "hypertrophy-bodybuilding-coach",
+      "endurance-conditioning-coach",
+      "running-coach",
+      "calisthenics-bodyweight-coach",
+      "mobility-flexibility-coach",
+      "sport-performance-coach",
+      "functional-mixed-modal-coach",
+      "biomechanics-technique-analyst",
+      "clinical-safety-gate",
+      "musculoskeletal-physiotherapist"
+    ]
+  },
+  "G7": {
+    "name": "programme/session prescription",
+    "mandatory_agents": [
+      "recommendation-engine-architect",
+      "exercise-ontology-curator",
+      "behavior-adherence-coach",
+      "recommendation-adversary"
+    ],
+    "conditional_agents": [
+      "clinical-safety-gate",
+      "general-fitness-coach",
+      "strength-power-coach",
+      "hypertrophy-bodybuilding-coach",
+      "endurance-conditioning-coach",
+      "running-coach",
+      "calisthenics-bodyweight-coach",
+      "mobility-flexibility-coach",
+      "sport-performance-coach",
+      "functional-mixed-modal-coach",
+      "special-population-specialists"
+    ]
+  },
+  "G8": {
+    "name": "recovery vs adherence separation",
+    "mandatory_agents": [
+      "recovery-sleep-coach",
+      "behavior-adherence-coach",
+      "fitness-data-scientist",
+      "evidence-guideline-reviewer",
+      "recommendation-engine-architect",
+      "recommendation-adversary"
+    ],
+    "conditional_agents": [
+      "sports-nutrition-dietitian",
+      "pregnancy-postpartum-coach",
+      "chronic-condition-exercise-specialist"
+    ]
+  },
+  "G9": {
+    "name": "AI boundary",
+    "mandatory_agents": [
+      "recommendation-engine-architect",
+      "clinical-safety-gate",
+      "regulatory-compliance-reviewer",
+      "recommendation-adversary"
+    ]
+  },
+  "G10": {
+    "name": "Scanner + Form Check context",
+    "mandatory_agents": [
+      "biomechanics-technique-analyst",
+      "exercise-ontology-curator",
+      "fitness-data-scientist",
+      "recommendation-engine-architect",
+      "recommendation-adversary"
+    ],
+    "conditional_agents": [
+      "clinical-safety-gate",
+      "regulatory-compliance-reviewer"
+    ]
+  },
+  "G11": {
+    "name": "final release audit",
+    "mandatory_agents": [
+      "recommendation-engine-architect",
+      "clinical-safety-gate",
+      "evidence-guideline-reviewer",
+      "fitness-data-scientist",
+      "recommendation-adversary",
+      "regulatory-compliance-reviewer"
+    ],
+    "conditional_agents": [
+      "all_impacted_domain_specialists"
+    ]
+  }
+}

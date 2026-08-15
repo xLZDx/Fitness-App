@@ -1,0 +1,34 @@
+{
+  "repository": "xLZDx/Fitness-App",
+  "branch": "master",
+  "head": "5b7c9acc7acdd00db502e1934afd2c75983eaeb9",
+  "new_feature": "mobile/lib/features/recommendation",
+  "keep": [
+    "mobile/lib/features/profile/data/profile_models.dart",
+    "mobile/lib/features/profile/state/profile_providers.dart",
+    "mobile/lib/features/equipment/data/exercise_filter.dart",
+    "mobile/lib/features/equipment/state/equipment_providers.dart",
+    "mobile/lib/features/programmes/data/programme.dart",
+    "mobile/lib/features/programmes/state/programme_providers.dart",
+    "mobile/lib/features/workouts/data/workout_session.dart",
+    "mobile/lib/features/visual_equipment/data/scan_outcome.dart",
+    "mobile/lib/features/form_check/data/pose_gate.dart"
+  ],
+  "extend": [
+    "mobile/lib/features/workouts/data/set_capture.dart",
+    "mobile/lib/features/workouts/data/workout_session.dart",
+    "mobile/lib/features/workouts/data/scheduled_session.dart",
+    "mobile/lib/core/health/state/health_providers.dart"
+  ],
+  "replace_decision_logic": [
+    "mobile/lib/features/workouts/data/progression.dart",
+    "mobile/lib/features/home/data/suggestion_builder.dart",
+    "mobile/lib/features/personalisation/data/for_you_ranker.dart",
+    "mobile/lib/features/ai_planner/data/plan_builder.dart",
+    "mobile/lib/features/recovery/data/deload_detector.dart"
+  ],
+  "narrow": [
+    "mobile/lib/features/ai_coach/ai_coach_context.dart"
+  ],
+  "g0_repo_modified": false
+}

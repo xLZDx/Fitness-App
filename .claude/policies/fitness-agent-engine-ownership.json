@@ -1,0 +1,729 @@
+{
+  "version": "2.3",
+  "date": "2026-08-15",
+  "repository": "xLZDx/Fitness-App",
+  "audited_remote_head": "5b7c9acc7acdd00db502e1934afd2c75983eaeb9",
+  "agents": [
+    {
+      "agent": "fitness-recommendation-orchestrator",
+      "role": "workflow_coordinator",
+      "engine_ownership": [
+        "cross-cutting orchestration"
+      ],
+      "real_repo_files": [],
+      "primary_gates": [
+        "G0.5",
+        "G2",
+        "G3",
+        "G4",
+        "G6",
+        "G7",
+        "G8",
+        "G9",
+        "G10",
+        "G11"
+      ],
+      "required_outputs": [
+        "routing_plan",
+        "conflict_resolution",
+        "final_expert_packet"
+      ],
+      "veto": "none_by_itself",
+      "notes": "Coordinates experts; never substitutes majority vote for policy precedence."
+    },
+    {
+      "agent": "clinical-safety-gate",
+      "role": "safety_policy_owner",
+      "engine_ownership": [
+        "SafetyGate",
+        "clinical stop/clearance/restriction policy"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/profile/data/profile_models.dart",
+        "mobile/lib/features/equipment/data/exercise_filter.dart",
+        "mobile/lib/features/equipment/state/equipment_providers.dart"
+      ],
+      "primary_gates": [
+        "G2",
+        "G6",
+        "G7",
+        "G9",
+        "G10",
+        "G11"
+      ],
+      "required_outputs": [
+        "safety_state",
+        "blocked_conditions",
+        "clearance_requirements",
+        "product_policy_deltas"
+      ],
+      "veto": "SAFETY_VETO",
+      "notes": "May block a recommendation/release on unresolved S0/S1 or unsafe product behavior."
+    },
+    {
+      "agent": "evidence-guideline-reviewer",
+      "role": "evidence_governance",
+      "engine_ownership": [
+        "evidence registry",
+        "EVIDENCE_ANCHOR vs MODEL_ESTIMATE vs PRODUCT_HEURISTIC classification"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/workouts/data/progression.dart",
+        "mobile/lib/features/recovery/data/deload_detector.dart",
+        "mobile/lib/features/workouts/data/set_session.dart"
+      ],
+      "primary_gates": [
+        "G2",
+        "G4",
+        "G6",
+        "G8",
+        "G11"
+      ],
+      "required_outputs": [
+        "evidence_classification",
+        "source_requirements",
+        "overclaim_findings"
+      ],
+      "veto": "EVIDENCE_CLAIM_VETO",
+      "notes": "Blocks a rule from being presented as evidence-backed when support is missing; does not invent clinical policy."
+    },
+    {
+      "agent": "recommendation-adversary",
+      "role": "independent_release_adversary",
+      "engine_ownership": [
+        "RecommendationValidator eval strategy",
+        "adversarial release review"
+      ],
+      "real_repo_files": [],
+      "primary_gates": [
+        "G2",
+        "G3",
+        "G4",
+        "G5",
+        "G6",
+        "G7",
+        "G8",
+        "G9",
+        "G10",
+        "G11"
+      ],
+      "required_outputs": [
+        "BLOCKER_HIGH_MEDIUM_LOW_findings",
+        "SHIP_SHIP_WITH_FIXES_DO_NOT_SHIP"
+      ],
+      "veto": "RELEASE_VETO_ON_UNRESOLVED_BLOCKER",
+      "notes": "Runs after primary experts; must not author the same rule it independently reviews."
+    },
+    {
+      "agent": "general-fitness-coach",
+      "role": "goal_policy_specialist",
+      "engine_ownership": [
+        "generic prescription fallback",
+        "general-fitness goal policy"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/ai_planner/data/plan_builder.dart",
+        "mobile/lib/features/programmes/data/programme_schedule.dart",
+        "mobile/lib/features/workouts/state/set_timer_providers.dart"
+      ],
+      "primary_gates": [
+        "G6",
+        "G7"
+      ],
+      "required_outputs": [
+        "prescription_policy_proposal",
+        "safe_default_ranges"
+      ],
+      "veto": "none",
+      "notes": "Goal specialist; subordinate to safety/special-population restrictions."
+    },
+    {
+      "agent": "strength-power-coach",
+      "role": "goal_policy_specialist",
+      "engine_ownership": [
+        "strength/power prescription",
+        "load progression"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/workouts/data/progression.dart",
+        "mobile/lib/features/workouts/data/set_capture.dart",
+        "mobile/lib/features/workouts/data/workout_session.dart"
+      ],
+      "primary_gates": [
+        "G5",
+        "G6",
+        "G7"
+      ],
+      "required_outputs": [
+        "strength_prescription_policy",
+        "load_progression_policy"
+      ],
+      "veto": "none",
+      "notes": "Cannot originate clinical clearance or override pain restrictions."
+    },
+    {
+      "agent": "hypertrophy-bodybuilding-coach",
+      "role": "goal_policy_specialist",
+      "engine_ownership": [
+        "hypertrophy prescription",
+        "volume/progression policy"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/workouts/data/progression.dart",
+        "mobile/lib/features/programmes/data/programme_schedule.dart"
+      ],
+      "primary_gates": [
+        "G6",
+        "G7"
+      ],
+      "required_outputs": [
+        "hypertrophy_prescription_policy",
+        "volume_progression_policy"
+      ],
+      "veto": "none",
+      "notes": "Volume landmarks are individualized ranges/heuristics unless evidence registry says otherwise."
+    },
+    {
+      "agent": "endurance-conditioning-coach",
+      "role": "goal_policy_specialist",
+      "engine_ownership": [
+        "conditioning prescription",
+        "intensity method selection"
+      ],
+      "real_repo_files": [
+        "mobile/lib/core/health/health_models.dart",
+        "mobile/lib/core/health/state/health_providers.dart",
+        "mobile/lib/features/ai_planner/data/plan_builder.dart"
+      ],
+      "primary_gates": [
+        "G6",
+        "G7",
+        "G8"
+      ],
+      "required_outputs": [
+        "conditioning_policy",
+        "intensity_method_policy"
+      ],
+      "veto": "none",
+      "notes": "HR-based targets require valid method/context; RPE/talk-test fallbacks remain available."
+    },
+    {
+      "agent": "running-coach",
+      "role": "goal_policy_specialist",
+      "engine_ownership": [
+        "running dose/progression",
+        "multi-stressor progression"
+      ],
+      "real_repo_files": [
+        "mobile/lib/core/health/health_models.dart",
+        "mobile/lib/features/recovery/data/deload_detector.dart"
+      ],
+      "primary_gates": [
+        "G6",
+        "G7",
+        "G8"
+      ],
+      "required_outputs": [
+        "running_progression_policy"
+      ],
+      "veto": "none",
+      "notes": "Avoids simultaneous uncontrolled increases in mileage/intensity/hills/long-run load."
+    },
+    {
+      "agent": "calisthenics-bodyweight-coach",
+      "role": "goal_policy_specialist",
+      "engine_ownership": [
+        "bodyweight progression",
+        "non-external-load prescription"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/workouts/data/set_session.dart",
+        "mobile/lib/features/workouts/state/set_timer_providers.dart"
+      ],
+      "primary_gates": [
+        "G6",
+        "G7"
+      ],
+      "required_outputs": [
+        "bodyweight_progression_policy"
+      ],
+      "veto": "none",
+      "notes": "Progression may use leverage/ROM/tempo/reps, not fabricated external kg."
+    },
+    {
+      "agent": "mobility-flexibility-coach",
+      "role": "goal_policy_specialist",
+      "engine_ownership": [
+        "mobility/flexibility dose",
+        "mobility substitutions"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/equipment/data/equipment_models.dart",
+        "mobile/lib/features/programmes/data/programme_schedule.dart"
+      ],
+      "primary_gates": [
+        "G6",
+        "G7"
+      ],
+      "required_outputs": [
+        "mobility_prescription_policy"
+      ],
+      "veto": "none",
+      "notes": "Does not convert pain or neurologic symptoms into mobility prescriptions."
+    },
+    {
+      "agent": "sport-performance-coach",
+      "role": "goal_policy_specialist",
+      "engine_ownership": [
+        "power/plyometric/speed/COD prescription"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/programmes/data/programme_schedule.dart",
+        "mobile/lib/features/workouts/data/workout_session.dart"
+      ],
+      "primary_gates": [
+        "G6",
+        "G7"
+      ],
+      "required_outputs": [
+        "sport_performance_policy"
+      ],
+      "veto": "none",
+      "notes": "Skill/fatigue placement rules are reviewed with biomechanics specialist."
+    },
+    {
+      "agent": "functional-mixed-modal-coach",
+      "role": "goal_policy_specialist",
+      "engine_ownership": [
+        "mixed-modal/HIIT/circuit prescription"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/ai_planner/data/plan_builder.dart",
+        "mobile/lib/features/programmes/data/programme_schedule.dart"
+      ],
+      "primary_gates": [
+        "G6",
+        "G7"
+      ],
+      "required_outputs": [
+        "mixed_modal_policy"
+      ],
+      "veto": "none",
+      "notes": "High-skill/high-load work is not blindly placed deep under fatigue for novices."
+    },
+    {
+      "agent": "biomechanics-technique-analyst",
+      "role": "cv_technique_boundary_owner",
+      "engine_ownership": [
+        "FormContext",
+        "observable technique interpretation",
+        "technique-aware modification"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/form_check/data/pose_gate.dart",
+        "mobile/lib/features/workouts/state/set_timer_providers.dart"
+      ],
+      "primary_gates": [
+        "G6",
+        "G10",
+        "G11"
+      ],
+      "required_outputs": [
+        "observable_constraints",
+        "camera_requirements",
+        "uncertainty_limits"
+      ],
+      "veto": "TECHNIQUE_DATA_VALIDITY_VETO",
+      "notes": "Can block use of invalid CV observations; cannot diagnose tissue injury."
+    },
+    {
+      "agent": "exercise-ontology-curator",
+      "role": "ontology_owner",
+      "engine_ownership": [
+        "exercise metadata",
+        "equipment resolution",
+        "aliases",
+        "movement properties",
+        "substitution families"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/equipment/data/equipment_models.dart",
+        "mobile/lib/features/equipment/data/exercise_filter.dart",
+        "mobile/lib/features/equipment/state/equipment_providers.dart",
+        "mobile/lib/features/visual_equipment/data/scan_outcome.dart"
+      ],
+      "primary_gates": [
+        "G2",
+        "G3",
+        "G6",
+        "G7",
+        "G10",
+        "G11"
+      ],
+      "required_outputs": [
+        "ontology_delta",
+        "equipment_resolution",
+        "substitution_constraints"
+      ],
+      "veto": "ONTOLOGY_UNKNOWN_BLOCKS_EXACT_MATCH",
+      "notes": "Unknown/conflicting mapping yields REVIEW_REQUIRED rather than fabricated equivalence."
+    },
+    {
+      "agent": "musculoskeletal-physiotherapist",
+      "role": "pain_rehab_specialist",
+      "engine_ownership": [
+        "pain/rehab restrictions",
+        "MSK substitutions",
+        "return-to-training constraints"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/profile/data/profile_models.dart",
+        "mobile/lib/features/equipment/data/exercise_filter.dart"
+      ],
+      "primary_gates": [
+        "G2",
+        "G6",
+        "G7",
+        "G10",
+        "G11"
+      ],
+      "required_outputs": [
+        "pain_constraints",
+        "rehab_modifications",
+        "handoff_conditions"
+      ],
+      "veto": "MSK_SAFETY_VETO",
+      "notes": "Works from symptoms/function/known restrictions; no remote tissue diagnosis."
+    },
+    {
+      "agent": "older-adult-functional-coach",
+      "role": "special_population_specialist",
+      "engine_ownership": [
+        "older/frail/fall-risk modifications"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/profile/data/profile_models.dart"
+      ],
+      "primary_gates": [
+        "G2",
+        "G6",
+        "G7"
+      ],
+      "required_outputs": [
+        "older_adult_constraints",
+        "functional_progression_policy"
+      ],
+      "veto": "SPECIAL_POPULATION_SAFETY_VETO",
+      "notes": "Safety restrictions outrank performance optimization."
+    },
+    {
+      "agent": "youth-adolescent-coach",
+      "role": "special_population_specialist",
+      "engine_ownership": [
+        "youth supervision/dose/progression constraints"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/profile/data/profile_models.dart"
+      ],
+      "primary_gates": [
+        "G2",
+        "G6",
+        "G7"
+      ],
+      "required_outputs": [
+        "youth_constraints",
+        "youth_progression_policy"
+      ],
+      "veto": "SPECIAL_POPULATION_SAFETY_VETO",
+      "notes": "Under-18 routing is mandatory when applicable."
+    },
+    {
+      "agent": "pregnancy-postpartum-coach",
+      "role": "special_population_specialist",
+      "engine_ownership": [
+        "pregnancy/postpartum exercise modifications"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/profile/data/profile_models.dart",
+        "mobile/lib/core/health/health_models.dart"
+      ],
+      "primary_gates": [
+        "G2",
+        "G6",
+        "G7",
+        "G8"
+      ],
+      "required_outputs": [
+        "pregnancy_postpartum_constraints",
+        "intensity_method_modifications"
+      ],
+      "veto": "SPECIAL_POPULATION_SAFETY_VETO",
+      "notes": "Clinical complications/clearance outrank training goals."
+    },
+    {
+      "agent": "chronic-condition-exercise-specialist",
+      "role": "special_population_specialist",
+      "engine_ownership": [
+        "condition-aware exercise constraints"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/profile/data/profile_models.dart"
+      ],
+      "primary_gates": [
+        "G2",
+        "G6",
+        "G7",
+        "G8"
+      ],
+      "required_outputs": [
+        "condition_constraints",
+        "clearance_questions"
+      ],
+      "veto": "SPECIAL_POPULATION_SAFETY_VETO",
+      "notes": "Unknown stability/restrictions do not imply clearance."
+    },
+    {
+      "agent": "adaptive-training-coach",
+      "role": "special_population_specialist",
+      "engine_ownership": [
+        "function-based accessibility/adaptive alternatives"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/profile/data/profile_models.dart",
+        "mobile/lib/features/equipment/data/exercise_filter.dart"
+      ],
+      "primary_gates": [
+        "G2",
+        "G6",
+        "G7"
+      ],
+      "required_outputs": [
+        "functional_constraints",
+        "adaptive_substitutions"
+      ],
+      "veto": "FUNCTIONAL_FEASIBILITY_VETO",
+      "notes": "Uses function/capability rather than guessing diagnosis."
+    },
+    {
+      "agent": "body-recomposition-coach",
+      "role": "goal_policy_specialist",
+      "engine_ownership": [
+        "recomposition training-goal policy",
+        "REDs/LEA escalation triggers"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/profile/data/profile_models.dart",
+        "mobile/lib/features/ai_planner/data/plan_builder.dart"
+      ],
+      "primary_gates": [
+        "G2",
+        "G6",
+        "G7",
+        "G8"
+      ],
+      "required_outputs": [
+        "recomposition_policy",
+        "energy_availability_escalation"
+      ],
+      "veto": "BODYCOMP_SAFETY_ESCALATION",
+      "notes": "Does not optimize deficit when REDs/ED risk is active."
+    },
+    {
+      "agent": "sports-nutrition-dietitian",
+      "role": "nutrition_boundary_specialist",
+      "engine_ownership": [
+        "nutrition context",
+        "fueling/recovery boundaries"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/profile/data/profile_models.dart"
+      ],
+      "primary_gates": [
+        "G8",
+        "G11"
+      ],
+      "required_outputs": [
+        "nutrition_context_rules",
+        "nutrition_handoffs"
+      ],
+      "veto": "NUTRITION_SAFETY_VETO_WHEN_APPLICABLE",
+      "notes": "Nutrition advice remains separate from unsupported medical nutrition therapy."
+    },
+    {
+      "agent": "recovery-sleep-coach",
+      "role": "recovery_policy_owner",
+      "engine_ownership": [
+        "readiness/recovery adaptation"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/recovery/data/deload_detector.dart",
+        "mobile/lib/features/recovery/state/recovery_providers.dart",
+        "mobile/lib/core/health/health_models.dart",
+        "mobile/lib/core/health/state/health_providers.dart"
+      ],
+      "primary_gates": [
+        "G4",
+        "G6",
+        "G8",
+        "G11"
+      ],
+      "required_outputs": [
+        "recovery_signal_model",
+        "freshness_rules",
+        "dose_modification_policy"
+      ],
+      "veto": "RECOVERY_DATA_VALIDITY_VETO",
+      "notes": "Separates readiness from adherence; one bad night is not an automatic cancellation."
+    },
+    {
+      "agent": "massage-soft-tissue-specialist",
+      "role": "recovery_specialist",
+      "engine_ownership": [
+        "massage/soft-tissue contraindication reference"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/profile/data/profile_models.dart"
+      ],
+      "primary_gates": [
+        "G2",
+        "G8"
+      ],
+      "required_outputs": [
+        "massage_contraindications",
+        "recovery_handoffs"
+      ],
+      "veto": "MASSAGE_SAFETY_VETO_WHEN_APPLICABLE",
+      "notes": "Unexplained swelling/systemic red flags route to safety assessment, not massage."
+    },
+    {
+      "agent": "behavior-adherence-coach",
+      "role": "preference_adherence_owner",
+      "engine_ownership": [
+        "preference ranking",
+        "adherence/schedule-fit signals"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/home/data/suggestion_builder.dart",
+        "mobile/lib/features/personalisation/data/for_you_ranker.dart",
+        "mobile/lib/features/recovery/data/deload_detector.dart"
+      ],
+      "primary_gates": [
+        "G3",
+        "G4",
+        "G7",
+        "G8"
+      ],
+      "required_outputs": [
+        "preference_policy",
+        "adherence_signal_model"
+      ],
+      "veto": "none",
+      "notes": "Preference may choose among safe equivalents but cannot override safety/feasibility."
+    },
+    {
+      "agent": "recommendation-engine-architect",
+      "role": "engine_architecture_owner",
+      "engine_ownership": [
+        "RecommendationContext",
+        "RecommendationResult",
+        "SafetyGate interfaces",
+        "EligibilityEngine",
+        "PrescriptionEngine",
+        "LoadEngine",
+        "ProgressionEngine",
+        "SubstitutionEngine",
+        "RecommendationValidator",
+        "versioning/audit trace"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/equipment/state/equipment_providers.dart",
+        "mobile/lib/features/home/state/suggestion_providers.dart",
+        "mobile/lib/features/ai_planner/state/ai_planner_providers.dart",
+        "mobile/lib/features/programmes/state/programme_providers.dart",
+        "mobile/lib/features/workouts/data/workout_session.dart",
+        "mobile/lib/features/workouts/data/progression.dart",
+        "mobile/lib/features/ai_coach/ai_coach_context.dart"
+      ],
+      "primary_gates": [
+        "G1",
+        "G2",
+        "G3",
+        "G4",
+        "G5",
+        "G6",
+        "G7",
+        "G8",
+        "G9",
+        "G10",
+        "G11"
+      ],
+      "required_outputs": [
+        "architecture_contract",
+        "deterministic_probabilistic_boundary",
+        "schema_and_version_plan"
+      ],
+      "veto": "ARCHITECTURE_GATE_VETO",
+      "notes": "May block duplicate source-of-truth or LLM-only safety/prescription architecture."
+    },
+    {
+      "agent": "fitness-data-scientist",
+      "role": "measurement_validation_owner",
+      "engine_ownership": [
+        "calibration",
+        "confidence",
+        "offline eval",
+        "subgroup/safety monitoring"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/personalisation/data/fitness_model.dart",
+        "mobile/lib/features/personalisation/data/for_you_ranker.dart",
+        "mobile/lib/features/recovery/data/deload_detector.dart",
+        "mobile/lib/features/visual_equipment/data/scan_outcome.dart"
+      ],
+      "primary_gates": [
+        "G1",
+        "G4",
+        "G5",
+        "G6",
+        "G8",
+        "G10",
+        "G11"
+      ],
+      "required_outputs": [
+        "metric_contract",
+        "calibration_requirements",
+        "eval_design",
+        "abstention_threshold_review"
+      ],
+      "veto": "MEASUREMENT_VALIDITY_VETO",
+      "notes": "Blocks release claims that exceed measured calibration/coverage."
+    },
+    {
+      "agent": "regulatory-compliance-reviewer",
+      "role": "regulatory_claims_reviewer",
+      "engine_ownership": [
+        "claim boundary",
+        "wellness vs medical-purpose escalation",
+        "regulatory review packet"
+      ],
+      "real_repo_files": [
+        "mobile/lib/features/ai_coach/ai_coach_context.dart",
+        "mobile/lib/features/form_check/data/pose_gate.dart",
+        "mobile/lib/features/profile/data/profile_models.dart"
+      ],
+      "primary_gates": [
+        "G2",
+        "G9",
+        "G10",
+        "G11"
+      ],
+      "required_outputs": [
+        "claim_risk_level",
+        "regulatory_review_required",
+        "human_review_packet"
+      ],
+      "veto": "CLAIM_RELEASE_VETO_PENDING_HUMAN_REVIEW",
+      "notes": "Does not self-classify the product as cleared/device/non-device; escalates to human legal/regulatory owner."
+    }
+  ]
+}

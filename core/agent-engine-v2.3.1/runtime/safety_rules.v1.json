@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0",
+  "policy_version": "2026-08-15",
+  "input_contract": "normalized facts, not raw keyword matching",
+  "states": [
+    "S0_EMERGENCY",
+    "S1_CLEARANCE_REQUIRED",
+    "S2_RESTRICTED",
+    "S3_ROUTINE"
+  ],
+  "s0_rules": [
+    {
+      "rule_id": "S0-CARDIAC-CHEST",
+      "facts_any": [
+        "exertional_chest_pain_pressure_tightness"
+      ],
+      "action": "urgent_or_emergency_localized",
+      "rule_kind": "CLINICAL_ESCALATION_POLICY",
+      "evidence_refs": [
+        "AHA-CHEST-2025"
+      ],
+      "owner_status": "CLINICAL_SIGNOFF_REQUIRED"
+    },
+    {
+      "rule_id": "S0-SYNCOPE",
+      "facts_any": [
+        "exertional_syncope",
+        "exertional_near_syncope",
+        "palpitations_with_dizziness"
+      ],
+      "action": "urgent_clinical_path",
+      "rule_kind": "CLINICAL_ESCALATION_POLICY",
+      "evidence_refs": [
+        "AHA-ARRHYTHMIA-CURRENT"
+      ],
+      "owner_status": "CLINICAL_SIGNOFF_REQUIRED"
+    },
+    {
+      "rule_id": "S0-STROKE",
+      "facts_any": [
+        "sudden_focal_weakness",
+        "facial_droop",
+        "speech_difficulty",
+        "sudden_major_visual_loss",
+        "seizure_new",
+        "new_confusion_acute"
+      ],
+      "action": "emergency_localized",
+      "rule_kind": "CLINICAL_ESCALATION_POLICY",
+      "evidence_refs": [
+        "CDC-STROKE-2026"
+      ],
+      "owner_status": "CLINICAL_SIGNOFF_REQUIRED"
+    },
+    {
+      "rule_id": "S0-CAUDA",
+      "facts_all_any_groups": [
+        [
+          "saddle_or_groin_sensory_loss"
+        ],
+        [
+          "new_bladder_dysfunction",
+          "new_bowel_dysfunction",
+          "rapidly_progressive_bilateral_neurologic_deficit"
+        ]
+      ],
+      "action": "emergency_localized",
+      "rule_kind": "CLINICAL_ESCALATION_POLICY",
+      "evidence_refs": [
+        "NICE-NEURO-NG127"
+      ],
+      "owner_status": "CLINICAL_SIGNOFF_REQUIRED"
+    },
+    {
+      "rule_id": "S0-VTE",
+      "facts_any": [
+        "unexplained_unilateral_calf_or_thigh_swelling_warmth_pain",
+        "sudden_dyspnea_with_pleuritic_chest_pain"
+      ],
+      "action": "urgent_or_emergency_localized",
+      "blocked_actions": [
+        "massage",
+        "foam_rolling",
+        "loaded_exercise_workaround"
+      ],
+      "rule_kind": "CLINICAL_ESCALATION_POLICY",
+      "evidence_refs": [
+        "CDC-VTE-CURRENT"
+      ],
+      "owner_status": "CLINICAL_SIGNOFF_REQUIRED"
+    },
+    {
+      "rule_id": "S0-RHABDO",
+      "facts_all": [
+        "severe_postexercise_muscle_pain_or_swelling",
+        "dark_urine_or_markedly_reduced_urine"
+      ],
+      "action": "urgent_localized",
+      "rule_kind": "CLINICAL_ESCALATION_POLICY",
+      "evidence_refs": [
+        "CDC-RHABDO-2025"
+      ],
+      "owner_status": "CLINICAL_SIGNOFF_REQUIRED"
+    },
+    {
+      "rule_id": "S0-INFECTED-JOINT",
+      "facts_all": [
+        "hot_swollen_joint",
+        "fever_or_systemic_illness"
+      ],
+      "action": "urgent_localized",
+      "rule_kind": "CLINICAL_ESCALATION_POLICY",
+      "evidence_refs": [
+        "NICE-SEPTIC-JOINT-NG219"
+      ],
+      "owner_status": "CLINICAL_SIGNOFF_REQUIRED"
+    },
+    {
+      "rule_id": "S0-HEAT",
+      "facts_all": [
+        "heat_exposure",
+        "confusion_or_altered_mental_state"
+      ],
+      "action": "emergency_localized",
+      "rule_kind": "CLINICAL_ESCALATION_POLICY",
+      "evidence_refs": [
+        "CDC-HEAT-CURRENT"
+      ],
+      "owner_status": "CLINICAL_SIGNOFF_REQUIRED"
+    },
+    {
+      "rule_id": "S0-SELF-HARM",
+      "facts_any": [
+        "imminent_self_harm_intent"
+      ],
+      "action": "crisis_path_localized",
+      "rule_kind": "PRODUCT_SAFETY_POLICY",
+      "evidence_refs": [
+        "PRODUCT-CRISIS-SAFETY-POLICY"
+      ],
+      "owner_status": "SAFETY_POLICY_OWNER_REQUIRED"
+    }
+  ],
+  "fail_closed_on": [
+    "malformed_critical_safety_fields",
+    "unresolved_possible_s0_fact"
+  ],
+  "output_rule": "When S0 fires, no workout optimization appears in the same user-facing response.",
+  "release_status": "ENGINEERING_BASELINE_NOT_CLINICALLY_SIGNED_OFF"
+}
