@@ -53,14 +53,38 @@ Widget _page(ProviderContainer c) => UncontrolledProviderScope(
     );
 
 void main() {
-  testWidgets('off by default: the camera is what the user gets', (t) async {
-    // The default matters more here than for most switches. This one decides
-    // what is shown INSTEAD of the ground truth, and it has not been watched on
-    // a real phone yet.
+  testWidgets('on by default: the scene and the figure are what the user gets',
+      (t) async {
+    // Was the opposite until 2026-08-15, and the reason it flipped is a
+    // decision rather than a discovery: the operator asked for this screen to
+    // look like the reference animation and chose avatar mode as the main
+    // view. The old default was protecting an unwatched feature; that argument
+    // stops applying once someone states the preference.
     _phoneSized(t);
     final c = _container(oneSquat(0));
     await t.pumpWidget(_page(c));
     await t.pump();
+    await t.pump(const Duration(seconds: 2));
+
+    expect(c.read(avatarModeProvider), isTrue);
+    expect(_backdrop, findsOneWidget);
+    expect(_avatar, findsOneWidget);
+    expect(c.read(showSkeletonProvider), isFalse,
+        reason: 'only the avatar moved; the diagnostic overlay stays off, and '
+            'a default that switched on two things at once would be a second '
+            'decision nobody made');
+  });
+
+  testWidgets('the camera is still one tap away', (t) async {
+    // What the old default was protecting is now the toggle's job. If the
+    // avatar is ever wrong about where the body is, this is the way out, so it
+    // is pinned rather than left to the toggle test below.
+    _phoneSized(t);
+    final c = _container(oneSquat(0));
+    await t.pumpWidget(_page(c));
+    await t.pump();
+
+    await t.tap(find.byTooltip('Show the camera again'));
     await t.pump(const Duration(seconds: 2));
 
     expect(c.read(avatarModeProvider), isFalse);
@@ -143,16 +167,18 @@ void main() {
         reason: 'the screen has to account for the empty scene');
   });
 
-  testWidgets('the toggle turns it on and back off', (t) async {
+  testWidgets('the toggle turns it off and back on', (t) async {
+    // Same round trip as before the default flipped, walked from the other
+    // end: the interesting assertion is the frame being dropped on the way OUT
+    // of avatar mode, and that step is now the first tap rather than the
+    // second.
     _phoneSized(t);
     final c = _container(oneSquat(0));
     await t.pumpWidget(_page(c));
-    await t.pump();
-
-    await t.tap(find.byTooltip('Draw me as a figure'));
     await t.pump(const Duration(seconds: 2));
-    expect(c.read(avatarModeProvider), isTrue);
-    expect(_backdrop, findsOneWidget);
+    expect(c.read(avatarModeProvider), isTrue,
+        reason: 'positive control: it starts on, so the first tap really is '
+            'the exit');
 
     await t.tap(find.byTooltip('Show the camera again'));
     await t.pump();
@@ -161,6 +187,11 @@ void main() {
     expect(c.read(latestPoseFrameProvider), isNull,
         reason: 'the held pose is dropped on the way out, so re-entering '
             'cannot paint a figure from a minute ago');
+
+    await t.tap(find.byTooltip('Draw me as a figure'));
+    await t.pump(const Duration(seconds: 2));
+    expect(c.read(avatarModeProvider), isTrue);
+    expect(_backdrop, findsOneWidget);
   });
 
   testWidgets('leaving the mode keeps the frame when the skeleton still wants it',

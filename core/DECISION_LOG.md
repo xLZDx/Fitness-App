@@ -9356,3 +9356,66 @@ comment whose conclusion may change next session is churn.
 none in a file this gate touched.
 
 Not pushed.
+
+## 2026-08-15 16:20 local (Europe/Chisinau) / 13:20 UTC — Form coach Gate C: the avatar becomes the main view
+
+### The decision, and whose it was
+
+The operator asked for this screen to look like the reference animation and, asked directly,
+chose "avatar mode = the main view", with the camera and the target outline kept as the option
+behind the toggle. `avatarModeProvider` now defaults to `true`.
+
+The default it replaces was not arbitrary and its reasoning is worth keeping straight: avatar mode
+decides what the user sees INSTEAD of the ground truth, and for something unwatched the honest
+default is the picture that cannot be wrong about where the body is. That argument is about an
+unverified feature, not about a preference, and it stops applying the moment the preference is
+stated. What it was protecting is now the toggle's job, and `the camera is still one tap away`
+pins that rather than leaving it to the toggle test.
+
+### What the reference video actually shows, which corrected the plan
+
+The gate was scoped to include "a two-sided skeleton, degrading to mirroring". Extracting the
+video's frames killed that scope before any of it was built.
+
+The figure in the reference stands **side-on** — the stance the coach asks for — and its skeleton
+is **one-sided**. So `pose_avatar.dart`'s existing construction, one believable side mirrored
+across the torso, already matches the target. Its header documents at length why it is built that
+way: from the side, BlazePose extrapolates the far arm and leg, those guesses jitter frame to
+frame while the user holds still, and a FILLED body has to close, so the jitter tears the whole
+outline rather than misplacing one line. That is a correct decision, not a limitation to lift.
+
+The painter also already draws what the video shows: a near-black body fill (`0xE60A0912`), a
+white rim, a blurred bone glow, a bright bone core and round joint dots
+(`form_check_page.dart:981-1027`). So Gate C is a default flip and nothing else, which is smaller
+than the gate was written to be. Recorded because "the plan said two-sided" would otherwise look
+like scope that went missing.
+
+One thing the video is NOT: a screen recording. It is a 1280x720 landscape render. It is a target
+for the LOOK, and its layout proportions are not a spec.
+
+### What flipping the default cost, stated plainly
+
+16 tests failed. None was a regression — every one encoded the old default — but the shape of the
+failures is worth recording rather than just fixing:
+
+- Three pinned the default or the toggle directly.
+- Six exercised camera-only surfaces: the match readout, the demonstration, the target outline.
+- Three graded a rep AGAINST THE TARGET, which Gate A deliberately withdrew in avatar mode.
+- Four asserted on the diagnostic skeleton, which Gate A stopped drawing in avatar mode, or on
+  the frame publication both switches share.
+
+Each was given an explicit `avatarModeProvider` override with the reason in the comment, rather
+than a blanket default restored in a test helper. A test that says which view it is about is
+worth more than one that inherits it.
+
+**The debt this creates, named rather than left implicit:** a large part of this feature's suite
+describes camera mode, which is no longer the default path. The app's main view is now less
+covered than its secondary one. Two tests were added for the new default (`on by default`, `the
+camera is still one tap away`); that is a floor, not parity.
+
+### State
+
+`flutter test` — 2397 tests. `flutter analyze lib test` — 7 issues, all pre-existing, none in a
+touched file.
+
+Not pushed.

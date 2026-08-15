@@ -44,6 +44,13 @@ ProviderContainer _container(List<PoseFrame> frames) {
     // R11h: this file's subject is the camera UI, so it starts where
     // that UI lives instead of tapping through the two intro cards.
     coachInitialPhaseProvider.overrideWithValue(CoachPhase.qualityCheck),
+    // Camera mode, stated rather than inherited from a default that flipped on
+    // 2026-08-15. This file's subject is the diagnostic skeleton, which Gate A
+    // stopped drawing in avatar mode — the avatar already draws lit bones, and
+    // a second thinner set on top reads as a tracking failure. Both switches
+    // also publish the same frame, so leaving avatar mode on would make "no
+    // frame is kept while it is off" test the wrong switch entirely.
+    avatarModeProvider.overrideWith((_) => false),
   ]);
   addTearDown(c.dispose);
   return c;

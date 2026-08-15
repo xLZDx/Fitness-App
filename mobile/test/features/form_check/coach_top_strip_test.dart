@@ -82,6 +82,11 @@ ProviderContainer _container({
     _showRepCountProvider.overrideWithValue(showRepCount),
     _armedProvider.overrideWithValue(armed),
     if (match != null) poseMatchProvider.overrideWith((_) => match),
+    // Camera mode, stated rather than inherited. The match readout only exists
+    // against a target, and Gate A withdrew the target in avatar mode — which
+    // became the default on 2026-08-15. A test about where the readout SITS has
+    // to be in the view that has one.
+    avatarModeProvider.overrideWith((_) => false),
   ]);
   addTearDown(c.dispose);
   return c;

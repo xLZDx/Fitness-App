@@ -54,6 +54,10 @@ ProviderContainer _container(List<PoseFrame> frames) {
     poseDetectorServiceProvider
         .overrideWithValue(MockPoseDetectorService(frames)),
     coachInitialPhaseProvider.overrideWithValue(CoachPhase.qualityCheck),
+    // Camera mode, stated rather than inherited — the default flipped on
+    // 2026-08-15. This file asserts on the diagnostic skeleton being held and
+    // dropped, and Gate A stopped drawing it in avatar mode.
+    avatarModeProvider.overrideWith((_) => false),
   ]);
   addTearDown(c.dispose);
   return c;

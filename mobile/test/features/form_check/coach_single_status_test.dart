@@ -369,6 +369,10 @@ void main() {
       // A face filling the frame: no hips, no knees, nothing to score.
       for (var i = 0; i < 30; i++) faceSelfie(100000 + i * 100),
     ]);
+    // Camera mode: the readout this test is about only exists against a target,
+    // and avatar mode has none by Gate A's own decision. Stated here rather
+    // than left to the default, which flipped to avatar on 2026-08-15.
+    c.read(avatarModeProvider.notifier).state = false;
     await t.pumpWidget(_page(c));
     // Mid-set, which is both where the readout is mounted and the realistic
     // way to reach this: the view degrades under someone who is already
@@ -418,6 +422,10 @@ void main() {
       for (var i = 0; i < 20; i++)
         if (i.isEven) squatFrame(i * 100, 0.71) else faceSelfie(i * 100),
     ]);
+    // Camera mode, for the same reason as the test above: this asserts that a
+    // percentage and an instruction never share the screen, which needs a view
+    // that can produce a percentage at all.
+    c.read(avatarModeProvider.notifier).state = false;
     await t.pumpWidget(_page(c));
     c.read(coachPhaseControllerProvider.notifier).start();
 

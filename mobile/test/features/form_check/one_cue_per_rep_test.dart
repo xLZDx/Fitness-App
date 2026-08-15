@@ -242,6 +242,13 @@ Future<RepSessionState> _runSquat(List<PoseFrame> frames) async {
   final container = ProviderContainer(overrides: [
     poseDetectorServiceProvider.overrideWithValue(svc),
     voiceCoachProvider.overrideWithValue(MockVoiceCoach()),
+    // Camera mode, stated rather than inherited. These tests grade a rep
+    // AGAINST THE TARGET, and Gate A withdrew the target in avatar mode on
+    // purpose: an undrawn target must not fail a rep for missing a shape the
+    // user was never shown. Avatar mode became the default on 2026-08-15, so
+    // without this line these three would be asserting that grading happens in
+    // the one mode that deliberately does not grade.
+    avatarModeProvider.overrideWith((_) => false),
   ]);
   addTearDown(container.dispose);
   container.read(selectedExerciseProvider.notifier).state = FormExercise.squat;

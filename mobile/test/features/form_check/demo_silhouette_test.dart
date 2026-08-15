@@ -45,6 +45,11 @@ ProviderContainer _container() {
     // R11h: this file's subject is the camera UI, so it starts where
     // that UI lives instead of tapping through the two intro cards.
     coachInitialPhaseProvider.overrideWithValue(CoachPhase.qualityCheck),
+    // And camera mode specifically, since 2026-08-15 flipped the default. The
+    // demonstration and the target outline are both fitted to the PANEL; the
+    // avatar is placed where the body is, and Gate A stopped the two being
+    // drawn together. This file is about the panel-fitted pair.
+    avatarModeProvider.overrideWith((_) => false),
   ]);
   addTearDown(c.dispose);
   return c;

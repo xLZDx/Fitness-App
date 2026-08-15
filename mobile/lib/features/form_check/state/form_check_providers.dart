@@ -278,17 +278,31 @@ final showSkeletonProvider = StateProvider<bool>((_) => false);
 /// preview. What changes is only what is put on screen: the room is replaced by
 /// a drawn scene and the body by an avatar built from the live pose.
 ///
-/// Off by default, for the same reason the skeleton is: this decides what the
-/// user sees INSTEAD of the ground truth, and until it has been watched on a
-/// real phone the honest default is the picture that cannot be wrong about
-/// where the body is.
-///
 /// Two things had to exist before this could: `pose_avatar.dart`, so a body can
 /// be drawn from one believable side rather than from the far side's guesses,
 /// and the empty frame the detector now emits, so losing the person clears the
 /// figure. Without the second, this switch would replace an honest picture with
 /// a figure that freezes and keeps posing.
-final avatarModeProvider = StateProvider<bool>((_) => false);
+///
+/// ## ON by default since 2026-08-15, by operator decision
+///
+/// It was off, for the same reason the skeleton is off: this decides what the
+/// user sees INSTEAD of the ground truth, and the honest default for something
+/// unwatched is the picture that cannot be wrong about where the body is.
+///
+/// That argument was about an unverified feature, not about a preference, and it
+/// stops applying the moment the preference is stated. The operator asked for
+/// this screen to look like the reference animation — a dusk scene, the body
+/// dark, the skeleton lit on it — and answered the direct question with "avatar
+/// mode = the main view", camera and target outline kept as the option behind
+/// the toggle. This is that decision.
+///
+/// What the old default was protecting against has not gone away and is now the
+/// toggle's job: if the avatar is ever wrong about where the body is, the camera
+/// is one tap away and `_MatchReadout`, `_Silhouette` and `_SkeletonOverlay` all
+/// come back with it. What is NOT kept is the pretence that both views can be on
+/// at once — Gate A settled that, and this only changes which of them opens.
+final avatarModeProvider = StateProvider<bool>((_) => true);
 
 /// The live body as a drawable figure, or null when there is nothing to draw.
 ///

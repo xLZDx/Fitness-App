@@ -99,6 +99,12 @@ Future<(RepSessionState, MockVoiceCoach)> run(
     // Off by default: these tests are about the counter's own outcomes, and a
     // stick-figure fixture would fail a silhouette it was never drawn for.
     if (!withTarget) poseTargetProvider.overrideWithValue(null),
+    // Camera mode, stated rather than inherited from a default that flipped on
+    // 2026-08-15. `withTarget: true` exists to exercise the silhouette verdict,
+    // and Gate A withdrew the target in avatar mode — so the one case in this
+    // file that asks for a target would otherwise be handed nothing to grade
+    // against and would quietly stop testing what it names.
+    avatarModeProvider.overrideWith((_) => false),
   ]);
   addTearDown(container.dispose);
 
