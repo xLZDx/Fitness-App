@@ -9282,3 +9282,77 @@ attributed to unstaged edits under `mobile/lib` — this gate's. True, and it wo
 the gate had only ever run `test/features/form_check/`, which does not contain it. Deleting
 `_AvatarCannotPlaceBody` removed three `Colors.white` literals, so the ledger moves 64 -> 61 with
 its reasoning written in the file's own idiom. Full-suite runs, not scoped ones, from here on.
+
+## 2026-08-15 15:55 local (Europe/Chisinau) / 12:55 UTC — Form coach Gate B, part 1: the coordinate question becomes measurable
+
+### What this gate was opened to do, and why that changed
+
+Gate B was scoped as "fix the coordinate conversion". Reading the code first, as the gate
+required, showed there is no evidence a conversion defect exists — and that the instrument meant
+to prove it cannot distinguish the two candidate explanations. So part 1 fixes the instrument and
+asserts nothing about the coordinates.
+
+The line in question, carried since the R0 audit and repeated in three places in the codebase:
+
+```
+pose[pixels] n=807 x -0.466..1.968 (bound 0.667) y -2.173..3.015
+```
+
+`form_check_page.dart` called this "still an open defect" on the strength of the extents alone.
+It cannot be read that way, for a reason that is in the code rather than in judgement:
+
+- BlazePose emits all 33 landmarks on every frame and **extrapolates** the ones outside the
+  image. That is documented behaviour, not a fault.
+- `mlkit_pose_detector_service.dart:177` forwards `likelihood` through and filters nothing, so
+  every extrapolated joint reaches the pipeline.
+- `pose_unit_probe.dart` folded **every** landmark into one extent.
+
+A lifter whose feet leave the bottom of the frame therefore produces `y > 1` legitimately, and a
+broken conversion produces the same line. One extent over everything cannot separate them, which
+is exactly why this has been re-argued at least three times instead of settled once.
+
+### The measurement that separates them
+
+The extent restricted to landmarks at or above `minLikelihood` (0.7, matching
+`PoseGateConfig`). A wrong unit has to show up there: if the trusted box sits inside the contract
+while the full box does not, the wild numbers are extrapolation and there is nothing to fix; a
+joint at likelihood 0.9 sitting at `y = 3.0` is a broken conversion and cannot be anything else.
+
+`PoseUnitReport` now carries `all` and `trusted` as a shared `PoseExtent`, plus
+`trustedOutOfContract`, and the rendered line names the verdict in words. Three details that are
+decisions rather than mechanics:
+
+- **`x` is judged against `frame.aspectRatio`, not against 1.** The contract is isotropic. A bare
+  `> 1` test would call a healthy portrait frame broken at `x = 0.9` and a landscape one healthy
+  at the same value. Pinned by its own test.
+- **No slack, deliberately unlike `PoseGateConfig.unitSanitySlack` (4.0).** Slack exists so a gate
+  does not falsely block a user; a diagnostic wants to see a trusted joint one percent outside the
+  frame. Different questions, different tolerances — the same reason `pose_avatar.dart`'s
+  `_drawSlack` is 0.5 and says so.
+- **An empty trusted box renders "none seen", not "in contract".** Reporting the benign verdict on
+  no evidence would retire a question nobody answered.
+
+### The measurement is now logged, not only drawn
+
+Taking it needs a real body in front of a real camera, so whoever takes it is holding the phone
+and cannot simultaneously read six decimals off it and write them down. Every previous round of
+this ended in a hand-transcribed number. The summary is now also `debugPrint`ed on change, inside
+the existing debug-overlay branch, using the same equality the provider uses — a handful of lines
+per session, nothing in release.
+
+### What is NOT claimed
+
+That the conversion is fine. That it is broken. Neither is earned yet: part 1 built the
+instrument, part 2 is the reading, and the reading needs a person doing squats in front of the
+camera. С8 (`SM G950F`, `ce0417141997e4640c`) is connected and confirmed via `flutter devices`.
+
+`pose_avatar.dart:83-87` still describes the extents as an open defect in its own comment. Left
+alone on purpose: its `_drawSlack = 0.5` bound is correct however Gate B resolves, and rewriting a
+comment whose conclusion may change next session is churn.
+
+### State
+
+`flutter test` — 2396 passed, 0 failed. `flutter analyze lib test` — 7 issues, all pre-existing,
+none in a file this gate touched.
+
+Not pushed.

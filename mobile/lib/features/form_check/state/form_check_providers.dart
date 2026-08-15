@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../profile/data/profile_models.dart';
@@ -486,7 +486,24 @@ class FormFeedbackController extends Notifier<FormFeedback?> {
     // measurement it will never display.
     if (ref.read(poseDebugOverlayProvider)) {
       _probe.observe(frame);
-      ref.read(poseUnitReportProvider.notifier).state = _probe.report;
+      final report = _probe.report;
+      final previous = ref.read(poseUnitReportProvider);
+      ref.read(poseUnitReportProvider.notifier).state = report;
+      // Also written to the log, not only to the screen.
+      //
+      // The measurement this probe exists for needs a real body in front of a
+      // real camera, which means the person taking it is holding the phone and
+      // cannot simultaneously read six decimals off it and type them somewhere.
+      // Every previous round of this ended with a number transcribed by hand
+      // into a plan. On the log it can be captured by whoever is running
+      // `flutter run` or `adb logcat`, and pasted rather than retyped.
+      //
+      // Emitted on CHANGE only, using the same equality the provider uses — a
+      // steady camera settles within a second or two, so this is a handful of
+      // lines per session and not thirty a second.
+      if (report != previous) {
+        debugPrint('[pose-probe] ${report.summary.replaceAll('\n', ' | ')}');
+      }
     }
 
     final classifiers = ref.read(activeClassifiersProvider);

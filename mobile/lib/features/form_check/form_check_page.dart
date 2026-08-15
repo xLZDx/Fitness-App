@@ -526,10 +526,18 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
           // value that never leaves a debug build is a value nobody reads. That
           // argument expired the moment the number arrived —
           // `pose[pixels] n=807 x -0.466..1.968 (bound 0.667) y -2.173..3.015`,
-          // recorded in the R0 audit §7.5. What it measured is still an open
-          // defect (those extents are outside the contract
-          // `pose_coordinate_space.dart` declares), so the instrument stays;
-          // only its exposure to users goes.
+          // recorded in the R0 audit §7.5. The instrument stays; only its
+          // exposure to users goes.
+          //
+          // What that line MEANS is still open, and this comment used to call
+          // it an open defect on the strength of the extents alone. It cannot
+          // be: BlazePose extrapolates the joints that leave the frame and the
+          // service forwards them unfiltered, so those numbers fit a broken
+          // conversion and a perfectly healthy session equally well. The probe
+          // now reports the extent restricted to landmarks above
+          // `minLikelihood` beside the full one, which is the measurement that
+          // separates the two — see `pose_unit_probe.dart`. Until that second
+          // line has been read off a real device, neither verdict is earned.
           if (ref.watch(poseDebugOverlayProvider) &&
               !ref.watch(poseUnitReportProvider).isEmpty) ...[
             Text(

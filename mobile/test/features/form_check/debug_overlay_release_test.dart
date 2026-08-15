@@ -31,12 +31,31 @@ final _probeLine = find.byKey(const Key('form-check-unit-probe'));
 
 /// A report with real content, so an absent line proves the gate closed rather
 /// than proving there was nothing to draw.
+/// `all` and `aspectRatio` are the operator's own, read off the phone that
+/// produced the screenshots, and are kept verbatim.
+///
+/// `trusted` is INVENTED — a body sitting comfortably inside the frame. Nobody
+/// has measured the real trusted extent yet; that is what Gate B is for. It is
+/// stated rather than left to look measured, because this file's job is to
+/// prove the probe line is absent in release, and any content at all serves
+/// that. Do not quote these four numbers as evidence of anything.
 const _report = PoseUnitReport(
   frames: 807,
-  minX: -0.466,
-  maxX: 1.968,
-  minY: -2.173,
-  maxY: 3.015,
+  all: PoseExtent(
+    minX: -0.466,
+    maxX: 1.968,
+    minY: -2.173,
+    maxY: 3.015,
+    landmarks: 26631,
+  ),
+  trusted: PoseExtent(
+    minX: 0.071,
+    maxX: 0.598,
+    minY: 0.104,
+    maxY: 0.943,
+    landmarks: 19442,
+  ),
+  minLikelihood: 0.7,
   spaces: {PoseCoordinateSpace.pixels},
   aspectRatio: 0.667,
 );

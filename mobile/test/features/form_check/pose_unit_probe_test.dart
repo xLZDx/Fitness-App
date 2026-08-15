@@ -11,8 +11,8 @@ import 'package:fitness_app/features/form_check/data/pose_unit_probe.dart';
 /// that it never prints nonsense (infinities from an empty accumulator) and
 /// that it does not force the screen to repaint on every camera frame.
 
-PoseLandmark p(LandmarkType t, double x, double y) =>
-    PoseLandmark(type: t, x: x, y: y, likelihood: 0.9);
+PoseLandmark p(LandmarkType t, double x, double y, {double likelihood = 0.9}) =>
+    PoseLandmark(type: t, x: x, y: y, likelihood: likelihood);
 
 PoseFrame f(
   Map<LandmarkType, PoseLandmark> ls, {
@@ -158,6 +158,112 @@ void main() {
           reason: 'a single landmark at the origin has zero extent, which is '
               'numerically identical to the empty report -- only isEmpty tells '
               'them apart');
+    });
+  });
+
+  group('the two explanations for a wide range are told apart', () {
+    // Gate B's whole question. The operator's device reported
+    // `x -0.466..1.968 (bound 0.667) y -2.173..3.015` on a session that was
+    // otherwise scoring, and a single extent over every landmark cannot say
+    // whether that is a broken conversion or BlazePose extrapolating the joints
+    // that left the frame. These two cases are those two worlds, built to be
+    // indistinguishable on the OLD summary line and opposite on the new one.
+
+    test('extrapolated joints leave the trusted extent in contract', () {
+      // The benign world: the body is comfortably inside the frame, and the
+      // wild numbers all belong to joints the detector is guessing at.
+      final probe = PoseUnitProbe();
+      probe.observe(f({
+        LandmarkType.leftHip: p(LandmarkType.leftHip, 0.20, 0.40),
+        LandmarkType.rightHip: p(LandmarkType.rightHip, 0.30, 0.50),
+        LandmarkType.leftAnkle:
+            p(LandmarkType.leftAnkle, -0.47, 3.01, likelihood: 0.05),
+        LandmarkType.rightAnkle:
+            p(LandmarkType.rightAnkle, 1.97, -2.17, likelihood: 0.10),
+      }));
+
+      final r = probe.report;
+      expect(r.minY, closeTo(-2.17, 1e-9),
+          reason: 'positive control: the full extent really is far outside the '
+              'contract, so this case is the one that used to be ambiguous');
+      expect(r.trusted.minY, closeTo(0.40, 1e-9));
+      expect(r.trusted.maxY, closeTo(0.50, 1e-9));
+      expect(r.trustedOutOfContract, isFalse);
+      expect(r.summary, contains('in contract'));
+      expect(r.summary, isNot(contains('OUT OF CONTRACT')));
+    });
+
+    test('a confident joint outside the frame is called out', () {
+      // The broken world. Same wild extent, but it belongs to a joint the
+      // detector is sure about, which no amount of extrapolation explains.
+      final probe = PoseUnitProbe();
+      probe.observe(f({
+        LandmarkType.leftHip: p(LandmarkType.leftHip, 0.20, 0.40),
+        LandmarkType.rightHip: p(LandmarkType.rightHip, 0.30, 3.01),
+      }));
+
+      final r = probe.report;
+      expect(r.trustedOutOfContract, isTrue);
+      expect(r.summary, contains('OUT OF CONTRACT'));
+    });
+
+    test('x is judged against the frame ratio, not against 1', () {
+      // x runs 0..aspectRatio by the isotropic contract, so a bare `> 1` test
+      // would call a perfectly normal landscape frame broken and a portrait
+      // one healthy at x = 0.9 when its bound is 0.5625.
+      final probe = PoseUnitProbe();
+      probe.observe(f({
+        LandmarkType.leftHip: p(LandmarkType.leftHip, 0.90, 0.40),
+      }, aspectRatio: 0.5625));
+      expect(probe.report.trustedOutOfContract, isTrue,
+          reason: 'x 0.90 is outside a 0.5625-wide frame');
+
+      final wide = PoseUnitProbe();
+      wide.observe(f({
+        LandmarkType.leftHip: p(LandmarkType.leftHip, 0.90, 0.40),
+      }, aspectRatio: 1.7778));
+      expect(wide.report.trustedOutOfContract, isFalse,
+          reason: 'the same x is well inside a landscape frame');
+    });
+
+    test('a session with nothing trusted says so instead of claiming health',
+        () {
+      // All guesses. "in contract" here would be a lie of omission: there is no
+      // evidence either way, and reporting the benign verdict would retire a
+      // question nobody answered.
+      final probe = PoseUnitProbe();
+      probe.observe(f({
+        LandmarkType.leftHip: p(LandmarkType.leftHip, 0.2, 5.0, likelihood: 0.1),
+      }));
+      final r = probe.report;
+      expect(r.trusted.isEmpty, isTrue);
+      expect(r.trustedOutOfContract, isFalse);
+      expect(r.summary, contains('none seen'));
+      expect(r.summary, isNot(contains('in contract')));
+    });
+
+    test('a widening trusted extent still refreshes the line', () {
+      // The full extent is held still on purpose, so the ONLY thing that
+      // changes is the trusted box. If equality ignored it, the diagnostic
+      // would freeze exactly when it began to matter.
+      final probe = PoseUnitProbe();
+      probe.observe(f({
+        LandmarkType.leftHip: p(LandmarkType.leftHip, 0.20, 0.40),
+        LandmarkType.leftAnkle:
+            p(LandmarkType.leftAnkle, 0.10, 0.90, likelihood: 0.1),
+      }));
+      final before = probe.report;
+      probe.observe(f({
+        LandmarkType.leftHip: p(LandmarkType.leftHip, 0.20, 0.40),
+        // Same coordinates as the guess above, now believed.
+        LandmarkType.leftAnkle: p(LandmarkType.leftAnkle, 0.10, 0.90),
+      }));
+      final after = probe.report;
+
+      expect(after.all, equals(before.all),
+          reason: 'positive control: the full extent did NOT move, so the '
+              'inequality below can only come from the trusted box');
+      expect(after, isNot(equals(before)));
     });
   });
 
