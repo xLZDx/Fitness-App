@@ -9,6 +9,9 @@ import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/equipment/data/asset_equipment_repository.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
+import 'package:fitness_app/features/safety/data/eligibility.dart';
+import 'package:fitness_app/features/safety/data/par_q.dart';
+import 'package:fitness_app/features/safety/state/eligibility_providers.dart';
 import 'package:fitness_app/features/equipment/widgets/exercise_thumb.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/programmes/data/programme.dart';
@@ -104,6 +107,13 @@ Widget _harness(AssetEquipmentRepository repo) {
   return ProviderScope(
     overrides: [
       equipmentRepositoryProvider.overrideWithValue(repo),
+      // Gate N. The Train tab renders a stated refusal rather than an empty
+      // list when the whole-person gate is closed, and an unscreened profile
+      // closes it — so a harness that says nothing about screening renders the
+      // refusal instead of the tab under test. `an unscreened user is refused`
+      // covers the other side deliberately.
+      safetyContextProvider.overrideWith((_) async => SafetyContext(
+          screening: screen({for (final q in ParQQuestion.values) q: false}))),
     ],
     child: MaterialApp.router(
       theme: AppTheme.light(),

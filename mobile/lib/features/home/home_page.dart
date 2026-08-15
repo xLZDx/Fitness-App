@@ -14,9 +14,8 @@ import '../moments/data/moment.dart';
 import '../moments/state/moment_providers.dart';
 import '../moments/widgets/day3_welcome_modal.dart';
 import '../recovery/widgets/deload_banner.dart';
-import '../safety/data/par_q.dart';
-import '../safety/state/safety_providers.dart';
-import '../safety/widgets/safety_refusal_card.dart';
+import '../safety/state/eligibility_providers.dart';
+import '../safety/widgets/eligibility_notice.dart';
 import '../equipment/data/catalog_labels.dart';
 import '../equipment/state/equipment_providers.dart';
 import '../programmes/data/programme_labels.dart';
@@ -154,12 +153,13 @@ class _HomePageState extends ConsumerState<HomePage> {
           // a different and untrue reason. The verdict is read here, where the
           // section is drawn, because that is where the wrong message would
           // have been shown.
-          if (ref.watch(safetyVerdictProvider).valueOrNull
-              case final v? when v.decision == SafetyDecision.blocked)
-            SafetyRefusalCard(
+          if (ref.watch(safetyContextProvider).valueOrNull
+              case final c? when !c.allowsAnyTraining)
+            EligibilityNotice(
               key: const Key('home.suggestions.refused'),
-              reasons: v.reasons,
-              onOpenScreening: () => GoRouter.of(context).push('/onboarding'),
+              title: l10n.eligTrainingBlockedTitle,
+              reasons: c.wholePersonBlocks,
+              onReviewProfile: () => GoRouter.of(context).push('/onboarding'),
             )
           else
           ...ref.watch(suggestionsProvider).when(

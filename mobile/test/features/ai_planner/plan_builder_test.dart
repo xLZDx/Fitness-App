@@ -6,6 +6,8 @@ import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/ai_planner/data/workout_plan.dart';
 import 'package:fitness_app/features/recovery/data/deload_detector.dart';
+import 'package:fitness_app/features/safety/data/eligibility.dart';
+import 'package:fitness_app/features/safety/data/health_flags.dart';
 import 'package:fitness_app/features/safety/data/par_q.dart';
 
 ExerciseItem _ex(
@@ -36,7 +38,8 @@ const _noDeload = DeloadVerdict(
 
 /// A screen that clears the user, so these cases exercise the planning logic
 /// rather than the Gate M floor. `plan_refusal_test.dart` owns the floor.
-final _cleared = screen({for (final q in ParQQuestion.values) q: false});
+final _cleared = SafetyContext(
+    screening: screen({for (final q in ParQQuestion.values) q: false}));
 
 /// Unwraps the outcome, failing loudly rather than returning a stand-in.
 ///
@@ -58,12 +61,12 @@ void main() {
       ];
       final plan = _plan(buildPlan(
         candidatePool: pool,
-        reportedInjuries: const [
-          Injury(bodyPart: 'shoulder', type: 'impingement'),
-        ],
+        safety: SafetyContext(
+          screening: screen({for (final q in ParQQuestion.values) q: false}),
+          injuries: const [Injury(bodyPart: 'shoulder', type: 'impingement')],
+        ),
         deficit: const <String, double>{},
         deload: _noDeload,
-        safety: _cleared,
       ));
       expect(plan.exercises.map((e) => e.id), ['squat']);
       expect(plan.rationale, contains('Filtered out 1'));
@@ -79,10 +82,12 @@ void main() {
           _ex('a'),
           _ex('press', contra: ['shoulder']),
         ],
-        reportedInjuries: const [Injury(bodyPart: 'shoulder', type: 'strain')],
+        safety: SafetyContext(
+          screening: screen({for (final q in ParQQuestion.values) q: false}),
+          injuries: const [Injury(bodyPart: 'shoulder', type: 'strain')],
+        ),
         deficit: const <String, double>{},
         deload: _noDeload,
-        safety: _cleared,
       ));
       expect(plan.rationale, contains('an injury you reported'));
       expect(plan.rationale, isNot(contains('condition')));
@@ -96,7 +101,6 @@ void main() {
       ];
       final plan = _plan(buildPlan(
         candidatePool: pool,
-        reportedInjuries: const [],
         deficit: const <String, double>{},
         deload: _noDeload,
         safety: _cleared,
@@ -115,7 +119,6 @@ void main() {
       );
       final plan = _plan(buildPlan(
         candidatePool: [_ex('squat', muscles: ['quads'])],
-        reportedInjuries: const [],
         deficit: const <String, double>{},
         deload: deload,
         safety: _cleared,
@@ -133,7 +136,6 @@ void main() {
       );
       final plan = _plan(buildPlan(
         candidatePool: [_ex('squat', muscles: ['quads'])],
-        reportedInjuries: const [],
         deficit: const <String, double>{},
         deload: deload,
         safety: _cleared,
@@ -149,7 +151,6 @@ void main() {
       ];
       final plan = _plan(buildPlan(
         candidatePool: pool,
-        reportedInjuries: const [],
         deficit: const <String, double>{},
         deload: _noDeload,
         safety: _cleared,
@@ -170,7 +171,6 @@ void main() {
           _ex('bench', primary: ['chest']),
           _ex('row', primary: ['back']),
         ],
-        reportedInjuries: const [],
         deficit: const {'chest': 0.1, 'back': 0.9},
         deload: _noDeload,
         safety: _cleared,
@@ -185,7 +185,6 @@ void main() {
           _ex('bench', primary: ['chest']),
           _ex('row', primary: ['back']),
         ],
-        reportedInjuries: const [],
         deficit: const {'chest': 0.9, 'back': 0.1},
         deload: _noDeload,
         safety: _cleared,
@@ -205,7 +204,6 @@ void main() {
           _ex('untagged-2'),
           _ex('row', primary: ['back']),
         ],
-        reportedInjuries: const [],
         // Deliberately small: even a nearly-met muscle outranks no signal.
         deficit: const {'back': 0.05},
         deload: _noDeload,
@@ -219,14 +217,12 @@ void main() {
         () {
       final cold = _plan(buildPlan(
         candidatePool: [_ex('a', primary: ['chest'])],
-        reportedInjuries: const [],
         deficit: const {},
         deload: _noDeload,
         safety: _cleared,
       ));
       final warm = _plan(buildPlan(
         candidatePool: [_ex('a', primary: ['chest'])],
-        reportedInjuries: const [],
         deficit: const {'chest': 0.8},
         deload: _noDeload,
         safety: _cleared,

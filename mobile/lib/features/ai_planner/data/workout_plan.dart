@@ -1,5 +1,5 @@
 import '../../equipment/data/equipment_models.dart';
-import '../../safety/data/par_q.dart';
+import '../../safety/data/eligibility.dart';
 
 /// What a plan request produced.
 ///
@@ -30,7 +30,7 @@ final class PlanReady extends PlanOutcome {
 /// English prose would be untranslatable and untestable in the same stroke.
 final class PlanRefused extends PlanOutcome {
   const PlanRefused(this.reasons);
-  final List<SafetyReason> reasons;
+  final List<EligibilityReason> reasons;
 }
 
 /// Generated workout plan — one day's worth of training.

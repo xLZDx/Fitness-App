@@ -6,7 +6,7 @@ import '../../equipment/state/equipment_providers.dart';
 import '../../personalisation/state/personalisation_providers.dart';
 import '../../profile/state/profile_providers.dart';
 import '../../recovery/state/recovery_providers.dart';
-import '../../safety/state/safety_providers.dart';
+import '../../safety/state/eligibility_providers.dart';
 import '../data/plan_builder.dart';
 import '../data/workout_plan.dart';
 
@@ -26,7 +26,7 @@ final generatedPlanProvider = FutureProvider<PlanOutcome?>((ref) async {
   final profile = await ref.watch(currentProfileProvider.future);
   if (profile == null) return null;
   final deload = ref.watch(deloadVerdictProvider);
-  final safety = await ref.watch(safetyVerdictProvider.future);
+  final safety = await ref.watch(safetyContextProvider.future);
   final deficit = await ref.watch(weeklyVolumeDeficitProvider.future);
 
   // Build the candidate pool from the catalog. Limit to body-weight +
@@ -41,7 +41,6 @@ final generatedPlanProvider = FutureProvider<PlanOutcome?>((ref) async {
 
   return buildPlan(
     candidatePool: pool,
-    reportedInjuries: profile.health.injuries,
     deficit: deficit,
     deload: deload,
     safety: safety,

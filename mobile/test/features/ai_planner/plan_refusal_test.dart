@@ -5,6 +5,8 @@ import 'package:fitness_app/features/ai_planner/data/workout_plan.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/recovery/data/deload_detector.dart';
+import 'package:fitness_app/features/safety/data/eligibility.dart';
+import 'package:fitness_app/features/safety/data/health_flags.dart';
 import 'package:fitness_app/features/safety/data/par_q.dart';
 
 /// The builder's floor.
@@ -33,27 +35,36 @@ const _noDeload = DeloadVerdict(
   suggestedVolumeFactor: 1.0,
 );
 
-SafetyVerdict _clear() =>
-    screen({for (final q in ParQQuestion.values) q: false});
+SafetyContext _ctx(Map<ParQQuestion, bool> answers,
+        {HealthFlags health = HealthFlags.empty}) =>
+    SafetyContext(screening: screen(answers), health: health);
 
-SafetyVerdict _restricted() => screen({
+SafetyContext _clear() =>
+    _ctx({for (final q in ParQQuestion.values) q: false});
+
+SafetyContext _restricted() => _ctx({
       for (final q in ParQQuestion.values) q: false,
       ParQQuestion.otherChronicCondition: true,
     });
 
-SafetyVerdict _blocked() => screen({
+SafetyContext _blocked() => _ctx({
       for (final q in ParQQuestion.values) q: false,
       ParQQuestion.medicallySupervisedOnly: true,
     });
 
+/// Gate N: refused for a reason with no PAR-Q+ question behind it.
+SafetyContext _postSurgical() => _ctx(
+      {for (final q in ParQQuestion.values) q: false},
+      health: const HealthFlags(surgery: SurgeryStatus.underRestrictions),
+    );
+
 PlanOutcome _build({
-  required SafetyVerdict safety,
+  required SafetyContext safety,
   DeloadVerdict deload = _noDeload,
   List<ExerciseItem>? pool,
 }) =>
     buildPlan(
       candidatePool: pool ?? [_ex('a'), _ex('b'), _ex('c')],
-      reportedInjuries: const <Injury>[],
       deficit: const {'chest': 0.8},
       deload: deload,
       safety: safety,
@@ -72,14 +83,28 @@ void main() {
     test('the refusal carries the reasons, so the UI need not re-derive them',
         () {
       final out = _build(safety: _blocked()) as PlanRefused;
-      expect(out.reasons,
-          contains(SafetyReason.question(ParQQuestion.medicallySupervisedOnly)));
+      expect(
+          out.reasons,
+          contains(const EligibilityReason(BlockReason.screening,
+              question: ParQQuestion.medicallySupervisedOnly)));
+    });
+
+    test('a Gate N refusal names itself, and is not called a screening one',
+        () {
+      // Post-operative restrictions have no PAR-Q+ question behind them. While
+      // `PlanRefused` carried Gate M's narrower `SafetyReason` this refusal
+      // could only have come back with an empty reason list — a card with a
+      // heading and no explanation.
+      final out = _build(safety: _postSurgical());
+      expect(out, isA<PlanRefused>());
+      expect((out as PlanRefused).reasons,
+          [const EligibilityReason(BlockReason.postSurgical)]);
     });
 
     test('an unscreened user is refused, not quietly cleared', () {
-      final out = _build(safety: kUnscreened);
+      final out = _build(safety: SafetyContext(screening: kUnscreened));
       expect(out, isA<PlanRefused>());
-      expect((out as PlanRefused).reasons.every((r) => r.incomplete), isTrue);
+      expect((out as PlanRefused).reasons.every((r) => r.unanswered), isTrue);
     });
 
     test('the refusal does not depend on the catalogue having loaded', () {
@@ -142,7 +167,7 @@ void main() {
       final out =
           (_build(safety: _restricted(), deload: deloading) as PlanReady).plan;
 
-      expect(out.rationale, startsWith('Your health screening'),
+      expect(out.rationale, startsWith('Your health answers'),
           reason: 'a user the app has not cleared must not have to read past '
               'a deload note to find that out');
       expect(out.rationale, contains('qualified exercise professional'));

@@ -10,6 +10,7 @@ import '../../shared/widgets/smooth_scroll_list.dart';
 import '../form_check/state/form_check_providers.dart';
 import '../programmes/data/programme_labels.dart';
 import '../programmes/state/programme_providers.dart';
+import '../safety/widgets/eligibility_notice.dart';
 import 'widgets/exercise_reference.dart';
 import '../workouts/data/progression.dart';
 import '../workouts/data/scheduled_session.dart';
@@ -191,6 +192,21 @@ class WorkoutPlayerPage extends ConsumerWidget {
                     ),
                   ],
                 ),
+              ),
+            );
+          }
+          // Withheld for a reason that is not an injury — the screening, a
+          // movement restriction, post-operative restrictions. Before Gate N
+          // this fell through to "we couldn't find that exercise", which is
+          // the exact lie the branch above exists to avoid, told for a
+          // different reason.
+          if (resolution.visible == null && resolution.exercise != null) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
+              child: EligibilityNotice(
+                key: const Key('player.withheld'),
+                reasons: resolution.withheldFor,
+                onReviewProfile: () => GoRouter.of(context).push('/onboarding'),
               ),
             );
           }

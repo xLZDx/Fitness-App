@@ -420,32 +420,45 @@ bool _partCovered(String part, Set<EquipmentKind> kinds) {
 List<ExerciseItem> availableWith(
   Iterable<ExerciseItem> exercises,
   EquipmentAccess access,
-) {
+) =>
+    exercises
+        .where((e) => isAvailableWith(e, access))
+        .toList(growable: false);
+
+/// The single-exercise form of [availableWith].
+///
+/// Extracted in Gate N so the eligibility layer (`safety/data/eligibility.dart`)
+/// can ask the equipment question about ONE candidate without building a
+/// one-element list — the same reason [isContraindicated] exists beside
+/// [filterContraindicated], and the same failure it prevents: measured before
+/// this existed, equipment was applied on two of the six surfaces that surface
+/// exercises, because the only way to ask was to call a list filter and four
+/// call sites simply did not.
+///
+/// All of the reasoning in [availableWith]'s doc lives here now, because this
+/// is where the decision is made.
+bool isAvailableWith(ExerciseItem e, EquipmentAccess access) {
   final kinds =
       access.available.where((k) => k != EquipmentKind.cameraScan).toSet();
   final atGym = access.location == TrainingLocation.gym ||
       access.location == TrainingLocation.mixed ||
       kinds.contains(EquipmentKind.fullGym);
-  if (atGym) return exercises.toList(growable: false);
+  if (atGym) return true;
   // Neither half of the question answered — see the doc above. With a location
   // named, an empty chip list is the answer "nothing", and filtering proceeds.
-  if (access.location == null && kinds.isEmpty) {
-    return exercises.toList(growable: false);
-  }
+  if (access.location == null && kinds.isEmpty) return true;
 
-  return exercises.where((e) {
-    if (!e.needsEquipment) return true;
-    final label = e.equipmentLabel;
-    if (label == null || label.trim().isEmpty) return false;
-    final parts = label.split(',');
-    // The contradiction described above: the label says nothing is needed while
-    // an `equipmentId` names a machine. Believe the id.
-    if (e.equipmentId != null &&
-        parts.every((p) => p.trim().toLowerCase().startsWith('none'))) {
-      return false;
-    }
-    return parts.every((p) => _partCovered(p, kinds));
-  }).toList(growable: false);
+  if (!e.needsEquipment) return true;
+  final label = e.equipmentLabel;
+  if (label == null || label.trim().isEmpty) return false;
+  final parts = label.split(',');
+  // The contradiction described above: the label says nothing is needed while
+  // an `equipmentId` names a machine. Believe the id.
+  if (e.equipmentId != null &&
+      parts.every((p) => p.trim().toLowerCase().startsWith('none'))) {
+    return false;
+  }
+  return parts.every((p) => _partCovered(p, kinds));
 }
 
 /// Full pipeline: hide contraindicated exercises, then surface tier-fit ones

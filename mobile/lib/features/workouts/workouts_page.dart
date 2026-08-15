@@ -20,6 +20,8 @@ import '../programmes/data/programme_labels.dart';
 import '../programmes/data/programme_schedule.dart';
 import '../programmes/data/programme_templates.dart';
 import '../programmes/state/programme_providers.dart';
+import '../safety/state/eligibility_providers.dart';
+import '../safety/widgets/eligibility_notice.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
 import 'data/scheduled_session.dart';
@@ -429,6 +431,22 @@ class _LibraryTabState extends ConsumerState<_LibraryTab> {
             ),
           ],
           data: (items) {
+            // Gate N. The whole-person gate is a screen state, never a silent
+            // empty list: a user the app cannot clear used to reach an
+            // "no exercises match" card, which is a true statement about the
+            // filter and a false one about why they have nothing to do.
+            final safety = ref.watch(safetyContextProvider).valueOrNull;
+            if (safety != null && !safety.allowsAnyTraining) {
+              return [
+                EligibilityNotice(
+                  key: const Key('train.blocked'),
+                  title: AppLocalizations.of(context).eligTrainingBlockedTitle,
+                  reasons: safety.wholePersonBlocks,
+                  onReviewProfile: () =>
+                      GoRouter.of(context).push('/onboarding'),
+                ),
+              ];
+            }
             if (items.isEmpty) {
               return [
                 GlassCard(
@@ -439,7 +457,18 @@ class _LibraryTabState extends ConsumerState<_LibraryTab> {
                 ),
               ];
             }
+            final advisories = safety?.advisories ?? const [];
             final out = <Widget>[];
+            // Once, above the list, not once per card: an unscreenable
+            // restriction is a fact about the person, and repeating it on
+            // every row would train them to scroll past it.
+            if (advisories.isNotEmpty) {
+              out.add(EligibilityNotice(
+                key: const Key('train.advisory'),
+                reasons: advisories,
+              ));
+              out.add(const SizedBox(height: 16));
+            }
             for (final ex in items) {
               out.add(_ExerciseCard(exercise: ex));
               out.add(const SizedBox(height: 16));

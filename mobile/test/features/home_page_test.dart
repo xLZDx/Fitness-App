@@ -8,7 +8,8 @@ import '../helpers/test_app.dart';
 
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/safety/data/par_q.dart';
-import 'package:fitness_app/features/safety/state/safety_providers.dart';
+import 'package:fitness_app/features/safety/data/eligibility.dart';
+import 'package:fitness_app/features/safety/state/eligibility_providers.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
@@ -59,7 +60,7 @@ Widget _buildApp({
   /// the section under test. Defaulting to `clear` here keeps every existing
   /// case about what it was about; `an unscreened user gets the refusal, not
   /// an empty state` covers the other side deliberately.
-  SafetyVerdict? safety,
+  SafetyContext? safety,
 }) {
   final router = GoRouter(
     initialLocation: '/home',
@@ -97,8 +98,10 @@ Widget _buildApp({
       // from provider through card to navigation.
       if (catalog != null)
         forYouExercisesProvider.overrideWith((_) async => catalog),
-      safetyVerdictProvider.overrideWith((_) async =>
-          safety ?? screen({for (final q in ParQQuestion.values) q: false})),
+      safetyContextProvider.overrideWith((_) async =>
+          safety ??
+          SafetyContext(
+              screening: screen({for (final q in ParQQuestion.values) q: false}))),
     ],
     child: MaterialApp.router(
       theme: AppTheme.light(),
@@ -243,7 +246,7 @@ void main() {
       await _setLargeSurface(tester);
       await tester.pumpWidget(_buildApp(
         catalog: [_ex('push-up', 'Push-up', const ['chest'])],
-        safety: kUnscreened,
+        safety: SafetyContext(screening: kUnscreened),
       ));
       await tester.pumpAndSettle();
 

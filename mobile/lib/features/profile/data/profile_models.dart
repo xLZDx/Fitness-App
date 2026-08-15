@@ -14,6 +14,7 @@ import '../../programmes/data/programme.dart' show ProgrammeGoal;
 // rather than in their own store because they are exactly the kind of data
 // `SensitiveProfile` exists to keep off the server, and a second store would
 // have needed the same treatment written twice.
+import '../../safety/data/health_flags.dart';
 import '../../safety/data/par_q.dart' show ParQQuestion;
 
 enum Gender { male, female, nonBinary, preferNotToSay }
@@ -351,6 +352,7 @@ class HealthHistory {
     this.bloodPressure,
     this.otherConcerns,
     this.screening = const {},
+    this.flags = HealthFlags.empty,
   });
 
   final List<String> conditions;
@@ -368,7 +370,38 @@ class HealthHistory {
   /// that turns the screen back into decoration.
   final Map<ParQQuestion, bool> screening;
 
+  /// The normalised half — the only part any rule is allowed to read.
+  ///
+  /// Gate N. The seven free-text fields above stay exactly as the user typed
+  /// them, for their own reference and for a clinician they may show them to,
+  /// and nothing interprets them. See `health_flags.dart` for why parsing them
+  /// was rejected rather than merely deferred.
+  final HealthFlags flags;
+
   static const empty = HealthHistory();
+
+  /// How much of this block is in a form rules can act on.
+  ///
+  /// Computed rather than stored: a stored flag can disagree with the data it
+  /// describes, and the disagreement would be invisible.
+  ///
+  /// `legacyUnreviewed` is the state that matters. It means free text exists
+  /// from before the normalised questions did, and the user has not answered
+  /// them — so the app holds health information it must not read and has none
+  /// it may. Treated conservatively by the eligibility layer and surfaced as a
+  /// prompt to re-answer, never as a guess at what the text meant.
+  HealthNormalisationState get normalisation {
+    if (!flags.isUnanswered) return HealthNormalisationState.normalised;
+    final hasFreeText = conditions.isNotEmpty ||
+        medications.isNotEmpty ||
+        physicalLimitations.isNotEmpty ||
+        recentSurgeries.isNotEmpty ||
+        bloodPressure != null ||
+        (otherConcerns?.isNotEmpty ?? false);
+    return hasFreeText
+        ? HealthNormalisationState.legacyUnreviewed
+        : HealthNormalisationState.notProvided;
+  }
 
   /// The single (de)serializer for this block, for the same reason
   /// [Injury.toJson] is: the shape had two implementations — the map literal
@@ -388,6 +421,7 @@ class HealthHistory {
         'screening': {
           for (final e in screening.entries) e.key.name: e.value,
         },
+        'flags': flags.toJson(),
       };
 
   /// Tolerant by design: a document written before a field existed, or by
@@ -407,6 +441,7 @@ class HealthHistory {
         bloodPressure: _enumByNameOrNull(BloodPressure.values, j['bloodPressure']),
         otherConcerns: j['otherConcerns'] as String?,
         screening: _readScreening(j['screening']),
+        flags: HealthFlags.fromJson(j['flags']),
       );
 
   /// Unknown keys and non-bool values are DROPPED, not coerced.
@@ -437,7 +472,8 @@ class HealthHistory {
       recentSurgeries.isEmpty &&
       bloodPressure == null &&
       (otherConcerns == null || otherConcerns!.isEmpty) &&
-      screening.isEmpty;
+      screening.isEmpty &&
+      flags == HealthFlags.empty;
 
   HealthHistory copyWith({
     List<String>? conditions,
@@ -449,6 +485,7 @@ class HealthHistory {
     BloodPressure? bloodPressure,
     String? otherConcerns,
     Map<ParQQuestion, bool>? screening,
+    HealthFlags? flags,
   }) =>
       HealthHistory(
         conditions: conditions ?? this.conditions,
@@ -460,6 +497,7 @@ class HealthHistory {
         bloodPressure: bloodPressure ?? this.bloodPressure,
         otherConcerns: otherConcerns ?? this.otherConcerns,
         screening: screening ?? this.screening,
+        flags: flags ?? this.flags,
       );
 }
 

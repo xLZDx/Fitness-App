@@ -4,7 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../ai_planner/data/workout_plan.dart';
-import '../../safety/widgets/safety_refusal_card.dart';
+import '../../safety/widgets/eligibility_notice.dart';
 import '../state/plan_preview_provider.dart';
 import '../widgets/inputs.dart';
 
@@ -68,8 +68,9 @@ class StepPreview extends ConsumerWidget {
   Widget _outcomeBody(
       BuildContext context, AppLocalizations l10n, PlanOutcome outcome) {
     if (outcome case PlanRefused(:final reasons)) {
-      return SafetyRefusalCard(
+      return EligibilityNotice(
         key: const Key('onb.preview.refused'),
+        title: l10n.eligTrainingBlockedTitle,
         reasons: reasons,
       );
     }

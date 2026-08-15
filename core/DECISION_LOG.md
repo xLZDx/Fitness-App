@@ -10247,3 +10247,120 @@ to remove. Programmes are Gate P and will carry it; the other three are recorded
 half-done.
 
 Not pushed.
+
+---
+
+## 2026-08-15 — Gate N: the health block stops being dead data, without becoming a diagnosis
+
+**Operator decision 2.** Seven fields — `conditions`, `allergies`, `medications`,
+`physicalLimitations`, `recentSurgeries`, `bloodPressure`, `otherConcerns` — were collected from the
+first release, stored device-local, and read by nothing. Only `injuries` reached a filter.
+
+### Decision — the text is not parsed, the ground is asked again
+
+**Reason.** Gate M forbade classifying free health text, and the ban is the right one: turning
+"metoprolol" into a drug class and a drug class into a plan change is clinical reasoning done by
+string matching, wrong in both directions and silent.
+
+**Evidence.** `health_flags.dart` reads no text. `eligibility_test.dart`'s
+`free text alone changes no decision` constructs a profile naming diabetes, hypertension, metformin,
+ramipril and "my shoulder hurts overhead", and asserts an overhead press is still ALLOWED — because
+nothing may read it. The next test, with the normalised chip ticked, asserts it is blocked.
+
+**Failure behaviour.** Structural rather than promised: `SafetyContext` takes `HealthFlags`, which
+has four fields and none of them is free text. A rule in the eligibility layer cannot reach the
+conditions list however tempting it becomes.
+
+The raw text is kept exactly as typed — for the user and for anyone they show it to — and
+`step_health.dart` is untouched.
+
+### Decision — a restriction the catalogue cannot express is stated, never silently ignored
+
+**Evidence.** Measured on the shipped catalogue: `contraindications` is a nine-value region
+vocabulary (shoulder 489, hip 404, elbow 371, knee 362, lower_back 313, upper_back 265, ankle 229,
+wrist 190, neck 117) on 1528 of 1887 rows, and there is no `movementRole`, `pattern`, impact,
+stability or duration tag of any kind.
+
+So `overhead → {shoulder, neck}` is enforceable and `impact`, `prolongedStanding`, `balance` and
+`other` are not. `MovementRestriction.regionTags` is empty for those four, and empty is a real answer
+here: `SafetyContext.advisories` turns it into a stated caveat on the Train tab, in the plan
+rationale and on the onboarding step itself.
+
+**Failure behaviour.** It never removes a candidate — there is nothing to remove it by — and it never
+passes silently either. `Degraded` exists as a third verdict for exactly this.
+
+### Decision — one eligibility layer, with reasons as values
+
+Every surface used to decide separately: the planner filtered injuries, the feed filtered injuries
+differently, the programme builder filtered equipment, the catalogue filtered nothing, and Gate M
+added screening to three of them. `evaluateExercise` is now the only decision, and `BlockReason` is
+an enum with a payload rather than an English string — three surfaces word the same decision
+differently and a fourth asserts on it.
+
+**Evidence of the reach.** `catalog_boundary_test.dart` proves the normalised answers arrive at
+`forYouExercisesProvider`, which is what the Train tab, the home Suggestions section and the planner
+pool all draw from, and at `exerciseResolutionProvider`, which is the deep link.
+
+### Decision — the whole-person gate is a screen state, not a list filter
+
+**Reason.** The first version returned `const []` from `eligibleExercises` when the gate was closed.
+That rendered the Train tab as a catalogue with nothing in it — no exercises, no reason, nothing to
+act on — which is the exact failure this layer exists to remove.
+
+**Evidence.** `eligibility_test.dart`: `it is NOT applied by the list filter` and
+`but it IS applied when a specific exercise is asked about`. A feed asks "which of these suit them";
+a tap asks "may they do this, now". Different questions, different answers.
+
+`buildPlan` refuses on the gate before it reads a pool; the Train tab, home Suggestions, the planner
+page, the onboarding preview and the player each render `EligibilityNotice` instead of work.
+
+### Decision — post-operative restrictions block; "not sure" caps instead
+
+Post-operative restrictions are specific, time-limited and issued by someone who examined the
+person. A generated programme cannot know what they are, and improvising around them is not
+something an app may do. `SurgeryStatus.unsure` caps the dose at 0.8 rather than refusing: refusing
+would punish an honest answer, ignoring it would waste one.
+
+Same shape for blood pressure and clinician advice. All figures are `PRODUCT_HEURISTIC` with no
+owner; what is defensible is their ORDER, not their value, and the ceiling composes by taking the
+lowest opinion.
+
+### Migration
+
+`HealthNormalisationState` is COMPUTED, never stored — a stored flag can disagree with the data it
+describes and the disagreement would be invisible. `legacyUnreviewed` means free text exists from
+before the normalised questions did and the user has not answered them: the app then holds health
+information it must not read and none it may, and says so on the Gate N step rather than guessing.
+
+An empty restriction SET is not evidence of having answered — "I have no restrictions" and "nobody
+asked me" produce the same empty set, and only the three nullable enums can tell them apart.
+`HealthFlags.fromJson` drops unknown names and non-bool values rather than defaulting them, for the
+same reason `_readScreening` does.
+
+### Two bugs the tests caught before they shipped
+
+1. `Eligibility.isAllowed` was `this is Allowed`, so `eligibleExercises` filtered out every
+   `Degraded` candidate — a user whose only restriction was one the catalogue cannot express got an
+   empty catalogue instead of a caveat. Now `this is! Blocked`.
+2. `PlanRefused` carried Gate M's `SafetyReason`, the PAR-Q+ vocabulary. Gate N added two refusals
+   with no PAR-Q+ question behind them, so both would have come back with an empty reason list — a
+   card with a heading and no explanation. Widened to `EligibilityReason`.
+
+### Verification
+
+Full suite 2531 passed / 0 failed (2484 at Gate M). `flutter analyze` clean.
+
+Two pre-existing tests were rewritten rather than deleted, and the reasons are the point:
+
+- `catalog_boundary_test.dart` asserted the For-you feed and the safe catalogue are EQUAL, to catch a
+  second filter growing somewhere. Gate N makes them diverge deliberately and in one direction, so
+  the assertion became a SUBSET: a recommendation may never surface what the safety boundary hides.
+- `workouts_page_test.dart` and `home_page_test.dart` now seed a cleared screen. Without it every
+  case rendered the refusal — correct behaviour, and the reason each file also gained a case
+  asserting exactly that.
+
+### Not in this gate
+
+`allergies` is stored context and is NOT a safety input. Food and drug allergies do not have exercise
+consequences this app can determine, and inventing one would be the pharmacology this gate refuses.
+Recorded rather than quietly dropped.

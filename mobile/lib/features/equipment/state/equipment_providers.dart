@@ -14,6 +14,9 @@ import '../data/equipment_report_service.dart';
 import '../data/equipment_repository.dart';
 import '../data/exercise_filter.dart';
 import '../data/mock_equipment_report_service.dart';
+import '../../safety/data/eligibility.dart';
+import '../../safety/data/par_q.dart' as par_q;
+import '../../safety/state/eligibility_providers.dart';
 
 /// The catalog, in the language the user is actually reading.
 ///
@@ -321,13 +324,23 @@ final safeCatalogProvider = FutureProvider<List<ExerciseItem>>((ref) async {
 
 /// "For you" feed for the Train tab: every exercise across the catalog,
 /// filtered + tier-sorted for the signed-in user.
+/// Gate N. This is a RECOMMENDATION feed, so it runs the whole eligibility
+/// layer — screening, injuries, normalised health restrictions and equipment —
+/// where [safeCatalogProvider] runs only the injury filter.
+///
+/// The two are deliberately different. Browsing the catalogue and being offered
+/// a session are different acts: looking at a leg press you do not own is
+/// information, and being handed it as today's work is a broken recommendation.
+/// That distinction is why equipment reached two of six surfaces before this —
+/// it was applied where somebody remembered, not where the question arises.
 final forYouExercisesProvider = FutureProvider<List<ExerciseItem>>((ref) async {
   final safe = await ref.watch(safeCatalogProvider.future);
   final profile = await ref.watch(screeningProfileProvider.future);
-  // Already screened by [safeCatalogProvider]; this only orders it. Running
-  // the safety filter twice would be harmless but would say, in code, that
-  // nobody was sure whether the first one had happened.
-  return sortByTierFit(safe, profile?.level.tier);
+  final context = await ref.watch(safetyContextProvider.future);
+  return sortByTierFit(
+    eligibleExercises(safe, context),
+    profile?.level.tier,
+  );
 });
 
 /// What a lookup by exercise id found, and whether the user may see it.
@@ -339,28 +352,51 @@ final forYouExercisesProvider = FutureProvider<List<ExerciseItem>>((ref) async {
 /// exist. It does; it is being withheld, and saying so is both more honest and
 /// the only version that lets them act on it.
 class ExerciseResolution {
-  const ExerciseResolution._(this.exercise, this.hiddenForInjury);
+  const ExerciseResolution._(this.exercise, this.withheldFor);
 
   /// Found, and safe to show.
   const ExerciseResolution.found(ExerciseItem exercise)
-      : this._(exercise, false);
+      : this._(exercise, const []);
 
   /// No exercise carries this id.
-  const ExerciseResolution.notFound() : this._(null, false);
+  const ExerciseResolution.notFound() : this._(null, const []);
 
   /// Found, but contraindicated by the user's own injury list.
   const ExerciseResolution.hiddenForInjury(ExerciseItem exercise)
-      : this._(exercise, true);
+      : this._(exercise, const [EligibilityReason(BlockReason.injury)]);
+
+  /// Found, and withheld for reasons the eligibility layer named.
+  ///
+  /// Gate N. Catalogue navigation was the last surface where a user could
+  /// reach work the generators would have refused them: the deep link screened
+  /// injuries and nothing else, so someone whose PAR-Q+ answers blocked every
+  /// generated plan could still tap an exercise out of the Train tab and be
+  /// taken straight into the player.
+  const ExerciseResolution.withheld(
+      ExerciseItem exercise, List<EligibilityReason> reasons)
+      : this._(exercise, reasons);
 
   /// The exercise, whether or not it may be shown. Null only when nothing
   /// carries the id.
   final ExerciseItem? exercise;
 
+  /// Why it is being withheld, empty when it is not.
+  ///
+  /// Machine-readable, so the player can say which answer is responsible
+  /// without this file owning any English.
+  final List<EligibilityReason> withheldFor;
+
   /// True when [exercise] exists but conflicts with a logged injury.
-  final bool hiddenForInjury;
+  ///
+  /// Kept as a named question rather than replaced by `withheldFor.isNotEmpty`:
+  /// the player draws a different card for an injury (which names the body
+  /// part the user themselves reported) than for a screening refusal, and
+  /// callers that only ever cared about injuries keep reading true/false.
+  bool get hiddenForInjury =>
+      withheldFor.any((r) => r.reason == BlockReason.injury);
 
   /// The exercise, or null when it must not be surfaced.
-  ExerciseItem? get visible => hiddenForInjury ? null : exercise;
+  ExerciseItem? get visible => withheldFor.isEmpty ? exercise : null;
 }
 
 /// Resolves a single exercise id through the same safety boundary as every
@@ -378,12 +414,28 @@ final exerciseResolutionProvider =
     FutureProvider.family<ExerciseResolution, String>((ref, id) async {
   final profile = await ref.watch(screeningProfileProvider.future);
 
-  ExerciseResolution screen(ExerciseItem? found) {
+  // Gate N: the whole eligibility layer, not just the injury filter. This is a
+  // "may this person do THIS, now" question — the user has tapped a specific
+  // exercise — so the whole-person gate applies, unlike in a feed.
+  //
+  // Equipment is deliberately NOT part of this context. A user who taps a leg
+  // press they do not own has said something explicit about what they want to
+  // look at, and refusing it would turn a browse into a prescription.
+  final context = profile == null
+      ? SafetyContext(screening: par_q.kUnscreened)
+      : SafetyContext(
+          screening: par_q.screen(profile.health.screening),
+          injuries: profile.health.injuries,
+          health: profile.health.flags,
+        );
+
+  ExerciseResolution screenOne(ExerciseItem? found) {
     if (found == null) return const ExerciseResolution.notFound();
-    final injuries = profile?.health.injuries ?? const [];
-    return isContraindicated(found, injuries)
-        ? ExerciseResolution.hiddenForInjury(found)
-        : ExerciseResolution.found(found);
+    final verdict = evaluateExercise(found, context);
+    if (verdict.isAllowed || verdict is Degraded) {
+      return ExerciseResolution.found(found);
+    }
+    return ExerciseResolution.withheld(found, verdict.reasons);
   }
 
   // AI-generated ids are 'ai::<equipmentId>::<index>' and live only in the
@@ -404,18 +456,18 @@ final exerciseResolutionProvider =
         await ref.watch(generatedExerciseRepositoryProvider).get(parts[1], lang);
     if (cached == null) return const ExerciseResolution.notFound();
     for (final e in cached) {
-      if (e.id == id) return screen(e);
+      if (e.id == id) return screenOne(e);
     }
     return const ExerciseResolution.notFound();
   }
 
   final repo = ref.watch(equipmentRepositoryProvider);
   for (final e in await repo.bodyweightExercises()) {
-    if (e.id == id) return screen(e);
+    if (e.id == id) return screenOne(e);
   }
   for (final eq in await repo.listEquipment()) {
     for (final e in await repo.exercisesFor(eq.id)) {
-      if (e.id == id) return screen(e);
+      if (e.id == id) return screenOne(e);
     }
   }
   return const ExerciseResolution.notFound();

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/features/onboarding/data/step_answered.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
+import 'package:fitness_app/features/safety/data/health_flags.dart';
 import 'package:fitness_app/features/safety/data/par_q.dart';
 import 'package:fitness_app/features/programmes/data/programme.dart'
     show ProgrammeGoal;
@@ -191,6 +192,13 @@ void main() {
           // them — including the one whose definition of answered is stricter
           // than every other step's.
           screening: {for (final q in ParQQuestion.values) q: false},
+          // Gate N added a screen, and "fully answered" still has to mean all
+          // of them.
+          flags: const HealthFlags(
+            bloodPressure: BloodPressureStatus.noKnownIssue,
+            surgery: SurgeryStatus.none,
+            clinicianAdvice: ClinicianExerciseAdvice.notAsked,
+          ),
         ),
         motivation: const MotivationPrefs(motivation: 'x'),
         personal: const PersonalInfo(age: 31),
@@ -214,6 +222,11 @@ void main() {
         health: HealthHistory(
           otherConcerns: 'none',
           screening: {for (final q in answered) q: false},
+          flags: const HealthFlags(
+            bloodPressure: BloodPressureStatus.noKnownIssue,
+            surgery: SurgeryStatus.none,
+            clinicianAdvice: ClinicianExerciseAdvice.notAsked,
+          ),
         ),
         motivation: const MotivationPrefs(motivation: 'x'),
         personal: const PersonalInfo(age: 31),

@@ -17,6 +17,25 @@ import 'package:fitness_app/features/equipment/workout_player_page.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/profile/data/profile_repository.dart';
 import 'package:fitness_app/features/profile/state/profile_providers.dart';
+import 'package:fitness_app/features/safety/data/eligibility.dart';
+import 'package:fitness_app/features/safety/data/health_flags.dart';
+import 'package:fitness_app/features/safety/data/par_q.dart';
+
+/// A completed PAR-Q+ that clears the user.
+///
+/// Gate N routed catalogue navigation through the eligibility layer, so an
+/// unscreened profile now withholds every exercise — correctly, and it is the
+/// subject of its own test below. Every fixture that is about something ELSE
+/// carries a clean screen, so those tests keep testing what they name.
+const _cleared = <ParQQuestion, bool>{
+  ParQQuestion.heartConditionOrHighBloodPressure: false,
+  ParQQuestion.chestPain: false,
+  ParQQuestion.dizzinessOrLossOfConsciousness: false,
+  ParQQuestion.otherChronicCondition: false,
+  ParQQuestion.prescribedMedication: false,
+  ParQQuestion.musculoskeletalProblem: false,
+  ParQQuestion.medicallySupervisedOnly: false,
+};
 
 /// The catalog's safety boundary, tested at the boundary rather than at each
 /// screen.
@@ -64,8 +83,14 @@ UserProfile _injured() => const UserProfile(
       uid: 'u1',
       health: HealthHistory(
         injuries: [Injury(bodyPart: 'knee', type: 'strain')],
+        screening: _cleared,
       ),
     );
+
+UserProfile _cleared0() =>
+    const UserProfile(uid: 'u1', health: HealthHistory(screening: _cleared));
+
+UserProfile _unscreened() => const UserProfile(uid: 'u1');
 
 const _user = AuthUser(uid: 'u1', displayName: 'U');
 
@@ -120,17 +145,80 @@ void main() {
     });
 
     test('a user with no injuries gets everything', () async {
-      final safe = await _container().read(safeCatalogProvider.future);
+      final safe =
+          await _container(profile: _cleared0()).read(safeCatalogProvider.future);
       expect(safe.map((e) => e.id), containsAll(['row', 'squat']));
     });
 
-    test('the For-you feed is ordered, not separately screened', () async {
-      // Screening lives in one place. If this ever diverges from
-      // safeCatalogProvider it means a second filter grew somewhere.
+    test('the For-you feed never widens the safety boundary', () async {
+      // Rewritten in Gate N. This used to assert the two sets are EQUAL, on the
+      // reasoning that any divergence meant a second filter had grown
+      // somewhere. Gate N makes them diverge on purpose and in one direction:
+      // the catalogue is a browse (looking at a leg press you do not own is
+      // information) and the For-you feed is a recommendation (being handed it
+      // as today's work is not), so the feed additionally applies screening,
+      // normalised health restrictions and equipment — through the single
+      // eligibility layer, which is what the original assertion was protecting.
+      //
+      // Subset, therefore, not equality. Equality could no longer be true; the
+      // property that must stay true is that a RECOMMENDATION can never surface
+      // something the safety boundary hides.
       final container = _container(profile: _injured());
       final forYou = await container.read(forYouExercisesProvider.future);
       final safe = await container.read(safeCatalogProvider.future);
-      expect(forYou.map((e) => e.id).toSet(), safe.map((e) => e.id).toSet());
+      expect(safe.map((e) => e.id).toSet(),
+          containsAll(forYou.map((e) => e.id).toSet()));
+      expect(forYou.map((e) => e.id), isNot(contains('squat')),
+          reason: 'the injury filter still applies to the feed');
+    });
+  });
+
+  group('the production recommendation consumer reads the health flags', () {
+    // Gate N's definition-of-done: the normalised answers must reach the real
+    // feed, not merely exist on a model. `forYouExercisesProvider` is what the
+    // Train tab, the home Suggestions section and the planner pool all draw
+    // from, so proving it here proves all three.
+
+    test('a movement restriction removes the exercise it applies to', () async {
+      final restricted = const UserProfile(
+        uid: 'u1',
+        health: HealthHistory(
+          screening: _cleared,
+          flags: HealthFlags(
+            restrictions: {MovementRestriction.deepKneeFlexion},
+          ),
+        ),
+      );
+      final feed = await _container(profile: restricted)
+          .read(forYouExercisesProvider.future);
+
+      expect(feed.map((e) => e.id), ['row'],
+          reason: 'the squat is tagged knee, and the user told us deep knee '
+              'flexion is limited');
+    });
+
+    test('and the same feed without the restriction keeps it', () async {
+      // The control. Without it the test above passes for a user whose feed is
+      // empty for any reason at all.
+      final feed = await _container(profile: _cleared0())
+          .read(forYouExercisesProvider.future);
+      expect(feed.map((e) => e.id), containsAll(['row', 'squat']));
+    });
+
+    test('equipment reaches the feed too', () async {
+      // Measured before Gate N: equipment was applied on two of the six
+      // surfaces that surface exercises. The feed was not one of them.
+      final home = const UserProfile(
+        uid: 'u1',
+        health: HealthHistory(screening: _cleared),
+        equipment: EquipmentAccess(location: TrainingLocation.home),
+      );
+      final feed =
+          await _container(profile: home).read(forYouExercisesProvider.future);
+
+      expect(feed, isEmpty,
+          reason: 'both fixtures name a rack, and this user trains at home '
+              'with no equipment chips ticked');
     });
   });
 
@@ -158,6 +246,44 @@ void main() {
       final r = await _container(profile: _injured())
           .read(exerciseResolutionProvider('row').future);
       expect(r.visible?.id, 'row');
+    });
+
+    test('an unscreened user cannot walk in through the catalogue', () async {
+      // Gate N closes the last surface. Before this, someone whose PAR-Q+
+      // answers blocked every generated plan could still tap an exercise out of
+      // the Train tab and land in the player: the deep link screened injuries
+      // and nothing else.
+      final r = await _container(profile: _unscreened())
+          .read(exerciseResolutionProvider('row').future);
+
+      expect(r.visible, isNull);
+      expect(r.exercise?.id, 'row',
+          reason: 'the page still needs to name what is withheld');
+      expect(r.withheldFor.map((x) => x.reason), contains(BlockReason.screening));
+      expect(r.hiddenForInjury, isFalse,
+          reason: 'this is not an injury, and calling it one would be a lie '
+              'about the user own answers');
+    });
+
+    test('a movement restriction withholds, and names itself', () async {
+      final restricted = const UserProfile(
+        uid: 'u1',
+        health: HealthHistory(
+          screening: _cleared,
+          flags: HealthFlags(
+            restrictions: {MovementRestriction.deepKneeFlexion},
+          ),
+        ),
+      );
+      final r = await _container(profile: restricted)
+          .read(exerciseResolutionProvider('squat').future);
+
+      expect(r.visible, isNull);
+      expect(
+          r.withheldFor,
+          contains(const EligibilityReason(BlockReason.movementRestriction,
+              regionTag: 'knee',
+              restriction: MovementRestriction.deepKneeFlexion)));
     });
 
     test('a malformed ai:: id is not found rather than throwing', () async {
@@ -403,7 +529,7 @@ void main() {
     });
 
     test('a deep link to one still works without injuries', () async {
-      final container = await withGenerated();
+      final container = await withGenerated(profile: _cleared0());
       final r = await container
           .read(exerciseResolutionProvider('ai::rack::0').future);
       expect(r.visible?.id, 'ai::rack::0');

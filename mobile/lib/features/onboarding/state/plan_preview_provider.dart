@@ -6,7 +6,7 @@ import '../../equipment/data/equipment_models.dart';
 import '../../equipment/state/equipment_providers.dart';
 import '../../personalisation/state/personalisation_providers.dart';
 import '../../recovery/state/recovery_providers.dart';
-import '../../safety/state/safety_providers.dart';
+import '../../safety/state/eligibility_providers.dart';
 import 'questionnaire_notifier.dart';
 
 /// O10 — the preview at the end of onboarding, built by the REAL generator.
@@ -31,7 +31,7 @@ final onboardingPlanPreviewProvider =
   // The DRAFT verdict, not the saved one: at this point in the flow the
   // answers exist only in the draft, and screening the stored profile would
   // refuse the preview to a first-run user who has just answered everything.
-  final safety = ref.watch(draftSafetyVerdictProvider);
+  final safety = safetyContextFor(draft);
   // A brand-new user has no training history, so every muscle is at maximum
   // deficit and the ordering carries no information. That is the honest state
   // for a preview built before the first session, and it is why this screen
@@ -47,10 +47,6 @@ final onboardingPlanPreviewProvider =
 
   return buildPlan(
     candidatePool: pool,
-    // The injuries the user has just entered — including the ones O6 wrote by
-    // tapping the body map, which is what makes the preview reflect the
-    // limitations screen rather than ignore it.
-    reportedInjuries: draft.health.injuries,
     deficit: deficit,
     deload: deload,
     safety: safety,

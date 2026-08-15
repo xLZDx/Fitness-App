@@ -4,6 +4,7 @@ import '../../equipment/data/exercise_filter.dart';
 import '../../personalisation/data/volume_ledger.dart';
 import '../../profile/data/profile_models.dart';
 import '../../recovery/data/deload_detector.dart';
+import '../../safety/data/eligibility.dart';
 import '../../safety/data/par_q.dart';
 import 'workout_plan.dart';
 
@@ -27,26 +28,31 @@ import 'workout_plan.dart';
 /// site, where the compiler asks about it once.
 PlanOutcome buildPlan({
   required List<ExerciseItem> candidatePool,
-  required Iterable<Injury> reportedInjuries,
   required Map<String, double> deficit,
   required DeloadVerdict deload,
-  required SafetyVerdict safety,
+  required SafetyContext safety,
   CyclePhase? cyclePhase,
   int targetMinutes = 45,
 }) {
   // 0. The floor. Before any pool is read, any deficit consulted, any
   //    exercise scored — because a refusal that depends on the catalogue
   //    having loaded is a refusal that can be raced.
-  if (!safety.allowsTraining) {
-    return PlanRefused(List.unmodifiable(safety.reasons));
+  //
+  //    Gate N widened what can stop a plan: the screening still can, and so now
+  //    can a clinician's stated advice against exercise and unexpired
+  //    post-operative restrictions. All three are the user's own words, none is
+  //    inferred, and they arrive through one type.
+  if (!safety.allowsAnyTraining) {
+    return PlanRefused(safetyReasonsFrom(safety));
   }
 
-  final injuryList = reportedInjuries.toList();
+  final injuryList = safety.injuries;
 
-  // 1. Filter for safety. Reuse the existing pure exercise filter so
-  //    the plan never contains an exercise that conflicts with a logged
-  //    injury — the entire moat.
-  final safe = filterContraindicated(candidatePool, injuryList);
+  // 1. Filter for safety. Gate N replaced the injury-only filter with the
+  //    eligibility layer, so the same pool that the feed, the programme
+  //    builder and the catalogue use is the pool here — injuries, normalised
+  //    movement restrictions and equipment, decided once.
+  final safe = eligibleExercises(candidatePool, safety);
 
   // 2. Score each remaining exercise by adaptive priority; novelty is broken
   //    by insertion order.
@@ -111,14 +117,14 @@ PlanOutcome buildPlan({
 
   // 5. Compose rationale string for transparency.
   final reasons = <String>[];
-  if (safety.decision == SafetyDecision.restricted) {
+  if (safety.intensityCeiling != null) {
     // First, and unconditionally. A user the screen could not clear must not
     // have to read past a deload note to find out that the app has not
     // cleared them — and this line must not be the one that gets dropped
     // because some other reason fired.
-    reasons.add('Your health screening answers mean this app has not cleared '
-        'you for unrestricted exercise, so intensity is capped at '
-        '${((safety.intensityCeiling ?? 1.0) * 100).round()}%. Talk to a doctor or a '
+    reasons.add('Your health answers mean this app has not cleared you for '
+        'unrestricted exercise, so intensity is capped at '
+        '${(safety.intensityCeiling! * 100).round()}%. Talk to a doctor or a '
         'qualified exercise professional before training harder.');
   }
   if (deload.shouldDeload) {
@@ -127,6 +133,14 @@ PlanOutcome buildPlan({
   }
   if (cyclePhase != null) {
     reasons.add(hintFor(cyclePhase).headline);
+  }
+  for (final advisory in safety.advisories) {
+    // Stated, not skipped. A restriction the catalogue carries no tag for
+    // filtered nothing, and a plan that says nothing about it reads as though
+    // it had been screened for.
+    reasons.add('You told us "${advisory.restriction?.name}" is limited. '
+        'Our exercise data carries no tag for that, so nothing was filtered '
+        'out on that basis.');
   }
   if (injuryList.isNotEmpty) {
     final filteredOut = candidatePool.length - safe.length;
@@ -154,7 +168,7 @@ PlanOutcome buildPlan({
   }
 
   return PlanReady(GeneratedPlan(
-    title: safety.decision == SafetyDecision.restricted
+    title: safety.intensityCeiling != null
         ? 'Reduced session'
         : deload.shouldDeload
             ? 'Deload day'

@@ -6,7 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
-import '../safety/widgets/safety_refusal_card.dart';
+import '../safety/widgets/eligibility_notice.dart';
 import 'data/workout_plan.dart';
 import 'state/ai_planner_providers.dart';
 import '../equipment/widgets/exercise_thumb.dart';
@@ -57,9 +57,11 @@ class AiPlannerPage extends ConsumerWidget {
               // The screening floor. Rendered instead of a plan, not above one:
               // a refusal shown next to a workout is a workout.
               if (outcome case PlanRefused(:final reasons)) {
-                return SafetyRefusalCard(
+                return EligibilityNotice(
+                  key: const Key('planner.refused'),
+                  title: AppLocalizations.of(context).eligTrainingBlockedTitle,
                   reasons: reasons,
-                  onOpenScreening: () =>
+                  onReviewProfile: () =>
                       GoRouter.of(context).push('/onboarding'),
                 );
               }

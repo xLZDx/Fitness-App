@@ -36,6 +36,11 @@ enum OnboardingStep {
   /// screen's question was already this one, asked as free text.
   barriers,
 
+  /// Gate N. The normalised health answers — movement restrictions, blood
+  /// pressure, surgery status, clinician advice. Distinct from [body], which
+  /// holds the same ground as free text nothing may read.
+  healthFlags,
+
   /// Gate M. The PAR-Q+ pre-exercise screen — the only step whose answers can
   /// stop the app producing a workout at all.
   screening,
@@ -69,6 +74,10 @@ const List<OnboardingStep> kOnboardingOrder = [
   OnboardingStep.barriers,
   OnboardingStep.personal,
   OnboardingStep.lifestyle,
+  // Straight before the screening: both are safety input, and asking them
+  // together means a user answers "what can you not do" and "what has a doctor
+  // told you" in one sitting rather than either side of three other screens.
+  OnboardingStep.healthFlags,
   // Immediately before the preview, because the preview is the first screen in
   // this flow that produces a workout, and this is the gate on producing one.
   // Placing it first instead would ask the medical questions before the user
@@ -174,6 +183,12 @@ bool isOnboardingStepAnswered(OnboardingStep step, UserProfile p) {
       return s.daysPerWeek != null ||
           s.sessionMinutes != null ||
           s.preferredWeekdays.isNotEmpty;
+    case OnboardingStep.healthFlags:
+      // "Touched", per this file's normal rule. Unlike the PAR-Q+ screen, a
+      // partial answer here is usable: each field gates independently, and an
+      // unanswered one is simply absent from the context rather than a hole in
+      // a decision rule.
+      return !p.health.flags.isUnanswered || p.health.flags.restrictions.isNotEmpty;
     case OnboardingStep.screening:
       // The one step where this asks "complete", not "touched", and the
       // departure from the rule above is deliberate.
