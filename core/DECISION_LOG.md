@@ -9419,3 +9419,73 @@ camera is still one tap away`); that is a floor, not parity.
 touched file.
 
 Not pushed.
+
+## 2026-08-15 16:45 local (Europe/Chisinau) / 13:45 UTC — Form coach Gate D: the scene becomes a photograph
+
+### Which set of images, and why the answer was not a matter of taste
+
+The operator supplied two candidate sets and asked which was better. The answer was measured
+rather than judged (`scratchpad/bg_measure.py`, 17 files):
+
+| set | size | flat filler rows | luminance in the figure's band |
+|---|---|---|---|
+| `coach_bg_1440x2560_webp.zip`, 10 files | 1440x2560, exactly 9:16 | **0%** | 58-147 |
+| 7 freshly generated PNGs | 1536x2752 | **42-66%** | 98-102 flat |
+
+The second set is broken, not merely worse. Its picture occupies only the top ~40% of the canvas;
+the beige and grey bands below are generator padding, which is also why all seven report the same
+luminance — that is the fill colour, not a scene. In the panel the user would stand on a flat grey
+rectangle. Each also carries a sparkle watermark in the bottom-right, exactly where the rep
+counter sits, and weighs 5-11 MB as PNG against 120-380 KB as WebP.
+
+**A prediction of mine that was wrong, corrected here rather than quietly dropped:** told the ten
+originals were 2816x1536 landscape, I predicted that fitting them to a 9:16 panel would destroy
+the compositions — Fuji losing its sakura framing, the Greek terrace reduced to a fragment of
+pavement. The zip is not a crop of those; they are re-composed portrait scenes. Opened and looked
+at: Fuji keeps sakura on both sides, the terrace keeps its full perspective to the sea. The
+objection was to a crop that never happened.
+
+**The objection that did survive:** three of the ten are bright exactly where the body stands —
+`04_fuji_sakura` at mean luminance 147 of 255 with a 95th percentile of 244, `09_forest_lake` at
+135/243, `07_snow_peak_tarn` at 120/224. A near-black body with a lit skeleton is unreadable over
+pale sakura. That is what the scrim is for, and it is why the fix is a darkening layer rather than
+dropping three scenes: a scrim fixes all three without touching the seven that were already fine.
+
+### What was built
+
+`_AvatarBackdrop` is three layers, each with a job: a flat near-black underneath (so the first
+frame is not a white flash before `Image.asset` resolves from the bundle), the photograph
+cover-fitted, and the scrim — light at the top where only sky sits behind the chrome, heavy from
+the middle down where the body is.
+
+The painted dusk gradient it replaces, `_AvatarBackdropPainter`, was a placeholder for exactly
+this and said so in its own comment. Deleted rather than left unreachable.
+
+Selection is `coachBackdropProvider`, re-rolled from `FormCheckPage`'s fresh-mount callback rather
+than in the provider's own `build`: the provider is app-scoped, so building once per process would
+show one picture for a whole day of training. The same hook already resets the set, and for the
+same reason — a lifecycle resume must not change the scene under someone mid-set.
+
+`shuffle()` never returns the scene already showing. Uniform choice over ten repeats one open in
+ten, and a repeat does not read as chance; it reads as the shuffle being broken. Mutation M6
+(dropping the filter) turns that test red.
+
+### On the reference video, which is a render and not a recording
+
+Worth recording so a later session does not treat it as a layout spec: the clip is 1280x720
+landscape, and the app shown in it is an illustration. It is authoritative about the LOOK — dark
+body, lit bones, photographic dusk scene, minimal chrome — and about the stance being side-on. It
+is not authoritative about proportions on a 9:16 phone panel.
+
+### State
+
+`flutter analyze lib test` — 7 issues, all pre-existing, none in a touched file. Assets: ten
+files, all verified 1440x2560, 2.2 MB total, declared in `pubspec.yaml` and pinned by a test that
+reads them off disk — a file renamed without updating `kCoachBackdrops` would otherwise be blank
+on a phone and green in every widget test, because the `errorBuilder` is deliberately quiet.
+
+No attribution entry: the operator generated these images, so there is no third party to credit.
+Stated in the pubspec because every other image directory there has one and silence would read as
+an oversight.
+
+Not pushed.

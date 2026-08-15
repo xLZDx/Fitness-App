@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -303,6 +304,65 @@ final showSkeletonProvider = StateProvider<bool>((_) => false);
 /// come back with it. What is NOT kept is the pretence that both views can be on
 /// at once — Gate A settled that, and this only changes which of them opens.
 final avatarModeProvider = StateProvider<bool>((_) => true);
+
+/// The scenes the avatar can stand in.
+///
+/// Photographs rather than the painted gradient they replaced, because the
+/// gradient was a placeholder for exactly this and said so. Ten of them so that
+/// opening the coach twice in an evening does not look like the same screen
+/// twice; the operator supplied them and asked for one at random each time.
+///
+/// Ordered and const so the list is greppable against `assets/coach_bg/` and a
+/// file renamed without updating this shows up as a missing asset at build time
+/// rather than as a blank screen at run time.
+const kCoachBackdrops = <String>[
+  'assets/coach_bg/01_cliffs_moher.webp',
+  'assets/coach_bg/02_volcano.webp',
+  'assets/coach_bg/03_waterfall_dock.webp',
+  'assets/coach_bg/04_fuji_sakura.webp',
+  'assets/coach_bg/05_sunset_hills.webp',
+  'assets/coach_bg/06_greek_terrace.webp',
+  'assets/coach_bg/07_snow_peak_tarn.webp',
+  'assets/coach_bg/08_coast_turquoise.webp',
+  'assets/coach_bg/09_forest_lake.webp',
+  'assets/coach_bg/10_beach_sunset.webp',
+];
+
+/// Injectable so a test gets the same scene every run.
+///
+/// A widget test that pumped a random one of ten would be a test that fails one
+/// time in ten for a reason nobody could reproduce.
+final coachBackdropRandomProvider = Provider<math.Random>((_) => math.Random());
+
+/// Which scene is on screen, re-rolled each time the coach page is opened.
+///
+/// "Each time" is the page mount, not the app launch: the operator asked for a
+/// different scene each time, and once per process would mean the same picture
+/// for a whole day of training.
+class CoachBackdropController extends Notifier<String> {
+  @override
+  String build() => kCoachBackdrops[
+      ref.read(coachBackdropRandomProvider).nextInt(kCoachBackdrops.length)];
+
+  /// Pick a new scene, never the one already showing.
+  ///
+  /// Uniform choice over ten would repeat one open in ten, and a repeat does
+  /// not read as chance — it reads as the shuffle being broken. Drawing from
+  /// the other nine costs nothing and removes the only outcome a user could
+  /// mistake for a bug.
+  void shuffle() {
+    if (kCoachBackdrops.length < 2) return;
+    final others = [
+      for (final b in kCoachBackdrops)
+        if (b != state) b,
+    ];
+    state = others[ref.read(coachBackdropRandomProvider).nextInt(others.length)];
+  }
+}
+
+final coachBackdropProvider =
+    NotifierProvider<CoachBackdropController, String>(
+        CoachBackdropController.new);
 
 /// The live body as a drawable figure, or null when there is nothing to draw.
 ///

@@ -119,6 +119,14 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
       if (!mounted) return;
       ref.read(repSessionControllerProvider.notifier).resetSet();
       ref.read(poseMatchProvider.notifier).state = null;
+      // A different scene each time the coach is opened, which is what the
+      // operator asked for. Here rather than in the provider's own `build`
+      // because the provider is app-scoped: built once per process, it would
+      // hold the same picture for a whole day of training. This is the same
+      // fresh-mount hook the reset above uses, and for the same reason — a
+      // lifecycle resume goes through `didChangeAppLifecycleState` and must NOT
+      // change the scene under someone mid-set.
+      ref.read(coachBackdropProvider.notifier).shuffle();
     });
     // R11h: arriving on this page is NOT asking for the camera any more. The
     // intro and preparation cards come first, and `_openCamera` below is the
@@ -801,80 +809,72 @@ class _SkeletonPainter extends CustomPainter {
 ///
 /// It is also the seam: swapping this widget for an `Image.asset` is one file
 /// and one licence line, and nothing else on this page has to know.
-class _AvatarBackdrop extends StatelessWidget {
+/// The scene the avatar stands in.
+///
+/// A photograph since 2026-08-15, chosen at random from ten each time the coach
+/// is opened. It replaces `_AvatarBackdropPainter`, which was a painted dusk
+/// gradient standing in for exactly this and said so in its own comment.
+///
+/// Three layers, and each earns its place:
+///
+/// 1. **A flat near-black underneath.** `Image.asset` resolves from the bundle
+///    without a network, but not within the same frame as the first build. One
+///    frame of white behind a dark figure is a flash, and this screen opens on
+///    it every time.
+/// 2. **The photograph, cover-fitted.** The assets are 1440x2560, the same 9:16
+///    the panel is, so cover crops almost nothing — it is there for the phones
+///    that are taller or shorter than 16:9, not as a framing decision.
+/// 3. **A scrim, dark towards the bottom.** This is the layer that makes the
+///    figure legible rather than the layer that makes the picture pretty. The
+///    body is drawn near-black with a lit skeleton on it, and the ten scenes
+///    were measured before being accepted: in the band the body occupies, mean
+///    luminance runs 58 to 147 out of 255, with `04_fuji_sakura` at 147 (95th
+///    percentile 244) and `09_forest_lake` at 135 (243). A white skeleton over
+///    pale sakura or a bright lake is unreadable, and three of the ten are
+///    bright enough for that to matter. Darkening the lower band fixes all
+///    three without touching the seven that were already fine — which is why
+///    the fix is a scrim and not a re-pick of the scenes.
+class _AvatarBackdrop extends ConsumerWidget {
   const _AvatarBackdrop();
 
   @override
-  Widget build(BuildContext context) => const RepaintBoundary(
-        child: CustomPaint(
-          key: Key('form_check.backdrop'),
-          painter: _AvatarBackdropPainter(),
-          size: Size.infinite,
+  Widget build(BuildContext context, WidgetRef ref) => RepaintBoundary(
+        child: Stack(
+          key: const Key('form_check.backdrop'),
+          fit: StackFit.expand,
+          children: [
+            const ColoredBox(color: Color(0xFF0B0A14)),
+            Image.asset(
+              ref.watch(coachBackdropProvider),
+              key: const Key('form_check.backdrop_photo'),
+              fit: BoxFit.cover,
+              // A missing or corrupt asset must not take the whole coach down
+              // with it: the layer under this one is already a usable ground,
+              // and the figure is what the user came for.
+              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            ),
+            const DecoratedBox(
+              key: Key('form_check.backdrop_scrim'),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  // Light at the top, where only sky sits behind the chrome, and
+                  // heavy from the middle down, where the body is.
+                  colors: [
+                    Color(0x33000000),
+                    Color(0x59000000),
+                    Color(0xA6000000),
+                  ],
+                  stops: [0.0, 0.45, 1.0],
+                ),
+              ),
+            ),
+          ],
         ),
       );
 }
 
-class _AvatarBackdropPainter extends CustomPainter {
-  const _AvatarBackdropPainter();
-
-  // Dusk, because the figure is drawn as a dark body with a light skeleton and
-  // needs a ground that is neither. Over a bright scene the body disappears;
-  // over the app's own near-black the whole point of leaving the camera behind
-  // is lost.
-  static const _sky = Color(0xFF241A3A);
-  static const _horizonGlow = Color(0xFFE8925A);
-  static const _ground = Color(0xFF0B0A14);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    final horizon = size.height * 0.62;
-
-    canvas.drawRect(
-      rect,
-      Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF120E22), _sky, Color(0xFF6B3F52)],
-          stops: [0.0, 0.38, 1.0],
-        ).createShader(rect),
-    );
-
-    // A low sun behind where the body stands. Off-centre: dead centre would sit
-    // exactly behind the torso and be hidden by it for the whole set.
-    canvas.drawCircle(
-      Offset(size.width * 0.68, horizon),
-      size.height * 0.34,
-      Paint()
-        ..shader = RadialGradient(
-          colors: [
-            _horizonGlow.withValues(alpha: 0.55),
-            _horizonGlow.withValues(alpha: 0.0),
-          ],
-        ).createShader(
-          Rect.fromCircle(
-            center: Offset(size.width * 0.68, horizon),
-            radius: size.height * 0.34,
-          ),
-        ),
-    );
-
-    canvas.drawRect(
-      Rect.fromLTRB(0, horizon, size.width, size.height),
-      Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [_ground.withValues(alpha: 0.86), _ground],
-        ).createShader(Rect.fromLTRB(0, horizon, size.width, size.height)),
-    );
-  }
-
-  // Nothing about it moves.
-  @override
-  bool shouldRepaint(_AvatarBackdropPainter old) => false;
-}
 
 /// The user, drawn as a figure instead of shown on camera.
 class _PoseAvatar extends ConsumerWidget {
