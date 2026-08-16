@@ -11342,3 +11342,66 @@ was done as an explicit write rather than reworded to get the same command past 
 *this paragraph* then tripped the gate a second time, on the command text quoting the command name.
 The gate matches text, not intent; that is now recorded three times and is a property worth knowing
 rather than a fault to work around.
+
+## 2026-08-16 — C2: 127 Russian summaries, and the test that was watching the wrong half
+
+**Basis: FACT.**
+
+The catalogue's rule is that a row's `summary` is byte-identical to its first step. English held it on
+1,887 of 1,887. Russian broke it on **127**.
+
+### The repair was deterministic, and that was checked rather than assumed
+
+All 127 diverge in one direction only. The steps were re-translated at some point — «спина прямая»
+became «спина в нейтральном положении», and a gerund opener («Начните, поставив колени…») became an
+imperative («Поставьте колени…») — while the summary kept the wording it had been derived from
+earlier.
+
+Before writing anything, all 127 pairs were compared: the lowest similarity of any pair is 0.65, and
+the most divergent row is «Встаньте прямо, расслабив плечи.» against «Встаньте, спина в нейтральном
+положении, расслабив плечи.» — the same instruction, one phrase revised. Not one of the 127 carries
+information the step does not.
+
+`steps[0]` is canonical by construction, not by preference: `merge_exercise_text.py` derives every
+Russian summary from it and refuses to let a batch author one, precisely so the two cannot diverge.
+These rows predate that rule. Setting `summary = steps[0]` restores the state the rule would have
+produced.
+
+`tools/catalog/repair_ru_summary.py` does it, and **refuses** rather than skips on a row with no
+usable `steps[0]` — a silent skip is how a repair tool reports success on the rows it did not fix.
+Neither refusal fires today. The diff is 127 insertions and 127 deletions.
+
+### The more useful finding is the test
+
+`exercise_translations_test.dart` already had "summary is always the first step". It ran over the
+**English** rows only, and its own comment said the consequence out loud: *"If a catalog rebuild ever
+breaks this, the Russian summary would silently diverge from the English one — so it fails here
+instead."*
+
+It had already diverged, on 127 rows, and this file was green the whole time. The English assertion
+was never wrong; it simply was not the assertion the comment claimed it was. A test that names the
+failure it prevents and then checks the other half of the pair is indistinguishable from a passing
+test until somebody measures.
+
+Both halves now run over all 1,887 rows, with a control asserting both sides were actually read —
+every "no row breaks the invariant" assertion is also satisfied by an empty collection.
+
+Mutation, four: a single Russian summary diverging by one trailing space, a single English one, a row
+dropped from the overlay, and — the one worth having — a "repair" that blanks `summary` **and**
+`steps[0]` together, which satisfies the invariant perfectly while emptying every card. All four red,
+restore green.
+
+### Shared, so the fix is not maintained twice
+
+`tools/catalog/json_io.py` now holds the format-preserving reader and writer that C1's addendum
+introduced. Two tools rewrite these files now, and copying that logic is how the second copy ends up
+being the one that still has the bug.
+
+### Verification
+
+Full suite **2621 passed / 0 failed** (2619 before; 2 added).
+
+### Open, and unchanged by this entry
+
+C3 (78 rows labelled "None" with a real `equipmentId`), G3, G4, G7, and R3/R10 from the recovered
+Gate J review.

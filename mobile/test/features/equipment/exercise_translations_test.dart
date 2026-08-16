@@ -102,11 +102,21 @@ void main() {
     });
   });
 
-  group('English base invariants the overlay format relies on', () {
-    test('summary is always the first step', () {
-      // The overlay stores only `title` + `steps` and derives the summary from
-      // step one. If a catalog rebuild ever breaks this, the Russian summary
-      // would silently diverge from the English one — so it fails here instead.
+  group('the summary invariant, in both languages', () {
+    /// C2. This group used to check English only, and its own comment said the
+    /// consequence out loud: "if a catalog rebuild ever breaks this, the Russian
+    /// summary would silently diverge". It had already diverged — on **127** of
+    /// 1,887 rows — and this file was green throughout, because nothing here
+    /// looked at the Russian side.
+    ///
+    /// That is the more useful lesson than the 127 rows: a test that names the
+    /// failure it is preventing, and then checks the other half of the pair, is
+    /// indistinguishable from a passing test until someone measures. The
+    /// English assertion was never wrong. It was just not the assertion the
+    /// comment claimed it was.
+    ///
+    /// Both halves now run over all 1,887 rows.
+    test('English: summary is always the first step', () {
       final broken = <String>[];
       for (final e in base) {
         final steps = ExerciseItem.parseSteps(e['steps']);
@@ -116,6 +126,37 @@ void main() {
         }
       }
       expect(broken, isEmpty);
+    });
+
+    test('Russian: summary is always the first step', () {
+      // Repaired by `tools/catalog/repair_ru_summary.py`, deterministically:
+      // every one of the 127 differed only in the phrasing of the same
+      // instruction, with `steps[0]` carrying the newer wording. `steps[0]` is
+      // canonical by construction — `merge_exercise_text.py` derives every
+      // Russian summary from it and refuses to let a batch author one.
+      final broken = <String>[];
+      ru.forEach((id, entry) {
+        final row = (entry as Map).cast<String, dynamic>();
+        final steps = ExerciseItem.parseSteps(row['steps']);
+        if (steps.isEmpty) return;
+        if (row['summary'] != (row['steps'] as List).first) broken.add(id);
+      });
+      expect(broken, isEmpty,
+          reason: '${broken.length} Russian rows break summary == steps[0]');
+    });
+
+    test('CONTROL: both sides were actually read', () {
+      // Every assertion above passes over an empty collection. The catalogue is
+      // 1,887 rows in both languages and each row has a summary to compare.
+      expect(base, hasLength(1887));
+      expect(ru, hasLength(1887));
+      expect(base.where((e) => (e['summary'] as String?)?.isNotEmpty ?? false),
+          hasLength(1887));
+      expect(
+        ru.values.where((e) =>
+            ((e as Map)['summary'] as String?)?.isNotEmpty ?? false),
+        hasLength(1887),
+      );
     });
 
     test('a purpose written in one language is written in both (B3)', () {

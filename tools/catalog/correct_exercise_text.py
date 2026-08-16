@@ -51,45 +51,16 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
+
+from json_io import dump_json as _dump_json, load_json as _load_json
 
 ROOT = Path(__file__).resolve().parents[2]
 EN_PATH = ROOT / "mobile" / "assets" / "data" / "exercises_vendor.json"
 RU_PATH = ROOT / "mobile" / "assets" / "data" / "exercises_vendor.ru.json"
 BATCH_DIR = Path(__file__).resolve().parent / "batches"
 
-
-def _load_json(path: Path):
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _dump_json(path: Path, data) -> None:
-    """Rewrite [path], preserving its indent and line endings.
-
-    Not cosmetic. The first version wrote `indent=2` with the platform's default
-    newline translation, against a catalogue file indented by one space and
-    stored with LF. Three corrected strings produced a 54,000-line diff -- the
-    real change was still in there, and nobody would ever have found it.
-
-    A formatting-only diff over a data file is worse than no diff: it defeats
-    review, it defeats `git blame`, and it makes the next person's genuine
-    change look identical to this one.
-    """
-    raw = path.read_bytes()
-    newline = "\r\n" if b"\r\n" in raw.split(b"\n", 2)[0] + b"\n" else "\n"
-    # Indent is read from the first nested line rather than assumed. The two
-    # catalogue files do not agree with each other, which is exactly why this
-    # cannot be a constant.
-    indent = 2
-    for line in raw.decode("utf-8").splitlines()[1:]:
-        stripped = line.lstrip(" ")
-        if stripped and stripped != line:
-            indent = len(line) - len(stripped)
-            break
-    with open(path, "w", encoding="utf-8", newline=newline) as fh:
-        fh.write(json.dumps(data, ensure_ascii=False, indent=indent) + "\n")
 
 
 class Refusal(Exception):

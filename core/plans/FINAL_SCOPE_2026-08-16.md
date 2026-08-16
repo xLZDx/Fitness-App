@@ -66,7 +66,7 @@ Measured 2026-08-16. These need no judgement call — they are facts about the d
 | Byte-identical `steps` shared by different exercises (EN) | **83** across 38 clusters |
 | Same, RU | **71** across 33 clusters |
 | Identical `summary` shared by different exercises (EN) | **355** across 140 clusters — **224 of them never flagged by any detector** |
-| `RU summary != steps[0]`, while EN holds the invariant on all 1887 | **127** |
+| `RU summary != steps[0]`, while EN holds the invariant on all 1887 | ~~127~~ **0 — repaired 2026-08-16 (C2)** |
 | `equipmentLabel` is the literal string `"None"` while `equipmentId` names a real machine | **78** |
 
 **Caveat without which the first row misleads.** Identical steps do not prove a wrong description.
@@ -74,8 +74,9 @@ The largest cluster is `Barbell Deadlift` / `(front POV)` / `(side POV)` / `360 
 exercise shot from four angles, where the text is correct and the **cards** are redundant. Read the
 83 as "redundant or wrong", never as "wrong".
 
-The 127 RU rows are a different matter: EN holds `summary == steps[0]` on 1887 of 1887 and RU breaks
-it on 127. That is a defect, not an ambiguity.
+The 127 RU rows were a different matter: EN held `summary == steps[0]` on 1887 of 1887 and RU broke
+it on 127. That was a defect, not an ambiguity, and it is **closed** — all 127 differed only in the
+phrasing of the same instruction, with `steps[0]` carrying the newer wording.
 
 ### 1.4 Known-wrong cards — **all five closed 2026-08-16 (C1)**
 
@@ -217,7 +218,7 @@ over 519 cards, 224 Gate E findings over 199 cards, 1887 verified rows of which 
 | Gate | Work | Size |
 |---|---|---|
 | ~~**C1**~~ | ~~Close the 5 known-wrong cards~~ | **Done 2026-08-16.** 1 withheld, 4 corrected in both locales via a new `correct_exercise_text.py` whose guard found the authored batches had already drifted from the shipped catalogue. 17 tests, 12 mutations |
-| **C2** | Fix the 127 `RU summary != steps[0]` rows mechanically; add the RU-side invariant test | ~2h |
+| ~~**C2**~~ | ~~Fix the 127 `RU summary != steps[0]` rows; add the RU-side invariant test~~ | **Done 2026-08-16.** All 127 repaired deterministically from `steps[0]` by `tools/catalog/repair_ru_summary.py`; the invariant now runs over all 1,887 rows in **both** languages. The pre-existing test checked English only, and its own comment named the Russian divergence it was not checking |
 | **C3** | Resolve the 78 `equipmentLabel: "None"` rows that name a machine | ~2h |
 | **C4** | Decide the 83/38 identical-steps clusters: one card with an angle switch, or leave them | product decision, then ~1d |
 | **C5** | Read the 224 shared-`summary` cards no detector ever touched | ~2d |

@@ -69,3 +69,11 @@ sequence,timestamp,marker,action,command_or_change,target,result,related_gate,co
 68,2026-08-16T10:23:41+03:00,+ГО,create,17 regression tests with controls,mobile/test/features/equipment,pass,C1,,
 69,2026-08-16T10:23:41+03:00,+ГО,test,12 mutations,catalog corrections + quarantine,"12/12 detected, restore green",C1,,"includes withhold-everything, which passes every absence assertion"
 70,2026-08-16T10:23:41+03:00,+ГО,test,flutter test,mobile/,2619 passed / 0 failed,C1,,2602 before; 17 added
+71,2026-08-16T10:40:09+03:00,+ГО|КОМИТ,record,git commit --amend on a local unpushed commit,C1,736 insertions / 20 deletions,C1,2d3659e,the first version reformatted exercises_vendor.ru.json into a 54118-line diff
+72,2026-08-16T10:40:09+03:00,+ГО,create,extract the format-preserving json reader/writer,tools/catalog/json_io.py,created,C2,,two tools rewrite these files now
+73,2026-08-16T10:40:09+03:00,+ГО,verify,measure summary == steps[0] in both languages,mobile/assets/data,"EN 0/1887 broken, RU 127/1887 broken",C2,,
+74,2026-08-16T10:40:09+03:00,+ГО,verify,compare all 127 pairs before repairing,ru overlay,"lowest similarity 0.65, same instruction reworded, no information in summary absent from steps[0]",C2,,checked rather than assumed
+75,2026-08-16T10:40:09+03:00,+ГО,create,deterministic repair tool that refuses rather than skips,tools/catalog/repair_ru_summary.py,"127 repaired, 127+/127- diff",C2,,
+76,2026-08-16T10:40:09+03:00,+ГО,edit,extend the invariant test to Russian and add a control,exercise_translations_test.dart,pass,C2,,the pre-existing test checked English only and its own comment named the gap
+77,2026-08-16T10:40:09+03:00,+ГО,test,4 mutations,exercise_translations_test.dart,"4/4 detected, restore green",C2,,"includes blanking summary and steps[0] together, which satisfies the invariant"
+78,2026-08-16T10:40:09+03:00,+ГО,test,flutter test,mobile/,2621 passed / 0 failed,C2,,2619 before; 2 added
