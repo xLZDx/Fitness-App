@@ -12015,3 +12015,69 @@ presenting unread territory as audited; `README.md` names all nine and why.
 
 Audit only. The remediation plan is written and **not started** — it awaits an explicit
 `REMEDIATION-GO`.
+
+## 2026-08-16 — Second-order review lands, E05 corrects a published downgrade, D3 and F011 resolved
+
+A second-order review of the audit above (`core/audits/FULL_PROJECT_AUDIT_2026-08-16_REVIEW/`, 17
+artefacts) was produced by a prior session and sat uncommitted under the commit pause. This entry
+commits it, together with a consolidated priority/dependency reconciliation (`40`, `41`) built on top
+of it this session, and closes out this session's own audit-quality work before any remediation code
+changes.
+
+**35 findings total** — the original 27 plus 8 the second-order review found: `N01` (a safety refusal
+rendered as a network error, with Retry — the sharpest of the eight), `N02` (the in-workout picker is
+unscreened and the tap is terminal), `N03` (the health-data client/server split has no server-side
+enforcement), `N04` (the AI coach is gated on one screen and not two others), `N05`–`N08`
+(architecture/routing/dead-code, INFO/LOW).
+
+**E05: a published correction was itself wrong, and reversing it changes a severity.** The first
+audit's dead-provider count (15) was corrected to 7 by counting occurrences instead of files. The
+second-order review's own re-count used the same occurrence method but did not strip comment lines
+first, so three providers discussed only in doc comments — `fitnessProfileProvider`,
+`safetyVerdictProvider`, `draftSafetyVerdictProvider` — read as live. Comment-stripped, the true count
+is **10, not 7**. This matters beyond the count: the review had downgraded `F001` (difficulty
+gradation is inert data) from HIGH to MEDIUM on the argument that `fitness_model.dart` computes a real
+per-muscle level signal consumed by `fitnessProfileProvider`. Nothing consumes it —
+`personalisation_providers.dart:12` declares it, and grep across `mobile/lib` and `mobile/test` finds
+only that declaration plus two doc-comment mentions. The signal computes into a void. **`F001` is
+restored to HIGH.** Independently re-confirmed this session by direct grep before committing to it —
+zero `ref.watch`/`ref.read` call sites on any of the three providers.
+
+**This session's own correction, before touching any of it:** the first pass at `41_CONSOLIDATED_FINDINGS_PRIORITY.csv`
+had tagged 8 findings (`F002, F004, F005, F006, F009, F011, F022, F023`) `OPEN_REPRODUCED` on the
+strength of their citations in `16_ROOT_CAUSE_MAP.csv`, which is a root-cause-mapping pass, not the
+formal reproduction pass 11 other findings went through (`07_HIGH_SEVERITY_REPRODUCTION.csv` contains
+exactly `F001, F003, F013–F021`). 27 − 11 = 16, matching the review's own stated NOT_REVIEWED count —
+the table was wrong, not the narrative, in exactly the citation-as-verification shape this whole audit
+exists to catch. All 8 have now been independently reproduced against current source (file:line
+evidence in `41`'s notes column), not merely relabeled.
+
+**Two decisions resolved with evidence, not deferred:**
+
+- **D3 (scanner claim).** `mobile/assets/models/README.md` read in full: the shipped model (v1) is 10
+  classes, matching the audit. A v2 exists in development with real abstention support but measures
+  **28% top-3 accuracy on the operator's own 30 real gym photos** — worse than v1's headline number,
+  and explicitly not shipped. Decision: correct the Scan-tab copy to what v1 actually supports now
+  (lands under G-A/A6); do not reference v2's capability in any user-facing claim until it ships and
+  clears a real-world bar. Copy-only — no ML work is authorised by this decision.
+- **F011 (post-deletion token window).** All 10 `onCall` callables in `functions/src/index.ts`
+  enumerated. `RISK_ACCEPTED` for the 7 whose blast radius is bounded by Firestore data account
+  deletion already removes (`optInDonorWall`, `optOutDonorWall`, `reportEquipment`,
+  `bookCoachSession`, `startCoachOnboarding`, `createPortalSession`, `generateAnnualReceipt`).
+  `REMEDIATE` for `startFreeTrial` and `createCheckoutSession` specifically: a stale token could
+  replay trial/checkout eligibility checks against now-absent records inside the ~1h window, which is
+  a distinct exploit the deletion path introduces rather than a pre-existing one. Implementation
+  queued, not yet landed.
+
+**Deliberately not decided here.** `D1` — whether the 360 untagged catalogue rows are a fail-open
+safety hole or nine-region 80.9% coverage with no material issue, per the blinded adversary's own
+disagreement with the first audit — stays `CONTESTED`. `H3` (content review for 1,887 exercises) stays
+`HOLD`. Neither an LLM specialist panel nor this session substitutes for a licensed clinician on either
+question; both are recorded `CLINICAL_VALIDATION_REQUIRED` rather than resolved by simulated authority.
+
+### Status
+
+Second-order audit reconciled and committed. Remediation started this session: see the next entry for
+`N01` (G-A's first item). Four of five principal gates, Tier 6, adversarial re-attack, and H3 remain.
+
+Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).

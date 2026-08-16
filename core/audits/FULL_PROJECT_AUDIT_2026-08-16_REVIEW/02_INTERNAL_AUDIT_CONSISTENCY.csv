@@ -1,0 +1,9 @@
+check,expected,found,result,note
+"finding count, 29_FINDINGS.csv",27,27,MATCH,
+severity split in the register,3/3/7/10/1/3,3/3/7/10/1/3,MATCH,
+executive summary severity split,3/3/7/10/1/3,3/3/7/10/1/3,MATCH,
+remediation IDs resolve to the register,all,all,MATCH,F013-F027 were absent before the commit and were added in the same commit
+every finding has a remediation task,27,24,GAP,"F002 (scanner covers 10 of 69 machines), F009 (uid in a debug log), F011 (post-deletion token window) have no P0-P3 task"
+artefacts named in README exist on disk,31,31,MATCH,
+artefacts required by the mandate,38,31,SHORTFALL,"README names all nine omissions and the reason for each; the shortfall is disclosed, not hidden"
+31_CONTRADICTIONS.md self-corrections,2,2,MATCH,both reproduce; a third instance of the same error class was found in this review
