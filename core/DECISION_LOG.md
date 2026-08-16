@@ -12397,3 +12397,65 @@ shapes could route around differently.
 G-D closed: 3/3 items landed and regression-verified. Not pushed.
 
 Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).
+
+## 2026-08-17 — G-C / F016: unscreened model-written movements stop reaching users who have something to screen
+
+Root cause RC2. `MachineDescriber` asks Gemini "what is this machine and what can you do on it" for a
+machine the catalogue has no page for, and `MachineCardView` rendered the resulting `uses[]` list —
+3-5 free-text movements — to every user unconditionally. Nothing screens that text: it carries no
+`contraindications` field and nothing can attach one, so `isContraindicated` returns false for every
+line of it however the user is injured.
+
+**Departed from the remediation plan's proposed mechanism, deliberately, and this is the substantive
+decision here.** `30_REVISED_REMEDIATION_PLAN.md:57-63` specifies: "Suppress `uses[]` unless every
+line matches the catalogue or an equipment alias." That fix cannot work on this surface.
+`MachineDescriber` is invoked *only* when catalogue recognition already came back empty — the machine
+is by construction not in the catalogue — so requiring each suggested movement to match a catalogue
+entry would suppress the list for essentially every card. That deletes the feature rather than making
+it safe, and it would do so while leaving the actual hazard (unscreened movements shown to an injured
+user) unaddressed in principle rather than by design.
+
+The plan cited the right precedent while describing the wrong mechanism. `equipment_providers.dart:481-482`
+— which the plan quotes — does not match `ai::` exercises against the catalogue. It **excludes them for
+users who have injuries**, with an explicit comment saying why: the generator "emits no
+`contraindications` field and never will at read time." Applied the same answer here, and extended it
+by two cases the same reasoning covers: a user under an ANSWERED whole-person block (offering
+movements to someone the app is refusing to train is exactly the error G-A removed from five other
+surfaces), and a user with a movement restriction (a restriction is a statement about which movements
+are unsafe, and this is a list of movements — nothing here can honour it).
+
+**Second correction, caught by a pre-existing test rather than by review.** The first implementation
+gated on `SafetyContext.allowsAnyTraining`. `screen()` is fail-closed, so a user who has answered
+nothing is `blocked` — meaning that version withheld the list from every un-onboarded user, which is
+most people who open the scanner, and reproduced the exact "deletes the feature" failure I had just
+rejected the plan's approach for. The existing `'is explained instead of shrugged at'` test went red
+and made it visible. The rule is now `wholePersonBlocks.any((r) => !r.unanswered)` — the user told us
+something that blocks them, as distinct from having told us nothing. Someone who has told us nothing
+has nothing to screen against, and `SafetyDisclosure` (G-A/F019, F020) is the mechanism that states
+that honestly; hiding content over it would be a second, worse answer to a question the app already
+answers.
+
+Withheld rather than silently shortened: `machineCardUsesWithheld` (EN+RU) says the machine is not in
+the catalogue, that its uses cannot be checked against the user's health answers, and to ask someone
+at the gym. A list that vanishes with no explanation reads as the app having nothing to say about the
+machine, which is a different and untrue claim. Name, summary, photo and the watch-elsewhere button
+are untouched in every case — withholding the movements must not withhold the answer.
+
+Placed at the render site, not at parse or save time: the card is persisted and re-read later, the
+decision depends on the *current* user's profile, and baking a safety verdict into stored data is how
+a card saved while healthy keeps showing movements after an injury is added. `MachineCardView` became
+a `ConsumerWidget` for this; `scanner_page.dart` needed no change.
+
+Regression-tested: 6 new widget tests (clear user sees the list; injured user gets the reason and not
+the movements; answered whole-person block withholds; UNANSWERED screen does NOT withhold; movement
+restriction withholds; the card still names the machine either way). Mutation-checked by stashing only
+`machine_card_view.dart` — 3 failed against the pre-fix widget, all 16 pass restored. `flutter analyze`
+clean. One pre-existing test needed a second `pump()`: the list now waits on a `FutureProvider` and
+the card withholds until it resolves rather than showing unscreened movements for the frame in
+between. `pumpAndSettle` is not usable on that screen — it animates continuously and times out.
+
+### Status
+
+G-C closed: F016 landed and regression-verified. Not pushed.
+
+Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).

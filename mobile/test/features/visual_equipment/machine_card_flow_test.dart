@@ -12,6 +12,11 @@ import 'package:fitness_app/features/visual_equipment/data/machine_card_reposito
 import 'package:fitness_app/features/visual_equipment/data/machine_describer.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_match.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_service.dart';
+import 'package:fitness_app/features/profile/data/profile_models.dart';
+import 'package:fitness_app/features/safety/data/eligibility.dart';
+import 'package:fitness_app/features/safety/data/health_flags.dart';
+import 'package:fitness_app/features/safety/data/par_q.dart';
+import 'package:fitness_app/features/safety/state/eligibility_providers.dart';
 import 'package:fitness_app/features/visual_equipment/state/machine_card_providers.dart';
 import 'package:fitness_app/features/visual_equipment/state/visual_equipment_providers.dart';
 import 'package:fitness_app/features/visual_equipment/widgets/machine_card_view.dart';
@@ -97,6 +102,14 @@ void main() {
       await container
           .read(visualEquipmentControllerProvider.notifier)
           .classifyFilePath('/tmp/unknown.jpg');
+      // Two pumps rather than one: F016 made the `uses` list wait on
+      // `safetyContextProvider`, which is a FutureProvider, and the card
+      // deliberately withholds the list until it resolves rather than showing
+      // unscreened movements for the frame in between. The name and the
+      // summary -- what this test is actually about -- appear on the first
+      // pump either way. `pumpAndSettle` is not an option here: the scan
+      // screen animates continuously and it times out.
+      await tester.pump();
       await tester.pump();
 
       expect(find.byType(MachineCardView), findsWidgets);
@@ -265,18 +278,20 @@ void main() {
       // Operator: "а клиенту посоветовать ролик на ютюбе или еще где пока мы
       // не добавим новый контент".
       Uri? opened;
-      await tester.pumpWidget(MaterialApp(
-        theme: AppTheme.light(),
-        locale: kTestLocale,
-        localizationsDelegates: kTestLocalizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: MachineCardView(
-            card: aCard(),
-            onWatchElsewhere: (u) async {
-              opened = u;
-              return true;
-            },
+      await tester.pumpWidget(ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.light(),
+          locale: kTestLocale,
+          localizationsDelegates: kTestLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: MachineCardView(
+              card: aCard(),
+              onWatchElsewhere: (u) async {
+                opened = u;
+                return true;
+              },
+            ),
           ),
         ),
       ));
@@ -289,6 +304,129 @@ void main() {
       expect(opened!.host, contains('youtube'));
       expect(opened!.queryParameters['search_query'],
           contains('Belt Squat Machine'));
+    });
+  });
+
+  group('F016: model-written "what you can do on it" is not shown unscreened',
+      () {
+    /// The card on its own, under whatever safety context the test supplies.
+    Future<void> pumpCard(
+      WidgetTester tester, {
+      required List<Override> overrides,
+    }) async {
+      await tester.pumpWidget(ProviderScope(
+        overrides: overrides,
+        child: MaterialApp(
+          theme: AppTheme.light(),
+          locale: kTestLocale,
+          localizationsDelegates: kTestLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: MachineCardView(card: aCard())),
+        ),
+      ));
+      await tester.pumpAndSettle();
+    }
+
+    final cleared = SafetyContext(
+      screening: screen({for (final q in ParQQuestion.values) q: false}),
+    );
+
+    testWidgets('a user with nothing to screen against still sees the list',
+        (tester) async {
+      // The feature must survive its own safety fix: withholding from
+      // everybody would delete it rather than make it safe.
+      await pumpCard(tester, overrides: [
+        safetyContextProvider.overrideWith((_) async => cleared),
+      ]);
+
+      expect(find.text('Belt squats'), findsOneWidget);
+      expect(find.byKey(const Key('machine-card.uses-withheld')), findsNothing);
+    });
+
+    testWidgets('an injured user gets the reason, not the movements',
+        (tester) async {
+      // The finding itself. `uses` is free text with no contraindication
+      // tags, so nothing screens it -- the same reason `ai::` exercises are
+      // excluded for injured users in equipment_providers.dart:481-482.
+      await pumpCard(tester, overrides: [
+        safetyContextProvider.overrideWith((_) async => SafetyContext(
+              screening: cleared.screening,
+              injuries: const [Injury(bodyPart: 'lower back', type: 'strain')],
+            )),
+      ]);
+
+      expect(find.text('Belt squats'), findsNothing);
+      expect(find.text('Calf raises'), findsNothing);
+      expect(
+          find.byKey(const Key('machine-card.uses-withheld')), findsOneWidget);
+    });
+
+    testWidgets('an ANSWERED whole-person block withholds them too',
+        (tester) async {
+      // Someone the app is refusing to train at all must not be handed a
+      // list of movements to try -- the same error G-A removed from five
+      // other surfaces.
+      await pumpCard(tester, overrides: [
+        safetyContextProvider.overrideWith((_) async => SafetyContext(
+              screening: screen({
+                for (final q in ParQQuestion.values)
+                  q: q == ParQQuestion.chestPain,
+              }),
+            )),
+      ]);
+
+      expect(find.text('Belt squats'), findsNothing);
+      expect(
+          find.byKey(const Key('machine-card.uses-withheld')), findsOneWidget);
+    });
+
+    testWidgets('an UNANSWERED screen does not withhold them', (tester) async {
+      // `screen()` is fail-closed, so an un-onboarded user is "blocked" for
+      // having answered nothing at all. Gating on that would withhold from
+      // most people who ever open the scanner and delete the feature rather
+      // than make it safe -- the same failure mode as requiring a catalogue
+      // match. Nothing has been told to us, so there is nothing to screen
+      // against, and SafetyDisclosure is what states that honestly.
+      await pumpCard(tester, overrides: [
+        safetyContextProvider
+            .overrideWith((_) async => SafetyContext(screening: kUnscreened)),
+      ]);
+
+      expect(find.text('Belt squats'), findsOneWidget);
+      expect(find.byKey(const Key('machine-card.uses-withheld')), findsNothing);
+    });
+
+    testWidgets('a movement restriction withholds them too', (tester) async {
+      // A restriction is exactly a statement about which movements are
+      // unsafe, and this list is movements. Nothing here can honour it.
+      await pumpCard(tester, overrides: [
+        safetyContextProvider.overrideWith((_) async => SafetyContext(
+              screening: cleared.screening,
+              health: const HealthFlags(
+                restrictions: {MovementRestriction.overhead},
+              ),
+            )),
+      ]);
+
+      expect(find.text('Belt squats'), findsNothing);
+      expect(
+          find.byKey(const Key('machine-card.uses-withheld')), findsOneWidget);
+    });
+
+    testWidgets('the card still names the machine and says what it is',
+        (tester) async {
+      // Withholding the movements must not withhold the answer. The user
+      // photographed a real machine and is owed what it is.
+      await pumpCard(tester, overrides: [
+        safetyContextProvider.overrideWith((_) async => SafetyContext(
+              screening: cleared.screening,
+              injuries: const [Injury(bodyPart: 'lower back', type: 'strain')],
+            )),
+      ]);
+
+      expect(find.text('Belt Squat Machine'), findsOneWidget);
+      expect(find.textContaining('hip-belt loaded squat machine'),
+          findsOneWidget);
     });
   });
 }

@@ -1655,6 +1655,10 @@
   "machineCardSeenTimes": "{count, plural, one{scanned once} other{scanned {count} times}}",
   "machineCardRemove": "Remove from my machines",
   "machineCardSectionTitle": "Being prepared",
+  "machineCardUsesWithheld": "This machine is not in our catalog, so we cannot check what it is used for against your health answers. Ask someone at your gym before trying it.",
+  "@machineCardUsesWithheld": {
+    "description": "Replaces the 'What you can do on it' list on a scanned machine card, for a user whose profile carries injuries or a whole-person training block. The list is free text from the model with no contraindication tags, so nothing can screen it -- the same reason ai:: exercises are excluded for injured users in equipment_providers.dart."
+  },
   "@machineCardSeenTimes": {
     "placeholders": {
       "count": {
