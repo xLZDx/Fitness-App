@@ -185,6 +185,22 @@ int _tierRank(FitnessTier t) {
 /// Stable-sorts so exercises closest to [tier] come first. Beginners see
 /// beginner → intermediate → advanced; advanced users see the inverse so
 /// challenging work surfaces first.
+///
+/// ## Stable, now that it says so (F024)
+///
+/// `List.sort` is NOT stable — measured, not assumed: an all-equal comparator
+/// moves four elements at n=40 and a two-key one reorders ties at every size.
+/// This comparator returns 0 for two exercises of the same difficulty, and
+/// ties are the ordinary case rather than an edge one: a beginner's list is
+/// mostly beginner exercises. So the order among equally-suitable exercises
+/// was whatever the sort left behind and could differ between two builds of
+/// the same list, which is what the doc above already promised it would not.
+///
+/// Fixed by carrying the input index and using it as the final tie-break,
+/// rather than by inventing a secondary ranking (title, id, duration). There
+/// is no product reason to prefer one equally-suitable exercise over another,
+/// and a made-up rule would be a personalisation decision smuggled in as a
+/// bug fix. Input order is what the caller already chose.
 List<ExerciseItem> sortByTierFit(
   Iterable<ExerciseItem> exercises,
   FitnessTier? tier,
@@ -192,21 +208,28 @@ List<ExerciseItem> sortByTierFit(
   final list = exercises.toList();
   if (tier == null) return list;
   final target = _tierRank(tier);
-  list.sort((a, b) {
-    final da = (_difficultyRank(a.difficulty) - target).abs();
-    final db = (_difficultyRank(b.difficulty) - target).abs();
+  final indexed = [
+    for (var i = 0; i < list.length; i++) (index: i, item: list[i]),
+  ];
+  indexed.sort((a, b) {
+    final da = (_difficultyRank(a.item.difficulty) - target).abs();
+    final db = (_difficultyRank(b.item.difficulty) - target).abs();
     if (da != db) return da.compareTo(db);
     // Within the same distance, prefer the easier one for beginners and
     // the harder one for advanced users.
     if (target == 0) {
-      return _difficultyRank(a.difficulty).compareTo(_difficultyRank(b.difficulty));
+      final byEase = _difficultyRank(a.item.difficulty)
+          .compareTo(_difficultyRank(b.item.difficulty));
+      if (byEase != 0) return byEase;
     }
     if (target == 2) {
-      return _difficultyRank(b.difficulty).compareTo(_difficultyRank(a.difficulty));
+      final byChallenge = _difficultyRank(b.item.difficulty)
+          .compareTo(_difficultyRank(a.item.difficulty));
+      if (byChallenge != 0) return byChallenge;
     }
-    return 0;
+    return a.index.compareTo(b.index);
   });
-  return list;
+  return [for (final e in indexed) e.item];
 }
 
 /// Only the exercises the app can demonstrate with a moving picture.

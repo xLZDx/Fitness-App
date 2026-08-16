@@ -12816,3 +12816,30 @@ would have produced a COMPILE error, which proves less), fails both tests with t
 ### Status
 
 F009 FIXED, mutation-proven at both sites, wider than the finding as recorded. Not pushed.
+
+## 2026-08-17 — Tier 6, F024: the recommendation order stops being arbitrary
+
+**Decision.** Make `sortByTierFit` actually stable, by carrying the input index as the final
+tie-break.
+
+Its doc already said "stable-sorts". `List.sort` is not stable, and this was measured rather than
+assumed before acting on it: an all-equal comparator moves four elements at n=40 and stays wrong at
+every larger size, and a two-key comparator reorders ties at n=100 and n=1000. The comparator here
+returns 0 for two exercises of the same difficulty, and that is the ORDINARY case — a beginner's
+list is mostly beginner exercises — so the order among equally-suitable exercises was whatever the
+sort left behind and could differ between two builds of the same list.
+
+**Not a made-up secondary ranking.** Title, id or duration would each have produced a stable order
+too, and each would have been a personalisation decision smuggled in as a bug fix. There is no
+product reason to prefer one equally-suitable exercise over another; input order is what the caller
+already chose, and it is what the doc promised.
+
+**Non-vacuity, and a vacuous first attempt.** The first version of these tests PASSED against the
+unfixed code. The cause was mine: a Python escaping slip wrote `'e\$i'` into the Dart source, so all
+60 fixture rows shared one id and the assertion compared identical strings. Corrected, both cases
+fail against HEAD and pass after the change — one on a uniform list, one on a mixed list where the
+distance ranking is still doing real work and only the ties fall through.
+
+### Status
+
+F024 FIXED, mutation-proven. Not pushed.

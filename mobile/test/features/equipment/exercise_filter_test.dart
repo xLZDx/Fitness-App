@@ -121,6 +121,43 @@ void main() {
       final out = sortByTierFit([advanced, beginner, intermediate], null);
       expect(out.map((e) => e.id), ['a', 'b', 'i']);
     });
+
+    /// F024 — the doc says "stable-sorts" and `List.sort` is not stable.
+    ///
+    /// Ties are the common case, not the edge: the comparator returns 0 for
+    /// two exercises of the SAME difficulty, and a beginner's list is mostly
+    /// beginner exercises. So the order the user sees among equally-suitable
+    /// exercises was whatever the sort happened to leave behind, and it could
+    /// differ between two builds of the same list.
+    ///
+    /// Small lists hide it — Dart's sort is insertion-based below a threshold
+    /// and incidentally stable there — which is why this uses a realistic
+    /// number of rows rather than three.
+    test('F024: equally-suitable exercises keep the order they came in', () {
+      final input = [
+        for (var i = 0; i < 60; i++)
+          _ex(id: 'e$i', difficulty: ExerciseDifficulty.beginner),
+      ];
+      final out = sortByTierFit(input, FitnessTier.beginner);
+      expect(out.map((e) => e.id).toList(), input.map((e) => e.id).toList());
+    });
+
+    test('F024: a tie inside a mixed list is broken by input order too', () {
+      // The same property where the comparator is actually doing work: the
+      // distance ranking still decides, and only the ties fall back to input
+      // order.
+      final input = [
+        for (var i = 0; i < 30; i++) ...[
+          _ex(id: 'a$i', difficulty: ExerciseDifficulty.advanced),
+          _ex(id: 'b$i', difficulty: ExerciseDifficulty.beginner),
+        ],
+      ];
+      final out = sortByTierFit(input, FitnessTier.beginner);
+      expect(out.take(30).map((e) => e.id).toList(),
+          [for (var i = 0; i < 30; i++) 'b$i']);
+      expect(out.skip(30).map((e) => e.id).toList(),
+          [for (var i = 0; i < 30; i++) 'a$i']);
+    });
   });
 
   group('recommended (full pipeline)', () {
