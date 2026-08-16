@@ -12142,3 +12142,37 @@ G-A remaining: F018, F019, F020's render-site half, F002's copy half.
 G-A in progress, two of six items landed. Not pushed.
 
 Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).
+
+## 2026-08-16 — F018: the false safety claim was never reachable, and is corrected anyway
+
+G-A/A3, root cause RC3. Before touching anything, traced `StepHealth`'s only call site
+(`step_body.dart:180`) and found it passes `showTitle: false` — the one place in the whole tree that
+renders this widget. `showTitle` defaults to `true` on the constructor, and the `onboardingWeUseThisToKeepYour`
+subtitle only renders when `showTitle` is true. **The false claim the first audit cited was never
+actually visible in the shipped app.** This corrects the audit record rather than silently agreeing
+with it: the claim was real content, but not a reachable defect the way it was described.
+
+Fixed the string anyway, and it was worth doing: `showTitle: true` is the default, so any future call
+site that does not explicitly override it would ship the false claim un-reviewed, and the underlying
+falsehood is real regardless of current visibility — `plan_builder.dart`'s own comment already
+documents, after a prior bug, that `HealthHistory.conditions` "reaches no filter at all" and that
+claiming otherwise "told a user with diabetes and hypertension that both had been screened for, which
+is the one direction a safety claim must never be wrong in." Same is true of `allergies` and
+`medications` — grepped for consumers outside their own model/step files; the only other reads are an
+onboarding-completion presence check and an explicit doc comment saying par_q.dart never reads them.
+
+New copy (EN+RU) states the true purpose: reference only, not read or acted on, the separate screening
+questions are what shapes the plan. Did not wire these fields into any filter to "use" them instead —
+the master plan is explicit that inventing a data consumer to avoid a copy fix is the wrong direction,
+and G-A's mandate here is disclosure/copy, not new safety logic.
+
+Regression-tested with the same mutation method: new widget test fails against the pre-fix string
+(finds "keep your plan safe"), passes with the fix restored. `flutter analyze` clean.
+
+G-A remaining: F019 (render `safetyFilterCoverage`), F020's render-site half, F002's copy half.
+
+### Status
+
+G-A in progress, three of six items landed. Not pushed.
+
+Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).
