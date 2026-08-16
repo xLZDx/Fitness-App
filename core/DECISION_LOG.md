@@ -11937,3 +11937,81 @@ all pre-existing.
 Both of today's wrong claims had the same shape: a filter that holds on the path I was looking at,
 asserted as a property of the system. B1's was recorded backwards in the scope; this one I wrote
 myself, in the same commit that fixed a test for asserting more than its fixture could support.
+
+## 2026-08-16 — Full forensic audit: three blockers, and a filter that fails open
+
+**Basis: FACT for every finding below; each was re-opened against source before entering the verdict.**
+
+A complete product audit was run against `f965302` and persisted to
+`core/audits/FULL_PROJECT_AUDIT_2026-08-16/` — 31 artefacts, 27 findings: 3 BLOCKER, 3 CRITICAL,
+7 HIGH, 10 MEDIUM, 1 LOW, 3 INFO. **Verdict: NOT_RELEASE_READY.** No source file was changed.
+
+### The finding that outranks everything else
+
+`exercise_filter.dart:38` — `if (exercise.contraindications.isEmpty) return false;`. An exercise
+carrying no contraindication tags is declared not contraindicated and served. `eligibility.dart:282`
+fails the same way: the movement-restriction loop iterates `exercise.contraindications`, so an empty
+list means no restriction can ever match.
+
+Measured against the shipped asset: **360 of 1,887 rows carry no tag.** 19.1% of the catalogue cannot
+be withheld from anyone, by any injury or restriction, on any surface — while the interface says the
+list was screened. The intent is written down at `exercise_filter.dart:67-68`, so this is a default
+rather than an oversight. It is still the wrong direction for a safety filter, and the standing
+instruction on this project is that safety-related ambiguity fails closed.
+
+Two things compound it. `safetyFilterCoverage` — the one string that would show the user how little
+is tagged — is authored, translated into both locales, computed by a live provider, and **rendered
+nowhere**. And `SafetyDisclosure` renders on exactly one screen, while `ExerciseCautionCard`, the
+per-item badge its own doc comment argues implies false clearance, ships on two others.
+
+### The other two blockers
+
+**No pregnancy path exists anywhere.** Seven PAR-Q+ questions, nine movement restrictions, and the
+catalogue tag vocabulary contain nothing about it; two tests use "pregnancy" specifically as an
+*invalid* value. `cycle_phase.dart:56-64` records a deliberate decision not to hold a pregnancy
+status — defensible, and worth keeping. But declining to store it is not declining to generate a
+plan, and today a pregnant user is asked nothing and receives a full programme including loaded
+spinal flexion.
+
+**The questionnaire-built programme skips the whole-person gate and is an alphabetical filler.**
+`programme_providers.dart:199-206` calls `buildProgrammeSchedule`, which has no `SafetyContext`
+parameter at all, so a user PAR-Q+ refused can enrol and get 24 sessions. `_fillDay` then walks
+consecutive indices of an id-sorted pool; every row is 10 minutes, so a 45-minute session is four
+alphabetically adjacent rows — day 0 is two yoga poses, a sit-up and a jump, for any goal.
+`programme_builder.dart:5-16` documents this defect as fixed. It is fixed for the four templates that
+have a spec; the fix never reached the default path.
+
+**Two reviewers with non-overlapping briefs found the bypass independently.** That is the strongest
+signal in the audit and the reason it is stated as fact rather than as a lead.
+
+### What the audit found well built, and said so
+
+No health data reaches any model — all three prompt builders carry subject name, language and image
+bytes only, and the refusal is reasoned and told to the user. The person-level PAR-Q+ gate is
+fail-closed and names the question responsible. The dangerous cycle logic was already removed by this
+project before the audit arrived. CI genuinely tests Firestore rules on an emulator and runs an
+account-deletion e2e, with no `continue-on-error` anywhere.
+
+And `equipment_v1.tflite` is real: trained 2026-07-29, per-class metrics, and a data leak the pipeline
+caught and fixed. `FINAL_SCOPE` P5 calls it "not trained and not bundled" — **CONTRADICTED**, and the
+real gap is narrower: 10 label classes against 69 registry machines.
+
+### The audit corrected itself twice, on record
+
+A file-count measure reported 15 dead providers; counting occurrences gives 7 —
+`aiCoachServiceProvider` is consumed four lines below its own declaration. And `heightCm` /
+`weightCurrentKg` were first classed as reaching no engine; they reach `body_comp` and
+`form_check/pose_silhouette`. Both are in `31_CONTRADICTIONS.md` rather than quietly fixed, because a
+grep treated as a fact is exactly what this audit exists to catch elsewhere.
+
+### What it could not do
+
+`32_UNVERIFIED_CLAIMS.md` lists 17 areas needing a device, a clinician or a live project — including
+the largest one: whether each of 2,539 clips depicts the exercise attached to it. Nine of the
+mandate's 38 artefacts were deliberately not written, each because writing it would have meant
+presenting unread territory as audited; `README.md` names all nine and why.
+
+### Status
+
+Audit only. The remediation plan is written and **not started** — it awaits an explicit
+`REMEDIATION-GO`.

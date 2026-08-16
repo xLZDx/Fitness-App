@@ -1,0 +1,197 @@
+provider,type,declared_in,line,autoDispose,family,lib_reference_files,referenced_in_tests,status
+_allExercisesProvider,FutureProvider<List<ExerciseItem>>,mobile/lib/features/equipment/state/equipment_providers.dart,191,False,False,1,True,OK
+_exercisesForEquipmentProvider,"FutureProvider.family<List<ExerciseItem>, String>",mobile/lib/features/equipment/state/equipment_providers.dart,79,False,True,1,True,OK
+_filteredExercisesProvider,"FutureProvider.family<List<ExerciseItem>, WorkoutsFilter>",mobile/lib/features/workouts/workouts_page.dart,152,False,True,1,False,NO_CONSUMER
+_legacyContainer,ProviderContainer,mobile/lib/core/router/app_router.dart,409,False,False,1,False,NO_CONSUMER
+_loggedEntryProvider,StateProvider.autoDispose.family<WorkoutSession,mobile/lib/features/equipment/workout_player_page.dart,59,True,True,1,True,OK
+accountDeletionActionProvider,"NotifierProvider<AccountDeletionAction, AsyncValue<void>>",mobile/lib/features/account_deletion/state/account_deletion_providers.dart,110,False,False,2,True,OK
+accountDeletionServiceProvider,Provider<AccountDeletionService>,mobile/lib/features/account_deletion/state/account_deletion_providers.dart,8,False,False,2,True,OK
+activeClassifiersProvider,Provider<List<FormClassifier>>,mobile/lib/features/form_check/state/form_check_providers.dart,443,False,False,1,True,OK
+activeProgrammeProgressProvider,Provider<ProgrammeProgress,mobile/lib/features/programmes/state/programme_providers.dart,55,False,False,3,True,OK
+activeProgrammeProvider,Provider<Programme,mobile/lib/features/programmes/state/programme_providers.dart,43,False,False,5,True,OK
+aiCoachAdviceProvider,"FutureProvider.autoDispose.family<String, AiCoachContext>",mobile/lib/features/ai_coach/ai_coach_service.dart,53,True,True,3,True,OK
+aiCoachServiceProvider,Provider<AiCoachService>,mobile/lib/features/ai_coach/ai_coach_service.dart,47,False,False,1,False,NO_CONSUMER
+aiExerciseGeneratorProvider,Provider<AiExerciseGenerator>,mobile/lib/features/equipment/state/equipment_providers.dart,91,False,False,1,True,OK
+allowTierOverrideProvider,Provider<bool>,mobile/lib/features/subscription/state/subscription_providers.dart,138,False,False,1,True,OK
+appRouterProvider,Provider<GoRouter>,mobile/lib/core/router/app_router.dart,218,False,False,2,True,OK
+approvedSubmissionsProvider,FutureProvider<List<CommunityVideo>>,mobile/lib/features/catalog/state/catalog_providers.dart,18,False,False,2,False,OK
+authActionProvider,"NotifierProvider<AuthAction, AsyncValue<void>>",mobile/lib/features/auth/state/auth_providers.dart,22,False,False,4,True,OK
+authRepositoryProvider,Provider<AuthRepository>,mobile/lib/features/auth/state/auth_providers.dart,9,False,False,4,True,OK
+authUserProvider,StreamProvider<AuthUser,mobile/lib/features/auth/state/auth_providers.dart,16,False,False,28,True,OK
+avatarCannotPlaceBodyProvider,Provider<bool>,mobile/lib/features/form_check/state/form_check_providers.dart,410,False,False,2,True,OK
+avatarFigureProvider,Provider<SilhouetteFigure,mobile/lib/features/form_check/state/form_check_providers.dart,391,False,False,2,False,OK
+avatarModeProvider,StateProvider<bool>,mobile/lib/features/form_check/state/form_check_providers.dart,317,False,False,2,True,OK
+backupCreateActionProvider,"NotifierProvider<BackupCreateAction, AsyncValue<void>>",mobile/lib/features/data_export/backup_providers.dart,83,False,False,2,False,OK
+backupRestoreActionProvider,"NotifierProvider<BackupRestoreAction, AsyncValue<void>>",mobile/lib/features/data_export/backup_providers.dart,126,False,False,2,True,OK
+cameraPermissionGateProvider,Provider<CameraPermissionGate>,mobile/lib/features/visual_equipment/state/live_equipment_providers.dart,12,False,False,2,True,OK
+catalogSafetyCoverageProvider,FutureProvider<CatalogSafetyCoverage>,mobile/lib/features/equipment/state/safety_coverage_providers.dart,83,False,False,1,True,OK
+celebrityPlanRepositoryProvider,Provider<CelebrityPlanRepository>,mobile/lib/features/celebrity_plans/state/celebrity_plan_providers.dart,6,False,False,1,False,NO_CONSUMER
+celebrityPlansProvider,FutureProvider<List<CelebrityPlan>>,mobile/lib/features/celebrity_plans/state/celebrity_plan_providers.dart,9,False,False,2,False,OK
+clipUrlResolverProvider,Provider<ClipUrlResolver>,mobile/lib/features/equipment/state/equipment_providers.dart,513,False,False,3,True,OK
+coachBackdropProvider,"NotifierProvider<CoachBackdropController, String>",mobile/lib/features/form_check/state/form_check_providers.dart,374,False,False,2,True,OK
+coachBackdropRandomProvider,Provider<math.Random>,mobile/lib/features/form_check/state/form_check_providers.dart,346,False,False,1,True,OK
+coachInitialPhaseProvider,Provider<CoachPhase>,mobile/lib/features/form_check/state/coach_phase_providers.dart,95,False,False,1,True,OK
+coachIsInstructingProvider,Provider<bool>,mobile/lib/features/form_check/state/form_check_providers.dart,425,False,False,2,False,OK
+coachListingRepositoryProvider,Provider<CoachListingRepository>,mobile/lib/features/marketplace/state/marketplace_providers.dart,63,False,False,2,True,OK
+coachListingsProvider,FutureProvider<List<CoachListing>>,mobile/lib/features/marketplace/state/marketplace_providers.dart,77,False,False,2,False,OK
+coachMarketplaceServiceProvider,Provider<CoachMarketplaceService>,mobile/lib/features/marketplace/state/marketplace_providers.dart,82,False,False,3,True,OK
+coachPhaseControllerProvider,"NotifierProvider<CoachPhaseController, CoachSessionState>",mobile/lib/features/form_check/state/coach_phase_providers.dart,97,False,False,4,True,OK
+coachSessionProvider,Provider<CoachSessionState>,mobile/lib/features/form_check/state/coach_phase_providers.dart,121,False,False,4,True,OK
+communityVideoRepositoryProvider,Provider<CommunityVideoRepository>,mobile/lib/features/catalog/state/catalog_providers.dart,6,False,False,3,False,OK
+cuePlayerProvider,Provider<CuePlayer>,mobile/lib/features/workouts/state/set_timer_providers.dart,14,False,False,1,True,OK
+currentProfileProvider,StreamProvider<UserProfile,mobile/lib/features/profile/state/profile_providers.dart,31,False,False,15,True,OK
+currentSubscriptionProvider,StreamProvider<Subscription,mobile/lib/features/subscription/state/subscription_providers.dart,44,False,False,6,True,OK
+dataExportActionProvider,"NotifierProvider<DataExportAction, AsyncValue<void>>",mobile/lib/features/data_export/data_export_providers.dart,140,False,False,2,True,OK
+dataExportSinkProvider,Provider<DataExportSink>,mobile/lib/features/data_export/data_export_sink.dart,74,False,False,4,True,OK
+defaultComparePairProvider,Provider<ComparePair,mobile/lib/features/progress_photos/state/progress_photos_providers.dart,222,False,False,2,False,OK
+deloadActionProvider,"NotifierProvider<DeloadAction, AsyncValue<void>>",mobile/lib/features/recovery/state/recovery_providers.dart,36,False,False,2,True,OK
+deloadVerdictProvider,Provider<DeloadVerdict>,mobile/lib/features/recovery/state/recovery_providers.dart,12,False,False,4,False,OK
+deviceLocalesProvider,StateProvider<List<Locale>>,mobile/lib/core/settings/state/settings_providers.dart,79,False,False,2,True,OK
+donorWallProvider,StreamProvider<List<DonorWallEntry>>,mobile/lib/features/donor_wall/state/donor_wall_providers.dart,13,False,False,2,False,OK
+donorWallRepositoryProvider,Provider<DonorWallRepository>,mobile/lib/features/donor_wall/state/donor_wall_providers.dart,6,False,False,2,False,OK
+draftSafetyVerdictProvider,Provider<SafetyVerdict>,mobile/lib/features/safety/state/safety_providers.dart,31,False,False,2,False,OK
+effectiveLanguageCodeProvider,Provider<String>,mobile/lib/core/settings/state/settings_providers.dart,89,False,False,9,True,OK
+effectiveTierProvider,Provider<SubscriptionTier>,mobile/lib/features/subscription/state/subscription_providers.dart,140,False,False,11,True,OK
+entitlementResolvedProvider,Provider<bool>,mobile/lib/features/subscription/state/subscription_providers.dart,99,False,False,7,True,OK
+entitlementStatusProvider,Provider<EntitlementStatus>,mobile/lib/features/subscription/state/subscription_providers.dart,75,False,False,4,True,OK
+equipmentByIdProvider,FutureProvider.family<EquipmentItem,mobile/lib/features/equipment/state/equipment_providers.dart,167,False,True,3,True,OK
+equipmentHeroImageProvider,FutureProvider.family<String,mobile/lib/features/equipment/state/equipment_providers.dart,234,False,True,2,True,OK
+equipmentListProvider,FutureProvider<List<EquipmentItem>>,mobile/lib/features/equipment/state/equipment_providers.dart,42,False,False,4,True,OK
+equipmentReportServiceProvider,Provider<EquipmentReportService>,mobile/lib/features/equipment/state/equipment_providers.dart,36,False,False,3,False,OK
+equipmentRepositoryProvider,Provider<EquipmentRepository>,mobile/lib/features/equipment/state/equipment_providers.dart,27,False,False,7,True,OK
+exerciseResolutionProvider,"FutureProvider.family<ExerciseResolution, String>",mobile/lib/features/equipment/state/equipment_providers.dart,444,False,True,5,True,OK
+exerciseTitlesProvider,"Provider<Map<String, String>>",mobile/lib/features/equipment/state/equipment_providers.dart,330,False,False,5,False,OK
+exercisesForEquipmentWithAiFallbackProvider,"FutureProvider.family<List<ExerciseItem>, String>",mobile/lib/features/equipment/state/equipment_providers.dart,139,False,True,1,True,OK
+featureAccessProvider,"Provider.family<bool, AppFeature>",mobile/lib/features/subscription/state/subscription_providers.dart,168,False,True,1,True,OK
+fitnessProfileProvider,FutureProvider<FitnessProfile>,mobile/lib/features/personalisation/state/personalisation_providers.dart,12,False,False,2,True,OK
+forYouExercisesProvider,FutureProvider<List<ExerciseItem>>,mobile/lib/features/equipment/state/equipment_providers.dart,367,False,False,3,True,OK
+formFeedbackControllerProvider,"NotifierProvider<FormFeedbackController, FormFeedback",mobile/lib/features/form_check/state/form_check_providers.dart,619,False,False,2,True,OK
+generatedExerciseRepositoryProvider,Provider<GeneratedExerciseRepository>,mobile/lib/features/equipment/state/equipment_providers.dart,88,False,False,2,True,OK
+generatedPlanProvider,FutureProvider<PlanOutcome,mobile/lib/features/ai_planner/state/ai_planner_providers.dart,23,False,False,5,False,OK
+hasShownProvider,"FutureProvider.family<bool, MomentId>",mobile/lib/features/moments/state/moment_providers.dart,44,False,True,1,False,NO_CONSUMER
+healthAuthActionProvider,"NotifierProvider<HealthAuthAction, AsyncValue<HealthAuthStatus>>",mobile/lib/core/health/state/health_providers.dart,66,False,False,2,False,OK
+healthAuthErrorProvider,StateProvider<String,mobile/lib/core/health/state/health_providers.dart,19,False,False,2,False,OK
+healthAuthStatusProvider,FutureProvider<HealthAuthStatus>,mobile/lib/core/health/state/health_providers.dart,12,False,False,2,False,OK
+healthServiceProvider,Provider<HealthService>,mobile/lib/core/health/state/health_providers.dart,6,False,False,3,True,OK
+healthSetupRequiredProvider,FutureProvider<bool>,mobile/lib/core/health/state/health_providers.dart,24,False,False,2,False,OK
+initialSettingsProvider,Provider<AppSettings>,mobile/lib/core/settings/state/settings_providers.dart,23,False,False,2,True,OK
+injuryFilterUsesProvider,FutureProvider<int>,mobile/lib/features/moments/state/moment_providers.dart,40,False,False,1,False,NO_CONSUMER
+injuryFilteringIsRealProvider,Provider<bool>,mobile/lib/features/equipment/state/safety_coverage_providers.dart,161,False,False,3,True,OK
+isOnboardedProvider,Provider<bool>,mobile/lib/features/profile/state/profile_providers.dart,75,False,False,1,True,OK
+last7DaysHealthProvider,FutureProvider<List<HealthSnapshot>>,mobile/lib/core/health/state/health_providers.dart,32,False,False,1,False,NO_CONSUMER
+lastMachineCardProvider,"NotifierProvider<LastMachineCardController, MachineCard",mobile/lib/features/visual_equipment/state/machine_card_providers.dart,44,False,False,3,True,OK
+latestPoseFrameProvider,StateProvider<PoseFrame,mobile/lib/features/form_check/state/form_check_providers.dart,275,False,False,3,True,OK
+launchCountProvider,FutureProvider<int>,mobile/lib/features/moments/state/moment_providers.dart,36,False,False,1,False,NO_CONSUMER
+liveEquipmentServiceProvider,Provider<LiveEquipmentService>,mobile/lib/features/visual_equipment/state/live_equipment_providers.dart,28,False,False,2,True,OK
+liveModeEnabledProvider,StateProvider<bool>,mobile/lib/features/visual_equipment/state/live_equipment_providers.dart,41,False,False,2,True,OK
+liveRecognitionProvider,StreamProvider.autoDispose<LiveRecognition,mobile/lib/features/visual_equipment/state/live_equipment_providers.dart,48,True,False,2,True,OK
+localDataWipeProvider,Provider<LocalDataWipe>,mobile/lib/features/account_deletion/state/account_deletion_providers.dart,13,False,False,2,True,OK
+localSensitiveStoreProvider,Provider<LocalSensitiveStore>,mobile/lib/features/profile/state/profile_providers.dart,27,False,False,3,True,OK
+logSessionActionProvider,"NotifierProvider<LogSessionAction, AsyncValue<void>>",mobile/lib/features/workouts/state/workout_session_providers.dart,74,False,False,2,False,OK
+logWorkoutActionProvider,"NotifierProvider<LogWorkoutAction, AsyncValue<void>>",mobile/lib/features/workouts/state/workout_log_providers.dart,48,False,False,1,True,OK
+machineCardRepositoryProvider,Provider<MachineCardRepository>,mobile/lib/features/visual_equipment/state/machine_card_providers.dart,15,False,False,4,True,OK
+machineCardsProvider,StreamProvider<List<MachineCard>>,mobile/lib/features/visual_equipment/state/machine_card_providers.dart,26,False,False,2,False,OK
+machineDescriberProvider,Provider<MachineDescriber>,mobile/lib/features/visual_equipment/state/machine_card_providers.dart,9,False,False,3,True,OK
+machineTextRecogniserProvider,Provider<MachineTextRecogniser,mobile/lib/features/visual_equipment/state/visual_equipment_providers.dart,24,False,False,2,True,OK
+marketplaceListingsAreDemoProvider,Provider<bool>,mobile/lib/features/marketplace/state/marketplace_providers.dart,73,False,False,3,False,OK
+missingBodyAnswersProvider,Provider<Set<BodyAnswer>>,mobile/lib/features/form_check/state/form_check_providers.dart,217,False,False,2,True,OK
+momentControllerProvider,"StateNotifierProvider<MomentController, AsyncValue<void>>",mobile/lib/features/moments/state/moment_providers.dart,31,False,False,1,False,NO_CONSUMER
+momentRepositoryProvider,Provider<MomentRepository>,mobile/lib/features/moments/state/moment_providers.dart,6,False,False,3,False,OK
+muscleRecoveryProvider,Provider<List<MuscleRecovery>>,mobile/lib/features/home/state/home_dashboard_providers.dart,26,False,False,2,False,OK
+notificationServiceProvider,Provider<NotificationService>,mobile/lib/core/notifications/notification_providers.dart,9,False,False,6,True,OK
+offlinePrefetchActionProvider,"NotifierProvider<OfflinePrefetchAction, AsyncValue<void>>",mobile/lib/features/workouts/state/offline_video_providers.dart,152,False,False,2,True,OK
+offlineVideoCacheProvider,Provider<OfflineVideoCache>,mobile/lib/features/workouts/state/offline_video_providers.dart,12,False,False,3,True,OK
+onboardingPlanPreviewProvider,FutureProvider.autoDispose<PlanOutcome>,mobile/lib/features/onboarding/state/plan_preview_provider.dart,27,True,False,3,True,OK
+pendingSubmissionsProvider,FutureProvider<List<CommunityVideo>>,mobile/lib/features/catalog/state/catalog_providers.dart,11,False,False,2,False,OK
+photoBytesProvider,FutureProvider.autoDispose,mobile/lib/features/progress_photos/state/progress_photos_providers.dart,241,True,False,4,False,OK
+photoConsentStoreProvider,FutureProvider<PhotoConsentStore>,mobile/lib/features/progress_photos/state/progress_photos_providers.dart,163,False,False,2,True,OK
+photoMonthsProvider,Provider<List<PhotoMonth>>,mobile/lib/features/progress_photos/state/progress_photos_providers.dart,216,False,False,1,False,NO_CONSUMER
+planProgressProvider,Provider<PlanProgress>,mobile/lib/features/home/state/home_dashboard_providers.dart,52,False,False,2,False,OK
+poseDebugOverlayProvider,Provider<bool>,mobile/lib/features/form_check/state/form_check_providers.dart,532,False,False,2,True,OK
+poseDemoProvider,Provider<,mobile/lib/features/form_check/state/form_check_providers.dart,265,False,False,2,False,OK
+poseDetectorServiceProvider,Provider<PoseDetectorService>,mobile/lib/features/form_check/state/form_check_providers.dart,466,False,False,6,True,OK
+poseErrorProvider,StateProvider<String,mobile/lib/features/form_check/state/form_check_providers.dart,478,False,False,3,True,OK
+poseGateConfigProvider,Provider<PoseGateConfig>,mobile/lib/features/form_check/state/form_check_providers.dart,509,False,False,1,False,NO_CONSUMER
+poseGateVerdictProvider,StateProvider<PoseGateVerdict>,mobile/lib/features/form_check/state/form_check_providers.dart,522,False,False,5,True,OK
+poseMatchProvider,StateProvider<double,mobile/lib/features/form_check/state/form_check_providers.dart,432,False,False,2,True,OK
+poseTargetProvider,Provider<PoseTarget,mobile/lib/features/form_check/state/form_check_providers.dart,248,False,False,3,True,OK
+poseUnitReportProvider,StateProvider<PoseUnitReport>,mobile/lib/features/form_check/state/form_check_providers.dart,542,False,False,2,True,OK
+postureCaptureDurationProvider,Provider<Duration>,mobile/lib/features/posture/state/posture_providers.dart,23,False,False,2,True,OK
+postureSessionControllerProvider,"NotifierProvider<PostureSessionController, PostureSessionState>",mobile/lib/features/posture/state/posture_providers.dart,157,False,False,2,True,OK
+profileRepositoryProvider,Provider<ProfileRepository>,mobile/lib/features/profile/state/profile_providers.dart,14,False,False,6,True,OK
+profileSubmitProvider,"NotifierProvider<ProfileSubmit, AsyncValue<void>>",mobile/lib/features/profile/state/profile_providers.dart,81,False,False,3,True,OK
+programmeActionProvider,"NotifierProvider<ProgrammeAction, AsyncValue<void>>",mobile/lib/features/programmes/state/programme_providers.dart,66,False,False,3,True,OK
+programmeRepositoryProvider,Provider<ProgrammeRepository>,mobile/lib/features/programmes/state/programme_providers.dart,22,False,False,3,True,OK
+programmesProvider,StreamProvider<List<Programme>>,mobile/lib/features/programmes/state/programme_providers.dart,29,False,False,1,True,OK
+progressPhotoCameraProvider,Provider<CameraSession>,mobile/lib/features/progress_photos/state/progress_photos_providers.dart,176,False,False,2,True,OK
+progressPhotosAreDemoProvider,Provider<bool>,mobile/lib/features/progress_photos/state/progress_photos_providers.dart,206,False,False,3,False,OK
+progressPhotosControllerProvider,"NotifierProvider<ProgressPhotosController, AsyncValue<void>>",mobile/lib/features/progress_photos/state/progress_photos_providers.dart,347,False,False,3,True,OK
+progressPhotosProvider,StreamProvider<List<ProgressPhoto>>,mobile/lib/features/progress_photos/state/progress_photos_providers.dart,211,False,False,3,False,OK
+progressPhotosRepositoryProvider,Provider<ProgressPhotosRepository>,mobile/lib/features/progress_photos/state/progress_photos_providers.dart,182,False,False,2,True,OK
+progressPhotosStoreProvider,FutureProvider<PhotoStore,mobile/lib/features/progress_photos/state/progress_photos_providers.dart,137,False,False,1,False,NO_CONSUMER
+questionnaireDraftProvider,"NotifierProvider<QuestionnaireDraft, UserProfile>",mobile/lib/features/onboarding/state/questionnaire_notifier.dart,11,False,False,14,True,OK
+rankedForYouProvider,FutureProvider<List<ExerciseItem>>,mobile/lib/features/personalisation/state/personalisation_providers.dart,40,False,False,2,True,OK
+recogniseTimeoutProvider,Provider<Duration>,mobile/lib/features/visual_equipment/state/visual_equipment_providers.dart,37,False,False,1,True,OK
+recognitionHistoryProvider,StreamProvider<List<RecognitionEntry>>,mobile/lib/features/visual_equipment/state/recognition_history_providers.dart,22,False,False,2,True,OK
+recognitionHistoryRepositoryProvider,Provider<RecognitionHistoryRepository>,mobile/lib/features/visual_equipment/state/recognition_history_providers.dart,7,False,False,3,True,OK
+recommendedExercisesProvider,"FutureProvider.family<RecommendedExercises, String>",mobile/lib/features/equipment/state/equipment_providers.dart,286,False,True,2,True,OK
+repSessionControllerProvider,"NotifierProvider<RepSessionController, RepSessionState>",mobile/lib/features/form_check/state/form_check_providers.dart,1140,False,False,2,True,OK
+restClockProvider,Provider<DateTime Function,mobile/lib/features/workouts/state/rest_timer_providers.dart,53,False,False,2,True,OK
+restTimerProvider,"NotifierProvider<RestTimerController, RestTimerState>",mobile/lib/features/workouts/state/rest_timer_providers.dart,209,False,False,3,True,OK
+restTimerVisibleProvider,Provider<bool>,mobile/lib/features/workouts/state/rest_timer_providers.dart,221,False,False,2,True,OK
+safeCatalogProvider,FutureProvider<List<ExerciseItem>>,mobile/lib/features/equipment/state/equipment_providers.dart,350,False,False,9,True,OK
+safetyContextProvider,FutureProvider<SafetyContext>,mobile/lib/features/safety/state/eligibility_providers.dart,27,False,False,6,True,OK
+safetyScreeningLevelProvider,Provider<SafetyScreeningLevel>,mobile/lib/features/equipment/state/safety_coverage_providers.dart,136,False,False,2,True,OK
+safetyVerdictProvider,FutureProvider<SafetyVerdict>,mobile/lib/features/safety/state/safety_providers.dart,17,False,False,2,False,OK
+scanCameraSessionProvider,Provider<CameraSession>,mobile/lib/features/visual_equipment/state/live_equipment_providers.dart,20,False,False,4,True,OK
+scheduleSessionActionProvider,"NotifierProvider<ScheduleSessionAction, AsyncValue<void>>",mobile/lib/features/workouts/state/scheduled_session_providers.dart,62,False,False,2,True,OK
+scheduledSessionRepositoryProvider,Provider<ScheduledSessionRepository>,mobile/lib/features/workouts/state/scheduled_session_providers.dart,16,False,False,5,True,OK
+scheduledSessionsProvider,StreamProvider<List<ScheduledSession>>,mobile/lib/features/workouts/state/scheduled_session_providers.dart,27,False,False,7,True,OK
+screenedUpcomingSessionsProvider,FutureProvider<List<ScreenedSession>>,mobile/lib/features/workouts/state/session_screening_providers.dart,69,False,False,3,True,OK
+screeningProfileProvider,FutureProvider<UserProfile,mobile/lib/features/equipment/state/equipment_providers.dart,68,False,False,6,True,OK
+selectedExerciseProvider,StateProvider<FormExercise>,mobile/lib/features/form_check/state/form_check_providers.dart,230,False,False,2,True,OK
+selectedPeriodProvider,StateProvider<SubscriptionPeriod>,mobile/lib/features/subscription/state/subscription_providers.dart,175,False,False,2,False,OK
+serverExportProvider,Provider<ServerExport>,mobile/lib/features/data_export/data_export_providers.dart,26,False,False,2,False,OK
+sessionReminderReconcilerProvider,Provider<SessionReminderReconciler>,mobile/lib/features/workouts/state/session_screening_providers.dart,143,False,False,2,True,OK
+setCuesMutedProvider,StateProvider<bool>,mobile/lib/features/workouts/state/set_timer_providers.dart,26,False,False,2,True,OK
+setLoadProvider,StateProvider.family<SetCapture,mobile/lib/features/workouts/state/set_timer_providers.dart,42,False,True,3,False,OK
+setPlanProvider,"Provider.family<SetPlan, ExerciseItem",mobile/lib/features/workouts/state/set_timer_providers.dart,87,False,True,2,False,OK
+setTimerProvider,"NotifierProvider<SetTimerController, SetTimerState>",mobile/lib/features/workouts/state/set_timer_providers.dart,238,False,False,2,True,OK
+setVoiceEnabledProvider,StateProvider<bool>,mobile/lib/features/workouts/state/set_timer_providers.dart,29,False,False,2,True,OK
+settingsControllerProvider,"NotifierProvider<SettingsController, AppSettings>",mobile/lib/core/settings/state/settings_providers.dart,64,False,False,7,True,OK
+settingsRepositoryProvider,Provider<SettingsRepository>,mobile/lib/core/settings/state/settings_providers.dart,13,False,False,2,True,OK
+showSkeletonProvider,StateProvider<bool>,mobile/lib/features/form_check/state/form_check_providers.dart,285,False,False,2,True,OK
+silhouetteBuildProvider,Provider<BodyBuild>,mobile/lib/features/form_check/state/form_check_providers.dart,198,False,False,2,True,OK
+socialFeedProvider,StreamProvider<List<SocialPost>>,mobile/lib/features/social_feed/state/social_feed_providers.dart,9,False,False,2,False,OK
+socialFeedRepositoryProvider,Provider<SocialFeedRepository>,mobile/lib/features/social_feed/state/social_feed_providers.dart,6,False,False,2,True,OK
+stripeCheckoutServiceProvider,Provider<StripeCheckoutService>,mobile/lib/features/subscription/state/subscription_providers.dart,29,False,False,2,True,OK
+subscriptionActionProvider,"NotifierProvider<SubscriptionAction, AsyncValue<void>>",mobile/lib/features/subscription/state/subscription_providers.dart,181,False,False,2,True,OK
+subscriptionRepositoryProvider,Provider<SubscriptionRepository>,mobile/lib/features/subscription/state/subscription_providers.dart,18,False,False,2,True,OK
+suggestionsProvider,FutureProvider<List<WorkoutSuggestion>>,mobile/lib/features/home/state/suggestion_providers.dart,13,False,False,2,False,OK
+summaryDayProvider,Provider<DateTime>,mobile/lib/features/workouts/state/day_result_providers.dart,16,False,False,1,False,NO_CONSUMER
+teamFeedIsDemoProvider,Provider<bool>,mobile/lib/features/community/state/team_feed_providers.dart,17,False,False,2,False,OK
+teamFeedProvider,"StreamProvider.family<List<TeamFeedPost>, String>",mobile/lib/features/community/state/team_feed_providers.dart,21,False,True,2,False,OK
+teamFeedRepositoryProvider,Provider<TeamFeedRepository>,mobile/lib/features/community/state/team_feed_providers.dart,6,False,False,2,True,OK
+todayDigestProvider,Provider<SessionDigest>,mobile/lib/features/workouts/state/session_digest_providers.dart,23,False,False,4,True,OK
+todayHealthProvider,FutureProvider<HealthSnapshot,mobile/lib/core/health/state/health_providers.dart,28,False,False,2,False,OK
+todayResultProvider,Provider<DayResult>,mobile/lib/features/workouts/state/day_result_providers.dart,23,False,False,3,False,OK
+unresolvedInjuryCountProvider,Provider<int>,mobile/lib/features/profile/state/profile_providers.dart,59,False,False,2,True,OK
+upcomingSessionsProvider,Provider<List<ScheduledSession>>,mobile/lib/features/workouts/state/scheduled_session_providers.dart,37,False,False,3,True,OK
+visualEquipmentControllerProvider,"NotifierProvider<VisualEquipmentController, AsyncValue<ScanResult>>",mobile/lib/features/visual_equipment/state/visual_equipment_providers.dart,202,False,False,2,True,OK
+visualEquipmentServiceProvider,Provider<VisualEquipmentService>,mobile/lib/features/visual_equipment/state/visual_equipment_providers.dart,16,False,False,2,True,OK
+voiceCoachProvider,Provider<VoiceCoach>,mobile/lib/features/form_check/state/form_check_providers.dart,625,False,False,3,True,OK
+voiceErrorProvider,StateProvider<String,mobile/lib/features/form_check/state/form_check_providers.dart,650,False,False,2,True,OK
+voiceMutedProvider,StateProvider<bool>,mobile/lib/features/form_check/state/form_check_providers.dart,633,False,False,2,False,OK
+watchPairedProvider,FutureProvider<bool>,mobile/lib/core/wear/state/wear_providers.dart,9,False,False,1,False,NO_CONSUMER
+wearIncomingProvider,StreamProvider<WearMessage>,mobile/lib/core/wear/state/wear_providers.dart,13,False,False,1,False,NO_CONSUMER
+wearSyncServiceProvider,Provider<WearSyncService>,mobile/lib/core/wear/state/wear_providers.dart,5,False,False,2,False,OK
+weekStripProvider,Provider<List<WeekDayCell>>,mobile/lib/features/home/state/home_dashboard_providers.dart,38,False,False,2,False,OK
+weekTotalsProvider,Provider<WeekTotals>,mobile/lib/features/home/state/home_dashboard_providers.dart,47,False,False,2,False,OK
+weeklyVolumeDeficitProvider,"FutureProvider<Map<String, double>>",mobile/lib/features/personalisation/state/personalisation_providers.dart,59,False,False,3,False,OK
+workoutLogRepositoryProvider,Provider<WorkoutLogRepository>,mobile/lib/features/workouts/state/workout_log_providers.dart,12,False,False,2,True,OK
+workoutLogsProvider,StreamProvider<List<WorkoutLogEntry>>,mobile/lib/features/workouts/state/workout_log_providers.dart,23,False,False,2,True,OK
+workoutSessionHistoryProvider,Provider<List<WorkoutLogEntry>>,mobile/lib/features/workouts/state/workout_session_providers.dart,58,False,False,8,True,OK
+workoutSessionRepositoryProvider,Provider<WorkoutSessionRepository>,mobile/lib/features/workouts/state/workout_session_providers.dart,13,False,False,3,True,OK
+workoutSessionTotalsProvider,FutureProvider<WorkoutLogTotals>,mobile/lib/features/workouts/state/workout_session_providers.dart,43,False,False,2,False,OK
+workoutSessionsProvider,StreamProvider<List<WorkoutSession>>,mobile/lib/features/workouts/state/workout_session_providers.dart,24,False,False,6,True,OK
+workoutTotalsProvider,FutureProvider<WorkoutLogTotals>,mobile/lib/features/workouts/state/workout_log_providers.dart,40,False,False,2,False,OK

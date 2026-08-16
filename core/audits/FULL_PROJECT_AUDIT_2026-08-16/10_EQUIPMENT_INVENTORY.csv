@@ -1,0 +1,70 @@
+equipment_id,name,manufacturer,category,alias_count,aliases,exercise_count,scanner_model_class,status
+treadmill,Treadmill,Any,cardio,5,running machine|treadmill|бегова дорожка|беговая дорожка|дорожка,3,True,MODEL_RECOGNISED
+rowing_machine,Rowing machine,Any,cardio,8,concept2|erg|ergometer|rower|rowing machine|гребля|гребной|гребной тренажёр,3,True,MODEL_RECOGNISED
+squat_rack,Squat rack,Any,strength,9,half rack|power cage|power rack|rack|squat rack|рама|силовая рама|стойка для приседаний|стойки,39,True,MODEL_RECOGNISED
+bench_press,Weight bench,Any,strength,6,bench press|bench press station|жим лежа|жим лёжа|жим лёжа (стойка)|стойка для жима,254,False,MANUAL_ONLY
+cable_machine,Cable machine,Any,strength,11,cable crossover|cable machine|cable station|crossover|dual pulley|functional trainer|блоки|блочная рама|блочный тренажёр|блочный тренажёр (кроссовер)|кроссовер,110,True,MODEL_RECOGNISED
+leg_press,Leg press,Any,strength,6,45 degree leg press|leg press|sled press|жим ногами|жим платформы|платформа,11,True,MODEL_RECOGNISED
+lat_pulldown,Lat pulldown,Any,strength,6,lat machine|lat pulldown|pulldown|вертикальная тяга|верхняя тяга|тяга верхнего блока,16,True,MODEL_RECOGNISED
+barbell,Barbell,Any,free_weights,4,barbell|olympic bar|гриф|штанга,165,True,MODEL_RECOGNISED
+dumbbell,Dumbbells,Any,free_weights,5,dumbbell|dumbbells|гантели|гантель|гантельный ряд,209,True,MODEL_RECOGNISED
+kettlebell,Kettlebell,Any,free_weights,3,kettlebell|гири|гиря,61,True,MODEL_RECOGNISED
+elliptical,Elliptical trainer,Any,cardio,6,cross trainer|elliptical|elliptical trainer|орбитрек|эллипс|эллиптический тренажёр,3,False,MANUAL_ONLY
+exercise_bike,Exercise bike,Any,cardio,9,exercise bike|indoor cycle|spin bike|stationary bike|upright bike|велосипед|велотренажер|велотренажёр|сайкл,1,False,MANUAL_ONLY
+recumbent_bike,Recumbent bike,Any,cardio,3,recumbent bike|горизонтальный велосипед|горизонтальный велотренажёр,0,False,NO_EXERCISES
+stair_climber,Stair climber,Any,cardio,8,stair climber|stairmaster|stepmill|stepper|клаймбер|лестница|степпер|степпер / лестница,1,False,MANUAL_ONLY
+air_bike,Air bike,Any,cardio,7,air bike|airdyne|assault bike|fan bike|ассолт байк|аэробайк|эйрбайк,3,False,MANUAL_ONLY
+ski_erg,Ski erg,Any,cardio,4,ski erg|skierg|лыжи|лыжный тренажёр,14,False,MANUAL_ONLY
+smith_machine,Smith machine,Any,strength,5,smith|smith machine|машина смита|смит|тренажёр смита,15,False,MANUAL_ONLY
+hack_squat_machine,Hack squat machine,Any,strength,5,hack squat|hack squat machine|гакк|гакк приседания|гакк-машина,2,False,MANUAL_ONLY
+leg_extension,Leg extension machine,Any,strength,5,leg extension|leg extension machine|quad extension|разгибание ног|разгибания ног,4,False,MANUAL_ONLY
+leg_curl,Leg curl machine,Any,strength,7,hamstring curl|leg curl|leg curl machine|lying leg curl|seated leg curl|сгибание ног|сгибания ног,8,False,MANUAL_ONLY
+hip_abductor_adductor,Hip abductor / adductor machine,Any,strength,10,abductor machine|adductor machine|hip abductor|hip abductor / adductor machine|hip adductor|thigh machine|разведение ног|сведение / разведение ног|сведение ног|сведение разведение ног,4,False,MANUAL_ONLY
+glute_kickback_machine,Glute kickback machine,Any,strength,8,glute kickback|glute kickback machine|glute machine|kickback machine|махи ногой|отведение ноги назад|отведение ноги назад (ягодичные)|ягодичный тренажёр,0,False,NO_EXERCISES
+calf_raise_machine,Calf raise machine,Any,strength,9,calf machine|calf raise|calf raise machine|seated calf raise|standing calf raise|голень тренажёр|икры|подъёмы на носки|подъёмы на носки (тренажёр),1,False,MANUAL_ONLY
+chest_press_machine,Chest press machine,Any,strength,7,chest press|chest press machine|seated chest press|грудной жим|жим от груди|жим от груди (тренажёр)|жим сидя,12,False,MANUAL_ONLY
+pec_deck,Pec deck / fly machine,Any,strength,11,butterfly machine|chest fly|fly machine|pec dec|pec deck|pec deck / fly machine|rear delt fly|бабочка|бабочка (пек-дек)|пек-дек|сведение рук,4,False,MANUAL_ONLY
+shoulder_press_machine,Shoulder press machine,Any,strength,7,overhead press machine|shoulder press|shoulder press machine|жим вверх сидя|жим на плечи|жим на плечи (тренажёр)|плечевой жим,3,False,MANUAL_ONLY
+seated_row_machine,Seated row machine,Any,strength,11,cable row|high row|leverage row|low row|row machine|seated row|seated row machine|горизонтальная тяга|нижняя тяга|рычажная тяга|тяга к поясу,8,False,MANUAL_ONLY
+t_bar_row,T-bar row,Any,strength,6,landmine row|t bar row|t-bar row|т гриф|т-гриф|тяга т-грифа,0,False,NO_EXERCISES
+assisted_pullup_machine,Assisted pull-up machine,Any,strength,6,assisted pull-up|assisted pull-up machine|assisted pullup machine|gravitron|гравитрон|подтягивания с противовесом,9,False,MANUAL_ONLY
+pullup_bar,Pull-up bar,Any,bodyweight,5,chin-up bar|pull-up bar|pullup bar|перекладина|турник,17,False,MANUAL_ONLY
+dip_station,Dip station,Any,bodyweight,4,dip bars|dip station|parallel bars|брусья,6,False,MANUAL_ONLY
+preacher_curl_bench,Preacher curl bench,Any,strength,6,preacher bench|preacher curl|preacher curl bench|scott bench|пюпитр|скамья скотта,13,False,MANUAL_ONLY
+bicep_curl_machine,Biceps curl machine,Any,strength,6,arm curl machine|bicep curl machine|biceps curl machine|бицепс-машина|сгибание рук|сгибание рук (тренажёр),4,False,MANUAL_ONLY
+tricep_extension_machine,Triceps extension machine,Any,strength,6,tricep extension machine|tricep machine|triceps extension machine|разгибание рук|разгибание рук (тренажёр)|трицепс-машина,1,False,MANUAL_ONLY
+ab_crunch_machine,Ab crunch machine,Any,strength,7,ab crunch machine|ab machine|abdominal machine|crunch machine|пресс-машина|скручивания сидя|тренажёр для пресса,1,False,MANUAL_ONLY
+rotary_torso_machine,Rotary torso machine,Any,strength,7,rotary torso|rotary torso machine|torso rotation|twist machine|повороты корпуса|ротация корпуса|ротация корпуса (тренажёр),0,False,NO_EXERCISES
+back_extension,Back extension bench,Any,strength,9,back extension|back extension bench|ghd|glute ham developer|hyperextension|roman chair back extension|гиперэкстензия|разгибание спины|экстензия,9,False,MANUAL_ONLY
+captains_chair,Captain's chair,Any,bodyweight,9,captain's chair|captains chair|knee raise station|leg raise station|vertical knee raise|подъемы ног|подъём ног в упоре|стойка для подъёма ног|стойка для пресса,3,False,MANUAL_ONLY
+adjustable_bench,Bench (flat / adjustable),Any,free_weights,12,adjustable bench|bench|bench (flat / adjustable)|flat bench|incline bench|utility bench|weight bench|лавка|наклонная скамья|скамейка|скамья|скамья (прямая / регулируемая),12,False,MANUAL_ONLY
+ez_curl_bar,EZ curl bar,Any,free_weights,6,curl bar|ez bar|ez curl bar|ez-гриф|изогнутый гриф|кривой гриф,9,False,MANUAL_ONLY
+weight_plates,Weight plates,Any,free_weights,5,bumper plates|plates|weight plates|блины|диски,53,False,MANUAL_ONLY
+resistance_bands,Resistance bands,Any,functional,7,bands|resistance band|resistance bands|ленты|резинки|резиновые ленты|эспандер,130,False,MANUAL_ONLY
+trx,Suspension trainer (TRX),Any,functional,7,suspension straps|suspension trainer|suspension trainer (trx)|trx|петли|петли trx|подвесные петли,33,False,MANUAL_ONLY
+medicine_ball,Medicine ball,Any,functional,7,med ball|medicine ball|slam ball|wall ball|медбол|медицинский мяч|слэмбол,16,False,MANUAL_ONLY
+battle_ropes,Battle ropes,Any,functional,4,battle rope|battle ropes|канат|канаты,3,False,MANUAL_ONLY
+plyo_box,Plyo box,Any,functional,12,aerobic step|aerobic stepper|box|jump box|plyo box|plyometric box|step platform|аэробный степ|бокс для запрыгиваний|плиобокс|степ-платформа|тумба,25,False,MANUAL_ONLY
+punching_bag,Punching bag,Any,functional,6,boxing bag|heavy bag|punching bag|боксёрская груша|груша|мешок,1,False,MANUAL_ONLY
+foam_roller,Foam roller,Any,functional,6,foam roller|roller|валик|массажный ролик|массажный ролл|ролл,4,False,MANUAL_ONLY
+stability_ball,Stability ball,Any,functional,9,balance ball|exercise ball|stability ball|swiss ball|yoga ball|гимнастический мяч|мяч для фитнеса|фитбол|швейцарский мяч,22,False,MANUAL_ONLY
+skipping_rope,Skipping rope,Any,cardio,5,jump rope|skipping rope|speed rope|прыгалка|скакалка,4,False,MANUAL_ONLY
+ab_wheel,Ab wheel,Any,functional,7,ab roller|ab wheel|abdominal wheel|wheel rollout|гимнастический ролик|колесо для пресса|ролик для пресса,11,False,MANUAL_ONLY
+parallettes,Parallettes,Any,bodyweight,11,paralettes|parallette|parallettes|push up handles|push-up bars|push-up blocks|push-up risers|блоки для отжиманий|брусья-паралетки|паралетки|упоры для отжиманий,2,False,MANUAL_ONLY
+seated_dip_machine,Seated dip machine,Any,strength,10,chest dip machine|dip machine|lever dip machine|seated dip machine|sitting dip machine|triceps dip machine|дожимной тренажёр|тренажёр для отжиманий|тренажёр для отжиманий (сидя)|трицепс машина сидя,2,False,MANUAL_ONLY
+multi_hip_machine,Multi hip machine,Any,strength,9,glute extension machine|hip machine|multi hip machine|multi-hip|standing hip machine|мульти-хип|мульти-хип машина|тренажёр для бедра стоя|тренажёр для ягодичных стоя,1,False,MANUAL_ONLY
+lateral_raise_machine,Lateral raise machine,Any,strength,8,delt machine|lateral raise machine|machine lateral raise|shoulder lateral machine|махи в стороны тренажёр|разведение рук тренажёр|тренажёр для дельт|тренажёр для разведения рук (плечи),1,False,MANUAL_ONLY
+sissy_squat_machine,Sissy squat machine,Any,strength,7,quad isolator|sissy squat bench|sissy squat frame|sissy squat machine|рама для сисси-приседа|тренажёр для сисси-приседа|тренажёр сисси-присед,1,False,MANUAL_ONLY
+agility_ladder,Agility ladder,Any,functional,7,agility ladder|coordination ladder|footwork ladder|speed ladder|координационная лестница|лестница для ног|скоростная лестница,10,False,MANUAL_ONLY
+mini_trampoline,Mini trampoline,Any,cardio,7,fitness trampoline|jump trampoline|mini trampoline|rebounder|батут|мини-батут|ребаундер,6,False,MANUAL_ONLY
+balance_board,Balance board,Any,functional,7,balance board|rocker board|stability board|wobble board|балансборд|балансировочная доска|доска для баланса,2,False,MANUAL_ONLY
+yoga_blocks,Yoga blocks,Any,functional,7,foam block|pilates block|yoga block|yoga blocks|блок для йоги|йога-блок|йога-блоки,5,False,MANUAL_ONLY
+weighted_sled,Weighted sled,Any,functional,9,drag sled|prowler|push sled|sled|weighted sled|проулер|сани|сани с грузом|сани с отягощением,2,False,MANUAL_ONLY
+ab_mat,Ab mat,Any,functional,6,ab mat|ab pad|core pad|sit-up pad|валик для пресса|подушка для пресса,1,False,MANUAL_ONLY
+bosu_ball,Bosu ball,Any,functional,8,balance dome|bosu|bosu ball|half dome trainer|босу|босу (полусфера)|босу мяч|полусфера,1,False,MANUAL_ONLY
+sliding_disc,Sliding discs,Any,functional,10,core sliders|gliding disc|slider|sliders|sliding disc|sliding discs|глайдинг диски|диски для скольжения|слайдеры|слайдеры (диски для скольжения),1,False,MANUAL_ONLY
+sandbag,Sandbag,Any,functional,5,sand bag|sandbag|strongman sandbag|мешок с песком|сэндбэг,1,False,MANUAL_ONLY
+gymnastic_rings,Gymnastic rings,Any,bodyweight,6,gymnastic rings|ring training|rings|suspended rings|гимнастические кольца|кольца,1,False,MANUAL_ONLY
+tyre,Tyre,Any,functional,8,sledgehammer|tire|tractor tyre|truck tyre|tyre|кувалда|покрышка|шина,2,False,MANUAL_ONLY
+vertical_pole,Vertical pole,Any,bodyweight,7,fixed bar|fixed pole|pole|vertical pole|вертикальный столб|столб|фиксированный столб,2,False,MANUAL_ONLY
+outdoor_air_walker,Outdoor air walker,Any,cardio,9,air swing|air walker|outdoor air walker|outdoor elliptical|street workout air walker|аэрошагатель|воздушный шагатель|уличный аэрошагатель|уличный тренажёр,3,False,MANUAL_ONLY

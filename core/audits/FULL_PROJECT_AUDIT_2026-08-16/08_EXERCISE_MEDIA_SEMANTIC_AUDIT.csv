@@ -1,0 +1,9 @@
+check,method,rows_checked,result,status,what_would_close_it
+clip path present for every row,"automated, read from JSON",1887,"1887/1887 have a video map; 1764 men, 775 girl, 652 both",VERIFIED,n/a
+clip path is not a placeholder host,automated,1887,0 rows carry VIDEO_HOST_PLACEHOLDER,VERIFIED,n/a
+poster file resolves on disk,"automated, os.path.exists",1887,0 missing,VERIFIED,n/a
+clip bytes exist and are playable,would need signed URL against live bucket,0,not attempted,UNAVAILABLE,sign a sample of clipUrl responses against the production bucket and fetch them
+clip DEPICTS the exercise it is attached to,human review of video,0,not attempted,UNAVAILABLE,"watching 2,539 clips against their text. No automated check exists. This is the single largest unverifiable claim in the product."
+description matches the movement in the clip,human/expert review,0,not attempted,UNAVAILABLE,same as above
+"left/right, seated/standing, incline/flat, grip mismatches",human review,0,not attempted,UNAVAILABLE,these are precisely the classes an automated check cannot see; core/plans records a prior detector pass at ~50% false-positive rate
+description copied from another exercise,"automated, exact-match clustering",1887,355 rows share a summary across 140 clusters; 83 rows share full steps across 38 clusters,VERIFIED,"a shared summary is a signal, not a defect: the largest steps cluster is one deadlift shot from four angles"

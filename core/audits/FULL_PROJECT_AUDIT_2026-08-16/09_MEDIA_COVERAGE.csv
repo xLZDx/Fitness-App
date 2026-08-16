@@ -1,0 +1,13 @@
+metric,count,of_total,status,note
+total exercises,1887,100%,VERIFIED,read from exercises_vendor.json
+rows with any clip,1887,100.0%,VERIFIED,clip paths are relative; bytes are NOT in the repo
+male clip,1764,93.5%,VERIFIED,
+female clip,775,41.1%,VERIFIED,
+both bodies,652,34.6%,VERIFIED,
+male-only,1112,58.9%,VERIFIED,a woman sees a male model on these
+female-only,123,6.5%,VERIFIED,
+poster files on disk,2989,-,VERIFIED,find mobile/assets -name *.webp/jpg/png
+local posters missing on disk,0,-,VERIFIED,every non-http poster path resolves
+video files in repo,0,-,VERIFIED,0 .mp4 under mobile/assets: clips are served remotely via clipUrl/clipUrls
+video bytes verified playable,0,-,UNAVAILABLE,requires signing a clip URL against the live bucket
+clip matches the exercise it is attached to,0,-,UNAVAILABLE,requires watching 2539 clips; no automated check possible

@@ -1,0 +1,21 @@
+feature,designed,implemented,reachable,tested,safe,released_path,notes
+Onboarding,YES,YES,YES,"YES (21 files, step_answered coverage)",n/a,YES,11 steps; 14 of 37 collected fields reach no engine
+Questionnaire / personalisation,YES,YES,YES,PARTIAL,health fields all reach the safety layer,YES,"23 of 37 fields consumed; sleep, stress, occupation, activityLevel collected and unused"
+Home / for-you feed,YES,YES,YES,YES,screened via safeCatalog,YES,
+Scanner,YES,YES,YES,PARTIAL,UNAVAILABLE (device),YES,model covers 10 of 69 machines
+Equipment catalogue,YES,YES,YES,YES,n/a,YES,4 of 69 machines have no exercise
+Exercise page,YES,YES,YES,YES,n/a,YES,
+Workout player,YES,YES,YES,PARTIAL,UNAVAILABLE (lifecycle),YES,
+Rest timer,YES,YES,YES,PARTIAL,UNAVAILABLE (background),YES,
+Form Check,YES,YES,YES,PARTIAL,UNAVAILABLE (biomechanics),YES,540 of 1887 exercises carry a pose target; 8 distinct targets
+Programme generator,YES,YES,YES,YES,refusal state exists,YES,
+AI Coach,YES,YES,PENDING,PENDING,PENDING,YES,service provider shows no consumer by grep; under second review
+AI exercise generation,YES,YES,**NO**,YES,n/a,NO,no consumer in lib/ since 6a72dce; output has no clip and every feed drops it
+Recovery,YES,YES,YES,PARTIAL,n/a,YES,"does not consume sleep or stress, which the questionnaire collects"
+Progress / history,YES,YES,YES,YES,n/a,YES,
+Progress photos,YES,YES,YES,YES,"AES-256-GCM, Keystore-backed",YES,
+Subscriptions / Stripe,YES,YES,YES,YES,server-authoritative,PARTIAL,5 price IDs not created: annual/family/lifetime cannot work
+Account deletion,YES,YES,YES,YES,CI e2e job exists,YES,documented ~1h token validity window after deletion
+Health Connect / Wear OS,PARTIAL,PARTIAL,UNKNOWN,NOT_CHECKED,NOT_CHECKED,NO,both wear providers have no reader
+Voice,PARTIAL,YES,NOT_CHECKED,NOT_CHECKED,NOT_CHECKED,NOT_CHECKED,
+iOS,NO,NO,NO,NO,n/a,NO,mobile/ios/ does not exist
