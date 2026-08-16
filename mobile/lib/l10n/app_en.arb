@@ -1945,7 +1945,7 @@
   "exerciseTypeMobility": "Mobility",
   "exerciseBodyweight": "Bodyweight",
   "equipmentSuitableForYou": "Suits you",
-  "equipmentSuitableBecause": "Based on your goal and level",
+  "equipmentSuitableBecause": "Checked against the health answers you gave us",
   "equipmentCheckWithCoach": "Check with a coach",
   "equipmentCheckBecauseInjury": "You have logged an injury this equipment can load",
   "equipmentRecommendedForYou": "Recommended for you",
@@ -2237,5 +2237,8 @@
         "type": "int"
       }
     }
+  },
+  "@equipmentSuitableBecause": {
+    "description": "Equipment detail suitability card, the not-flagged case. F001: this said 'Based on your goal and level' and neither is read - the only input is rec.hiddenForInjury, and 1877 of the catalogue's 1887 rows are 'beginner' so level could not differentiate anything even if it were read."
   }
 }

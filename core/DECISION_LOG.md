@@ -13215,3 +13215,39 @@ classified, not repaired, and not counted as fixed.
 
 Codex review unavailable: usage_limit_exhausted until 2026-08-20 17:32 (attempted this gate; the
 fail-open receipt is what satisfies the local hook). Not pushed.
+
+## 2026-08-17 — Tier 6, F001: the difficulty field exists, the gradation does not
+
+**Measured before acting.** Against the shipped catalogue: **1877 of 1887 rows are `beginner`**, 8
+are `advanced`, 2 are `intermediate`. The machinery for level-based personalisation is all present —
+`ExerciseItem.difficulty` is a three-value enum, `sortByTierFit` orders by it, and F024 just made
+that sort stable. What is missing is the DATA. The sort is not broken; it has nothing to sort.
+
+**Real integration is not one of the available outcomes.** F001's instruction forbids wiring
+`fitnessProfileProvider` somewhere to produce a reference count, and the situation here is stronger
+than that prohibition: a signal that is constant across 99.5% of its domain cannot improve any
+decision path. Grading the catalogue is a content project, not a code change, and doing it by
+inference from titles would be exactly the fabricated-authority move this audit exists to prevent.
+
+So the remediation is the other branch the finding offers: **narrow the claim.**
+
+`equipmentSuitableBecause` read "Based on your goal and level" (RU: "На основе вашей цели и уровня").
+The card's only input is `rec.hiddenForInjury > 0` — neither signal was read, and one of them could
+not have carried information if it had been. It now says "Checked against the health answers you gave
+us", which is what the code actually does.
+
+**Three tests.** The distribution itself, so the claim can be revisited rather than assumed
+permanent — asserted as a ratio as well as counts, so it survives a catalogue that grows without
+being graded, and it fails if grading ever rises above 5%. The copy, in both languages, asserting the
+absence of the unsupported words and the presence of the supported one. And the premise: that the
+page really does read only the injury count, so if it ever starts reading a goal the narrowed wording
+becomes wrong in the other direction and that is where it shows.
+
+Note the code-side honesty was already done in an earlier gate — `fitness_model.dart` states
+"Nothing consumes this today" rather than claiming to be load-bearing. This entry closes the
+user-facing half.
+
+### Status
+
+F001 FIXED by claim narrowing, with the measurement recorded so the decision is revisitable. Not
+pushed.
