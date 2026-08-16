@@ -11,6 +11,7 @@ import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/equipment/data/asset_equipment_repository.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
+import 'package:fitness_app/features/equipment/widgets/safety_disclosure.dart';
 import 'package:fitness_app/features/safety/data/eligibility.dart';
 import 'package:fitness_app/features/safety/data/par_q.dart';
 import 'package:fitness_app/features/safety/state/eligibility_providers.dart';
@@ -137,6 +138,14 @@ final Finder _chipRow = find.byWidgetPredicate(
   (w) => w is Scrollable && w.axisDirection == AxisDirection.right,
 );
 
+/// The vertical exercise list. Same reasoning as `_chipRow`: the page has
+/// more than one `Scrollable` once the chip row is present, so
+/// `scrollUntilVisible`'s default (`find.byType(Scrollable)`, then
+/// `.single`) throws instead of picking one.
+final Finder _exerciseList = find.byWidgetPredicate(
+  (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+);
+
 /// R11i: WorkoutsPage now opens on the Programs sub-tab (matching the
 /// prototype's own default), so every test below that exercises the
 /// Library filter chips/list must switch to it first — the chip row and
@@ -247,8 +256,23 @@ void main() {
         (tester) async {
       await _pumpLibrary(tester, _seededRepo());
       expect(find.text('Easy run'), findsOneWidget);
+      // F020 pushed the list down by one SafetyDisclosure card, so the
+      // second and third exercises start below the fold -- scroll to them
+      // rather than assert on raw pixel position, same reasoning as
+      // `_tapChip`'s own comment on this exact pitfall.
+      await tester.scrollUntilVisible(find.text('Back squat'), 200,
+          scrollable: _exerciseList);
       expect(find.text('Back squat'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Push-ups'), 200,
+          scrollable: _exerciseList);
       expect(find.text('Push-ups'), findsOneWidget);
+    });
+
+    testWidgets(
+        'F020: the Library list carries the "screened by rules, not a '
+        'clinician" disclosure', (tester) async {
+      await _pumpLibrary(tester, _seededRepo());
+      expect(find.byType(SafetyDisclosure), findsOneWidget);
     });
 
     testWidgets('Cardio filter restricts to cardio-category equipment',

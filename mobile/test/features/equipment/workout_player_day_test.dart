@@ -8,6 +8,7 @@ import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
+import 'package:fitness_app/features/equipment/widgets/safety_disclosure.dart';
 import 'package:fitness_app/features/equipment/workout_player_page.dart';
 import 'package:fitness_app/features/programmes/data/programme.dart';
 import 'package:fitness_app/features/programmes/data/programme_templates.dart';
@@ -157,6 +158,23 @@ void main() {
     await t.pumpAndSettle();
 
     expect(find.byKey(const Key('player.dayStrip')), findsNothing);
+  });
+
+  testWidgets(
+      'F020: the player carries the same "screened by rules, not a '
+      'clinician" disclosure the reference page does', (t) async {
+    // workout_player_page.dart builds its own section list rather than
+    // calling exerciseReferenceSections -- the function exercise_page.dart
+    // uses -- so it needs its own proof the disclosure actually reached it,
+    // not just a shared one on the other screen.
+    await tall(t);
+    await t.pumpWidget(_app(
+      const WorkoutPlayerPage(exerciseId: 'ea_row'),
+      days: [_day(exercises: [_squat, _row, _press])],
+    ));
+    await t.pumpAndSettle();
+
+    expect(find.byType(SafetyDisclosure), findsOneWidget);
   });
 
   testWidgets('a one-exercise day draws no strip -- there is nothing to walk',

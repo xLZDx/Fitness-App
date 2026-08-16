@@ -9,6 +9,7 @@ import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/exercise_page.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
+import 'package:fitness_app/features/equipment/widgets/safety_disclosure.dart';
 import 'package:fitness_app/features/ai_coach/ai_coach_context.dart';
 import 'package:fitness_app/features/equipment/workout_player_page.dart';
 import 'package:fitness_app/features/safety/data/eligibility.dart';
@@ -59,6 +60,20 @@ void main() {
     expect(find.text('Air Squat'), findsOneWidget);
     expect(find.byKey(const Key('exercise.start')), findsOneWidget,
         reason: 'reference has to lead somewhere, or it is a dead end');
+  });
+
+  testWidgets(
+      'F020: the page carries the "screened by rules, not a clinician" '
+      'disclosure', (t) async {
+    t.view.physicalSize = const Size(400, 1600);
+    t.view.devicePixelRatio = 1.0;
+    addTearDown(t.view.resetPhysicalSize);
+    addTearDown(t.view.resetDevicePixelRatio);
+
+    await t.pumpWidget(_page(const ExercisePage(exerciseId: 'ea_air_squat')));
+    await t.pumpAndSettle();
+
+    expect(find.byType(SafetyDisclosure), findsOneWidget);
   });
 
   testWidgets('it carries none of the controls for a set in progress',

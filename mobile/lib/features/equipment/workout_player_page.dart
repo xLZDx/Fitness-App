@@ -12,6 +12,7 @@ import '../programmes/data/programme_labels.dart';
 import '../programmes/state/programme_providers.dart';
 import '../safety/widgets/eligibility_notice.dart';
 import 'widgets/exercise_reference.dart';
+import 'widgets/safety_disclosure.dart';
 import '../workouts/data/progression.dart';
 import '../workouts/data/scheduled_session.dart';
 import '../workouts/data/workout_session.dart';
@@ -233,6 +234,12 @@ class WorkoutPlayerPage extends ConsumerWidget {
           return SmoothScrollList(
             padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
             children: [
+              // F020: this screen builds its own list rather than calling
+              // `exerciseReferenceSections`, so it needs the same
+              // catalog-wide "screened by rules, not a clinician" disclosure
+              // inserted separately -- see that function's own comment.
+              const SafetyDisclosure(compact: true),
+              const SizedBox(height: 16),
               // Above the exercise, not below it: the first question someone
               // who tapped a day has is "what am I doing today and where am I
               // in it", and that has to be answerable without scrolling past

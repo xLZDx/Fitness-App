@@ -12,6 +12,7 @@ import '../equipment/data/catalog_labels.dart';
 import '../equipment/data/equipment_models.dart';
 import '../equipment/data/exercise_filter.dart' show availableWith;
 import '../equipment/state/equipment_providers.dart';
+import '../equipment/widgets/safety_disclosure.dart';
 import '../form_check/state/form_check_providers.dart';
 import '../personalisation/state/personalisation_providers.dart';
 import '../programmes/data/programme.dart';
@@ -459,7 +460,14 @@ class _LibraryTabState extends ConsumerState<_LibraryTab> {
               ];
             }
             final advisories = safety?.advisories ?? const [];
-            final out = <Widget>[];
+            final out = <Widget>[
+              // F020: the catalog-wide "screened by rules, not a clinician"
+              // disclosure, which used to render on equipment_detail_page.dart
+              // alone while this list — the highest-traffic exercise-serving
+              // surface in the app — carried only the per-user advisory below.
+              const SafetyDisclosure(compact: true),
+              const SizedBox(height: 16),
+            ];
             // Once, above the list, not once per card: an unscreenable
             // restriction is a fact about the person, and repeating it on
             // every row would train them to scroll past it.

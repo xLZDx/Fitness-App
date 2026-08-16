@@ -12201,3 +12201,52 @@ G-A remaining: F020's render-site half, F002's copy half.
 G-A in progress, four of six items landed. Not pushed.
 
 Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).
+
+## 2026-08-16 — F020: the "screened by rules, not a clinician" disclosure reaches every exercise-detail screen, not just one
+
+G-A/A5, root cause RC3. `SafetyDisclosure` had exactly one call site (`equipment_detail_page.dart`);
+the per-item `ExerciseCautionCard` badge that appears on the other three exercise-detail surfaces
+carries no equivalent catalog-wide disclosure. Traced those three surfaces: the Library exercise list
+in `workouts_page.dart`, and the two screens built from `exercise_page.dart` / `workout_player_page.dart`.
+
+Found, while wiring the second pair, that my own first-draft comment in `exercise_reference.dart` was
+wrong in exactly the way this whole audit exists to catch: it asserted `exerciseReferenceSections()` —
+the function `exercise_page.dart` calls — was also what `workout_player_page.dart` renders. It is not.
+`workout_player_page.dart` builds its own `SmoothScrollList` inline and only reuses `ExerciseCautionCard`
+from that file; it never calls the shared function. One insertion into `exerciseReferenceSections()`
+would have silently left the in-workout player screen without the disclosure while the decision log
+claimed otherwise. Caught before commit by writing a screen-specific test for each of the three
+surfaces rather than trusting the shared-function assumption; corrected the comment and added
+`SafetyDisclosure(compact: true)` directly to `workout_player_page.dart`'s own list as well.
+
+All three insertions render `compact: true` (headline only, no coverage figure), matching the badge's
+existing per-item footprint on these denser screens; the full two-line + coverage form stays on
+`equipment_detail_page.dart`.
+
+Fixing the Library list insertion pushed `workouts_page_test.dart`'s existing
+`'"For you" surfaces every catalog exercise (no profile)'` test's later assertions below the initial
+test-viewport fold (`SmoothScrollList` builds lazily). First attempt at a fix —
+`tester.scrollUntilVisible` with no `scrollable:` argument — threw `Iterable.single` from inside
+Flutter's own `WidgetController.scrollUntilVisible`, because the page now has more than one `Scrollable`
+(the chip row plus the exercise list) and the default `find.byType(Scrollable)` finder is ambiguous.
+Fixed the same way `_tapChip` already disambiguates the chip row in this file: an axis-based
+`find.byWidgetPredicate` finder (`AxisDirection.down` for the list, vs. `.right` for the chips), passed
+explicitly as `scrollable:`.
+
+Regression-tested: one new widget test per surface (Library list, exercise page, workout player),
+each asserting `find.byType(SafetyDisclosure)`, each mutation-checked by stashing only the three
+`lib/` source files (not the tests) and confirming all three failed with "Found 0 widgets" against the
+pre-fix code before restoring. `flutter analyze` clean on all six touched files.
+
+This is the render-site half only. F020's status stays `PARTIALLY_FIXED_GA` per
+`41_CONSOLIDATED_FINDINGS_PRIORITY.csv` — the routing/eligibility half (whether an individual exercise
+is withheld or shown at all, as opposed to the catalog-wide disclosure being visible) closes only after
+G-B propagates eligibility to every actionable surface.
+
+G-A remaining: F002's copy half.
+
+### Status
+
+G-A in progress, five of six items landed. Not pushed.
+
+Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).

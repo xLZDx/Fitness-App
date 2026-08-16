@@ -39,6 +39,7 @@ import '../data/equipment_models.dart';
 import '../state/equipment_providers.dart';
 import 'exercise_thumb.dart';
 import 'muscle_map.dart';
+import 'safety_disclosure.dart';
 
 class ExerciseHero extends StatelessWidget {
   const ExerciseHero({super.key, required this.exercise});
@@ -1066,6 +1067,15 @@ List<Widget> exerciseReferenceSections(
   final theme = Theme.of(context);
   final demoVideo = item.playableVideoFor(body) ?? item.videoUrl;
   return [
+    // F020: this list is what the reference page (exercise_page.dart)
+    // renders. ExerciseCautionCard below used to be the only
+    // safety-adjacent copy it carried -- the catalog-wide "screened by
+    // rules, not a clinician" disclosure rendered on
+    // equipment_detail_page.dart alone. workout_player_page.dart builds its
+    // own list rather than calling this function, so it carries the same
+    // insertion separately -- see the top of its own `SmoothScrollList`.
+    const SafetyDisclosure(compact: true),
+    const SizedBox(height: 16),
     // R11d: the name and the picture moved OUT of this list and into
     // `ExerciseImmersiveHero`, which the page renders edge-to-edge above the
     // padding. What is left here is the design's three-up stats row
