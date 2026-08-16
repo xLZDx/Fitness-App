@@ -11736,3 +11736,8 @@ mutation.
 
 `flutter test` **2634 passed / 0 failed** (2631 before; 3 added). `flutter analyze lib/ test/`
 7 issues, all pre-existing.
+
+### Pushed — 2026-08-16, `016ee87..25a0015`
+
+G4/R5 and the equipment-name lookup. Local HEAD equals upstream, `0 0`, no force, no history rewrite.
+`flutter test` 2634 / 0, `functions/` 165 / 0, `flutter analyze` 7 issues all pre-existing.

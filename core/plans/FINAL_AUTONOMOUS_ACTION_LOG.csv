@@ -119,3 +119,5 @@ sequence,timestamp,marker,action,command_or_change,target,result,related_gate,co
 118,2026-08-16T11:51:13+03:00,+ГО,create,3 tests over the three fallbacks,exercise_immersive_hero_test.dart,pass,C3-followup,,
 119,2026-08-16T11:51:13+03:00,+ГО,test,4 mutations,exercise_immersive_hero_test.dart,"3 red; the 4th was a no-op mutation of mine, re-cut and red",C3-followup,,"second time today a green mutation was the mutation being wrong, not the test"
 120,2026-08-16T11:51:13+03:00,+ГО,test,flutter test + analyze,mobile/,"2634 passed / 0 failed; 7 analyzer issues, all pre-existing",C3-followup,,2631 before; 3 added
+121,2026-08-16T11:51:48+03:00,+ГО|КОМИТ,record,git commit,equipment localisation,committed,C3-followup,25a0015,"5 files, 157 insertions"
+122,2026-08-16T11:51:48+03:00,+ГО|+ПУШ,push,git push origin formcoach/gates-a-c,origin/formcoach/gates-a-c,local HEAD == upstream HEAD,mission,25a0015,"2 commits: G4/R5 and the equipment name lookup. No force, no history rewrite"
