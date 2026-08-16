@@ -2,7 +2,17 @@ name: flutter
 
 on:
   push:
-    branches: [master, main]
+    # F008: every branch, not just the two that get merged into.
+    #
+    # `[master, main]` meant a working branch got NO push-triggered run at
+    # all, and `pull_request` only covers a branch once someone opens one. So
+    # the branch where the work actually happens -- where a regression is
+    # cheapest to find -- was the one branch with no CI, and a gate could sit
+    # broken for days until its PR went up.
+    #
+    # The cost is bounded by the `concurrency` group below, which already
+    # cancels a superseded run on the same ref.
+    branches: ['**']
   pull_request:
   # Daily, so the device job runs even in a week with no pull request. 04:00
   # UTC / 07:00 Europe/Chisinau -- a failure is waiting in the morning rather

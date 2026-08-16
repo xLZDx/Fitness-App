@@ -12899,3 +12899,41 @@ demonstrates. That is a separate unit of work and is NOT closed by this entry.
 
 F027 PARTIALLY_FIXED: both `Text()`-layer strings fixed and the guard that missed them widened and
 self-tested. The `plan_builder.dart` rationale surface remains OPEN, scoped above. Not pushed.
+
+## 2026-08-17 — Tier 6, F007 and F008: CI covers the branch the work happens on
+
+**F007 is CONTESTED, on measurement.** The finding says "flutter analyze cannot fail CI". That is
+not so. `flutter analyze --no-pub --no-fatal-warnings --no-fatal-infos` was run against a file
+containing a genuine type error:
+
+```
+error - A value of type 'String' can't be returned from the function 'probe' ... return_of_invalid_type
+EXIT=1
+```
+
+Errors are still fatal; the two flags suppress warnings and infos only, which is what the inline
+comment beside them already claimed. The true residual is narrower than the finding: the repository
+carries 7 pre-existing warnings/infos that CI will not fail on, and that is a documented deliberate
+choice rather than a hole. Recorded as CONTESTED with the exit code rather than closed as fixed,
+because nothing needed fixing.
+
+**F008 is real and is fixed.** `push: branches: [master, main]` (and `[master]` for the functions
+workflow) meant a working branch got no push-triggered run at all, and `pull_request` only starts
+covering a branch once someone opens one. So the branch where the work actually happens — where a
+regression is cheapest to find — was the one branch with no CI. Concretely: the Firestore rules
+tests that prove G-D never ran on the branch G-D was built on. Both workflows now trigger on
+`branches: ['**']`; the cost is bounded by the `concurrency` groups that were already there and
+already cancel a superseded run on the same ref.
+
+**Both are now checkable.** Neither claim could be verified by anything in the repository, so a
+change to a trigger or a flag silently changed what the branch is protected by. `test/ci/workflow_gates_test.dart`
+reads the workflow files: every-branch triggers, no live `continue-on-error` in either workflow,
+`flutter analyze` and `flutter test` both still present, `--no-fatal-errors` absent (that is the flag
+that would make F007's claim true), and the rules job still referenced.
+
+**Non-vacuity.** Stashing `.github/workflows/` fails both F008 cases against the previous triggers.
+
+### Status
+
+F008 FIXED, mutation-proven. F007 CONTESTED — measured false as written, with the narrower true
+statement pinned by a test instead. Not pushed.

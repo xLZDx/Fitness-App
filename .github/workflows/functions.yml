@@ -12,7 +12,10 @@ name: functions
 
 on:
   push:
-    branches: [master]
+    # F008, same reasoning as `flutter.yml`: a working branch got no
+    # push-triggered run, so the Firestore rules tests -- the ones that proved
+    # G-D -- did not run on the branch G-D was built on.
+    branches: ['**']
   pull_request:
 
 # A push that supersedes an in-flight run cancels it. The value of these
