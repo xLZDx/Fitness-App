@@ -12286,3 +12286,51 @@ routing/eligibility half stays open under G-B per its ledger status (`PARTIALLY_
 G-A closed pending the regression pass below. Not pushed.
 
 Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).
+
+## 2026-08-17 — G-A regression pass, and the gate closes
+
+Full `flutter test` (2652 tests): one failure, `test/widgets/app_buttons_test.dart` — a Flutter
+scheduler/semantics-tree assertion unrelated to any G-A file, isolated re-run 21/21 green. This exact
+flake class is already recorded pre-existing in this same log (see the "Gap" entry a few thousand
+lines above this one, from before G-A's work started), so it is not new and not investigated further.
+Every G-A-added test passed, including N01 and F017 re-run together with everything else. Full-project
+`flutter analyze`: 7 pre-existing issues, none in a G-A file (`subscription_providers.dart`,
+`progression.dart`, three `state/*_providers.dart` files, `test/_mockups.dart`,
+`exercise_thumb_test.dart` — none touched this gate).
+
+Delegated an independent adversarial review of the combined six-commit G-A diff
+(`7c19a97~1..cb55cd7`) to a fresh `flutter-reviewer` agent with no access to this session's reasoning,
+specifically asked to try to falsify the "G-A is safe to close" claim. It raised one genuine question
+before running out of turns without concluding: whether `EligibilityNotice`'s F017 urgent-title logic
+(chest pain -> `eligTrainingBlockedUrgentTitle`) actually reaches the withheld-exercise card on
+`exercise_page.dart` and `workout_player_page.dart`, given `workout_player_page.dart` does not go
+through the same `ExerciseResolutionView` widget `exercise_page.dart` uses and instead re-implements
+the withheld/hidden-for-injury branching inline (a pre-existing duplication, not introduced this
+session — same class of duplication F020's own fix just found and fixed for `SafetyDisclosure`).
+
+Traced it directly rather than wait further: both call sites construct
+`EligibilityNotice(reasons: resolution.withheldFor, ...)` (`exercise_reference.dart:1191`,
+`workout_player_page.dart:209`), and `resolution.withheldFor` on both is the same
+`ExerciseResolution.withheldFor` field, populated in both cases from the eligibility layer's own
+`verdict.reasons` (`equipment_providers.dart:469`). The urgent check itself
+(`eligibility_notice.dart:108-110`) lives inside `EligibilityNotice`, not duplicated per caller — so
+the duplication between the two screens is an existing architectural cost (two branches to keep in
+sync, exactly what F020 just paid for), but it is not a correctness gap for F017: every caller that
+constructs this widget gets urgent detection for free, because the widget decides, not the caller.
+No fix needed here; noting the duplication itself as a candidate for a future cleanup pass, not a G-A
+blocker.
+
+Updated `41_CONSOLIDATED_FINDINGS_PRIORITY.csv`: N01, F017, F018, F019, F002 -> `FIXED_BY_REMEDIATION`
+with commit references; F020 -> `PARTIALLY_FIXED_GA` (render-site half only, routing/eligibility half
+stays open under G-B).
+
+**G-A is closed.** Six remediation commits: `7c19a97` (N01), `8bf16d2` (F017), `9c7a3e1` (F018),
+`7d204b2` (F019), `71f5cc5` (F020), `cb55cd7` (F002) — on top of `bc395df`, the audit-reconciliation
+commit that was this gate's prerequisite. Continuing to G-D next per the standing remediation-plan
+dependency order, without a further checkpoint.
+
+### Status
+
+G-A closed: 6/6 items landed and regression-verified. Not pushed.
+
+Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).
