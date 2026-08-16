@@ -11212,3 +11212,133 @@ Recorded as gate G7 with the one-line change written out and the verification it
 
 G3 Stripe price IDs, G4 the R5 Firestore question, G7 the targetSdk bump, and the C-series catalogue
 work. R3 and R10 from the recovered Gate J review remain operator decisions.
+
+## 2026-08-16 — C1: the five known-wrong cards, and what the safety guard found on the way
+
+**Basis: FACT.**
+
+Five cards the 2026-08-15 audit read and found wrong rather than merely thin. All five are closed:
+one withheld, four corrected in both languages.
+
+### The tool had to be built before the fix could be made
+
+`merge_exercise_text.py` refuses, fatally, to overwrite text that is already present, and that
+refusal is correct — "merge" is the operation that quietly destroys authored work when it is allowed
+to overwrite. But it left no way at all to fix text that shipped wrong.
+
+`tools/catalog/correct_exercise_text.py` is the other half, deliberately **not** a `--force` flag on
+the first tool. Overwriting needs a different safety property from filling, and folding them together
+would put the data-loss the first tool's docstring is about one flag away.
+
+Its guard: every correction states the text it expects to find, byte for byte, and refuses if the
+catalogue holds something else. That is not ceremony — it is the case that actually happens. A
+catalogue rebuild changes text underneath, and a correction written against the old wording would
+otherwise overwrite the new one with a fix for a problem that no longer exists.
+
+### The guard fired on its first run, and found a real drift
+
+Six refusals, all on the authored batch files. `tools/catalog/batches/*.json` still hold the
+superlative first drafts — *"the side almost nothing else works"*, *"The best shape for..."*,
+*"a stretch almost nothing else reaches"* — while the shipped catalogue holds softened versions of
+the same sentences. Somebody removed the overclaiming and never wrote it back to the source.
+
+FACT, and it matters: `merge_exercise_text.py` fills empty rows from those batches. Anyone who
+emptied a row and re-ran it would have reintroduced the superlatives that were deliberately taken
+out — and today would also have undone this gate's corrections. So the tool records a separate
+`batch_before` where the two have drifted, corrects both, and refuses rather than guessing which
+text it is looking at.
+
+The drift itself is now removed for these four cards. It is **not** measured for the other 399
+authored rows; that is a known unknown, recorded here rather than tidied away.
+
+### `ea_major_groups_muscle_body` — withheld, not deleted
+
+Not an exercise. One step — *"Stand tall with your spine neutral, arms by your side, and feet
+shoulder-width apart"* — a starting position with no movement after it, no muscles, no equipment, no
+purpose, and a title that reads like a heading from the vendor's own index. FACT: it is the only row
+of 1,887 with exactly one step. There is nothing behind it to describe, so no rewrite fixes it.
+
+`assets/data/exercises_quarantine.json` carries the id, the date, the gate and the reason;
+`AssetEquipmentRepository._loadQuarantine` filters it at load. That location is the point:
+equipment browsing, the workout player, the For You feed and the generated plan all resolve through
+that one repository, so a withheld id is withheld **everywhere** rather than on the surfaces somebody
+remembered. The test asserts against `bodyweightExercises()` — the surface this card actually
+reached users through — rather than a test-only accessor.
+
+Withheld rather than deleted for two reasons. The external audit is pinned to all 1,887 ids and
+matches them in both directions; deleting a row would break that correspondence for a reason a later
+reader could not reconstruct from a diff. And a deletion records no reason, whereas the quarantine
+file keeps the reason beside the id.
+
+A malformed quarantine file withholds **nothing** and says so. Failing open is deliberate: the other
+failure mode takes the entire library down in both languages to enforce a list that today holds one
+entry.
+
+### The four text fixes
+
+- **`ea_cable_wrist_extension`** carried two defects in one sentence. *"Keeping the extensors as
+  strong as the flexors"* asserts a parity that does not exist — the flexors are substantially the
+  stronger group in a normal forearm — and *"is what protects the outer elbow from the ache"* is an
+  unhedged causal claim about a named body part, in an app whose Terms say nothing in it is medical
+  advice and whose library no physiotherapist has reviewed. Now: the extensors are described as
+  naturally weaker, extensor work is described as something that *appears in* programmes written
+  around the outer elbow, and the card says plainly that this is exercise and not treatment.
+- **`ea_puppy_pose`** said the hips staying high mean *"the lower back is not involved"*. Backwards,
+  and in the direction that costs: holding the hips over the knees while the chest sinks **extends**
+  the lumbar spine. A reader with a sensitive lower back was told the opposite of what the shape does
+  to them.
+- **`ea_sissy_squat_bodyweight`** said *"the knees need time to adapt to this position"*, which tells
+  every reader their knee adapts given patience. Some do not, and a catalogue card cannot know which
+  reader it has. Stopping is now named as an outcome rather than a failure to progress.
+- **`ea_criss_cross_bow_tie_pose`** had a Russian title — *поза «бабочка» со скрещенными **ногами*** —
+  describing a seated hip opener, on a shoulder stretch whose own Russian steps describe the arms
+  crossed behind the back. A Russian-speaking user searching for a hip stretch found this card; one
+  looking for a shoulder stretch did not.
+
+### Tests
+
+17 new, and every one of them carries a control, because "the wrong sentence is absent" is also true
+of an empty card and an empty card is worse than a wrong one. The assertions pin the **claim**, not
+the corrected paragraph: pinning the paragraph fails on any rewording, which trains people to update
+the expected string without reading it, and the string is the only thing under test.
+
+Mutation, twelve in total. Seven revert each corrected field to its exact prior text — all red. Five
+attack the quarantine: the filter removed from the load path, the list emptied, the id typo'd, the
+reason blanked, and the filter widened to withhold the entire catalogue. All red, restore green. The
+last is the one worth having: withholding everything satisfies every "is it absent" assertion, and
+only the control sees it.
+
+### Verification
+
+Full suite **2619 passed / 0 failed** (2602 before; 17 added).
+
+### Open, and unchanged by this entry
+
+C2 (127 RU rows breaking `summary == steps[0]`), C3 (78 rows labelled "None" with a real
+`equipmentId`), G3, G4, G7, and R3/R10 from the recovered Gate J review.
+
+### Addendum, same day — the correction tool's first diff was 54,000 lines
+
+Caught before the branch was pushed, and worth recording because it nearly was not caught at all.
+
+`_dump_json` wrote `indent=2` through `Path.write_text`, which on Windows also translates newlines.
+`exercises_vendor.ru.json` is indented by **one** space and stored with LF, so three corrected
+strings produced a 54,118-line diff. The real change was in there; nobody reviewing it would have
+found it.
+
+A formatting-only diff over a data file is worse than no diff — it defeats review, it defeats
+`git blame`, and it makes the next person's genuine change indistinguishable from this one. The tool
+now reads the indent and the line ending from the file it is about to rewrite, because the two
+catalogue files do not agree with each other, which is exactly why it could not be a constant.
+
+The C1 commit was amended rather than followed by a reformatting commit: it is local and unpushed,
+and a second 54,000-line diff to undo the first is not an improvement on history. The corrected diff
+is 21 insertions and 13 deletions.
+
+One process note, the third of its kind in this log. Restoring the files tripped the shell gate,
+which blocks the command class that discards worktree changes. There were none to discard —
+everything was committed — and the operation actually needed was materialising an older blob, so it
+was done as an explicit write rather than reworded to get the same command past the gate. Appending
+*this paragraph* then tripped the gate a second time, on the command text quoting the command name.
+The gate matches text, not intent; that is now recorded three times and is a property worth knowing
+rather than a fault to work around.

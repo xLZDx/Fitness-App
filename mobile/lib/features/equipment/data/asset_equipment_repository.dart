@@ -56,12 +56,51 @@ class AssetEquipmentRepository implements EquipmentRepository {
       debugPrint('catalog $name.json unusable: $e');
       return const <ExerciseItem>[];
     }
+    final quarantined = await _loadQuarantine();
     final base = (jsonDecode(raw) as List)
         .cast<Map<String, dynamic>>()
         .map(ExerciseItem.fromJson)
+        .where((e) => !quarantined.contains(e.id))
         .toList(growable: false);
     return applyTranslations(
         base, await _loadOverlay('assets/data/$name.$languageCode.json'));
+  }
+
+  /// Ids the catalogue still contains and no user may be offered.
+  ///
+  /// C1. The 2026-08-15 audit found rows that are not exercises — the first
+  /// being `ea_major_groups_muscle_body`, a single step describing a standing
+  /// position with no movement after it. A card like that cannot be fixed by
+  /// rewriting its text, because there is nothing behind it to describe.
+  ///
+  /// Withheld here rather than deleted from the JSON, for two reasons. The
+  /// external audit is pinned to all 1,887 ids and cross-references them in
+  /// both directions, so removing a row would make that evidence stop matching
+  /// the shipped catalogue for a reason a later reader could not reconstruct.
+  /// And a deletion says nothing about WHY, whereas
+  /// `exercises_quarantine.json` carries the reason next to the id.
+  ///
+  /// This is the only load path — equipment browsing, the workout player, the
+  /// For You feed and the generated plan all resolve through this repository —
+  /// so a withheld id is withheld everywhere rather than on the surfaces
+  /// somebody remembered to filter.
+  ///
+  /// A missing or malformed file quarantines NOTHING and says so. Failing open
+  /// is the deliberate choice: the alternative failure, a parse error taking
+  /// the whole catalogue down, costs every user the entire library to enforce a
+  /// list that today holds one entry.
+  Future<Set<String>> _loadQuarantine() async {
+    try {
+      final raw =
+          await rootBundle.loadString('assets/data/exercises_quarantine.json');
+      return (jsonDecode(raw) as List)
+          .cast<Map<String, dynamic>>()
+          .map((e) => e['id'] as String)
+          .toSet();
+    } catch (e) {
+      debugPrint('exercise quarantine list unusable, withholding nothing: $e');
+      return const <String>{};
+    }
   }
 
   /// Loads the translation overlay, or returns empty on any failure.

@@ -77,15 +77,15 @@ exercise shot from four angles, where the text is correct and the **cards** are 
 The 127 RU rows are a different matter: EN holds `summary == steps[0]` on 1887 of 1887 and RU breaks
 it on 127. That is a defect, not an ambiguity.
 
-### 1.4 Known-wrong cards still open
+### 1.4 Known-wrong cards — **all five closed 2026-08-16 (C1)**
 
 | id | Defect |
 |---|---|
-| `ea_major_groups_muscle_body` | a single step, a generic standing cue, no real exercise behind it. Quarantine-or-delete decision |
-| `ea_cable_wrist_extension` | asserts a flexor/extensor strength parity that does not exist, plus an unhedged causal medical claim |
-| `ea_puppy_pose` | "the lower back is not involved" is backwards for this pose |
-| `ea_sissy_squat_bodyweight` | implies any knee adapts eventually |
-| `ea_criss_cross_bow_tie_pose` | the RU title describes a seated crossed-**legs** hip opener; the exercise is a shoulder stretch with the arms crossed behind the back, and the card's own RU steps say so |
+| `ea_major_groups_muscle_body` | a single step, a generic standing cue, no real exercise behind it. **WITHHELD** — `assets/data/exercises_quarantine.json`, filtered in `AssetEquipmentRepository`, the single load path for every surface. Row kept so the audit's 1,887-id cross-reference stays exact |
+| `ea_cable_wrist_extension` | asserts a flexor/extensor strength parity that does not exist, plus an unhedged causal medical claim. **FIXED** both locales |
+| `ea_puppy_pose` | "the lower back is not involved" is backwards for this pose. **FIXED** both locales |
+| `ea_sissy_squat_bodyweight` | implies any knee adapts eventually. **FIXED** both locales |
+| `ea_criss_cross_bow_tie_pose` | the RU title describes a seated crossed-**legs** hip opener; the exercise is a shoulder stretch with the arms crossed behind the back, and the card's own RU steps say so. **FIXED** — RU title now names the arms |
 
 ### 1.5 Catalogue metadata
 
@@ -216,7 +216,7 @@ over 519 cards, 224 Gate E findings over 199 cards, 1887 verified rows of which 
 
 | Gate | Work | Size |
 |---|---|---|
-| **C1** | Close the 5 known-wrong cards (quarantine `ea_major_groups_muscle_body`, 4 text fixes) | ~1h |
+| ~~**C1**~~ | ~~Close the 5 known-wrong cards~~ | **Done 2026-08-16.** 1 withheld, 4 corrected in both locales via a new `correct_exercise_text.py` whose guard found the authored batches had already drifted from the shipped catalogue. 17 tests, 12 mutations |
 | **C2** | Fix the 127 `RU summary != steps[0]` rows mechanically; add the RU-side invariant test | ~2h |
 | **C3** | Resolve the 78 `equipmentLabel: "None"` rows that name a machine | ~2h |
 | **C4** | Decide the 83/38 identical-steps clusters: one card with an angle switch, or leave them | product decision, then ~1d |

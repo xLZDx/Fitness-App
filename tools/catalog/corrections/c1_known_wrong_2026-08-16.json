@@ -1,0 +1,62 @@
+{
+  "ea_cable_wrist_extension": {
+    "reason": "The purpose claimed the extensors should be kept \"as strong as the flexors\" -- a parity that does not exist in a normal forearm, where the flexors are substantially stronger -- and then made an unhedged causal claim that this is what protects the outer elbow from pain. The first is false, the second is a treatment claim the app is not allowed to make: the Terms in the same product state nothing in it is medical advice and the library has not been reviewed by a physiotherapist.",
+    "en": {
+      "purpose": {
+        "before": "Trains the top of the forearm — a side most grip and pressing exercises leave undertrained. Keeping the extensors as strong as the flexors is what protects the outer elbow from the ache that comes from gripping all day, at the gym or at a keyboard.",
+        "after": "Trains the top of the forearm, a side most grip and pressing work leaves out. The wrist extensors are naturally much weaker than the flexors, and this is one of the few movements that loads them directly rather than as a side effect of holding something. Extensor work often appears in programmes written around the outer elbow, but this is exercise and not treatment: if that area already hurts, ask a qualified professional before loading it.",
+        "batch_before": "Trains the top of the forearm — the side almost nothing else works. Keeping the extensors as strong as the flexors is what protects the outer elbow from the ache that comes from gripping all day, at the gym or at a keyboard."
+      }
+    },
+    "ru": {
+      "purpose": {
+        "before": "Тренирует верх предплечья — сторону, которую большинство хватовых и жимовых упражнений оставляет недогруженной. Держать разгибатели такими же сильными, как сгибатели, — это то, что защищает внешнюю сторону локтя от боли, возникающей от постоянного хвата, в зале или за клавиатурой.",
+        "after": "Тренирует верх предплечья — сторону, которую большинство хватовых и жимовых упражнений оставляет без работы. Разгибатели запястья от природы заметно слабее сгибателей, и это одно из немногих движений, которое нагружает их напрямую, а не попутно с удержанием снаряда. Работу на разгибатели часто включают в программы, построенные вокруг внешней стороны локтя, но это упражнение, а не лечение: если эта область уже болит, сначала обратитесь к специалисту.",
+        "batch_before": "Нагружает верх предплечья — сторону, которую почти ничто другое не тренирует. Разгибатели, равные по силе сгибателям, защищают внешнюю сторону локтя от боли, которая появляется от постоянного хвата — что в зале, что за клавиатурой."
+      }
+    }
+  },
+  "ea_puppy_pose": {
+    "reason": "\"so the lower back is not involved\" is backwards. Holding the hips over the knees while the chest sinks extends the lumbar spine -- the lower back is not avoided, it arches, which is exactly what the user with a sensitive lower back was being told would not happen.",
+    "en": {
+      "purpose": {
+        "before": "Stretches the shoulders and the upper back with the hips staying high, so the lower back is not involved. A useful shape for opening overhead range if the lower back does not tolerate a deep fold.",
+        "after": "Stretches the shoulders and the upper back. Keeping the hips stacked over the knees, rather than sitting back toward the heels, is what sends the stretch into the shoulders instead of the hips — but letting the chest sink from there also arches the lower back, so ease off if that is where you feel it. A useful shape for opening overhead range without a deep forward fold.",
+        "batch_before": "Stretches the shoulders and the upper back with the hips staying high, so the lower back is not involved. The best shape for opening overhead range if the lower back does not tolerate a deep fold."
+      }
+    },
+    "ru": {
+      "purpose": {
+        "before": "Растягивает плечи и верх спины при высоко поднятом тазе, так что поясница не вовлекается. Удобная форма для раскрытия амплитуды над головой, если поясница не переносит глубокий наклон.",
+        "after": "Растягивает плечи и верх спины. Таз строго над коленями, а не смещённый назад к пяткам, — именно это направляет растяжение в плечи, а не в бёдра. Но опускание груди из этого положения прогибает и поясницу, поэтому уменьшите амплитуду, если чувствуете именно её. Удобная форма для раскрытия амплитуды над головой без глубокого наклона.",
+        "batch_before": "Растягивает плечи и верх спины при высоком тазе, поэтому поясница не участвует. Лучшая поза для раскрытия амплитуды над головой, если поясница не переносит глубокого складывания."
+      }
+    }
+  },
+  "ea_sissy_squat_bodyweight": {
+    "reason": "\"the knees need time to adapt to this position\" says every knee adapts if given long enough. Some do not, and a user reading a catalogue card has no way to know which kind they have. Stopping has to be presented as an outcome rather than a failure to progress.",
+    "en": {
+      "purpose": {
+        "before": "Loads the front of the thigh through a stretch most squats skip, by letting the knees travel far forward while the hips stay open. Build up slowly — the knees need time to adapt to this position.",
+        "after": "Loads the front of the thigh through a stretch most squats skip, by letting the knees travel far forward while the hips stay open. Build up slowly. This is a deep loaded knee-flexion position and not every knee tolerates it — if yours does not, that is a reason to leave the movement alone rather than to work through it.",
+        "batch_before": "Loads the front of the thigh through a stretch almost nothing else reaches, by letting the knees travel far forward while the hips stay open. Build up slowly — the knees need time to adapt to this position."
+      }
+    },
+    "ru": {
+      "purpose": {
+        "before": "Нагружает переднюю поверхность бедра через растяжение, которое большинство приседов пропускает, позволяя коленям далеко уйти вперёд при раскрытом тазе. Наращивайте постепенно — коленям нужно время, чтобы адаптироваться к этому положению.",
+        "after": "Нагружает переднюю поверхность бедра через растяжение, которое большинство приседов пропускает, позволяя коленям далеко уйти вперёд при раскрытом тазе. Наращивайте постепенно. Это глубокое сгибание колена под нагрузкой, и его переносит не каждое колено — если ваше не переносит, это причина отказаться от движения, а не продавливать его.",
+        "batch_before": "Нагружает переднюю поверхность бедра в растяжении, до которого почти ничто не добирается: колени уходят далеко вперёд, а таз остаётся раскрытым. Наращивайте постепенно — коленям нужно время, чтобы адаптироваться к этому положению."
+      }
+    }
+  },
+  "ea_criss_cross_bow_tie_pose": {
+    "reason": "The Russian title read \"поза «бабочка» со скрещенными ногами\" -- butterfly pose with crossed LEGS, which is a seated hip opener. The exercise is a shoulder stretch with the arms crossed behind the back, and the card's own Russian steps describe the arms. A Russian-speaking user searching for a hip stretch would find this card, and one looking for a shoulder stretch would not.",
+    "ru": {
+      "title": {
+        "before": "Поза «бабочка» со скрещенными ногами",
+        "after": "Поза «бабочка»: руки скрещены за спиной"
+      }
+    }
+  }
+}

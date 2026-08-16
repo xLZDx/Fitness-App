@@ -1,0 +1,8 @@
+[
+  {
+    "id": "ea_major_groups_muscle_body",
+    "since": "2026-08-16",
+    "gate": "C1",
+    "reason": "Not an exercise. The vendor row carries a single step -- 'Stand tall with your spine neutral, arms by your side, and feet shoulder-width apart' -- which is a starting position, with no movement after it. It has no muscles, no equipment and no purpose text, and its title ('Major Groups Muscle Body') reads like an index heading from the vendor's own sheet rather than a movement. It is the only row in all 1,887 with exactly one step. Withheld rather than deleted so the audit cross-reference against all 1,887 ids stays exact and the provenance stays readable."
+  }
+]

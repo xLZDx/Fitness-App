@@ -59,3 +59,13 @@ sequence,timestamp,marker,action,command_or_change,target,result,related_gate,co
 58,2026-08-16T10:07:34+03:00,+ГО,verify,Play download-size limit,support.google.com answer 9859372,"500MB base module, 200MB warning",G2,,arm64 download 107.2MB is inside both
 59,2026-08-16T10:07:34+03:00,+ГО,verify,Play target API requirement,support.google.com answer 11926878,API 36 required from 2026-08-31,G2,,BLOCKER: artifact reports targetSdk 35
 60,2026-08-16T10:07:34+03:00,+ГО,create,record the build,core/RELEASE_BUILD_2026-08-16.md,written,G2,,"not PRODUCTION_MANIFEST, which is generated from live APIs"
+61,2026-08-16T10:08:05+03:00,+ГО|КОМИТ,record,git commit,core/,committed,G2,39f4095,"4 files, 225 insertions"
+62,2026-08-16T10:23:41+03:00,+ГО,verify,read all 5 known-wrong cards in both locales,mobile/assets/data,all 5 defects still present,C1,,
+63,2026-08-16T10:23:41+03:00,+ГО,create,build a correction tool with a byte-exact before-guard,tools/catalog/correct_exercise_text.py,created,C1,,"merge_exercise_text.py refuses to overwrite by design; this is the other half, not a force flag"
+64,2026-08-16T10:23:41+03:00,+ГО,test,first dry run,c1_known_wrong_2026-08-16.json,6 refusals,C1,,the authored batches had already drifted from the shipped catalogue
+65,2026-08-16T10:23:41+03:00,+ГО,edit,record batch drift as batch_before and re-run,tools/catalog,13 corrections applied,C1,,"4 cards, both locales, plus 3 batch files"
+66,2026-08-16T10:23:41+03:00,+ГО,edit,only write batches actually changed,correct_exercise_text.py,fixed,C1,,avoid reformatting untouched evidence files
+67,2026-08-16T10:23:41+03:00,+ГО,create,withhold the non-exercise row,assets/data/exercises_quarantine.json + AssetEquipmentRepository,filtered at the single load path,C1,,row kept so the 1887-id audit cross-reference stays exact
+68,2026-08-16T10:23:41+03:00,+ГО,create,17 regression tests with controls,mobile/test/features/equipment,pass,C1,,
+69,2026-08-16T10:23:41+03:00,+ГО,test,12 mutations,catalog corrections + quarantine,"12/12 detected, restore green",C1,,"includes withhold-everything, which passes every absence assertion"
+70,2026-08-16T10:23:41+03:00,+ГО,test,flutter test,mobile/,2619 passed / 0 failed,C1,,2602 before; 17 added
