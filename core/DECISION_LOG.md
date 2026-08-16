@@ -11040,3 +11040,118 @@ at the time.
 
 G5 (R8/R9/R11), G2 (release build), G3 (Stripe price IDs), G4 (the R5 Firestore question), and the
 C-series catalogue work. G6 is closed.
+
+## 2026-08-16 — G5: R8, R9 and R11 are not unknown; the review that produced them was recoverable
+
+**Basis: FACT unless marked.**
+
+Gate J deferred "R4, R5, R7, R8, R9, R11" and described only the first three. The 2026-08-16 round
+could do nothing with the rest but mark them **UNKNOWN**, on the correct grounds that inventing three
+findings to fill three slots is worse than an admitted gap. G5 existed to search for the source
+instead of guessing, and the search succeeded.
+
+### Where it was
+
+The labels come from the "regulatory-compliance sweep" reviewer of the 14-agent expert-pack round of
+2026-08-15. Its own output file still exists and is **0 bytes**. The only surviving copy was one
+`result` field inside the Claude Code session transcript under `~/.claude/projects/` — outside the
+repository, on one machine, in a directory the tool rotates.
+
+Extracted verbatim to `core/audit/gate_j_regulatory_review_2026-08-15/`, hashed, manifested and
+covered by `tools/evidence/validate_csv_evidence.py`, for the same reason as G6: an artifact whose
+only copy is in a temp directory is not evidence.
+
+### It contained twelve findings, not eleven
+
+**R3, R10 and R12 were never recorded anywhere.** R8/R9/R11 at least existed as labels; these three
+left no trace at all. R3 is a **MAJOR** — no explicit Art. 9(2)(a) consent event for special-category
+health data — and it dropped out of the deferral list entirely, so no later gate knew to look at it.
+Recovering R8/R9/R11 was the goal; finding R3 is why the search was worth doing rather than guessing.
+
+### R11 — FIXED. The comment was wrong, and it was wrong in the direction that costs the most
+
+`data_export.dart` said "there is no key: `AesPhotoCipher` has no caller and the only repository
+bound is the in-memory mock". FACT: `progress_photos_providers.dart:153` builds `PhotoStore` over a
+real `AesPhotoCipher`, `:195` binds `LocalProgressPhotosRepository` over it, and the key comes from
+`SecurePhotoKeyStore` — Keystore-wrapped on Android, Keychain on iOS. The mock survives only as the
+degraded fallback when the key store will not open.
+
+The same file also still claimed the key "lives in SharedPreferences", which A2-sec changed
+specifically because SharedPreferences put the key next to the ciphertext it unlocks.
+
+Both corrected. `core/PLAY_DATA_SAFETY_2026-08-05.md` carried the same stale evidence and is
+corrected too — and while correcting it I found the replacement reference I was about to write was
+*also* stale: `index.ts:1163` is a coach-booking handler now, not the Cloud Storage note, which has
+moved to `:1353`. Fixing a stale line reference with another stale line reference is the failure this
+whole gate is about, so it was checked before it was written.
+
+The Data safety answer itself does not change: photos never leave the device. What changes is that
+the answer is now derived from something true.
+
+### R8 — FIXED. The notice described an erasure the code does not perform
+
+FACT: `functions/src/index.ts:1544-1616` replaces `clientUid` / `coachUid` / `reporterUid` with
+`deleted_user` on `coach_bookings` and `equipment_reports` and keeps the rows. The privacy policy
+said deletion leaves "no archive copy kept afterwards". Under Recital 26 a pseudonymised row is still
+personal data, so the notice was overstating the erasure.
+
+Retaining them is the right behaviour — a booking is also the coach's record of a session that
+happened, a report is a fault the gym still has — so the fix is the sentence, not the code. Both
+locales now name the two record types, say the identifier is removed rather than the row deleted,
+say a booking whose other side is also gone is deleted outright, and warn that report free text
+stays as written.
+
+**The test is in two halves, because one of them is not enough.** Asserting the rendered policy names
+the two collections proves the sentence exists; it does not prove the sentence is still *complete*.
+Adding a third shared collection to `sweepSharedRecords` would leave that assertion green while the
+notice silently under-described the retention again — the exact defect, recurring. So the second half
+reads `index.ts` and fails if the set of collections queried there grows beyond the three it knows
+about. `functions/` has no Dart test of its own and a file scan is coarse; it is also the only thing
+in either suite that would notice.
+
+Mutation, both directions: deleting the disclosure sentence and rebuilding turns it red; adding a
+fourth queried collection turns it red; restore green.
+
+### R9 — FIXED. Three things implied a clinical review programme, next to a sentence denying one
+
+The About page headed a principle "Open clinical content" under a `medical_information` icon, whose
+own body says the library "has not been reviewed by a physiotherapist", above a use-of-funds table
+giving 25% to "Clinical / physio review". Nothing was false in isolation, and the caption did say
+"Approximate, year-1 conservative budget" — but the caption describes the numbers' *precision*, not
+whether the money moved, which is the question a reader actually has.
+
+Same defect class as R2, which was a blocker because "rehab-grade" made an outright therapeutic
+claim; R9 is milder because it is an implication. The body was always the honest half. The heading,
+the icon and the budget line now agree with it, in both locales.
+
+Mutation: five, including reverting the RU heading while leaving EN correct — a corrected claim
+surviving in one language is a regression this project has already had once. All five red, restore
+green. The fifth is the one that matters: **deleting the principle outright** satisfies every other
+assertion in the file while removing the disclosure that the library is unreviewed, which is strictly
+worse than the defect. A control assertion pins the honest sentence in place, and the deletion
+mutation confirms it fires.
+
+### The three that stay open, with their reasons
+
+- **R3 · MAJOR · DECISION_REQUIRED.** Health fields are collected inside a collapsed "More health
+  details" accordion under a bundled "By continuing you agree" line on a previous screen. FACT: there
+  is no consent control in `step_health.dart` today. The reviewer's own unresolved item says the
+  Art. 9 basis must be confirmed with counsel *before* the control is designed, because the answer
+  decides whether it is a consent checkbox or something else. Building the wrong control is worse
+  than building none. **Now recorded, which it was not before today.**
+- **R10 · MINOR · DECISION_REQUIRED.** Crashlytics is enabled in release (`main.dart:159`), disclosed
+  in the policy, with an Art. 21 objection route by email and no in-app toggle. The reviewer's own
+  verdict: "no change strictly required". Operator's call.
+- **R12 · NOT A DEFECT.** BMI bands render "Obese range" against the user's own figure. The reviewer
+  recorded it as a boundary observation rather than a finding, noting the app states BMI cannot tell
+  muscle from fat and `body_metrics.dart:29` confirms nothing consumes it. Recorded so it is not
+  rediscovered as new.
+
+### Verification
+
+Full suite **2602 passed / 0 failed** (2596 before; 6 added). `flutter analyze lib/ test/` reports
+7 issues, all pre-existing and none in files touched here.
+
+### Open, and unchanged by this entry
+
+G2 release build, G3 Stripe price IDs, G4 the R5 Firestore question, and the C-series catalogue work.

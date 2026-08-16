@@ -28,8 +28,14 @@ class AboutPage extends StatelessWidget {
           title: l.aboutSafetyIsNeverPaywalled,
           body: l.aboutInjuryAwareExerciseFilteringPlateCalculators,
         ),
+        // R9 of the Gate J review. The heading read "Open clinical content"
+        // over a body that says the library has NOT been reviewed by a
+        // physiotherapist, under a medical-information icon -- a heading and an
+        // icon both implying a clinical review programme the body then denies.
+        // The body was always the honest half; the heading and the icon now
+        // agree with it.
         _Principle(
-          icon: Icons.medical_information_outlined,
+          icon: Icons.menu_book_outlined,
           title: l.aboutOpenClinicalContent,
           body: l.aboutOurExerciseLibraryIsReviewedAgainst,
         ),

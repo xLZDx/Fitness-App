@@ -135,7 +135,10 @@ over 519 cards, 224 Gate E findings over 199 cards, 1887 verified rows of which 
 |---|---|---|
 | **S1** | `mobile/lib/features/insurance/` — dead code designing the sharing of adherence-derived eligibility with a carrier, recorded in Gate J as prohibited by a 15 April 2026 Play policy | **Closed 2026-08-16.** Deleted under an explicit operator GO after the shell safety gate blocked the first attempt |
 | **S2** | **R5** — the device-local claim is absolute in the policy, and `firestore_profile_repository.dart:74` still parses a populated legacy `health` block | **UNKNOWN.** `legal_text.py`'s own evidence header records that H1b cleared the 14 documents that had one and a read-only query returned zero. Re-running it needs production Firestore |
-| **S3** | **R8 / R9 / R11** from Gate J | **UNKNOWN.** Deferred without recording what they are. Needs the original review artefact |
+| **S3** | **R8 / R9 / R11** from Gate J | **Closed 2026-08-16 (G5).** Source recovered to `core/audit/gate_j_regulatory_review_2026-08-15/`. R8 (deletion pseudonymises `coach_bookings` / `equipment_reports` without saying so) **FIXED** — policy sentence in both locales, plus a test that reads `index.ts` so a fourth shared collection fails. R9 (About page implies a clinical review programme) **FIXED** in both locales. R11 (stale comment says photos are unencrypted) **FIXED** in both copies |
+| **S3a** | **R3** — no explicit Art. 9(2)(a) consent event for special-category health data | **DECISION_REQUIRED.** MAJOR, and it had been dropped from Gate J's deferral list entirely — recovered 2026-08-16. FACT: no consent control exists in `step_health.dart`. The reviewer's own unresolved item requires the Art. 9 basis be settled with counsel before the control is designed |
+| **S3b** | **R10** — Crashlytics enabled in release with no in-app opt-out | **DECISION_REQUIRED.** Disclosed, with an Art. 21 route by email; the reviewer's own verdict is "no change strictly required". Also never recorded before 2026-08-16 |
+| **S3c** | **R12** — BMI bands render "Obese range" | **NOT A DEFECT.** The reviewer filed it as a boundary observation: the app states BMI cannot tell muscle from fat and `body_metrics.dart:29` confirms nothing consumes it. Recorded so it is not rediscovered as new |
 | **S4** | The 2026-08-16 review round left 9 test files and 4 programme claims unexamined | not cleared, not examined |
 | **S5** | Deleting `recovery_block.dart` and retracting the body-comp paywall line removed what `NEXT_TICKETS.md` calls the MK.6/MK.7 "foundations" | deliberate — there was no functionality behind either — but picking those up now starts from zero |
 
@@ -205,7 +208,7 @@ over 519 cards, 224 Gate E findings over 199 cards, 1887 verified rows of which 
 | **G2** | Run `flutter build apk --release` and `--split-per-abi`; record size and versions | the build passes; the size lands in `PRODUCTION_MANIFEST` |
 | **G3** | Create 5 Stripe price IDs, run `setup_stripe_secrets.ps1` | operator, ~10 min in the dashboard |
 | **G4** | Settle R5: either an evidential read-only Firestore query, or soften the absolute wording in `legal_text.py` | policy and code agree |
-| **G5** | Recover the R8/R9/R11 artefact, or close them as "no source exists" | no UNKNOWN left hanging |
+| ~~**G5**~~ | ~~Recover the R8/R9/R11 artefact, or close them as "no source exists"~~ | **Done 2026-08-16.** Recovered from the session transcript (the agent's own output file was 0 bytes), persisted and hashed. R8/R9/R11 all FIXED with mutation-tested regressions; R3/R10/R12 surfaced, three findings nobody had recorded at all — see S3a–S3c |
 | ~~**G6**~~ | ~~Move the three audit CSVs from `Downloads` under `core/`~~ | **Done 2026-08-16.** 9 artifacts imported unmodified, hashes recorded, validator added and mutation-tested |
 
 ### P1 — catalogue content (the bulk; scale is an operator decision)

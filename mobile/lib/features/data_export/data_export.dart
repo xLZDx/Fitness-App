@@ -14,10 +14,11 @@ import '../workouts/data/workout_log.dart';
 /// history, full schedule, and progress-photo metadata. Deliberately NOT
 /// included: the encrypted photo bytes themselves. Decrypting and packaging
 /// binary blobs from `ProgressPhotosRepository` is a materially larger
-/// feature -- a different code path with its own failure modes (the AES key
-/// lives in SharedPreferences and never leaves the device, so bundling a
-/// decrypted image into a shareable file changes that guarantee) -- and is
-/// out of this gate's scope. [ProgressPhotoExport] carries everything about a
+/// feature -- a different code path with its own failure modes (`A2-sec` moved
+/// the AES key out of SharedPreferences into `flutter_secure_storage`, one
+/// entry per uid, Keystore-wrapped on Android and Keychain on iOS, so bundling
+/// a decrypted image into a shareable file steps outside that guarantee) --
+/// and is out of this gate's scope. [ProgressPhotoExport] carries everything about a
 /// photo except the pixels, which at least lets a user audit how many they
 /// have and when each was taken.
 ///
@@ -52,11 +53,18 @@ Map<String, dynamic> buildExport({
   Map<String, dynamic>? server,
 }) {
   // One sentence, not two. The second used to read "The encryption key never
-  // leaves this device", which was written into a file the user downloads and
-  // keeps -- the most durable copy of the claim anywhere in the product, and
-  // there is no key: `AesPhotoCipher` has no caller and the only repository
-  // bound is the in-memory mock. Whoever adds photo bytes here in R7 restores
-  // a sentence about the key at the same time, when it is true.
+  // leaves this device", and it was dropped when that was not yet true --
+  // written into a file the user downloads and keeps, which is the most
+  // durable copy of any claim anywhere in the product.
+  //
+  // It IS true now, and this comment said otherwise until 2026-08-16 (finding
+  // R11 of the Gate J review, `core/audit/gate_j_regulatory_review_2026-08-15/`).
+  // `progress_photos_providers.dart:153` builds `PhotoStore` over a real
+  // `AesPhotoCipher` with a key from `SecurePhotoKeyStore`, and `:195` binds
+  // `LocalProgressPhotosRepository` over it -- the in-memory mock this comment
+  // named is no longer what production runs. The sentence stays out only
+  // because the export still carries no photo bytes for it to describe;
+  // whoever adds them restores it at the same time.
   final notes = <String>[
     'Progress photo image data is not included in this export.',
   ];

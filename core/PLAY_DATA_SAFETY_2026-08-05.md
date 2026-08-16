@@ -103,9 +103,27 @@ project is on. Confirm the retention terms for `fitness-app-korostelev`'s
 current Gemini tier; if inputs may be retained, drop the ephemeral tick rather
 than defend it.
 
-Progress photos are **not** collected: `MockProgressPhotosRepository`
-(`progress_photos_providers.dart:13`) is the only implementation, and
-`index.ts:1163` records that there is nothing in Cloud Storage to delete.
+Progress photos are **not** collected — but the evidence written here in
+August 2025 was already stale by the time it was read, and the answer needs the
+current reason rather than that one. It said `MockProgressPhotosRepository` was
+the only implementation. It is not: `progress_photos_providers.dart:195` binds
+`LocalProgressPhotosRepository` over a `PhotoStore` with a real
+`AesPhotoCipher` (`:153`), keyed from platform secure storage.
+
+The answer is unchanged because the photos are written to the device's own
+documents directory and never uploaded: nothing under
+`mobile/lib/features/progress_photos/` touches Firebase Storage, and
+`functions/src/index.ts:1353-1355` still records that `deleteAccount` has
+nothing in Cloud Storage to delete because no backend exists. "Not collected"
+is about leaving the device, and nothing here does. The mock survives only as
+the degraded fallback when the key store will not open
+(`progress_photos_providers.dart:194`), which is a state the photos tab shows
+as its demo state rather than the path production takes.
+
+Corrected 2026-08-16 under finding R11 of
+the Gate J review (`core/audit/gate_j_regulatory_review_2026-08-15/`), whose
+point was precisely that a future author would otherwise re-derive a Data
+safety answer from an obsolete file reference.
 
 ### App activity
 

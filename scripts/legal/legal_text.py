@@ -204,6 +204,14 @@ you is ever published.
 Your data is kept while your account exists, and goes when you delete it. \
 There is no separate retention timer and no archive copy kept afterwards.
 
+Two kinds of record are shared with someone else, and those are kept with your \
+identifier removed rather than deleted: a coach booking, which is also the \
+coach's record of a session that really happened, and an equipment report, \
+which is a fault the gym still has to fix. Nothing left in them identifies \
+you, and a booking whose other side has also deleted their account is removed \
+outright. Anything you wrote in the text of a report stays as written, so do \
+not put anything personal in one.
+
 Stripe keeps its own payment records for as long as its own legal obligations \
 require. Those are outside this app's control and cannot be deleted from here.
 
@@ -360,6 +368,14 @@ Authentication, Firestore, Crashlytics, App Check и модель Gemini) и Str
 Данные хранятся, пока существует ваша учётная запись, и исчезают, когда вы её \
 удаляете. Отдельного таймера хранения нет, архивной копии после удаления не \
 остаётся.
+
+Две записи принадлежат не только вам, и они не удаляются, а сохраняются без \
+вашего идентификатора: запись о занятии с тренером -- это одновременно и его \
+запись о состоявшемся занятии -- и сообщение о неисправном оборудовании, \
+которое залу ещё предстоит починить. В том, что остаётся, вас ничто не \
+называет, а запись о занятии, вторая сторона которого тоже удалила учётную \
+запись, удаляется целиком. Текст сообщения об оборудовании остаётся таким, как \
+вы его написали, поэтому не пишите в нём ничего личного.
 
 Stripe хранит собственные платёжные записи столько, сколько требуют его \
 собственные обязательства. Это вне контроля приложения и отсюда не удаляется.

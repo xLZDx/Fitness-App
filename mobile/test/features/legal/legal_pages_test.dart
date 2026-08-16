@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -141,6 +143,67 @@ void main() {
       expect(text, contains('is not sent to this app'));
       expect(text, contains('do not come back on their own'));
       expect(text, contains('cannot be recovered by anyone'));
+    });
+
+    /// R8 of the Gate J review, `core/audit/gate_j_regulatory_review_2026-08-15/`.
+    ///
+    /// The policy said deletion leaves "no archive copy kept afterwards" while
+    /// `sweepSharedRecords` keeps `coach_bookings` and `equipment_reports` with
+    /// the id replaced by `deleted_user`. Under Recital 26 a pseudonymised row
+    /// is still personal data, so the notice was describing an erasure the code
+    /// does not perform.
+    ///
+    /// Retaining them is the right call -- a booking is also the coach's record
+    /// and a report is a fault the gym still has -- so the fix is the sentence,
+    /// not the behaviour.
+    testWidgets('names the records deletion keeps rather than erases',
+        (tester) async {
+      await tester.pumpWidget(_host(const PrivacyPage()));
+      await tester.pumpAndSettle();
+      final text = renderedText(tester);
+      expect(text, contains('identifier removed'));
+      expect(text, contains('coach booking'));
+      expect(text, contains('equipment report'));
+    });
+  });
+
+  /// The half of R8 a rendered-text assertion cannot reach.
+  ///
+  /// Asserting the policy names two collections proves the sentence exists. It
+  /// does not prove the sentence is still COMPLETE -- adding a third shared
+  /// collection to `sweepSharedRecords` would leave every assertion above green
+  /// while the notice silently under-described the retention again, which is
+  /// the exact shape of the defect R8 reported.
+  ///
+  /// So this reads the function itself. `functions/` is TypeScript with no Dart
+  /// test of its own; a file scan is coarse, and it is still the only thing in
+  /// either suite that would notice.
+  group('deletion disclosure tracks the deletion code', () {
+    test('no shared collection is pseudonymised without being disclosed', () {
+      final source = File('../functions/src/index.ts').readAsStringSync();
+      final start = source.indexOf('async function sweepSharedRecords');
+      expect(start, isNot(-1), reason: 'sweepSharedRecords was renamed or removed');
+      // The queries all sit in one `Promise.all` at the top of the function.
+      final body = source.substring(start, start + 1200);
+      final queried = RegExp(r'db\.collection\("([a-z_]+)"\)')
+          .allMatches(body)
+          .map((m) => m.group(1)!)
+          .toSet();
+
+      // `debug_sessions` is deleted outright, not retained, so it needs no
+      // retention sentence -- see the function's own doc comment.
+      expect(queried, containsAll(<String>{'coach_bookings', 'equipment_reports'}));
+      expect(
+        queried.difference(<String>{
+          'coach_bookings',
+          'equipment_reports',
+          'debug_sessions',
+        }),
+        isEmpty,
+        reason: 'a shared collection was added to sweepSharedRecords; if it is '
+            'retained rather than deleted, the privacy policy deletion '
+            'paragraph in scripts/legal/legal_text.py has to name it too',
+      );
     });
   });
 

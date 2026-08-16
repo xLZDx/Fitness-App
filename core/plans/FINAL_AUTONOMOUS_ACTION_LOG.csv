@@ -29,3 +29,22 @@ sequence,timestamp,marker,action,command_or_change,target,result,related_gate,co
 28,2026-08-16T09:32:30+03:00,+ГО,test,python tools/evidence/validate_csv_evidence.py,core/plans + core/audit,PASS,G6,,
 29,2026-08-16T09:32:30+03:00,+ГО,test,7 semantic mutations of ledger and evidence,tools/evidence/validate_csv_evidence.py,"7/7 detected, restore green",G6,,"bad SHA, non-ancestor SHA, non-monotonic sequence, illegal marker, missing column, removed gap note, tampered byte, unlisted file"
 30,2026-08-16T09:32:30+03:00,+ГО,edit,repoint documentation at repo-local evidence,core/plans/CATALOG_DESCRIPTION_COVERAGE_2026-08-15.md + FINAL_SCOPE_2026-08-16.md,no Downloads references remain in core/plans,G6,,DECISION_LOG history entries deliberately left unedited
+31,2026-08-16T09:38:54+03:00,+ГО,verify,measure line endings of imported artifacts,core/audit/full_catalog_1887_2026-08-15/,4 of 9 are LF-only under core.autocrlf=true,G6,,integrity defect found before the commit: a fresh clone would have broken 4 manifest hashes
+32,2026-08-16T09:38:54+03:00,+ГО,create,add .gitattributes: core/audit/** -text,.gitattributes,created,G6,,freezes evidence bytes across checkout
+33,2026-08-16T09:38:54+03:00,+ГО,test,codex_review.py --uncommitted,D:/Repo/_wt-formcoach,usage_limit_exhausted until 2026-08-20; fail-open receipt written,G6,,external review unavailable; internal reviewers scheduled per mission section 55
+34,2026-08-16T09:38:54+03:00,+ГО|КОМИТ,commit,git commit,core/audit + tools/evidence + core/plans + .gitattributes,committed,G6,8e50b9c,"16 files, 30438 insertions"
+35,2026-08-16T09:38:54+03:00,+ГО,test,git clone into a temp dir and re-hash against MANIFEST,fresh clone of formcoach/gates-a-c,"9 artifacts, 0 mismatches",G6,,proves the .gitattributes fix rather than asserting it
+36,2026-08-16T09:52:34+03:00,+ГО,search,grep R8/R9/R11 across working tree and git history,repository,no artifact file; DECISION_LOG carries labels only,G5,,two numbering schemes collide: R6-R11 are also refactor gate ids from the FIGMA_MAKE plan
+37,2026-08-16T09:52:34+03:00,+ГО,search,grep session transcripts under ~/.claude/projects,d--repo transcripts,"found task ae31c31fdb5230dc7, regulatory-compliance sweep",G5,,the agent .output file exists and is 0 bytes; the transcript result field was the only copy
+38,2026-08-16T09:52:34+03:00,+ГО,create,extract the result field verbatim,core/audit/gate_j_regulatory_review_2026-08-15/,"21423 bytes, 12 findings R1-R12",G5,,"no rewording, reordering or renumbering"
+39,2026-08-16T09:52:34+03:00,+ГО,create,README + MANIFEST,core/audit/gate_j_regulatory_review_2026-08-15/,2 artifacts hashed and manifested,G5,,validator green over both audit directories
+40,2026-08-16T09:52:34+03:00,+ГО,verify,measure R8/R9/R11 against the live tree,functions + mobile + core,all three still current,G5,,R11 also had a second stale copy in PLAY_DATA_SAFETY
+41,2026-08-16T09:52:34+03:00,+ГО,edit,correct the encryption comments,data_export.dart + PLAY_DATA_SAFETY_2026-08-05.md,R11 fixed,G5,,the replacement reference index.ts:1163 was itself stale and was checked before being written
+42,2026-08-16T09:52:34+03:00,+ГО,edit,disclose the retained shared records in both locales,scripts/legal/legal_text.py,R8 fixed; artifacts rebuilt,G5,,build_legal.py rewrote both arb files and privacy.html
+43,2026-08-16T09:52:34+03:00,+ГО,create,two-part R8 regression,mobile/test/features/legal/legal_pages_test.dart,rendered-text assertion plus an index.ts scan,G5,,the scan fails if sweepSharedRecords grows a fourth collection
+44,2026-08-16T09:52:34+03:00,+ГО,edit,"heading, icon and fund line agree with the body",about_page.dart + both arb files,R9 fixed,G5,,both locales
+45,2026-08-16T09:52:34+03:00,+ГО,create,R9 regression with a deletion control,mobile/test/features/about/about_claims_test.dart,4 tests,G5,,control pins the unreviewed-library sentence in place
+46,2026-08-16T09:52:34+03:00,+ГО,test,"mutation: 2 for R8, 5 for R9",legal + about suites,"7/7 detected, restore green",G5,,includes RU-only revert and deleting the principle outright
+47,2026-08-16T09:52:34+03:00,+ГО,verify,"measure R3, R10, R12 against the live tree",mobile/lib,all three still current; none had ever been recorded,G5,,R3 is a MAJOR that fell out of the deferral list entirely
+48,2026-08-16T09:52:34+03:00,+ГО,test,flutter test,mobile/,2602 passed / 0 failed,G5,,2596 before; 6 added
+49,2026-08-16T09:52:34+03:00,+ГО,test,flutter analyze lib/ test/,mobile/,"7 issues, all pre-existing",G5,,none in files touched here
