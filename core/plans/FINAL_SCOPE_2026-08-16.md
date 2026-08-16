@@ -157,7 +157,7 @@ over 519 cards, 224 Gate E findings over 199 cards, 1887 verified rows of which 
 
 | # | Item | Evidence |
 |---|---|---|
-| **B1** | **H4** — `ExerciseThumb` carries no `Semantics`/`semanticLabel`. Exercise tiles on the programme card are nameless to a screen reader | no `Semantics` anywhere in `exercise_thumb.dart` |
+| **B1** | ~~**H4** — exercise tiles on the programme card are nameless to a screen reader~~ **STALE, and the conclusion was backwards.** The evidence line was true — there is no `Semantics` in `exercise_thumb.dart` — but the programme card supplies its own `Semantics(label: title)` at `workouts_page.dart:1169`, and the other five call sites put the tile beside a `Text` with the title, where a label would make the name be read twice. The change actually missing was the opposite: `excludeFromSemantics`, so the picture stops contributing an unnamed graphic node. **Done 2026-08-16**, 3 tests, 2 mutations |
 | **B2** | `purpose` is rendered on the exercise card only (`exercise_reference.dart:892`). Neither the programme card nor the player shows it | single UI reader |
 | **B3** | **There is no iOS scaffold at all** — `mobile/ios/` does not exist | `ls` |
 
@@ -168,7 +168,7 @@ over 519 cards, 224 Gate E findings over 199 cards, 1887 verified rows of which 
 | **B4** | **B4** silhouette — third attempt; "closed only after the operator looks at it" | `PLAN_BUGS_2026-08-13.md` |
 | **B5** | **B6** video speed control — code done, unverified on device | same |
 | **B6** | **H2** template ranking ignores equipment and injuries (they affect selection INSIDE a programme, not card order) | same |
-| **B7** | **H5** 89 rows with a contradictory muscle group. My check "primary ∉ muscles" returned 0, so the original measurement used a different definition — **not reproduced** | same |
+| **B7** | **H5** 89 rows with a contradictory muscle group — **NOT_REPRODUCED, and the source definition does not exist anywhere.** Four definitions tried on 2026-08-16: `primaryMuscles ⊄ muscles` → **0**; `primaryMuscles` set with `muscles` empty → **0**; `muscles` set with `primaryMuscles` empty → **269**; both empty → **182**. A fifth, `vendorGroup` sharing no muscle with its own body area, gives **28** under a mapping this session invented, which is not a reproduction either. No fix is proposed, because fixing an unreproducible count means inventing the defect to match it |
 | **B8** | **R11f-2** photo export conflicts with the recorded decision that photos never leave the phone — **decision not taken** | `PLAN_REDESIGN_REMAINDER_2026-08-12.md` |
 | **B9** | **R11f-3** photo reminder — notification-scheduler territory | same |
 | **B10** | **F3** screen-by-screen parity check against the Figma prototype | same |
@@ -181,13 +181,13 @@ over 519 cards, 224 Gate E findings over 199 cards, 1887 verified rows of which 
 | # | Item |
 |---|---|
 | **P1** | **iOS does not exist.** No scaffold, no `Info.plist`, no entitlements. `mobile/IOS_PERMISSIONS_TODO.md` lists what is needed |
-| **P2** | The release build has never been run per the docs (`NEXT_TICKETS.md`: "release build untested"). The debug APK is 380 MB |
+| **P2** | ~~The release build has never been run~~ **Closed 2026-08-16 (G2)** — see `core/RELEASE_BUILD_2026-08-16.md`. The debug APK measures **292.6 MB** (306,805,723 bytes), not 380 |
 | **P3** | Wear OS smoke test never run on an emulator |
 | **P4** | 5 Stripe price IDs not created — annual / family / lifetime SKUs do not work |
 | **P5** | `equipment_v1.tflite` not trained and not bundled — recognition runs cloud-only |
-| **P6** | Stripe Connect return URL is the placeholder `fitnessapp.example.com/coach/onboarding-done` |
-| **P7** | Cloud Functions with no tests: `stripeWebhook`, `createPortalSession`, `optInDonorWall`, `optOutDonorWall`, `startCoachOnboarding`, `reportEquipment` |
-| **P8** | `AesPhotoCipher` is implemented and tested; the photos page still uses the test-only XOR cipher |
+| **P6** | ~~Stripe Connect return URL is a placeholder domain~~ **STALE.** `RETURN_ORIGIN` (`index.ts:244`) is derived from `GCLOUD_PROJECT`, so a deploy returns the browser to whichever project it landed in; the placeholder survives only in the comment recording its removal. Both target pages exist: `public/coach/onboarding-done.html` and `onboarding-refresh.html` |
+| **P7** | **Mostly stale, and one real gap.** The suite runs — 8 files, **151 tests, all passing**, first executed in this worktree on 2026-08-16 after `npm ci` (`ts-jest` was not installed, so it had never run here). `stripeWebhook`, `createPortalSession`, `optInDonorWall` and `startCoachOnboarding` have behavioural tests. **`optOutDonorWall` and `reportEquipment` appear only in `scaling.test.ts`**, which asserts scaling configuration and not behaviour — those two are genuinely untested |
+| **P8** | ~~the photos page still uses the test-only XOR cipher~~ **STALE.** `progress_photos_providers.dart:153` builds `PhotoStore` over a real `AesPhotoCipher` keyed from `SecurePhotoKeyStore`, and `:195` binds `LocalProgressPhotosRepository` over it. `XorPhotoCipher` has **no** caller in `lib/` outside its own definition. Same stale claim as R11, corrected in two other places on 2026-08-16 |
 
 ---
 

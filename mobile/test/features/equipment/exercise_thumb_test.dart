@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
@@ -76,7 +77,89 @@ void main() {
       expect(radius / size, closeTo(0.31, 1e-9), reason: 'at $size');
     }
   });
+  /// H4 — what a screen reader is actually handed.
+  ///
+  /// The finding was recorded as "`ExerciseThumb` carries no `Semantics`", with
+  /// the evidence "no `Semantics` anywhere in `exercise_thumb.dart`". Both are
+  /// true, and the conclusion drawn from them was wrong: the tile is DECORATIVE
+  /// at five of its six call sites, where it sits in a `Row` directly beside a
+  /// `Text` carrying the exercise title. A label on the picture there makes the
+  /// name be read out twice.
+  ///
+  /// The sixth is the programme card's tile strip, which has no text per tile,
+  /// and it already supplies its own `Semantics(label: title)` wrapper
+  /// (`workouts_page.dart:1169`). So the change that was actually missing is the
+  /// opposite of the one recorded: the image must be EXCLUDED, so it stops
+  /// contributing an unnamed graphic node between the title and the next
+  /// control on every list in the app.
+  group('semantics', () {
+    testWidgets('the poster contributes no node of its own', (t) async {
+      final handle = t.ensureSemantics();
+      await _pump(
+          t,
+          ExerciseThumb(
+            exercise: _ex(
+                poster: const {'men': 'assets/posters/men/barbell_squat.jpg'}),
+          ));
+      expect(
+        _announcesAnImage(t, find.byType(Image)),
+        isFalse,
+        reason: 'a decorative tile must not announce anything on its own',
+      );
+      handle.dispose();
+    });
+
+    testWidgets('beside a title, the name is announced exactly once', (t) async {
+      // The shape of five of the six call sites.
+      final handle = t.ensureSemantics();
+      await _pump(
+        t,
+        Row(children: [
+          ExerciseThumb(
+              exercise: _ex(
+                  poster: const {'men': 'assets/posters/men/barbell_squat.jpg'})),
+          const Text('Barbell Squat'),
+        ]),
+      );
+      expect(find.bySemanticsLabel('Barbell Squat'), findsOneWidget);
+      handle.dispose();
+    });
+
+    testWidgets('wrapped in a label, the name still gets through', (t) async {
+      // The shape of the sixth. Excluding the image must not swallow a label
+      // the call site deliberately added.
+      final handle = t.ensureSemantics();
+      await _pump(
+        t,
+        Semantics(
+          label: 'Barbell Squat',
+          image: true,
+          excludeSemantics: true,
+          child: ExerciseThumb(
+              exercise: _ex(
+                  poster: const {'men': 'assets/posters/men/barbell_squat.jpg'})),
+        ),
+      );
+      expect(find.bySemanticsLabel('Barbell Squat'), findsOneWidget);
+      handle.dispose();
+    });
+  });
 }
 
 Size tester_size(WidgetTester t) =>
     t.getSize(find.byType(ExerciseThumb));
+
+/// Whether anything inside [finder] announces itself as an image.
+///
+/// Asked of the subtree rather than by label, because the node this is about
+/// has NO label — which is exactly what makes it a problem: a screen reader
+/// reaches an unnamed graphic and says so. A label-based finder cannot see it.
+///
+/// `SemanticsController.find` walks UP to the nearest node, which is why the
+/// finder must be the `Image` itself rather than the tile around it: excluded,
+/// the image has no node and this resolves to a plain ancestor; included, it
+/// resolves to the image's own node and the flag is there. Pointed at the tile
+/// instead, it walked past the very node under test and could not fail at all —
+/// caught by mutation, not by reading it.
+bool _announcesAnImage(WidgetTester t, Finder finder) =>
+    t.semantics.find(finder).getSemanticsData().hasFlag(SemanticsFlag.isImage);

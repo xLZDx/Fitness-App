@@ -11495,3 +11495,82 @@ entry records why amending beat a second 54,000-line commit to undo it. The acti
 pre-amend SHA afterwards, and `validate_csv_evidence.py` caught it: *"action log names 569714d, which
 is not reachable from HEAD"*. That is the check earning its place — it was written two gates earlier
 for exactly this and had never yet fired on a real mistake.
+
+## 2026-08-16 — Six scope rows measured, and five of them were wrong
+
+**Basis: FACT.**
+
+The scope document warns that items B4–B11 come from plan files and were not re-verified. These six
+sat in the sections that had been. Measuring them one at a time found that **five of the six were
+stale or backwards**, which is a better argument for the warning than the warning is.
+
+### B1 / H4 — the evidence was true and the conclusion was the wrong way round
+
+Recorded as *"`ExerciseThumb` carries no `Semantics`… exercise tiles on the programme card are
+nameless to a screen reader"*, on the evidence *"no `Semantics` anywhere in `exercise_thumb.dart`"*.
+
+The evidence is literally true. The conclusion is not. The programme card's tile strip — the one row
+in the app with no text per tile — already wraps each thumb in `Semantics(label: visible.title)` at
+`workouts_page.dart:1169`, with a comment naming H4. The fix went to the call site, not the widget,
+so a grep of the widget could never find it.
+
+All six call sites were then read. Five put the tile in a `Row` directly beside a `Text` carrying the
+exercise title, where a label on the picture would make a screen reader say the name **twice**. So
+the change actually missing was the opposite of the one recorded: `excludeFromSemantics: true`, so
+the poster stops contributing a node flagged `isImage` with no label — an unnamed graphic announced
+between the title and the next control, on every list in the app.
+
+**The test for it was wrong twice before it was right, and only mutation said so.** The first version
+walked the semantics tree from `binding.pipelineOwner`, which is deprecated. Rewriting it onto the
+public `SemanticsController.find` made the analyzer clean and made the test **unable to fail** —
+`find` walks UP to the nearest node, so pointed at the tile it stepped straight past the node under
+test. Both mutations went green. A test that cannot fail is worse than a lint warning, and reading it
+would not have shown that; re-running the mutations did. Pointing the finder at the `Image` itself
+restored it: excluded, there is no node and it resolves to a plain ancestor; included, it resolves to
+the image's own node. Both mutations red again.
+
+### B7 / H5 — not reproduced, and no fix invented to match it
+
+"89 rows with a contradictory muscle group." Four definitions measured today: `primaryMuscles ⊄
+muscles` → **0**; `primaryMuscles` set with `muscles` empty → **0**; `muscles` set with
+`primaryMuscles` empty → **269**; both empty → **182** (269 + 182 = 451, which is the `primaryMuscles`
+figure the scope already carries, so the data is at least self-consistent). A fifth, `vendorGroup`
+sharing no muscle with its own body area, gives **28** under a mapping invented in this session — not
+a reproduction either.
+
+No definition yields 89, and the original definition is recorded nowhere. **NOT_REPRODUCED** is the
+final state. Proposing a fix would mean choosing whichever definition happened to produce a number,
+which is inventing the defect to match the count.
+
+### P2, P6, P8 — stale
+
+- **P2** "the release build has never been run" — closed by G2 today. The debug APK measures
+  **292.6 MB**, not the 380 MB recorded.
+- **P6** "Stripe Connect return URL is the placeholder `fitnessapp.example.com`" — `RETURN_ORIGIN`
+  (`index.ts:244`) is derived from `GCLOUD_PROJECT`. The placeholder survives only inside the comment
+  recording its removal, which is how a grep keeps finding it. Both target pages exist:
+  `public/coach/onboarding-done.html` and `onboarding-refresh.html`.
+- **P8** "the photos page still uses the test-only XOR cipher" — `progress_photos_providers.dart:153`
+  builds `PhotoStore` over a real `AesPhotoCipher`. `XorPhotoCipher` has no caller in `lib/` outside
+  its own definition. This is the third place today carrying that same stale claim, after
+  `data_export.dart` and `PLAY_DATA_SAFETY` (R11).
+
+### P7 — mostly stale, and one real gap that a green suite was hiding
+
+The Cloud Functions suite **had never run in this worktree**: `npm ci` had not been run, so
+`ts-jest` was missing and `jest` refused to start. Every "full suite green" statement made in this
+session covered `mobile/` only.
+
+It runs now: **8 suites, 151 tests, all passing.** Four of the six functions P7 names —
+`stripeWebhook`, `createPortalSession`, `optInDonorWall`, `startCoachOnboarding` — have behavioural
+tests.
+
+`optOutDonorWall` and `reportEquipment` appear in exactly one file, `scaling.test.ts`, which asserts
+scaling configuration and calls neither. Those two are genuinely untested, and that is the row's
+surviving half.
+
+### Verification
+
+`flutter test` **2628 passed / 0 failed** (2625 before; 3 added). `flutter analyze lib/ test/` back
+to **7** issues, all pre-existing — the deprecated-API version of the new test had made it 8.
+`functions/`: 151 passed / 0 failed.

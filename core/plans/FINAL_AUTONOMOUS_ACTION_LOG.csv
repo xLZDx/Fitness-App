@@ -86,3 +86,17 @@ sequence,timestamp,marker,action,command_or_change,target,result,related_gate,co
 85,2026-08-16T10:49:39+03:00,+ГО,test,flutter test,mobile/,2625 passed / 0 failed,C3,,2621 before; 4 added
 86,2026-08-16T10:50:32+03:00,+ГО|КОМИТ,record,git commit,C3,committed,C3,8e1dc5e,"6 files, 379 insertions"
 87,2026-08-16T10:50:32+03:00,+ГО|+ПУШ,push,git push origin formcoach/gates-a-c,origin/formcoach/gates-a-c,local HEAD == upstream HEAD,mission,8e1dc5e,"6 commits: G6, G5, G2, C1, C2, C3. No force, no history rewrite"
+88,2026-08-16T11:22:02+03:00,+ГО,verify,read all 6 ExerciseThumb call sites,mobile/lib,5 sit beside a title Text; the 6th already wraps its own Semantics label,B1,,the recorded conclusion was backwards
+89,2026-08-16T11:22:02+03:00,+ГО,edit,mark the poster decorative,exercise_thumb.dart,excludeFromSemantics: true,B1,,
+90,2026-08-16T11:22:02+03:00,+ГО,create,3 semantics tests,exercise_thumb_test.dart,pass,B1,,
+91,2026-08-16T11:22:02+03:00,+ГО,test,mutation round 1,exercise_thumb_test.dart,2/2 detected,B1,,helper used a deprecated API
+92,2026-08-16T11:22:02+03:00,+ГО,edit,rewrite the helper onto the public API,exercise_thumb_test.dart,analyzer clean,B1,,
+93,2026-08-16T11:22:02+03:00,+ГО,test,mutation round 2,exercise_thumb_test.dart,0/2 detected - the test could no longer fail,B1,,"SemanticsController.find walks up, past the node under test"
+94,2026-08-16T11:22:02+03:00,+ГО,edit,point the finder at the Image itself,exercise_thumb_test.dart,2/2 detected again,B1,,a test that cannot fail is worse than a lint warning
+95,2026-08-16T11:22:02+03:00,+ГО,verify,measure H5 under 5 definitions,mobile/assets/data,0 / 0 / 269 / 182 / 28 - none is 89,B7,,NOT_REPRODUCED; no fix invented to match the count
+96,2026-08-16T11:22:02+03:00,+ГО,verify,RETURN_ORIGIN and the coach return pages,functions + public,derived from GCLOUD_PROJECT; both pages exist,P6,,stale
+97,2026-08-16T11:22:02+03:00,+ГО,verify,which cipher production binds,mobile/lib/features/progress_photos,AesPhotoCipher; XorPhotoCipher has no caller in lib/,P8,,third copy of the same stale claim today
+98,2026-08-16T11:22:02+03:00,+ГО,build,npm ci,functions/,installed; ts-jest was missing so the suite had never run here,P7,,
+99,2026-08-16T11:22:02+03:00,+ГО,test,npx jest --ci,functions/,"8 suites, 151 tests, all passing",P7,,every previous full-suite-green statement covered mobile/ only
+100,2026-08-16T11:22:02+03:00,+ГО,verify,behavioural coverage of the 6 named functions,functions/src/__tests__,4 covered; optOutDonorWall and reportEquipment appear only in scaling.test.ts,P7,,the row is mostly stale with one real gap
+101,2026-08-16T11:22:02+03:00,+ГО,test,flutter test,mobile/,2628 passed / 0 failed,B1,,2625 before; 3 added

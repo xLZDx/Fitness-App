@@ -58,6 +58,20 @@ class ExerciseThumb extends StatelessWidget {
         color: Colors.white,
         child: Image.asset(
           poster,
+          // H4, finished. This tile is decorative at every call site, and that
+          // was checked rather than assumed: five of the six put it in a Row
+          // directly beside a `Text` carrying the exercise title, so a label
+          // here would make a screen reader say the name twice. The sixth --
+          // the programme card's tile strip (`workouts_page.dart:1169`) -- is
+          // the one row with no text per tile, and it supplies its own
+          // `Semantics(label: title)` wrapper for exactly that reason.
+          //
+          // Without this flag `Image` still contributes a node with
+          // `image: true` and no label, which announces as an unnamed graphic:
+          // noise between the title and the next control, on every list in the
+          // app. Silent is the correct behaviour for a picture whose name is
+          // already being read out beside it.
+          excludeFromSemantics: true,
           fit: BoxFit.cover,
           // The frame is wider than it is tall (400x230) and these tiles are
           // square, so `cover` crops the sides. Aligning to the top keeps the
