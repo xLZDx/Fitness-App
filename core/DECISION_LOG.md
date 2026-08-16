@@ -12334,3 +12334,66 @@ dependency order, without a further checkpoint.
 G-A closed: 6/6 items landed and regression-verified. Not pushed.
 
 Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).
+
+## 2026-08-17 — G-D: Firestore stops trusting the client for three things it never should have
+
+Root cause RC6. `firestore.rules`' per-user wildcard (`users/{uid}/{coll}/{document=**}`) carved out
+exactly one collection (`subscription`) as server-only; everything else under a user's own uid was
+theirs to read AND write, including collections three separate server-side mechanisms treat as
+authoritative.
+
+**F005** — `abuse_guard.ts`'s daily quota lives at `users/{uid}/usage/{yyyy-mm-dd}`, read-compared-and-
+written inside a Firestore transaction specifically so two concurrent calls cannot both slip under the
+limit. That atomicity bought nothing while the same client holding the transaction could simply
+overwrite or delete the counter directly. **F006** — `generateAnnualReceipt` computes a receipt from
+Stripe invoices and persists it to `users/{uid}/receipts/{year}` "so the year-end batch job has a known
+address"; its own doc comment calls this "the one document a user might hand to a tax authority," and
+it was client-writable. **N03** — the privacy policy's "health answers stay on your phone" claim is
+implemented entirely in `DeviceHealthProfileRepository` (`stripSensitive()` before every write reaches
+`FirestoreProfileRepository`); nothing server-side backed that promise, so a modified client, or a
+future regression in the decorator itself, could put real health data on the server with nothing to
+stop it.
+
+Fixed by excluding all three from the wildcard (`usage`/`receipts` from read AND write, `profile` from
+write only — it stays generally readable) and adding dedicated blocks:
+- `usage`, `receipts`: `allow read, write: if false`. Neither has a client reader (each collection's
+  caller gets its data back in the callable's own response), so closed outright rather than opened
+  read-only for a caller that does not exist.
+- `profile`: a `healthIsStripped()` rules function mirroring the exact shape `stripSensitive()`
+  produces (`sensitive_profile.dart`) — every free-text/list health field empty, `lifestyle.smoking`/
+  `alcohol` null — enforced only when the write actually includes a `health`/`lifestyle` field, so a
+  partial-field update that omits them entirely is unaffected. A write whose `health` block carries a
+  real condition, injury, medication, or a real smoking/alcohol answer is refused.
+
+**Caught and fixed during verification, not after:** the first version excluded `usage`/`receipts`
+from the wildcard's WRITE rule only, leaving its READ rule (`allow read: if request.auth != null &&
+request.auth.uid == uid`, no collection check) unconditionally granting read on every collection under
+the uid — including the two new `if false` blocks, which do nothing when a broader rule already
+permits the same request (Firestore allows if ANY matching rule permits). The rules-emulator test run
+below caught this directly: `assertFails(getDoc(...))` failed with "expected to fail, but succeeded"
+on both. Fixed by excluding both collections from the wildcard's read line too.
+
+**Verified against the real Firestore emulator**, not just written and assumed correct — this project
+already has `functions/src/__rules__/firestore_rules.test.ts`, run via `npm run test:rules`
+(`functions.yml`'s `rules` job, required on every push/PR, no `continue-on-error`). Port 8080 was held
+by an unrelated long-running Docker process on this machine; ran the suite against an alternate port
+via a scratch `firebase.json` copy and a temporarily-repointed test file, both reverted before commit
+(diff-clean on `firestore_rules.test.ts` outside the new test blocks — confirmed via `git diff`).
+
+Added 5 new tests (F005 read+write refused, F006 read+write refused, N03: empty write succeeds /
+stripped-shape write succeeds / real-condition write refused / real-injury write refused /
+smoking-alcohol write refused). Mutation-tested the whole set: stashed `firestore.rules` only,
+re-ran — all 5 failed for exactly the reason expected (real condition/injury/smoking-alcohol writes and
+usage/receipts reads all *succeeded* against the pre-fix rules), restored, all 34 (29 pre-existing + 5
+new) pass. `npx tsc --noEmit` clean on the whole `functions` package.
+
+G-D is closed: F005, F006, N03 all landed and verified. No adversarial payload beyond the three tested
+(bare list-field content, a structured injury object, enum-valued smoking/alcohol) — the rejected shape
+is a straightforward conjunction over independent fields, not branching logic that specific payload
+shapes could route around differently.
+
+### Status
+
+G-D closed: 3/3 items landed and regression-verified. Not pushed.
+
+Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).

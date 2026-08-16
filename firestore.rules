@@ -4,16 +4,100 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // Per-user data: every subcollection under /users/{uid}/ is the user's
-    // own to read and write — except `subscription`, which is server-only.
-    // The Cloud Functions backend (running with the Admin SDK, no auth
-    // context) writes to /users/{uid}/subscription/main via the Stripe
-    // webhook. Clients can read their record so the UI shows tier + status,
-    // but they can never mutate it.
+    // own to read and write — except the collections carved out below, each
+    // for its own reason. The Cloud Functions backend (running with the
+    // Admin SDK, no auth context) writes to /users/{uid}/subscription/main
+    // via the Stripe webhook. Clients can read their record so the UI shows
+    // tier + status, but they can never mutate it.
+    //
+    // G-D / F005, F006, N03: `usage`, `receipts` and `profile` joined this
+    // list. All three used to fall through to this wildcard's blanket
+    // client-write grant, which meant a client could quietly undo work three
+    // separate server-side mechanisms do on its behalf — see each one's own
+    // block below for what it actually protects. `usage` and `receipts` are
+    // excluded from read too: no client reads either directly (each is
+    // returned inline by the callable that writes it), and the more specific
+    // blocks below saying `if false` do nothing against a wildcard that
+    // still grants the same request — Firestore allows a request if ANY
+    // matching rule permits it, so a blanket read grant here would have kept
+    // overriding a stricter one there.
     match /users/{uid}/{coll}/{document=**} {
-      allow read: if request.auth != null && request.auth.uid == uid;
+      allow read: if request.auth != null
+                  && request.auth.uid == uid
+                  && coll != 'usage'
+                  && coll != 'receipts';
       allow write: if request.auth != null
                    && request.auth.uid == uid
-                   && coll != 'subscription';
+                   && coll != 'subscription'
+                   && coll != 'usage'
+                   && coll != 'receipts'
+                   && coll != 'profile';
+    }
+
+    // F005: `abuse_guard.ts`'s daily quota lives at
+    // `users/{uid}/usage/{yyyy-mm-dd}`, read-then-compare-then-write inside a
+    // transaction so two concurrent calls cannot both slip under the limit.
+    // The wildcard rule above used to let the same client that transaction
+    // limits simply overwrite or delete its own counter directly — the
+    // server-side atomicity bought nothing if the number it protected was
+    // still client-writable. No client reads this collection today (the
+    // callable returns whatever it needs in its own response), so closed
+    // outright rather than opened read-only for a caller that does not exist.
+    match /users/{uid}/usage/{day} {
+      allow read, write: if false;
+    }
+
+    // F006: `generateAnnualReceipt` writes to `users/{uid}/receipts/{year}`
+    // from figures it pulled from Stripe directly — no client-supplied
+    // field reaches the document. The comment on that function is explicit
+    // about why this collection cannot be client-writable: it is "the one
+    // document a user might hand to a tax authority," and a client that can
+    // edit or delete it after the fact makes it worthless as a record of
+    // what was actually charged. No client reads this collection either
+    // (the callable's own response is what the UI renders).
+    match /users/{uid}/receipts/{year} {
+      allow read, write: if false;
+    }
+
+    // N03: `DeviceHealthProfileRepository` (mobile/lib/features/profile/data/
+    // device_health_profile_repository.dart) strips every free-text health
+    // field out of a profile before `FirestoreProfileRepository` ever sees
+    // it — that split is what backs the privacy policy's "health answers
+    // stay on your phone" claim. It was enforced by client code alone:
+    // nothing here independently rejected a write that skipped the strip,
+    // whether from a modified client or a future regression in the decorator
+    // itself. This mirrors the shape `stripSensitive()` produces
+    // (sensitive_profile.dart) — every free-text/list health field empty,
+    // and lifestyle.smoking/alcohol null — and rejects anything else, so a
+    // write that still carries a real condition, medication or injury is
+    // refused at the one layer a client cannot route around.
+    function healthIsStripped(h) {
+      return h.conditions.size() == 0
+          && h.allergies.size() == 0
+          && h.medications.size() == 0
+          && h.injuries.size() == 0
+          && h.physicalLimitations.size() == 0
+          && h.recentSurgeries.size() == 0
+          && h.bloodPressure == null
+          && h.otherConcerns == null;
+    }
+    match /users/{uid}/profile/{docId} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      // Tolerant of a write that omits `health`/`lifestyle` altogether
+      // (a partial field update, or a document shape this rule has not seen
+      // yet) — it only refuses a write that INCLUDES a health block and that
+      // block is not the stripped shape. What it must never accept is a
+      // present `health` carrying real content.
+      allow write: if request.auth != null
+                   && request.auth.uid == uid
+                   && (!('health' in request.resource.data)
+                       || healthIsStripped(request.resource.data.health))
+                   && (!('lifestyle' in request.resource.data)
+                       || (!('smoking' in request.resource.data.lifestyle)
+                           || request.resource.data.lifestyle.smoking == null))
+                   && (!('lifestyle' in request.resource.data)
+                       || (!('alcohol' in request.resource.data.lifestyle)
+                           || request.resource.data.lifestyle.alcohol == null));
     }
 
     // Equipment + exercise catalogs are read-only for clients.

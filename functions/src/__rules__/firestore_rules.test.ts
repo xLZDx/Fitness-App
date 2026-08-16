@@ -125,6 +125,95 @@ describe("subscription is server-only", () => {
   });
 });
 
+describe("G-D: usage quota is closed to clients (F005)", () => {
+  test("no read, no write, even for the owner", async () => {
+    // abuse_guard.ts's whole point is a server-atomic ceiling; a client that
+    // can write its own counter can reset it to zero directly, no race
+    // needed.
+    await assertFails(getDoc(doc(asAlice(), `users/${ALICE}/usage/2026-08-17`)));
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/usage/2026-08-17`), { aiCoach: 0 }),
+    );
+  });
+});
+
+describe("G-D: receipts are closed to clients (F006)", () => {
+  test("no read, no write, even for the owner", async () => {
+    // generateAnnualReceipt computes this from Stripe invoices directly; a
+    // client that can edit it after the fact can hand itself a fabricated
+    // tax record.
+    await assertFails(getDoc(doc(asAlice(), `users/${ALICE}/receipts/2026`)));
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/receipts/2026`), {
+        totalCents: 999999,
+      }),
+    );
+  });
+});
+
+describe("G-D: profile health block cannot reach the server unstripped (N03)", () => {
+  const strippedHealth = () => ({
+    conditions: [],
+    allergies: [],
+    medications: [],
+    injuries: [],
+    physicalLimitations: [],
+    recentSurgeries: [],
+    bloodPressure: null,
+    otherConcerns: null,
+    screening: {},
+    flags: { restrictions: [], bloodPressure: null, surgery: null, clinicianAdvice: null },
+  });
+
+  test("a profile write with no health/lifestyle field at all succeeds", async () => {
+    // A minimal or partial-field write — nothing here claims anything about
+    // health one way or the other, so nothing to reject.
+    await assertSucceeds(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), { goal: "strength" }),
+    );
+  });
+
+  test("a profile write carrying the stripped (empty) health block succeeds",
+    async () => {
+      await assertSucceeds(
+        setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+          health: strippedHealth(),
+          lifestyle: { smoking: null, alcohol: null, diet: [] },
+        }),
+      );
+    });
+
+  test("a profile write carrying a real condition is refused", async () => {
+    // This is the exact bypass the client-side split (device_health_profile_
+    // repository.dart) exists to prevent — a compromised or buggy client
+    // sending the real health block straight to Firestore.
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        health: { ...strippedHealth(), conditions: ["type 2 diabetes"] },
+      }),
+    );
+  });
+
+  test("a profile write carrying a real injury is refused", async () => {
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        health: {
+          ...strippedHealth(),
+          injuries: [{ bodyPart: "knee", confirmed: true }],
+        },
+      }),
+    );
+  });
+
+  test("a profile write carrying smoking/alcohol answers is refused", async () => {
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        lifestyle: { smoking: "current", alcohol: "none", diet: [] },
+      }),
+    );
+  });
+});
+
 describe("catalogs are read-only", () => {
   for (const c of ["equipment", "exercises", "gyms"]) {
     test(`${c}: signed-in reads, nobody writes`, async () => {
