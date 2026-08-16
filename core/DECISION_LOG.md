@@ -12995,3 +12995,68 @@ and what was deliberately not decided (D1, H3, N07, F010, F014).
 ### Status
 
 Reporting artefact only; no behaviour changed. Not pushed.
+
+## 2026-08-17 — Consolidated A–D adversarial matrix, and the stale-state attack
+
+**Why a matrix when every gate already has tests.** Each gate was proven in isolation, looking at the
+surface that gate touched. That is precisely the shape of coverage that let F020 ship half-fixed: a
+shared rule applied on one screen and not the next, with each screen's own file green. The matrix
+asserts ONE SAFETY STATE AGAINST EVERY SURFACE AT ONCE, in a table, so a surface that forgets the
+eligibility layer fails here even when its own tests pass.
+
+Five states (`cleared`, `injury`, `restriction`, `blocked`, `unscreened`) against four surfaces
+(catalogue eligibility, exercise resolution, generated `ai::` rows, programme enrolment), 24 cases.
+
+### Two things the matrix taught me, both corrections to my own expectations
+
+**1. A blocked user's library stays full, and that is the invariant.** I wrote the eligibility row
+expecting `blocked` to hide the attacked exercise. It does not: `eligibleExercises` passes
+`includeWholePerson: false` deliberately — it is a DISPLAY filter, narrowing by what the user's
+injuries and restrictions rule out, never by the whole-person gate. Expecting an empty library for a
+blocked user is exactly the over-suppression this programme shipped twice. The table now carries the
+correct expectation with the reasoning beside it rather than a quietly-changed number.
+
+**2. An unscreened tap is withheld, and the property worth holding is that it EXPLAINS itself.** I
+first asserted `found` for a harmless exercise. Wrong: a tap is a terminal question, so the
+whole-person gate applies. The real invariant, from the deep-link fix, is that the refusal names
+itself — `withheld` with reasons and a non-null exercise, never `notFound`, which would tell the
+user the exercise does not exist.
+
+### A vacuous cell in my own new test, caught by mutation
+
+The first mutation run — removing the restriction half of `cannotScreenGeneratedFor` — left the
+matrix **green**. Cell C was passing for the wrong reason: the generated-exercise cache was empty, so
+every `ai::` lookup returned not-found whether the gate ran or not. A cell that cannot tell the fix
+from its absence is not evidence.
+
+Fixed by seeding a real generated row (carrying no `contraindications`, which is the whole reason the
+gate exists) and adding the control that makes the refusals mean something: **a cleared user DOES
+reach it**. Two mutations now fail the matrix:
+
+| mutation | result |
+|---|---|
+| restriction half of `cannotScreenGeneratedFor` removed | FAILS — `restriction` cell reports `found` |
+| the whole `ai::` gate removed | FAILS — `injury` and `restriction` cells both report `found` |
+
+### The stale-state attack
+
+Every other proof in this repository fixes a safety state and then asks a surface what it does. The
+hazard does not arrive that way — it arrives as a TRANSITION. So each case holds ONE container
+across the change, as a running app does; a fresh container per state would prove nothing because it
+never held the stale value.
+
+Five cases: an allowed-then-injured re-resolution; a scheduled session written while cleared and
+struck after the injury; unscreened-then-blocked, where the feed stays full and the terminal answer
+changes; enrolled-then-blocked, where a second enrolment is refused and writes nothing further; and
+the direction nobody tests — the answer being REMOVED must reopen what it closed, or a mistyped
+injury is permanent.
+
+**Non-vacuity is unusually sharp here.** Changing one word in `exerciseResolutionProvider` —
+`ref.watch(screeningProfileProvider.future)` to `ref.read(...)`, which still returns the right value
+but stops subscribing — fails three of the five, including the cached-session case.
+
+### Status
+
+A–D matrix: 24 cases, all passing, two mutations proven. Stale-state attack: 5 cases, all passing,
+one-word mutation proven. No cross-gate defect found in the product; one vacuous cell found and fixed
+in my own test. Not pushed.
