@@ -127,6 +127,57 @@ void main() {
           findsOneWidget);
       expect(find.textContaining('Check with a professional'), findsNothing);
     });
+
+    // F019: safetyFilterCoverage was authored, translated and computed by
+    // catalogSafetyCoverageProvider, and rendered by nothing — the group
+    // above already proved the string exists and is a real ICU plural, which
+    // is not the same claim as this one.
+    testWidgets(
+        'shows the tagged/total coverage figure, not only the headline',
+        (tester) async {
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          safetyScreeningLevelProvider
+              .overrideWithValue(SafetyScreeningLevel.rulesOnly),
+          catalogSafetyCoverageProvider.overrideWith((ref) async =>
+              const CatalogSafetyCoverage(tagged: 1527, total: 1887)),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.dark(),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(body: SafetyDisclosure()),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+          tester.element(find.byType(SafetyDisclosure)));
+      expect(find.text(l10n.safetyFilterCoverage(1527, 1887)), findsOneWidget);
+    });
+
+    testWidgets('compact still drops the coverage figure, same as the detail',
+        (tester) async {
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          safetyScreeningLevelProvider
+              .overrideWithValue(SafetyScreeningLevel.rulesOnly),
+          catalogSafetyCoverageProvider.overrideWith((ref) async =>
+              const CatalogSafetyCoverage(tagged: 1527, total: 1887)),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.dark(),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(body: SafetyDisclosure(compact: true)),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+          tester.element(find.byType(SafetyDisclosure)));
+      expect(find.text(l10n.safetyFilterCoverage(1527, 1887)), findsNothing);
+    });
   });
 
   group('the shipped copy', () {

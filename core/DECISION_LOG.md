@@ -12176,3 +12176,28 @@ G-A remaining: F019 (render `safetyFilterCoverage`), F020's render-site half, F0
 G-A in progress, three of six items landed. Not pushed.
 
 Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).
+
+## 2026-08-16 — F019: the tagged/total coverage figure finally renders
+
+G-A/A4, root cause RC3. `safetyFilterCoverage` was authored, translated into both locales, computed
+live by `catalogSafetyCoverageProvider`, and matched by an existing test proving it is a real ICU
+plural rather than a Dart-side ternary — and still rendered nowhere. `safety_disclosure_test.dart`
+already had a test for "the string exists"; there was none for "the string is shown", which is the gap
+this closes without touching the existing 12.
+
+`SafetyDisclosure` now watches `catalogSafetyCoverageProvider` alongside the screening level it already
+read, and renders the tagged/total figure as a third line whenever `!compact` and the coverage has
+resolved (a `FutureProvider`, so nothing renders for the one frame before the memoised first read
+completes, rather than a stale or invented number). `compact` mode drops it along with the existing
+detail line — same visibility rule, not a new one.
+
+Regression-tested: two new widget tests (present in non-compact, absent in compact), both mutation-
+checked against the pre-fix source. `flutter analyze` clean.
+
+G-A remaining: F020's render-site half, F002's copy half.
+
+### Status
+
+G-A in progress, four of six items landed. Not pushed.
+
+Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).

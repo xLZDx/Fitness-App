@@ -44,6 +44,14 @@ class SafetyDisclosure extends ConsumerWidget {
     final theme = Theme.of(context);
     final colour = theme.colorScheme.tertiary;
 
+    // F019: safetyFilterCoverage was authored, translated and computed by
+    // catalogSafetyCoverageProvider, and rendered nowhere — the one figure
+    // that would show a user how much of the catalog "screened by rules" (or
+    // "not screened yet") actually covers. Coverage is null only for one
+    // frame while the provider's first read is in flight; nothing is shown
+    // rather than a stale or invented number.
+    final coverage = ref.watch(catalogSafetyCoverageProvider).valueOrNull;
+
     // Two different truths, and the weaker one is not a softened version of
     // the stronger. "Nothing was screened" and "screened by rules, not by a
     // clinician" describe different products, and collapsing the second into
@@ -89,6 +97,16 @@ class SafetyDisclosure extends ConsumerWidget {
                         color: theme.colors.textSecondary,
                       ),
                     ),
+                    if (coverage != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        l10n.safetyFilterCoverage(
+                            coverage.tagged, coverage.total),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ],
                 ],
               ),
