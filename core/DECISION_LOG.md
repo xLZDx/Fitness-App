@@ -12977,3 +12977,21 @@ unreferenced. The finding's own note already says not to delete during an audit.
 
 F012 FIXED (documentation). N07 and F010 OPEN_DECISION_REQUIRED, deliberately. Full suite: **2684
 passing**. Not pushed.
+
+## 2026-08-17 — Checkpoint report for G-E and the first Tier-6 pass
+
+Written to `reports/checkpoint_2026-08-17_gate_ge_tier6.html` and published as an artifact, per the
+operator's standing reporting rule (local copy for durable/offline access in the repo, artifact link
+for viewing and sharing).
+
+It records evidence rather than conclusions: the pre-G-E figures with their row ids, the F016
+trust-boundary trace and hallucination results, the mutation table for every fix, and the Phase 0
+diagnosis in which no ordering failure survived scrutiny. It also states plainly what was NOT done
+(Phase 2, Phase 5, five Tier-6 findings, the F011 payment callables, the six independent attacks)
+and what was deliberately not decided (D1, H3, N07, F010, F014).
+
+`RELEASE_READY` is not claimed anywhere in it.
+
+### Status
+
+Reporting artefact only; no behaviour changed. Not pushed.
