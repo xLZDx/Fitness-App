@@ -11471,3 +11471,27 @@ Full suite **2625 passed / 0 failed** (2621 before; 4 added).
 
 G3 Stripe price IDs, G4 the R5 Firestore question, G7 the `targetSdk` bump, R3 and R10 from the
 recovered Gate J review, and C4 onward in the catalogue plan.
+
+## 2026-08-16 — Six gates pushed
+
+**Basis: FACT.** `e2946ad..8e1dc5e`, six commits, no force and no history rewrite. Local HEAD equals
+upstream HEAD and `git rev-list --left-right --count` reports `0 0`.
+
+| gate | what it closed |
+|---|---|
+| **G6** | the three audit CSVs moved out of `Downloads` into `core/audit/`, hashed and manifested, with a validator no Flutter test could stand in for |
+| **G5** | R8/R9/R11 recovered from the session transcript — and R3, R10, R12 found, three findings nobody had recorded at all |
+| **G2** | the first Android release build, which found `targetSdk 35` against a Play deadline 15 days out |
+| **C1** | the five known-wrong cards: one withheld, four corrected in both languages |
+| **C2** | 127 Russian summaries repaired, and a test that had been watching the wrong half of the pair |
+| **C3** | 78 exercises that said they needed nothing while naming a machine |
+
+Full suite **2625 passed / 0 failed**, from 2596 at the start of the day. `flutter analyze lib/ test/`
+reports 7 issues, all pre-existing and none in files touched.
+
+One commit in this range was amended before the push — C1, whose first version reformatted
+`exercises_vendor.ru.json` into a 54,118-line diff. It was local and unpushed; the addendum to the C1
+entry records why amending beat a second 54,000-line commit to undo it. The action ledger named the
+pre-amend SHA afterwards, and `validate_csv_evidence.py` caught it: *"action log names 569714d, which
+is not reachable from HEAD"*. That is the check earning its place — it was written two gates earlier
+for exactly this and had never yet fired on a real mistake.

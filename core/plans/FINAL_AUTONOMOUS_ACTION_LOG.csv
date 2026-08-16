@@ -84,3 +84,5 @@ sequence,timestamp,marker,action,command_or_change,target,result,related_gate,co
 83,2026-08-16T10:49:39+03:00,+ГО,create,permanent invariant test,equipment_label_invariant_test.dart,4 tests,C3,,includes a no-id row must not be given a machine name
 84,2026-08-16T10:49:39+03:00,+ГО,test,4 mutations,equipment_label_invariant_test.dart,"4/4 detected, restore green",C3,,"includes nulling every machine label, which satisfies the invariant by saying nothing"
 85,2026-08-16T10:49:39+03:00,+ГО,test,flutter test,mobile/,2625 passed / 0 failed,C3,,2621 before; 4 added
+86,2026-08-16T10:50:32+03:00,+ГО|КОМИТ,record,git commit,C3,committed,C3,8e1dc5e,"6 files, 379 insertions"
+87,2026-08-16T10:50:32+03:00,+ГО|+ПУШ,push,git push origin formcoach/gates-a-c,origin/formcoach/gates-a-c,local HEAD == upstream HEAD,mission,8e1dc5e,"6 commits: G6, G5, G2, C1, C2, C3. No force, no history rewrite"
