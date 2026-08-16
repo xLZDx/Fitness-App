@@ -161,7 +161,7 @@ over 519 cards, 224 Gate E findings over 199 cards, 1887 verified rows of which 
 | # | Item | Evidence |
 |---|---|---|
 | **B1** | ~~**H4** — exercise tiles on the programme card are nameless to a screen reader~~ **STALE, and the conclusion was backwards.** The evidence line was true — there is no `Semantics` in `exercise_thumb.dart` — but the programme card supplies its own `Semantics(label: title)` at `workouts_page.dart:1169`, and the other five call sites put the tile beside a `Text` with the title, where a label would make the name be read twice. The change actually missing was the opposite: `excludeFromSemantics`, so the picture stops contributing an unnamed graphic node. **Done 2026-08-16**, 3 tests, 2 mutations |
-| **B2** | `purpose` is rendered on the exercise card only (`exercise_reference.dart:892`). Neither the programme card nor the player shows it | single UI reader |
+| **B2** | ~~`purpose` is rendered on the exercise card only~~ **Half stale, and the real defect was worse. Closed 2026-08-16.** The player already showed it — `workout_player_page.dart:282` renders `ExerciseStepsCard`, the same widget that draws the purpose block on the detail page. What was real: the list row's subtitle was `exercise.summary`, and `summary` is byte-identical to `steps[0]` by an invariant enforced on all 1,887 rows — so the subtitle was the first **instruction**, shown on the one screen where the user has not chosen yet. `exerciseSubtitle` now prefers `purpose`, keeping both fallbacks for the 1,484 rows without one. 5 tests, 4 mutations |
 | **B3** | **There is no iOS scaffold at all** — `mobile/ios/` does not exist | `ls` |
 
 ### From plan files, NOT re-verified on device

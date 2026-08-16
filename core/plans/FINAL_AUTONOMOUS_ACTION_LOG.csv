@@ -121,3 +121,11 @@ sequence,timestamp,marker,action,command_or_change,target,result,related_gate,co
 120,2026-08-16T11:51:13+03:00,+ГО,test,flutter test + analyze,mobile/,"2634 passed / 0 failed; 7 analyzer issues, all pre-existing",C3-followup,,2631 before; 3 added
 121,2026-08-16T11:51:48+03:00,+ГО|КОМИТ,record,git commit,equipment localisation,committed,C3-followup,25a0015,"5 files, 157 insertions"
 122,2026-08-16T11:51:48+03:00,+ГО|+ПУШ,push,git push origin formcoach/gates-a-c,origin/formcoach/gates-a-c,local HEAD == upstream HEAD,mission,25a0015,"2 commits: G4/R5 and the equipment name lookup. No force, no history rewrite"
+123,2026-08-16T12:04:24+03:00,+ГО|КОМИТ,record,git commit,push record,committed,C3-followup,f5cd064,"2 files, 7 insertions"
+124,2026-08-16T12:04:24+03:00,+ГО,verify,does the player show purpose?,workout_player_page.dart,"yes - it renders ExerciseStepsCard, the same widget as the detail page",B2,,half of B2 was stale
+125,2026-08-16T12:04:24+03:00,+ГО,verify,what the list row subtitle actually is,workouts_page.dart,"exercise.summary, which the catalogue invariant makes byte-identical to steps[0]",B2,,"the subtitle was the first instruction, on the screen where the user has not chosen yet"
+126,2026-08-16T12:04:24+03:00,+ГО,edit,extract exerciseSubtitle and prefer purpose,workouts_page.dart,403 rows now answer why rather than how,B2,,"the widget is private, so the choice was extracted to be testable"
+127,2026-08-16T12:04:24+03:00,+ГО,create,5 tests,exercise_subtitle_test.dart,pass,B2,,
+128,2026-08-16T12:04:24+03:00,+ГО,test,4 mutations,exercise_subtitle_test.dart,"4/4 detected, restore green",B2,,
+129,2026-08-16T12:04:24+03:00,+ГО,test,flutter test + analyze,mobile/,"2639 passed / 0 failed; 7 analyzer issues, all pre-existing",B2,,analyzer crashed on the first run and repeated the same answer on the second
+130,2026-08-16T12:04:24+03:00,+ГО,verify,decision-log coverage per commit,git log e2946ad..HEAD,13 of 13 carry a DECISION_LOG change,process,,enforced by decision_log_gate.py; 3 of the 13 are push records whose only content is the entry

@@ -11741,3 +11741,61 @@ mutation.
 
 G4/R5 and the equipment-name lookup. Local HEAD equals upstream, `0 0`, no force, no history rewrite.
 `flutter test` 2634 / 0, `functions/` 165 / 0, `flutter analyze` 7 issues all pre-existing.
+
+## 2026-08-16 — B2: the subtitle on the choosing screen was an instruction
+
+**Basis: FACT.**
+
+Recorded as *"`purpose` is rendered on the exercise card only. Neither the programme card nor the
+player shows it."* Half of that is stale and the other half understates a worse defect.
+
+**The player already showed it.** `workout_player_page.dart:282` renders `ExerciseStepsCard`, which
+is the same widget that draws the purpose block on the detail page — measured before anything was
+changed. That is the sixth stale scope row found today by reading code instead of trusting the
+document.
+
+### What was actually wrong
+
+The list row's subtitle was `exercise.summary`. And `summary` is **byte-identical to `steps[0]`** by
+an invariant this project enforces on all 1,887 rows in both languages — C2 spent a gate restoring
+exactly that property.
+
+So the subtitle was never a description. It was the first **instruction**, shown on the one screen
+where the user has not chosen yet. *"Stand tall with your spine neutral, arms by your side"* is a
+perfectly good first step and tells a reader nothing at all about which exercise to pick.
+
+That is a sharper finding than the one recorded, and it only becomes visible once you know what
+`summary` is. The two facts sat in different documents.
+
+### The fix
+
+`exerciseSubtitle` prefers `purpose` — 403 rows have one, written for precisely this question — and
+keeps both existing fallbacks for the 1,484 that do not: summary, then up to three muscle names. An
+instruction is a poor subtitle; a blank one is worse.
+
+A whitespace-only `purpose` is treated as absent rather than rendered, because that is what a
+half-finished authoring pass leaves behind and it would blank the row.
+
+Extracted as a function rather than left inline: `_ExerciseCard` is private, so the choice could
+otherwise only be tested by pumping the whole page, and the choice is the part worth pinning.
+
+### Verification
+
+Five tests, four mutations — ignoring `purpose`, rendering a blank one, dropping the summary
+fallback, and uncapping the muscle list — all red, restore green.
+
+`flutter test` **2639 passed / 0 failed** (2634 before; 5 added). `flutter analyze lib/ test/` 7
+issues, all pre-existing. The analyzer crashed with an access violation on its first run and gave the
+same answer on the second; recorded because a crashed analyzer exits non-zero and would otherwise
+read as a finding.
+
+### On this log itself
+
+The operator asked whether every commit carries an entry here. Measured: **13 of 13** commits since
+`e2946ad` do, which is not discipline — `decision_log_gate.py` blocks `git commit` unless this file
+is staged in the same commit.
+
+Worth naming the cost: three of those thirteen are `docs:` commits recording a push, whose entire
+content **is** the log entry. The hook requires an entry for the commit that records the push, which
+is close to circular, and those thin entries dilute a file that is now 11,743 lines. Not changed
+unilaterally — the gate is an operator choice recorded in §12 of the global contract — but flagged.

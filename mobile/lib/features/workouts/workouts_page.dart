@@ -505,6 +505,34 @@ class _LoadingCard extends StatelessWidget {
   }
 }
 
+/// The one line under an exercise's name in a list.
+///
+/// `purpose` first, because of what `summary` actually is. The catalogue's
+/// invariant is that `summary` is byte-identical to `steps[0]`, enforced on all
+/// 1,887 rows in both languages (`exercise_translations_test.dart`). So this
+/// subtitle was never a description — it was the first INSTRUCTION, read out on
+/// a list where the user is still choosing. "Stand tall with your spine
+/// neutral, arms by your side" says nothing about which exercise to pick.
+///
+/// 403 rows carry a `purpose` written for exactly that question, and until now
+/// only the detail page and the player asked it. The other 1,484 keep the old
+/// behaviour, which is why both fallbacks stay: an instruction is a poor
+/// subtitle, and a blank one is worse.
+///
+/// A function rather than inline code so it can be tested without pumping the
+/// whole page — the widget it serves is private, and the choice is the part
+/// worth pinning.
+@visibleForTesting
+String exerciseSubtitle(
+  ExerciseItem exercise,
+  String Function(String muscle) muscleLabel,
+) {
+  final purpose = exercise.purpose;
+  if (purpose != null && purpose.trim().isNotEmpty) return purpose;
+  if (exercise.summary.isNotEmpty) return exercise.summary;
+  return exercise.muscles.take(3).map(muscleLabel).join(' · ');
+}
+
 class _ExerciseCard extends ConsumerWidget {
   const _ExerciseCard({required this.exercise});
   final ExerciseItem exercise;
@@ -552,13 +580,11 @@ class _ExerciseCard extends ConsumerWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  exercise.summary.isEmpty
-                      ? exercise.muscles
-                          .take(3)
-                          .map((m) => CatalogLabels.muscle(
-                              AppLocalizations.of(context), m))
-                          .join(' · ')
-                      : exercise.summary,
+                  exerciseSubtitle(
+                    exercise,
+                    (m) => CatalogLabels.muscle(
+                        AppLocalizations.of(context), m),
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(
