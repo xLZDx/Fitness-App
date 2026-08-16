@@ -12937,3 +12937,43 @@ that would make F007's claim true), and the rules job still referenced.
 
 F008 FIXED, mutation-proven. F007 CONTESTED — measured false as written, with the narrower true
 statement pinned by a test instead. Not pushed.
+
+## 2026-08-17 — Tier 6, F012 corrected; N07 and F010 left as decisions, not answered
+
+**F012 — scope row corrected.** `FINAL_SCOPE_2026-08-16.md` P5 said `equipment_v1.tflite` was "not
+trained and not bundled — recognition runs cloud-only". Checked against the artefact rather than
+against the claim: the file is 4,496,661 bytes, trained 2026-07-29, declared in `pubspec.yaml`,
+copied out by `core/assets/asset_bootstrap.dart`, and loaded by both
+`MlKitVisualEquipmentService` and `MlKitLiveEquipmentService`. Recognition is cloud-FIRST with this
+as the on-device fallback.
+
+The correction keeps the part of the row that IS true and matters more than the part that was
+wrong: the model is a 10-way head over a 69-machine catalogue, measured top-1 0.617 / top-3 0.835
+on a held-out 15% (n=261). Restating that beside the correction is deliberate — the reason the row
+existed was to stop the scanner being oversold, and F002 corrected the pitch deck to the same
+figures. A bare "STALE" would have removed the caution along with the error.
+
+**N07 — decision required, not taken.** `/team/:teamId` is declared in `app_router.dart:349` and
+has no navigation call site: a grep for `push(`/`go(` against any team path returns nothing, so
+`TeamFeedPage` is unreachable in the shipped app. (It is also where one of F027's two hardcoded
+strings lived, which is consistent — nobody could have reported it.)
+
+The finding offers two dispositions and both are product calls, not engineering ones:
+
+- **wire it up** — ships a Celebrity-tier feature that no user has ever exercised, inside an audit
+  remediation gate. That is scope expansion decided by an agent;
+- **delete it** — removes `TeamFeedPage`, `team_feed_providers.dart` and the route, i.e. deletes
+  work someone intended, during an audit, which is precisely what F010's own note warns against
+  ("do not delete during an audit — decide per feature: wire up or delete").
+
+I am not making it. Recorded as `OPEN_DECISION_REQUIRED` with the evidence and both costs, in the
+same spirit as D1 and H3: an agent inventing product intent is worse than an open row.
+
+**F010 — same shape, same treatment.** The Moments feature and both Wear OS providers are
+unreferenced. The finding's own note already says not to delete during an audit. Left
+`OPEN_DECISION_REQUIRED`.
+
+### Status
+
+F012 FIXED (documentation). N07 and F010 OPEN_DECISION_REQUIRED, deliberately. Full suite: **2684
+passing**. Not pushed.
