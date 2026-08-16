@@ -106,3 +106,5 @@ sequence,timestamp,marker,action,command_or_change,target,result,related_gate,co
 105,2026-08-16T11:26:52+03:00,+ГО,test,7 mutations,functions/src/index.ts,"7/7 detected, restore green",P7,,includes making the report write unreachable and removing the webhook timeout
 106,2026-08-16T11:26:52+03:00,+ГО,test,npx jest --ci,functions/,165 passed / 0 failed,P7,,151 before; 14 added
 107,2026-08-16T11:26:52+03:00,+ГО,edit,correct the P7 scope row,core/plans/FINAL_SCOPE_2026-08-16.md,4 covered -> 3 covered,P7,,correcting a figure written earlier the same day
+108,2026-08-16T11:27:30+03:00,+ГО|КОМИТ,record,git commit,P7,committed,P7,71fd1d9,"4 files, 245 insertions"
+109,2026-08-16T11:27:30+03:00,+ГО|+ПУШ,push,git push origin formcoach/gates-a-c,origin/formcoach/gates-a-c,local HEAD == upstream HEAD,mission,71fd1d9,"2 commits: B1/scope corrections and P7. No force, no history rewrite"

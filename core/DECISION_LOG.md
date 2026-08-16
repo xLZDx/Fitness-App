@@ -11626,3 +11626,12 @@ unreachable, and removing the webhook timeout. Restore green.
 ### Verification
 
 `functions/`: **165 passed / 0 failed**, 8 suites (151 before; 14 added).
+
+### Pushed — 2026-08-16, `0c4fa6e..71fd1d9`
+
+Two commits: the H4 finish plus five corrected scope rows, and the P7 callable tests. Local HEAD
+equals upstream and `git rev-list --left-right --count` reports `0 0`. No force, no history rewrite.
+
+Verification at this point covers both halves of the repository for the first time in this session:
+`flutter test` **2628 / 0**, `functions/` **165 / 0**, `flutter analyze lib/ test/` **7 issues, all
+pre-existing**.
