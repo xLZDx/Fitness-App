@@ -77,3 +77,10 @@ sequence,timestamp,marker,action,command_or_change,target,result,related_gate,co
 76,2026-08-16T10:40:09+03:00,+ГО,edit,extend the invariant test to Russian and add a control,exercise_translations_test.dart,pass,C2,,the pre-existing test checked English only and its own comment named the gap
 77,2026-08-16T10:40:09+03:00,+ГО,test,4 mutations,exercise_translations_test.dart,"4/4 detected, restore green",C2,,"includes blanking summary and steps[0] together, which satisfies the invariant"
 78,2026-08-16T10:40:09+03:00,+ГО,test,flutter test,mobile/,2621 passed / 0 failed,C2,,2619 before; 2 added
+79,2026-08-16T10:49:39+03:00,+ГО|КОМИТ,record,git commit,C2,committed,C2,8e55127,"8 files, 387 insertions"
+80,2026-08-16T10:49:39+03:00,+ГО,verify,classify equipmentLabel against equipmentId,mobile/assets/data,503 NO_EQUIPMENT / 1384 KNOWN_EQUIPMENT / 0 UNKNOWN_EQUIPMENT; 78 contradictory,C3,,
+81,2026-08-16T10:49:39+03:00,+ГО,verify,read every production consumer of equipmentLabel,mobile/lib,card renders it verbatim; filter already had a believe-the-id workaround,C3,,the user-visible half was undefended
+82,2026-08-16T10:49:39+03:00,+ГО,create,"derive the label from the registry, refuse on an unresolvable id",tools/catalog/repair_equipment_label.py,"78 repaired, 78+/78- diff",C3,,
+83,2026-08-16T10:49:39+03:00,+ГО,create,permanent invariant test,equipment_label_invariant_test.dart,4 tests,C3,,includes a no-id row must not be given a machine name
+84,2026-08-16T10:49:39+03:00,+ГО,test,4 mutations,equipment_label_invariant_test.dart,"4/4 detected, restore green",C3,,"includes nulling every machine label, which satisfies the invariant by saying nothing"
+85,2026-08-16T10:49:39+03:00,+ГО,test,flutter test,mobile/,2625 passed / 0 failed,C3,,2621 before; 4 added

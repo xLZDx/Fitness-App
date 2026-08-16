@@ -11405,3 +11405,69 @@ Full suite **2621 passed / 0 failed** (2619 before; 2 added).
 
 C3 (78 rows labelled "None" with a real `equipmentId`), G3, G4, G7, and R3/R10 from the recovered
 Gate J review.
+
+## 2026-08-16 — C3: 78 exercises told the user they needed nothing, then asked for a cable machine
+
+**Basis: FACT.**
+
+78 of the 1,887 rows carried `equipmentLabel: "None"` while `equipmentId` named a real registry
+entry — 25 a weight bench, 19 a cable machine, the rest spread over 18 more.
+
+### Two consumers, affected differently, and only one of them was already handled
+
+FACT: `exercise_reference.dart:315` renders the label verbatim on the exercise card. So those 78
+cards displayed **"None"** under "Equipment" and then asked for a cable machine in step one. That is
+the user-visible half, and nothing was defending against it.
+
+FACT: `exercise_filter.dart:459-465` already carried a workaround, with its own comment naming the
+problem — *"the label says nothing is needed while an `equipmentId` names a machine. Believe the
+id."* So a user filtering for home training was never offered these; the filter was right.
+
+That split is the useful part. The contradiction had been **seen**, worked around at one call site,
+and left in the data — where the other call site, which does no reasoning at all because it only
+renders a string, kept showing it. A guard written around corrupt data is evidence of the
+corruption, not a substitute for repairing it. The guard stays; it is now belt-and-braces over data
+that no longer contradicts itself.
+
+### Three states, kept apart
+
+The defect exists because "needs nothing" and "needs something we cannot name" were both written as
+`None`. `repair_equipment_label.py` refuses to collapse them again:
+
+| state | rows | treatment |
+|---|---|---|
+| `NO_EQUIPMENT` — no `equipmentId` | **503** | left alone. "Yoga Mat", "Wall", "Chair", "None" are all legitimate vendor text, and `ExerciseItem.needsEquipment` reads them — a mat is deliberately not equipment |
+| `KNOWN_EQUIPMENT` — id resolves in `equipment.json` | **1384** | label derived from the registry name |
+| `UNKNOWN_EQUIPMENT` — id set, absent from the registry | **0** | a **refusal**, not a skip: inventing a label for an id nothing resolves writes a confident-looking guess into the catalogue |
+
+Zero UNKNOWN today, and the refusal exists so that stays a measured fact rather than an assumption.
+Diff: 78 insertions, 78 deletions.
+
+### The invariant
+
+Four assertions, permanent: no row may name a machine and label it "None"; every `equipmentId` must
+resolve; a row with **no** id must not be given a registry machine name (the repair must not run
+backwards); and a control that all three populations were actually read.
+
+Mutation, four: one machine row relabelled "None", an id resolving nowhere, a bodyweight row handed a
+machine name, and — the one worth having — the contradiction "fixed" by nulling **every** machine
+label, which satisfies "no row says None while naming a machine" completely, by saying nothing at
+all. All four red, restore green.
+
+### Found while fixing it, and not fixed here
+
+The exercise card renders `equipmentLabel` verbatim and the Russian overlay carries no equipment
+text — it stores `title`, `steps`, `summary` and `purpose` only. So a Russian user reads the machine
+name in English. Pre-existing, and C3 does not widen it: `"None"` was English too. But it is now the
+only untranslated string on that card, and the registry already has Russian names in
+`equipment.ru.json` that nothing on this surface reads. Recorded in the scope rather than folded into
+this gate, because the fix is a change to the overlay contract.
+
+### Verification
+
+Full suite **2625 passed / 0 failed** (2621 before; 4 added).
+
+### Open, and unchanged by this entry
+
+G3 Stripe price IDs, G4 the R5 Firestore question, G7 the `targetSdk` bump, R3 and R10 from the
+recovered Gate J review, and C4 onward in the catalogue plan.

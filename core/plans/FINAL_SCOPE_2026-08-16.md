@@ -67,7 +67,7 @@ Measured 2026-08-16. These need no judgement call — they are facts about the d
 | Same, RU | **71** across 33 clusters |
 | Identical `summary` shared by different exercises (EN) | **355** across 140 clusters — **224 of them never flagged by any detector** |
 | `RU summary != steps[0]`, while EN holds the invariant on all 1887 | ~~127~~ **0 — repaired 2026-08-16 (C2)** |
-| `equipmentLabel` is the literal string `"None"` while `equipmentId` names a real machine | **78** |
+| `equipmentLabel` is the literal string `"None"` while `equipmentId` names a real machine | ~~78~~ **0 — repaired 2026-08-16 (C3)** |
 
 **Caveat without which the first row misleads.** Identical steps do not prove a wrong description.
 The largest cluster is `Barbell Deadlift` / `(front POV)` / `(side POV)` / `360 Degrees` — one
@@ -116,7 +116,13 @@ the content is not there.
 
 - 69 machines in the registry, **4 with no exercise linked at all**: `glute_kickback_machine`,
   `recumbent_bike`, `rotary_torso_machine`, `t_bar_row`. Those machine pages are empty.
-- 78 rows say "no equipment" on the card for an exercise that names a machine (see 1.3).
+- ~~78 rows say "no equipment" on the card for an exercise that names a machine~~ — **repaired 2026-08-16 (C3)**,
+  derived from the registry. Measured populations: **503 NO_EQUIPMENT / 1384 KNOWN_EQUIPMENT /
+  0 UNKNOWN_EQUIPMENT**. A permanent invariant test now holds all three apart.
+- **New, found during C3:** the exercise card renders `equipmentLabel` verbatim
+  (`exercise_reference.dart:315`) and the Russian overlay carries no equipment text, so a Russian
+  user reads the machine name in English. Pre-existing and not widened by C3 — "None" was English
+  too — but it is now the only untranslated string on that card.
 
 ### 1.8 Persistence risk, inherited — **closed 2026-08-16 (G6)**
 
@@ -219,7 +225,7 @@ over 519 cards, 224 Gate E findings over 199 cards, 1887 verified rows of which 
 |---|---|---|
 | ~~**C1**~~ | ~~Close the 5 known-wrong cards~~ | **Done 2026-08-16.** 1 withheld, 4 corrected in both locales via a new `correct_exercise_text.py` whose guard found the authored batches had already drifted from the shipped catalogue. 17 tests, 12 mutations |
 | ~~**C2**~~ | ~~Fix the 127 `RU summary != steps[0]` rows; add the RU-side invariant test~~ | **Done 2026-08-16.** All 127 repaired deterministically from `steps[0]` by `tools/catalog/repair_ru_summary.py`; the invariant now runs over all 1,887 rows in **both** languages. The pre-existing test checked English only, and its own comment named the Russian divergence it was not checking |
-| **C3** | Resolve the 78 `equipmentLabel: "None"` rows that name a machine | ~2h |
+| ~~**C3**~~ | ~~Resolve the 78 `equipmentLabel: "None"` rows that name a machine~~ | **Done 2026-08-16.** All 78 derived from the registry by `tools/catalog/repair_equipment_label.py`. The three states are kept apart — 503 NO_EQUIPMENT / 1384 KNOWN_EQUIPMENT / 0 UNKNOWN_EQUIPMENT — and an unresolvable id is a refusal, not a guess. Permanent invariant test, 4 mutations |
 | **C4** | Decide the 83/38 identical-steps clusters: one card with an angle switch, or leave them | product decision, then ~1d |
 | **C5** | Read the 224 shared-`summary` cards no detector ever touched | ~2d |
 | **C6** | Re-verify the 320 dismissed at gates A/B/C (those detectors are ~50% false-positive) | ~3d |

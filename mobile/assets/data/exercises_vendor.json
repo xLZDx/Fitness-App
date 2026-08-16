@@ -789,7 +789,7 @@
       "Avoid using momentum by performing the movement slowly and with control",
       "Keep your feet on the floor and your knees stable to maintain proper form"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Ab mat",
     "poster": {
       "girl": "assets/posters/girl/ea_ab_mat_sit_up.jpg"
     },
@@ -1171,7 +1171,7 @@
       "Avoid using momentum; focus on engaging your abdominal muscles throughout the exercise",
       "Ensure your lower back remains in contact with the backrest of the machine"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Ab crunch machine",
     "poster": {
       "girl": "assets/posters/girl/ea_abdominal_crunches_machine.jpg",
       "men": "assets/posters/men/ea_abdominal_crunches_machine.jpg"
@@ -4258,7 +4258,7 @@
       "Focus on lowering your chest towards the floor to maximize the stretch in your shoulders and upper back",
       "Keep the stretch at least between 15-20 seconds to make the most out of it"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Bench (flat / adjustable)",
     "poster": {
       "girl": "assets/posters/girl/ea_armless_prayer_stretch.jpg"
     },
@@ -5282,7 +5282,7 @@
       "Exhale as you push up and inhale as you lower your body",
       "Ensure the weight plate is securely placed on your upper back for safety"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight plates",
     "poster": {
       "girl": "assets/posters/girl/ea_assisted_weighted_push_up.jpg",
       "men": "assets/posters/men/ea_assisted_weighted_push_up.jpg"
@@ -5328,7 +5328,7 @@
       "Ensure your upper body remains upright and avoid leaning forward or backward",
       "Keep your supporting leg slightly bent to enhance balance and reduce strain on your joints"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Squat rack",
     "poster": {
       "girl": "assets/posters/girl/ea_back_and_forward_leg_swings.jpg",
       "men": "assets/posters/men/ea_back_and_forward_leg_swings.jpg"
@@ -5372,7 +5372,7 @@
       "Avoid pulling too hard on your elbow; the stretch should be gentle and not cause pain",
       "Breathe deeply and steadily to help relax your muscles and enhance the stretch"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Bench (flat / adjustable)",
     "poster": {
       "girl": "assets/posters/girl/ea_back_and_shoulder_stretch.jpg",
       "men": "assets/posters/men/ea_back_and_shoulder_stretch.jpg"
@@ -5496,7 +5496,7 @@
       "Ensure your grip on the bar is firm and secure to provide stability and prevent slipping",
       "Breathe steadily and evenly to help maintain the hold and reduce tension"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Squat rack",
     "poster": {
       "girl": "assets/posters/girl/ea_back_lever.jpg",
       "men": "assets/posters/men/ea_back_lever.jpg"
@@ -5536,7 +5536,7 @@
       "Engage your core to maintain stability and support your lower back during the stretch",
       "Breathe deeply and steadily to help relax your muscles and enhance the stretch"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_back_pec_stretch.jpg"
     }
@@ -5610,7 +5610,7 @@
       "Focus on squeezing your shoulder blades together to maximize the activation of your upper back muscles",
       "Maintain an upright posture and avoid leaning forward or backward during the movement"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Plyo box",
     "poster": {
       "men": "assets/posters/men/ea_back_squeeze.jpg"
     },
@@ -5651,7 +5651,7 @@
       "Focus on pushing your hips downwards rather than bending at the waist to enhance the stretch in your back",
       "Use controlled movements to avoid jerking or sudden motions that could lead to injury"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Bench (flat / adjustable)",
     "poster": {
       "men": "assets/posters/men/ea_back_stretch_dynamic.jpg"
     }
@@ -5689,7 +5689,7 @@
       "Keep your shoulders relaxed and down away from your ears to prevent tension",
       "Make sure your feet are firmly planted on the floor to provide a stable base and enhance the stretch"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_back_stretch_standing_with_bench.jpg"
     }
@@ -16845,7 +16845,7 @@
       "Maintain an upright posture, keeping your chest lifted and shoulders back to ensure proper form",
       "Focus on driving through your heel as you step up to maximize glute and leg engagement"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_bench_alternating_step_ups.jpg"
     },
@@ -16887,7 +16887,7 @@
       "Use a mirror or ask for feedback to ensure your knee stays aligned with your foot and doesn’t cave inward",
       "Keep your movements smooth and controlled, ensuring you lower and lift yourself with even tempo"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_bench_bulgarian_split_squats_left.jpg"
     },
@@ -16930,7 +16930,7 @@
       "Use a mirror or ask for feedback to ensure your knee stays aligned with your foot and doesn’t cave inward",
       "Keep your movements smooth and controlled, ensuring you lower and lift yourself with even tempo"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_bench_bulgarian_split_squats_right.jpg"
     },
@@ -16970,7 +16970,7 @@
       "Focus on squeezing your abdominal muscles at the top of the crunch to enhance muscle engagement",
       "Breathe out as you lift your body and breathe in as you lower it to maintain a steady rhythm and maximize oxygen flow"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_bench_decline_ab_sit_ups.jpg"
     },
@@ -17010,7 +17010,7 @@
       "Avoid locking your elbows at the top of the movement to maintain tension in your triceps",
       "Perform the movement slowly and with control to maximize muscle activation and prevent injury"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_bench_dip_knees_bent.jpg"
     },
@@ -17051,7 +17051,7 @@
       "Engage your core and glutes to keep your body stable",
       "Keep your shoulders down and away from your ears to avoid strain and ensure proper alignment"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_bench_dip_on_floor.jpg"
     },
@@ -17091,7 +17091,7 @@
       "Avoid using momentum; focus on using your abdominal muscles to pull your knees in",
       "Breathe steadily, exhaling as you tuck your knees in and inhaling as you extend your legs out"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_bench_knee_tucks.jpg"
     }
@@ -17170,7 +17170,7 @@
       "Keep your elbows slightly bent to avoid locking your joints and ensure muscle engagement",
       "Breathe steadily and avoid holding your breath to maintain control and endurance during the hold"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_bench_reverse_plank_hold.jpg"
     },
@@ -17210,7 +17210,7 @@
       "Maintain a controlled movement for both the dip and the leg curl to maximize muscle activation",
       "Engage your core to maintain stability and proper form throughout the exercise"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_bench_triceps_dip_leg_curls.jpg"
     },
@@ -17252,7 +17252,7 @@
       "Maintain a straight line from your hips to your heels to ensure proper form",
       "Perform the movement slowly and with control to maximize muscle activation and prevent injury"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_bench_triceps_dip_straight_legs.jpg"
     },
@@ -17646,7 +17646,7 @@
       "Focus on rotating your torso, not just your arms, to ensure you're engaging your obliques effectively",
       "Maintain even breathing throughout the exercise to help stabilize your core and keep movements fluid"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Barbell",
     "poster": {
       "men": "assets/posters/men/ea_bent_over_twist.jpg"
     },
@@ -18000,7 +18000,7 @@
       "Avoid using momentum; focus on using your biceps to lift your leg",
       "Breathe steadily, exhaling as you lift your leg and inhaling as you lower it"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_biceps_leg_concentration_curl.jpg"
     },
@@ -20086,7 +20086,7 @@
       "Ensure your entire foot is placed on the box to prevent slipping",
       "Focus on pushing through your heel when stepping up to activate your glutes and quadriceps"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Plyo box",
     "poster": {
       "men": "assets/posters/men/ea_bodyweight_step_up_on_step_box.jpg"
     },
@@ -21739,7 +21739,7 @@
       "Avoid using momentum; focus on the controlled contraction of your hamstrings",
       "Exhale as you straighten your legs and inhale as you return to the starting position"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_assisted_inverse_leg_curl.jpg"
     },
@@ -22238,7 +22238,7 @@
       "Avoid using momentum; focus on the contraction of your shoulder muscles",
       "Ensure your shoulders stay down and relaxed, not shrugged up towards your ears"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_front_raises_straight_bar.jpg"
     },
@@ -22435,7 +22435,7 @@
       "Exhale as you raise the handles and inhale as you lower them back down",
       "Avoid using momentum; focus on the contraction of your shoulder muscles"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_lateral_raises.jpg"
     },
@@ -22473,7 +22473,7 @@
       "Avoid using momentum; focus on the contraction of your shoulder muscles",
       "Lean away from the machine to increase the range of motion and target the shoulder muscles more effectively"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_leaning_lateral_raise.jpg"
     },
@@ -22822,7 +22822,7 @@
       "Exhale as you stand up and inhale as you sit back down",
       "Ensure your back remains straight and avoid rounding your spine"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_narrow_chair_stand_up.jpg"
     }
@@ -22896,7 +22896,7 @@
       "Start with a lighter weight to ensure proper form and gradually increase the resistance as you build strength",
       "Focus on the contraction of your back muscles as you pull the handle towards you"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_one_arm_bent_over_row.jpg"
     },
@@ -22936,7 +22936,7 @@
       "Start with a lighter weight to ensure proper form and gradually increase the resistance as you build strength",
       "Focus on squeezing your chest muscles as you bring the handles together"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_one_arm_chest_fly_bent.jpg"
     },
@@ -23012,7 +23012,7 @@
       "Exhale as you raise the handle and inhale as you lower it back down",
       "Avoid locking your elbow; keep a slight bend to reduce strain on your joints"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_one_arm_front_raise.jpg"
     },
@@ -23212,7 +23212,7 @@
       "Use a lighter weight to ensure proper form and gradually increase the resistance as you get stronger",
       "Exhale as you pull the handle towards your body and inhale as you extend it back"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_palm_rotational_row.jpg"
     },
@@ -23517,7 +23517,7 @@
       "Use a lighter weight to ensure proper form and gradually increase the resistance as you get stronger",
       "Focus on engaging your rear deltoids and upper back during the movement"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_rear_delt_fly.jpg"
     },
@@ -23558,7 +23558,7 @@
       "Maintain a neutral wrist position to prevent strain",
       "Stand with a slight bend in your knees for better stability"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_rear_drive.jpg"
     },
@@ -23597,7 +23597,7 @@
       "Maintain a neutral wrist position to prevent strain",
       "Stand with a slight bend in your knees for better stability"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_rear_drive_bent_arm.jpg"
     },
@@ -24031,7 +24031,7 @@
       "Ensure your feet are firmly planted on the floor for stability",
       "Focus on engaging your rear deltoids and upper back during the movement"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_seated_rear_lateral_raise.jpg"
     },
@@ -24763,7 +24763,7 @@
       "Exhale as you twist away from the machine and inhale as you return to the starting position",
       "Minimize hip twisting to focus on engaging your obliques and core during the twist"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_twist.jpg"
     }
@@ -24798,7 +24798,7 @@
       "Exhale as you twist away from the machine and inhale as you return to the starting position",
       "Minimize hip twisting to focus on engaging your obliques and core during the twist"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_twist_up_down.jpg"
     }
@@ -25024,7 +25024,7 @@
       "Keep your elbows higher than your wrists throughout the movement",
       "Exhale as you pull the EZ bar up and inhale as you lower it back down"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_upright_row_with_ez_bar.jpg"
     },
@@ -25067,7 +25067,7 @@
       "Keep your elbows higher than your wrists throughout the movement",
       "Exhale as you pull the straight bar up and inhale as you lower it back down"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_upright_row_with_straight_bar.jpg"
     },
@@ -25180,7 +25180,7 @@
       "Use a lighter weight to ensure proper form and gradually increase the resistance as you get stronger",
       "Exhale as you raise the handles and inhale as you lower them back down"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_cable_y_raise.jpg"
     },
@@ -25329,7 +25329,7 @@
       "Focus on a full range of motion, pushing your forefeet as much as possible for deep muscle activation",
       "Exhale as you raise your heels and inhale as you lower them back down"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Leg press",
     "poster": {
       "girl": "assets/posters/girl/ea_calf_raise_leg_press_machine.jpg",
       "men": "assets/posters/men/ea_calf_raise_leg_press_machine.jpg"
@@ -25658,7 +25658,7 @@
       "Avoid using momentum; the movement should be controlled and deliberate",
       "Focus on engaging your core muscles throughout the movement"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Captain's chair",
     "poster": {
       "men": "assets/posters/men/ea_captains_chair_leg_raise.jpg"
     }
@@ -25694,7 +25694,7 @@
       "Avoid using momentum; the movement should be controlled and deliberate",
       "Exhale as you raise your legs and inhale as you lower them back down"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Captain's chair",
     "poster": {
       "men": "assets/posters/men/ea_captains_chair_straight_leg_raise.jpg"
     }
@@ -26297,7 +26297,7 @@
       "Ensure your feet are firmly planted on the floor to provide stability and prevent your lower back from arching excessively",
       "Ensure your head remains in contact with the bench, and avoid lifting it during the press"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_chest_bench_press_correct_stance.jpg"
     },
@@ -26459,7 +26459,7 @@
       "Focus on leaning forward slightly to emphasize the chest muscles",
       "Ensure your shoulders remain down and away from your ears to avoid unnecessary strain"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Bench (flat / adjustable)",
     "poster": {
       "men": "assets/posters/men/ea_chest_dip_on_bench.jpg"
     },
@@ -29329,7 +29329,7 @@
       "Avoid pulling on your neck with your hands; focus on using your abdominal muscles to lift your shoulders",
       "Breathe steadily throughout the exercise, exhaling as you lift your shoulders and inhaling as you lower them"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Stability ball",
     "poster": {
       "men": "assets/posters/men/ea_crunch_legs_on_stability_ball.jpg"
     },
@@ -29370,7 +29370,7 @@
       "Breathe steadily throughout the exercise, exhaling as you lift your shoulders and inhaling as you lower them",
       "Ensure your lower back remains in contact with the BOSU ball to avoid unnecessary strain"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Bosu ball",
     "poster": {
       "men": "assets/posters/men/ea_crunch_on_bosu_ball.jpg"
     },
@@ -29410,7 +29410,7 @@
       "Ensure your lower back remains in contact with the stability ball to avoid unnecessary strain",
       "Breathe steadily throughout the exercise, exhaling as you lift your shoulders and inhaling as you lower them"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Stability ball",
     "poster": {
       "men": "assets/posters/men/ea_crunch_on_stability_ball.jpg"
     },
@@ -29614,7 +29614,7 @@
       "Keep the movement slow and controlled to maximize muscle engagement and prevent injury",
       "Use a medicine ball with an appropriate weight that allows you to maintain proper form"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Medicine ball",
     "poster": {
       "men": "assets/posters/men/ea_crunch_with_medicine_ball.jpg"
     },
@@ -29937,7 +29937,7 @@
       "Perform the movement with control to maximize muscle activation and prevent injury",
       "Breathe steadily throughout the exercise, exhaling as you lift your shoulders and inhaling as you lower them"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_decline_bench_full_sit_up.jpg"
     },
@@ -29975,7 +29975,7 @@
       "Avoid using momentum to lift your hips; focus on using your abdominal muscles for the movement",
       "Breathe steadily throughout the exercise, exhaling as you lift your hips and inhaling as you lower them"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_decline_bent_leg_reverse_crunch.jpg"
     },
@@ -30063,7 +30063,7 @@
       "Perform the movement with control to maximize muscle activation and prevent injury",
       "Breathe steadily throughout the exercise, exhaling as you push up and inhaling as you lower down"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_decline_diamond_pike_push_up.jpg"
     },
@@ -30106,7 +30106,7 @@
       "Perform the movement with control to maximize muscle activation and prevent injury",
       "Breathe steadily throughout the exercise, exhaling as you push up and inhaling as you lower down"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Plyo box",
     "poster": {
       "men": "assets/posters/men/ea_decline_kneeling_push_up.jpg"
     },
@@ -30150,7 +30150,7 @@
       "Perform the movement with control to maximize muscle activation and prevent injury",
       "Breathe steadily throughout the exercise, exhaling as you push up and inhaling as you lower down"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Plyo box",
     "poster": {
       "men": "assets/posters/men/ea_decline_kneeling_push_up_on_box.jpg"
     },
@@ -30192,7 +30192,7 @@
       "Ensure your lower back remains off the bench and parallel to the floor to engage your core muscles effectively",
       "Use a stable decline bench to prevent any movement or slipping during the exercise"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_decline_levitating_sit_ups_bodyweight.jpg"
     },
@@ -30234,7 +30234,7 @@
       "Use a stable chair or bench to prevent any movement or slipping during the exercise",
       "Perform the movement with control to maximize muscle activation and prevent injury"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_decline_push_up.jpg"
     },
@@ -30321,7 +30321,7 @@
       "Avoid letting your shoulders sag; keep them stable and aligned with your hands",
       "Use a stable bench to prevent any movement or slipping during the exercise"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_decline_shoulder_tap.jpg"
     }
@@ -30356,7 +30356,7 @@
       "Avoid pulling on your neck with your hands; focus on using your abdominal muscles to lift your shoulders",
       "Breathe steadily throughout the exercise, exhaling as you lift your shoulders and inhaling as you lower them"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_decline_sit_up.jpg"
     },
@@ -30439,7 +30439,7 @@
       "Breathe steadily throughout the exercise, exhaling as you push up and inhaling as you lower down",
       "Perform the movement with control to maximize muscle activation and prevent injury"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Dumbbells",
     "poster": {
       "men": "assets/posters/men/ea_deep_push_up.jpg"
     },
@@ -30913,7 +30913,7 @@
       "Emphasize the upward and downward movements equally to enhance muscle growth and strength in your calves",
       "Maintain a slow, controlled pace to increase the intensity of the muscle contraction and effectiveness of the exercise"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Bench (flat / adjustable)",
     "poster": {
       "men": "assets/posters/men/ea_donkey_calf_raise.jpg"
     },
@@ -44815,7 +44815,7 @@
       "Focus on steady breathing, exhaling as you lift your upper body and inhaling as you lower it",
       "Avoid pulling on your neck with your hands if they are placed behind your head; instead, use your core muscles to lift"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Stability ball",
     "poster": {
       "men": "assets/posters/men/ea_exercise_ball_sit_ups.jpg"
     },
@@ -48350,7 +48350,7 @@
       "Focus on steady breathing, exhaling as you lift your knees and inhaling as you lower them",
       "Ensure your grip on the bar is secure to prevent slipping"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Pull-up bar",
     "poster": {
       "men": "assets/posters/men/ea_hanging_knee_raises.jpg"
     }
@@ -48414,7 +48414,7 @@
       "Focus on steady breathing, exhaling as you lift your knees and twist, and inhaling as you lower them",
       "Ensure your grip on the bar is secure to prevent slipping"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Pull-up bar",
     "poster": {
       "men": "assets/posters/men/ea_hanging_oblique_crunches.jpg"
     },
@@ -54372,7 +54372,7 @@
       "Focus on engaging your shoulder muscles throughout the movement",
       "Exhale as you raise the handle and inhale as you lower it back down"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Cable machine",
     "poster": {
       "men": "assets/posters/men/ea_lateral_raises_on_cable_machine.jpg"
     },
@@ -54846,7 +54846,7 @@
       "Breathe steadily, exhaling as you lift your legs and inhaling as you lower them",
       "Ensure your arms and shoulders remain stable to support your body weight effectively"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Captain's chair",
     "poster": {
       "men": "assets/posters/men/ea_leg_raises_straight_legs.jpg"
     }
@@ -55798,7 +55798,7 @@
       "Move slowly and with control to maximize muscle engagement and prevent injury",
       "Keep your elbows fixed at a 90-degree angle throughout the movement to isolate the shoulder rotation"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_lying_bench_external_shoulder_rotation.jpg"
     }
@@ -55831,7 +55831,7 @@
       "Move slowly and with control to maximize muscle engagement and prevent injury",
       "Keep your elbows fixed at a 90-degree angle throughout the movement to isolate the shoulder rotation"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_lying_bench_internal_rotation_stretch.jpg"
     }
@@ -56161,7 +56161,7 @@
       "Avoid using momentum; let your muscles do the work",
       "Exhale as you curl your legs up and inhale as you lower them back down"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Leg curl machine",
     "poster": {
       "men": "assets/posters/men/ea_lying_leg_curl_machine.jpg"
     },
@@ -56587,7 +56587,7 @@
       "Use a moderate weight to ensure proper form and gradually increase the resistance as you get stronger",
       "Focus on engaging your shoulder muscles throughout the movement"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Lateral raise machine",
     "poster": {
       "girl": "assets/posters/girl/ea_machine_lateral_raise.jpg",
       "men": "assets/posters/men/ea_machine_lateral_raise.jpg"
@@ -59160,7 +59160,7 @@
       "Keep a slight bend in your elbows to protect your joints",
       "Breathe steadily, exhaling as you lift the plate and inhaling as you lower it"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight plates",
     "poster": {
       "men": "assets/posters/men/ea_plate_front_raise.jpg"
     },
@@ -64329,7 +64329,7 @@
       "Ensure your movements are smooth and controlled to maximize core engagement",
       "Focus on twisting from your torso, not just moving your arms side to side"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Medicine ball",
     "poster": {
       "men": "assets/posters/men/ea_russian_twist_weighted_ball.jpg"
     }
@@ -64547,7 +64547,7 @@
       "Maintain tension in the calves from start to finish",
       "Lower your heels slowly to emphasize the eccentric portion of the lift"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Calf raise machine",
     "poster": {
       "men": "assets/posters/men/ea_seated_calf_machine.jpg"
     },
@@ -64912,7 +64912,7 @@
       "Perform the exercise on a stable, non-slip bench to ensure safety and prevent slipping",
       "If you are new to this exercise, start with a smaller range of motion and gradually increase it as you build strength"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_seated_flutter_kicks.jpg"
     }
@@ -65135,7 +65135,7 @@
     },
     "isStretch": false,
     "vendorGroup": "Legs",
-    "equipmentLabel": "None",
+    "equipmentLabel": "Hip abductor / adductor machine",
     "poster": {
       "girl": "assets/posters/girl/ea_seated_machine_hip_adductor.jpg",
       "men": "assets/posters/men/ea_seated_machine_hip_adductor.jpg"
@@ -65350,7 +65350,7 @@
       "Ensure your supporting hand is firmly placed on the bench to maintain stability",
       "Perform the stretch on a stable, non-slip surface to ensure safety and reduce discomfort"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight bench",
     "poster": {
       "men": "assets/posters/men/ea_seated_side_stretch.jpg"
     }
@@ -71364,7 +71364,7 @@
       "Keep your neck relaxed and avoid straining it during the movement",
       "Ensure your back remains straight and avoid leaning forward or backward"
     ],
-    "equipmentLabel": "None",
+    "equipmentLabel": "Weight plates",
     "poster": {
       "girl": "assets/posters/girl/ea_trap_bar_shrug.jpg",
       "men": "assets/posters/men/ea_trap_bar_shrug.jpg"
