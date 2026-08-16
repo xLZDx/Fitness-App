@@ -15,6 +15,7 @@ import '../data/equipment_repository.dart';
 import '../data/exercise_filter.dart';
 import '../data/mock_equipment_report_service.dart';
 import '../../safety/data/eligibility.dart';
+import '../../safety/data/health_flags.dart' show MovementRestriction;
 import '../../safety/data/par_q.dart' as par_q;
 import '../../safety/state/eligibility_providers.dart';
 
@@ -268,6 +269,25 @@ bool isGenerated(ExerciseItem exercise) => exercise.id.startsWith('ai::');
 bool hasInjuries(UserProfile? profile) =>
     (profile?.health.injuries ?? const <Injury>[]).isNotEmpty;
 
+/// True when this person has told us something that per-exercise screening
+/// acts on, and which a generated exercise therefore cannot honour.
+///
+/// F023 (G-B/B6). This used to be [hasInjuries] at both call sites, which read
+/// the injury list and nothing else. A movement restriction is the same kind of
+/// fact — a statement that some movements are unsafe for this person, enforced
+/// by `evaluateExercise` against `contraindications` tags — and generated rows
+/// carry no tags at all, so `isContraindicated` returns false for every one of
+/// them however the user is restricted. Excluding on injuries but not on
+/// restrictions meant a user whose only entry was "no overhead work" was served
+/// untagged AI rows while the app told them their list was screened.
+///
+/// Restrictions are read from the normalised [HealthFlags], never from the free
+/// text beside them — same boundary `health_flags.dart` draws.
+bool cannotScreenGeneratedFor(UserProfile? profile) =>
+    hasInjuries(profile) ||
+    (profile?.health.flags.restrictions ?? const <MovementRestriction>{})
+        .isNotEmpty;
+
 /// Result of running the recommendation pipeline for a specific equipment.
 class RecommendedExercises {
   const RecommendedExercises({
@@ -294,8 +314,21 @@ final recommendedExercisesProvider =
   // Clip-only first, injuries second, and the count is taken AFTER the first.
   // Measuring it against `raw` would report an exercise we simply cannot
   // demonstrate as one the user's injuries removed.
+  // F023 widened the predicate here for consistency with the `ai::` branch of
+  // [exerciseResolutionProvider], NOT because this call site leaks.
+  //
+  // Stated precisely, because the first version of this comment claimed a
+  // second live hazard and a mutation test proved it wrong: `raw` above is
+  // `_exercisesForEquipmentProvider`, the vendor catalogue, which never
+  // carries an `ai::` row — so `isGenerated` is false for everything in this
+  // pool and the branch cannot currently fire. It is kept, and kept in step
+  // with the other one, because the pool's source is exactly the kind of
+  // thing a later change swaps for a feed that does include generated rows,
+  // and a filter that disagrees with its twin is how that lands unnoticed.
   final shown = withDemonstration(
-    hasInjuries(profile) ? raw.where((e) => !isGenerated(e)).toList() : raw,
+    cannotScreenGeneratedFor(profile)
+        ? raw.where((e) => !isGenerated(e)).toList()
+        : raw,
   );
   final items = recommended(shown, profile);
   final hidden = shown.length - items.length;
@@ -478,8 +511,13 @@ final exerciseResolutionProvider =
   // a harmless no-op into a live hazard, because the app now says lists ARE
   // screened. The plan's own answer is the one taken here: excluded for
   // injury-aware users until a generation-time tagging pass exists.
+  //
+  // F023 widened "injury-aware" to include movement restrictions — see
+  // [cannotScreenGeneratedFor].
   if (id.startsWith('ai::')) {
-    if (hasInjuries(profile)) return const ExerciseResolution.notFound();
+    if (cannotScreenGeneratedFor(profile)) {
+      return const ExerciseResolution.notFound();
+    }
     final parts = id.split('::');
     if (parts.length != 3) return const ExerciseResolution.notFound();
     final lang = ref.watch(effectiveLanguageCodeProvider);

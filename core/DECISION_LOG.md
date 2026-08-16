@@ -12459,3 +12459,47 @@ between. `pumpAndSettle` is not usable on that screen — it animates continuous
 G-C closed: F016 landed and regression-verified. Not pushed.
 
 Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).
+
+## 2026-08-17 — G-B/B6 (F023): a movement restriction now excludes generated exercises, as an injury already did
+
+Root cause RC1. `exerciseResolutionProvider`'s `ai::` branch excluded generated exercises when
+`hasInjuries(profile)` and on nothing else. A movement restriction is the same kind of fact — a
+statement that some movements are unsafe, enforced by `evaluateExercise` against `contraindications`
+tags — and generated rows carry no tags at all. A user whose only health entry was "no overhead work"
+was therefore served untagged AI rows while the app told them their list was screened.
+
+Introduced `cannotScreenGeneratedFor(profile)` (injuries OR normalised `flags.restrictions`) and used
+it at both `hasInjuries` call sites that guard generated content. Restrictions are read from the
+normalised `HealthFlags`, never from the free text beside them — the boundary `health_flags.dart`
+already draws.
+
+**A false claim of my own, caught by the mutation check rather than by review, and corrected before
+commit.** I first wrote that the second call site (`recommendedExercisesProvider:298`) was "the LIST
+half of the identical hazard" and added a test asserting a restriction-only user is served no
+generated exercise there. The mutation run showed that test passing against the *unfixed* code —
+which is the definition of a test that proves nothing. The reason is in that provider's own existing
+comment, which I had read past: its pool is `_exercisesForEquipmentProvider`, the vendor catalogue,
+which never carries an `ai::` row. `isGenerated` is false for everything in it and the branch cannot
+fire. The audit was right to name only `481-482`.
+
+Both the comment and the test are corrected. The line-298 predicate is still widened — kept in step
+with its twin deliberately, and now documented as consistency for an unreachable branch rather than
+as a second live fix. The vacuous test is deleted and replaced by a comment saying why it must not be
+re-added. This is the same error class (citation/assumption treated as verification) the whole audit
+exists to catch, found in my own work by the discipline the master prompt mandates; recording it
+rather than quietly deleting the bad test.
+
+Live-path scope, verified rather than assumed: `exerciseResolutionProvider` is the ONLY route by
+which an `ai::` row reaches a user, because every list applies `withDemonstration` and generated rows
+carry no clip. That path answers deep links and history rows and is terminal.
+
+Regression-tested: 3 tests (restriction-only cannot resolve; injury-only still excluded, as the
+control for not having replaced one case with the other; a profile with neither still resolves it, so
+the fix does not delete the capability). Mutation-checked: exactly 1 fails against the pre-fix code,
+the two controls correctly pass in both states. `flutter analyze` clean.
+
+### Status
+
+G-B in progress: B6 landed. B1, B2, B3, B4, B5 remain. Not pushed.
+
+Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).

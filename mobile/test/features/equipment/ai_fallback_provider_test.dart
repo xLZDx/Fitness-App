@@ -8,6 +8,9 @@ import 'package:fitness_app/features/equipment/data/asset_equipment_repository.d
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/data/equipment_repository.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
+import 'package:fitness_app/features/profile/data/profile_models.dart';
+import 'package:fitness_app/features/safety/data/health_flags.dart';
+import 'package:fitness_app/features/safety/data/par_q.dart';
 
 const _elliptical = EquipmentItem(
   id: 'elliptical',
@@ -46,6 +49,7 @@ ProviderContainer _makeContainer({
   required int Function() askCallCount,
   GeneratedExerciseRepository? generatedRepo,
   Future<String> Function(String prompt)? ask,
+  UserProfile? profile,
 }) {
   final repo = AssetEquipmentRepository()
     ..seedForTests(
@@ -61,7 +65,7 @@ ProviderContainer _makeContainer({
     // No signed-in user, so nothing to screen against. Stated rather than
     // inherited: the safe catalog now waits on auth AND the profile, and a
     // container that resolved neither would hang instead of failing.
-    screeningProfileProvider.overrideWith((ref) async => null),
+    screeningProfileProvider.overrideWith((ref) async => profile),
     generatedExerciseRepositoryProvider
         .overrideWithValue(generatedRepo ?? MockGeneratedExerciseRepository()),
     aiExerciseGeneratorProvider.overrideWithValue(AiExerciseGenerator(ask: (p) async {
@@ -161,6 +165,103 @@ void main() {
       final container = _makeContainer(askCallCount: () => 0);
       final out = await container.read(safeCatalogProvider.future);
       expect(out.where((e) => e.equipmentId == 'elliptical'), isEmpty);
+    });
+  });
+
+  /// F023 (G-B/B6) — a movement restriction excludes generated exercises for
+  /// the same reason an injury does.
+  ///
+  /// Generated rows carry no `contraindications` field and nothing can attach
+  /// one, so `isContraindicated` returns false for every one of them however
+  /// the user is restricted. The exclusion used to read the injury list and
+  /// nothing else, which served untagged AI rows to a user whose only entry was
+  /// a restriction — while the app told them the list was screened.
+  ///
+  /// A clip is stated on the fixtures below because both surfaces under test
+  /// apply `withDemonstration`; a clipless one would pass for the wrong reason.
+  group('F023: generated exercises and movement restrictions', () {
+    const generated = ExerciseItem(
+      id: 'ai::elliptical::0',
+      title: 'AI elliptical intervals',
+      equipmentId: 'elliptical',
+      muscles: ['quads'],
+      difficulty: ExerciseDifficulty.beginner,
+      durationMinutes: 8,
+      summary: 's',
+      steps: ['a'],
+      videoUrl: 'https://example.invalid/ai.mp4',
+    );
+
+    UserProfile profileWith({
+      Set<MovementRestriction> restrictions = const {},
+      List<Injury> injuries = const [],
+    }) =>
+        UserProfile(
+          uid: 'u1',
+          health: HealthHistory(
+            injuries: injuries,
+            screening: {for (final q in ParQQuestion.values) q: false},
+            flags: HealthFlags(restrictions: restrictions),
+          ),
+        );
+
+    Future<GeneratedExerciseRepository> seeded() async {
+      final genRepo = MockGeneratedExerciseRepository();
+      await genRepo.save('elliptical', 'en', const [generated]);
+      return genRepo;
+    }
+
+    test('a restriction-only profile cannot resolve one by id', () async {
+      // `exerciseResolutionProvider` is the only live path by which an `ai::`
+      // row reaches a user: every list applies `withDemonstration` and
+      // generated rows carry no clip, so this is what answers
+      // `/workout/ai::elliptical::0` from a deep link or a history row. It is
+      // terminal -- nothing downstream re-screens it.
+      //
+      // There is deliberately no companion test against
+      // `recommendedExercisesProvider`: its pool is the vendor catalogue,
+      // which holds no `ai::` rows at all, so such a test would pass against
+      // the unfixed code and prove nothing. Verified by mutation, not assumed.
+      final container = _makeContainer(
+        askCallCount: () => 0,
+        generatedRepo: await seeded(),
+        profile: profileWith(restrictions: {MovementRestriction.overhead}),
+      );
+
+      final res = await container
+          .read(exerciseResolutionProvider('ai::elliptical::0').future);
+      expect(res.exercise, isNull);
+    });
+
+    test('an injury-only profile is still excluded, as it always was',
+        () async {
+      // The control for the pre-existing half of the rule: widening it must
+      // not have replaced the injury case with the restriction one.
+      final container = _makeContainer(
+        askCallCount: () => 0,
+        generatedRepo: await seeded(),
+        profile: profileWith(
+          injuries: const [Injury(bodyPart: 'shoulder', type: 'strain')],
+        ),
+      );
+
+      final res = await container
+          .read(exerciseResolutionProvider('ai::elliptical::0').future);
+      expect(res.exercise, isNull);
+    });
+
+    test('a profile with neither still sees them', () async {
+      // The feature must survive its own fix. Someone who has told us nothing
+      // to screen against has nothing this rule can act on.
+      final container = _makeContainer(
+        askCallCount: () => 0,
+        generatedRepo: await seeded(),
+        profile: profileWith(),
+      );
+
+      final res = await container
+          .read(exerciseResolutionProvider('ai::elliptical::0').future);
+      expect(res.exercise?.id, 'ai::elliptical::0');
     });
   });
 
