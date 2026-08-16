@@ -11574,3 +11574,55 @@ surviving half.
 `flutter test` **2628 passed / 0 failed** (2625 before; 3 added). `flutter analyze lib/ test/` back
 to **7** issues, all pre-existing — the deprecated-API version of the new test had made it 8.
 `functions/`: 151 passed / 0 failed.
+
+## 2026-08-16 — P7: three callables that only a scaling test had ever touched
+
+**Basis: FACT.**
+
+Correcting something written a few hours earlier in this same log. The P7 row was updated to say four
+of the six named functions had behavioural tests. **Three do.** The count came from grepping for the
+function name, which matched `optInDonorWall` inside a *comment* in `delete_account.test.ts` and
+missed `stripeWebhook`, which is invoked through a cast — `(stripeWebhook as unknown as (req, res) =>
+…)(…)` — so the name is never followed by `(`. Two errors in opposite directions that happened to
+land on the same total.
+
+Re-measured by looking for an actual invocation:
+
+| function | before today |
+|---|---|
+| `stripeWebhook` | tested (`stripe_webhook.test.ts` drives it as an HTTP function) |
+| `createPortalSession` | tested |
+| `startCoachOnboarding` | tested |
+| `optInDonorWall` | **only in `scaling.test.ts`** |
+| `optOutDonorWall` | **only in `scaling.test.ts`** |
+| `reportEquipment` | **only in `scaling.test.ts`** |
+
+`scaling.test.ts` asserts every export's scaling configuration and calls none of them. A function
+listed there has its `maxInstances` pinned and nothing else, which is coverage in a sense that does
+not survive being stated precisely.
+
+### What the 14 new tests assert
+
+Chosen by what actually goes wrong, not by line coverage. Two of the three write to shared
+collections `deleteAccount` has to sweep, and the third is the only endpoint in the codebase that
+calls a third party.
+
+- **`optInDonorWall`** — the wall is world-readable, so the interesting properties are all refusals:
+  no active subscription is a refusal (a cancelled-but-paid-up one is not), the 60- and
+  200-character limits are the numbers the privacy policy states out loud, a blank name writes
+  "Anonymous donor" because the policy promises that, and **the tier is derived from the
+  subscription rather than the request** — a client-supplied tier would let any supporter list
+  themselves as a sustainer on a public page.
+- **`optOutDonorWall`** — deletes the caller's own row and not one named in the request body.
+- **`reportEquipment`** — `reporterUid` is the authenticated uid, not a client field (it is what
+  `deleteAccount` later replaces with `deleted_user`); the gym webhook fires only when one is
+  registered, carries a timeout, and **a dead endpoint does not cost the user their report** —
+  the write happens first, which is the only thing that makes swallowing that error defensible.
+
+Mutation, seven, all red: dropping the subscription check, trusting a client tier, dropping the name
+limit, deleting a uid from the request body, stamping a client-supplied reporter, making the write
+unreachable, and removing the webhook timeout. Restore green.
+
+### Verification
+
+`functions/`: **165 passed / 0 failed**, 8 suites (151 before; 14 added).

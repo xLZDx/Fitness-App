@@ -100,3 +100,9 @@ sequence,timestamp,marker,action,command_or_change,target,result,related_gate,co
 99,2026-08-16T11:22:02+03:00,+ГО,test,npx jest --ci,functions/,"8 suites, 151 tests, all passing",P7,,every previous full-suite-green statement covered mobile/ only
 100,2026-08-16T11:22:02+03:00,+ГО,verify,behavioural coverage of the 6 named functions,functions/src/__tests__,4 covered; optOutDonorWall and reportEquipment appear only in scaling.test.ts,P7,,the row is mostly stale with one real gap
 101,2026-08-16T11:22:02+03:00,+ГО,test,flutter test,mobile/,2628 passed / 0 failed,B1,,2625 before; 3 added
+102,2026-08-16T11:26:52+03:00,+ГО|КОМИТ,record,git commit,B1 + scope corrections,committed,B1,8f75d84,"5 files, 196 insertions"
+103,2026-08-16T11:26:52+03:00,+ГО,verify,re-count function coverage by actual invocation,functions/src/__tests__,"3 of 6 covered, not 4",P7,,my earlier grep counted a comment mention and missed a cast-invoked export
+104,2026-08-16T11:26:52+03:00,+ГО,create,14 behavioural tests for the 3 uncovered callables,functions/src/__tests__/index.test.ts,pass,P7,,chosen by what goes wrong: shared-collection writes and the only third-party call
+105,2026-08-16T11:26:52+03:00,+ГО,test,7 mutations,functions/src/index.ts,"7/7 detected, restore green",P7,,includes making the report write unreachable and removing the webhook timeout
+106,2026-08-16T11:26:52+03:00,+ГО,test,npx jest --ci,functions/,165 passed / 0 failed,P7,,151 before; 14 added
+107,2026-08-16T11:26:52+03:00,+ГО,edit,correct the P7 scope row,core/plans/FINAL_SCOPE_2026-08-16.md,4 covered -> 3 covered,P7,,correcting a figure written earlier the same day

@@ -98,6 +98,9 @@ import {
   bookCoachSession,
   createPortalSession,
   startCoachOnboarding,
+  optInDonorWall,
+  optOutDonorWall,
+  reportEquipment,
 } from "../index";
 
 const adminMock = jest.requireMock("firebase-admin") as any;
@@ -930,4 +933,187 @@ describe("Stripe return URLs", () => {
       );
       expect(JSON.stringify(args)).not.toContain(DEAD);
     });
+});
+
+
+/* ------------------------------------------------------------------ */
+/* P7 — the three callables that had no behavioural test at all        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * All three appeared only in `scaling.test.ts`, which asserts the scaling
+ * configuration of every export and calls none of them. A function listed there
+ * is covered in the sense that its `maxInstances` is pinned, and in no other
+ * sense — the scope row that listed these as "no tests" was right about them and
+ * wrong about the three it grouped them with.
+ *
+ * Two of the three write to shared collections that `deleteAccount` has to sweep
+ * (`donor_wall`, `equipment_reports`), and the third is the only endpoint that
+ * calls out to a third party. Those are the properties asserted below: what
+ * lands in Firestore, and what happens when the gym's endpoint misbehaves.
+ */
+describe("optInDonorWall", () => {
+  it("refuses an unauthenticated caller", async () => {
+    await expectHttpsError(optInDonorWall.run(req({})), "unauthenticated");
+  });
+
+  it("refuses a caller with no active subscription", async () => {
+    // The wall is a list of people who are currently supporting the project.
+    // Without this the endpoint is an open write to a world-readable
+    // collection.
+    primeDoc("users/u1/subscription/main", { status: "expired" });
+    await expectHttpsError(
+      optInDonorWall.run(req({ displayName: "Sam" }, { uid: "u1" })),
+      "failed-precondition",
+    );
+    expect(adminMock.__getRef("donor_wall/u1").set).not.toHaveBeenCalled();
+  });
+
+  it("accepts a cancelled subscription, which is still paid up", async () => {
+    primeDoc("users/u1/subscription/main", { status: "cancelled" });
+    await optInDonorWall.run(req({ displayName: "Sam" }, { uid: "u1" }));
+    expect(adminMock.__getRef("donor_wall/u1").set).toHaveBeenCalled();
+  });
+
+  it("writes an anonymous entry when the name is blank", async () => {
+    // Blank is a deliberate choice in the UI, not a missing field: the privacy
+    // policy tells the user that leaving the name empty shows the entry as
+    // anonymous.
+    primeDoc("users/u1/subscription/main", { status: "active" });
+    await optInDonorWall.run(req({ displayName: "   " }, { uid: "u1" }));
+    const [written] = adminMock.__getRef("donor_wall/u1").set.mock.calls[0];
+    expect(written.displayName).toBe("Anonymous donor");
+    expect(written).not.toHaveProperty("message");
+  });
+
+  it("enforces the published limits on both fields", async () => {
+    // 60 and 200 are the numbers the privacy policy states out loud, so they
+    // are a promise rather than an implementation detail.
+    primeDoc("users/u1/subscription/main", { status: "active" });
+    await expectHttpsError(
+      optInDonorWall.run(req({ displayName: "x".repeat(61) }, { uid: "u1" })),
+      "invalid-argument",
+    );
+    await expectHttpsError(
+      optInDonorWall.run(req({ message: "x".repeat(201) }, { uid: "u1" })),
+      "invalid-argument",
+    );
+    expect(adminMock.__getRef("donor_wall/u1").set).not.toHaveBeenCalled();
+  });
+
+  it("derives the tier from the subscription, not from the request", async () => {
+    // A client-supplied tier would let any supporter list themselves as a
+    // sustainer on a public page.
+    primeDoc("users/u1/subscription/main", {
+      status: "active",
+      tier: "celebrityTrainer",
+    });
+    await optInDonorWall.run(
+      req({ displayName: "Sam", tier: "sustainer" }, { uid: "u1" }),
+    );
+    const [written] = adminMock.__getRef("donor_wall/u1").set.mock.calls[0];
+    expect(written.tier).toBe("sustainer");
+
+    adminMock.__reset();
+    primeDoc("users/u2/subscription/main", { status: "active", tier: "x" });
+    await optInDonorWall.run(
+      req({ displayName: "Sam", tier: "sustainer" }, { uid: "u2" }),
+    );
+    const [second] = adminMock.__getRef("donor_wall/u2").set.mock.calls[0];
+    expect(second.tier).toBe("supporter");
+  });
+});
+
+describe("optOutDonorWall", () => {
+  it("refuses an unauthenticated caller", async () => {
+    await expectHttpsError(optOutDonorWall.run(req({})), "unauthenticated");
+  });
+
+  it("deletes only the caller's own entry", async () => {
+    // The uid comes from the auth context and there is no client field for it.
+    // A request body naming somebody else must not reach their row.
+    await optOutDonorWall.run(req({ uid: "victim" }, { uid: "u1" }));
+    expect(adminMock.__getRef("donor_wall/u1").delete).toHaveBeenCalled();
+    expect(adminMock.__getRef("donor_wall/victim").delete).not.toHaveBeenCalled();
+  });
+});
+
+describe("reportEquipment", () => {
+  const originalFetch = global.fetch;
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("refuses an unauthenticated caller", async () => {
+    await expectHttpsError(reportEquipment.run(req({})), "unauthenticated");
+  });
+
+  it("requires an equipmentId", async () => {
+    await expectHttpsError(
+      reportEquipment.run(req({ gymId: "g1" }, { uid: "u1" })),
+      "invalid-argument",
+    );
+  });
+
+  it("stamps the report with the caller's own uid and opens it", async () => {
+    // `reporterUid` is what `deleteAccount` later replaces with
+    // `deleted_user`, so it has to be the authenticated uid rather than
+    // anything the client sent.
+    global.fetch = jest.fn() as any;
+    await reportEquipment.run(
+      req(
+        { id: "r1", equipmentId: "cable_machine", reporterUid: "someone_else" },
+        { uid: "u1" },
+      ),
+    );
+    const [written] = adminMock.__getRef("equipment_reports/r1").set.mock.calls[0];
+    expect(written.reporterUid).toBe("u1");
+    expect(written.status).toBe("open");
+    expect(written.gymId).toBe("unknown");
+    expect(written.fault).toBe("other");
+  });
+
+  it("posts to a gym's webhook when one is registered", async () => {
+    const fetchMock = jest.fn().mockResolvedValue({ ok: true });
+    global.fetch = fetchMock as any;
+    primeDoc("gyms/g1", { maintenanceWebhookUrl: "https://gym.example/hook" });
+    await reportEquipment.run(
+      req(
+        { id: "r2", equipmentId: "leg_press", gymId: "g1", fault: "broken" },
+        { uid: "u1" },
+      ),
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe("https://gym.example/hook");
+    expect(JSON.parse(init.body).equipmentId).toBe("leg_press");
+    // Bounded on purpose: one gym whose endpoint accepts and never answers
+    // would otherwise hold the instance until the platform kills it, with the
+    // user watching a spinner and nobody else able to file a report.
+    expect(init.signal).toBeDefined();
+  });
+
+  it("does not call out when the gym registered no webhook", async () => {
+    const fetchMock = jest.fn();
+    global.fetch = fetchMock as any;
+    primeDoc("gyms/g1", {});
+    await reportEquipment.run(
+      req({ id: "r3", equipmentId: "leg_press", gymId: "g1" }, { uid: "u1" }),
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("still stores the report when the gym's endpoint fails", async () => {
+    // The ordering is the whole point: the write happens first, so a dead
+    // third-party endpoint cannot cost the user their report. Swallowing the
+    // error is only defensible because of that, and this is what pins it.
+    global.fetch = jest.fn().mockRejectedValue(new Error("gym is down")) as any;
+    primeDoc("gyms/g1", { maintenanceWebhookUrl: "https://gym.example/hook" });
+    await expect(
+      reportEquipment.run(
+        req({ id: "r4", equipmentId: "leg_press", gymId: "g1" }, { uid: "u1" }),
+      ),
+    ).resolves.toBeDefined();
+    expect(adminMock.__getRef("equipment_reports/r4").set).toHaveBeenCalled();
+  });
 });
