@@ -13104,3 +13104,44 @@ Full functions suite: **171 passing**, `tsc --noEmit` clean.
 
 F011 IMPLEMENTED and MUTATION_PROVEN. Its decision half was already `DECISION_RESOLVED` and was not
 revisited. Not pushed.
+
+## 2026-08-17 — Independent attack 1 of 6: Firestore re-attack
+
+**Not a rerun.** The G-D suite proved the controls it was written for, which is not the same as
+proving they hold against an attacker who did not read it. 25 new cases, against the real emulator,
+using verbs and shapes the earlier file never sends.
+
+**The sharpest of them is `updateDoc` rather than `setDoc`.** `setDoc` sends the whole document, so
+`request.resource.data` carries every field the rule inspects; `updateDoc` sends a PATCH, and a rule
+written as "field absent OR field is empty" can read absence in a patch and allow a write that adds
+a forbidden value. Attacked three ways: a whole-map patch onto a legitimately-written clean profile,
+a dotted-path patch (`"health.conditions"`), and a dotted-path patch into `lifestyle`.
+
+Also attacked: a `health` block of the wrong TYPE (a bare string, a string where a list belongs, a
+number where a list belongs) — `healthIsStripped` calls `.size()`, and a rule that errors must deny
+rather than evaluate true; a health block MISSING the fields the helper reads, which is the mirror
+image of adding one; `update`, `delete` and `addDoc` on `usage` and `receipts`, because a control
+that stops writes but not deletes is not a quota; DEEPER paths under both, since the wildcard
+exclusion is by collection name at one level; `subscription/mine` rather than `subscription/main`,
+which is the way past a rule keyed on the document instead of the collection; a nested path under
+`subscription`; and `alice2` reading `alice`'s profile, which a `startsWith` comparison would allow.
+
+**Controls, so the suite cannot pass by refusing everything:** an unknown sibling field alongside a
+clean health block still succeeds (the rule constrains health and lifestyle; it is not an allow-list
+over the profile); reading one's own subscription still succeeds, because it is server-WRITTEN, not
+server-secret; and a user's ordinary collection still round-trips — isolation must not be isolation
+from yourself.
+
+**Result: 59 passing (34 existing + 25 new). No defect found.** That is the honest outcome: the
+rules held against every novel shape tried.
+
+**Two durable fixes so this could run at all.** Port 8080 is occupied on this machine by Docker. The
+previous G-D run worked around it with a temporary edit to the test file and a scratch config at the
+repo root, both reverted by hand — which is exactly how a temporary edit eventually gets committed.
+The port is now read from `FIRESTORE_EMULATOR_PORT` (default 8080, which is what `firebase.json` and
+CI use) and the runner honours an optional `FIREBASE_EMULATOR_CONFIG`. This run used a config held
+entirely in the session scratchpad; `git status` confirms nothing was left in the repository.
+
+### Status
+
+Firestore re-attack COMPLETE, no finding. 1 of 6 independent attacks done. Not pushed.

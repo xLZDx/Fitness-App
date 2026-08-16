@@ -56,7 +56,13 @@ beforeAll(async () => {
     firestore: {
       rules: readFileSync(resolve(__dirname, "../../../firestore.rules"), "utf8"),
       host: "127.0.0.1",
-      port: 8080,
+      // 8080 is the emulator's default and what `firebase.json` and CI use.
+      // Overridable because a developer machine can easily have something
+      // else on that port -- Docker Desktop does, on this one -- and the
+      // alternative was editing this line and `firebase.json` by hand for
+      // every local run, which is how a temporary edit ends up committed.
+      // Pair with FIREBASE_EMULATOR_CONFIG so both halves agree.
+      port: Number(process.env.FIRESTORE_EMULATOR_PORT ?? 8080),
     },
   });
 });
@@ -351,5 +357,243 @@ describe("a collection nobody wrote a rule for", () => {
     await assertFails(
       setDoc(doc(asAlice(), "some_new_collection/x"), { a: 1 }),
     );
+  });
+});
+
+/* ==================================================================== */
+/* RE-ATTACK - novel payloads, not a rerun of the G-D suite              */
+/* ==================================================================== */
+
+/**
+ * The G-D suite proved the controls it was written for. That is not the same
+ * as proving they hold against an attacker who did not read it, so this
+ * describes attacks the earlier file does not make: partial updates instead
+ * of whole-document writes, wrong types where a rule reads a field, sibling
+ * fields the rule never mentions, deeper paths under a closed collection, and
+ * merges that try to smuggle a value into a document written a moment earlier.
+ *
+ * `update` rather than `set` is the sharpest of these. `setDoc` sends the
+ * whole document, so `request.resource.data` carries every field the rule
+ * looks at; `updateDoc` sends a patch, and a rule written as "field absent OR
+ * field is empty" can read absence in a patch and allow a write that adds a
+ * forbidden value.
+ */
+describe("re-attack: profile health, by patch rather than by whole document", () => {
+  const strippedHealth = () => ({
+    conditions: [],
+    allergies: [],
+    medications: [],
+    injuries: [],
+    physicalLimitations: [],
+    recentSurgeries: [],
+    bloodPressure: null,
+    otherConcerns: null,
+    screening: {},
+    flags: { restrictions: [], bloodPressure: null, surgery: null, clinicianAdvice: null },
+  });
+
+  test("updateDoc cannot add a condition to a legitimately-written profile", async () => {
+    // Write a clean profile first, which is allowed, then PATCH the health
+    // block. If the rule reasoned about absence in a patch, this is where it
+    // would let one through.
+    await assertSucceeds(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        health: strippedHealth(),
+      }),
+    );
+    await assertFails(
+      updateDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        health: { ...strippedHealth(), conditions: ["hypertension"] },
+      }),
+    );
+  });
+
+  test("a dotted-path patch into the health map is refused", async () => {
+    await assertSucceeds(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        health: strippedHealth(),
+      }),
+    );
+    await assertFails(
+      updateDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        "health.conditions": ["asthma"],
+      }),
+    );
+  });
+
+  test("a dotted-path patch into lifestyle is refused", async () => {
+    await assertSucceeds(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), { goal: "strength" }),
+    );
+    await assertFails(
+      updateDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        "lifestyle.smoking": "current",
+      }),
+    );
+  });
+
+  test("a health block of the WRONG TYPE is refused, not waved through", async () => {
+    // `healthIsStripped` reads `.size()` off list fields. A string or a number
+    // where a list belongs is the classic way to make a helper throw, and a
+    // rule that errors denies -- which is the outcome wanted, but it has to be
+    // confirmed rather than assumed.
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        health: "not a map at all",
+      }),
+    );
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        health: { ...strippedHealth(), conditions: "diabetes" },
+      }),
+    );
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        health: { ...strippedHealth(), conditions: 3 },
+      }),
+    );
+  });
+
+  test("a health block MISSING the fields the rule reads is refused", async () => {
+    // Removing a field is the mirror image of adding one: if the helper reads
+    // `h.conditions.size()` on a map with no `conditions`, the rule must deny
+    // rather than evaluate to true.
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        health: { conditions: [] },
+      }),
+    );
+  });
+
+  test("an unknown sibling field alongside a clean health block is allowed", async () => {
+    // The control. The rule constrains health and lifestyle; it is not an
+    // allow-list over the whole profile, and asserting otherwise would assert
+    // a restriction the product does not have.
+    await assertSucceeds(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        health: strippedHealth(),
+        somethingNew: { added: "by a later app version" },
+      }),
+    );
+  });
+
+  test("Bob cannot write Alice's profile even with a stripped block", async () => {
+    await assertFails(
+      setDoc(doc(asBob(), `users/${ALICE}/profile/main`), {
+        health: strippedHealth(),
+      }),
+    );
+  });
+});
+
+describe("re-attack: usage and receipts, every verb", () => {
+  // G-D closed these to read AND write. The earlier suite checks get/set;
+  // these check the verbs an attacker would reach for next.
+  for (const coll of ["usage", "receipts"]) {
+    test(`${coll}: update is refused`, async () => {
+      await assertFails(
+        updateDoc(doc(asAlice(), `users/${ALICE}/${coll}/2026`), { n: 1 }),
+      );
+    });
+
+    test(`${coll}: delete is refused`, async () => {
+      // Deleting a quota row resets it. A control that stops writes but not
+      // deletes is not a quota.
+      await assertFails(deleteDoc(doc(asAlice(), `users/${ALICE}/${coll}/2026`)));
+    });
+
+    test(`${coll}: addDoc into the collection is refused`, async () => {
+      await assertFails(
+        addDoc(collection(asAlice(), `users/${ALICE}/${coll}`), { n: 1 }),
+      );
+    });
+
+    test(`${coll}: a DEEPER path is refused too`, async () => {
+      // The exclusion is by collection name at one level. A nested document is
+      // the obvious way to test whether it reaches further down.
+      await assertFails(
+        setDoc(doc(asAlice(), `users/${ALICE}/${coll}/2026/detail/x`), { n: 1 }),
+      );
+      await assertFails(
+        getDoc(doc(asAlice(), `users/${ALICE}/${coll}/2026/detail/x`)),
+      );
+    });
+
+    test(`${coll}: Bob cannot read Alice's`, async () => {
+      await assertFails(getDoc(doc(asBob(), `users/${ALICE}/${coll}/2026`)));
+    });
+  }
+});
+
+describe("re-attack: subscription cannot be reached sideways", () => {
+  test("update and delete are both refused", async () => {
+    await assertFails(
+      updateDoc(doc(asAlice(), `users/${ALICE}/subscription/main`), {
+        tier: "celebrityTrainer",
+      }),
+    );
+    await assertFails(
+      deleteDoc(doc(asAlice(), `users/${ALICE}/subscription/main`)),
+    );
+  });
+
+  test("a document under a DIFFERENT id in the same collection is refused", async () => {
+    // The rule names `subscription` as a collection, not `main` as a document.
+    // `subscription/mine` is the way past a rule written the other way round.
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/subscription/mine`), {
+        tier: "celebrityTrainer",
+      }),
+    );
+  });
+
+  test("a nested path under subscription is refused", async () => {
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/subscription/main/x/y`), {
+        tier: "celebrityTrainer",
+      }),
+    );
+  });
+
+  test("reading it is still allowed, because the app renders it", async () => {
+    // The control. Subscription is server-WRITTEN, not server-secret.
+    await assertSucceeds(
+      getDoc(doc(asAlice(), `users/${ALICE}/subscription/main`)),
+    );
+  });
+});
+
+describe("re-attack: ownership cannot be transferred or forged", () => {
+  test("Alice cannot create a document under Bob's user tree", async () => {
+    await assertFails(setDoc(doc(asAlice(), `users/${BOB}/workouts/w1`), { x: 1 }));
+  });
+
+  test("a signed-out client reaches nothing under any user", async () => {
+    await assertFails(getDoc(doc(signedOut(), `users/${ALICE}/profile/main`)));
+    await assertFails(
+      setDoc(doc(signedOut(), `users/${ALICE}/workouts/w1`), { x: 1 }),
+    );
+  });
+
+  test("a uid-shaped prefix is not the same uid", async () => {
+    // `alice` vs `alice2`: a rule comparing with `startsWith` rather than
+    // equality would let this through.
+    await assertFails(
+      getDoc(
+        doc(
+          env.authenticatedContext("alice2").firestore(),
+          `users/${ALICE}/profile/main`,
+        ),
+      ),
+    );
+  });
+
+  test("Alice's own ordinary collection still works", async () => {
+    // The control for this whole describe: isolation must not be isolation
+    // from yourself.
+    await assertSucceeds(
+      setDoc(doc(asAlice(), `users/${ALICE}/workouts/w1`), { x: 1 }),
+    );
+    await assertSucceeds(getDoc(doc(asAlice(), `users/${ALICE}/workouts/w1`)));
   });
 });

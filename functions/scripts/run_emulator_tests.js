@@ -98,8 +98,17 @@ if (!chosen) {
 // `.cmd` without a shell -- the CVE-2024-27980 hardening -- and `npx` on
 // Windows IS `npx.cmd`, so the argv form dies with a bare `EINVAL` that says
 // nothing about why.
+// An alternate emulator config, for a machine whose default ports are taken.
+// CI sets neither and gets the repository's own `firebase.json` on 8080.
+// FIRESTORE_EMULATOR_PORT has to match whatever that config declares -- the
+// suite reads it to know where to connect.
+const configFlag = process.env.FIREBASE_EMULATOR_CONFIG
+  ? `--config "${process.env.FIREBASE_EMULATOR_CONFIG}" `
+  : "";
+
 const result = spawnSync(
   `npx firebase emulators:exec --only ${emulators} ` +
+    configFlag +
     `--project ${projectId} ` +
     `"npx jest --config ${config}"`,
   {
