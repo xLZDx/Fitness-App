@@ -140,16 +140,18 @@ PY
 ```
 
 The Gate E verdict counts come from
-`D:/Downloads/SPTR_FULL_CATALOG_1887_GATE_E_RECLASSIFIED_2026-08-15.csv` (224 findings over
-199 distinct cards, column `gate_e_label`). The 519/609 detector totals come from
-`SPTR_FULL_CATALOG_1887_FINAL_ISSUES_2026-08-15.csv`, and the per-card
-`visual_status` / `has_purpose` / `final_priority` columns from
-`SPTR_FULL_CATALOG_1887_FINAL_VERIFIED_2026-08-15.csv` (all 1887 rows).
+`core/audit/full_catalog_1887_2026-08-15/SPTR_FULL_CATALOG_1887_GATE_E_RECLASSIFIED_2026-08-15.csv`
+(224 findings over 199 distinct cards, column `gate_e_label`). The 519/609 detector totals come
+from `core/audit/full_catalog_1887_2026-08-15/SPTR_FULL_CATALOG_1887_FINAL_ISSUES_2026-08-15.csv`,
+and the per-card `visual_status` / `has_purpose` / `final_priority` columns from
+`core/audit/full_catalog_1887_2026-08-15/SPTR_FULL_CATALOG_1887_FINAL_VERIFIED_2026-08-15.csv`
+(all 1887 rows).
 
-Those three CSVs live outside the repository, in the operator's `Downloads` directory. That
-is a persistence risk of the same class this project already hit once — see
-`core/DECISION_LOG.md` on the 2026-08-04 loss of 131 unpersisted findings — and moving them
-under `core/` is worth its own gate.
+**Those files used to live only in the operator's `Downloads` directory** — a persistence risk of
+the same class this project already hit once, the 2026-08-04 loss of 131 unpersisted findings. Gate
+G6 (2026-08-16) imported the whole delivered package into `core/audit/full_catalog_1887_2026-08-15/`
+byte-for-byte, with a `MANIFEST.csv` recording a SHA-256 and a row count for each. Run
+`python tools/evidence/validate_csv_evidence.py` to prove the bytes have not moved since.
 
 ---
 

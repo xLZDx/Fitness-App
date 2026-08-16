@@ -117,10 +117,15 @@ the content is not there.
   `recumbent_bike`, `rotary_torso_machine`, `t_bar_row`. Those machine pages are empty.
 - 78 rows say "no equipment" on the card for an exercise that names a machine (see 1.3).
 
-### 1.8 Persistence risk, inherited
+### 1.8 Persistence risk, inherited — **closed 2026-08-16 (G6)**
 
-The three CSVs every audit figure rests on (`SPTR_FULL_CATALOG_1887_*`) live **outside the
-repository**, in the operator's `Downloads`. Same class of risk as the 2026-08-04 loss.
+The CSVs every audit figure rests on used to live outside the repository, in the operator's
+`Downloads`. The whole delivered package — 5 CSVs, 3 summaries and the review page — is now under
+`core/audit/full_catalog_1887_2026-08-15/`, imported byte-for-byte with a `MANIFEST.csv`
+carrying a SHA-256 and a row count per file. `tools/evidence/validate_csv_evidence.py` re-hashes
+them, and every documented count was verified against the live catalogue at import: 609 findings
+over 519 cards, 224 Gate E findings over 199 cards, 1887 verified rows of which 403 carry a
+`purpose`, and the audit's 1887 ids match the shipped catalogue exactly in both directions.
 
 ---
 
@@ -201,7 +206,7 @@ repository**, in the operator's `Downloads`. Same class of risk as the 2026-08-0
 | **G3** | Create 5 Stripe price IDs, run `setup_stripe_secrets.ps1` | operator, ~10 min in the dashboard |
 | **G4** | Settle R5: either an evidential read-only Firestore query, or soften the absolute wording in `legal_text.py` | policy and code agree |
 | **G5** | Recover the R8/R9/R11 artefact, or close them as "no source exists" | no UNKNOWN left hanging |
-| **G6** | Move the three audit CSVs from `Downloads` under `core/` | the persistence risk is gone |
+| ~~**G6**~~ | ~~Move the three audit CSVs from `Downloads` under `core/`~~ | **Done 2026-08-16.** 9 artifacts imported unmodified, hashes recorded, validator added and mutation-tested |
 
 ### P1 — catalogue content (the bulk; scale is an operator decision)
 

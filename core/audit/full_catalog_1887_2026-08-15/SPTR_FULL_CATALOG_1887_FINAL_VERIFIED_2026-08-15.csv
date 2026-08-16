@@ -1,0 +1,1888 @@
+﻿id,title,group,has_purpose,final_priority,confirmed_real_issue_codes,visual_status
+ea_3_4_sit_up,3-4 Sit-up,Abdominals,False,PASS,,NOT_VERIFIED
+ea_45_degree_bicycle_twist_knee_to_elbow,45 Degree Bicycle Twist Knee to Elbow,Abdominals,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_45_degree_bicycle_twisting,45 Degree Bicycle Twisting,Abdominals,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_45_degree_bicycle_twisting_crunch,45 Degree Bicycle Twisting Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_45_degree_side_bend,45 Degree Side Bend,Abdominals,False,PASS,,NOT_VERIFIED
+ea_45_degree_twisting_hyperextension,45 Degree Twisting Hyperextension,Abdominals,False,PASS,,NOT_VERIFIED
+ea_90_degree_heel_touch,90 Degree Heel Touch,Abdominals,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_90_degree_heels_touch,90 Degree Heels Touch,Abdominals,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_ab_wheel_all_the_way_out,AB Wheel All the Way Out,Abdominals,False,PASS,,NOT_VERIFIED
+ea_ab_wheel_halfway_out,AB Wheel Halfway Out,Abdominals,False,PASS,,NOT_VERIFIED
+ea_ab_wheel_left_out,AB Wheel Left Out,Abdominals,False,PASS,,NOT_VERIFIED
+ea_ab_wheel_pulses,AB Wheel Pulses,Abdominals,False,PASS,,NOT_VERIFIED
+ea_ab_wheel_right_out,AB Wheel Right Out,Abdominals,False,PASS,,NOT_VERIFIED
+ea_ab_wheel_take_it_or_leave_it,AB Wheel Take It or Leave It,Abdominals,False,PASS,,NOT_VERIFIED
+ea_ab_mat_sit_up,Ab Mat Sit-up,Abdominals,False,PASS,,NOT_VERIFIED
+ea_ab_tuck,Ab Tuck,Abdominals,False,PASS,,NOT_VERIFIED
+ea_abdominal_crunches,Abdominal Crunches,Abdominals,False,PASS,,NOT_VERIFIED
+ea_abdominal_crunches_machine,Abdominal Crunches Machine,Abdominals,False,PASS,,NOT_VERIFIED
+ea_abdominal_crunches_with_hold,Abdominal Crunches with Hold,Abdominals,False,PASS,,NOT_VERIFIED
+ea_abs_snails,Abs Snails,Abdominals,True,PASS,,PASS
+ea_air_bike,Air Bike,Abdominals,False,PASS,,NOT_VERIFIED
+ea_air_bike_version_2,Air Bike (version 2),Abdominals,False,PASS,,NOT_VERIFIED
+ea_air_bike_crunch,Air Bike Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_air_twisting_crunch,Air Twisting Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_alternate_arm_leg_plank,Alternate Arm Leg Plank,Abdominals,False,PASS,,NOT_VERIFIED
+ea_alternate_arm_leg_plank_hold,Alternate Arm Leg Plank Hold,Abdominals,False,PASS,,NOT_VERIFIED
+ea_alternate_arm_leg_plank_rest_pause,Alternate Arm Leg Plank Rest Pause,Abdominals,False,PASS,,NOT_VERIFIED
+ea_alternate_heel_touches,Alternate Heel Touches,Abdominals,False,PASS,,NOT_VERIFIED
+ea_alternate_leg_pull,Alternate Leg Pull,Abdominals,False,PASS,,NOT_VERIFIED
+ea_alternate_leg_raise,Alternate Leg Raise,Abdominals,False,PASS,,NOT_VERIFIED
+ea_alternate_leg_raise_from_reverse_plank_position,Alternate Leg Raise From Reverse Plank Position,Abdominals,False,P1,FORCED_ROM,NOT_VERIFIED
+ea_alternate_leg_raise_with_head_up,Alternate Leg Raise with Head Up,Abdominals,False,PASS,,NOT_VERIFIED
+ea_alternate_lying_floor_leg_raise,Alternate Lying Floor Leg Raise,Abdominals,False,PASS,,NOT_VERIFIED
+ea_alternate_oblique_crunch,Alternate Oblique Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_alternate_toe_tap_leg_lift,Alternate Toe Tap Leg Lift,Abdominals,False,PASS,,NOT_VERIFIED
+ea_alternating_leg_lifts,Alternating Leg Lifts,Abdominals,False,PASS,,NOT_VERIFIED
+ea_alternating_oblique_sit_ups,Alternating Oblique Sit-ups,Abdominals,False,PASS,,NOT_VERIFIED
+ea_alternating_plank_lunge,Alternating Plank Lunge,Abdominals,False,PASS,,NOT_VERIFIED
+ea_alternating_toe_tap,Alternating Toe Tap,Abdominals,False,PASS,,NOT_VERIFIED
+ea_arm_rotation_knee_lift,Arm Rotation Knee Lift,Abdominals,False,PASS,,NOT_VERIFIED
+ea_assisted_sit_ups,Assisted Sit Ups,Abdominals,False,PASS,,NOT_VERIFIED
+ea_assisted_sit_up,Assisted Sit-up,Abdominals,False,PASS,,NOT_VERIFIED
+ea_ball_sit_up,Ball Sit-up,Abdominals,False,PASS,,NOT_VERIFIED
+ea_band_bicycle_crunch,Band Bicycle Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_band_decline_sit_up,Band Decline Sit Up,Abdominals,False,PASS,,NOT_VERIFIED
+ea_band_kneeling_crunch,Band Kneeling Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_band_side_bend,Band Side Bend,Abdominals,False,PASS,,NOT_VERIFIED
+ea_barbell_landmine_side_bend,Barbell Landmine Side Bend,Abdominals,True,PASS,,PASS
+ea_barbell_rollout,Barbell Rollout,Abdominals,False,PASS,,NOT_VERIFIED
+ea_barbell_seated_twist,Barbell Seated Twist,Abdominals,False,PASS,,NOT_VERIFIED
+ea_barbell_seated_twist_on_exercise_ball,Barbell Seated Twist on Exercise Ball,Abdominals,False,PASS,,NOT_VERIFIED
+ea_barbell_side_bends,Barbell Side Bends,Abdominals,False,PASS,,NOT_VERIFIED
+ea_barbell_situp,Barbell Situp,Abdominals,True,PASS,,PASS
+ea_barbell_standing_twist,Barbell Standing Twist,Abdominals,False,PASS,,NOT_VERIFIED
+ea_bench_decline_ab_sit_ups,Bench Decline Ab Sit-ups,Abdominals,False,PASS,,NOT_VERIFIED
+ea_bench_knee_tucks,Bench Knee Tucks,Abdominals,False,PASS,,NOT_VERIFIED
+ea_bent_knee_lying_twist,Bent Knee Lying Twist,Abdominals,False,PASS,,NOT_VERIFIED
+ea_bent_knee_lying_twist_on_stability_ball,Bent Knee Lying Twist (on Stability Ball),Abdominals,False,PASS,,NOT_VERIFIED
+ea_bicycle_twisting_crunch,Bicycle Twisting Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_bicycles,Bicycles,Abdominals,False,PASS,,NOT_VERIFIED
+ea_bicycles_crunches,Bicycles Crunches,Abdominals,False,PASS,,NOT_VERIFIED
+ea_bottoms_up_half_rep,Bottoms-up Half Rep,Abdominals,False,PASS,,NOT_VERIFIED
+ea_brazilian_crunches,Brazilian Crunches,Abdominals,False,PASS,,NOT_VERIFIED
+ea_bridge_mountain_climber_cross_body,Bridge - Mountain Climber (cross Body),Abdominals,False,PASS,,NOT_VERIFIED
+ea_cable_standing_crunch,Cable Standing Crunch,Abdominals,True,PASS,,PASS
+ea_cable_twist,Cable Twist,Abdominals,False,PASS,,NOT_VERIFIED
+ea_cable_twist_up_down,Cable Twist (up-down),Abdominals,False,PASS,,NOT_VERIFIED
+ea_captains_chair_leg_raise,Captains Chair Leg Raise,Abdominals,False,PASS,,NOT_VERIFIED
+ea_captains_chair_straight_leg_raise,Captains Chair Straight Leg Raise,Abdominals,False,PASS,,NOT_VERIFIED
+ea_chest_lift_with_rotation,Chest Lift with Rotation,Abdominals,False,PASS,,NOT_VERIFIED
+ea_copenhagen_plank,Copenhagen Plank,Abdominals,True,PASS,,PASS
+ea_crab_twist_toe_touch,Crab Twist Toe Touch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_criss_cross_leg_raises,Criss Cross Leg Raises,Abdominals,False,PASS,,NOT_VERIFIED
+ea_crunch_arms_straight,Crunch (arms Straight),Abdominals,False,PASS,,NOT_VERIFIED
+ea_crunch_hands_overhead,Crunch (hands Overhead),Abdominals,False,PASS,,NOT_VERIFIED
+ea_crunch_legs_on_stability_ball,Crunch (legs on Stability Ball),Abdominals,False,PASS,,NOT_VERIFIED
+ea_crunch_on_bosu_ball,Crunch (on Bosu Ball),Abdominals,False,PASS,,NOT_VERIFIED
+ea_crunch_on_stability_ball,Crunch (on Stability Ball),Abdominals,False,PASS,,NOT_VERIFIED
+ea_crunch_straight_leg_up,Crunch (straight Leg Up),Abdominals,False,PASS,,NOT_VERIFIED
+ea_crunch_floor,Crunch Floor,Abdominals,False,PASS,,NOT_VERIFIED
+ea_crunch_frog_on_floor,Crunch Frog on Floor,Abdominals,False,PASS,,NOT_VERIFIED
+ea_crunch_leg_raise,Crunch Leg Raise,Abdominals,False,PASS,,NOT_VERIFIED
+ea_crunch_with_medicine_ball,Crunch with Medicine Ball,Abdominals,False,PASS,,NOT_VERIFIED
+ea_dead_bug,Dead Bug,Abdominals,False,PASS,,NOT_VERIFIED
+ea_dead_bug_extended_arms,Dead Bug Extended Arms,Abdominals,False,PASS,,NOT_VERIFIED
+ea_decline_bench_full_sit_up,Decline Bench Full Sit Up,Abdominals,False,PASS,,NOT_VERIFIED
+ea_decline_bent_leg_reverse_crunch,Decline Bent Leg Reverse Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_decline_levitating_sit_ups_bodyweight,Decline Levitating Sit Ups Bodyweight,Abdominals,False,PASS,,NOT_VERIFIED
+ea_decline_sit_up,Decline Sit Up,Abdominals,False,PASS,,NOT_VERIFIED
+ea_decline_sit_ups_dumbbells,Decline Sit Ups Dumbbells,Abdominals,False,PASS,,NOT_VERIFIED
+ea_diagonal_chop_cable,Diagonal Chop Cable,Abdominals,False,P1,EQUIPMENT_TEXT_CONFLICT,NOT_VERIFIED
+ea_diagonal_chop_left,Diagonal Chop Left,Abdominals,False,PASS,,NOT_VERIFIED
+ea_diagonal_chop_right,Diagonal Chop Right,Abdominals,False,PASS,,NOT_VERIFIED
+ea_dragonfly,Dragonfly,Abdominals,True,PASS,,PASS
+ea_dumbbell_ab_crunch,Dumbbell Ab Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_dumbbell_crunch_hold_with_legs_off,Dumbbell Crunch Hold with Legs Off,Abdominals,False,PASS,,NOT_VERIFIED
+ea_dumbbell_decline_overhead_sit_up,Dumbbell Decline Overhead Sit-up,Abdominals,False,PASS,,NOT_VERIFIED
+ea_dumbbell_decline_sit_up,Dumbbell Decline Sit-up,Abdominals,False,PASS,,NOT_VERIFIED
+ea_dumbbell_diagonal_chop,Dumbbell Diagonal Chop,Abdominals,False,PASS,,NOT_VERIFIED
+ea_dumbbell_elbow_side_plank,Dumbbell Elbow Side Plank,Abdominals,True,PASS,,PASS
+ea_dumbbell_half_kneeling_wood_chopper,Dumbbell Half Kneeling Wood Chopper,Abdominals,True,PASS,,PASS
+ea_dumbbell_hand_side_plank,Dumbbell Hand Side Plank,Abdominals,True,PASS,,PASS
+ea_dumbbell_kneeling_wood_chopper,Dumbbell Kneeling Wood Chopper,Abdominals,True,PASS,,PASS
+ea_dumbbell_overhead_side_bend,Dumbbell Overhead Side Bend,Abdominals,True,PASS,,PASS
+ea_dumbbell_overhead_sit_up,Dumbbell Overhead Sit-up,Abdominals,False,PASS,,NOT_VERIFIED
+ea_dumbbell_russian_twist_with_legs_floor_off,Dumbbell Russian Twist with Legs Floor Off,Abdominals,False,PASS,,NOT_VERIFIED
+ea_dumbbell_side_bend,Dumbbell Side Bend,Abdominals,False,PASS,,NOT_VERIFIED
+ea_dumbbell_side_plank_up_down,Dumbbell Side Plank Up Down,Abdominals,True,PASS,,PASS
+ea_dumbbell_side_plank_with_rear_fly,Dumbbell Side Plank with Rear Fly,Abdominals,False,PASS,,NOT_VERIFIED
+ea_dumbbell_single_arm_starfish_crunch,Dumbbell Single Arm Starfish Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_dumbbell_starfish_crunch_alternating,Dumbbell Starfish Crunch Alternating,Abdominals,False,PASS,,NOT_VERIFIED
+ea_dumbbell_straight_arm_crunch,Dumbbell Straight Arm Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_dumbbell_straight_arm_twisting_sit_up,Dumbbell Straight Arm Twisting Sit-up,Abdominals,False,PASS,,NOT_VERIFIED
+ea_dumbbell_straight_leg_russian_twist,Dumbbell Straight Leg Russian Twist,Abdominals,False,PASS,,NOT_VERIFIED
+ea_dumbbell_suitcase_crunch,Dumbbell Suitcase Crunch,Abdominals,True,PASS,,PASS
+ea_dumbbell_v_up,Dumbbell V-up,Abdominals,False,PASS,,NOT_VERIFIED
+ea_elbow_push_plank_up,Elbow Push Plank Up,Abdominals,False,PASS,,NOT_VERIFIED
+ea_elbow_up_and_down_dynamic_plank,Elbow-up and Down Dynamic Plank,Abdominals,False,PASS,,NOT_VERIFIED
+ea_exercise_ball_body_saw,Exercise Ball Body Saw,Abdominals,False,PASS,,NOT_VERIFIED
+ea_exercise_ball_sit_ups,Exercise Ball Sit Ups,Abdominals,False,PASS,,NOT_VERIFIED
+ea_flat_knee_raise,Flat Knee Raise,Abdominals,True,PASS,,PASS
+ea_flutter_kicks,Flutter Kicks,Abdominals,False,PASS,,NOT_VERIFIED
+ea_hanging_knee_raises,Hanging Knee Raises,Abdominals,False,PASS,,NOT_VERIFIED
+ea_hanging_leg_raises,Hanging Leg Raises,Abdominals,True,PASS,,PASS
+ea_hanging_oblique_crunches,Hanging Oblique Crunches,Abdominals,False,PASS,,NOT_VERIFIED
+ea_heel_touches,Heel Touches,Abdominals,False,PASS,,NOT_VERIFIED
+ea_high_cable_kneeling_crunch,High Cable Kneeling Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_high_knee_twist,High Knee Twist,Abdominals,False,PASS,,NOT_VERIFIED
+ea_high_resistance_band_kneeling_crunch,High Resistance Band Kneeling Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_hold_the_world_med_ball,Hold the World Med Ball,Abdominals,True,PASS,,PASS
+ea_hollow_hold,Hollow Hold,Abdominals,False,PASS,,NOT_VERIFIED
+ea_jack_knives,Jack Knives,Abdominals,False,PASS,,NOT_VERIFIED
+ea_kettlebell_situp_press,Kettlebell Situp Press,Abdominals,False,PASS,,NOT_VERIFIED
+ea_l_sit_hold,L Sit Hold,Abdominals,True,PASS,,PASS
+ea_landmine_hollow_hold,Landmine Hollow Hold,Abdominals,True,PASS,,PASS
+ea_landmine_kneeling_twist,Landmine Kneeling Twist,Abdominals,True,PASS,,PASS
+ea_landmine_oblique_twist,Landmine Oblique Twist,Abdominals,True,PASS,,PASS
+ea_landmine_russian_twist,Landmine Russian Twist,Abdominals,True,PASS,,PASS
+ea_leg_lift_circles,Leg Lift Circles,Abdominals,False,PASS,,NOT_VERIFIED
+ea_leg_raises_straight_legs,Leg Raises (straight Legs),Abdominals,False,PASS,,NOT_VERIFIED
+ea_long_arm_crunches,Long Arm Crunches,Abdominals,False,PASS,,NOT_VERIFIED
+ea_long_lever_plank,Long Lever Plank,Abdominals,True,PASS,,PASS
+ea_lying_abs_resistance_band,Lying Abs Resistance Band,Abdominals,False,PASS,,NOT_VERIFIED
+ea_lying_leg_raise,Lying Leg Raise,Abdominals,False,PASS,,NOT_VERIFIED
+ea_med_ball_half_kneeling_wood_choppers,Med Ball Half Kneeling Wood Choppers,Abdominals,True,PASS,,PASS
+ea_med_ball_toe_touches,Med Ball Toe Touches,Abdominals,True,PASS,,PASS
+ea_medicine_ball_chest_throw_with_abs,Medicine Ball Chest Throw with Abs,Abdominals,True,PASS,,PASS
+ea_medicine_ball_rotational_throw,Medicine Ball Rotational Throw,Abdominals,True,PASS,,PASS
+ea_middle_crunches,Middle Crunches,Abdominals,False,PASS,,NOT_VERIFIED
+ea_mountain_climbers,Mountain Climbers,Abdominals,False,PASS,,NOT_VERIFIED
+ea_oblique_crunch,Oblique Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_over_head_weight_sit_up,Over Head Weight Sit Up,Abdominals,False,PASS,,NOT_VERIFIED
+ea_over_weight_ab_crunch,Over Weight Ab Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_plank_cross_knee_drive,Plank Cross Knee Drive,Abdominals,False,PASS,,NOT_VERIFIED
+ea_plank_jack,Plank Jack,Abdominals,False,PASS,,NOT_VERIFIED
+ea_plank_knee_tucks,Plank Knee Tucks,Abdominals,False,PASS,,NOT_VERIFIED
+ea_plank_reach_through,Plank Reach Through,Abdominals,False,PASS,,NOT_VERIFIED
+ea_plank_on_elbows,Plank on Elbows,Abdominals,False,PASS,,NOT_VERIFIED
+ea_plate_hollow_hold,Plate Hollow Hold,Abdominals,True,PASS,,PASS
+ea_plate_pinch_grip_side_bend,Plate Pinch Grip Side Bend,Abdominals,True,PASS,,PASS
+ea_plate_russian_twist,Plate Russian Twist,Abdominals,True,PASS,,PASS
+ea_plate_situp,Plate Situp,Abdominals,True,PASS,,PASS
+ea_plate_standing_twist,Plate Standing Twist,Abdominals,True,PASS,,PASS
+ea_plate_wood_chopper,Plate Wood Chopper,Abdominals,True,PASS,,PASS
+ea_raised_leg_crunch,Raised Leg Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_resistance_band_lying_bent_knee_raise,Resistance Band Lying Bent Knee Raise,Abdominals,False,PASS,,NOT_VERIFIED
+ea_reverse_ab_wheel_rollout,Reverse Ab Wheel Rollout,Abdominals,False,PASS,,NOT_VERIFIED
+ea_reverse_crunch,Reverse Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_reverse_crunch_with_kick_out,Reverse Crunch with Kick Out,Abdominals,False,PASS,,NOT_VERIFIED
+ea_reverse_plank,Reverse Plank,Abdominals,True,P2,PRIOR_REAUDIT,PASS
+ea_russian_twist,Russian Twist,Abdominals,False,PASS,,NOT_VERIFIED
+ea_russian_twist_weighted_ball,Russian Twist Weighted Ball,Abdominals,False,PASS,,NOT_VERIFIED
+ea_scissors_kick,Scissors Kick,Abdominals,False,PASS,,NOT_VERIFIED
+ea_seated_floor_crunches,Seated Floor Crunches,Abdominals,False,PASS,,NOT_VERIFIED
+ea_seated_flutter_kicks,Seated Flutter Kicks,Abdominals,False,PASS,,NOT_VERIFIED
+ea_seated_v_up,Seated V Up,Abdominals,False,PASS,,NOT_VERIFIED
+ea_side_plank,Side Plank,Abdominals,False,PASS,,NOT_VERIFIED
+ea_side_plank_oblique_crunch,Side Plank Oblique Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_situps,Situps,Abdominals,False,PASS,,NOT_VERIFIED
+ea_spider_plank,Spider Plank,Abdominals,False,PASS,,NOT_VERIFIED
+ea_standing_ab_wheel_rollout,Standing Ab Wheel Rollout,Abdominals,False,PASS,,NOT_VERIFIED
+ea_standing_cable_oblique_twist,Standing Cable Oblique Twist,Abdominals,False,PASS,,NOT_VERIFIED
+ea_standing_oblique_crunch,Standing Oblique Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_star_crunches,Star Crunches,Abdominals,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_abdominal_fallout,Suspension Trainer with Grips Abdominal Fallout,Abdominals,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_hanging_knees_to_elbows,Suspension Trainer with Grips Hanging Knees to Elbows,Abdominals,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_hanging_leg_hip_raise,Suspension Trainer with Grips Hanging Leg Hip Raise,Abdominals,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_hanging_straight_leg_hip_raise,Suspension Trainer with Grips Hanging Straight Leg Hip Raise,Abdominals,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_pull_through,Suspension Trainer with Grips Pull Through,Abdominals,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_reverse_ab_rollout,Suspension Trainer with Grips Reverse Ab Rollout,Abdominals,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_supine_crunch,Suspension Trainer with Grips Supine Crunch,Abdominals,False,PASS,,NOT_VERIFIED
+ea_v_crunches,V Crunches,Abdominals,False,PASS,,NOT_VERIFIED
+ea_v_up,V Up,Abdominals,False,PASS,,NOT_VERIFIED
+ea_walkout,Walkout,Abdominals,False,PASS,,NOT_VERIFIED
+ea_wheels_to_heaven,Wheels to Heaven,Abdominals,False,PASS,,NOT_VERIFIED
+ea_wheels_to_toes,Wheels to Toes,Abdominals,False,PASS,,NOT_VERIFIED
+ea_wind_wipers,Wind Wipers,Abdominals,False,PASS,,NOT_VERIFIED
+ea_45_degree_hyperextension_arms_in_front_of_chest,45 Degree Hyperextension (arms in Front of Chest),Back,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_45_degree_hyperextension_arms_to_chest,45 Degree Hyperextension Arms to Chest,Back,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_alternate_superman,Alternate Superman,Back,False,PASS,,NOT_VERIFIED
+ea_alternating_superman,Alternating Superman,Back,False,PASS,,NOT_VERIFIED
+ea_archer_pull_up,Archer Pull Up,Back,False,PASS,,NOT_VERIFIED
+ea_around_the_world_superman_hold,Around the World Superman Hold,Back,False,PASS,,NOT_VERIFIED
+ea_assisted_chin_up_normal_width_reverse_grip,Assisted Chin Up Normal Width Reverse Grip,Back,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_assisted_chin_up_reverse_close_grip,Assisted Chin Up Reverse Close Grip,Back,False,PASS,,NOT_VERIFIED
+ea_assisted_chin_up_reverse_wide_grip,Assisted Chin Up Reverse Wide Grip,Back,False,PASS,,NOT_VERIFIED
+ea_assisted_chin_up_on_a_bench,Assisted Chin-up on a Bench,Back,False,PASS,,NOT_VERIFIED
+ea_assisted_close_grip_underhand_chin_up,Assisted Close Grip Underhand Chin Up,Back,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_assisted_parallel_close_grip_pull_up,Assisted Parallel Close Grip Pull Up,Back,False,PASS,,NOT_VERIFIED
+ea_assisted_pull_up,Assisted Pull Up,Back,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_assisted_pull_up_close_grip,Assisted Pull Up Close Grip,Back,False,PASS,,NOT_VERIFIED
+ea_assisted_pull_up_normal_grip,Assisted Pull Up Normal Grip,Back,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_assisted_pull_up_wide_grip,Assisted Pull Up Wide Grip,Back,False,PASS,,NOT_VERIFIED
+ea_back_extension_machine,Back Extension Machine,Back,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_back_extension_on_exercise_ball,Back Extension on Exercise Ball,Back,False,PASS,,NOT_VERIFIED
+ea_back_squeeze,Back Squeeze,Back,False,PASS,,NOT_VERIFIED
+ea_band_assisted_chin_up_from_knee,Band Assisted Chin Up (from Knee),Back,False,PASS,,NOT_VERIFIED
+ea_band_bent_over_row,Band Bent-over Row,Back,False,PASS,,NOT_VERIFIED
+ea_band_fixed_back_underhand_pulldown,Band Fixed Back Underhand Pulldown,Back,False,PASS,,NOT_VERIFIED
+ea_band_kneeling_lat_pulldown,Band Kneeling Lat Pulldown,Back,False,PASS,,NOT_VERIFIED
+ea_band_kneeling_single_arm_high_row,Band Kneeling Single Arm High Row,Back,False,PASS,,NOT_VERIFIED
+ea_band_lying_reverse_grip_row,Band Lying Reverse Grip Row,Back,False,PASS,,NOT_VERIFIED
+ea_band_pull_up,Band Pull Up,Back,False,PASS,,NOT_VERIFIED
+ea_band_rotating_hammer_grip_incline_bench_row,Band Rotating Hammer Grip Incline Bench Row,Back,False,PASS,,NOT_VERIFIED
+ea_barbell_bent_over_row_pronated_grip,Barbell Bent Over Row Pronated Grip,Back,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_bent_over_row_supinated_grip,Barbell Bent Over Row Supinated Grip,Back,False,PASS,,NOT_VERIFIED
+ea_barbell_coan_deadlift,Barbell Coan Deadlift,Back,True,PASS,,PASS
+ea_barbell_deadlift_360_degrees,Barbell Deadlift 360 Degrees,Back,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_deadlift_high_pull,Barbell Deadlift High Pull,Back,False,PASS,,NOT_VERIFIED
+ea_barbell_good_morning,Barbell Good Morning,Back,False,PASS,,NOT_VERIFIED
+ea_barbell_long_landmine_row,Barbell Long Landmine Row,Back,False,PASS,,NOT_VERIFIED
+ea_barbell_lying_row,Barbell Lying Row,Back,False,PASS,,NOT_VERIFIED
+ea_barbell_meadows_row,Barbell Meadows Row,Back,False,PASS,,NOT_VERIFIED
+ea_barbell_one_arm_single_deadlift,Barbell One Arm Single Deadlift,Back,False,PASS,,NOT_VERIFIED
+ea_barbell_pendlay_row,Barbell Pendlay Row,Back,False,PASS,,NOT_VERIFIED
+ea_barbell_push_bent_over_row,Barbell Push Bent Over Row,Back,False,PASS,,NOT_VERIFIED
+ea_barbell_reverse_deadlift,Barbell Reverse Deadlift,Back,True,PASS,,PASS
+ea_barbell_reverse_grip_bent_over_row,Barbell Reverse Grip Bent Over Row,Back,False,PASS,,NOT_VERIFIED
+ea_barbell_seated_good_morning,Barbell Seated Good Morning,Back,False,PASS,,NOT_VERIFIED
+ea_barbell_single_leg_deadlift,Barbell Single Leg Deadlift,Back,False,PASS,,NOT_VERIFIED
+ea_barbell_snatch_deadlift_close_grip,Barbell Snatch Deadlift Close Grip,Back,False,PASS,,NOT_VERIFIED
+ea_barbell_snatch_deadlift_wide_grip,Barbell Snatch Deadlift Wide Grip,Back,False,PASS,,NOT_VERIFIED
+ea_barbell_sumo_deadlift,Barbell Sumo Deadlift,Back,False,PASS,,NOT_VERIFIED
+ea_barbell_underhand_bent_over_row,Barbell Underhand Bent Over Row,Back,False,PASS,,NOT_VERIFIED
+ea_barbell_wide_grip_upright_row,Barbell Wide Grip Upright Row,Back,False,P1,UPRIGHT_ROW,NOT_VERIFIED
+ea_barbell_zercher_good_morning,Barbell Zercher Good Morning,Back,True,PASS,,PASS
+ea_behind_neck_lat_pull_down_machine,Behind Neck Lat Pull Down Machine,Back,False,P1,BEHIND_NECK,NOT_VERIFIED
+ea_bench_pull_ups,Bench Pull-ups,Back,False,PASS,,NOT_VERIFIED
+ea_bent_over_barbell_row,Bent Over Barbell Row,Back,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_bent_over_row_resistance_band,Bent Over Row Resistance Band,Back,False,PASS,,NOT_VERIFIED
+ea_bent_over_row_with_bar,Bent-over Row with Bar,Back,False,PASS,,NOT_VERIFIED
+ea_bodyweight_muscle_up,Bodyweight Muscle-up,Back,False,PASS,,NOT_VERIFIED
+ea_cable_bar_lateral_pulldown,Cable Bar Lateral Pulldown,Back,False,PASS,,NOT_VERIFIED
+ea_cable_bent_over_reverse_grip_row,Cable Bent Over Reverse Grip Row,Back,False,PASS,,NOT_VERIFIED
+ea_cable_bent_over_row,Cable Bent Over Row,Back,False,PASS,,NOT_VERIFIED
+ea_cable_close_grip_front_lat_pulldown,Cable Close Grip Front Lat Pulldown,Back,False,PASS,,NOT_VERIFIED
+ea_cable_lat_prayer,Cable Lat Prayer,Back,True,PASS,,PASS
+ea_cable_low_seated_row,Cable Low Seated Row,Back,False,PASS,,NOT_VERIFIED
+ea_cable_lying_extension_pullover_with_cables_attachment,Cable Lying Extension Pullover (with Cables Attachment),Back,False,PASS,,NOT_VERIFIED
+ea_cable_one_arm_bent_over_row,Cable One Arm Bent Over Row,Back,False,PASS,,NOT_VERIFIED
+ea_cable_one_arm_lat_pulldown,Cable One Arm Lat Pulldown,Back,False,PASS,,NOT_VERIFIED
+ea_cable_palm_rotational_row,Cable Palm Rotational Row,Back,False,PASS,,NOT_VERIFIED
+ea_cable_pull_in_kneeling,Cable Pull in Kneeling,Back,True,PASS,,PASS
+ea_cable_pulldown,Cable Pulldown,Back,False,PASS,,NOT_VERIFIED
+ea_cable_pulldown_pro_lat_bar,Cable Pulldown (pro Lat Bar),Back,False,PASS,,NOT_VERIFIED
+ea_cable_pushdown_straight_arm,Cable Pushdown (straight Arm),Back,False,PASS,,NOT_VERIFIED
+ea_cable_rear_pulldown,Cable Rear Pulldown,Back,False,PASS,,NOT_VERIFIED
+ea_cable_reverse_grip_straight_back_seated_high_row,Cable Reverse Grip Straight Back Seated High Row,Back,False,PASS,,NOT_VERIFIED
+ea_cable_seated_one_arm_alternate_row,Cable Seated One Arm Alternate Row,Back,False,PASS,,NOT_VERIFIED
+ea_cable_seated_row,Cable Seated Row,Back,False,PASS,,NOT_VERIFIED
+ea_cable_seated_supine_grip_row,Cable Seated Supine Grip Row,Back,False,PASS,,NOT_VERIFIED
+ea_cable_seated_on_floor_row,Cable Seated on Floor Row,Back,False,PASS,,NOT_VERIFIED
+ea_cable_silverback_shrug,Cable Silverback Shrug,Back,True,P2,PRIOR_REAUDIT,PASS
+ea_cable_straight_arm_pulldown,Cable Straight Arm Pulldown,Back,False,PASS,,NOT_VERIFIED
+ea_cable_twin_handle_parallel_grip_lat_pulldown,Cable Twin Handle Parallel Grip Lat Pulldown,Back,False,PASS,,NOT_VERIFIED
+ea_cable_twisting_pull,Cable Twisting Pull,Back,False,PASS,,NOT_VERIFIED
+ea_cable_underhand_pulldown_wide_grips,Cable Underhand Pulldown Wide Grips,Back,False,PASS,,NOT_VERIFIED
+ea_chin_up,Chin Up,Back,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_chin_up_reverse_close_grip,Chin Up Reverse Close Grip,Back,False,PASS,,NOT_VERIFIED
+ea_chin_up_reverse_normal_grip,Chin Up Reverse Normal Grip,Back,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_chin_up_reverse_wide_grip,Chin Up Reverse Wide Grip,Back,False,PASS,,NOT_VERIFIED
+ea_chin_ups_narrow_parallel_grip,Chin Ups (narrow Parallel Grip),Back,False,PASS,,NOT_VERIFIED
+ea_chin_up_isometric_and_negative,Chin-up (isometric and Negative),Back,False,PASS,,NOT_VERIFIED
+ea_commando_pull_up,Commando Pull-up,Back,False,PASS,,NOT_VERIFIED
+ea_dumbbell_alternating_pendlay_row,Dumbbell Alternating Pendlay Row,Back,True,PASS,,PASS
+ea_dumbbell_bent_arm_pullover,Dumbbell Bent Arm Pullover,Back,False,PASS,,NOT_VERIFIED
+ea_dumbbell_bent_over_reverse_row,Dumbbell Bent-over Reverse Row,Back,False,PASS,,NOT_VERIFIED
+ea_dumbbell_goblet_good_morning,Dumbbell Goblet Good Morning,Back,True,P2,SPINE_CUE,PASS
+ea_dumbbell_hammer_grip_incline_bench_two_arm_row,Dumbbell Hammer Grip Incline Bench Two Arm Row,Back,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_row,Dumbbell Incline Row,Back,False,PASS,,NOT_VERIFIED
+ea_dumbbell_knee_lawnmower_row,Dumbbell Knee Lawnmower Row,Back,True,PASS,,PASS
+ea_dumbbell_one_arm_row_rack_support,Dumbbell One Arm Row (rack Support),Back,False,PASS,,NOT_VERIFIED
+ea_dumbbell_pendlay_row,Dumbbell Pendlay Row,Back,True,PASS,,PASS
+ea_dumbbell_pullover,Dumbbell Pullover,Back,False,PASS,,NOT_VERIFIED
+ea_dumbbell_pullover_version_2,Dumbbell Pullover (version 2),Back,False,PASS,,NOT_VERIFIED
+ea_dumbbell_pullover_on_floor,Dumbbell Pullover on Floor,Back,False,PASS,,NOT_VERIFIED
+ea_dumbbell_renegade_row,Dumbbell Renegade Row,Back,False,PASS,,NOT_VERIFIED
+ea_dumbbell_romanian_deadlift,Dumbbell Romanian Deadlift,Back,False,PASS,,NOT_VERIFIED
+ea_dumbbells_bent_over_row,Dumbbells Bent Over Row,Back,False,PASS,,NOT_VERIFIED
+ea_dumbbells_bent_over_row_pronated_grip,Dumbbells Bent Over Row Pronated Grip,Back,False,PASS,,NOT_VERIFIED
+ea_dumbbells_plank_to_alternating_row,Dumbbells Plank to Alternating Row,Back,False,PASS,,NOT_VERIFIED
+ea_dumbbells_single_arm_row,Dumbbells Single Arm Row,Back,False,PASS,,NOT_VERIFIED
+ea_elbow_lift_reverse_push_up,Elbow Lift Reverse Push Up,Back,False,PASS,,NOT_VERIFIED
+ea_exercise_ball_back_extension_with_hands_behind_head,Exercise Ball Back Extension with Hands Behind Head,Back,False,PASS,,NOT_VERIFIED
+ea_good_morning_resistance_band,Good Morning Resistance Band,Back,False,PASS,,NOT_VERIFIED
+ea_good_mornings_barbell,Good Mornings Barbell,Back,False,PASS,,NOT_VERIFIED
+ea_good_mornings_dumbbells,Good Mornings Dumbbells,Back,False,PASS,,NOT_VERIFIED
+ea_good_mornings_kettlebell,Good Mornings Kettlebell,Back,False,PASS,,NOT_VERIFIED
+ea_hammer_strength_plate_loaded_high_row_alternate_arms,Hammer Strength Plate Loaded High Row Alternate Arms,Back,False,PASS,,NOT_VERIFIED
+ea_hammer_strength_plate_loaded_high_row_both_arms,Hammer Strength Plate Loaded High Row Both Arms,Back,False,PASS,,NOT_VERIFIED
+ea_hammer_strength_plate_loaded_high_row_single_arm,Hammer Strength Plate Loaded High Row Single Arm,Back,False,PASS,,NOT_VERIFIED
+ea_inverted_rows_on_smith_machine,Inverted Rows on Smith Machine,Back,False,PASS,,NOT_VERIFIED
+ea_jump_rope_row,Jump Rope Row,Back,False,PASS,,NOT_VERIFIED
+ea_kettlebell_gorilla_row,Kettlebell Gorilla Row,Back,True,PASS,,PASS
+ea_kettlebell_pullover,Kettlebell Pullover,Back,True,P2,PRIOR_REAUDIT,PASS
+ea_kettlebell_row,Kettlebell Row,Back,True,PASS,,PASS
+ea_kettlebell_single_arm_row,Kettlebell Single Arm Row,Back,True,PASS,,PASS
+ea_kettlebell_sumo_deadlift,Kettlebell Sumo Deadlift,Back,False,PASS,,NOT_VERIFIED
+ea_kettlebell_sumo_deadlift_with_high_pull,Kettlebell Sumo Deadlift with High Pull,Back,False,PASS,,NOT_VERIFIED
+ea_kipping_pull_up,Kipping Pull Up,Back,True,PASS,,PASS
+ea_landmine_romanian_deadlift,Landmine Romanian Deadlift,Back,True,PASS,,PASS
+ea_landmine_row,Landmine Row,Back,False,PASS,,NOT_VERIFIED
+ea_lat_pull_down_close_grip,Lat Pull Down Close Grip,Back,False,PASS,,NOT_VERIFIED
+ea_lat_pull_down_normal_grip,Lat Pull Down Normal Grip,Back,False,PASS,,NOT_VERIFIED
+ea_lat_pull_down_wide_grip,Lat Pull Down Wide Grip,Back,False,PASS,,NOT_VERIFIED
+ea_lawnmower_row,Lawnmower Row,Back,True,PASS,,PASS
+ea_lying_back_extension,Lying Back Extension,Back,False,PASS,,NOT_VERIFIED
+ea_plate_alternating_deadstop_row,Plate Alternating Deadstop Row,Back,True,PASS,,PASS
+ea_plate_glute_bridge_to_pullover,Plate Glute Bridge to Pullover,Back,True,P2,PRIOR_REAUDIT,PASS
+ea_plate_good_morning,Plate Good Morning,Back,True,P2,SPINE_CUE,PASS
+ea_plate_pinch_grip_deadlift,Plate Pinch Grip Deadlift,Back,True,PASS,,PASS
+ea_plate_pinch_grip_row,Plate Pinch Grip Row,Back,True,P1,PRIOR_REAUDIT,PASS
+ea_prone_bench_row_barbell_pronate_grip,Prone Bench Row Barbell Pronate Grip,Back,False,PASS,,NOT_VERIFIED
+ea_prone_bench_row_barbell_reverse_grip,Prone Bench Row Barbell Reverse Grip,Back,False,PASS,,NOT_VERIFIED
+ea_prone_bench_row_dumbbells,Prone Bench Row Dumbbells,Back,False,PASS,,NOT_VERIFIED
+ea_prone_bench_row_dumbbells_pronated_grip,Prone Bench Row Dumbbells Pronated Grip,Back,False,PASS,,NOT_VERIFIED
+ea_prone_bench_row_dumbbells_supinated_grip,Prone Bench Row Dumbbells Supinated Grip,Back,False,PASS,,NOT_VERIFIED
+ea_pull_up_normal_grip,Pull Up Normal Grip,Back,False,PASS,,NOT_VERIFIED
+ea_pull_up_wide_grip,Pull Up Wide Grip,Back,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_pull_up_wide_grip_front_view,Pull Up Wide Grip Front View,Back,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_push_pull_chair_over_head_pull,Push Pull Chair Over Head Pull,Back,True,PASS,,PASS
+ea_resistance_band_cable_row,Resistance Band - Cable Row,Back,False,PASS,,NOT_VERIFIED
+ea_resistance_band_cross_body_single_straight_arm_supinated_pulldown,Resistance Band Cross Body Single Straight Arm Supinated Pulldown,Back,False,PASS,,NOT_VERIFIED
+ea_resistance_band_floor_hyperextension,Resistance Band Floor Hyperextension,Back,False,PASS,,NOT_VERIFIED
+ea_resistance_band_kneeling_cross_body_single_straight_arm_supinated_pulldown,Resistance Band Kneeling Cross Body Single Straight Arm Supinated Pulldown,Back,False,PASS,,NOT_VERIFIED
+ea_resistance_band_lying_hyperextension_abduction,Resistance Band Lying Hyperextension Abduction,Back,False,PASS,,NOT_VERIFIED
+ea_reverse_grip_lat_pull_down,Reverse Grip Lat Pull Down,Back,False,PASS,,NOT_VERIFIED
+ea_romanian_deadlift_barbell,Romanian Deadlift Barbell,Back,False,PASS,,NOT_VERIFIED
+ea_seated_cable_row_v_bar_machine,Seated Cable Row V Bar Machine,Back,False,PASS,,NOT_VERIFIED
+ea_seated_normal_grip_row_machine,Seated Normal Grip Row Machine,Back,False,PASS,,NOT_VERIFIED
+ea_seated_resistance_band_cable_rows,Seated Resistance Band - Cable Rows,Back,False,PASS,,NOT_VERIFIED
+ea_seated_row_machine_rows,Seated Row Machine Rows,Back,True,PASS,,PASS
+ea_single_arm_cable_row_left,Single Arm Cable Row Left,Back,False,PASS,,NOT_VERIFIED
+ea_single_arm_cable_row_right,Single Arm Cable Row Right,Back,False,PASS,,NOT_VERIFIED
+ea_single_arm_standing_low_cable_row,Single Arm Standing Low Cable Row,Back,False,PASS,,NOT_VERIFIED
+ea_single_kettlebell_deadlift,Single Kettlebell Deadlift,Back,False,PASS,,NOT_VERIFIED
+ea_standing_lat_cable_pull_over,Standing Lat Cable Pull Over,Back,False,PASS,,NOT_VERIFIED
+ea_straight_arm_cable_lat_pull_down,Straight Arm Cable Lat Pull Down,Back,True,PASS,,PASS
+ea_straight_bar_cable_pull_down,Straight Bar Cable Pull Down,Back,False,PASS,,NOT_VERIFIED
+ea_straight_bar_cable_row_close_grip,Straight Bar Cable Row Close Grip,Back,False,PASS,,NOT_VERIFIED
+ea_straight_bar_cable_row_normal_grip,Straight Bar Cable Row Normal Grip,Back,False,PASS,,NOT_VERIFIED
+ea_superman,Superman,Back,False,PASS,,NOT_VERIFIED
+ea_superman_pulls,Superman Pulls,Back,False,PASS,,NOT_VERIFIED
+ea_superman_pulls_resistance_band,Superman Pulls Resistance Band,Back,False,PASS,,NOT_VERIFIED
+ea_supine_push_up,Supine Push Up,Back,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_bent_knee_inverted_row,Suspension Trainer with Grips Bent Knee Inverted Row,Back,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_chin_up,Suspension Trainer with Grips Chin-up,Back,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_high_row,Suspension Trainer with Grips High Row,Back,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_inverted_row,Suspension Trainer with Grips Inverted Row,Back,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_inverted_row_arm_twist,Suspension Trainer with Grips Inverted Row Arm Twist,Back,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_knee_tuck_row,Suspension Trainer with Grips Knee Tuck Row,Back,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_pull_up,Suspension Trainer with Grips Pull-up,Back,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_wide_grip_inverted_row_on_floor_1,Suspension Trainer with Grips Wide Grip Inverted Row on Floor_1,Back,True,PASS,,PASS
+ea_theraband_scapula_retraction,Theraband Scapula Retraction,Back,True,P2,PRIOR_REAUDIT,PASS
+ea_trap_bar_deadlift,Trap Bar Deadlift,Back,False,PASS,,NOT_VERIFIED
+ea_upright_row_barbell,Upright Row Barbell,Back,False,P1,UPRIGHT_ROW,NOT_VERIFIED
+ea_v_bar_lat_pull_down,V Bar Lat Pull Down,Back,False,PASS,,NOT_VERIFIED
+ea_weighted_back_extensions_on_hyperextension_bench,Weighted Back Extensions on Hyperextension Bench,Back,True,PASS,,PASS
+ea_alternate_biceps_curl_resistance_band,Alternate Biceps Curl Resistance Band,Biceps,True,PASS,,PASS
+ea_alternate_biceps_curl_standing_dumbbells,Alternate Biceps Curl Standing Dumbbells,Biceps,True,PASS,,PASS
+ea_alternate_hammer_curl_standing_dumbbells,Alternate Hammer Curl Standing Dumbbells,Biceps,False,PASS,,NOT_VERIFIED
+ea_alternating_biceps_curl_seated_dumbbells,Alternating Biceps Curl Seated Dumbbells,Biceps,False,PASS,,NOT_VERIFIED
+ea_alternating_biceps_hammer_curl_resistance_band,Alternating Biceps Hammer Curl Resistance Band,Biceps,False,PASS,,NOT_VERIFIED
+ea_band_close_grip_biceps_curl,Band Close-grip Biceps Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_band_concentration_curl,Band Concentration Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_band_cross_chest_biceps_curl,Band Cross Chest Biceps Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_band_incline_alternate_hammer_curl,Band Incline Alternate Hammer Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_band_incline_biceps_curl,Band Incline Biceps Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_band_incline_hammer_curl,Band Incline Hammer Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_band_kneeling_preacher_curl,Band Kneeling Preacher Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_band_prone_incline_curl,Band Prone Incline Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_band_prone_incline_hammer_curl,Band Prone Incline Hammer Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_band_reverse_spider_curl,Band Reverse Spider Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_barbell_alternate_biceps_curl,Barbell Alternate Biceps Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_barbell_bicep_curl_close_grip,Barbell Bicep Curl Close Grip,Biceps,False,PASS,,NOT_VERIFIED
+ea_barbell_bicep_curl_normal_grip,Barbell Bicep Curl Normal Grip,Biceps,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_bicep_curl_wide_grip,Barbell Bicep Curl Wide Grip,Biceps,False,PASS,,NOT_VERIFIED
+ea_barbell_biceps_curl,Barbell Biceps Curl,Biceps,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_curl,Barbell Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_barbell_drag_biceps_curl,Barbell Drag Biceps Curl,Biceps,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_drag_curl,Barbell Drag Curl,Biceps,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_lap_curl,Barbell Lap Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_barbell_preacher_curl,Barbell Preacher Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_barbell_reverse_biceps_curl,Barbell Reverse Biceps Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_barbell_reverse_spider_curl,Barbell Reverse Spider Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_barbell_seated_concentration_biceps_curl,Barbell Seated Concentration Biceps Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_barbell_single_arm_biceps_curl,Barbell Single Arm Biceps Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_barbell_standing_close_grip_curl,Barbell Standing Close Grip Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_barbell_standing_concentration_curl,Barbell Standing Concentration Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_barbell_standing_wide_grip_biceps_curls,Barbell Standing Wide Grip Biceps Curls,Biceps,False,PASS,,NOT_VERIFIED
+ea_barbell_wide_grip_biceps_curl,Barbell Wide Grip Biceps Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_bicep_curl_low_cable_machine_normal_grip,Bicep Curl Low Cable Machine Normal Grip,Biceps,False,PASS,,NOT_VERIFIED
+ea_biceps_curl_cable,Biceps Curl Cable,Biceps,False,PASS,,NOT_VERIFIED
+ea_biceps_curl_cable_wide_grip,Biceps Curl Cable Wide Grip,Biceps,False,PASS,,NOT_VERIFIED
+ea_biceps_curl_cable_wide_grip_crossover_machine,Biceps Curl Cable Wide Grip Crossover Machine,Biceps,False,PASS,,NOT_VERIFIED
+ea_biceps_curl_front_step,Biceps Curl Front Step,Biceps,False,PASS,,NOT_VERIFIED
+ea_biceps_curl_resistance_band,Biceps Curl Resistance Band,Biceps,False,PASS,,NOT_VERIFIED
+ea_biceps_curl_to_shoulder_press_resistance_band,Biceps Curl to Shoulder Press Resistance Band,Biceps,False,PASS,,NOT_VERIFIED
+ea_biceps_leg_concentration_curl,Biceps Leg Concentration Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_cable_biceps_curl_ez_bar,Cable Biceps Curl (ez-bar),Biceps,False,PASS,,NOT_VERIFIED
+ea_cable_close_grip_curl,Cable Close Grip Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_cable_one_arm_curl,Cable One Arm Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_cable_one_arm_inner_biceps_curl,Cable One Arm Inner Biceps Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_cable_overhead_curl,Cable Overhead Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_cable_preacher_curl,Cable Preacher Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_cable_reverse_curl,Cable Reverse Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_cable_twisting_biceps_curl,Cable Twisting Biceps Curl,Biceps,True,PASS,,PASS
+ea_concentration_curls_dumbbell,Concentration Curls Dumbbell,Biceps,False,PASS,,NOT_VERIFIED
+ea_doorway_biceps_curl,Doorway Biceps Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_drag_curl_dumbbell,Drag Curl Dumbbell,Biceps,False,PASS,,NOT_VERIFIED
+ea_drag_curl_resistance_band,Drag Curl Resistance Band,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_alternate_biceps_curl,Dumbbell Alternate Biceps Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_alternate_biceps_curl_version_2,Dumbbell Alternate Biceps Curl (version 2),Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_alternate_seated_hammer_curl,Dumbbell Alternate Seated Hammer Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_biceps_curl_with_overhead_extension_on_stability_ball,Dumbbell Biceps Curl with Overhead Extension on Stability Ball,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_close_grip_simultaneous_curl,Dumbbell Close-grip Simultaneous Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_cross_body_hammer_curl_version_2,Dumbbell Cross Body Hammer Curl (version 2),Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_curls,Dumbbell Curls,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_curls_alternating,Dumbbell Curls Alternating,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_drag_over_shoulder_bicep_curl,Dumbbell Drag Over Shoulder Bicep Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_half_biceps_curl_for_21s,Dumbbell Half Biceps Curl For 21s,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_hammer_curl,Dumbbell Hammer Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_hammer_curl_simultaneous_arms,Dumbbell Hammer Curl Simultaneous Arms,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_hammer_preacher_curl_simultaneous_arms,Dumbbell Hammer Preacher Curl Simultaneous Arms,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_hammer_strict_curl,Dumbbell Hammer Strict Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_high_curl,Dumbbell High Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_alternate_bicep_curl,Dumbbell Incline Alternate Bicep Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_alternate_curl,Dumbbell Incline Alternate Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_alternate_hammer_curl,Dumbbell Incline Alternate Hammer Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_biceps_simultaneous_curl,Dumbbell Incline Biceps Simultaneous Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_hammer_simultaneous_curl,Dumbbell Incline Hammer Simultaneous Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_simultaneous_curl,Dumbbell Incline Simultaneous Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_lying_supine_curl,Dumbbell Lying Supine Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_one_arm_hammer_preacher_curl,Dumbbell One Arm Hammer Preacher Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_one_arm_reverse_preacher_curl,Dumbbell One Arm Reverse Preacher Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_one_arm_zottman_preacher_curl,Dumbbell One Arm Zottman Preacher Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_preacher_curl,Dumbbell Preacher Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_preacher_curl_turned_torso,Dumbbell Preacher Curl (turned Torso),Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_preacher_curl_over_exercise_ball,Dumbbell Preacher Curl Over Exercise Ball,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_prone_incline_curl,Dumbbell Prone Incline Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_prone_incline_hammer_curl,Dumbbell Prone Incline Hammer Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_reverse_grip_biceps_curl,Dumbbell Reverse Grip Biceps Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_reverse_spider_curl,Dumbbell Reverse Spider Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_curl,Dumbbell Seated Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_hammer_curl,Dumbbell Seated Hammer Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_preacher_curl,Dumbbell Seated Preacher Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_reverse_grip_concentration_curl,Dumbbell Seated Reverse Grip Concentration Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_zottman_curl,Dumbbell Seated Zottman Curl,Biceps,True,P2,PRIOR_REAUDIT,PASS
+ea_dumbbell_simultaneous_biceps_curl,Dumbbell Simultaneous Biceps Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_concentration_curl,Dumbbell Standing Concentration Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_hammer_drag_curl,Dumbbell Standing Hammer Drag Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_one_arm_concentration_curl,Dumbbell Standing One Arm Concentration Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_one_arm_curl_over_incline_bench,Dumbbell Standing One Arm Curl Over Incline Bench,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_preacher_curl,Dumbbell Standing Preacher Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_reverse_curl,Dumbbell Standing Reverse Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_simultaneous_biceps_curl,Dumbbell Standing Simultaneous Biceps Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_wide_simultaneous_biceps_curl,Dumbbell Standing Wide Simultaneous Biceps Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_waiter_biceps_curl,Dumbbell Waiter Biceps Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_zottman_curl,Dumbbell Zottman Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_zottman_preacher_curl,Dumbbell Zottman Preacher Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_ez_barbell_close_grip_curl,EZ Barbell Close Grip Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_ez_barbell_curl,EZ Barbell Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_ez_bar_biceps_curl_close_grip,Ez Bar Biceps Curl Close Grip,Biceps,False,PASS,,NOT_VERIFIED
+ea_ez_bar_biceps_curl_normal_grip,Ez Bar Biceps Curl Normal Grip,Biceps,False,PASS,,NOT_VERIFIED
+ea_ez_bar_biceps_curl_wide_grip,Ez Bar Biceps Curl Wide Grip,Biceps,False,PASS,,NOT_VERIFIED
+ea_ez_bar_cable_curl_wide_grip,Ez Bar Cable Curl Wide Grip,Biceps,False,PASS,,NOT_VERIFIED
+ea_ez_bar_cable_curl_wide_grip_crossover_machine,Ez Bar Cable Curl Wide Grip Crossover Machine,Biceps,False,PASS,,NOT_VERIFIED
+ea_hammer_curl_resistance_band_simultaneous,Hammer Curl Resistance Band Simultaneous,Biceps,False,PASS,,NOT_VERIFIED
+ea_hammer_strength_mts_iso_lateral_biceps_curl_alternate_arm,Hammer Strength MTS Iso-lateral Biceps Curl Alternate Arm,Biceps,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_hammer_strength_mts_iso_lateral_biceps_curl_arm_alternating,Hammer Strength MTS Iso-lateral Biceps Curl Arm Alternating,Biceps,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_hammer_strength_mts_iso_lateral_biceps_curl_both_arm,Hammer Strength MTS Iso-lateral Biceps Curl Both Arm,Biceps,False,PASS,,NOT_VERIFIED
+ea_hammer_strength_mts_iso_lateral_biceps_curl_single_arm,Hammer Strength MTS Iso-lateral Biceps Curl Single Arm,Biceps,False,PASS,,NOT_VERIFIED
+ea_incline_dumbbell_curl,Incline Dumbbell Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_kettlebell_concentration_curl,Kettlebell Concentration Curl,Biceps,True,PASS,,PASS
+ea_kettlebell_curl,Kettlebell Curl,Biceps,True,PASS,,PASS
+ea_kettlebell_goblet_curl,Kettlebell Goblet Curl,Biceps,True,PASS,,PASS
+ea_kettlebell_preacher_curl,Kettlebell Preacher Curl,Biceps,True,PASS,,PASS
+ea_kettlebell_single_arm_curl,Kettlebell Single Arm Curl,Biceps,True,PASS,,PASS
+ea_landmine_bicep_curl,Landmine Bicep Curl,Biceps,True,PASS,,PASS
+ea_landmine_concentration_curl,Landmine Concentration Curl,Biceps,True,PASS,,PASS
+ea_low_resistance_band_lying_bicep_curl,Low Resistance Band Lying Bicep Curl,Biceps,False,PASS,,NOT_VERIFIED
+ea_low_resistance_band_lying_bicep_curl_half_repetition,Low Resistance Band Lying Bicep Curl Half Repetition,Biceps,False,PASS,,NOT_VERIFIED
+ea_plate_curl_to_overhead_press,Plate Curl to Overhead Press,Biceps,True,PASS,,PASS
+ea_preacher_curl_dumbbells_simultaneous,Preacher Curl Dumbbells Simultaneous,Biceps,False,PASS,,NOT_VERIFIED
+ea_preacher_curl_ez_bar,Preacher Curl Ez Bar,Biceps,False,PASS,,NOT_VERIFIED
+ea_preacher_curl_ez_bar_close_grip,Preacher Curl Ez Bar Close Grip,Biceps,False,PASS,,NOT_VERIFIED
+ea_preacher_curl_ez_bar_wide_grip,Preacher Curl Ez Bar Wide Grip,Biceps,False,PASS,,NOT_VERIFIED
+ea_reverse_curl_barbell,Reverse Curl Barbell,Biceps,True,PASS,,PASS
+ea_reverse_grip_resistance_band_simultaneous,Reverse Grip Resistance Band Simultaneous,Biceps,False,PASS,,NOT_VERIFIED
+ea_single_dumbbell_biceps_curls,Single Dumbbell Biceps Curls,Biceps,False,PASS,,NOT_VERIFIED
+ea_spider_curl_barbell,Spider Curl Barbell,Biceps,False,PASS,,NOT_VERIFIED
+ea_spider_curl_dumbbells_simultaneous,Spider Curl Dumbbells Simultaneous,Biceps,False,PASS,,NOT_VERIFIED
+ea_spider_curl_ez_bar,Spider Curl Ez Bar,Biceps,False,PASS,,NOT_VERIFIED
+ea_zotman_curls_resistance_band_simultaneous,Zotman Curls Resistance Band Simultaneous,Biceps,False,PASS,,NOT_VERIFIED
+ea_180_jump_turns,180 Jump Turns,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_4_corners_curtsy,4 Corners Curtsy,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_4_corners_side_step,4 Corners Side Step,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_4_punches_side_squat,4 Punches Side Squat,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_agility_ladder_advanced_hop_position,Agility Ladder Advanced Hop Position,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_agility_ladder_advanced_single_leg,Agility Ladder Advanced Single-leg,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_agility_ladder_advancing_laterally_switching_base,Agility Ladder Advancing Laterally Switching Base,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_agility_ladder_lateral_movement_in_in_out,Agility Ladder Lateral Movement in in Out,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_agility_ladder_lateral_movement_with_double_hop,Agility Ladder Lateral Movement with Double Hop,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_agility_ladder_skipping_1_touch,Agility Ladder Skipping 1 Touch,Calisthenics-Cardio-Plyo-Functional,True,P2,PRIOR_REAUDIT; SUPERLATIVE_CLAIM,PASS
+ea_agility_ladder_skipping_2_touches,Agility Ladder Skipping 2 Touches,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_agility_ladder_in_in_out_out,Agility Ladder in in Out Out,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_agility_ladder_in_in_out_out_moving_laterally,Agility Ladder in in Out Out Moving Laterally,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_agility_ladder_in_in_out_out_with_knee_lift,Agility Ladder in in Out Out with Knee Lift,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_air_punches_march,Air Punches March,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_air_swing_running,Air Swing Running,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_air_swing_side_to_side_swing,Air Swing Side to Side Swing,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_air_swing_walking,Air Swing Walking,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_alternate_front_kick_in_place,Alternate Front Kick in Place,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_alternate_punching,Alternate Punching,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_alternating_hamstring_curl,Alternating Hamstring Curl,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_alternating_hamstring_curl_with_punch,Alternating Hamstring Curl with Punch,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_arm_crossover,Arm Crossover,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_arm_crossover_chest_out,Arm Crossover Chest Out,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_arm_double_crossover,Arm Double Crossover,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_arm_pulses,Arm Pulses,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_arm_pulses_cross,Arm Pulses Cross,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_arm_pulses_palms_downwards,Arm Pulses Palms Downwards,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_arm_pulses_palms_upwards,Arm Pulses Palms Upwards,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_arms_lateral_raise_and_rotation_up,Arms Lateral Raise and Rotation Up,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_arms_up_and_down,Arms Up and Down,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_assault_airbike_fast_speed,Assault Airbike Fast Speed,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_assault_airbike_normal_speed,Assault Airbike Normal Speed,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_assault_airbike_sprint_speed,Assault Airbike Sprint Speed,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_back_lever,Back Lever,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_balance_board_lateral_squat,Balance Board Lateral Squat,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_ball_slams,Ball Slams,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_balloon_drill,Balloon Drill,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_band_squat_row,Band Squat Row,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_barbell_jump_shrug,Barbell Jump Shrug,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_basketball_shot_jump,Basketball Shot Jump,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_battle_rope_alternating_arm_waves,Battle Rope Alternating Arm Waves,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_battle_rope_double_arm_slams,Battle Rope Double Arm Slams,Calisthenics-Cardio-Plyo-Functional,True,P2,SUPERLATIVE_CLAIM,PASS
+ea_bear_crawls,Bear Crawls,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_bent_over_twist,Bent Over Twist,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_body_slide,Body Slide,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_body_throw,Body Throw,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_bodyweight_front_slam,Bodyweight Front Slam,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_bodyweight_full_squat_with_overhead_front_raise,Bodyweight Full Squat with Overhead Front Raise,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_bodyweight_knee_thrust,Bodyweight Knee Thrust,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_bodyweight_knee_to_hand_tap,Bodyweight Knee to Hand Tap,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_bodyweight_standing_triangle_fly,Bodyweight Standing Triangle Fly,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_bodyweight_windmill,Bodyweight Windmill,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_bodyweight_windmill_cut,Bodyweight Windmill Cut,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_bouncing_circle_draw,Bouncing Circle Draw,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_bouncing_inner_thigh_tap,Bouncing Inner Thigh Tap,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_box_sled_push,Box Sled Push,Calisthenics-Cardio-Plyo-Functional,True,P0,BOX_SLED_STEP_IMAGE,TITLE/POSTER ACCEPTED AS MOVEMENT-FAMILY CONVENTION; STEPS↔POSTER FAIL
+ea_boxing_jab,Boxing Jab,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_boxing_left_hook,Boxing Left Hook,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_boxing_left_uppercut,Boxing Left Uppercut,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_boxing_right_cross,Boxing Right Cross,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_boxing_right_hook,Boxing Right Hook,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_boxing_right_uppercut,Boxing Right Uppercut,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_briskly_walking,Briskly Walking,Calisthenics-Cardio-Plyo-Functional,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_briskly_walking_360_degrees,Briskly Walking (360 Degrees),Calisthenics-Cardio-Plyo-Functional,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_burpee,Burpee,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_butt_kick_with_row,Butt Kick with Row,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_butt_kicks,Butt Kicks,Calisthenics-Cardio-Plyo-Functional,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_butt_kicks_slow,Butt Kicks Slow,Calisthenics-Cardio-Plyo-Functional,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_cable_twisting_overhead_press,Cable Twisting Overhead Press,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_cardio_lunge,Cardio Lunge,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_celebratory_hip_thrust,Celebratory Hip Thrust,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_chest_fly_side_step,Chest Fly Side Step,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_chest_pull_back,Chest Pull Back,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_chest_raise_and_rotate,Chest Raise and Rotate,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_circle_elbow_arm,Circle Elbow Arm,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_clap_jack,Clap Jack,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_control_balance,Control Balance,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_corner_touch,Corner Touch,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_crawl_with_sled_drag,Crawl with Sled Drag,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_criss_cross_arms_lift,Criss Cross Arms Lift,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_criss_cross_elbow_to_knee,Criss Cross Elbow to Knee,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_criss_cross_jack,Criss Cross Jack,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_criss_cross_jump,Criss Cross Jump,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_decline_shoulder_tap,Decline Shoulder Tap,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_diagonal_opens,Diagonal Opens,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_diagonal_punch,Diagonal Punch,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_double_kettlebell_sled_push,Double Kettlebell Sled Push,Calisthenics-Cardio-Plyo-Functional,True,PASS,,ACCEPTED WITH NAMING CAVEAT
+ea_double_knee_drive,Double Knee Drive,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_double_punch_front_leg_lift,Double Punch Front Leg Lift,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_downward_dog_sprint,Downward Dog Sprint,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_dumbbell_curl_press_extend,Dumbbell Curl Press Extend,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_dumbbell_iron_cross,Dumbbell Iron Cross,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_dumbbell_low_windmill,Dumbbell Low Windmill,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_dumbbell_pullover_hip_extension_on_exercise_ball,Dumbbell Pullover Hip Extension on Exercise Ball,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_dumbbell_single_arm_overhead_carry,Dumbbell Single Arm Overhead Carry,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_dumbbell_swing,Dumbbell Swing,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_dumbell_burpee,Dumbell Burpee,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_dynamic_leg_swing,Dynamic Leg Swing,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_elbow_extension,Elbow-extension,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_fast_feet,Fast Feet,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_front_lever_raise,Front Lever Raise,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_front_lever_raise_to_hold,Front Lever Raise to Hold,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_gorilla_walk,Gorilla Walk,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_gym_elliptical_machine_fast_speed,Gym Elliptical Machine Fast Speed,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_gym_elliptical_machine_normal_speed,Gym Elliptical Machine Normal Speed,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_gym_elliptical_machine_sprint_speed,Gym Elliptical Machine Sprint Speed,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_gym_rowing_machine_fast_speed,Gym Rowing Machine Fast Speed,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_gym_rowing_machine_normal_speed,Gym Rowing Machine Normal Speed,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_gym_rowing_machine_sprint_speed,Gym Rowing Machine Sprint Speed,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_half_burpees,Half Burpees,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_hand_stand_hold,Hand Stand Hold,Calisthenics-Cardio-Plyo-Functional,True,P1,PRIOR_REAUDIT; SUPERLATIVE_CLAIM,PASS
+ea_headstand,Headstand,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_heavy_bag_sled_drag,Heavy Bag Sled Drag,Calisthenics-Cardio-Plyo-Functional,True,P1,MEDICAL_CLAIM,PASS
+ea_high_knees,High Knees,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_jogging,Jogging,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_jump_rope_alternating_foot,Jump Rope Alternating Foot,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_jump_rope_basic_jump,Jump Rope Basic Jump,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_jump_rope_double_bounce,Jump Rope Double Bounce,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_jumping_jack,Jumping Jack,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_kettlebell_single_arm_clean_and_press,Kettlebell Single Arm Clean and Press,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_kettlebell_single_leg_glute_bridge_pullover,Kettlebell Single Leg Glute Bridge Pullover,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_kettlebell_sled_drag,Kettlebell Sled Drag,Calisthenics-Cardio-Plyo-Functional,True,PASS,,ACCEPTED WITH NAMING CAVEAT
+ea_kettlebell_snatch,Kettlebell Snatch,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_kettlebell_strict_press,Kettlebell Strict Press,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_kettlebell_swing,Kettlebell Swing,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_kettlebell_swing_version_2,Kettlebell Swing (version 2),Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_kettlebell_thruster,Kettlebell Thruster,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_kettlebell_turkish_get_up,Kettlebell Turkish Get Up,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_kettlebell_walkover_pushup,Kettlebell Walkover Pushup,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_kettlebell_windmill,Kettlebell Windmill,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_kipping_handstand_push_up,Kipping Handstand Push-up,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_landmine_alternating_lunge_and_twist,Landmine Alternating Lunge and Twist,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_landmine_alternating_lunge_to_chest_press,Landmine Alternating Lunge to Chest Press,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_landmine_rotational_lift_to_press,Landmine Rotational Lift to Press,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_lateral_sled_drag,Lateral Sled Drag,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_low_box_lateral_runner,Low Box Lateral Runner,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_low_box_quick_feet,Low Box Quick Feet,Calisthenics-Cardio-Plyo-Functional,True,P1,PRIOR_REAUDIT; SUPERLATIVE_CLAIM,PASS
+ea_low_rotational_med_ball_chops_quarter_squat_rotating_med_ball_left_and_ride_across_core,"Low Rotational Med Ball Chops (quarter Squat, Rotating Med Ball Left and Ride Across Core)",Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_low_sled_push,Low Sled Push,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_lying_neck_curls,Lying Neck Curls,Calisthenics-Cardio-Plyo-Functional,True,P1,NECK_SPECIALIZED,PASS
+ea_lying_neck_extension,Lying Neck Extension,Calisthenics-Cardio-Plyo-Functional,True,P1,NECK_SPECIALIZED,PASS
+ea_lying_on_side_arm_circle_warm_up,Lying on Side Arm Circle Warm Up,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_major_groups_muscle_body,Major Groups Muscle Body,Calisthenics-Cardio-Plyo-Functional,False,P2,TOO_FEW_STEPS,NOT_VERIFIED
+ea_med_ball_jumping_jacks,Med Ball Jumping Jacks,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_med_ball_side_wall_slams,Med Ball Side Wall Slams,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_med_ball_slam_burpees,Med Ball Slam Burpees,Calisthenics-Cardio-Plyo-Functional,True,P1,PRIOR_REAUDIT,PASS
+ea_monkey_bar_swings,Monkey Bar Swings,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_mountain_climber_jumps,Mountain Climber Jumps,Calisthenics-Cardio-Plyo-Functional,True,P2,SPINE_CUE,PASS
+ea_overhead_med_ball_throw,Overhead Med Ball Throw,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_pike_alternating_opposite_hip_taps,Pike Alternating Opposite Hip Taps,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_pike_individual_alternating_arm_reaches,Pike Individual Alternating Arm Reaches,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_pike_jacks_feet_kicking_in_and_out,Pike Jacks Feet Kicking in and Out,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_pike_shoulder_taps,Pike Shoulder Taps,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_plank_iytw,Plank IYTW,Calisthenics-Cardio-Plyo-Functional,True,P2,PRIOR_REAUDIT,PASS
+ea_plank_individual_arm_reach,Plank Individual Arm Reach,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_plank_lunges,Plank Lunges,Calisthenics-Cardio-Plyo-Functional,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_plank_pushup,Plank Pushup,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_plank_shoulder_taps,Plank Shoulder Taps,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_plate_overhead_carry,Plate Overhead Carry,Calisthenics-Cardio-Plyo-Functional,True,P1,PRIOR_REAUDIT; SUPERLATIVE_CLAIM,PASS
+ea_pull_sled_or_dog_sled_push,Pull Sled or Dog Sled Push,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_pushup_to_renegade_row,Pushup to Renegade Row,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_rebounder_high_knee_runs,Rebounder High Knee Runs,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_rebounder_knee_jumps,Rebounder Knee Jumps,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_rebounder_knee_pushes,Rebounder Knee Pushes,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_rebounder_light_jumps,Rebounder Light Jumps,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_rebounder_in_out_from_ground,Rebounder in & Out From Ground,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_rebounder_in_out_jacks,Rebounder in & Out Jacks,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_resistance_band_pull_apart,Resistance Band Pull Apart,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_resistance_band_shoulder_adduction,Resistance Band Shoulder Adduction,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_resistance_band_standing_external_rotation,Resistance Band Standing External Rotation,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_resistance_band_standing_single_arm_shoulder_extension,Resistance Band Standing Single Arm Shoulder Extension,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_resistance_band_standing_single_arm_shoulder_flexion,Resistance Band Standing Single Arm Shoulder Flexion,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_ring_dips,Ring Dips,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_running,Running,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_shadow_boxing,Shadow Boxing,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_side_to_side_punch,Side to Side Punch,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_single_kettlebell_sled_push,Single Kettlebell Sled Push,Calisthenics-Cardio-Plyo-Functional,True,PASS,,ACCEPTED WITH NAMING CAVEAT
+ea_skater_hops,Skater Hops,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_ski_ergometer_cross_country_ski_alternating_arm_pull,Ski Ergometer Cross Country Ski Alternating Arm Pull,Calisthenics-Cardio-Plyo-Functional,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_ski_ergometer_cross_country_ski_alternating_arm_pulls,Ski Ergometer Cross Country Ski Alternating Arm Pulls,Calisthenics-Cardio-Plyo-Functional,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_ski_ergometer_cross_country_ski_basic_pull,Ski Ergometer Cross Country Ski Basic Pull,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_ski_ergometer_cross_country_ski_face_biceps_curl_pull,Ski Ergometer Cross Country Ski Face Biceps Curl Pull,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_ski_ergometer_cross_country_ski_flyes,Ski Ergometer Cross Country Ski Flyes,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_ski_ergometer_cross_country_ski_jump_squat_pull,Ski Ergometer Cross Country Ski Jump Squat Pull,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_ski_ergometer_cross_country_ski_kneeling_reverse_fly_pull,Ski Ergometer Cross Country Ski Kneeling Reverse Fly Pull,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_ski_ergometer_cross_country_ski_pullover_pull,Ski Ergometer Cross Country Ski Pullover Pull,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_ski_ergometer_cross_country_ski_reverse_fly_pull,Ski Ergometer Cross Country Ski Reverse Fly Pull,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_ski_ergometer_cross_country_ski_reverse_lunge_pull,Ski Ergometer Cross Country Ski Reverse Lunge Pull,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_ski_ergometer_cross_country_ski_reverse_triceps_extension_pull,Ski Ergometer Cross Country Ski Reverse Triceps Extension Pull,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_ski_ergometer_cross_country_ski_squat_pull_half_circles,Ski Ergometer Cross Country Ski Squat Pull Half Circles,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_ski_ergometer_cross_country_ski_squat_wide_lat_pull,Ski Ergometer Cross Country Ski Squat Wide Lat Pull,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_ski_ergometer_cross_country_ski_triceps_extension_pull,Ski Ergometer Cross Country Ski Triceps Extension Pull,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_skipping,Skipping,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_sled_battle_rope_pull,Sled Battle Rope Pull,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_sled_drag_and_row,Sled Drag and Row,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_standing_toe_touch,Standing Toe Touch,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_star_jump,Star Jump,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_stationary_exercise_bike,Stationary Exercise Bike,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_stepmill_machine_steps,Stepmill Machine Steps,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_suspension_trainer_with_grips_mountain_climber,Suspension Trainer with Grips Mountain Climber,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_pike,Suspension Trainer with Grips Pike,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_tennis_forehand_ground_stroke,Tennis Forehand Ground Stroke,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_the_wall_ball,The Wall Ball,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_treadmill_jogging,Treadmill Jogging,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_treadmill_running,Treadmill Running,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_treadmill_walk,Treadmill Walk,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_tyre_flip,Tyre Flip,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_tyre_hammering,Tyre Hammering,Calisthenics-Cardio-Plyo-Functional,True,P1,PRIOR_REAUDIT,PASS
+ea_unilateral_box_jump,Unilateral Box Jump,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_unilateral_box_jump_bilateral_deceleration,Unilateral Box Jump - Bilateral Deceleration,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_unilateral_front_plank,Unilateral Front Plank,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_unilateral_jumps,Unilateral Jumps,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_unilateral_plank,Unilateral Plank,Calisthenics-Cardio-Plyo-Functional,True,PASS,,PASS
+ea_walking,Walking,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_walking_fast,Walking Fast,Calisthenics-Cardio-Plyo-Functional,False,PASS,,NOT_VERIFIED
+ea_archer_push_up,Archer Push Up,Chest,False,PASS,,NOT_VERIFIED
+ea_assisted_weighted_push_up,Assisted Weighted Push Up,Chest,False,PASS,,NOT_VERIFIED
+ea_band_bench_press,Band Bench Press,Chest,False,PASS,,NOT_VERIFIED
+ea_band_chest_fly,Band Chest Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_band_cross_body_one_arm_chest_press,Band Cross Body One Arm Chest Press,Chest,False,PASS,,NOT_VERIFIED
+ea_band_high_fly,Band High Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_band_incline_bench_press,Band Incline Bench Press,Chest,False,PASS,,NOT_VERIFIED
+ea_band_incline_fly,Band Incline Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_band_incline_hammer_press,Band Incline Hammer Press,Chest,False,PASS,,NOT_VERIFIED
+ea_band_incline_palms_back_press,Band Incline Palms Back Press,Chest,False,PASS,,NOT_VERIFIED
+ea_band_low_alternate_chest_press,Band Low Alternate Chest Press,Chest,False,PASS,,NOT_VERIFIED
+ea_band_low_chest_fly,Band Low Chest Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_band_low_chest_press,Band Low Chest Press,Chest,False,PASS,,NOT_VERIFIED
+ea_band_pallof_press,Band Pallof Press,Chest,True,PASS,,PASS
+ea_band_palloff_press,Band Palloff Press,Chest,False,PASS,,NOT_VERIFIED
+ea_band_push_up,Band Push-up,Chest,False,PASS,,NOT_VERIFIED
+ea_band_single_arm_pec_fly,Band Single Arm Pec Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_barbell_bench_press,Barbell Bench Press,Chest,False,PASS,,NOT_VERIFIED
+ea_barbell_bench_press_decline,Barbell Bench Press Decline,Chest,False,PASS,,NOT_VERIFIED
+ea_barbell_bench_press_incline,Barbell Bench Press Incline,Chest,False,PASS,,NOT_VERIFIED
+ea_barbell_floor_chest_press,Barbell Floor Chest Press,Chest,False,PASS,,NOT_VERIFIED
+ea_barbell_hooklying_bench_press,Barbell Hooklying Bench Press,Chest,True,PASS,,PASS
+ea_barbell_hooklying_bench_press_close_elbows,Barbell Hooklying Bench Press Close Elbows,Chest,True,PASS,,PASS
+ea_barbell_inclined_bench_press,Barbell Inclined Bench Press,Chest,False,PASS,,NOT_VERIFIED
+ea_barbell_jm_bench_press,Barbell JM Bench Press,Chest,False,PASS,,NOT_VERIFIED
+ea_barbell_landmine_chest_press,Barbell Landmine Chest Press,Chest,True,PASS,,PASS
+ea_barbell_larsen_bench_press,Barbell Larsen Bench Press,Chest,True,PASS,,PASS
+ea_barbell_pause_incline_bench_press,Barbell Pause Incline Bench Press,Chest,False,PASS,,NOT_VERIFIED
+ea_barbell_pullover_to_triceps_extension,Barbell Pullover to Triceps Extension,Chest,False,PASS,,NOT_VERIFIED
+ea_barbell_reverse_close_grip_bench_press,Barbell Reverse Close Grip Bench Press,Chest,False,PASS,,NOT_VERIFIED
+ea_barbell_reverse_grip_bench_press,Barbell Reverse Grip Bench Press,Chest,False,PASS,,NOT_VERIFIED
+ea_barbell_smith_chest_press,Barbell Smith Chest Press,Chest,False,PASS,,NOT_VERIFIED
+ea_barbell_spoto_press,Barbell Spoto Press,Chest,True,PASS,,PASS
+ea_barbell_wide_bench_press,Barbell Wide Bench Press,Chest,False,PASS,,NOT_VERIFIED
+ea_bodyweight_standing_fly,Bodyweight Standing Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_bodyweight_svend_press,Bodyweight Svend Press,Chest,False,PASS,,NOT_VERIFIED
+ea_cable_bench_fly_press,Cable Bench Fly Press,Chest,False,PASS,,NOT_VERIFIED
+ea_cable_core_palloff_press,Cable Core Palloff Press,Chest,True,PASS,,PASS
+ea_cable_low_fly,Cable Low Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_cable_lying_fly,Cable Lying Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_cable_machine_low_to_high,Cable Machine Low to High,Chest,False,PASS,,NOT_VERIFIED
+ea_cable_middle_fly,Cable Middle Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_cable_one_arm_chest_fly_bent,Cable One Arm Chest Fly Bent,Chest,False,PASS,,NOT_VERIFIED
+ea_cable_standing_up_straight_crossovers,Cable Standing Up Straight Crossovers,Chest,False,PASS,,NOT_VERIFIED
+ea_cable_upper_chest_crossover,Cable Upper Chest Crossover,Chest,False,PASS,,NOT_VERIFIED
+ea_chest_bench_press_correct_stance,Chest Bench Press Correct Stance,Chest,False,PASS,,NOT_VERIFIED
+ea_chest_dip,Chest Dip,Chest,False,PASS,,NOT_VERIFIED
+ea_chest_dip_on_dip_station,Chest Dip (on Dip Station),Chest,False,PASS,,NOT_VERIFIED
+ea_chest_dip_machine,Chest Dip Machine,Chest,False,PASS,,NOT_VERIFIED
+ea_chest_dip_weighted,Chest Dip Weighted,Chest,False,PASS,,NOT_VERIFIED
+ea_chest_dip_weighted_slow,Chest Dip Weighted Slow,Chest,False,PASS,,NOT_VERIFIED
+ea_chest_dip_on_bench,Chest Dip on Bench,Chest,False,PASS,,NOT_VERIFIED
+ea_chest_dip_with_pause_bodyweight,Chest Dip with Pause Bodyweight,Chest,False,PASS,,NOT_VERIFIED
+ea_chest_fly_low_to_high_resistance_band,Chest Fly Low to High Resistance Band,Chest,False,PASS,,NOT_VERIFIED
+ea_chest_press_front_resistance_band,Chest Press Front Resistance Band,Chest,False,PASS,,NOT_VERIFIED
+ea_chest_press_high_to_low_cable_resistance_band,Chest Press High to Low Cable Resistance Band,Chest,False,PASS,,NOT_VERIFIED
+ea_chest_press_low_to_high_resistance_band,Chest Press Low to High Resistance Band,Chest,False,PASS,,NOT_VERIFIED
+ea_chest_press_machine,Chest Press Machine,Chest,False,PASS,,NOT_VERIFIED
+ea_chest_tap_push_up,Chest Tap Push Up,Chest,False,PASS,,NOT_VERIFIED
+ea_clap_push_ups,Clap Push Ups,Chest,False,PASS,,NOT_VERIFIED
+ea_climber_a_padded_stool_supported,Climber a Padded Stool Supported,Chest,False,PASS,,NOT_VERIFIED
+ea_clock_push_ups,Clock Push Ups,Chest,False,PASS,,NOT_VERIFIED
+ea_close_grip_barbell_bench_press,Close Grip Barbell Bench Press,Chest,False,PASS,,NOT_VERIFIED
+ea_close_grip_push_up,Close Grip Push Up,Chest,False,PASS,,NOT_VERIFIED
+ea_decline_kneeling_push_up,Decline Kneeling Push Up,Chest,False,PASS,,NOT_VERIFIED
+ea_decline_kneeling_push_up_on_box,Decline Kneeling Push Up on Box,Chest,False,PASS,,NOT_VERIFIED
+ea_decline_push_up,Decline Push Up,Chest,False,PASS,,NOT_VERIFIED
+ea_decline_push_up_against_wall,Decline Push Up Against Wall,Chest,False,PASS,,NOT_VERIFIED
+ea_deep_push_up,Deep Push-up,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_alternate_bench_press_high_start,Dumbbell Alternate Bench Press (high Start),Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_around_pullover,Dumbbell Around Pullover,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_bench_press,Dumbbell Bench Press,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_chest_press_decline,Dumbbell Chest Press Decline,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_chest_press_flat,Dumbbell Chest Press Flat,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_chest_press_incline_bench,Dumbbell Chest Press Incline Bench,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_chest_pull_over,Dumbbell Chest Pull Over,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_decline_alternate_bench_press,Dumbbell Decline Alternate Bench Press,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_decline_bench_press,Dumbbell Decline Bench Press,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_decline_close_neutral_grip_press,Dumbbell Decline Close Neutral Grip Press,Chest,True,PASS,,PASS
+ea_dumbbell_decline_fly,Dumbbell Decline Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_decline_hammer_press,Dumbbell Decline Hammer Press,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_decline_one_arm_hammer_press,Dumbbell Decline One Arm Hammer Press,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_decline_twist_fly,Dumbbell Decline Twist Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_floor_fly,Dumbbell Floor Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_fly_flat_bench,Dumbbell Fly Flat Bench,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_fly_flat_bench_slow,Dumbbell Fly Flat Bench Slow,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_fly_incline_bench,Dumbbell Fly Incline Bench,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_hex_press,Dumbbell Hex Press,Chest,True,PASS,,PASS
+ea_dumbbell_incline_alternate_press,Dumbbell Incline Alternate Press,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_bench_press,Dumbbell Incline Bench Press,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_fly,Dumbbell Incline Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_fly_on_exercise_ball,Dumbbell Incline Fly on Exercise Ball,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_one_arm_press,Dumbbell Incline One Arm Press,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_palms_back_press,Dumbbell Incline Palms Back Press,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_squeeze_press,Dumbbell Incline Squeeze Press,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_svend_close_grip_press,Dumbbell Incline Svend Close Grip Press,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_twisted_fly,Dumbbell Incline Twisted Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_lying_on_floor_chest_press,Dumbbell Lying on Floor Chest Press,Chest,True,P1,MEDICAL_CLAIM,PASS
+ea_dumbbell_one_arm_floor_fly,Dumbbell One Arm Floor Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_one_arm_floor_press,Dumbbell One Arm Floor Press,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_one_arm_wide_grip_bench_press,Dumbbell One Arm Wide Grip Bench Press,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_single_arm_floor_press,Dumbbell Single Arm Floor Press,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_single_arm_floor_press_from_close_elbow,Dumbbell Single Arm Floor Press From Close Elbow,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_single_arm_cross_raise,Dumbbell Standing Single Arm Cross Raise,Chest,False,PASS,,NOT_VERIFIED
+ea_dumbbell_svend_press,Dumbbell Svend Press,Chest,False,PASS,,NOT_VERIFIED
+ea_elevated_push_up,Elevated Push Up,Chest,False,PASS,,NOT_VERIFIED
+ea_explosive_push_ups,Explosive Push Ups,Chest,False,PASS,,NOT_VERIFIED
+ea_flat_bench_cable_fly,Flat Bench Cable Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_floor_cable_resistance_band_press,Floor Cable Resistance Band Press,Chest,False,PASS,,NOT_VERIFIED
+ea_full_planche_push_up,Full Planche Push Up,Chest,False,PASS,,NOT_VERIFIED
+ea_hammer_strength_mts_iso_lateral_decline_press_alternate_arms,Hammer Strength MTS Iso-lateral Decline Press Alternate Arms,Chest,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_hammer_strength_mts_iso_lateral_decline_press_alternating_arms,Hammer Strength MTS Iso-lateral Decline Press Alternating Arms,Chest,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_hammer_strength_mts_iso_lateral_decline_press_both_arms,Hammer Strength MTS Iso-lateral Decline Press Both Arms,Chest,False,PASS,,NOT_VERIFIED
+ea_hammer_strength_mts_iso_lateral_decline_press_single_arm,Hammer Strength MTS Iso-lateral Decline Press Single Arm,Chest,False,PASS,,NOT_VERIFIED
+ea_hammer_strength_plate_loaded_combination_iso_lateral_chest_chest_press,Hammer Strength Plate-loaded Combination Iso-lateral Chest - Chest Press,Chest,False,PASS,,NOT_VERIFIED
+ea_hammer_strength_plate_loaded_combination_iso_lateral_chest_chest_press_alternate_arm,Hammer Strength Plate-loaded Combination Iso-lateral Chest - Chest Press Alternate Arm,Chest,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_hammer_strength_plate_loaded_combination_iso_lateral_chest_chest_press_alternating_arms,Hammer Strength Plate-loaded Combination Iso-lateral Chest - Chest Press_alternating Arms,Chest,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_hammer_strength_plate_loaded_combination_iso_lateral_chest_chest_press_single_arm,Hammer Strength Plate-loaded Combination Iso-lateral Chest - Chest Press_single Arm,Chest,False,PASS,,NOT_VERIFIED
+ea_hold_the_world_med_ball_chest_press,Hold the World Med Ball Chest Press,Chest,True,PASS,,PASS
+ea_incline_bench_cable_fly,Incline Bench Cable Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_incline_push_up_on_box,Incline Push-up (on Box),Chest,False,PASS,,NOT_VERIFIED
+ea_kettlebell_single_arm_chest_fly,Kettlebell Single Arm Chest Fly,Chest,True,PASS,,PASS
+ea_kneeling_push_up,Kneeling Push-up,Chest,True,P2,SUPERLATIVE_CLAIM,PASS
+ea_landmine_chest_press,Landmine Chest Press,Chest,False,PASS,,NOT_VERIFIED
+ea_lying_pull_over_with_resistance_band_cable,Lying Pull Over with Resistance Band Cable,Chest,False,PASS,,NOT_VERIFIED
+ea_machine_chest_press_decline,Machine Chest Press Decline,Chest,False,PASS,,NOT_VERIFIED
+ea_machine_chest_press_incline,Machine Chest Press Incline,Chest,False,PASS,,NOT_VERIFIED
+ea_machine_fly,Machine Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_normal_push_up,Normal Push-up,Chest,False,PASS,,NOT_VERIFIED
+ea_one_arm_push_up,One Arm Push Up,Chest,True,PASS,,PASS
+ea_pec_deck_fly_machine,Pec Deck Fly Machine,Chest,False,PASS,,NOT_VERIFIED
+ea_pec_deck_fly_machine_flies,Pec Deck Fly Machine Flies,Chest,True,PASS,,PASS
+ea_plate_deficit_pushup,Plate Deficit Pushup,Chest,True,PASS,,PASS
+ea_plate_glute_bridge_to_chest_press,Plate Glute Bridge to Chest Press,Chest,True,PASS,,PASS
+ea_plate_press,Plate Press,Chest,True,PASS,,PASS
+ea_push_pull_front_handle_push,Push Pull Front Handle Push,Chest,True,PASS,,PASS
+ea_push_up_plus,Push Up Plus,Chest,False,PASS,,NOT_VERIFIED
+ea_push_up_and_rotation,Push Up and Rotation,Chest,False,PASS,,NOT_VERIFIED
+ea_push_ups_bodyweight,Push Ups Bodyweight,Chest,False,PASS,,NOT_VERIFIED
+ea_resistance_band_assisted_push_up,Resistance Band Assisted Push-up,Chest,False,PASS,,NOT_VERIFIED
+ea_side_to_side_push_up,Side to Side Push Up,Chest,False,PASS,,NOT_VERIFIED
+ea_smith_machine_press_decline,Smith Machine Press Decline,Chest,False,PASS,,NOT_VERIFIED
+ea_smith_machine_press_flat,Smith Machine Press Flat,Chest,False,PASS,,NOT_VERIFIED
+ea_smith_machine_press_incline,Smith Machine Press Incline,Chest,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_chest_fly,Suspension Trainer with Grips Chest Fly,Chest,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_decline_push_up,Suspension Trainer with Grips Decline Push-up,Chest,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_push_up_to_side_plank,Suspension Trainer with Grips Push-up to Side Plank,Chest,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_reverse_push_up,Suspension Trainer with Grips Reverse Push-up,Chest,False,PASS,,NOT_VERIFIED
+ea_svend_press_decline_bench,Svend Press Decline Bench,Chest,False,PASS,,NOT_VERIFIED
+ea_svend_press_flat_bench,Svend Press Flat Bench,Chest,False,PASS,,NOT_VERIFIED
+ea_svend_press_incline_bench,Svend Press Incline Bench,Chest,False,PASS,,NOT_VERIFIED
+ea_wide_push_ups_bodyweight,Wide Push Ups Bodyweight,Chest,False,PASS,,NOT_VERIFIED
+ea_band_wrist_curl_single_arm,Band Wrist Curl Single Arm,Forearms,True,PASS,,PASS
+ea_barbell_palm_down_wrist_curl_over_a_bench,Barbell Palm Down Wrist Curl Over a Bench,Forearms,False,PASS,,NOT_VERIFIED
+ea_barbell_standing_back_wrist_curl,Barbell Standing Back Wrist Curl,Forearms,False,PASS,,NOT_VERIFIED
+ea_barbell_wrist_curl_wide_legs,Barbell Wrist Curl Wide Legs,Forearms,False,PASS,,NOT_VERIFIED
+ea_barbell_wrist_curl_on_knees,Barbell Wrist Curl on Knees,Forearms,False,PASS,,NOT_VERIFIED
+ea_barbell_wrist_extension_on_knees,Barbell Wrist Extension on Knees,Forearms,False,PASS,,NOT_VERIFIED
+ea_cable_wrist_curl,Cable Wrist Curl,Forearms,False,PASS,,NOT_VERIFIED
+ea_cable_wrist_extension,Cable Wrist Extension,Forearms,True,P1,PRIOR_REAUDIT; SUPERLATIVE_CLAIM,PASS
+ea_dumbbell_lying_pronation_rotation_on_floor,Dumbbell Lying Pronation Rotation on Floor,Forearms,False,PASS,,NOT_VERIFIED
+ea_dumbbell_one_arm_reverse_wrist_curl,Dumbbell One Arm Reverse Wrist Curl,Forearms,False,PASS,,NOT_VERIFIED
+ea_dumbbell_one_arm_seated_neutral_wrist_curl,Dumbbell One Arm Seated Neutral Wrist Curl,Forearms,False,PASS,,NOT_VERIFIED
+ea_dumbbell_one_arm_wrist_curl,Dumbbell One Arm Wrist Curl,Forearms,False,PASS,,NOT_VERIFIED
+ea_dumbbell_over_bench_reverse_wrist_curl,Dumbbell Over Bench Reverse Wrist Curl,Forearms,False,PASS,,NOT_VERIFIED
+ea_dumbbell_over_bench_wrist_curl,Dumbbell Over Bench Wrist Curl,Forearms,False,PASS,,NOT_VERIFIED
+ea_dumbbell_reverse_wrist_curl,Dumbbell Reverse Wrist Curl,Forearms,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_neutral_wrist_curl,Dumbbell Seated Neutral Wrist Curl,Forearms,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_wrist_curl,Dumbbell Standing Wrist Curl,Forearms,False,PASS,,NOT_VERIFIED
+ea_ez_bar_seated_wrist_curl,EZ Bar Seated Wrist Curl,Forearms,False,PASS,,NOT_VERIFIED
+ea_kettlebell_wrist_curl,Kettlebell Wrist Curl,Forearms,True,PASS,,PASS
+ea_kettlebell_wrist_extension,Kettlebell Wrist Extension,Forearms,True,PASS,,PASS
+ea_wrist_curl_barbell,Wrist Curl Barbell,Forearms,False,PASS,,NOT_VERIFIED
+ea_wrist_curl_dumbbell,Wrist Curl Dumbbell,Forearms,False,PASS,,NOT_VERIFIED
+ea_wrist_extension_barbell,Wrist Extension Barbell,Forearms,False,PASS,,NOT_VERIFIED
+ea_wrist_extension_dumbbell,Wrist Extension Dumbbell,Forearms,False,PASS,,NOT_VERIFIED
+ea_4_reverse_lunge_and_4_side_taps,4 Reverse Lunge and 4 Side Taps,Legs,False,PASS,,NOT_VERIFIED
+ea_45_degrees_step_out,45 Degrees Step Out,Legs,False,PASS,,NOT_VERIFIED
+ea_alternate_heel_touch_side_kick_squat,Alternate Heel Touch Side Kick Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_alternate_single_leg_raises_plank,Alternate Single Leg Raises Plank,Legs,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_alternating_step_out,Alternating Step Out,Legs,False,PASS,,NOT_VERIFIED
+ea_ankle_circles,Ankle Circles,Legs,False,PASS,,NOT_VERIFIED
+ea_ankle_dorsal_flexion,Ankle Dorsal Flexion,Legs,False,PASS,,NOT_VERIFIED
+ea_ankle_plantar_flexion,Ankle Plantar Flexion,Legs,False,PASS,,NOT_VERIFIED
+ea_ankle_pumps,Ankle Pumps,Legs,True,P1,PRIOR_REAUDIT,PASS
+ea_assisted_bulgarian_split_squat,Assisted Bulgarian Split Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_assisted_pistol_squats,Assisted Pistol Squats,Legs,False,PASS,,NOT_VERIFIED
+ea_back_and_forward_leg_swings,Back and Forward Leg Swings,Legs,False,PASS,,NOT_VERIFIED
+ea_balance_board_version_2,Balance Board (version 2),Legs,False,PASS,,NOT_VERIFIED
+ea_ball_headlock_squat,Ball Headlock Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_band_bent_over_hip_extension,Band Bent-over Hip Extension,Legs,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_band_cross_abduction,Band Cross Abduction,Legs,False,PASS,,NOT_VERIFIED
+ea_band_deadlift,Band Deadlift,Legs,False,PASS,,NOT_VERIFIED
+ea_band_hip_adduction,Band Hip Adduction,Legs,True,P1,PRIOR_REAUDIT; SUPERLATIVE_CLAIM,PASS
+ea_band_kneeling_rear_kick,Band Kneeling Rear Kick,Legs,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_band_leg_press,Band Leg Press,Legs,False,PASS,,NOT_VERIFIED
+ea_band_pullthrough,Band Pullthrough,Legs,False,PASS,,NOT_VERIFIED
+ea_band_single_leg_split_squat,Band Single Leg Split Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_band_spanish_split_squat,Band Spanish Split Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_band_standing_leg_curl,Band Standing Leg Curl,Legs,False,PASS,,NOT_VERIFIED
+ea_band_two_legs_calf_raise_band_under_both_legs_version_2,Band Two Legs Calf Raise - (band Under Both Legs) Version 2,Legs,False,PASS,,NOT_VERIFIED
+ea_banded_feet_elevated_hip_thrusters,Banded Feet Elevated Hip Thrusters,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_bench_lateral_step_up,Barbell Bench Lateral Step-up,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_bench_squats,Barbell Bench Squats,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_box_squat,Barbell Box Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_bulgarian_split_squat,Barbell Bulgarian Split Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_bulgarian_split_squat_left_front_back_view,Barbell Bulgarian Split Squat Left Front-back View,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_bulgarian_split_squat_left_side_view,Barbell Bulgarian Split Squat Left Side View,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_calf_jump,Barbell Calf Jump,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_clean_grip_front_squat,Barbell Clean Grip Front Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_curtsy_lunges,Barbell Curtsy Lunges,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_feet_elevated_figure_four_glute_bridge,Barbell Feet Elevated Figure Four Glute Bridge,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_feet_elevated_glute_bridge,Barbell Feet Elevated Glute Bridge,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_feet_elevated_single_leg_glute_bridge,Barbell Feet Elevated Single Leg Glute Bridge,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_feet_elevated_staggered_glute_bridge,Barbell Feet Elevated Staggered Glute Bridge,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_front_bench_squat,Barbell Front Bench Squat,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_front_chest_bench_squat,Barbell Front Chest Bench Squat,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_front_chest_lunges,Barbell Front Chest Lunges,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_front_chest_squat,Barbell Front Chest Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_front_lunges_with_small_pause,Barbell Front Lunges with Small Pause,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_front_rack_lunge,Barbell Front Rack Lunge,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_front_squats,Barbell Front Squats,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_full_squat,Barbell Full Squat,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_full_squat_side_pov,Barbell Full Squat Side Pov,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_full_squat_wide,Barbell Full Squat Wide,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_full_squat_back,Barbell Full Squat(back),Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_full_squat_with_rack,Barbell Full Squat(with Rack),Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_full_zercher_squat,Barbell Full Zercher Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_glute_bridge,Barbell Glute Bridge,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_glute_bridge_hands_on_bar,Barbell Glute Bridge (hands on Bar),Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_hip_thrust,Barbell Hip Thrust,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_jefferson_split_squat,Barbell Jefferson Split Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_jefferson_squat,Barbell Jefferson Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_jump_squat,Barbell Jump Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_kas_glute_bridge,Barbell KAS Glute Bridge,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_kneeling_squat,Barbell Kneeling Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_lateral_lunges,Barbell Lateral Lunges,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_low_bar_squat,Barbell Low Bar Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_lunges,Barbell Lunges,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_lunges_on_the_spot,Barbell Lunges on the Spot,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_narrow_stance_full_squat,Barbell Narrow Stance Full Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_narrow_stance_squat,Barbell Narrow Stance Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_one_leg_hip_thrust,Barbell One Leg Hip Thrust,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_overhead_lunges,Barbell Overhead Lunges,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_overhead_squat,Barbell Overhead Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_pause_lunge,Barbell Pause Lunge,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_quarter_squat,Barbell Quarter Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_rear_lunge_on_box,Barbell Rear Lunge on Box,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_rear_lunges,Barbell Rear Lunges,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_seated_on_knee_calve_raises,Barbell Seated on Knee Calve Raises,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_side_split_squat,Barbell Side Split Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_side_step_up,Barbell Side Step Up,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_single_leg_split_squat,Barbell Single Leg Split Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_split_squat,Barbell Split Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_squat_back_pov,Barbell Squat Back POV,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_squat_to_grass,Barbell Squat to Grass,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_squat_with_2_sec_hold,Barbell Squat with 2 Sec Hold,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_staggered_deadlift,Barbell Staggered Deadlift,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_standing_leg_calf_raises,Barbell Standing Leg Calf Raises,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_step_up_balance_on_box,Barbell Step Up Balance on Box,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_step_up_on_bench,Barbell Step Up on Bench,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_stiff_leg_deadlift,Barbell Stiff Leg Deadlift,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_straight_leg_deadlift,Barbell Straight Leg Deadlift,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_sumo_romanian_deadlift,Barbell Sumo Romanian Deadlift,Legs,False,PASS,,NOT_VERIFIED
+ea_bench_alternating_step_ups,Bench Alternating Step Ups,Legs,False,PASS,,NOT_VERIFIED
+ea_bench_bulgarian_split_squats_left,Bench Bulgarian Split Squats Left,Legs,False,PASS,,NOT_VERIFIED
+ea_bench_bulgarian_split_squats_right,Bench Bulgarian Split Squats Right,Legs,False,PASS,,NOT_VERIFIED
+ea_bent_knee_back_to_side_kick,Bent Knee Back to Side Kick,Legs,False,PASS,,NOT_VERIFIED
+ea_bent_leg_side_kick_kneeling,Bent Leg Side Kick (kneeling),Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_calf_raises,Bodyweight Calf Raises,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_feet_elevated_figure_four_glute_bridge,Bodyweight Feet Elevated Figure Four Glute Bridge,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_feet_elevated_staggered_glute_bridge,Bodyweight Feet Elevated Staggered Glute Bridge,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_forward_lunge,Bodyweight Forward Lunge,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_full_squat_with_overhead_press,Bodyweight Full Squat with Overhead Press,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_hip_thrust,Bodyweight Hip Thrust,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_kneeling_hold_to_stand,Bodyweight Kneeling Hold to Stand,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_kneeling_sissy_squat,Bodyweight Kneeling Sissy Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_lying_leg_curl,Bodyweight Lying Leg Curl,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_overhead_squat,Bodyweight Overhead Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_pulse_forward_lunge,Bodyweight Pulse Forward Lunge,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_pulse_squat,Bodyweight Pulse Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_pulse_squat_arms_to_chest,Bodyweight Pulse Squat Arms to Chest,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_rear_lunge,Bodyweight Rear Lunge,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_rear_lunge_front_raise,Bodyweight Rear Lunge Front Raise,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_single_leg_deadlift,Bodyweight Single Leg Deadlift,Legs,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_bodyweight_squat_to_front_leg,Bodyweight Squat to Front Leg,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_squat_to_side_leg,Bodyweight Squat to Side Leg,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_squat_to_side_to_front_leg,Bodyweight Squat to Side to Front Leg,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_squats,Bodyweight Squats,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_squats_hold,Bodyweight Squats Hold,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_standing_calf_raise,Bodyweight Standing Calf Raise,Legs,False,PASS,,NOT_VERIFIED
+ea_bodyweight_step_up_on_step_box,Bodyweight Step-up on Step Box,Legs,False,PASS,,NOT_VERIFIED
+ea_box_jump,Box Jump,Legs,False,PASS,,NOT_VERIFIED
+ea_box_jump_squats,Box Jump Squats,Legs,False,PASS,,NOT_VERIFIED
+ea_bulgarian_split_squat,Bulgarian Split Squat,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_bulgarian_split_squat_bodyweight_left,Bulgarian Split Squat Bodyweight Left,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_bulgarian_split_squat_bodyweight_right,Bulgarian Split Squat Bodyweight Right,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_bulgarian_split_squat_cable_resistance_band,Bulgarian Split Squat Cable Resistance Band,Legs,False,PASS,,NOT_VERIFIED
+ea_bulgarian_split_squat_left_bodyweight_side_view,Bulgarian Split Squat Left Bodyweight Side View,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_bulgarian_split_squat_right_bodyweight_side_view,Bulgarian Split Squat Right Bodyweight Side View,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_burpee_squat,Burpee Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_cable_assisted_inverse_leg_curl,Cable Assisted Inverse Leg Curl,Legs,False,PASS,,NOT_VERIFIED
+ea_cable_calve_raise,Cable Calve Raise,Legs,False,PASS,,NOT_VERIFIED
+ea_cable_goblet_squat,Cable Goblet Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_cable_hamstring_curl,Cable Hamstring Curl,Legs,False,PASS,,NOT_VERIFIED
+ea_cable_individual_glute_kickbacks,Cable Individual Glute Kickbacks,Legs,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_cable_narrow_chair_stand_up,Cable Narrow Chair Stand-up,Legs,False,PASS,,NOT_VERIFIED
+ea_cable_pull_through,Cable Pull Through,Legs,False,PASS,,NOT_VERIFIED
+ea_cable_single_leg_deadlift,Cable Single Leg Deadlift,Legs,False,PASS,,NOT_VERIFIED
+ea_cable_split_squat,Cable Split Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_cable_standing_leg_extension,Cable Standing Leg Extension,Legs,False,PASS,,NOT_VERIFIED
+ea_calf_raise_clap,Calf Raise Clap,Legs,False,PASS,,NOT_VERIFIED
+ea_calf_raise_from_deficit_with_chair_supported,Calf Raise From Deficit with Chair Supported,Legs,False,PASS,,NOT_VERIFIED
+ea_calf_raise_leg_press_machine,Calf Raise Leg Press Machine,Legs,False,PASS,,NOT_VERIFIED
+ea_calf_raise_on_hack_squat_machine,Calf Raise on Hack Squat Machine,Legs,False,PASS,,NOT_VERIFIED
+ea_calf_raise_with_wall_support,Calf Raise with Wall Support,Legs,False,PASS,,NOT_VERIFIED
+ea_chair_back_lunge_left_resistance_band,Chair Back Lunge Left Resistance Band,Legs,False,PASS,,NOT_VERIFIED
+ea_chair_back_lunge_right_resistance_band,Chair Back Lunge Right Resistance Band,Legs,False,PASS,,NOT_VERIFIED
+ea_chair_bulgarian_split_squats_bodyweight_left,Chair Bulgarian Split Squats Bodyweight Left,Legs,False,PASS,,NOT_VERIFIED
+ea_chair_bulgarian_split_squats_bodyweight_right,Chair Bulgarian Split Squats Bodyweight Right,Legs,False,PASS,,NOT_VERIFIED
+ea_chair_elevated_single_leg_glute_bridge,Chair Elevated Single Leg Glute Bridge,Legs,False,PASS,,NOT_VERIFIED
+ea_chair_feet_elevated_glute_bridge,Chair Feet Elevated Glute Bridge,Legs,False,PASS,,NOT_VERIFIED
+ea_chair_frog_feet_elevated_glute_bridge_bodyweight,Chair Frog Feet Elevated Glute Bridge Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_clamshell,Clamshell,Legs,False,PASS,,NOT_VERIFIED
+ea_clap_curtsy_squat,Clap Curtsy Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_cossack_squat,Cossack Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_counterbalanced_skater_squat,Counterbalanced Skater Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_crossed_arms_front_leg_kick,Crossed Arms Front Leg Kick,Legs,False,PASS,,NOT_VERIFIED
+ea_curtsy_lunge_bodyweight,Curtsy Lunge Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_curtsy_lunge_slide_with_towel,Curtsy Lunge Slide with Towel,Legs,False,PASS,,NOT_VERIFIED
+ea_curtsy_lunges_resistance_band,Curtsy Lunges Resistance Band,Legs,False,PASS,,NOT_VERIFIED
+ea_curtsy_squat,Curtsy Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_diagonal_lunge,Diagonal Lunge,Legs,False,PASS,,NOT_VERIFIED
+ea_donkey_calf_raise,Donkey Calf Raise,Legs,False,PASS,,NOT_VERIFIED
+ea_donkey_kicks_bodyweight,Donkey Kicks Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_double_jump_squat,Double Jump Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_bar_grip_sumo_squat,Dumbbell Bar Grip Sumo Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_bench_squat,Dumbbell Bench Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_bulgarian_box_split_squat,Dumbbell Bulgarian Box Split Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_bulgarian_split_squat,Dumbbell Bulgarian Split Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_close_legs_deadlift,Dumbbell Close Legs Deadlift,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_cossack_squats_version_2,Dumbbell Cossack Squats (version 2),Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_curtsy_lunge,Dumbbell Curtsy Lunge,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_farmer_walks,Dumbbell Farmer Walks,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_feet_elevated_figure_four_glute_bridge,Dumbbell Feet Elevated Figure Four Glute Bridge,Legs,True,PASS,,PASS
+ea_dumbbell_feet_elevated_glute_bridge,Dumbbell Feet Elevated Glute Bridge,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_feet_elevated_single_leg_glute_bridge,Dumbbell Feet Elevated Single Leg Glute Bridge,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_feet_elevated_staggered_glute_bridge,Dumbbell Feet Elevated Staggered Glute Bridge,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_figure_four_glute_bridge,Dumbbell Figure Four Glute Bridge,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_figure_four_hip_thrust,Dumbbell Figure Four Hip Thrust,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_frog_jumps,Dumbbell Frog Jumps,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_front_rack_lunge,Dumbbell Front Rack Lunge,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_front_squat,Dumbbell Front Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_glute_bridge,Dumbbell Glute Bridge,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_goblet_2_sec_hold_squat,Dumbbell Goblet 2 Sec Hold Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_goblet_curtsy_lunge,Dumbbell Goblet Curtsy Lunge,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_goblet_forward_lunge,Dumbbell Goblet Forward Lunge,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_goblet_reverse_lunge,Dumbbell Goblet Reverse Lunge,Legs,True,P1,PRIOR_REAUDIT; SPINE_CUE,PASS
+ea_dumbbell_goblet_split_squat,Dumbbell Goblet Split Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_goblet_split_squat_front_foot_elevanted,Dumbbell Goblet Split Squat Front Foot Elevanted,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_goblet_squat,Dumbbell Goblet Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_hip_thrust,Dumbbell Hip Thrust,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_hip_thrust_version_2,Dumbbell Hip Thrust (version 2),Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_jumping_squat,Dumbbell Jumping Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_kneeling_hold_to_stand_clean_grip,Dumbbell Kneeling Hold to Stand Clean Grip,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_kneeling_squat,Dumbbell Kneeling Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_lunge_alternating_on_the_spot,Dumbbell Lunge Alternating on the Spot,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_lunge_pulse,Dumbbell Lunge Pulse,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_lunge_to_overhead_press,Dumbbell Lunge to Overhead Press,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_narrow_stance_squats,Dumbbell Narrow Stance Squats,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_offset_squat,Dumbbell Offset Squat,Legs,True,PASS,,PASS
+ea_dumbbell_overhead_lunge,Dumbbell Overhead Lunge,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_press_squat,Dumbbell Press Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_rear_lunge,Dumbbell Rear Lunge,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_rear_lunge_from_step,Dumbbell Rear Lunge From Step,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_reverse_lunge_on_the_spot,Dumbbell Reverse Lunge on the Spot,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_reverse_lunges_pulses,Dumbbell Reverse Lunges Pulses,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_calf_raise,Dumbbell Seated Calf Raise,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_one_leg_calf_raise_hammer_grip,Dumbbell Seated One Leg Calf Raise Hammer Grip,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_side_lunge_alternating,Dumbbell Side Lunge Alternating,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_side_lunge_left_n_right,Dumbbell Side Lunge Left N Right,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_side_lunge_single_leg,Dumbbell Side Lunge Single Leg,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_side_squat_side_to_side,Dumbbell Side Squat Side to Side,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_single_arm_overhead_lunge,Dumbbell Single Arm Overhead Lunge,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_single_leg_calf_raise_wall_support,Dumbbell Single Leg Calf Raise Wall Support,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_single_leg_deadlift,Dumbbell Single Leg Deadlift,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_single_leg_hip_thrust,Dumbbell Single Leg Hip Thrust,Legs,True,PASS,,PASS
+ea_dumbbell_single_leg_single_arm_deadlift,Dumbbell Single Leg Single Arm Deadlift,Legs,True,PASS,,PASS
+ea_dumbbell_single_leg_split_squat,Dumbbell Single Leg Split Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_single_leg_squat,Dumbbell Single Leg Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_single_leg_squat_with_support_pistol,Dumbbell Single Leg Squat with Support (pistol),Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_single_leg_step_up,Dumbbell Single Leg Step-up,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_split_squat,Dumbbell Split Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_squats,Dumbbell Squats,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_squats_to_shoulder_press,Dumbbell Squats to Shoulder Press,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_staggered_deadlift,Dumbbell Staggered Deadlift,Legs,True,PASS,,PASS
+ea_dumbbell_staggered_glute_bridge,Dumbbell Staggered Glute Bridge,Legs,True,PASS,,PASS
+ea_dumbbell_staggered_hip_thrust,Dumbbell Staggered Hip Thrust,Legs,True,PASS,,PASS
+ea_dumbbell_standing_calf_raise,Dumbbell Standing Calf Raise,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_calf_raise_on_step,Dumbbell Standing Calf Raise on Step,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_hip_abduction,Dumbbell Standing Hip Abduction,Legs,True,PASS,,PASS
+ea_dumbbell_standing_single_leg_calf_raise,Dumbbell Standing Single Leg Calf Raise,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_static_lunge,Dumbbell Static Lunge,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_step_up_on_bench,Dumbbell Step Up on Bench,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_step_up_with_knee_raise,Dumbbell Step-up with Knee Raise,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_stiff_leg_deadlift,Dumbbell Stiff Leg Deadlift,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_straight_leg_deadlift,Dumbbell Straight Leg Deadlift,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_suitcase_carry,Dumbbell Suitcase Carry,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_sumo_squat_off_benches,Dumbbell Sumo Squat Off Benches,Legs,False,PASS,,NOT_VERIFIED
+ea_dumbbell_supported_sissy_squat,Dumbbell Supported Sissy Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_elevated_standing_calf_raise,Elevated Standing Calf Raise,Legs,False,PASS,,NOT_VERIFIED
+ea_exercise_ball_leg_curl,Exercise Ball Leg Curl,Legs,False,PASS,,NOT_VERIFIED
+ea_exercise_ball_one_legged_diagonal_kick_hamstring_curl,Exercise Ball One Legged Diagonal Kick Hamstring Curl,Legs,False,PASS,,NOT_VERIFIED
+ea_exercise_ball_wall_squat,Exercise Ball Wall Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_feet_together_barbell_squats,Feet Together Barbell Squats,Legs,False,PASS,,NOT_VERIFIED
+ea_fire_hydrant_bodyweight,Fire Hydrant Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_fire_hydrant_circle_bodyweight,Fire Hydrant Circle Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_frog_jumps,Frog Jumps,Legs,True,P1,PRIOR_REAUDIT; SUPERLATIVE_CLAIM,PASS
+ea_front_squats_dumbbell_low,Front Squats Dumbbell Low,Legs,False,PASS,,NOT_VERIFIED
+ea_front_squats_dumbbell_over_shoulders,Front Squats Dumbbell Over Shoulders,Legs,False,PASS,,NOT_VERIFIED
+ea_glute_bridge_bodyweight,Glute Bridge Bodyweight,Legs,True,PASS,,PASS
+ea_glute_bridge_with_abduction_bodyweight,Glute Bridge with Abduction Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_goblet_kettlebell_squats,Goblet Kettlebell Squats,Legs,False,PASS,,NOT_VERIFIED
+ea_good_mornings,Good Mornings,Legs,True,P2,SPINE_CUE,PASS
+ea_hack_squat_machine_squat,Hack Squat Machine Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_hammer_strength_iso_lateral_leg_curl_alternating_legs,Hammer Strength Iso-lateral LEG CURL Alternating Legs,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_hammer_strength_iso_lateral_leg_curl_alternate_legs,Hammer Strength Iso-lateral LEG Curl_alternate Legs,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_hammer_strength_iso_lateral_leg_curl_both_leg,Hammer Strength Iso-lateral LEG Curl_both Leg,Legs,False,PASS,,NOT_VERIFIED
+ea_hammer_strength_iso_lateral_leg_curl_single_leg,Hammer Strength Iso-lateral LEG Curl_single Leg,Legs,False,PASS,,NOT_VERIFIED
+ea_hip_thrust_in_smith_machine,Hip-thrust in Smith Machine,Legs,True,PASS,,PASS
+ea_horizontal_leg_press,Horizontal Leg Press,Legs,True,PASS,,PASS
+ea_horizontal_leg_press_calf_raise,Horizontal Leg Press Calf Raise,Legs,True,PASS,,PASS
+ea_horizontal_leg_press_calf_raise_single_leg,Horizontal Leg Press Calf Raise Single Leg,Legs,True,PASS,,PASS
+ea_horizontal_leg_press_single_leg,Horizontal Leg Press Single Leg,Legs,True,PASS,,PASS
+ea_in_and_out_squats,In and Out Squats,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_in_and_out_squats_jump_bodyweight,In and Out Squats Jump Bodyweight,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_in_and_out_squats_jump_bodyweight_2,In and Out Squats Jump Bodyweight (2),Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_jumping_lunge,Jumping Lunge,Legs,True,PASS,,PASS
+ea_jumping_pistol_squat,Jumping Pistol Squat,Legs,True,PASS,,PASS
+ea_kettlebell_bulgarian_split_squat_right,Kettlebell Bulgarian Split Squat Right,Legs,False,PASS,,NOT_VERIFIED
+ea_kettlebell_bulgarian_split_squat_right_side_view,Kettlebell Bulgarian Split Squat Right Side View,Legs,False,PASS,,NOT_VERIFIED
+ea_kettlebell_calf_raise,Kettlebell Calf Raise,Legs,True,PASS,,PASS
+ea_kettlebell_glute_bridge,Kettlebell Glute Bridge,Legs,True,PASS,,PASS
+ea_kettlebell_hip_thrusts,Kettlebell Hip Thrusts,Legs,True,PASS,,PASS
+ea_kettlebell_hip_thrusts_with_bench,Kettlebell Hip Thrusts with Bench,Legs,True,PASS,,PASS
+ea_kettlebell_lateral_lunge,Kettlebell Lateral Lunge,Legs,True,PASS,,PASS
+ea_kettlebell_reverse_lunge,Kettlebell Reverse Lunge,Legs,True,P1,PRIOR_REAUDIT; SPINE_CUE,PASS
+ea_kettlebell_seated_calf_raise,Kettlebell Seated Calf Raise,Legs,True,PASS,,PASS
+ea_kettlebell_single_leg_calf_raise,Kettlebell Single Leg Calf Raise,Legs,True,PASS,,PASS
+ea_kettlebell_single_leg_deadlift,Kettlebell Single Leg Deadlift,Legs,True,PASS,,PASS
+ea_kettlebell_single_leg_glute_bridge,Kettlebell Single Leg Glute Bridge,Legs,True,PASS,,PASS
+ea_kettlebell_single_leg_hip_thrust,Kettlebell Single Leg Hip Thrust,Legs,True,PASS,,PASS
+ea_kettlebell_single_leg_romanian_deadlifts,Kettlebell Single Leg Romanian Deadlifts,Legs,True,PASS,,PASS
+ea_kettlebell_split_squat,Kettlebell Split Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_kettlebell_squats,Kettlebell Squats,Legs,False,PASS,,NOT_VERIFIED
+ea_kettlebell_staggered_deadlift,Kettlebell Staggered Deadlift,Legs,True,PASS,,PASS
+ea_kettlebell_step_up,Kettlebell Step-up,Legs,False,PASS,,NOT_VERIFIED
+ea_kettlebell_suitcase_squat,Kettlebell Suitcase Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_kettlebell_sumo_squat,Kettlebell Sumo Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_kettlebell_sumo_squat_version_2,Kettlebell Sumo Squat (version 2),Legs,False,PASS,,NOT_VERIFIED
+ea_kettlebell_sumo_squat_off_stepbox,Kettlebell Sumo Squat Off Stepbox,Legs,False,PASS,,NOT_VERIFIED
+ea_kneeling_leg_curl_machine,Kneeling Leg Curl Machine,Legs,False,PASS,,NOT_VERIFIED
+ea_kneeling_squat_jumps_bodyweight,Kneeling Squat Jumps Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_landmine_calf_raise,Landmine Calf Raise,Legs,True,PASS,,PASS
+ea_landmine_curtsy_lunge,Landmine Curtsy Lunge,Legs,True,PASS,,PASS
+ea_landmine_glute_kick_back,Landmine Glute Kick Back,Legs,True,PASS,,PASS
+ea_landmine_goblet_curtsy_lunge,Landmine Goblet Curtsy Lunge,Legs,True,PASS,,PASS
+ea_landmine_goblet_lateral_lunge,Landmine Goblet Lateral Lunge,Legs,True,PASS,,PASS
+ea_landmine_hack_squat,Landmine Hack Squat,Legs,True,PASS,,PASS
+ea_landmine_lateral_lunge,Landmine Lateral Lunge,Legs,True,PASS,,PASS
+ea_landmine_lunge_to_overhead_press,Landmine Lunge to Overhead Press,Legs,True,PASS,,PASS
+ea_landmine_squat_and_press,Landmine Squat and Press,Legs,True,PASS,,PASS
+ea_lateral_band_walks,Lateral Band Walks,Legs,True,PASS,,PASS
+ea_lateral_box_jump,Lateral Box Jump,Legs,True,PASS,,PASS
+ea_leg_press_machine_close_stance,Leg Press Machine Close Stance,Legs,False,PASS,,NOT_VERIFIED
+ea_leg_press_machine_normal_stance,Leg Press Machine Normal Stance,Legs,False,PASS,,NOT_VERIFIED
+ea_leg_press_wide_high_stance,Leg Press Wide High Stance,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_leg_press_wide_high_stance_behind_view,Leg Press Wide High Stance Behind View,Legs,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_lever_leg_extension,Lever Leg Extension,Legs,False,PASS,,NOT_VERIFIED
+ea_lunge_front_kick,Lunge Front Kick,Legs,False,PASS,,NOT_VERIFIED
+ea_lunge_pulses_bodyweight,Lunge Pulses Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_lunge_reverse_with_resistance_band,Lunge Reverse with Resistance Band,Legs,False,PASS,,NOT_VERIFIED
+ea_lunge_rotation_left_and_right_bodyweight,Lunge Rotation Left and Right Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_lunge_to_knee_drive_left_bodyweight,Lunge to Knee Drive Left Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_lunge_to_knee_drive_right_bodyweight,Lunge to Knee Drive Right Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_lunges_alternate_leg_with_pause_bodyweight,Lunges Alternate Leg with Pause Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_lunges_same_leg_side_view_bodyweight,Lunges Same Leg Side View Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_lying_leg_curl_machine,Lying Leg Curl Machine,Legs,False,PASS,,NOT_VERIFIED
+ea_mts_iso_lateral_kneeling_leg_curl,MTS Iso-lateral Kneeling LEG CURL,Legs,False,PASS,,NOT_VERIFIED
+ea_med_ball_front_squat_raise,Med Ball Front Squat Raise,Legs,True,PASS,,PASS
+ea_medicine_ball_jumps,Medicine Ball Jumps,Legs,True,PASS,,PASS
+ea_multi_hip_abduction,Multi Hip Abduction,Legs,False,PASS,,NOT_VERIFIED
+ea_multi_hip_adduction,Multi Hip Adduction,Legs,True,PASS,,PASS
+ea_multi_hip_glute_extension,Multi Hip Glute Extension,Legs,False,PASS,,NOT_VERIFIED
+ea_narrow_stance_heels_elevated_dumbbell_goblet_squats,Narrow Stance Heels Elevated Dumbbell Goblet Squats,Legs,True,PASS,,PASS
+ea_nordic_hamstring_curl_with_partner,Nordic Hamstring Curl with Partner,Legs,True,P1,PRIOR_REAUDIT; SUPERLATIVE_CLAIM,PASS
+ea_normal_squat_smith_machine,Normal Squat Smith Machine,Legs,True,PASS,,PASS
+ea_pistol_squat_to_box,Pistol Squat to Box,Legs,True,PASS,,PASS
+ea_plate_curtsy_lunge,Plate Curtsy Lunge,Legs,True,PASS,,PASS
+ea_plate_deadlift,Plate Deadlift,Legs,True,PASS,,PASS
+ea_plate_deficit_lunge,Plate Deficit Lunge,Legs,True,PASS,,PASS
+ea_plate_forward_lunge,Plate Forward Lunge,Legs,True,PASS,,PASS
+ea_plate_good_morning_anterior,Plate Good Morning Anterior,Legs,True,P2,SPINE_CUE,PASS
+ea_plate_lateral_lunge,Plate Lateral Lunge,Legs,True,P1,PRIOR_REAUDIT; SUPERLATIVE_CLAIM,PASS
+ea_plate_overhead_walking_lunge,Plate Overhead Walking Lunge,Legs,True,PASS,,PASS
+ea_plate_single_leg_deadlift,Plate Single Leg Deadlift,Legs,True,PASS,,PASS
+ea_plate_single_leg_pinch_grip_deadlift,Plate Single Leg Pinch Grip Deadlift,Legs,True,P1,PRIOR_REAUDIT,PASS
+ea_plate_squat_hold,Plate Squat Hold,Legs,True,P2,PRIOR_REAUDIT,PASS
+ea_plate_squat_hold_biceps_curl,Plate Squat Hold Biceps Curl,Legs,True,PASS,,PASS
+ea_plate_squat_hold_reach,Plate Squat Hold Reach,Legs,True,PASS,,PASS
+ea_plate_squat_reach,Plate Squat Reach,Legs,True,PASS,,PASS
+ea_plate_staggered_deadlift,Plate Staggered Deadlift,Legs,True,PASS,,PASS
+ea_plate_staggered_pinch_grip_deadlift,Plate Staggered Pinch Grip Deadlift,Legs,True,PASS,,PASS
+ea_resistance_band_bent_leg_kickback_kneeling,Resistance Band Bent Leg Kickback (kneeling),Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_calf_press_sitting_on_chair,Resistance Band Calf Press Sitting on Chair,Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_clam,Resistance Band Clam,Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_hip_thrust_version_2,Resistance Band Hip Thrust (version 2),Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_hip_thrusts_on_knees,Resistance Band Hip Thrusts on Knees,Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_kneeling_leg_half_circle,Resistance Band Kneeling Leg Half Circle,Legs,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_resistance_band_kneeling_leg_half_circle_on_bench,Resistance Band Kneeling Leg Half Circle on Bench,Legs,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_resistance_band_leg_curl,Resistance Band Leg Curl,Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_leg_kickback,Resistance Band Leg Kickback,Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_lying_abduction,Resistance Band Lying Abduction,Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_lying_bent_knee_hip_abduction,Resistance Band Lying Bent Knee Hip Abduction,Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_lying_leg_raise,Resistance Band Lying Leg Raise,Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_one_leg_glute_bridge,Resistance Band One Leg Glute Bridge,Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_one_leg_kickback_bent_position,Resistance Band One Leg Kickback (bent Position),Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_reverse_hyper_with_stability_ball_on_flat_bench,Resistance Band Reverse Hyper with Stability Ball on Flat Bench,Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_seated_bent_knee_abduction,Resistance Band Seated Bent Knee Abduction,Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_seated_hip_abduction,Resistance Band Seated Hip Abduction,Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_side_plank_glute_raise,Resistance Band Side Plank Glute Raise,Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_squat,Resistance Band Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_squat_jump,Resistance Band Squat Jump,Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_standing_balance_glute_kickback,Resistance Band Standing Balance Glute Kickback,Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_standing_balance_glute_kickback_version_2,Resistance Band Standing Balance Glute Kickback (version 2),Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_standing_balance_hip_abduction,Resistance Band Standing Balance Hip Abduction,Legs,False,PASS,,NOT_VERIFIED
+ea_resistance_band_standing_hip_abduction,Resistance Band Standing Hip Abduction,Legs,False,PASS,,NOT_VERIFIED
+ea_reverse_lunge_left_resistance_band,Reverse Lunge Left Resistance Band,Legs,False,PASS,,NOT_VERIFIED
+ea_seated_calf_machine,Seated Calf Machine,Legs,False,PASS,,NOT_VERIFIED
+ea_seated_calf_raises_dumbbell_on_knee,Seated Calf Raises Dumbbell on Knee,Legs,False,PASS,,NOT_VERIFIED
+ea_seated_hip_abductor_machine,Seated Hip Abductor Machine,Legs,False,PASS,,NOT_VERIFIED
+ea_seated_leg_curl_machine,Seated Leg Curl Machine,Legs,False,PASS,,NOT_VERIFIED
+ea_seated_leg_extension_single_leg,Seated Leg Extension Single Leg,Legs,False,PASS,,NOT_VERIFIED
+ea_seated_leg_extension_alternate_legs,Seated Leg Extension_alternate Legs,Legs,False,PASS,,NOT_VERIFIED
+ea_seated_leg_extension_both_legs,Seated Leg Extension_both Legs,Legs,False,PASS,,NOT_VERIFIED
+ea_seated_machine_hip_adductor,Seated Machine Hip Adductor,Legs,False,PASS,,NOT_VERIFIED
+ea_side_lunges_bodyweight,Side Lunges Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_side_lying_leg_lift_left,Side Lying Leg Lift Left,Legs,False,PASS,,NOT_VERIFIED
+ea_side_lying_leg_lift_right,Side Lying Leg Lift Right,Legs,False,PASS,,NOT_VERIFIED
+ea_single_leg_calf_raise_leg_press_machine,Single Leg Calf Raise Leg Press Machine,Legs,False,PASS,,NOT_VERIFIED
+ea_single_leg_incline_45_degree_leg_press_machine,Single Leg Incline 45 Degree Leg Press Machine,Legs,False,PASS,,NOT_VERIFIED
+ea_single_leg_romanian_deadlift_dumbbell,Single Leg Romanian Deadlift Dumbbell,Legs,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_single_leg_romanian_deadlifts_right_cable_resistance_band,Single Leg Romanian Deadlifts Right Cable Resistance Band,Legs,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_sissy_squat_bodyweight,Sissy Squat Bodyweight,Legs,True,P1,PRIOR_REAUDIT; SUPERLATIVE_CLAIM,PASS
+ea_smith_machine_bulgarian_split_squat,Smith Machine Bulgarian Split Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_smith_machine_calf_raise,Smith Machine Calf Raise,Legs,False,PASS,,NOT_VERIFIED
+ea_smith_machine_narrow_stance_heels_elevated_squats,Smith Machine Narrow Stance Heels Elevated Squats,Legs,True,PASS,,PASS
+ea_standing_cable_hip_flexion,Standing Cable Hip Flexion,Legs,True,PASS,,PASS
+ea_standing_calf_raise_resistance_band,Standing Calf Raise Resistance Band,Legs,False,PASS,,NOT_VERIFIED
+ea_standing_calf_raises_smith_machine,Standing Calf Raises Smith Machine,Legs,False,PASS,,NOT_VERIFIED
+ea_standing_side_leg_raises,Standing Side Leg Raises,Legs,False,PASS,,NOT_VERIFIED
+ea_step_up_on_chair_bodyweight,Step Up on Chair Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_sumo_squat_over_shoulder_resistance_band,Sumo Squat Over Shoulder Resistance Band,Legs,False,PASS,,NOT_VERIFIED
+ea_sumo_squat_in_between_legs_resistance_band,Sumo Squat in Between Legs Resistance Band,Legs,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_hip_bridge,Suspension Trainer with Grips Hip Bridge,Legs,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_leg_curl,Suspension Trainer with Grips Leg Curl,Legs,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_side_squat,Suspension Trainer with Grips Side Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_split_squat,Suspension Trainer with Grips Split Squat,Legs,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_straight_hip_leg_curl,Suspension Trainer with Grips Straight Hip Leg Curl,Legs,False,PASS,,NOT_VERIFIED
+ea_wall_sit_bodyweight,Wall Sit Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_wall_squat_bodyweight,Wall Squat Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_wall_squat_with_pause_bodyweight,Wall Squat with Pause Bodyweight,Legs,False,PASS,,NOT_VERIFIED
+ea_barbell_clean_deadlift,Barbell Clean Deadlift,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_barbell_clean_pull,Barbell Clean Pull,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_barbell_clean_and_jerk,Barbell Clean and Jerk,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_barbell_clean_and_jerk_split_squat,Barbell Clean and Jerk Split Squat,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_barbell_clean_and_press,Barbell Clean and Press,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_barbell_deadlift,Barbell Deadlift,Powerlifting,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_deadlift_front_pov,Barbell Deadlift (front POV),Powerlifting,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_deadlift_side_pov,Barbell Deadlift (side POV),Powerlifting,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_full_clean,Barbell Full Clean,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_barbell_hang_clean,Barbell Hang Clean,Powerlifting,True,PASS,,PASS
+ea_barbell_muscle_clean,Barbell Muscle Clean,Powerlifting,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_power_clean,Barbell Power Clean,Powerlifting,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_power_clean_from_blocks,Barbell Power Clean From Blocks,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_barbell_power_jerk,Barbell Power Jerk,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_barbell_power_snatch,Barbell Power Snatch,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_barbell_press_under,Barbell Press Under,Powerlifting,True,PASS,,PASS
+ea_barbell_rack_pull,Barbell Rack Pull,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_barbell_snatch,Barbell Snatch,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_barbell_snatch_balance,Barbell Snatch Balance,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_barbell_snatch_from_blocks,Barbell Snatch From Blocks,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_barbell_snatch_pull,Barbell Snatch Pull,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_barbell_split_clean,Barbell Split Clean,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_barbell_split_jerk,Barbell Split Jerk,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_barbell_thruster,Barbell Thruster,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_cluster,Cluster,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_dumbbell_hang_power_clean,Dumbbell Hang Power Clean,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_dumbbell_one_arm_snatch,Dumbbell One Arm Snatch,Powerlifting,False,PASS,,NOT_VERIFIED
+ea_plate_clean,Plate Clean,Powerlifting,True,PASS,,PASS
+ea_plate_clean_and_press,Plate Clean and Press,Powerlifting,True,PASS,,PASS
+ea_plate_thruster,Plate Thruster,Powerlifting,True,P1,PRIOR_REAUDIT; SUPERLATIVE_CLAIM,PASS
+ea_sandbag_cleans,Sandbag Cleans,Powerlifting,True,PASS,,PASS
+ea_arm_circle,Arm Circle,Shoulders,False,PASS,,NOT_VERIFIED
+ea_arm_circles_backward,Arm Circles Backward,Shoulders,False,PASS,,NOT_VERIFIED
+ea_arm_swing_side_to_side,Arm Swing Side to Side,Shoulders,False,PASS,,NOT_VERIFIED
+ea_arm_tuck_side_bend,Arm Tuck Side Bend,Shoulders,False,PASS,,NOT_VERIFIED
+ea_arms_behind_back_shoulder_flexor_stretch,Arms Behind Back Shoulder Flexor Stretch,Shoulders,False,PASS,,NOT_VERIFIED
+ea_arnold_press_cable_resistance_band_standing,Arnold Press Cable Resistance Band Standing,Shoulders,False,PASS,,NOT_VERIFIED
+ea_arnold_press_dumbbell,Arnold Press Dumbbell,Shoulders,False,PASS,,NOT_VERIFIED
+ea_backhand_raise,Backhand Raise,Shoulders,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_band_behind_neck_shoulder_press,Band Behind Neck Shoulder Press,Shoulders,False,P1,BEHIND_NECK,NOT_VERIFIED
+ea_band_close_grip_row,Band Close Grip Row,Shoulders,False,PASS,,NOT_VERIFIED
+ea_band_face_pull,Band Face Pull,Shoulders,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_band_front_face_pull,Band Front Face Pull,Shoulders,False,PASS,,NOT_VERIFIED
+ea_band_front_raise,Band Front Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_band_horizontal_shrug,Band Horizontal Shrug,Shoulders,False,PASS,,NOT_VERIFIED
+ea_band_incline_row,Band Incline Row,Shoulders,False,PASS,,NOT_VERIFIED
+ea_band_incline_t_raise,Band Incline T Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_band_incline_y_raise,Band Incline Y Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_band_reverse_fly,Band Reverse Fly,Shoulders,False,PASS,,NOT_VERIFIED
+ea_band_seated_lateral_raise,Band Seated Lateral Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_band_seated_neutral_grip_shoulders_press,Band Seated Neutral Grip Shoulders Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_band_seated_shoulder_press,Band Seated Shoulder Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_band_single_arm_overhead_press,Band Single Arm Overhead Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_band_standing_rear_delt_row,Band Standing Rear Delt Row,Shoulders,False,PASS,,NOT_VERIFIED
+ea_band_y_raise,Band Y Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_barbell_back_wide_shrug,Barbell Back Wide Shrug,Shoulders,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_back_wide_shrugs,Barbell Back Wide Shrugs,Shoulders,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_behind_neck_push_press,Barbell Behind Neck Push Press,Shoulders,False,P1,BEHIND_NECK,NOT_VERIFIED
+ea_barbell_behind_the_back_push_press_single_arm_balance,Barbell Behind the Back Push Press Single Arm Balance,Shoulders,False,PASS,,NOT_VERIFIED
+ea_barbell_bent_over_reverse_raise_skier,Barbell Bent Over Reverse Raise (skier),Shoulders,False,PASS,,NOT_VERIFIED
+ea_barbell_decline_shrug,Barbell Decline Shrug,Shoulders,False,PASS,,NOT_VERIFIED
+ea_barbell_incline_shoulders_press,Barbell Incline Shoulders Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_barbell_incline_shoulders_press_inside_squat_cage,Barbell Incline Shoulders Press (inside Squat Cage),Shoulders,False,PASS,,NOT_VERIFIED
+ea_barbell_overhead_shrug,Barbell Overhead Shrug,Shoulders,False,PASS,,NOT_VERIFIED
+ea_barbell_rear_delt_raise,Barbell Rear Delt Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_barbell_seated_behind_neck_military_press,Barbell Seated Behind Neck Military Press,Shoulders,False,P1,BEHIND_NECK,NOT_VERIFIED
+ea_barbell_seated_military_press,Barbell Seated Military Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_barbell_seated_overhead_press,Barbell Seated Overhead Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_barbell_shrugs,Barbell Shrugs,Shoulders,False,PASS,,NOT_VERIFIED
+ea_barbell_silverback_shrug,Barbell Silverback Shrug,Shoulders,False,PASS,,NOT_VERIFIED
+ea_barbell_standing_close_grip_military_press,Barbell Standing Close Grip Military Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_barbell_standing_military_press,Barbell Standing Military Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_barbell_standing_shoulder_press,Barbell Standing Shoulder Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_barbell_standing_wide_grip_military_press,Barbell Standing Wide Grip Military Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_barbell_wide_shrug,Barbell Wide Shrug,Shoulders,False,PASS,,NOT_VERIFIED
+ea_barbell_z_press,Barbell Z Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_behind_neck_press_resistance_band_cable,Behind Neck Press Resistance Band Cable,Shoulders,False,P1,BEHIND_NECK,NOT_VERIFIED
+ea_bent_over_rear_delt_fly_dumbbell,Bent Over Rear Delt Fly Dumbbell,Shoulders,False,PASS,,NOT_VERIFIED
+ea_bent_over_rear_deltoid_fly_resistance_band,Bent Over Rear Deltoid Fly Resistance Band,Shoulders,False,PASS,,NOT_VERIFIED
+ea_bodyweight_bent_over_rear_delt_fly,Bodyweight Bent Over Rear Delt Fly,Shoulders,False,PASS,,NOT_VERIFIED
+ea_bodyweight_standing_around_world_wall_supported,Bodyweight Standing Around World Wall Supported,Shoulders,False,PASS,,NOT_VERIFIED
+ea_bodyweight_standing_military_press,Bodyweight Standing Military Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_bodyweight_standing_military_press_wall_supported,Bodyweight Standing Military Press Wall Supported,Shoulders,False,PASS,,NOT_VERIFIED
+ea_bodyweight_standing_shrug,Bodyweight Standing Shrug,Shoulders,False,PASS,,NOT_VERIFIED
+ea_cable_30_degree_shrug,Cable 30 Degree Shrug,Shoulders,True,PASS,,PASS
+ea_cable_bent_over_one_arm_lateral_raise,Cable Bent Over One Arm Lateral Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_cable_face_pull_with_rope,Cable Face Pull with Rope,Shoulders,True,PASS,,PASS
+ea_cable_front_raises_straight_bar,Cable Front Raises Straight Bar,Shoulders,False,PASS,,NOT_VERIFIED
+ea_cable_lateral_raises,Cable Lateral Raises,Shoulders,False,PASS,,NOT_VERIFIED
+ea_cable_leaning_lateral_raise,Cable Leaning Lateral Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_cable_one_arm_front_raise,Cable One Arm Front Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_cable_rear_delt_fly,Cable Rear Delt Fly,Shoulders,False,PASS,,NOT_VERIFIED
+ea_cable_rear_drive_bent_arm,Cable Rear Drive Bent Arm,Shoulders,False,PASS,,NOT_VERIFIED
+ea_cable_reverse_fly_on_crossover,Cable Reverse Fly on Crossover,Shoulders,False,PASS,,NOT_VERIFIED
+ea_cable_seated_rear_lateral_raise,Cable Seated Rear Lateral Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_cable_single_arm_reverse_fly,Cable Single Arm Reverse Fly,Shoulders,True,PASS,,PASS
+ea_cable_upright_row_with_ez_bar,Cable Upright Row with EZ Bar,Shoulders,False,P1,UPRIGHT_ROW,NOT_VERIFIED
+ea_cable_upright_row_with_straight_bar,Cable Upright Row with Straight Bar,Shoulders,False,P1,UPRIGHT_ROW,NOT_VERIFIED
+ea_cable_y_raise,Cable Y Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_cross_over_shoulder_stretch,Cross Over Shoulder Stretch,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_alternate_shoulder_press,Dumbbell Alternate Shoulder Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_alternate_side_press,Dumbbell Alternate Side Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_alternating_arnold_press,Dumbbell Alternating Arnold Press,Shoulders,True,PASS,,PASS
+ea_dumbbell_armpit_row,Dumbbell Armpit Row,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_arnold_press_version_2,Dumbbell Arnold Press (version 2),Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_arnold_press_seated,Dumbbell Arnold Press Seated,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_around_the_world,Dumbbell Around the World,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_bench_seated_press,Dumbbell Bench Seated Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_bent_arm_lateral_raise,Dumbbell Bent Arm Lateral Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_bent_over_face_pull,Dumbbell Bent Over Face Pull,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_bicep_curl_to_shoulder_press,Dumbbell Bicep Curl to Shoulder Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_chest_supported_lateral_raises,Dumbbell Chest Supported Lateral Raises,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_chest_supported_y_raise,Dumbbell Chest Supported Y Raise,Shoulders,True,P1,PRIOR_REAUDIT; SUPERLATIVE_CLAIM,PASS
+ea_dumbbell_close_grip_shoulder_press_sit_up,Dumbbell Close Grip Shoulder Press Sit Up,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_cuban_press_version_2,Dumbbell Cuban Press (version 2),Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_decline_shrug,Dumbbell Decline Shrug,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_external_rotatio,Dumbbell External Rotatio,Shoulders,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_dumbbell_external_rotation,Dumbbell External Rotation,Shoulders,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_dumbbell_face_down_lying_shoulder_pres,Dumbbell Face Down Lying Shoulder Pres,Shoulders,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_dumbbell_face_down_lying_shoulder_press,Dumbbell Face Down Lying Shoulder Press,Shoulders,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_dumbbell_front_raise,Dumbbell Front Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_front_raise_version_2,Dumbbell Front Raise (version 2),Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_half_kneeling_military_press,Dumbbell Half Kneeling Military Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_breeding,Dumbbell Incline Breeding,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_front_raise,Dumbbell Incline Front Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_hammer_shoulder_press,Dumbbell Incline Hammer Shoulder Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_lying_front_raise,Dumbbell Incline Lying Front Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_one_arm_lateral_raise,Dumbbell Incline One Arm Lateral Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_rear_lateral_raise,Dumbbell Incline Rear Lateral Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_shrug,Dumbbell Incline Shrug,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_kneeling_arnold_press,Dumbbell Kneeling Arnold Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_lateral_to_front_raise,Dumbbell Lateral to Front Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_laying_30_degree_shrug,Dumbbell Laying 30 Degree Shrug,Shoulders,True,P2,PRIOR_REAUDIT,PASS
+ea_dumbbell_laying_silverback_shrug,Dumbbell Laying Silverback Shrug,Shoulders,True,PASS,,PASS
+ea_dumbbell_leaning_fly,Dumbbell Leaning Fly,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_lying_external_shoulder_rotation,Dumbbell Lying External Shoulder Rotation,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_lying_one_arm_rear_lateral_raise,Dumbbell Lying One Arm Rear Lateral Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_lying_rear_delt_row,Dumbbell Lying Rear Delt Row,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_lying_rear_lateral_raise,Dumbbell Lying Rear Lateral Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_one_arm_front_raise,Dumbbell One Arm Front Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_one_arm_lateral_raise,Dumbbell One Arm Lateral Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_one_arm_low_fly,Dumbbell One Arm Low Fly,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_one_arm_shoulder_press_version_2,Dumbbell One Arm Shoulder Press (version 2),Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_plank_pullthrough,Dumbbell Plank Pullthrough,Shoulders,True,PASS,,PASS
+ea_dumbbell_push_press,Dumbbell Push Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_rear_delt_row,Dumbbell Rear Delt Row,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_rear_full_shrugs,Dumbbell Rear Full Shrugs,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_rear_lateral_raise,Dumbbell Rear Lateral Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_reverse_fly,Dumbbell Reverse Fly,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_scott_press,Dumbbell Scott Press,Shoulders,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_dumbbell_scott_press_360_degrees,Dumbbell Scott Press (360 Degrees),Shoulders,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_dumbbell_seated_alternate_front_raise,Dumbbell Seated Alternate Front Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_alternate_press,Dumbbell Seated Alternate Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_alternate_shoulder_press,Dumbbell Seated Alternate Shoulder Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_front_raise,Dumbbell Seated Front Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_lateral_raise,Dumbbell Seated Lateral Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_reverse_close_grip_press,Dumbbell Seated Reverse Close Grip Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_shoulder_press,Dumbbell Seated Shoulder Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_shoulder_press_parallel_grip,Dumbbell Seated Shoulder Press Parallel Grip,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_on_exercise_ball_shoulder_press,Dumbbell Seated on Exercise Ball Shoulder Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_shoulder_extension,Dumbbell Shoulder Extension,Shoulders,True,P1,PRIOR_REAUDIT; SPINE_CUE; SUPERLATIVE_CLAIM,PASS
+ea_dumbbell_shrugs,Dumbbell Shrugs,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_side_lying_one_hand_raise,Dumbbell Side Lying One Hand Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_silverback_shrug,Dumbbell Silverback Shrug,Shoulders,True,PASS,,PASS
+ea_dumbbell_single_arm_underhand_front_raise,Dumbbell Single Arm Underhand Front Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_single_arm_upright_row,Dumbbell Single Arm Upright Row,Shoulders,True,P1,UPRIGHT_ROW,PASS
+ea_dumbbell_standing_alternate_overhead_press,Dumbbell Standing Alternate Overhead Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_alternate_raise,Dumbbell Standing Alternate Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_alternate_vertical_front_raises,Dumbbell Standing Alternate Vertical Front Raises,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_behind_back_shoulders_press,Dumbbell Standing Behind Back Shoulders Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_curl_arnold_press,Dumbbell Standing Curl Arnold Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_front_raise_above_head,Dumbbell Standing Front Raise Above Head,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_overhead_press,Dumbbell Standing Overhead Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_palms_in_press,Dumbbell Standing Palms in Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_dumbbell_upright_shoulder_external_rotatio,Dumbbell Upright Shoulder External Rotatio,Shoulders,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_dumbbell_upright_shoulder_external_rotation,Dumbbell Upright Shoulder External Rotation,Shoulders,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_dumbbell_w_press,Dumbbell W Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_ez_bar_standing_front_raise,EZ Bar Standing Front Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_ez_barbell_anti_gravity_press,EZ Barbell Anti Gravity Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_elevated_pike_shoulder_shrug,Elevated Pike Shoulder Shrug,Shoulders,True,PASS,,PASS
+ea_ez_bar_seated_close_grip_shoulder_press,Ez Bar Seated Close Grip Shoulder Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_front_raise_resistance_bands,Front Raise Resistance Bands,Shoulders,False,PASS,,NOT_VERIFIED
+ea_front_raises_barbell,Front Raises Barbell,Shoulders,False,PASS,,NOT_VERIFIED
+ea_handstand_push_on_chair,Handstand Push on Chair,Shoulders,False,PASS,,NOT_VERIFIED
+ea_incline_lateral_raises_dumbbell,Incline Lateral Raises Dumbbell,Shoulders,False,PASS,,NOT_VERIFIED
+ea_iso_lateral_shoulder_press_alternate_arms,Iso Lateral Shoulder Press Alternate Arms,Shoulders,False,PASS,,NOT_VERIFIED
+ea_iso_lateral_shoulder_press_both_arms,Iso Lateral Shoulder Press Both Arms,Shoulders,False,PASS,,NOT_VERIFIED
+ea_iso_lateral_shoulder_press_single_arm,Iso Lateral Shoulder Press Single Arm,Shoulders,False,PASS,,NOT_VERIFIED
+ea_jump_rope_face_pull,Jump Rope Face Pull,Shoulders,False,PASS,,NOT_VERIFIED
+ea_kettlebell_front_raise,Kettlebell Front Raise,Shoulders,True,PASS,,PASS
+ea_kettlebell_half_kneeling_shoulder_press,Kettlebell Half Kneeling Shoulder Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_kettlebell_incline_shrug,Kettlebell Incline Shrug,Shoulders,True,PASS,,PASS
+ea_kettlebell_kneeling_one_arm_shoulder_press,Kettlebell Kneeling One Arm Shoulder Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_kettlebell_long_lever_lateral_raise,Kettlebell Long Lever Lateral Raise,Shoulders,True,PASS,,PASS
+ea_kettlebell_rear_delt_row,Kettlebell Rear Delt Row,Shoulders,True,PASS,,PASS
+ea_kettlebell_seesaw_press,Kettlebell Seesaw Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_kettlebell_shoulder_extension,Kettlebell Shoulder Extension,Shoulders,True,P2,PRIOR_REAUDIT,PASS
+ea_kettlebell_shrug,Kettlebell Shrug,Shoulders,True,PASS,,PASS
+ea_kettlebell_silverback_shrug,Kettlebell Silverback Shrug,Shoulders,True,P2,PRIOR_REAUDIT,PASS
+ea_kettlebell_single_arm_lateral_raise,Kettlebell Single Arm Lateral Raise,Shoulders,True,PASS,,PASS
+ea_kettlebell_single_arm_rear_delt_fly,Kettlebell Single Arm Rear Delt Fly,Shoulders,True,PASS,,PASS
+ea_kettlebell_standing_bottoms_up_one_arm_shoulder_press,Kettlebell Standing Bottoms-up One Arm Shoulder Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_kettlebell_upright_row,Kettlebell Upright Row,Shoulders,True,P1,UPRIGHT_ROW,PASS
+ea_landmine_alternating_single_arm_press,Landmine Alternating Single Arm Press,Shoulders,True,P2,SUPERLATIVE_CLAIM,PASS
+ea_landmine_half_kneeling_single_arm_overhead_press,Landmine Half Kneeling Single Arm Overhead Press,Shoulders,True,PASS,,PASS
+ea_landmine_kneeling_alternating_overhead_press,Landmine Kneeling Alternating Overhead Press,Shoulders,True,PASS,,PASS
+ea_landmine_kneeling_overhead_press,Landmine Kneeling Overhead Press,Shoulders,True,PASS,,PASS
+ea_landmine_lateral_raise,Landmine Lateral Raise,Shoulders,True,PASS,,PASS
+ea_landmine_overhead_press,Landmine Overhead Press,Shoulders,True,PASS,,PASS
+ea_landmine_seated_alternating_overhead_press,Landmine Seated Alternating Overhead Press,Shoulders,True,P2,PRIOR_REAUDIT,PASS
+ea_landmine_seated_overhead_press,Landmine Seated Overhead Press,Shoulders,True,PASS,,PASS
+ea_landmine_seated_single_arm_overhead_press,Landmine Seated Single Arm Overhead Press,Shoulders,True,PASS,,PASS
+ea_landmine_single_arm_push_press,Landmine Single Arm Push Press,Shoulders,True,PASS,,PASS
+ea_landmine_single_arm_staggered_overhead_press,Landmine Single Arm Staggered Overhead Press,Shoulders,True,PASS,,PASS
+ea_lateral_raise_bodyweight,Lateral Raise Bodyweight,Shoulders,False,PASS,,NOT_VERIFIED
+ea_lateral_raise_to_shoulder_press_resistance_band_cable,Lateral Raise to Shoulder Press Resistance Band Cable,Shoulders,False,PASS,,NOT_VERIFIED
+ea_lateral_raises_dumbbell,Lateral Raises Dumbbell,Shoulders,False,PASS,,NOT_VERIFIED
+ea_lateral_raises_dumbbell_seated_with_swing,Lateral Raises Dumbbell Seated with Swing,Shoulders,False,PASS,,NOT_VERIFIED
+ea_lateral_raises_on_cable_machine,Lateral Raises on Cable Machine,Shoulders,False,PASS,,NOT_VERIFIED
+ea_laying_lateral_raise,Laying Lateral Raise,Shoulders,True,PASS,,PASS
+ea_leaning_dumbbell_lateral_raise,Leaning Dumbbell Lateral Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_low_cable_overhead_flyes,Low Cable Overhead Flyes,Shoulders,False,PASS,,NOT_VERIFIED
+ea_lying_bench_external_shoulder_rotation,Lying Bench External Shoulder Rotation,Shoulders,False,PASS,,NOT_VERIFIED
+ea_lying_bench_internal_rotation_stretch,Lying Bench Internal Rotation Stretch,Shoulders,False,PASS,,NOT_VERIFIED
+ea_lying_lateral_raises_bodyweight,Lying Lateral Raises Bodyweight,Shoulders,False,PASS,,NOT_VERIFIED
+ea_machine_lateral_raise,Machine Lateral Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_military_press_bodyweight,Military Press Bodyweight,Shoulders,False,PASS,,NOT_VERIFIED
+ea_one_arm_reverse_dumbbell_fly,One Arm Reverse Dumbbell Fly,Shoulders,False,PASS,,NOT_VERIFIED
+ea_overhand_clap,Overhand Clap,Shoulders,False,PASS,,NOT_VERIFIED
+ea_palm_up_palm_down_rotation,Palm Up Palm Down Rotation,Shoulders,False,PASS,,NOT_VERIFIED
+ea_plank_reverse_fly_with_bottle,Plank Reverse Fly with Bottle,Shoulders,False,PASS,,NOT_VERIFIED
+ea_plate_car_driver,Plate Car Driver,Shoulders,True,PASS,,PASS
+ea_plate_front_raise,Plate Front Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_plate_full_front_raise,Plate Full Front Raise,Shoulders,True,PASS,,PASS
+ea_plate_halo,Plate Halo,Shoulders,True,PASS,,PASS
+ea_plate_internally_rotated_rear_delt_fly,Plate Internally Rotated Rear Delt Fly,Shoulders,True,PASS,,PASS
+ea_plate_lateral_raise,Plate Lateral Raise,Shoulders,True,PASS,,PASS
+ea_plate_overhead_press_to_tricep_extension,Plate Overhead Press to Tricep Extension,Shoulders,True,PASS,,PASS
+ea_plate_overhead_shrug,Plate Overhead Shrug,Shoulders,True,PASS,,PASS
+ea_plate_reach,Plate Reach,Shoulders,True,PASS,,PASS
+ea_plate_rear_delt_fly,Plate Rear Delt Fly,Shoulders,True,PASS,,PASS
+ea_prone_front_raises_barbell_on_bench,Prone Front Raises Barbell on Bench,Shoulders,False,PASS,,NOT_VERIFIED
+ea_prone_front_raises_dumbbell_on_bench,Prone Front Raises Dumbbell on Bench,Shoulders,False,PASS,,NOT_VERIFIED
+ea_pull_apart_cable_resistance_band,Pull Apart Cable Resistance Band,Shoulders,False,PASS,,NOT_VERIFIED
+ea_reaching_up_shoulder_stretch,Reaching Up Shoulder Stretch,Shoulders,False,PASS,,NOT_VERIFIED
+ea_rear_deltoid_fly_cable_resistance_band,Rear Deltoid Fly Cable Resistance Band,Shoulders,False,PASS,,NOT_VERIFIED
+ea_resistance_band_face_pull,Resistance Band Face Pull,Shoulders,False,PASS,,NOT_VERIFIED
+ea_resistance_bands_facepull,Resistance Bands Facepull,Shoulders,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_reverse_machine_fly,Reverse Machine Fly,Shoulders,False,PASS,,NOT_VERIFIED
+ea_reverse_shoulder_stretch,Reverse Shoulder Stretch,Shoulders,False,PASS,,NOT_VERIFIED
+ea_seated_dumbbell_neutral_grip_front_raises,Seated Dumbbell Neutral Grip Front Raises,Shoulders,True,P2,PRIOR_REAUDIT,PASS
+ea_seated_dumbbell_neutral_grip_side_raises,Seated Dumbbell Neutral Grip Side Raises,Shoulders,True,PASS,,PASS
+ea_seated_dumbbell_one_arm_shoulder_press,Seated Dumbbell One Arm Shoulder Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_seated_dumbbell_rear_delt_fly,Seated Dumbbell Rear Delt Fly,Shoulders,False,PASS,,NOT_VERIFIED
+ea_seated_shoulder_flexor_depressor_retractor_stretch,Seated Shoulder Flexor Depressor Retractor Stretch,Shoulders,False,PASS,,NOT_VERIFIED
+ea_seated_shoulder_press_barbell,Seated Shoulder Press Barbell,Shoulders,False,PASS,,NOT_VERIFIED
+ea_shoulder_abduction,Shoulder Abduction,Shoulders,False,PASS,,NOT_VERIFIED
+ea_shoulder_circle,Shoulder Circle,Shoulders,False,PASS,,NOT_VERIFIED
+ea_shoulder_extension,Shoulder Extension,Shoulders,False,PASS,,NOT_VERIFIED
+ea_side_lateral_raise_resistance_band,Side Lateral Raise Resistance Band,Shoulders,False,PASS,,NOT_VERIFIED
+ea_smith_machine_shoulder_press,Smith Machine Shoulder Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_standing_arnold_press_dumbbell,Standing Arnold Press Dumbbell,Shoulders,False,PASS,,NOT_VERIFIED
+ea_standing_dumbbell_alternate_shoulder_press,Standing Dumbbell Alternate Shoulder Press,Shoulders,False,PASS,,NOT_VERIFIED
+ea_standing_front_raise_dumbbell,Standing Front Raise Dumbbell,Shoulders,False,PASS,,NOT_VERIFIED
+ea_standing_overhand_shoulder_stretch,Standing Overhand Shoulder Stretch,Shoulders,False,PASS,,NOT_VERIFIED
+ea_standing_reverse_shoulder_stretch,Standing Reverse Shoulder Stretch,Shoulders,False,PASS,,NOT_VERIFIED
+ea_standing_shoulder_press_dumbbell,Standing Shoulder Press Dumbbell,Shoulders,False,PASS,,NOT_VERIFIED
+ea_standing_swimmer,Standing Swimmer,Shoulders,False,PASS,,NOT_VERIFIED
+ea_standing_y_raise,Standing Y Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_face_pull,Suspension Trainer with Grips Face Pull,Shoulders,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_front_raise,Suspension Trainer with Grips Front Raise,Shoulders,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_inverted_row_on_floor,Suspension Trainer with Grips Inverted Row on Floor,Shoulders,True,PASS,,PASS
+ea_suspension_trainer_with_grips_rear_delt_row,Suspension Trainer with Grips Rear Delt Row,Shoulders,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_single_arm_rear_delt_row,Suspension Trainer with Grips Single Arm Rear Delt Row,Shoulders,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_split_fly,Suspension Trainer with Grips Split Fly,Shoulders,False,PASS,,NOT_VERIFIED
+ea_trap_bar_shrug,Trap Bar Shrug,Shoulders,False,PASS,,NOT_VERIFIED
+ea_upright_row_cable_resistance_band,Upright Row Cable Resistance Band,Shoulders,False,P1,UPRIGHT_ROW,NOT_VERIFIED
+ea_upright_row_dumbbell,Upright Row Dumbbell,Shoulders,False,P1,UPRIGHT_ROW,NOT_VERIFIED
+ea_upright_row_ez_bar,Upright Row Ez Bar,Shoulders,False,P1,UPRIGHT_ROW,NOT_VERIFIED
+ea_upward_rotation_bent_arms,Upward Rotation Bent Arms,Shoulders,False,PASS,,NOT_VERIFIED
+ea_weighted_standing_shoulder_press_with_plate,Weighted Standing Shoulder Press with Plate,Shoulders,False,PASS,,NOT_VERIFIED
+ea_5_sec_fist_against_chin,5 Sec Fist Against Chin,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_90_to_90_stretch,90 to 90 Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_abdominal_stretch,Abdominal Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_abdominal_stretch_version2,Abdominal Stretch ( Version2 ),Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_above_head_chest_stretch,Above Head Chest Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_across_chest_shoulder_stretch,Across Chest Shoulder Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_adductor_dynamic_stretch,Adductor Dynamic Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_adductor_stretch,Adductor Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_adductor_stretch_side_standing,Adductor Stretch Side Standing,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_all_fours_quad_stretch,All Fours Quad Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_armless_prayer_stretch,Armless Prayer Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_arms_behind_back_chest_stretch,Arms Behind Back Chest Stretch,Stretching - Mobility,True,P2,PRIOR_REAUDIT,PASS
+ea_arms_wide_chest_stretch,Arms Wide Chest Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_back_pec_stretch,Back Pec Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_back_slaps_wrap_around_stretch,Back Slaps Wrap Around Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_back_stretch_dynamic,Back Stretch Dynamic,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_back_stretch_standing_with_bench,Back Stretch Standing with Bench,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_back_and_shoulder_stretch,Back and Shoulder Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_backward_abdominal_stretch,Backward Abdominal Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_backward_forward_turn_to_side_neck_stretch,Backward Forward Turn to Side Neck Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_band_warm_up_shoulder_stretch,Band Warm Up Shoulder Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_bent_arm_chest_stretch,Bent Arm Chest Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_biceps_stretch_behind_the_back,Biceps Stretch Behind the Back,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_boat_stretch,Boat Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_bodyweight_standing_back_stretch,Bodyweight Standing Back Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_both_arms_behind_on_wall_biceps_stretch,Both Arms Behind on Wall Biceps Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_bulgarian_split_squat_stretch,Bulgarian Split Squat Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_butterfly_yoga_flaps,Butterfly Yoga Flaps,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_calf_push_stretch_with_hands_against_wall_v_2,Calf Push Stretch with Hands Against Wall V.2,Stretching - Mobility,True,PASS,,PASS
+ea_calf_stretch_with_hands_against_wall,Calf Stretch with Hands Against Wall,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_calf_stretch_with_rope,Calf Stretch with Rope,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_calve_stretch_foot_on_wall,Calve Stretch Foot on Wall,Stretching - Mobility,True,P1,PRIOR_REAUDIT,PASS
+ea_calve_stretch_from_wall_to_floor,Calve Stretch From Wall to Floor,Stretching - Mobility,True,PASS,,PASS
+ea_calves_stretch_on_stairs,Calves Stretch on Stairs,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_calves_stretch_on_step,Calves Stretch on Step,Stretching - Mobility,True,PASS,,PASS
+ea_ceiling_look_stretch,Ceiling Look Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_chest_out_hands_behind_hold,Chest Out Hands Behind (hold),Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_chest_stretch_with_exercise_ball,Chest Stretch with Exercise Ball,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_child_pose_lower_back_stretch,Child Pose Lower Back Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_circles_knee_stretch,Circles Knee Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_cobra_stretch,Cobra Stretch,Stretching - Mobility,True,P2,POSTURE_CAUSAL; PRIOR_REAUDIT,PASS
+ea_cocoons,Cocoons,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_corner_wall_chest_stretch,Corner Wall Chest Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_crescent_moon_pose_quad_stretch,Crescent Moon Pose Quad Stretch,Stretching - Mobility,True,P2,POSTURE_CAUSAL; PRIOR_REAUDIT,PASS
+ea_crescent_moon_pose_quad_stretch_with_block,Crescent Moon Pose Quad Stretch with Block,Stretching - Mobility,True,PASS,,PASS
+ea_cross_body_elbow_pull_shoulder_stretch,Cross Body Elbow Pull Shoulder Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_cross_body_shoulder_stretch,Cross Body Shoulder Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_crossover_kneeling_hip_flexor_stretch,Crossover Kneeling Hip Flexor Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_crouching_heel_back_calf_stretch,Crouching Heel Back Calf Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_dead_hang_stretch,Dead Hang Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_dumbbell_rdl_stretch_isometric,Dumbbell Rdl Stretch Isometric,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_elbow_back_stretch,Elbow Back Stretch,Stretching - Mobility,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_elbow_extension_and_supination_pronation_forearm_stretch,Elbow Extension and Supination Pronation Forearm Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_elbow_flexor_stretch,Elbow Flexor Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_elbows_back_stretch,Elbows Back Stretch,Stretching - Mobility,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_exercise_ball_back_stretch,Exercise Ball Back Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_exercise_ball_hip_flexor_stretch,Exercise Ball Hip Flexor Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_exercise_ball_lat_stretch,Exercise Ball Lat Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_exercise_ball_lower_back_dynamic_stretch,Exercise Ball Lower Back Dynamic Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_exercise_ball_lower_back_prone_stretch,Exercise Ball Lower Back Prone Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_exercise_ball_lying_side_lat_stretch,Exercise Ball Lying Side Lat Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_exercise_ball_lying_side_lat_stretch_v_2,Exercise Ball Lying Side Lat Stretch V.2,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_exercise_ball_seated_hamstring_stretch,Exercise Ball Seated Hamstring Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_exercise_ball_seated_quad_stretch,Exercise Ball Seated Quad Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_extension_and_inclination_neck_stretch,Extension and Inclination Neck Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_extension_of_arms_in_vertical_stretch,Extension of Arms in Vertical Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_fixed_bar_stretch,Fixed Bar Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_foam_roller_back,Foam Roller Back,Stretching - Mobility,True,P2,PRIOR_REAUDIT,PASS
+ea_foam_roller_calves,Foam Roller Calves,Stretching - Mobility,True,P1,PRIOR_REAUDIT; SUPERLATIVE_CLAIM,PASS
+ea_foam_roller_lateral_quads,Foam Roller Lateral Quads,Stretching - Mobility,True,P1,PRIOR_REAUDIT,PASS
+ea_foam_roller_quads,Foam Roller Quads-,Stretching - Mobility,True,PASS,,PASS
+ea_forearms_pull_with_opposite_hand_stretch,Forearms Pull with Opposite Hand Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_forearms_stretch_on_wall,Forearms Stretch on Wall,Stretching - Mobility,True,P2,SUPERLATIVE_CLAIM,PASS
+ea_forearms_stretch_on_wall_fingers_facing_down,Forearms Stretch on Wall Fingers Facing Down,Stretching - Mobility,True,PASS,,PASS
+ea_front_shoulder_stretch_with_bar,Front Shoulder Stretch with Bar,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_half_neck_rolls,Half Neck Rolls,Stretching - Mobility,True,P1,NECK_SPECIALIZED,PASS
+ea_hamstring_lying_curl_up_stretch,Hamstring Lying Curl Up Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_hamstring_lying_straight_leg_stretch,Hamstring Lying Straight Leg Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_hands_clapped_forearms_stretch,Hands Clapped Forearms Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_intermediate_hip_flexor_and_quad_stretch,Intermediate Hip Flexor and Quad Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_iron_cross_stretch,Iron Cross Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_knee_to_chest_stretch,Knee to Chest Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_kneeling_hip_flexor_stretch,Kneeling Hip Flexor Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_kneeling_lat_floor_stretch,Kneeling Lat Floor Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_kneeling_wrist_flexor_stretch,Kneeling Wrist Flexor Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_lats_stretch_elbow_on_wall,Lats Stretch Elbow on Wall,Stretching - Mobility,True,PASS,,PASS
+ea_lats_stretch_on_wall,Lats Stretch on Wall,Stretching - Mobility,True,P2,PRIOR_REAUDIT,PASS
+ea_leg_extended_stretch_on_bench,Leg Extended Stretch on Bench,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_legs_hand_reach_spine_stretch,Legs Hand Reach Spine Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_lunging_straight_leg_calf_stretch,Lunging Straight Leg Calf Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_lying_prone_abdominal_stretch,Lying (prone) Abdominal Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_lying_bent_knee_cross_glutes_stretch,Lying Bent Knee Cross Glutes Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_lying_crossover_stretch,Lying Crossover Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_lying_face_down_quadriceps_stretch,Lying Face Down Quadriceps Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_lying_glute_stretch,Lying Glute Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_lying_hip_flexor_stretch,Lying Hip Flexor Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_lying_knee_hugs_lower_back_stretch,Lying Knee Hugs Lower Back Stretch,Stretching - Mobility,True,P2,PRIOR_REAUDIT,PASS
+ea_lying_knee_pull_glutes_stretch,Lying Knee Pull Glutes Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_lying_knees_to_floor_lower_back_stretch,Lying Knees to Floor Lower Back Stretch,Stretching - Mobility,True,P2,PRIOR_REAUDIT; SUPERLATIVE_CLAIM,PASS
+ea_lying_quadriceps_stretch,Lying Quadriceps Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_lying_side_quadriceps_stretch,Lying Side Quadriceps Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_lying_single_leg_extended_on_wall_hamstrings_stretch,Lying Single Leg Extended on Wall Hamstrings Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_middle_back_rotation_stretch,Middle Back Rotation Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_overhead_triceps_stretch_side_angle,Overhead Triceps Stretch Side Angle,Stretching - Mobility,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_plyo_side_lunge_stretch,Plyo Side Lunge Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_pretzel_stretch,Pretzel Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_rear_deltoid_stretch,Rear Deltoid Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_resistance_band_assisted_front_rack_stretch,Resistance Band Assisted Front Rack Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_revolved_head_to_knee,Revolved Head to Knee,Stretching - Mobility,True,P1,PRIOR_REAUDIT; SUPERLATIVE_CLAIM,PASS
+ea_runner_stretch,Runner Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_seated_calf_stretch,Seated Calf Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_seated_figure_four_with_twist_glute_stretch,Seated Figure Four with Twist Glute Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_seated_single_leg_hamstring_stretch,Seated Single Leg Hamstring Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_seated_single_leg_toe_touch_hamstring_stretch,Seated Single Leg Toe Touch Hamstring Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_seated_straight_leg_calf_stretch,Seated Straight Leg Calf Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_seated_toe_touch_hamstrings_stretch,Seated Toe Touch Hamstrings Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_side_bend_standing_lats_stretch,Side Bend Standing Lats Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_side_chest_stretch_on_wall,Side Chest Stretch on Wall,Stretching - Mobility,True,P2,PRIOR_REAUDIT,PASS
+ea_side_lying_floor_stretch,Side Lying Floor Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_side_wrist_pull_stretch,Side Wrist Pull Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_single_arm_extended_pull_downwards_biceps_stretch,Single Arm Extended Pull Downwards Biceps Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_single_arm_palm_down_on_wall_biceps_stretch,Single Arm Palm Down on Wall Biceps Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_single_arm_on_wall_side_biceps_stretch,Single Arm on Wall Side Biceps Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_standing_adductor_stretch,Standing Adductor Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_standing_bow_hamstring_stretch,Standing Bow Hamstring Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_standing_gastrocnemius_stretch,Standing Gastrocnemius Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_standing_hamstring_calf_stretch_with_resistance_band,Standing Hamstring Calf Stretch with Resistance Band,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_standing_lateral_stretch,Standing Lateral Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_standing_leg_elevated_hamstring_stretch,Standing Leg Elevated Hamstring Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_standing_one_arm_chest_stretch,Standing One Arm Chest Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_standing_quadriceps_stretch,Standing Quadriceps Stretch,Stretching - Mobility,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_standing_quadriceps_stretch_side_angle,Standing Quadriceps Stretch Side Angle,Stretching - Mobility,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_standing_side_slope_stretch,Standing Side Slope Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_standing_straight_leg_hamstring_stretch,Standing Straight-leg Hamstring Stretch,Stretching - Mobility,True,PASS,,PASS
+ea_triceps_light_stretch,Triceps Light Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_upper_back_stretch,Upper Back Stretch,Stretching - Mobility,False,PASS,,NOT_VERIFIED
+ea_band_bent_over_one_arm_kickback,Band Bent Over One Arm Kickback,Triceps,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_band_incline_triceps_extension,Band Incline Triceps Extension,Triceps,False,PASS,,NOT_VERIFIED
+ea_band_lying_press_down,Band Lying Press Down,Triceps,True,PASS,,PASS
+ea_band_skullcrusher,Band Skullcrusher,Triceps,True,PASS,,PASS
+ea_band_triceps_pushdown_single_arm,Band Triceps Pushdown Single Arm,Triceps,True,PASS,,PASS
+ea_barbell_close_grip_press,Barbell Close Grip Press,Triceps,False,PASS,,NOT_VERIFIED
+ea_barbell_lying_extension,Barbell Lying Extension,Triceps,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_lying_triceps_extension,Barbell Lying Triceps Extension,Triceps,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_lying_triceps_skull_crusher,Barbell Lying Triceps Skull Crusher,Triceps,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_lying_triceps_skull_crushers,Barbell Lying Triceps Skull Crushers,Triceps,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_barbell_seated_overhead_triceps_press,Barbell Seated Overhead Triceps Press,Triceps,False,PASS,,NOT_VERIFIED
+ea_barbell_standing_overhead_triceps_extension,Barbell Standing Overhead Triceps Extension,Triceps,False,PASS,,NOT_VERIFIED
+ea_bench_dip_knees_bent,Bench Dip (knees Bent),Triceps,False,PASS,,NOT_VERIFIED
+ea_bench_dip_on_floor,Bench Dip on Floor,Triceps,False,PASS,,NOT_VERIFIED
+ea_bench_triceps_dip_leg_curls,Bench Triceps Dip Leg Curls,Triceps,False,PASS,,NOT_VERIFIED
+ea_bench_triceps_dip_straight_legs,Bench Triceps Dip Straight Legs,Triceps,False,PASS,,NOT_VERIFIED
+ea_body_up,Body-up,Triceps,False,PASS,,NOT_VERIFIED
+ea_bodyweight_kneeling_triceps_extension,Bodyweight Kneeling Triceps Extension,Triceps,False,PASS,,NOT_VERIFIED
+ea_bodyweight_overhead_triceps_extension,Bodyweight Overhead Triceps Extension,Triceps,False,PASS,,NOT_VERIFIED
+ea_bodyweight_triceps_extension,Bodyweight Triceps Extension,Triceps,False,PASS,,NOT_VERIFIED
+ea_cable_alternate_triceps_extension,Cable Alternate Triceps Extension,Triceps,False,PASS,,NOT_VERIFIED
+ea_cable_cross_pushdown,Cable Cross Pushdown,Triceps,True,PASS,,PASS
+ea_cable_lying_triceps_extension,Cable Lying Triceps Extension,Triceps,False,PASS,,NOT_VERIFIED
+ea_cable_lying_triceps_extension_low,Cable Lying Triceps Extension (LOW),Triceps,False,PASS,,NOT_VERIFIED
+ea_cable_neutral_grip_kickback,Cable Neutral Grip Kickback,Triceps,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_cable_overhead_extension_rope,Cable Overhead Extension Rope,Triceps,False,PASS,,NOT_VERIFIED
+ea_cable_pushdown,Cable Pushdown,Triceps,False,PASS,,NOT_VERIFIED
+ea_cable_rear_drive,Cable Rear Drive,Triceps,False,PASS,,NOT_VERIFIED
+ea_cable_reverse_grip_pushdown,Cable Reverse Grip Pushdown,Triceps,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_cable_reverse_grip_triceps_push_down_straight_bar_on_crossover,Cable Reverse Grip Triceps Push Down Straight Bar on Crossover,Triceps,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_cable_reverse_grip_triceps_pushdown_ez_bar,Cable Reverse Grip Triceps Pushdown (ez-bar),Triceps,False,PASS,,NOT_VERIFIED
+ea_cable_reverse_grip_triceps_pushdown_back_side_pov,Cable Reverse Grip Triceps Pushdown Back Side Pov,Triceps,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_cable_triceps_overhead_extension_ez_bar,Cable Triceps Overhead Extension (ez Bar),Triceps,False,PASS,,NOT_VERIFIED
+ea_cable_triceps_push_down_elbow_out_v_bar,Cable Triceps Push Down Elbow Out (v Bar),Triceps,False,PASS,,NOT_VERIFIED
+ea_cable_triceps_push_down_ez_bar,Cable Triceps Push Down Ez Bar,Triceps,False,PASS,,NOT_VERIFIED
+ea_cable_triceps_push_down_ez_bar_close_grip,Cable Triceps Push Down Ez Bar Close Grip,Triceps,False,PASS,,NOT_VERIFIED
+ea_cable_triceps_push_down_ez_bar_wide_grip,Cable Triceps Push Down Ez Bar Wide Grip,Triceps,False,PASS,,NOT_VERIFIED
+ea_cable_triceps_push_down_straight_bar,Cable Triceps Push Down Straight Bar,Triceps,False,PASS,,NOT_VERIFIED
+ea_cable_triceps_push_down_v_bar,Cable Triceps Push Down V Bar,Triceps,False,PASS,,NOT_VERIFIED
+ea_chair_triceps_dips,Chair Triceps Dips,Triceps,False,PASS,,NOT_VERIFIED
+ea_decline_chair_push_up_diamond,Decline Chair Push Up Diamond,Triceps,False,PASS,,NOT_VERIFIED
+ea_decline_diamond_pike_push_up,Decline Diamond Pike Push-up,Triceps,False,PASS,,NOT_VERIFIED
+ea_diamond_push_up,Diamond Push Up,Triceps,False,PASS,,NOT_VERIFIED
+ea_diamond_push_up_on_knees,Diamond Push-up (on Knees),Triceps,False,PASS,,NOT_VERIFIED
+ea_dip_leg_raise_on_couch,Dip Leg Raise on Couch,Triceps,False,PASS,,NOT_VERIFIED
+ea_dip_on_floor_with_chair,Dip on Floor with Chair,Triceps,False,PASS,,NOT_VERIFIED
+ea_dips_between_chairs,Dips Between Chairs,Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_decline_triceps_pull_over_extension,Dumbbell Decline Triceps Pull-over Extension,Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_triceps_extension,Dumbbell Incline Triceps Extension,Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_incline_two_arm_extension,Dumbbell Incline Two Arm Extension,Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_kickback,Dumbbell Kickback,Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_lying_one_arm_neutral_triceps_extension,Dumbbell Lying One Arm Neutral Triceps Extension,Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_lying_triceps_extension,Dumbbell Lying Triceps Extension,Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_lying_triceps_extension_on_floor,Dumbbell Lying Triceps Extension on Floor,Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_one_arm_kickback,Dumbbell One Arm Kickback,Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_one_arm_triceps_extension_on_bench,Dumbbell One Arm Triceps Extension (on Bench),Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_overhead_extension_seated,Dumbbell Overhead Extension Seated,Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_overhead_extension_standing,Dumbbell Overhead Extension Standing,Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_pronate_grip_triceps_extension,Dumbbell Pronate-grip Triceps Extension,Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_bench_extension,Dumbbell Seated Bench Extension,Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_seated_kickback,Dumbbell Seated Kickback,Triceps,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_dumbbell_skullcrusher,Dumbbell Skullcrusher,Triceps,True,PASS,,PASS
+ea_dumbbell_standing_both_arms_kickback,Dumbbell Standing Both Arms Kickback,Triceps,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_dumbbell_standing_one_arm_extension,Dumbbell Standing One Arm Extension,Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_standing_triceps_extension,Dumbbell Standing Triceps Extension,Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_tate_press,Dumbbell Tate Press,Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbell_triceps_kick_back_single_arm,Dumbbell Triceps Kick Back Single Arm,Triceps,False,PASS,,NOT_VERIFIED
+ea_dumbbells_triceps_kick_back_both_arms,Dumbbells Triceps Kick Back Both Arms,Triceps,False,PASS,,NOT_VERIFIED
+ea_ez_bar_overhead_extensions_standing,Ez Bar Overhead Extensions Standing,Triceps,False,PASS,,NOT_VERIFIED
+ea_floor_tricep_dip,Floor Tricep Dip,Triceps,True,P2,SPINE_CUE,PASS
+ea_incline_diamond_push_up_on_bench,Incline Diamond Push Up on Bench,Triceps,False,PASS,,NOT_VERIFIED
+ea_incline_push_ups_on_chair,Incline Push Ups on Chair,Triceps,False,PASS,,NOT_VERIFIED
+ea_kettlebell_decline_skull_crusher,Kettlebell Decline Skull Crusher,Triceps,True,PASS,,PASS
+ea_kettlebell_skull_crusher,Kettlebell Skull Crusher,Triceps,True,PASS,,PASS
+ea_kettlebell_standing_tricep_extension,Kettlebell Standing Tricep Extension,Triceps,True,PASS,,PASS
+ea_landmine_lying_tricep_extension,Landmine Lying Tricep Extension,Triceps,True,PASS,,PASS
+ea_overhand_tricep_stretching_single_arm,Overhand Tricep Stretching Single Arm,Triceps,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_overhead_extension_resistance_band_both_arms,Overhead Extension Resistance Band Both Arms,Triceps,False,PASS,,NOT_VERIFIED
+ea_pike_push_up,Pike Push Up,Triceps,False,PASS,,NOT_VERIFIED
+ea_plate_curl_to_overhead_press_to_tricep_extension,Plate Curl to Overhead Press to Tricep Extension,Triceps,True,PASS,,PASS
+ea_plate_overhead_tricep_extension,Plate Overhead Tricep Extension,Triceps,True,PASS,,PASS
+ea_single_arm_overhead_extension_resistance_band,Single Arm Overhead Extension Resistance Band,Triceps,False,PASS,,NOT_VERIFIED
+ea_suspension_trainer_with_grips_triceps_extension,Suspension Trainer with Grips Triceps Extension,Triceps,False,PASS,,NOT_VERIFIED
+ea_tricep_cable_kickback_on_crossover_machine,Tricep Cable Kickback on Crossover Machine,Triceps,False,PASS,,NOT_VERIFIED
+ea_tricep_extension_machine,Tricep Extension Machine,Triceps,False,PASS,,NOT_VERIFIED
+ea_tricep_rope_extension_on_crossover_machine,Tricep Rope Extension on Crossover Machine,Triceps,True,PASS,,PASS
+ea_triceps_dip_machine,Triceps Dip Machine,Triceps,False,PASS,,NOT_VERIFIED
+ea_3_leg_chatarunga_pose,3 Leg Chatarunga Pose,Yoga,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_3_leg_dog_pose,3 Leg Dog Pose,Yoga,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_ab_wheel_plank,Ab Wheel Plank,Yoga,False,PASS,,NOT_VERIFIED
+ea_alternate_sprinter_lunge,Alternate Sprinter Lunge,Yoga,False,PASS,,NOT_VERIFIED
+ea_alternating_leg_downward_dog,Alternating Leg Downward Dog,Yoga,False,PASS,,NOT_VERIFIED
+ea_alternating_lunge_with_rotation,Alternating Lunge with Rotation,Yoga,False,PASS,,NOT_VERIFIED
+ea_archer_step_back,Archer Step Back,Yoga,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_archer_stepback,Archer Stepback,Yoga,False,P2,DUPLICATE_STEPS,NOT_VERIFIED
+ea_basic_toe_touch,Basic Toe Touch,Yoga,False,PASS,,NOT_VERIFIED
+ea_bench_reverse_plank_hold,Bench Reverse Plank Hold,Yoga,False,PASS,,NOT_VERIFIED
+ea_bicycle_air_legs,Bicycle Air Legs,Yoga,False,PASS,,NOT_VERIFIED
+ea_bird_dog,Bird Dog,Yoga,False,PASS,,NOT_VERIFIED
+ea_bird_dog_version_2,Bird Dog (version 2),Yoga,False,PASS,,NOT_VERIFIED
+ea_body_saw_plank,Body Saw Plank,Yoga,False,PASS,,NOT_VERIFIED
+ea_bodyweight_kneeling_push_up_row,Bodyweight Kneeling Push-up Row,Yoga,False,PASS,,NOT_VERIFIED
+ea_bow_pose,Bow Pose,Yoga,True,P2,POSTURE_CAUSAL; PRIOR_REAUDIT,PASS
+ea_bridge_hip_abduction,Bridge Hip Abduction,Yoga,False,PASS,,NOT_VERIFIED
+ea_bridge_pose_setu_bandhasana,Bridge Pose Setu Bandhasana,Yoga,False,PASS,,NOT_VERIFIED
+ea_bridge_with_alternating_leg_raise,Bridge with Alternating Leg Raise,Yoga,False,PASS,,NOT_VERIFIED
+ea_butterfly_yoga_pose,Butterfly Yoga Pose,Yoga,False,PASS,,NOT_VERIFIED
+ea_cat_pose,Cat Pose,Yoga,True,P2,PRIOR_REAUDIT,PASS
+ea_cat_stretch,Cat Stretch,Yoga,False,PASS,,NOT_VERIFIED
+ea_chair_pose,Chair Pose,Yoga,True,PASS,,PASS
+ea_child_pose_arms_extended_left_right,Child Pose Arms Extended Left Right,Yoga,True,PASS,,PASS
+ea_child_pose_arms_on_side,Child Pose Arms on Side,Yoga,True,PASS,,PASS
+ea_child_pose_elbows_on_block,Child Pose Elbows on Block,Yoga,True,PASS,,PASS
+ea_child_pose_up,Child Pose Up,Yoga,False,PASS,,NOT_VERIFIED
+ea_cobra_full_push_up,Cobra Full Push Up,Yoga,False,PASS,,NOT_VERIFIED
+ea_cobra_push_up,Cobra Push Up,Yoga,False,PASS,,NOT_VERIFIED
+ea_cobra_side_ab_stretch,Cobra Side Ab Stretch,Yoga,False,PASS,,NOT_VERIFIED
+ea_cobra_yoga_pose_hold,Cobra Yoga Pose Hold,Yoga,False,PASS,,NOT_VERIFIED
+ea_crab_pose,Crab Pose,Yoga,False,PASS,,NOT_VERIFIED
+ea_crescent_moon_pose,Crescent Moon Pose,Yoga,True,PASS,,PASS
+ea_criss_cross_bow_tie_pose,Criss Cross Bow Tie Pose,Yoga,True,P1,PRIOR_REAUDIT; SUPERLATIVE_CLAIM,PASS
+ea_crow_pose,Crow Pose,Yoga,True,P1,PRIOR_REAUDIT,PASS
+ea_double_pigeon_pose,Double Pigeon Pose,Yoga,True,PASS,,PASS
+ea_downward_dog_toe_to_heel,Downward Dog Toe to Heel,Yoga,True,PASS,,PASS
+ea_downward_dog_with_fingers_facing_feet,Downward Dog with Fingers Facing Feet,Yoga,True,PASS,,PASS
+ea_dumbbell_single_leg_glute_bridge,Dumbbell Single Leg Glute Bridge,Yoga,False,PASS,,NOT_VERIFIED
+ea_eagle_arms_chin_into_chest,Eagle Arms Chin Into Chest,Yoga,True,P2,PRIOR_REAUDIT,PASS
+ea_easy_pose_neck_stretch,Easy Pose Neck Stretch,Yoga,True,PASS,,PASS
+ea_easy_seated_twist_pose,Easy Seated Twist Pose,Yoga,True,P2,PRIOR_REAUDIT,PASS
+ea_extended_side_angle,Extended Side Angle,Yoga,False,PASS,,NOT_VERIFIED
+ea_extended_side_angle_pose,Extended Side Angle Pose,Yoga,True,PASS,,PASS
+ea_extended_side_angle_pose_with_block,Extended Side Angle Pose with Block,Yoga,True,PASS,,PASS
+ea_gate_pose_rounding_spine_looking_up,Gate Pose Rounding Spine Looking Up,Yoga,True,P2,SUPERLATIVE_CLAIM,PASS
+ea_gate_pose_variation_arm_extended_on_side,Gate Pose Variation Arm Extended on Side,Yoga,True,PASS,,PASS
+ea_half_lotus,Half Lotus,Yoga,True,P2,PRIOR_REAUDIT,PASS
+ea_half_monkey_pose,Half Monkey Pose,Yoga,True,PASS,,PASS
+ea_happy_baby,Happy Baby,Yoga,True,PASS,,PASS
+ea_high_plank,High Plank,Yoga,False,P2,SPINE_CUE,NOT_VERIFIED
+ea_lord_of_the_dance,Lord of the Dance,Yoga,True,PASS,,PASS
+ea_modified_hindu_push_up,Modified Hindu Push Up,Yoga,False,PASS,,NOT_VERIFIED
+ea_monkey_pose,Monkey Pose,Yoga,True,PASS,,PASS
+ea_one_arm_cow_face_pose_easy,One Arm Cow Face Pose - Easy,Yoga,True,PASS,,PASS
+ea_pigeon_glutes_stretch,Pigeon Glutes Stretch,Yoga,True,P2,SPINE_CUE,PASS
+ea_pigeon_pose,Pigeon Pose,Yoga,True,P1,PRIOR_REAUDIT; SPINE_CUE,PASS
+ea_puppy_pose,Puppy Pose,Yoga,True,P1,PRIOR_REAUDIT; SUPERLATIVE_CLAIM,PASS
+ea_pyramid_pose_parsvottanasana,Pyramid Pose - Parsvottanasana,Yoga,True,PASS,,PASS
+ea_pyramid_pose_blocks,Pyramid Pose Blocks,Yoga,True,PASS,,PASS
+ea_pyramid_pose_calf_blocks,Pyramid Pose Calf Blocks,Yoga,True,PASS,,PASS
+ea_pyramid_prayer,Pyramid Prayer,Yoga,True,PASS,,PASS
+ea_reclining_pigeon_pose,Reclining Pigeon Pose,Yoga,True,PASS,,PASS
+ea_resistance_band_glute_bridge,Resistance Band Glute Bridge,Yoga,False,PASS,,NOT_VERIFIED
+ea_resistance_band_glute_bridge_abduction,Resistance Band Glute Bridge Abduction,Yoga,False,PASS,,NOT_VERIFIED
+ea_resistance_band_glute_bridge_version2,Resistance Band Glute Bridge_version2,Yoga,False,PASS,,NOT_VERIFIED
+ea_resistance_band_upper_body_dead_bug,Resistance Band Upper Body Dead Bug,Yoga,False,PASS,,NOT_VERIFIED
+ea_restful_cow_face_pose_legs,Restful Cow Face Pose Legs,Yoga,True,PASS,,PASS
+ea_reverse_prayer,Reverse Prayer,Yoga,True,PASS,,PASS
+ea_revolved_side_angle_pose_with_prayer_hands,Revolved Side Angle Pose with Prayer Hands,Yoga,True,PASS,,PASS
+ea_revolved_side_angle_pose_with_prayer_hands_beginner,Revolved Side Angle Pose with Prayer Hands Beginner,Yoga,True,PASS,,PASS
+ea_runners_lunge,Runners Lunge,Yoga,True,PASS,,PASS
+ea_scapula_push_up,Scapula Push Up,Yoga,False,PASS,,NOT_VERIFIED
+ea_scorpion_twist_pose,Scorpion Twist Pose,Yoga,True,PASS,,PASS
+ea_seated_cross_leg_glute_stretch,Seated Cross Leg Glute Stretch,Yoga,False,PASS,,NOT_VERIFIED
+ea_seated_side_stretch,Seated Side Stretch,Yoga,False,PASS,,NOT_VERIFIED
+ea_side_lying_parsva_savasana_variation,Side Lying Parsva Savasana Variation,Yoga,True,PASS,,PASS
+ea_side_plank_with_hip_lift,Side Plank with Hip Lift,Yoga,False,PASS,,NOT_VERIFIED
+ea_superman_holds,Superman Holds,Yoga,False,PASS,,NOT_VERIFIED
+ea_wild_thing_pose,Wild Thing Pose,Yoga,True,P1,PRIOR_REAUDIT,PASS
+ea_yoga_flow_sequences_sun_salutations,Yoga Flow Sequences Sun Salutations,Yoga,True,PASS,,PASS

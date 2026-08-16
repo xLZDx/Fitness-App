@@ -10968,3 +10968,75 @@ not by itself proof that a destructive action was tried.
 G2 release build, G3 Stripe price IDs, G4 the R5 Firestore question, G5 the R8/R9/R11 artefact,
 G6 moving the three audit CSVs under `core/` — all listed in
 `core/plans/FINAL_SCOPE_2026-08-16.md`, all still open, none started.
+
+## 2026-08-16 — G6: the audit evidence moved out of Downloads, and a validator that can read it
+
+**Basis: FACT (measured), with one DECISION recorded below.**
+
+Three CSVs have been the evidence behind every catalogue claim this project has made — 1,887 rows,
+609 findings, 224 reclassified cards. Until today their only copy was in `D:\Downloads`, a directory
+outside the repository, on one machine, with no hash and no provenance record. Every plan file
+pointed at it. That is not evidence; it is a citation of something nobody else can open.
+
+### What was found, and how it was checked before it was trusted
+
+Nine artifacts were located, and each was verified **before** import, not after:
+
+- `FINAL_ISSUES` — 609 findings over 519 distinct cards
+- `GATE_E_RECLASSIFIED` — 224 findings over 199 cards
+- `FINAL_VERIFIED` — 1,887 rows, 403 carrying `purpose`
+
+Every one of those counts matches what the plan files already claimed, to the row. More usefully,
+all 1,887 ids in the audit match the live catalogue **in both directions** — no audited id is absent
+from the app, and no app exercise is unaudited. An audit that covered 1,880 of 1,887 would have
+looked identical in a summary line and would have been quietly wrong.
+
+Also checked: uniform row widths, no NUL bytes, no secrets or personal data. And the
+`AUDIT_PACKAGE` zip was opened rather than assumed — its four members are byte-identical to the
+loose files, so the container was skipped as a proven duplicate rather than imported twice.
+
+### Imported as originals
+
+`core/audit/full_catalog_1887_2026-08-15/` now holds all nine, copied byte-for-byte and re-hashed
+after the copy. `MANIFEST.csv` records for each: sha256, size, row count, `state`, purpose,
+provenance, and the HEAD at import (`e2946ad`). Every row is `ORIGINAL_PRESERVED`.
+
+**DECISION: nothing was cleaned on the way in.** Two of the CSVs have quirks a tidier import would
+have normalised. They were left exactly as received. An imported original that was silently repaired
+is no longer an original, and the distinction `ORIGINAL_PRESERVED` vs `REGENERATED` only means
+something if the first one is true when it is claimed.
+
+### The gap this closes, stated plainly
+
+`flutter test` opens Dart and declared assets. It has never opened a file under `core/`. So the
+green suite this project keeps citing has said **nothing whatsoever** about the action ledger or the
+audit CSVs — a claim that was easy to miss precisely because the suite was green.
+
+`tools/evidence/validate_csv_evidence.py` is the tool that actually reads them. It checks the ledger
+(header, field counts, monotonic unique sequence, ISO timestamps, legal markers, and — the part that
+matters — that every commit SHA named is a real commit **reachable from HEAD**), and every audit
+manifest (file present, size, hash, legal state, non-empty purpose, header, no ragged rows, row
+count, and no unlisted file sitting in an evidence directory).
+
+It was mutation-tested rather than run once and believed: eight tampering attempts — an invented
+SHA, a real-but-unreachable SHA, an out-of-order sequence, an invented marker, a deleted column, the
+removed historical-gap note, one flipped byte inside an imported CSV, and an unlisted extra file —
+all eight detected, and green again after restore.
+
+That exercise found a real defect in the validator itself. The reachability check originally went
+through a helper returning stdout, and `merge-base --is-ancestor` answers through its **exit code**
+and prints nothing — so every answer was an empty string and the branch could never fail. It was
+passing by construction. Fixed to read the return code, and re-verified against `8a16d2d` (a real
+commit on master, not on this branch), which now correctly fails.
+
+### Documentation repointed
+
+`CATALOG_DESCRIPTION_COVERAGE_2026-08-15.md` and `FINAL_SCOPE_2026-08-16.md` now cite repo-relative
+paths; no `D:/Downloads` reference remains under `core/plans/`. This log's earlier entries were
+deliberately **not** edited — they are append-only history and record where the files genuinely were
+at the time.
+
+### Open, and unchanged by this entry
+
+G5 (R8/R9/R11), G2 (release build), G3 (Stripe price IDs), G4 (the R5 Firestore question), and the
+C-series catalogue work. G6 is closed.

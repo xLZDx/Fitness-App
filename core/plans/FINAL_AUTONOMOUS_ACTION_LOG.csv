@@ -19,3 +19,13 @@ sequence,timestamp,marker,action,command_or_change,target,result,related_gate,co
 18,2026-08-16T02:11:09+03:00,+ГО|КОМИТ,commit,git commit,mobile/ + core/,committed,G1,981c7fb,"insurance-attestation feature deleted"
 19,2026-08-16T02:11:40+03:00,+ГО|+ПУШ,push,git push origin formcoach/gates-a-c,origin/formcoach/gates-a-c,"local HEAD == upstream HEAD",G1,981c7fb,
 20,2026-08-16T02:20:00+03:00,+ГО,create,write file,core/plans/FINAL_AUTONOMOUS_ACTION_LOG.csv,created,protocol,,"backfilled from git log; timestamps are the real commit times, read-only actions before this row were not journalled and are marked absent rather than invented"
+21,2026-08-16T09:32:30+03:00,+ГО,verify,git status / branch -vv / rev-parse / rev-list,repository,"HEAD e2946ad, 0/0, clean",baseline,,live baseline re-established per mission section 5
+22,2026-08-16T09:32:30+03:00,+ГО,search,"find SPTR_FULL_CATALOG* in Downloads, Temp, both repos",D:\Downloads,9 artifacts + 1 zip found,G6,,all three documented CSVs present
+23,2026-08-16T09:32:30+03:00,+ГО,verify,csv parse + sha256 + row widths + documented count cross-check,D:\Downloads SPTR artifacts,"609/519, 224/199, 1887/403 all match docs exactly",G6,,"1887 audit ids match live catalogue in both directions; no secrets, no NUL bytes"
+24,2026-08-16T09:32:30+03:00,+ГО,verify,zip content vs loose files,SPTR_FULL_CATALOG_1887_AUDIT_PACKAGE_2026-08-15.zip,"4 entries, all byte-identical to loose copies",G6,,zip skipped as a proven duplicate container
+25,2026-08-16T09:32:30+03:00,+ГО,create,shutil.copy2 + sha256 re-verify,core/audit/full_catalog_1887_2026-08-15/,9 files imported byte-for-byte,G6,,ORIGINAL_PRESERVED
+26,2026-08-16T09:32:30+03:00,+ГО,create,generate manifest,core/audit/full_catalog_1887_2026-08-15/MANIFEST.csv,"9 rows: sha256, bytes, row_count, state, purpose, provenance",G6,,
+27,2026-08-16T09:32:30+03:00,+ГО,create,write validator,tools/evidence/validate_csv_evidence.py,created,G6,,validates the action ledger and every audit MANIFEST
+28,2026-08-16T09:32:30+03:00,+ГО,test,python tools/evidence/validate_csv_evidence.py,core/plans + core/audit,PASS,G6,,
+29,2026-08-16T09:32:30+03:00,+ГО,test,7 semantic mutations of ledger and evidence,tools/evidence/validate_csv_evidence.py,"7/7 detected, restore green",G6,,"bad SHA, non-ancestor SHA, non-monotonic sequence, illegal marker, missing column, removed gap note, tampered byte, unlisted file"
+30,2026-08-16T09:32:30+03:00,+ГО,edit,repoint documentation at repo-local evidence,core/plans/CATALOG_DESCRIPTION_COVERAGE_2026-08-15.md + FINAL_SCOPE_2026-08-16.md,no Downloads references remain in core/plans,G6,,DECISION_LOG history entries deliberately left unedited
