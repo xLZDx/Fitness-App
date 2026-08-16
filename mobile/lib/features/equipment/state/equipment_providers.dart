@@ -101,8 +101,22 @@ final aiExerciseGeneratorProvider =
 /// **This provider has no consumer in `lib/`, deliberately, since C14.** What
 /// it generates is text: a title, muscles and steps, and
 /// `ai_exercise_generator.dart:135-149` passes neither `video` nor `videoUrl`,
-/// so [withDemonstration] — which every surfacing path applies — drops all of
-/// it. Generating anyway cost a Gemini call and a cache write per empty
+/// so [withDemonstration] drops all of it.
+///
+/// Scope that precisely: **every list and feed** applies the clip-only rule —
+/// this provider's former caller and [_allExercisesProvider] are the two
+/// places it is applied, and between them they are what every list in the app
+/// reads from. The one surface that does *not* is [exerciseResolutionProvider]
+/// (`:472`), which resolves an `ai::` id straight from the cache; the player
+/// then renders the text with `ExerciseNoVideoFallback`
+/// (`workout_player_page.dart:250-257`, whose own comment says as much). That
+/// path needs an `ai::` id to already exist client-side — an entry cached
+/// before this change, or a row in a workout history written when lists still
+/// showed clipless exercises, since no list has offered one since 2026-08-03.
+/// It is untouched here and shrinks over time rather than growing, because
+/// nothing creates new ones.
+///
+/// Generating anyway cost a Gemini call and a cache write per empty
 /// machine per language for output that provably could not be rendered, and
 /// its *failure* was worse than its success: the thrown Future reached
 /// `equipment_detail_page.dart:156` as "couldn't load exercises", so a Gemini
@@ -162,9 +176,12 @@ final equipmentByIdProvider =
 ///
 /// Reads the cache ONLY — visiting the Train tab must never fan out a
 /// generation call per empty machine (operator: "чтобы мы не генерили
-/// миллион апиай запросов на 1 фото/тренажёр"). A machine's generated
-/// exercises join this feed only after its own detail page has been opened
-/// at least once, which is what actually triggers generation+save.
+/// миллион апиай запросов на 1 фото/тренажёр"). This used to add that a
+/// machine's generated exercises join the feed once its detail page has been
+/// opened, "which is what actually triggers generation+save". **Since C14
+/// nothing in `lib/` triggers it**, so the only entries this can read are ones
+/// cached before that change — and [withDemonstration] at the bottom of this
+/// provider drops them anyway.
 ///
 /// Private. This is the unscreened catalog, and it was public with a
 /// doc-comment saying "use [recommendedExercisesProvider] when surfacing them

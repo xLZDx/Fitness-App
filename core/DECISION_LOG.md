@@ -11882,3 +11882,58 @@ issues, all pre-existing.
 card and in the player, `semanticLabel` on `ExerciseThumb`, Cloud Function tests, AES for photos, the
 Stripe Connect return URL. Struck, with what each actually turned out to be. **G7** added to P3,
 where the `targetSdk` deadline belongs.
+
+## 2026-08-16 — C14 follow-up: the "can never be rendered" claim was too broad
+
+**Basis: FACT. Correction to the entry above.**
+
+Independent review of `6a72dce` (one specialist on the surface actually touched — the standing
+contract forbids full-roster voting, and Codex is rate-limited until 2026-08-20) returned no BLOCKER
+and no MAJOR, and three MINOR findings. Two are accepted and fixed here; one is an operations note
+already recorded in the scope.
+
+### F1 — accepted, and it is my error
+
+The commit's doc says generated exercises could never be rendered. That is true of every **list and
+feed** — `withDemonstration` is applied by both, and between them they are what every list reads
+from. It is **not** true of `exerciseResolutionProvider:472`, which reads the generated cache
+directly and applies no clip rule.
+
+Verified rather than taken on the reviewer's word: `workout_player_page.dart:250-257` renders
+`ExerciseNoVideoFallback()` when there is no clip, and its own comment says exactly why — *"Lists
+cannot reach this state at all… This page can still be opened by deep link or from a logged workout,
+so the honest card has to exist here too rather than relying on nobody arriving."*
+
+I had seen that provider while measuring and dismissed it with "nothing in the app can produce a link
+to one". That reasoning was about *new* links. It ignored ids already on a device: an entry cached
+before this change, or a workout-history row written when lists still showed clipless exercises,
+before the clip-only rule landed on 2026-08-03.
+
+The fix stands unchanged — nothing creates new `ai::` ids, so that population shrinks rather than
+grows — but the claim around it was wider than the evidence. The doc now scopes it to lists and feeds
+and names the exception, and a widget test pins the exception so the comment cannot drift back:
+seed a clipless `ai::` entry, open `WorkoutPlayerPage` on that id, and the honest card is what
+renders, not "couldn't find it". Mutation: replace the fallback with an empty box — red.
+
+### F2 — accepted
+
+`_allExercisesProvider`'s comment claimed a machine's generated exercises join the Train-tab feed
+"only after its own detail page has been opened at least once, which is what actually triggers
+generation+save". Since C14 nothing in `lib/` triggers it. Corrected.
+
+### F3 — noted, no change
+
+The Gemini call chain and the Firestore cache write are now exercised only by tests. That is the
+deliberate consequence recorded in scope §6 P4, and the bit-rot risk belongs with the operator's
+decision about the capability's fate rather than being answered inside this gate.
+
+### Verification
+
+`flutter test` **2643 passed / 0 failed** (2642 before; +1). `flutter analyze lib/ test/` 7 issues,
+all pre-existing.
+
+### The general lesson
+
+Both of today's wrong claims had the same shape: a filter that holds on the path I was looking at,
+asserted as a property of the system. B1's was recorded backwards in the scope; this one I wrote
+myself, in the same commit that fixed a test for asserting more than its fixture could support.

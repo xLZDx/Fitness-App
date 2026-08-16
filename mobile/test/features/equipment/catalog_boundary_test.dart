@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/core/settings/state/settings_providers.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
@@ -15,6 +16,7 @@ import 'package:fitness_app/features/equipment/data/asset_equipment_repository.d
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/data/exercise_filter.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
+import 'package:fitness_app/features/equipment/widgets/exercise_reference.dart';
 import 'package:fitness_app/features/equipment/workout_player_page.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/profile/data/profile_repository.dart';
@@ -564,6 +566,59 @@ void main() {
       final r = await container
           .read(exerciseResolutionProvider('ai::rack::0').future);
       expect(r.visible?.id, 'ai::rack::0');
+    });
+
+    testWidgets('one already cached still opens by id, as text with no clip',
+        (tester) async {
+      // The limit of what C14 fixed, pinned so the doc comment cannot drift
+      // back to "these can never be rendered". Lists cannot reach a clipless
+      // exercise — `withDemonstration` removes it upstream — but
+      // `exerciseResolutionProvider:472` reads the cache directly and applies
+      // no clip rule, so an `ai::` id that already exists on the device (one
+      // cached before C14, or a workout-history row from when lists still
+      // showed clipless exercises) still opens. The honest card is what the
+      // player shows, not "couldn't find it".
+      //
+      // Nothing creates new ones, so this population shrinks rather than grows.
+      const clipless = ExerciseItem(
+        id: 'ai::rack::0',
+        title: 'Invented movement',
+        equipmentId: 'rack',
+        muscles: ['quads'],
+        difficulty: ExerciseDifficulty.beginner,
+        durationMinutes: 10,
+        summary: 's',
+        steps: ['a'],
+      );
+      final repo = AssetEquipmentRepository()
+        ..seedForTests(equipment: const [_rack], exercises: const []);
+      final gen = MockGeneratedExerciseRepository();
+      await gen.save('rack', 'en', const [clipless]);
+      final container = ProviderContainer(overrides: [
+        effectiveLanguageCodeProvider.overrideWithValue('en'),
+        equipmentRepositoryProvider.overrideWithValue(repo),
+        generatedExerciseRepositoryProvider.overrideWithValue(gen),
+        screeningProfileProvider.overrideWith((ref) async => _cleared0()),
+      ]);
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          // The real theme: this test renders the whole player, and the muscle
+          // map reads the AppSemanticColors extension. The withheld-exercise
+          // tests above never get that far, which is why they do without.
+          theme: AppTheme.dark(),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const WorkoutPlayerPage(exerciseId: 'ai::rack::0'),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ExerciseNoVideoFallback), findsOneWidget);
+      expect(find.textContaining('Invented movement'), findsWidgets);
+      expect(find.textContaining("couldn't find"), findsNothing);
     });
 
     test('isGenerated names them by id, not by a flag nobody sets', () {
