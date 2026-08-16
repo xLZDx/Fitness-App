@@ -12598,3 +12598,123 @@ G-B closed: B1, B2, B3, B4, B5, B6 all landed and regression-verified. F015 rema
 by design — B1 is the immediate patch; G-E removes the fallback entirely. Not pushed.
 
 Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).
+
+## 2026-08-17 — G-E: the programme generator stops inventing a programme (F015 final, F021, F022)
+
+**Decision.** Delete `buildProgrammeSchedule` and `_fillDay`. Give every shipped programme id a
+declared structure, and make "no viable programme" a result the generator is allowed to return.
+
+### What the fallback actually did
+
+`programme_providers.dart` had two enrolment arms. Templates with a `ProgrammeSpec` went through
+`buildProgramme`, which fills declared movement roles and validates the week. Templates without one —
+`shred_endurance`, `shoulders_arms`, and the questionnaire-built `from_answers` — went to
+`buildProgrammeSchedule`, which walked the catalogue and took what came first.
+
+Measured, not described. Enrolling into `shred_endurance` against the shipped 1,887-row catalogue,
+through `ProgrammeAction.enroll`, on the pre-G-E implementation:
+
+- **F021** — primary strength patterns covered in the first week: **0**. Not four, not one. The
+  reported reason line is `covered ()`.
+- **F022** — sessions 0 and 1 share **3** exercises:
+  `{ea_3_leg_chatarunga_pose, ea_45_degree_bicycle_twist_knee_to_elbow, ea_45_degree_bicycle_twisting}`.
+
+That is the "32 sessions of yoga poses and sit-ups" claim from the audit, now with the row ids under
+it. Both figures come from the mutation runs recorded below, so they are what the shipped build does,
+not a reconstruction.
+
+### Structure and dose are two different things
+
+The first version of this gate added three `ProgrammeSpec` entries and stopped. That was wrong and
+its own tests caught it: `shred_endurance` is five days a week and the structure it was given
+(`_upperLower`) has four sessions. `buildProgramme` picks a session template by
+`(week * daysPerWeek + day) % sessions.length`, so a five-day week repeats one template every week,
+and `ProgrammeFault.duplicateSession` then refuses the enrolment for any user whose eligible
+catalogue is too narrow to disguise the repeat. I had replaced a generator that fabricated
+programmes with one that refused them.
+
+`programme_specs.dart` now separates the two things that were conflated:
+
+- **structure** — which patterns, on which day, how often a week — follows from HOW MANY DAYS the
+  person trains. Two sessions cannot train seven patterns twice; five days cannot run four sessions.
+- **dose** — sets per slot and the weekly band — follows from WHICH PROGRAMME they chose.
+  `injury_comeback` and `strength_base` run the same shape at deliberately different volumes.
+
+`_shapeFor(daysPerWeek)` returns a shape with **exactly `daysPerWeek` sessions** for 1..6, and null
+outside. Null is not an omission: the questionnaire offers 2..6 (`step_schedule.dart`),
+`programmeDaysPerWeek` floors at 1 and never raises a template's own figure, and the largest shipped
+template is five days. A stored row saying 7 is hand-written or from a build that no longer exists,
+and `noDeclaredStructure` — "we cannot build this" — is the true answer. A seven-session split is a
+training design nobody here has made.
+
+Two new shapes were needed and only two: `_oneDay` (frequency rule drops to once a week, because one
+session cannot expose anything twice) and `_fiveDay`/`_sixDay`. `shoulders_arms` reuses
+`_threeDayFullBody` deliberately — emphasis reaches it through the `rank` callback, which orders
+candidates inside each role, not by selecting different slots. Designing a bespoke shoulders/arms
+split is a training decision, and making one under cover of a defect fix is the scope drift this
+audit exists to catch. It stays an open product question.
+
+### NO_SAFE_VIABLE_PROGRAMME is a feature
+
+Three refusal paths, all of which previously produced a full multi-week schedule:
+
+- an id with no declared structure → `ProgrammeFault.noDeclaredStructure`;
+- a catalogue satisfying no role (three stretches) → `ProgrammeNotViable`;
+- an empty catalogue → `ProgrammeNotViable`.
+
+In every case nothing is written: not the `Programme` row, not one `ScheduledSession`. A refusal must
+not leave a half-written programme behind.
+
+### Non-vacuity
+
+The two acceptance criteria are asserted **through `ProgrammeAction.enroll` against the shipped
+catalogue**, not against `buildProgramme`. That distinction is the whole proof and it is why the
+first set of G-E tests was insufficient: `buildProgramme` already satisfied F021 and F022 before this
+gate: tests pointed at it pass on the broken build. The defect was that two templates never REACHED
+it. F021 and F022 also get one case each rather than sharing one, because a single case stops at its
+first failed expectation and F021 fails first — which would have left F022 unproven while looking
+proven.
+
+Mutation runs, stashing only `programme_specs.dart`, `programme_schedule.dart` and
+`programme_providers.dart` and keeping every test:
+
+| test | against pre-G-E `lib/` |
+|---|---|
+| F021, shipped catalogue, through enrolment | FAILS — `Actual: <0>`, `covered ()` |
+| F022, shipped catalogue, through enrolment | FAILS — `Actual: <3>`, names the three yoga rows |
+| F021, `shred_endurance`, fixture | FAILS — `Actual: <0>` |
+| F021, `shoulders_arms`, fixture | FAILS — `Actual: <0>` |
+| a catalogue satisfying no role refuses | FAILS — enrolled successfully, `error` was null |
+| an empty catalogue refuses | FAILS — enrolled successfully, `error` was null |
+| an unshipped id refuses instead of filling | FAILS — enrolled successfully |
+| every shipped template refuses a blocked person | passes both — control, and B1's guard |
+
+`programme_builder_test.dart` gains the structural matrix: every id at every reachable day count has
+a spec, that spec has exactly as many sessions as the week has days, and it **builds** against the
+real catalogue. Having a structure and being buildable are not the same thing, which is exactly how
+the five-day defect above got in.
+
+### Collateral corrections
+
+- `programme_schedule.dart` — deleting `buildProgrammeSchedule` left its doc comment attached to
+  `kDefaultSessionMinutes`, so a constant about session length carried three headings about pool
+  walking and exercise rotation. Replaced with a library doc that says what the file is now.
+- `programme_schedule_test.dart` — the deleted function had 30 tests; `scheduleFromPlan`, the
+  scheduler that survives and the only shipping schedule-writing path, had none. Replaced the group
+  rather than dropping it: 7 tests covering row-per-session, first-exercise-leads, offsets, weekly
+  spacing, id uniqueness, empty-session skipping and the empty-plan case.
+- `programme_action_test.dart` — its F015/B1 group selected the defective case with
+  `firstWhere((t) => programmeSpecFor(t.id) == null)`, which now throws `StateError` because no
+  shipped template matches. The finding is not obsolete, only its shape: it was about one template
+  escaping the gate, so the surviving proof is that **every** shipped template is subject to it,
+  checked by name.
+
+### Status
+
+G-E closed. F021 FIXED (mutation-proven). F022 FIXED (mutation-proven). **F015 now fully FIXED** —
+G-B/B1 patched the immediate bypass, and this removes the arm that caused it; every enrolment path
+runs the one spec pipeline or refuses.
+
+`flutter analyze`: the same 7 pre-existing issues, none in a touched file. Not pushed.
+
+Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).

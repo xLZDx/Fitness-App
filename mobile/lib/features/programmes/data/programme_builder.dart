@@ -197,6 +197,22 @@ enum ProgrammeFault {
   /// The one fault that must never be reachable by design, and is checked
   /// anyway. See [validateProgramme].
   ineligibleExerciseIncluded,
+
+  /// The programme has no declared role structure, so there is nothing to
+  /// build it from.
+  ///
+  /// G-E. Until this existed, `programmeSpecFor` returning null routed the
+  /// enrolment to `buildProgrammeSchedule`, which walked the catalogue in
+  /// alphabetical order and called the result a programme. Every shipped
+  /// template now has a spec — `programme_builder_test.dart` asserts it, and
+  /// asserts each one actually builds — so this is reachable only by a
+  /// template id that is not shipped: a stored enrolment from an older build,
+  /// or a row written by hand.
+  ///
+  /// It refuses rather than falling back, and that IS the fix. "We cannot
+  /// build this programme" is a true statement a user can act on; a plausible
+  /// alphabetical list under a strength title is not.
+  noDeclaredStructure,
 }
 
 /// A structural complaint about a programme.

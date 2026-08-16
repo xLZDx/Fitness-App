@@ -8,6 +8,7 @@ import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/programmes/data/movement_role.dart';
 import 'package:fitness_app/features/programmes/data/programme_builder.dart';
 import 'package:fitness_app/features/programmes/data/programme_specs.dart';
+import 'package:fitness_app/features/programmes/data/programme_templates.dart';
 import 'package:fitness_app/features/safety/data/eligibility.dart';
 import 'package:fitness_app/features/safety/data/health_flags.dart';
 import 'package:fitness_app/features/safety/data/par_q.dart';
@@ -556,6 +557,130 @@ void main() {
     test('G: zero weeks does not crash', () {
       final result = buildProgramme(_request(weeks: 0));
       expect(result, isA<ProgrammeRefused>());
+    });
+  });
+
+  /// G-E — every shipped template has a declared structure, and the
+  /// alphabetical fallback is gone.
+  ///
+  /// `programmeSpecFor` returning null was the ONLY thing that routed an
+  /// enrolment to `buildProgrammeSchedule`, whose `_fillDay` walked the
+  /// catalogue in alphabetical order (F021) and repeated three of four
+  /// exercises between consecutive days (F022). Specs for the last three
+  /// templates remove the branch rather than patching the filler.
+  group('G-E: every shipped template builds from a spec', () {
+    test('no shipped template falls through to a null spec', () {
+      // The guard on the whole gate. A template added later without a spec
+      // fails here rather than silently reaching a filler that no longer
+      // exists.
+      for (final t in programmeTemplates) {
+        expect(programmeSpecFor(t.id, daysPerWeek: t.daysPerWeek), isNotNull,
+            reason: '${t.id} has no declared role structure');
+      }
+    });
+
+    test('the questionnaire-built programme has one for every day count it '
+        'can be given', () {
+      // `from_answers` is minted by `programmeFromProfile`, not listed in
+      // `programmeTemplates`, so the loop above cannot see it. Its day count
+      // is whatever the user ticked: the questionnaire offers 2..6
+      // (`step_schedule.dart`) and `programmeDaysPerWeek` floors at 1, so 1..6
+      // is the reachable range.
+      for (final days in const [1, 2, 3, 4, 5, 6]) {
+        expect(programmeSpecFor(kProfileProgrammeId, daysPerWeek: days),
+            isNotNull,
+            reason: '$days days a week');
+      }
+    });
+
+    test('a week longer than any declared structure refuses rather than '
+        'repeating a session', () {
+      // 7 is not reachable from the product. It is null on purpose and not by
+      // omission: enrolment turns it into `noDeclaredStructure`, which is a
+      // true statement, where stretching the six-day shape over seven days
+      // would repeat a session every week — the exact defect that shipped in
+      // G-E's own first draft for `shred_endurance`.
+      expect(programmeSpecFor(kProfileProgrammeId, daysPerWeek: 7), isNull);
+      expect(programmeSpecFor('strength_base', daysPerWeek: 0), isNull);
+    });
+
+    test('a structure has exactly as many sessions as the week has days', () {
+      // The invariant behind both of the above, stated once. A shape with
+      // fewer sessions than days makes `buildProgramme`'s rolling cursor
+      // repeat one every week, and `duplicateSession` then refuses the
+      // enrolment for anyone whose eligible pool is too narrow to disguise it.
+      for (final days in const [1, 2, 3, 4, 5, 6]) {
+        for (final id in programmeSpecIds) {
+          expect(programmeSpecFor(id, daysPerWeek: days)!.sessions, hasLength(days),
+              reason: '$id at $days days a week');
+        }
+      }
+    });
+
+    test('every id builds at every day count it can be asked for', () {
+      // Having a structure is not the same as being buildable. A five-day
+      // `shred_endurance` returned a spec and then refused every enrolment,
+      // and only a build proved it.
+      for (final days in const [1, 2, 3, 4, 5, 6]) {
+        for (final id in programmeSpecIds) {
+          final result = buildProgramme(ProgrammeBuildRequest(
+            spec: programmeSpecFor(id, daysPerWeek: days)!,
+            catalogue: catalogue,
+            safety: _cleared(),
+            weeks: 4,
+            daysPerWeek: days,
+          ));
+          expect(result, isA<ProgrammeBuilt>(),
+              reason: '$id at $days days a week: '
+                  '${result is ProgrammeRefused ? result.findings : ''}');
+        }
+      }
+    });
+
+    test('every shipped template actually builds against the real catalogue',
+        () {
+      // Having a spec is not the same as being buildable. This is what would
+      // catch a spec whose frequency rules the shipped catalogue cannot meet
+      // -- which would turn a working enrolment into a refusal for every user.
+      for (final t in programmeTemplates) {
+        final result = buildProgramme(ProgrammeBuildRequest(
+          spec: programmeSpecFor(t.id, daysPerWeek: t.daysPerWeek)!,
+          catalogue: catalogue,
+          safety: _cleared(),
+          weeks: t.weeks,
+          daysPerWeek: t.daysPerWeek,
+        ));
+        expect(result, isA<ProgrammeBuilt>(), reason: t.id);
+      }
+    });
+
+    test('F021: a week of strength covers at least four primary roles', () {
+      // The plan's own acceptance criterion. The filler this replaces walked
+      // the catalogue alphabetically, so a "strength" week could be yoga
+      // poses and sit-ups.
+      final result = buildProgramme(_request(daysPerWeek: 4, weeks: 1));
+      final built = result as ProgrammeBuilt;
+      final roles = <MovementRole>{
+        for (final s in built.sessions)
+          for (final e in s.exercises)
+            if (kPrimaryStrengthRoles.contains(e.role)) e.role,
+      };
+      expect(roles.length, greaterThanOrEqualTo(4),
+          reason: 'covered ${roles.map((r) => r.name)}');
+    });
+
+    test('F022: consecutive sessions overlap by at most one exercise', () {
+      // The three-of-four repetition, stated as the plan states it. Measured
+      // pairwise across a whole 8-week enrolment rather than on one pair, so
+      // a rotation that only drifts apart later still has to hold at week 1.
+      final built = buildProgramme(_request(daysPerWeek: 4, weeks: 8))
+          as ProgrammeBuilt;
+      for (var i = 1; i < built.sessions.length; i++) {
+        final a = built.sessions[i - 1].exercises.map((e) => e.exercise.id).toSet();
+        final b = built.sessions[i].exercises.map((e) => e.exercise.id).toSet();
+        expect(a.intersection(b).length, lessThanOrEqualTo(1),
+            reason: 'sessions ${i - 1} and $i share ${a.intersection(b)}');
+      }
     });
   });
 }

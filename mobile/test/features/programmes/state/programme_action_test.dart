@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -9,6 +12,7 @@ import 'package:fitness_app/features/profile/data/mock_profile_repository.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/profile/state/profile_providers.dart';
 import 'package:fitness_app/features/programmes/data/mock_programme_repository.dart';
+import 'package:fitness_app/features/programmes/data/movement_role.dart';
 import 'package:fitness_app/features/programmes/data/programme.dart';
 import 'package:fitness_app/features/programmes/data/programme_builder.dart';
 import 'package:fitness_app/features/programmes/data/programme_specs.dart';
@@ -146,14 +150,69 @@ void main() {
           }),
         );
 
-    ProgrammeTemplate templateWithoutSpec() {
-      final t = programmeTemplates
-          .firstWhere((t) => programmeSpecFor(t.id) == null);
-      return t;
-    }
+    // G-E note. This group used to split the templates into a spec-BEARING
+    // and a spec-LESS arm, because only the first ran the safety gate. G-E
+    // gave every shipped template a spec and deleted the second arm outright,
+    // so `firstWhere((t) => programmeSpecFor(t.id) == null)` — what this file
+    // used to select the defective case with — now throws `StateError`.
+    //
+    // The finding is not obsolete, only its old shape: it was about ONE
+    // template escaping the gate, so the proof that survives is every shipped
+    // template being subject to it, checked by name rather than by whichever
+    // two the list happened to hold.
+    test('every shipped template refuses a blocked person, and writes nothing',
+        () async {
+      for (final template in programmeTemplates) {
+        final programmeRepo = MockProgrammeRepository(latency: Duration.zero);
+        addTearDown(programmeRepo.dispose);
+        final sessionRepo =
+            MockScheduledSessionRepository(latency: Duration.zero);
+        addTearDown(sessionRepo.dispose);
+        final container = _container(
+          programmeRepo: programmeRepo,
+          sessionRepo: sessionRepo,
+          catalogue: _roleCatalogue(),
+          user: const AuthUser(uid: 'u1', displayName: 'T'),
+          safety: chestPain(),
+        );
+        addTearDown(container.dispose);
+        await container.read(authUserProvider.future);
 
-    test('the spec-LESS template refuses instead of enrolling', () async {
-      // The finding itself. Before B1 this wrote a full multi-week schedule.
+        await container.read(programmeActionProvider.notifier).enroll(template);
+
+        final state = container.read(programmeActionProvider);
+        expect(state.hasError, isTrue, reason: template.id);
+        expect(state.error, isA<ProgrammeNotViable>(), reason: template.id);
+        expect(
+          (state.error as ProgrammeNotViable).findings.map((f) => f.fault),
+          contains(ProgrammeFault.blockedBySafety),
+          reason: 'N01 renders the stated refusal off exactly this fault '
+              '(${template.id})',
+        );
+        expect(programmeRepo.cached('u1'), isEmpty,
+            reason: 'nothing may be written for a person who was refused '
+                '(${template.id})');
+        expect(sessionRepo.cached('u1'), isEmpty, reason: template.id);
+      }
+    });
+
+    test('a template id with no declared structure refuses instead of filling',
+        () async {
+      // The arm that replaced `_fillDay`. Unreachable from the shipped list by
+      // construction — which is the point of the loop above — but reachable
+      // from a stored enrolment written by an older build, and THAT is the
+      // path that used to reach the alphabetical filler.
+      const unshipped = ProgrammeTemplate(
+        id: 'retired_v1_programme',
+        goal: ProgrammeGoal.strength,
+        level: ExerciseDifficulty.beginner,
+        weeks: 4,
+        daysPerWeek: 3,
+        muscles: ['chest'],
+      );
+      expect(programmeSpecFor(unshipped.id), isNull,
+          reason: 'the fixture is only meaningful while this stays true');
+
       final programmeRepo = MockProgrammeRepository(latency: Duration.zero);
       addTearDown(programmeRepo.dispose);
       final sessionRepo = MockScheduledSessionRepository(latency: Duration.zero);
@@ -163,33 +222,270 @@ void main() {
         sessionRepo: sessionRepo,
         catalogue: _roleCatalogue(),
         user: const AuthUser(uid: 'u1', displayName: 'T'),
-        safety: chestPain(),
+      );
+      addTearDown(container.dispose);
+      await container.read(authUserProvider.future);
+
+      await container.read(programmeActionProvider.notifier).enroll(unshipped);
+
+      final state = container.read(programmeActionProvider);
+      expect(state.error, isA<ProgrammeNotViable>());
+      expect(
+        (state.error as ProgrammeNotViable).findings.map((f) => f.fault),
+        contains(ProgrammeFault.noDeclaredStructure),
+      );
+      expect(programmeRepo.cached('u1'), isEmpty);
+      expect(sessionRepo.cached('u1'), isEmpty,
+          reason: 'NO_SAFE_VIABLE_PROGRAMME is a result, not a half-written one',
+      );
+    });
+  });
+
+  /// G-E — F021 and F022, measured where the defect actually was.
+  ///
+  /// `programme_builder_test.dart` asserts both criteria against
+  /// `buildProgramme` directly, and that is not a proof of these findings:
+  /// `buildProgramme` already satisfied them before G-E. The defect was that
+  /// `shred_endurance` and `shoulders_arms` never REACHED it — enrolment sent
+  /// them to `buildProgrammeSchedule`/`_fillDay`, which walked the catalogue
+  /// alphabetically. So the proof has to run through `enroll` and read what
+  /// was written to the session repository, which is what the user gets.
+  ///
+  /// Both cases below fail against the pre-G-E implementation. The mutation
+  /// run is recorded in the decision log.
+  group('G-E: the templates that used the filler now build from a spec', () {
+    /// Four candidates per role, so rotation has somewhere to go.
+    ///
+    /// `_roleCatalogue` carries two, which is enough to FILL every slot and
+    /// therefore enough for every case above, but not enough to distinguish a
+    /// rotating builder from a repeating one — with two candidates a role must
+    /// reuse one every other session. F022 is about that distinction, so it
+    /// needs a pool that could have repeated and did not.
+    ///
+    /// Titles, not ids: `movementRoleOf` classifies on the title.
+    List<ExerciseItem> deepRoleCatalogue() {
+      const byRole = <String, List<String>>{
+        'sq': ['Bodyweight Squat', 'Goblet Squat', 'Front Squat', 'Box Squat'],
+        'hi': [
+          'Romanian Deadlift',
+          'Glute Bridge',
+          'Kettlebell Swing',
+          'Good Morning',
+        ],
+        'hp': ['Push Up', 'Bench Press', 'Chest Press', 'Ring Dip'],
+        'vp': [
+          'Overhead Press',
+          'Push Press',
+          'Arnold Press',
+          'Military Press',
+        ],
+        'hl': ['Bent Over Row', 'Seated Row', 'Face Pull', 'Cable Row'],
+        'vl': ['Pull Up', 'Lat Pulldown', 'Chin Up', 'Wide Pulldown'],
+        'sl': [
+          'Walking Lunge',
+          'Bulgarian Split Squat',
+          'Step Up',
+          'Reverse Lunge',
+        ],
+        'ce': ['Front Plank', 'Hollow Hold', 'Ab Wheel', 'Side Plank'],
+        'cr': [
+          'Russian Twist',
+          'Cable Woodchop',
+          'Pallof Press',
+          'Oblique Crunch',
+        ],
+      };
+      return [
+        for (final entry in byRole.entries)
+          for (var i = 0; i < entry.value.length; i++)
+            _ex('${entry.key}$i', title: entry.value[i]),
+      ];
+    }
+
+    /// The scheduled rows, in the order they were written, as exercise-id sets.
+    List<Set<String>> writtenSessions(MockScheduledSessionRepository repo) => [
+          for (final r in repo.cached('u1'))
+            {r.exerciseId, ...r.extraExercises.map((e) => e.exerciseId)},
+        ];
+
+    Future<MockScheduledSessionRepository> enrolInto(
+        ProgrammeTemplate template) async {
+      final programmeRepo = MockProgrammeRepository(latency: Duration.zero);
+      addTearDown(programmeRepo.dispose);
+      final sessionRepo = MockScheduledSessionRepository(latency: Duration.zero);
+      addTearDown(sessionRepo.dispose);
+      final container = _container(
+        programmeRepo: programmeRepo,
+        sessionRepo: sessionRepo,
+        catalogue: deepRoleCatalogue(),
+        user: const AuthUser(uid: 'u1', displayName: 'T'),
+      );
+      addTearDown(container.dispose);
+      await container.read(authUserProvider.future);
+      await container.read(programmeActionProvider.notifier).enroll(template);
+      expect(container.read(programmeActionProvider).hasError, isFalse,
+          reason: '${template.id}: ${container.read(programmeActionProvider).error}');
+      return sessionRepo;
+    }
+
+    ProgrammeTemplate byId(String id) =>
+        programmeTemplates.firstWhere((t) => t.id == id);
+
+    for (final id in const ['shred_endurance', 'shoulders_arms']) {
+      test('F021: an enrolled $id week covers four primary strength roles',
+          () async {
+        final repo = await enrolInto(byId(id));
+        final byTitle = {for (final e in deepRoleCatalogue()) e.id: e};
+        final template = byId(id);
+        final firstWeek =
+            writtenSessions(repo).take(template.daysPerWeek).expand((s) => s);
+        final roles = <MovementRole>{
+          for (final exerciseId in firstWeek)
+            if (kPrimaryStrengthRoles.contains(movementRoleOf(byTitle[exerciseId]!)))
+              movementRoleOf(byTitle[exerciseId]!)!,
+        };
+        expect(roles.length, greaterThanOrEqualTo(4),
+            reason: 'covered ${roles.map((r) => r.name)}');
+      });
+
+      test('F022: consecutive $id sessions share at most one exercise',
+          () async {
+        final repo = await enrolInto(byId(id));
+        final sessions = writtenSessions(repo);
+        expect(sessions.length, greaterThan(1));
+        for (var i = 1; i < sessions.length; i++) {
+          final shared = sessions[i - 1].intersection(sessions[i]);
+          expect(shared.length, lessThanOrEqualTo(1),
+              reason: 'sessions ${i - 1} and $i share $shared');
+        }
+      });
+    }
+
+    /// The shipped catalogue, read the same way `programme_builder_test.dart`
+    /// reads it.
+    ///
+    /// F021 and F022 were both MEASURED against these 1,887 rows, so the
+    /// end-to-end proof has to run on them too. The fixtures above cannot
+    /// reproduce F022: the filler walked the pool alphabetically, and a
+    /// 36-row fixture is small enough that the walk does not come back around
+    /// to a previous day's exercises the way it does on the real catalogue.
+    List<ExerciseItem> shippedCatalogue() {
+      final file = File('assets/data/exercises_vendor.json');
+      expect(file.existsSync(), isTrue,
+          reason: 'F021/F022 were measured against the shipped catalogue');
+      final rows = <ExerciseItem>[];
+      void walk(Object? node) {
+        if (node is Map) {
+          if (node.containsKey('id') && node.containsKey('steps')) {
+            rows.add(ExerciseItem.fromJson(Map<String, dynamic>.from(node)));
+          }
+          node.values.forEach(walk);
+        } else if (node is List) {
+          node.forEach(walk);
+        }
+      }
+
+      walk(jsonDecode(file.readAsStringSync()));
+      return rows;
+    }
+
+    /// Enrols into `shred_endurance` on the shipped catalogue and returns the
+    /// written sessions with the rows needed to classify them.
+    ///
+    /// F021 and F022 get a case each rather than sharing one, so that each
+    /// carries its own mutation evidence: a single case stops at the first
+    /// failed expectation, and F021 fails first against the old
+    /// implementation, which would leave F022 unproven.
+    Future<(List<Set<String>>, Map<String, ExerciseItem>, ProgrammeTemplate)>
+        enrolOnShippedCatalogue() async {
+      final programmeRepo = MockProgrammeRepository(latency: Duration.zero);
+      addTearDown(programmeRepo.dispose);
+      final sessionRepo = MockScheduledSessionRepository(latency: Duration.zero);
+      addTearDown(sessionRepo.dispose);
+      final catalogue = shippedCatalogue();
+      final container = _container(
+        programmeRepo: programmeRepo,
+        sessionRepo: sessionRepo,
+        catalogue: catalogue,
+        user: const AuthUser(uid: 'u1', displayName: 'T'),
+      );
+      addTearDown(container.dispose);
+      await container.read(authUserProvider.future);
+
+      final template = byId('shred_endurance');
+      await container.read(programmeActionProvider.notifier).enroll(template);
+      expect(container.read(programmeActionProvider).hasError, isFalse,
+          reason: '${container.read(programmeActionProvider).error}');
+
+      final sessions = writtenSessions(sessionRepo);
+      expect(sessions, hasLength(template.weeks * template.daysPerWeek));
+      return (sessions, {for (final e in catalogue) e.id: e}, template);
+    }
+
+    test('F021: a shipped-catalogue week is a strength week, not whatever '
+        'sorts first', () async {
+      // The finding as it was originally measured, at the surface that
+      // produced it. `shred_endurance` is the template whose enrolment used to
+      // reach `_fillDay`, and against that implementation this reports
+      // `covered ()` — not one primary strength pattern in the whole week.
+      final (sessions, rows, template) = await enrolOnShippedCatalogue();
+      final roles = <MovementRole>{
+        for (final id in sessions.take(template.daysPerWeek).expand((s) => s))
+          if (rows[id] != null &&
+              kPrimaryStrengthRoles.contains(movementRoleOf(rows[id]!)))
+            movementRoleOf(rows[id]!)!,
+      };
+      expect(roles.length, greaterThanOrEqualTo(4),
+          reason: 'covered ${roles.map((r) => r.name)}');
+    });
+
+    test('F022: shipped-catalogue sessions do not repeat each other', () async {
+      // Measured pairwise across the whole 8-week enrolment rather than on one
+      // pair, so a rotation that only drifts apart later still has to hold at
+      // week 1.
+      final (sessions, _, _) = await enrolOnShippedCatalogue();
+      for (var i = 1; i < sessions.length; i++) {
+        final shared = sessions[i - 1].intersection(sessions[i]);
+        expect(shared.length, lessThanOrEqualTo(1),
+            reason: 'sessions ${i - 1} and $i share $shared');
+      }
+    });
+
+    test('a catalogue that satisfies no role refuses instead of force-filling',
+        () async {
+      // NO_SAFE_VIABLE_PROGRAMME as a result rather than an error condition.
+      // `_fillDay` took whatever the pool held and wrote a full multi-week
+      // schedule regardless; these rows classify as nothing at all, so the
+      // spec pipeline has no candidate for any slot.
+      final programmeRepo = MockProgrammeRepository(latency: Duration.zero);
+      addTearDown(programmeRepo.dispose);
+      final sessionRepo = MockScheduledSessionRepository(latency: Duration.zero);
+      addTearDown(sessionRepo.dispose);
+      final container = _container(
+        programmeRepo: programmeRepo,
+        sessionRepo: sessionRepo,
+        catalogue: [
+          _ex('m1', title: 'Hamstring Stretch'),
+          _ex('m2', title: 'Pigeon Pose'),
+          _ex('m3', title: 'Cat Cow Stretch'),
+        ],
+        user: const AuthUser(uid: 'u1', displayName: 'T'),
       );
       addTearDown(container.dispose);
       await container.read(authUserProvider.future);
 
       await container
           .read(programmeActionProvider.notifier)
-          .enroll(templateWithoutSpec());
+          .enroll(byId('shred_endurance'));
 
-      final state = container.read(programmeActionProvider);
-      expect(state.hasError, isTrue);
-      expect(state.error, isA<ProgrammeNotViable>());
-      expect(
-        (state.error as ProgrammeNotViable)
-            .findings
-            .map((f) => f.fault),
-        contains(ProgrammeFault.blockedBySafety),
-        reason: 'N01 renders the stated refusal off exactly this fault',
-      );
-      expect(await programmeRepo.watch('u1').first, isEmpty,
-          reason: 'nothing may be written for a person who was refused');
+      expect(container.read(programmeActionProvider).error,
+          isA<ProgrammeNotViable>());
+      expect(programmeRepo.cached('u1'), isEmpty);
+      expect(sessionRepo.cached('u1'), isEmpty,
+          reason: 'a refusal must not leave a half-written programme behind');
     });
 
-    test('the spec-BEARING template still refuses, as it already did',
-        () async {
-      // The control for the arm that was already correct: hoisting the gate
-      // must not have moved the refusal off it.
+    test('an empty catalogue refuses deterministically', () async {
       final programmeRepo = MockProgrammeRepository(latency: Duration.zero);
       addTearDown(programmeRepo.dispose);
       final sessionRepo = MockScheduledSessionRepository(latency: Duration.zero);
@@ -197,18 +493,19 @@ void main() {
       final container = _container(
         programmeRepo: programmeRepo,
         sessionRepo: sessionRepo,
-        catalogue: _roleCatalogue(),
+        catalogue: const [],
         user: const AuthUser(uid: 'u1', displayName: 'T'),
-        safety: chestPain(),
       );
       addTearDown(container.dispose);
       await container.read(authUserProvider.future);
 
-      await container.read(programmeActionProvider.notifier).enroll(
-          programmeTemplates.firstWhere((t) => programmeSpecFor(t.id) != null));
+      await container
+          .read(programmeActionProvider.notifier)
+          .enroll(byId('shred_endurance'));
 
       expect(container.read(programmeActionProvider).error,
           isA<ProgrammeNotViable>());
+      expect(sessionRepo.cached('u1'), isEmpty);
     });
   });
 

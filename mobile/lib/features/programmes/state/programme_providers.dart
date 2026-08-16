@@ -11,7 +11,6 @@ import '../data/mock_programme_repository.dart';
 import '../data/programme.dart';
 import '../data/programme_repository.dart';
 import '../../safety/state/eligibility_providers.dart';
-import '../../safety/data/eligibility.dart' show eligibleExercises;
 import '../data/programme_builder.dart';
 import '../data/programme_schedule.dart';
 import '../data/programme_specs.dart';
@@ -172,22 +171,32 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
         );
       }
 
-      // Gate P. A template with a declared role structure is built by
-      // `buildProgramme`, which fills MOVEMENT ROLES and validates the result;
-      // one without falls back to the muscle-pool scheduler.
+      // Gate P, completed by G-E. EVERY programme is built by
+      // `buildProgramme`, which fills declared MOVEMENT ROLES and validates
+      // the result.
       //
-      // The split is not a migration half-done — it is which programmes the
-      // sequential filler was actually wrong for. `strength_base`,
-      // `gym_start` and `injury_comeback` name no muscles, so their pool was
-      // the whole catalogue in alphabetical order and `_fillDay` walked
-      // consecutive entries: 32 sessions of yoga poses and sit-ups under a
-      // strength title. `shred_endurance` and `shoulders_arms` name muscles
-      // and draw from a muscle pool, which is a weaker guarantee than a role
-      // structure but not the same defect.
+      // There used to be a second arm here for templates with no spec, and it
+      // was the defect rather than a migration half-done: `_fillDay` walked
+      // the catalogue in alphabetical order, so a "strength base" came out as
+      // 32 sessions of yoga poses and sit-ups (F021), repeating three of four
+      // exercises between consecutive days (F022). G-E gave the last three
+      // templates — `shred_endurance`, `shoulders_arms` and the
+      // questionnaire-built `from_answers` — declared structures, so the arm
+      // has no shipped caller left and is gone.
+      //
+      // A null spec now refuses. It is reachable only by a template id that is
+      // not shipped: a stored enrolment from an older build, or a row written
+      // by hand. "We cannot build this" is a true statement the user can act
+      // on; a plausible alphabetical list under a strength title is not.
       final spec = programmeSpecFor(template.id,
           daysPerWeek: programme.daysPerWeek);
+      if (spec == null) {
+        throw const ProgrammeNotViable(
+          [ProgrammeFinding(ProgrammeFault.noDeclaredStructure)],
+        );
+      }
       List<ScheduledSession> rows;
-      if (spec != null) {
+      {
         final focus = programme.muscles.toSet();
         final built = buildProgramme(ProgrammeBuildRequest(
           spec: spec,
@@ -224,22 +233,6 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
               dayOffsets: dayOffsets,
             );
         }
-      } else {
-        // F015's per-candidate half. `availableWith` slices by equipment and
-        // `safeCatalogue` has had injuries removed, but neither applies the
-        // movement restrictions, post-operative restrictions or clinician
-        // advice the eligibility layer holds — which the spec branch has
-        // honoured since Gate P via `buildProgramme`. Same layer, same call,
-        // so the two arms can no longer disagree about what this person may
-        // be given.
-        rows = buildProgrammeSchedule(
-          programme: programme,
-          catalogue: availableWith(
-              eligibleExercises(safeCatalogue, safety),
-              profile?.equipment ?? EquipmentAccess.empty),
-          sessionMinutes: profile?.schedule.sessionMinutes,
-          preferredWeekdays: profile?.schedule.preferredWeekdays ?? const [],
-        );
       }
 
       await repo.save(user.uid, programme);
