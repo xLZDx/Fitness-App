@@ -53,11 +53,26 @@ jest.mock("firebase-admin", () => {
   firestoreFn.FieldValue = {
     serverTimestamp: jest.fn(() => "__SERVER_TIMESTAMP__"),
   };
+  // F011. `startFreeTrial` and `createCheckoutSession` now ask Auth whether
+  // the uid still exists, so the mock has to answer. Default: it does.
+  // `__setUserLookup` lets a case make the account absent (a deleted user
+  // whose token has not expired) or make the lookup itself fail (an Auth
+  // outage), which are two different requirements.
+  const getUser = jest.fn(async (uid: string) => ({ uid }));
+  const authFn: any = jest.fn(() => ({ getUser }));
   return {
     initializeApp: jest.fn(),
     firestore: firestoreFn,
+    auth: authFn,
     __getRef: getRef,
-    __reset: () => refs.clear(),
+    __getUser: getUser,
+    __setUserLookup: (impl: (uid: string) => Promise<any>) =>
+      getUser.mockImplementation(impl as any),
+    __reset: () => {
+      refs.clear();
+      getUser.mockReset();
+      getUser.mockImplementation(async (uid: string) => ({ uid }));
+    },
   };
 });
 
@@ -173,6 +188,108 @@ beforeEach(() => {
   stripeMock.subscriptions.list.mockReset().mockResolvedValue({ data: [] });
   stripeMock.invoices.list.mockReset();
   stripeMock.paymentIntents.create.mockReset();
+});
+
+/* ------------------------------------------------------------------ */
+/* F011 — the stale-token window, on the two callables that close it   */
+/* ------------------------------------------------------------------ */
+
+/**
+ * `deleteAccount` removes the Auth user, but a token minted just before that
+ * stays valid for up to ~1 hour and `onCall` does not re-check that the uid
+ * still exists. The F011 decision RISK_ACCEPTED seven callables and required
+ * remediation for exactly these two, because their eligibility checks read
+ * records deletion has just removed: a stale token replays them against
+ * absence and gets a fresh trial, or a new paid subscription attached to an
+ * account that no longer exists.
+ *
+ * Each case is written so it FAILS without the guard: every one of them
+ * reaches a state the callable would otherwise treat as success.
+ */
+describe("F011: a deleted account cannot replay a payment operation", () => {
+  const deleted = async (_uid: string) => {
+    const e: any = new Error("no user record");
+    e.code = "auth/user-not-found";
+    throw e;
+  };
+
+  test("startFreeTrial refuses, and writes nothing", async () => {
+    // No subscription doc, which is what deletion leaves behind — so without
+    // the guard `trialStartedOnce` is absent and the trial is GRANTED.
+    const ref = primeDoc("users/u1/subscription/main", undefined);
+    adminMock.__setUserLookup(deleted);
+
+    await expectHttpsError(
+      startFreeTrial.run(req({ tier: "standard" }, { uid: "u1" })),
+      "unauthenticated",
+    );
+    expect(ref.set).not.toHaveBeenCalled();
+  });
+
+  test("createCheckoutSession refuses, and never reaches Stripe", async () => {
+    primeDoc("users/u1/subscription/main", undefined);
+    adminMock.__setUserLookup(deleted);
+
+    await expectHttpsError(
+      createCheckoutSession.run(
+        req({ tier: "standard" }, { uid: "u1", token: { email: "a@b.test" } }),
+      ),
+      "unauthenticated",
+    );
+    expect(stripeMock.customers.create).not.toHaveBeenCalled();
+    expect(stripeMock.checkout.sessions.create).not.toHaveBeenCalled();
+  });
+
+  test("the check runs before the trial-already-used branch", async () => {
+    // Ordering matters: a deleted account must be refused as unauthenticated
+    // rather than told "trial already used", which is a different fact and
+    // leaks whether that uid ever had one.
+    primeDoc("users/u1/subscription/main", { trialStartedOnce: true });
+    adminMock.__setUserLookup(deleted);
+
+    await expectHttpsError(
+      startFreeTrial.run(req({ tier: "standard" }, { uid: "u1" })),
+      "unauthenticated",
+    );
+  });
+
+  test("an Auth outage refuses rather than granting", async () => {
+    // Fail-closed. "We could not check" must never read as "yes" on a payment
+    // path, so a lookup failure that is NOT user-not-found propagates.
+    const ref = primeDoc("users/u1/subscription/main", undefined);
+    adminMock.__setUserLookup(async () => {
+      const e: any = new Error("backend unavailable");
+      e.code = "auth/internal-error";
+      throw e;
+    });
+
+    await expect(
+      startFreeTrial.run(req({ tier: "standard" }, { uid: "u1" })),
+    ).rejects.toThrow("backend unavailable");
+    expect(ref.set).not.toHaveBeenCalled();
+  });
+
+  test("a live account is unaffected, and is asked about by uid", async () => {
+    // The control. Without it the four refusals above are satisfied by a
+    // guard that refuses everybody.
+    const ref = primeDoc("users/u1/subscription/main", undefined);
+
+    const res = await startFreeTrial.run(
+      req({ tier: "standard" }, { uid: "u1" }),
+    );
+
+    expect(res.trialEndsAt).toBeTruthy();
+    expect(ref.set).toHaveBeenCalledTimes(1);
+    expect(adminMock.__getUser).toHaveBeenCalledWith("u1");
+  });
+
+  test("an unauthenticated caller is still refused before any lookup", async () => {
+    await expectHttpsError(
+      startFreeTrial.run(req({ tier: "standard" }, undefined)),
+      "unauthenticated",
+    );
+    expect(adminMock.__getUser).not.toHaveBeenCalled();
+  });
 });
 
 /* ------------------------------------------------------------------ */

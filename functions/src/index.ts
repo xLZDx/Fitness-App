@@ -53,6 +53,66 @@ import { noteAppCheck } from "./abuse_guard";
 admin.initializeApp();
 const db = admin.firestore();
 
+/**
+ * Refuses a call made with a token belonging to an account that no longer
+ * exists.
+ *
+ * ## F011, and why only two callables carry this
+ *
+ * `deleteAccount` deletes the Auth user, but a Firebase ID token minted just
+ * before that call stays cryptographically valid for up to ~1 hour, and
+ * `onCall`'s built-in verification does not re-check that the uid still
+ * exists (no `checkRevoked`, and v2 `onCall` exposes no per-function option
+ * for it). So a client still holding that token can keep calling as a deleted
+ * uid until it expires on its own. The gap is a platform property of every
+ * callable here, which is why it is documented at `deleteAccount` rather than
+ * pretended away.
+ *
+ * The F011 decision RISK_ACCEPTED that for the seven callables whose blast
+ * radius is bounded by data deletion already removes, and required
+ * remediation for exactly two: `startFreeTrial` and `createCheckoutSession`.
+ * Those two are different in kind — their eligibility checks read records that
+ * deletion has just removed, so a stale token replays them against absence and
+ * gets a fresh trial or a new paid subscription attached to an account that no
+ * longer exists. That is an exploit the deletion path INTRODUCES, not one it
+ * inherits.
+ *
+ * ## Why an Auth lookup and not a tombstone
+ *
+ * A `deleted_accounts/{uid}` marker would answer the same question without the
+ * round trip, and it would mean retaining a uid specifically about a person
+ * who asked to be forgotten — new data, created at deletion time, for the sole
+ * purpose of remembering them. The Auth lookup keeps nothing. Both callables
+ * are declared `RARE`, so one extra call on a trial start or a checkout is not
+ * a cost worth trading data minimisation for.
+ *
+ * ## Fail-closed
+ *
+ * A lookup that fails for any reason OTHER than user-not-found is rethrown,
+ * so an Auth outage refuses the payment operation rather than granting it.
+ * "We could not check" must never read as "yes" on this path.
+ */
+async function assertAccountStillExists(
+  uid: string,
+  callable: string,
+): Promise<void> {
+  try {
+    await admin.auth().getUser(uid);
+  } catch (e) {
+    if ((e as { code?: string })?.code === "auth/user-not-found") {
+      logger.warn("refused a call from a deleted account", {
+        uid,
+        callable,
+      });
+      throw new HttpsError(
+        "unauthenticated",
+        "This account no longer exists. Sign in again.",
+      );
+    }
+    throw e;
+  }
+}
+
 const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY");
 const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET");
 const STRIPE_PRICE_STANDARD = defineSecret("STRIPE_PRICE_STANDARD");
@@ -322,6 +382,8 @@ export const startFreeTrial = onCall(
       throw new HttpsError("unauthenticated", "Sign in to start a trial.");
     }
     noteAppCheck(request, "startFreeTrial");
+    // F011 — the stale-token window this callable is one of two to close.
+    await assertAccountStillExists(auth.uid, "startFreeTrial");
 
     // A6-full — account rotation.
     //
@@ -417,6 +479,8 @@ export const createCheckoutSession = onCall(
       throw new HttpsError("unauthenticated", "Sign in to subscribe.");
     }
     noteAppCheck(request, "createCheckoutSession");
+    // F011 — see `assertAccountStillExists`.
+    await assertAccountStillExists(auth.uid, "createCheckoutSession");
 
     const tier = request.data?.tier as Tier | undefined;
     if (tier !== "standard" && tier !== "celebrityTrainer") {

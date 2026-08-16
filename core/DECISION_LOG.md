@@ -13060,3 +13060,47 @@ but stops subscribing — fails three of the five, including the cached-session 
 A–D matrix: 24 cases, all passing, two mutations proven. Stale-state attack: 5 cases, all passing,
 one-word mutation proven. No cross-gate defect found in the product; one vacuous cell found and fixed
 in my own test. Not pushed.
+
+## 2026-08-17 — F011 implemented: the two payment callables close the stale-token window
+
+**The decision was not revisited.** F011 was already resolved: `RISK_ACCEPTED` for the seven
+callables whose blast radius is bounded by what account deletion already removes, `REMEDIATE` for
+`startFreeTrial` and `createCheckoutSession`. Only the implementation was outstanding.
+
+**Why those two are different in kind.** `deleteAccount` removes the Auth user, but a Firebase ID
+token minted just before it stays valid for up to ~1 hour, and `onCall`'s verification does not
+re-check that the uid still exists — v2 exposes no per-function `checkRevoked`. That is a platform
+property of every callable here and is documented at `deleteAccount` rather than pretended away.
+These two are the exploit the deletion path INTRODUCES rather than inherits: their eligibility checks
+read records deletion has just removed, so a stale token replays them against absence and gets a
+fresh 14-day trial, or a new paid subscription attached to an account that no longer exists.
+
+**`assertAccountStillExists(uid, callable)`** asks Auth. Two design points:
+
+- **An Auth lookup, not a tombstone.** A `deleted_accounts/{uid}` marker answers the same question
+  without the round trip — and would mean retaining a uid specifically about someone who asked to be
+  forgotten, new data created at deletion time for the sole purpose of remembering them. The lookup
+  keeps nothing. Both callables are `RARE`, so one extra call on a trial start or a checkout is not a
+  cost worth trading data minimisation for.
+- **Fail-closed.** A lookup that fails for any reason other than `auth/user-not-found` is rethrown,
+  so an Auth outage refuses the payment operation. "We could not check" must never read as "yes" on
+  this path.
+
+**Six tests, four of them written so they fail without the guard.** Refusal plus no write; refusal
+plus Stripe never reached (neither `customers.create` nor `checkout.sessions.create`); the check
+running BEFORE the trial-already-used branch, because a deleted account must be refused as
+unauthenticated rather than told "trial already used", which is a different fact and leaks whether
+that uid ever had one; and the outage case. Plus two controls without which a guard that refuses
+everybody would satisfy the rest: a live account still enrols and is asked about by uid, and an
+unauthenticated caller is refused before any lookup happens.
+
+**Non-vacuity.** Deleting the two call sites produces a COMPILE error (unused symbol), which proves
+less than it looks like. So the mutation is behavioural instead — the guard kept in place and made a
+no-op — and 4 of the 6 fail, with the two controls correctly still passing.
+
+Full functions suite: **171 passing**, `tsc --noEmit` clean.
+
+### Status
+
+F011 IMPLEMENTED and MUTATION_PROVEN. Its decision half was already `DECISION_RESOLVED` and was not
+revisited. Not pushed.
