@@ -12843,3 +12843,59 @@ distance ranking is still doing real work and only the ties fall through.
 ### Status
 
 F024 FIXED, mutation-proven. Not pushed.
+
+## 2026-08-17 — Tier 6, F027: the guard that could not see the strings it was for
+
+**Decision.** Fix the hardcoded strings, and fix the reason they were reachable.
+
+F027 was recorded as "seven hardcoded English safety strings bypass l10n". Measured rather than
+taken at the recorded count: a scan of every `Text(` call's first positional argument, with comments
+stripped, finds **two** live offenders, and one previously-recorded site
+(`suggestion_builder.dart`'s `'Safe with the injuries you listed'`) is already a comment describing
+a string that was removed. The remaining candidates in `plan_builder.dart` are data-layer rationale
+copy, which is a different problem with a different fix — see the scope note below.
+
+The two live ones:
+
+- `equipment_detail_page.dart` — `Filtered out N exercise(s) that conflicts with your injuries.`
+  Safety copy, in English, on a Russian screen.
+- `team_feed_page.dart` — `Become a Sustainer to read what your coach is sharing.`
+
+**The root cause is the guard, not the two strings.** `test/l10n/no_untranslated_strings_test.dart`
+matched only a literal IMMEDIATELY after `Text(`, so anything wrapped in a ternary was invisible.
+That blind spot was already WRITTEN DOWN — in `app_en.arb`'s own description for `homeTodayDigest`:
+"the project's l10n guard test does not see ternary-wrapped `Text()` and two untranslated strings
+have already slipped past it that way". It was known, recorded, and left open, and these two are
+what fell through it afterwards. Fixing only the strings would have left the next ones to the same
+gap.
+
+The guard now reads the whole first positional argument of every `Text(` call. Two details are
+load-bearing and both were learned by getting them wrong first:
+
+- **named arguments are excluded** — `key:` and `style:` carry identifiers that are not display copy,
+  and a guard that flags them gets switched off rather than obeyed;
+- **comments are stripped first** — a comment containing a comma otherwise ends the argument early,
+  which is exactly why the team-feed string survived my first attempt at widening and reported a
+  clean tree.
+
+A scan that silently stops matching reports a clean tree forever, which is the failure mode F027
+came from. So the guard has two guards of its own: one asserting it still sees a ternary-wrapped
+literal behind a comma-bearing comment, one asserting it ignores named arguments and
+compared-against literals.
+
+**Non-vacuity.** Reverting only the two `lib/` fixes fails the widened guard, naming both strings.
+The pre-widening guard passes on that same tree — which is the finding.
+
+### Scope note, stated rather than quietly dropped
+
+`plan_builder.dart` composes user-facing rationale copy in English inside a data-layer function with
+no `BuildContext`: a safety line ("this app has not cleared you for unrestricted exercise"), an
+advisory line, an injury-filter line, four session titles and two fallbacks. Those are not fixable
+by swapping in an `AppLocalizations` call; the repository's own answer to this shape is a typed
+reason rendered at the widget layer, which `SuggestionReason` in `suggestion_builder.dart` already
+demonstrates. That is a separate unit of work and is NOT closed by this entry.
+
+### Status
+
+F027 PARTIALLY_FIXED: both `Text()`-layer strings fixed and the guard that missed them widened and
+self-tested. The `plan_builder.dart` rationale surface remains OPEN, scoped above. Not pushed.

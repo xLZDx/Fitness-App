@@ -2224,5 +2224,18 @@
   "adviceLimitsGiven": "Asked, limits given",
   "adviceAdvisedAgainstExercise": "Advised not to exercise",
   "adviceNotAsked": "I have not asked anyone",
-  "healthLegacyNotice": "You entered health details in an older version. We kept your words exactly and do not interpret them — please answer the questions on this screen so we can act on them."
+  "healthLegacyNotice": "You entered health details in an older version. We kept your words exactly and do not interpret them — please answer the questions on this screen so we can act on them.",
+  "communitySustainerFeedPitch": "Become a Sustainer to read what your coach is sharing.",
+  "@communitySustainerFeedPitch": {
+    "description": "Empty team feed, shown only to a user who is not on a paid tier and who may be offered one. F027: was a hardcoded English literal inside a ternary, which the l10n guard could not see."
+  },
+  "equipmentInjuryFilteredOut": "{count, plural, =1{Filtered out 1 exercise that conflicts with your injuries.} other{Filtered out {count} exercises that conflict with your injuries.}}",
+  "@equipmentInjuryFilteredOut": {
+    "description": "Equipment detail: how many exercises the injury filter removed. F027: was two hardcoded English literals inside a ternary.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

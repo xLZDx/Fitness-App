@@ -64,7 +64,8 @@ class TeamFeedPage extends ConsumerWidget {
                     // not yet known — "no posts yet" is true either way.
                     isPremium || !mayOffer
                         ? AppLocalizations.of(context).communityNoPostsYet
-                        : 'Become a Sustainer to read what your coach is sharing.',
+                        : AppLocalizations.of(context)
+                            .communitySustainerFeedPitch,
                     style: theme.textTheme.bodyMedium,
                   ),
                 );

@@ -58,13 +58,25 @@ void main() {
     // Catches the class of bug the operator actually hit: a literal written
     // straight into the widget tree, which never reaches the ARB pipeline at
     // all.
+    //
+    // F027 widened this. The old version matched only a literal IMMEDIATELY
+    // after `Text(`, so anything wrapped in a ternary was invisible to it --
+    // a blind spot this file's own ARB notes had already recorded
+    // ("does not see ternary-wrapped Text()") without closing. Two strings
+    // were living in it: the injury-filter count on the equipment page and
+    // the Sustainer pitch on the team feed. Both were user-facing English on
+    // a Russian screen, and one of them was safety copy.
+    //
+    // It now reads the whole FIRST POSITIONAL argument of every `Text(` call,
+    // with comments stripped first. Both details are load-bearing: named
+    // arguments (`key:`, `style:`) carry identifiers that are not display
+    // copy, and a comment containing a comma otherwise ends the argument
+    // early -- which is the precise reason the team-feed string survived a
+    // first attempt at this widening.
     final offenders = <String>[];
-    final textLiteral = RegExp(r"""Text\(\s*'([^']{4,90})'""");
     for (final f in Directory('lib').listSync(recursive: true)) {
       if (f is! File || !f.path.endsWith('.dart')) continue;
-      final src = f.readAsStringSync();
-      for (final m in textLiteral.allMatches(src)) {
-        final s = m.group(1)!;
+      for (final s in _textArguments(_stripComments(f.readAsStringSync()))) {
         // Two consecutive words of 3+ Latin letters = a sentence, not an
         // identifier, a URL fragment or a unit.
         if (RegExp(r'[A-Za-z]{3,}\s+[A-Za-z]{3,}').hasMatch(s) &&
@@ -75,6 +87,38 @@ void main() {
     }
     expect(offenders, isEmpty,
         reason: 'hardcoded English in the widget tree: $offenders');
+  });
+
+  test('the widened scan still sees a ternary-wrapped literal', () {
+    // The guard needs its own guard. A scan that silently stopped matching
+    // would report a clean tree forever, which is exactly the failure mode
+    // F027 came from -- so this pins the widening itself rather than trusting
+    // that an empty offender list means what it looks like it means.
+    const sample = '''
+      Text(
+        // a comment, with commas, that used to end the argument early
+        flag
+            ? l10n.somethingTranslated
+            : 'Become a Sustainer to read what your coach is sharing.',
+        style: theme.textTheme.bodyMedium,
+      )
+    ''';
+    expect(_textArguments(_stripComments(sample)),
+        contains('Become a Sustainer to read what your coach is sharing.'));
+  });
+
+  test('the widened scan ignores what is not display copy', () {
+    // Named arguments and compared-against literals are not user-facing, and
+    // a scan that flagged them would be turned off rather than obeyed.
+    const sample = '''
+      Text(
+        e.toString().contains('no longer has')
+            ? l10n.keyMissing
+            : l10n.blobMissing,
+        key: const Key('some identifier here'),
+      )
+    ''';
+    expect(_textArguments(_stripComments(sample)), isEmpty);
   });
 
   test('no English month or weekday tables outside intl', () {
@@ -137,4 +181,85 @@ void main() {
       expect(labels, contains("case '$c':"), reason: '$c has no label');
     }
   });
+}
+
+/// Every `Text(...)` call's first positional argument, as string literals.
+///
+/// Deliberately not a regular expression over the whole call: Dart arguments
+/// nest, and the thing being looked for is display copy, which is only ever
+/// the first positional one.
+List<String> _textArguments(String src) {
+  final out = <String>[];
+  final literal = RegExp(r"'([^'\\\n]{4,120})'");
+  final predicate =
+      RegExp(r'(contains|startsWith|endsWith|indexOf|split)\($|==\s*$');
+  for (final call in RegExp(r'\bText\(').allMatches(src)) {
+    var i = call.end;
+    var depth = 1;
+    int? firstComma;
+    while (i < src.length && depth > 0) {
+      final c = src[i];
+      if (c == '(') {
+        depth++;
+      } else if (c == ')') {
+        depth--;
+      } else if (c == ',' && depth == 1 && firstComma == null) {
+        firstComma = i;
+      }
+      i++;
+    }
+    final span = src.substring(call.end, firstComma ?? i - 1);
+    for (final m in literal.allMatches(span)) {
+      if (predicate.hasMatch(span.substring(0, m.start).trimRight())) continue;
+      out.add(m.group(1)!);
+    }
+  }
+  return out;
+}
+
+/// [src] with comments blanked out, preserving offsets.
+///
+/// A comment's own commas and quotation marks are indistinguishable from code
+/// to any scan that does not do this, and both appear in this repository's
+/// comments constantly.
+String _stripComments(String src) {
+  final out = src.split('');
+  var i = 0;
+  String? quote;
+  while (i < src.length) {
+    final c = src[i];
+    if (quote != null) {
+      if (c == r'\') {
+        i += 2;
+        continue;
+      }
+      if (c == quote) quote = null;
+      i++;
+      continue;
+    }
+    if (c == "'" || c == '"') {
+      quote = c;
+      i++;
+      continue;
+    }
+    if (c == '/' && i + 1 < src.length && src[i + 1] == '/') {
+      while (i < src.length && src[i] != '\n') {
+        out[i] = ' ';
+        i++;
+      }
+      continue;
+    }
+    if (c == '/' && i + 1 < src.length && src[i + 1] == '*') {
+      while (i + 1 < src.length && !(src[i] == '*' && src[i + 1] == '/')) {
+        if (src[i] != '\n') out[i] = ' ';
+        i++;
+      }
+      if (i < src.length) out[i] = ' ';
+      if (i + 1 < src.length) out[i + 1] = ' ';
+      i += 2;
+      continue;
+    }
+    i++;
+  }
+  return out.join();
 }

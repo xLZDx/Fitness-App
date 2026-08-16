@@ -524,9 +524,7 @@ class _FilteredHint extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              count == 1
-                  ? 'Filtered out 1 exercise that conflicts with your injuries.'
-                  : 'Filtered out $count exercises that conflict with your injuries.',
+              AppLocalizations.of(context).equipmentInjuryFilteredOut(count),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colors.textSecondary,
                 fontWeight: FontWeight.w600,
