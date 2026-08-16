@@ -11155,3 +11155,60 @@ Full suite **2602 passed / 0 failed** (2596 before; 6 added). `flutter analyze l
 ### Open, and unchanged by this entry
 
 G2 release build, G3 Stripe price IDs, G4 the R5 Firestore question, and the C-series catalogue work.
+
+## 2026-08-16 — G2: the first release build, and the thing only a release build could find
+
+**Basis: FACT.**
+
+This project has described itself as near release for weeks without ever having produced a release
+artifact. All three builds now pass from `4f5f596`: `apk --release` (440 s), `--split-per-abi` (49 s)
+and `appbundle --release` (42 s). Full detail in `core/RELEASE_BUILD_2026-08-16.md`.
+
+### The artifacts were checked, not taken at their word
+
+"It said release on the command line" is not evidence that a release came out. `apksigner` reports
+the APK and the bundle are signed with `CN=Ivan Korostelev` (SHA-256 `77da5eed…`), against the
+`C=US, O=Android, CN=Android Debug` certificate on the debug APK sitting in the same output
+directory. `android:debuggable` is absent, and the package id carries no `.debug` suffix.
+
+The certificate fingerprint is public — Play displays it. `android/key.properties` is untracked,
+matched by `android/.gitignore:17`, and nothing from it appears in the repository or in the record.
+
+### Size, measured rather than feared
+
+The fat APK is 263.4 MB, which sounds alarming and is irrelevant: it carries four ABIs and is not a
+submission route. The bundle is 128.8 MB and an arm64 device downloads about 107.2 MB. Play's base
+module limit is 500 MB compressed download, with a mobile-data warning above 200 MB — so the app is
+under a third of the hard limit and about half the warning threshold. Verified against the policy
+page rather than recalled.
+
+Roughly half the native weight is ML Kit's pose and OCR pipelines, which are the Form Coach and the
+machine scanner. That is the price of two shipped features, not accidental bloat.
+
+### BLOCKER, and it is a deadline rather than a defect
+
+The built artifact reports `targetSdkVersion:'35'`. Play requires **API 36** for new apps and updates
+from **31 August 2026** — fifteen days from today. This app has never been submitted, so it submits
+as a new app, and the deadline lands before any realistic submission date. The available extension
+runs to 1 November 2026 and is a delay, not an exemption.
+
+Nothing in the test suite could have surfaced this. It is a property of the artifact, and there was
+no artifact until today.
+
+### Why it was not just bumped
+
+`compileSdk` is already 36 and the change is one line. It was still left alone.
+
+`targetSdk` is the one SDK knob that changes runtime *behaviour* rather than API availability. API 36
+enforces edge-to-edge display, and no layout in this app has ever been opened on an Android 16
+device — the R11/O series only reached a device at all after that gap sat open for weeks. Bumping it
+here would produce a build that compiles, passes all 2602 tests, and is visually broken for real
+users. That is the exact shape of claim this project's contract forbids: a feature asserted to work
+because the code that would implement it exists.
+
+Recorded as gate G7 with the one-line change written out and the verification it needs named.
+
+### Open, and unchanged by this entry
+
+G3 Stripe price IDs, G4 the R5 Firestore question, G7 the targetSdk bump, and the C-series catalogue
+work. R3 and R10 from the recovered Gate J review remain operator decisions.

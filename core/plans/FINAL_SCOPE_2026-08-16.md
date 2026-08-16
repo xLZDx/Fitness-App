@@ -205,7 +205,8 @@ over 519 cards, 224 Gate E findings over 199 cards, 1887 verified rows of which 
 | Gate | Work | Acceptance |
 |---|---|---|
 | ~~**G1**~~ | ~~Delete `mobile/lib/features/insurance/` and its test~~ | **Done 2026-08-16.** No consumer existed in `lib/`; suite 2596 green after removal |
-| **G2** | Run `flutter build apk --release` and `--split-per-abi`; record size and versions | the build passes; the size lands in `PRODUCTION_MANIFEST` |
+| ~~**G2**~~ | ~~Run `flutter build apk --release` and `--split-per-abi`; record size and versions~~ | **Done 2026-08-16.** All three builds pass, real signing key verified against the debug one, not debuggable; AAB 128.8 MB, arm64 download 107.2 MB, both well inside Play's 500 MB limit. Recorded in `core/RELEASE_BUILD_2026-08-16.md` rather than `PRODUCTION_MANIFEST`, which is generated from live APIs. **Found one blocker: `targetSdk` 35 — see G7** |
+| **G7** | Raise `targetSdk` to 36 and verify on an Android 16 device | Play requires API 36 for new apps from **31 Aug 2026**, 15 days out. One line in `android/app/build.gradle:126`; deliberately not changed blind, because API 36 enforces edge-to-edge and no layout here has run on Android 16 |
 | **G3** | Create 5 Stripe price IDs, run `setup_stripe_secrets.ps1` | operator, ~10 min in the dashboard |
 | **G4** | Settle R5: either an evidential read-only Firestore query, or soften the absolute wording in `legal_text.py` | policy and code agree |
 | ~~**G5**~~ | ~~Recover the R8/R9/R11 artefact, or close them as "no source exists"~~ | **Done 2026-08-16.** Recovered from the session transcript (the agent's own output file was 0 bytes), persisted and hashed. R8/R9/R11 all FIXED with mutation-tested regressions; R3/R10/R12 surfaced, three findings nobody had recorded at all — see S3a–S3c |

@@ -48,3 +48,14 @@ sequence,timestamp,marker,action,command_or_change,target,result,related_gate,co
 47,2026-08-16T09:52:34+03:00,+ГО,verify,"measure R3, R10, R12 against the live tree",mobile/lib,all three still current; none had ever been recorded,G5,,R3 is a MAJOR that fell out of the deferral list entirely
 48,2026-08-16T09:52:34+03:00,+ГО,test,flutter test,mobile/,2602 passed / 0 failed,G5,,2596 before; 6 added
 49,2026-08-16T09:52:34+03:00,+ГО,test,flutter analyze lib/ test/,mobile/,"7 issues, all pre-existing",G5,,none in files touched here
+50,2026-08-16T09:53:19+03:00,+ГО|КОМИТ,record,git commit,core/ + mobile/ + scripts/ + public/,committed,G5,4f5f596,"15 files, 544 insertions"
+51,2026-08-16T10:07:34+03:00,+ГО,verify,flutter --version / java -version / gradle + AGP + Kotlin,mobile/android,"Flutter 3.27.1, Dart 3.6.0, JDK 17.0.18, Gradle 8.10.2, AGP 8.7.0, Kotlin 2.2.20",G2,,
+52,2026-08-16T10:07:34+03:00,+ГО,verify,git ls-files + check-ignore on key.properties,mobile/android/key.properties,untracked and ignored,G2,,no signing secret is recorded anywhere
+53,2026-08-16T10:07:34+03:00,+ГО,build,flutter build apk --release,mobile/,"ok, 440.4s, 276186855 bytes",G2,,
+54,2026-08-16T10:07:34+03:00,+ГО,build,flutter build apk --release --split-per-abi,mobile/,"ok, 3 apks: 96786803 / 112419555 / 113524691",G2,,
+55,2026-08-16T10:07:34+03:00,+ГО,build,flutter build appbundle --release,mobile/,"ok, 135033029 bytes",G2,,
+56,2026-08-16T10:07:34+03:00,+ГО,verify,apksigner + aapt2 + jarsigner,release artifacts,"real key CN=Ivan Korostelev, not debuggable, no .debug suffix",G2,,debug apk in the same directory carries CN=Android Debug
+57,2026-08-16T10:07:34+03:00,+ГО,verify,zip entry size analysis,app-release.apk,"native 4 ABIs 220MB, assets 45.92MB",G2,,ML Kit pose+OCR is about half the native weight
+58,2026-08-16T10:07:34+03:00,+ГО,verify,Play download-size limit,support.google.com answer 9859372,"500MB base module, 200MB warning",G2,,arm64 download 107.2MB is inside both
+59,2026-08-16T10:07:34+03:00,+ГО,verify,Play target API requirement,support.google.com answer 11926878,API 36 required from 2026-08-31,G2,,BLOCKER: artifact reports targetSdk 35
+60,2026-08-16T10:07:34+03:00,+ГО,create,record the build,core/RELEASE_BUILD_2026-08-16.md,written,G2,,"not PRODUCTION_MANIFEST, which is generated from live APIs"
