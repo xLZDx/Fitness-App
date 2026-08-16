@@ -15,6 +15,7 @@ import '../equipment/state/equipment_providers.dart';
 import '../form_check/state/form_check_providers.dart';
 import '../personalisation/state/personalisation_providers.dart';
 import '../programmes/data/programme.dart';
+import '../programmes/data/programme_builder.dart' show ProgrammeNotViable, ProgrammeFault;
 import '../programmes/data/programme_fit.dart';
 import '../programmes/data/programme_labels.dart';
 import '../programmes/data/programme_schedule.dart';
@@ -1278,17 +1279,48 @@ Future<void> _startProgramme(
     // error in front of the user. The action is retryable and the snackbar
     // is where the retry belongs, so it carries one instead of the
     // exception text.
-    error: (e, _) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(l.errorServiceUnavailable),
-      behavior: SnackBarBehavior.floating,
-      // `active: null` deliberately: the switch-confirmation sheet was
-      // already answered on the first attempt, and asking again on a retry
-      // of the same action would be a second dialog for one decision.
-      action: SnackBarAction(
-        label: l.errorRetry,
-        onPressed: () => _startProgramme(context, ref, null, template),
-      ),
-    )),
+    //
+    // N01: a safety refusal (ProgrammeNotViable with blockedBySafety) is a
+    // different fact from a network/service failure and must not collapse
+    // into the same "service unavailable" + Retry copy — retrying a refusal
+    // repeats the same answer forever, and offering it implies the block is
+    // transient when it is not.
+    error: (e, _) {
+      if (e is ProgrammeNotViable &&
+          e.findings.any((f) => f.fault == ProgrammeFault.blockedBySafety)) {
+        final reasons =
+            ref.read(safetyContextProvider).valueOrNull?.wholePersonBlocks ??
+                const [];
+        showDialog<void>(
+          context: context,
+          builder: (dialogContext) => Dialog(
+            backgroundColor: Colors.transparent,
+            child: EligibilityNotice(
+              key: const Key('programme.enrol.blocked'),
+              title: l.eligTrainingBlockedTitle,
+              reasons: reasons,
+              onReviewProfile: () {
+                Navigator.of(dialogContext).pop();
+                GoRouter.of(context).push('/onboarding');
+              },
+            ),
+          ),
+        );
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(l.errorServiceUnavailable),
+        behavior: SnackBarBehavior.floating,
+        // `active: null` deliberately: the switch-confirmation sheet was
+        // already answered on the first attempt, and asking again on a
+        // retry of the same action would be a second dialog for one
+        // decision.
+        action: SnackBarAction(
+          label: l.errorRetry,
+          onPressed: () => _startProgramme(context, ref, null, template),
+        ),
+      ));
+    },
     loading: () {},
   );
 }

@@ -12081,3 +12081,31 @@ Second-order audit reconciled and committed. Remediation started this session: s
 `N01` (G-A's first item). Four of five principal gates, Tier 6, adversarial re-attack, and H3 remain.
 
 Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).
+
+## 2026-08-16 — N01: the app's one honest refusal stops reading as a network error
+
+G-A/A1, root cause RC3, first item of the five-gate remediation plan. `ProgrammeNotViable` carrying
+`ProgrammeFault.blockedBySafety` was falling into the same `AsyncValue.error` handler as every other
+enrolment failure in `workouts_page.dart`, which rendered a fixed "service unavailable" string with a
+**Retry** action that just re-ran the same blocked action. The four templates that refuse correctly
+told the user it was a connectivity problem; this was the one honest refusal the app produces, and no
+user could tell it from a dropped connection.
+
+The error branch now checks for `ProgrammeNotViable` carrying `blockedBySafety` before the generic
+handler and renders `EligibilityNotice` — the same widget the Train tab already uses for the identical
+whole-person-blocked state — in a dialog, with a Review-profile action and no retry. Every other
+exception (the actual network/service case) still gets the original snackbar unchanged.
+
+Regression-tested with a mutation check, not just a green run: stashed the source fix alone (test kept
+new), confirmed the new test fails against the pre-fix code — finds the Retry snackbar the old handler
+produces — then restored the fix and confirmed it passes. `flutter analyze` clean on the changed file.
+
+G-A is not closed. Remaining: F017 (chest-pain refusal carries no urgency), F018 (false safety claim
+over unused health fields), F019 (render `safetyFilterCoverage`), F020's render-site half, F002's copy
+half (D3, resolved above, has not yet been implemented as a code change).
+
+### Status
+
+G-A in progress, one of six items landed. Not pushed.
+
+Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).

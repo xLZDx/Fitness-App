@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 
 import '../helpers/test_app.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/features/auth/data/auth_user.dart';
+import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/equipment/data/asset_equipment_repository.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
@@ -916,6 +918,58 @@ void main() {
       // this test to copy that says nothing about enrolment. The Retry button
       // is what makes this snackbar the *enrolment* failure specifically.
       expect(find.widgetWithText(SnackBar, 'Retry'), findsOneWidget);
+    });
+
+    testWidgets(
+        'N01: a safety-blocked enrolment does not render as a service error, '
+        'and offers no retry', (tester) async {
+      // strength_base has a declared ProgrammeSpec, so this profile reaches
+      // `buildProgramme`'s safety check and throws
+      // ProgrammeNotViable(blockedBySafety) — not the "no signed-in user"
+      // exception the sibling test above uses, which is why that one still
+      // exercises the generic service-error branch and this one must not.
+      final router = GoRouter(
+        initialLocation: '/workouts',
+        routes: [
+          GoRoute(path: '/workouts', builder: (_, __) => const WorkoutsPage()),
+        ],
+      );
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          equipmentRepositoryProvider.overrideWithValue(_seededRepo()),
+          authUserProvider.overrideWith((_) => Stream.value(
+              const AuthUser(uid: 'u1', displayName: 'Tester'))),
+          // chestPain is a kBlockingQuestions member: this profile is
+          // refused ALL training, not screened for one exercise.
+          safetyContextProvider.overrideWith((_) async => SafetyContext(
+              screening: screen({
+                for (final q in ParQQuestion.values)
+                  q: q == ParQQuestion.chestPain,
+              }))),
+        ],
+        child: MaterialApp.router(
+          theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
+          locale: kTestLocale,
+          localizationsDelegates: kTestLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+          builder: (context, child) =>
+              AuroraBackground(child: child ?? const SizedBox.shrink()),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Start programme').first);
+      await tester.pumpAndSettle();
+
+      // Mutation check for this test: reverting the error branch to the old
+      // single SnackBar makes this fail (finds the Retry snackbar, not the
+      // dialog) — that is the point of asserting both sides.
+      expect(find.widgetWithText(SnackBar, 'Retry'), findsNothing);
+      expect(find.text(AppLocalizations.of(tester.element(find.byType(WorkoutsPage)))
+          .errorServiceUnavailable), findsNothing);
+      expect(find.byKey(const Key('programme.enrol.blocked')), findsOneWidget);
     });
   });
 }
