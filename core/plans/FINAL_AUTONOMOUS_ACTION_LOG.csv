@@ -114,3 +114,8 @@ sequence,timestamp,marker,action,command_or_change,target,result,related_gate,co
 113,2026-08-16T11:42:35+03:00,+ГО,create,3 tests including a control on the absolute claim,health_disclosure_test.dart,pass,G4,,"without the control, deleting the strong sentence would satisfy the rest"
 114,2026-08-16T11:42:35+03:00,+ГО,test,4 mutations,legal suite,"3 red immediately; the 4th was a malformed mutation, re-cut and red",G4,,a mutation that does not mutate the thing under test looks like a weak test
 115,2026-08-16T11:42:35+03:00,+ГО,test,flutter test,mobile/,2631 passed / 0 failed,G4,,2628 before; 3 added
+116,2026-08-16T11:51:13+03:00,+ГО|КОМИТ,record,git commit,G4/R5,committed,G4,9732b17,"8 files, 127 insertions"
+117,2026-08-16T11:51:13+03:00,+ГО,edit,resolve the equipment name through the registry,exercise_reference.dart,ExerciseQuickStats is now a ConsumerWidget,C3-followup,,equipment.ru.json already had the translation; this surface never asked
+118,2026-08-16T11:51:13+03:00,+ГО,create,3 tests over the three fallbacks,exercise_immersive_hero_test.dart,pass,C3-followup,,
+119,2026-08-16T11:51:13+03:00,+ГО,test,4 mutations,exercise_immersive_hero_test.dart,"3 red; the 4th was a no-op mutation of mine, re-cut and red",C3-followup,,"second time today a green mutation was the mutation being wrong, not the test"
+120,2026-08-16T11:51:13+03:00,+ГО,test,flutter test + analyze,mobile/,"2634 passed / 0 failed; 7 analyzer issues, all pre-existing",C3-followup,,2631 before; 3 added

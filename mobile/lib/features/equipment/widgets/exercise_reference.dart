@@ -293,12 +293,40 @@ class _ScrimChip extends StatelessWidget {
 /// guessed. `equipmentLabel` is the vendor's own free text — shown verbatim
 /// rather than mapped, because the mapping onto this app's 52 machine ids does
 /// not exist yet and inventing one per label would be worse than quoting.
-class ExerciseQuickStats extends StatelessWidget {
+class ExerciseQuickStats extends ConsumerWidget {
   const ExerciseQuickStats({super.key, required this.exercise});
   final ExerciseItem exercise;
 
+  /// The equipment name, in the language the rest of the card is written in.
+  ///
+  /// `equipmentLabel` is the vendor's own English free text, and rendering it
+  /// verbatim left this tile as the one untranslated string on a Russian card —
+  /// "Cable Pulley Machine" under "ОБОРУДОВАНИЕ". Found while repairing the 78
+  /// rows that labelled a machine "None" (C3), which is when it became the only
+  /// wrong thing left in this tile rather than the second-worst.
+  ///
+  /// The registry already carries the translation (`equipment.ru.json`); this
+  /// surface simply never asked it. Resolved by `equipmentId`, so it is the
+  /// same lookup the machine pages do rather than a second mapping to keep in
+  /// step.
+  ///
+  /// Three fallbacks, in order, and each is a different fact:
+  ///   * no `equipmentId` — the row needs no machine, and the vendor's own
+  ///     words ("Yoga Mat", "Wall") are the best thing to show;
+  ///   * the id does not resolve, or the registry is still loading — the label
+  ///     is stale English rather than nothing, which beats an empty tile;
+  ///   * no label either — the exercise is bodyweight, and says so.
+  String _equipment(WidgetRef ref, AppLocalizations l10n) {
+    final id = exercise.equipmentId;
+    if (id != null) {
+      final name = ref.watch(equipmentByIdProvider(id)).valueOrNull?.name;
+      if (name != null && name.trim().isNotEmpty) return name;
+    }
+    return exercise.equipmentLabel ?? l10n.exerciseBodyweight;
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     return Row(
       children: [
@@ -312,7 +340,7 @@ class ExerciseQuickStats extends StatelessWidget {
         Expanded(
           child: _QuickStat(
             label: l10n.exerciseStatEquipment,
-            value: exercise.equipmentLabel ?? l10n.exerciseBodyweight,
+            value: _equipment(ref, l10n),
           ),
         ),
         const SizedBox(width: 8),

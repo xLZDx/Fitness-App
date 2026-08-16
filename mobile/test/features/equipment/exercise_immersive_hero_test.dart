@@ -1,6 +1,8 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
+import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/equipment/widgets/exercise_reference.dart';
 import '../../helpers/test_app.dart';
 
@@ -19,12 +21,13 @@ ExerciseItem _ex({
   List<String> muscles = const ['chest', 'triceps'],
   ExerciseDifficulty difficulty = ExerciseDifficulty.intermediate,
   String? equipmentLabel,
+  String? equipmentId,
   bool isStretch = false,
 }) =>
     ExerciseItem(
       id: 'bench',
       title: title,
-      equipmentId: null,
+      equipmentId: equipmentId,
       equipmentLabel: equipmentLabel,
       muscles: muscles,
       primaryMuscles: muscles.take(1).toList(),
@@ -120,6 +123,71 @@ void main() {
 
       expect(find.text('Bodyweight'), findsOneWidget,
           reason: 'better than an empty tile or the vendor\'s null');
+    });
+
+    /// C3 follow-up. `equipmentLabel` is the vendor's own English free text,
+    /// so this tile was the one untranslated string on a Russian card —
+    /// "Cable Pulley Machine" under "ОБОРУДОВАНИЕ". The registry already
+    /// carries the translation; this surface had simply never asked it.
+    ///
+    /// Resolved through `equipmentByIdProvider`, the same lookup the machine
+    /// pages use, so there is no second mapping to keep in step.
+    testWidgets('the registry name wins over the vendor label', (tester) async {
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          equipmentByIdProvider('cable_machine').overrideWith(
+            (ref) async => const EquipmentItem(
+              id: 'cable_machine',
+              name: 'Блочный тренажёр',
+              manufacturer: '',
+              category: 'strength',
+              description: '',
+            ),
+          ),
+        ],
+        child: testHarness(
+          child: ExerciseQuickStats(
+            exercise: _ex(
+                equipmentId: 'cable_machine',
+                equipmentLabel: 'Cable Pulley Machine'),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Блочный тренажёр'), findsOneWidget);
+      expect(find.text('Cable Pulley Machine'), findsNothing);
+    });
+
+    testWidgets('an unresolvable id falls back to the vendor label',
+        (tester) async {
+      // Stale English beats an empty tile, and beats claiming bodyweight for
+      // an exercise that names a machine.
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          equipmentByIdProvider('ghost').overrideWith((ref) async => null),
+        ],
+        child: testHarness(
+          child: ExerciseQuickStats(
+            exercise: _ex(equipmentId: 'ghost', equipmentLabel: 'Some Machine'),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Some Machine'), findsOneWidget);
+    });
+
+    testWidgets('a row with no equipmentId keeps the vendor words',
+        (tester) async {
+      // NO_EQUIPMENT is not a machine we failed to name: "Yoga Mat" and "Wall"
+      // are the honest answer and must not be replaced by a registry lookup.
+      await tester.pumpWidget(testHarness(
+        child: ExerciseQuickStats(exercise: _ex(equipmentLabel: 'Yoga Mat')),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Yoga Mat'), findsOneWidget);
     });
 
     testWidgets('a stretch reads Mobility, not Strength', (tester) async {

@@ -11691,3 +11691,48 @@ to tell the two apart is to check what the mutated artifact actually says.
 ### Verification
 
 `flutter test` **2631 passed / 0 failed** (2628 before; 3 added).
+
+## 2026-08-16 — The one untranslated string on a Russian exercise card
+
+**Basis: FACT.**
+
+Found while repairing the 78 rows that labelled a machine "None" (C3), and recorded there rather
+than folded into that gate. `ExerciseQuickStats` rendered `equipmentLabel` verbatim, and that field
+is the vendor's own English free text — so a Russian card read **"Cable Pulley Machine"** under
+**"ОБОРУДОВАНИЕ"**.
+
+Pre-existing, and C3 did not widen it: `"None"` was English too. What C3 changed is that it became
+the only wrong thing left in that tile rather than the second-worst.
+
+The translation already existed. `equipment.ru.json` carries a Russian name for every registry entry
+and the machine pages read it; this surface simply never asked. So the fix is a lookup, not new
+content: `equipmentByIdProvider`, the same call the machine pages make, rather than a second mapping
+that would need keeping in step.
+
+### Three fallbacks, and each is a different fact
+
+The ordering is the design, not defensiveness:
+
+- **No `equipmentId`** — the row needs no machine, and the vendor's own words are the honest answer.
+  "Yoga Mat" and "Wall" must not be replaced by a registry lookup that would find nothing.
+- **The id does not resolve, or the registry is still loading** — the English label is stale but
+  true. It beats an empty tile, and it beats claiming bodyweight for an exercise that names a
+  machine, which is the C3 defect arriving from the other direction.
+- **No label either** — bodyweight, and it says so.
+
+### Mutation, and one of them was mine
+
+Four. Making the vendor label win over the registry, pushing a no-id row through the registry anyway,
+and dropping through to "Bodyweight" on an unresolvable id — all red.
+
+The fourth, "the registry lookup is dropped again", came back **green**, and the mutation was at
+fault rather than the test: it appended a comment to the fallback line and changed no behaviour at
+all. Re-cut to delete the lookup block, it is red. That is the second time today a green mutation
+turned out to be a mutation that did not mutate — worth naming as a habit, because the reflex on a
+green mutation is to distrust the test, and half the time here the thing to check first was the
+mutation.
+
+### Verification
+
+`flutter test` **2634 passed / 0 failed** (2631 before; 3 added). `flutter analyze lib/ test/`
+7 issues, all pre-existing.

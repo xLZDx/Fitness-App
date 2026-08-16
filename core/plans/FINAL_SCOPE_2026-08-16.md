@@ -119,10 +119,13 @@ the content is not there.
 - ~~78 rows say "no equipment" on the card for an exercise that names a machine~~ — **repaired 2026-08-16 (C3)**,
   derived from the registry. Measured populations: **503 NO_EQUIPMENT / 1384 KNOWN_EQUIPMENT /
   0 UNKNOWN_EQUIPMENT**. A permanent invariant test now holds all three apart.
-- **New, found during C3:** the exercise card renders `equipmentLabel` verbatim
-  (`exercise_reference.dart:315`) and the Russian overlay carries no equipment text, so a Russian
-  user reads the machine name in English. Pre-existing and not widened by C3 — "None" was English
-  too — but it is now the only untranslated string on that card.
+- ~~**New, found during C3:** the exercise card renders `equipmentLabel` verbatim, so a Russian
+  user reads the machine name in English~~ — **fixed 2026-08-16.** `ExerciseQuickStats` now
+  resolves the name through `equipmentByIdProvider`, the same lookup the machine pages use, so
+  there is no second mapping to keep in step. Three fallbacks, each a different fact: no
+  `equipmentId` keeps the vendor's own words ("Yoga Mat", "Wall"), an unresolvable id keeps the
+  stale English label rather than claiming bodyweight, and no label at all reads Bodyweight.
+  3 tests, 4 mutations.
 
 ### 1.8 Persistence risk, inherited — **closed 2026-08-16 (G6)**
 
