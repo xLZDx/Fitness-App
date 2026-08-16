@@ -19,6 +19,9 @@ import 'package:fitness_app/features/visual_equipment/data/scan_outcome.dart';
 import 'package:fitness_app/features/visual_equipment/state/recognition_history_providers.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
+import 'package:fitness_app/features/safety/data/eligibility.dart';
+import 'package:fitness_app/features/safety/data/par_q.dart';
+import 'package:fitness_app/features/safety/state/eligibility_providers.dart';
 import 'package:fitness_app/features/visual_equipment/data/live_recognition.dart';
 import 'package:fitness_app/features/visual_equipment/data/mlkit_text_recogniser.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_match.dart';
@@ -996,6 +999,43 @@ void main() {
           find.byKey(const Key('scan-ai-coach')), 120);
 
       expect(find.byKey(const Key('scan-ai-coach')), findsOneWidget);
+    });
+
+    testWidgets(
+        'N04: a user refused all training is offered no AI Coach here either',
+        (tester) async {
+      // The coach's answer IS a sets-and-reps prescription. `exercise_page`
+      // withholds it structurally for a refused user; this route reached
+      // `AiCoachSheet` directly and did not, so someone the app refuses all
+      // training could still ask for and receive one.
+      //
+      // Blocked by a STATED answer -- chest pain during exertion -- not by an
+      // unfinished questionnaire, which is the distinction
+      // `SafetyContext.blockedByAStatedAnswer` exists to draw and which the
+      // test above ('a confident result offers the AI Coach', an un-onboarded
+      // user) is the control for.
+      final container = await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(_SpySession()),
+        visualEquipmentServiceProvider.overrideWithValue(
+          MockVisualEquipmentService(fixedResults: const [
+            VisualMatch(equipmentId: 'leg_press', confidence: 0.95),
+          ]),
+        ),
+        safetyContextProvider.overrideWith((_) async => SafetyContext(
+              screening: screen({
+                for (final q in ParQQuestion.values)
+                  q: q == ParQQuestion.chestPain,
+              }),
+            )),
+      ]);
+
+      await container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/a.jpg');
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.byKey(const Key('scan-ai-coach')), findsNothing);
     });
 
     testWidgets('an undecided result offers no AI Coach', (tester) async {

@@ -78,20 +78,13 @@ class MachineCardView extends ConsumerWidget {
     // unscreened movements in front of an injured user for exactly as long as
     // it takes them to read one.
     final safety = ref.watch(safetyContextProvider).valueOrNull;
-    // `allowsAnyTraining` is deliberately NOT the test. `screen()` is
-    // fail-closed, so an un-onboarded user is "blocked" purely for having
-    // answered nothing — gating on it would withhold from everyone who has
-    // not finished the questionnaire, which is most people who open the
-    // scanner, and would delete this feature exactly as a catalogue match
-    // would. What matters is whether the user has told us something that
-    // screens: an ANSWERED block, an injury, or a movement restriction.
-    // Someone who has told us nothing has nothing to screen against, and the
-    // app's own disclosure system (SafetyDisclosure) is what states that
-    // honestly rather than hiding content over it.
-    final blockedByAnAnswer =
-        safety?.wholePersonBlocks.any((r) => !r.unanswered) ?? false;
+    // `allowsAnyTraining` is deliberately NOT the test — see
+    // `SafetyContext.blockedByAStatedAnswer`, which is where that distinction
+    // is defined and argued. Someone who has told us nothing has nothing to
+    // screen against, and `SafetyDisclosure` is what states that honestly
+    // rather than hiding content over it.
     final showUses = safety != null &&
-        !blockedByAnAnswer &&
+        !safety.blockedByAStatedAnswer &&
         safety.injuries.isEmpty &&
         safety.health.restrictions.isEmpty;
 

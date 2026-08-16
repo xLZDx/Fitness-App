@@ -215,6 +215,36 @@ class SafetyContext {
 
   bool get allowsAnyTraining => wholePersonBlocks.isEmpty;
 
+  /// Blocked by something the user actually TOLD us, as distinct from blocked
+  /// for having told us nothing yet.
+  ///
+  /// [allowsAnyTraining] cannot separate those two, and for some surfaces the
+  /// difference is the whole decision. `screen()` is fail-closed by design, so
+  /// a user who has not finished the questionnaire is `blocked` with every
+  /// reason marked `incomplete`. That is the correct answer to "may I build
+  /// this person a workout" — and the wrong one to "may I show this person
+  /// what a machine is", because gating the second on it hides ordinary
+  /// content from everybody who has not onboarded, which is most people who
+  /// ever open the scanner.
+  ///
+  /// So the two questions are asked separately:
+  ///
+  ///  * [allowsAnyTraining] — may work be PRESCRIBED? A generator, a
+  ///    programme enrolment, a session: these refuse an unscreened user, and
+  ///    should, because they would otherwise be inventing a dose for someone
+  ///    nothing is known about.
+  ///  * this — has the user stated something that refuses them? Surfaces that
+  ///    merely describe, or that offer advice about equipment rather than a
+  ///    prescription, use this so an un-onboarded user keeps the app while a
+  ///    user who answered "yes, chest pain during exertion" does not get a
+  ///    sets-and-reps prescription.
+  ///
+  /// Neither is a softened version of the other, and a surface picking the
+  /// wrong one fails in a direction its own tests will not show: the first
+  /// over-refuses silently, the second under-refuses silently.
+  bool get blockedByAStatedAnswer =>
+      wholePersonBlocks.any((r) => !r.unanswered);
+
   /// The intensity ceiling this context imposes, or null for none.
   ///
   /// Composed from the screening verdict and the health answers by taking the

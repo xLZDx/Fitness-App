@@ -10,6 +10,8 @@ import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/profile/state/profile_providers.dart';
 import 'package:fitness_app/features/programmes/data/mock_programme_repository.dart';
 import 'package:fitness_app/features/programmes/data/programme.dart';
+import 'package:fitness_app/features/programmes/data/programme_builder.dart';
+import 'package:fitness_app/features/programmes/data/programme_specs.dart';
 import 'package:fitness_app/features/programmes/data/programme_templates.dart';
 import 'package:fitness_app/features/programmes/state/programme_providers.dart';
 import 'package:fitness_app/features/safety/data/eligibility.dart';
@@ -93,6 +95,9 @@ ProviderContainer _container({
   required List<ExerciseItem> catalogue,
   AuthUser? user,
   MockProfileRepository? profileRepo,
+  // F015/B1: replaces the cleared context below outright, so a case can
+  // enrol as a person the safety layer refuses.
+  SafetyContext? safety,
 }) {
   return ProviderContainer(overrides: [
     programmeRepositoryProvider.overrideWithValue(programmeRepo),
@@ -108,6 +113,7 @@ ProviderContainer _container({
     // `a home, bodyweight-only answer never schedules a barbell` still tests
     // the thing it is about.
     safetyContextProvider.overrideWith((ref) async {
+      if (safety != null) return safety;
       final profile = await ref.watch(screeningProfileProvider.future);
       return SafetyContext(
         screening: screen({for (final q in ParQQuestion.values) q: false}),
@@ -122,6 +128,90 @@ ProviderContainer _container({
 }
 
 void main() {
+  /// F015 (G-B/B1) — the whole-person gate applies to BOTH enrolment arms.
+  ///
+  /// `programme_providers.dart` reads a `ProgrammeSpec` for the template and
+  /// builds through `buildProgramme` when there is one; `buildProgramme`
+  /// refuses a blocked person itself. The `else` arm — templates with no
+  /// declared role structure, `shred_endurance` and `shoulders_arms` — called
+  /// `buildProgrammeSchedule` with an injury-filtered, equipment-sliced
+  /// catalogue and no safety context at all. So which of two templates a
+  /// person happened to tap decided whether their screening was honoured.
+  group('F015/B1: a refused person is refused whichever template they tap',
+      () {
+    SafetyContext chestPain() => SafetyContext(
+          screening: screen({
+            for (final q in ParQQuestion.values)
+              q: q == ParQQuestion.chestPain,
+          }),
+        );
+
+    ProgrammeTemplate templateWithoutSpec() {
+      final t = programmeTemplates
+          .firstWhere((t) => programmeSpecFor(t.id) == null);
+      return t;
+    }
+
+    test('the spec-LESS template refuses instead of enrolling', () async {
+      // The finding itself. Before B1 this wrote a full multi-week schedule.
+      final programmeRepo = MockProgrammeRepository(latency: Duration.zero);
+      addTearDown(programmeRepo.dispose);
+      final sessionRepo = MockScheduledSessionRepository(latency: Duration.zero);
+      addTearDown(sessionRepo.dispose);
+      final container = _container(
+        programmeRepo: programmeRepo,
+        sessionRepo: sessionRepo,
+        catalogue: _roleCatalogue(),
+        user: const AuthUser(uid: 'u1', displayName: 'T'),
+        safety: chestPain(),
+      );
+      addTearDown(container.dispose);
+      await container.read(authUserProvider.future);
+
+      await container
+          .read(programmeActionProvider.notifier)
+          .enroll(templateWithoutSpec());
+
+      final state = container.read(programmeActionProvider);
+      expect(state.hasError, isTrue);
+      expect(state.error, isA<ProgrammeNotViable>());
+      expect(
+        (state.error as ProgrammeNotViable)
+            .findings
+            .map((f) => f.fault),
+        contains(ProgrammeFault.blockedBySafety),
+        reason: 'N01 renders the stated refusal off exactly this fault',
+      );
+      expect(await programmeRepo.watch('u1').first, isEmpty,
+          reason: 'nothing may be written for a person who was refused');
+    });
+
+    test('the spec-BEARING template still refuses, as it already did',
+        () async {
+      // The control for the arm that was already correct: hoisting the gate
+      // must not have moved the refusal off it.
+      final programmeRepo = MockProgrammeRepository(latency: Duration.zero);
+      addTearDown(programmeRepo.dispose);
+      final sessionRepo = MockScheduledSessionRepository(latency: Duration.zero);
+      addTearDown(sessionRepo.dispose);
+      final container = _container(
+        programmeRepo: programmeRepo,
+        sessionRepo: sessionRepo,
+        catalogue: _roleCatalogue(),
+        user: const AuthUser(uid: 'u1', displayName: 'T'),
+        safety: chestPain(),
+      );
+      addTearDown(container.dispose);
+      await container.read(authUserProvider.future);
+
+      await container.read(programmeActionProvider.notifier).enroll(
+          programmeTemplates.firstWhere((t) => programmeSpecFor(t.id) != null));
+
+      expect(container.read(programmeActionProvider).error,
+          isA<ProgrammeNotViable>());
+    });
+  });
+
   group('ProgrammeAction.enroll', () {
     test('writes the programme and its generated schedule for the current '
         'user', () async {

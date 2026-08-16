@@ -13,6 +13,7 @@ import 'data/catalog_labels.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../workouts/widgets/plate_calculator.dart';
 import '../workouts/widgets/warmup_calculator.dart';
+import '../safety/state/eligibility_providers.dart' show safetyContextProvider;
 import 'data/equipment_models.dart';
 import 'widgets/safety_disclosure.dart';
 import 'state/equipment_providers.dart';
@@ -29,6 +30,25 @@ class EquipmentDetailPage extends ConsumerWidget {
     final theme = Theme.of(context);
     final eq = ref.watch(equipmentByIdProvider(equipmentId));
     final ex = ref.watch(recommendedExercisesProvider(equipmentId));
+
+    // N04 (G-B/B4). The whole-person gate, which this screen did not apply.
+    // `exercise_page.dart` gets one structurally — its coach entry sits inside
+    // `ExerciseResolutionView`'s builder, which runs only for an exercise the
+    // eligibility layer allows — but this page and the scanner reach
+    // `AiCoachSheet` directly, so a user the app refuses all training could
+    // still ask for and receive a sets-and-reps prescription.
+    //
+    // `blockedByAStatedAnswer` rather than `!allowsAnyTraining`, deliberately:
+    // see that getter's own doc. The latter is fail-closed on an UNANSWERED
+    // questionnaire, so gating on it would hide the coach from every user who
+    // has not onboarded — a much larger change than N04 describes, and one
+    // whose cost lands on people who have told us nothing that refuses them.
+    // N04 is about a user who was refused, not one who was never asked.
+    //
+    // Null while resolving: hidden until the answer is real. Showing first and
+    // retracting is the direction that cannot be undone once tapped.
+    final safety = ref.watch(safetyContextProvider).valueOrNull;
+    final mayTrain = safety != null && !safety.blockedByAStatedAnswer;
 
     return FrostedScaffold(
       // R11d: no GlassAppBar. The design opens on the machine's own picture at
@@ -109,40 +129,47 @@ class EquipmentDetailPage extends ConsumerWidget {
               // The visible AI: one tap, machine-specific technique advice in
               // the interface language. Recognition may also be cloud-backed,
               // but this is where the user can SEE an AI working for them.
-              GlassCard(
-                key: const Key('equipment-ai-coach'),
-                onTap: () => AiCoachSheet.show(
-                  context,
-                  source: AiCoachSource.equipment,
-                  subjectId: item.id,
-                  subjectName: item.name,
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.auto_awesome),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context).aiCoachButton,
-                            style: theme.textTheme.titleSmall
-                                ?.copyWith(fontWeight: FontWeight.w800),
-                          ),
-                          Text(
-                            AppLocalizations.of(context).aiCoachButtonHint,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colors.textSecondary,
+              //
+              // N04: hidden outright for a whole-person block rather than
+              // shown-and-refused. The sheet's answer IS the prescription, so
+              // an entry point that opens and then declines is a worse version
+              // of the same offer -- and the refusal itself already has a
+              // home, on the screens that state it with its reason.
+              if (mayTrain)
+                GlassCard(
+                  key: const Key('equipment-ai-coach'),
+                  onTap: () => AiCoachSheet.show(
+                    context,
+                    source: AiCoachSource.equipment,
+                    subjectId: item.id,
+                    subjectName: item.name,
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.auto_awesome),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppLocalizations.of(context).aiCoachButton,
+                              style: theme.textTheme.titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.w800),
                             ),
-                          ),
-                        ],
+                            Text(
+                              AppLocalizations.of(context).aiCoachButtonHint,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const Icon(Icons.chevron_right_rounded),
-                  ],
+                      const Icon(Icons.chevron_right_rounded),
+                    ],
+                  ),
                 ),
-              ),
               const SizedBox(height: 24),
               Text(
                 AppLocalizations.of(context).equipmentRecommendedExercises,

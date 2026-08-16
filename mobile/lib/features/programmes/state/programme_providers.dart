@@ -11,6 +11,7 @@ import '../data/mock_programme_repository.dart';
 import '../data/programme.dart';
 import '../data/programme_repository.dart';
 import '../../safety/state/eligibility_providers.dart';
+import '../../safety/data/eligibility.dart' show eligibleExercises;
 import '../data/programme_builder.dart';
 import '../data/programme_schedule.dart';
 import '../data/programme_specs.dart';
@@ -143,6 +144,34 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
 
       final safeCatalogue = await ref.read(safeCatalogProvider.future);
 
+      // F015 (G-B/B1). The whole-person gate, hoisted ABOVE the branch below.
+      //
+      // It used to be read inside the `spec != null` arm only, and
+      // `buildProgramme` applied it there (`programme_builder.dart:319`). The
+      // `else` arm applied nothing of the kind: `buildProgrammeSchedule` got
+      // `availableWith(safeCatalogue, equipment)` — the injury filter plus an
+      // equipment slice — so a user the safety layer refuses ALL training was
+      // enrolled in a full multi-week programme, provided the template they
+      // picked happened to be one of the two without a declared role
+      // structure. Which of two templates a person tapped decided whether
+      // their screening was honoured.
+      //
+      // `allowsAnyTraining` is the correct gate here — not
+      // `blockedByAStatedAnswer`, which some display surfaces use. This
+      // prescribes work: it is exactly the case that getter's own doc names
+      // as belonging to the stricter test, because enrolling an unscreened
+      // person means inventing a dose for someone nothing is known about.
+      //
+      // Thrown as `ProgrammeNotViable(blockedBySafety)` rather than a bare
+      // error so the caller renders the stated refusal N01 built for it,
+      // rather than a service-unavailable snackbar with a Retry button.
+      final safety = await ref.read(safetyContextProvider.future);
+      if (!safety.allowsAnyTraining) {
+        throw const ProgrammeNotViable(
+          [ProgrammeFinding(ProgrammeFault.blockedBySafety)],
+        );
+      }
+
       // Gate P. A template with a declared role structure is built by
       // `buildProgramme`, which fills MOVEMENT ROLES and validates the result;
       // one without falls back to the muscle-pool scheduler.
@@ -159,7 +188,6 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
           daysPerWeek: programme.daysPerWeek);
       List<ScheduledSession> rows;
       if (spec != null) {
-        final safety = await ref.read(safetyContextProvider.future);
         final focus = programme.muscles.toSet();
         final built = buildProgramme(ProgrammeBuildRequest(
           spec: spec,
@@ -197,10 +225,18 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
             );
         }
       } else {
+        // F015's per-candidate half. `availableWith` slices by equipment and
+        // `safeCatalogue` has had injuries removed, but neither applies the
+        // movement restrictions, post-operative restrictions or clinician
+        // advice the eligibility layer holds — which the spec branch has
+        // honoured since Gate P via `buildProgramme`. Same layer, same call,
+        // so the two arms can no longer disagree about what this person may
+        // be given.
         rows = buildProgrammeSchedule(
           programme: programme,
           catalogue: availableWith(
-              safeCatalogue, profile?.equipment ?? EquipmentAccess.empty),
+              eligibleExercises(safeCatalogue, safety),
+              profile?.equipment ?? EquipmentAccess.empty),
           sessionMinutes: profile?.schedule.sessionMinutes,
           preferredWeekdays: profile?.schedule.preferredWeekdays ?? const [],
         );

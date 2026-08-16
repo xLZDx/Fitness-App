@@ -22,6 +22,7 @@ import '../programmes/data/programme_labels.dart';
 import '../programmes/data/programme_schedule.dart';
 import '../programmes/data/programme_templates.dart';
 import '../programmes/state/programme_providers.dart';
+import '../safety/data/eligibility.dart' show eligibleExercises;
 import '../safety/state/eligibility_providers.dart';
 import '../safety/widgets/eligibility_notice.dart';
 import '../subscription/data/subscription_models.dart';
@@ -154,6 +155,23 @@ List<ExerciseItem> videoFirst(List<ExerciseItem> items) => [
 final _filteredExercisesProvider =
     FutureProvider.family<List<ExerciseItem>, WorkoutsFilter>(
         (ref, filter) async {
+  // F020's routing half / G-B/B5. Every branch below used to read
+  // `safeCatalogProvider` directly, which applies `safeFor` — the injury
+  // filter and nothing else. So "For you" ran the whole eligibility layer
+  // (via `forYouExercisesProvider`) while every OTHER chip on the same row
+  // ran one rule of it: a user under a movement restriction, post-operative
+  // restrictions or a clinician's advice saw those exercises removed from one
+  // tab and present in the next, on the same screen, with no way to tell
+  // which list was the honest one.
+  //
+  // Read once here rather than per branch, so a chip added later cannot
+  // reintroduce the gap by reaching for the raw catalogue out of habit.
+  Future<List<ExerciseItem>> eligibleCatalog() async {
+    final all = await ref.watch(safeCatalogProvider.future);
+    final safety = await ref.watch(safetyContextProvider.future);
+    return eligibleExercises(all, safety);
+  }
+
   if (filter == WorkoutsFilter.forYou) {
     // Ranked, not merely filtered. `rankedForYouProvider` puts the muscles the
     // user has trained least in the last weeks at the top; before it was wired
@@ -163,10 +181,10 @@ final _filteredExercisesProvider =
     return videoFirst(await ref.watch(rankedForYouProvider.future));
   }
   if (filter == WorkoutsFilter.all) {
-    return videoFirst(await ref.watch(safeCatalogProvider.future));
+    return videoFirst(await eligibleCatalog());
   }
   if (filter == WorkoutsFilter.noEquipment) {
-    final all = await ref.watch(safeCatalogProvider.future);
+    final all = await eligibleCatalog();
     // `!needsEquipment`, not `equipmentId == null`. The purchased library has
     // no machine ids at all, so the old test promised a no-equipment tab and
     // filled it with barbell work; the vendor's own equipment column is what
@@ -174,7 +192,7 @@ final _filteredExercisesProvider =
     return videoFirst(all.where((e) => !e.needsEquipment).toList());
   }
   if (filter == WorkoutsFilter.formCoach) {
-    final all = await ref.watch(safeCatalogProvider.future);
+    final all = await eligibleCatalog();
     // `formCoachSupports`, not `poseTargetId != null`. The catalog tags 540
     // rows across eight movement patterns; the coach has been taught one of
     // them, so 37 of those 540 can actually be judged. Filtering on the tag
@@ -187,19 +205,19 @@ final _filteredExercisesProvider =
         all.where((e) => formCoachSupports(e.poseTargetId)).toList());
   }
   if (filter == WorkoutsFilter.stretching) {
-    final all = await ref.watch(safeCatalogProvider.future);
+    final all = await eligibleCatalog();
     return videoFirst(all.where((e) => e.isStretch).toList());
   }
 
   final muscles = kFilterMuscles[filter];
   if (muscles != null) {
-    final all = await ref.watch(safeCatalogProvider.future);
+    final all = await eligibleCatalog();
     return videoFirst(
         all.where((e) => e.muscles.any(muscles.contains)).toList());
   }
 
   final categories = kFilterCategories[filter]!;
-  final all = await ref.watch(safeCatalogProvider.future);
+  final all = await eligibleCatalog();
   final equipment =
       await ref.watch(equipmentRepositoryProvider).listEquipment();
   final wantedIds = {

@@ -13,6 +13,7 @@ import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/equipment/widgets/safety_disclosure.dart';
 import 'package:fitness_app/features/safety/data/eligibility.dart';
+import 'package:fitness_app/features/safety/data/health_flags.dart';
 import 'package:fitness_app/features/safety/data/par_q.dart';
 import 'package:fitness_app/features/safety/state/eligibility_providers.dart';
 import 'package:fitness_app/features/equipment/widgets/exercise_thumb.dart';
@@ -87,7 +88,7 @@ AssetEquipmentRepository _seededRepo() {
     );
 }
 
-Widget _harness(AssetEquipmentRepository repo) {
+Widget _harness(AssetEquipmentRepository repo, {SafetyContext? safety}) {
   final router = GoRouter(
     initialLocation: '/workouts',
     routes: [
@@ -115,8 +116,11 @@ Widget _harness(AssetEquipmentRepository repo) {
       // closes it — so a harness that says nothing about screening renders the
       // refusal instead of the tab under test. `an unscreened user is refused`
       // covers the other side deliberately.
-      safetyContextProvider.overrideWith((_) async => SafetyContext(
-          screening: screen({for (final q in ParQQuestion.values) q: false}))),
+      safetyContextProvider.overrideWith((_) async =>
+          safety ??
+          SafetyContext(
+              screening:
+                  screen({for (final q in ParQQuestion.values) q: false}))),
     ],
     child: MaterialApp.router(
       theme: AppTheme.light(),
@@ -151,9 +155,9 @@ final Finder _exerciseList = find.byWidgetPredicate(
 /// Library filter chips/list must switch to it first — the chip row and
 /// exercise list this whole file already tested did not move or change,
 /// they just live behind a tap now.
-Future<void> _pumpLibrary(
-    WidgetTester tester, AssetEquipmentRepository repo) async {
-  await tester.pumpWidget(_harness(repo));
+Future<void> _pumpLibrary(WidgetTester tester, AssetEquipmentRepository repo,
+    {SafetyContext? safety}) async {
+  await tester.pumpWidget(_harness(repo, safety: safety));
   await tester.pumpAndSettle();
   await tester.tap(find.text('Library'));
   await tester.pumpAndSettle();
@@ -273,6 +277,93 @@ void main() {
         'clinician" disclosure', (tester) async {
       await _pumpLibrary(tester, _seededRepo());
       expect(find.byType(SafetyDisclosure), findsOneWidget);
+    });
+
+    /// G-B/B5 — every chip runs the whole eligibility layer, not just the
+    /// injury filter.
+    ///
+    /// "For you" reads `rankedForYouProvider` -> `forYouExercisesProvider`,
+    /// which already applied `eligibleExercises`. Every other chip read
+    /// `safeCatalogProvider`, which applies `safeFor` — injuries and nothing
+    /// else. A user under a movement restriction therefore saw the same
+    /// exercise removed from one chip and present in the next, on one screen,
+    /// with nothing to say which list was the honest one.
+    group('B5: a movement restriction reaches every chip', () {
+      AssetEquipmentRepository repoWithOverhead() =>
+          AssetEquipmentRepository()
+            ..seedForTests(
+              equipment: const [
+                EquipmentItem(
+                  id: 'rack',
+                  name: 'Rack',
+                  manufacturer: 'Y',
+                  category: 'strength',
+                  description: '',
+                ),
+              ],
+              exercises: const [
+                ExerciseItem(
+                  id: 'ohp',
+                  title: 'Overhead press',
+                  equipmentId: 'rack',
+                  muscles: ['shoulders'],
+                  difficulty: ExerciseDifficulty.beginner,
+                  durationMinutes: 10,
+                  summary: 'Pressing overhead',
+                  steps: [],
+                  // The tag `MovementRestriction.overhead` screens on.
+                  contraindications: ['shoulder'],
+                  video: {'men': 'https://cdn.example.com/ohp.mp4'},
+                ),
+                ExerciseItem(
+                  id: 'lateral',
+                  title: 'Lateral raise',
+                  equipmentId: 'rack',
+                  muscles: ['shoulders'],
+                  difficulty: ExerciseDifficulty.beginner,
+                  durationMinutes: 10,
+                  summary: 'Not overhead',
+                  steps: [],
+                  video: {'men': 'https://cdn.example.com/lat.mp4'},
+                ),
+              ],
+            );
+
+      SafetyContext restricted() => SafetyContext(
+            screening:
+                screen({for (final q in ParQQuestion.values) q: false}),
+            health: const HealthFlags(
+              restrictions: {MovementRestriction.overhead},
+            ),
+          );
+
+      testWidgets('the Shoulders chip drops the restricted movement',
+          (tester) async {
+        await _pumpLibrary(tester, repoWithOverhead(), safety: restricted());
+        await _tapChip(tester, 'Shoulders');
+
+        expect(find.text('Overhead press'), findsNothing);
+        expect(find.text('Lateral raise'), findsOneWidget,
+            reason: 'the chip must filter, not empty itself');
+      });
+
+      testWidgets('so does the All chip', (tester) async {
+        // A separate branch of the same resolver, and the one a user reaches
+        // when a muscle chip looks short.
+        await _pumpLibrary(tester, repoWithOverhead(), safety: restricted());
+        await _tapChip(tester, 'All');
+
+        expect(find.text('Overhead press'), findsNothing);
+        expect(find.text('Lateral raise'), findsOneWidget);
+      });
+
+      testWidgets('CONTROL: an unrestricted user sees both', (tester) async {
+        await _pumpLibrary(tester, repoWithOverhead());
+        await _tapChip(tester, 'Shoulders');
+
+        expect(find.text('Overhead press'), findsOneWidget);
+        expect(find.text('Lateral raise'), findsOneWidget);
+      });
     });
 
     testWidgets('Cardio filter restricts to cardio-category equipment',

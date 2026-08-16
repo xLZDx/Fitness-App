@@ -14,6 +14,7 @@ import '../../core/camera/centre_crop.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../equipment/state/equipment_providers.dart';
+import '../safety/state/eligibility_providers.dart' show safetyContextProvider;
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/experimental_banner.dart';
 import '../../shared/widgets/glass.dart';
@@ -1416,6 +1417,16 @@ class _ScanAiCoachEntry extends ConsumerWidget {
     // opened mid-catalogue-load still names the right machine rather than
     // waiting or showing nothing.
     final name = equipmentDisplayName(ref, match.equipmentId);
+
+    // N04 (G-B/B4): the second ungated route to a prescription. Same rule and
+    // same reasoning as `equipment_detail_page.dart` — hidden for a user who
+    // has STATED something that refuses them (not merely one who has not
+    // answered yet; see `SafetyContext.blockedByAStatedAnswer`), and hidden
+    // while the answer is still resolving, rather than opened then refused.
+    final safety = ref.watch(safetyContextProvider).valueOrNull;
+    if (safety == null || safety.blockedByAStatedAnswer) {
+      return const SizedBox.shrink();
+    }
 
     return GlassCard(
       key: const Key('scan-ai-coach'),

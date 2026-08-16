@@ -9,6 +9,10 @@ import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/equipment/widgets/safety_disclosure.dart';
+import 'package:fitness_app/features/safety/data/eligibility.dart';
+import 'package:fitness_app/features/safety/data/health_flags.dart';
+import 'package:fitness_app/features/safety/data/par_q.dart';
+import 'package:fitness_app/features/safety/state/eligibility_providers.dart';
 import 'package:fitness_app/features/equipment/workout_player_page.dart';
 import 'package:fitness_app/features/programmes/data/programme.dart';
 import 'package:fitness_app/features/programmes/data/programme_templates.dart';
@@ -44,6 +48,18 @@ ExerciseItem _exercise(String id, String title) => ExerciseItem.fromJson({
 final _squat = _exercise('ea_air_squat', 'Air Squat');
 final _row = _exercise('ea_row', 'Bent-over Row');
 final _press = _exercise('ea_press', 'Overhead Press');
+
+/// Carries the tag `MovementRestriction.overhead` screens on, so the
+/// eligibility layer has something real to remove. N02's fixture.
+final _overheadPress = ExerciseItem.fromJson({
+  'id': 'ea_ohp',
+  'title': 'Standing Overhead Press',
+  'durationMinutes': 10,
+  'difficulty': 'beginner',
+  'muscles': const ['shoulders'],
+  'steps': const ['Press overhead'],
+  'contraindications': const ['shoulder'],
+});
 
 ScheduledSession _day({
   String id = 'day_1',
@@ -87,13 +103,22 @@ Widget _app(
   MockWorkoutSessionRepository? repo,
   Programme? programme,
   MockScheduledSessionRepository? sessionRepo,
+  // N02: what the add-exercise picker draws from, and who it draws for.
+  List<ExerciseItem>? catalog,
+  SafetyContext? safety,
 }) =>
     ProviderScope(
       overrides: [
         exerciseResolutionProvider.overrideWith((ref, id) async {
-          final item = [_squat, _row, _press].where((e) => e.id == id).first;
+          final item = [_squat, _row, _press, _overheadPress]
+              .where((e) => e.id == id)
+              .first;
           return ExerciseResolution.found(item);
         }),
+        if (catalog != null)
+          safeCatalogProvider.overrideWith((_) async => catalog),
+        if (safety != null)
+          safetyContextProvider.overrideWith((_) async => safety),
         authUserProvider.overrideWith((_) => Stream.value(
             const AuthUser(uid: 'u1', displayName: 'Tester'))),
         if (repo != null) workoutSessionRepositoryProvider.overrideWithValue(repo),
@@ -289,6 +314,46 @@ void main() {
       containsAll(const ['ea_air_squat', 'ea_row']),
       reason: 'exercise one must survive exercise two being logged',
     );
+  });
+
+  testWidgets(
+      'N02: the add-exercise picker offers nothing a movement restriction '
+      'rules out', (t) async {
+    // The highest-risk unscreened list in the app, and the reason it is:
+    // whatever is tapped here is written straight into the logged session, so
+    // no later screen re-evaluates it. The picker used to read
+    // `safeCatalogProvider`, which applies `safeFor` -- the INJURY filter and
+    // nothing else -- so a user whose profile says "no overhead work" was
+    // offered every overhead movement in the catalogue.
+    await tall(t);
+    final repo = MockWorkoutSessionRepository(latency: Duration.zero);
+    addTearDown(repo.dispose);
+    await t.runAsync(
+        () => repo.save('u1', _daySessionWith(const [_squatLogged])));
+
+    await t.pumpWidget(_app(
+      const WorkoutPlayerPage(exerciseId: 'ea_row', dayId: 'day_1'),
+      days: [_day(exercises: [_squat, _row])],
+      logged: [_daySessionWith(const [_squatLogged])],
+      repo: repo,
+      catalog: [_press, _overheadPress],
+      safety: SafetyContext(
+        screening: screen({for (final q in ParQQuestion.values) q: false}),
+        health: const HealthFlags(
+          restrictions: {MovementRestriction.overhead},
+        ),
+      ),
+    ));
+    await t.pumpAndSettle();
+
+    await t.tap(find.byKey(const Key('player.addExercise')));
+    await t.pumpAndSettle();
+
+    expect(find.text('Standing Overhead Press'), findsNothing,
+        reason: 'the restriction names exactly this movement');
+    expect(find.text('Overhead Press'), findsOneWidget,
+        reason: 'an untagged exercise must still be offered -- the fix must '
+            'filter, not empty the picker');
   });
 
   testWidgets('a tap before the history has loaded waits instead of overwriting',

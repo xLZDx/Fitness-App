@@ -12503,3 +12503,98 @@ the two controls correctly pass in both states. `flutter analyze` clean.
 G-B in progress: B6 landed. B1, B2, B3, B4, B5 remain. Not pushed.
 
 Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).
+
+## 2026-08-17 — G-B: the eligibility layer reaches the call sites that never called it
+
+Root cause RC1, and the plan's own summary of it is exact: "One pattern, six call sites. The
+eligibility layer is correct; these surfaces simply do not call it." B6 landed separately above; B1,
+B2, B3/B4 and B5 land here, each with its own mutation check per the plan's instruction that every
+step lands separately.
+
+**The distinction this gate forced into the open.** Three of these surfaces need a whole-person gate,
+and the obvious expression of it — `!SafetyContext.allowsAnyTraining` — is wrong for some of them,
+because `screen()` is fail-closed: a user who has answered nothing is `blocked` with every reason
+marked `incomplete`. Gating a display surface on it hides ordinary content from everyone who has not
+onboarded. I hit this twice (once in G-C, once here on the coach entry, where an existing scanner test
+went red and caught it), so rather than repeat the same ad-hoc predicate a third time it is now one
+named getter with the argument written down: `SafetyContext.blockedByAStatedAnswer`
+(`eligibility.dart`). Its doc states the split explicitly — `allowsAnyTraining` answers "may work be
+PRESCRIBED for this person", `blockedByAStatedAnswer` answers "has this person told us something that
+refuses them" — and warns that a surface picking the wrong one fails silently in a direction its own
+tests will not show. `machine_card_view.dart` (G-C) was refactored onto it too, so there is one
+definition rather than three copies.
+
+**B1 (F015, partial).** `enrol` read `safetyContextProvider` inside the `spec != null` arm only, where
+`buildProgramme` applies it (`programme_builder.dart:319`). The `else` arm handed
+`availableWith(safeCatalogue, equipment)` to `buildProgrammeSchedule` — injuries and an equipment
+slice, no safety context at all. A user the layer refuses ALL training was enrolled in a full
+multi-week programme provided they tapped one of the two templates without a declared role structure
+(`shred_endurance`, `shoulders_arms`). Which of two templates a person happened to tap decided whether
+their screening was honoured. The gate is hoisted above the branch and throws
+`ProgrammeNotViable(blockedBySafety)`, which is the fault N01 already renders a stated refusal from;
+the fallback's catalogue now goes through `eligibleExercises` so the two arms cannot disagree about
+what this person may be given. `allowsAnyTraining` is the correct gate HERE — this prescribes work,
+which is the case that getter's doc names.
+
+**B2 (N02).** The in-workout add-exercise picker read `safeCatalogProvider`, i.e. `safeFor`, i.e. the
+injury filter alone. The ledger calls this the highest-risk site in the gate and it is right: what is
+tapped is written straight into the logged session, so nothing downstream re-evaluates it. Now
+`eligibleExercises(catalog, safety)`. The whole-person gate is deliberately not added here — this
+screen already answers it upstream, since `exerciseResolutionProvider` withholds the entry exercise
+itself for a blocked user, so a refused person never reaches the button.
+
+**B3/B4 (N04).** `equipment_detail_page.dart` and `scanner_page.dart` reach `AiCoachSheet` directly.
+`exercise_page.dart` cannot serve a refused user because its entry sits inside
+`ExerciseResolutionView`'s builder, which never runs for one; these two had no equivalent, so a
+refused user could still ask for and receive a sets-and-reps prescription. Both now hide the entry on
+`blockedByAStatedAnswer`, and hide it while the context is still resolving. `EquipmentDetailPage` had
+no test file of any kind, so one was created.
+
+**B5 (F020's routing half).** Every chip on the Library row except "For you" read
+`safeCatalogProvider`. "For you" goes through `forYouExercisesProvider`, which already applied
+`eligibleExercises`. So one chip ran the whole layer and the other fourteen ran one rule of it: a user
+under a movement restriction saw the same exercise absent from one tab and present in the next, on one
+screen, with nothing to say which was honest. Routed through a single local `eligibleCatalog()` rather
+than per branch, so a chip added later cannot reintroduce the gap by reaching for the raw catalogue.
+
+Regression-tested, each step mutation-checked separately by stashing only its own source file:
+B1 2 tests (spec-less refuses — fails pre-fix; spec-bearing still refuses — control, passes both);
+B2 1 test (restricted movement absent from the picker, unrestricted one still present);
+B3/B4 4 tests across two files (refused user gets no entry — fails pre-fix on both; cleared user does;
+un-onboarded user does, which is the regression guard for the `allowsAnyTraining` trap);
+B5 3 tests (Shoulders chip and All chip both drop the restricted movement — both fail pre-fix; control
+passes both). Full-project `flutter analyze`: the same 7 pre-existing issues, none in a touched file.
+
+F020 is now fully closed — the render half landed in G-A (`71f5cc5`) and the routing half is B5.
+
+### Gap in my own G-A verification, found by this gate's full-suite run
+
+The full run after G-B came back with one failure:
+`test/features/safety/screening_reaches_the_screen_test.dart`, `'answering a blocking question says
+so on the spot'`, asserting the routine copy "We are not going to hand you a workout" on a CHEST PAIN
+answer. That is precisely the wording F017 (`8bf16d2`, G-A) deliberately replaced with
+`safetyBlockedUrgentTitle` for this one answer.
+
+So the test was broken by F017 and **the G-A regression run did not surface it** — that run reported
+exactly one failure, the known pre-existing `app_buttons_test.dart` scheduler flake, and this test
+passed in it. Confirmed the failure predates G-B rather than assuming: stashed the uncommitted G-B
+`lib/` changes and it still failed against committed HEAD, and `git show 8bf16d2:...safety_refusal_card.dart`
+carries the urgent branch. The two runs differ in which single test failed, so full-suite ordering is
+evidently affecting both — the flake fired in one run and this test in the other. Recording that as an
+open observation about the suite, not a diagnosis: I have not established why.
+
+The correction is to the test, not the code — F017's behaviour is the intended one, and
+`safety_refusal_card_test.dart` already pins both sides (urgent for chest pain, routine for other
+blocking answers). Updated to assert the urgent title and to assert the routine wording is ABSENT, so
+it now fails in both directions rather than one.
+
+The honest statement about G-A's closure: it was verified, but its regression pass missed a real
+failure it should have caught, and the claim "every G-A-added test passed" in that entry stands while
+"the suite was green apart from a known flake" did not hold as strongly as written.
+
+### Status
+
+G-B closed: B1, B2, B3, B4, B5, B6 all landed and regression-verified. F015 remains PARTIALLY fixed
+by design — B1 is the immediate patch; G-E removes the fallback entirely. Not pushed.
+
+Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).

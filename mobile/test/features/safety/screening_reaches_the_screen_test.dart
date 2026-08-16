@@ -95,8 +95,18 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('onb.screening.blocked')), findsOneWidget);
-      expect(find.text('We are not going to hand you a workout'),
+      // F017 changed what this says for THIS answer, and the change is the
+      // point: chest pain during exertion is the app's one S0 hard-interrupt
+      // category, so the card stops reading as a routine "not today" and says
+      // the symptom needs medical attention. The old expectation
+      // (`safetyBlockedTitle`, "We are not going to hand you a workout") is
+      // still correct for every other blocking answer -- see
+      // `safety_refusal_card_test.dart`, which pins both sides -- and this
+      // case is chest pain specifically.
+      expect(find.text('This needs medical attention, not a workout'),
           findsOneWidget);
+      expect(find.text('We are not going to hand you a workout'), findsNothing,
+          reason: 'the routine wording must not survive an urgent answer');
     });
 
     testWidgets('an incomplete screen is not shouted at', (tester) async {

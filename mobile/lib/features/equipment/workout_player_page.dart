@@ -10,6 +10,8 @@ import '../../shared/widgets/smooth_scroll_list.dart';
 import '../form_check/state/form_check_providers.dart';
 import '../programmes/data/programme_labels.dart';
 import '../programmes/state/programme_providers.dart';
+import '../safety/data/eligibility.dart' show eligibleExercises;
+import '../safety/state/eligibility_providers.dart' show safetyContextProvider;
 import '../safety/widgets/eligibility_notice.dart';
 import 'widgets/exercise_reference.dart';
 import 'widgets/safety_disclosure.dart';
@@ -802,8 +804,26 @@ class _AddExerciseButton extends ConsumerWidget {
 
     Future<void> onTap() async {
       final exclude = already.exercises.map((e) => e.exerciseId).toSet();
+      // N02 (G-B/B2). `safeCatalogProvider` applies `safeFor`, which is the
+      // INJURY filter and nothing else — it reads `health.injuries` and stops.
+      // This picker is the one unscreened list in the app whose tap is
+      // terminal: what the user chooses is written straight into the logged
+      // session, so there is no later screen that re-evaluates it and no
+      // refusal card that could catch it afterwards. A user under a movement
+      // restriction, post-operative restrictions or a clinician's advice was
+      // offered every exercise those rules exist to remove.
+      //
+      // `eligibleExercises` is the whole layer rather than one of its rules.
+      // It deliberately does NOT apply the whole-person gate (see its own
+      // doc): that gate is a screen state, and this screen already answers it
+      // upstream — `exerciseResolutionProvider` withholds the entry exercise
+      // itself for a whole-person block, so a refused user never reaches this
+      // button.
       final catalog = await ref.read(safeCatalogProvider.future);
-      final candidates = catalog.where((e) => !exclude.contains(e.id)).toList();
+      final safety = await ref.read(safetyContextProvider.future);
+      final candidates = eligibleExercises(catalog, safety)
+          .where((e) => !exclude.contains(e.id))
+          .toList();
       if (!context.mounted) return;
       final picked = await _ExercisePickerSheet.show(context, candidates);
       if (picked == null || !context.mounted) return;
