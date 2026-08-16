@@ -12250,3 +12250,39 @@ G-A remaining: F002's copy half.
 G-A in progress, five of six items landed. Not pushed.
 
 Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).
+
+## 2026-08-16 — F002: the pitch deck's scan-coverage claim now matches the shipped model
+
+G-A/A6, root cause RC7, per D3 (RESOLVED, `40_CONSOLIDATED_PRIORITY_DEPENDENCY.md`). D3's own text
+names the exact instance: `core/business/PITCH_2026.md:15`, "QR-scan any gym machine" against a
+shipped model (`equipment_v1.tflite`, `mobile/assets/models/README.md`) that recognises 10 machine
+types out of a 69-machine catalogue. D3 already decided the fix is copy-only, proceeds regardless of
+whether the label set ever expands, and does not touch the unshipped v2 model (28% top-3 on the
+operator's own 30 real gym photos — nowhere near a bar that would justify a wider claim).
+
+Grepped the repo for every instance of the same overclaim (`scan (any|every) (gym )?machine`, case-
+insensitive, across `core/business/`, `mobile/lib/`, `mobile/assets/`) — this is the only hit. In-app
+scanner copy (`scannerPointAtAMachineAndTapRecognise` and neighbours in `app_en.arb`) already says "a
+machine" / "one machine" without a coverage claim, so nothing there needed changing.
+
+Scoped the edit tightly to what D3 actually resolved. `PITCH_2026.md`'s slide 3 ("Scan the QR code on
+any gym machine...") makes a separate, larger claim about gym-partnership QR-tag deployment that no
+finding in this audit measured — left untouched rather than folded into a copy fix D3 did not
+authorise. Also did not touch the word "QR-scan" itself on line 15: `RecognitionSource.qr` is a real,
+exact-by-construction recognition path in `recognition_history.dart` (separate from the ML/photo path
+this finding is about), so removing it would have introduced a different inaccuracy while fixing this
+one. Added a parenthetical instead of rewriting the line, so the pitch's own wording stays intact for
+whoever reviews it and the correction is legible as a correction.
+
+Not a code change — no `flutter analyze` or test suite applies to a business-plan Markdown file.
+Verification here is the grep above (only instance) plus a direct re-read of the edited paragraph
+against `mobile/assets/models/README.md`'s own measured numbers.
+
+**G-A is now complete: N01, F017, F018, F019, F020 (render-site half), F002 all landed.** F020's
+routing/eligibility half stays open under G-B per its ledger status (`PARTIALLY_FIXED_GA`).
+
+### Status
+
+G-A closed pending the regression pass below. Not pushed.
+
+Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).

@@ -12,7 +12,9 @@
 # **[App Name]**
 ### The fitness coach you'd hire if you could afford one — in your pocket, for the price of a pizza.
 
-QR-scan any gym machine → instant personalized workout that respects your injuries, time budget, and goal. No coach needed. No guesswork.
+QR-scan a gym machine → instant personalized workout that respects your injuries, time budget, and goal. No coach needed. No guesswork.
+
+*(Camera recognition ships covering 10 common machine types today, out of a 69-machine catalogue — see `mobile/assets/models/README.md`. Broader coverage is in progress [v2, unshipped] but not yet claimed here. QR-code recognition is exact where a gym has tagged its equipment.)*
 
 Built solo in a garage in 6 months. Already shipping. Looking for $500K to hit 10,000 paying users in 12 months.
 
