@@ -4,6 +4,7 @@ import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 
 import '../equipment/data/equipment_models.dart';
+import 'provider_safety_settings.dart';
 
 /// Signature of "send a prompt, get text back" — injectable for tests.
 typedef GeneratorAsk = Future<String?> Function(String prompt);
@@ -32,6 +33,8 @@ class AiExerciseGenerator {
     if (custom != null) return custom(prompt);
     _model ??= FirebaseAI.googleAI().generativeModel(
       model: modelName,
+      // F026 — provider moderation, not domain safety.
+      safetySettings: kProviderSafetySettings,
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
         temperature: 0.4,

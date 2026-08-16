@@ -2,6 +2,7 @@ import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'ai_coach_context.dart';
+import 'provider_safety_settings.dart';
 
 /// Signature of "send a prompt, get text back" — injectable for tests.
 typedef CoachAsk = Future<String?> Function(String prompt);
@@ -24,7 +25,12 @@ class AiCoachService {
   Future<String?> _askCloud(String prompt) async {
     final custom = _ask;
     if (custom != null) return custom(prompt);
-    _model ??= FirebaseAI.googleAI().generativeModel(model: modelName);
+    _model ??= FirebaseAI.googleAI().generativeModel(
+      model: modelName,
+      // F026. Provider moderation only — see `provider_safety_settings.dart`
+      // for why this closes nothing in the fitness-safety space.
+      safetySettings: kProviderSafetySettings,
+    );
     final r = await _model!.generateContent([Content.text(prompt)]);
     return r.text;
   }

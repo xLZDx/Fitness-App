@@ -13145,3 +13145,73 @@ entirely in the session scratchpad; `git status` confirms nothing was left in th
 ### Status
 
 Firestore re-attack COMPLETE, no finding. 1 of 6 independent attacks done. Not pushed.
+
+## 2026-08-17 — Tier 6: F026 implemented, N08 resolved by deletion, F025 left dormant with a tripwire
+
+### F026 — provider moderation configured, and fenced off from domain safety
+
+No `SafetySetting` was configured on any of the three Gemini call sites. Leaving it unset does not
+mean "no filtering": it means the provider's defaults, whatever they are on the day, changing when
+they change them, with nothing in the repository recording what this app asked for.
+
+`kProviderSafetySettings` declares all four `HarmCategory` values at `HarmBlockThreshold.medium` and
+is passed at all three sites.
+
+**`medium`, deliberately not `low`.** Fitness content sits closer to these categories than most
+product copy does — "blast your chest" is ordinary gym register, and anatomical or injury discussion
+is unavoidably bodily. `low` blocks at the lowest probability of harm and would refuse legitimate
+answers about pelvic-floor work or a groin strain, producing a coach that goes silent exactly where a
+user most needs it. Silence reads as a broken feature, not as a safety decision. `PRODUCT_HEURISTIC`
+with no named owner, recorded rather than buried. `none` and `off` appear nowhere.
+
+**The boundary is the finding.** Provider moderation knows nothing about this user, their injuries or
+their PAR-Q+ answers. "Do heavy barbell squats through the knee pain" is not dangerous content by any
+provider's definition and is dangerous advice by this product's. So the declaration carries the
+distinction in its own doc, the tests live in their own file asserting nothing about eligibility, and
+one case asserts the doc still says it — because the whole finding is one sentence away from being
+read as "the AI coach is now safe", and the only durable place to stop that is beside the
+declaration. A fourth case pins that there are exactly three call sites, so a new one cannot appear
+without being told it needs both the settings and the F016 question asked of it.
+
+**Non-vacuity:** removing the settings from one site fails that site's case.
+
+### N08 — deleted, not wired
+
+`safetyVerdictProvider` and `draftSafetyVerdictProvider` had zero consumers — verified by grep across
+`lib/` and `test/`; the only hits were doc-comment mentions. Both were superseded: the saved-profile
+question is `safetyContextProvider`'s, and the draft question is `safetyContextFor(draft)`'s, which is
+what `onboardingPlanPreviewProvider` actually calls.
+
+Both deleted ones returned the `SafetyVerdict` **alone** — the screening half, without the injuries,
+flags and equipment every caller also needs. The risk was never a wrong answer; it was that they sat
+there looking authoritative, so a future surface could screen a user with the verdict and no injuries
+and believe it had asked. One safety truth is the point. The two doc comments that referenced the
+file now explain why it is gone.
+
+This is NOT the N07/F010 shape. Those are unused FEATURES, where deleting would discard intended
+product work. This was a duplicate mechanism for a question already answered better a file away.
+
+### F025 — dormant, and given a tripwire instead of a repair
+
+The nine celebrity-plan ids (`squat`, `plank`, `birddog`, …) are genuinely dangling: the shipped
+catalogue is vendor-prefixed (`ea_*`) and not one resolves. But `dailyWorkouts` has **no reader in
+`lib/` at all**, so nothing can reach them. Repairing the ids now would be repairing an artefact
+nobody uses — closure-count work, not safety work.
+
+What makes it worth something is what a first reader would most naturally do: render the day's
+exercises. That path would hand a user a list built from a hand-written map, bypassing the
+eligibility layer every other exercise surface goes through — the F020 shape exactly. So the test
+asserts REACHABILITY, which is what a source scan can legitimately see (there being no behaviour
+yet), and fails the moment a reader appears, naming the two prerequisites. A second case pins that
+the ids really are dangling, so the tripwire cannot pass forever over a field that was fine all along.
+
+**Non-vacuity:** a one-line probe reading `dailyWorkouts` fails it; a probe re-declaring
+`safetyVerdictProvider` fails the N08 fence.
+
+### Status
+
+F026 FIXED, mutation-proven. N08 RESOLVED by deletion. F025 DORMANT_TRIPWIRED — accurately
+classified, not repaired, and not counted as fixed.
+
+Codex review unavailable: usage_limit_exhausted until 2026-08-20 17:32 (attempted this gate; the
+fail-open receipt is what satisfies the local hook). Not pushed.

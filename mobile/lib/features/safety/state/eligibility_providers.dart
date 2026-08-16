@@ -23,7 +23,15 @@ import '../data/par_q.dart';
 /// screen out for as long as the read takes.
 ///
 /// A genuinely absent profile — signed out, or never onboarded — yields
-/// [kUnscreened], which blocks. Same rule as `safetyVerdictProvider`.
+/// [kUnscreened], which blocks.
+///
+/// N08. `safety_providers.dart` once held a `safetyVerdictProvider` that
+/// answered the same question from `currentProfileProvider` and returned only
+/// the `SafetyVerdict` — the screening half, without the injuries, flags or
+/// equipment every caller also needs. It had no consumer and was deleted:
+/// two providers answering "is this person screened?" with different amounts
+/// of information is a second authority waiting to be reached for, and one
+/// safety truth is the point of this file.
 final safetyContextProvider = FutureProvider<SafetyContext>((ref) async {
   final profile = await ref.watch(screeningProfileProvider.future);
   if (profile == null) {
@@ -42,8 +50,12 @@ final safetyContextProvider = FutureProvider<SafetyContext>((ref) async {
 /// Onboarding has no saved profile yet, so reading the stored one would screen
 /// the user as they were BEFORE they answered — which on a first run means
 /// screening an empty profile and refusing the preview to someone who has just
-/// filled the whole form in. Same split, same reason, as
-/// `draftSafetyVerdictProvider`.
+/// filled the whole form in.
+///
+/// N08. This is what `onboardingPlanPreviewProvider` actually calls, and it is
+/// why the deleted `draftSafetyVerdictProvider` had no consumer: the draft
+/// path was already served, by the version that carries the whole context
+/// rather than the verdict alone.
 SafetyContext safetyContextFor(UserProfile profile) => SafetyContext(
       screening: screen(profile.health.screening),
       injuries: profile.health.injuries,

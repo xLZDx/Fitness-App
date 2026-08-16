@@ -10,6 +10,7 @@ import 'package:image/image.dart' as img;
 import '../../equipment/data/equipment_alias_index.dart';
 import 'visual_equipment_match.dart';
 import 'visual_equipment_service.dart';
+import '../../ai_coach/provider_safety_settings.dart';
 
 /// Signature of "send an image + prompt to the cloud model, get text back".
 /// Injectable so every piece of this service is testable without Firebase.
@@ -36,6 +37,8 @@ CloudAsk firebaseCloudAsk({String modelName = kVisionModel}) {
   return (Uint8List bytes, String prompt) {
     model ??= FirebaseAI.googleAI().generativeModel(
       model: modelName,
+      // F026 — provider moderation, not domain safety.
+      safetySettings: kProviderSafetySettings,
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
         temperature: 0,
