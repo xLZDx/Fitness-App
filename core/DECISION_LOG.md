@@ -12789,3 +12789,30 @@ original invariant proven structurally. 25 tests in `machine_describer_test.dart
 suite at the G-E state: 2672 passing. Not pushed.
 
 Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).
+
+## 2026-08-17 — Tier 6, F009: the uid stops reaching the console
+
+**Decision.** Redact the account id from every string the photo key store writes down, and keep the
+diagnostic that made those strings worth writing.
+
+The audit recorded one site: `photo_key_store.dart:184` interpolates `$name` into `debugPrint`, and
+`name` is `secureKeyFor(uid)`. Tracing the type found a **second and worse one**:
+`PhotoKeyUnavailable.toString()` embeds the same string, and
+`progress_photos_providers.dart:191` prints `async.error` — on the ORDINARY store-unavailable path,
+not a rare one. So the leak was on a path the app takes whenever secure storage will not open, and
+an exception's `toString()` is exactly what a crash reporter uses as its message.
+
+`redactedKeyName(name)` replaces the uid with a literal `<uid>` and is a function over the name
+rather than a field on the exception: the raw name reaches log lines from more than one place, and a
+field would only have redacted the one that remembered to use it. The diagnostic worth having is
+WHICH SLOT failed — this account's secure key or the install-wide legacy one — and that survives
+redaction intact. The legacy key is deliberately left alone: it is one per install and names nobody.
+
+**Non-vacuity.** Reverting only the two call sites, keeping the helper defined (a source-file stash
+would have produced a COMPILE error, which proves less), fails both tests with the uid visible:
+`PhotoKeyUnavailable(progress_photos.key.v2.auth0|9f3c-REAL-USER-ID)` and
+`progress photos: stored key for progress_photos.key.v2.auth0|9f3c-REAL-USER-ID is not base64`.
+
+### Status
+
+F009 FIXED, mutation-proven at both sites, wider than the finding as recorded. Not pushed.

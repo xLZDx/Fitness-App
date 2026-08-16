@@ -17,13 +17,35 @@ import 'photo_encryption.dart';
 class PhotoKeyUnavailable implements Exception {
   PhotoKeyUnavailable(this.keyName, this.cause);
 
+  /// The slot that would not open. Carries the account id — see
+  /// [redactedKeyName] before putting it anywhere it can be read.
   final String keyName;
   final Object cause;
 
+  /// F009. [keyName] is `secureKeyFor(uid)`, so the account id used to reach
+  /// every string this exception was interpolated into — including
+  /// `progress_photos_providers.dart`'s `debugPrint` of `async.error`, which
+  /// is on the ordinary failure path rather than a rare one.
   @override
   String toString() =>
-      'PhotoKeyUnavailable($keyName): secure storage could not be read '
-      '— $cause. No key was written; existing photos are untouched.';
+      'PhotoKeyUnavailable(${redactedKeyName(keyName)}): secure storage could '
+      'not be read — $cause. No key was written; existing photos are '
+      'untouched.';
+}
+
+/// [name] with the account id taken out, for anything that gets written down.
+///
+/// F009. The diagnostic worth having is WHICH SLOT failed — this account's
+/// secure key or the install-wide legacy one — and that survives redaction.
+/// The uid does not need to be in a console log, a crash report or a bug
+/// attachment to answer it.
+///
+/// Deliberately a function over the name rather than a second field on the
+/// exception: the raw name reaches log lines from more than one place, and a
+/// field would only have redacted the one that remembered to use it.
+String redactedKeyName(String name) {
+  const securePrefix = 'progress_photos.key.v2.';
+  return name.startsWith(securePrefix) ? '$securePrefix<uid>' : name;
 }
 
 /// Where the photo encryption key lives between launches.
@@ -181,7 +203,9 @@ class SecurePhotoKeyStore implements PhotoKeyStore {
     } catch (e) {
       // Corrupt, not unreadable: the value came back, it is simply not a key.
       // Same treatment as a wrong length below.
-      debugPrint('progress photos: stored key for $name is not base64: $e');
+      // F009: `$name` is `secureKeyFor(uid)`.
+      debugPrint('progress photos: stored key for ${redactedKeyName(name)} is '
+          'not base64: $e');
       return null;
     }
     return key.length == 32 ? key : null;
