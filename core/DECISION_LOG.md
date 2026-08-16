@@ -9990,3 +9990,34 @@ active lifetime). The settings.json wiring covers delegation attempts session-wi
 outside that one agent. Verified functionally before commit: allowed `subagent_type` → exit 0,
 unknown `subagent_type` → exit 2 deny, non-`Agent` tool call → exit 0, all through the exact
 interpreter path (`C:/Python314/python.exe`) the config declares.
+
+---
+
+## 2026-08-16 — 10 of the 12 opus expert-team agents downgraded to sonnet
+
+**Operator decision.** 12 of the 29 expert-team agents (`chronic-condition-exercise-specialist`,
+`clinical-safety-gate`, `evidence-guideline-reviewer`, `fitness-data-scientist`,
+`fitness-recommendation-orchestrator`, `musculoskeletal-physiotherapist`,
+`pregnancy-postpartum-coach`, `recommendation-adversary`, `recommendation-engine-architect`,
+`regulatory-compliance-reviewer`, `sports-nutrition-dietitian`, `youth-adolescent-coach`) shipped
+on `model: opus`. Operator asked to move all of them to sonnet except the 2 most load-bearing,
+leaving the choice of which 2 to the assistant.
+
+**Kept on opus:** `fitness-recommendation-orchestrator` and `recommendation-adversary` — the only
+two whose job is breadth-of-synthesis across the *whole* case rather than one bounded domain: the
+orchestrator routes and reconciles every specialist's output into one recommendation, and the
+adversary is the final cross-cutting safety net explicitly scoped to catch what the rest missed.
+Neither is swappable for a narrower prompt the way a single-condition specialist is.
+
+**Downgraded to sonnet (10):** the other 10 were each scoped to one bounded domain (a specific
+chronic-condition family, pregnancy/postpartum, youth, one nutrition vertical, one architecture
+concern, one evidence-verification pass, one regulatory boundary, one data-science task, pain
+triage, or pre-participation screening) with the domain content already carried by the skill/policy
+files rather than needed from the model itself. `clinical-safety-gate` is a hard upstream gate but
+the task itself is closer to checklist/red-flag matching than open-ended synthesis, so it went with
+the other 10 rather than joining the kept pair.
+
+Change is a single-line `model:` frontmatter edit per file, nothing else touched. Verified:
+`git diff --stat` shows exactly `1 file, 1 insertion, 1 deletion` per file, 10 files, and a spot
+check of `clinical-safety-gate.md`/`fitness-recommendation-orchestrator.md`/
+`recommendation-adversary.md` headers confirms only the `model:` line changed.

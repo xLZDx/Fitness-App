@@ -1,7 +1,7 @@
 ---
 name: recommendation-engine-architect
 description: Recommendation-engine architecture specialist. Use when implementing intake, safety gates, exercise filtering, load calculations, personalization, rule versioning, LLM boundaries, explainability, audit logs, or deterministic validation.
-model: opus
+model: sonnet
 maxTurns: 12
 skills:
 - fitness-core-policy

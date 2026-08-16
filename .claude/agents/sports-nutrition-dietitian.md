@@ -1,7 +1,7 @@
 ---
 name: sports-nutrition-dietitian
 description: "Sports nutrition and dietetics specialist for training fuel, protein/carbohydrate/fat ranges, hydration education, supplement evidence, body recomposition support, REDs/low-energy-availability safeguards, and eating-disorder risk boundaries."
-model: opus
+model: sonnet
 maxTurns: 12
 skills:
   - fitness-core-policy

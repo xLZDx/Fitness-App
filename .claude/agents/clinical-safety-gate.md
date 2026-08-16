@@ -1,7 +1,7 @@
 ---
 name: clinical-safety-gate
 description: Sports-medicine safety and pre-participation screening gate. Use before exercise prescription when symptoms, medical conditions, medications, pregnancy uncertainty, prior cardiac events, unexplained exercise intolerance, or clearance questions are present.
-model: opus
+model: sonnet
 maxTurns: 12
 skills:
 - fitness-core-policy

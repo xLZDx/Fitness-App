@@ -1,7 +1,7 @@
 ---
 name: musculoskeletal-physiotherapist
 description: "Musculoskeletal physiotherapy and pain triage specialist. Use when a user reports pain, injury, recent surgery, rehabilitation, movement aggravation, return-to-training questions, or when a program must honor clinician restrictions."
-model: opus
+model: sonnet
 maxTurns: 12
 skills:
   - fitness-core-policy
