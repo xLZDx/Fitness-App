@@ -11635,3 +11635,59 @@ equals upstream and `git rev-list --left-right --count` reports `0 0`. No force,
 Verification at this point covers both halves of the repository for the first time in this session:
 `flutter test` **2628 / 0**, `functions/` **165 / 0**, `flutter analyze lib/ test/` **7 issues, all
 pre-existing**.
+
+## 2026-08-16 — G4 / R5: the question a production query was being asked to answer, answered by reading the code
+
+**Basis: FACT.**
+
+R5 has been open since Gate J as UNKNOWN, on the grounds that settling it needed a read-only query
+against production Firestore that this session cannot run. Exhausting the local evidence first turned
+out to close it.
+
+### What the code proves without any access
+
+- **The current app cannot send it.** `DeviceHealthProfileRepository.save` calls `stripSensitive`
+  before `_inner.save`, so the health block never reaches the write. The present-tense sentence —
+  *"is stored on your device and is not sent to this app's servers"* — is **true**, and
+  `device_health_profile_repository_test.dart` already pins the behaviour behind it.
+- **A pre-split document may still carry one.** `firestore_profile_repository.dart:74` parses it,
+  deliberately, because documents written before 2026-08-06 have it.
+- **It is cleared on the owner's next read.** `_resolve` moves the block down and deletes it upstream,
+  keyed off "the server still carries it" rather than "the device has it" — the comment there
+  explains why, and the distinction is what makes the migration survive an offline failure.
+- **Deletion removes it either way.** `deleteAccount` runs `recursiveDelete` over `users/{uid}`.
+
+So the only population the absolute sentence could be wrong for is an account nobody has opened
+since — which is precisely the population it was silently speaking for.
+
+### The fix, and why it is not "soften the wording"
+
+Gate G4's acceptance was written as *"either an evidential read-only Firestore query, or soften the
+absolute wording"*. Neither branch was taken as written. Softening would have retracted a sentence
+that is **true** and that a reader needs; the query would have measured a residue that the code
+already accounts for.
+
+Both locales now keep the absolute claim and add the one case it cannot promise for, with the single
+action that resolves it: opening the app once. A disclosure that names a residue and offers no action
+is worse than one that names nothing — it worries the reader without helping them.
+
+### Tests
+
+Three, and the third is the point: a **control** asserting the absolute present-tense claim is still
+made. Without it, every other assertion here is satisfied by deleting the strong sentence, which is
+the tempting way to make a wording complaint go away.
+
+Mutation, four. Dropping the whole exception paragraph, dropping the RU one while EN keeps it, and
+keeping the exception while removing the reader's action — all red. The fourth, retracting the
+absolute claim, went **green on the first attempt** and that was the mutation's fault rather than the
+test's: it replaced the sentence from `this app's servers.` onward, leaving `is not sent to` on the
+line above to join with the mutant text, so the asserted substring survived by accident. Re-cut
+across the whole clause it is red.
+
+Worth writing down, because it is the same failure as a false-green test: a mutation that does not
+actually mutate the thing under test reports the test as weak when the test is fine, and the only way
+to tell the two apart is to check what the mutated artifact actually says.
+
+### Verification
+
+`flutter test` **2631 passed / 0 failed** (2628 before; 3 added).

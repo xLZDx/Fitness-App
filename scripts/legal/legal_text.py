@@ -133,6 +133,14 @@ smoking and alcohol answers -- is stored on your device and is not sent to \
 this app's servers. Nothing on the server ever read it, so there was no reason \
 to hold it there.
 
+One exception, and it is historical rather than current. Accounts that answered \
+the questionnaire before 6 August 2026 had those answers held on the server, \
+because that is where the app kept them at the time. Opening the app moves them \
+down to your device and deletes the server copy, and deleting your account \
+removes them either way -- but an account nobody has opened since may still \
+have a copy sitting there. If that could be yours, opening the app once is \
+enough.
+
 Two things follow from that, and both are yours to weigh. If you reinstall the \
 app or move to another phone, those answers do not come back on their own; \
 Settings has a passphrase-protected backup that carries them, and a forgotten \
@@ -293,6 +301,14 @@ Fitness App делает и поддерживает один независим
 алкоголь -- хранится на устройстве и не отправляется на серверы этого \
 приложения. На сервере это никто и никогда не читал, поэтому держать их там \
 было незачем.
+
+Одно исключение, и оно историческое, а не текущее. У учётных записей, \
+заполнивших анкету до 6 августа 2026 года, эти ответы хранились на сервере -- \
+тогда приложение держало их именно там. При открытии приложения они \
+переносятся на устройство, а серверная копия удаляется; удаление учётной \
+записи убирает их в любом случае. Но у записи, которую с тех пор никто не \
+открывал, копия может ещё лежать там. Если это может быть ваш случай, \
+достаточно один раз открыть приложение.
 
 Отсюда два следствия, и оба вам стоит взвесить. При переустановке приложения \
 или переходе на другой телефон эти ответы сами не вернутся; в настройках есть \

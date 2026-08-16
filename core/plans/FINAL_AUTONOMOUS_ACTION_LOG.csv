@@ -108,3 +108,9 @@ sequence,timestamp,marker,action,command_or_change,target,result,related_gate,co
 107,2026-08-16T11:26:52+03:00,+ГО,edit,correct the P7 scope row,core/plans/FINAL_SCOPE_2026-08-16.md,4 covered -> 3 covered,P7,,correcting a figure written earlier the same day
 108,2026-08-16T11:27:30+03:00,+ГО|КОМИТ,record,git commit,P7,committed,P7,71fd1d9,"4 files, 245 insertions"
 109,2026-08-16T11:27:30+03:00,+ГО|+ПУШ,push,git push origin formcoach/gates-a-c,origin/formcoach/gates-a-c,local HEAD == upstream HEAD,mission,71fd1d9,"2 commits: B1/scope corrections and P7. No force, no history rewrite"
+110,2026-08-16T11:42:35+03:00,+ГО|КОМИТ,record,git commit,P7 push record,committed,P7,016ee87,"2 files, 11 insertions"
+111,2026-08-16T11:42:35+03:00,+ГО,verify,trace every health-block path in code,mobile/lib/features/profile + functions,save strips before writing; legacy parse survives; _resolve clears on next read; recursiveDelete removes on account deletion,G4,,the production query was not needed to answer the question
+112,2026-08-16T11:42:35+03:00,+ГО,edit,name the historical exception and the action that resolves it,scripts/legal/legal_text.py,both locales; artifacts rebuilt,G4,,
+113,2026-08-16T11:42:35+03:00,+ГО,create,3 tests including a control on the absolute claim,health_disclosure_test.dart,pass,G4,,"without the control, deleting the strong sentence would satisfy the rest"
+114,2026-08-16T11:42:35+03:00,+ГО,test,4 mutations,legal suite,"3 red immediately; the 4th was a malformed mutation, re-cut and red",G4,,a mutation that does not mutate the thing under test looks like a weak test
+115,2026-08-16T11:42:35+03:00,+ГО,test,flutter test,mobile/,2631 passed / 0 failed,G4,,2628 before; 3 added

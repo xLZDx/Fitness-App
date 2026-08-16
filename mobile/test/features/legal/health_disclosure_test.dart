@@ -88,6 +88,49 @@ void main() {
   /// «Вы получаете всё», while `data_export.dart` deliberately excludes the
   /// encrypted progress-photo bytes and prints a line inside the export saying
   /// so. A promise about a data-subject right is not a place to round up.
+  /// R5 of the Gate J review — the device-local claim was absolute in the
+  /// notice and conditional in the code.
+  ///
+  /// Gate J deferred it as needing a production Firestore query nobody could
+  /// run. Reading the code settles it without one, which is why it is closed
+  /// here rather than left open on an access request:
+  ///
+  /// * `DeviceHealthProfileRepository.save` calls `stripSensitive` before it
+  ///   writes, so the CURRENT app cannot put a health block on the server. The
+  ///   present-tense claim is true, and
+  ///   `device_health_profile_repository_test.dart` is what keeps it true.
+  /// * `firestore_profile_repository.dart:74` still PARSES one, because a
+  ///   document written before the 2026-08-06 split may carry it.
+  /// * `_resolve` moves that block down and clears it upstream on the owner's
+  ///   next read, and `deleteAccount`'s `recursiveDelete` of `users/{uid}`
+  ///   removes it with the account.
+  /// * Only an account nobody opens again keeps a copy — which is exactly the
+  ///   population the absolute sentence was silently speaking for.
+  ///
+  /// So the notice is now specific about the one case it cannot promise, and
+  /// tells that reader the one action that resolves it.
+  group('the device-local health claim covers the accounts it cannot promise for',
+      () {
+    test('both locales name the historical exception', () {
+      expect(_arb('en'), contains('before 6 august 2026'));
+      expect(_arb('ru'), contains('до 6 августа 2026'));
+    });
+
+    test('and tell the reader what resolves it', () {
+      // A disclosure that names a residue and offers no action is worse than
+      // one that names nothing: it worries the reader without helping them.
+      expect(_arb('en'), contains('opening the app once is enough'));
+      expect(_arb('ru'), contains('достаточно один раз открыть приложение'));
+    });
+
+    test('CONTROL: the absolute present-tense claim is still made', () {
+      // The fix must not be "soften it until it says nothing". The app really
+      // does not send these answers, and that is the sentence a user needs.
+      expect(_arb('en'), contains("is not sent to this app's servers"));
+      expect(_arb('ru'), contains('не отправляется на серверы этого'));
+    });
+  });
+
   group('the export promise matches what the export produces', () {
     test('neither locale promises the file contains everything', () {
       expect(_arb('en'), isNot(contains('you get everything')));
