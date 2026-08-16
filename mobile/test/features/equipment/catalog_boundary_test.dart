@@ -9,9 +9,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitness_app/core/settings/state/settings_providers.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
+import 'package:fitness_app/features/ai_coach/ai_exercise_generator.dart';
 import 'package:fitness_app/features/ai_coach/generated_exercise_repository.dart';
 import 'package:fitness_app/features/equipment/data/asset_equipment_repository.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
+import 'package:fitness_app/features/equipment/data/exercise_filter.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/equipment/workout_player_page.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
@@ -485,11 +487,17 @@ void main() {
       durationMinutes: 10,
       summary: 's',
       steps: ['a'],
+      // NOT what the generator emits. `ai_exercise_generator.dart:135-149`
+      // passes neither `video` nor `videoUrl`, and this fixture invents one so
+      // the injury gate below is exercised on the one path that can surface a
+      // generated exercise at all — the deep link, which does not apply the
+      // clip-only rule. `no feed can show them` pins the real shape.
       videoUrl: 'https://example.test/ai.mp4',
     );
 
-    // The rack has no vendored exercises, so the machine falls through to the
-    // generated cache -- the production path for the 11 cardio ids.
+    // The rack has no vendored exercises, so it is one of the machines with
+    // nothing curated -- measured on the shipped assets: 4 of 69, not the "11
+    // cardio ids" this comment used to claim against a 48-machine registry.
     Future<ProviderContainer> withGenerated({UserProfile? profile}) async {
       final repo = AssetEquipmentRepository()
         ..seedForTests(equipment: const [_rack], exercises: const []);
@@ -505,20 +513,43 @@ void main() {
       return container;
     }
 
-    test('reach a user with no injuries', () async {
-      // The control. Without it the exclusion below could pass because the
-      // fixture never produced a generated exercise at all.
-      final container = await withGenerated();
-      final result =
-          await container.read(recommendedExercisesProvider('rack').future);
-      expect(result.items.map((e) => e.id), ['ai::rack::0']);
+    test('as the generator really builds them, no feed can show them',
+        () async {
+      // C14. This group's control used to read `recommendedExercisesProvider`
+      // and assert the generated exercise "reaches a user with no injuries".
+      // It passed only because the fixture above invents a `videoUrl`. Built
+      // the way production builds them, every feed drops them — which is why
+      // the machine page no longer pays Gemini to make one.
+      final built = await AiExerciseGenerator(
+        ask: (_) async => '[{"title": "Invented movement", "steps": ["a"], '
+            '"muscles": ["quads"], "difficulty": "beginner", '
+            '"durationMinutes": 10}]',
+      ).generate(
+        equipmentId: 'rack',
+        machineName: 'Rack',
+        languageCode: 'en',
+      );
+      expect(built.single.id, 'ai::rack::0',
+          reason: 'the control half: the generator did produce one');
+      expect(built.single.videoUrl, isNull);
+      expect(built.single.playableVideoFor(null), isNull);
+      expect(withDemonstration(built), isEmpty,
+          reason: 'the rule every list in the app applies');
     });
 
-    test('are not surfaced to a user with an injury', () async {
-      final container = await withGenerated(profile: _injured());
-      final result =
-          await container.read(recommendedExercisesProvider('rack').future);
-      expect(result.items, isEmpty);
+    test('never reach a feed at all, injured or not', () async {
+      // Both profiles, because after C14 the feed is empty for either reason
+      // and a one-profile assertion would read as an injury gate it no longer
+      // proves. The injury gate is proven by the two deep-link tests below —
+      // the only path that can surface a generated exercise.
+      final cleared = await withGenerated(profile: _cleared0());
+      final injured = await withGenerated(profile: _injured());
+      expect(
+          (await cleared.read(recommendedExercisesProvider('rack').future)).items,
+          isEmpty);
+      expect(
+          (await injured.read(recommendedExercisesProvider('rack').future)).items,
+          isEmpty);
     });
 
     test('a deep link to one is not found for an injured user', () async {

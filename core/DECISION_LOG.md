@@ -11799,3 +11799,86 @@ Worth naming the cost: three of those thirteen are `docs:` commits recording a p
 content **is** the log entry. The hook requires an entry for the commit that records the push, which
 is close to circular, and those thin entries dilute a file that is now 11,743 lines. Not changed
 unilaterally — the gate is an operator choice recorded in §12 of the global contract — but flagged.
+
+## 2026-08-16 — C14: the machine page was paying for text nothing could render
+
+**Basis: FACT.**
+
+Recorded as *"4 machines with no exercises — link them, or hide the pages"*. The content half is still
+open. Measuring it turned up a defect that had nothing to do with content.
+
+### What was measured
+
+69 registry ids on the shipped assets, **4** with no exercise linked: `recumbent_bike`,
+`glute_kickback_machine`, `t_bar_row`, `rotary_torso_machine`. (The doc comment in
+`equipment_providers.dart` claimed *"11 mostly-cardio ids"* against a *"48 registry machines"* — both
+numbers stale.)
+
+Opening one of those four pages ran this chain:
+
+1. `recommendedExercisesProvider` → `exercisesForEquipmentWithAiFallbackProvider` → real list empty,
+   cache miss → **a Gemini call**, then a cache write.
+2. `ai_exercise_generator.dart:135-149` builds each `ExerciseItem` with no `video` and no `videoUrl`
+   (defaults at `equipment_models.dart:19-21`).
+3. `withDemonstration` (`exercise_filter.dart:243-246`) keeps only exercises with a playable clip.
+4. So the list came back empty and the user read `equipmentNoCuratedYet` — **exactly what they would
+   have read had the call never happened.**
+
+Both feeds apply the rule: `recommendedExercisesProvider` and `_allExercisesProvider:199`, whose own
+comment says AI text is caught by it. The `ai::` badge at `equipment_detail_page.dart:420` is
+therefore unreachable, and `exerciseResolutionProvider:464` would resolve an `ai::` id but nothing in
+the app can produce a link to one.
+
+### The sharper half
+
+A generation failure — offline, quota, malformed answer — surfaces as a thrown Future, and
+`equipment_detail_page.dart:156` renders it as *"couldn't load exercises"*. So a Gemini outage turned
+an honest empty state into an **error card about work whose success would have changed nothing**. The
+failure of the call was visible to the user; its success never was.
+
+### Why it survived
+
+`catalog_boundary_test.dart` had a control named *"AI-generated exercises reach a user with no
+injuries"*, asserting `['ai::rack::0']` through `recommendedExercisesProvider`. It passed because its
+fixture invents `videoUrl: 'https://example.test/ai.mp4'` — a field the real generator never sets. A
+green test asserting the opposite of production behaviour, which is why nothing pointed at the dead
+path. §57.
+
+The provider's own doc comment already said *"the public feed applies `withDemonstration`, which
+drops AI text entirely"*. Whoever wrote that knew; the call was simply never removed.
+
+### The change
+
+`recommendedExercisesProvider` reads `_exercisesForEquipmentProvider` — the real catalogue. Nothing
+the user sees changes on success, and on failure they now get the honest empty state instead of an
+error card.
+
+The generator, its cache and the Firestore repository are **kept**. Unrenderable is not wrong: the
+day those four machines have footage this is the seam that fills them. Deleting a capability is an
+operator call, recorded in scope §6 P4 rather than taken here. The consequence is stated plainly in
+the provider's doc — it now has no consumer in `lib/`.
+
+`ai_fallback_provider_test.dart` still proves the generate-once-and-cache economics through the
+provider directly, so that behaviour is not lost.
+
+### Verification
+
+Three new tests (no generator call for an empty machine; a generator that *would* throw changes
+nothing; CONTROL that a curated machine still serves its exercises). The two false-green boundary
+tests replaced by one that builds an exercise through the **real** generator and asserts
+`withDemonstration` drops it, and one that pins the feed as empty for injured and uninjured alike —
+the injury gate is proven by the two deep-link tests, the only path that can surface a generated
+exercise.
+
+Two mutations: restoring the AI-fallback watch on the render path → red; making the generator emit a
+`videoUrl` → red. Restored, green.
+
+`flutter test` **2642 passed / 0 failed** (2639 before; +3 net). `flutter analyze lib/ test/` 7
+issues, all pre-existing.
+
+### Scope housekeeping in the same commit
+
+§6 **P2** and **P3** carried prose naming five items that are closed — `purpose` on the programme
+card and in the player, `semanticLabel` on `ExerciseThumb`, Cloud Function tests, AES for photos, the
+Stripe Connect return URL. Struck, with what each actually turned out to be. **G7** added to P3,
+where the `targetSdk` deadline belongs.

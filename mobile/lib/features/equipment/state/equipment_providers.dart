@@ -91,25 +91,36 @@ final generatedExerciseRepositoryProvider =
 final aiExerciseGeneratorProvider =
     Provider<AiExerciseGenerator>((_) => AiExerciseGenerator());
 
-/// Real catalog first (round 4 (S0) covers 37 of 48 registry machines with
-/// vendored public-domain exercises); only the machines with nothing real —
-/// 11 mostly-cardio ids — fall through to AI generation, cached so a machine
-/// is billed once per (user, language) rather than on every page visit.
+/// Real catalog first; the machines with nothing real fall through to AI
+/// generation, cached so a machine is billed once per (user, language) rather
+/// than on every page visit. Measured on the shipped assets: 69 registry ids,
+/// **4** with no exercise linked — `recumbent_bike`, `glute_kickback_machine`,
+/// `t_bar_row`, `rotary_torso_machine`. (The doc here used to say "11
+/// mostly-cardio ids" against a 48-machine registry; both numbers were stale.)
 ///
-/// A generation failure (offline, quota, malformed answer) surfaces as a
-/// thrown Future — [recommendedExercisesProvider]'s `.when()` renders that as
-/// an error card, which is honest: "no exercises" and "couldn't generate any"
-/// are different facts and must not read the same to the user.
+/// **This provider has no consumer in `lib/`, deliberately, since C14.** What
+/// it generates is text: a title, muscles and steps, and
+/// `ai_exercise_generator.dart:135-149` passes neither `video` nor `videoUrl`,
+/// so [withDemonstration] — which every surfacing path applies — drops all of
+/// it. Generating anyway cost a Gemini call and a cache write per empty
+/// machine per language for output that provably could not be rendered, and
+/// its *failure* was worse than its success: the thrown Future reached
+/// `equipment_detail_page.dart:156` as "couldn't load exercises", so a Gemini
+/// outage turned an honest "nothing curated yet" into an error card about work
+/// whose result nobody would have seen either way.
+///
+/// It is kept rather than deleted because the capability is only unrenderable,
+/// not wrong: the day these four machines have footage, this is the seam that
+/// fills them. Deleting the generator, its cache and the Firestore repository
+/// is a product call, recorded as open in the scope rather than taken here.
 ///
 /// Raw and unscreened, like everything else on this side of the boundary. It
-/// is `@visibleForTesting` rather than `_`-private only because the
-/// generate-once-and-cache economics it encodes have no other observable seam:
-/// the public feed applies [withDemonstration], which drops AI text entirely,
-/// so a test asserting through it could no longer tell a cache hit from a
-/// generated miss. A reader in `lib/` raises
-/// `invalid_use_of_visible_for_testing_member` — verified, and a warning
-/// rather than an error, which is why `catalog_boundary_test.dart` fails on
-/// one as well rather than trusting the annotation alone.
+/// is `@visibleForTesting` rather than `_`-private because the
+/// generate-once-and-cache economics it encodes have no other observable seam.
+/// A reader in `lib/` raises `invalid_use_of_visible_for_testing_member` —
+/// verified, and a warning rather than an error, which is why
+/// `catalog_boundary_test.dart` fails on one as well rather than trusting the
+/// annotation alone.
 @visibleForTesting
 final exercisesForEquipmentWithAiFallbackProvider =
     FutureProvider.family<List<ExerciseItem>, String>((ref, equipmentId) async {
@@ -257,8 +268,11 @@ class RecommendedExercises {
 /// applied based on the signed-in user's profile.
 final recommendedExercisesProvider =
     FutureProvider.family<RecommendedExercises, String>((ref, equipmentId) async {
-  final raw = await ref
-      .watch(exercisesForEquipmentWithAiFallbackProvider(equipmentId).future);
+  // The real catalog, not the AI fallback. See that provider's doc: its output
+  // carries no clip, so `withDemonstration` below discarded 100% of it, and a
+  // generation failure surfaced to the user as an error about exercises they
+  // were never going to be shown.
+  final raw = await ref.watch(_exercisesForEquipmentProvider(equipmentId).future);
   final profile = await ref.watch(screeningProfileProvider.future);
   // Clip-only first, injuries second, and the count is taken AFTER the first.
   // Measuring it against `raw` would report an exercise we simply cannot

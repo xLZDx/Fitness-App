@@ -32,6 +32,10 @@ const _realExercise = ExerciseItem(
   durationMinutes: 8,
   summary: 's',
   steps: ['a'],
+  // A catalog exercise the app can actually demonstrate. Stated on the fixture
+  // because `recommendedExercisesProvider` applies `withDemonstration`, and a
+  // clipless fixture would make the control below pass for the wrong reason.
+  videoUrl: 'https://example.invalid/walk.mp4',
 );
 
 const _genJson = '[{"title": "AI Elliptical Warm-up", "steps": ["a", "b"], '
@@ -41,6 +45,7 @@ const _genJson = '[{"title": "AI Elliptical Warm-up", "steps": ["a", "b"], '
 ProviderContainer _makeContainer({
   required int Function() askCallCount,
   GeneratedExerciseRepository? generatedRepo,
+  Future<String> Function(String prompt)? ask,
 }) {
   final repo = AssetEquipmentRepository()
     ..seedForTests(
@@ -59,8 +64,9 @@ ProviderContainer _makeContainer({
     screeningProfileProvider.overrideWith((ref) async => null),
     generatedExerciseRepositoryProvider
         .overrideWithValue(generatedRepo ?? MockGeneratedExerciseRepository()),
-    aiExerciseGeneratorProvider.overrideWithValue(AiExerciseGenerator(ask: (_) async {
+    aiExerciseGeneratorProvider.overrideWithValue(AiExerciseGenerator(ask: (p) async {
       askCallCount();
+      if (ask != null) return ask(p);
       return _genJson;
     })),
   ]);
@@ -155,6 +161,62 @@ void main() {
       final container = _makeContainer(askCallCount: () => 0);
       final out = await container.read(safeCatalogProvider.future);
       expect(out.where((e) => e.equipmentId == 'elliptical'), isEmpty);
+    });
+  });
+
+  /// C14 — the machine page must not buy what it cannot show.
+  ///
+  /// Measured on the shipped assets: 69 registry machines, 4 with no exercise
+  /// linked. Opening one of those pages used to run the AI fallback, so a
+  /// Gemini call and a cache write happened for text that
+  /// `ai_exercise_generator.dart:135-149` builds with no `video` and no
+  /// `videoUrl` — which `withDemonstration` then dropped in full. The user saw
+  /// "nothing curated yet" either way, so the only observable effects of the
+  /// call were the bill and the failure mode below.
+  group('recommendedExercisesProvider', () {
+    test('a machine with nothing curated does not reach the generator',
+        () async {
+      var calls = 0;
+      final genRepo = MockGeneratedExerciseRepository();
+      final container =
+          _makeContainer(askCallCount: () => calls++, generatedRepo: genRepo);
+
+      final rec = await container.read(recommendedExercisesProvider('elliptical').future);
+
+      expect(rec.items, isEmpty, reason: 'nothing curated, and nothing invented');
+      expect(calls, 0, reason: 'a paid call whose result withDemonstration drops');
+      expect(await genRepo.get('elliptical', 'en'), isNull,
+          reason: 'and nothing written to the cache either');
+    });
+
+    test('a generator that would fail changes nothing the user sees', () async {
+      // The sharper half of the defect. The thrown Future used to reach
+      // `equipment_detail_page.dart:156` and render "couldn't load exercises",
+      // so a Gemini outage turned an honest empty state into an error card
+      // about exercises that would have been discarded on success.
+      var calls = 0;
+      final container = _makeContainer(
+        askCallCount: () => calls++,
+        ask: (_) async => throw Exception('quota exhausted'),
+      );
+
+      final rec = await container.read(recommendedExercisesProvider('elliptical').future);
+
+      expect(rec.items, isEmpty);
+      expect(rec.hiddenForInjury, 0,
+          reason: 'nothing was hidden — there was nothing to hide');
+      expect(calls, 0);
+    });
+
+    test('CONTROL: a machine with curated exercises still serves them',
+        () async {
+      var calls = 0;
+      final container = _makeContainer(askCallCount: () => calls++);
+
+      final rec = await container.read(recommendedExercisesProvider('treadmill').future);
+
+      expect(rec.items.map((e) => e.id), ['treadmill_walk']);
+      expect(calls, 0);
     });
   });
 }

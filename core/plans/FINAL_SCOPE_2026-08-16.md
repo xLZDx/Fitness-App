@@ -239,22 +239,35 @@ over 519 cards, 224 Gate E findings over 199 cards, 1887 verified rows of which 
 | **C11** | A real `difficulty` gradation — 1877/1887 are `beginner`, the field is unusable | content |
 | **C12** | 451 without `primaryMuscles`, 182 without `muscles`, 503 without `equipmentId`, 360 without an injury tag | tagging |
 | **C13** | 26 rows `movementRoleOf` cannot classify | rules, or a manual tag |
-| **C14** | 4 machines with no exercises | link them, or hide the pages |
+| **C14** | 4 machines with no exercises — `recumbent_bike`, `glute_kickback_machine`, `t_bar_row`, `rotary_torso_machine` (69 registry ids, remeasured 2026-08-16) | **Content still open** (link them, or hide the pages). **The defect behind them is fixed 2026-08-16:** opening one of those pages ran the AI fallback, so a Gemini call and a cache write happened per machine per language for text the generator builds with no clip (`ai_exercise_generator.dart:135-149`) and `withDemonstration` then dropped in full — and a generation failure reached `equipment_detail_page.dart:156` as "couldn't load exercises", turning an honest empty state into an error card about work nobody would have seen. `recommendedExercisesProvider` now reads the real catalogue. The page renders `equipmentNoCuratedYet` exactly as before. 3 tests + 2 rewritten, 2 mutations |
 
 ### P2 — UI and accessibility
 
-Surface `purpose` on the programme card and in the player · `semanticLabel` on `ExerciseThumb` ·
 B4 silhouette (operator's eyes) · B6 speed control on device · H2 template ranking · F3 Figma parity.
+
+Closed 2026-08-16: ~~surface `purpose` on the programme card and in the player~~ (B2 — the player
+already did; the list row's subtitle was the first *instruction*, which is the sharper defect) ·
+~~`semanticLabel` on `ExerciseThumb`~~ (B1 — the label was decoration a screen reader announced as an
+image; `excludeFromSemantics` was the fix, and the recorded finding had it backwards).
 
 ### P3 — platform
 
-iOS scaffold · Wear OS smoke test · the TFLite equipment model · Cloud Function tests · AES instead
-of XOR for photos · the Stripe Connect return URL.
+iOS scaffold · Wear OS smoke test · the TFLite equipment model · **G7** (`targetSdk` 36 before the
+31 Aug 2026 Play deadline, then edge-to-edge verified on an Android 16 device).
+
+Closed 2026-08-16: ~~Cloud Function tests~~ (P7 — the suite had never run in this worktree at all;
+`npm ci`, then 14 behavioural tests, 151 → 165) · ~~AES instead of XOR for photos~~ · ~~the Stripe
+Connect return URL~~.
 
 ### P4 — operator decisions only
 
 R11f-2 photo export (conflicts with "photos never leave the phone") · A5 Paywall pricing · the fate
-of MK.4 and of MK.6/MK.7 · the scale of C7 (own pass versus a hire).
+of MK.4 and of MK.6/MK.7 · the scale of C7 (own pass versus a hire) · **the fate of AI exercise
+generation** — since C14 it has no consumer in `lib/`, because what it produces has no clip and every
+list applies the clip-only rule. Either it is deleted (generator, cache, `FirestoreGeneratedExerciseRepository`,
+the `ai::` badge and the deep-link branch) or it waits for the day those machines have footage. Kept
+for now: unrenderable is not the same as wrong, and deleting a capability is not a call to make while
+measuring one.
 
 ---
 
