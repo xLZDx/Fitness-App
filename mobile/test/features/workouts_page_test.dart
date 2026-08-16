@@ -971,5 +971,50 @@ void main() {
           .errorServiceUnavailable), findsNothing);
       expect(find.byKey(const Key('programme.enrol.blocked')), findsOneWidget);
     });
+
+    testWidgets(
+        'F017: a chest-pain block on the Library list renders urgent '
+        'wording, not the routine "no sessions" one', (tester) async {
+      // This is the second of the two render sites F017 named — the first,
+      // the onboarding SafetyRefusalCard, has its own dedicated test. This
+      // one is EligibilityNotice, which every non-onboarding surface
+      // (Train tab, this Library list, the N01 dialog above) renders
+      // through, and which used to say the same "No sessions right now"
+      // regardless of what caused the block.
+      final router = GoRouter(
+        initialLocation: '/workouts',
+        routes: [
+          GoRoute(path: '/workouts', builder: (_, __) => const WorkoutsPage()),
+        ],
+      );
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          equipmentRepositoryProvider.overrideWithValue(_seededRepo()),
+          safetyContextProvider.overrideWith((_) async => SafetyContext(
+              screening: screen({
+                for (final q in ParQQuestion.values)
+                  q: q == ParQQuestion.chestPain,
+              }))),
+        ],
+        child: MaterialApp.router(
+          theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
+          locale: kTestLocale,
+          localizationsDelegates: kTestLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+          builder: (context, child) =>
+              AuroraBackground(child: child ?? const SizedBox.shrink()),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Library'));
+      await tester.pumpAndSettle();
+
+      final l10n =
+          AppLocalizations.of(tester.element(find.byType(WorkoutsPage)));
+      expect(find.text(l10n.eligTrainingBlockedUrgentTitle), findsOneWidget);
+      expect(find.text(l10n.eligTrainingBlockedTitle), findsNothing);
+    });
   });
 }

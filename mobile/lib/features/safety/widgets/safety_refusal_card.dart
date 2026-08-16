@@ -60,6 +60,15 @@ class SafetyRefusalCard extends StatelessWidget {
     // told us about chest pain is not asked to go and tick more boxes.
     final referral = answered.isNotEmpty;
 
+    // F017: chest pain is the one PAR-Q+ answer this app treats as urgent
+    // rather than routine (see kBlockingQuestions' doc comment). The generic
+    // "talk to a doctor first" referral used for every other blocking answer
+    // reads as routine, which is the wrong message for this one — it must not
+    // collapse into the same wording as, say, an unanswered question about
+    // prescribed medication.
+    final urgent =
+        answered.any((r) => r.question == ParQQuestion.chestPain);
+
     return GlassCard(
       tint: theme.colorScheme.error,
       padding: const EdgeInsets.all(20),
@@ -68,12 +77,21 @@ class SafetyRefusalCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(referral ? Icons.medical_services_outlined : Icons.pending_actions,
+              Icon(
+                  urgent
+                      ? Icons.local_hospital_outlined
+                      : referral
+                          ? Icons.medical_services_outlined
+                          : Icons.pending_actions,
                   color: theme.colorScheme.error),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  referral ? l10n.safetyBlockedTitle : l10n.safetyIncompleteTitle,
+                  urgent
+                      ? l10n.safetyBlockedUrgentTitle
+                      : referral
+                          ? l10n.safetyBlockedTitle
+                          : l10n.safetyIncompleteTitle,
                   style: theme.textTheme.titleMedium
                       ?.copyWith(fontWeight: FontWeight.w800),
                 ),
@@ -81,7 +99,12 @@ class SafetyRefusalCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Text(referral ? l10n.safetyBlockedBody : l10n.safetyIncompleteBody,
+          Text(
+              urgent
+                  ? l10n.safetyBlockedUrgentBody
+                  : referral
+                      ? l10n.safetyBlockedBody
+                      : l10n.safetyIncompleteBody,
               style: theme.textTheme.bodyMedium),
           if (answered.isNotEmpty) ...[
             const SizedBox(height: 14),

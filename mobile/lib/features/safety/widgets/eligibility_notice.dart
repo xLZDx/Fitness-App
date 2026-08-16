@@ -5,6 +5,7 @@ import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/glass.dart';
 import '../data/eligibility.dart';
 import '../data/health_flags.dart';
+import '../data/par_q.dart' show ParQQuestion;
 import 'safety_refusal_card.dart' show parQQuestionText;
 
 /// Named constructors for the reasons a UI builds directly.
@@ -99,6 +100,15 @@ class EligibilityNotice extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
+    // F017: this card is the one every whole-person block renders through
+    // (Train tab, programme-enrolment refusal, deep links) — not only the
+    // onboarding screen SafetyRefusalCard covers. A chest-pain reason must
+    // read as urgent here too, or the routine "no sessions right now" wording
+    // survives on every surface except the one it was first noticed on.
+    final urgent = reasons.any((r) =>
+        r.reason == BlockReason.screening &&
+        r.question == ParQQuestion.chestPain);
+
     return GlassCard(
       tint: theme.colorScheme.error,
       padding: const EdgeInsets.all(20),
@@ -107,17 +117,25 @@ class EligibilityNotice extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.shield_outlined, color: theme.colorScheme.error),
+              Icon(
+                  urgent
+                      ? Icons.local_hospital_outlined
+                      : Icons.shield_outlined,
+                  color: theme.colorScheme.error),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(title ?? l10n.eligBlockedTitle,
+                child: Text(
+                    urgent
+                        ? l10n.eligTrainingBlockedUrgentTitle
+                        : title ?? l10n.eligBlockedTitle,
                     style: theme.textTheme.titleMedium
                         ?.copyWith(fontWeight: FontWeight.w800)),
               ),
             ],
           ),
           const SizedBox(height: 10),
-          Text(l10n.eligBlockedIntro, style: theme.textTheme.bodyMedium),
+          Text(urgent ? l10n.eligBlockedUrgentIntro : l10n.eligBlockedIntro,
+              style: theme.textTheme.bodyMedium),
           for (final r in reasons)
             Padding(
               padding: const EdgeInsets.only(top: 8),

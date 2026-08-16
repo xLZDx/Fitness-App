@@ -12109,3 +12109,36 @@ half (D3, resolved above, has not yet been implemented as a code change).
 G-A in progress, one of six items landed. Not pushed.
 
 Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).
+
+## 2026-08-16 — F017: chest pain stops reading as a routine referral
+
+G-A/A2, root cause RC3. Two render sites carried the exact same "talk to a doctor first" wording for
+every blocking PAR-Q+ answer, chest pain included — `SafetyRefusalCard` (the onboarding/direct-screening
+surface) and `EligibilityNotice` (every other surface a whole-person block reaches: Train tab, the
+Library list, and the N01 dialog landed above). Loaded `fitness-clinical-reference` before writing the
+copy: chest pain during exertion is its S0 hard-interrupt category — "stop exercise content;
+urgent/emergency pathway" — and the rule that the user-facing reply must not bury an urgent action
+below a workout. This app's own PAR-Q+ question is broader than "during exertion" (it asks about rest,
+daily activity, and exercise together, deliberately, per `par_q.dart`'s existing comment on asymmetric
+cost), so any `yes` on it now gets the urgent treatment rather than trying to sub-triage further.
+
+New copy (`safetyBlockedUrgentTitle/Body`, `eligTrainingBlockedUrgentTitle`, `eligBlockedUrgentIntro`,
+EN+RU) is non-diagnostic — it never names a condition — but is explicit: get it checked before
+exercising, and treat specific accompanying symptoms (breathlessness, pain spreading to arm/jaw/back,
+sweating, nausea, dizziness) as an emergency. No hardcoded emergency number, since the app has no
+locale-to-region mapping to make one honest.
+
+Both widgets now detect a chest-pain reason among `reasons`/`answered` and swap title, body and icon;
+every other blocking reason (e.g. `medicallySupervisedOnly`) is unaffected — proven by a same-widget
+negative test, not just the positive case.
+
+Regression-tested with two mutation checks (one per widget), same stash-and-restore method as N01:
+both new tests fail against the pre-fix source and pass with it restored. `flutter analyze` clean.
+
+G-A remaining: F018, F019, F020's render-site half, F002's copy half.
+
+### Status
+
+G-A in progress, two of six items landed. Not pushed.
+
+Codex review unavailable: usage_limit_exhausted until 2026-08-20 05:32 (unchanged since `1453236`).
