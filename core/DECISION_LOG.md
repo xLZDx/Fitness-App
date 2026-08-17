@@ -13522,3 +13522,65 @@ which are the only ones a leak is distinguishable from correct copy.
 
 F027 FIXED, both halves, plus two sites it did not name. `progression.dart` recorded as dormant.
 Not pushed.
+
+## 2026-08-17 — Final reconciliation and release verdict
+
+Full report: `reports/final_reconciliation_2026-08-17.html`
+Artifact: https://claude.ai/code/artifact/97846caa-1a8e-4bf0-8ac9-10eedce4074a
+
+### Counts, over 37 items
+
+27 `F` findings + 8 `N` findings + `D1`/`H3`, plus two raised by this session's own attacks
+(`ML-F1`, `CI-F1`).
+
+**26 closed · 4 not-a-defect · 2 dormant · 3 operator decision · 2 external authority.**
+**Zero `NOT_REVIEWED`.**
+
+Dispositions were read off this log and then re-verified against current source. The source won
+twice, and both are recorded rather than smoothed over:
+
+- **N06 had no disposition anywhere.** Now dispositioned NOT_A_DEFECT: `kSafetyTagsClinicallyReviewed
+  = false` is the product correctly recording that its tags are unreviewed, with a self-removing
+  disclosure and two tests pinning the flag. It is evidence for D1, not a defect against the code.
+- **F010's premise has drifted.** The audit said 7 of 193 providers had no reader; re-measured at
+  this HEAD it is **14 of 193** (13 public, 1 private-by-construction). Quoting the audit's figure
+  would have understated the gap. `momentRepositoryProvider` and `wearSyncServiceProvider` are now
+  wired; four moments and two wear providers still are not.
+
+N02 and N04 were re-verified at source rather than trusted from this log — both remediated,
+with the fix comments naming the finding.
+
+### F007 classified: FALSE_POSITIVE_AS_WRITTEN
+
+Measured directly: `--no-fatal-warnings --no-fatal-infos` still exits 1 on a genuine error. The
+finding as recorded is false. It is not discarded, because the narrower true statement — that the
+suppression stays limited to warnings and infos — is now pinned by a test asserting
+`--no-fatal-errors` never appears. The finding was wrong; the worry behind it was not.
+
+### The three left open, with packages
+
+`N07` (unreachable `/team/:teamId`), `F010` (unread providers), `F014` (no pregnancy path). Each
+carries current code, reachability, safety impact, Option A/B, a recommendation and reversibility
+in the report.
+
+`F014` is the one with direct safety impact. Recommendation is Option A — one self-reported
+boolean routed to `wholePersonBlocks` with a referral, the shape `SurgeryStatus.underRestrictions`
+already uses. **No clinical rule is invented, per instruction**: it holds no medical category,
+encodes no trimester and makes no clinical claim. It only stops the app prescribing into a state it
+has never asked about. It still needs an owner, because it adds a health question to onboarding.
+
+### Verdict: NOT RELEASE_READY
+
+Not because of the tests — 2765 mobile and 171 functions pass. Because of F014, because D1/H3
+remain with external authority, and because nothing is pushed.
+
+**Explicitly not claimed:** that green tests mean release-ready; that any model works; that
+clinical validation has occurred. D1 stays `EXTERNAL_CLINICAL_VALIDATION_REQUIRED`, H3 stays
+`HOLD`, D3 untouched.
+
+### State
+
+HEAD `ab11150`, branch `formcoach/gates-a-c`, 29 ahead of origin, 0 behind, **nothing pushed at any
+point**. Working tree carries one dirty file, `core/plans/FINAL_AUTONOMOUS_ACTION_LOG.csv` —
+pre-existing operator work, and zero commits in this programme touch it, verified by an empty
+`git log` over the whole range rather than by assertion.

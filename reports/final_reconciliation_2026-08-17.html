@@ -1,0 +1,459 @@
+<title>SPTR Remediation Ledger</title>
+<style>
+  :root {
+    --ground: #fbfbfa;
+    --panel: #ffffff;
+    --rule: #e2e2dd;
+    --rule-strong: #c9c9c2;
+    --ink: #1b1c1a;
+    --ink-2: #4a4c47;
+    --ink-3: #74766e;
+    --accent: #2f5d50;
+    --accent-soft: #e8f0ed;
+    --closed: #2f5d50;
+    --decision: #8a5a12;
+    --hold: #8f2f2f;
+    --dormant: #56585a;
+    --code-bg: #f2f2ee;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #14150f;
+      --panel: #1b1d17;
+      --rule: #2e3128;
+      --rule-strong: #454940;
+      --ink: #ecece4;
+      --ink-2: #b8bab0;
+      --ink-3: #8a8d82;
+      --accent: #8fc4b0;
+      --accent-soft: #1e2a25;
+      --closed: #8fc4b0;
+      --decision: #d9a75a;
+      --hold: #e08585;
+      --dormant: #9a9d95;
+      --code-bg: #23261e;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #14150f;
+    --panel: #1b1d17;
+    --rule: #2e3128;
+    --rule-strong: #454940;
+    --ink: #ecece4;
+    --ink-2: #b8bab0;
+    --ink-3: #8a8d82;
+    --accent: #8fc4b0;
+    --accent-soft: #1e2a25;
+    --closed: #8fc4b0;
+    --decision: #d9a75a;
+    --hold: #e08585;
+    --dormant: #9a9d95;
+    --code-bg: #23261e;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 60rem; margin: 0 auto; padding: 4rem 1.5rem 6rem; }
+
+  header { border-bottom: 2px solid var(--ink); padding-bottom: 1.75rem; margin-bottom: 2.5rem; }
+  .eyebrow {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-3); margin: 0 0 .9rem;
+  }
+  h1 { font-size: clamp(1.9rem, 4.5vw, 2.7rem); line-height: 1.12; margin: 0 0 .8rem; letter-spacing: -.02em; text-wrap: balance; }
+  .standfirst { font-size: 1.08rem; color: var(--ink-2); margin: 0; max-width: 46rem; }
+
+  h2 {
+    font-size: 1.35rem; letter-spacing: -.01em; margin: 3.5rem 0 .4rem;
+    padding-top: 1.6rem; border-top: 1px solid var(--rule-strong); text-wrap: balance;
+  }
+  h2 .num {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .78rem; color: var(--ink-3); display: block; margin-bottom: .35rem; letter-spacing: .1em;
+  }
+  h3 { font-size: 1.02rem; margin: 2rem 0 .5rem; letter-spacing: -.005em; }
+  p { margin: .85rem 0; max-width: 46rem; }
+  ul { max-width: 46rem; padding-left: 1.15rem; }
+  li { margin: .4rem 0; }
+
+  code, .mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .875em;
+  }
+  code { background: var(--code-bg); padding: .1em .35em; border-radius: 3px; }
+
+  a { color: var(--accent); text-underline-offset: 2px; }
+
+  .counts { display: flex; flex-wrap: wrap; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 2rem 0; }
+  .count { flex: 1 1 8rem; background: var(--panel); padding: 1rem 1.1rem; }
+  .count b { display: block; font-size: 1.85rem; line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .count span {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
+  }
+  .count.closed b { color: var(--closed); }
+  .count.decision b { color: var(--decision); }
+  .count.hold b { color: var(--hold); }
+
+  .scroll { overflow-x: auto; margin: 1.5rem 0; border: 1px solid var(--rule); background: var(--panel); }
+  table { border-collapse: collapse; width: 100%; min-width: 44rem; font-size: .9rem; }
+  th, td { text-align: left; padding: .6rem .8rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .68rem; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3);
+    border-bottom: 1px solid var(--rule-strong); white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.id { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight: 600; white-space: nowrap; }
+
+  .st { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .7rem; letter-spacing: .05em; white-space: nowrap; }
+  .st.closed { color: var(--closed); }
+  .st.decision { color: var(--decision); }
+  .st.hold { color: var(--hold); }
+  .st.dormant { color: var(--dormant); }
+
+  .card { border: 1px solid var(--rule); border-left: 3px solid var(--rule-strong); background: var(--panel); padding: 1.3rem 1.5rem; margin: 1.5rem 0; }
+  .card.decision { border-left-color: var(--decision); }
+  .card.hold { border-left-color: var(--hold); }
+  .card h3 { margin-top: 0; }
+  .card dl { margin: .8rem 0 0; display: grid; grid-template-columns: minmax(7rem, max-content) 1fr; gap: .45rem 1.1rem; font-size: .93rem; }
+  .card dt {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); padding-top: .28em;
+  }
+  .card dd { margin: 0; }
+  @media (max-width: 34rem) { .card dl { grid-template-columns: 1fr; gap: .15rem; } .card dd { margin-bottom: .55rem; } }
+
+  blockquote {
+    margin: 1.2rem 0; padding: .3rem 0 .3rem 1.1rem;
+    border-left: 2px solid var(--accent); color: var(--ink-2); font-style: italic;
+  }
+
+  .verdict { border: 2px solid var(--ink); background: var(--panel); padding: 1.75rem; margin: 2rem 0; }
+  .verdict .label {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3);
+  }
+  .verdict .call { font-size: 1.5rem; font-weight: 700; letter-spacing: -.015em; margin: .3rem 0 .8rem; }
+
+  footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); color: var(--ink-3); font-size: .85rem; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">SPTR · forensic remediation · 2026-08-17</p>
+  <h1>What is closed, what is not, and what is not mine to close</h1>
+  <p class="standfirst">
+    Every finding in the register reconciled against the code at
+    <code>ab11150</code>. Nothing pushed. Three items are deliberately left open,
+    and two of those cannot be closed by any amount of engineering.
+  </p>
+</header>
+
+<div class="counts">
+  <div class="count closed"><b>26</b><span>Closed</span></div>
+  <div class="count"><b>4</b><span>Not a defect</span></div>
+  <div class="count"><b>2</b><span>Dormant</span></div>
+  <div class="count decision"><b>3</b><span>Operator decision</span></div>
+  <div class="count hold"><b>2</b><span>External authority</span></div>
+</div>
+
+<p>
+  37 items: the register's 27 <code>F</code> findings, 8 <code>N</code> findings from the
+  blinded review, and the 2 standing decisions <code>D1</code> and <code>H3</code>.
+  Two new findings were raised by this session's own attacks (<code>ML-F1</code>,
+  <code>CI-F1</code>) and are counted in the closed column.
+  <strong>Zero items are <code>NOT_REVIEWED</code>.</strong>
+</p>
+
+<h2><span class="num">01</span>Reconciliation</h2>
+
+<p>
+  Dispositions are read off <a href="core/DECISION_LOG.md">core/DECISION_LOG.md</a> and
+  re-verified against current source, not recalled. Where the two disagreed, the source won —
+  that happened twice, and both are noted below.
+</p>
+
+<div class="scroll">
+<table>
+  <thead>
+    <tr><th>ID</th><th>Severity</th><th>Disposition</th><th>Evidence</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="id">F001</td><td>HIGH</td><td class="st closed">FIXED</td><td>Claim narrowed. 1877 of 1887 catalogue rows are <code>beginner</code>; a signal constant across 99.5% of its domain cannot inform a decision, so the card stopped claiming it. Measurement pinned so the decision is revisitable.</td></tr>
+    <tr><td class="id">F002</td><td>HIGH</td><td class="st closed">FIXED</td><td>Pitch deck corrected to the model that ships.</td></tr>
+    <tr><td class="id">F003</td><td>MEDIUM</td><td class="st closed">FIXED</td><td>G-A, onboarding.</td></tr>
+    <tr><td class="id">F004</td><td>MEDIUM</td><td class="st closed">FIXED</td><td>Recovery refusal copy.</td></tr>
+    <tr><td class="id">F005</td><td>MEDIUM</td><td class="st closed">FIXED</td><td>G-D. Firestore rules, emulator-verified.</td></tr>
+    <tr><td class="id">F006</td><td>MEDIUM</td><td class="st closed">FIXED</td><td>G-D, same suite.</td></tr>
+    <tr><td class="id">F007</td><td>MEDIUM</td><td class="st dormant">FALSE_POSITIVE_AS_WRITTEN</td><td>See §2. Measured false; the narrower true statement is pinned by test instead.</td></tr>
+    <tr><td class="id">F008</td><td>MEDIUM</td><td class="st closed">FIXED</td><td><code>branches: ['**']</code> on both workflows, pinned by <code>workflow_gates_test.dart</code>.</td></tr>
+    <tr><td class="id">F009</td><td>LOW</td><td class="st closed">FIXED</td><td>Key-name redaction, mutation-proven at <em>both</em> sites — wider than the finding recorded, because <code>PhotoKeyUnavailable.toString()</code> leaks on the ordinary path too.</td></tr>
+    <tr><td class="id">F010</td><td>INFO</td><td class="st decision">OPERATOR DECISION</td><td>See §3. Premise re-measured and it has drifted: <strong>14 of 193</strong> providers unread, not the audit's 7 of 196.</td></tr>
+    <tr><td class="id">F011</td><td>INFO</td><td class="st closed">FIXED</td><td><code>assertAccountStillExists</code> on both payment callables, fail-closed. 6 cases.</td></tr>
+    <tr><td class="id">F012</td><td>INFO</td><td class="st closed">FIXED</td><td>Scope row matches the bundled artefact.</td></tr>
+    <tr><td class="id">F013</td><td>BLOCKER</td><td class="st dormant">CONTESTED — NOT UPHELD</td><td>The blinded adversary disagreed with the original reading. An untagged row yields <em>withheld</em>, not <em>allowed</em>, for an injured user. Not a fail-open.</td></tr>
+    <tr><td class="id">F014</td><td>BLOCKER</td><td class="st decision">OPERATOR DECISION</td><td>See §3. Verified absence — no pregnancy path anywhere in <code>lib/</code>.</td></tr>
+    <tr><td class="id">F015</td><td>BLOCKER</td><td class="st closed">FIXED</td><td>G-E. Mutation-proven at the enrolment surface against the real 1,887-row catalogue.</td></tr>
+    <tr><td class="id">F016</td><td>CRITICAL</td><td class="st closed">FIXED + RE-VERIFIED</td><td>Structural trust boundary: the type cannot carry an exercise id. 9 hallucination/injection cases plus a consumer fence, which found a consumer manual grep had missed.</td></tr>
+    <tr><td class="id">F017</td><td>CRITICAL</td><td class="st closed">FIXED</td><td>Chest-pain block renders urgent wording, not the routine empty state.</td></tr>
+    <tr><td class="id">F018</td><td>CRITICAL</td><td class="st closed">FIXED</td><td>G-A, commit <code>9c7a3e1</code>.</td></tr>
+    <tr><td class="id">F019</td><td>HIGH</td><td class="st closed">FIXED</td><td><code>SafetyDisclosure</code>.</td></tr>
+    <tr><td class="id">F020</td><td>HIGH</td><td class="st closed">FIXED</td><td>G-B. Every exercise surface routed through the eligibility layer.</td></tr>
+    <tr><td class="id">F021</td><td>HIGH</td><td class="st closed">FIXED</td><td>G-E, mutation-proven.</td></tr>
+    <tr><td class="id">F022</td><td>HIGH</td><td class="st closed">FIXED</td><td>G-E, mutation-proven, separate test from F021.</td></tr>
+    <tr><td class="id">F023</td><td>HIGH</td><td class="st closed">FIXED</td><td>G-B/B6. A movement restriction now excludes generated exercises, as an injury already did.</td></tr>
+    <tr><td class="id">F024</td><td>MEDIUM</td><td class="st closed">FIXED</td><td>Stable sort. Dart's <code>List.sort</code> is not stable — measured, 4 of 40 elements moved under an all-equal comparator.</td></tr>
+    <tr><td class="id">F025</td><td>MEDIUM</td><td class="st dormant">DORMANT + TRIPWIRED</td><td>Nine dangling ids, zero readers. Repairing an artefact nothing reaches is closure-count work; the tripwire makes the moment of reachability loud instead.</td></tr>
+    <tr><td class="id">F026</td><td>MEDIUM</td><td class="st closed">FIXED</td><td>All four <code>HarmCategory</code> values declared at <code>medium</code>, plus a fence proving all three Gemini call sites pass them. The file states in the file that this is <em>not</em> fitness safety.</td></tr>
+    <tr><td class="id">F027</td><td>MEDIUM</td><td class="st closed">FIXED</td><td>Both halves. See §4 — it was larger than recorded.</td></tr>
+    <tr><td class="id">N01</td><td>HIGH</td><td class="st closed">FIXED</td><td>A safety refusal no longer renders as a service error with a Retry button.</td></tr>
+    <tr><td class="id">N02</td><td>HIGH</td><td class="st closed">FIXED</td><td>Verified at source: <code>workout_player_page.dart:807-823</code> now reads the eligibility layer and re-screens. The tap is terminal, so this one mattered.</td></tr>
+    <tr><td class="id">N03</td><td>MEDIUM</td><td class="st closed">FIXED</td><td>G-D. Rules reject a <code>health</code> map server-side, not just in a client wrapper.</td></tr>
+    <tr><td class="id">N04</td><td>MEDIUM</td><td class="st closed">FIXED</td><td>Verified at source: all three AI-coach entries now read <code>safetyContextProvider</code>.</td></tr>
+    <tr><td class="id">N05</td><td>INFO</td><td class="st dormant">WITHDRAWN</td><td>Its original evidence was false and was corrected by the review itself (E04).</td></tr>
+    <tr><td class="id">N06</td><td>INFO</td><td class="st dormant">NOT A DEFECT</td><td><strong>Had no disposition anywhere until now.</strong> <code>kSafetyTagsClinicallyReviewed = false</code> is the product correctly recording that its tags are unreviewed, with a self-removing disclosure and two tests pinning the flag. It is evidence for D1, not a defect.</td></tr>
+    <tr><td class="id">N07</td><td>INFO</td><td class="st decision">OPERATOR DECISION</td><td>See §3.</td></tr>
+    <tr><td class="id">N08</td><td>LOW</td><td class="st closed">RESOLVED BY DELETION</td><td>Two superseded verdict providers deleted rather than wired up, with a fence so they cannot return.</td></tr>
+    <tr><td class="id">ML-F1</td><td>MAJOR</td><td class="st closed">FIXED</td><td>New. The strategy document described an unshipped model as bundled. See §4.</td></tr>
+    <tr><td class="id">CI-F1</td><td>MAJOR</td><td class="st closed">FIXED</td><td>New. The dependency audit ran only on push. See §4.</td></tr>
+    <tr><td class="id">D1</td><td>—</td><td class="st hold">EXTERNAL_CLINICAL_VALIDATION_REQUIRED</td><td>Unchanged and unchangeable here. See §5.</td></tr>
+    <tr><td class="id">H3</td><td>—</td><td class="st hold">HOLD</td><td>Unchanged. See §5.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2><span class="num">02</span>F007, classified</h2>
+
+<p>
+  Recorded as <em>"<code>flutter analyze</code> cannot fail CI"</em>. Measured directly by
+  analysing a file with a return-type error and reading the exit code:
+  <code>--no-fatal-warnings --no-fatal-infos</code> still exits 1 on a genuine error.
+  The finding is <strong>false as written</strong>.
+</p>
+<p>
+  It is not discarded, because a narrower true statement sits underneath it: the suppression
+  must stay limited to warnings and infos. <code>--no-fatal-errors</code> is the flag that
+  would make the original claim true, and a test now asserts it never appears. That is the
+  honest disposition — the finding was wrong, the worry behind it was not.
+</p>
+
+<h2><span class="num">03</span>The three decisions that are not mine</h2>
+
+<div class="card decision">
+  <h3>N07 — a declared route nobody can reach</h3>
+  <dl>
+    <dt>Current code</dt><dd><code>/team/:teamId</code> is declared at <a href="mobile/lib/core/router/app_router.dart">mobile/lib/core/router/app_router.dart:349</a> and renders <code>TeamFeedPage</code>. Measured: <strong>no navigation to it exists anywhere in <code>lib/</code></strong>.</dd>
+    <dt>Reachability</dt><dd>Zero. A user cannot arrive except by a hand-typed deep link.</dd>
+    <dt>Safety impact</dt><dd>None. It is a feed, not a training surface.</dd>
+    <dt>Option A</dt><dd>Delete the route and the page. Smallest tree, and the reachability test stops asserting something that is not true of the product.</dd>
+    <dt>Option B</dt><dd>Add the entry point the feature was built for. It is finished code with an owner's intent behind it.</dd>
+    <dt>Recommendation</dt><dd><strong>B, if teams are still on the roadmap; otherwise A.</strong> This is a product-roadmap question wearing a dead-code costume, and I do not have the roadmap.</dd>
+    <dt>Reversibility</dt><dd>A is reversible from git history. B is reversible by deleting one link.</dd>
+  </dl>
+</div>
+
+<div class="card decision">
+  <h3>F010 — unread providers, and a premise that moved</h3>
+  <dl>
+    <dt>Correction</dt><dd>The audit said 7 of 196 providers had no reference. <strong>Re-measured at this HEAD: 14 of 193.</strong> The gap widened, not narrowed — so quoting the audit's number would have understated it.</dd>
+    <dt>What changed</dt><dd><code>momentRepositoryProvider</code> and <code>wearSyncServiceProvider</code> <em>are</em> now wired in <a href="mobile/lib/main.dart">mobile/lib/main.dart</a>. Four moments providers and two wear providers still have no reader.</dd>
+    <dt>Not all equal</dt><dd>One of the 14 (<code>_filteredExercisesProvider</code>) is private to its own file, where "no external reader" is correct by construction. The other 13 are public.</dd>
+    <dt>Safety impact</dt><dd>None. Nothing unread can influence a prescription.</dd>
+    <dt>Option A</dt><dd>Delete per feature. Cheapest maintenance, discards intended work.</dd>
+    <dt>Option B</dt><dd>Wire up the two named features. Larger, and only worth it if they are wanted.</dd>
+    <dt>Recommendation</dt><dd><strong>Neither, during an audit.</strong> The audit's own <code>minimal_fix</code> says "do not delete during an audit" and it is right: a deletion pass mid-remediation makes every later diff harder to read. Schedule it as its own gate.</dd>
+    <dt>Reversibility</dt><dd>Full, from history.</dd>
+  </dl>
+</div>
+
+<div class="card hold">
+  <h3>F014 — no pregnancy or postpartum path exists</h3>
+  <dl>
+    <dt>Verified</dt><dd>Absence, at this HEAD. The only occurrence of the word in <code>lib/</code> is <a href="mobile/lib/features/cycle_aware/data/cycle_phase.dart">mobile/lib/features/cycle_aware/data/cycle_phase.dart:56-60</a>, recording a deliberate decision <em>not to hold</em> a pregnancy status.</dd>
+    <dt>The gap</dt><dd>That decision is defensible on privacy grounds. But declining to <em>store</em> a status is not the same as declining to <em>generate a plan</em> — and the app currently does the second without doing the first.</dd>
+    <dt>Constraint</dt><dd>I was instructed not to invent pregnancy clinical rules, and I have not. Nothing below is a clinical rule.</dd>
+    <dt>Option A</dt><dd>One self-reported question persisting a boolean, routed to <code>wholePersonBlocks</code> with a referral — the exact shape <code>SurgeryStatus.underRestrictions</code> already uses at <a href="mobile/lib/features/safety/data/eligibility.dart">mobile/lib/features/safety/data/eligibility.dart:212</a>. Holds no medical category, encodes no trimester, makes no clinical claim. It only stops the app from prescribing into a state it has never asked about.</dd>
+    <dt>Option B</dt><dd>Do nothing and record the risk explicitly.</dd>
+    <dt>Recommendation</dt><dd><strong>A</strong> — it is the smallest change that removes a prescription the app is not entitled to make, and it needs no clinical content to build. But it needs an owner's sign-off, because it adds a health question to onboarding, and that is a product and privacy decision.</dd>
+    <dt>Reversibility</dt><dd>High. One question, one boolean, one block reason.</dd>
+  </dl>
+</div>
+
+<h2><span class="num">04</span>What this session's attacks found</h2>
+
+<h3>ML-F1 — the project could not say which model it ships</h3>
+<p>
+  <a href="core/plans/ML_STRATEGY_2026-08-11.md">core/plans/ML_STRATEGY_2026-08-11.md</a>
+  described "Equipment classifier v2 (29 classes)" as the bundled TFLite model.
+  <code>mobile/assets/models/</code> contains exactly one model and it is v1; three call sites
+  name it; the model README says plainly that v2 is not shipped.
+</p>
+<p>
+  This matters because <strong>the shipped model cannot abstain at all</strong> — ten classes
+  over a 69-machine catalogue — which is precisely the measured finding that no confidence
+  threshold repairs it. v2 has a trained <code>none</code> class that fixed two of those
+  errors. A reader planning from that table would have believed the abstention work was
+  partly done in the product. It is not started.
+</p>
+<blockquote>
+  Two model versions existed, both measured, and nothing in the repository recorded which one
+  was deployed. That is the registry gap made concrete, and it is why the next ML milestone is
+  a registry entry rather than a platform.
+</blockquote>
+
+<h3>CI-F1 — the only check that can go stale on its own ran only on demand</h3>
+<p>
+  Four of <code>functions.yml</code>'s five jobs are deterministic given the lockfile.
+  <code>npm audit</code> is not: a CVE against <code>stripe</code> or <code>firebase-admin</code>
+  is disclosed on someone else's schedule. It had no <code>schedule</code> and no
+  <code>workflow_dispatch</code> — so in a quiet fortnight, the job whose entire purpose is to
+  report what happened while nobody was looking was the job that required somebody to be
+  looking. Its own comment records two real production advisories it caught, both on a push
+  that happened to follow disclosure.
+</p>
+
+<h3>F027 was larger than recorded</h3>
+<p>
+  The finding named untranslated strings. What it actually was: a pure data layer with no
+  <code>BuildContext</code>, and therefore no locale, composing the sentence whose entire job
+  is to tell a user the app has <strong>not</strong> cleared them for unrestricted exercise.
+  Russian users read it in English.
+</p>
+<p>
+  The argument for the fix was already written in the same file — <code>PlanRefused</code> had
+  carried typed reasons since Gate M, documented as <em>"a pure builder that returned English
+  prose would be untranslatable and untestable in the same stroke."</em> One file, two halves,
+  disagreeing. Three further defects fell out on the way: a raw Dart identifier
+  (<code>deepKneeFlexion</code>) reaching users in both languages, an English string that was
+  load-bearing for control flow, and the same defect in the deload banner.
+</p>
+
+<h3>Three source scans have now failed the same way</h3>
+<p>
+  The l10n guard should have caught the deload banner's hardcoded fallback, which sits directly
+  inside a <code>Text(</code>. Its literal regex matched single quotes only; the string was
+  double-quoted. The sentence was not hidden behind cleverness — it was hidden behind a
+  quotation mark, and the suite reported a clean widget tree for as long as that was true.
+</p>
+<p>
+  With <code>dormant_traps</code> and <code>CI-F1</code>, that is three. The pattern is
+  consistent enough to state as a rule: <strong>a scan over source needs its own failing test,
+  because a scan that has quietly stopped matching is indistinguishable from a codebase that is
+  clean.</strong> Every scan in this programme now has one.
+</p>
+
+<h2><span class="num">05</span>What cannot be closed here</h2>
+
+<div class="card hold">
+  <h3>D1 and H3 remain exactly where they were</h3>
+  <p>
+    <code>D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED</code>.
+    <code>H3 = HOLD</code>. Nothing in this session moved either, and nothing in this session
+    could have.
+  </p>
+  <p>
+    No agent panel, no model, no pattern scan and no amount of green tests converts an
+    engineering artefact into clinical validation. The code says so itself:
+    <code>kSafetyTagsClinicallyReviewed = false</code>, with a disclosure that removes itself
+    the day a clinician signs off and two tests holding the flag down until then. That constant
+    is the most honest line in the repository, and N06 — which had no disposition until this
+    reconciliation — is really just a pointer to it.
+  </p>
+  <p>
+    The ML workstream does not touch this either. A retraining platform is not a substitute
+    for clinical validation, and its existence is not evidence about any model.
+  </p>
+</div>
+
+<h2><span class="num">06</span>Release verdict</h2>
+
+<div class="verdict">
+  <p class="label">Verdict</p>
+  <p class="call">NOT RELEASE_READY — and not because of the tests</p>
+  <p>
+    2,765 mobile tests and 171 functions tests pass. That is not the question. Three things
+    stand between this branch and a release, and none of them is a red test:
+  </p>
+  <ul>
+    <li><strong>F014</strong> — the app generates prescriptions for a state it has never asked about. This is the one open item with direct safety impact, and it needs an owner's decision, not code.</li>
+    <li><strong>D1 / H3</strong> — the safety tag set is rules-derived and not clinically reviewed. The product already says so on screen. Shipping is a decision about what claim the product is entitled to make, and that decision belongs to someone with clinical authority.</li>
+    <li><strong>Nothing is pushed.</strong> 29 commits sit local. No remote push has been made or attempted, per <code>REMOTE-PUSH-GO = NO</code>.</li>
+  </ul>
+  <p>
+    Everything that engineering can close in this register is closed, mutation-proven, and
+    recorded. What remains is deliberately not mine to close.
+  </p>
+</div>
+
+<h2><span class="num">07</span>Repository state</h2>
+
+<div class="scroll">
+<table>
+  <tbody>
+    <tr><th>HEAD</th><td class="mono">ab11150 — fix(F027): the safety ceiling stops being English in a data layer</td></tr>
+    <tr><th>Branch</th><td class="mono">formcoach/gates-a-c</td></tr>
+    <tr><th>Upstream</th><td class="mono">origin/formcoach/gates-a-c</td></tr>
+    <tr><th>Ahead / behind</th><td class="mono">29 ahead · 0 behind</td></tr>
+    <tr><th>Pushed</th><td class="mono">no — nothing, at any point</td></tr>
+    <tr><th>Working tree</th><td class="mono">one dirty file: core/plans/FINAL_AUTONOMOUS_ACTION_LOG.csv</td></tr>
+    <tr><th>That file</th><td>Pre-existing operator work. <strong>Zero commits in this programme touch it</strong> — verified by an empty <code>git log</code> over the whole range, not by assertion.</td></tr>
+    <tr><th>Mobile suite</th><td class="mono">2765 passing · 0 failing</td></tr>
+    <tr><th>Functions suite</th><td class="mono">171 passing</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2><span class="num">08</span>This session's commits</h2>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>SHA</th><th>Subject</th></tr></thead>
+  <tbody>
+    <tr><td class="id">ab11150</td><td>fix(F027): the safety ceiling stops being English in a data layer</td></tr>
+    <tr><td class="id">7d2ae42</td><td>fix(CI-F1): schedule the one check whose answer changes without a commit</td></tr>
+    <tr><td class="id">55c73b4</td><td>docs(ml): open the ML platform workstream, and correct a shipped-model mismatch</td></tr>
+    <tr><td class="id">7e23f76</td><td>fix(F001): the suitability card stops claiming a signal nothing reads</td></tr>
+    <tr><td class="id">2a67214</td><td>fix(F026, N08, F025): provider moderation, one safety authority, one tripwire</td></tr>
+    <tr><td class="id">4644d24</td><td>test: Firestore re-attack with novel payloads, against the real emulator</td></tr>
+    <tr><td class="id">b5b06e4</td><td>fix(F011): the two payment callables refuse a token from a deleted account</td></tr>
+    <tr><td class="id">fb6374e</td><td>test: the consolidated A–D matrix and the stale-state attack</td></tr>
+    <tr><td class="id">b4c44d7</td><td>docs: checkpoint report for G-E and the first Tier-6 pass</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2><span class="num">09</span>Errors I made, recorded</h2>
+
+<p>
+  An audit that reports only what it found in other people's work is not measuring itself.
+  These are mine, from this session:
+</p>
+<ul>
+  <li><strong>Claimed a test file failed deterministically.</strong> I had run a path that does not exist; "does not exist" reports as a failure. The real file passes.</li>
+  <li><strong>Wrote a matrix that could double-count.</strong> The first ML applicability draft classified two modules twice and omitted a third entirely. Now a strict partition with a test that fails if it stops summing to the measured module count.</li>
+  <li><strong>Wrote a guard that could not fail.</strong> The CI schedule assertion matched the commented-out form of the thing it was checking. Found by mutating it, not by review.</li>
+  <li><strong>Asserted an over-strict property.</strong> The identifier-leak test forbade every enum name in rendered copy, which fails on <code>overhead</code> — an identifier that is also an ordinary English word.</li>
+  <li><strong>Drafted "everything is L0"</strong> before reading the model README in full. It was wrong: the equipment pipeline has more discipline than most L2 setups. Corrected before commit.</li>
+</ul>
+
+<footer>
+  <p>
+    Generated 2026-08-17 · SPTR forensic remediation programme · worktree
+    <code class="mono">D:\Repo\_wt-formcoach</code> · branch <code class="mono">formcoach/gates-a-c</code> at <code class="mono">ab11150</code>.
+    Durable record: <a href="core/DECISION_LOG.md">core/DECISION_LOG.md</a>.
+    Nothing in this report has been pushed to any remote.
+  </p>
+</footer>
+</div>
