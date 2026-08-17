@@ -14356,3 +14356,111 @@ costs a false failure later.
 
 **Suites at this commit:** mobile 2847 passed / 0 failed; CT-1 30 passed. Firestore rules and Cloud
 Functions untouched this round. `REMOTE-PUSH-GO` remains NO; nothing has been pushed.
+
+## Section 17 and 18 closed, and the data-export path traced
+
+**§17 (FIXED): three named limitations of the registry fence, turned into rules.**
+
+*The asset declaration was read as a string.* `pubspec.contains('assets/models/')` proves a substring
+appears somewhere in a file; Flutter's contract is that a directory entry covers files **directly**
+inside it and does not recurse. So `assets/models/v1/equipment_v1.tflite` would sit in the repository,
+hash correctly, be loaded by name in Dart, and not be in the build -- every check green, the app
+throwing at runtime. Measured: moving the artefact into a subdirectory now turns five assertions red,
+and the declaration is parsed as a YAML list matched per artefact (exact file, or its immediate
+parent directory).
+
+Recorded honestly: renaming `assets:` to something else is rejected by the flutter tool itself
+("Unexpected child not_assets found under flutter") before any test runs, so that particular mutation
+is caught by the toolchain and not by this fence. The two mutations the fence does catch are the
+realistic ones -- the `- assets/models/` line deleted, and the same line commented out.
+
+*Interpolated model paths were invisible.* `modelPathsInCode()` matches quoted literals. A path built
+as `'assets/models/equipment_$version.tflite'` is invisible to BOTH directions of the fence: the
+registry would not see the model the app loads, and "the bundled path is the one the code names"
+would not see the name. Nothing would go red. The scanner cannot be taught to evaluate Dart, so the
+construct is refused with the reason rather than the hole being lived with. Mutation-proven by adding
+one interpolated path to `lib/`.
+
+*`deployment_surface` was declared and never checked.* The field decides which rules apply, so
+mislabelling a model exempted it from the rule meant to catch it. The checkable half is the negative
+one: a model declaring `OFFLINE_ADVISORY` must not be loaded by Dart under `lib/`. Mutation-proven by
+pointing CT-1's offline champion at the artefact the app actually loads.
+
+**§18 (FIXED): the Dart model and the Firestore rule are now held in step structurally.**
+N-02 was fixed by hand, and fixing it by hand is the thing that failed -- three times in this
+programme a field has reached the model and the serialiser and not the guard.
+`health_rules_parity_test.dart` takes the keys from calling `toJson()` on a populated instance (not a
+hardcoded list, which would be a third place to forget) and requires each to be named inside the
+brace-balanced body of the corresponding rule function, comments stripped.
+
+It also asserts `healthIsStripped` actually delegates to `flagsAreStripped`, because naming the
+`flags` key proves the key is mentioned, not that its contents are inspected.
+
+Five mutations, each killing its intended assertion: a new `HealthFlags` key absent from the rule; the
+N-02 rule itself restored (screening + flags dropped); `flags` named but not inspected; the F014 field
+dropped from `flagsAreStripped`; and -- the one that matters most here -- **the field mentioned only
+in a comment**, which is the shape that has now defeated five earlier guards in this repository.
+
+Stated limitation: this proves the rule MENTIONS every writable key, not that it tests the right
+thing about it. The emulator suite in `functions/` proves the behaviour. Neither subsumes the other:
+this one cannot be forgotten, that one cannot be satisfied by a mention.
+
+**UNREVIEWED AREA 2 -- `exportAccountData`, traced end to end.**
+
+Confirmed correct, by reading rather than assuming: the uid comes from `request.auth.uid` and never
+from the request body; every subcollection read is scoped under `users/{uid}`; the three top-level
+collections are filtered by an ownership field; reads are capped at `MAX_ROWS` and every capped
+section is NAMED in the response; a failed read throws rather than returning a short export claiming
+to be whole; the daily quota added as N-06 is in place and sits after the auth guard so a refusal
+costs nothing.
+
+Per the standing distinction: sensitive data existing in a lawful self-export is not a leak. What
+follows are defects in **third-party** data and in **unbounded input**, not in the user receiving
+their own records.
+
+*(1) MAJOR, FACT, FIXED -- the booking redaction was a deny-list.* `redactBooking` removed
+`clientUid`, `coachUid` and `stripePaymentIntentId` and spread the rest. Traced field by field against
+both writers, that list is complete for what is written today, so **there was no live leak and this is
+not a bug fix**. What it could not do is stay correct: a field added to a booking writer would have
+reached a coach's export untouched, with nothing anywhere noticing -- the same shape as F014 (twice),
+N-02 and N-01.
+
+Now an allow-list, plus `booking_export_parity.test.ts`, which parses the object literals of BOTH
+writers (`bookCoachSession` creates the row, `stripeWebhook` merges `status`/`confirmedAt` into it
+after payment; reading only the first is how the second would have been missed) and requires every key
+to be classified as exported or explicitly withheld.
+
+The parser's own first version matched only `name: value` and found five of the nine fields -- the
+four it missed included `coachUid`, one of the two the redaction exists for. A parser that cannot see
+the field it is auditing proves nothing, which is the same failure it exists to detect. Fixed to match
+shorthand properties as well.
+
+Mutation results, including the one that does NOT go red: adding an unclassified field to the writer
+turns the parity test red; adding the same field and classifying it as exportable is **green**,
+because the test asserts classification and not policy -- stated in the test's own doc comment rather
+than left to be discovered; reverting the allow-list to a partial deny-list is caught by the
+behavioural test instead.
+
+*(2) MAJOR, FACT, FIXED -- `bookCoachSession` wrote unbounded client input, and charged for it.*
+Found by tracing the export, not by looking at payments: `coachUid`, `startsAt` and `durationMinutes`
+go verbatim into `coach_bookings/{id}` and come back out of the export. N-04 applied `bounded()` to
+`reportEquipment` and stopped there, so the callable that also creates a Stripe PaymentIntent took a
+string of any length -- a client could put 900 KB into `startsAt` and pay to store it.
+
+Fixed with the existing helper rather than a new mechanism, refusing rather than truncating, and
+before anything reaches Stripe. `durationMinutes` is now required to be a whole number of minutes from
+1 to 480. Eight refusal cases plus a control that a well-formed booking still goes through; three
+mutations, each turning its own cases red.
+
+*(3) MINOR, FACT, FIXED where it belongs -- one booking could be listed twice.* `bookCoachSession`
+does not refuse a coach who books themselves, so one document satisfies both ownership queries and
+appeared twice in the export. Whether self-booking should be possible at all is a payments/product
+question and is recorded here as **open, not decided**; counting one session twice in a data export is
+not a product question and is fixed where the two lists meet.
+
+**Suites:** mobile 2853 passed / 0 failed; Cloud Functions 188 passed / 0 failed, `tsc` clean; CT-1 30
+passed. `REMOTE-PUSH-GO` remains NO.
+
+**Recorded so it is not mistaken for a clean bill:** the external second-opinion tool (Codex) reported
+`usage_limit_exhausted` on this gate and on the previous one. Its receipt satisfies the local gate
+fail-open by design, but no external review actually ran. Every finding above is my own measurement.

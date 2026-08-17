@@ -299,20 +299,125 @@ void main() {
       }
     });
 
-    test('the asset is declared in pubspec, or it never reaches a device', () {
+    /// §17 — the declared asset paths, read as a list rather than as a string.
+    ///
+    /// The previous check was `pubspec.contains('assets/models/')`. It proved
+    /// that a string appears somewhere in a file, which is not the contract
+    /// Flutter actually applies, and it was satisfied by the string appearing
+    /// under any key at all.
+    List<String> declaredAssets() {
+      final lines = File('pubspec.yaml')
+          .readAsStringSync()
+          // `trimRight`, because the file is checked out with CRLF on this
+          // machine and every exact-match below would otherwise compare
+          // against a trailing carriage return. The first version of this
+          // helper failed for exactly that and nothing else.
+          .split('\n')
+          .map((l) => l.trimRight())
+          .where((l) => !l.trimLeft().startsWith('#'))
+          .toList();
+      // The `flutter:` block is the top-level one, not `dependencies:`'
+      // nested `flutter: sdk: flutter`. Top-level means column zero.
+      final flutterAt = lines.indexWhere((l) => l == 'flutter:');
+      expect(flutterAt, greaterThanOrEqualTo(0),
+          reason: 'no top-level flutter: block in pubspec.yaml');
+      final assetsAt = lines.indexWhere(
+          (l) => l.trim() == 'assets:' && l.startsWith('  '), flutterAt);
+      expect(assetsAt, greaterThan(flutterAt),
+          reason: 'the flutter: block declares no assets at all, so nothing '
+              'in assets/ reaches a device');
+      final out = <String>[];
+      for (var i = assetsAt + 1; i < lines.length; i++) {
+        final l = lines[i];
+        if (l.trim().isEmpty) continue;
+        // A line that is not more-indented than `assets:` ends the list.
+        if (!l.startsWith('    ')) break;
+        final t = l.trim();
+        if (!t.startsWith('- ')) break;
+        out.add(t.substring(2).trim());
+      }
+      return out;
+    }
+
+    test('the asset is declared in pubspec the way Flutter reads it', () {
       // A file in `assets/` that pubspec does not declare is not in the APK.
       // The registry would be accurate about the repository and wrong about
       // the product.
-      // Comments stripped: `assets/models/` occurs exactly once in pubspec, so
-      // commenting the line out dropped the model from the APK while leaving
-      // this test green.
-      final pubspec = File('pubspec.yaml')
-          .readAsStringSync()
-          .split('\n')
-          .where((l) => !l.trimLeft().startsWith('#'))
-          .join('\n');
-      expect(pubspec, contains('assets/models/'),
-          reason: 'the model directory is not declared as an asset');
+      //
+      // §17. `contains('assets/models/')` was too weak in a way that matters:
+      // Flutter's directory entry covers files DIRECTLY in that directory and
+      // does not recurse. So `assets/models/v3/equipment_v3.tflite` would sit
+      // in the repository, be hashed correctly by the fence above, be loaded
+      // by name in Dart — and not be in the build. Every check would pass and
+      // the app would throw at runtime.
+      //
+      // The declaration is therefore read as a list and matched per artefact:
+      // the exact file, or the directory it sits in directly.
+      final declared = declaredAssets();
+      expect(declared, isNotEmpty);
+      final bundled = models.where((m) => m['bundled'] == true).toList();
+      expect(bundled, isNotEmpty);
+      for (final m in bundled) {
+        final assetPath =
+            (m['artifact_path'] as String).replaceFirst('mobile/', '');
+        final parent =
+            '${assetPath.substring(0, assetPath.lastIndexOf('/') + 1)}';
+        expect(declared.contains(assetPath) || declared.contains(parent), isTrue,
+            reason: 'pubspec declares $declared, and none of those puts '
+                '$assetPath in the build. A directory entry covers files '
+                'directly inside it and does not recurse into subdirectories');
+      }
+    });
+
+    test('§17: a model path the scanner cannot follow is not allowed', () {
+      // The stated limitation of `modelPathsInCode`, turned into a rule.
+      //
+      // It matches quoted literals. A path assembled at runtime —
+      // `'assets/models/equipment_$version.tflite'` — is invisible to BOTH
+      // directions of the fence: the registry would not see the model the app
+      // loads, and "the bundled path is the one the code names" would not see
+      // the name. Nothing would go red.
+      //
+      // The scanner cannot be taught to evaluate Dart, so the alternative to
+      // living with the hole is refusing the construct. An interpolated model
+      // path is rejected here with the reason, which is a smaller cost than a
+      // fence that quietly stops covering the thing it exists for.
+      final offenders = <String>[];
+      final interpolated = RegExp(r'''(?:'|")[^'"\n]*assets/models/[^'"\n]*\$''');
+      for (final f in Directory('lib').listSync(recursive: true)) {
+        if (f is! File || !f.path.endsWith('.dart')) continue;
+        final src = f.readAsStringSync();
+        for (final m in interpolated.allMatches(src)) {
+          offenders.add('${f.path}: ${m.group(0)}');
+        }
+      }
+      expect(offenders, isEmpty,
+          reason: 'these build a model asset path by interpolation, which the '
+              'registry fence cannot resolve. Write the path as a literal, or '
+              'the registry stops describing what the app loads: $offenders');
+    });
+
+    test('§17: deployment_surface is checked, not merely declared', () {
+      // The field decides which rules apply — an ON_DEVICE champion must be
+      // bundled, an OFFLINE_ADVISORY one need not be. Until now nothing
+      // checked that the declaration was TRUE, so mislabelling a model
+      // exempted it from the rule that was supposed to catch it.
+      //
+      // The checkable half is the negative one: a model that says it runs
+      // offline must not be loaded by the app. The positive direction is
+      // already covered by 'the registry's bundled path is the one the code
+      // actually names'.
+      final loaded = modelPathsInCode();
+      for (final m in models.where(
+          (m) => m['deployment_surface'] == 'OFFLINE_ADVISORY')) {
+        final assetPath =
+            (m['artifact_path'] as String).replaceFirst('mobile/', '');
+        expect(loaded, isNot(contains(assetPath)),
+            reason: '${m['model_id']}@${m['model_version']} declares '
+                'OFFLINE_ADVISORY and is loaded by Dart source under lib/. '
+                'The declaration is what exempts it from the on-device rules, '
+                'so a false one is not a labelling error — it is a hole');
+      }
     });
   });
 

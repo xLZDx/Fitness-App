@@ -981,6 +981,68 @@ describe("bookCoachSession", () => {
     });
   });
 
+  /**
+   * Found while tracing the export path, not while looking at payments.
+   *
+   * Every field below is written verbatim into `coach_bookings/{id}` and read
+   * back out by `exportAccountData`. None was bounded: N-04 applied `bounded`
+   * to `reportEquipment` and stopped there, so the callable that also charges
+   * a card took a string of any length.
+   *
+   * Refused rather than truncated, and nothing may reach Stripe first -- a
+   * rejected booking that has already created a PaymentIntent is worse than
+   * the unbounded write it replaced.
+   */
+  describe("client input is bounded before anything is charged", () => {
+    beforeEach(() => {
+      primeDoc("coach_listings/coach1", {
+        priceCentsPerSession: 10000,
+        stripeConnectAccountId: "acct_c1",
+      });
+      primeDoc(CLIENT_SUB_PATH, { stripeCustomerId: "cus_cl1" });
+    });
+
+    const bad: [string, Record<string, unknown>][] = [
+      ["an oversized startsAt", { coachUid: "coach1", startsAt: "x".repeat(65) }],
+      ["a non-string startsAt", { coachUid: "coach1", startsAt: 12345 }],
+      ["an oversized coachUid", { coachUid: "c".repeat(129), startsAt: "2026-08-01T10:00:00.000Z" }],
+      ["a fractional duration", { coachUid: "coach1", startsAt: "2026-08-01T10:00:00.000Z", durationMinutes: 45.5 }],
+      ["a negative duration", { coachUid: "coach1", startsAt: "2026-08-01T10:00:00.000Z", durationMinutes: -60 }],
+      ["a zero duration", { coachUid: "coach1", startsAt: "2026-08-01T10:00:00.000Z", durationMinutes: 0 }],
+      ["an absurd duration", { coachUid: "coach1", startsAt: "2026-08-01T10:00:00.000Z", durationMinutes: 100000 }],
+      ["a duration that is not a number", { coachUid: "coach1", startsAt: "2026-08-01T10:00:00.000Z", durationMinutes: "60" }],
+    ];
+
+    for (const [name, payload] of bad) {
+      test(`${name} is refused, and nothing is charged`, async () => {
+        await expect(
+          bookCoachSession.run(req(payload, { uid: "client1", token: {} })),
+        ).rejects.toMatchObject({ code: "invalid-argument" });
+        expect(stripeMock.paymentIntents.create).not.toHaveBeenCalled();
+      });
+    }
+
+    test("the control: a well-formed booking still goes through", async () => {
+      // Without this the group above would pass just as happily against a
+      // callable that refuses everything.
+      stripeMock.paymentIntents.create.mockResolvedValue({
+        id: "pi_ok",
+        client_secret: "pi_ok_secret",
+      });
+      const res = await bookCoachSession.run(
+        req(
+          {
+            coachUid: "coach1",
+            startsAt: "2026-08-01T10:00:00.000Z",
+            durationMinutes: 480,
+          },
+          { uid: "client1", token: {} },
+        ),
+      );
+      expect(res.bookingId).toMatch(/^bk_\d+_client1$/);
+    });
+  });
+
   test("defaults durationMinutes to 60 and rounds the platform fee", async () => {
     primeDoc("coach_listings/coach2", {
       priceCentsPerSession: 3333,

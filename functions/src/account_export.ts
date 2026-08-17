@@ -104,32 +104,72 @@ async function owned(
 }
 
 /**
- * A booking with the OTHER person removed.
+ * The booking fields that belong to the user asking for their data.
  *
- * A booking names both parties and carries payment identifiers
- * (`index.ts:1154-1164`: `clientUid`, `coachUid`, `stripePaymentIntentId`).
- * Exporting it whole means a coach with 200 bookings downloads 200 real
- * Firebase uids belonging to clients who never asked to be in anyone's export,
- * plus a payment-intent id per session -- third-party personal data inside a
- * file the recipient can forward anywhere.
+ * ## Why an allow-list, and why this is the second version
  *
- * The user's own side stays: what they booked, when, and what it cost is their
- * data and the reason the export exists.
+ * A booking names both parties and carries payment identifiers. Exporting it
+ * whole means a coach with 200 bookings downloads 200 real Firebase uids
+ * belonging to clients who never asked to be in anyone's export, plus a
+ * payment-intent id per session -- third-party personal data inside a file the
+ * recipient can forward anywhere.
+ *
+ * The first version removed `clientUid`, `coachUid` and `stripePaymentIntentId`
+ * and spread the rest. That is a DENY-list, and it was complete for the fields
+ * `bookCoachSession` writes today -- traced field by field, not assumed. What
+ * it is not is stable: a field added to the booking writer flows into the
+ * export untouched, and nothing anywhere says so.
+ *
+ * That is the failure mode this codebase has now produced four times -- a
+ * field that reaches the writer and the serialiser and not the guard. It cost
+ * F014 twice, N-02 once, and N-01 once. The version that cannot fail that way
+ * names what may leave rather than what may not, so a new field is withheld
+ * until somebody classifies it, and `booking_export_parity.test.ts` fails
+ * until they do.
+ *
+ * `id` is included because the export lists rows by id everywhere else and a
+ * booking id is the user's own reference for a session they attended.
  */
+const BOOKING_SELF_FIELDS = [
+  "id",
+  "startsAt",
+  "durationMinutes",
+  "priceCents",
+  "platformFeeCents",
+  "status",
+  "createdAt",
+  "confirmedAt",
+] as const;
+
+/**
+ * Fields deliberately WITHHELD, listed so the omission is a decision.
+ *
+ * Read by `booking_export_parity.test.ts`: every key `bookCoachSession` writes
+ * must appear in one list or the other, so a new field cannot be neither.
+ */
+const BOOKING_WITHHELD_FIELDS = [
+  // The other party. Which side this user was on is meaningful; who the other
+  // person is is not theirs to receive.
+  "clientUid",
+  "coachUid",
+  // A payment-intent id is a live Stripe handle, not a receipt.
+  "stripePaymentIntentId",
+] as const;
+
+/** A booking reduced to the part that is this user's own data. */
 function redactBooking(row: Record<string, unknown>, uid: string): unknown {
-  const {
-    clientUid,
-    coachUid,
-    stripePaymentIntentId: _intent,
-    ...rest
-  } = row as Record<string, unknown>;
-  return {
-    ...rest,
-    // Which side this user was on is meaningful; who the other person is is
-    // not theirs to receive.
-    yourRole: clientUid === uid ? "client" : "coach",
-  };
+  const out: Record<string, unknown> = {};
+  for (const field of BOOKING_SELF_FIELDS) {
+    if (field in row) out[field] = row[field];
+  }
+  out.yourRole = row.clientUid === uid ? "client" : "coach";
+  return out;
 }
+
+export const __bookingExportContract = {
+  self: BOOKING_SELF_FIELDS,
+  withheld: BOOKING_WITHHELD_FIELDS,
+};
 
 export const exportAccountData = onCall(RARE, async (request) => {
   const auth = request.auth;
@@ -211,9 +251,21 @@ export const exportAccountData = onCall(RARE, async (request) => {
       // Both sides in one list rather than two keys: a booking is one event
       // whichever end of it this user was, and splitting it would make a
       // reader reconcile two lists to answer "how many sessions did I have".
-      coachBookings: [...bookingsAsClient, ...bookingsAsCoach].map((b) =>
-        redactBooking(b as Record<string, unknown>, uid),
-      ),
+      //
+      // De-duplicated by id: `bookCoachSession` does not refuse a coach who
+      // books themselves, so one document can satisfy BOTH queries and be
+      // listed twice. Whether self-booking should be possible at all is a
+      // payments/product question and is recorded as open rather than decided
+      // here; counting one session twice in someone's data export is not, and
+      // is fixed where the two lists meet.
+      coachBookings: [
+        ...new Map(
+          [...bookingsAsClient, ...bookingsAsCoach].map((b) => [
+            (b as Record<string, unknown>).id,
+            b,
+          ]),
+        ).values(),
+      ].map((b) => redactBooking(b as Record<string, unknown>, uid)),
       equipmentReports,
       debugSessions,
       // Named, never silent. A capped read that did not say so would be the

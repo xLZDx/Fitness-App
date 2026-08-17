@@ -1274,16 +1274,41 @@ export const bookCoachSession = onCall(
     // `assertAccountStillExists`.
     await assertAccountStillExists(auth.uid, "bookCoachSession");
     const data = request.data ?? {};
-    const coachUid = data.coachUid as string | undefined;
-    const startsAt = data.startsAt as string | undefined;
-    const durationMinutes =
-      (data.durationMinutes as number | undefined) ?? 60;
+    // Found tracing the export path, not by looking for it here: every field
+    // below is written verbatim into `coach_bookings/{id}` and then read back
+    // out by `exportAccountData`, and none of them was bounded. N-04 applied
+    // `bounded` to `reportEquipment` and stopped there, so the endpoint that
+    // ALSO charges a card kept taking a string of any length -- a client could
+    // put 900 KB into `startsAt` and pay to store it. Same helper, same
+    // refuse-rather-than-truncate stance; no new mechanism.
+    const coachUid = bounded(data.coachUid, 128, "coachUid");
+    const startsAt = bounded(data.startsAt, 64, "startsAt");
     if (!coachUid || !startsAt) {
       throw new HttpsError(
         "invalid-argument",
         "coachUid and startsAt are required.",
       );
     }
+    // A duration is priced per session rather than per minute, so an absurd
+    // value does not change what is charged -- it changes what the coach is
+    // told they agreed to. Refused rather than clamped, for the same reason
+    // `bounded` refuses: silently storing a different number than the client
+    // sent is a data-integrity bug wearing a limit's clothes.
+    const rawDuration = data.durationMinutes;
+    if (rawDuration !== undefined && rawDuration !== null) {
+      if (
+        typeof rawDuration !== "number" ||
+        !Number.isInteger(rawDuration) ||
+        rawDuration <= 0 ||
+        rawDuration > 480
+      ) {
+        throw new HttpsError(
+          "invalid-argument",
+          "durationMinutes must be a whole number of minutes from 1 to 480.",
+        );
+      }
+    }
+    const durationMinutes = (rawDuration as number | undefined) ?? 60;
     const coachSnap = await db.doc(`coach_listings/${coachUid}`).get();
     const coach = coachSnap.data();
     if (!coach) {
