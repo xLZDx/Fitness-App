@@ -43,6 +43,7 @@ import {
   QUOTAS,
   enforceDailyQuota,
   noteAppCheck,
+  quotaFor,
   refundQuota,
 } from "./abuse_guard";
 
@@ -236,7 +237,15 @@ export const clipUrl = onCall(VIDEO_HOT, async (request) => {
   // stop a signed-in one, and `maxInstances` only slows the drain rather than
   // bounding it. The quota is what makes "mint links for the whole library in
   // a loop" -- the comment directly above -- actually impossible per account.
-  await enforceDailyQuota(request.auth.uid, "clipUrl", QUOTAS.clipUrl);
+  // N-05. The ceiling is per uid, and an anonymous uid is free to replace, so
+  // the ceiling did not bind at all for the caller most likely to be a script.
+  // Anonymous callers get a fraction of it. See `quotaFor` for why this is a
+  // mitigation and not a fix.
+  await enforceDailyQuota(
+    request.auth.uid,
+    "clipUrl",
+    quotaFor(QUOTAS.clipUrl, request.auth.token?.firebase?.sign_in_provider),
+  );
 
   try {
     const now = Date.now();
@@ -286,7 +295,10 @@ export const clipUrls = onCall(VIDEO_BATCH, async (request) => {
   await enforceDailyQuota(
     request.auth.uid,
     "clipUrlsObjects",
-    QUOTAS.clipUrlsObjects,
+    quotaFor(
+      QUOTAS.clipUrlsObjects,
+      request.auth.token?.firebase?.sign_in_provider,
+    ),
     objects.length,
   );
   const now = Date.now();

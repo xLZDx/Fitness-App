@@ -41,10 +41,30 @@ const collectionRef = (name: string): any => ({
   }),
 });
 
+// N-06. The export now spends a daily quota before it reads anything, and the
+// quota is a transaction against `users/{uid}/usage/{day}`. Held here rather
+// than in the shared docRef store so a test can read the count back.
+let usage: Record<string, number> = {};
+const usagePaths: string[] = [];
+
 jest.mock("firebase-admin", () => ({
   firestore: jest.fn(() => ({
-    doc: jest.fn((path: string) => docRef(path)),
+    doc: jest.fn((path: string) => {
+      if (path.includes("/usage/")) {
+        usagePaths.push(path);
+        return { path };
+      }
+      return docRef(path);
+    }),
     collection: jest.fn((name: string) => collectionRef(name)),
+    runTransaction: jest.fn(async (fn: (tx: any) => Promise<void>) =>
+      fn({
+        get: async () => ({ data: () => ({ ...usage }) }),
+        set: (_ref: any, data: Record<string, number>) => {
+          usage = { ...usage, ...data };
+        },
+      }),
+    ),
   })),
 }));
 
@@ -56,6 +76,7 @@ jest.mock("firebase-functions/logger", () => ({
 
 import { HttpsError } from "firebase-functions/v2/https";
 import { exportAccountData } from "../account_export";
+import { QUOTAS } from "../abuse_guard";
 
 const req = (uid: string | null = "u1"): any => ({
   data: {},
@@ -66,6 +87,8 @@ const req = (uid: string | null = "u1"): any => ({
 beforeEach(() => {
   docs.clear();
   collections.clear();
+  usage = {};
+  usagePaths.length = 0;
 });
 
 test("refuses when signed out", async () => {
@@ -239,16 +262,47 @@ test("one failed read fails the whole export instead of shipping it short",
   async () => {
     collections.set("users/u1/workout_logs", [{ id: "l1", data: {} }]);
     const admin = jest.requireMock("firebase-admin");
-    admin.firestore.mockImplementationOnce(() => ({
+    // Two `once`s, and a working `runTransaction` on both. The export now
+    // spends its N-06 quota before it reads anything, and the quota calls
+    // `admin.firestore()` too -- a single `once` was consumed by the quota, so
+    // the failing-read mock never reached the code under test and this
+    // assertion silently stopped testing anything.
+    const failingReads = () => ({
       doc: jest.fn(() => ({
         get: async () => {
           throw new Error("firestore unavailable");
         },
       })),
       collection: jest.fn((name: string) => collectionRef(name)),
-    }));
-
-    await expect(exportAccountData.run(req())).rejects.toThrow(
-      /Could not assemble/,
-    );
+      runTransaction: jest.fn(async (fn: (tx: any) => Promise<void>) =>
+        fn({ get: async () => ({ data: () => ({}) }), set: () => {} }),
+      ),
+    });
+    // Persistent for the duration, then restored. `once` cannot work here:
+    // `db()` is called afresh by every one of the sixteen concurrent reads, so
+    // which read receives the failing handle depends on scheduling order --
+    // and the quota now takes one before any of them.
+    const original = admin.firestore.getMockImplementation();
+    admin.firestore.mockImplementation(failingReads);
+    try {
+      await expect(exportAccountData.run(req())).rejects.toThrow(
+        /Could not assemble/,
+      );
+    } finally {
+      admin.firestore.mockImplementation(original);
+    }
   });
+
+  test("the export is rate-limited, because it is the heaviest read path",
+    async () => {
+      // N-06. Sixteen collection reads per call over collections the client
+      // may fill itself. The mechanism existed and was pointed at the video
+      // endpoints only.
+      for (let i = 0; i < QUOTAS.accountExport; i++) {
+        await exportAccountData.run(req());
+      }
+      await expect(exportAccountData.run(req())).rejects.toThrow(
+        /resource-exhausted|quota|limit/i,
+      );
+      expect(usagePaths.some((p) => p.includes("/usage/"))).toBe(true);
+    });

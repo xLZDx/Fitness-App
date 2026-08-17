@@ -14051,3 +14051,46 @@ the control: a live account still reaches the coach listing, so the refusals are
 guard that refuses everybody.
 
 Functions suite: 174 passing, up from 171.
+
+## N-04, N-05, N-06 (MAJOR): the quota mechanism existed and was pointed at two endpoints
+
+`enforceDailyQuota` was written for the video signer and applied there and nowhere else. The two
+heaviest and least bounded endpoints in the backend never called it.
+
+**N-04 `reportEquipment`.** No quota; a client-chosen document id written with `set()`, so knowing an
+id overwrote that report with no trace of the original, and a slash in it wrote into an arbitrary
+subcollection; an unbounded `note`; and a client-chosen `gymId` selecting which third party receives
+that note verbatim. The Admin SDK bypasses `firestore.rules`, so the `if false` on
+`equipment_reports` protected none of this. Now: quota; id validated for shape; a transaction that
+refuses to overwrite a report owned by someone else while still letting the same reporter re-file
+their own (the client generates the id so an offline retry does not double-file, and that had to keep
+working); every client string bounded, and REFUSED rather than truncated -- silently storing half of
+what someone typed is a data bug wearing a limit's clothes; newlines stripped from the note before it
+is interpolated into a Slack-shaped `text`, because a newline lets an attacker forge the lines the
+platform writes itself.
+
+Not done, and recorded as an operator decision rather than invented: there is no check that the
+reporter has any association with the gym whose channel receives the message. Requiring one is a
+product decision about how gym membership works, which this repository does not model.
+
+**N-06 `exportAccountData`.** Sixteen concurrent reads per call, each bounded at `MAX_ROWS + 1`, over
+collections the client may write freely -- so seeding one's own tree turned a single invocation into
+tens of thousands of billed reads. Quota added at three a day.
+
+**N-05 `clipUrl` / `clipUrls` -- a MITIGATION, and labelled as one.** The ceiling is per uid, and an
+anonymous uid costs nothing: the Web API key ships in the app, Identity Toolkit mints another on
+request, and the counter restarts at zero. Three throwaway accounts covered the entire licensed clip
+library, so the module's own stated goal was not being met.
+
+Anonymous callers now get an eighth of the ceiling. That raises the number of rotations eightfold and
+does nothing about the rotation itself, because nothing in this layer can. The control that binds a
+caller to a real install is App Check, and `APP_CHECK_ENFORCED` defaults to off -- a deployment
+decision. Refusing anonymous callers outright was the other candidate and was NOT taken: anonymous
+sign-in is a first-class login button in this app, and removing video from it is a product decision
+that belongs to the operator.
+
+**OPERATOR DECISIONS OUTSTANDING (neither is a code defect):**
+1. Enforce App Check on the metered video endpoints? This is the only thing that closes N-05.
+2. Should filing an equipment report require an association with that gym?
+
+Functions suite: 185 passing, up from 171 at the start of this session.

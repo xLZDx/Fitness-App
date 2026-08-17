@@ -46,7 +46,7 @@ jest.mock("firebase-admin", () => ({
 }));
 
 import { clipUrl, clipUrls, __resetSignatureCache } from "../video_urls";
-import { QUOTAS } from "../abuse_guard";
+import { QUOTAS, quotaFor, ANONYMOUS_QUOTA_DIVISOR } from "../abuse_guard";
 
 const TTL_SECONDS = 15 * 60;
 
@@ -276,4 +276,49 @@ describe("A6-lite — per-user daily quota", () => {
 
       expect(usagePaths.some((p) => p.startsWith("users/u7/usage/"))).toBe(true);
     });
+
+  /*
+   * N-05. The per-uid ceiling did not bind for the caller most likely to be a
+   * script: an anonymous uid is free to mint from the shipped API key, so the
+   * counter it protects can simply be replaced. Three throwaway accounts
+   * covered the whole clip library under the previous limits.
+   *
+   * A smaller share is a MITIGATION and is tested as one. The control that
+   * actually binds a caller to a real install is App Check, which is off by
+   * default and is an operator decision -- see the decision log.
+   */
+  describe("N-05: an anonymous caller gets a fraction of the ceiling", () => {
+    const anon = (data: unknown, uid = "anon1"): any => ({
+      data,
+      auth: { uid, token: { firebase: { sign_in_provider: "anonymous" } } },
+    });
+
+    test("quotaFor cuts the limit down, and never below one", () => {
+      expect(quotaFor(400, "anonymous")).toBe(400 / ANONYMOUS_QUOTA_DIVISOR);
+      expect(quotaFor(400, "google.com")).toBe(400);
+      expect(quotaFor(400, undefined)).toBe(400);
+      // A limit smaller than the divisor must still permit one call, or the
+      // mitigation becomes a ban by arithmetic accident.
+      expect(quotaFor(1, "anonymous")).toBe(1);
+    });
+
+    test("an anonymous caller is refused at the reduced ceiling", async () => {
+      const limit = quotaFor(QUOTAS.clipUrl, "anonymous");
+      expect(limit).toBeLessThan(QUOTAS.clipUrl);
+
+      usage = { clipUrl: limit };
+      await expect(clipUrl.run(anon({ object: OBJ }))).rejects.toThrow(
+        /limit/i,
+      );
+    });
+
+    test("a signed-in caller at that same count is still served", async () => {
+      // The control. Without it the refusal above is satisfied by a ceiling
+      // that dropped for everybody.
+      usage = { clipUrl: quotaFor(QUOTAS.clipUrl, "anonymous") };
+      await expect(
+        clipUrl.run(req({ object: OBJ }, "u9")),
+      ).resolves.toBeDefined();
+    });
+  });
 });

@@ -168,4 +168,58 @@ export const QUOTAS = {
   clipUrl: 400,
   /** Objects signed through the batch endpoint per user per day. */
   clipUrlsObjects: 1200,
+  /**
+   * Broken-equipment reports per user per day.
+   *
+   * N-04. This endpoint had no ceiling at all, and it writes a document whose
+   * id the client chooses and whose free-text note it also supplies — so the
+   * loop that fills a bucket with ~1 MB documents costs an attacker nothing.
+   * Generous against real use: filing thirty faults in one day is already an
+   * implausible gym visit.
+   */
+  equipmentReport: 30,
+  /**
+   * GDPR data exports per user per day.
+   *
+   * N-06. Each call fans out into sixteen concurrent collection reads, each
+   * bounded at MAX_ROWS + 1, and the collections it reads are ones the client
+   * may write freely — so a user who seeds their own tree turns one callable
+   * invocation into tens of thousands of billed reads. An export is a
+   * once-in-a-while action; three a day is already indulgent.
+   */
+  accountExport: 3,
 } as const;
+
+/**
+ * The share of a quota an anonymous caller gets.
+ *
+ * N-05, and this is a MITIGATION rather than a fix — say so plainly.
+ *
+ * A per-uid quota binds only if a uid costs something. An anonymous uid costs
+ * nothing: the Firebase Web API key ships in the app, Identity Toolkit will
+ * mint another on request, and the counter starts again at zero. Three
+ * throwaway accounts covered the entire clip library under the previous
+ * limits, so the module's own stated goal — that a script looping the library
+ * hits the ceiling — was not being met.
+ *
+ * What this does: raises the number of rotations needed by 8x. What it does
+ * NOT do: make rotation expensive, because nothing here can.
+ *
+ * The control that actually binds a caller to a real install is App Check, and
+ * `APP_CHECK_ENFORCED` defaults to off — an operator/deployment decision, not
+ * a code one. Refusing anonymous callers outright was the other candidate and
+ * was rejected here: anonymous sign-in is a first-class login button in this
+ * app, and removing video from it is a product decision that belongs to the
+ * operator too. Both are recorded in the decision log rather than silently
+ * chosen.
+ */
+export const ANONYMOUS_QUOTA_DIVISOR = 8;
+
+/** The quota `action` allows this caller, given how they signed in. */
+export function quotaFor(
+  limit: number,
+  signInProvider: string | undefined,
+): number {
+  if (signInProvider !== "anonymous") return limit;
+  return Math.max(1, Math.floor(limit / ANONYMOUS_QUOTA_DIVISOR));
+}

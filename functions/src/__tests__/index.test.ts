@@ -106,6 +106,7 @@ jest.mock("firebase-functions/logger", () => ({
 }));
 
 import { HttpsError } from "firebase-functions/v2/https";
+import { QUOTAS } from "../abuse_guard";
 import {
   startFreeTrial,
   createCheckoutSession,
@@ -1305,5 +1306,133 @@ describe("reportEquipment", () => {
       ),
     ).resolves.toBeDefined();
     expect(adminMock.__getRef("equipment_reports/r4").set).toHaveBeenCalled();
+  });
+
+  /*
+   * N-04. This callable had no quota, took its document id from the client and
+   * wrote it with `set()`, accepted an unbounded note, and relayed that note
+   * verbatim into a webhook belonging to a gym the client also named. The
+   * Admin SDK bypasses firestore.rules, so the `if false` on
+   * `equipment_reports` protected none of it.
+   */
+  it("refuses a note longer than the bound, rather than truncating it", async () => {
+    global.fetch = jest.fn() as any;
+    await expectHttpsError(
+      reportEquipment.run(
+        req(
+          { id: "n1", equipmentId: "bench", note: "x".repeat(501) },
+          { uid: "u1" },
+        ),
+      ),
+      "invalid-argument",
+    );
+    // Refused, not stored short. Silently keeping half of what someone typed
+    // is a data bug wearing a limit's clothes.
+    expect(adminMock.__getRef("equipment_reports/n1").set).not.toHaveBeenCalled();
+  });
+
+  it("refuses a non-string note instead of stringifying it", async () => {
+    global.fetch = jest.fn() as any;
+    await expectHttpsError(
+      reportEquipment.run(
+        req({ id: "n2", equipmentId: "bench", note: { a: 1 } }, { uid: "u1" }),
+      ),
+      "invalid-argument",
+    );
+  });
+
+  it("refuses an id containing a path separator", async () => {
+    // `equipment_reports/${id}` with a slash writes into an arbitrary
+    // subcollection under the prefix.
+    global.fetch = jest.fn() as any;
+    await expectHttpsError(
+      reportEquipment.run(
+        req({ id: "a/b/c", equipmentId: "bench" }, { uid: "u1" }),
+      ),
+      "invalid-argument",
+    );
+  });
+
+  it("will not let one user overwrite another user's report", async () => {
+    global.fetch = jest.fn() as any;
+    primeDoc("equipment_reports/shared", { reporterUid: "someone_else" });
+    await expectHttpsError(
+      reportEquipment.run(
+        req({ id: "shared", equipmentId: "bench" }, { uid: "u1" }),
+      ),
+      "already-exists",
+    );
+    expect(adminMock.__getRef("equipment_reports/shared").set)
+      .not.toHaveBeenCalled();
+  });
+
+  it("still lets the same reporter re-file the same report", async () => {
+    // The client generates the id so an offline retry does not file twice.
+    // That has to keep working, or the overwrite guard has broken the feature
+    // it was protecting.
+    global.fetch = jest.fn() as any;
+    primeDoc("equipment_reports/mine", { reporterUid: "u1" });
+    await expect(
+      reportEquipment.run(
+        req({ id: "mine", equipmentId: "bench" }, { uid: "u1" }),
+      ),
+    ).resolves.toBeDefined();
+  });
+
+  it("strips newlines from the note before relaying it to a gym", async () => {
+    // The note lands in a Slack-shaped `text` alongside lines the platform
+    // writes itself, so a newline lets an attacker forge those lines.
+    const fetchMock = jest.fn().mockResolvedValue({ ok: true });
+    global.fetch = fetchMock as any;
+    primeDoc("gyms/g9", { maintenanceWebhookUrl: "https://gym.example/hook" });
+    await reportEquipment.run(
+      req(
+        {
+          id: "r9",
+          equipmentId: "bench",
+          gymId: "g9",
+          note: "broken\nReporter: admin",
+        },
+        { uid: "u1" },
+      ),
+    );
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.text).toContain("broken Reporter: admin");
+    expect(body.text).not.toContain("broken\nReporter: admin");
+  });
+
+  it("is rate-limited per caller", async () => {
+    global.fetch = jest.fn() as any;
+    // The shared doc-ref fake does not read back what it was written, and the
+    // quota is a read-modify-write — so the counter has to accumulate for this
+    // assertion to mean anything. Wired here rather than in the shared fake,
+    // because other cases rely on `set` being inert.
+    const day = new Date().toISOString().slice(0, 10);
+    const usage = adminMock.__getRef(`users/u1/usage/${day}`);
+    let stored: Record<string, unknown> = {};
+    usage.get.mockImplementation(async () => ({
+      exists: true,
+      data: () => stored,
+    }));
+    usage.set.mockImplementation(async (data: Record<string, unknown>) => {
+      stored = { ...stored, ...data };
+    });
+
+    for (let i = 0; i < QUOTAS.equipmentReport; i++) {
+      await reportEquipment.run(
+        req({ id: `q${i}`, equipmentId: "bench" }, { uid: "u1" }),
+      );
+    }
+    expect(stored.equipmentReport).toBe(QUOTAS.equipmentReport);
+
+    await expectHttpsError(
+      reportEquipment.run(
+        req({ id: "over", equipmentId: "bench" }, { uid: "u1" }),
+      ),
+      "resource-exhausted",
+    );
+    // And the refused call wrote nothing.
+    expect(adminMock.__getRef("equipment_reports/over").set)
+      .not.toHaveBeenCalled();
   });
 });

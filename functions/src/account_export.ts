@@ -2,7 +2,7 @@ import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import { RARE } from "./scaling";
-import { noteAppCheck } from "./abuse_guard";
+import { noteAppCheck, enforceDailyQuota, QUOTAS } from "./abuse_guard";
 
 /**
  * A3 — everything the product stores about one user, assembled server-side.
@@ -138,6 +138,18 @@ export const exportAccountData = onCall(RARE, async (request) => {
   }
   noteAppCheck(request, "exportAccountData");
   const uid = auth.uid;
+  // N-06. Sixteen concurrent reads per call, each bounded at MAX_ROWS + 1, over
+  // collections the client may write freely — so a user who seeds their own
+  // tree turns one invocation into tens of thousands of billed reads, with no
+  // ceiling anywhere. The quota mechanism already existed and was applied to
+  // the video endpoints and not to this, the heaviest read path in the
+  // backend.
+  //
+  // Placed after the auth guard and before the reads, so a refusal costs
+  // nothing. A GDPR request is not made three times a day by anyone acting in
+  // good faith, and the right to the data is not a right to it on demand at
+  // any rate.
+  await enforceDailyQuota(uid, "accountExport", QUOTAS.accountExport);
 
   const truncated: Truncation = [];
 

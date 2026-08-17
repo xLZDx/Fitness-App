@@ -48,7 +48,7 @@ import * as logger from "firebase-functions/logger";
 import type Stripe from "stripe";
 import { tierForPriceId } from "./tiers";
 import { INTERACTIVE, RARE, WEBHOOK } from "./scaling";
-import { noteAppCheck } from "./abuse_guard";
+import { noteAppCheck, enforceDailyQuota, QUOTAS } from "./abuse_guard";
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -106,6 +106,49 @@ const db = admin.firestore();
  * so an Auth outage refuses the payment operation rather than granting it.
  * "We could not check" must never read as "yes" on this path.
  */
+/**
+ * A client-supplied string, refused rather than truncated when it is too long.
+ *
+ * N-04. Truncation was the alternative and it is the wrong one here: silently
+ * storing half of what the user typed is a data-integrity bug dressed up as a
+ * limit, and it hides the abuse it is meant to stop. A caller sending 900 KB
+ * where 500 characters are expected is not a user whose note needs trimming.
+ *
+ * Non-strings return undefined rather than stringifying, so a client sending
+ * `{note: {...}}` cannot land `[object Object]` in a maintenance channel.
+ */
+function bounded(
+  value: unknown,
+  max: number,
+  field: string,
+): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== "string") {
+    throw new HttpsError("invalid-argument", `${field} must be a string.`);
+  }
+  if (value.length > max) {
+    throw new HttpsError(
+      "invalid-argument",
+      `${field} is longer than ${max} characters.`,
+    );
+  }
+  return value;
+}
+
+/**
+ * Free text on its way into somebody else's chat channel.
+ *
+ * The maintenance webhook is Slack-shaped, and the note is interpolated into
+ * its `text`. Newlines let an attacker forge the lines around theirs — a note
+ * containing "\nReporter: someone-else" reads exactly like the field the
+ * platform appends — so they collapse to spaces. This is not XSS-grade
+ * escaping and does not pretend to be; it removes the ability to fake the
+ * message's own structure.
+ */
+function forRelay(note: string): string {
+  return note.replace(/[\r\n\t]+/g, " ").trim();
+}
+
 async function assertAccountStillExists(
   uid: string,
   callable: string,
@@ -1317,30 +1360,55 @@ export const reportEquipment = onCall(
       throw new HttpsError("unauthenticated", "Sign in to file a report.");
     }
     noteAppCheck(request, "reportEquipment");
+    // N-04. Nothing bounded this endpoint: no quota, a client-chosen document
+    // id written with `set()`, an unbounded note, and a client-chosen gymId
+    // selecting which third party receives that note. The Admin SDK bypasses
+    // firestore.rules, so the `if false` on `equipment_reports` protected
+    // nothing here.
+    await enforceDailyQuota(auth.uid, "equipmentReport", QUOTAS.equipmentReport);
     const data = request.data ?? {};
-    const equipmentId = data.equipmentId as string | undefined;
-    const gymId = (data.gymId as string | undefined) ?? "unknown";
-    const fault = (data.fault as string | undefined) ?? "other";
-    const note = (data.note as string | undefined) ?? "";
+    const equipmentId = bounded(data.equipmentId, 128, "equipmentId");
+    const gymId = bounded(data.gymId, 128, "gymId") ?? "unknown";
+    const fault = bounded(data.fault, 64, "fault") ?? "other";
+    // Bounded hardest of the four: this is the only field that leaves the
+    // platform verbatim, into a channel belonging to somebody else.
+    const note = bounded(data.note, 500, "note") ?? "";
     if (!equipmentId) {
       throw new HttpsError("invalid-argument", "equipmentId is required.");
     }
 
-    const reportId =
-      (data.id as string | undefined) ??
-      `${Date.now()}_${equipmentId}`;
+    const clientId = bounded(data.id, 128, "id");
+    if (clientId !== undefined && !/^[A-Za-z0-9_.-]+$/.test(clientId)) {
+      // A slash here writes into an arbitrary subcollection under the prefix.
+      throw new HttpsError("invalid-argument", "id has an unusable shape.");
+    }
+    const reportId = clientId ?? `${Date.now()}_${equipmentId}`;
     const reportedAt = (data.reportedAt as string | undefined) ??
       new Date().toISOString();
 
-    await db.doc(`equipment_reports/${reportId}`).set({
-      equipmentId,
-      gymId,
-      fault,
-      note,
-      reportedAt,
-      reporterUid: auth.uid,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      status: "open",
+    // The client generates the id so it can retry the same report offline
+    // without filing it twice, which is worth keeping. What it must not do is
+    // overwrite a report belonging to someone else: `set()` on a known id did
+    // exactly that, silently and with no trace of the original. A transaction
+    // rather than `create()`, because a legitimate retry of the SAME report by
+    // the SAME reporter still has to succeed.
+    await db.runTransaction(async (tx) => {
+      const ref = db.doc(`equipment_reports/${reportId}`);
+      const existing = await tx.get(ref);
+      const owner = existing.data()?.reporterUid as string | undefined;
+      if (existing.exists && owner !== auth.uid) {
+        throw new HttpsError("already-exists", "That report id is taken.");
+      }
+      tx.set(ref, {
+        equipmentId,
+        gymId,
+        fault,
+        note,
+        reportedAt,
+        reporterUid: auth.uid,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        status: "open",
+      });
     });
 
     // Best-effort webhook dispatch. We look up gyms/{gymId} to see
@@ -1354,7 +1422,7 @@ export const reportEquipment = onCall(
           text:
             `Equipment report — ${fault.toUpperCase()}\n` +
             `Gym: ${gymId}  ·  Equipment: ${equipmentId}\n` +
-            (note ? `Note: ${note}\n` : "") +
+            (note ? `Note: ${forRelay(note)}\n` : "") +
             `Reporter: ${auth.uid}`,
           equipmentId,
           gymId,
