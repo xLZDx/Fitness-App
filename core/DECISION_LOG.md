@@ -14833,3 +14833,28 @@ was touched by this gate.
 **Not accepted:** nothing. Every finding raised was either confirmed and fixed, or was already
 correct — the semantics reviewer's checks on leakage, staleness ordering, coverage accounting,
 `row_is_bad` and `content_version` all came back clean and I verified two of them independently.
+
+## Self-booking — the operator decision written up rather than left as a sentence
+
+`core/DECISION_SELF_BOOKING.md`. Raised by the R4 review, whose data-export half was fixed and whose
+product half was recorded as "open, not decided" — which is accurate and is not something an operator
+can act on.
+
+Current behaviour, read from source rather than remembered: `bookCoachSession` never compares
+`coachUid` to `auth.uid`, so a coach with a completed Connect listing can call it with their own uid,
+be charged `priceCents` on their own card, have 15% kept as the platform fee and the remainder
+transferred to their own account. They end up strictly worse off by the fee plus processing, and both
+sides of the booking name the same person. Reachable, not hypothetical.
+
+The document states both options with what each COSTS, which is the part that was missing. Option A
+is not "leave it alone": allowing self-booking deliberately means building a fee policy, a UI
+disclosure and a stance on what self-bookings do to utilisation and revenue figures. Option B is four
+lines and one test.
+
+Recommended default: **B, on asymmetry rather than on principle.** Self-booking may well be a feature;
+until somebody decides, the product has a payment path nobody chose. Reverting a refusal is cheap;
+recovering from a season of undisclosed self-charges is not.
+
+The tests Option B needs are named, including the one that matters: the refusal must happen BEFORE
+`ensureCustomer` and any Stripe call, because a guard placed after it refuses the booking and still
+charges. `NOT DECIDED HERE` — this is a payments and product question.
