@@ -332,7 +332,8 @@ existing ML features rather than the whole product:
 Content QA prioritisation deserves the note: ranking missing catalogue content by how often users
 actually met the machine uses data already collected, needs no telemetry decision, no model, no
 promotion gate — and it feeds the corpus gap the README calls "the next gap that matters"
-(`ab_crunch_machine`, 31 crops, the machine that reads `treadmill` at 0.940).
+(`ab_crunch_machine`, 31 crops, the machine v2 reads as `treadmill` at 0.940 from one angle; the
+shipped v1 calls it `treadmill` at 0.742).
 
 **2. The correction that the CT sequence must start further back than `M0`.** M0 is a *data*
 prerequisite. There is a *platform* prerequisite before it that `ML_STRATEGY` did not have in scope:

@@ -246,10 +246,71 @@ void main() {
     test('the strategy document distinguishes shipped from measured', () {
       final strategy =
           File('../core/plans/ML_STRATEGY_2026-08-11.md').readAsStringSync();
-      expect(strategy, contains('SHIPPED'),
+      // NOT `contains('SHIPPED')`. That is a substring of 'NOT SHIPPED', so
+      // the assertion guarding the v1 row was satisfied by the v2 row beside
+      // it -- deleting the marking this test exists to protect left it green.
+      final v1Marked = strategy
+          .split('\n')
+          .any((l) => l.contains('**v1**') && l.contains('**SHIPPED**'));
+      expect(v1Marked, isTrue,
           reason: 'ML-F1 corrected this document to mark which classifier is '
               'in the APK. If that marking is removed, the defect returns');
-      expect(strategy, contains('NOT SHIPPED'));
+      final v2Marked = strategy
+          .split('\n')
+          .any((l) => l.contains('**v2**') && l.contains('**NOT SHIPPED**'));
+      expect(v2Marked, isTrue);
+    });
+
+    /// The fence covered `assets/models/README.md` and the strategy document.
+    /// It did not cover `core/ml/` — the directory the registry lives in and
+    /// whose stated job is being the authoritative answer to "which model is
+    /// actually deployed". ML-F1's defect recurred there: a v2 measurement was
+    /// attributed to the shipped model, which overstated the shipped model's
+    /// confident-error severity by ~0.2 absolute.
+    ///
+    /// The figures are read out of the registry rather than hardcoded, so the
+    /// fence tracks the registry instead of drifting alongside it.
+    test('no ML document attributes a v2-only measurement to what ships', () {
+      final registry = jsonDecode(
+        File('../core/ml/MODEL_REGISTRY.json').readAsStringSync(),
+      ) as Map<String, dynamic>;
+      final models = (registry['models'] as List).cast<Map<String, dynamic>>();
+      final v2 = models.firstWhere((m) => m['bundled'] != true);
+      final v1 = models.firstWhere((m) => m['bundled'] == true);
+
+      // Confidence figures that appear in v2's evidence and nowhere in v1's.
+      final v2Text = jsonEncode(v2);
+      final v1Text = jsonEncode(v1);
+      final figures = RegExp(r'0\.\d{3}')
+          .allMatches(v2Text)
+          .map((m) => m.group(0)!)
+          .where((f) => !v1Text.contains(f))
+          .toSet();
+      expect(figures, isNotEmpty,
+          reason: 'the parser found no v2-only figures, so this test would '
+              'police nothing');
+
+      final docs = [
+        File('../core/ml/CT_CANDIDATE_DECISION.md'),
+        File('../core/ML_PLATFORM_ARCHITECTURE.md'),
+      ];
+      for (final doc in docs) {
+        final lines = doc.readAsStringSync().split('\n');
+        for (var i = 0; i < lines.length; i++) {
+          final line = lines[i];
+          final figure = figures.where(line.contains);
+          if (figure.isEmpty) continue;
+          // A line may carry a v2 figure -- it just has to say so.
+          expect(
+            line.contains('v2'),
+            isTrue,
+            reason:
+                '${doc.path}:${i + 1} quotes ${figure.join(', ')}, which is a '
+                'v2 measurement, without naming v2. The shipped model is v1; '
+                'attributing v2 numbers to it is the ML-F1 defect.\n  $line',
+          );
+        }
+      }
     });
   });
 }

@@ -104,7 +104,8 @@ Until those exist: `PRODUCTION_IMAGE_COLLECTION = DISABLED`, and it stays disabl
 continuous retraining — it is a ranked query over data already collected, with no model, no
 promotion gate and no privacy consequence. It is listed as the first deliverable because it produces
 value in days and feeds the corpus gap the model README already names as the one that matters
-(`ab_crunch_machine`, 31 crops — the machine the shipped model calls `treadmill` at 0.940).
+(`ab_crunch_machine`, 31 crops — the machine the shipped model calls `treadmill` at 0.742, per B1;
+v2 reads the same machine `treadmill` 0.940 or `none` 0.946 depending on the angle).
 
 ---
 

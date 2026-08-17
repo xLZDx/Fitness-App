@@ -13969,3 +13969,33 @@ Same shape as N-01. A field reached the model and the serialiser and not the gua
 Note for whoever runs this next: port 8080 is held by Docker on this machine, so the suite was run
 via the runner's own `FIREBASE_EMULATOR_CONFIG` / `FIRESTORE_EMULATOR_PORT` escape hatch on 8091.
 The alternate config was deleted afterwards rather than committed.
+
+## N-12 (MAJOR): ML-F1's defect recurred, in the directory built to prevent it
+
+`core/ml/CT_CANDIDATE_DECISION.md` — written in this programme, four days after ML-F1 corrected the
+same mistake elsewhere — said the SHIPPED model calls that machine `treadmill` at **0.940**.
+
+It does not. `0.940` is v2's reading. Evidence: v1's measured confidence ceiling over all 30 B1
+photos is `0.897` (registry `confidence_max`), so 0.940 exceeds what v1 can produce on that set;
+B1's own row for that frame reads `treadmill` **0.742**; and the registry files `treadmill 0.940 /
+none 0.946` in v2's `abstention_note`, where `none` is a class v1 does not have at all.
+
+The consequence is not cosmetic: it overstates the shipped model's confident-error severity by about
+0.2 absolute, in the one directory whose stated purpose is being the authoritative answer to which
+model is actually deployed. `core/ML_PLATFORM_ARCHITECTURE.md` carried the same figure without
+naming a model.
+
+Why the fence missed it: the doc tests covered `assets/models/README.md` and `ML_STRATEGY`, and
+nothing in `core/ml/`. The registry could be perfectly honest while the prose beside it was not.
+
+The new fence reads the v2-only confidence figures OUT OF THE REGISTRY rather than hardcoding them,
+and fails any line in the ML docs that quotes one without naming v2. Mutation-proven: restoring the
+false sentence turns it red with the file, line and figure.
+
+Separately, the assertion guarding ML-F1's original correction could not fail. It was
+`contains('SHIPPED')` — and `'NOT SHIPPED'` contains `'SHIPPED'`, so the v2 row satisfied the check
+meant for the v1 row. Deleting the v1 marking left it green. Now matched per row; mutation-proven.
+
+Third and fourth scanner in this programme found to be incapable of failing. The pattern is
+consistent enough to name: a substring check against prose passes for reasons unrelated to what it
+is checking.
