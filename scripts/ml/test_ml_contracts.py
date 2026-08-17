@@ -264,6 +264,32 @@ def test_the_clinical_worklist_is_registered_with_its_zero():
         == (1527, 360)
 
 
+def test_the_worklist_entry_is_pinned_to_its_source_not_to_the_last_commit():
+    """A field that moves with every commit inside a re-derived payload makes
+    `--check` fail on every commit, and a drift alarm that fires constantly is
+    one nobody reads. Found when it did exactly that."""
+    import subprocess
+
+    from dataset_registry import REPO
+
+    entries = {e["dataset_id"]: e for e in build()["datasets"]}
+    worklist = entries["clinical_contraindication_worklist"]
+    catalogue = subprocess.run(
+        ["git", "-C", str(REPO), "log", "-1", "--format=%H", "--",
+         "mobile/assets/data/exercises_vendor.json"],
+        capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    assert worklist["source_commit"] == catalogue
+    head = subprocess.run(
+        ["git", "-C", str(REPO), "rev-parse", "HEAD"],
+        capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    assert worklist["source_commit"] != head, (
+        "the entry names HEAD, so it will differ the moment anything is "
+        "committed and --check will fail with nothing actually wrong"
+    )
+
+
 def test_no_registered_dataset_carries_a_human_or_clinical_label():
     """One assertion over the whole registry rather than per-entry, so a NEW
     dataset added later cannot arrive with a manufactured label count and no

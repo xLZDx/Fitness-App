@@ -15052,3 +15052,19 @@ malformed `injury_regions.json` and no test fed it one. The test was added; the 
 
 `PUSHED = NO`. `CONTINUOUS_RETRAINING_OPERATIONAL = NO`. `D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED`.
 `H3 = HOLD`.
+
+### Two follow-on defects in the above, found and fixed
+
+**FACT.** The handoff's `handoff_commit` pin still named `7f65229` — the commit at which §4.1 said
+untagged rows are *withheld*. A clinician checking that commit out would have read the uncorrected
+claim the pin exists to prevent them reading. Repinned to `a18e0da`, and §8 now states plainly that
+the DIGEST is the load-bearing half: `handoff_commit` is necessarily one behind the commit that
+records it, because a pin cannot name its own commit. That off-by-one is bounded — the named commit
+contains this document and this worklist, and the only thing that can move underneath a review is
+the catalogue, which the digest covers exactly.
+
+**FACT.** The new registry entry took its `source_commit` from `handoff_commit`, which moves with
+every commit. Inside a payload that CI re-derives and compares, that makes `--check` fail on every
+commit — observed immediately. A drift alarm that fires constantly is one nobody reads. It now names
+the commit the CATALOGUE last changed at, which is both stable and the correct meaning of "the commit
+this data is from". A test pins it and asserts it is not HEAD.

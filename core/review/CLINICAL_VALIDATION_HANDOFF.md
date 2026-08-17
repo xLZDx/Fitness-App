@@ -291,9 +291,15 @@ catalogue_sha256  d9de3a740f9cc3d20e5ee994170969fe90bbdb7549444f5330483b904f3197
 catalogue_bytes   3127495
 rows              1887
 tagged/untagged   1527 / 360
-handoff_commit    7f6522931e4fe8cea54da63f78c73cced2e5fbb3
+handoff_commit    a18e0daa5727fd9f104a2dc57f083ef82f097400
 tag_source        core/contraindications/*.csv
 ```
+
+The load-bearing half is the **digest**. `handoff_commit` names the commit the worklist was generated
+at, and it is necessarily one behind the commit that records it — a pin cannot name its own commit.
+That off-by-one is bounded and harmless: the commit it names contains this document and this
+worklist, and the only thing that can change underneath a review is the catalogue, which the digest
+covers exactly. Check the digest; the commit is for finding the sources afterwards.
 
 A **digest and a commit**, not a branch. The previous version of this section named the branch
 `formcoach/gates-a-c`, which is a moving pointer: it advanced three commits while this document sat

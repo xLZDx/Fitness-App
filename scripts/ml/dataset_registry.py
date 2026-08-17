@@ -86,6 +86,18 @@ def _git_commit() -> str:
         return "UNKNOWN"
 
 
+def _last_commit_touching(path: str) -> str:
+    """The commit a source file last changed at. Stable until the file changes."""
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(REPO), "log", "-1", "--format=%H", "--", path],
+            capture_output=True, text=True, check=True,
+        ).stdout.strip()
+        return out or "UNKNOWN"
+    except Exception:
+        return "UNKNOWN"
+
+
 def _ct1_catalogue() -> dict[str, Any]:
     """The CT-1 base dataset, read from its own manifest and its own bytes."""
     root = REPO / "core" / "ml" / "datasets" / "content_qa_catalogue_v1"
@@ -200,7 +212,13 @@ def _clinical_worklist() -> dict[str, Any] | None:
             "the contraindication tags. Answers D1/H3; not a training corpus."
         ),
         "status": "AVAILABLE",
-        "source_commit": meta["handoff_commit"],
+        # The commit the SOURCE last changed at, not the one the worklist was
+        # generated at. `handoff_commit` moves with every commit, and a moving
+        # field inside a re-derived payload would fail `--check` on every
+        # commit -- a drift alarm that fires constantly is one nobody reads.
+        "source_commit": _last_commit_touching(
+            "mobile/assets/data/exercises_vendor.json"
+        ),
         "schema_version": meta["schema_version"],
         "sources": {
             "catalogue": "mobile/assets/data/exercises_vendor.json",

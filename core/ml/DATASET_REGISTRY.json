@@ -169,7 +169,7 @@
       "purpose": "The row-level worklist issued for external clinical validation of the contraindication tags. Answers D1/H3; not a training corpus.",
       "row_count": 1887,
       "schema_version": 1,
-      "source_commit": "7f6522931e4fe8cea54da63f78c73cced2e5fbb3",
+      "source_commit": "8e1dc5ee8c39867ad252da6994840d15305a183e",
       "sources": {
         "catalogue": "mobile/assets/data/exercises_vendor.json",
         "catalogue_sha256": "d9de3a740f9cc3d20e5ee994170969fe90bbdb7549444f5330483b904f3197c8",
@@ -203,7 +203,7 @@
       "status": "UNRESOLVED"
     }
   ],
-  "registry_commit": "7f6522931e4fe8cea54da63f78c73cced2e5fbb3",
+  "registry_commit": "a18e0daa5727fd9f104a2dc57f083ef82f097400",
   "required_fields": [
     "dataset_id",
     "dataset_version",
