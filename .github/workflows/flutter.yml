@@ -198,12 +198,49 @@ jobs:
       - name: Label contract, baseline, builder, evaluation
         run: python -m pytest scripts/ct1/test_ct1.py -q
 
-      # The review batch's blindness and the importer's refusals. Named as a
-      # separate step rather than folded into the line above so that a failure
-      # here reads as what it is: the human-label acquisition path stopped
-      # refusing something it must refuse.
-      - name: Review batch blindness and import refusals
+      # The human-label acquisition path, in four named steps rather than one.
+      #
+      # Folded together, a red X says "CT-1 broke". Split, it says which
+      # protection stopped working -- and these four fail for entirely
+      # different reasons, none of which is recoverable by rerunning.
+      - name: Review batch — blindness and sampling
         run: python -m pytest scripts/ct1/test_review_batch.py -q
+
+      - name: Review import — refusals and adjudication
+        run: python -m pytest scripts/ct1/test_review_import.py -q
+
+      # The reviewer's page is where blindness either holds or fails, because
+      # it is the only artefact a reviewer actually opens. Scanned as rendered
+      # bytes, not as intent.
+      - name: Review interface — blindness of the generated page
+        run: python -m pytest scripts/ct1/test_review_app.py -q
+
+      - name: Leakage guards and the evaluation dataset
+        run: python -m pytest scripts/ct1/test_leakage.py scripts/ct1/test_human_eval.py -q
+
+      # Same argument as the dataset check below: a rebuild that does not
+      # reproduce the committed batch means the row assignments a reviewer is
+      # working from cannot be regenerated, and a lost package would have to be
+      # reconstructed from somebody's memory.
+      - name: The committed review batch is the one this code builds
+        run: |
+          python scripts/ct1/review_batch.py --out /tmp/ct1review
+          python - <<'PY'
+          import json, sys
+          root = "core/ml/review/ct1_review_batch_002"
+          for name in ("items.json", "assignments.json"):
+              a = json.load(open(f"{root}/{name}", encoding="utf-8"))
+              b = json.load(open(f"/tmp/ct1review/ct1_review_batch_002/{name}",
+                                encoding="utf-8"))
+              if a != b:
+                  sys.exit(
+                      f"{name} drifted. Either the catalogue changed without "
+                      "the batch being rebuilt, or selection/assignment stopped "
+                      "being deterministic -- and a reviewer's package can no "
+                      "longer be regenerated from the batch."
+                  )
+          print("review batch reproduces")
+          PY
 
       # A rebuild that does not reproduce the committed hash means the pipeline
       # is not reproducible, whatever the manifest claims. Compared against the

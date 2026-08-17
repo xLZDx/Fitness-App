@@ -14673,3 +14673,77 @@ Written to `reports/remediation_r3_r4_2026-08-17.html` and published at
 Rows are labelled HEAD-at-assessment (`be461d6`) following the correction earlier in this
 programme: a document cannot state its own final commit, because the commit that states it is the
 one after the line.
+
+## CT-1 LabelOps built to the human-input boundary — `CT1_REVIEW_BATCH_002`
+
+Everything between "a batch exists" and "a metric can be reported" is now built and tested, and none
+of it fabricates the one thing it is waiting for. Status is unchanged where it should be:
+`BLOCKER = HUMAN_REVIEW_LABELS_REQUIRED`, `EVALUATION_LABEL_GAP = OPEN`.
+
+**002, not a rebuilt 001, and the rule cost something.** Review schema v2 adds structured reason
+codes, a per-row content digest, review timestamps and an explicit review status; a v1 answer cannot
+carry any of them, so reading a v1 submission as v2 would be guessing what the reviewer meant. 001
+was built, committed and never reviewed — nothing was lost, which is exactly the situation in which
+a new-batch-on-schema-change rule is cheap to waive. The row SELECTION is unchanged and a test proves
+it by rebuilding against the committed `001/items.json`, so the supersession is provably schema-only
+rather than asserted to be. 001 is recorded `SUPERSEDED_BEFORE_REVIEW`.
+
+**The interface is where blindness either holds or fails.** It is the only artefact a reviewer opens,
+so `test_review_app` scans the RENDERED BYTES rather than the payload builder: no rule name (the
+vocabulary is derived from `run_checks`, so a rule added later is covered without anybody remembering
+to add it), no verdict/score/prediction word, no other reviewer slot, only the rows the slot was
+dealt, and nowhere any sign that a row is double-reviewed. The payload is built by ALLOWLIST — a
+denylist over an upstream dict leaks every field added after it was written.
+
+**Double review is invisible to the reviewer, deliberately.** `double_review` came off the item
+entirely and lives in the assignment layer. A reviewer who knows a row is also going to somebody else
+answers it differently — more carefully, or less, but not the same — and the agreement figure then
+measures the marking rather than the labelling.
+
+**What the importer will not do.** It refuses a submission for another batch or another review
+schema; a machine-shaped reviewer; a row assigned to a different slot (which would add an unplanned
+reviewer and change what that row's agreement measures); the same row twice, conflicting or
+identical; a naive timestamp, because an instant with no offset cannot be ordered against a catalogue
+edit and that ordering is how staleness is judged; a `problem` with no reason code; `other` with no
+note. It does not resolve disagreements: `DISAGREE_UNADJUDICATED` is a queue, not a result, and an
+adjudicator may not be one of the two parties, anonymous, or machine-shaped.
+
+**Content that moved under the reviewer is neither imported nor rejected.** Each item carries a
+digest of exactly the fields it showed; a mismatch comes back `STALE / RE_REVIEW_REQUIRED`, reported
+rather than dropped — a dropped row is indistinguishable from one that was never assigned. A row
+nobody returned is `NOT_RETURNED`, an UNKNOWN, never "reviewed, nothing found".
+
+**`bad / 180` is not a defect rate, so three numbers under three names.** `BATCH METRIC` describes
+those rows. `HOLDOUT ESTIMATE` re-weights stratum rates by the holdout population with a standard
+error; the flagged stratum was sampled exhaustively so it contributes zero sampling variance, and the
+uncertainty is honestly attributed to the 124-of-330 unflagged sample. `CATALOGUE RATE` is present
+and null with the assumption written out, so its absence is a statement rather than an omission
+somebody fills in. An unsampled stratum makes the estimate null, not zero.
+
+**A guard branch was REMOVED rather than counted.** `assert_trainable` had a check for "a reviewed
+label with no named reviewer". `Label.__post_init__` already makes that object impossible to
+construct, so the branch could never fire — and a branch that cannot fail is a branch nobody knows is
+disconnected. Deleted, with a test asserting the contract instead and the guard's docstring saying
+why it is absent.
+
+**A fixture defect found by mutation, not by reading.** Mutation H replaced the population-weighted
+estimator with an unweighted mean and the test stayed GREEN. The shared fixture duplicated every
+second row, which made both strata exactly 44 rows, which made the weighted estimate numerically
+identical to the unweighted one. The test could not fail whatever the estimator did. `dup_every` is
+now a parameter and the evaluation tests use unequal strata. This is the second time in this
+programme a fixture has guaranteed its own outcome.
+
+**Mutation proof:** 12 mutations applied to the guarded SOURCE, each restored byte-for-byte and
+re-verified green. All 12 killed after the fixture fix. Covered: rule name leaking into the page,
+double-review marker on the item, stale review imported anyway, disagreement resolved by majority,
+unreturned row counted as clean, holdout human label made trainable, split guard checking only the
+intersection, unweighted estimator, unsampled stratum treated as zero, evaluation set overwritten in
+place, uncoded problem accepted, machine adjudicating between two humans.
+
+**Suites:** CT-1 155 passed (was 56). Review batch and assignments verified to rebuild
+byte-identically; CI now checks that, and runs the five CT-1 suites as separately named steps so a
+red X says which protection stopped working.
+
+`D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED` and `H3 = HOLD` untouched. No question, in name or in
+the prose a reviewer reads, asks whether an exercise is safe. `CLINICALLY_VALIDATED_LABEL` remains
+unconstructible. `CONTINUOUS_RETRAINING_OPERATIONAL = NO`.

@@ -14,30 +14,41 @@ import json
 
 import pytest
 
+from baseline import DATA, REPO, load
 from label_contract import LabelSource
 from review_batch import (
     BATCH_ID,
+    REASON_CODES,
     REVIEW_QUESTIONS,
-    ReviewImportError,
-    agreement,
-    import_reviews,
+    REVIEW_SCHEMA_VERSION,
+    SUPERSEDES,
+    VERDICTS,
+    assign,
+    content_version,
+    is_double,
     select,
 )
 from test_ct1 import EN, EQ, RU  # the same hand-written fixture
 
 
-def _corpus(n: int = 400):
+def _corpus(n: int = 400, dup_every: int = 2):
     """A corpus big enough that both strata are populated.
 
-    Rows alternate between a clean one and one that duplicates its neighbour's
-    summary, so `duplicate_summary` fires on roughly half — the flag family the
-    shipped catalogue is also dominated by.
+    One row in `dup_every` duplicates a shared summary, so `duplicate_summary`
+    fires on that share — the flag family the shipped catalogue is also
+    dominated by.
+
+    `dup_every` is a parameter rather than a constant because at the default of
+    2 the two strata come out the same size, and equal strata make a
+    population-weighted estimate numerically identical to an unweighted mean.
+    A test of the weighting then cannot fail, whatever the estimator does.
+    Found by mutation, not by reading.
     """
     en = []
     ru = {}
     for i in range(n):
         rid = f"row{i:04d}"
-        dup = i % 2 == 1
+        dup = i % dup_every == 1
         en.append({
             "id": rid,
             "title": f"Exercise {i}",
@@ -150,155 +161,187 @@ def test_selection_is_deterministic_and_stable_as_the_corpus_grows():
     assert len(grown) == 60
 
 
+# --------------------------------------------------------------------------
+# assignment — who gets what, and what the package does not say
+# --------------------------------------------------------------------------
+
+
 def test_double_review_is_assigned_and_is_a_minority():
-    batch = _batch(size=100)
-    doubles = [i for i in batch["items"] if i["double_review"]]
+    batch = _batch()
+    doubles = [i for i in batch["items"] if is_double(i["item_id"])]
     assert doubles, "nothing is double-reviewed, so agreement is unmeasurable"
+    # A majority double-reviewed would halve the corpus for the same effort.
     assert len(doubles) < len(batch["items"]) / 2
 
 
-# --------------------------------------------------------------------------
-# the importer — every case here is one where the alternative is a label that
-# looks exactly like a good one
-# --------------------------------------------------------------------------
+def test_no_item_a_reviewer_opens_says_it_is_double_reviewed():
+    """The overlap rows must be indistinguishable from the rest.
 
-def _submission(batch, **overrides):
-    item = batch["items"][0]["item_id"]
-    base = {
-        "batch_id": BATCH_ID,
-        "reviewer": "qa.jordan",
-        "reviewer_kind": "HUMAN",
-        "reviews": [{
-            "item_id": item,
-            "answers": {q: "ok" for q in REVIEW_QUESTIONS},
-        }],
+    A reviewer who knows a row is also going to somebody else answers it
+    differently -- more carefully, or less, but not the same -- and the
+    agreement figure then measures the marking rather than the labelling.
+    """
+    batch = _batch()
+    for item in batch["items"]:
+        assert "double_review" not in item
+        blob = json.dumps(item, ensure_ascii=False).lower()
+        for word in ("double", "overlap", "second_reviewer", "agreement"):
+            assert word not in blob, f"{item['item_id']} leaks {word!r}"
+
+
+def test_every_item_has_exactly_one_primary_reviewer():
+    batch = _batch()
+    a = assign(batch["items"])
+    assert set(a["primary"]) == {i["item_id"] for i in batch["items"]}
+    # Every doubled row, and only a doubled row, has a second.
+    assert set(a["secondary"]) == {
+        i["item_id"] for i in batch["items"] if is_double(i["item_id"])
     }
-    base.update(overrides)
-    return base
 
 
-def test_a_well_formed_submission_imports_as_reviewed_labels():
-    # The control. Without it every refusal below would pass just as happily
-    # against an importer that refuses everything.
+def test_a_second_reviewer_is_never_the_first():
+    """Otherwise 'double review' is one person answering twice."""
     batch = _batch()
-    labels = import_reviews(_submission(batch), batch)
-    assert len(labels) == len(REVIEW_QUESTIONS)
-    assert all(l.source is LabelSource.HUMAN_REVIEWED_QA_LABEL for l in labels)
-    assert all(l.reviewer == "qa.jordan" for l in labels)
+    a = assign(batch["items"])
+    for item_id, second in a["secondary"].items():
+        assert second != a["primary"][item_id]
 
 
-@pytest.mark.parametrize("reviewer", [
-    "claude", "claude-opus", "gpt4-reviewer", "qa_bot", "auto.reviewer",
-    "baseline", "heuristic_v2",
-])
-def test_a_machine_shaped_reviewer_identity_is_refused(reviewer):
+def test_packages_partition_the_work_and_cover_the_doubles():
     batch = _batch()
-    with pytest.raises(ReviewImportError, match="may not enter"):
-        import_reviews(_submission(batch, reviewer=reviewer), batch)
+    a = assign(batch["items"])
+    total = sum(len(v) for v in a["packages"].values())
+    assert total == len(batch["items"]) + len(a["secondary"])
+    for slot, ids in a["packages"].items():
+        assert len(set(ids)) == len(ids), f"{slot} was dealt a row twice"
 
 
-def test_reviewer_kind_must_be_stated_rather_than_omitted():
-    # It proves nothing and is not meant to. It exists so that submitting a
-    # machine's output requires stating something untrue rather than leaving a
-    # field out.
+def test_assignment_is_reproducible_from_the_batch_alone():
     batch = _batch()
-    sub = _submission(batch)
-    del sub["reviewer_kind"]
-    with pytest.raises(ReviewImportError, match="HUMAN"):
-        import_reviews(sub, batch)
+    assert assign(batch["items"]) == assign(batch["items"])
 
 
-def test_a_review_of_a_row_nobody_was_asked_about_is_refused():
+def test_double_review_needs_more_than_one_reviewer():
     batch = _batch()
-    sub = _submission(batch)
-    sub["reviews"][0]["item_id"] = "row_not_in_batch"
-    with pytest.raises(ReviewImportError, match="not in this batch"):
-        import_reviews(sub, batch)
+    with pytest.raises(ValueError):
+        assign(batch["items"], slots=("R1",))
 
 
-def test_a_partially_answered_row_is_refused_rather_than_half_imported():
+# --------------------------------------------------------------------------
+# the schema change that made this batch 002 rather than a new 001
+# --------------------------------------------------------------------------
+
+
+def test_the_batch_id_changed_with_the_review_schema():
+    """Section 45: a material schema change gets a new batch id.
+
+    Not because 001 had returned work to protect -- it had none -- but because
+    the first time the rule is expensive is the time it gets waived.
+    """
     batch = _batch()
-    sub = _submission(batch)
-    sub["reviews"][0]["answers"].pop(REVIEW_QUESTIONS[0])
-    with pytest.raises(ReviewImportError, match="no answer for"):
-        import_reviews(sub, batch)
+    m = batch["manifest"]
+    assert m["batch_id"] == BATCH_ID != SUPERSEDES
+    assert m["supersedes"] == SUPERSEDES
+    assert m["review_schema_version"] == REVIEW_SCHEMA_VERSION >= 2
+    assert "SUPERSEDED_BEFORE_REVIEW" in m["supersession"]
 
 
-def test_an_answer_to_a_question_nobody_asked_is_refused():
+def test_the_supersession_is_schema_only_and_selects_the_same_rows():
+    """The claim in `SUPERSESSION`, checked rather than asserted in prose.
+
+    Reads the committed 001 artefact if it is present. Selection is a function
+    of the corpus and the id hash, neither of which v2 touched, so any
+    difference would mean the supersession note is wrong about itself.
+    """
+    old = REPO / "core" / "ml" / "review" / "ct1_review_batch_001" / "items.json"
+    if not old.exists():
+        pytest.skip("batch 001 is not in this checkout")
+    en, ru, eq = load(
+        DATA / "exercises_vendor.json",
+        DATA / "exercises_vendor.ru.json",
+        DATA / "equipment.json",
+    )
+    rebuilt = {i["item_id"] for i in select(en, ru, eq)["items"]}
+    before = {i["item_id"] for i in json.loads(old.read_text(encoding="utf-8"))}
+    assert rebuilt == before
+
+
+def test_every_item_carries_the_content_it_was_reviewed_at():
     batch = _batch()
-    sub = _submission(batch)
-    sub["reviews"][0]["answers"]["is_this_exercise_safe"] = "ok"
-    with pytest.raises(ReviewImportError, match="not asked"):
-        import_reviews(sub, batch)
+    for item in batch["items"]:
+        assert item["source_content_version"] == content_version(item)
 
 
-def test_a_submission_for_another_batch_is_refused():
+def test_the_content_version_moves_when_reviewed_content_moves():
+    """Otherwise section 12's staleness check cannot fire."""
     batch = _batch()
-    with pytest.raises(ReviewImportError, match="is for batch"):
-        import_reviews(_submission(batch, batch_id="CT1_REVIEW_BATCH_999"), batch)
+    item = dict(batch["items"][0])
+    before = content_version(item)
+    item["steps"] = list(item["steps"]) + ["and one more"]
+    assert content_version(item) != before
 
 
-def test_cannot_judge_is_an_abstention_and_never_a_class():
-    # Forcing a verdict manufactures a label, and a manufactured label is
-    # indistinguishable from a real one once it is in the file. Importing the
-    # abstention as a VALUE would make "we do not know" a trainable class.
+def test_the_content_version_ignores_fields_no_reviewer_was_shown():
     batch = _batch()
-    sub = _submission(batch)
-    sub["reviews"][0]["answers"][REVIEW_QUESTIONS[0]] = "cannot_judge"
-    labels = import_reviews(sub, batch)
-    assert len(labels) == len(REVIEW_QUESTIONS) - 1
-    assert all(l.check != REVIEW_QUESTIONS[0] for l in labels)
+    item = dict(batch["items"][0])
+    before = content_version(item)
+    item["some_internal_field_added_later"] = "irrelevant"
+    assert content_version(item) == before
 
 
-def test_an_unusable_verdict_word_is_refused():
-    batch = _batch()
-    sub = _submission(batch)
-    sub["reviews"][0]["answers"][REVIEW_QUESTIONS[0]] = "probably fine"
-    with pytest.raises(ReviewImportError, match="is not one of"):
-        import_reviews(sub, batch)
+# --------------------------------------------------------------------------
+# the questions, and the boundary they may not cross
+# --------------------------------------------------------------------------
 
 
 def test_no_question_asks_whether_an_exercise_is_safe():
-    # HUMAN_REVIEWED_QA_LABEL covers CONTENT. Clinical authority is unreachable
-    # from this repository by construction (D1/H3), and a question that invites
-    # the answer is how a content label gets read as a clinical one.
-    for q in REVIEW_QUESTIONS:
-        for forbidden in ("safe", "risk", "injur", "contraindicat", "clinic"):
-            assert forbidden not in q
+    """Section 9 and 10. A content reviewer may not produce a clinical claim.
 
-
-# --------------------------------------------------------------------------
-# double review
-# --------------------------------------------------------------------------
-
-def test_disagreement_is_reported_and_not_resolved():
-    """No automatic tie-break.
-
-    A rule deciding which of two humans was right is the same substitution this
-    whole module exists to prevent, wearing a different hat.
+    Checked on the question NAMES, which is where the wording would have to
+    appear for a reviewer to be asked it. `review_app` carries the prose and is
+    scanned separately.
     """
-    batch = _batch()
-    a = import_reviews(_submission(batch, reviewer="qa.jordan"), batch)
-    sub_b = _submission(batch, reviewer="qa.sam")
-    sub_b["reviews"][0]["answers"][REVIEW_QUESTIONS[0]] = "problem"
-    b = import_reviews(sub_b, batch)
-
-    out = agreement(a, b)
-    assert out["compared"] == len(REVIEW_QUESTIONS)
-    assert out["disagreed"] == 1
-    assert out["items"] == [
-        {"item_id": batch["items"][0]["item_id"], "check": REVIEW_QUESTIONS[0]}
-    ]
-    assert out["resolution"] == "THIRD_REVIEWER_REQUIRED"
+    forbidden = ("safe", "risk", "injur", "contraindicat", "clinic", "danger",
+                 "harm", "medical")
+    for q in REVIEW_QUESTIONS:
+        for word in forbidden:
+            assert word not in q.lower(), f"question {q!r} contains {word!r}"
 
 
-def test_agreement_on_nothing_reports_no_rate_rather_than_a_perfect_one():
-    # `0/0 = 1.0` would report flawless agreement between two reviewers who
-    # never looked at the same thing.
-    assert agreement([], [])["rate"] is None
+def test_the_questions_cover_the_dimensions_the_brief_named():
+    dimensions = {
+        "content_is_complete", "structure_is_consistent",
+        "content_is_not_duplicated", "title_matches_content",
+        "equipment_matches_content", "localisation_is_faithful",
+        "instructions_are_consistent", "metadata_matches_content",
+    }
+    assert dimensions <= set(REVIEW_QUESTIONS)
 
 
-# The shipped fixture is imported for its side-effect-free constants only; this
-# keeps the import from being flagged as unused and documents the reuse.
+def test_unsure_is_one_of_the_verdicts():
+    """Forcing a verdict on a row nobody can assess manufactures a label."""
+    assert "unsure" in VERDICTS
+    assert "cannot_judge" not in VERDICTS
+
+
+def test_the_reason_vocabulary_has_an_escape_hatch():
+    """`other` is how an incomplete vocabulary shows up as a countable class
+    rather than as reviewers forcing a near-miss code."""
+    assert "other" in REASON_CODES
+
+
+def test_reason_codes_do_not_name_a_baseline_rule():
+    """A code named after a rule would tell a reviewer which rules exist and,
+    row by row, invite them to look for that rule's subject."""
+    families = {
+        "duplicate_id", "duplicate_title", "duplicate_summary",
+        "duplicate_steps_block", "dangling_equipment_ref",
+        "unknown_contraindication_tag", "locale_row_missing",
+        "locale_row_orphan", "locale_field_missing", "locale_field_orphan",
+        "locale_value_identical",
+    }
+    assert families.isdisjoint(set(REASON_CODES))
+
+
 def test_the_shared_fixture_is_the_one_the_other_suite_uses():
     assert EN and RU and EQ

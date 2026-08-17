@@ -64,14 +64,42 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from baseline import DATA, REPO, load, run_checks  # noqa: E402
 from build_dataset import file_digest, git_commit, source_ref, split_for  # noqa: E402
-from label_contract import (  # noqa: E402
-    Label,
-    LabelContractError,
-    LabelSource,
-)
+from label_contract import LabelSource  # noqa: E402
 
 SCHEMA_VERSION = 1
-BATCH_ID = "CT1_REVIEW_BATCH_001"
+
+#: The version of the ANSWER schema — what a reviewer is asked and may return.
+#:
+#: Separate from ``SCHEMA_VERSION`` (the manifest/export shape) because the two
+#: change for different reasons and only this one invalidates returned work. A
+#: review answered under v1 cannot be read as a v2 answer: v2 adds required
+#: reason codes, renames the abstention, and carries a content digest per row.
+REVIEW_SCHEMA_VERSION = 2
+
+#: The batch a reviewer is working on.
+#:
+#: 002, not a regenerated 001. Section 45 of the brief: a material change to the
+#: review schema produces a NEW batch with explicit migration semantics, rather
+#: than new row assignments under an id somebody may already have quoted. The
+#: row SELECTION is unchanged and a test proves it, so the supersession is
+#: schema-only — but the rule is worth more than the one directory it costs
+#: here, and the first time it is expensive is exactly when it gets waived.
+BATCH_ID = "CT1_REVIEW_BATCH_002"
+
+#: The batch this one replaces, and why.
+#:
+#: 001 was built, committed and never reviewed. Nothing to migrate; recorded
+#: anyway, because "no returned work was lost" is a claim a reader should be
+#: able to check rather than infer from the absence of a note.
+SUPERSEDES = "CT1_REVIEW_BATCH_001"
+SUPERSESSION = (
+    "SUPERSEDED_BEFORE_REVIEW. CT1_REVIEW_BATCH_001 was built and committed at "
+    "review schema v1 and no reviewer returned a submission against it. This "
+    "batch selects the SAME rows (asserted by test) under review schema v2, "
+    "which adds structured reason codes, per-row source content digests, "
+    "review timestamps and an explicit review status. A v1 submission is NOT "
+    "importable here: the importer requires fields v1 could not carry."
+)
 
 #: How many items a reviewer is asked to look at.
 #:
@@ -106,21 +134,78 @@ DOUBLE_REVIEW_SHARE = 0.2
 #: clinical authority, it is unreachable from here by construction, and a
 #: question that invites the answer is how a content label gets read as one.
 #: See D1 and H3.
+#: Widened at review schema v2 from five questions to the eight content
+#: dimensions this repository can actually supply evidence for. Each names a
+#: comparison a reviewer can make from the row in front of them, against
+#: something else in the same row. None of them can be answered "correctly" by
+#: knowing the exercise; they are answerable by reading.
 REVIEW_QUESTIONS = (
-    "steps_match_title",
-    "steps_are_complete",
-    "equipment_is_correct",
-    "translation_is_faithful",
-    "summary_is_accurate",
+    # Title/content agreement.
+    "title_matches_content",
+    # Content completeness.
+    "content_is_complete",
+    # Structural consistency: numbering, ordering, formatting of the steps.
+    "structure_is_consistent",
+    # Internal instruction consistency: steps and tips not contradicting.
+    "instructions_are_consistent",
+    # Duplicate content.
+    "content_is_not_duplicated",
+    # Equipment/content agreement.
+    "equipment_matches_content",
+    # Localisation quality.
+    "localisation_is_faithful",
+    # Metadata/content consistency: muscles, difficulty, stretch flag.
+    "metadata_matches_content",
 )
 
 #: The answers a question may take.
 #:
-#: ``cannot_judge`` is not politeness. Forcing a verdict on a row the reviewer
-#: cannot assess manufactures a label, and a manufactured label is
-#: indistinguishable from a real one once it is in the file. It is imported as
-#: an ABSTENTION and never as a target.
-VERDICTS = ("ok", "problem", "cannot_judge")
+#: ``unsure`` is not politeness. Forcing a verdict on a row the reviewer cannot
+#: assess manufactures a label, and a manufactured label is indistinguishable
+#: from a real one once it is in the file. It is imported as an ABSTENTION and
+#: never as a target. Renamed from v1's ``cannot_judge`` because the reviewer
+#: interface says UNSURE and a stored value that disagrees with the button that
+#: produced it is a decoding error waiting to be argued about.
+VERDICTS = ("ok", "problem", "unsure")
+
+#: What a reviewer may say is WRONG, as a closed vocabulary.
+#:
+#: A free-text note alone cannot be counted, compared between reviewers, or
+#: turned into a stratum; a closed vocabulary can. ``other`` exists so the
+#: vocabulary being incomplete shows up as a countable category instead of as
+#: reviewers forcing a near-miss code, and the importer requires a note with it.
+#:
+#: These are shown identically on every row, so they carry no information about
+#: any particular row. That is what keeps them compatible with blindness: the
+#: reviewer learns the shape of the defects this catalogue can have, which is
+#: training, and learns nothing about whether a rule fired on the row open in
+#: front of them, which is the leak.
+REASON_CODES = (
+    "steps_missing",
+    "steps_truncated",
+    "steps_out_of_order",
+    "steps_contradict_each_other",
+    "title_describes_different_movement",
+    "duplicate_of_another_row",
+    "duplicate_text_within_row",
+    "equipment_not_used_by_steps",
+    "equipment_required_but_absent",
+    "translation_missing",
+    "translation_left_in_source_language",
+    "translation_changes_meaning",
+    "muscles_do_not_match_content",
+    "difficulty_does_not_match_content",
+    "formatting_broken",
+    "other",
+)
+
+#: What happened to a row, as distinct from what the reviewer concluded.
+#:
+#: Section 48: ``UNKNOWN`` may not collapse into "reviewed, nothing found".
+#: A row nobody returned is absent from the submission entirely and is counted
+#: as ``NOT_RETURNED`` by the importer; the two states below are the ones a
+#: reviewer can assert. ``SKIPPED`` carries no answers by construction.
+REVIEW_STATUSES = ("COMPLETE", "SKIPPED")
 
 #: Reviewer identities the importer refuses outright.
 #:
@@ -148,6 +233,26 @@ def _bucket(item_id: str, salt: str, buckets: int) -> int:
 def _rank(item_id: str, salt: str) -> int:
     """A stable order within a stratum, independent of catalogue order."""
     return int(hashlib.sha256(f"{salt}:{item_id}".encode("utf-8")).hexdigest()[:16], 16)
+
+
+#: Fields whose value the reviewer's answer is ABOUT.
+#:
+#: The digest covers these and nothing else, so that an unrelated catalogue edit
+#: -- a field this batch never showed anyone -- does not invalidate returned
+#: work. Widening this tuple invalidates every outstanding review, which is
+#: correct and should be a decision rather than a side effect.
+REVIEWED_FIELDS = (
+    "title", "summary", "steps", "tips", "equipment_id", "muscles",
+    "difficulty", "is_stretch", "ru",
+)
+
+
+def content_version(item: dict[str, Any]) -> str:
+    """A digest of exactly the content a reviewer was shown."""
+    payload = {k: item.get(k) for k in REVIEWED_FIELDS}
+    canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True,
+                           separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:32]
 
 
 def _families(checks: set[str]) -> set[str]:
@@ -244,7 +349,7 @@ def select(
     blind_items = []
     for r in items:
         rid = r["id"]
-        blind_items.append({
+        item = {
             "item_id": rid,
             "title": r.get("title"),
             "summary": r.get("summary"),
@@ -255,9 +360,24 @@ def select(
             "difficulty": r.get("difficulty"),
             "is_stretch": bool(r.get("isStretch")),
             "ru": ru.get(rid),
-            "double_review": _bucket(rid, "double", 100)
-            < round(DOUBLE_REVIEW_SHARE * 100),
-        })
+        }
+        # What the reviewer actually looked at, as one value.
+        #
+        # Section 12: if the row changed after the batch was built, the review
+        # describes content that is no longer there. Importing it anyway is the
+        # quietest way to get a label that is wrong about the current catalogue
+        # and indistinguishable from one that is right. The importer compares
+        # this digest and marks a mismatch STALE rather than repairing it.
+        item["source_content_version"] = content_version(item)
+        blind_items.append(item)
+
+    # Deliberately NOT on the item: which rows are double-reviewed.
+    #
+    # A reviewer who can see that a row is also going to somebody else answers
+    # it differently -- more carefully, or less, but not the same -- and the
+    # agreement rate then measures the marking rather than the labelling. The
+    # assignment layer knows; the item does not, and `test_review_batch`
+    # asserts the key is absent from what gets exported.
 
     # Sealed: the baseline's own labels for the same items. Kept so the batch
     # can be evaluated afterwards; NOT part of what a reviewer opens.
@@ -265,9 +385,12 @@ def select(
         r["id"]: sorted(checks_by_item.get(r["id"], set())) for r in items
     }
 
-    doubles = [i["item_id"] for i in blind_items if i["double_review"]]
+    doubles = [i["item_id"] for i in blind_items if is_double(i["item_id"])]
     manifest = {
         "schema_version": SCHEMA_VERSION,
+        "review_schema_version": REVIEW_SCHEMA_VERSION,
+        "supersedes": SUPERSEDES,
+        "supersession": SUPERSESSION,
         "batch_id": BATCH_ID,
         "source_commit": git_commit(),
         "split": "holdout",
@@ -303,6 +426,8 @@ def select(
         "double_review_items": len(doubles),
         "questions": list(REVIEW_QUESTIONS),
         "verdicts": list(VERDICTS),
+        "reason_codes": list(REASON_CODES),
+        "review_statuses": list(REVIEW_STATUSES),
         "blind": True,
         "sampling": (
             "STRATIFIED, NOT RANDOM. Flagged and unflagged rows are drawn in a "
@@ -320,105 +445,75 @@ def select(
     return {"manifest": manifest, "items": blind_items, "sealed": sealed}
 
 
-class ReviewImportError(ValueError):
-    """A submitted review that would put an unusable label in the corpus."""
+def is_double(item_id: str) -> bool:
+    """Whether this row goes to a second reviewer as well.
 
-
-def import_reviews(
-    submission: dict[str, Any], batch: dict[str, Any]
-) -> list[Label]:
-    """Validates one reviewer's returned file and turns it into labels.
-
-    Refuses rather than repairs. Every rejection below is a case where the
-    alternative is a label that looks exactly like a good one.
+    A property of the id, so it is stable across rebuilds and is not a property
+    of who opened the file first.
     """
-    if submission.get("batch_id") != batch["manifest"]["batch_id"]:
-        raise ReviewImportError(
-            f"submission is for batch {submission.get('batch_id')!r}, this is "
-            f"{batch['manifest']['batch_id']!r}"
-        )
-    reviewer = submission.get("reviewer")
-    if not isinstance(reviewer, str) or not reviewer:
-        raise ReviewImportError("reviewer identity is required")
-    low = reviewer.lower()
-    for marker in MACHINE_REVIEWER_MARKERS:
-        if marker in low:
-            raise ReviewImportError(
-                f"reviewer {reviewer!r} contains {marker!r}. A machine-produced "
-                "label may not enter the corpus as a reviewed one; see "
-                "label_contract.TRAINABLE_SOURCES"
-            )
-    if submission.get("reviewer_kind") != "HUMAN":
-        raise ReviewImportError(
-            "reviewer_kind must be the literal 'HUMAN'. This records a CLAIM "
-            "and proves nothing; it exists so that submitting a machine's "
-            "output requires stating something untrue rather than omitting a "
-            "field"
-        )
-
-    known = {i["item_id"] for i in batch["items"]}
-    out: list[Label] = []
-    for entry in submission.get("reviews") or []:
-        item_id = entry.get("item_id")
-        if item_id not in known:
-            raise ReviewImportError(
-                f"{item_id!r} is not in this batch. A review of a row nobody "
-                "was asked about has no sampling provenance and cannot be "
-                "used as evaluation"
-            )
-        answers = entry.get("answers") or {}
-        unknown = sorted(set(answers) - set(REVIEW_QUESTIONS))
-        if unknown:
-            raise ReviewImportError(
-                f"{item_id}: answers to questions that were not asked: {unknown}"
-            )
-        missing = sorted(set(REVIEW_QUESTIONS) - set(answers))
-        if missing:
-            raise ReviewImportError(
-                f"{item_id}: no answer for {missing}. A partially reviewed row "
-                "imported as fully reviewed would silently read as agreement"
-            )
-        for question, verdict in sorted(answers.items()):
-            if verdict not in VERDICTS:
-                raise ReviewImportError(
-                    f"{item_id}.{question}: {verdict!r} is not one of {VERDICTS}"
-                )
-            if verdict == "cannot_judge":
-                # An abstention, kept out of the label set entirely. Importing
-                # it as a value would make "we do not know" a class.
-                continue
-            out.append(
-                Label(
-                    item_id=item_id,
-                    check=question,
-                    source=LabelSource.HUMAN_REVIEWED_QA_LABEL,
-                    value=(verdict == "ok"),
-                    reviewer=reviewer,
-                    evidence={"batch_id": submission["batch_id"]},
-                )
-            )
-    return out
+    return _bucket(item_id, "double", 100) < round(DOUBLE_REVIEW_SHARE * 100)
 
 
-def agreement(a: list[Label], b: list[Label]) -> dict[str, Any]:
-    """Where two reviewers looked at the same item and question.
+#: The reviewer slots a batch is dealt into.
+#:
+#: Slots, not people. A slot is bound to a named person in the procedure, in a
+#: file this repository does not hold, because binding it here would put a
+#: reviewer's identity in a public catalogue artefact for no benefit -- the
+#: agreement maths only needs to know that two answers came from two different
+#: people.
+REVIEWER_SLOTS = ("R1", "R2", "R3")
 
-    Reports disagreement; does NOT resolve it. An automatic tie-break would be
-    a machine deciding which human was right, which is the same substitution
-    this whole module exists to prevent. Disagreements go back to a third
-    reviewer, named in the procedure, not to a rule.
+
+def assign(
+    items: list[dict[str, Any]], slots: tuple[str, ...] = REVIEWER_SLOTS
+) -> dict[str, Any]:
+    """Deal the batch into per-reviewer packages, reproducibly.
+
+    Derived entirely from the item ids and the slot list, so the same batch
+    deals the same way on any machine and a lost package can be regenerated
+    rather than reconstructed from somebody's memory of who had what.
+
+    The second reviewer of a doubled row is never its first: picked from the
+    remaining slots, so a "double review" cannot degenerate into one person
+    answering twice.
     """
-    left = {(l.item_id, l.check): l.value for l in a}
-    right = {(l.item_id, l.check): l.value for l in b}
-    shared = sorted(set(left) & set(right))
-    disagreements = [k for k in shared if left[k] != right[k]]
+    if len(slots) < 2:
+        raise ValueError("double review needs at least two reviewer slots")
+    primary: dict[str, str] = {}
+    secondary: dict[str, str] = {}
+    for item in items:
+        rid = item["item_id"]
+        p = slots[_bucket(rid, "primary", len(slots))]
+        primary[rid] = p
+        if is_double(rid):
+            others = [s for s in slots if s != p]
+            secondary[rid] = others[_bucket(rid, "secondary", len(others))]
+
+    packages: dict[str, list[str]] = {s: [] for s in slots}
+    for rid, slot in primary.items():
+        packages[slot].append(rid)
+    for rid, slot in secondary.items():
+        packages[slot].append(rid)
+    for slot in packages:
+        # Sorted by a hash rather than by id: a package ordered by id would put
+        # the doubled rows at reproducible positions relative to each other in
+        # both reviewers' packages, which is a weak but real signal about which
+        # rows are doubled. It also stops a reviewer inferring anything from
+        # catalogue order.
+        packages[slot].sort(key=lambda r: _rank(r, "package"))
+
     return {
-        "compared": len(shared),
-        "agreed": len(shared) - len(disagreements),
-        "disagreed": len(disagreements),
-        "rate": (len(shared) - len(disagreements)) / len(shared) if shared else None,
-        "items": [{"item_id": i, "check": c} for i, c in disagreements],
-        "resolution": "THIRD_REVIEWER_REQUIRED",
+        "slots": list(slots),
+        "primary": primary,
+        "secondary": secondary,
+        "packages": packages,
+        "counts": {s: len(v) for s, v in packages.items()},
+        "double_review_items": sorted(secondary),
+        "blindness": (
+            "A reviewer's package does NOT record which of its rows are also "
+            "assigned to somebody else. Marking them would measure the marking "
+            "rather than the labelling."
+        ),
     }
 
 
@@ -434,6 +529,7 @@ def main(argv: list[str] | None = None) -> int:
         DATA / "equipment.json",
     )
     batch = select(en, ru, eq, size=args.size)
+    batch["assignments"] = assign(batch["items"])
 
     target = Path(args.out) / BATCH_ID.lower()
     target.mkdir(parents=True, exist_ok=True)
@@ -441,6 +537,7 @@ def main(argv: list[str] | None = None) -> int:
         ("manifest.json", batch["manifest"]),
         ("items.json", batch["items"]),
         ("sealed_baseline_labels.json", batch["sealed"]),
+        ("assignments.json", batch["assignments"]),
     ):
         (target / name).write_text(
             json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)
@@ -454,6 +551,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  unflagged {m['unflagged_selected']}")
     print(f"  families  {m['family_counts']}")
     print(f"  double    {m['double_review_items']}")
+    print(f"  packages  {batch['assignments']['counts']}")
     print(f"  commit    {m['source_commit']}")
     print(f"  -> {target}")
     return 0

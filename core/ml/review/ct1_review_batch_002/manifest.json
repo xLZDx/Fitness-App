@@ -1,0 +1,71 @@
+{
+  "backfilled": true,
+  "batch_id": "CT1_REVIEW_BATCH_002",
+  "blind": true,
+  "double_review_items": 44,
+  "family_counts": {
+    "duplicate_steps_block": 13,
+    "duplicate_summary": 56,
+    "duplicate_title": 1
+  },
+  "flagged_available": 56,
+  "flagged_exhausted": true,
+  "flagged_selected": 56,
+  "flagged_wanted": 120,
+  "holdout_rows": 386,
+  "questions": [
+    "title_matches_content",
+    "content_is_complete",
+    "structure_is_consistent",
+    "instructions_are_consistent",
+    "content_is_not_duplicated",
+    "equipment_matches_content",
+    "localisation_is_faithful",
+    "metadata_matches_content"
+  ],
+  "reason_codes": [
+    "steps_missing",
+    "steps_truncated",
+    "steps_out_of_order",
+    "steps_contradict_each_other",
+    "title_describes_different_movement",
+    "duplicate_of_another_row",
+    "duplicate_text_within_row",
+    "equipment_not_used_by_steps",
+    "equipment_required_but_absent",
+    "translation_missing",
+    "translation_left_in_source_language",
+    "translation_changes_meaning",
+    "muscles_do_not_match_content",
+    "difficulty_does_not_match_content",
+    "formatting_broken",
+    "other"
+  ],
+  "requested_size": 180,
+  "review_schema_version": 2,
+  "review_statuses": [
+    "COMPLETE",
+    "SKIPPED"
+  ],
+  "sampling": "STRATIFIED, NOT RANDOM. Flagged and unflagged rows are drawn in a stated ratio and flagged rows are spread across check families. Any rate computed on this batch describes THIS batch and must not be reported as a corpus rate.",
+  "schema_version": 1,
+  "short": false,
+  "size": 180,
+  "source": {
+    "catalogue_en": "mobile/assets/data/exercises_vendor.json",
+    "sha256": {
+      "catalogue_en": "d9de3a740f9cc3d20e5ee994170969fe90bbdb7549444f5330483b904f3197c8"
+    }
+  },
+  "source_commit": "763cf93260f81fb1bcb52bd23c439ab82921c506",
+  "split": "holdout",
+  "supersedes": "CT1_REVIEW_BATCH_001",
+  "supersession": "SUPERSEDED_BEFORE_REVIEW. CT1_REVIEW_BATCH_001 was built and committed at review schema v1 and no reviewer returned a submission against it. This batch selects the SAME rows (asserted by test) under review schema v2, which adds structured reason codes, per-row source content digests, review timestamps and an explicit review status. A v1 submission is NOT importable here: the importer requires fields v1 could not carry.",
+  "unflagged_available": 330,
+  "unflagged_selected": 124,
+  "verdicts": [
+    "ok",
+    "problem",
+    "unsure"
+  ]
+}
