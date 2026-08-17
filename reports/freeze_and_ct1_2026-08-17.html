@@ -1,0 +1,356 @@
+<title>Freeze and CT-1</title>
+<style>
+  :root {
+    --ground: #FBF9F5;
+    --raised: #FFFFFF;
+    --edge: #E2DDD2;
+    --edge-soft: #EDE9E0;
+    --ink: #1A1815;
+    --ink-2: #4A453D;
+    --ink-3: #7A736A;
+    --accent: #0E6B63;
+    --accent-soft: #E3F0EE;
+    --pass: #2C6E49;
+    --open: #9A6114;
+    --stop: #A32E28;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
+    --sans: "Inter var", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #131211;
+      --raised: #1B1A18;
+      --edge: #33302B;
+      --edge-soft: #262421;
+      --ink: #F2EFE9;
+      --ink-2: #C3BCB1;
+      --ink-3: #8B8478;
+      --accent: #4FC7B8;
+      --accent-soft: #17322F;
+      --pass: #6FBF8E;
+      --open: #DDA94A;
+      --stop: #E8837C;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #131211;
+    --raised: #1B1A18;
+    --edge: #33302B;
+    --edge-soft: #262421;
+    --ink: #F2EFE9;
+    --ink-2: #C3BCB1;
+    --ink-3: #8B8478;
+    --accent: #4FC7B8;
+    --accent-soft: #17322F;
+    --pass: #6FBF8E;
+    --open: #DDA94A;
+    --stop: #E8837C;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 62rem; margin: 0 auto; padding: 4rem 1.5rem 6rem; }
+
+  header { border-bottom: 2px solid var(--ink); padding-bottom: 1.75rem; margin-bottom: 3rem; }
+  .eyebrow {
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 .9rem;
+  }
+  h1 {
+    font-size: clamp(2.1rem, 5vw, 3.1rem); line-height: 1.06; letter-spacing: -.025em;
+    margin: 0 0 .8rem; text-wrap: balance; font-weight: 660;
+  }
+  .standfirst { font-size: 1.1rem; color: var(--ink-2); max-width: 46rem; margin: 0; }
+
+  h2 {
+    font-size: 1.42rem; letter-spacing: -.015em; margin: 3.4rem 0 .4rem;
+    padding-top: 1.6rem; border-top: 1px solid var(--edge); font-weight: 640;
+  }
+  h2:first-of-type { margin-top: 2.6rem; }
+  h3 { font-size: 1.02rem; margin: 2rem 0 .3rem; font-weight: 650; letter-spacing: -.005em; }
+  p { margin: .75rem 0; max-width: 46rem; }
+  .lede { color: var(--ink-2); margin-top: .1rem; }
+
+  code, .mono { font-family: var(--mono); font-size: .875em; }
+  code { background: var(--edge-soft); padding: .1em .38em; border-radius: 3px; }
+
+  .grid { display: grid; gap: 1px; background: var(--edge); border: 1px solid var(--edge);
+          grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); margin: 1.6rem 0; }
+  .cell { background: var(--raised); padding: 1rem 1.1rem; }
+  .cell dt { font-family: var(--mono); font-size: .68rem; letter-spacing: .11em;
+             text-transform: uppercase; color: var(--ink-3); margin: 0 0 .35rem; }
+  .cell dd { margin: 0; font-size: 1.42rem; font-weight: 640; letter-spacing: -.02em;
+             font-variant-numeric: tabular-nums; }
+  .cell dd small { display: block; font-size: .8rem; font-weight: 400; color: var(--ink-3);
+                   letter-spacing: 0; margin-top: .15rem; }
+
+  .scroll { overflow-x: auto; margin: 1.4rem 0; border: 1px solid var(--edge); }
+  table { border-collapse: collapse; width: 100%; font-size: .93rem; background: var(--raised); }
+  th, td { text-align: left; padding: .62rem .85rem; border-bottom: 1px solid var(--edge-soft);
+           vertical-align: top; }
+  thead th { background: var(--edge-soft); font-size: .7rem; letter-spacing: .09em;
+             text-transform: uppercase; color: var(--ink-3); font-weight: 620;
+             border-bottom: 1px solid var(--edge); white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right;
+           white-space: nowrap; }
+
+  .tag { font-family: var(--mono); font-size: .68rem; letter-spacing: .06em; font-weight: 600;
+         padding: .16em .5em; border-radius: 3px; white-space: nowrap;
+         border: 1px solid currentColor; }
+  .t-pass { color: var(--pass); }
+  .t-open { color: var(--open); }
+  .t-stop { color: var(--stop); }
+
+  pre { background: var(--raised); border: 1px solid var(--edge); padding: 1rem 1.1rem;
+        overflow-x: auto; font-family: var(--mono); font-size: .84rem; line-height: 1.55;
+        margin: 1.2rem 0; }
+
+  .note { border-left: 3px solid var(--accent); background: var(--accent-soft);
+          padding: .9rem 1.1rem; margin: 1.5rem 0; }
+  .note p { margin: .3rem 0; max-width: none; }
+  .note strong { font-weight: 660; }
+
+  ul, ol { max-width: 46rem; padding-left: 1.2rem; }
+  li { margin: .35rem 0; }
+
+  footer { margin-top: 4.5rem; padding-top: 1.4rem; border-top: 1px solid var(--edge);
+           color: var(--ink-3); font-size: .84rem; }
+  footer p { max-width: none; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">SPTR · engineering checkpoint · 2026-08-17</p>
+  <h1>Remediation frozen, CT-1 running</h1>
+  <p class="standfirst">An independent review was asked to disprove the completed remediation and
+  found six defects, one of them a real bypass of the F014 safety block. All six are fixed and
+  mutation-proven. The audit is now closed as an audit, and the first ML pipeline exists and runs.</p>
+</header>
+
+<h2>Repository</h2>
+<dl class="grid">
+  <div class="cell"><dt>Branch</dt><dd style="font-size:1rem">formcoach/gates-a-c</dd></div>
+  <div class="cell"><dt>Final HEAD</dt><dd class="mono" style="font-size:1.15rem">d230124</dd></div>
+  <div class="cell"><dt>Ahead / behind</dt><dd>45 / 0</dd></div>
+  <div class="cell"><dt>Pushed</dt><dd class="t-open">NO</dd></div>
+  <div class="cell"><dt>Dirty</dt><dd>1 <small>operator-owned action log, untouched</small></dd></div>
+</dl>
+<p class="lede">Starting HEAD <code>4cdc35d</code>. Every row above is measured at the moment of this
+checkpoint; corrections to this page are themselves commits, so a later HEAD does not contradict it.</p>
+
+<h2>Test evidence</h2>
+<div class="scroll"><table>
+  <thead><tr><th>Suite</th><th class="num">Before</th><th class="num">Now</th><th>Note</th></tr></thead>
+  <tbody>
+    <tr><td>Flutter / mobile</td><td class="num">2812</td><td class="num">2831</td><td>+19</td></tr>
+    <tr><td>Cloud Functions</td><td class="num">171</td><td class="num">185</td><td>+14</td></tr>
+    <tr><td>Firestore rules (emulator)</td><td class="num">59</td><td class="num">64</td><td>+5 denial cases</td></tr>
+    <tr><td>CT-1 (pytest)</td><td class="num">—</td><td class="num">29</td><td>new</td></tr>
+    <tr><td><strong>Failures</strong></td><td class="num">0</td><td class="num"><strong>0</strong></td><td></td></tr>
+  </tbody>
+</table></div>
+<p class="lede">All four suites were run at the final HEAD. The rules suite needed the runner's own
+port escape hatch — 8080 is held by Docker on this machine — and the temporary config was deleted
+rather than committed.</p>
+
+<h2>What the review found</h2>
+<p>Six reopened. Every fix carries a test that was run <em>before</em> the fix and watched to fail;
+that is the bar, and it was met in every case.</p>
+
+<div class="scroll"><table>
+  <thead><tr><th>ID</th><th>Severity</th><th>Defect</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">N-01</td><td><span class="tag t-stop">BLOCKER</span></td>
+      <td><strong>The F014 block was discarded on restart.</strong> <code>HealthFlags.operator ==</code>
+      omitted <code>professionalGuidance</code>, so a reported need compared equal to no answer at all.
+      <code>HealthHistory.isEmpty</code> asked through that equality, and the profile merge drops a
+      local health block that reads as empty. After a restart and a clean PAR-Q,
+      <code>allowsAnyTraining</code> came back <strong>true</strong>. The block was least durable for
+      the user who told the app the least — the opposite of fail-closed.</td></tr>
+    <tr><td class="mono">N-02</td><td><span class="tag t-stop">MAJOR</span></td>
+      <td><strong>The Firestore health rule inspected eight fields of a ten-field map.</strong> The
+      PAR-Q+ answers and the normalised flags — the most structured health data the model holds — were
+      the part the server-side backstop never looked at. The fixture already named both fields and no
+      test ever populated them.</td></tr>
+    <tr><td class="mono">N-03</td><td><span class="tag t-stop">MAJOR</span></td>
+      <td><strong>A deleted account could still book and pay for a coach session.</strong> F011
+      exempted callables "bounded by what deletion removes"; this one writes — a Stripe customer
+      holding the deleted uid, a subscription document re-created after the erasure sweep, a charged
+      card. The criterion was sound and was applied to what the callable reads.</td></tr>
+    <tr><td class="mono">N-04</td><td><span class="tag t-stop">MAJOR</span></td>
+      <td><strong><code>reportEquipment</code> was unbounded in four ways at once</strong>: no quota, a
+      client-chosen document id written with <code>set()</code>, an unbounded note, and that note
+      relayed verbatim into a gym's maintenance channel.</td></tr>
+    <tr><td class="mono">N-05</td><td><span class="tag t-open">MAJOR · mitigated</span></td>
+      <td><strong>Per-uid quotas did not bind</strong>, because an anonymous uid is free to mint.
+      Three throwaway accounts covered the whole licensed clip library.</td></tr>
+    <tr><td class="mono">N-06</td><td><span class="tag t-stop">MAJOR</span></td>
+      <td><strong><code>exportAccountData</code> was an unquota'd read amplifier</strong> — sixteen
+      reads per call over collections the client may fill itself.</td></tr>
+    <tr><td class="mono">N-09<br>…N-13</td><td><span class="tag t-stop">MAJOR/MINOR</span></td>
+      <td><strong>Five guards reported success against the regression they guard.</strong></td></tr>
+  </tbody>
+</table></div>
+
+<h3>Two patterns, not seven incidents</h3>
+<p><strong>A field reaches the model and the serialiser and not the guard.</strong> N-01 and N-02 are
+the same defect in two languages. F014's field was added to <code>toJson</code>/<code>copyWith</code>
+and not <code>fromJson</code>; then to <code>fromJson</code> and not <code>operator ==</code>; and the
+<code>health</code> map grew two fields the Firestore rule never learned about. Nothing in Dart or in
+the rules language checks "did you list the field again", and every instance passed the analyzer, the
+suite and review.</p>
+
+<p><strong>A guard matching a substring of prose is evidence about the substring.</strong> Deleting
+the entire Firestore rules CI job left its test green — the word "rules" appears five times in
+comments. Deleting the whole-suite step left its test green — <code>flutter test</code> also matches
+the integration job, which runs one file and is skipped on push. <code>contains('SHIPPED')</code> was
+satisfied by <code>NOT SHIPPED</code>.</p>
+
+<div class="note">
+<p>Neither pattern was found by reading. Both were found by breaking the thing and watching the test
+stay green. Both now have structural defences: a source-scanning field-coverage test that fails when a
+declared field is missing from any serialiser or from equality, and five guards rewritten to match
+commands rather than words.</p>
+</div>
+
+<h3>Checked and sound</h3>
+<p class="lede">Negative results are part of the evidence.</p>
+<ul>
+  <li><strong>F016 / AI trust boundary.</strong> Every <code>MachineCard</code> consumer enumerated —
+  all render-only or card-store-only. No model output can mint, mutate or prescribe a canonical
+  exercise identity.</li>
+  <li><strong>Model governance.</strong> The bundled artefact's sha256 and byte count recomputed and
+  matched exactly; committed blob matches the worktree; the load path is the registry's path; no code
+  loads v2 and no document claims it ships; <code>training_code_commit: UNKNOWN</code> intact.</li>
+  <li><strong>Entitlements and receipts.</strong> Server-only, double-closed, denial-tested per verb.
+  No store-receipt path exists; entitlement flows only from a signature-verified webhook whose uid is
+  stamped server-side. No replay, no cross-account binding.</li>
+  <li><strong>F014 wording.</strong> Neither locale carries any forbidden term. Reasons are a typed
+  enum through an exhaustive switch, so an unhandled case fails to compile.</li>
+</ul>
+
+<h2>Freeze</h2>
+<pre>ENGINEERING_REMEDIATION = FROZEN
+
+baseline HEAD        4cdc35d
+reviewed HEAD        4cdc35d
+test-evidence HEAD   8857e6e   (CT-1 work followed)</pre>
+<p>Previously reconciled findings are not automatically reopened during feature or ML development. A
+defect from here on is a new finding or a regression against this baseline.</p>
+<p>What justifies stopping is <em>not</em> that the last review came back clean — it did not. It is
+that the findings clustered into two patterns rather than scattering, both now have structural
+defences, and eleven previous reconciliation passes had surfaced none of them. Re-reading had stopped
+producing information; breaking things was still producing it.</p>
+
+<h2>CT-1 — Content QA</h2>
+<pre>CT-1_STATUS                       = BASELINE_READY
+CONTINUOUS_RETRAINING_OPERATIONAL = NO</pre>
+<p>Four executable components, 29 tests, a built dataset with a real provenance commit, and a registry
+entry. Not another architecture document.</p>
+
+<dl class="grid">
+  <div class="cell"><dt>Dataset</dt><dd>1,887<small>rows · 1,501 train / 386 holdout</small></dd></div>
+  <div class="cell"><dt>Findings</dt><dd>1,664<small>over 836 rows · 44.3%</small></dd></div>
+  <div class="cell"><dt>Reviewed labels</dt><dd class="t-open">0<small>the one real blocker</small></dd></div>
+  <div class="cell"><dt>Champion</dt><dd style="font-size:1rem">deterministic rules<small>advisory, offline</small></dd></div>
+</dl>
+
+<h3>The champion is a rule set by decision</h3>
+<p>Every check is exact, so its precision against its own definition is 1.0 and reporting that number
+would be meaningless. Training a classifier to detect a missing key would be a slower, less precise,
+unexplainable reimplementation of <code>'contraindications' not in row</code>. The checks a model
+could genuinely earn its keep on — steps contradicting a title, a fluent non-translation — are
+deliberately <em>absent</em>, because they are what a challenger has to bring.</p>
+
+<div class="scroll"><table>
+  <thead><tr><th class="num">Findings</th><th>Check</th></tr></thead>
+  <tbody>
+    <tr><td class="num">451</td><td><code>primaryMuscles</code> present but empty</td></tr>
+    <tr><td class="num">407</td><td><code>tips</code> absent</td></tr>
+    <tr><td class="num">359</td><td><code>contraindications</code> absent</td></tr>
+    <tr><td class="num">216</td><td>duplicate <code>summary</code> — a real content defect</td></tr>
+    <tr><td class="num">182</td><td><code>muscles</code> present but empty</td></tr>
+    <tr><td class="num">45</td><td>duplicate <code>steps</code> block</td></tr>
+    <tr><td class="num">3</td><td>duplicate <code>title</code></td></tr>
+    <tr><td class="num">1</td><td><code>contraindications</code> present but <strong>empty</strong></td></tr>
+  </tbody>
+</table></div>
+<p class="lede">Zero dangling equipment references, zero tags outside the nine-region vocabulary, zero
+locale gaps, zero duplicate ids.</p>
+
+<div class="note">
+<p><strong>That last row is a third state.</strong> 359 rows have no <code>contraindications</code>
+key; one has the key with an empty list. "Nobody has tagged this" and "somebody tagged it as having
+none" are different facts, and that empty list is the only trace in the entire catalogue that the
+decision was made.</p>
+<p><strong><code>difficulty</code> is degenerate.</strong> 1,877 of 1,887 rows say
+<code>beginner</code> — a field carrying no information whatever it was meant to carry.</p>
+</div>
+
+<h3>EVALUATION_LABEL_GAP</h3>
+<p>Precision, recall and false-positive rate are <strong>not reported</strong>, and the absence is the
+finding. With zero reviewed labels, any figure would be computed against the baseline's own output —
+the self-referential loop the label contract forbids. Computing it while forbidding it would be a
+strange sort of principle.</p>
+<p>Roughly 150–200 reviewed rows from the holdout split would close it. Nothing else is blocking, and
+no further code substitutes for a person.</p>
+
+<h3>Anti-loop rules, enforced in code</h3>
+<pre>MODEL_PREDICTION       -> can never be a training target
+AUTO_HEURISTIC_FLAG    -> can never be a training target
+                          (imitating the rules is not beating them)
+CLINICALLY_VALIDATED   -> raises on construction. Unreachable here.</pre>
+<p>A reviewed label without a reviewer raises; a machine label <em>with</em> one raises too — a
+heuristic flag with a person's name beside it reads exactly like a review.</p>
+
+<h2>External authorities — unchanged</h2>
+<pre>D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED
+H3 = HOLD
+D3 = CLOSED
+PRODUCTION_IMAGE_COLLECTION = DISABLED
+CT != CD</pre>
+<p>An engineering freeze is a statement about engineering. No green suite, no registry and no content
+scan is evidence about clinical safety. Automated content QA is not clinical review: 56% of the
+catalogue is unflagged, and silence there means "no rule matched", never "this row is fine".</p>
+
+<h2>Open — recorded, not hidden</h2>
+<h3>Operator decisions</h3>
+<ol>
+  <li><strong>Enforce App Check on the metered video endpoints?</strong> The only control that closes
+  N-05. Refusing anonymous callers outright was deliberately <em>not</em> taken — anonymous sign-in is
+  a first-class login button, and removing video from it is a product decision.</li>
+  <li><strong>Must filing an equipment report require an association with that gym?</strong> The free
+  text reaches that gym's channel. Requiring it means modelling gym membership, which this repository
+  does not do.</li>
+</ol>
+<h3>Deferred</h3>
+<p><strong>N07</strong> — <code>KEEP</code>, dormant product capability, not release-blocking.
+<strong>F010</strong> — <code>DEFERRED_TO_DEDICATED_CLEANUP_GATE</code>, 14 of 193 providers unread,
+<code>SAFE_TO_DELETE</code> deliberately empty. Six residual MINORs are listed in the freeze record.</p>
+
+<h2>Release status — four separate dimensions</h2>
+<div class="scroll"><table>
+  <thead><tr><th>Dimension</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td>Engineering</td><td><span class="tag t-pass">FROZEN</span> remediation complete, independently reviewed</td></tr>
+    <tr><td>Clinical authority</td><td><span class="tag t-open">EXTERNAL</span> D1 validation required · H3 hold</td></tr>
+    <tr><td>Product release verdict</td><td>evidence-based; <strong>not inferable from push state</strong></td></tr>
+    <tr><td>Delivery state</td><td><span class="tag t-open">LOCAL_ONLY</span> 45 commits ahead, nothing pushed</td></tr>
+  </tbody>
+</table></div>
+<p>45 commits ahead with nothing pushed is an operational fact about delivery. It is not a
+product-quality finding and must not be read as one.</p>
+
+<footer>
+  <p>No remote push. <code>REMOTE-PUSH-GO = NO</code> remains in force; this checkpoint is
+  push-readiness evidence only.</p>
+</footer>
+</div>

@@ -14178,3 +14178,12 @@ outside the repository, including the one a test supplies.
 Privacy: no images, no personal data, asserted by a test that scans the built dataset for photo,
 image, camera, uid, email, poster and video. That is why CT-1 went first, and the way to keep the
 scanner's blocking questions from arising here is to never add the field.
+
+## Checkpoint report published
+
+`reports/freeze_and_ct1_2026-08-17.html`, artifact
+`https://claude.ai/code/artifact/c45830e3-34a0-4b84-9e43-4be644a80d95`.
+
+Rows measured at the checkpoint are labelled as such, following the correction earlier in this
+programme: a document cannot state its own final commit, because the correction that states it is
+itself a commit.
