@@ -13582,5 +13582,10 @@ clinical validation has occurred. D1 stays `EXTERNAL_CLINICAL_VALIDATION_REQUIRE
 
 HEAD `ab11150`, branch `formcoach/gates-a-c`, 29 ahead of origin, 0 behind, **nothing pushed at any
 point**. Working tree carries one dirty file, `core/plans/FINAL_AUTONOMOUS_ACTION_LOG.csv` —
-pre-existing operator work, and zero commits in this programme touch it, verified by an empty
-`git log` over the whole range rather than by assertion.
+pre-existing operator work, left alone per instruction.
+
+Stated precisely, because the looser version was wrong: **zero of this session's ten commits touch
+it** (empty `git log` over that range). One earlier commit on this branch, `1453236`, does modify
+it — from a prior session, before the instruction existed. Checking the full `origin..HEAD` range
+rather than the session range is what surfaced that, and the first phrasing of this entry would
+have overstated the claim.
