@@ -13251,3 +13251,107 @@ user-facing half.
 
 F001 FIXED by claim narrowing, with the measurement recorded so the decision is revisitable. Not
 pushed.
+
+## 2026-08-17 — ML platform workstream opens (ML-0), and finds a shipped-model mismatch
+
+**Track B of the continuation programme.** The mandate was a first-class ML + continuous-retraining
+architecture across all modules and business processes. What it produced first is a correction to an
+existing document, which is the more useful half.
+
+### New artefact
+
+`core/ML_PLATFORM_ARCHITECTURE.md` — module/process applicability matrix, lifecycle, registry and
+dataset contracts, label taxonomy, authority boundaries, drift/rollback, maturity ladder, roadmap.
+It is DESIGN ONLY: no model trained, no telemetry added, no promotion made, no gate opened.
+
+It does **not** supersede `core/plans/ML_STRATEGY_2026-08-11.md`. That document answers "are these
+three models good enough and which is on the critical path", with measurements. This one answers
+"what would have to exist to retrain, version and promote any of them repeatedly". Where they
+overlap — the first candidate — the existing strategy wins, because it is the one with numbers
+behind it. §8 defers rather than re-deciding.
+
+### ML-F1 — MAJOR | FACT | documentation defect
+
+`ML_STRATEGY §1.1` described "Equipment classifier v2 (29 classes)" as the "Bundled TFLite model
+behind ML Kit's labeler". v2 has never been bundled.
+
+Evidence: `mobile/assets/models/` contains exactly `README.md` and `equipment_v1.tflite`;
+`asset_bootstrap.dart:20`, `mlkit_visual_equipment_service.dart:19` and
+`mlkit_live_equipment_service.dart:31` all name v1; the README's own v2 section says "Not shipped."
+
+Why it matters, and it is not pedantry: **the shipped model has no abstention at all** — ten classes
+over a 69-machine catalogue, softmax always answering, which is exactly B1's finding that a
+confidence threshold cannot repair. v2 has a trained `none` class that measurably fixed two of B1's
+confident errors. A reader planning from §1.1 would believe E2 ("add an I-don't-know output") was
+partly solved in the product. It is not started for the artefact users run.
+
+Both `§1.1` and `§3.2 E2` corrected in place, with the correction marked and dated rather than
+silently rewritten, so the earlier reasoning stays legible.
+
+**This is the registry gap made concrete.** Two model versions exist, both measured, and nothing in
+the repository records which is deployed. Every field in the architecture's registry contract earns
+its place from a failure of this shape — which is why ML-4 (a registry entry for `equipment_v1`) is
+named as the next milestone: it is the only ML step with no blocker in front of it.
+
+### The headline of the inventory: there is no product telemetry
+
+`core/diagnostics/debug_telemetry.dart` is debug-builds-only by explicit design, and the privacy
+policy promises users "no third-party analytics or attribution SDK is built into the app". So ML-1
+is not an engineering task — it is an operator decision with a privacy-policy consequence, and it is
+recorded as a blocker rather than designed around. Everything past ML-0 except ML-4 waits on either
+that decision or on M0 (the held-out set `ML_STRATEGY §3.1` already specified).
+
+### Maturity, corrected against the evidence
+
+An early draft of the architecture said "everything is L0". Reading
+`mobile/assets/models/README.md` in full disproved it: equipment recognition has a real pipeline,
+a licence-filtered corpus with attribution collected at download time, a held-out real-world set,
+per-class holdout counts, and a documented train/val leakage bug the pipeline now *raises* on. That
+is more discipline than most L2 setups. It scores L1-partial only because the pipeline directory is
+**not under version control** (verified: no `.git` at `D:\tools\equipment-model\`), so
+`training_code_commit` is unresolvable and a run is reproducible by one person. The hard part is
+done; the cheap part is missing.
+
+### Applicability matrix, and a defect in my own first draft
+
+39 feature modules, counted. The first draft classified `data_export` and `account_deletion` twice
+and omitted `ai_planner` entirely — recorded rather than quietly fixed, because a matrix that can
+double-count is a matrix nobody has to finish. Now a strict partition: ML_CORE 3 · ML_AUGMENTED 5 ·
+RULE_BASED_WITH_ML_MONITORING 5 · ML_OPTIONAL 10 · ML_NOT_JUSTIFIED 16 = 39.
+
+`ai_planner` is worth its own line: it contains **no AI** — zero references to `firebase_ai`,
+`generativeModel`, `http` or `Random`. A directory named `ai_planner` with a deterministic builder
+inside is where an unsupported product claim would live, so the user-visible copy was checked: the
+title is "Today's plan" / "План на сегодня". No overclaim reaches the user. The misleading name is
+internal only.
+
+`posture` is classified ML_CORE rather than ML_NOT_JUSTIFIED, even though `ML_STRATEGY §3.4`
+deliberately parks it. It *is* an ML-derived system, and filing it under "not justified" would hide
+an active pose-derived surface behind a category that reads as "nothing here".
+
+### Test: `mobile/test/docs/ml_applicability_matrix_test.dart` (4 cases)
+
+A matrix rots silently — nobody re-reads a design document when adding a directory, and once a
+module can be missing, "unclassified" and "deliberately ML_NOT_JUSTIFIED" become indistinguishable.
+The test asserts coverage, arithmetic, class-name presence, and that the `safety` row still says ML
+may "never decide".
+
+Honest about its own limits: it proves the matrix COVERS the codebase, not that any classification
+is right. Whether `recovery` belongs in ML_OPTIONAL is a judgement no test can hold; whether
+`recovery` appears at all is exactly the part that rots.
+
+**Mutation-proven, both branches:**
+- Added `lib/features/zz_mutation_probe/` → coverage case fails naming it, and the count case fails
+  with "matrix totals 39 but lib/features holds 40". Probe removed non-recursively (file, then
+  `rmdir`) after the shell policy gate correctly blocked a chained `rm -rf`; not reformulated.
+- Edited the document's own count `ML_OPTIONAL 10` → `9` → fails with "the document's own five
+  counts do not sum to its stated total". The self-asserted arithmetic is checked, because a line
+  containing numbers reads as verified precisely when nobody has verified it.
+
+One real defect in the test itself, found and fixed: the partition claim is hard-wrapped at 80
+columns, so a line-based read saw four counts and not five. It now reads by paragraph.
+
+### Status
+
+ML-0 DESIGNED. Every other phase NOT STARTED. Nothing authorises collecting a new user signal, and
+nothing here is evidence that any model works. D1, H3 and D3 untouched. Not pushed.

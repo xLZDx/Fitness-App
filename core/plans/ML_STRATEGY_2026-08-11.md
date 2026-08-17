@@ -30,10 +30,21 @@ measurements, both cited inline.
 
 ### 1.1 Equipment recognition — two anchors, and the weak one is the ML one
 
-| Anchor | What it does | Measured |
-|---|---|---|
-| `machine_text_anchor.dart` | Reads the machine's own printed name with ML Kit text recognition | **18/18** on the frames where a name is legible |
-| Equipment classifier v2 (29 classes) | Bundled TFLite model behind ML Kit's labeler | **top-3 5/18 (28%)** on the same frames |
+| Anchor | Status | What it does | Measured |
+|---|---|---|---|
+| `machine_text_anchor.dart` | shipped | Reads the machine's own printed name with ML Kit text recognition | **18/18** on the frames where a name is legible |
+| Equipment classifier **v1** (10 classes, no abstention) | **SHIPPED** — the file in the APK | Bundled TFLite model behind ML Kit's labeler | B1: its three most confident answers on real gym photos were all **wrong**, up to `0.897` |
+| Equipment classifier **v2** (29 classes + a trained `none`) | **NOT SHIPPED** | Exists at `D:\tools\equipment-model\`; the app does not load it | **top-3 5/18 (28%)**, abstained 10/30 |
+
+> **Correction, 2026-08-17 (ML-F1).** This table previously described v2 as "the
+> bundled TFLite model" and carried only its number. v2 has never been bundled:
+> `mobile/assets/models/` holds exactly `README.md` and `equipment_v1.tflite`,
+> and `asset_bootstrap.dart:20`, `mlkit_visual_equipment_service.dart:19` and
+> `mlkit_live_equipment_service.dart:31` all name v1. The distinction matters
+> because **the shipped model cannot abstain at all** — which is B1's finding
+> that no confidence threshold repairs — while v2 can. Reading the old row, E2
+> below looked partly solved for the shipped artefact. It is not started.
+> See `core/ML_PLATFORM_ARCHITECTURE.md` §4.
 
 Evidence: `core/plans/B5b_TEXT_ANCHOR_2026-08-07.md`,
 `mobile/assets/models/README.md`, `D:\tools\equipment-model\gym_photos_truth.json`.
@@ -155,6 +166,17 @@ cost:
    silent, which is the behaviour the product wants anyway.
 2. If (1) leaves too much on the table: a 30th "none of these" class trained on
    negatives. More work, needs training data, only justified by (1) failing.
+
+**Correction, 2026-08-17 (ML-F1):** mechanism (2) is not hypothetical work —
+**v2 already trained a `none` class** on mined negatives, four days before this
+document was written, and it measurably fixed two of B1's confident errors (the
+abduction machine went from `treadmill` 0.892 to `none` 0.808). It is not in the
+product because v2 is not shipped. So E2's real content is narrower than written:
+the open question is not "how do we build abstention" but "does v2's abstention
+hold under viewpoint" — the README records the same abdominal machine reading
+`treadmill` 0.940 from one angle and `none` 0.946 from another. That is an M0
+measurement, not a modelling task. Mechanism (1) still applies to v1, which has
+no abstention of any kind and is what users currently run.
 
 **Step E3 — make the smoother check the right thing.** `live_recognition.dart`
 currently rewards agreement across frames. Under E2 it should require *N frames
