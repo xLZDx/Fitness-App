@@ -13893,3 +13893,13 @@ fail reports success indistinguishably from a check that passed. Every scripted 
 session that mattered has since carried an `assert`; this one did not, and it is the one that got
 through. Corrected via a tool edit that fails loudly on a non-match, and the stale `34 ahead` fixed
 in the same pass.
+
+### A report cannot state its own final commit
+
+Follow-up to the placeholder fix above. Writing `c52e135` into the "Final HEAD" row made the row
+wrong the instant the correction itself was committed — the fix is a commit, so the hash it claims
+as final is always the one before it. Chasing it would never converge.
+
+Relabelled to `HEAD at assessment`, with an explicit note that later commits do not contradict the
+row, and the prose count replaced by the claim that actually matters and stays true: every commit of
+this programme is local and nothing is pushed.
