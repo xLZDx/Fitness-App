@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../ai_planner/data/workout_plan.dart';
+import '../../ai_planner/plan_reason_text.dart';
 import '../../safety/widgets/eligibility_notice.dart';
 import '../state/plan_preview_provider.dart';
 import '../widgets/inputs.dart';
@@ -108,7 +109,7 @@ class StepPreview extends ConsumerWidget {
         // screen: it names what it filtered and why, which is the part worth
         // reading.
         Text(
-          plan.rationale,
+          planRationaleText(AppLocalizations.of(context), plan.reasons),
           style: theme.textTheme.bodySmall
               ?.copyWith(color: theme.colors.textSecondary),
         ),

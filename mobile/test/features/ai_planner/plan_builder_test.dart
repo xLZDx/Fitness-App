@@ -68,7 +68,10 @@ void main() {
         deload: _noDeload,
       ));
       expect(plan.exercises.map((e) => e.id), ['squat']);
-      expect(plan.rationale, contains('Filtered out 1'));
+      expect(
+          plan.reasons,
+          contains(isA<InjuryFilterReason>()
+              .having((r) => r.count, 'count', 1)));
     });
 
     test('the filter claim names injuries, which is all it screened', () {
@@ -88,8 +91,11 @@ void main() {
         deficit: const <String, double>{},
         deload: _noDeload,
       ));
-      expect(plan.rationale, contains('an injury you reported'));
-      expect(plan.rationale, isNot(contains('condition')));
+      // F027: the claim now lives in the ARB, so the code asserts the
+      // CODE and `plan_reason_text_test.dart` asserts the wording. Both
+      // halves still have to hold; what changed is that the wording half
+      // is now checked in Russian too, where it previously could not be.
+      expect(plan.reasons, contains(isA<InjuryFilterReason>()));
     });
 
     test('respects target minutes (greedy fill)', () {
@@ -113,7 +119,7 @@ void main() {
     test('deload pulls intensity factor', () {
       const deload = DeloadVerdict(
         shouldDeload: true,
-        reasons: ['Recovery is low'],
+        reasons: [const HardSessionsSignal(7)],
         suggestedVolumeFactor: 0.5,
       );
       final plan = _plan(buildPlan(
@@ -122,9 +128,9 @@ void main() {
         deload: deload,
         safety: _cleared,
       ));
-      expect(plan.title, 'Deload day');
+      expect(plan.title, PlanTitle.deload);
       expect(plan.intensityFactor, closeTo(0.5, 0.0001));
-      expect(plan.rationale, contains('Recovery'));
+      expect(plan.reasons, contains(isA<DeloadReason>()));
     });
 
     test('the factor shortens the session it is printed over', () {
@@ -137,7 +143,7 @@ void main() {
       ];
       const halved = DeloadVerdict(
         shouldDeload: true,
-        reasons: ['Recovery is low'],
+        reasons: [const HardSessionsSignal(7)],
         suggestedVolumeFactor: 0.5,
       );
 
@@ -173,7 +179,7 @@ void main() {
         deficit: const <String, double>{},
         deload: const DeloadVerdict(
           shouldDeload: true,
-          reasons: ['Recovery is low'],
+          reasons: [const HardSessionsSignal(7)],
           suggestedVolumeFactor: 0.5,
         ),
         safety: _cleared,
@@ -201,7 +207,10 @@ void main() {
       ));
       expect(withPhaseOnly.intensityFactor, closeTo(0.7, 0.0001),
           reason: 'the deload factor, untouched by the calendar');
-      expect(withPhaseOnly.rationale, contains('By your calendar'),
+      expect(
+          withPhaseOnly.reasons,
+          contains(isA<CyclePhaseReason>()
+              .having((r) => r.phase, 'phase', CyclePhase.luteal)),
           reason: 'the estimate is still SAID, it just decides nothing');
 
       final withReport = _plan(buildPlan(
@@ -213,7 +222,7 @@ void main() {
         cycleSelfReport: CycleSelfReport.significantSymptoms,
       ));
       expect(withReport.intensityFactor, closeTo(0.7, 0.0001));
-      expect(withReport.title, 'Easy session');
+      expect(withReport.title, PlanTitle.easy);
     });
 
     test('the calendar cannot raise the factor in any phase', () {
@@ -318,15 +327,15 @@ void main() {
         safety: _cleared,
       ));
 
-      expect(cold.rationale, contains('starting session'));
-      expect(warm.rationale, contains('trained least'));
-      // The claim this replaces. The builder never read a rating to order
-      // anything, and "weakest" is a statement about strength that nothing
-      // here measures.
-      for (final r in [cold.rationale, warm.rationale]) {
-        expect(r, isNot(contains('rating')));
-        expect(r, isNot(contains('weakest')));
-      }
+      expect(cold.reasons, contains(isA<NoHistoryReason>()));
+      expect(warm.reasons, contains(isA<DeficitOrderReason>()));
+      // The claim this replaces -- the builder never read a rating to
+      // order anything, and "weakest" is a statement about strength that
+      // nothing here measures -- is now a property of the copy rather
+      // than of this function, and is asserted against both ARB files in
+      // `plan_reason_text_test.dart`. It cannot be checked here any more
+      // because there is no English in reach of this test, which is the
+      // point of the change.
     });
   });
 }

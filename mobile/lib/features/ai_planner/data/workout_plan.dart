@@ -1,5 +1,7 @@
+import '../../cycle_aware/data/cycle_phase.dart';
 import '../../equipment/data/equipment_models.dart';
 import '../../safety/data/eligibility.dart';
+import '../../safety/data/health_flags.dart';
 
 /// What a plan request produced.
 ///
@@ -33,6 +35,98 @@ final class PlanRefused extends PlanOutcome {
   final List<EligibilityReason> reasons;
 }
 
+/// What kind of session this is, as a code rather than a heading.
+///
+/// The four values are not interchangeable labels: `reduced` is the screening
+/// ceiling speaking and outranks the rest, which is why it is first in the
+/// builder's own conditional and why nothing may reorder them casually.
+enum PlanTitle { reduced, deload, easy, adaptive }
+
+/// Why the plan looks the way it does — one code per statement, with its
+/// numbers, and no prose.
+///
+/// F027. `PlanRefused` above already carries [EligibilityReason] for exactly
+/// the reason stated in its doc: *"the message belongs to the UI layer, which
+/// has the locale. A pure builder that returned English prose would be
+/// untranslatable and untestable in the same stroke."* Every word of that
+/// applied equally to the plan that DOES get built, and for months the two
+/// halves of one file disagreed — refusal was typed, success was a
+/// `reasons.join(' ')` of hand-composed English in a layer with no
+/// `BuildContext`.
+///
+/// The consequence was not theoretical. A Russian user was shown the safety
+/// ceiling — the single most important line the planner emits, the one that
+/// says the app has NOT cleared them — in English.
+///
+/// A sealed hierarchy rather than a flat enum with side-car fields: the
+/// arguments genuinely differ per case (a percentage, a count, a phase, a
+/// restriction), and modelling that as one enum plus four nullable companions
+/// is how a renderer ends up reading the wrong field for the wrong code.
+sealed class PlanReason {
+  const PlanReason();
+}
+
+/// The screen could not clear this user, so intensity is capped.
+///
+/// Emitted first and unconditionally. A user the screen could not clear must
+/// not have to read past a deload note to find that out.
+final class ScreeningCeilingReason extends PlanReason {
+  const ScreeningCeilingReason(this.percent);
+
+  /// The ceiling as a whole percentage, already rounded.
+  final int percent;
+}
+
+/// Recovery signals fired and pulled the session's intensity down.
+final class DeloadReason extends PlanReason {
+  const DeloadReason(this.percent);
+  final int percent;
+}
+
+/// The user's own self-report lowered the ceiling. Gate O: only downwards, and
+/// only from what they said they feel.
+final class CycleSelfReportReason extends PlanReason {
+  const CycleSelfReportReason(this.report);
+  final CycleSelfReport report;
+}
+
+/// Where the calendar puts them. A NOTE — nothing was changed because of it,
+/// and the rendered text has to keep saying so.
+final class CyclePhaseReason extends PlanReason {
+  const CyclePhaseReason(this.phase);
+  final CyclePhase phase;
+}
+
+/// The user declared a restriction the catalogue carries no tag for, so
+/// nothing was filtered on that basis.
+///
+/// Stated rather than skipped: a plan silent about it reads as though it had
+/// been screened for.
+final class UntaggedRestrictionReason extends PlanReason {
+  const UntaggedRestrictionReason(this.restriction);
+  final MovementRestriction? restriction;
+}
+
+/// Exercises were removed because they conflict with a reported **injury**.
+///
+/// "Injury", not "condition", and the rendered string must not widen it:
+/// `HealthHistory.conditions` reaches no filter at all, and claiming otherwise
+/// told a user with diabetes that it had been screened for.
+final class InjuryFilterReason extends PlanReason {
+  const InjuryFilterReason(this.count);
+  final int count;
+}
+
+/// Nothing else applied and there is no training history yet.
+final class NoHistoryReason extends PlanReason {
+  const NoHistoryReason();
+}
+
+/// Nothing else applied; the order came from the weekly set deficit.
+final class DeficitOrderReason extends PlanReason {
+  const DeficitOrderReason();
+}
+
 /// Generated workout plan — one day's worth of training.
 class GeneratedPlan {
   const GeneratedPlan({
@@ -40,10 +134,10 @@ class GeneratedPlan {
     required this.estimatedMinutes,
     required this.exercises,
     required this.intensityFactor,
-    required this.rationale,
+    required this.reasons,
   });
 
-  final String title;
+  final PlanTitle title;
   final int estimatedMinutes;
   final List<ExerciseItem> exercises;
 
@@ -59,6 +153,10 @@ class GeneratedPlan {
   /// user says they feel today. The calendar cannot move it — see Gate O.
   final double intensityFactor;
 
-  /// Why this plan was selected (read out by the page so users trust it).
-  final String rationale;
+  /// Why this plan was selected, in the order it should be read.
+  ///
+  /// Order is part of the contract, not an accident of composition: the
+  /// screening ceiling comes first when present, because it is the line a user
+  /// must not have to scroll past.
+  final List<PlanReason> reasons;
 }

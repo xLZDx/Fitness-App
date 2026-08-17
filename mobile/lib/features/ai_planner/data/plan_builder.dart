@@ -131,74 +131,68 @@ PlanOutcome buildPlan({
     if (picked.length >= 6) break;
   }
 
-  // 5. Compose rationale string for transparency.
-  final reasons = <String>[];
+  // 5. State the reasons, as codes.
+  //
+  //    F027: this block used to compose English prose, in a pure data layer
+  //    with no `BuildContext` and therefore no locale — so a Russian user read
+  //    the safety ceiling, the most important line here, in English. The
+  //    sibling type in this very file (`PlanRefused`) had carried typed
+  //    reasons since Gate M for exactly that argument; only the success path
+  //    disagreed with it.
+  //
+  //    Order is the contract. The ceiling is first and unconditional.
+  final reasons = <PlanReason>[];
   if (safety.intensityCeiling != null) {
-    // First, and unconditionally. A user the screen could not clear must not
-    // have to read past a deload note to find out that the app has not
-    // cleared them — and this line must not be the one that gets dropped
-    // because some other reason fired.
-    reasons.add('Your health answers mean this app has not cleared you for '
-        'unrestricted exercise, so intensity is capped at '
-        '${(safety.intensityCeiling! * 100).round()}%. Talk to a doctor or a '
-        'qualified exercise professional before training harder.');
+    reasons.add(
+        ScreeningCeilingReason((safety.intensityCeiling! * 100).round()));
   }
   if (deload.shouldDeload) {
-    reasons.add('Recovery signals are firing — intensity pulled to '
-        '${(factor * 100).round()}%.');
+    reasons.add(DeloadReason((factor * 100).round()));
   }
-  if (cycleAdjustment.rationale.isNotEmpty) {
-    reasons.add(cycleAdjustment.rationale);
+  if (cycleAdjustment.intensityCeiling != null && cycleSelfReport != null) {
+    // Keyed off the self-report rather than off a rendered string. The old
+    // `cycleAdjustment.rationale.isNotEmpty` test was asking a text field
+    // whether an adjustment had happened, which made the English load-bearing
+    // for control flow as well as for display.
+    reasons.add(CycleSelfReportReason(cycleSelfReport));
   }
   if (cycle.phase case final phase?) {
-    // A note, not a prescription. It says where the calendar puts them and
-    // that nothing was changed because of it.
-    reasons.add(noteFor(phase).body);
+    // A note, not a prescription — the rendered text has to keep saying that
+    // nothing was changed because of it.
+    reasons.add(CyclePhaseReason(phase));
   }
   for (final advisory in safety.advisories) {
-    // Stated, not skipped. A restriction the catalogue carries no tag for
-    // filtered nothing, and a plan that says nothing about it reads as though
-    // it had been screened for.
-    reasons.add('You told us "${advisory.restriction?.name}" is limited. '
-        'Our exercise data carries no tag for that, so nothing was filtered '
-        'out on that basis.');
+    reasons.add(UntaggedRestrictionReason(advisory.restriction));
   }
   if (injuryList.isNotEmpty) {
     final filteredOut = candidatePool.length - safe.length;
     if (filteredOut > 0) {
-      // "injuries", not "conditions". `filterContraindicated` is passed
-      // `injuryList` and nothing else; `HealthHistory.conditions` is a
-      // separate field that reaches no filter at all. Claiming otherwise
-      // told a user with diabetes and hypertension that both had been
-      // screened for, which is the one direction a safety claim must never
-      // be wrong in.
-      reasons.add(
-          'Filtered out $filteredOut exercise(s) that conflict with '
-          'an injury you reported.');
+      reasons.add(InjuryFilterReason(filteredOut));
     }
   }
   if (reasons.isEmpty) {
-    // This used to read "Built from your latest difficulty ratings — weakest
-    // muscle groups first", and both halves were wrong. The builder never read
-    // a difficulty rating for ordering, and "weakest" was a claim about
-    // strength that nothing here measures. It now says what the code does.
+    // The fallback used to read "Built from your latest difficulty ratings —
+    // weakest muscle groups first", and both halves were wrong: the builder
+    // never read a difficulty rating for ordering, and "weakest" was a claim
+    // about strength nothing here measures. The two codes say what the code
+    // does, and which one fires is still decided here rather than in the UI —
+    // "do we have history yet" is the builder's question.
     reasons.add(deficit.isEmpty
-        ? 'A starting session from your available equipment — '
-            'log a few workouts and this will follow what you train least.'
-        : 'Ordered by the muscle groups you have trained least this week.');
+        ? const NoHistoryReason()
+        : const DeficitOrderReason());
   }
 
   return PlanReady(GeneratedPlan(
     title: safety.intensityCeiling != null
-        ? 'Reduced session'
+        ? PlanTitle.reduced
         : deload.shouldDeload
-            ? 'Deload day'
+            ? PlanTitle.deload
             : cycleSelfReport == CycleSelfReport.significantSymptoms
-                ? 'Easy session'
-                : 'Adaptive session',
+                ? PlanTitle.easy
+                : PlanTitle.adaptive,
     estimatedMinutes: minutes,
     exercises: List.unmodifiable(picked),
     intensityFactor: factor,
-    rationale: reasons.join(' '),
+    reasons: List.unmodifiable(reasons),
   ));
 }

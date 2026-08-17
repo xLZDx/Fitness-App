@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../deload_signal_text.dart';
+
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/glass.dart';
@@ -64,9 +66,10 @@ class DeloadBanner extends ConsumerWidget {
                       const SizedBox(height: 2),
                       Text(
                         verdict.reasons.isEmpty
-                            ? "Recovery signals are pointing toward a "
-                                "lighter week."
-                            : verdict.reasons.first,
+                            ? AppLocalizations.of(context)
+                                .recoveryDeloadGenericSignal
+                            : deloadSignalText(AppLocalizations.of(context),
+                                verdict.reasons.first),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colors.textSecondary,
                         ),

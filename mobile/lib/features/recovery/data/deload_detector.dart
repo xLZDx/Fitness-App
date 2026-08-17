@@ -18,6 +18,40 @@ import '../../workouts/data/workout_log.dart';
 ///
 /// Two of three signals trigger a deload recommendation. HRV is
 /// optional because most users won't have a wearable on day one.
+/// Why the detector reached its verdict — one code per signal, with its
+/// numbers.
+///
+/// F027. These used to be composed English sentences on a `List<String>`, in a
+/// pure data layer with no `BuildContext`, and `deload_banner.dart` rendered
+/// `reasons.first` straight into a `Text`. A Russian user was told *"Last 7
+/// workouts averaged 'too hard' — your body is asking for a break"* in English.
+///
+/// The same shape as `PlanReason`, deliberately: a sealed hierarchy switched
+/// over at the presentation boundary, so a new signal cannot be added without
+/// the renderer failing to compile.
+sealed class DeloadSignal {
+  const DeloadSignal();
+}
+
+/// The last [count] rated workouts averaged "too hard".
+final class HardSessionsSignal extends DeloadSignal {
+  const HardSessionsSignal(this.count);
+  final int count;
+}
+
+/// [missed] of [scheduled] sessions in the last two weeks were not done.
+final class MissedSessionsSignal extends DeloadSignal {
+  const MissedSessionsSignal(this.missed, this.scheduled);
+  final int missed;
+  final int scheduled;
+}
+
+/// HRV is [percentBelow]% under the 30-day baseline.
+final class HrvBelowBaselineSignal extends DeloadSignal {
+  const HrvBelowBaselineSignal(this.percentBelow);
+  final int percentBelow;
+}
+
 class DeloadVerdict {
   const DeloadVerdict({
     required this.shouldDeload,
@@ -28,9 +62,12 @@ class DeloadVerdict {
   /// True when the detector recommends a deload week.
   final bool shouldDeload;
 
-  /// Human-readable reasons that triggered the recommendation, in order
-  /// of magnitude. Empty when [shouldDeload] is false.
-  final List<String> reasons;
+  /// The signals that triggered the recommendation, in order of magnitude.
+  /// Empty when [shouldDeload] is false.
+  ///
+  /// Codes, not sentences — see [DeloadSignal]. Rendered by
+  /// `deload_signal_text.dart`, which has the locale.
+  final List<DeloadSignal> reasons;
 
   /// Factor to multiply the next 7 days' volume by. 0.5 = half-volume
   /// recovery week; 1.0 = no change.
@@ -45,7 +82,7 @@ DeloadVerdict detectDeload({
   DateTime? now,
 }) {
   final t = now ?? DateTime.now();
-  final reasons = <String>[];
+  final reasons = <DeloadSignal>[];
 
   // Signal 1: average difficulty over last 7 rated logs.
   final ratedLogs = recentLogs
@@ -56,9 +93,7 @@ DeloadVerdict detectDeload({
   final tooHardSignal = last7.length >= 3 &&
       _avg(last7.map((l) => l.difficulty!.score.toDouble())) > 0.4;
   if (tooHardSignal) {
-    reasons.add(
-      'Last ${last7.length} workouts averaged "too hard" — your body is asking for a break.',
-    );
+    reasons.add(HardSessionsSignal(last7.length));
   }
 
   // Signal 2: compliance over last 14 scheduled days. Only counts past
@@ -76,9 +111,7 @@ DeloadVerdict detectDeload({
   if (totalScheduled >= 5) {
     complianceRatio = completed.length / totalScheduled;
     if (complianceRatio < 0.7) {
-      reasons.add(
-        'You missed ${pastDue.length} of $totalScheduled scheduled sessions in the last 2 weeks.',
-      );
+      reasons.add(MissedSessionsSignal(pastDue.length, totalScheduled));
     }
   }
   final complianceSignal = totalScheduled >= 5 && complianceRatio < 0.7;
@@ -91,9 +124,7 @@ DeloadVerdict detectDeload({
     final ratio = hrvCurrent7DayAvg / hrvBaseline30DayAvg;
     if (ratio < 0.92) {
       hrvSignal = true;
-      reasons.add(
-        'HRV is ${((1 - ratio) * 100).toStringAsFixed(0)}% below your 30-day baseline — recovery is lagging.',
-      );
+      reasons.add(HrvBelowBaselineSignal(((1 - ratio) * 100).round()));
     }
   }
 

@@ -105,37 +105,21 @@ void main() {
 
   group('the calendar cannot raise a load, in any state', () {
     test('no phase carries a multiplier at all any more', () {
-      // The mutation this file exists to catch. `PhaseNote` has a phase and a
-      // body and nothing numeric: re-adding a factor means re-adding a field,
-      // which is a deliberate act rather than an edit to a constant.
+      // The mutation this group exists to catch: a phase must not be able to
+      // acquire a number. `CyclePhase` is a bare enum with no fields, so
+      // re-adding a factor means re-adding a field -- a deliberate act rather
+      // than an edit to a constant.
+      //
+      // F027 moved the note TEXT out of this layer and into the ARB, since a
+      // pure data file cannot know the user's locale. The three assertions
+      // that were here about that text -- that it claims no performance peak,
+      // and that it presents itself as a calendar estimate -- did not go away:
+      // they moved to `plan_reason_text_test.dart`, where they now run against
+      // BOTH languages instead of only the English one.
       for (final p in CyclePhase.values) {
-        final note = noteFor(p);
-        expect(note.phase, p);
-        expect(note.body, isNotEmpty);
+        expect(p.name, isNotEmpty);
       }
-    });
-
-    test('and no note claims a performance peak', () {
-      // The exact strings that were there: "Peak performance day. PR attempts
-      // welcome." and "Strength + speed window. Push the heavy days now."
-      for (final p in CyclePhase.values) {
-        final body = noteFor(p).body.toLowerCase();
-        for (final banned in const [
-          'pr attempt',
-          'peak performance day',
-          'push the heavy',
-          'strength + speed window',
-        ]) {
-          expect(body, isNot(contains(banned)), reason: '${p.name}: $banned');
-        }
-      }
-    });
-
-    test('every note says the estimate came from the calendar', () {
-      for (final p in CyclePhase.values) {
-        expect(noteFor(p).body.toLowerCase(), contains('by your calendar'),
-            reason: '${p.name} presents an estimate as an observation');
-      }
+      expect(CyclePhase.values, hasLength(4));
     });
   });
 
@@ -164,9 +148,19 @@ void main() {
     });
 
     test('an adjustment always explains itself', () {
+      // Was: `rationale.isEmpty == (intensityCeiling == null)`. That coupling
+      // is exactly what F027 removed -- an English string in a data layer was
+      // load-bearing for whether the user was told about a cap, so emptying it
+      // would have hidden the cap silently.
+      //
+      // The property survives in a stronger form: a capped self-report must
+      // produce a reason CODE, and the renderer must have a sentence for it in
+      // every language. The first half is asserted here; the second is a
+      // compile-time exhaustiveness check in `plan_reason_text.dart` plus the
+      // both-locales pass in `plan_reason_text_test.dart`.
       for (final r in CycleSelfReport.values) {
-        final a = adjustmentFor(r);
-        expect(a.rationale.isEmpty, a.intensityCeiling == null,
+        final capped = adjustmentFor(r).intensityCeiling != null;
+        expect(capped, r != CycleSelfReport.asUsual,
             reason: '${r.name}: a silent cap is a change the user cannot see');
       }
     });

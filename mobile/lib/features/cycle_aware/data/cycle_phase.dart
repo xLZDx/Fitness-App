@@ -160,67 +160,31 @@ CycleState estimatePhase({
   return const CycleEstimated(CyclePhase.luteal);
 }
 
-/// What the phase estimate is allowed to say.
-///
-/// A note and a question. No multiplier, no tags to upweight, no claim about
-/// today's capacity. [PhaseHint.intensityFactor] used to live here and is gone
-/// — see the library doc.
-class PhaseNote {
-  const PhaseNote({required this.phase, required this.body});
-
-  final CyclePhase phase;
-
-  /// Neutral, and phrased as an estimate.
-  ///
-  /// Every one of these used to be a claim: *"Strength + speed window. Push the
-  /// heavy days now"*, *"Peak performance day. PR attempts welcome"*. They are
-  /// now statements about where the calendar says the user is, plus the one
-  /// thing this app can honestly do with that, which is ask.
-  final String body;
-}
-
-PhaseNote noteFor(CyclePhase p) => switch (p) {
-      CyclePhase.menstrual => const PhaseNote(
-          phase: CyclePhase.menstrual,
-          body: 'By your calendar this is around the start of your cycle. '
-              'How today actually feels is the part that decides the session — '
-              'tell us and we will adjust.',
-        ),
-      CyclePhase.follicular => const PhaseNote(
-          phase: CyclePhase.follicular,
-          body: 'By your calendar you are in the follicular phase. Research '
-                  'finds no reliable performance difference between phases, so '
-                  'we do not change your training for it — how you feel today '
-                  'is what we act on.',
-        ),
-      CyclePhase.ovulatory => const PhaseNote(
-          phase: CyclePhase.ovulatory,
-          body: 'By your calendar you are around mid-cycle. This used to be '
-              'labelled a peak-performance day; the evidence does not support '
-              'that, so nothing about your session changes because of it.',
-        ),
-      CyclePhase.luteal => const PhaseNote(
-          phase: CyclePhase.luteal,
-          body: 'By your calendar you are in the luteal phase. Some people feel '
-              'flatter here and many notice nothing. Tell us how today feels '
-              'and we will adjust the session.',
-        ),
-    };
+/// F027 note: `PhaseNote`/`noteFor` used to live here and carried four
+/// English paragraphs in a pure data layer. The phase itself is now handed to
+/// the UI as `CyclePhaseReason` and rendered through `plan_reason_text.dart`,
+/// which has the locale. The wording moved verbatim to `planReasonPhase*` in
+/// the ARB files, including the deliberate absence of any performance claim —
+/// these strings were rewritten once already to remove *"Strength + speed
+/// window. Push the heavy days now"* and must not acquire another.
 
 /// What a self-report does to the session.
 ///
 /// The only place in this feature that touches a prescription, and it only ever
 /// reduces one.
 class CycleAdjustment {
-  const CycleAdjustment._(this.intensityCeiling, this.rationale);
+  const CycleAdjustment._(this.intensityCeiling);
 
   /// A cap, never a target. Null means "no opinion".
+  ///
+  /// This is now the ONLY signal the type carries, and callers test it
+  /// directly. There used to be a companion `rationale` string, and
+  /// `plan_builder` branched on `rationale.isNotEmpty` — so an English text
+  /// field was load-bearing for control flow as well as for display, and
+  /// emptying it would silently have disabled the adjustment. F027.
   final double? intensityCeiling;
 
-  /// Why, for the plan's rationale. Empty when there is no adjustment.
-  final String rationale;
-
-  static const none = CycleAdjustment._(null, '');
+  static const none = CycleAdjustment._(null);
 }
 
 /// Derives the adjustment from what the user said, not from the calendar.
@@ -230,13 +194,6 @@ class CycleAdjustment {
 /// normal session even if the calendar says day 2.
 CycleAdjustment adjustmentFor(CycleSelfReport? report) => switch (report) {
       null || CycleSelfReport.asUsual => CycleAdjustment.none,
-      CycleSelfReport.lowEnergy => const CycleAdjustment._(
-          0.9,
-          'You told us your energy is low today, so intensity is capped at 90%.',
-        ),
-      CycleSelfReport.significantSymptoms => const CycleAdjustment._(
-          0.7,
-          'You told us you have significant symptoms today, so this session is '
-              'capped at 70% and leans on lighter work.',
-        ),
+      CycleSelfReport.lowEnergy => const CycleAdjustment._(0.9),
+      CycleSelfReport.significantSymptoms => const CycleAdjustment._(0.7),
     };

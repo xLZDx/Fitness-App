@@ -107,6 +107,33 @@ void main() {
         contains('Become a Sustainer to read what your coach is sharing.'));
   });
 
+  test('the scan sees a double-quoted literal, and one split across lines', () {
+    // The second blind spot, found by scanning data layers for prose and then
+    // asking why the guard had not already objected. The answer was not
+    // subtle: the literal regex was `'([^'\\\n]{4,120})'` — single quotes
+    // only — and Dart treats `"..."` as exactly the same literal.
+    //
+    // `deload_banner.dart` was living in that gap, showing Russian users
+    // *"Recovery signals are pointing toward a lighter week."* while this
+    // suite reported a clean widget tree. It was hidden behind a quotation
+    // mark, which is why the self-test matters more than the scan: a guard
+    // that cannot fail is indistinguishable from a codebase that is clean.
+    const sample = '''
+      Text(
+        flag
+            ? "Recovery signals are pointing toward a "
+                "lighter week."
+            : other,
+        style: theme.textTheme.bodyMedium,
+      )
+    ''';
+    final found = _textArguments(_stripComments(sample));
+    expect(found, contains('Recovery signals are pointing toward a '));
+    expect(found, contains('lighter week.'),
+        reason: 'adjacent concatenation is two literals to Dart, and the '
+            'wrap that splits a sentence must not also hide it');
+  });
+
   test('the widened scan ignores what is not display copy', () {
     // Named arguments and compared-against literals are not user-facing, and
     // a scan that flagged them would be turned off rather than obeyed.
@@ -190,7 +217,18 @@ void main() {
 /// the first positional one.
 List<String> _textArguments(String src) {
   final out = <String>[];
-  final literal = RegExp(r"'([^'\\\n]{4,120})'");
+  // Both quote styles. The first version of this matched only `'...'`, and
+  // Dart treats `"..."` as exactly the same literal — so a double-quoted
+  // sentence in a widget tree was invisible to a guard whose entire job is to
+  // find sentences in widget trees. One was living in that gap:
+  // `deload_banner.dart` rendered *"Recovery signals are pointing toward a
+  // lighter week."* to Russian users, and this suite reported a clean tree.
+  //
+  // Adjacent concatenation is handled by matching each chunk separately
+  // rather than the whole expression: `'a ' 'b'` is two literals to Dart and
+  // two matches here, and a sentence long enough to be worth catching survives
+  // being cut in half by the line wrap that split it.
+  final literal = RegExp("'([^'\\\\\\n]{4,120})'|\"([^\"\\\\\\n]{4,120})\"");
   final predicate =
       RegExp(r'(contains|startsWith|endsWith|indexOf|split)\($|==\s*$');
   for (final call in RegExp(r'\bText\(').allMatches(src)) {
@@ -211,7 +249,7 @@ List<String> _textArguments(String src) {
     final span = src.substring(call.end, firstComma ?? i - 1);
     for (final m in literal.allMatches(span)) {
       if (predicate.hasMatch(span.substring(0, m.start).trimRight())) continue;
-      out.add(m.group(1)!);
+      out.add(m.group(1) ?? m.group(2)!);
     }
   }
   return out;

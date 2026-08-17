@@ -74,7 +74,7 @@ void main() {
       expect(v.shouldDeload, isTrue);
       expect(v.suggestedVolumeFactor, 0.5);
       expect(v.reasons, hasLength(2));
-      expect(v.reasons.first, contains('too hard'));
+      expect(v.reasons.first, isA<HardSessionsSignal>());
     });
 
     test('difficulty + HRV drop → deload', () {
@@ -89,7 +89,7 @@ void main() {
         now: now,
       );
       expect(v.shouldDeload, isTrue);
-      expect(v.reasons.any((r) => r.contains('HRV')), isTrue);
+      expect(v.reasons.whereType<HrvBelowBaselineSignal>(), isNotEmpty);
     });
 
     test('all 3 signals fire → still triggers, more reasons', () {

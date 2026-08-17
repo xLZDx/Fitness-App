@@ -8,6 +8,7 @@ import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import '../safety/widgets/eligibility_notice.dart';
 import 'data/workout_plan.dart';
+import 'plan_reason_text.dart';
 import 'state/ai_planner_providers.dart';
 import '../equipment/widgets/exercise_thumb.dart';
 
@@ -94,7 +95,7 @@ class AiPlannerPage extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(plan.title,
+                                  Text(planTitleText(AppLocalizations.of(context), plan.title),
                                       style: theme.textTheme.titleLarge
                                           ?.copyWith(
                                               fontWeight: FontWeight.w800)),
@@ -111,7 +112,9 @@ class AiPlannerPage extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 12),
-                        Text(plan.rationale,
+                        Text(
+                            planRationaleText(
+                                AppLocalizations.of(context), plan.reasons),
                             style: theme.textTheme.bodySmall),
                       ],
                     ),

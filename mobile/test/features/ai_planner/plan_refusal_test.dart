@@ -149,7 +149,7 @@ void main() {
       // to train harder.
       const deloading = DeloadVerdict(
         shouldDeload: true,
-        reasons: ['low'],
+        reasons: [const HardSessionsSignal(7)],
         suggestedVolumeFactor: 0.6,
       );
       final out =
@@ -160,16 +160,21 @@ void main() {
     test('the user is told, in the rationale, before anything else', () {
       const deloading = DeloadVerdict(
         shouldDeload: true,
-        reasons: ['low'],
+        reasons: [const HardSessionsSignal(7)],
         suggestedVolumeFactor: 0.6,
       );
       final out =
           (_build(safety: _restricted(), deload: deloading) as PlanReady).plan;
 
-      expect(out.rationale, startsWith('Your health answers'),
+      expect(out.reasons.first, isA<ScreeningCeilingReason>(),
           reason: 'a user the app has not cleared must not have to read past '
               'a deload note to find that out');
-      expect(out.rationale, contains('qualified exercise professional'));
+      // Order is the assertion. `first` rather than `contains` because a
+      // ceiling that is merely PRESENT, below a deload note, is the defect
+      // this case was written for -- and a list of codes makes the
+      // position checkable, which a joined paragraph did not.
+      expect(out.reasons.whereType<DeloadReason>(), isNotEmpty,
+          reason: 'the deload note is still made, just not first');
     });
   });
 
@@ -178,7 +183,7 @@ void main() {
       final out = (_build(safety: _clear()) as PlanReady).plan;
       expect(out.exercises, isNotEmpty);
       expect(out.intensityFactor, closeTo(1.0, 0.0001));
-      expect(out.rationale, isNot(contains('screening')));
+      expect(out.reasons.whereType<ScreeningCeilingReason>(), isEmpty);
     });
   });
 }

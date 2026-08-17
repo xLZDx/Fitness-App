@@ -13412,3 +13412,113 @@ asserting that somebody wrote the word.
 ### Status
 
 CI-F1 FIXED and pinned. F007 and F008 re-verified as previously recorded. Not pushed.
+
+## 2026-08-17 — F027 closed, and the guard that was supposed to catch it
+
+F027's first half (the `Text()` widening) landed earlier. This is the second half — the composed
+English in data layers — plus two more sites the work uncovered.
+
+### The defect, stated precisely
+
+`plan_builder.dart` is a pure function. It has no `BuildContext`, therefore no locale, therefore
+every sentence it composed was English by construction. It composed nine, including this one:
+
+> *"Your health answers mean this app has not cleared you for unrestricted exercise, so intensity is
+> capped at 60%. Talk to a doctor or a qualified exercise professional before training harder."*
+
+That is the most important line the planner emits — the line whose entire job is to tell a user the
+app has **not** cleared them — and Russian users read it in English.
+
+**The argument for the fix was already written, in the same file.** `PlanRefused` has carried typed
+`EligibilityReason`s since Gate M, with this doc: *"the message belongs to the UI layer, which has
+the locale. A pure builder that returned English prose would be untranslatable and untestable in the
+same stroke."* Every word applied to the success path too. One file, two halves, disagreeing.
+
+### Change
+
+`PlanReason` (sealed, 8 variants) and `PlanTitle` (enum, 4) in `workout_plan.dart`;
+`GeneratedPlan.rationale: String` becomes `reasons: List<PlanReason>`, `title: String` becomes
+`PlanTitle`; `plan_reason_text.dart` renders at the presentation boundary, the same shape as
+`_reasonText` in `home_page.dart`. 21 EN keys, 16 RU. Both render sites updated.
+
+A sealed hierarchy rather than an enum plus side-car fields, because the arguments genuinely differ
+per case (a percentage, a count, a phase, a restriction) and one enum with four nullable companions
+is how a renderer reads the wrong field for the wrong code.
+
+Three things the move fixed that were not in the finding:
+
+- **A raw Dart identifier was reaching users.** The advisory line interpolated
+  `advisory.restriction?.name`, so a user saw the literal string `deepKneeFlexion` — in English
+  *and* in Russian. `movementRestrictionText` already existed and was simply not called.
+- **An English string was load-bearing for control flow.** The builder branched on
+  `cycleAdjustment.rationale.isNotEmpty`, so emptying a display string would have silently disabled
+  the cap. It now tests `intensityCeiling != null`; verified equivalent, since `CycleAdjustment.none`
+  is the only value with either.
+- **`PhaseNote`/`noteFor` and `CycleAdjustment.rationale` became dead** once the phase travelled as a
+  code. Deleted rather than left, per the N08 precedent. Their wording moved to the ARB verbatim,
+  including the deliberate absence of any performance claim.
+
+### F027b — two more sites, found by measuring rather than by assuming
+
+Scanned every `lib/**/data/**.dart` for long English literals: 38 files, 74 literals, of which the
+overwhelming majority are assertion messages, `debugPrint` diagnostics and seed data — correctly
+English, since no user reads them. Two were user-facing:
+
+`deload_detector.dart` composed three sentences that `deload_banner.dart` rendered via
+`reasons.first`, straight into a `Text`. Same fix: `DeloadSignal` (sealed, 3 variants),
+`deload_signal_text.dart`, 8 EN keys and 4 RU. The English singular improved on the way past — the
+old string produced *"Last 1 workouts"*.
+
+`progression.dart`'s advice strings are the same shape but have **no reader in `lib/`** — recorded
+here rather than fixed, per the F025 precedent: repairing an artefact nothing reaches is
+closure-count work. If a reader appears it needs this treatment first.
+
+### The guard had a blind spot, and it was not a subtle one
+
+The obvious question is why the l10n guard did not object to the banner's own hardcoded fallback,
+which sits directly inside a `Text(`. The answer:
+
+```dart
+final literal = RegExp(r"'([^'\\n]{4,120})'");   // single quotes only
+```
+
+The banner's string was double-quoted. Dart treats `"..."` as exactly the same literal; the guard
+did not. A sentence was not hidden behind cleverness — it was hidden behind a quotation mark, and
+this suite reported a clean widget tree for as long as that was true.
+
+Widened to both quote styles, matching each adjacent-concatenation chunk separately so a sentence
+split by a line wrap is not also hidden by it. Across the whole of `lib/`, the widening found
+**exactly one** offender — the banner. Precise, not noisy.
+
+Mutation-proven: reverting the regex to the single-quote form fails the new self-test. Restored.
+
+**This is the third comment/quoting blind spot this programme has found in a source scan** (after
+`dormant_traps` and CI-F1). The pattern is consistent enough to state: a scan over source needs its
+own failing test, because a scan that has quietly stopped matching is indistinguishable from a
+codebase that is clean.
+
+### Tests
+
+- `plan_reason_text_test.dart` — 16 cases, **every one in both locales**. That is the change: the
+  claims this file makes (says "injury" not "condition"; no cycle note claims a performance peak;
+  every phase note presents itself as a calendar estimate; the fallback claims neither a rating nor
+  a weakness) all existed before F027 and were correct — but they could only ever be made about
+  English, because English was the only thing the builder produced.
+- `deload_signal_text_test.dart` — 6 cases, both locales.
+- Existing plan/cycle/deload tests re-pointed from prose to codes.
+
+**Mutation-proven against the original defect**: removing `planReasonScreeningCeiling` from
+`app_ru.arb` makes gen-l10n fall back to English — reproducing the exact failure — and three cases
+fail, quoting the English sentence back. Restored by rebuilding the file from HEAD plus the
+additions, after the shell policy gate correctly blocked a worktree-discarding checkout that would
+have thrown away the new keys along with the mutation.
+
+One test defect of my own: the identifier-leak check asserted `isNot(contains(r.name))` for every
+`MovementRestriction`, which fails on `overhead` — an enum identifier that is also an ordinary
+English word, legitimately present in "reaching or pressing overhead". Narrowed to camelCase names,
+which are the only ones a leak is distinguishable from correct copy.
+
+### Status
+
+F027 FIXED, both halves, plus two sites it did not name. `progression.dart` recorded as dormant.
+Not pushed.
