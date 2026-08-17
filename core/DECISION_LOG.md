@@ -14522,3 +14522,82 @@ assumed.
 
 **Suites:** mobile 2857 passed / 0 failed; analyzer clean of errors (15 pre-existing infos).
 `REMOTE-PUSH-GO` remains NO.
+
+## R4 independent review of the new work — one real defect in my own gate
+
+Four read-only reviewers, independent round 1, none seeded with another's output: A state/safety,
+B security/privacy, C MLOps/registry, D test-quality adversary. Scope was the three new commits only
+(`494a30d`, `4b44279`, `8002771`), not the frozen baseline. Every MAJOR was adjudicated by direct
+measurement rather than accepted on the reviewer's word.
+
+**R4-A, MAJOR, FACT — CONFIRMED, and it was worse than reported. FIXED.**
+
+The reviewer's finding: `_AddToProgrammeButton` has no branch for `ProgrammeNotViable`, so my own doc
+comment claiming "the caller renders the stated refusal" was false — the button interpolates the
+exception into `equipmentCouldNotSchedule`, putting `ProgrammeNotViable([ProgrammeFinding(
+blockedBySafety)])` in front of a user. Verified: `workouts_page.dart:1314` does special-case it and
+`workout_player_page.dart:1237` does not.
+
+Following it to its cause found the larger defect the reviewer had not reached. The R-03 gate read
+`safetyContextProvider`, which carries EQUIPMENT. The page that offers the button resolves the
+exercise through `exerciseResolutionProvider`, which builds its context WITHOUT equipment, on purpose
+and with its own reason recorded: tapping a leg press you do not own is an explicit statement about
+what you want to look at, and refusing it would turn a browse into a prescription.
+
+So the two disagreed, and the disagreement was reachable in the most ordinary case there is: a home
+user taps a barbell exercise, the page shows it, and "add to programme" refuses — with the garbled
+snackbar. **I introduced a behaviour regression in the commit that was supposed to be pure defence in
+depth**, and the reviewer's finding was the thread that led to it.
+
+Measured before fixing: a new case builds a bodyweight-only home user and a barbell exercise, and
+fails against the shipped gate with `ProgrammeNotViable([ProgrammeFinding(blockedBySafety)])`.
+
+Fixed by stripping equipment from the context the gate evaluates against. Equipment is not a safety
+rule and this is a safety gate. The R-03 mutation matrix was re-run and extended to five, each
+killing exactly its intended case — the new fifth is "equipment folded back into the gate", which
+turns the new case red.
+
+The message half is deliberately NOT fixed with a branch, and the doc comment now says why instead of
+claiming what it used to. With equipment out of the context, every remaining refusal — whole-person,
+injury, movement restriction — also makes `resolution.visible` null, so the page renders an
+`EligibilityNotice` and the button does not exist. The throw is unreachable through today's caller by
+construction, which is what defence in depth should look like, and a handler for it could not be
+given a failing test. A SECOND caller must handle it, and the comment is addressed to whoever writes
+one.
+
+**R4-C, MINOR, FACT — CONFIRMED. FIXED.** The §17 interpolation refusal matched `$` only INSIDE the
+same quoted literal as `assets/models/`. A path assembled by concatenation — `'assets/models/' + v`
+or adjacent literals `'assets/models/' '$v.tflite'` — puts the dynamic half in a different token, so
+it evaded both the interpolation check and `modelPathsInCode`. Nothing in `lib/` uses either
+construct, so this closed a gap rather than a live defect. Both forms now refused; both
+mutation-proven by injecting them into `lib/core/assets/asset_bootstrap.dart`.
+
+**R4-B residual, MINOR — ADOPTED even though the reviewer judged it below their own bar.** `coachUid`
+becomes a Firestore path segment at `coach_listings/${coachUid}` and was bounded for length but not
+for shape. `reportEquipment` already refuses a client-chosen id containing a path separator, with the
+same expression and the same reasoning; there was no reason for the two callables to disagree.
+Applied, with a case and a mutation.
+
+**R4-B, no material issue found** on the three claims it did reach: the allow-list redaction is
+genuine and `yourRole` leaks no counterpart uid; every other export key is self-scoped by query or
+path; the booking parity scanner covers both writers and there is no third; the booking bounds all
+throw before `ensureCustomer` and before Stripe; the health-parity keys match the rule bodies and
+`healthIsStripped` genuinely delegates.
+
+**R4-D, no material issue found** across ten test files read in full, judged against its own lens —
+could any of these pass while the thing it names is broken.
+
+**Recorded rather than implied — what the reviewers did NOT reach.** A and B had no shell access, so
+neither ran `git show`/`git diff` and both reviewed the working tree instead of the diff; C likewise,
+and could not run `git cat-file` to confirm the manifest's `source_commit` resolves (it does — I ran
+it). D did not finish `functions/src/__tests__/index.test.ts` and said so. A did not read
+`exerciseResolutionProvider`'s implementation or the ARB signature of `equipmentCouldNotSchedule`.
+B did not read the whole of `firestore.rules`, `abuse_guard.ts`, or the mobile write surface for
+health-shaped data. None of that is a clean bill and none of it is recorded as one.
+
+**External second opinion: still none.** Codex returned `usage_limit_exhausted` on all three gates.
+The local gate accepts that receipt fail-open by design; no external review has actually run in this
+session and every finding above is mine or one of the four subagents'.
+
+**Suites:** mobile 2858 passed / 0 failed; Cloud Functions 198 passed / 0 failed, `tsc` clean.
+`REMOTE-PUSH-GO` remains NO.

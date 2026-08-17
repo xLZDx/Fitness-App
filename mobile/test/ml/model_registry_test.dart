@@ -382,13 +382,30 @@ void main() {
       // living with the hole is refusing the construct. An interpolated model
       // path is rejected here with the reason, which is a smaller cost than a
       // fence that quietly stops covering the thing it exists for.
+      // Two patterns, because the first version caught only one of them and an
+      // independent reviewer found the other. `'assets/models/' + suffix` and
+      // adjacent-literal concatenation `'assets/models/' '$name.tflite'` both
+      // evade an interpolation check: the dynamic half sits in a DIFFERENT
+      // token from the literal, so neither the `$` scan nor `modelPathsInCode`
+      // sees anything wrong. Nothing in `lib/` uses either construct today —
+      // this closes the gap rather than fixing a live defect.
       final offenders = <String>[];
-      final interpolated = RegExp(r'''(?:'|")[^'"\n]*assets/models/[^'"\n]*\$''');
+      final patterns = <String, RegExp>{
+        'interpolated':
+            RegExp(r'''(?:'|")[^'"\n]*assets/models/[^'"\n]*\$'''),
+        // A model-path literal immediately followed by `+` or by another
+        // string literal: the path is being assembled, so the scanner is
+        // reading a prefix rather than the artefact.
+        'concatenated': RegExp(
+            r'''(?:'|")[^'"\n]*assets/models/[^'"\n]*(?:'|")\s*(?:\+|(?:'|"))'''),
+      };
       for (final f in Directory('lib').listSync(recursive: true)) {
         if (f is! File || !f.path.endsWith('.dart')) continue;
         final src = f.readAsStringSync();
-        for (final m in interpolated.allMatches(src)) {
-          offenders.add('${f.path}: ${m.group(0)}');
+        for (final e in patterns.entries) {
+          for (final m in e.value.allMatches(src)) {
+            offenders.add('${f.path} (${e.key}): ${m.group(0)}');
+          }
         }
       }
       expect(offenders, isEmpty,

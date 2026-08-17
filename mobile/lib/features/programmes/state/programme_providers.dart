@@ -294,15 +294,53 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
       // user for a reason that is about provider timing rather than about
       // them. Awaiting resolves it, and a context that cannot be resolved
       // throws out of here — still fail-closed, and nothing is written.
-      final safety = await ref.read(safetyContextProvider.future);
+      final resolved = await ref.read(safetyContextProvider.future);
+      // Equipment removed, deliberately, and this is the correction to the
+      // first version of this gate rather than a refinement of it.
+      //
+      // The page that offers this button shows the exercise through
+      // `exerciseResolutionProvider`, which builds ITS context without
+      // equipment on purpose — its own doc gives the reason: tapping a leg
+      // press you do not own is an explicit statement about what you want to
+      // look at, and refusing it would turn a browse into a prescription.
+      //
+      // Reading the equipment-carrying context here made the two disagree, and
+      // the disagreement was reachable in the most ordinary case there is: a
+      // home user taps a barbell exercise, the page shows it, and "add to
+      // programme" refuses. Equipment is not a safety rule; this is a safety
+      // gate. Found by an independent reviewer and confirmed by measurement,
+      // not by re-reading the code that had just been written.
+      final safety = SafetyContext(
+        screening: resolved.screening,
+        injuries: resolved.injuries,
+        health: resolved.health,
+      );
       // `isAllowed` is the hierarchy's own verdict, so this branch does not
       // enumerate the variants and cannot fall out of step with them. It is
       // false for [Blocked] only: a [Degraded] caveat about what could not be
       // checked must not refuse training, for the same reason it does not
       // empty the catalogue.
       if (!evaluateExercise(exercise, safety).isAllowed) {
-        // The same refusal shape enrolment throws, so the caller renders the
-        // stated refusal rather than a service-unavailable snackbar.
+        // The same refusal shape enrolment throws, so a caller CAN render the
+        // stated refusal.
+        //
+        // Stated exactly, because the first version of this comment claimed
+        // the caller already does and an independent reviewer showed it does
+        // not: `workouts_page.dart` special-cases this exception and
+        // `_AddToProgrammeButton` does not — it would interpolate
+        // `ProgrammeNotViable([ProgrammeFinding(blockedBySafety)])` into a
+        // snackbar.
+        //
+        // That is not worth a branch there, and the reason is the same one
+        // that made the equipment read wrong: with equipment out of the
+        // context, every remaining refusal here — whole-person, injury,
+        // movement restriction — also makes `resolution.visible` null, so the
+        // page renders an `EligibilityNotice` and this button does not exist.
+        // The throw is unreachable through today's caller BY CONSTRUCTION,
+        // which is what defence in depth is supposed to look like, and a
+        // handler for it could not be given a failing test.
+        //
+        // A SECOND caller must handle it. That is what this comment is for.
         throw const ProgrammeNotViable(
           [ProgrammeFinding(ProgrammeFault.blockedBySafety)],
         );

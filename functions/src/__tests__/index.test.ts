@@ -1006,6 +1006,7 @@ describe("bookCoachSession", () => {
       ["an oversized startsAt", { coachUid: "coach1", startsAt: "x".repeat(65) }],
       ["a non-string startsAt", { coachUid: "coach1", startsAt: 12345 }],
       ["an oversized coachUid", { coachUid: "c".repeat(129), startsAt: "2026-08-01T10:00:00.000Z" }],
+      ["a coachUid containing a path separator", { coachUid: "coach1/sub/doc", startsAt: "2026-08-01T10:00:00.000Z" }],
       ["a fractional duration", { coachUid: "coach1", startsAt: "2026-08-01T10:00:00.000Z", durationMinutes: 45.5 }],
       ["a negative duration", { coachUid: "coach1", startsAt: "2026-08-01T10:00:00.000Z", durationMinutes: -60 }],
       ["a zero duration", { coachUid: "coach1", startsAt: "2026-08-01T10:00:00.000Z", durationMinutes: 0 }],

@@ -1283,6 +1283,16 @@ export const bookCoachSession = onCall(
     // refuse-rather-than-truncate stance; no new mechanism.
     const coachUid = bounded(data.coachUid, 128, "coachUid");
     const startsAt = bounded(data.startsAt, 64, "startsAt");
+    // Same rule `reportEquipment` already applies to a client-chosen id, for
+    // the same reason and with the same expression: this value becomes a
+    // Firestore path segment at `coach_listings/${coachUid}` below, and a
+    // slash in it addresses a different document entirely. Raised by an
+    // independent reviewer as a residual they judged not worth a finding; it
+    // costs two lines and the mechanism already exists, so there is no reason
+    // for the two callables to disagree about it.
+    if (coachUid !== undefined && !/^[A-Za-z0-9_.-]+$/.test(coachUid)) {
+      throw new HttpsError("invalid-argument", "coachUid has an unusable shape.");
+    }
     if (!coachUid || !startsAt) {
       throw new HttpsError(
         "invalid-argument",

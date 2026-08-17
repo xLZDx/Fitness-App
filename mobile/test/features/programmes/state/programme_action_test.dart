@@ -1096,6 +1096,51 @@ void main() {
       expect(sessionRepo.cached('alice'), isEmpty);
     });
 
+    test('an exercise the user lacks the equipment for is still addable',
+        () async {
+      // R4-A's finding, followed to its cause. The player shows an exercise
+      // through `exerciseResolutionProvider`, which deliberately builds its
+      // context WITHOUT equipment: tapping a leg press you do not own is an
+      // explicit statement about what you want to look at, and refusing it
+      // would turn a browse into a prescription (that provider's own doc says
+      // exactly this).
+      //
+      // The R-03 gate read `safetyContextProvider`, which DOES carry
+      // equipment. So the two disagreed, and the disagreement was reachable in
+      // the most ordinary case there is: a home user taps a barbell exercise,
+      // the page shows it, and "add to programme" refuses -- with the raw
+      // `ProgrammeNotViable([...])` in a snackbar, because the caller has no
+      // branch for a refusal it was never supposed to receive.
+      //
+      // Equipment is not a safety rule and this gate is a safety gate.
+      final (error, sessionRepo) = await addDirectly(
+        ExerciseItem(
+          id: 'bonus',
+          title: 'Barbell Bench Press',
+          equipmentId: 'barbell',
+          equipmentLabel: 'Barbell',
+          muscles: const ['chest'],
+          difficulty: ExerciseDifficulty.beginner,
+          durationMinutes: 20,
+          summary: '',
+          steps: const [],
+        ),
+        SafetyContext(
+          screening: screen({for (final q in ParQQuestion.values) q: false}),
+          equipment: const EquipmentAccess(
+            location: TrainingLocation.home,
+            available: [EquipmentKind.bodyweight],
+          ),
+        ),
+      );
+
+      expect(error, isNull,
+          reason: 'equipment is not a safety rule. The user chose this '
+              'exercise on a page that showed it to them');
+      expect(sessionRepo.cached('alice').where((r) => r.exerciseId == 'bonus'),
+          hasLength(1));
+    });
+
     test('a caveat the catalogue cannot screen does NOT refuse', () async {
       // The other direction, and the reason the gate reads `isAllowed` rather
       // than `is Allowed`. `impact` carries no region tag, so it produces a
