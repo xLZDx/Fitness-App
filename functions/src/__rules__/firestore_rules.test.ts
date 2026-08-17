@@ -218,6 +218,71 @@ describe("G-D: profile health block cannot reach the server unstripped (N03)", (
       }),
     );
   });
+
+  // The eight fields above were the whole of the rule while the model had
+  // grown to ten. `HealthHistory.toJson` puts the PAR-Q+ answers and the
+  // normalised flags inside this same `health` map, so every case below used
+  // to SUCCEED: the fixture already carried `screening: {}` and `flags: {...}`,
+  // and no test ever populated either. The most structured health data the app
+  // holds was the part the backstop did not inspect.
+  test("a profile write carrying PAR-Q screening answers is refused", async () => {
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        health: {
+          ...strippedHealth(),
+          screening: { chestPainAtRest: true, heartCondition: true },
+        },
+      }),
+    );
+  });
+
+  test("a profile write carrying movement restrictions is refused", async () => {
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        health: {
+          ...strippedHealth(),
+          flags: { ...strippedHealth().flags, restrictions: ["overhead"] },
+        },
+      }),
+    );
+  });
+
+  test("a profile write carrying a surgery status is refused", async () => {
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        health: {
+          ...strippedHealth(),
+          flags: { ...strippedHealth().flags, surgery: "underRestrictions" },
+        },
+      }),
+    );
+  });
+
+  // F014. Deliberately generic on the wire -- but "generic" is not "not health
+  // data", and this is still a disclosure that must stay on the device.
+  test("a profile write carrying the F014 answer is refused", async () => {
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        health: {
+          ...strippedHealth(),
+          flags: { ...strippedHealth().flags, professionalGuidance: "reported" },
+        },
+      }),
+    );
+  });
+
+  // The tolerance half of the same change: a build that predates a field omits
+  // the key entirely. That must still be accepted, or the rule rejects
+  // legitimate writes from installed clients instead of the attack it targets.
+  test("a health block omitting screening and flags entirely still succeeds",
+    async () => {
+      const { screening, flags, ...older } = strippedHealth();
+      void screening;
+      void flags;
+      await assertSucceeds(
+        setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), { health: older }),
+      );
+    });
 });
 
 describe("catalogs are read-only", () => {

@@ -71,6 +71,23 @@ service cloud.firestore {
     // and lifestyle.smoking/alcohol null — and rejects anything else, so a
     // write that still carries a real condition, medication or injury is
     // refused at the one layer a client cannot route around.
+    // `screening` and `flags` are read through get() with a default, unlike the
+    // eight fields above. Two different reasons, and both matter:
+    //
+    //   - tolerance: an older client that predates a field writes a `health`
+    //     map without the key. A bare `h.flags` on a missing key errors, and an
+    //     erroring rule denies -- which would reject a legitimate write from an
+    //     installed build rather than the attack this is here to stop.
+    //   - the defect this replaces: the function inspected eight fields and the
+    //     model had grown to ten. `HealthHistory.toJson` serialises the PAR-Q+
+    //     answers and the normalised flags INSIDE this same map, so a client
+    //     that emptied the eight while carrying real screening answers and
+    //     restrictions passed the check that exists to make the strip
+    //     independent of the client. The most structured health data the model
+    //     holds was the part the backstop did not look at.
+    //
+    // Same shape of miss as F014's (N-01): a field added to the model and its
+    // serialiser, not added to the thing guarding it.
     function healthIsStripped(h) {
       return h.conditions.size() == 0
           && h.allergies.size() == 0
@@ -79,7 +96,19 @@ service cloud.firestore {
           && h.physicalLimitations.size() == 0
           && h.recentSurgeries.size() == 0
           && h.bloodPressure == null
-          && h.otherConcerns == null;
+          && h.otherConcerns == null
+          && h.get('screening', {}).size() == 0
+          && flagsAreStripped(h.get('flags', {}));
+    }
+    // Every answer HealthFlags can carry. Listed one by one rather than by
+    // size(), because a stripped block legitimately still has the KEYS -- what
+    // it must not have is a value in any of them.
+    function flagsAreStripped(f) {
+      return f.get('restrictions', []).size() == 0
+          && f.get('bloodPressure', null) == null
+          && f.get('surgery', null) == null
+          && f.get('clinicianAdvice', null) == null
+          && f.get('professionalGuidance', null) == null;
     }
     match /users/{uid}/profile/{docId} {
       allow read: if request.auth != null && request.auth.uid == uid;

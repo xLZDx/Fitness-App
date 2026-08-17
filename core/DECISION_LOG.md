@@ -13937,3 +13937,35 @@ or `hashCode`. Mutation-proven: removing the field from `==` turns it red with t
 The existing F014 suite could not have caught this. Every test in it constructs `HealthFlags` or
 `SafetyContext` directly, so none crosses `mergeSensitive` -- coverage of the serialiser was
 mistaken for coverage of persistence.
+
+## N-02 (MAJOR): the health backstop inspected eight fields of a ten-field map
+
+`healthIsStripped` in `firestore.rules` is the server-side backstop for the privacy policy's
+"health answers stay on your phone" claim -- the layer a modified or regressed client cannot route
+around. It checked `conditions`, `allergies`, `medications`, `injuries`, `physicalLimitations`,
+`recentSurgeries`, `bloodPressure`, `otherConcerns`.
+
+`HealthHistory.toJson` serialises `screening` and `flags` into that same `health` map. So a client
+that emptied the eight while carrying the full PAR-Q+ answers and the normalised movement
+restrictions passed. The most structured health data the model holds -- the part with a closed
+vocabulary, the part actually usable -- was the part the backstop did not look at.
+
+Scope, stated honestly rather than inflated: read is still owner-only, and no function copies health
+data into a shared or aggregate document, so there was no cross-user, coach or analytics exposure.
+What failed is the independence of the guarantee: the strip was again enforced by client code alone,
+which is the exact condition N03 was raised to end.
+
+The rules suite already carried `screening: {}` and `flags: {...}` in its fixture and never populated
+either. That is why this survived 59 passing tests -- the fixture named the fields, and naming them
+in a fixture is not testing them.
+
+Four denial cases added, plus one that asserts an older client omitting the keys entirely is still
+accepted (`get(key, default)` rather than a bare read, so a missing key does not error the rule into
+denying a legitimate write). Mutation-proven: with the two clauses removed, exactly the four denial
+cases fail and the tolerance case still passes.
+
+Same shape as N-01. A field reached the model and the serialiser and not the guard.
+
+Note for whoever runs this next: port 8080 is held by Docker on this machine, so the suite was run
+via the runner's own `FIREBASE_EMULATOR_CONFIG` / `FIRESTORE_EMULATOR_PORT` escape hatch on 8091.
+The alternate config was deleted afterwards rather than committed.
