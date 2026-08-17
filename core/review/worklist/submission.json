@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "handoff_commit": "7f6522931e4fe8cea54da63f78c73cced2e5fbb3",
+  "catalogue_sha256": "d9de3a740f9cc3d20e5ee994170969fe90bbdb7549444f5330483b904f3197c8",
+  "reviewer_name": "",
+  "reviewer_credentials": "",
+  "reviewer_authority": "",
+  "reviewed_at": "",
+  "rows_csv": "worklist.csv"
+}

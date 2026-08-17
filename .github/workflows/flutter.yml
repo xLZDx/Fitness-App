@@ -218,6 +218,24 @@ jobs:
       - name: Leakage guards and the evaluation dataset
         run: python -m pytest scripts/ct1/test_leakage.py scripts/ct1/test_human_eval.py -q
 
+      - name: ML lifecycle, dataset registry and training-run manifests
+        run: python -m pytest scripts/ml/test_ml_contracts.py -q
+
+      # Separate from CT-1's suite on purpose. The two review paths are kept
+      # apart in the tree because a content reviewer must never be able to
+      # produce a clinical claim, and folding their checks into one step would
+      # make a clinical regression read as "CT-1 broke".
+      - name: Clinical review — structure, provenance and the worklist
+        run: python -m pytest scripts/review/test_clinical_import.py -q
+
+      # The clinician-facing sheet must still describe the catalogue. If an
+      # exercise is edited and the worklist is not regenerated, a review in
+      # flight is reviewing content that moved -- and the refusal distinguishes
+      # a stale blank sheet (regenerate) from a RETURNED review committed over
+      # it (do not regenerate; that would destroy a clinician's work).
+      - name: The checked-in clinical worklist matches the catalogue
+        run: python scripts/review/clinical_import.py --verify core/review/worklist
+
       # Same argument as the dataset check below: a rebuild that does not
       # reproduce the committed batch means the row assignments a reviewer is
       # working from cannot be regenerated, and a lost package would have to be

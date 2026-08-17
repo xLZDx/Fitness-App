@@ -14968,3 +14968,87 @@ write anything; the default is a dry run that prints what it would draw and why 
 mutations killed. One first-run kill was rejected as invalid: mutating the quota call left `quotaFor`
 unused, so the suite failed to compile rather than failing an assertion — re-run with a compiling
 mutant, which the test then killed properly.
+
+## MLOps lifecycle, dataset registry and training-run manifests
+
+`scripts/ml/`. `MODEL_REGISTRY.json` already declared nine lifecycle states and a Dart test checked
+membership in them; membership cannot tell `TRAINED` from `CHAMPION`. `lifecycle.TRANSITIONS` makes
+the two implications this repository must deny explicit — being BUILT is not evidence of being
+BETTER, and being better is not authority to SHIP — with `PROMOTION_REVIEW` as the only door to
+`CHAMPION`. `assert_no_train_deploy_coupling` refuses a pre-champion model reporting a live
+deployment: `CT != CD`, and a cycle ending at `REJECTED` is a success.
+
+`DATASET_REGISTRY.json` is GENERATED from the artefacts and re-derived by CI, because a registry
+maintained by hand is wrong the first time somebody rebuilds a dataset and the failure is silent —
+the registry is the thing you would check. The scanner's training corpus is registered `UNRESOLVED`
+with its reason rather than omitted: an entry saying it cannot be traced is evidence, an absent one
+is not. That entry blocks ML-2a.
+
+`training_run.py` is a validator and not a framework — the two consumers a framework would need do
+not exist. Its CLI prints **NO REAL CT-1 CHALLENGER TRAINED**, which is the true state, rather than
+an empty table that reads like a clean history.
+
+## Clinical validation handoff — a MAJOR documentation defect, corrected
+
+**FACT.** §4.1 of `core/review/CLINICAL_VALIDATION_HANDOFF.md` said an untagged exercise is
+*withheld*. `mobile/lib/features/equipment/data/exercise_filter.dart:38` returns `false` when
+`contraindications` is empty, so the row is KEPT and SHOWN — including to a user with a declared
+injury, and without telling them it could not be screened. The document put the central behavioural
+claim of the review backwards, and a clinician answering Q3 would have been answering about a
+product that does not exist. Corrected in place with an explicit CORRECTION block rather than a
+silent edit.
+
+The same section mis-stated F013 as "contested and not upheld". The audit records
+(`07_HIGH_SEVERITY_REPRODUCTION.csv`, `16_ROOT_CAUSE_MAP.csv`) say the BEHAVIOUR is
+`REPRODUCED_VERIFIED` and the BLOCKER upheld; only the SEVERITY is contested 1-1. Behaviour,
+severity and the instruction not to act are now three separate rows.
+
+`exercise_filter.dart:38` was NOT flipped. `41_CONSOLIDATED_FINDINGS_PRIORITY.csv`: *do not flip it
+to fail-closed before D1 answers.* That remains the position.
+
+§8 previously bound a review to the BRANCH `formcoach/gates-a-c`, which advanced three commits while
+the document sat unchanged. It is now pinned to `catalogue_sha256
+d9de3a740f9cc3d20e5ee994170969fe90bbdb7549444f5330483b904f3197c8` / 3 127 495 bytes / handoff commit
+`7f65229`.
+
+## Clinical worklist and validator — D1 stays OPEN
+
+`scripts/review/clinical_import.py` plus `core/review/worklist/`. An independent review asked whether
+a clinician could start on Monday from the handoff alone. They could not, and five of the six
+blockers needed no clinical judgement: a moving branch pin, no row-level worklist, no fillable
+format, no field anywhere for a reviewer's credentials or authority, and a vocabulary readable only
+as Python. All five are engineering and all five are now closed.
+
+The worklist covers BOTH populations — 1 527 tagged and 360 untagged. A worklist of only the untagged
+rows would have answered Q2 by omission. It ships as CSV with a UTF-8 BOM because the reviewer is a
+clinician with a spreadsheet, and Excel on Windows mangles a BOM-less UTF-8 file. Each row states, in
+its own cell, what the app does with it today — the corrected F013 claim on the row rather than in a
+section a reader may not reach.
+
+**A blank row is NOT REVIEWED, never accepted.** `UNKNOWN` is a first-class disposition: forcing an
+answer on a row nobody can decide manufactures exactly the clinical judgement this repository must
+not manufacture.
+
+Deliberately NOT a flag on `scripts/ct1/review_import.py`. That module refuses to ask whether an
+exercise is safe, in its own docstring, and the refusal is load-bearing: a content reviewer must
+never be able to produce a clinical claim, and one file with a boolean between the two authorities
+would end that. A test asserts the two paths do not import each other; another fails if a heuristic
+mapping content to a tag ever appears in the clinical module.
+
+**This does NOT close D1 or H3.** `validate()` returns `closes: []` and says so. It establishes that
+a named, credentialled reviewer gave structurally valid answers about specific rows of a specific
+catalogue version. What the app should then DO — particularly with an `UNKNOWN` row — is a separate
+decision no validator has authority over. `clinical_contraindication_worklist` is registered with
+`returned_clinical_labels: 0`.
+
+`--verify` refuses a checked-in worklist that no longer matches the catalogue, and distinguishes a
+stale blank sheet (regenerate) from a RETURNED review committed over it (do not regenerate — that
+would destroy a clinician's work). Both branches are tested.
+
+**Suites:** 297 passed across `scripts/ct1`, `scripts/ml`, `scripts/review` (was 200). 26 mutations
+killed against `clinical_import.py`, subject restored byte-identical. One survivor, U, was diagnosed
+correctly as a MISSING test rather than a defective guard: the vocabulary fallback only fires on a
+malformed `injury_regions.json` and no test fed it one. The test was added; the mutation now dies.
+
+`PUSHED = NO`. `CONTINUOUS_RETRAINING_OPERATIONAL = NO`. `D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED`.
+`H3 = HOLD`.
