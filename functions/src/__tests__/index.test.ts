@@ -106,7 +106,7 @@ jest.mock("firebase-functions/logger", () => ({
 }));
 
 import { HttpsError } from "firebase-functions/v2/https";
-import { QUOTAS } from "../abuse_guard";
+import { QUOTAS, quotaFor } from "../abuse_guard";
 import {
   startFreeTrial,
   createCheckoutSession,
@@ -923,6 +923,101 @@ describe("generateAnnualReceipt", () => {
 describe("bookCoachSession", () => {
   const CLIENT_SUB_PATH = "users/client1/subscription/main";
 
+  /**
+   * Operator decision of 2026-08-17: a coach may not book themselves.
+   *
+   * The refusal is the small half. The half worth testing is WHERE it happens
+   * -- a guard placed after `ensureCustomer` refuses the booking and still
+   * mints a Stripe customer and writes Firestore; a guard after
+   * `paymentIntents.create` refuses it and still charges a card. So these
+   * cases assert what did NOT happen, not just what threw.
+   */
+  describe("self-booking is refused", () => {
+    test("refused before any Stripe call or Firestore write", async () => {
+      // Primed so that a guard which failed to fire would find a complete,
+      // chargeable listing and proceed -- otherwise this passes because the
+      // listing is missing rather than because the guard works.
+      primeDoc("coach_listings/coach1", {
+        priceCentsPerSession: 10000,
+        stripeConnectAccountId: "acct_c1",
+        currency: "eur",
+      });
+      primeDoc("users/coach1/subscription/main", { stripeCustomerId: "cus_c1" });
+      stripeMock.paymentIntents.create.mockResolvedValue({
+        id: "pi_self",
+        client_secret: "pi_self_secret",
+      });
+
+      await expectHttpsError(
+        bookCoachSession.run(
+          req(
+            { coachUid: "coach1", startsAt: "2026-08-01T10:00:00.000Z" },
+            { uid: "coach1", token: { email: "coach1@example.com" } },
+          ),
+        ),
+        "failed-precondition",
+      );
+
+      // No charge.
+      expect(stripeMock.paymentIntents.create).not.toHaveBeenCalled();
+      // No Stripe customer -- `ensureCustomer` also writes Firestore.
+      expect(stripeMock.customers.create).not.toHaveBeenCalled();
+      // And the strongest ordering evidence available: the coach listing was
+      // never even READ. Everything that could leave something behind -- the
+      // Stripe client, `ensureCustomer`, the PaymentIntent, the booking
+      // document -- sits below that read, so a guard that fires before it
+      // cannot have reached any of them.
+      expect(adminMock.__getRef("coach_listings/coach1").get)
+        .not.toHaveBeenCalled();
+    });
+
+    test("booking a DIFFERENT coach still works", async () => {
+      // The control. A guard that refused every booking would satisfy the case
+      // above, and this endpoint's entire purpose is the case below.
+      primeDoc("coach_listings/coach1", {
+        priceCentsPerSession: 10000,
+        stripeConnectAccountId: "acct_c1",
+        currency: "eur",
+      });
+      primeDoc(CLIENT_SUB_PATH, { stripeCustomerId: "cus_cl1" });
+      stripeMock.paymentIntents.create.mockResolvedValue({
+        id: "pi_ok",
+        client_secret: "pi_ok_secret",
+      });
+
+      const res = await bookCoachSession.run(
+        req(
+          { coachUid: "coach1", startsAt: "2026-08-01T10:00:00.000Z" },
+          { uid: "client1", token: { email: "client1@example.com" } },
+        ),
+      );
+      expect(res.bookingId).toBeTruthy();
+      expect(stripeMock.paymentIntents.create).toHaveBeenCalled();
+    });
+
+    test("a coach may still be booked by somebody else", async () => {
+      // The guard compares two uids. One that compared the caller against the
+      // presence of a listing would refuse every coach's own clients.
+      primeDoc("coach_listings/coach1", {
+        priceCentsPerSession: 5000,
+        stripeConnectAccountId: "acct_c1",
+      });
+      primeDoc("users/coach2/subscription/main", { stripeCustomerId: "cus_c2" });
+      stripeMock.paymentIntents.create.mockResolvedValue({
+        id: "pi_peer",
+        client_secret: "pi_peer_secret",
+      });
+
+      const res = await bookCoachSession.run(
+        req(
+          { coachUid: "coach1", startsAt: "2026-08-02T10:00:00.000Z" },
+          { uid: "coach2", token: { email: "coach2@example.com" } },
+        ),
+      );
+      expect(res.bookingId).toBeTruthy();
+    });
+  });
+
   test("happy path: PaymentIntent with 15% platform fee + pending booking doc", async () => {
     primeDoc("coach_listings/coach1", {
       priceCentsPerSession: 10000,
@@ -1497,5 +1592,77 @@ describe("reportEquipment", () => {
     // And the refused call wrote nothing.
     expect(adminMock.__getRef("equipment_reports/over").set)
       .not.toHaveBeenCalled();
+  });
+
+  it("gives an anonymous caller the same divided share the video endpoints do", async () => {
+    // The two metered surfaces disagreed about what a uid is worth. `clipUrl`
+    // divided an anonymous caller's ceiling by eight; this one took the raw
+    // number, so the endpoint that relays text into a third party's channel
+    // was the more permissive of the two.
+    //
+    // A per-uid ceiling binds only if a uid costs something, and anonymous
+    // sign-in is a first-class login button here: a fresh uid is free. This
+    // does not close that -- nothing in this layer can -- but the two call
+    // sites must not disagree by accident.
+    global.fetch = jest.fn() as any;
+    const day = new Date().toISOString().slice(0, 10);
+    const usage = adminMock.__getRef(`users/anon-eq/usage/${day}`);
+    let stored: Record<string, unknown> = {};
+    usage.get.mockImplementation(async () => ({
+      exists: true,
+      data: () => stored,
+    }));
+    usage.set.mockImplementation(async (data: Record<string, unknown>) => {
+      stored = { ...stored, ...data };
+    });
+
+    const anon = {
+      uid: "anon-eq",
+      token: { firebase: { sign_in_provider: "anonymous" } },
+    };
+    const share = quotaFor(QUOTAS.equipmentReport, "anonymous");
+    expect(share).toBeLessThan(QUOTAS.equipmentReport);
+
+    for (let i = 0; i < share; i++) {
+      await reportEquipment.run(
+        req({ id: `a${i}`, equipmentId: "bench" }, anon),
+      );
+    }
+    expect(stored.equipmentReport).toBe(share);
+
+    await expectHttpsError(
+      reportEquipment.run(req({ id: "anon-over", equipmentId: "bench" }, anon)),
+      "resource-exhausted",
+    );
+    expect(adminMock.__getRef("equipment_reports/anon-over").set)
+      .not.toHaveBeenCalled();
+  });
+
+  it("still gives a real account the undivided ceiling", async () => {
+    // The control. A guard that divides everybody's quota would satisfy the
+    // case above and quietly cut the limit for every signed-in user.
+    global.fetch = jest.fn() as any;
+    const day = new Date().toISOString().slice(0, 10);
+    const usage = adminMock.__getRef(`users/real-eq/usage/${day}`);
+    let stored: Record<string, unknown> = {};
+    usage.get.mockImplementation(async () => ({
+      exists: true,
+      data: () => stored,
+    }));
+    usage.set.mockImplementation(async (data: Record<string, unknown>) => {
+      stored = { ...stored, ...data };
+    });
+
+    const real = {
+      uid: "real-eq",
+      token: { firebase: { sign_in_provider: "google.com" } },
+    };
+    const beyondAnonymousShare = quotaFor(QUOTAS.equipmentReport, "anonymous") + 1;
+    for (let i = 0; i < beyondAnonymousShare; i++) {
+      await reportEquipment.run(
+        req({ id: `r${i}`, equipmentId: "bench" }, real),
+      );
+    }
+    expect(stored.equipmentReport).toBe(beyondAnonymousShare);
   });
 });

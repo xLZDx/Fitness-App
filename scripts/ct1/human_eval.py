@@ -54,7 +54,12 @@ from typing import Any, Iterable
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_dataset import DATA, REPO, file_digest, git_commit, source_ref  # noqa: E402
 from label_contract import Label  # noqa: E402
-from review_batch import REVIEW_QUESTIONS, REVIEW_SCHEMA_VERSION  # noqa: E402
+from review_batch import (  # noqa: E402
+    REVIEW_QUESTIONS,
+    REVIEW_SCHEMA_VERSION,
+    assert_authoritative,
+    check_contract,
+)
 from review_import import adjudicate, import_reviews  # noqa: E402
 
 DATASET_ID = "CT1_HUMAN_EVAL"
@@ -442,6 +447,8 @@ def main(argv: list[str] | None = None) -> int:
         "manifest": json.loads((batch_dir / "manifest.json").read_text("utf-8")),
         "items": json.loads((batch_dir / "items.json").read_text("utf-8")),
     }
+    check_contract(batch["manifest"])
+    assert_authoritative(batch["manifest"])
     assignments = json.loads((batch_dir / "assignments.json").read_text("utf-8"))
     sealed = json.loads(
         (batch_dir / "sealed_baseline_labels.json").read_text("utf-8")

@@ -48,7 +48,12 @@ import * as logger from "firebase-functions/logger";
 import type Stripe from "stripe";
 import { tierForPriceId } from "./tiers";
 import { INTERACTIVE, RARE, WEBHOOK } from "./scaling";
-import { noteAppCheck, enforceDailyQuota, QUOTAS } from "./abuse_guard";
+import {
+  noteAppCheck,
+  enforceDailyQuota,
+  quotaFor,
+  QUOTAS,
+} from "./abuse_guard";
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -1299,6 +1304,35 @@ export const bookCoachSession = onCall(
         "coachUid and startsAt are required.",
       );
     }
+    // A coach may not book themselves. Operator decision, taken 2026-08-17 on
+    // the evidence in `core/DECISION_SELF_BOOKING.md`.
+    //
+    // NOT for the fraud reason the first draft of that document gave. Two
+    // independent reviews looked for something a self-booking could inflate --
+    // a leaderboard, a session count, a payout tier, a ranking -- and found
+    // none in this repository. There is no metric to game and the actor ends
+    // up down the platform fee. The fraud argument was empty and is recorded
+    // as disproved rather than quietly dropped.
+    //
+    // The reason is accounting. This callable charges a real card, there is no
+    // refund handling anywhere in this codebase to unwind it, and both sides of
+    // the resulting document name the same person. That is a payment shape
+    // nobody decided to ship. Refusing it is four lines and reverting the
+    // refusal is deleting them; the other direction commits to a fee policy, a
+    // disclosure and a metrics stance, none of which exist.
+    //
+    // Placed HERE deliberately: before `coach_listings` is read, before
+    // `stripeClient()`, before `ensureCustomer` (which creates a Stripe
+    // customer AND writes Firestore), before `paymentIntents.create` and
+    // before the booking `.set()`. A guard below any of those refuses the
+    // booking and still leaves something behind -- in the worst case a charge.
+    // `index.test.ts` asserts the ordering, not just the refusal.
+    if (coachUid === auth.uid) {
+      throw new HttpsError(
+        "failed-precondition",
+        "You cannot book a session with yourself.",
+      );
+    }
     // A duration is priced per session rather than per minute, so an absurd
     // value does not change what is charged -- it changes what the coach is
     // told they agreed to. Refused rather than clamped, for the same reason
@@ -1400,7 +1434,27 @@ export const reportEquipment = onCall(
     // selecting which third party receives that note. The Admin SDK bypasses
     // firestore.rules, so the `if false` on `equipment_reports` protected
     // nothing here.
-    await enforceDailyQuota(auth.uid, "equipmentReport", QUOTAS.equipmentReport);
+    //
+    // The anonymous divisor, which this call site was missing. `clipUrl` and
+    // `clipUrls` already apply it (`video_urls.ts`); this one took the raw
+    // ceiling, so the two metered surfaces disagreed about what a uid is worth.
+    //
+    // It matters here for the same reason it matters there: a per-uid ceiling
+    // binds only if a uid costs something, anonymous sign-in is a first-class
+    // login button, and a fresh uid is free. Thirty relayed messages a day
+    // into a third party's maintenance channel becomes thirty per rotation.
+    // This does not close that -- nothing in this layer can, which is what
+    // App Check is for -- it raises the number of rotations eightfold and
+    // stops the two quota call sites from being inconsistent for no reason.
+    //
+    // Found by an independent review of the equipment-report authority
+    // question. It is not an answer to that question; it is the one thing that
+    // was wrong regardless of how the question is answered.
+    await enforceDailyQuota(
+      auth.uid,
+      "equipmentReport",
+      quotaFor(QUOTAS.equipmentReport, auth.token?.firebase?.sign_in_provider),
+    );
     const data = request.data ?? {};
     const equipmentId = bounded(data.equipmentId, 128, "equipmentId");
     const gymId = bounded(data.gymId, 128, "gymId") ?? "unknown";

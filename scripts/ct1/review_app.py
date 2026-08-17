@@ -43,6 +43,8 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from review_batch import (  # noqa: E402
     REASON_CODES,
+    assert_authoritative,
+    check_contract,
     REVIEW_QUESTIONS,
     REVIEW_SCHEMA_VERSION,
     VERDICTS,
@@ -448,6 +450,11 @@ def main(argv: list[str] | None = None) -> int:
 
     batch = Path(args.batch)
     manifest = json.loads((batch / "manifest.json").read_text(encoding="utf-8"))
+    # Dealing pages from a superseded batch would send a reviewer rows whose
+    # assignments are not the live ones, and their submission would be refused
+    # on import -- after the work had already been done.
+    check_contract(manifest)
+    assert_authoritative(manifest)
     items = json.loads((batch / "items.json").read_text(encoding="utf-8"))
     assignments = json.loads(
         (batch / "assignments.json").read_text(encoding="utf-8")

@@ -505,6 +505,28 @@ def check_contract(manifest: dict[str, Any]) -> None:
             )
 
 
+def assert_authoritative(manifest: dict[str, Any]) -> None:
+    """Refuse to build reviewer pages or an evaluation set from a dead batch.
+
+    ``check_contract`` above happens to reject 001 and 002 today, because their
+    manifests were written at ``schema_version: 1``. That is an accident of
+    history, not a rule: a future batch superseded WITHOUT a schema change
+    would sail through it. Superseded batches stay in the repository as
+    historical evidence — a test rebuilds against them — so something has to
+    say which one is live, and it should say so because it is the rule rather
+    than because the numbers happen not to match.
+    """
+    got = manifest.get("batch_id")
+    if got != BATCH_ID:
+        raise BatchContractError(
+            f"{got!r} is not the authoritative batch. {BATCH_ID} is. A "
+            "superseded batch is kept as evidence and must not be dealt to a "
+            "reviewer or built into an evaluation dataset: its row assignments "
+            "are not the live ones, and a submission against it would be "
+            "refused on import after the work had already been done"
+        )
+
+
 def is_double(item_id: str) -> bool:
     """Whether this row goes to a second reviewer as well.
 

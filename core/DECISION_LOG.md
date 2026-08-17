@@ -14866,3 +14866,105 @@ Artifact: https://claude.ai/code/artifact/8927140d-a664-4679-9962-a7910066ca19
 
 Three commits: `d482ece` (build), `c470b71` (gate-review remediation), `2ef5d94` (self-booking
 decision package). `REMOTE PUSH = NOT PERFORMED`; 57 commits ahead of upstream, nothing pushed.
+
+## Operator decision 1 RESOLVED — self-booking is PROHIBITED, and my own reasoning was wrong
+
+Two independent reviews (payments/fraud/accounting; product/marketplace), round 1, neither shown the
+other's output. Both reached Option B. Both disproved the argument my own decision package led with.
+
+**DISPROVED — the fraud argument was empty.** The package said self-booking "becomes interesting only
+where a metric is worth more than 15% of a session". Both reviews went looking: leaderboards, session
+counts, payout tiers, badges, rankings, `sessionsCompleted`, search ordering, coach stats. There are
+zero Firestore triggers in `functions/src`; the only post-creation writer to a booking sets
+`status`/`confirmedAt`; `platformFeeCents` is stored and never summed; `ratingAverage`/`ratingCount`
+exist on a Dart model and nothing writes or sorts by them. **There is no metric to inflate.** A
+self-booking is a pure loss for whoever makes it. Recorded as disproved rather than dropped, because
+the decision was nearly taken on it.
+
+**DISPROVED — "a completed coach listing is a first-class state in the product".** Verified myself
+after the review raised it: `priceCentsPerSession` is never written by any production code (read at
+`index.ts:1327`, written only in tests and a Dart model); `firestore.rules` has NO `coach_listings`
+block; `startOnboarding()` has no caller in any screen; the marketplace binds
+`MockCoachListingRepository` and the book affordance is disabled for everyone. A bookable listing is
+a state no shipped code can produce. Severity is API-only — the callable is deployed and reachable by
+a crafted request — not "a user can do this today".
+
+**CONFIRMED, and this is the actual reason.** The callable charges a real card and there is no refund
+handling anywhere in this codebase: no `refunds.create`, no `charge.refunded` or dispute webhook. An
+issued charge can only be unwound from the Stripe dashboard, where by default the application fee is
+not returned and the transfer is not reversed. A booking whose two sides name the same person is a
+payment shape nobody decided to ship, with no machinery to undo one. Four lines to refuse; deleting
+them to reverse.
+
+**Placement is the half worth testing.** The guard sits before the `coach_listings` read, and
+therefore before `stripeClient()`, before `ensureCustomer` (which mints a Stripe customer AND writes
+Firestore), before `paymentIntents.create` and before the booking `.set()`. The test asserts the
+listing was never even READ — a guard below any of those refuses the booking and still leaves
+something behind, in the worst case a charge. Mutation X deletes the guard entirely and the ordering
+test goes red; mutation W neutralises the condition.
+
+**Findings raised by the same reviews, recorded not fixed** (each a separate gate, none affected by
+this decision): no refund handling at all, for any booking; no double-booking protection —
+`bookCoachSession` never queries existing bookings and `startsAt` is an opaque string, so two clients
+can book the same coach at the same instant and both are charged; the booking sheet fires the paid
+call on one tap with no confirmation and `startsAt` hardcoded to now+1 day; the 15% fee can be
+net-negative after Stripe's fixed per-charge component and nothing validates a minimum price;
+`yourRole` in the account export is always `client` for a both-sides-same-uid booking. The
+double-booking one is strictly larger than what was fixed here and harms real users.
+
+## Operator decision 3 — equipment-report gym association stays OPEN, but one thing was wrong regardless
+
+An independent review confirmed every claim in the N-04 record against source, and established that a
+gym-membership model **does not exist** in this repository in any form: no membership collection, no
+join or check-in flow, no writer for `gyms/`, no scanner resolving a gym id. `BuddyProfile.gymId` is
+constructed only in a test. The equipment report sheet defaults `gymId` to `'unknown'` and its only
+call site omits it — so from the shipped app every report carries `unknown` and the webhook branch is
+effectively dead in production.
+
+Requiring association therefore means building a gym directory, onboarding tooling, membership
+records, join/verify UX, revocation, rules and deletion/export coverage — a feature programme to
+bound a webhook no shipped client can reach. It stays an operator decision, unchanged.
+
+**What was wrong regardless of that answer:** `reportEquipment` took the raw daily ceiling while
+`clipUrl`/`clipUrls` divide an anonymous caller's by eight. The two metered surfaces disagreed about
+what a uid is worth, and the more permissive one was the endpoint that relays text into a third
+party's channel. `quotaFor` now applied at both. This does not close uid rotation — nothing in this
+layer can — it raises the cost eightfold and removes an inconsistency that was nobody's decision.
+
+## Operator decision 4 RESOLVED — superseded batches are KEPT, and now refused structurally
+
+001 and 002 stay as historical evidence: a test rebuilds the current selection against `002/items.json`
+to assert the supersession moved the two rows it claims and not more, so deleting them would delete
+the ability to check the claim. There is nothing sensitive in them — no reviewer names, no
+submissions, only catalogue content that ships in the app.
+
+`check_contract` happened to reject both already, because their manifests were written at
+`schema_version: 1`. That is an accident of history, not a rule: a batch superseded WITHOUT a schema
+change would sail through it. `assert_authoritative()` now refuses any batch whose id is not the live
+one, wired into both entry points that could deal work from a dead batch — the page generator and the
+evaluation-dataset builder. Both directories carry a `SUPERSEDED.md` a person opening them will see.
+
+Recursive delete stays blocked by the shell policy hook and was not worked around.
+
+## CT-1 train-split label acquisition — tooling built, batch deliberately NOT issued
+
+`scripts/ct1/train_review.py`. A separate module rather than a flag on the holdout sampler: a boolean
+that switches which split a batch is drawn from is one edit away from drawing the wrong one, and the
+edit would look correct. `train_rows()` is the only place the module decides what it may see.
+
+`TRAIN REVIEW ROWS ∩ HOLDOUT ROWS = ∅` is checked at draw time as well as in `leakage_guard`. Not
+redundancy: the guard runs at training time, which is after a reviewer has already spent a day on the
+wrong rows; this one runs while the mistake is still free. Mutation AA makes `train_rows` stop
+filtering and three tests go red.
+
+**The batch is not issued, and that is the design.** What a training set should over-sample depends on
+where the baseline is WRONG, which nobody knows until the holdout review returns. `error_targeted` —
+the strategy this design expects — refuses with `BLOCKER = HUMAN_REVIEW_LABELS_REQUIRED` rather than
+approximating. `mirror_baseline` is available and its own manifest field says it ENCODES THE RULES'
+CURRENT OPINION, which is the feedback loop this project refuses elsewhere. `--issue` is required to
+write anything; the default is a dry run that prints what it would draw and why it is not drawing it.
+
+**Suites:** CT-1 200 passed (was 184). Cloud Functions 203 passed (was 198), `tsc` clean. Six
+mutations killed. One first-run kill was rejected as invalid: mutating the quota call left `quotaFor`
+unused, so the suite failed to compile rather than failing an assertion — re-run with a compiling
+mutant, which the test then killed properly.

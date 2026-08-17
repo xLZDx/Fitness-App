@@ -22,6 +22,7 @@ from review_batch import (
     BATCH_ID,
     BatchContractError,
     DOUBLE_REVIEW_SHARE,
+    assert_authoritative,
     REVIEW_STATUSES,
     SCHEMA_VERSION,
     check_contract,
@@ -433,3 +434,36 @@ def test_every_identifier_the_page_puts_in_an_attribute_is_quote_free():
                        REVIEW_STATUSES):
         for identifier in vocabulary:
             assert re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", identifier), identifier
+
+
+def test_only_the_authoritative_batch_may_be_dealt_or_evaluated():
+    """Section 7. Superseded batches stay in the repository as evidence, so
+    something has to say which one is live.
+
+    `check_contract` happens to reject 001 and 002 today, because their
+    manifests were written at `schema_version: 1`. That is an accident of
+    history, not a rule -- a future batch superseded WITHOUT a schema change
+    would sail through it.
+    """
+    batch = _batch()
+    assert_authoritative(batch["manifest"])          # green on the live batch
+
+    for superseded in ("CT1_REVIEW_BATCH_001", "CT1_REVIEW_BATCH_002"):
+        stale = {**batch["manifest"], "batch_id": superseded}
+        with pytest.raises(BatchContractError, match="not the authoritative"):
+            assert_authoritative(stale)
+
+
+def test_the_superseded_batches_on_disk_are_refused_by_both_guards():
+    """Not a hypothetical id -- the manifests actually committed."""
+    review = REPO / "core" / "ml" / "review"
+    for name in ("ct1_review_batch_001", "ct1_review_batch_002"):
+        path = review / name / "manifest.json"
+        assert path.exists(), f"{path} is the evidence; it must not vanish"
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        with pytest.raises(BatchContractError):
+            assert_authoritative(manifest)
+        # And each carries a marker a person opening the directory will see.
+        marker = (review / name / "SUPERSEDED.md").read_text(encoding="utf-8")
+        assert "SUPERSEDED" in marker
+        assert BATCH_ID in marker

@@ -1,9 +1,16 @@
 # Operator decision — should a coach be able to book themselves?
 
-**Status: OPEN. Not decided here.** This document exists so the decision can be taken on evidence
-rather than discovered in a support ticket. It states what the code does today, what each option
-costs, and what would have to be built either way. It does not choose, because the choice is a
-payments and product question and this repository does not hold the authority for it.
+**Status: DECIDED 2026-08-17. Option B — PROHIBITED.** Implemented in
+[functions/src/index.ts](functions/src/index.ts), refused before the coach listing is read and
+therefore before any Stripe call or Firestore write. Reverting is deleting the guard.
+
+**The reasoning below was WRONG in its first draft and is corrected in place.** Two independent
+reviews went looking for something a self-booking could inflate — a leaderboard, a session count, a
+payout tier, a ranking — and found none in this repository. The fraud argument was empty. It is
+recorded as DISPROVED rather than quietly dropped, because the decision was nearly taken on it.
+
+The first draft also said a completed coach listing "is a first-class state in the product". That is
+**false**. See *What is actually reachable* below. The verdict did not change; the reason did.
 
 Raised by the R4 independent review as a MINOR whose data-export half was fixed and whose product
 half was not. See `core/DECISION_LOG.md` under *Unreviewed area 2* and the 2026-08-17 reconciliation.
@@ -37,8 +44,21 @@ charges for the card and the transfer. **The caller ends up strictly worse off b
 platform fee plus processing**, and both sides of the resulting booking document name the same
 person.
 
-This is reachable, not hypothetical: it needs only a completed coach listing, which is a first-class
-state in the product.
+## What is actually reachable — a correction
+
+The first draft called a completed coach listing "a first-class state in the product". Measured:
+
+| Claim | Reality |
+|---|---|
+| A coach can create a listing | `startCoachOnboarding` writes only the Connect id. `startOnboarding()` has **no caller in any screen** — it exists in a service interface and its tests. |
+| A listing has a price | `priceCentsPerSession` is **never written by any production code**. It is read at `index.ts:1327` and written only in tests and a Dart model. |
+| Clients can reach listings | `firestore.rules` has **no `coach_listings` block at all**. |
+| The marketplace shows real coaches | It binds `MockCoachListingRepository`; the book affordance is disabled for everyone because the listings are demo data. |
+
+So a bookable listing is a state **no shipped code can produce**. It can exist — the Admin SDK and
+the console bypass rules — and the callable is deployed and reachable by a crafted request from any
+authenticated user. That is why the guard is still worth its four lines. But the severity is
+**API-only**, not "a user can do this today", and saying otherwise would have overstated the case.
 
 ## What has already been fixed, and what has not
 
@@ -100,18 +120,24 @@ because a refusal that breaks an existing user flow is worse than the flow it wa
 
 ---
 
-## Recommendation
+## Decision — Option B, and why the stated reason matters
 
-**Option B, as the reversible default.**
+**PROHIBITED.** Not on the fraud argument, which two independent reviews disproved: there is no
+metric in this repository to inflate, no payout to game, and the actor ends up down the platform fee.
+A self-booking is a pure loss for whoever makes it.
 
-Not because self-booking is clearly wrong — it may well be a feature — but because of the asymmetry.
-Option B is four lines and one test, it is trivially reversible, and until it is taken the product
-has a payment path nobody has decided should exist. Option A is not a decision to leave things alone;
-it is a decision to build a fee policy, a UI disclosure and a metrics stance, and doing that by
-default is how a feature gets shipped without anybody choosing it.
+The reason is **accounting**. This callable charges a real card. There is no refund handling anywhere
+in this codebase — no `refunds.create`, no `charge.refunded` webhook — so an issued charge can only be
+unwound from the Stripe dashboard, where by default the application fee is not returned and the
+transfer is not reversed. A booking whose two sides name the same person is a payment shape nobody
+decided to ship, and there is no machinery to undo one.
 
-If the operator wants self-booking, Option B does not close it off. Reverting a refusal is cheap;
-recovering from a season of undisclosed self-charges is not.
+Option A was never "leave it alone". It commits to a fee policy, a disclosure and a metrics stance,
+none of which exist. Arriving there by default is how a feature ships without anybody choosing it.
+
+**Honest limitation of this fix.** It closes a small, API-only path. The larger defects on the same
+callable are untouched and are recorded separately below — a reader who sees this guard should not
+conclude the booking path has been audited.
 
 ## Reversibility
 
@@ -139,10 +165,29 @@ recovering from a season of undisclosed self-charges is not.
 **If Option A is chosen:** the fee policy and the disclosure are what need tests, and they cannot be
 written until that policy exists.
 
-## What is NOT in scope of this decision
+## What this fix does NOT address — findings raised by the same reviews
 
-- The double-listing in the account export. Fixed, and correct either way.
-- The deletion-sweep survival. Fixed, and correct either way.
-- Whether the 15% platform fee is right in general.
-- Whether anonymous accounts should be able to book at all — that is the N-05 App Check decision,
-  which is separate and also open.
+Recorded here rather than fixed, because each is a separate gate and none is made better or worse by
+the self-booking decision. All were measured, not inferred.
+
+1. **No refund handling exists at all.** No `refunds.create`, no `charge.refunded` or dispute webhook
+   anywhere in `functions/src`. A dashboard refund leaves the platform holding the 15% and the coach
+   holding the 85%, and the booking document stays `status: "confirmed"` forever because nothing
+   listens. True for every booking, not just a self-booking.
+2. **No double-booking protection.** `startsAt` is an opaque bounded string, written verbatim, never
+   parsed or range-queried. `bookCoachSession` never queries existing bookings. Two clients can book
+   the same coach at the same instant and both are charged. This is the defect that harms real users,
+   and it is strictly larger than the one fixed here.
+3. **The booking UI charges with no confirmation.** A single tap fires the paid call with `startsAt`
+   hardcoded to now + 1 day. Currently unreachable (listings are mock-only), and unshippable as it
+   stands regardless of the self-booking question.
+4. **The platform fee can be net-negative.** 15% of a small `priceCents` is less than Stripe's fixed
+   per-charge component. Nothing validates a minimum price beyond `priceCents <= 0`.
+5. **`yourRole` in the account export is always `"client"`** for a booking where both sides are the
+   same uid. Moot for new bookings once this guard ships; still wrong for any that exist.
+6. **No slot or availability model exists.** So "a coach holding their own calendar" — the strongest
+   argument for Option A — is not served by self-booking either. If slot-holding is wanted, it is its
+   own feature and would also close (2).
+
+Also out of scope and separately open: whether the 15% fee is right in general, and whether anonymous
+accounts should be able to book — that is the N-05 App Check question.
