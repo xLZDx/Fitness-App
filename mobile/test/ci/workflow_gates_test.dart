@@ -21,15 +21,44 @@ void main() {
     return f;
   }
 
+  /// The YAML with comment lines removed.
+  ///
+  /// Not fastidiousness: these workflows carry more explanation than
+  /// configuration, and every trigger name below also appears in prose
+  /// nearby. A raw `contains` matches the commented-out form just as happily
+  /// as the live one — which is exactly how a disabled nightly would keep a
+  /// test green. Found by mutating this file rather than by foresight.
+  ///
+  /// Declared here rather than halfway down: the groups above it were still
+  /// reading the raw source, and the reason was proximity rather than intent.
+  String live(String name) => workflow(name)
+      .readAsStringSync()
+      .split('\n')
+      .where((l) => !l.trimLeft().startsWith('#'))
+      .join('\n');
+
   group('F008: the branch the work happens on is covered', () {
     for (final name in const ['flutter.yml', 'functions.yml']) {
       test('$name runs on a push to any branch', () {
-        final src = workflow(name).readAsStringSync();
+        // `live`, not the raw source. This group used the raw source while the
+        // group below it had already been fixed to strip comments -- so
+        // commenting out the wildcard and adding `branches: [main]` beside it
+        // left this green, which is the same defect one file over.
+        final src = live(name);
         expect(src, contains("branches: ['**']"),
             reason: 'a working branch got no push-triggered run at all, so a '
                 'regression sat until someone opened a pull request');
-        expect(src, isNot(contains('branches: [master, main]')));
-        expect(src, isNot(contains('branches: [master]')));
+        // And no OTHER branch filter, whatever it names. The previous version
+        // listed two literal spellings to reject, so `branches: [main]` -- the
+        // most likely regression of all -- passed both guards.
+        final filters = src
+            .split('\n')
+            .where((l) => l.contains('branches:'))
+            .where((l) => !l.contains("['**']"))
+            .toList();
+        expect(filters, isEmpty,
+            reason: 'a branch filter other than the wildcard narrows what CI '
+                'sees: $filters');
       });
     }
   });
@@ -52,9 +81,17 @@ void main() {
     }
 
     test('flutter.yml still runs analyze and the whole test suite', () {
-      final src = workflow('flutter.yml').readAsStringSync();
+      final src = live('flutter.yml');
       expect(src, contains('flutter analyze'));
-      expect(src, contains('flutter test'));
+      // `flutter test --no-pub`, not `flutter test`. The bare form is also how
+      // the integration job invokes ONE file -- `flutter test
+      // integration_test/app_test.dart` -- so deleting the whole-suite step
+      // left this assertion satisfied by a job that runs a single test and is
+      // itself skipped on push. It claimed to check the suite and checked
+      // nothing.
+      expect(src, contains('flutter test --no-pub'),
+          reason: 'the step that runs the entire suite is gone; a bare '
+              '"flutter test" match is satisfied by the integration job');
     });
 
     test('the analyze flags suppress warnings only, never errors', () {
@@ -70,19 +107,6 @@ void main() {
       expect(src, isNot(contains('--no-fatal-errors')));
     });
   });
-
-  /// The YAML with comment lines removed.
-  ///
-  /// Not fastidiousness: these workflows carry more explanation than
-  /// configuration, and every trigger name below also appears in prose
-  /// nearby. A raw `contains` matches the commented-out form just as happily
-  /// as the live one — which is exactly how a disabled nightly would keep a
-  /// test green. Found by mutating this file rather than by foresight.
-  String live(String name) => workflow(name)
-      .readAsStringSync()
-      .split('\n')
-      .where((l) => !l.trimLeft().startsWith('#'))
-      .join('\n');
 
   group('CI-F1: the check that can go stale on its own runs on its own', () {
     // A dependency audit is the only job in this repository whose verdict
@@ -121,6 +145,14 @@ void main() {
     // G-D is proven by the emulator suite in `functions/`. If that job stops
     // running, the gate stops being enforced anywhere but in a decision-log
     // entry.
-    expect(workflow('functions.yml').readAsStringSync(), contains('rules'));
+    //
+    // This asserted `contains('rules')` against the whole file, comments
+    // included. The word appears five times in prose -- the header comment
+    // alone says "the Firestore rules" -- so deleting the entire `rules:` job
+    // left the test green. It could not fail. Match the command instead.
+    expect(live('functions.yml'), contains('npm run test:rules'),
+        reason: 'the emulator suite is the only thing that proves G-D against '
+            'a real Firestore; a mention of the word "rules" in a comment is '
+            'not evidence that it runs');
   });
 }

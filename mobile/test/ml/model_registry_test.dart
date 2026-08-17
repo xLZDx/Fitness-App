@@ -99,7 +99,19 @@ void main() {
     /// Every `.tflite` path that appears in a Dart source file under `lib/`.
     Set<String> modelPathsInCode() {
       final found = <String>{};
-      final pattern = RegExp(r"'(assets/models/[A-Za-z0-9_.\-]+\.tflite)'");
+      // Both quote styles. The single-quoted form was the only one matched,
+      // and nothing in this project forces single quotes -- `prefer_single_
+      // quotes` is commented out in analysis_options.yaml and flutter_lints
+      // does not include it. So `"assets/models/equipment_v2.tflite"` was
+      // legal, unflagged Dart that shipped a second model with the registry
+      // never told, which is precisely the drift this scanner exists to catch.
+      //
+      // Fourth instance in this programme of a scanner blind to a quoting or
+      // commenting variant. The lesson has stopped being about quotes: a
+      // matcher written against one spelling of a thing is evidence about that
+      // spelling, not about the thing.
+      final pattern =
+          RegExp(r'''(?:'|")(assets/models/[A-Za-z0-9_.\-]+\.tflite)(?:'|")''');
       for (final f in Directory('lib').listSync(recursive: true)) {
         if (f is! File || !f.path.endsWith('.dart')) continue;
         for (final m in pattern.allMatches(f.readAsStringSync())) {
@@ -141,7 +153,14 @@ void main() {
       // A file in `assets/` that pubspec does not declare is not in the APK.
       // The registry would be accurate about the repository and wrong about
       // the product.
-      final pubspec = File('pubspec.yaml').readAsStringSync();
+      // Comments stripped: `assets/models/` occurs exactly once in pubspec, so
+      // commenting the line out dropped the model from the APK while leaving
+      // this test green.
+      final pubspec = File('pubspec.yaml')
+          .readAsStringSync()
+          .split('\n')
+          .where((l) => !l.trimLeft().startsWith('#'))
+          .join('\n');
       expect(pubspec, contains('assets/models/'),
           reason: 'the model directory is not declared as an asset');
     });

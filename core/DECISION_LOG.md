@@ -13999,3 +13999,30 @@ meant for the v1 row. Deleting the v1 marking left it green. Now matched per row
 Third and fourth scanner in this programme found to be incapable of failing. The pattern is
 consistent enough to name: a substring check against prose passes for reasons unrelated to what it
 is checking.
+
+## N-09..N-13 (MAJOR/MINOR): five scanners that could not fail
+
+The independent review mutation-tested the guards themselves rather than the things they guard, and
+five of them reported success against the regression they exist to catch. All five are now
+mutation-proven red.
+
+| guard | what it asserted | why it could not fail |
+|---|---|---|
+| Firestore rules job | `contains('rules')` over the whole file | the word appears five times in prose; the header comment alone kept it green after the entire `rules:` job was deleted |
+| whole test suite | `contains('flutter test')` | also matches the integration job's `flutter test integration_test/app_test.dart` — one file, and skipped on push. Deleting the whole-suite step changed nothing |
+| F008 branch coverage | raw source, rejecting two literal spellings | comment-blind, and `branches: [main]` was not one of the two spellings rejected |
+| pubspec asset | `contains('assets/models/')` | comment-blind; the string occurs once, so commenting it out drops the model from the APK silently |
+| unregistered models | regex over single-quoted Dart strings only | `prefer_single_quotes` is commented out in `analysis_options.yaml` and `flutter_lints` does not include it, so a double-quoted path is legal, unflagged, and invisible |
+
+Now: the command rather than the word; `flutter test --no-pub`; comments stripped and any non-wildcard
+branch filter rejected whatever it names; comments stripped; both quote styles.
+
+**The pattern is worth naming, because this is the fourth and fifth instance in this programme.** A
+substring check against prose passes for reasons unrelated to what it is checking, and the failure
+is silent in the worst possible way: the test is green, so the guard looks present. Two of these
+five sat in the same file as a sibling that had already been fixed for exactly this reason -- the
+`live()` helper existed, and the groups above it went on reading the raw source because it was
+declared below them. It has been moved above its first use.
+
+A guard is evidence about the spelling it matches, not about the thing it names. None of these were
+found by reading the tests; all were found by mutating the thing and watching the test stay green.
