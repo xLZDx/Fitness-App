@@ -345,3 +345,70 @@ def test_the_written_metrics_round_trip_as_json(tmp_path):
     path = tmp_path / "m.json"
     path.write_text(json.dumps(metrics, ensure_ascii=False), encoding="utf-8")
     assert json.loads(path.read_text(encoding="utf-8")) == metrics
+
+
+# --------------------------------------------------------------------------
+# guards found untested by gate review
+# --------------------------------------------------------------------------
+
+
+def test_labels_can_exist_while_no_row_settles_on_every_question():
+    """The `not rows` guard, reached on its own.
+
+    The existing test set every review to SKIPPED, which emptied every
+    reviewer's label list and tripped the EARLIER EVALUATION_LABEL_GAP guard
+    instead -- so deleting `if not rows` specifically would have changed
+    nothing. Here labels exist in quantity and every row has exactly one
+    question left in dispute, so `included` is full and `rows` is empty.
+    """
+    batch = _batch()
+    subs = _submissions(batch)
+    secondary = batch["assignments"]["secondary"]
+    for sub in subs:
+        for review in sub["reviews"]:
+            rid = review["item_id"]
+            # Disagree on one question for every row, so nothing settles fully.
+            if secondary.get(rid) == sub["reviewer_slot"]:
+                review["answers"][REVIEW_QUESTIONS[0]] = "problem"
+                review["reason_codes"] = ["steps_missing"]
+    # Only the doubled rows can disagree, so restrict the batch to those.
+    for sub in subs:
+        sub["reviews"] = [r for r in sub["reviews"] if r["item_id"] in secondary]
+
+    with pytest.raises(EvaluationError, match="no row settled"):
+        build_eval(batch, subs, assignments=batch["assignments"])
+
+
+def test_a_stratum_with_one_reviewed_row_says_its_variance_is_missing():
+    """A single observation has no estimable sample variance, so it contributes
+    full weight to the estimate and nothing to the standard error. That narrows
+    the interval, and this module does not omit an assumption silently."""
+    batch = _batch()
+    dataset = _built(batch, bad_for=_bad_if_flagged(batch))
+    # One row from EACH stratum: with a stratum at zero the unsampled-stratum
+    # guard fires first and returns no estimate at all, which is a different
+    # (and also correct) refusal.
+    one_flagged = next(i for i in dataset["rows"] if batch["sealed"].get(i))
+    one_clean = next(i for i in dataset["rows"] if not batch["sealed"].get(i))
+    dataset = {
+        **dataset,
+        "rows": {k: dataset["rows"][k] for k in (one_flagged, one_clean)},
+        "strata": {
+            "flagged": {"population": 40, "sampled": 1},
+            "unflagged": {"population": 40, "sampled": 1},
+        },
+    }
+    metrics = evaluate(dataset, batch["sealed"])
+    estimate = metrics["HOLDOUT_ESTIMATE"]
+    assert estimate["estimate"] is not None
+    assert estimate["variance_understated"]
+    assert "lower bound" in estimate["variance_note"]
+
+
+def test_a_normally_sampled_batch_claims_no_missing_variance():
+    """So the disclosure above is a real signal rather than boilerplate on
+    every report."""
+    batch = _batch()
+    metrics = evaluate(_built(batch, bad_for=_bad_if_flagged(batch)),
+                       batch["sealed"])
+    assert "variance_understated" not in metrics["HOLDOUT_ESTIMATE"]

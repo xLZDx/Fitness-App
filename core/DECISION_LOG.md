@@ -14747,3 +14747,89 @@ red X says which protection stopped working.
 `D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED` and `H3 = HOLD` untouched. No question, in name or in
 the prose a reviewer reads, asks whether an exercise is safe. `CLINICALLY_VALIDATED_LABEL` remains
 unconstructible. `CONTINUOUS_RETRAINING_OPERATIONAL = NO`.
+
+## CT-1 gate review, and what four independent reviewers found
+
+Four read-only reviewers on the `d482ece` diff only, round 1 independent, none shown another's output:
+label/state semantics, test quality/mutation, privacy/page safety, architecture/contracts. Every
+BLOCKER/MAJOR was reproduced before being accepted; nothing was taken on the reviewer's word.
+
+**Five MAJOR, all CONFIRMED by measurement. Zero BLOCKER.**
+
+**1. An adjudicator's name recorded next to a value they contradicted.** `adjudicate()` validated a
+ruling whose key had one reviewer, or two who agreed, then never read it — the branch order reaches
+`SINGLE` and `AGREE` before it consults a ruling. Reproduced: a ruling of `False` on a settled `True`
+came back `state=SINGLE, value=True, adjudicator='qa.carol'`. Both states are in the evaluation set's
+`USABLE`, so a documented human correction would have been dropped into an immutable dataset while
+the record named the person who made it. Now refused: an adjudication of something nobody disputed is
+not an adjudication, and if the settled answer is wrong that is a correction to the review and should
+look different in the file.
+
+**2. The baseline flagged duplicates by position in the file.** Found by a test written for this
+review asserting that selection is a function of the row id. `duplicate_title`, `duplicate_summary`
+and `duplicate_steps_block` reported the second and later occurrence in *input order*, so which
+member of a duplicate group got flagged was a fact about the catalogue's layout. Reordering the
+corpus without changing a character moved a row in and out of the flagged set — the same instability
+the hash-based sampling exists to avoid, reached by a different route, and a vendor re-export in a
+different order would have silently changed which rows reviewers were sent. Fixed to the lowest id in
+the group. Queue size is unchanged; the flagged holdout population moved 56 → 55.
+
+**3. The manifest described the contract and no consumer read it.** `questions`, `verdicts`,
+`reason_codes`, `review_statuses` and `review_schema_version` were written into every manifest while
+the page generator, the importer and the evaluator all read the code constants. Documentation that
+cannot be wrong is documentation nobody checks. The concrete failure: bump the constants, regenerate
+pages from a committed batch directory — the documented command — and reviewers answer v3 questions
+over a v2 batch with nothing erroring anywhere. `check_contract()` now refuses field by field, and
+the importer calls it before anything else.
+
+**4. `SCHEMA_VERSION` had not moved although the manifest shape had.** Both 001 and 002 said
+`schema_version: 1` while 002 added five fields. Now 2.
+
+**5. CI compared the two artefacts a reviewer opens and not the two the metrics are computed from.**
+`sealed_baseline_labels.json` is the ground truth behind every precision and recall figure and
+`manifest.json` carries the stratum populations the estimator is weighted by; a drift in either would
+have left `items.json` identical and the numbers wrong. All four are compared now, the manifest minus
+`source_commit`, and the path is derived from `BATCH_ID` rather than spelled out.
+
+**Batch 003, not a rebuilt 002.** The baseline fix moved two rows, so the assignments changed. The
+tempting argument was that 002 was committed the same afternoon, never pushed, and nothing had been
+returned against it — but that rests on "nobody has a copy", and this checkout is shared: the 002
+reviewer pages sat on disk where anyone could have opened one. A claim I cannot check is not allowed
+to be what a rule hangs on. 002 is kept with a `SUPERSEDED.md` rather than deleted; the shell policy
+hook blocks recursive deletes and the honest response to a guard is to work with it, not around it.
+Deleting the superseded directories is an operator call.
+
+**MINORs fixed, each confirmed first.** Six guards had no test at all — a missing reviewer identity, a
+non-text note, non-list reason codes, an adjudication for a pair nobody reviewed, a non-boolean
+adjudicated value, and `build_eval`'s "no row settled" branch, which the existing test could never
+reach because an earlier guard fired first. A non-dict review entry raised `AttributeError` out of
+the middle of the loop rather than being refused with a sentence. A stratum with one reviewed row
+contributed full weight to the estimate and nothing to the standard error, silently; it now says so.
+`import_reviews` had an `assignments=None` default that disabled the unplanned-reviewer check for any
+caller that forgot it — a convenience default that turns off a check is a check with an off switch,
+and it is now required. `esc()` in the reviewer page now escapes quotes, and a test pins every
+identifier the page puts in an HTML attribute to `[A-Za-z][A-Za-z0-9_]*`, which is what actually
+makes those contexts safe. The reviewer instructions overstated what the export file contains; the
+wording now lists it.
+
+**Two weak tests, both replaced.** `test_selection_is_deterministic_and_stable_as_the_corpus_grows`
+claimed to rule out a seeded shuffle and did not: `random.Random(seed).sample` satisfies both its
+assertions, measured. Replaced by order-independence, which a seeded shuffle cannot satisfy — and
+which promptly failed against the real code and produced finding 2 above. `test_double_review_is_a
+_minority` asserted "fewer than half", and a mutation raising the share to 50% still passed because
+the hash landed just under the line; it now pins the configured share.
+
+**The supersession test no longer skips.** It called `pytest.skip` when the superseded artefact was
+absent — a test that stops running when its evidence disappears reports success for the one state it
+exists to detect. It asserts presence now.
+
+**Mutation proof:** 10 new mutations on the remediated guards, all killed; the original 12 re-run and
+still killed. 22 total, every file restored byte-for-byte and re-verified green.
+
+**Suites:** CT-1 184 passed (was 155). Batch 003 and the rebuilt dataset both reproduce
+byte-identically. Mobile CI-gate suite 13 passed after the workflow edit. No Dart or TypeScript source
+was touched by this gate.
+
+**Not accepted:** nothing. Every finding raised was either confirmed and fixed, or was already
+correct — the semantics reviewer's checks on leakage, staleness ordering, coverage accounting,
+`row_is_bad` and `content_version` all came back clean and I verified two of them independently.

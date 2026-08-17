@@ -14,7 +14,7 @@ Both answers are proven below rather than asserted.
 
 ## What exists
 
-Nine executable components under [scripts/ct1/](scripts/ct1/), 155 tests, a built dataset and a
+Nine executable components under [scripts/ct1/](scripts/ct1/), 184 tests, a built dataset and a
 built review batch.
 
 | | |
@@ -34,7 +34,7 @@ python scripts/ct1/baseline.py
 python scripts/ct1/build_dataset.py
 python scripts/ct1/evaluate.py
 python scripts/ct1/review_batch.py --out core/ml/review
-python scripts/ct1/review_app.py --batch core/ml/review/ct1_review_batch_002
+python scripts/ct1/review_app.py --batch core/ml/review/ct1_review_batch_003
 python -m pytest scripts/ct1/ -q
 ```
 
@@ -183,20 +183,28 @@ reviewed rows would make a challenger comparison meaningful; fewer would produce
 wider than any difference worth acting on. Nothing else is blocking, and no amount of further code
 substitutes for it.
 
-## `CT1_REVIEW_BATCH_002` — the batch that would close it
+## `CT1_REVIEW_BATCH_003` — the batch that would close it
 
 Built by [scripts/ct1/review_batch.py](scripts/ct1/review_batch.py), written to
-[core/ml/review/ct1_review_batch_002/](core/ml/review/ct1_review_batch_002/), and asserted by
+[core/ml/review/ct1_review_batch_003/](core/ml/review/ct1_review_batch_003/), and asserted by
 [scripts/ct1/test_review_batch.py](scripts/ct1/test_review_batch.py) — one of five CT-1 suites in CI
-(155 tests total).
+(184 tests total).
 
-**Why 002 and not a rebuilt 001.** Review schema v2 adds structured reason codes, a per-row content
-digest, review timestamps and an explicit review status. A v1 answer cannot carry any of them, so
-reading a v1 submission as v2 would be guessing what the reviewer meant. 001 was built, committed and
-never reviewed, so nothing was lost — which is exactly the situation in which the rule is cheap to
-waive, and waiving it the first time it costs anything is how it stops being a rule. The row
-SELECTION is unchanged, and a test proves it by rebuilding against the committed `001/items.json`, so
-the supersession is provably schema-only. 001 is recorded as `SUPERSEDED_BEFORE_REVIEW`.
+**Why a third batch id.** A new id each time row assignments change, rather than a rebuild under an
+id somebody may already hold a package for. 002 replaced 001 for a review-schema change that left the
+rows identical. 003 replaces 002 because the rows moved: the baseline's duplicate checks reported the
+second and later occurrence *in catalogue file order*, so which member of a duplicate group got
+flagged was a fact about the file's layout rather than its content — a vendor re-export in a
+different order would have silently changed which rows reviewers were sent. Fixed to a deterministic
+representative, which moved the flagged holdout population from 56 to 55 and two rows in and out of
+the batch. Found by a test written during this gate's own review.
+
+Rebuilding 002 in place was the tempting alternative — same afternoon, never pushed, nothing
+returned. It was rejected because it rests on "nobody has a copy", and this checkout is shared: the
+002 reviewer pages existed on disk where anyone could have opened one. A claim that cannot be checked
+is not allowed to be what a rule hangs on. Both superseded directories are kept, 002 carrying a
+`SUPERSEDED.md`, and a test rebuilds against `002/items.json` to assert the move was the small
+explained one and not a reshuffle.
 
 **The batch is BLIND, and everything else about it follows from that.** A reviewer who can see which
 rule fired is not producing a label; they are producing an agreement rate, and an agreement rate
@@ -210,8 +218,8 @@ so the batch can be evaluated afterwards and is not part of what a reviewer open
 
 ```text
 holdout rows          386
-flagged available      56   (every flagged holdout row is in the batch)
-unflagged available   330 -> 124 selected
+flagged available      55   (every flagged holdout row is in the batch)
+unflagged available   331 -> 125 selected
 batch                 180   flagged_exhausted = true, backfilled = true, short = false
 double review          44   (~20%)
 packages              R1 69   R2 81   R3 74
@@ -223,7 +231,7 @@ flagged rows would measure precision exhaustively and could not, even in princip
 row. So both strata are drawn deliberately, flagged rows are spread across check families, and
 `manifest.sampling` states in the file that any rate computed on it describes THIS batch.
 
-`flagged_wanted` (120) and `flagged_available` (56) are recorded separately on purpose: the shortfall
+`flagged_wanted` (120) and `flagged_available` (55) are recorded separately on purpose: the shortfall
 is a property of the corpus, not a failure of the sampler, and when the whole flagged population fits
 the precision measurement is exhaustive for the holdout rather than a sample of it. The shortfall is
 backfilled from the other stratum and `backfilled` records that it happened — an earlier version
@@ -358,7 +366,7 @@ BATCH METRIC      defective / reviewed.  True about THESE rows. Not prevalence.
 HOLDOUT ESTIMATE  stratum rates re-weighted by the holdout population, with a
                   standard error. The flagged stratum was sampled exhaustively,
                   so it contributes zero sampling variance and nearly all the
-                  uncertainty is honestly attributed to the 124-of-330 unflagged
+                  uncertainty is honestly attributed to the 125-of-331 unflagged
                   sample.
 CATALOGUE RATE    null, with the assumption written out. Getting from holdout to
                   catalogue needs a stated assumption this module will not make

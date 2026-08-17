@@ -36,6 +36,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from label_contract import Label, LabelSource  # noqa: E402
 from review_batch import (  # noqa: E402
     MACHINE_REVIEWER_MARKERS,
+    check_contract,
     REASON_CODES,
     REVIEW_QUESTIONS,
     REVIEW_SCHEMA_VERSION,
@@ -119,14 +120,24 @@ def import_reviews(
     submission: dict[str, Any],
     batch: dict[str, Any],
     *,
-    assignments: dict[str, Any] | None = None,
+    assignments: dict[str, Any],
 ) -> dict[str, Any]:
     """Validate one reviewer's returned file.
 
     Returns labels plus a coverage account, because the labels alone cannot
     distinguish "reviewed and clean" from "never looked at".
+
+    ``assignments`` is REQUIRED. It was optional, defaulting to "every row in
+    the batch is assigned to this reviewer", which silently defeated the
+    unplanned-reviewer protection below for any caller that forgot it. A
+    convenience default that disables a check is a check with an off switch.
     """
     manifest = batch["manifest"]
+    # Before anything else: is this batch's recorded contract the one this code
+    # implements? Every check below reads a code constant, so a batch built
+    # under a different vocabulary would be validated against questions its
+    # reviewers were never asked.
+    check_contract(manifest)
     if submission.get("batch_id") != manifest["batch_id"]:
         raise ReviewImportError(
             f"submission is for batch {submission.get('batch_id')!r}, this is "
@@ -156,16 +167,13 @@ def import_reviews(
     # two people can share one, and a slot whose owner changed mid-batch would
     # otherwise silently look like an unassigned reviewer.
     slot = submission.get("reviewer_slot")
-    if assignments is not None:
-        packages = assignments.get("packages") or {}
-        if slot not in packages:
-            raise ReviewImportError(
-                f"reviewer_slot {slot!r} holds no package in this batch. Slots "
-                f"are {sorted(packages)}"
-            )
-        assigned = set(packages[slot])
-    else:
-        assigned = set(items)
+    packages = (assignments or {}).get("packages") or {}
+    if slot not in packages:
+        raise ReviewImportError(
+            f"reviewer_slot {slot!r} holds no package in this batch. Slots "
+            f"are {sorted(packages)}"
+        )
+    assigned = set(packages[slot])
 
     labels: list[Label] = []
     outcomes: dict[str, str] = {}
@@ -176,6 +184,14 @@ def import_reviews(
     seen: dict[str, dict[str, Any]] = {}
 
     for entry in submission.get("reviews") or []:
+        if not isinstance(entry, dict):
+            # Refused rather than allowed to become an AttributeError. This
+            # module's whole stance is that a bad submission is REFUSED with a
+            # sentence saying why; a stack trace out of the middle of the loop
+            # is the same rejection delivered as a bug report.
+            raise ReviewImportError(
+                f"a review entry is {type(entry).__name__}, not an object"
+            )
         item_id = entry.get("item_id")
         if item_id not in items:
             raise ReviewImportError(
@@ -437,6 +453,24 @@ def adjudicate(
         if key not in by_key:
             raise ReviewImportError(
                 f"adjudication for {key} which no two reviewers answered"
+            )
+        # A ruling on something nobody disputed. Raised in gate review, and
+        # worse than it sounds: the branch order below reaches SINGLE and AGREE
+        # before it consults a ruling, so such a record was validated, stored,
+        # never read -- and the output still attached the adjudicator's NAME to
+        # the reviewers' value. An adjudicator recorded against a verdict they
+        # contradicted, in a dataset that is immutable once written.
+        #
+        # Refused rather than applied. If the settled answer is wrong, that is a
+        # correction to the review, not an adjudication of a dispute that did
+        # not happen, and it should look different in the file.
+        if len(by_key[key]) < 2 or len(set(by_key[key].values())) == 1:
+            raise ReviewImportError(
+                f"{key}: nothing to adjudicate -- "
+                + ("only one reviewer answered it"
+                   if len(by_key[key]) < 2 else "the reviewers agree")
+                + ". An adjudication here would be recorded next to a value "
+                "its adjudicator did not give"
             )
         adjudicator = record.get("adjudicator")
         if not isinstance(adjudicator, str) or not adjudicator:

@@ -116,30 +116,51 @@ def run_checks(en: list, ru: dict, eq: list) -> list[Label]:
             flag(rid or "<missing-id>", "duplicate_id", occurrences=n)
 
     # --- duplication -------------------------------------------------------
-    # Reported on the SECOND and later occurrence only. Flagging all members of
-    # a duplicate group doubles the review queue and states the same fact twice.
-    for field_name in ("title", "summary"):
-        seen: dict[str, str] = {}
+    # One member of each duplicate group is left unflagged, because flagging all
+    # of them doubles the review queue and states the same fact twice. Which
+    # member is spared is chosen by the LOWEST ID in the group, not by which
+    # row happened to come first in the file.
+    #
+    # It was by file position. Found by a test asserting that selection is a
+    # function of the row id: reordering the catalogue without changing a single
+    # character of content moved a row in and out of the flagged set, because
+    # "first occurrence" is a fact about the file's layout rather than about the
+    # content. A vendor re-export in a different order would have silently
+    # changed which rows reviewers were sent, which is exactly the instability
+    # the hash-based sampling exists to avoid -- reached by a different route.
+    def _groups(key_of) -> dict[str, list[str]]:
+        buckets: dict[str, list[str]] = collections.defaultdict(list)
         for row in en:
-            key = (row.get(field_name) or "").strip().lower()
-            if not key:
+            key = key_of(row)
+            if key is None:
                 continue
-            if key in seen:
-                flag(row.get("id", ""), f"duplicate_{field_name}",
-                     first_seen=seen[key])
-            else:
-                seen[key] = row.get("id", "")
+            buckets[key].append(row.get("id", ""))
+        return buckets
 
-    seen_steps: dict[str, str] = {}
-    for row in en:
-        key = json.dumps(row.get("steps") or [], ensure_ascii=False, sort_keys=True)
-        if key == "[]":
+    for field_name in ("title", "summary"):
+        def key_of(row, field_name=field_name):
+            value = (row.get(field_name) or "").strip().lower()
+            return value or None
+        for members in _groups(key_of).values():
+            if len(members) < 2:
+                continue
+            keeper = min(members)
+            for rid in sorted(members):
+                if rid != keeper:
+                    flag(rid, f"duplicate_{field_name}", first_seen=keeper)
+
+    def steps_key(row):
+        key = json.dumps(row.get("steps") or [], ensure_ascii=False,
+                         sort_keys=True)
+        return None if key == "[]" else key
+
+    for members in _groups(steps_key).values():
+        if len(members) < 2:
             continue
-        if key in seen_steps:
-            flag(row.get("id", ""), "duplicate_steps_block",
-                 first_seen=seen_steps[key])
-        else:
-            seen_steps[key] = row.get("id", "")
+        keeper = min(members)
+        for rid in sorted(members):
+            if rid != keeper:
+                flag(rid, "duplicate_steps_block", first_seen=keeper)
 
     # --- localisation ------------------------------------------------------
     en_ids = {r.get("id") for r in en}

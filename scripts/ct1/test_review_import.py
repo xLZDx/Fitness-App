@@ -16,7 +16,13 @@ from __future__ import annotations
 import pytest
 
 from label_contract import LabelSource
-from review_batch import REVIEW_QUESTIONS, REVIEW_SCHEMA_VERSION, assign, select
+from review_batch import (
+    REVIEW_QUESTIONS,
+    REVIEW_SCHEMA_VERSION,
+    BatchContractError,
+    assign,
+    select,
+)
 from review_import import (
     ReviewImportError,
     adjudicate,
@@ -539,3 +545,128 @@ def test_adjudication_never_reports_a_majority_or_first_wins_policy():
     _, per_reviewer = _disagreeing(batch)
     out = adjudicate(per_reviewer)
     assert "No automatic tie-break" in out["policy"]
+
+
+# --------------------------------------------------------------------------
+# guards that had no test at all, found by gate review
+#
+# Each is a `raise` in the source that nothing triggered, so deleting it would
+# have left the suite green. That is the definition of an unproven guard.
+# --------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("bad", ["", None, 42])
+def test_a_missing_reviewer_identity_is_refused(bad):
+    batch = _batch()
+    sub = _submission(batch)
+    sub["reviewer"] = bad
+    with pytest.raises(ReviewImportError, match="reviewer identity"):
+        _import(batch, sub)
+
+
+@pytest.mark.parametrize("bad", [["a note"], 7, {"text": "x"}])
+def test_a_note_that_is_not_text_is_refused(bad):
+    batch = _batch()
+    sub = _submission(batch)
+    sub["reviews"][0]["note"] = bad
+    with pytest.raises(ReviewImportError, match="note must be text"):
+        _import(batch, sub)
+
+
+@pytest.mark.parametrize("bad", ["steps_missing", [1, 2], {"a": 1}])
+def test_reason_codes_that_are_not_a_list_of_strings_are_refused(bad):
+    """`"steps_missing"` is the dangerous one: a bare string is iterable, so a
+    laxer check would read it as sixteen single-character codes."""
+    batch = _batch()
+    sub = _submission(batch)
+    sub["reviews"][0]["reason_codes"] = bad
+    with pytest.raises(ReviewImportError, match="reason_codes must be a list"):
+        _import(batch, sub)
+
+
+@pytest.mark.parametrize("bad", ["a string", 7, None, ["nested"]])
+def test_a_review_entry_that_is_not_an_object_is_refused_not_crashed(bad):
+    """It raised AttributeError from the middle of the loop. This module's
+    stance is that a bad submission is REFUSED with a sentence saying why; a
+    stack trace is the same rejection delivered as a bug report."""
+    batch = _batch()
+    sub = _submission(batch)
+    sub["reviews"] = [bad]
+    with pytest.raises(ReviewImportError, match="not an object"):
+        _import(batch, sub)
+
+
+def test_a_batch_whose_contract_is_not_this_codes_is_refused():
+    batch = _batch()
+    batch["manifest"] = {**batch["manifest"], "review_schema_version": 99}
+    with pytest.raises(BatchContractError):
+        _import(batch, _submission(batch))
+
+
+def test_an_adjudication_for_a_pair_nobody_reviewed_is_refused():
+    batch = _batch()
+    item, per_reviewer = _disagreeing(batch)
+    with pytest.raises(ReviewImportError, match="no two reviewers answered"):
+        adjudicate(per_reviewer, adjudications=[{
+            "item_id": "row-nobody-reviewed", "check": REVIEW_QUESTIONS[0],
+            "adjudicator": "qa.lead.morgan", "value": True,
+        }])
+
+
+@pytest.mark.parametrize("bad", ["true", 1, 0, [True]])
+def test_a_non_boolean_adjudicated_value_is_refused(bad):
+    """`1` and `0` matter: Python would accept them as truthy/falsy and the
+    dataset would carry an integer where every other value is a bool."""
+    batch = _batch()
+    item, per_reviewer = _disagreeing(batch)
+    with pytest.raises(ReviewImportError, match="must be boolean"):
+        adjudicate(per_reviewer, adjudications=[{
+            "item_id": item["item_id"], "check": REVIEW_QUESTIONS[0],
+            "adjudicator": "qa.lead.morgan", "value": bad,
+        }])
+
+
+# --------------------------------------------------------------------------
+# the MAJOR from gate review: a ruling on something nobody disputed
+# --------------------------------------------------------------------------
+
+
+def _undisputed(batch, *, two_reviewers: bool):
+    """A key that is settled: one reviewer, or two who agree."""
+    item, one, two = _two_reviewers(batch)
+    per = {f"qa.{one.lower()}":
+           _import(batch, _submission(batch, item=item, slot=one))["labels"]}
+    if two_reviewers:
+        per[f"qa.{two.lower()}"] = _import(
+            batch, _submission(batch, item=item, slot=two)
+        )["labels"]
+    return item, per
+
+
+@pytest.mark.parametrize("two_reviewers", [False, True])
+def test_an_adjudication_of_something_nobody_disputed_is_refused(two_reviewers):
+    """Measured before it was fixed: the ruling was validated, stored, and
+    never read, because the branch order reaches SINGLE and AGREE before it
+    consults a ruling. The output still attached the adjudicator's NAME to the
+    reviewers' value -- so the record named a person against a verdict they had
+    contradicted, in a dataset that is immutable once written.
+    """
+    batch = _batch()
+    item, per_reviewer = _undisputed(batch, two_reviewers=two_reviewers)
+    with pytest.raises(ReviewImportError, match="nothing to adjudicate"):
+        adjudicate(per_reviewer, adjudications=[{
+            "item_id": item["item_id"], "check": REVIEW_QUESTIONS[0],
+            "adjudicator": "qa.lead.morgan", "value": False,
+        }])
+
+
+def test_a_settled_key_never_carries_an_adjudicator_name():
+    """The observable half of the same defect, asserted on the output rather
+    than on the refusal -- so a future change that stops refusing but also stops
+    mislabelling still has to keep this true."""
+    batch = _batch()
+    item, per_reviewer = _undisputed(batch, two_reviewers=True)
+    out = adjudicate(per_reviewer)
+    for record in out["states"].values():
+        if record["state"] in ("SINGLE", "AGREE"):
+            assert record["adjudicator"] is None

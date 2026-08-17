@@ -66,7 +66,14 @@ from baseline import DATA, REPO, load, run_checks  # noqa: E402
 from build_dataset import file_digest, git_commit, source_ref, split_for  # noqa: E402
 from label_contract import LabelSource  # noqa: E402
 
-SCHEMA_VERSION = 1
+#: The manifest/export SHAPE.
+#:
+#: 2, because the shape moved: v2 manifests carry `review_schema_version`,
+#: `supersedes`, `supersession`, `reason_codes` and `review_statuses`, none of
+#: which a v1 manifest has. Leaving this at 1 while adding fields is how a
+#: consumer that dispatches on it ends up unable to tell a 001 manifest (verdict
+#: `cannot_judge`, no reason codes) from a 002 one. Raised in gate review.
+SCHEMA_VERSION = 2
 
 #: The version of the ANSWER schema — what a reviewer is asked and may return.
 #:
@@ -78,27 +85,36 @@ REVIEW_SCHEMA_VERSION = 2
 
 #: The batch a reviewer is working on.
 #:
-#: 002, not a regenerated 001. Section 45 of the brief: a material change to the
-#: review schema produces a NEW batch with explicit migration semantics, rather
-#: than new row assignments under an id somebody may already have quoted. The
-#: row SELECTION is unchanged and a test proves it, so the supersession is
-#: schema-only — but the rule is worth more than the one directory it costs
-#: here, and the first time it is expensive is exactly when it gets waived.
-BATCH_ID = "CT1_REVIEW_BATCH_002"
+#: A new id each time row assignments change, rather than a rebuild under an id
+#: somebody may already hold a package for. Section 45.
+#:
+#: 002 replaced 001 for a schema change that did not move the rows. 003 replaces
+#: 002 because the rows DID move: the baseline's duplicate checks reported the
+#: second and later occurrence in FILE ORDER, so which member of a duplicate
+#: group got flagged was a fact about the catalogue's layout rather than its
+#: content. Fixed to a deterministic representative, which changed the flagged
+#: holdout population from 56 to 55 and moved two rows in and out of the batch.
+#:
+#: Rebuilding 002 in place was the tempting alternative: it was committed the
+#: same afternoon, never pushed, and no reviewer had returned anything. That
+#: reasoning was rejected because it rests on "nobody has a copy", and this
+#: checkout is shared -- the 002 reviewer pages existed on disk where anyone
+#: could have opened one. A claim I cannot check is not allowed to be the thing
+#: a rule hangs on. A new directory costs nothing and needs no such claim.
+BATCH_ID = "CT1_REVIEW_BATCH_003"
 
 #: The batch this one replaces, and why.
-#:
-#: 001 was built, committed and never reviewed. Nothing to migrate; recorded
-#: anyway, because "no returned work was lost" is a claim a reader should be
-#: able to check rather than infer from the absence of a note.
-SUPERSEDES = "CT1_REVIEW_BATCH_001"
+SUPERSEDES = "CT1_REVIEW_BATCH_002"
 SUPERSESSION = (
-    "SUPERSEDED_BEFORE_REVIEW. CT1_REVIEW_BATCH_001 was built and committed at "
-    "review schema v1 and no reviewer returned a submission against it. This "
-    "batch selects the SAME rows (asserted by test) under review schema v2, "
-    "which adds structured reason codes, per-row source content digests, "
-    "review timestamps and an explicit review status. A v1 submission is NOT "
-    "importable here: the importer requires fields v1 could not carry."
+    "SUPERSEDED_BEFORE_REVIEW. No reviewer returned a submission against "
+    "CT1_REVIEW_BATCH_002 or CT1_REVIEW_BATCH_001. 002 superseded 001 for a "
+    "review-schema change that left the row selection identical. 003 supersedes "
+    "002 for a defect in the baseline's duplicate checks, which selected the "
+    "flagged member of a duplicate group by position in the catalogue file "
+    "rather than by a property of the rows; the fix changed the flagged holdout "
+    "population from 56 to 55 and moved two rows. A submission against 001 or "
+    "002 is NOT importable here: the row assignments differ, and 001 predates "
+    "the fields review schema v2 requires."
 )
 
 #: How many items a reviewer is asked to look at.
@@ -443,6 +459,50 @@ def select(
         },
     }
     return {"manifest": manifest, "items": blind_items, "sealed": sealed}
+
+
+class BatchContractError(ValueError):
+    """A batch whose recorded contract is not the one this code implements."""
+
+
+#: Manifest fields that record the review contract, and the constant each must
+#: equal. The manifest is the contract between the builder, the page generator,
+#: the importer and the evaluator; if it merely DESCRIBES the contract while
+#: every consumer reads the code constants instead, it is documentation that
+#: cannot be wrong, which is the same as documentation nobody checks.
+CONTRACT_FIELDS = {
+    "schema_version": lambda: SCHEMA_VERSION,
+    "review_schema_version": lambda: REVIEW_SCHEMA_VERSION,
+    "questions": lambda: list(REVIEW_QUESTIONS),
+    "verdicts": lambda: list(VERDICTS),
+    "reason_codes": lambda: list(REASON_CODES),
+    "review_statuses": lambda: list(REVIEW_STATUSES),
+}
+
+
+def check_contract(manifest: dict[str, Any]) -> None:
+    """Refuse to process a batch this code no longer agrees with.
+
+    Raised in gate review. The scenario is concrete: the constants move to v3,
+    somebody regenerates reviewer pages from the committed v2 batch directory —
+    which is the documented command — and the pages ask v3 questions over a v2
+    batch while stamping v3 on the submissions. The importer then accepts them
+    against a manifest that says v2, and nothing anywhere errors.
+
+    Checked field by field rather than by comparing one version number, because
+    a version number is only as good as the discipline of bumping it, and the
+    field lists are the thing that actually has to match.
+    """
+    for field, expected in CONTRACT_FIELDS.items():
+        want = expected()
+        got = manifest.get(field)
+        if got != want:
+            raise BatchContractError(
+                f"batch {manifest.get('batch_id')!r} records {field}={got!r}; "
+                f"this code implements {want!r}. Rebuild the batch, or process "
+                "it with the code it was built by -- reading it under a "
+                "different contract is guessing what the reviewer was asked"
+            )
 
 
 def is_double(item_id: str) -> bool:

@@ -119,8 +119,11 @@ the answer is Unsure. That is the correct answer, not a cop-out.
   quality around the middle, and we would rather have your judgement than your
   endurance.
 - **When you are done**, type your name at the bottom, press **Export
-  submission**, and send the downloaded file back. The file contains only your
-  answers and the ids of the rows you saw.
+  submission**, and send the downloaded file back. The file contains your
+  answers, reason codes and notes; the ids of the rows you saw and a digest of
+  the text you saw them at; the name you typed and your reviewer slot; and the
+  batch id, schema version and timestamps. Nothing else — no browsing data, no
+  timings beyond the moment you answered, and nothing the page did not show you.
 
 ## What happens to your answers
 

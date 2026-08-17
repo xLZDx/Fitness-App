@@ -11,6 +11,8 @@ of the rules it was supposed to check.
 from __future__ import annotations
 
 import json
+import random
+import re
 
 import pytest
 
@@ -18,6 +20,11 @@ from baseline import DATA, REPO, load
 from label_contract import LabelSource
 from review_batch import (
     BATCH_ID,
+    BatchContractError,
+    DOUBLE_REVIEW_SHARE,
+    REVIEW_STATUSES,
+    SCHEMA_VERSION,
+    check_contract,
     REASON_CODES,
     REVIEW_QUESTIONS,
     REVIEW_SCHEMA_VERSION,
@@ -166,12 +173,24 @@ def test_selection_is_deterministic_and_stable_as_the_corpus_grows():
 # --------------------------------------------------------------------------
 
 
-def test_double_review_is_assigned_and_is_a_minority():
+def test_double_review_is_assigned_at_the_share_it_is_configured_for():
+    """Pinned to the configured share, not merely to "a minority".
+
+    "Fewer than half" was the assertion, and a mutation raising the share to
+    50% still passed it -- the hash landed just under the line on this fixture,
+    so the test's verdict was a coin flip rather than a measurement. Every item
+    double-reviewed halves the corpus for the same effort; none leaves label
+    quality unmeasurable. The share is the decision, so the share is what gets
+    asserted.
+    """
     batch = _batch()
     doubles = [i for i in batch["items"] if is_double(i["item_id"])]
     assert doubles, "nothing is double-reviewed, so agreement is unmeasurable"
-    # A majority double-reviewed would halve the corpus for the same effort.
-    assert len(doubles) < len(batch["items"]) / 2
+    observed = len(doubles) / len(batch["items"])
+    assert abs(observed - DOUBLE_REVIEW_SHARE) < 0.1, (
+        f"{observed:.0%} double-reviewed against a configured "
+        f"{DOUBLE_REVIEW_SHARE:.0%}"
+    )
 
 
 def test_no_item_a_reviewer_opens_says_it_is_double_reviewed():
@@ -246,24 +265,29 @@ def test_the_batch_id_changed_with_the_review_schema():
     assert "SUPERSEDED_BEFORE_REVIEW" in m["supersession"]
 
 
-def test_the_supersession_is_schema_only_and_selects_the_same_rows():
-    """The claim in `SUPERSESSION`, checked rather than asserted in prose.
-
-    Reads the committed 001 artefact if it is present. Selection is a function
-    of the corpus and the id hash, neither of which v2 touched, so any
-    difference would mean the supersession note is wrong about itself.
-    """
-    old = REPO / "core" / "ml" / "review" / "ct1_review_batch_001" / "items.json"
-    if not old.exists():
-        pytest.skip("batch 001 is not in this checkout")
+def test_the_supersession_moved_the_rows_it_says_it_moved():
+    """The claim in `SUPERSESSION`, checked rather than asserted in prose."""
+    superseded = REPO / "core" / "ml" / "review" / SUPERSEDES.lower() / "items.json"
+    # Asserted present rather than skipped. A test that quietly stops running
+    # when its evidence disappears is a test that reports success for the one
+    # state it exists to detect. Raised in gate review.
+    assert superseded.exists(), (
+        f"{superseded} is missing, so the supersession claim is unverifiable"
+    )
     en, ru, eq = load(
         DATA / "exercises_vendor.json",
         DATA / "exercises_vendor.ru.json",
         DATA / "equipment.json",
     )
     rebuilt = {i["item_id"] for i in select(en, ru, eq)["items"]}
-    before = {i["item_id"] for i in json.loads(old.read_text(encoding="utf-8"))}
-    assert rebuilt == before
+    before = {i["item_id"] for i in json.loads(superseded.read_text(encoding="utf-8"))}
+    # 003 MOVED rows, deliberately -- see SUPERSESSION. What must hold is that
+    # the move is the small, explained one and not a wholesale reshuffle, and
+    # that the manifest says the rows changed rather than claiming they did not.
+    assert rebuilt != before, "the supersession note says the rows moved"
+    assert len(rebuilt ^ before) <= 4, (
+        f"{len(rebuilt ^ before)} rows moved; the supersession note explains two"
+    )
 
 
 def test_every_item_carries_the_content_it_was_reviewed_at():
@@ -345,3 +369,67 @@ def test_reason_codes_do_not_name_a_baseline_rule():
 
 def test_the_shared_fixture_is_the_one_the_other_suite_uses():
     assert EN and RU and EQ
+
+
+def test_selection_does_not_depend_on_the_order_rows_arrive_in():
+    """The assertion the determinism test above was missing.
+
+    `first == again` is satisfied by a seeded shuffle called fresh each time,
+    and so is "the batch is still full after the corpus grows" -- both were
+    measured against `random.Random(seed).sample`, and both passed. Neither
+    rules out the thing the docstring claims to rule out.
+
+    Order-independence does. A seeded shuffle over a reordered list draws a
+    different set; a selection that is a function of the row id cannot.
+    """
+    en, ru, eq = _corpus()
+    straight = {i["item_id"] for i in select(en, ru, eq, size=60)["items"]}
+    shuffled = list(en)
+    random.Random(20260817).shuffle(shuffled)
+    reordered = {i["item_id"] for i in select(shuffled, ru, eq, size=60)["items"]}
+    assert straight == reordered
+
+
+def test_a_batch_built_under_a_different_contract_is_refused():
+    """The manifest is the contract between the builder, the page generator,
+    the importer and the evaluator. A manifest that merely DESCRIBES the
+    contract while every consumer reads the code constants is documentation
+    that cannot be wrong, which is the same as documentation nobody checks."""
+    batch = _batch()
+    check_contract(batch["manifest"])          # green on a real batch
+
+    for field, bad in (
+        ("review_schema_version", 1),
+        ("schema_version", 1),
+        ("questions", ["steps_match_title"]),
+        ("verdicts", ["ok", "problem", "cannot_judge"]),
+        ("reason_codes", []),
+        ("review_statuses", ["COMPLETE"]),
+    ):
+        stale = {**batch["manifest"], field: bad}
+        with pytest.raises(BatchContractError, match=field):
+            check_contract(stale)
+
+
+def test_the_manifest_shape_version_moved_with_the_manifest_shape():
+    """`schema_version` stayed at 1 while v2 added five manifest fields, so a
+    consumer dispatching on it could not tell a 001 manifest from a 002 one."""
+    m = _batch()["manifest"]
+    assert m["schema_version"] == SCHEMA_VERSION >= 2
+    for added in ("review_schema_version", "supersedes", "supersession",
+                  "reason_codes", "review_statuses"):
+        assert added in m
+
+
+def test_every_identifier_the_page_puts_in_an_attribute_is_quote_free():
+    """What actually makes the reviewer page's attribute contexts safe.
+
+    `name="${q.id}"`, `value="${v.id}"` and `value="${c.id}"` interpolate these
+    vocabularies directly. They are code constants, not catalogue text, so the
+    protection is that no identifier can contain a quote -- asserted here rather
+    than left to the escaper, which does not run on them.
+    """
+    for vocabulary in (REVIEW_QUESTIONS, VERDICTS, REASON_CODES,
+                       REVIEW_STATUSES):
+        for identifier in vocabulary:
+            assert re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", identifier), identifier

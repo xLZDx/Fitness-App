@@ -222,16 +222,35 @@ jobs:
       # reproduce the committed batch means the row assignments a reviewer is
       # working from cannot be regenerated, and a lost package would have to be
       # reconstructed from somebody's memory.
+      #
+      # All FOUR artefacts, not just the two a reviewer opens. `sealed` is the
+      # ground truth every precision and recall figure is computed against, and
+      # the manifest carries the stratum populations the whole estimator is
+      # weighted by -- a drift in either leaves items.json identical and the
+      # metrics wrong. Raised in gate review, where the first version of this
+      # step compared only items and assignments.
       - name: The committed review batch is the one this code builds
         run: |
           python scripts/ct1/review_batch.py --out /tmp/ct1review
           python - <<'PY'
           import json, sys
-          root = "core/ml/review/ct1_review_batch_002"
-          for name in ("items.json", "assignments.json"):
+          sys.path.insert(0, "scripts/ct1")
+          # The batch id comes from the module rather than being spelled here,
+          # so renaming it cannot leave this step silently checking a directory
+          # that no longer exists.
+          from review_batch import BATCH_ID
+          root = f"core/ml/review/{BATCH_ID.lower()}"
+          rebuilt = f"/tmp/ct1review/{BATCH_ID.lower()}"
+          for name in ("items.json", "assignments.json", "manifest.json",
+                       "sealed_baseline_labels.json"):
               a = json.load(open(f"{root}/{name}", encoding="utf-8"))
-              b = json.load(open(f"/tmp/ct1review/ct1_review_batch_002/{name}",
-                                encoding="utf-8"))
+              b = json.load(open(f"{rebuilt}/{name}", encoding="utf-8"))
+              if name == "manifest.json":
+                  # `source_commit` records the HEAD the batch was built at and
+                  # is expected to differ on every rebuild. Everything else in
+                  # the manifest is a claim about the batch and must not.
+                  a.pop("source_commit", None)
+                  b.pop("source_commit", None)
               if a != b:
                   sys.exit(
                       f"{name} drifted. Either the catalogue changed without "
@@ -239,7 +258,7 @@ jobs:
                       "being deterministic -- and a reviewer's package can no "
                       "longer be regenerated from the batch."
                   )
-          print("review batch reproduces")
+          print(f"{BATCH_ID} reproduces: items, assignments, manifest, sealed")
           PY
 
       # A rebuild that does not reproduce the committed hash means the pipeline

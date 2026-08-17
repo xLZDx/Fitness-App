@@ -4248,17 +4248,7 @@
         "vendor_group": "Calisthenics-Cardio-Plyo-Functional"
       },
       "item_id": "ea_balance_board_lateral_squat",
-      "labels": [
-        {
-          "check": "duplicate_summary",
-          "evidence": {
-            "first_seen": "ea_balance_board_version_2"
-          },
-          "item_id": "ea_balance_board_lateral_squat",
-          "source": "AUTO_HEURISTIC_FLAG",
-          "value": true
-        }
-      ],
+      "labels": [],
       "split": "train"
     },
     {
@@ -4279,6 +4269,15 @@
       },
       "item_id": "ea_balance_board_version_2",
       "labels": [
+        {
+          "check": "duplicate_summary",
+          "evidence": {
+            "first_seen": "ea_balance_board_lateral_squat"
+          },
+          "item_id": "ea_balance_board_version_2",
+          "source": "AUTO_HEURISTIC_FLAG",
+          "value": true
+        },
         {
           "check": "field_absent:contraindications",
           "item_id": "ea_balance_board_version_2",
@@ -29793,26 +29792,7 @@
         "vendor_group": "Legs"
       },
       "item_id": "ea_hammer_strength_iso_lateral_leg_curl_alternate_legs",
-      "labels": [
-        {
-          "check": "duplicate_steps_block",
-          "evidence": {
-            "first_seen": "ea_hammer_strength_iso_lateral_leg_curl_alternating_legs"
-          },
-          "item_id": "ea_hammer_strength_iso_lateral_leg_curl_alternate_legs",
-          "source": "AUTO_HEURISTIC_FLAG",
-          "value": true
-        },
-        {
-          "check": "duplicate_summary",
-          "evidence": {
-            "first_seen": "ea_hammer_strength_iso_lateral_leg_curl_alternating_legs"
-          },
-          "item_id": "ea_hammer_strength_iso_lateral_leg_curl_alternate_legs",
-          "source": "AUTO_HEURISTIC_FLAG",
-          "value": true
-        }
-      ],
+      "labels": [],
       "split": "holdout"
     },
     {
@@ -29832,7 +29812,26 @@
         "vendor_group": "Legs"
       },
       "item_id": "ea_hammer_strength_iso_lateral_leg_curl_alternating_legs",
-      "labels": [],
+      "labels": [
+        {
+          "check": "duplicate_steps_block",
+          "evidence": {
+            "first_seen": "ea_hammer_strength_iso_lateral_leg_curl_alternate_legs"
+          },
+          "item_id": "ea_hammer_strength_iso_lateral_leg_curl_alternating_legs",
+          "source": "AUTO_HEURISTIC_FLAG",
+          "value": true
+        },
+        {
+          "check": "duplicate_summary",
+          "evidence": {
+            "first_seen": "ea_hammer_strength_iso_lateral_leg_curl_alternate_legs"
+          },
+          "item_id": "ea_hammer_strength_iso_lateral_leg_curl_alternating_legs",
+          "source": "AUTO_HEURISTIC_FLAG",
+          "value": true
+        }
+      ],
       "split": "train"
     },
     {
@@ -29856,7 +29855,7 @@
         {
           "check": "duplicate_summary",
           "evidence": {
-            "first_seen": "ea_hammer_strength_iso_lateral_leg_curl_alternating_legs"
+            "first_seen": "ea_hammer_strength_iso_lateral_leg_curl_alternate_legs"
           },
           "item_id": "ea_hammer_strength_iso_lateral_leg_curl_both_leg",
           "source": "AUTO_HEURISTIC_FLAG",
@@ -29886,7 +29885,7 @@
         {
           "check": "duplicate_summary",
           "evidence": {
-            "first_seen": "ea_hammer_strength_iso_lateral_leg_curl_alternating_legs"
+            "first_seen": "ea_hammer_strength_iso_lateral_leg_curl_alternate_legs"
           },
           "item_id": "ea_hammer_strength_iso_lateral_leg_curl_single_leg",
           "source": "AUTO_HEURISTIC_FLAG",
@@ -43988,17 +43987,7 @@
         "vendor_group": "Legs"
       },
       "item_id": "ea_seated_leg_extension_alternate_legs",
-      "labels": [
-        {
-          "check": "duplicate_summary",
-          "evidence": {
-            "first_seen": "ea_seated_leg_extension_single_leg"
-          },
-          "item_id": "ea_seated_leg_extension_alternate_legs",
-          "source": "AUTO_HEURISTIC_FLAG",
-          "value": true
-        }
-      ],
+      "labels": [],
       "split": "train"
     },
     {
@@ -44038,7 +44027,17 @@
         "vendor_group": "Legs"
       },
       "item_id": "ea_seated_leg_extension_single_leg",
-      "labels": [],
+      "labels": [
+        {
+          "check": "duplicate_summary",
+          "evidence": {
+            "first_seen": "ea_seated_leg_extension_alternate_legs"
+          },
+          "item_id": "ea_seated_leg_extension_single_leg",
+          "source": "AUTO_HEURISTIC_FLAG",
+          "value": true
+        }
+      ],
       "split": "train"
     },
     {

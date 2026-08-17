@@ -279,6 +279,7 @@ def _stratified(strata: list[dict[str, Any]]) -> dict[str, Any]:
             }
     estimate = 0.0
     variance = 0.0
+    unestimated: list[str] = []
     for s in strata:
         w = s["population"] / total
         n, N = s["sampled"], s["population"]
@@ -291,13 +292,31 @@ def _stratified(strata: list[dict[str, Any]]) -> dict[str, Any]:
             # flagged row.
             fpc = 1 - n / N
             variance += (w ** 2) * fpc * p * (1 - p) / (n - 1)
+        elif n == 1 and N > 1:
+            # A single observation has no sample variance to compute -- the
+            # estimator's denominator is n-1 -- so this stratum contributes
+            # nothing to the standard error while contributing its full weight
+            # to the estimate. That understates the uncertainty, and it is
+            # recorded rather than absorbed: this module refuses to omit an
+            # assumption silently for CATALOGUE_RATE and the same rule applies
+            # here. Raised in gate review.
+            unestimated.append(s["name"])
     se = math.sqrt(variance)
-    return {
+    out = {
         "estimate": estimate,
         "standard_error": se,
         "ci95": [max(0.0, estimate - 1.96 * se), min(1.0, estimate + 1.96 * se)],
         "strata": strata,
     }
+    if unestimated:
+        out["variance_understated"] = unestimated
+        out["variance_note"] = (
+            "The standard error EXCLUDES " + ", ".join(unestimated) + ": a "
+            "stratum with one reviewed row has no estimable sample variance, "
+            "so the interval below is narrower than the truth. Treat it as a "
+            "lower bound on the uncertainty, not as the uncertainty."
+        )
+    return out
 
 
 def evaluate(

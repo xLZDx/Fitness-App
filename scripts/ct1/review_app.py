@@ -223,8 +223,15 @@ let state = {};
 try { state = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { state = {}; }
 let cur = 0;
 
-const esc = s => String(s == null ? '' : s).replace(/[&<>]/g,
-  c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+// Quotes are escaped too, although no vendor-controlled value currently
+// reaches an attribute. Every `="${...}"` slot below interpolates a code
+// constant or a loop index, and a test pins those vocabularies to
+// `[a-z][a-z0-9_]*` so a quote cannot appear in one -- that is what makes the
+// attribute contexts safe. This is the belt: it means the property survives
+// somebody adding a catalogue field to an attribute later, rather than
+// depending on nobody doing so.
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 function rec(id) {
   if (!state[id]) state[id] = { answers: {}, reason_codes: [], note: '',

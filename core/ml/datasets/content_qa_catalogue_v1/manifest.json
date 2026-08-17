@@ -1,9 +1,9 @@
 {
   "builder": "scripts/ct1/build_dataset.py",
-  "built_at": "2026-08-17T02:57:57+00:00",
+  "built_at": "2026-08-17T12:31:59+00:00",
   "contains_images": false,
   "contains_personal_data": false,
-  "dataset_hash": "09522b126a0ab1e550c6b9f81b7c8d514ed57928e7edc8990db4dfd18a21d1ee",
+  "dataset_hash": "f75f6d43cf99c26f9f8f451b868599c0aa6a600c9ea9eb36a7791041a1b3f4bc",
   "dataset_id": "content_qa_catalogue",
   "dataset_version": "v1",
   "excluded": [],
@@ -30,7 +30,7 @@
       "equipment": "6e72adcd800e503b555629b5b481977f9bdf7e5e5a360572b5246884f0fa80d9"
     }
   },
-  "source_commit": "bb4497f43ff3896a9f9a32e9f3ccf452ac935096",
+  "source_commit": "d482ece9246d640a80f52469a98a7b6206271f3e",
   "split_strategy": "sha256(item_id) % 10000 < 2000 -> holdout; stable under corpus growth",
   "splits": {
     "holdout": 386,
