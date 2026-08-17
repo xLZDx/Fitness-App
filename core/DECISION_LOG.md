@@ -14237,3 +14237,6 @@ inspects all ten, with `flagsAreStripped` covering all five `HealthFlags` fields
 `features/profile/data`, `features/safety/data` and `features/programmes/data` was not reached by any
 reviewer. The data-export path was not opened. `deload_detector`'s effect through `plan_builder` was
 not read. Those are open, not passed.
+
+Review report: `reports/agent_review_2026-08-17.html`, artifact
+`https://claude.ai/code/artifact/99a7b306-0111-42ab-a555-6371b649cc3b`.

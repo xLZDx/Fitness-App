@@ -1,0 +1,287 @@
+<title>Agent Review Findings</title>
+<style>
+  :root {
+    --ground: #FAF8F4; --raised: #FFFFFF; --edge: #E0DACF; --edge-soft: #EDE8DE;
+    --ink: #17150F; --ink-2: #4B453A; --ink-3: #7B7466;
+    --accent: #7A4A1E; --accent-soft: #F3E8DA;
+    --pass: #2F6B45; --open: #8E5A10; --stop: #A02B22;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #121110; --raised: #1A1917; --edge: #34302A; --edge-soft: #24221F;
+      --ink: #F3EFE7; --ink-2: #C4BCAE; --ink-3: #8C8474;
+      --accent: #D9A05B; --accent-soft: #2B2118;
+      --pass: #74C08E; --open: #DDA94A; --stop: #E8837C;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #121110; --raised: #1A1917; --edge: #34302A; --edge-soft: #24221F;
+    --ink: #F3EFE7; --ink-2: #C4BCAE; --ink-3: #8C8474;
+    --accent: #D9A05B; --accent-soft: #2B2118;
+    --pass: #74C08E; --open: #DDA94A; --stop: #E8837C;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink);
+         font-family: var(--sans); font-size: 16px; line-height: 1.6;
+         -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 60rem; margin: 0 auto; padding: 3.5rem 1.5rem 6rem; }
+  header { border-bottom: 2px solid var(--ink); padding-bottom: 1.5rem; margin-bottom: 2.5rem; }
+  .eyebrow { font-family: var(--mono); font-size: .72rem; letter-spacing: .16em;
+             text-transform: uppercase; color: var(--accent); margin: 0 0 .8rem; }
+  h1 { font-size: clamp(2rem, 5vw, 2.9rem); line-height: 1.07; letter-spacing: -.025em;
+       margin: 0 0 .7rem; text-wrap: balance; font-weight: 660; }
+  .standfirst { font-size: 1.08rem; color: var(--ink-2); max-width: 44rem; margin: 0; }
+  h2 { font-size: 1.36rem; letter-spacing: -.015em; margin: 3rem 0 .4rem;
+       padding-top: 1.5rem; border-top: 1px solid var(--edge); font-weight: 640; }
+  h3 { font-size: 1rem; margin: 1.8rem 0 .3rem; font-weight: 650; }
+  p { margin: .7rem 0; max-width: 44rem; }
+  .lede { color: var(--ink-2); }
+  code { font-family: var(--mono); font-size: .875em; background: var(--edge-soft);
+         padding: .1em .38em; border-radius: 3px; }
+  pre { background: var(--raised); border: 1px solid var(--edge); padding: 1rem;
+        overflow-x: auto; font-family: var(--mono); font-size: .84rem; margin: 1.1rem 0; }
+  .scroll { overflow-x: auto; margin: 1.3rem 0; border: 1px solid var(--edge); }
+  table { border-collapse: collapse; width: 100%; font-size: .92rem; background: var(--raised); }
+  th, td { text-align: left; padding: .6rem .8rem; border-bottom: 1px solid var(--edge-soft);
+           vertical-align: top; }
+  thead th { background: var(--edge-soft); font-size: .69rem; letter-spacing: .09em;
+             text-transform: uppercase; color: var(--ink-3); font-weight: 620;
+             border-bottom: 1px solid var(--edge); white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.num { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums;
+           white-space: nowrap; }
+  .tag { font-family: var(--mono); font-size: .67rem; letter-spacing: .06em; font-weight: 600;
+         padding: .15em .48em; border-radius: 3px; border: 1px solid currentColor;
+         white-space: nowrap; }
+  .t-pass { color: var(--pass); } .t-open { color: var(--open); } .t-stop { color: var(--stop); }
+  .finding { border: 1px solid var(--edge); background: var(--raised); margin: 1.4rem 0; }
+  .finding > .head { background: var(--edge-soft); padding: .6rem .9rem;
+                     border-bottom: 1px solid var(--edge); font-weight: 650; }
+  .finding > .body { padding: .3rem .9rem 1rem; }
+  .finding dl { display: grid; grid-template-columns: max-content 1fr; gap: .1rem .9rem;
+                margin: .6rem 0 0; }
+  .finding dt { font-family: var(--mono); font-size: .67rem; letter-spacing: .09em;
+                text-transform: uppercase; color: var(--ink-3); padding-top: .3rem; }
+  .finding dd { margin: 0; padding-top: .15rem; }
+  .note { border-left: 3px solid var(--accent); background: var(--accent-soft);
+          padding: .85rem 1rem; margin: 1.4rem 0; }
+  .note p { margin: .25rem 0; max-width: none; }
+  ul, ol { max-width: 44rem; padding-left: 1.2rem; }
+  li { margin: .3rem 0; }
+  footer { margin-top: 4rem; padding-top: 1.3rem; border-top: 1px solid var(--edge);
+           color: var(--ink-3); font-size: .84rem; }
+  @media (max-width: 34rem) { .finding dl { grid-template-columns: 1fr; } }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">SPTR · R3 agent review · 2026-08-17</p>
+  <h1>The guard had the bug it was written to catch</h1>
+  <p class="standfirst">Five independent reviewers attacked the remediation at <code>f91dfde</code>.
+  One confirmed defect, in my own safety fence. Two of their MAJOR claims were disproved by
+  measurement. Three areas came back genuinely unreviewed, and are recorded as open rather than
+  passed.</p>
+</header>
+
+<h2>Verdict</h2>
+<pre>REVIEW_RESULT = ONE CONFIRMED DEFECT (fixed), TWO CLAIMS DISPROVED,
+                THREE AREAS UNREVIEWED
+FREEZE        = HOLDS. No finding reopens the remediation baseline.
+BLOCKERS      = none</pre>
+<p>Round 1 was independent — no reviewer saw another's output. Everything below that survived was
+verified by me, by measurement, before being accepted. Two MAJOR claims did not survive that step,
+which is the point of taking it.</p>
+
+<h2>Top risks</h2>
+<ol>
+  <li><strong>The field-coverage fence could not see the defect it exists for.</strong> Confirmed by
+  demonstration, now fixed.</li>
+  <li><strong>The N-01 same-shape sweep was never performed</strong> by any reviewer. Open.</li>
+  <li><strong>My mutation count was inflated</strong> — seven tests, not nine.</li>
+  <li><strong><code>addExerciseToActiveProgramme</code> carries no gate of its own</strong> — safe
+  today because its single caller is gated, undefended against a second caller.</li>
+  <li><strong>Registry fence guards are narrower than the documents describing them</strong> —
+  positional <code>v2</code> selection, hex-shape-only commit validation, artefact existence checked
+  only for bundled entries.</li>
+</ol>
+
+<h2>Confirmed and fixed</h2>
+
+<div class="finding">
+<div class="head">R-01 — the fence absorbed the next member's doc comment</div>
+<div class="body">
+<dl>
+  <dt>Severity</dt><dd><span class="tag t-stop">MAJOR</span></dd>
+  <dt>Basis</dt><dd><strong>FACT</strong> — demonstrated, not argued</dd>
+  <dt>Claim</dt><dd><code>health_flags_field_coverage_test.dart</code> slices each member from its own
+    anchor to the <em>next</em> anchor, so every slice swallows the doc comment belonging to the
+    following member. A field named once in that comment satisfied <code>contains</code>.</dd>
+  <dt>Evidence</dt><dd>A field added to every member <em>except</em> <code>operator ==</code>, with its
+    name appearing once in the doc comment that follows <code>operator ==</code>, left the entire
+    fence green. Re-running that attack against the fix turns <code>operator ==</code> red.</dd>
+  <dt>Failure</dt><dd>Exactly N-01: a field present everywhere but in equality, which is what made
+    <code>HealthFlags(reported) == HealthFlags.empty</code> true and discarded the user's health
+    block on the next read.</dd>
+  <dt>Impact</dt><dd>The guard built to end that bug class would not have reported its return.</dd>
+  <dt>Fix</dt><dd>Comments stripped from each slice; matching on a word boundary rather than a
+    substring — <code>surgery</code> was otherwise satisfied by a mention of
+    <code>surgeryDate</code>.</dd>
+</dl>
+<div class="note"><p>Sixth instance of this class in this programme, and the first one I wrote myself
+— in the file whose own doc comment describes the class. A matcher that reads prose is evidence about
+prose, including when the prose is about matchers.</p></div>
+</div>
+</div>
+
+<div class="finding">
+<div class="head">R-02 — my mutation count was inflated</div>
+<div class="body">
+<dl>
+  <dt>Severity</dt><dd><span class="tag t-open">MAJOR · honesty</span></dd>
+  <dt>Basis</dt><dd><strong>FACT</strong> — measured</dd>
+  <dt>Claim</dt><dd>I reported <em>"nine load-bearing cases fail against pre-F014 behaviour"</em>.</dd>
+  <dt>Evidence</dt><dd>Removing <code>BlockReason.professionalGuidance</code> from
+    <code>wholePersonBlocks</code> and running both F014 files fails <strong>seven</strong>: the
+    reported state blocking and naming itself, the planner, the programme builder, enrolment, the deep
+    link, the cached programme, and <code>allowsAnyTraining</code> after the storage round trip.</dd>
+  <dt>Impact</dt><dd>The invariant holds and the coverage is real; the number was overstated by two.
+    A reviewer's independent count of seven was right.</dd>
+  <dt>Fix</dt><dd>Corrected in the decision log. The inflated figure never reached any committed
+    document — it lived only in a status message.</dd>
+</dl>
+</div>
+</div>
+
+<h2>Disproved by measurement</h2>
+<p class="lede">Recorded so they are not re-raised. Both were reported as MAJOR.</p>
+
+<div class="scroll"><table>
+  <thead><tr><th>Claim</th><th>Test</th><th>Result</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>The pregnancy-field fence omits <code>pregnan</code> from its banned list and scans one
+        file, so adding <code>bool? isPregnant</code> would pass.</td>
+      <td>Added exactly that field.</td>
+      <td><strong>Six tests go red</strong>, including <em>the stored document carries no medical
+        detail</em>. The field-coverage fence forces every declared field into <code>toJson</code>,
+        and the serialisation test then finds <code>pregnan</code> in the JSON. The narrow source scan
+        is weak alone; the chain covers the scenario named.
+        <span class="tag t-pass">FALSE_POSITIVE</span></td>
+    </tr>
+    <tr>
+      <td>Cross-document commit-count disagreement, 43 vs 29.</td>
+      <td>Read both lines.</td>
+      <td>The decision-log line is explicitly HEAD-qualified (<code>HEAD ab11150 … 29 ahead</code>).
+        Two snapshots at different HEADs, not a contradiction.
+        <span class="tag t-open">MINOR at most</span></td>
+    </tr>
+  </tbody>
+</table></div>
+
+<h2>Claims you asked me to falsify</h2>
+<div class="scroll"><table>
+  <thead><tr><th>Assertion</th><th>Outcome</th></tr></thead>
+  <tbody>
+    <tr><td>No prescribing surface can bypass the F014 block</td>
+      <td><span class="tag t-pass">HOLDS</span> for programme generation, enrolment, the planner, deep
+      links, resumed sessions, the AI coach and the workout player. The gate is re-evaluated
+      <strong>on read</strong> via <code>exerciseResolutionProvider</code>, not only at generation —
+      which is the part that mattered. <strong>Not cleared:</strong> the deload verdict's path through
+      the plan builder, and any substitution flow.</td></tr>
+    <tr><td>The persisted health document carries no medical detail</td>
+      <td><span class="tag t-pass">HOLDS</span>. <code>HealthHistory.toJson</code> emits ten fields;
+      <code>firestore.rules</code> now inspects all ten, with <code>flagsAreStripped</code> covering
+      all five <code>HealthFlags</code> fields — I diffed both lists myself. The serialised F014 value
+      is <code>"reported"</code> and names no category. <strong>Not cleared:</strong> the data-export
+      path was not opened by anyone.</td></tr>
+    <tr><td>The registry fence would catch deployment drift</td>
+      <td><span class="tag t-open">MOSTLY</span>. Caught: unregistered model loaded from
+      <code>assets/models/</code>, swapped artefact, v2 promoted, entry deleted while loaded, asset
+      removed from pubspec, absent or unknown <code>deployment_surface</code>. Not caught: a model
+      under a different asset directory or an interpolated path; a <code>source_commit</code> that is
+      hex-shaped but not a real commit; a missing artefact for a non-bundled champion.</td></tr>
+    <tr><td>Unknown/unanswered semantics preserved</td>
+      <td><span class="tag t-pass">HOLDS</span>. One decision site, using positive equality
+      (<code>== reported</code>). No <code>!= reported</code> anywhere, no <code>?? false</code>,
+      and <code>fromJson</code> drops unknown names rather than defaulting. The one wrinkle is that
+      <code>copyWith</code> cannot move a field back to <code>null</code> — fail-closed, so
+      over-blocking rather than under-blocking.</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Open findings — not fixed</h2>
+<div class="scroll"><table>
+  <thead><tr><th>ID</th><th>Sev</th><th>Finding</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">R-03</td><td><span class="tag t-open">MINOR</span></td>
+      <td><code>addExerciseToActiveProgramme</code> applies no gate of its own. Its single production
+      caller is gated by construction, so there is no bypass today — but no defence in depth, and its
+      doc comment already names the wrong caller.</td></tr>
+    <tr><td class="mono">R-04</td><td><span class="tag t-open">MINOR</span></td>
+      <td>The registry's <code>v2</code> is selected positionally (<code>firstWhere(bundled != true)</code>).
+      Correct today with three entries; wrong if they are reordered.</td></tr>
+    <tr><td class="mono">R-05</td><td><span class="tag t-open">MINOR</span></td>
+      <td><code>RECORDED_PER_BUILD</code> is validated for hex shape only, while my own CT-1 document
+      says the manifest "must carry a real commit". The document overclaims what the fence proves.</td></tr>
+    <tr><td class="mono">R-06</td><td><span class="tag t-open">MINOR</span></td>
+      <td>Artefact existence is asserted only for bundled entries, so the CT-1 champion's file can be
+      renamed without the fence noticing.</td></tr>
+    <tr><td class="mono">R-07</td><td><span class="tag t-open">MINOR</span></td>
+      <td>No test covers the AI coach path or a cached-programme <em>render/resume surface</em> — only
+      exercise resolution and re-enrolment. A resume button that started a session without consulting
+      the safety context would pass the current suite.</td></tr>
+    <tr><td class="mono">R-08</td><td><span class="tag t-open">MINOR</span></td>
+      <td>Several registry-fence loops iterate a filtered set with no assertion that the set is
+      non-empty, so they would pass vacuously if the registry changed shape.</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Independently re-verified</h2>
+<p class="lede">Not taken on the implementer's word — recomputed.</p>
+<ul>
+  <li><strong>Clinical handoff.</strong> 1,887 rows / 1,527 tagged / 360 untagged, nine-tag vocabulary
+  from <code>shoulder 489</code> down to <code>neck 117</code> — recomputed from the shipped
+  catalogue, exact match.</li>
+  <li><strong>F010.</strong> 14 of 193 providers unread — my own scan first said 194/15; the extra was
+  <code>_legacyContainer</code>, a <code>ProviderContainer</code> my regex mistook for a provider.
+  Corrected, the count and all fourteen names match.</li>
+  <li><strong>Health rule coverage.</strong> Ten emitted fields, ten inspected; five flag fields, five
+  inspected.</li>
+</ul>
+
+<h2>Unreviewed — open, not passed</h2>
+<div class="note">
+<p>Three areas came back explicitly unreached. They are not clean; nobody looked.</p>
+</div>
+<ol>
+  <li><strong>The N-01 same-shape sweep</strong> across <code>features/profile/data</code>,
+  <code>features/safety/data</code> and <code>features/programmes/data</code> — every
+  <code>operator ==</code>, <code>hashCode</code>, <code>isEmpty</code> and
+  <code>a.isEmpty ? b : a</code> merge. This is the highest-value remaining check, because it is the
+  one class of defect this programme has hit repeatedly. A lead was left:
+  <code>ai_coach_context.dart</code> uses <code>==</code> as a cache key, the same
+  equality-drives-behaviour shape, outside all three directories.</li>
+  <li><strong>The data-export path.</strong> Nobody opened it.</li>
+  <li><strong>The deload verdict's effect through the plan builder</strong>, and any
+  substitution/swap flow.</li>
+</ol>
+
+<h2>Unresolved assumptions</h2>
+<ul>
+  <li><code>flutter test</code> runs with CWD <code>mobile/</code>. Several fences resolve
+  <code>../core/…</code> relative to it; a runner change turns them into load errors rather than
+  silent passes, which is the safe direction — but it is an assumption, not a guarantee.</li>
+  <li>Whether the dataset manifest's <code>source_commit</code> is a <em>reachable</em> commit is
+  unverified by the fence, only its shape. See R-05.</li>
+  <li>Whether an on-device model could be mis-declared <code>OFFLINE_ADVISORY</code> — the guard
+  checks the field is present and known, not that it is true.</li>
+</ul>
+
+<footer>
+  <p>Review roles were read-only; no reviewer edited, committed or pushed. The one fix
+  (<strong>R-01</strong>) was applied and committed after adjudication, with the attack re-run against
+  it. <code>REMOTE-PUSH-GO = NO</code> remains in force — nothing was pushed.</p>
+</footer>
+</div>
