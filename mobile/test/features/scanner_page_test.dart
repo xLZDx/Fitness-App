@@ -20,6 +20,7 @@ import 'package:fitness_app/features/visual_equipment/state/recognition_history_
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/safety/data/eligibility.dart';
+import 'package:fitness_app/features/safety/data/health_flags.dart';
 import 'package:fitness_app/features/safety/data/par_q.dart';
 import 'package:fitness_app/features/safety/state/eligibility_providers.dart';
 import 'package:fitness_app/features/visual_equipment/data/live_recognition.dart';
@@ -1026,6 +1027,44 @@ void main() {
                 for (final q in ParQQuestion.values)
                   q: q == ParQQuestion.chestPain,
               }),
+            )),
+      ]);
+
+      await container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/a.jpg');
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.byKey(const Key('scan-ai-coach')), findsNothing);
+    });
+
+    testWidgets(
+        'R-07/F014: a stated health answer withholds the AI Coach here too',
+        (tester) async {
+      // The second direct route to `AiCoachSheet`, and the reason it gets its
+      // own case rather than trusting the equipment page's. Both read
+      // `blockedByAStatedAnswer`, but "both call the same getter" is a claim
+      // about the source; this measures the scanner.
+      //
+      // The questionnaire is fully CLEARED, so nothing in the screening can be
+      // doing the blocking -- only F014's professional-guidance answer can.
+      // The control is 'a confident result offers the AI Coach' above, which
+      // runs the same recognition with no safety override at all.
+      final container = await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(_SpySession()),
+        visualEquipmentServiceProvider.overrideWithValue(
+          MockVisualEquipmentService(fixedResults: const [
+            VisualMatch(equipmentId: 'leg_press', confidence: 0.95),
+          ]),
+        ),
+        safetyContextProvider.overrideWith((_) async => SafetyContext(
+              screening: screen({
+                for (final q in ParQQuestion.values) q: false,
+              }),
+              health: const HealthFlags(
+                professionalGuidance: ProfessionalGuidanceNeed.reported,
+              ),
             )),
       ]);
 

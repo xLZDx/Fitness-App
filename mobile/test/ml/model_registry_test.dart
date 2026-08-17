@@ -43,24 +43,117 @@ void main() {
   /// Repository-root-relative path resolved from `mobile/`, where tests run.
   File repoFile(String path) => File('../$path');
 
+  /// The one entry with this identity, or a failure naming what was found.
+  ///
+  /// R-04. These lookups used to be `firstWhere((m) => m['bundled'] != true)`,
+  /// which selects by POSITION among the entries that happen to satisfy a
+  /// predicate. That was correct while the registry held exactly two entries
+  /// and the second was equipment v2. It stopped being correct the moment a
+  /// third model was registered: `content_qa@baseline-v1` is also not bundled,
+  /// so reordering the file — a formatting change, an alphabetical sort, an
+  /// append in the other order — silently repoints the fence at a different
+  /// model. It would not have failed; it would have policed the wrong figures
+  /// and stayed green, which is worse than not existing.
+  ///
+  /// `model_id` + `model_version` is the registry's own identity, and
+  /// [hasLength] rather than `first` means an ambiguous registry is a failure
+  /// instead of a coin toss.
+  Map<String, dynamic> entry(String id, String version) {
+    final hits = models
+        .where((m) => m['model_id'] == id && m['model_version'] == version)
+        .toList();
+    expect(hits, hasLength(1),
+        reason: 'expected exactly one $id@$version in the registry, found '
+            '${hits.length}. Registered: '
+            '${models.map((m) => '${m['model_id']}@${m['model_version']}').join(', ')}');
+    return hits.single;
+  }
+
   group('the registry describes a real tree', () {
-    test('every model marked bundled has an artefact that exists', () {
-      for (final m in models.where((m) => m['bundled'] == true)) {
-        final f = repoFile(m['artifact_path'] as String);
-        expect(f.existsSync(), isTrue,
-            reason: '${m['model_id']}@${m['model_version']} claims '
-                'bundled=true but ${m['artifact_path']} is not there. Either '
-                'the asset was removed and the app is broken, or the registry '
-                'is describing a deployment that does not exist');
+    /// R-06 — where the artefact lives, declared rather than guessed.
+    ///
+    /// The existence and digest checks below used to run over
+    /// `bundled == true` and nothing else. That left the two entries that are
+    /// not bundled entirely unchecked, including one whose artefact IS in the
+    /// repository and is readable right now: `content_qa@baseline-v1` points
+    /// at `scripts/ct1/baseline.py`, the deterministic champion of its task.
+    /// The registry could have named a path that does not exist and no test
+    /// would have said so.
+    ///
+    /// The obvious repair — "every entry must have an artefact on disk" — is
+    /// wrong, and would have been wrong the moment it was written. `v2` lives
+    /// at `D:/tools/equipment-model/out_v2/`, off this machine's repository
+    /// and off every other machine; a retired model's blob is legitimately
+    /// deleted. A rule that demands a local file forever turns an accurate
+    /// historical record into a test failure, and the way that gets resolved
+    /// is by deleting the history.
+    ///
+    /// So the registry declares it, per entry, and the fence checks what the
+    /// declaration implies. `artifact_in_repository` already existed on the
+    /// entries that needed it; this makes it required and load-bearing.
+    test('every model says whether its artefact is in this repository', () {
+      expect(models, isNotEmpty);
+      for (final m in models) {
+        expect(m['artifact_in_repository'], isA<bool>(),
+            reason: '${m['model_id']}@${m['model_version']} does not say where '
+                'its artefact lives, so nothing can be checked about it. This '
+                'is a required field: "we did not say" is how an entry ends up '
+                'describing a file nobody has');
       }
     });
 
-    test('the bundled artefact hashes to the recorded digest', () {
+    test('an in-repository artefact is actually there', () {
+      final inRepo =
+          models.where((m) => m['artifact_in_repository'] == true).toList();
+      expect(inRepo, isNotEmpty,
+          reason: 'no entry claims a local artefact, so this test polices '
+              'nothing');
+      for (final m in inRepo) {
+        final path = m['artifact_path'] as String;
+        // The flag and the path have to agree. Flipping the flag to true and
+        // leaving an absolute path behind would satisfy every check below by
+        // accident of `repoFile` resolving somewhere unexpected.
+        expect(RegExp(r'^([a-zA-Z]:|/|\\)').hasMatch(path), isFalse,
+            reason: '${m['model_id']}@${m['model_version']} claims its '
+                'artefact is in this repository and gives the absolute path '
+                '$path. A repository path is relative to the repository');
+        expect(repoFile(path).existsSync(), isTrue,
+            reason: '${m['model_id']}@${m['model_version']} claims '
+                'artifact_in_repository=true but $path is not there. Either '
+                'the artefact was removed — in which case say so by setting '
+                'the flag false, which is a legitimate state for a retired or '
+                'externally built model — or the registry is describing a '
+                'deployment that does not exist');
+      }
+    });
+
+    test('an artefact outside the repository is not required to be here, and '
+        'may not ship', () {
+      // The explicit half of the rule, so that "not checked" is a recorded
+      // decision rather than a gap. What an external artefact still may not do
+      // is claim to be in the build users install.
+      for (final m in models.where((m) => m['artifact_in_repository'] == false)) {
+        expect(m['bundled'], isNot(isTrue),
+            reason: '${m['model_id']}@${m['model_version']} is bundled into '
+                'the app and its artefact is not in the repository. One of the '
+                'two is false; nothing can ship from a path that only exists '
+                'on one machine');
+      }
+    });
+
+    test('a recorded digest matches the bytes it describes', () {
       // The assertion ML-F1 would have failed. A hash is what makes "which
       // model is this" answerable without trusting a filename -- v1 and v2
       // are both called `equipment_v*.tflite` and are within 1.5% of each
       // other in size.
-      for (final m in models.where((m) => m['bundled'] == true)) {
+      //
+      // Widened past `bundled` for R-06: the claim being checked is "these
+      // bytes are those bytes", and it is checkable for any local artefact
+      // that records a digest. A null digest is a legitimate state and is
+      // handled by the test below rather than by silently skipping here.
+      var checked = 0;
+      for (final m in models.where((m) => m['artifact_in_repository'] == true)) {
+        if (m['artifact_sha256'] == null) continue;
         final f = repoFile(m['artifact_path'] as String);
         final digest = sha256.convert(f.readAsBytesSync()).toString();
         expect(digest, m['artifact_sha256'],
@@ -69,6 +162,28 @@ void main() {
                 'registry being updated, which is precisely the state ML-F1 '
                 'described');
         expect(f.lengthSync(), m['artifact_bytes'], reason: m['artifact_path']);
+        checked++;
+      }
+      expect(checked, greaterThan(0),
+          reason: 'no local artefact records a digest, so this test verified '
+              'nothing at all');
+    });
+
+    test('what ships is pinned by a digest', () {
+      // Narrower than the test above and the reason it exists separately: a
+      // null digest is defensible for a versioned source file (CT-1's baseline
+      // says so in `$artifact_note`, and its identity is pinned by the dataset
+      // manifest's commit instead). It is not defensible for a binary in the
+      // APK, which is the exact artefact ML-F1 was wrong about.
+      final bundled = models.where((m) => m['bundled'] == true).toList();
+      expect(bundled, isNotEmpty);
+      for (final m in bundled) {
+        expect(m['artifact_in_repository'], isTrue, reason: 'unshippable');
+        expect(m['artifact_sha256'], isNotNull,
+            reason: '${m['model_id']}@${m['model_version']} ships without a '
+                'recorded digest, so "which model is in this build" is '
+                'answerable only by trusting the filename');
+        expect(m['artifact_bytes'], isNotNull);
       }
     });
 
@@ -167,13 +282,21 @@ void main() {
     });
 
     test('the registry\'s bundled path is the one the code actually names', () {
-      final bundled = models.firstWhere((m) => m['bundled'] == true);
-      final assetPath =
-          (bundled['artifact_path'] as String).replaceFirst('mobile/', '');
-      expect(modelPathsInCode(), contains(assetPath),
-          reason: 'the registry says $assetPath is bundled but no Dart source '
-              'loads it. This is the ML-F1 shape exactly, in the other '
-              'direction: a documented deployment nothing performs');
+      // EVERY bundled entry, not the first one. A registry that grows a second
+      // shipped model must not leave the new one unchecked, and there is no
+      // reason to pick one out by identity here — the claim is about all of
+      // them.
+      final bundled = models.where((m) => m['bundled'] == true);
+      expect(bundled, isNotEmpty,
+          reason: 'no model claims to be bundled, so this test proves nothing');
+      for (final m in bundled) {
+        final assetPath =
+            (m['artifact_path'] as String).replaceFirst('mobile/', '');
+        expect(modelPathsInCode(), contains(assetPath),
+            reason: 'the registry says $assetPath is bundled but no Dart source '
+                'loads it. This is the ML-F1 shape exactly, in the other '
+                'direction: a documented deployment nothing performs');
+      }
     });
 
     test('the asset is declared in pubspec, or it never reaches a device', () {
@@ -201,6 +324,29 @@ void main() {
       }
     });
 
+    /// R-08 note, and it applies to every `models.where(...)` loop in this
+    /// file. A filtered loop over an empty set passes, so the assertions below
+    /// are only worth what the filter matches. Non-vacuity is asserted where
+    /// an empty result would mean the registry has stopped saying something it
+    /// must say, and NOT where empty is a legitimate state:
+    ///
+    ///   champion == true        -> asserted. A registry with nothing in
+    ///                              charge of anything is not a state this
+    ///                              project can be in; every registered task
+    ///                              has a champion by construction.
+    ///   bundled != true         -> NOT asserted. A registry whose every entry
+    ///                              ships is unusual, not wrong.
+    ///   deployment_surface ==
+    ///     'ON_DEVICE'           -> NOT asserted. If the app ever stops
+    ///                              shipping an on-device classifier, this set
+    ///                              empties legitimately, and a guard here
+    ///                              would fail for being right.
+    ///   artifact_in_repository
+    ///     == false              -> NOT asserted. Every artefact being local
+    ///                              is the better world, not a defect.
+    ///
+    /// An assertion that empty is impossible where it is merely unusual buys
+    /// nothing and costs a false failure later.
     test('a champion that is not the first of its kind has a rollback target',
         () {
       // A first champion legitimately has none — there is nothing behind it.
@@ -212,7 +358,11 @@ void main() {
       // task's v1 by coincidence of naming, and CT-1 arriving as a second task
       // is what made that visible. It is now a declared flag, and declaring it
       // still costs a written reason.
-      for (final m in models.where((m) => m['champion'] == true)) {
+      final champions = models.where((m) => m['champion'] == true).toList();
+      expect(champions, isNotEmpty,
+          reason: 'the registry names no champion at all, so every rule below '
+              'about what serves users is checking nothing');
+      for (final m in champions) {
         if (m['first_of_its_kind'] == true) {
           expect(m['rollback_note'], isNotNull,
               reason: '${m['model_id']}@${m['model_version']} claims to be the '
@@ -236,7 +386,11 @@ void main() {
     test('nothing is CHAMPION without having been EVALUATED first', () {
       // The state machine's one non-negotiable ordering. A model cannot serve
       // users on the strength of having been trained.
-      for (final m in models.where((m) => m['champion'] == true)) {
+      final champions = models.where((m) => m['champion'] == true).toList();
+      expect(champions, isNotEmpty,
+          reason: 'no champion is recorded, so the ordering this test pins is '
+              'not being checked against anything');
+      for (final m in champions) {
         expect(m['evaluations'], isNotEmpty,
             reason: '${m['model_version']} is champion with no evaluation '
                 'recorded at all');
@@ -272,9 +426,31 @@ void main() {
     /// strictly stronger than what the legacy models are held to, which is the
     /// intent — CT-1 exists to start doing provenance properly, and a token
     /// that let it off would defeat the point.
-    test('RECORDED_PER_BUILD resolves to a real commit', () {
-      for (final m in models.where(
-          (m) => m['training_code_commit'] == 'RECORDED_PER_BUILD')) {
+    test('RECORDED_PER_BUILD resolves to a commit that exists', () {
+      // R-05. This used to assert `^[0-9a-f]{7,40}$` and stop there, which
+      // tests the SHAPE of the string and calls it provenance. `deadbeef` is
+      // hex, seven-to-forty characters long, and names nothing at all — it
+      // passed. So the guard certified a pointer it had never followed, which
+      // is the ML-F1 failure in miniature: a record that reads as verified
+      // because something checked it, where what was checked was not the
+      // claim.
+      //
+      // The claim is "this artefact was built from a known revision of this
+      // repository". The narrowest thing that actually establishes it is that
+      // the revision RESOLVES — a commit object with that name is present
+      // here. That is what git is asked, and nothing beyond it: the fence does
+      // not require the commit to be an ancestor of HEAD, because a manifest
+      // built on a branch that was later rebased still records where it came
+      // from honestly, and demanding reachability would push the next person
+      // to rewrite the manifest rather than keep it true.
+      final pointers = models
+          .where((m) => m['training_code_commit'] == 'RECORDED_PER_BUILD')
+          .toList();
+      expect(pointers, isNotEmpty,
+          reason: 'no model uses the token, so this test polices nothing. If '
+              'the token was retired, delete this test deliberately');
+
+      for (final m in pointers) {
         final report = m['evaluation_report'] as String?;
         expect(report, isNotNull,
             reason: '${m['model_version']} says its commit is recorded per '
@@ -288,9 +464,32 @@ void main() {
         expect(f.existsSync(), isTrue, reason: 'no manifest at $manifest');
         final commit =
             (jsonDecode(f.readAsStringSync()) as Map)['source_commit'] as String;
+
+        // Shape first, so `UNKNOWN` — what the builder writes when git cannot
+        // answer — reports as the honest admission it is rather than as a
+        // failed object lookup.
         expect(RegExp(r'^[0-9a-f]{7,40}$').hasMatch(commit), isTrue,
             reason: '${m['model_version']} points at a manifest whose '
-                'source_commit is "$commit"');
+                'source_commit is "$commit". A model may not claim '
+                'RECORDED_PER_BUILD provenance on a build that did not record '
+                'one — that is what UNKNOWN in the registry is for');
+
+        // `^{commit}` and not a bare `-e`: a bare existence check is satisfied
+        // by a blob or a tree whose id happens to be this string, and "the
+        // object exists" is not the claim. The peel makes git assert the type.
+        final probe = Process.runSync(
+          'git',
+          ['-C', '..', 'cat-file', '-e', '$commit^{commit}'],
+        );
+        expect(probe.exitCode, 0,
+            reason: '${m['model_version']}: $manifest records source_commit '
+                '$commit, and no such commit exists in this repository.\n'
+                'Either the manifest records a revision that was never here, '
+                'or the checkout does not carry enough history to tell — a '
+                'shallow clone cannot verify provenance, which is why '
+                '.github/workflows/flutter.yml pins fetch-depth: 0 on the job '
+                'that runs this suite.\n'
+                'git said: ${probe.stderr}');
       }
     });
   });
@@ -301,7 +500,7 @@ void main() {
       // scanner is 62% accurate" and "the scanner answers confidently about
       // machines it has never seen", and only the second is true of what
       // ships.
-      final bundled = models.firstWhere((m) => m['bundled'] == true);
+      final bundled = entry('equipment_recognition', 'v1');
       expect(bundled['supports_unknown_or_abstain'], isFalse);
       expect(bundled['abstention_note'], isNotEmpty);
       expect(bundled['class_count'], 10,
@@ -359,12 +558,8 @@ void main() {
     /// The figures are read out of the registry rather than hardcoded, so the
     /// fence tracks the registry instead of drifting alongside it.
     test('no ML document attributes a v2-only measurement to what ships', () {
-      final registry = jsonDecode(
-        File('../core/ml/MODEL_REGISTRY.json').readAsStringSync(),
-      ) as Map<String, dynamic>;
-      final models = (registry['models'] as List).cast<Map<String, dynamic>>();
-      final v2 = models.firstWhere((m) => m['bundled'] != true);
-      final v1 = models.firstWhere((m) => m['bundled'] == true);
+      final v2 = entry('equipment_recognition', 'v2');
+      final v1 = entry('equipment_recognition', 'v1');
 
       // Confidence figures that appear in v2's evidence and nowhere in v1's.
       final v2Text = jsonEncode(v2);

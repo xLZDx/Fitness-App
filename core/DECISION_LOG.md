@@ -14240,3 +14240,119 @@ not read. Those are open, not passed.
 
 Review report: `reports/agent_review_2026-08-17.html`, artifact
 `https://claude.ai/code/artifact/99a7b306-0111-42ab-a555-6371b649cc3b`.
+
+## R-03 to R-08 remediated, each mutation-proven
+
+The R3 review's remaining findings, closed with a measurement per finding. Nothing here reopens the
+frozen engineering baseline; every item is new work on top of it.
+
+**R-03 (FIXED): the terminal training mutation now refuses on its own authority.**
+`ProgrammeAction.addExerciseToActiveProgramme` schedules an exercise under a live programme and
+carried no safety check. That was **not** a live bypass and this is not a bug fix -- verified rather
+than assumed: `workout_player_page.dart` renders `_AddToProgrammeButton` only under
+`resolution.visible`, and a withheld exercise draws an `EligibilityNotice` instead of the page body,
+so no ineligible exercise reaches the method through today's UI. What it depended on was there being
+exactly one caller, gated. A review can establish that today and cannot establish it for the second
+entry point somebody adds.
+
+The gate calls the same `evaluateExercise` the UI does (`includeWholePerson: true`) rather than
+restating the rule, and reads the context with `await ref.read(safetyContextProvider.future)` -- the
+same read enrolment uses. A synchronous `.valueOrNull` was written first and rejected: it returns
+null whenever the context has merely not resolved yet, which would refuse eligible users for a reason
+about provider timing.
+
+Four direct-invocation cases, bypassing the gated UI caller entirely. Mutation matrix, each killing
+exactly its intended case: gate deleted -> whole-person and exercise-specific cases red; gate narrowed
+to `allowsAnyTraining` -> exercise-specific case red; resolution failure swallowed -> fail-closed case
+red; `isAllowed` narrowed to `is Allowed` -> the `Degraded`-must-not-refuse case red.
+
+One fixture followed: `workout_player_day_test.dart`'s snackbar-wording case left the safety context
+at its default, an unscreened profile, which blocks all training. Harmless while the method had no
+check; now it described a user the page would have answered with an `EligibilityNotice`. The fixture
+now screens its user rather than the assertion being weakened.
+
+**R-04 (FIXED): the registry fence selected by position and silently policed the wrong model.**
+`models.firstWhere((m) => m['bundled'] != true)` was correct while the registry held two entries. A
+third (`content_qa@baseline-v1`) is also not bundled, so file order decided which model the
+v2-attribution fence read.
+
+Measured, not argued. Reordering the three entries -- same content, same count, order only -- and
+running the fence: with the positional lookup it **stayed green while reading a different model**.
+That is worse than a failure. Replaced with lookup by `model_id` + `model_version` asserting exactly
+one hit; the same reorder is now invisible to the fence.
+
+**R-05 (FIXED): `RECORDED_PER_BUILD` checked the shape of a sha, not a sha.**
+The guard asserted `^[0-9a-f]{7,40}$`. `deadbeefdeadbeefdeadbeefdeadbeefdeadbeef` is hex, is the right
+length, and names nothing -- it passed. The contract is now stated and enforced as:
+
+    RECORDED_PER_BUILD  requires  git cat-file -e <manifest.source_commit>^{commit}  ->  0
+
+`^{commit}` and not a bare `-e`: a bare existence check is satisfied by a blob or tree whose id
+happens to match. Deliberately NOT required: ancestry of `HEAD` (a manifest built on a later-rebased
+branch still records its origin honestly, and demanding reachability would push the next person to
+rewrite the manifest rather than keep it true).
+
+The check needs history, so `.github/workflows/flutter.yml` pins `fetch-depth: 0` on the suite job and
+`workflow_gates_test.dart` asserts that depth against the comment-stripped YAML. Aligned in all four
+places: guard, workflow, workflow guard, and the builder's own schema test in `scripts/ct1/test_ct1.py`
+(a manifest may record `UNKNOWN`; it may not record a revision that was never here).
+
+Mutation-proven four ways: hex-shaped fake sha -> registry fence red; `fetch-depth` removed -> workflow
+fence red; `fetch-depth` commented out -> workflow fence red; `git_commit()` returning a fake sha ->
+CT-1 schema test red.
+
+**R-06 (FIXED): artefact existence was checked only for what ships.**
+Existence and digest ran over `bundled == true` alone, leaving both non-bundled entries unchecked --
+including `content_qa@baseline-v1`, whose artefact IS in the repository (`scripts/ct1/baseline.py`) and
+is the deterministic champion of its task. The registry could have named a path that does not exist.
+
+The obvious repair -- every entry must have a local artefact -- would have been wrong when written:
+`equipment_recognition@v2` lives at `D:/tools/equipment-model/out_v2/`, and a retired model's blob is
+legitimately deleted. A rule demanding a local file forever turns an accurate historical record into a
+test failure, and that gets resolved by deleting history. So `artifact_in_repository` is now required
+on every entry and load-bearing:
+
+    in_repo == true   -> the path is repo-relative AND the file is there
+    in_repo == true   -> a recorded digest must match the bytes (null is legal; see below)
+    in_repo == false  -> existence NOT required, and may not be bundled
+    bundled == true   -> in_repo AND a digest recorded
+
+The null digest on CT-1's baseline stays legal and is reasoned in the registry's own artefact note: it
+is versioned source, not a binary, and its identity is pinned by the dataset manifest's commit --
+which R-05 just made verifiable. Five mutations, each killing its intended assertion: unresolvable
+in-repo path; declaration absent; external path declared in-repo; shipped artefact unpinned; external
+artefact marked bundled.
+
+**R-07 (FIXED): the F014 path had no adversarial coverage at three surfaces.**
+`wholePersonBlocks` has four arms and three come from `HealthFlags` -- clinician advice, post-operative
+restrictions, and F014's professional-guidance answer. Every existing case at the AI Coach gates
+blocked through `screening`, so removing all three health arms left them green. Measured: with the
+F014 arm deleted, the pre-existing coach tests stayed green.
+
+Added, each with the questionnaire fully CLEARED so only the health answer can block, and each with a
+stated control so it cannot pass vacuously:
+
+* `equipment_detail_coach_gate_test.dart` -- six cases across all three health arms plus both
+  three-state controls (`.none` must NOT withhold; discharged-from-surgery must NOT withhold).
+* `scanner_page_test.dart` -- the second direct route to `AiCoachSheet`, measured rather than
+  inferred from both call sites reading the same getter.
+* `stale_state_attack_test.dart` -- the cached-programme RESUME surface, which nothing reached. The
+  existing programme case proves a second *enrolment* is refused; the hazard is a user who already
+  has eight weeks of rows written and answers F014 the following Tuesday. Both reading surfaces are
+  measured: the day list strikes every session, and re-opening a row is withheld-not-vanished.
+
+Seven mutations across the three files, each killing exactly its intended case, including the
+over-blocking direction (F014 blocking on ANY answer instead of `.reported` turns the `.none` control
+red).
+
+**R-08 (FIXED, and deliberately narrow): non-vacuity where empty is illegitimate, and nowhere else.**
+`champion == true` is asserted non-empty -- a registry with nothing in charge of anything is not a
+state this project can be in. Explicitly NOT asserted, with the reasons recorded in the file:
+`bundled != true` (a registry whose every entry ships is unusual, not wrong), `deployment_surface ==
+'ON_DEVICE'` (empties legitimately if the app stops shipping an on-device classifier, and a guard
+there would fail for being right), `artifact_in_repository == false` (every artefact being local is
+the better world). An assertion that empty is impossible where it is merely unusual buys nothing and
+costs a false failure later.
+
+**Suites at this commit:** mobile 2847 passed / 0 failed; CT-1 30 passed. Firestore rules and Cloud
+Functions untouched this round. `REMOTE-PUSH-GO` remains NO; nothing has been pushed.

@@ -39,6 +39,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # R-05. `test/ml/model_registry_test.dart` verifies that a manifest's
+          # recorded `source_commit` names a commit that exists here, rather
+          # than merely looking like a sha. The default shallow checkout has
+          # exactly one commit, so that lookup would fail on every build for a
+          # reason that has nothing to do with provenance -- and the usual
+          # repair for a test that fails for the wrong reason is to weaken it
+          # back to a regex.
+          #
+          # Full history is what makes provenance checkable at all. If this is
+          # ever removed, `test/ci/workflow_gates_test.dart` fails, so the
+          # decision has to be taken rather than drifted into.
+          fetch-depth: 0
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2

@@ -415,6 +415,16 @@ void main() {
     await t.pumpWidget(_app(
       const WorkoutPlayerPage(exerciseId: 'ea_row'),
       sessionRepo: sessionRepo,
+      // R-03. This case is about the snackbar's WORDING, and it used to leave
+      // the safety context at its default — an unscreened profile, which
+      // blocks all training. That was harmless only while
+      // `addExerciseToActiveProgramme` had no safety check of its own; now
+      // that it does, the default fixture describes a user the page would have
+      // answered with an `EligibilityNotice` instead of this button. Screening
+      // the fixture user makes it describe the state it is actually about.
+      safety: SafetyContext(
+        screening: screen({for (final q in ParQQuestion.values) q: false}),
+      ),
       programme: Programme(
         id: 'p1',
         templateId: kProfileProgrammeId,

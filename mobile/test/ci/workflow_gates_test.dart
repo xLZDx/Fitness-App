@@ -94,6 +94,35 @@ void main() {
               '"flutter test" match is satisfied by the integration job');
     });
 
+    test('the job that runs the suite checks out enough history to verify '
+        'provenance', () {
+      // R-05. `test/ml/model_registry_test.dart` asks git whether a manifest's
+      // recorded `source_commit` names a commit that exists. Under the default
+      // shallow checkout it never can — one commit is present — so that check
+      // would fail on every CI run for a reason unrelated to what it tests,
+      // and the cheapest repair would be to weaken it back to the regex that
+      // proved nothing.
+      //
+      // So the depth is load-bearing, and this is the assertion that says so.
+      // Matched against the live YAML, because a `fetch-depth: 0` sitting in a
+      // comment is exactly the state this exists to catch.
+      final lines = live('flutter.yml').split('\n');
+      final analyzeAndTest = lines.indexWhere((l) => l.contains('analyze-and-test:'));
+      expect(analyzeAndTest, greaterThanOrEqualTo(0),
+          reason: 'the job was renamed; this guard now points at nothing');
+      // The first checkout after that job's declaration is the one it uses.
+      final checkout = lines.indexWhere(
+          (l) => l.contains('actions/checkout@'), analyzeAndTest);
+      expect(checkout, greaterThan(analyzeAndTest));
+      final block = lines.skip(checkout).take(12).join('\n');
+      expect(block, contains('fetch-depth: 0'),
+          reason: 'the suite-running job checks out shallowly, so the model '
+              'registry cannot verify that a recorded training commit exists. '
+              'A provenance check that cannot resolve its pointer is the '
+              'ML-F1 shape: a record that reads as verified because something '
+              'looked at it');
+    });
+
     test('the analyze flags suppress warnings only, never errors', () {
       // F007 was recorded as "flutter analyze cannot fail CI". Measured, that
       // is not so: `--no-fatal-warnings --no-fatal-infos` still exits 1 on a

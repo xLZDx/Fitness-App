@@ -10,6 +10,7 @@ import '../../workouts/state/scheduled_session_providers.dart';
 import '../data/mock_programme_repository.dart';
 import '../data/programme.dart';
 import '../data/programme_repository.dart';
+import '../../safety/data/eligibility.dart';
 import '../../safety/state/eligibility_providers.dart';
 import '../data/programme_builder.dart';
 import '../data/programme_schedule.dart';
@@ -248,19 +249,63 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
   }
 
   /// Schedules one extra [exercise] under the active programme, at
-  /// [nextProgrammeSlot]. Used by the Equipment exercise page's "Add to
-  /// programme" button (`exercise_reference.dart`).
+  /// [nextProgrammeSlot]. Called by the workout player's "Add to programme"
+  /// button (`workout_player_page.dart`).
   ///
   /// Throws [StateError] when nothing is active — the button only calls this
   /// after checking [activeProgrammeProvider] itself, so reaching here with
   /// none active would be this action being called from somewhere new that
   /// skipped that check, and failing loudly beats silently doing nothing.
+  ///
+  /// ## R-03 — why the safety check is HERE and not only at the button
+  ///
+  /// This is a terminal training mutation: after it, an exercise is scheduled
+  /// under the user's programme. It used to carry no safety check of its own.
+  ///
+  /// That was not a live bypass, and this is not a bug fix. The one caller is
+  /// gated: `workout_player_page.dart` renders `_AddToProgrammeButton` only
+  /// under `resolution.visible`, and a withheld exercise draws an
+  /// `EligibilityNotice` instead of the page body. So today no ineligible
+  /// exercise reaches this method through the UI, and that was verified rather
+  /// than assumed.
+  ///
+  /// What it depended on was there being exactly one caller, gated. A review
+  /// can establish that today; it cannot establish it for the second entry
+  /// point somebody adds. A terminal mutation must not rest on caller
+  /// discipline, so the authority now sits where the mutation is.
+  ///
+  /// The check is not a second opinion: it calls the same `evaluateExercise`
+  /// the UI does, with `includeWholePerson: true`, so there is one rule and
+  /// this is a second place that asks it. Duplicating the reasoning here
+  /// instead would be the failure mode this is meant to avoid.
+  ///
+  /// Fail-closed on an unresolvable safety context: "we could not tell" must
+  /// never read as "go ahead" on a path that schedules training.
   Future<void> addExerciseToActiveProgramme(ExerciseItem exercise) async {
     state = const AsyncValue.loading();
     try {
       final user = ref.read(authUserProvider).valueOrNull;
       if (user == null) {
         throw StateError('Cannot schedule a session while signed out');
+      }
+      // `.future`, not `.valueOrNull`: the same read enrolment does. A
+      // synchronous read returns null whenever the context merely has not been
+      // resolved yet, which would make the gate refuse a perfectly eligible
+      // user for a reason that is about provider timing rather than about
+      // them. Awaiting resolves it, and a context that cannot be resolved
+      // throws out of here — still fail-closed, and nothing is written.
+      final safety = await ref.read(safetyContextProvider.future);
+      // `isAllowed` is the hierarchy's own verdict, so this branch does not
+      // enumerate the variants and cannot fall out of step with them. It is
+      // false for [Blocked] only: a [Degraded] caveat about what could not be
+      // checked must not refuse training, for the same reason it does not
+      // empty the catalogue.
+      if (!evaluateExercise(exercise, safety).isAllowed) {
+        // The same refusal shape enrolment throws, so the caller renders the
+        // stated refusal rather than a service-unavailable snackbar.
+        throw const ProgrammeNotViable(
+          [ProgrammeFinding(ProgrammeFault.blockedBySafety)],
+        );
       }
       final programme = ref.read(activeProgrammeProvider);
       if (programme == null) {

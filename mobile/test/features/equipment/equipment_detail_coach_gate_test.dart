@@ -8,6 +8,7 @@ import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/equipment_detail_page.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/safety/data/eligibility.dart';
+import 'package:fitness_app/features/safety/data/health_flags.dart';
 import 'package:fitness_app/features/safety/data/par_q.dart';
 import 'package:fitness_app/features/safety/state/eligibility_providers.dart';
 
@@ -85,5 +86,90 @@ void main() {
     // nothing that refuses them. See `SafetyContext.blockedByAStatedAnswer`.
     await pump(t, SafetyContext(screening: kUnscreened));
     expect(find.byKey(const Key('equipment-ai-coach')), findsOneWidget);
+  });
+
+  /// R-07 — the health half of the gate, which nothing here reached.
+  ///
+  /// Every case above blocks through `screening`. `wholePersonBlocks` has four
+  /// arms and three of them come from [HealthFlags]: a clinician who advised
+  /// against exercise, unexpired post-operative restrictions, and F014's
+  /// professional-guidance answer. A regression that dropped the health arms
+  /// entirely — which is the exact shape F014 failed in twice, a field that
+  /// reaches the model and the serialiser but not the guard — would have left
+  /// all three tests above green.
+  ///
+  /// So each arm gets a case, with the questionnaire fully CLEARED, so that
+  /// the health answer is the only thing that can be doing the blocking. The
+  /// control at the top of the group is what makes them non-vacuous: the same
+  /// cleared screening, the same page, and the coach IS offered.
+  group('R-07: a stated health answer withholds the coach on its own', () {
+    SafetyContext clearedWith(HealthFlags health) => SafetyContext(
+          screening: screen({for (final q in ParQQuestion.values) q: false}),
+          health: health,
+        );
+
+    testWidgets('the control: cleared screening, nothing stated, coach shown',
+        (t) async {
+      // Deliberately duplicated from the top of the file, with the health
+      // object made explicit. Without it every case below could pass because
+      // the page stopped rendering the entry at all.
+      await pump(t, clearedWith(HealthFlags.empty));
+      expect(find.byKey(const Key('equipment-ai-coach')), findsOneWidget);
+    });
+
+    testWidgets('F014: professional guidance reported', (t) async {
+      await pump(
+        t,
+        clearedWith(const HealthFlags(
+          professionalGuidance: ProfessionalGuidanceNeed.reported,
+        )),
+      );
+      expect(find.byKey(const Key('equipment-ai-coach')), findsNothing,
+          reason: 'F014. The app holds no validated prescription policy for '
+              'this state, and the coach\'s answer is a prescription');
+    });
+
+    testWidgets('F014: the same field answered NO does not withhold it',
+        (t) async {
+      // The three-state semantics, at the surface. `null` is never asked,
+      // `.none` is answered no, `.reported` is answered yes -- and only the
+      // last blocks. A guard that treated "answered" as "blocked" would refuse
+      // every user who completed the questionnaire honestly.
+      await pump(
+        t,
+        clearedWith(const HealthFlags(
+          professionalGuidance: ProfessionalGuidanceNeed.none,
+        )),
+      );
+      expect(find.byKey(const Key('equipment-ai-coach')), findsOneWidget);
+    });
+
+    testWidgets('a clinician advised against exercise', (t) async {
+      await pump(
+        t,
+        clearedWith(const HealthFlags(
+          clinicianAdvice: ClinicianExerciseAdvice.advisedAgainstExercise,
+        )),
+      );
+      expect(find.byKey(const Key('equipment-ai-coach')), findsNothing);
+    });
+
+    testWidgets('post-operative restrictions are still in force', (t) async {
+      await pump(
+        t,
+        clearedWith(const HealthFlags(surgery: SurgeryStatus.underRestrictions)),
+      );
+      expect(find.byKey(const Key('equipment-ai-coach')), findsNothing);
+    });
+
+    testWidgets('discharged back to normal exercise does not withhold it',
+        (t) async {
+      await pump(
+        t,
+        clearedWith(
+            const HealthFlags(surgery: SurgeryStatus.clearedForNormalExercise)),
+      );
+      expect(find.byKey(const Key('equipment-ai-coach')), findsOneWidget);
+    });
   });
 }

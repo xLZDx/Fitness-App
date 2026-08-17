@@ -15,11 +15,13 @@ written only in prose is a rule that gets skipped.
 from __future__ import annotations
 
 import json
+import re
+import subprocess
 
 import pytest
 
 from baseline import REGION_TAGS, corpus_observations, run_checks
-from build_dataset import build, split_for
+from build_dataset import REPO, build, split_for
 from evaluate import EXACT_BY_CONSTRUCTION, check_family, evaluate
 from label_contract import (
     Label,
@@ -254,6 +256,46 @@ def test_the_manifest_records_what_a_rebuild_would_need(tmp_path):
         assert key in m, f"manifest is missing {key}"
     assert set(m["source"]["sha256"]) == {"catalogue_en", "catalogue_ru",
                                           "equipment"}
+
+
+def test_source_commit_is_a_real_revision_or_an_honest_unknown(tmp_path):
+    """R-05. The manifest half of the RECORDED_PER_BUILD contract.
+
+    `mobile/test/ml/model_registry_test.dart` enforces the registry half: a
+    model claiming RECORDED_PER_BUILD must point at a manifest whose
+    `source_commit` resolves to a commit object. That check is only as good as
+    what the builder is allowed to write here, so the two are pinned together.
+
+    Two values are legal and nothing else is: a commit that exists, or the word
+    UNKNOWN. Specifically NOT permitted is anything shaped like a sha that is
+    not one -- the pre-R-05 registry fence accepted
+    `deadbeefdeadbeefdeadbeefdeadbeefdeadbeef`, which is hex, is the right
+    length, and names nothing.
+    """
+    en_p = tmp_path / "en.json"
+    ru_p = tmp_path / "ru.json"
+    eq_p = tmp_path / "eq.json"
+    for p, v in ((en_p, EN), (ru_p, RU), (eq_p, EQ)):
+        p.write_text(json.dumps(v, ensure_ascii=False), encoding="utf-8")
+    commit = build(en_p, ru_p, eq_p, "test")["manifest"]["source_commit"]
+
+    if commit == "UNKNOWN":
+        # Legal, and the reason the registry may then NOT claim
+        # RECORDED_PER_BUILD provenance for a model built from it.
+        return
+
+    assert re.fullmatch(r"[0-9a-f]{7,40}", commit), (
+        f"source_commit {commit!r} is neither a sha nor UNKNOWN"
+    )
+    probe = subprocess.run(
+        ["git", "-C", str(REPO), "cat-file", "-e", f"{commit}^{{commit}}"],
+        capture_output=True, text=True,
+    )
+    assert probe.returncode == 0, (
+        f"source_commit {commit} does not resolve to a commit in {REPO}. "
+        "A manifest may record UNKNOWN; it may not record a revision that "
+        "was never here."
+    )
 
 
 def test_the_dataset_carries_no_images_and_no_personal_data(tmp_path):

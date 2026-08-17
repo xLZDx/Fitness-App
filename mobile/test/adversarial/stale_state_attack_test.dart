@@ -83,6 +83,12 @@ void main() {
   UserProfile profileWith({
     List<Injury> injuries = const [],
     bool chestPain = false,
+    // R-07. Every case in this file used to move the user through `injuries`
+    // or the PAR-Q, and `wholePersonBlocks` has three arms that come from
+    // neither. A transition into a STATED health answer -- F014's
+    // professional-guidance question above all -- was not exercised anywhere,
+    // which is the same coverage shape F014 was lost in twice.
+    HealthFlags flags = HealthFlags.empty,
   }) =>
       UserProfile(
         uid: 'u1',
@@ -92,6 +98,7 @@ void main() {
               q: chestPain && q == ParQQuestion.chestPain,
           },
           injuries: injuries,
+          flags: flags,
         ),
       );
 
@@ -258,6 +265,90 @@ void main() {
         contains(ProgrammeFault.blockedBySafety));
     expect(sessionRepo.cached('u1'), hasLength(writtenWhileCleared),
         reason: 'the refused second enrolment wrote nothing further');
+  });
+
+  test('R-07/F014: enrolled while cleared, then reported — the cached '
+      'programme is struck at read time', () async {
+    // The cached-PROGRAMME resume surface, which nothing reached.
+    //
+    // The case above proves a second ENROLMENT is refused. That is not the
+    // hazard a user meets: they already have eight weeks of sessions written
+    // to the repository, and they answer F014 the following Tuesday. Nothing
+    // rewrites those rows — by design, a session carries no safety verdict —
+    // so the only thing between them and a prescribed workout is what the
+    // reading surfaces do with the CURRENT answer.
+    //
+    // Measured at both surfaces, because they are different code: the day list
+    // (`screenedUpcomingSessionsProvider`) and re-opening one of the rows
+    // (`exerciseResolutionProvider`, the player's own resolution).
+    final programmeRepo = MockProgrammeRepository(latency: Duration.zero);
+    addTearDown(programmeRepo.dispose);
+    final sessionRepo = MockScheduledSessionRepository(latency: Duration.zero);
+    addTearDown(sessionRepo.dispose);
+
+    final source = StateProvider<UserProfile>((_) => profileWith());
+    final container = ProviderContainer(overrides: [
+      authUserProvider.overrideWith(
+          (_) => Stream.value(const AuthUser(uid: 'u1', displayName: 'T'))),
+      screeningProfileProvider.overrideWith((ref) async => ref.watch(source)),
+      safetyContextProvider
+          .overrideWith((ref) async => contextFor(ref.watch(source))),
+      safeCatalogProvider.overrideWith((_) async => catalogue),
+      equipmentRepositoryProvider.overrideWithValue(_FakeRepo(catalogue)),
+      programmeRepositoryProvider.overrideWithValue(programmeRepo),
+      scheduledSessionRepositoryProvider.overrideWithValue(sessionRepo),
+      // The rows the enrolment below writes, read back as "what is coming up".
+      upcomingSessionsProvider.overrideWith((ref) => sessionRepo.cached('u1')),
+    ]);
+    addTearDown(container.dispose);
+    await container.read(authUserProvider.future);
+
+    final template = programmeTemplates.firstWhere((t) => t.id == 'gym_start');
+    await container.read(programmeActionProvider.notifier).enroll(template);
+    expect(container.read(programmeActionProvider).hasError, isFalse,
+        reason: 'precondition: a cleared user enrols');
+    final written = sessionRepo.cached('u1');
+    expect(written, isNotEmpty, reason: 'nothing was cached, so the case that '
+        'follows would pass over an empty list');
+
+    final beforeList =
+        await container.read(screenedUpcomingSessionsProvider.future);
+    expect(beforeList, isNotEmpty);
+    expect(beforeList.every((s) => s.withheldExerciseIds.isEmpty), isTrue,
+        reason: 'precondition: none of it was withheld while cleared');
+    final anExerciseId = written.first.exerciseId;
+    final beforeOpen = await container
+        .read(exerciseResolutionProvider(anExerciseId).future);
+    expect(beforeOpen.withheldFor, isEmpty);
+
+    // Tuesday.
+    container.read(source.notifier).state = profileWith(
+      flags: const HealthFlags(
+        professionalGuidance: ProfessionalGuidanceNeed.reported,
+      ),
+    );
+
+    final safety = await container.read(safetyContextProvider.future);
+    expect(safety.allowsAnyTraining, isFalse,
+        reason: 'the fixture must actually block, or nothing below means '
+            'anything');
+
+    final afterList =
+        await container.read(screenedUpcomingSessionsProvider.future);
+    expect(afterList, isNotEmpty, reason: 'the sessions are still THERE — the '
+        'user must be able to see what was withheld and why');
+    expect(afterList.every((s) => s.withheldExerciseIds.isNotEmpty), isTrue,
+        reason: 'a session written before the answer must be struck after it, '
+            'because nothing rewrites the stored row');
+
+    final afterOpen = await container
+        .read(exerciseResolutionProvider(anExerciseId).future);
+    expect(afterOpen.withheldFor, isNotEmpty,
+        reason: 'resuming a cached programme is a terminal training action and '
+            'must read the current answer, not the one that was true when the '
+            'programme was built');
+    expect(afterOpen.exercise, isNotNull,
+        reason: 'withheld, not vanished — the refusal has to be explicable');
   });
 
   test('the answer being REMOVED reopens what it closed', () async {

@@ -192,9 +192,33 @@ every entry now declares where it runs, so the rule cannot silently exempt anyth
 
 `training_code_commit` is **not** `UNKNOWN` here. It is `RECORDED_PER_BUILD`, and that token is
 permitted only on a condition the fence enforces: the named evaluation report must exist and its
-manifest must carry a real commit. A pointer that resolves to nothing would be worse than `UNKNOWN`,
-because it claims provenance exists. Mutation-proven — setting the manifest's commit to `UNKNOWN`
-turns the fence red.
+manifest must carry a commit that **resolves in this repository**. A pointer that resolves to
+nothing would be worse than `UNKNOWN`, because it claims provenance exists.
+
+The contract, stated exactly (R-05 tightened it — the first version checked that the recorded value
+*looked* like a sha, which `deadbeefdeadbeefdeadbeefdeadbeefdeadbeef` also does):
+
+```text
+RECORDED_PER_BUILD  requires  git cat-file -e <manifest.source_commit>^{commit}  ->  0
+```
+
+Three things it deliberately does **not** require. The commit need not be an ancestor of `HEAD`: a
+manifest built on a branch that was later rebased still records where it came from honestly, and
+demanding reachability would push the next person to rewrite the manifest instead of keeping it
+true. It is not a claim that the *artefact* was rebuilt at that commit — only that the revision the
+builder read its inputs at is a real one. And it says nothing about the training code being any
+good; provenance is not quality.
+
+Because the check needs history, `.github/workflows/flutter.yml` pins `fetch-depth: 0` on the job
+that runs the suite; a shallow checkout carries one commit and could never resolve the pointer.
+`mobile/test/ci/workflow_gates_test.dart` asserts that depth, so removing it fails rather than
+silently disarming the provenance check.
+
+When git cannot answer at build time, `scripts/ct1/build_dataset.py` writes `UNKNOWN` — never a
+plausible-looking placeholder — and the fence then rejects the `RECORDED_PER_BUILD` claim outright.
+
+Mutation-proven three ways: a hex-shaped commit that names nothing turns the registry fence red;
+removing `fetch-depth: 0` and commenting it out both turn the workflow fence red.
 
 Writing a literal commit into the registry was considered and rejected: the commit containing the
 registry cannot be known while writing it. This programme already shipped that exact self-reference

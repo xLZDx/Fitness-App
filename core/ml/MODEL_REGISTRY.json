@@ -37,6 +37,7 @@
       "task": "single-label image classification of gym equipment",
       "architecture": "MobileNetV2 (ImageNet weights) + 10-way softmax head, float16 quantised",
       "artifact_path": "mobile/assets/models/equipment_v1.tflite",
+      "artifact_in_repository": true,
       "artifact_sha256": "6f159ec32cd6c010c5319cb3436b22e97ce07ee72ff6f05daf02d3a2c7e696e3",
       "artifact_bytes": 4496661,
       "training_code_commit": "UNKNOWN",

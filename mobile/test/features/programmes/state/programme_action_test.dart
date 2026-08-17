@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -946,6 +947,174 @@ void main() {
       expect(state.hasError, isTrue);
       expect(state.error, isA<StateError>());
       expect(sessionRepo.cached('alice'), isEmpty);
+    });
+  });
+
+  /// R-03 — the terminal mutation refuses on its own authority.
+  ///
+  /// `addExerciseToActiveProgramme` schedules training. Until R-03 it carried
+  /// no safety check at all and was safe only because its single caller sits
+  /// behind an `EligibilityNotice`. A review can confirm that no bypass exists
+  /// TODAY; it cannot confirm that none appears the next time somebody adds a
+  /// second "add to programme" entry point.
+  ///
+  /// So these cases do exactly what a second caller would: they invoke the
+  /// domain operation directly, with no UI in the way, and require it to
+  /// refuse by itself. The mutation run (deleting the gate from
+  /// `programme_providers.dart`) is recorded in the decision log — the three
+  /// refusal cases fail and the [Degraded] case stays green, which is what
+  /// makes the last one worth having.
+  group('R-03: addExerciseToActiveProgramme is gated at the mutation', () {
+    /// An active programme already on file, so a refusal cannot be mistaken
+    /// for "there was nothing to add to". Seeded through the repository rather
+    /// than by enrolling, because a refused person cannot enrol.
+    Programme activeProgramme() => Programme(
+          id: 'p1',
+          templateId: 'strength_base',
+          title: 'strength_base',
+          goal: ProgrammeGoal.strength,
+          level: ExerciseDifficulty.beginner,
+          weeks: 4,
+          daysPerWeek: 3,
+          startedAt: DateTime(2026, 1, 1),
+        );
+
+    /// Invokes the domain operation directly and returns what it left behind.
+    Future<(Object?, MockScheduledSessionRepository)> addDirectly(
+      ExerciseItem exercise,
+      SafetyContext safety,
+    ) async {
+      final programmeRepo = MockProgrammeRepository(latency: Duration.zero);
+      addTearDown(programmeRepo.dispose);
+      final sessionRepo = MockScheduledSessionRepository(latency: Duration.zero);
+      addTearDown(sessionRepo.dispose);
+      await programmeRepo.save('alice', activeProgramme());
+
+      final container = _container(
+        programmeRepo: programmeRepo,
+        sessionRepo: sessionRepo,
+        catalogue: _roleCatalogue(),
+        user: const AuthUser(uid: 'alice', displayName: 'Alice'),
+        safety: safety,
+      );
+      addTearDown(container.dispose);
+      await container.read(authUserProvider.future);
+      await container.read(programmesProvider.future);
+      expect(container.read(activeProgrammeProvider), isNotNull,
+          reason: 'the fixture is only meaningful with a programme to add to');
+
+      await container
+          .read(programmeActionProvider.notifier)
+          .addExerciseToActiveProgramme(exercise);
+
+      return (container.read(programmeActionProvider).error, sessionRepo);
+    }
+
+    SafetyContext cleared({HealthFlags? health}) => SafetyContext(
+          screening: screen({for (final q in ParQQuestion.values) q: false}),
+          health: health ?? HealthFlags.empty,
+        );
+
+    test('a whole-person block refuses, and schedules nothing', () async {
+      final (error, sessionRepo) = await addDirectly(
+        _ex('bonus', muscles: ['chest']),
+        SafetyContext(
+          screening: screen({
+            for (final q in ParQQuestion.values) q: q == ParQQuestion.chestPain,
+          }),
+        ),
+      );
+
+      expect(error, isA<ProgrammeNotViable>());
+      expect(
+        (error as ProgrammeNotViable).findings.map((f) => f.fault),
+        contains(ProgrammeFault.blockedBySafety),
+        reason: 'the refusal must carry the fault the UI renders the stated '
+            'reason off, not a bare StateError',
+      );
+      expect(sessionRepo.cached('alice'), isEmpty);
+    });
+
+    test('an exercise-specific block refuses a person who may otherwise train',
+        () async {
+      // Not the whole-person gate: this person is cleared for training and is
+      // refused only THIS exercise. A gate that checked `allowsAnyTraining`
+      // alone would let it through, so this is what separates the two.
+      final (error, sessionRepo) = await addDirectly(
+        ExerciseItem(
+          id: 'bonus',
+          title: 'Deep Squat',
+          equipmentId: null,
+          equipmentLabel: null,
+          muscles: const ['quads'],
+          difficulty: ExerciseDifficulty.beginner,
+          durationMinutes: 20,
+          summary: '',
+          steps: const [],
+          contraindications: const ['knee'],
+        ),
+        cleared(
+          health: const HealthFlags(
+            restrictions: {MovementRestriction.deepKneeFlexion},
+          ),
+        ),
+      );
+
+      expect(error, isA<ProgrammeNotViable>());
+      expect(sessionRepo.cached('alice'), isEmpty);
+    });
+
+    test('a safety context that cannot be resolved refuses rather than '
+        'proceeding', () async {
+      // Fail-closed. "We could not tell" must not read as "go ahead" on a path
+      // that schedules training. The failure travels out as the error it is,
+      // rather than being caught and treated as "no restrictions known".
+      final programmeRepo = MockProgrammeRepository(latency: Duration.zero);
+      addTearDown(programmeRepo.dispose);
+      final sessionRepo = MockScheduledSessionRepository(latency: Duration.zero);
+      addTearDown(sessionRepo.dispose);
+      await programmeRepo.save('alice', activeProgramme());
+
+      final container = ProviderContainer(overrides: [
+        programmeRepositoryProvider.overrideWithValue(programmeRepo),
+        scheduledSessionRepositoryProvider.overrideWithValue(sessionRepo),
+        authUserProvider.overrideWith(
+            (_) => Stream.value(const AuthUser(uid: 'alice', displayName: 'A'))),
+        safeCatalogProvider.overrideWith((ref) async => _roleCatalogue()),
+        safetyContextProvider.overrideWith(
+            (ref) async => throw StateError('profile unreachable')),
+      ]);
+      addTearDown(container.dispose);
+      await container.read(authUserProvider.future);
+      await container.read(programmesProvider.future);
+
+      await container
+          .read(programmeActionProvider.notifier)
+          .addExerciseToActiveProgramme(_ex('bonus'));
+
+      expect(container.read(programmeActionProvider).error, isA<StateError>());
+      expect(sessionRepo.cached('alice'), isEmpty);
+    });
+
+    test('a caveat the catalogue cannot screen does NOT refuse', () async {
+      // The other direction, and the reason the gate reads `isAllowed` rather
+      // than `is Allowed`. `impact` carries no region tag, so it produces a
+      // [Degraded] advisory — an honest "we could not check this for you". If
+      // that refused, every user carrying an unscreenable restriction would
+      // lose the button entirely, which is the same defect that once emptied
+      // the catalogue.
+      final (error, sessionRepo) = await addDirectly(
+        _ex('bonus', muscles: ['chest']),
+        cleared(
+          health: const HealthFlags(
+            restrictions: {MovementRestriction.impact},
+          ),
+        ),
+      );
+
+      expect(error, isNull, reason: 'a caveat is not a refusal');
+      expect(sessionRepo.cached('alice').where((r) => r.exerciseId == 'bonus'),
+          hasLength(1));
     });
   });
 }
