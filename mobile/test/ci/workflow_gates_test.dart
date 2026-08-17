@@ -71,6 +71,52 @@ void main() {
     });
   });
 
+  /// The YAML with comment lines removed.
+  ///
+  /// Not fastidiousness: these workflows carry more explanation than
+  /// configuration, and every trigger name below also appears in prose
+  /// nearby. A raw `contains` matches the commented-out form just as happily
+  /// as the live one — which is exactly how a disabled nightly would keep a
+  /// test green. Found by mutating this file rather than by foresight.
+  String live(String name) => workflow(name)
+      .readAsStringSync()
+      .split('\n')
+      .where((l) => !l.trimLeft().startsWith('#'))
+      .join('\n');
+
+  group('CI-F1: the check that can go stale on its own runs on its own', () {
+    // A dependency audit is the only job in this repository whose verdict
+    // changes with no commit behind it. Running it only on push means the one
+    // check designed to report what happened while nobody was looking is the
+    // one check that needs somebody to be looking.
+    for (final name in const ['flutter.yml', 'functions.yml']) {
+      test('$name has a nightly schedule', () {
+        final src = live(name);
+        expect(src, contains('schedule:'),
+            reason: 'a workflow with no schedule can only ever tell you about '
+                'your own commits');
+        expect(src, contains('cron:'));
+      });
+
+      test('$name can be started by hand', () {
+        // When an advisory lands, the alternative to this is pushing an empty
+        // commit to ask a question.
+        expect(live(name), contains('workflow_dispatch'));
+      });
+    }
+
+    test('the audit job is still in the workflow the schedule triggers', () {
+      // The schedule above is worth exactly the jobs it reaches. If `audit`
+      // moves to another file, the cron stays green while auditing nothing.
+      final src = live('functions.yml');
+      expect(src, contains('npm audit'));
+      expect(src, contains('--audit-level=high'));
+      expect(src, contains('--package-lock-only'),
+          reason: 'without it npm audits the INSTALLED tree, which still '
+              'contains the dev packages --omit=dev was meant to exclude');
+    });
+  });
+
   test('the Firestore rules tests are part of a workflow', () {
     // G-D is proven by the emulator suite in `functions/`. If that job stops
     // running, the gate stops being enforced anywhere but in a decision-log

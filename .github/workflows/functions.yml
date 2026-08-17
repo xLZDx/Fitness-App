@@ -17,6 +17,29 @@ on:
     # G-D -- did not run on the branch G-D was built on.
     branches: ['**']
   pull_request:
+  # CI-F1: the `audit` job below is the only check in this repository whose
+  # RESULT CHANGES WITHOUT ANYONE COMMITTING -- a CVE against `stripe` or
+  # `firebase-admin` is disclosed on someone else's schedule, not ours. It was
+  # also the only one that ran solely on a commit. So in a quiet fortnight,
+  # the job whose whole purpose is to tell us about something that happened
+  # while we were not looking was the job that could not.
+  #
+  # That is not hypothetical for this file: the comment on `audit` records two
+  # real production advisories it caught (`@grpc/grpc-js`, `body-parser`).
+  # Both were found on a push that happened to follow the disclosure.
+  #
+  # The other four jobs are deterministic given the lockfile, so a nightly run
+  # of them is redundant rather than noisy -- and it is the cheap way to catch
+  # toolchain rot in the runner images, which this project has already been
+  # bitten by once (the Firestore emulator's JDK 21 requirement).
+  #
+  # 04:15 UTC, a quarter-hour after `flutter.yml`'s nightly, so the two do not
+  # start into the same runner pool at the same instant.
+  schedule:
+    - cron: '15 4 * * *'
+  # And so it can be run from the Actions tab the moment an advisory lands,
+  # instead of pushing an empty commit to ask a question.
+  workflow_dispatch:
 
 # A push that supersedes an in-flight run cancels it. The value of these
 # checks is on the newest commit, not on a queue of stale ones.

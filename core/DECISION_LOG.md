@@ -13355,3 +13355,60 @@ columns, so a line-based read saw four counts and not five. It now reads by para
 
 ML-0 DESIGNED. Every other phase NOT STARTED. Nothing authorises collecting a new user signal, and
 nothing here is evidence that any model works. D1, H3 and D3 untouched. Not pushed.
+
+## 2026-08-17 — CI re-attack: CI-F1, the audit that could only report our own commits
+
+**Independent attack on the workflow files**, re-run after F007/F008 rather than trusting them.
+F008's trigger widening and F007's analyze-flag reading both hold. One new defect.
+
+### CI-F1 — MAJOR | FACT | `.github/workflows/functions.yml`
+
+**Claim.** `functions.yml` had `push` and `pull_request` and nothing else. `flutter.yml` has a
+nightly `schedule` and `workflow_dispatch`; `functions.yml` had neither.
+
+**Why it is not symmetric with `flutter.yml`.** Four of its five jobs are deterministic given the
+lockfile — `unit`, `rules`, `e2e` and `drift` answer the same way today and next month unless
+someone commits. The fifth does not. `npm audit --omit=dev --package-lock-only --audit-level=high`
+is **the only check in this repository whose verdict changes with no commit behind it**, because a
+CVE against `stripe` or `firebase-admin` is disclosed on someone else's schedule.
+
+**Failure scenario.** A high-severity advisory lands against a production dependency during a
+fortnight with no commits to this repo. Nothing runs, nothing reports, and the first anyone hears of
+it is whenever the next push happens to occur. The job whose entire purpose is to report what
+happened while nobody was looking was the job that required somebody to be looking.
+
+**Not hypothetical for this file.** Its own comment records two real production advisories it
+caught — a high in `@grpc/grpc-js` reached through `firebase-admin`, so it runs in every deployed
+function, and a DoS in `body-parser`. Both were found on a push that happened to follow disclosure.
+
+**Change.** Added `schedule: '15 4 * * *'` (a quarter-hour after `flutter.yml`'s nightly, so the two
+do not start into the runner pool together) and `workflow_dispatch` (so an advisory can be answered
+from the Actions tab instead of by pushing an empty commit). All five jobs run on the nightly rather
+than gating four of them off: they are free on a public repo, and a nightly full run is the cheap
+way to catch toolchain rot in the runner images — which this project has already been bitten by once
+(the Firestore emulator's JDK 21 requirement).
+
+**Acceptance test.** `mobile/test/ci/workflow_gates_test.dart`, group `CI-F1` (5 new cases, 12
+total): both workflows carry a schedule and a manual trigger, and the audit job with all three of
+its load-bearing flags is still inside the workflow the schedule reaches — a cron pointed at a
+workflow the audit has left is green and audits nothing.
+
+### A defect the mutation found in my own test
+
+First version asserted `contains('schedule:')` against the raw YAML. Commenting the schedule out
+left the string `# schedule:` in the file and **the test still passed** — the mutation reported no
+failure at all, which is how a disabled nightly would have kept it green.
+
+This is the third time in this programme that a comment line has defeated a source scan (after
+`dormant_traps` and the l10n guard), and these workflows are the worst case for it: they carry more
+explanation than configuration, so every trigger name appears in prose a few lines from the trigger
+itself. The assertions now read a comment-stripped copy. Re-mutated: fails with `Actual: 'name:
+functions'`. Restored, 12/12 green, YAML re-parsed — 5 jobs, 4 triggers, unchanged.
+
+Found by mutating rather than by foresight. Recorded because the pattern is now three-for-three and
+worth remembering: a source scan over a file that documents itself must strip comments, or it is
+asserting that somebody wrote the word.
+
+### Status
+
+CI-F1 FIXED and pinned. F007 and F008 re-verified as previously recorded. Not pushed.
