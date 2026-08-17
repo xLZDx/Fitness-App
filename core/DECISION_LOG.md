@@ -13877,3 +13877,19 @@ Zero of this session's commits touch the operator's action log — verified over
 not asserted.
 
 Suites: **mobile 2812 passing · functions 171 passing**, both measured at this HEAD, zero failures.
+
+### Correction: a placeholder shipped in the release report
+
+The release decision report went out with `Final HEAD | see footer` — a literal placeholder — and a
+stale ahead-count. The operator spotted it in the rendered page.
+
+Cause worth recording, because it is a repeat: I used a Python string replace with **no assertion**
+on the result, and it printed its success message regardless. The replace had not matched (wrong
+indentation), so the file was unchanged, the commit that followed contained only the decision-log
+entry, and nothing anywhere objected.
+
+This is the same class as the CI-schedule mutation earlier in the programme: a check that cannot
+fail reports success indistinguishably from a check that passed. Every scripted edit in this
+session that mattered has since carried an `assert`; this one did not, and it is the one that got
+through. Corrected via a tool edit that fails loudly on a non-match, and the stale `34 ahead` fixed
+in the same pass.
