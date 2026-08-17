@@ -176,6 +176,80 @@ reviewed rows would make a challenger comparison meaningful; fewer would produce
 wider than any difference worth acting on. Nothing else is blocking, and no amount of further code
 substitutes for it.
 
+## `CT1_REVIEW_BATCH_001` — the batch that would close it
+
+Built by [scripts/ct1/review_batch.py](scripts/ct1/review_batch.py), written to
+[core/ml/review/ct1_review_batch_001/](core/ml/review/ct1_review_batch_001/), and asserted by
+[scripts/ct1/test_review_batch.py](scripts/ct1/test_review_batch.py) (26 tests, in CI).
+
+**The batch is BLIND, and everything else about it follows from that.** A reviewer who can see which
+rule fired is not producing a label; they are producing an agreement rate, and an agreement rate
+trained on is exactly the feedback loop the label contract refuses at the training step. Refusing it
+there and then handing reviewers the machine's output would be refusing it in the one place it cannot
+happen. So `items.json` carries the catalogue content a person needs and no label, flag, score or
+hint. The baseline's own labels for the same rows go to `sealed_baseline_labels.json`, which exists
+so the batch can be evaluated afterwards and is not part of what a reviewer opens. A test asserts the
+blindness by scanning the exported items for the vocabulary.
+
+**Sampling — stratified, and the manifest says so.**
+
+```text
+holdout rows          386
+flagged available      56   (every flagged holdout row is in the batch)
+unflagged available   330 -> 124 selected
+batch                 180   flagged_exhausted = true, backfilled = true, short = false
+double review          44   (~20%)
+```
+
+A batch drawn at random from the holdout would be ~86% unflagged and would measure the rules'
+precision on a handful of rows while saying nothing about what they MISS. A batch drawn only from
+flagged rows would measure precision exhaustively and could not, even in principle, discover a missed
+row. So both strata are drawn deliberately, flagged rows are spread across check families, and
+`manifest.sampling` states in the file that any rate computed on it describes THIS batch and must not
+be reported as a corpus rate.
+
+`flagged_wanted` (120) and `flagged_available` (56) are recorded separately on purpose: the shortfall
+is a property of the corpus, not a failure of the sampler, and when the whole flagged population fits
+the precision measurement is exhaustive for the holdout rather than a sample of it. The shortfall is
+backfilled from the other stratum and `backfilled` records that it happened — an earlier version
+returned a silently short batch, which a test caught.
+
+**What a reviewer is asked.** Five questions, each about CONTENT:
+`steps_match_title`, `steps_are_complete`, `equipment_is_correct`, `translation_is_faithful`,
+`summary_is_accurate`. Verdicts are `ok` / `problem` / `cannot_judge`.
+
+`cannot_judge` is not politeness. Forcing a verdict on a row a reviewer cannot assess manufactures a
+label, and a manufactured label is indistinguishable from a real one once it is in the file. It
+imports as an abstention and never as a class — a test asserts this.
+
+**No question asks whether an exercise is SAFE.** That is clinical authority, it is unreachable from
+this repository by construction, and a question that invites the answer is how a content label gets
+read as a clinical one. A test asserts that no question name contains `safe`, `risk`, `injur`,
+`contraindicat` or `clinic`. `D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED` and `H3 = HOLD` are
+untouched by this batch and cannot be closed by any label in it.
+
+**What the importer refuses**, each because the alternative is a label that looks exactly like a good
+one: a submission for another batch; a missing or machine-shaped reviewer identity; a `reviewer_kind`
+that is not the literal `HUMAN`; a review of a row nobody was asked about; a partially answered row;
+an answer to a question that was not asked; a verdict word outside the three.
+
+**What none of that establishes.** No file format can show that a reviewer is a person.
+`reviewer_kind` records a CLAIM, and the machine-identity blocklist catches the specific cheap
+mistake of putting a tool's name in the field — a determined mislabel would pass. The protection that
+actually holds is procedural: a label is trainable only when a named human took responsibility for
+it, and no agent, model or heuristic in this repository may enter that name. Stated here rather than
+implied by the code.
+
+**Double review.** ~20% of the batch is assigned to a second reviewer, chosen by hashing the item id
+so the assignment is stable and not a property of who opened the file first. `agreement()` reports
+compared / agreed / disagreed and returns `resolution: THIRD_REVIEWER_REQUIRED`. It does **not**
+resolve disagreements: an automatic tie-break is a machine deciding which human was right, which is
+the same substitution this whole module exists to prevent wearing a different hat.
+
+**Status.** The batch is BUILT and UNREVIEWED. `EVALUATION_LABEL_GAP` remains OPEN and closes only
+when reviewed labels come back and are imported. Nothing in this section is evidence about the
+baseline's precision or recall.
+
 ## Champion / challenger
 
 ```text

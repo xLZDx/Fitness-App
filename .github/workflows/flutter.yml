@@ -198,6 +198,13 @@ jobs:
       - name: Label contract, baseline, builder, evaluation
         run: python -m pytest scripts/ct1/test_ct1.py -q
 
+      # The review batch's blindness and the importer's refusals. Named as a
+      # separate step rather than folded into the line above so that a failure
+      # here reads as what it is: the human-label acquisition path stopped
+      # refusing something it must refuse.
+      - name: Review batch blindness and import refusals
+        run: python -m pytest scripts/ct1/test_review_batch.py -q
+
       # A rebuild that does not reproduce the committed hash means the pipeline
       # is not reproducible, whatever the manifest claims. Compared against the
       # checked-in manifest rather than against a second run in the same job:

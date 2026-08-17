@@ -14601,3 +14601,66 @@ session and every finding above is mine or one of the four subagents'.
 
 **Suites:** mobile 2858 passed / 0 failed; Cloud Functions 198 passed / 0 failed, `tsc` clean.
 `REMOTE-PUSH-GO` remains NO.
+
+## CT-1 advanced to human-label acquisition — `CT1_REVIEW_BATCH_001` built
+
+The gate CT-1 has been blocked on since it was designed. `EVALUATION_LABEL_GAP` is open because there
+are zero human-reviewed labels; every metric that could be reported would measure the baseline's
+agreement with itself. This builds the batch that closes it, and does not close it.
+
+**Blind, and everything else follows from that.** A reviewer who can see which rule fired produces an
+agreement rate, not a label. `items.json` carries the catalogue content a person needs to judge a row
+and no label, flag, score or hint; the baseline's own labels go to `sealed_baseline_labels.json`,
+which exists so the batch is evaluable afterwards and is not what a reviewer opens. Asserted by
+scanning the exported items for the vocabulary, not by intention.
+
+**Stratified, and the manifest says so in the file.** 386 holdout rows; 56 flagged (every flagged
+holdout row, so the precision measurement is exhaustive rather than a sample) plus 124 of 330
+unflagged; 180 total; 44 double-reviewed. A random draw would be ~86% unflagged and would say nothing
+about what the rules MISS; an all-flagged draw could not discover a missed row even in principle.
+`manifest.sampling` records that any rate computed on this batch describes this batch.
+
+**A defect the tests found, not the code review.** The first sampler took `min(available, share)` from
+each stratum independently and returned whatever that summed to. On a corpus where every holdout row
+is flagged it produced a 40-item batch for a requested 60, silently, with 48 unused flagged rows
+sitting there. A short batch that does not say it is short is the same lie as a capped export claiming
+to be whole. Now backfilled in both directions, with `backfilled` and `short` recorded.
+
+**A fixture defect found the same way.** The first test corpus gave every row identical steps, so
+`duplicate_steps_block` fired on all of it and the unflagged stratum was empty — the fixture
+guaranteed the outcome it was meant to test. Steps are now unique per row.
+
+**The five questions are about CONTENT and none asks whether an exercise is safe.** That is clinical
+authority, unreachable from this repository by construction, and a question that invites the answer is
+how a content label gets read as a clinical one. Asserted: no question name contains `safe`, `risk`,
+`injur`, `contraindicat` or `clinic`. `D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED` and `H3 = HOLD`
+are untouched and cannot be closed by any label in this batch.
+
+**`cannot_judge` is an abstention and never a class.** Forcing a verdict manufactures a label, and a
+manufactured label is indistinguishable from a real one once it is in the file.
+
+**What the importer refuses**, each because the alternative is a label that looks exactly like a good
+one: a submission for another batch; a missing or machine-shaped reviewer identity; a `reviewer_kind`
+that is not the literal `HUMAN`; a review of a row nobody was asked about; a partially answered row;
+an answer to a question that was not asked; a verdict word outside the three. A control case asserts a
+well-formed submission still imports, so the refusals are not satisfied by an importer that refuses
+everything.
+
+**Double review does not auto-resolve.** ~20%, assigned by hashing the item id so it is stable and not
+a property of who opened the file first. `agreement()` reports compared / agreed / disagreed and
+returns `THIRD_REVIEWER_REQUIRED`. An automatic tie-break is a machine deciding which human was right,
+which is the same substitution this module exists to prevent.
+
+**Stated limitation, in the module's own docstring rather than left to be discovered.** No file format
+can establish that a reviewer is a person. `reviewer_kind` records a CLAIM and the blocklist catches
+the cheap mistake of putting a tool's name in the field; a determined mislabel would pass. The
+protection that holds is procedural.
+
+**Status unchanged where it should be:** `EVALUATION_LABEL_GAP = OPEN`. The batch is BUILT and
+UNREVIEWED. `CONTINUOUS_RETRAINING_OPERATIONAL = NO`. `PRODUCTION_IMAGE_COLLECTION = DISABLED`.
+Nothing here is evidence about the baseline's precision or recall.
+
+CI runs the new suite as its own named step, so a failure reads as what it is: the human-label
+acquisition path stopped refusing something it must refuse.
+
+**Suites:** CT-1 56 passed (30 contract/builder + 26 batch/importer).

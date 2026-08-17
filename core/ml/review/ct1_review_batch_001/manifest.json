@@ -1,0 +1,43 @@
+{
+  "backfilled": true,
+  "batch_id": "CT1_REVIEW_BATCH_001",
+  "blind": true,
+  "double_review_items": 44,
+  "family_counts": {
+    "duplicate_steps_block": 13,
+    "duplicate_summary": 56,
+    "duplicate_title": 1
+  },
+  "flagged_available": 56,
+  "flagged_exhausted": true,
+  "flagged_selected": 56,
+  "flagged_wanted": 120,
+  "holdout_rows": 386,
+  "questions": [
+    "steps_match_title",
+    "steps_are_complete",
+    "equipment_is_correct",
+    "translation_is_faithful",
+    "summary_is_accurate"
+  ],
+  "requested_size": 180,
+  "sampling": "STRATIFIED, NOT RANDOM. Flagged and unflagged rows are drawn in a stated ratio and flagged rows are spread across check families. Any rate computed on this batch describes THIS batch and must not be reported as a corpus rate.",
+  "schema_version": 1,
+  "short": false,
+  "size": 180,
+  "source": {
+    "catalogue_en": "mobile/assets/data/exercises_vendor.json",
+    "sha256": {
+      "catalogue_en": "d9de3a740f9cc3d20e5ee994170969fe90bbdb7549444f5330483b904f3197c8"
+    }
+  },
+  "source_commit": "f9edcd1ac1f0d2272497872840a4f4557540c751",
+  "split": "holdout",
+  "unflagged_available": 330,
+  "unflagged_selected": 124,
+  "verdicts": [
+    "ok",
+    "problem",
+    "cannot_judge"
+  ]
+}
