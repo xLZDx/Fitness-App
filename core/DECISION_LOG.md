@@ -14858,3 +14858,11 @@ recovering from a season of undisclosed self-charges is not.
 The tests Option B needs are named, including the one that matters: the refusal must happen BEFORE
 `ensureCustomer` and any Stripe call, because a guard placed after it refuses the booking and still
 charges. `NOT DECIDED HERE` — this is a payments and product question.
+
+## Session report — CT-1 LabelOps
+
+`reports/ct1_labelops_2026-08-17.html`
+Artifact: https://claude.ai/code/artifact/8927140d-a664-4679-9962-a7910066ca19
+
+Three commits: `d482ece` (build), `c470b71` (gate-review remediation), `2ef5d94` (self-booking
+decision package). `REMOTE PUSH = NOT PERFORMED`; 57 commits ahead of upstream, nothing pushed.

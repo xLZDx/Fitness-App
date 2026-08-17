@@ -1,0 +1,421 @@
+<title>Human-Label Boundary</title>
+<style>
+:root{
+  --ink:#16181d; --ink-2:#3d434e; --ink-3:#6d7482;
+  --ground:#f7f6f3; --panel:#ffffff; --rule:#dedbd4;
+  --accent:#1f5f6b;          /* single accent: a desaturated deep teal */
+  --sig-open:#8a5a12;        /* semantic, not the accent */
+  --sig-good:#2f6042;
+  --sig-bad:#8f3524;
+  --chip:#eceae5;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,"Cascadia Mono",Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ink:#e6e4df; --ink-2:#b3b0a8; --ink-3:#84827b;
+    --ground:#131417; --panel:#1a1c20; --rule:#2e3137;
+    --accent:#67b3bf; --sig-open:#d3a04a; --sig-good:#6bab84; --sig-bad:#d0796a;
+    --chip:#24272c;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#e6e4df; --ink-2:#b3b0a8; --ink-3:#84827b;
+  --ground:#131417; --panel:#1a1c20; --rule:#2e3137;
+  --accent:#67b3bf; --sig-open:#d3a04a; --sig-good:#6bab84; --sig-bad:#d0796a;
+  --chip:#24272c;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font:16px/1.6 var(--sans); -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:74ch; margin:0 auto; padding:0 24px 96px}
+
+/* ---- masthead: the verdict is the hero, because it is the whole report ---- */
+header{padding:56px 0 28px; border-bottom:1px solid var(--rule)}
+.eyebrow{
+  font:600 11px/1 var(--sans); letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink-3); margin:0 0 20px;
+}
+h1{
+  font:400 clamp(30px,5.2vw,44px)/1.12 var(--serif); margin:0 0 18px;
+  letter-spacing:-.012em; text-wrap:balance;
+}
+.standfirst{font-size:18px; line-height:1.55; color:var(--ink-2); margin:0; max-width:62ch}
+
+.verdict{
+  margin:28px 0 0; padding:18px 20px; background:var(--panel);
+  border:1px solid var(--rule); border-left:3px solid var(--sig-open);
+  border-radius:3px;
+}
+.verdict .label{
+  font:600 11px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase;
+  color:var(--sig-open); display:block; margin-bottom:8px;
+}
+.verdict p{margin:0; color:var(--ink-2)}
+.verdict code{font-family:var(--mono); font-size:.92em; color:var(--ink)}
+
+/* ---- facts strip ---- */
+.facts{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:1px; background:var(--rule); border:1px solid var(--rule);
+  border-radius:3px; margin:32px 0 0; overflow:hidden;
+}
+.facts div{background:var(--panel); padding:14px 16px}
+.facts dt{
+  font:600 10px/1 var(--sans); letter-spacing:.13em; text-transform:uppercase;
+  color:var(--ink-3); margin:0 0 6px;
+}
+.facts dd{
+  margin:0; font-family:var(--mono); font-size:15px;
+  font-variant-numeric:tabular-nums; color:var(--ink);
+}
+
+section{margin:52px 0 0}
+h2{
+  font:400 26px/1.25 var(--serif); margin:0 0 6px; letter-spacing:-.008em;
+  text-wrap:balance;
+}
+h2 + .sub{color:var(--ink-3); margin:0 0 22px; font-size:15px}
+h3{font:600 15px/1.4 var(--sans); margin:28px 0 8px}
+p{margin:0 0 14px; max-width:66ch}
+a{color:var(--accent); text-underline-offset:2px}
+code{font-family:var(--mono); font-size:.9em; background:var(--chip);
+  padding:1px 5px; border-radius:3px}
+pre{
+  font-family:var(--mono); font-size:13.5px; line-height:1.55;
+  background:var(--panel); border:1px solid var(--rule); border-radius:3px;
+  padding:14px 16px; overflow-x:auto; margin:0 0 18px;
+}
+pre code{background:none; padding:0; font-size:inherit}
+
+/* ---- findings ---- */
+.finding{
+  background:var(--panel); border:1px solid var(--rule); border-radius:3px;
+  padding:16px 18px; margin:0 0 14px;
+}
+.finding > h4{
+  font:600 16px/1.4 var(--sans); margin:0 0 4px; display:flex; gap:10px;
+  align-items:baseline; flex-wrap:wrap;
+}
+.sev{
+  font:700 10px/1 var(--sans); letter-spacing:.1em; padding:4px 7px;
+  border-radius:2px; background:var(--chip); color:var(--ink-2);
+  flex:none; text-transform:uppercase;
+}
+.sev.major{background:var(--sig-bad); color:#fff}
+.sev.minor{background:var(--chip); color:var(--ink-2)}
+.finding p{margin:8px 0 0; font-size:15px; color:var(--ink-2)}
+.finding p:first-of-type{color:var(--ink)}
+.finding .measured{
+  font-family:var(--mono); font-size:13px; color:var(--ink-2);
+  background:var(--ground); border-left:2px solid var(--accent);
+  padding:8px 12px; margin:12px 0 0; overflow-x:auto;
+}
+
+/* ---- tables ---- */
+.scroll{overflow-x:auto; margin:0 0 18px; border:1px solid var(--rule);
+  border-radius:3px; background:var(--panel)}
+table{border-collapse:collapse; width:100%; font-size:14.5px; min-width:520px}
+th,td{text-align:left; padding:9px 14px; border-bottom:1px solid var(--rule);
+  vertical-align:top}
+th{font:600 10px/1.3 var(--sans); letter-spacing:.11em; text-transform:uppercase;
+  color:var(--ink-3); white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.num{font-family:var(--mono); font-variant-numeric:tabular-nums;
+  white-space:nowrap}
+.killed{color:var(--sig-good); font-weight:600}
+.state-open{color:var(--sig-open); font-weight:600}
+
+ul{margin:0 0 14px; padding-left:20px; max-width:66ch}
+li{margin:5px 0}
+.note{
+  font-size:14.5px; color:var(--ink-2); border-left:2px solid var(--rule);
+  padding-left:16px; margin:18px 0;
+}
+footer{margin:64px 0 0; padding-top:22px; border-top:1px solid var(--rule);
+  color:var(--ink-3); font-size:14px}
+:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">SPTR · CT-1 Content QA · 17 August 2026</p>
+  <h1>Everything up to the point where a person has to read something</h1>
+  <p class="standfirst">
+    The CT-1 gate has been blocked since it was designed on one thing: there are no
+    human-reviewed labels, so every quality number the project could report would be
+    the rules agreeing with themselves. This session built the entire path around that
+    gap — the batch, the interface, the importer, adjudication, the evaluation dataset,
+    the estimator and both leakage guards — and did not fabricate the one thing it is
+    waiting for.
+  </p>
+
+  <div class="verdict">
+    <span class="label">Stopped at</span>
+    <p><code>BLOCKER = HUMAN_REVIEW_LABELS_REQUIRED</code> — a legitimate external-input
+    boundary. <code>EVALUATION_LABEL_GAP</code> stays <span class="state-open">OPEN</span>.
+    Nothing in this report is evidence about the baseline's precision or recall.</p>
+  </div>
+
+  <dl class="facts">
+    <div><dt>Starting HEAD</dt><dd>763cf93</dd></div>
+    <div><dt>Final HEAD</dt><dd>2ef5d94</dd></div>
+    <div><dt>Commits</dt><dd>3</dd></div>
+    <div><dt>Ahead / behind</dt><dd>57 / 0</dd></div>
+    <div><dt>CT-1 suite</dt><dd>184 passed</dd></div>
+    <div><dt>Mutations killed</dt><dd>22 / 22</dd></div>
+    <div><dt>Remote push</dt><dd class="state-open">NOT PERFORMED</dd></div>
+  </dl>
+</header>
+
+<section>
+  <h2>What was built</h2>
+  <p class="sub">Nine executable components, 184 tests, in <code>scripts/ct1/</code>.</p>
+
+  <p>
+    The design constraint everything else follows from: a reviewer who can see which rule
+    fired is not producing a label, they are producing an agreement rate — and an agreement
+    rate trained on looks exactly like a human label while being a slightly noisier copy of
+    the rule that generated it. That is the feedback loop the label contract already refuses
+    at the training step, and handing reviewers the machine's output would be refusing it in
+    the one place it cannot happen.
+  </p>
+
+  <div class="scroll"><table>
+    <thead><tr><th>Component</th><th>What it refuses</th></tr></thead>
+    <tbody>
+      <tr><td><code>review_batch.py</code></td><td>A batch whose recorded contract is not the one this code implements</td></tr>
+      <tr><td><code>review_app.py</code></td><td>Showing a rule name, a score, another reviewer, or that a row is doubled</td></tr>
+      <tr><td><code>review_import.py</code></td><td>Wrong batch, wrong schema, wrong slot, duplicate row, naive timestamp, uncoded problem</td></tr>
+      <tr><td><code>human_eval.py</code></td><td>Overwriting a published evaluation set; reporting a batch rate as a prevalence</td></tr>
+      <tr><td><code>leakage_guard.py</code></td><td>Training on machine output, or on a human label from a holdout row</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>The three numbers, named so they cannot be swapped</h3>
+  <p>
+    The batch over-samples flagged rows roughly sevenfold by design, so <code>bad / 180</code>
+    is true about those rows and wrong about anything else.
+  </p>
+<pre><code>BATCH METRIC      defective / reviewed. Describes THESE rows. Not prevalence.
+HOLDOUT ESTIMATE  stratum rates re-weighted by the holdout population, with a
+                  standard error. The flagged stratum is sampled exhaustively,
+                  so it contributes zero sampling variance; the uncertainty is
+                  attributed to the 125-of-331 unflagged sample, where it lives.
+CATALOGUE RATE    null, with the assumption written out. Its absence is a
+                  statement, not an omission somebody fills in.</code></pre>
+
+  <div class="note">
+    A guard was <em>removed</em> rather than counted. <code>assert_trainable</code> checked for
+    a reviewed label with no named reviewer — an object <code>Label.__post_init__</code> already
+    makes impossible to construct, so the branch could never fire. A branch that cannot fail is
+    a branch nobody knows is disconnected.
+  </div>
+</section>
+
+<section>
+  <h2>The gate review</h2>
+  <p class="sub">Four independent reviewers, round 1 with no shared output. Every MAJOR reproduced before it was accepted.</p>
+
+  <div class="finding">
+    <h4><span class="sev major">Major</span> An adjudicator's name next to a value they contradicted</h4>
+    <p><code>adjudicate()</code> validated a ruling whose key had one reviewer, or two who agreed,
+    then never read it — the branch order reaches <code>SINGLE</code> and <code>AGREE</code> before
+    it consults a ruling.</p>
+    <div class="measured">ruling: value=False by qa.carol
+result: state=SINGLE  value=True  adjudicator='qa.carol'</div>
+    <p>Both states are <code>USABLE</code>, so a documented human correction would have been dropped
+    into an immutable dataset while the record named the person who made it. Now refused: an
+    adjudication of something nobody disputed is not an adjudication.</p>
+  </div>
+
+  <div class="finding">
+    <h4><span class="sev major">Major</span> The baseline flagged duplicates by position in the file</h4>
+    <p>Found by a test written <em>for this review</em>, asserting that selection is a function of the
+    row id. <code>duplicate_title</code>, <code>duplicate_summary</code> and
+    <code>duplicate_steps_block</code> reported the second and later occurrence in input order, so
+    which member of a duplicate group got flagged was a fact about the catalogue's layout.</p>
+    <div class="measured">same content, rows shuffled → symmetric difference: 1 row
+flagged holdout population: 56 → 55 after the fix</div>
+    <p>A vendor re-export in a different order would have silently changed which rows reviewers were
+    sent — the same instability the hash-based sampling exists to avoid, reached by another route.
+    Fixed to the lowest id in the group; queue size unchanged.</p>
+  </div>
+
+  <div class="finding">
+    <h4><span class="sev major">Major</span> The manifest described the contract and no consumer read it</h4>
+    <p>Questions, verdicts, reason codes and schema version were written into every manifest while
+    the page generator, importer and evaluator all read the code constants. Documentation that cannot
+    be wrong is documentation nobody checks. Concretely: bump the constants, regenerate pages from a
+    committed batch — the documented command — and reviewers answer v3 questions over a v2 batch with
+    nothing erroring anywhere. <code>check_contract()</code> now refuses field by field.</p>
+  </div>
+
+  <div class="finding">
+    <h4><span class="sev major">Major</span> <code>SCHEMA_VERSION</code> had not moved although the manifest shape had</h4>
+    <p>Both 001 and 002 said <code>schema_version: 1</code> while 002 had gained five fields, so a
+    consumer dispatching on it could not tell them apart. Now 2.</p>
+  </div>
+
+  <div class="finding">
+    <h4><span class="sev major">Major</span> CI compared what a reviewer opens, not what the metrics come from</h4>
+    <p><code>sealed_baseline_labels.json</code> is the ground truth behind every precision figure and
+    the manifest carries the stratum populations the estimator weights by. Drift in either leaves
+    <code>items.json</code> identical and the numbers wrong. All four artefacts are compared now,
+    the manifest minus <code>source_commit</code>, with the path derived from <code>BATCH_ID</code>.</p>
+  </div>
+
+  <div class="finding">
+    <h4><span class="sev minor">Minor</span> Eight smaller findings, all confirmed and fixed</h4>
+    <p>Six guards had no test at all. A non-dict review entry raised <code>AttributeError</code> from
+    the middle of the loop instead of being refused with a sentence. A stratum with one reviewed row
+    contributed full weight to the estimate and nothing to the standard error, silently — it says so
+    now. <code>import_reviews</code> had an <code>assignments=None</code> default that disabled the
+    unplanned-reviewer check for any caller that forgot it; a convenience default that turns off a
+    check is a check with an off switch.</p>
+  </div>
+
+  <h3>Two tests that could not have failed</h3>
+  <p>
+    The determinism test claimed to rule out a seeded shuffle. It did not — <code>random.Random(seed).sample</code>
+    satisfies both of its assertions, measured. Its replacement asserts order-independence, which a
+    seeded shuffle cannot satisfy, and it failed against the real code immediately, producing the
+    baseline finding above. Separately, the double-review test asserted "fewer than half"; a mutation
+    raising the share to 50% still passed because the hash landed just under the line.
+  </p>
+  <p>
+    Earlier in the session a mutation of the estimator <span class="killed">survived</span>: the shared
+    fixture duplicated every second row, making both strata exactly 44 rows, which made a
+    population-weighted estimate numerically identical to an unweighted mean. That is the third time
+    in this programme a fixture has guaranteed its own outcome.
+  </p>
+</section>
+
+<section>
+  <h2>Mutation evidence</h2>
+  <p class="sub">Each mutation is applied to the guarded source, not to the guard. Every file restored byte-for-byte and re-verified green.</p>
+
+  <div class="scroll"><table>
+    <thead><tr><th>Mutation</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>The reviewer's page shows which rule fired</td><td class="num killed">KILLED</td></tr>
+      <tr><td>The package marks its double-reviewed rows</td><td class="num killed">KILLED</td></tr>
+      <tr><td>A stale review is imported instead of flagged</td><td class="num killed">KILLED</td></tr>
+      <tr><td>A disagreement is resolved by majority</td><td class="num killed">KILLED</td></tr>
+      <tr><td>An unreturned row counts as reviewed-and-clean</td><td class="num killed">KILLED</td></tr>
+      <tr><td>A holdout human label becomes trainable</td><td class="num killed">KILLED</td></tr>
+      <tr><td>The split guard checks only the intersection</td><td class="num killed">KILLED</td></tr>
+      <tr><td>The batch rate is reported as the holdout rate</td><td class="num killed">KILLED<sup>†</sup></td></tr>
+      <tr><td>An unsampled stratum is treated as zero</td><td class="num killed">KILLED</td></tr>
+      <tr><td>The evaluation dataset is overwritten in place</td><td class="num killed">KILLED</td></tr>
+      <tr><td>A problem needs no reason code</td><td class="num killed">KILLED</td></tr>
+      <tr><td>A machine adjudicates between two humans</td><td class="num killed">KILLED</td></tr>
+      <tr><td>The baseline picks its keeper by file position</td><td class="num killed">KILLED</td></tr>
+      <tr><td>A foreign batch contract is processed anyway</td><td class="num killed">KILLED</td></tr>
+      <tr><td>The importer stops checking the contract</td><td class="num killed">KILLED</td></tr>
+      <tr><td>A ruling on an undisputed key is accepted</td><td class="num killed">KILLED</td></tr>
+      <tr><td>A non-object review entry crashes</td><td class="num killed">KILLED</td></tr>
+      <tr><td>An anonymous reviewer identity is accepted</td><td class="num killed">KILLED</td></tr>
+      <tr><td><code>reason_codes</code> may be a bare string</td><td class="num killed">KILLED</td></tr>
+      <tr><td>A one-row stratum hides its missing variance</td><td class="num killed">KILLED</td></tr>
+      <tr><td>Double review silently raised to half the batch</td><td class="num killed">KILLED<sup>†</sup></td></tr>
+      <tr><td>An identifier that would break an HTML attribute</td><td class="num killed">KILLED</td></tr>
+    </tbody>
+  </table></div>
+  <p style="font-size:14px;color:var(--ink-3)"><sup>†</sup> Survived on first run. Both survivals
+  were test defects, not guard defects; the tests were repaired and the mutation re-run.</p>
+</section>
+
+<section>
+  <h2>Why the batch is 003</h2>
+  <p>
+    The baseline fix moved two rows, so the reviewer assignments changed. Rebuilding 002 in place was
+    tempting — it was committed the same afternoon, never pushed, and nothing had been returned
+    against it.
+  </p>
+  <p>
+    That argument rests on <em>nobody has a copy</em>, and this checkout is shared: the 002 reviewer
+    pages sat on disk where anyone could have opened one. A claim I cannot check is not allowed to be
+    what a rule hangs on, and a new directory costs nothing and needs no such claim. 001 and 002 are
+    both kept, 002 carrying a <code>SUPERSEDED.md</code>; a test rebuilds against
+    <code>002/items.json</code> and asserts the move was the small explained one rather than a
+    reshuffle.
+  </p>
+  <div class="note">
+    Deleting the superseded directories is an operator call. The shell policy hook blocks recursive
+    deletes, and the response to a guard is to work with it rather than around it.
+  </div>
+</section>
+
+<section>
+  <h2>Tests</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Suite</th><th>Result</th><th>HEAD</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td>CT-1 (<code>scripts/ct1/</code>)</td><td class="num">184 passed</td><td class="num">2ef5d94</td><td>was 56 at session start</td></tr>
+      <tr><td>Mobile CI gates (<code>test/ci/</code>)</td><td class="num">13 passed</td><td class="num">d482ece</td><td>run because the workflow changed</td></tr>
+      <tr><td>Batch 003 rebuild</td><td class="num">4 / 4 identical</td><td class="num">2ef5d94</td><td>items, assignments, manifest, sealed</td></tr>
+      <tr><td>Dataset rebuild</td><td class="num">hash matches</td><td class="num">2ef5d94</td><td>rebuilt after the baseline fix</td></tr>
+      <tr><td>Mobile full suite</td><td class="num">not re-run</td><td class="num">—</td><td>no Dart source changed</td></tr>
+      <tr><td>Cloud Functions</td><td class="num">not re-run</td><td class="num">—</td><td>no TypeScript changed</td></tr>
+      <tr><td>Firestore rules</td><td class="num">not re-run</td><td class="num">—</td><td>rules untouched</td></tr>
+    </tbody>
+  </table></div>
+  <p>
+    The three suites marked <em>not re-run</em> are stated rather than quoted from an earlier HEAD.
+    <code>git diff --name-only 763cf93..HEAD</code> touches only <code>.github/workflows</code>,
+    <code>core/</code> and <code>scripts/ct1/</code> — no <code>mobile/</code>,
+    <code>functions/</code> or <code>firestore.rules</code>.
+  </p>
+</section>
+
+<section>
+  <h2>What is still open</h2>
+  <p class="sub">Read from the decision log and current source, not from memory.</p>
+
+  <h3>Blocked on a person</h3>
+  <ul>
+    <li><strong>CT-1 human labels.</strong> 180 rows dealt into three packages. Everything downstream
+      is built and tested; none of it can be honestly simulated.</li>
+  </ul>
+
+  <h3>Operator decisions, none of them a code defect</h3>
+  <ul>
+    <li><strong>Self-booking.</strong> Written up this session with both options costed and a
+      recommended reversible default — see the decision package. <span class="state-open">OPEN</span>.</li>
+    <li><strong>App Check on the metered video endpoints.</strong> The only thing that closes N-05.</li>
+    <li><strong>Should filing an equipment report require gym association?</strong> A product question
+      about how membership works, which the repository does not model.</li>
+    <li><strong>Deleting the superseded review batches.</strong> Raised by this session.</li>
+  </ul>
+
+  <h3>External authority</h3>
+  <ul>
+    <li><code>D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED</code> and <code>H3 = HOLD</code> — untouched,
+      and unreachable from any label in this batch by construction.</li>
+  </ul>
+
+  <div class="note">
+    The external second-opinion tool has not run successfully on the last several gates
+    (<code>usage_limit_exhausted</code>). Its receipt satisfies the local gate fail-open by design.
+    <strong>No external review actually ran</strong>; every finding above is either my own measurement
+    or a subagent's claim that I reproduced.
+  </div>
+</section>
+
+<footer>
+  <p>
+    <code>REMOTE PUSH = NOT PERFORMED.</code> Branch <code>formcoach/gates-a-c</code>, 57 commits
+    ahead of its upstream, nothing pushed. Two pre-existing dirty files
+    (<code>core/plans/FINAL_AUTONOMOUS_ACTION_LOG.csv</code>, and
+    <code>mobile/lib/features/safety/data/eligibility.dart</code>, verified byte-identical to HEAD)
+    were left untouched and unstaged.
+  </p>
+</footer>
+
+</div>
