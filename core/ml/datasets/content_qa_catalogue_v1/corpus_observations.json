@@ -1,0 +1,23 @@
+[
+  {
+    "degenerate": true,
+    "distinct_values": 3,
+    "dominant_share": 0.9947,
+    "dominant_value": "beginner",
+    "field": "difficulty"
+  },
+  {
+    "degenerate": false,
+    "distinct_values": 12,
+    "dominant_share": 0.2099,
+    "dominant_value": "Legs",
+    "field": "vendorGroup"
+  },
+  {
+    "degenerate": false,
+    "distinct_values": 2,
+    "dominant_share": 0.885,
+    "dominant_value": false,
+    "field": "isStretch"
+  }
+]

@@ -1,0 +1,136 @@
+{
+  "corpus": [
+    {
+      "degenerate": true,
+      "distinct_values": 3,
+      "dominant_share": 0.9947,
+      "dominant_value": "beginner",
+      "field": "difficulty"
+    },
+    {
+      "degenerate": false,
+      "distinct_values": 12,
+      "dominant_share": 0.2099,
+      "dominant_value": "Legs",
+      "field": "vendorGroup"
+    },
+    {
+      "degenerate": false,
+      "distinct_values": 2,
+      "dominant_share": 0.885,
+      "dominant_value": false,
+      "field": "isStretch"
+    }
+  ],
+  "coverage": {
+    "heuristic_flags": 264,
+    "observations": 1400,
+    "rows": 1887,
+    "rows_with_any_finding": 836,
+    "share": 0.443
+  },
+  "evaluation_label_gap": {
+    "blocks": [
+      "precision",
+      "recall",
+      "false_positive_rate",
+      "calibration",
+      "novel_defect_yield"
+    ],
+    "reason": "no human-reviewed QA labels exist in this repository, so precision, recall and false-positive rate cannot be computed against a ground truth. Numbers derived from the baseline's own output would measure it against itself.",
+    "reviewed_labels": 0,
+    "state": "EVALUATION_LABEL_GAP",
+    "what_would_close_it": "a reviewed sample drawn from the holdout split; see core/ml/CT1_CONTENT_QA.md for the size that would make a challenger comparison meaningful"
+  },
+  "queue_shape": [
+    {
+      "check": "field_present_but_empty:primaryMuscles",
+      "exact_by_construction": true,
+      "items": 451,
+      "share_of_queue": 0.271
+    },
+    {
+      "check": "field_absent:tips",
+      "exact_by_construction": true,
+      "items": 407,
+      "share_of_queue": 0.2446
+    },
+    {
+      "check": "field_absent:contraindications",
+      "exact_by_construction": true,
+      "items": 359,
+      "share_of_queue": 0.2157
+    },
+    {
+      "check": "duplicate_summary",
+      "exact_by_construction": true,
+      "items": 216,
+      "share_of_queue": 0.1298
+    },
+    {
+      "check": "field_present_but_empty:muscles",
+      "exact_by_construction": true,
+      "items": 182,
+      "share_of_queue": 0.1094
+    },
+    {
+      "check": "duplicate_steps_block",
+      "exact_by_construction": true,
+      "items": 45,
+      "share_of_queue": 0.027
+    },
+    {
+      "check": "duplicate_title",
+      "exact_by_construction": true,
+      "items": 3,
+      "share_of_queue": 0.0018
+    },
+    {
+      "check": "field_present_but_empty:contraindications",
+      "exact_by_construction": true,
+      "items": 1,
+      "share_of_queue": 0.0006
+    }
+  ],
+  "requires_judgement_not_covered": [
+    "steps contradict the title",
+    "description promises equipment the row does not use",
+    "cues are unsafe in wording without naming a clinical claim",
+    "a translation that is fluent but not a translation of this row",
+    "instructions that are correct but for a different movement"
+  ],
+  "slices": {
+    "has_equipment": {
+      "False": {
+        "flagged": 278,
+        "flagged_share": 0.5527,
+        "rows": 503
+      },
+      "True": {
+        "flagged": 558,
+        "flagged_share": 0.4032,
+        "rows": 1384
+      }
+    },
+    "has_ru": {
+      "True": {
+        "flagged": 836,
+        "flagged_share": 0.443,
+        "rows": 1887
+      }
+    },
+    "is_stretch": {
+      "False": {
+        "flagged": 677,
+        "flagged_share": 0.4054,
+        "rows": 1670
+      },
+      "True": {
+        "flagged": 159,
+        "flagged_share": 0.7327,
+        "rows": 217
+      }
+    }
+  },
+  "unclassified_check_families": []
+}

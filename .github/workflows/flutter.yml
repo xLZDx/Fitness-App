@@ -160,3 +160,49 @@ jobs:
             -no-boot-anim -camera-back emulated -camera-front emulated
           working-directory: mobile
           script: flutter test integration_test/app_test.dart --reporter=expanded
+
+  # CT-1. Cheap on purpose: a contract check and a rule set, not a training
+  # run. §26 of the CT-1 brief is explicit that expensive training must not
+  # ride on every commit, and there is nothing to train here anyway -- the
+  # champion is deterministic. What this job protects is the part that CAN
+  # rot silently: the label ontology's refusal to train on machine output, and
+  # the dataset builder's reproducibility.
+  ct1-content-qa:
+    name: CT-1 content QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pytest
+        run: python -m pip install --quiet pytest
+
+      - name: Label contract, baseline, builder, evaluation
+        run: python -m pytest scripts/ct1/test_ct1.py -q
+
+      # A rebuild that does not reproduce the committed hash means the pipeline
+      # is not reproducible, whatever the manifest claims. Compared against the
+      # checked-in manifest rather than against a second run in the same job:
+      # two runs of the same code agreeing proves determinism, not that the
+      # artefact in the repository is the one this code produces.
+      - name: The committed dataset is the one this code builds
+        run: |
+          python scripts/ct1/build_dataset.py --out /tmp/ct1
+          python - <<'PY'
+          import json, sys
+          a = json.load(open("core/ml/datasets/content_qa_catalogue_v1/manifest.json", encoding="utf-8"))
+          b = json.load(open("/tmp/ct1/content_qa_catalogue_v1/manifest.json", encoding="utf-8"))
+          if a["dataset_hash"] != b["dataset_hash"]:
+              sys.exit(
+                  "dataset_hash drifted: committed %s, rebuilt %s.\n"
+                  "Either the catalogue changed without the dataset being "
+                  "rebuilt, or the builder stopped being deterministic."
+                  % (a["dataset_hash"], b["dataset_hash"])
+              )
+          print("dataset_hash matches:", a["dataset_hash"])
+          PY

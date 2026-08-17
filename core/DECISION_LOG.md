@@ -14116,3 +14116,65 @@ Suites at the freeze: mobile 2828, functions 185, Firestore rules 64, zero failu
 
 Residual MINORs and two operator decisions are listed in the freeze record rather than left implied.
 Nothing in the freeze touches D1, H3, D3 or PRODUCTION_IMAGE_COLLECTION.
+
+## CT-1 Content QA — BASELINE_READY, and CONTINUOUS_RETRAINING_OPERATIONAL = NO
+
+The instruction was not to write another architecture document and stop. Four executable components
+under `scripts/ct1/`, 29 tests, a built dataset with a real provenance commit, and a registry entry.
+Full account in `core/ml/CT1_CONTENT_QA.md`.
+
+**The champion is a rule set, and that is a decision rather than a placeholder.** Measured on the
+shipped catalogue: 1,664 findings over 836 rows (44.3%). Every check is exact, so its precision
+against its own definition is 1.0 and reporting that number would be meaningless. Training a
+classifier to detect a missing key would be a slower, less precise, unexplainable reimplementation of
+`'contraindications' not in row`. The checks a model could actually earn its keep on -- steps
+contradicting a title, a fluent non-translation -- are deliberately ABSENT, because they are what a
+challenger has to bring.
+
+**Two findings from the baseline worth keeping.** `difficulty` is degenerate: 1,877 of 1,887 rows say
+`beginner`, a field carrying no information whatever it was meant to carry. And exactly one row has
+`contraindications` present-but-empty against 359 with the key absent -- a third state, and the only
+trace in the catalogue that somebody decided that row has none. It is also why the clinical handoff's
+1,527/360 split is right: it counts truthiness, not key presence.
+
+**EVALUATION_LABEL_GAP is reported instead of numbers.** Zero reviewed labels exist, so precision and
+recall could only be computed against the baseline's own output -- the self-referential loop the label
+contract forbids. Computing it while forbidding it would have been a strange principle. ~150-200
+reviewed rows from the 386-row holdout would close it; nothing else is blocking and no further code
+substitutes for a person.
+
+**Three anti-loop rules are enforced in code, not documented.** A model prediction can never be a
+training target; nor can a heuristic flag, because imitating the rules is not beating them; and
+`CLINICALLY_VALIDATED_LABEL` raises on construction, so the member exists to make the absence
+representable and unpromotable. A reviewed label without a reviewer raises, and a machine label WITH
+one raises too -- a heuristic flag with a person's name beside it reads exactly like a review.
+
+**The registry fence had to grow, and what it caught is worth recording.** Its rule "not bundled
+implies not champion" conflated *runs on the phone* with *is in charge* -- correct only while every
+registered model ran on a device. An offline advisory champion is in nobody's APK. Every entry now
+declares `deployment_surface`, the on-device guarantee is kept exactly, and the rule cannot silently
+exempt an entry that omits the field. Separately, the exemption for a first champion was keyed on the
+literal string `v1`, which would have exempted any future task's v1 by coincidence of naming.
+
+**`training_code_commit` is `RECORDED_PER_BUILD`, not `UNKNOWN`** -- CT-1 exists to start doing
+provenance properly. The token is permitted only under a condition the fence enforces: the named
+evaluation report must exist and its manifest must carry a real commit, which is strictly stronger
+than what the legacy models are held to. Mutation-proven. Writing a literal commit into the registry
+was rejected because the commit containing the registry cannot be known while writing it -- this
+programme already shipped that self-reference once, in a report that stated its own final HEAD.
+
+**Reproducibility is two claims, kept separate.** Deterministic: the split hashes each row's stable
+id, so corpus growth cannot reshuffle existing assignments -- the failure mode of a seeded shuffle,
+which is reproducible for a fixed corpus and silently is not once it grows. Attested: `dataset_hash`
+excludes the manifest's own timestamp, because a hash that moves when nothing moved proves nothing.
+CI compares a rebuild against the COMMITTED manifest, not a second run in the same job -- two runs
+agreeing proves determinism, not that the committed artefact is what this code produces.
+
+**Two bugs in my own CT-1 code, found by its tests before commit.** The degeneracy rule carried an
+`and len(counts) > 1` guard that exempted a field holding a single value everywhere -- the most
+degenerate case there is. And the manifest used `relative_to(REPO)`, which raised for any input
+outside the repository, including the one a test supplies.
+
+Privacy: no images, no personal data, asserted by a test that scans the built dataset for photo,
+image, camera, uid, email, poster and video. That is why CT-1 went first, and the way to keep the
+scanner's blocking questions from arising here is to never add the field.

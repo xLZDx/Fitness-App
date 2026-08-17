@@ -90,7 +90,34 @@ void main() {
     test('a model that is not shipped does not claim to be', () {
       for (final m in models.where((m) => m['bundled'] != true)) {
         expect(m['deployment_status'], isNot('BUNDLED'), reason: '${m['model_version']}');
-        expect(m['champion'], isNot(true), reason: '${m['model_version']}');
+      }
+    });
+
+    test('an on-device champion is in the APK, or it serves nobody', () {
+      // This used to read "not bundled implies not champion", which conflated
+      // two different things and was only correct while every registered model
+      // ran on the phone. CT-1's champion is a rule set that runs offline and
+      // is nobody's APK asset; under the old rule it could not have been
+      // recorded as champion at all, which would have made the registry
+      // silent about the thing actually in charge of content QA.
+      //
+      // The guarantee that mattered is kept exactly: a model users' devices
+      // execute cannot be champion unless it is in the build they have.
+      for (final m in models.where((m) => m['deployment_surface'] == 'ON_DEVICE')) {
+        if (m['champion'] != true) continue;
+        expect(m['bundled'], isTrue,
+            reason: '${m['model_version']} is the on-device champion and is '
+                'not in the APK');
+      }
+    });
+
+    test('every model declares where it runs', () {
+      // Otherwise the rule above silently exempts anything that forgets the
+      // field, which is the failure mode of every allowlist.
+      const surfaces = {'ON_DEVICE', 'OFFLINE_ADVISORY'};
+      for (final m in models) {
+        expect(surfaces, contains(m['deployment_surface']),
+            reason: '${m['model_id']}@${m['model_version']}');
       }
     });
   });
@@ -176,11 +203,22 @@ void main() {
 
     test('a champion that is not the first of its kind has a rollback target',
         () {
-      // v1 legitimately has none — there is nothing behind it. Anything that
-      // replaces it must name what it falls back to, because "we promoted and
-      // cannot go back" is not a deployment, it is a hope.
+      // A first champion legitimately has none — there is nothing behind it.
+      // Anything that replaces it must name what it falls back to, because "we
+      // promoted and cannot go back" is not a deployment, it is a hope.
+      //
+      // The exemption was `model_version == 'v1'`, which is a version string
+      // and not a fact about the model — it would have exempted any future
+      // task's v1 by coincidence of naming, and CT-1 arriving as a second task
+      // is what made that visible. It is now a declared flag, and declaring it
+      // still costs a written reason.
       for (final m in models.where((m) => m['champion'] == true)) {
-        if (m['model_version'] == 'v1') continue;
+        if (m['first_of_its_kind'] == true) {
+          expect(m['rollback_note'], isNotNull,
+              reason: '${m['model_id']}@${m['model_version']} claims to be the '
+                  'first of its kind and does not say why that is true');
+          continue;
+        }
         expect(m['rollback_target'], isNotNull,
             reason: '${m['model_id']}@${m['model_version']} is champion with '
                 'no rollback target');
@@ -210,7 +248,8 @@ void main() {
       // genuinely unresolvable for both models -- the pipeline is not under
       // version control -- and writing a plausible sha would be worse than
       // useless. UNKNOWN is the accurate value and the useful one.
-      const permitted = {'UNKNOWN', 'NOT_RECORDED', 'LEGACY'};
+      const permitted = {'UNKNOWN', 'NOT_RECORDED', 'LEGACY',
+                         'RECORDED_PER_BUILD'};
       for (final m in models) {
         for (final field in const [
           'training_code_commit',
@@ -222,6 +261,36 @@ void main() {
               reason: '${m['model_version']}.$field = "$value" is neither a '
                   'real commit nor an honest admission that there is not one');
         }
+      }
+    });
+
+    /// `RECORDED_PER_BUILD` is a pointer, and a pointer that resolves to
+    /// nothing is worse than `UNKNOWN` — it claims provenance exists.
+    ///
+    /// So it is permitted above only on the condition enforced here: the named
+    /// evaluation report must exist and must carry a real commit. This is
+    /// strictly stronger than what the legacy models are held to, which is the
+    /// intent — CT-1 exists to start doing provenance properly, and a token
+    /// that let it off would defeat the point.
+    test('RECORDED_PER_BUILD resolves to a real commit', () {
+      for (final m in models.where(
+          (m) => m['training_code_commit'] == 'RECORDED_PER_BUILD')) {
+        final report = m['evaluation_report'] as String?;
+        expect(report, isNotNull,
+            reason: '${m['model_version']} says its commit is recorded per '
+                'build and does not say where');
+        final manifest = File('../${report!}')
+            .parent
+            .uri
+            .resolve('manifest.json')
+            .toFilePath();
+        final f = File(manifest);
+        expect(f.existsSync(), isTrue, reason: 'no manifest at $manifest');
+        final commit =
+            (jsonDecode(f.readAsStringSync()) as Map)['source_commit'] as String;
+        expect(RegExp(r'^[0-9a-f]{7,40}$').hasMatch(commit), isTrue,
+            reason: '${m['model_version']} points at a manifest whose '
+                'source_commit is "$commit"');
       }
     });
   });
