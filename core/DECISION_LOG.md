@@ -14664,3 +14664,12 @@ CI runs the new suite as its own named step, so a failure reads as what it is: t
 acquisition path stopped refusing something it must refuse.
 
 **Suites:** CT-1 56 passed (30 contract/builder + 26 batch/importer).
+
+## Checkpoint report for this session
+
+Written to `reports/remediation_r3_r4_2026-08-17.html` and published at
+`https://claude.ai/code/artifact/8445a831-8fd3-40b0-bbb4-963f7fa81d79`.
+
+Rows are labelled HEAD-at-assessment (`be461d6`) following the correction earlier in this
+programme: a document cannot state its own final commit, because the commit that states it is the
+one after the line.
