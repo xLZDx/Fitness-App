@@ -14094,3 +14094,25 @@ that belongs to the operator.
 2. Should filing an equipment report require an association with that gym?
 
 Functions suite: 185 passing, up from 171 at the start of this session.
+
+## ENGINEERING_REMEDIATION = FROZEN
+
+Frozen at test-evidence HEAD `8857e6e`, reviewed HEAD `4cdc35d`. Record in
+`core/REMEDIATION_ENGINEERING_FREEZE.md`.
+
+The freeze is dated after the fixes rather than after the review, because the review found six
+defects worth reopening for -- one of them a genuine bypass of the F014 invariant. Freezing on the
+strength of a review that found things, without fixing them, would have been the worst of both.
+
+What makes this a defensible stopping point is not that the last review came back clean. It did not.
+It is that the review went looking for eight specific bypass classes with a mandate to disprove the
+completed state, and what it found clustered into two patterns rather than scattering -- a field
+reaching the model and the serialiser but not the guard, and a guard matching a substring of prose.
+Both now have structural defences: a source-scanning field-coverage test, and five guards rewritten
+to match commands rather than words. Eleven previous reconciliation passes had surfaced none of it,
+which is the evidence that re-reading was no longer producing information and breaking things was.
+
+Suites at the freeze: mobile 2828, functions 185, Firestore rules 64, zero failures.
+
+Residual MINORs and two operator decisions are listed in the freeze record rather than left implied.
+Nothing in the freeze touches D1, H3, D3 or PRODUCTION_IMAGE_COLLECTION.
