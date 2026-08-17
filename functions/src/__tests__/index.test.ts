@@ -290,6 +290,79 @@ describe("F011: a deleted account cannot replay a payment operation", () => {
     );
     expect(adminMock.__getUser).not.toHaveBeenCalled();
   });
+
+  /*
+   * N-03. `bookCoachSession` was counted among the callables F011 accepted as
+   * "bounded by what deletion already removes". It is not bounded by that: it
+   * WRITES. `ensureCustomer` mints a Stripe customer holding the deleted uid
+   * and the token's email, and writes the subscription document back into
+   * Firestore after the recursive delete and the shared-record sweep have both
+   * finished — so nothing ever cleans it up — and then a card is charged for a
+   * booking made by an account that cannot sign in.
+   *
+   * Without the guard this whole sequence succeeds, which is why the
+   * assertions below are on the Stripe calls rather than on the thrown code
+   * alone.
+   */
+  test("bookCoachSession refuses, and creates nothing in Stripe", async () => {
+    primeDoc("coach_listings/c1", {
+      priceCentsPerSession: 5000,
+      stripeConnectAccountId: "acct_live",
+      currency: "usd",
+    });
+    const sub = primeDoc("users/u1/subscription/main", undefined);
+    adminMock.__setUserLookup(deleted);
+
+    await expectHttpsError(
+      bookCoachSession.run(
+        req(
+          { coachUid: "c1", startsAt: "2026-09-01T10:00:00Z" },
+          { uid: "u1", token: { email: "a@b.test" } },
+        ),
+      ),
+      "unauthenticated",
+    );
+
+    expect(stripeMock.customers.create).not.toHaveBeenCalled();
+    expect(stripeMock.paymentIntents.create).not.toHaveBeenCalled();
+    expect(sub.set).not.toHaveBeenCalled();
+  });
+
+  test("the booking guard runs before the coach listing is even read", async () => {
+    // Ordering. A deleted account must not be told whether a coach exists,
+    // and must not spend a read finding out.
+    const listing = primeDoc("coach_listings/c1", undefined);
+    adminMock.__setUserLookup(deleted);
+
+    await expectHttpsError(
+      bookCoachSession.run(
+        req(
+          { coachUid: "c1", startsAt: "2026-09-01T10:00:00Z" },
+          { uid: "u1", token: { email: "a@b.test" } },
+        ),
+      ),
+      "unauthenticated",
+    );
+    expect(listing.get).not.toHaveBeenCalled();
+  });
+
+  test("a live account still reaches the coach listing", async () => {
+    // The control. Without it, both refusals above are satisfied by a guard
+    // that refuses everybody.
+    const listing = primeDoc("coach_listings/c1", undefined);
+
+    await expectHttpsError(
+      bookCoachSession.run(
+        req(
+          { coachUid: "c1", startsAt: "2026-09-01T10:00:00Z" },
+          { uid: "u1", token: { email: "a@b.test" } },
+        ),
+      ),
+      "not-found",
+    );
+    expect(listing.get).toHaveBeenCalled();
+    expect(adminMock.__getUser).toHaveBeenCalledWith("u1");
+  });
 });
 
 /* ------------------------------------------------------------------ */

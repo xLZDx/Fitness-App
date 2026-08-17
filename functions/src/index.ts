@@ -68,14 +68,28 @@ const db = admin.firestore();
  * callable here, which is why it is documented at `deleteAccount` rather than
  * pretended away.
  *
- * The F011 decision RISK_ACCEPTED that for the seven callables whose blast
- * radius is bounded by data deletion already removes, and required
- * remediation for exactly two: `startFreeTrial` and `createCheckoutSession`.
- * Those two are different in kind — their eligibility checks read records that
- * deletion has just removed, so a stale token replays them against absence and
- * gets a fresh trial or a new paid subscription attached to an account that no
- * longer exists. That is an exploit the deletion path INTRODUCES, not one it
- * inherits.
+ * The F011 decision RISK_ACCEPTED that for the callables whose blast radius is
+ * bounded by data deletion already removes, and required remediation for
+ * `startFreeTrial` and `createCheckoutSession`. Those are different in kind —
+ * their eligibility checks read records that deletion has just removed, so a
+ * stale token replays them against absence and gets a fresh trial or a new
+ * paid subscription attached to an account that no longer exists. That is an
+ * exploit the deletion path INTRODUCES, not one it inherits.
+ *
+ * ## N-03: `bookCoachSession` was misclassified into the accepted group
+ *
+ * It was counted among the callables bounded by what deletion removes. It is
+ * not. It CREATES data after the erasure has run: `ensureCustomer` mints a
+ * Stripe customer carrying the deleted uid and the token's email, writes
+ * `users/{uid}/subscription/main` back into Firestore after the recursive
+ * delete and the shared-record sweep have both finished — so nothing will ever
+ * clean it up — and a `coach_bookings` row names the deleted uid as the
+ * client. A card is charged for a session booked by an account that cannot
+ * sign in.
+ *
+ * The criterion was right and its application was wrong: "bounded by what
+ * deletion removes" has to be checked against what the callable WRITES, not
+ * only against what it reads.
  *
  * ## Why an Auth lookup and not a tombstone
  *
@@ -1211,6 +1225,11 @@ export const bookCoachSession = onCall(
     if (!auth) {
       throw new HttpsError("unauthenticated", "Sign in first.");
     }
+    // N-03. This one writes — a Stripe customer, a subscription document and a
+    // booking row — so a stale token from a deleted account re-creates personal
+    // data after the erasure sweep, and charges for it. See
+    // `assertAccountStillExists`.
+    await assertAccountStillExists(auth.uid, "bookCoachSession");
     const data = request.data ?? {};
     const coachUid = data.coachUid as string | undefined;
     const startsAt = data.startsAt as string | undefined;

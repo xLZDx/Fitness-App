@@ -14026,3 +14026,28 @@ declared below them. It has been moved above its first use.
 
 A guard is evidence about the spelling it matches, not about the thing it names. None of these were
 found by reading the tests; all were found by mutating the thing and watching the test stay green.
+
+## N-03 (MAJOR): F011's exemption criterion was applied to reads, not to writes
+
+F011 accepted the stale-token window for the callables whose "blast radius is bounded by what data
+deletion already removes", and remediated the two whose eligibility checks read records deletion had
+just erased.
+
+`bookCoachSession` was placed in the accepted group and does not belong there. It writes. With a
+token minted seconds before `deleteAccount` -- valid for up to an hour, and `onCall` does not
+re-check that the uid exists -- it mints a Stripe customer carrying the deleted uid and the token's
+email, writes `users/{uid}/subscription/main` back into Firestore *after* the recursive delete and
+the shared-record sweep have both finished, so nothing will ever clean it up, and charges a card for
+a session booked by an account that cannot sign in.
+
+The criterion was sound; its application was not. "Bounded by what deletion removes" has to be
+checked against what a callable WRITES, not only against what it reads. `generateAnnualReceipt`
+survives the same test honestly -- it returns before any write when there is no Stripe customer.
+
+Guard added. Three cases, mutation-proven: with the guard removed, all three fail. Two assert that
+no Stripe customer and no payment intent are created and the subscription document is not written --
+the thrown code alone would not have proven anything, since the damage is the writes. The third is
+the control: a live account still reaches the coach listing, so the refusals are not the work of a
+guard that refuses everybody.
+
+Functions suite: 174 passing, up from 171.
