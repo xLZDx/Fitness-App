@@ -266,8 +266,19 @@ void main() {
       // has no conditions, medications, allergies or otherConcerns on it — so
       // a rule in this layer cannot read them however tempting it becomes.
       const flags = HealthFlags(restrictions: {MovementRestriction.overhead});
-      expect(flags.toJson().keys,
-          ['restrictions', 'bloodPressure', 'surgery', 'clinicianAdvice']);
+      expect(flags.toJson().keys, [
+        'restrictions',
+        'bloodPressure',
+        'surgery',
+        'clinicianAdvice',
+        // F014. Added deliberately, and it belongs on this list rather than
+        // beside it: the fence's whole job is that every key here is a CLOSED
+        // answer set with no free text and no medical detail behind it, and
+        // `ProfessionalGuidanceNeed` is two values plus null. If a future
+        // change adds `trimester` or a due date, this assertion is where it
+        // has to be argued for.
+        'professionalGuidance',
+      ]);
     });
 
     test('free text alone changes no decision', () {

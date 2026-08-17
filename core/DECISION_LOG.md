@@ -13589,3 +13589,91 @@ it** (empty `git log` over that range). One earlier commit on this branch, `1453
 it — from a prior session, before the instruction existed. Checking the full `origin..HEAD` range
 rather than the session range is what surfaced that, and the first phrasing of this entry would
 have overstated the claim.
+
+## 2026-08-17 — F014 implemented: the app stops prescribing into a state it never asked about
+
+**Operator decision received: `F014 = GO`** for the minimal conservative design. Implemented without
+inventing any clinical policy.
+
+### The design, and why the stored value says nothing about pregnancy
+
+Three states, carried by a nullable enum exactly as every other answer in `health_flags.dart`:
+
+```text
+null       not asked                -> UNKNOWN semantics, unchanged
+none       asked, nothing reported  -> normal product behaviour
+reported   asked, state reported    -> whole-person block
+```
+
+`ProfessionalGuidanceNeed` names no medical category. The QUESTION names the states it asks about,
+because a user has to understand what they are answering; the STORED VALUE does not, because nothing
+in the app ever needs to know which state was reported — all of them produce the same behaviour.
+
+That is not squeamishness, it is data minimisation made concrete. A profile document containing
+`pregnant: true` is a medical disclosure that syncs, backs up, lands in a data export and is readable
+over someone's shoulder. `professionalGuidance: reported` is a statement about what the app will do,
+and it is all the app needs. Asserted against the real serialised JSON, not against the doc comment:
+the persisted string must not contain `pregnan`, `postpartum`, `perinatal`, `trimester`, `birth`,
+`maternal` or `due`.
+
+Nothing clinical was added: no trimester, due date, pregnancy type, complication, postpartum
+duration, risk score, allowlist or denylist. A test asserts F014 filters **zero** exercises and sets
+**no** intensity ceiling — because it has no clinical basis on which to prefer one movement over
+another, and pretending otherwise would be worse than the gap it closes.
+
+### Enforcement is one line, and that is the argument for it
+
+The block enters at `SafetyContext.wholePersonBlocks`. That single point is what `allowsAnyTraining`
+reads, and what every prescribing surface already consults — so programme generation, enrolment, the
+planner, the AI-coach entries, exercise resolution and therefore deep links and the in-workout picker
+were all covered by one edit. More to the point, a **new** prescribing surface cannot miss it by
+forgetting a check, because there is no separate check to forget.
+
+`blockedByAStatedAnswer` is true for it (the reason is not `unanswered`), which is what the AI-coach
+gates read. Verified by tracing every reader of both getters, not by assuming.
+
+### Tests: 20 in a dedicated file, plus a sixth row across the whole A-D matrix
+
+The matrix row matters more than the dedicated file. The matrix's entire argument is that one safety
+state is asserted against every surface at once; a new whole-person state tested only in its own file
+would reproduce the per-surface blind spot the matrix exists to close.
+
+**Mutation-proven against the pre-F014 implementation**: disabling the single `wholePersonBlocks`
+condition (a behaviour-only mutation, not a compile error) fails **9 tests** — the planner refusal,
+the programme-builder refusal, enrolment, the deep link, the cached-state case, matrix groups B, C
+and D, and the state assertion itself. The "would this fail against the implementation before F014"
+question is answered YES for every load-bearing case.
+
+### Two things found while doing it
+
+- **A real bug in my own first cut.** I added the field to `toJson` and `copyWith` but not to
+  `fromJson`, so the block would have evaporated on the next app launch — a whole-person refusal
+  silently becoming a clean bill. The round-trip test caught it before commit. This is exactly why
+  that case exists rather than a `toJson`-only assertion.
+- **A matrix expectation of mine was wrong, and the code was better than my prediction.** I expected
+  a generated `ai::` row to be `notFound` for this state, matching `injury` and `restriction`. It is
+  `withheld`. The two refusals are not the same kind: injury and restriction are per-exercise
+  screening questions that a generated row carries no tags to answer, so removing it from the
+  universe is honest; F014 is a whole-person block, where the row is perfectly findable and what is
+  refused is the prescription. `withheld` carries a stated reason; `notFound` would tell the user the
+  exercise does not exist. Recorded rather than edited away.
+
+### Wording
+
+Asserted by rendering in both locales, not by ARB-key existence. It must NOT contain `unsafe`,
+`dangerous`, `risk`, `prohibited` (or `опасно`, `нельзя`, `запрещ`, `риск`), and it MUST say training
+can be appropriate and name a referral. A refusal with no route forward is a dead end, and one that
+implies the user is medically unsafe is medical advice this repository has no authority to give.
+
+### Disposition
+
+```text
+F014 = ENGINEERING_REMEDIATED
+       residual: CLINICAL_POLICY_NOT_DEFINED
+```
+
+**Not** `CLINICALLY_VALIDATED`, and the conservative block is not medical validation. What exists now
+is a product boundary: SPTR declines to issue an unrestricted personalised prescription for a state
+it has no validated policy for. Defining such a policy remains clinical work under D1.
+
+Full suite: 2789 passing.

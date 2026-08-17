@@ -61,6 +61,12 @@ String eligibilityReasonText(AppLocalizations l10n, EligibilityReason r) =>
               : movementRestrictionText(l10n, r.restriction!)),
       BlockReason.postSurgical => l10n.eligReasonPostSurgical,
       BlockReason.clinicianAdvice => l10n.eligReasonClinician,
+      // F014. The wording is load-bearing and is tested for what it must NOT
+      // say: it states what this app will not do, never that the user is
+      // medically unsafe and never that exercise is prohibited. Both of those
+      // would be medical advice, which is exactly what the absence of a
+      // validated policy means we may not give.
+      BlockReason.professionalGuidance => l10n.eligReasonProfessionalGuidance,
       BlockReason.equipment => l10n.eligReasonEquipment,
       BlockReason.formCoachUnsupported => l10n.eligReasonFormCoach,
       BlockReason.unscreenableRestriction => l10n.eligAdvisoryUnscreenable(

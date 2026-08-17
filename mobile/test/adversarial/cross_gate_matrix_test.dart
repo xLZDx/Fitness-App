@@ -156,6 +156,28 @@ void main() {
         }),
       ),
     ),
+    // F014. A user who answered every PAR-Q+ question safely -- so the
+    // screening itself clears them -- and then reported a state this app holds
+    // no validated prescription policy for. The screening half is deliberately
+    // clean, because that is what makes the row prove something: any refusal
+    // observed below comes from `professionalGuidance` and from nothing else.
+    'perinatal': (
+      profile: UserProfile(
+        uid: 'u1',
+        health: HealthHistory(
+          screening: {for (final q in ParQQuestion.values) q: false},
+          flags: HealthFlags(
+            professionalGuidance: ProfessionalGuidanceNeed.reported,
+          ),
+        ),
+      ),
+      safety: SafetyContext(
+        screening: screen({for (final q in ParQQuestion.values) q: false}),
+        health: HealthFlags(
+          professionalGuidance: ProfessionalGuidanceNeed.reported,
+        ),
+      ),
+    ),
     'unscreened': (
       profile: null,
       safety: SafetyContext(screening: kUnscreened),
@@ -234,6 +256,14 @@ void main() {
       'injury': false,
       'restriction': false,
       'blocked': true,
+      // TRUE, for the same reason `blocked` is true, and it is the invariant
+      // rather than an oversight: F014 withholds a PRESCRIPTION, not a
+      // library. Someone who reported a pregnancy keeps the ability to read
+      // what a leg press is. Expecting `false` here would be the
+      // over-suppression this programme has already shipped twice, and it
+      // would be uglier in this row than in any other -- hiding the app from
+      // a person because they told you they are pregnant.
+      'perinatal': true,
       'unscreened': true,
     }.entries) {
       test('${entry.key}: overhead press present == ${entry.value}', () async {
@@ -262,6 +292,11 @@ void main() {
       'injury': 'withheld',
       'restriction': 'withheld',
       'blocked': 'withheld',
+      // A tap is a terminal question, so the whole-person gate applies and
+      // this row is refused -- while group A above keeps the same user's
+      // library. That pair IS the F014 design: display visibility is not
+      // training authority.
+      'perinatal': 'withheld',
       'unscreened': 'withheld',
     }.entries) {
       test('${entry.key}: resolving the overhead press is ${entry.value}',
@@ -309,6 +344,29 @@ void main() {
                 'will at read time, so it cannot be screened for $state');
       });
     }
+
+    test('perinatal: the generated row is WITHHELD, not hidden', () async {
+      // I put `perinatal` in the loop above and it failed, correctly, and the
+      // real behaviour is better than the one I predicted.
+      //
+      // The two refusals are not the same kind. `injury` and `restriction` are
+      // per-exercise screening questions, and a generated row carries no
+      // `contraindications` to answer them with -- so it is removed from the
+      // universe entirely, and `notFound` is honest. F014 is a WHOLE-PERSON
+      // block: the row is perfectly findable, and what is being refused is the
+      // prescription rather than the lookup. `withheld` carries a stated
+      // reason; `notFound` would tell the user the exercise does not exist,
+      // which is false and gives them nothing to act on.
+      //
+      // Recorded rather than silently corrected, because "the test expected a
+      // stricter answer than the code gives" is exactly the shape that should
+      // be looked at twice before being edited away.
+      final c = harness('perinatal');
+      final res = await c.read(exerciseResolutionProvider(_generatedId).future);
+      expect(_kind(res), 'withheld');
+      expect(res.withheldFor, isNotEmpty,
+          reason: 'a refusal with no stated reason cannot be acted on');
+    });
 
     test('the control: a cleared user DOES reach the generated row', () async {
       // Without this the group above proves nothing — an empty cache would
@@ -382,7 +440,7 @@ void main() {
       expect(await enrol('cleared'), isNull);
     });
 
-    for (final state in ['blocked', 'unscreened']) {
+    for (final state in ['blocked', 'unscreened', 'perinatal']) {
       test('$state is refused, and nothing is written', () async {
         final error = await enrol(state);
         expect(error, isA<ProgrammeNotViable>(), reason: state);

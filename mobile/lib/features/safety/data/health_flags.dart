@@ -139,6 +139,67 @@ enum SurgeryStatus {
   unsure,
 }
 
+/// Whether the user has self-reported a whole-person state for which this app
+/// holds **no validated prescription policy**.
+///
+/// F014. The finding was that pregnancy and postpartum were never asked, never
+/// inferred, never filtered and never warned about — so the app generated
+/// personalised prescriptions for a state it had never enquired into. The gap
+/// was real; the obvious fix was not available, because writing pregnancy
+/// exercise rules is clinical work and this repository has no clinical
+/// authority (see D1).
+///
+/// So this deliberately does the *other* thing: it records that the user
+/// reported such a state, and stops prescribing. It encodes no clinical
+/// content whatsoever.
+///
+/// # Why the name says nothing about pregnancy
+///
+/// This is the smallest thing that can be stored and still be acted on. The
+/// question names the states it asks about, because a user has to understand
+/// what they are answering. The stored value does not, because nothing in this
+/// app ever needs to know *which* state was reported — every one of them
+/// produces the same product behaviour, which is to decline an unrestricted
+/// personalised prescription and refer.
+///
+/// The privacy consequence is the point. A profile document containing
+/// `pregnant: true` is a medical disclosure that syncs, backs up, appears in a
+/// data export and is readable over someone's shoulder. A profile document
+/// containing `professionalGuidance: reported` is a statement about what this
+/// app will do, and it is genuinely all the app needs.
+///
+/// # What is deliberately NOT here
+///
+/// No trimester. No due date. No pregnancy type. No complication. No postpartum
+/// duration. No risk score. No allowlist, denylist or categorical exclusion.
+/// Each of those is a clinical judgement, and none is authorised — adding one
+/// would convert a conservative refusal into unvalidated medical advice, which
+/// is a strictly worse product than the one this replaces.
+///
+/// Nullability carries the third state, as it does for every enum in this file:
+/// `null` is *not asked*, and it is not the same as [none].
+enum ProfessionalGuidanceNeed {
+  /// Asked, and the user reported none of the listed states.
+  ///
+  /// An answer, not an absence — which is exactly why this value exists rather
+  /// than reusing `null`. "I am not in any of those situations" is information;
+  /// "nobody has asked me" is not, and treating the second as the first is the
+  /// class of defect this whole audit is about.
+  none,
+
+  /// The user reported one of the listed states.
+  ///
+  /// Blocks prescription via [SafetyContext.wholePersonBlocks], in the same way
+  /// and for the same reason as [SurgeryStatus.underRestrictions]: the
+  /// limitations that apply are specific to the person and are the province of
+  /// someone who can examine them. "Train around it" is not something this app
+  /// may improvise.
+  ///
+  /// This is a **product boundary, not a medical opinion**. It does not say
+  /// exercise is unsafe, and no user-facing string derived from it may say so.
+  reported,
+}
+
 /// What a clinician has said about exercising with the user's conditions or
 /// medications.
 ///
@@ -198,12 +259,18 @@ class HealthFlags {
     this.bloodPressure,
     this.surgery,
     this.clinicianAdvice,
+    this.professionalGuidance,
   });
 
   final Set<MovementRestriction> restrictions;
   final BloodPressureStatus? bloodPressure;
   final SurgeryStatus? surgery;
   final ClinicianExerciseAdvice? clinicianAdvice;
+
+  /// F014. Null means the question has not been asked — see
+  /// [ProfessionalGuidanceNeed], which explains why this field carries no
+  /// medical detail at all.
+  final ProfessionalGuidanceNeed? professionalGuidance;
 
   static const empty = HealthFlags();
 
@@ -214,7 +281,10 @@ class HealthFlags {
   /// and the set cannot tell them apart. The three enums can, which is why they
   /// are nullable and the set is not.
   bool get isUnanswered =>
-      bloodPressure == null && surgery == null && clinicianAdvice == null;
+      bloodPressure == null &&
+      surgery == null &&
+      clinicianAdvice == null &&
+      professionalGuidance == null;
 
   /// Restrictions the catalogue has no tag for.
   ///
@@ -233,6 +303,10 @@ class HealthFlags {
         'bloodPressure': bloodPressure?.name,
         'surgery': surgery?.name,
         'clinicianAdvice': clinicianAdvice?.name,
+        // Deliberately generic on the wire as well as in memory: this key and
+        // its value are what land in Firestore, in a backup and in a data
+        // export. See [ProfessionalGuidanceNeed].
+        'professionalGuidance': professionalGuidance?.name,
       };
 
   /// Unknown names are DROPPED, not defaulted.
@@ -265,6 +339,8 @@ class HealthFlags {
       surgery: byName(SurgeryStatus.values, raw['surgery']),
       clinicianAdvice:
           byName(ClinicianExerciseAdvice.values, raw['clinicianAdvice']),
+      professionalGuidance:
+          byName(ProfessionalGuidanceNeed.values, raw['professionalGuidance']),
     );
   }
 
@@ -273,12 +349,14 @@ class HealthFlags {
     BloodPressureStatus? bloodPressure,
     SurgeryStatus? surgery,
     ClinicianExerciseAdvice? clinicianAdvice,
+    ProfessionalGuidanceNeed? professionalGuidance,
   }) =>
       HealthFlags(
         restrictions: restrictions ?? this.restrictions,
         bloodPressure: bloodPressure ?? this.bloodPressure,
         surgery: surgery ?? this.surgery,
         clinicianAdvice: clinicianAdvice ?? this.clinicianAdvice,
+        professionalGuidance: professionalGuidance ?? this.professionalGuidance,
       );
 
   @override

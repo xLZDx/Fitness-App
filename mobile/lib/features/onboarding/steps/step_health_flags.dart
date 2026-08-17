@@ -136,6 +136,25 @@ class StepHealthFlags extends ConsumerWidget {
           value: flags.clinicianAdvice,
           onChanged: (v) => update((f) => f.copyWith(clinicianAdvice: v)),
         ),
+        const SizedBox(height: 16),
+        // F014. Last, and a plain yes/no, because it is the only question here
+        // whose answer does not describe a limitation the user lives with --
+        // it describes a limitation of THIS APP. Offering "unsure" would be
+        // asking someone to be uncertain about something they are not
+        // uncertain about, and offering more granularity would collect a
+        // medical detail nothing acts on. See `ProfessionalGuidanceNeed`.
+        FieldLabel(l10n.healthStepProfessionalGuidance),
+        SingleChoiceChips<ProfessionalGuidanceNeed>(
+          key: const Key('onb.flags.guidance'),
+          options: ProfessionalGuidanceNeed.values,
+          labelOf: (v) => switch (v) {
+            ProfessionalGuidanceNeed.none => l10n.guidanceNeedNone,
+            ProfessionalGuidanceNeed.reported => l10n.guidanceNeedReported,
+          },
+          value: flags.professionalGuidance,
+          onChanged: (v) =>
+              update((f) => f.copyWith(professionalGuidance: v)),
+        ),
       ],
     );
   }

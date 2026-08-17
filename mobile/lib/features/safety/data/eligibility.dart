@@ -47,6 +47,14 @@ enum BlockReason {
   /// A clinician advised against exercise.
   clinicianAdvice,
 
+  /// F014. The user reported a whole-person state for which this app holds no
+  /// validated prescription policy, so it declines to prescribe one.
+  ///
+  /// A statement about the PRODUCT's limits, not about the user's health. Any
+  /// string rendered from this must say so: nothing here concludes that
+  /// exercise is unsafe, and nothing here is entitled to.
+  professionalGuidance,
+
   /// The user does not have the equipment.
   equipment,
 
@@ -211,6 +219,16 @@ class SafetyContext {
           const EligibilityReason(BlockReason.clinicianAdvice),
         if (health.surgery == SurgeryStatus.underRestrictions)
           const EligibilityReason(BlockReason.postSurgical),
+        // F014. Fourth whole-person state, and it enters here rather than
+        // anywhere nearer the UI on purpose: `wholePersonBlocks` is what
+        // `allowsAnyTraining` reads, and `allowsAnyTraining` is what every
+        // prescribing surface already consults. Adding the condition at this
+        // one point covers programme generation, enrolment, the planner and
+        // the AI coach in the same edit -- and, more to the point, makes it
+        // impossible for a new prescribing surface to miss it by forgetting a
+        // check, because there is no separate check to forget.
+        if (health.professionalGuidance == ProfessionalGuidanceNeed.reported)
+          const EligibilityReason(BlockReason.professionalGuidance),
       ];
 
   bool get allowsAnyTraining => wholePersonBlocks.isEmpty;
