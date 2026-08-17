@@ -1,0 +1,436 @@
+<title>SPTR Release Decision</title>
+<style>
+  :root {
+    --ground: #fbfbfa; --panel: #ffffff; --rule: #e2e2dd; --rule-strong: #c9c9c2;
+    --ink: #1b1c1a; --ink-2: #4a4c47; --ink-3: #74766e;
+    --accent: #2f5d50; --closed: #2f5d50; --decision: #8a5a12; --hold: #8f2f2f;
+    --neutral: #56585a; --code-bg: #f2f2ee;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #14150f; --panel: #1b1d17; --rule: #2e3128; --rule-strong: #454940;
+      --ink: #ecece4; --ink-2: #b8bab0; --ink-3: #8a8d82;
+      --accent: #8fc4b0; --closed: #8fc4b0; --decision: #d9a75a; --hold: #e08585;
+      --neutral: #9a9d95; --code-bg: #23261e;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #14150f; --panel: #1b1d17; --rule: #2e3128; --rule-strong: #454940;
+    --ink: #ecece4; --ink-2: #b8bab0; --ink-3: #8a8d82;
+    --accent: #8fc4b0; --closed: #8fc4b0; --decision: #d9a75a; --hold: #e08585;
+    --neutral: #9a9d95; --code-bg: #23261e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px; line-height: 1.62; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 60rem; margin: 0 auto; padding: 4rem 1.5rem 6rem; }
+  header { border-bottom: 2px solid var(--ink); padding-bottom: 1.75rem; margin-bottom: 2.5rem; }
+  .eyebrow {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-3); margin: 0 0 .9rem;
+  }
+  h1 { font-size: clamp(1.9rem, 4.5vw, 2.7rem); line-height: 1.12; margin: 0 0 .8rem; letter-spacing: -.02em; text-wrap: balance; }
+  .standfirst { font-size: 1.08rem; color: var(--ink-2); margin: 0; max-width: 46rem; }
+  h2 { font-size: 1.35rem; margin: 3.5rem 0 .4rem; padding-top: 1.6rem; border-top: 1px solid var(--rule-strong); letter-spacing: -.01em; text-wrap: balance; }
+  h2 .num { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .78rem; color: var(--ink-3); display: block; margin-bottom: .35rem; letter-spacing: .1em; }
+  h3 { font-size: 1.02rem; margin: 2rem 0 .5rem; }
+  p { margin: .85rem 0; max-width: 46rem; }
+  ul { max-width: 46rem; padding-left: 1.15rem; }
+  li { margin: .4rem 0; }
+  code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .875em; }
+  code { background: var(--code-bg); padding: .1em .35em; border-radius: 3px; }
+  a { color: var(--accent); text-underline-offset: 2px; }
+
+  .dims { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 2rem 0; }
+  .dim { background: var(--panel); padding: 1.15rem 1.2rem; }
+  .dim .k { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .66rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); display: block; margin-bottom: .45rem; }
+  .dim .v { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight: 700; font-size: 1rem; line-height: 1.3; display: block; }
+  .dim.ok .v { color: var(--closed); }
+  .dim.hold .v { color: var(--hold); }
+  .dim.neutral .v { color: var(--neutral); }
+  .dim p { font-size: .84rem; color: var(--ink-2); margin: .5rem 0 0; }
+
+  .scroll { overflow-x: auto; margin: 1.5rem 0; border: 1px solid var(--rule); background: var(--panel); }
+  table { border-collapse: collapse; width: 100%; min-width: 40rem; font-size: .9rem; }
+  th, td { text-align: left; padding: .6rem .8rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .68rem; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3); border-bottom: 1px solid var(--rule-strong); white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: none; }
+  td.id { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight: 600; white-space: nowrap; }
+  td.num { font-variant-numeric: tabular-nums; text-align: right; }
+
+  .card { border: 1px solid var(--rule); border-left: 3px solid var(--rule-strong); background: var(--panel); padding: 1.3rem 1.5rem; margin: 1.5rem 0; }
+  .card.hold { border-left-color: var(--hold); }
+  .card.ok { border-left-color: var(--closed); }
+  .card h3 { margin-top: 0; }
+  blockquote { margin: 1.2rem 0; padding: .3rem 0 .3rem 1.1rem; border-left: 2px solid var(--accent); color: var(--ink-2); font-style: italic; }
+  footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); color: var(--ink-3); font-size: .85rem; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">SPTR · release decision · 2026-08-17</p>
+  <h1>Four questions that were being answered as one</h1>
+  <p class="standfirst">
+    F014 is engineering-remediated. The release verdict does not change, and the
+    reason it does not change is now stated without borrowing evidence from the
+    wrong category.
+  </p>
+</header>
+
+<div class="dims">
+  <div class="dim ok">
+    <span class="k">Engineering status</span>
+    <span class="v">ALL CLOSEABLE<br>FINDINGS RESOLVED</span>
+    <p>Every finding engineering can close is closed and mutation-proven. 2 remain as scheduled maintenance debt, neither release-blocking.</p>
+  </div>
+  <div class="dim hold">
+    <span class="k">Clinical authority</span>
+    <span class="v">D1 REQUIRED<br>H3 HOLD</span>
+    <p>1,527 rule-tagged rows unreviewed, 360 untagged. Handoff package prepared and awaiting external authority.</p>
+  </div>
+  <div class="dim hold">
+    <span class="k">Product release verdict</span>
+    <span class="v">NOT_RELEASE_READY</span>
+    <p>On clinical authority alone. No engineering finding contributes to this.</p>
+  </div>
+  <div class="dim neutral">
+    <span class="k">Delivery state</span>
+    <span class="v">LOCAL_ONLY</span>
+    <p>34 commits ahead, nothing pushed. Operational fact, not a product-quality finding.</p>
+  </div>
+</div>
+
+<h2><span class="num">01</span>The correction that made this report necessary</h2>
+
+<p>
+  The previous reconciliation listed three reasons for <code>NOT_RELEASE_READY</code>,
+  and the third was <em>"nothing is pushed."</em> That was a category error.
+</p>
+
+<blockquote>
+  An unpushed branch says something about where the code is. It says nothing
+  about whether the product is safe to ship.
+</blockquote>
+
+<p>
+  Listing it beside F014 implied the two were the same kind of fact, and it made the
+  verdict look better-supported than it was — three reasons instead of one. The
+  claim is withdrawn. Delivery state now has its own dimension, and it is reported
+  even when it is uninteresting, which is most of the time.
+</p>
+
+<h2><span class="num">02</span>Engineering status</h2>
+
+<div class="card ok">
+  <h3>F014 — the one open finding with direct safety impact</h3>
+  <p>
+    <code>ENGINEERING_REMEDIATED</code>, residual <code>CLINICAL_POLICY_NOT_DEFINED</code>.
+  </p>
+  <p>
+    The app now declines to build a personalised programme for a user who reports
+    being pregnant or recently postpartum, and refers them. It encodes no trimester,
+    no due date, no postpartum week and no risk score, and it removes not one exercise
+    from the library — a test asserts it filters <strong>zero</strong> rows and sets
+    <strong>no</strong> intensity ceiling, because it has no clinical basis on which
+    to prefer one movement over another.
+  </p>
+  <p>
+    Enforcement is a single condition in <code>wholePersonBlocks</code>. That is the
+    point rather than a shortcut: it is what <code>allowsAnyTraining</code> reads and
+    what every prescribing surface already consults, so generation, enrolment, the
+    planner, the AI coach, deep links and the in-workout picker were covered by one
+    edit — and a <em>new</em> prescribing surface cannot miss it by forgetting a check,
+    because there is no separate check to forget.
+  </p>
+  <p>
+    <strong>Mutation-proven:</strong> disabling that one condition fails 9 tests.
+  </p>
+  <p>
+    <strong>Not <code>CLINICALLY_VALIDATED</code>.</strong> A conservative refusal is
+    not medical validation. Defining an actual perinatal exercise policy is clinical
+    work under D1.
+  </p>
+</div>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>Item</th><th>Disposition</th><th>Release impact</th></tr></thead>
+  <tbody>
+    <tr><td class="id">F014</td><td>ENGINEERING_REMEDIATED · residual CLINICAL_POLICY_NOT_DEFINED</td><td>none — closed</td></tr>
+    <tr><td class="id">N07</td><td>DORMANT · feature preserved, no ordinary route</td><td>none</td></tr>
+    <tr><td class="id">F010</td><td>DEFERRED_TO_DEDICATED_CLEANUP_GATE</td><td>none</td></tr>
+    <tr><td class="id">ML-F1</td><td>FIXED · registry is now the source of truth</td><td>none</td></tr>
+    <tr><td class="id">CI-F1</td><td>FIXED · nightly + manual trigger</td><td>none</td></tr>
+    <tr><td class="id">All others</td><td>as reconciled 2026-08-17</td><td>none</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>N07 — dormant, and deliberately not touched</h3>
+<p>
+  <code>/team/:teamId</code> is declared and has no ordinary navigation to it. The
+  feature is preserved rather than deleted: a finished feature is not removed merely
+  for lacking a route, and wiring it up to close an audit row would be the opposite
+  mistake. Release impact: none. When Teams is activated it needs an intentional entry
+  point and its own QA.
+</p>
+
+<h3>F010 — maintenance debt, and a number that moved</h3>
+<p>
+  The audit recorded 7 of 196 providers with no reader. Re-measured at this HEAD:
+  <strong>14 of 193</strong> — the gap widened, so quoting the audit would have
+  understated it. One is private and valid by construction; the other 13 are
+  classified in
+  <a href="core/PROVIDER_CLEANUP_INVENTORY.md">core/PROVIDER_CLEANUP_INVENTORY.md</a>
+  as INTENDED, DORMANT or PRODUCT_DECISION.
+</p>
+<p>
+  <strong><code>SAFE_TO_DELETE</code> is empty on purpose.</strong> Not one can be
+  called safe to delete on a name and a reference count — two of them are more likely
+  to be wiring defects than dead code, and those look identical from the outside.
+  Deleting during an audit is what the audit's own guidance forbids.
+</p>
+
+<h2><span class="num">03</span>Clinical authority status</h2>
+
+<div class="card hold">
+  <h3>D1 and H3 are unchanged, and are the entire verdict</h3>
+  <p>
+    <code>D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED</code> ·
+    <code>H3 = HOLD</code>
+  </p>
+  <p>
+    Measured today: <strong>1,887</strong> exercise rows, <strong>1,527</strong> carrying
+    at least one safety tag, <strong>360</strong> carrying none. The tags come from
+    deterministic rules over movement names and primary muscles, with per-row provenance.
+    That is a real screen and not a clinical one, and the product says so on screen —
+    <code>kSafetyTagsClinicallyReviewed = false</code> drives a disclosure written to
+    remove itself the day a clinician signs off.
+  </p>
+  <p>
+    What is new is that the review is now <em>askable</em>:
+    <a href="core/review/CLINICAL_VALIDATION_HANDOFF.md">core/review/CLINICAL_VALIDATION_HANDOFF.md</a>
+    states the current behaviour, asks seven bounded questions instead of "is SPTR safe?",
+    and defines the structured result that must come back. A comment saying "looks good"
+    is explicitly not validation evidence.
+  </p>
+</div>
+
+<h2><span class="num">04</span>Could <code>CONDITIONAL_RELEASE</code> be defensible?</h2>
+
+<p>
+  Analysed rather than voted on, because the instruction was explicit that it must not
+  be decided by vote.
+</p>
+
+<h3>What could ship untouched</h3>
+<p>
+  Everything that does not depend on a safety tag: the exercise library as reference
+  content, manual workout logging, the plate calculator, progress photos, body
+  composition, subscriptions, account management, data export, the equipment scanner
+  as an identification aid, and the AI coach in its already-gated form.
+</p>
+
+<h3>What could not</h3>
+<p>
+  Everything whose output is a <em>prescription</em>: programme generation and
+  enrolment, the adaptive planner, the For-You ranking, and exercise substitution.
+  Each of those hands a user a specific movement, and the claim that unsuitable
+  movements were removed rests entirely on tags no clinician has seen.
+</p>
+
+<h3>Why that subset is not a smaller version of this product</h3>
+<p>
+  The honest reading of the split is that the disabled half <strong>is</strong> the
+  product. SPTR's stated purpose is programmes built around what a person can actually
+  do; a build with generation, planning and substitution removed is an exercise
+  encyclopaedia with a logbook. That may be a legitimate thing to ship — but it is a
+  different product, not a conditional release of this one, and calling it the latter
+  would be the silent conversion the instruction warns against.
+</p>
+
+<h3>Does UNKNOWN genuinely fail closed?</h3>
+<p>
+  Yes, and this was checked rather than assumed. An untagged row is
+  <em>withheld</em> from an injured user rather than shown; an unfinished questionnaire
+  refuses prescriptions while keeping browsing; the four unenforceable restrictions are
+  stated to the user rather than silently filtering nothing. F013 was raised as a
+  fail-open, contested by a blinded reader, re-read, and not upheld.
+</p>
+<p>
+  So the failure mode is not "unsafe exercise recommended". It is
+  <strong>"a claim of screening that rests on unreviewed rules"</strong> — which is a
+  claims problem, and is exactly what D1 exists to resolve.
+</p>
+
+<h3>Would a limited beta change the risk?</h3>
+<p>
+  It changes the blast radius, not the claim. A beta user reading "exercises that
+  conflict with your injury were removed" is relying on the same unreviewed tags as a
+  general-release user. What a restricted release genuinely buys is the ability to
+  gather the real-world evidence that several open questions need — including the
+  held-out recognition set — under an explicit, prominent statement of what has and
+  has not been reviewed.
+</p>
+
+<div class="card hold">
+  <h3>Conclusion</h3>
+  <p>
+    <strong>No credible safe subset exists that is still this product.</strong>
+    <code>PRODUCT_RELEASE_VERDICT = NOT_RELEASE_READY</code> stands, on clinical
+    authority alone.
+  </p>
+  <p>
+    A restricted internal or clinical-pilot mode is describable and is described above.
+    It is not being declared, because declaring it here would be exactly the quiet
+    conversion of a full release into a beta that the instruction forbids. It needs its
+    own decision, with its own disclosures.
+  </p>
+</div>
+
+<h2><span class="num">05</span>ML platform maturity</h2>
+
+<p>
+  Reported as a maturity state, not as open/closed. Architecture existing is not a
+  platform existing.
+</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>Capability</th><th>State</th><th>Evidence</th></tr></thead>
+  <tbody>
+    <tr><td>Architecture / applicability</td><td class="id">DESIGNED</td><td>39 modules partitioned, integrity-tested including no-duplicate</td></tr>
+    <tr><td>Model registry</td><td class="id">IMPLEMENTED · VALIDATED</td><td><code>core/ml/MODEL_REGISTRY.json</code>, 16 tests, mutation-proven 3 ways</td></tr>
+    <tr><td>Deployment-drift fence</td><td class="id">IMPLEMENTED · VALIDATED</td><td>hash, bundled-count, code-vs-registry, docs fence</td></tr>
+    <tr><td>Telemetry / instrumentation</td><td class="id">NOT STARTED</td><td>blocked on a privacy-policy decision, not on engineering</td></tr>
+    <tr><td>Training reproducibility</td><td class="id">NOT STARTED</td><td>pipeline is not under version control — <code>training_code_commit = UNKNOWN</code></td></tr>
+    <tr><td>Dataset versioning</td><td class="id">NOT STARTED</td><td><code>NOT_RECORDED</code> for both models</td></tr>
+    <tr><td>Evaluation gate</td><td class="id">DESIGNED</td><td>criteria defined; no candidate can yet <em>fail</em></td></tr>
+    <tr><td>Champion / challenger</td><td class="id">DESIGNED</td><td>state machine declared in the registry; v2 deliberately not a challenger</td></tr>
+    <tr><td>Continuous retraining</td><td class="id">DESIGNED</td><td>triggers, label classes and CT≠CD separation specified</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>Overall: <code>ML PLATFORM = DESIGNED / PARTIAL</code>.</strong></p>
+
+<h3>The registry's first real finding</h3>
+<p>
+  Two entries, both measured. <code>equipment_v1</code> is bundled and champion —
+  <em>by default rather than by evaluation</em>, since it is the only model that has
+  ever shipped, and the registry says so rather than implying it won something. Its
+  hash matches the training pipeline's own output, which is genuine provenance.
+</p>
+<p>
+  <code>equipment_v2</code> is <strong>deliberately not marked challenger</strong>. A
+  challenger is a state reached by passing a gate; no gate has run, the held-out set
+  does not exist, and its one real-world number is below any product bar. Calling it a
+  challenger because it is newer is precisely the drift the registry exists to stop.
+</p>
+<p>
+  Also corrected: the strategy document says v2 has 29 classes; its own
+  <code>labels.json</code> lists <strong>37</strong>. The registry carries the measured
+  value and the prose is now fenced against it.
+</p>
+
+<h3>First CT candidate — scored, not assumed</h3>
+<p>
+  Four candidates across eleven criteria in
+  <a href="core/ml/CT_CANDIDATE_DECISION.md">core/ml/CT_CANDIDATE_DECISION.md</a>.
+  Equipment recognition wins on 23/33; recommendation and search ranking score 13 each
+  and are removed from contention by a single zero — <strong>there is no product
+  telemetry</strong>, so there is no impression log to learn a ranking from.
+</p>
+<p>
+  The uncomfortable cell is the scanner's own zero: <strong>privacy risk</strong>.
+  Retraining it continuously means gym photographs leaving devices, which is the most
+  sensitive collection this product could add. So the winner is blocked, and not by a
+  modelling problem.
+</p>
+<p>
+  Content QA prioritisation scores higher (31/33) and is named the first
+  <em>deliverable</em> rather than the CT candidate, because it is not retraining at all
+  — it is a ranked query over data already collected, with no model and no privacy
+  consequence. Collapsing the two would have been the mistake.
+</p>
+
+<h3>Next executable ML milestone</h3>
+<p>
+  <strong>Bring <code>D:/tools/equipment-model</code> under version control.</strong> It
+  is not a git repository — verified — which is why <code>training_code_commit</code> is
+  <code>UNKNOWN</code> for both registered models and why neither can be regenerated by
+  anyone who does not hold that directory. It is the cheapest item in the entire ML
+  programme, it blocks every reproducibility claim downstream, and it requires no
+  decision from anyone.
+</p>
+
+<h2><span class="num">06</span>Repository and delivery state</h2>
+
+<div class="scroll">
+<table>
+  <tbody>
+    <tr><th>Starting HEAD</th><td class="mono">8a43470</td></tr>
+    <tr><th>Final HEAD</th><td class="mono">see footer</td></tr>
+    <tr><th>Branch</th><td class="mono">formcoach/gates-a-c</td></tr>
+    <tr><th>Upstream</th><td class="mono">origin/formcoach/gates-a-c</td></tr>
+    <tr><th>Ahead / behind</th><td class="mono">34 ahead · 0 behind</td></tr>
+    <tr><th>Delivery state</th><td class="mono">LOCAL_ONLY</td></tr>
+    <tr><th>Pushed</th><td class="mono">no — not at any point, per REMOTE-PUSH-GO = NO</td></tr>
+    <tr><th>Working tree</th><td class="mono">one dirty file: core/plans/FINAL_AUTONOMOUS_ACTION_LOG.csv</td></tr>
+    <tr><th>That file</th><td>Operator-owned. Zero commits in this session touch it, verified over the session range.</td></tr>
+    <tr><th>Mobile suite</th><td class="mono">2812 passing · 0 failing</td></tr>
+    <tr><th>Functions suite</th><td class="mono">171 passing</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>
+  <code>LOCAL_ONLY</code> is reported because delivery state should be reported, not
+  because it is evidence about the product. It is the expected state given the standing
+  instruction, and it carries no quality signal in either direction.
+</p>
+
+<h2><span class="num">07</span>Errors in this session, recorded</h2>
+
+<ul>
+  <li>
+    <strong>I wired a health field into <code>toJson</code> and <code>copyWith</code> but
+    not <code>fromJson</code>.</strong> The F014 block would have evaporated on the next
+    app launch — a whole-person refusal silently becoming a clean bill. Caught by the
+    round-trip test before commit, which is exactly why that case exists rather than a
+    <code>toJson</code>-only assertion.
+  </li>
+  <li>
+    <strong>A matrix expectation of mine was wrong in the strict direction.</strong> I
+    predicted a generated exercise would be <code>notFound</code> for a blocked user; the
+    code returns <code>withheld</code>, which is better — the user gets a stated reason
+    instead of being told the exercise does not exist. Recorded rather than edited away.
+  </li>
+  <li>
+    <strong>My own documentation test contradicted itself.</strong> It asserted
+    <code>1,887</code> in one place and <code>1887</code> in another, so its two halves
+    were checking different things.
+  </li>
+  <li>
+    <strong>The no-duplicate test flagged a cross-reference as a double classification.</strong>
+    Correct by its own rule, wrong in substance. Fixed by rewording the document rather
+    than by making the test guess at intent.
+  </li>
+</ul>
+
+<footer>
+  <p>
+    Generated 2026-08-17 · SPTR forensic remediation programme · worktree
+    <code class="mono">D:\Repo\_wt-formcoach</code> · branch
+    <code class="mono">formcoach/gates-a-c</code>.
+    Durable record: <a href="core/DECISION_LOG.md">core/DECISION_LOG.md</a>.
+    Prior reconciliation:
+    <a href="reports/final_reconciliation_2026-08-17.html">reports/final_reconciliation_2026-08-17.html</a>.
+    Nothing in this report has been pushed to any remote.
+  </p>
+</footer>
+</div>

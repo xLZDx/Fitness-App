@@ -389,7 +389,22 @@
   <ul>
     <li><strong>F014</strong> — the app generates prescriptions for a state it has never asked about. This is the one open item with direct safety impact, and it needs an owner's decision, not code.</li>
     <li><strong>D1 / H3</strong> — the safety tag set is rules-derived and not clinically reviewed. The product already says so on screen. Shipping is a decision about what claim the product is entitled to make, and that decision belongs to someone with clinical authority.</li>
-    <li><strong>Nothing is pushed.</strong> 29 commits sit local. No remote push has been made or attempted, per <code>REMOTE-PUSH-GO = NO</code>.</li>
+  </ul>
+  <p class="label" style="margin-top:1.5rem">Correction, 2026-08-17</p>
+  <p>
+    This section originally listed "nothing is pushed" as a third reason for the
+    verdict. That was a category error and is withdrawn. <strong>Delivery state is not
+    a product-quality finding.</strong> An unpushed branch says something about where
+    the code is, not about whether the product is safe to ship, and citing it
+    alongside F014 implied the two are the same kind of fact.
+  </p>
+  <p>
+    The four dimensions are reported separately from here on — see
+    <a href="reports/release_decision_2026-08-17.html">reports/release_decision_2026-08-17.html</a>.
+    The verdict itself is unchanged: F014 has since been remediated in
+    engineering terms, and D1/H3 remain the reason it stands.
+  </p>
+  <ul style="display:none">
   </ul>
   <p>
     Everything that engineering can close in this register is closed, mutation-proven, and

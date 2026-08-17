@@ -102,8 +102,8 @@ point — a matrix where a module can sit in two classes is a matrix nobody has 
 ### ML_NOT_JUSTIFIED — stated as a decision, not an omission (16)
 
 `about`, `auth`, `celebrity_plans`, `cycle_aware`, `donor_wall`, `legal`, `licences`, `moments`,
-`onboarding`, `profile`, `progress_photos`, `scanner` (the UI shell only — the model is in
-`visual_equipment`), `sdk_export`, `settings`, `splash`, `voice`.
+`onboarding`, `profile`, `progress_photos`, `scanner` (the UI shell only — the model itself lives in the
+visual_equipment module, classified ML_CORE above), `sdk_export`, `settings`, `splash`, `voice`.
 
 **A good `ML_NOT_JUSTIFIED` is worth more than a fake integration.** `cycle_aware` is the clearest
 case: its phase notes are a published, citable model of a menstrual cycle, and replacing them with

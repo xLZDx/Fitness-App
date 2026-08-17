@@ -13746,3 +13746,115 @@ DESIGNED only.
 
 D3 is untouched. Nothing here authorises shipping v2, and a test pins the bundled version at v1 so
 that changing it forces a new promotion decision to be written.
+
+## 2026-08-17 — Dispositions, clinical handoff, CT candidate, and a release-semantics correction
+
+### Release semantics: a category error, withdrawn
+
+The previous reconciliation gave three reasons for `NOT_RELEASE_READY`, and the third was "nothing
+is pushed". That was wrong in kind, not in degree.
+
+```text
+PRODUCT_RELEASE_VERDICT   what the product is
+DELIVERY_STATE            where the code is
+```
+
+An unpushed branch says nothing about whether a product is safe to ship, and listing it beside F014
+made the verdict look better-supported than it was — three reasons where there was one. Corrected in
+the reconciliation report, and the four dimensions are now reported separately in
+`reports/release_decision_2026-08-17.html`.
+
+```text
+ENGINEERING_STATUS       = all engineering-closeable release findings resolved
+CLINICAL_AUTHORITY_STATUS = D1 external validation required; H3 hold
+PRODUCT_RELEASE_VERDICT  = NOT_RELEASE_READY   (on clinical authority ALONE)
+DELIVERY_STATE           = LOCAL_ONLY          (expected, carries no quality signal)
+```
+
+### `CONDITIONAL_RELEASE` analysed, not voted on
+
+What could ship: everything not depending on a safety tag — library as reference, manual logging,
+plate calculator, photos, body comp, subscription, export, scanner as identification aid, AI coach
+as already gated. What could not: anything whose output is a *prescription* — generation, enrolment,
+the planner, For-You ranking, substitution.
+
+The honest reading is that **the disabled half is the product**. SPTR's stated purpose is programmes
+built around what a person can do; with generation, planning and substitution removed it is an
+encyclopaedia with a logbook. That may be worth shipping, but it is a different product, and calling
+it a conditional release of this one would be the silent conversion into a beta that was explicitly
+forbidden.
+
+UNKNOWN was re-checked rather than assumed and does fail closed. So the residual risk is not "unsafe
+exercise recommended" — it is **a claim of screening resting on unreviewed rules**, which is a claims
+problem, which is what D1 is for. A limited beta changes blast radius, not the claim.
+
+**`NOT_RELEASE_READY` stands, on clinical authority alone.**
+
+### N07 = DORMANT, not release blocking
+
+`/team/:teamId` declared, no ordinary navigation, feature preserved. Not wired up to close an audit
+row and not deleted for lacking a route. Release impact: none.
+
+### F010 = DEFERRED_TO_DEDICATED_CLEANUP_GATE
+
+`core/PROVIDER_CLEANUP_INVENTORY.md`. Re-measured: **14 of 193**, against the audit's 7 of 196 — the
+gap widened, so quoting the audit would have understated it. `momentRepositoryProvider` and
+`wearSyncServiceProvider` are now wired, so the audit's specific claim is no longer true as written
+while the general condition is more widespread.
+
+Classified: VALID_BY_CONSTRUCTION 1 · INTENDED 4 · DORMANT 7 · PRODUCT_DECISION 2 · SUPERSEDED 0 ·
+**SAFE_TO_DELETE 0**.
+
+The empty column is the point. Not one public provider can be called safe to delete on a name and a
+reference count, and two are more likely wiring defects than dead code — which look identical from
+outside and are opposite problems.
+
+### Clinical review package
+
+`core/review/CLINICAL_VALIDATION_HANDOFF.md`, with `mobile/test/docs/clinical_handoff_test.dart`
+(7 cases) binding it to reality.
+
+Numbers verified before writing, exactly as instructed: **1,887 rows · 1,527 tagged · 360 untagged**,
+nine-region vocabulary, distribution measured per tag. The test asserts the document's counts against
+the shipped catalogue in both section 2 and section 8, so a review cannot be stapled to a version
+that no longer exists.
+
+Seven bounded questions instead of "is SPTR safe?", each changing a specific decision — Q2 (is
+rule-derived tagging acceptable as a basis at all) determines whether H3 is weeks or months. A
+structured result schema is required, and the document states that "looks good" is not validation
+evidence. A test asserts the document never claims validation has occurred.
+
+### First CT candidate: scored, and the winner is blocked
+
+`core/ml/CT_CANDIDATE_DECISION.md`. Four candidates, eleven criteria.
+
+| | Total /33 |
+|---|---|
+| Content QA prioritisation | **31** |
+| Equipment recognition | **23** |
+| Recommendation ranking | 13 |
+| Search ranking | 13 |
+
+Recommendation and search are removed by a single zero: no product telemetry, so no impression log
+to learn a ranking from. That zero is a privacy decision, not an engineering gap.
+
+The scanner wins the CT question — only candidate with a model, a baseline, a bounded label space, a
+correction path and a visible failure mode. **But its own zero is privacy**: continuous retraining
+means gym photographs leaving devices. `PRODUCTION_IMAGE_COLLECTION = DISABLED` and stays disabled.
+
+Content QA scores higher and is named the first **deliverable**, deliberately not the CT candidate —
+it is a ranked query over data already collected, with no model and no privacy consequence.
+Collapsing the two would have been the mistake.
+
+**Next executable ML milestone: put `D:/tools/equipment-model` under version control.** Not a git
+repository (verified), which is why `training_code_commit = UNKNOWN` for both registered models and
+why neither can be regenerated by anyone without that directory. Cheapest item in the ML programme,
+blocks every reproducibility claim, needs no decision from anyone.
+
+### Module matrix integrity
+
+Added the no-duplicate-classification assertion §29 requires — the exact defect the first draft had.
+It immediately flagged `visual_equipment` in two sections; on inspection that was a prose
+cross-reference rather than a real double classification. Fixed by rewording the document, not by
+teaching the test to guess at intent, and the convention (backticked mention inside a class section
+= classified there) is now documented in the test.

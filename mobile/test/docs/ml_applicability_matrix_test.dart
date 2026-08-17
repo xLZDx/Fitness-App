@@ -98,6 +98,49 @@ void main() {
             'under ML_NOT_JUSTIFIED and the count moves with it');
   });
 
+  test('no module is classified twice', () {
+    // The defect the first draft of the matrix actually had: `data_export` and
+    // `account_deletion` appeared under two classes at once. A partition that
+    // can double-count is a partition nobody has to finish — the counts still
+    // sum, the coverage check still passes, and the document silently means
+    // two different things about the same module.
+    //
+    // Counting BACKTICKED mentions per class section, which is the
+    // convention this makes load-bearing: a module named in backticks inside a
+    // class section IS classified there. A prose cross-reference must
+    // therefore drop the backticks, and one already had to — the
+    // ML_NOT_JUSTIFIED entry for `scanner` pointed at the visual_equipment
+    // module and this test flagged it, correctly by its own rule and wrongly
+    // in substance.
+    //
+    // Left as-is rather than made cleverer. A test that tried to infer intent
+    // from surrounding prose would be guessing, and the cost of the rule is
+    // one word of rewording against a real duplicate going unnoticed.
+    final sections = <String, String>{};
+    final headings = RegExp(r'^### (ML_CORE|ML_AUGMENTED|'
+            r'RULE_BASED_WITH_ML_MONITORING|ML_OPTIONAL|ML_NOT_JUSTIFIED)',
+        multiLine: true);
+    final matches = headings.allMatches(matrix).toList();
+    expect(matches, hasLength(5), reason: 'expected five class sections');
+    for (var i = 0; i < matches.length; i++) {
+      final start = matches[i].start;
+      final end = i + 1 < matches.length ? matches[i + 1].start : matrix.length;
+      sections[matches[i].group(1)!] = matrix.substring(start, end);
+    }
+
+    final duplicates = <String, List<String>>{};
+    for (final m in modules) {
+      final classes = [
+        for (final entry in sections.entries)
+          if (entry.value.contains('`$m`')) entry.key,
+      ];
+      if (classes.length > 1) duplicates[m] = classes;
+    }
+    expect(duplicates, isEmpty,
+        reason: 'these modules are classified under more than one ML class, '
+            'so the matrix does not say what it claims to say: $duplicates');
+  });
+
   test('the five class names are all present, so the counts mean something',
       () {
     // Without this, renaming a class heading would leave five integers in the
