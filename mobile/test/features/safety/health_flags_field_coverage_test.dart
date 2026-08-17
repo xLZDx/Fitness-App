@@ -29,6 +29,27 @@ void main() {
   final file = File('lib/features/safety/data/health_flags.dart');
   final source = file.readAsStringSync();
 
+  /// Comments removed before any slice is matched.
+  ///
+  /// Found by attacking this file rather than by writing it. A slice runs from
+  /// its own anchor to the NEXT anchor, so it absorbs the doc comment that
+  /// belongs to the following member — and a field named only in that comment
+  /// satisfied `contains`. Demonstrated: a field present in every member
+  /// except `operator ==`, with its name appearing once in the doc comment
+  /// that follows `operator ==`, left this fence entirely green. That is the
+  /// N-01 defect exactly, passing through the guard written to catch N-01.
+  ///
+  /// Sixth instance of this class in this programme, and the first one written
+  /// by the same hand that had just finished describing the class. A matcher
+  /// that reads prose is evidence about prose.
+  String _stripComments(String s) {
+    final withoutBlocks = s.replaceAll(RegExp(r'/\*.*?\*/', dotAll: true), '');
+    return withoutBlocks
+        .split('\n')
+        .where((l) => !l.trimLeft().startsWith('//'))
+        .join('\n');
+  }
+
   /// The class body, so an identically named member of another class in the
   /// same file cannot satisfy a check by accident.
   // These helpers run at collection time as well as inside tests, so they
@@ -73,10 +94,13 @@ void main() {
     for (var i = 0; i < ordered.length; i++) {
       final end =
           i + 1 < ordered.length ? ordered[i + 1].value : body.length;
-      out[ordered[i].key] = body.substring(ordered[i].value, end);
+      out[ordered[i].key] = _stripComments(
+        body.substring(ordered[i].value, end),
+      );
     }
     return out;
   }
+
 
   /// `final Foo? bar;` / `final Set<Baz> qux;` declared on the class.
   ///
@@ -133,9 +157,12 @@ void main() {
     for (final member in mustNameEveryField) {
       test(member, () {
         for (final f in fields.keys) {
+          // Word-boundary, not substring: `surgery` was otherwise satisfied by
+          // a mention of `surgeryDate`, so a field could be covered by a
+          // DIFFERENT field whose name contains it.
           expect(
             m[member],
-            contains(f),
+            matches(RegExp(r'\b' + RegExp.escape(f) + r'\b')),
             reason: '$member does not mention "$f". Every field must be '
                 'carried by all of: ${mustNameEveryField.join(', ')}. '
                 'A field missing from one of them is silently dropped at '
@@ -153,7 +180,7 @@ void main() {
         if (!e.value) continue;
         expect(
           m['bool get isUnanswered'],
-          contains(e.key),
+          matches(RegExp(r'\b' + RegExp.escape(e.key) + r'\b')),
           reason: 'isUnanswered ignores nullable field "${e.key}", so a user '
               'who answered only that question reads as never asked.',
         );

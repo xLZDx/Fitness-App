@@ -14187,3 +14187,53 @@ scanner's blocking questions from arising here is to never add the field.
 Rows measured at the checkpoint are labelled as such, following the correction earlier in this
 programme: a document cannot state its own final commit, because the correction that states it is
 itself a commit.
+
+## R3 agent review at f91dfde — one confirmed defect in my own guard
+
+Five reviewers, independent round 1. Two findings survived verification by measurement; two more were
+disproved by measurement; the rest is recorded in the review report.
+
+**R-01 (MAJOR, FACT, FIXED): the field-coverage fence could not see the defect it was written for.**
+`health_flags_field_coverage_test.dart` slices each member from its own anchor to the NEXT anchor, so
+every slice absorbs the doc comment belonging to the following member. A field named once in that
+comment satisfied `contains`.
+
+Demonstrated rather than argued: a field added to every member EXCEPT `operator ==`, with its name
+appearing once in the doc comment that follows `operator ==`, left the whole fence green. That is
+the N-01 defect, passing through the guard built to catch N-01.
+
+Sixth instance of this class in this programme, and the first one I wrote myself while documenting the
+class. Fixed by stripping comments from each slice and matching on a word boundary rather than a
+substring -- `surgery` was otherwise satisfied by a mention of `surgeryDate`. Re-running the exact
+attack now turns `operator ==` red.
+
+**R-02 (MAJOR, FACT, CORRECTION TO MY OWN CLAIM): the F014 mutation count was 7, not 9.**
+I reported "nine load-bearing cases fail against pre-F014 behaviour". Measured by removing
+`BlockReason.professionalGuidance` from `wholePersonBlocks` and running the two F014 files: **seven**
+tests fail -- the reported state blocking and naming itself, the planner, the programme builder,
+enrolment, the deep link, the cached programme, and `allowsAnyTraining` after the storage round trip.
+The claim was inflated by roughly two, and the reviewer's independent count of 7 was right.
+
+**DISPROVED BY MEASUREMENT (recorded so they are not re-raised):**
+
+A reviewer called the pregnancy-field fence MAJOR because its source scan omits `pregnan` and reads
+one file. Tested by adding `bool? isPregnant` to `HealthFlags`: **six** tests go red, including
+`the stored document carries no medical detail`, because the field-coverage fence forces every
+declared field into `toJson` and the serialisation test then finds `pregnan` in the JSON. The narrow
+source scan is weak on its own; the chain covers the scenario named. FALSE_POSITIVE in substance.
+
+A reviewer reported a cross-document commit-count disagreement (43 vs 29). The decision-log line is
+explicitly HEAD-qualified (`HEAD ab11150 ... 29 ahead`), so the two are snapshots at different HEADs,
+not a contradiction. MINOR at most, and not the defect described.
+
+**Independently re-verified by me, not taken on the implementer's word:** the clinical handoff's
+1,887 / 1,527 / 360 split and the full nine-tag vocabulary with per-tag counts, recomputed from the
+shipped catalogue -- exact match. F010's 14-of-193, recomputed with my own scan -- exact match, same
+fourteen names (my first count said 194/15 and the extra was `_legacyContainer`, a `ProviderContainer`
+my regex mistook for a provider). `HealthHistory.toJson` emits ten fields and `firestore.rules` now
+inspects all ten, with `flagsAreStripped` covering all five `HealthFlags` fields.
+
+**Genuinely unreviewed, and recorded as such rather than as clean:** the N-01 same-shape sweep across
+`features/profile/data`, `features/safety/data` and `features/programmes/data` was not reached by any
+reviewer. The data-export path was not opened. `deload_detector`'s effect through `plan_builder` was
+not read. Those are open, not passed.
