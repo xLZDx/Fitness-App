@@ -1,0 +1,178 @@
+{
+  "$comment": [
+    "SPTR model registry — the single authoritative answer to 'which model is actually deployed'.",
+    "",
+    "ML-F1 is why this file exists. The ML strategy document described a 29-class v2 as 'the",
+    "bundled TFLite model'. The APK ships a 10-class v1 that cannot abstain at all. Two model",
+    "versions existed, both measured, and nothing in the repository recorded which one was",
+    "deployed — so a reader planning from the strategy believed abstention work was partly done",
+    "in the product when it was not started.",
+    "",
+    "Rules for this file:",
+    "  1. Nothing here is fabricated. A value that is not known is stated as UNKNOWN,",
+    "     NOT_RECORDED or LEGACY, and that absence is itself the useful evidence.",
+    "  2. `deployment_status` is the field the CI fence checks against the actual asset tree.",
+    "     Editing it without editing reality makes the build fail, which is the point.",
+    "  3. TRAINED does not imply EVALUATED. EVALUATED does not imply CHALLENGER.",
+    "     CHALLENGER does not imply CHAMPION. Promotion is always a separate decision.",
+    "  4. This registry is not evidence that any model works, and no entry in it changes D1."
+  ],
+  "schema_version": "1.0.0",
+  "updated": "2026-08-17",
+  "lifecycle_states": [
+    "TRAINED",
+    "EVALUATED",
+    "CHALLENGER_CANDIDATE",
+    "SHADOW_READY",
+    "SHADOW",
+    "PROMOTION_REVIEW",
+    "CHAMPION",
+    "REJECTED",
+    "RETIRED"
+  ],
+  "models": [
+    {
+      "model_id": "equipment_recognition",
+      "model_version": "v1",
+      "task": "single-label image classification of gym equipment",
+      "architecture": "MobileNetV2 (ImageNet weights) + 10-way softmax head, float16 quantised",
+      "artifact_path": "mobile/assets/models/equipment_v1.tflite",
+      "artifact_sha256": "6f159ec32cd6c010c5319cb3436b22e97ce07ee72ff6f05daf02d3a2c7e696e3",
+      "artifact_bytes": 4496661,
+      "training_code_commit": "UNKNOWN",
+      "training_code_location": "D:/tools/equipment-model (NOT under version control — verified: no .git)",
+      "training_dataset_version": "NOT_RECORDED",
+      "training_dataset_description": "1741 web-crawled photos, deduped by pixel hash, 115-200 per class",
+      "input_schema_version": "float32 [1,224,224,3], raw 0-255; [-1,1] scaling inside the graph, so metadata declares mean 0 / std 1",
+      "output_schema": "float32 [1,10] softmax, label order contractual",
+      "class_count": 10,
+      "classes": [
+        "squat_rack",
+        "barbell",
+        "dumbbell",
+        "kettlebell",
+        "cable_machine",
+        "bench",
+        "leg_press",
+        "lat_pulldown",
+        "rowing_machine",
+        "treadmill"
+      ],
+      "supports_unknown_or_abstain": false,
+      "abstention_note": "A closed 10-way softmax over a 69-machine catalogue. It cannot say 'not a machine I know' — probability mass is redistributed over the ten it has. B1 measured its three most confident real-world answers as all wrong, up to 0.897, on machines it has no class for. No confidence threshold repairs this; it is a property of the head, not of the threshold.",
+      "training_timestamp": "2026-07-29",
+      "evaluation_report": "mobile/assets/models/README.md",
+      "evaluations": [
+        {
+          "dataset": "held-out 15% stratified slice of the same web crawl",
+          "n": 261,
+          "metrics": {
+            "top_1": 0.617,
+            "top_3": 0.835
+          },
+          "caveat": "Same distribution as training: catalogue-style photos, clean background, machine centred. An upper bound, not a product number."
+        },
+        {
+          "dataset": "operator's 30 real gym photos (core/plans/B1_RECOGNITION_MEASUREMENT_2026-08-07.md)",
+          "n": 30,
+          "metrics": {
+            "confidence_min": 0.215,
+            "confidence_median": 0.437,
+            "confidence_max": 0.897,
+            "rejected_by_photo_threshold_0_10": 0,
+            "rejected_by_live_threshold_0_05": 0
+          },
+          "caveat": "The real-world measurement. Not a single frame was rejected by either shipped threshold, and the live threshold (0.05) is below random for ten classes (0.10)."
+        }
+      ],
+      "primary_metrics": {
+        "top_1": 0.617,
+        "top_3": 0.835
+      },
+      "guardrail_metrics": {
+        "confident_false_identification": "PRESENT — measured up to 0.897 on out-of-catalogue machines",
+        "ood_rejection_rate": 0.0
+      },
+      "deployment_status": "BUNDLED",
+      "bundled": true,
+      "champion": true,
+      "challenger": false,
+      "fallback": "machine_text_anchor (OCR of the machine's printed name) — measured 18/18 where a name is legible, and the stronger anchor of the two",
+      "rollback_target": null,
+      "rollback_note": "No previous version exists. This is v1.",
+      "lifecycle_state": "CHAMPION",
+      "notes": "Champion by default rather than by evaluation: it is the only model that has ever shipped. Its provenance is partial — the training code is not under version control, so `training_code_commit` cannot be resolved and this model cannot be regenerated by anyone who does not hold that directory."
+    },
+    {
+      "model_id": "equipment_recognition",
+      "model_version": "v2",
+      "task": "single-label image classification of gym equipment, with abstention",
+      "architecture": "NOT_RECORDED (see train_v2.py, outside version control)",
+      "artifact_path": "D:/tools/equipment-model/out_v2/equipment_v2.tflite",
+      "artifact_in_repository": false,
+      "artifact_sha256": "d642effced67d0aef4f17273f8c6e7e4ebf90aa3452576ec1cde75ed52f74848",
+      "artifact_bytes": 4564876,
+      "training_code_commit": "UNKNOWN",
+      "training_code_location": "D:/tools/equipment-model (NOT under version control)",
+      "training_dataset_version": "NOT_RECORDED",
+      "training_dataset_description": "55,466 crops from CC BY 4.0 Roboflow datasets (36 usable of 112 found), bounding-box cropped, with background crops mined for the `none` class from photos that contain a recognised machine",
+      "input_schema_version": "NOT_RECORDED",
+      "output_schema": "37-way softmax",
+      "class_count": 37,
+      "classes_source": "D:/tools/equipment-model/out_v2/labels.json",
+      "supports_unknown_or_abstain": true,
+      "abstention_note": "`none` is a real trained class, not a threshold. Measured: it corrected two of B1's confident errors (the abduction machine went from `treadmill` 0.892 to `none` 0.808). NOT yet stable under viewpoint — the same abdominal machine reads `treadmill` 0.940 from one angle and `none` 0.946 from another.",
+      "training_timestamp": "2026-08-07",
+      "evaluation_report": "mobile/assets/models/README.md",
+      "evaluations": [
+        {
+          "dataset": "operator's 30 real gym photos — 18 labelled with certainty, 12 wide room shots not gradable by a one-label classifier",
+          "n": 18,
+          "metrics": {
+            "top_3": 0.28,
+            "abstained_of_30": 10
+          },
+          "caveat": "28% top-3 is not a product. Measured against the only real-world sample the project has."
+        }
+      ],
+      "primary_metrics": {
+        "top_3_real_world": 0.28
+      },
+      "guardrail_metrics": {
+        "abstention_stable_under_viewpoint": false
+      },
+      "deployment_status": "NOT_SHIPPED",
+      "bundled": false,
+      "champion": false,
+      "challenger": false,
+      "challenger_note": "Deliberately NOT marked challenger. A challenger is a formal state reached by passing an evaluation gate, and no gate has been run: there is no independent held-out set (ML_STRATEGY step M0 is unstarted), and its one real-world number is worse than a product bar. It is an EXPERIMENTAL model. Calling it a challenger because it is newer is exactly the drift this registry exists to stop.",
+      "fallback": null,
+      "rollback_target": "equipment_recognition@v1",
+      "lifecycle_state": "EVALUATED",
+      "notes": "The ML strategy document described this as 29 classes; the artefact's own labels.json lists 37 including `none`. The registry records the measured value. D3 remains in force: nothing here authorises shipping v2."
+    }
+  ],
+  "vendor_models": {
+    "$comment": "Third-party models the app depends on but does not train. Listed so the registry is a complete answer to 'what models run', and excluded from the CI fence because we neither version nor bundle them.",
+    "entries": [
+      {
+        "model_id": "mlkit_pose_detection",
+        "vendor": "Google ML Kit",
+        "used_by": "features/form_check, features/posture",
+        "note": "The pose model is the vendor's. The rep counter on top of it is ours and has never been measured — ML_STRATEGY §1.2 shows the published accuracy figures came from a different algorithm (3D/bilateral/2-phase) than the one that ships (2D/one-side/4-phase)."
+      },
+      {
+        "model_id": "mlkit_text_recognition",
+        "vendor": "Google ML Kit",
+        "used_by": "features/visual_equipment (machine_text_anchor)",
+        "note": "Measured 18/18 where a machine's printed name is legible — the strongest recognition signal in the product, and not a model we train."
+      },
+      {
+        "model_id": "gemini",
+        "vendor": "Google (firebase_ai)",
+        "used_by": "features/ai_coach, features/visual_equipment",
+        "note": "Provider moderation is configured (F026) and closes nothing in the fitness-safety space."
+      }
+    ]
+  }
+}
