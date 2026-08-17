@@ -13903,3 +13903,37 @@ as final is always the one before it. Chasing it would never converge.
 Relabelled to `HEAD at assessment`, with an explicit note that later commits do not contradict the
 row, and the prose count replaced by the claim that actually matters and stays true: every commit of
 this programme is local and nothing is pushed.
+
+## Final independent review — N-01 (BLOCKER): the F014 block was lost on restart
+
+An adversarial review at `4cdc35d` broke the F014 invariant. `HealthFlags.operator ==` omitted
+`professionalGuidance`, so `HealthFlags(reported)` compared equal to `HealthFlags.empty`. That
+equality is load-bearing: `HealthHistory.isEmpty` asked the question that way, `SensitiveProfile.
+isEmpty` delegates to it, and `mergeSensitive` returns the SERVER profile when the local block reads
+as empty. The user's answer was discarded on the next read.
+
+The demonstrated bypass, not just the lost field: a user who answers the one question that blocks
+them and nothing else has a health block containing exactly one fact -- and one fact is what the
+equality could not see. After a restart and a clean PAR-Q, `allowsAnyTraining` was **true**. Proven
+by test before the fix; all six cases in `f014_persistence_merge_test.dart` failed against the old
+behaviour.
+
+The block was least durable for the user who told the app the least. That is the opposite of
+fail-closed.
+
+**Root cause, and why the fix is not just three added lines.** This is the same bug class three
+times in one class: F014's field was added to `toJson`/`copyWith` but not `fromJson` (caught before
+commit), then to `fromJson` but not `operator ==` (this finding), and separately the `health` map
+grew `screening`/`flags` that the Firestore rule backing the same privacy claim does not inspect
+(N-02). Dart has no exhaustiveness check for "list the field again", and every instance passed the
+analyzer, the suite and review.
+
+So: `HealthHistory.isEmpty` now asks `HealthFlags.isEmpty`, which derives from `isUnanswered` --
+the one list that names the answers and that an author adding an answer has a reason to open.
+`operator ==` is not such a list. And `health_flags_field_coverage_test.dart` reads the source and
+fails when a declared field is missing from any of `toJson`, `fromJson`, `copyWith`, `operator ==`
+or `hashCode`. Mutation-proven: removing the field from `==` turns it red with the field named.
+
+The existing F014 suite could not have caught this. Every test in it constructs `HealthFlags` or
+`SafetyContext` directly, so none crosses `mergeSensitive` -- coverage of the serialiser was
+mistaken for coverage of persistence.

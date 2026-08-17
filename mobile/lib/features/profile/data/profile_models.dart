@@ -473,7 +473,12 @@ class HealthHistory {
       bloodPressure == null &&
       (otherConcerns == null || otherConcerns!.isEmpty) &&
       screening.isEmpty &&
-      flags == HealthFlags.empty;
+      // Asks HealthFlags directly, and deliberately NOT through equality
+      // against the empty instance. This getter decides whether the locally
+      // stored block wins over the server copy, so an equality that forgets a
+      // field does not merely compare loosely -- it throws the user's answer
+      // away. See [HealthFlags.isEmpty].
+      flags.isEmpty;
 
   HealthHistory copyWith({
     List<String>? conditions,

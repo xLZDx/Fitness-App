@@ -286,6 +286,20 @@ class HealthFlags {
       clinicianAdvice == null &&
       professionalGuidance == null;
 
+  /// True when this holds nothing the user told us.
+  ///
+  /// Deliberately NOT `this == empty`. `HealthHistory.isEmpty` used to ask the
+  /// question that way, and it decides whether a locally stored health block
+  /// wins over the server copy — so a field missing from `operator ==` did not
+  /// merely make equality sloppy, it silently discarded the user's answer on
+  /// the next read. F014 was lost exactly like that: the field was added to
+  /// `isUnanswered` and to every serialiser, and to `==` it was not.
+  ///
+  /// Routing through [isUnanswered] means the one list a new answer must join
+  /// is the list that names the answers. That is a list an author updating
+  /// this class has a reason to look at; `operator ==` is not.
+  bool get isEmpty => isUnanswered && restrictions.isEmpty;
+
   /// Restrictions the catalogue has no tag for.
   ///
   /// The eligibility layer states these to the user instead of silently
@@ -365,6 +379,7 @@ class HealthFlags {
       other.bloodPressure == bloodPressure &&
       other.surgery == surgery &&
       other.clinicianAdvice == clinicianAdvice &&
+      other.professionalGuidance == professionalGuidance &&
       other.restrictions.length == restrictions.length &&
       other.restrictions.containsAll(restrictions);
 
@@ -373,11 +388,13 @@ class HealthFlags {
         bloodPressure,
         surgery,
         clinicianAdvice,
+        professionalGuidance,
         Object.hashAllUnordered(restrictions),
       );
 
   @override
   String toString() => 'HealthFlags(${restrictions.map((r) => r.name).toList()},'
       ' bp: ${bloodPressure?.name}, surgery: ${surgery?.name},'
-      ' advice: ${clinicianAdvice?.name})';
+      ' advice: ${clinicianAdvice?.name},'
+      ' guidance: ${professionalGuidance?.name})';
 }
