@@ -98,7 +98,22 @@ PlanOutcome buildPlan({
   //    factor was carried to the screen and rendered as "intensity 80%" over a
   //    session identical to the one a well-recovered user got. The number was
   //    true about what the app had decided and false about what it handed over.
-  var factor = deload.suggestedVolumeFactor;
+  // `isFinite` first, and NOT because clamp would propagate a NaN — measured,
+  // it does not: `double.nan.clamp(0.5, 1.10)` returns 1.10. That is the
+  // problem. A factor that is not a real number would come out of the clamp as
+  // the planner's MAXIMUM, so "we could not work out a recovery factor" would
+  // silently read as "train ten per cent harder than baseline" — a fail-open
+  // in the one place in this file whose job is to fail closed.
+  //
+  // `DeloadVerdict` now asserts the invariant, which makes a bad const literal
+  // a compile error and a bad runtime value throw in debug. Asserts are
+  // stripped in release, so the release-safe half lives here.
+  //
+  // 1.0 is not an invented value: it is exactly what `detectDeload` returns
+  // for "no signal fired", i.e. no change, and it stays subject to
+  // `safety.intensityCeiling` below like any other factor.
+  var factor =
+      deload.suggestedVolumeFactor.isFinite ? deload.suggestedVolumeFactor : 1.0;
   // Gate O: the calendar phase no longer multiplies anything. What the user
   // says they feel does, and only downwards.
   final cycleAdjustment = adjustmentFor(cycleSelfReport);

@@ -71,6 +71,16 @@ class DeloadVerdict {
 
   /// Factor to multiply the next 7 days' volume by. 0.5 = half-volume
   /// recovery week; 1.0 = no change.
+  ///
+  /// [detectDeload] returns 0.5 or 1.0 and nothing else, so nothing outside
+  /// that range reaches a reader today — traced through both `buildPlan` call
+  /// sites rather than assumed.
+  ///
+  /// The invariant is nevertheless enforced by the reader (`plan_builder.dart`
+  /// step 3) rather than by an `assert` here, for two reasons. An assert is
+  /// stripped in release, so it would not close the case it exists for; and it
+  /// would make the reader's guard impossible to construct a failing case for,
+  /// which in this repository means a guard nothing has ever proven.
   final double suggestedVolumeFactor;
 }
 

@@ -143,6 +143,48 @@ void main() {
           closeTo(_restricted().intensityCeiling!, 0.0001));
     });
 
+    test('a factor that is not a real number does not become the maximum', () {
+      // Traced first, and NOT reachable today: both `buildPlan` call sites
+      // take their verdict from `deloadVerdictProvider` -> `detectDeload`,
+      // which returns 0.5 or 1.0 and nothing else. This is about the SHAPE of
+      // the failure if a second producer ever appears — the same argument
+      // R-03 made about a terminal mutation with one gated caller.
+      //
+      // The direction is what makes it worth a case, and it was measured
+      // rather than assumed. The first version of this reasoning predicted a
+      // crash: `clamp` propagating NaN into `.round()`. Measured, Dart does
+      // not propagate it — `double.nan.clamp(0.5, 1.10)` returns **1.10**, the
+      // upper limit. So an unusable factor came out of the clamp as the
+      // planner's MAXIMUM intensity, and "we could not work out a recovery
+      // factor" read as "train ten per cent harder than baseline".
+      final unusable = DeloadVerdict(
+        shouldDeload: false,
+        reasons: const [],
+        // Computed, not a literal: `double.nan` as a const would be folded and
+        // the point is a value arriving at runtime.
+        suggestedVolumeFactor: double.nan * 1,
+      );
+      final out = (_build(safety: _clear(), deload: unusable) as PlanReady).plan;
+
+      expect(out.intensityFactor.isFinite, isTrue);
+      expect(out.intensityFactor, lessThanOrEqualTo(1.0),
+          reason: 'an unusable recovery factor must not resolve to more work '
+              'than an unremarkable week');
+    });
+
+    test('an unusable factor is still subject to the screening ceiling', () {
+      // The substitute value is not exempt from the gate that outranks it.
+      final unusable = DeloadVerdict(
+        shouldDeload: false,
+        reasons: const [],
+        suggestedVolumeFactor: double.nan * 1,
+      );
+      final out =
+          (_build(safety: _restricted(), deload: unusable) as PlanReady).plan;
+      expect(out.intensityFactor,
+          closeTo(_restricted().intensityCeiling!, 0.0001));
+    });
+
     test('the cap never raises a factor that was already lower', () {
       // `clamp(0.5, ceiling)` with a deload of 0.6 must leave 0.6 alone. A cap
       // that becomes a floor would turn a recovery signal into a prescription

@@ -14464,3 +14464,61 @@ passed. `REMOTE-PUSH-GO` remains NO.
 **Recorded so it is not mistaken for a clean bill:** the external second-opinion tool (Codex) reported
 `usage_limit_exhausted` on this gate and on the previous one. Its receipt satisfies the local gate
 fail-open by design, but no external review actually ran. Every finding above is my own measurement.
+
+## Unreviewed area 3: the deload verdict, the plan builder, and substitution
+
+**Traced and found correct, by reading rather than assuming.** `buildPlan` applies the whole-person
+gate at step 0, before the pool is read, so a refusal cannot be raced by a slow catalogue load. The
+candidate pool goes through `eligibleExercises`, the same layer the feed and the programme builder
+use. The intensity ceiling composes by taking the LOWEST opinion and the code will not let a safety
+type raise it. `DeloadReason` reports the factor after clamping, so the number shown is the number
+built against. `plan_refusal_test.dart` already carried the adversarial case that matters most --
+a cap must never become a floor.
+
+**DISPROVED BY MEASUREMENT, recorded so it is not re-raised.** I predicted that a non-finite
+`suggestedVolumeFactor` would propagate through `clamp` into `.round()` and crash plan generation.
+Measured with a throwaway Dart program: `double.nan.clamp(0.5, 1.10)` returns **1.10**. Dart does not
+propagate NaN through `clamp`; it returns the upper limit. There is no crash.
+
+**MAJOR, FACT, FIXED -- and the measurement changed the finding rather than closing it.** The real
+shape is worse than the predicted one and points the other way. A factor that is not a real number
+came out of the clamp as the planner's MAXIMUM intensity, so "we could not work out a recovery
+factor" would have read as "train ten per cent harder than baseline" -- a fail-open in the one step
+of that file whose job is to fail closed.
+
+**NOT reachable today, and said plainly:** both `buildPlan` call sites take their verdict from
+`deloadVerdictProvider` -> `detectDeload`, which returns 0.5 or 1.0 and nothing else. This is
+existence, not reachability. It is fixed anyway for the reason R-03 was: "one producer, correct
+today" is a fact about today.
+
+Fixed at the reader with `isFinite`, substituting 1.0 -- which is not an invented value but exactly
+what `detectDeload` returns for "no signal fired", and which remains subject to
+`safety.intensityCeiling` like any other factor. An `assert` on `DeloadVerdict` was written first and
+removed: it is stripped in release, so it would not close the case it exists for, and it would make
+the reader's guard impossible to construct a failing case for -- a guard nothing has ever proven,
+which is the thing this programme keeps finding. The reasoning is recorded on the field's doc
+comment. Mutation-proven: removing the `isFinite` guard turns the new case red.
+
+**The substitution surface -- a composition claim, now measured as one.** `_AddExerciseButton` opens
+a picker whose result is written straight into the logged session, with no whole-person gate of its
+own. The page's own doc says why that is correct: the gate is answered upstream by
+`exerciseResolutionProvider`, which withholds the entry exercise, so a refused user never reaches the
+button. That reasoning is sound and it is a claim about two mechanisms in different files ADDING UP.
+
+`stale_state_attack_test.dart` proves the provider re-answers. Nothing proved the SCREEN followed. A
+`ref.read` in place of the `ref.watch` at `workout_player_page.dart:165` would have broken the
+composition with neither existing proof going red.
+
+`player_substitution_transition_test.dart` holds one widget tree across the change -- a fresh pump
+would prove nothing, because it never held the stale value -- and asserts the picker leaves and the
+withheld notice arrives, then that both reverse when the answer is corrected. Two mutations, each
+turning both cases red: the page reading the resolution once instead of watching it, and the withheld
+branch removed.
+
+Fixture note worth keeping: the first version of that test found no button at all, because the picker
+is hidden until the day's first exercise has been logged. A control that finds nothing makes every
+assertion after it pass for the wrong reason, which is why the control is asserted rather than
+assumed.
+
+**Suites:** mobile 2857 passed / 0 failed; analyzer clean of errors (15 pre-existing infos).
+`REMOTE-PUSH-GO` remains NO.
