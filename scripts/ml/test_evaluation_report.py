@@ -219,3 +219,62 @@ def test_an_evaluation_may_cite_its_own_source(tmp_path):
     result = audit(moved)
     assert result["findings"][0]["cited_report"] == "no/such/file.md"
     assert result["findings"][0]["verdict"] == "SOURCE_MISSING"
+
+
+# --- the denominator-carrying key, and the six it must not also "fix" --------
+
+
+def test_out_of_key_matches_the_fraction_the_source_writes():
+    src = "abstained ('none'):                   10/30 (33%)"
+    assert locate(src, "abstained_of_30", 10)
+
+
+def test_out_of_key_does_not_accept_a_different_numerator():
+    # The whole risk of a looser rule: `abstained` is present, `30` is present,
+    # and a checker that stopped there would confirm a claim of ten against a
+    # source that measured nine.
+    src = "abstained ('none'):                   9/30 (30%)"
+    assert not locate(src, "abstained_of_30", 10)
+
+
+def test_out_of_key_does_not_accept_a_different_denominator():
+    src = "abstained ('none'):                   10/29 (34%)"
+    assert not locate(src, "abstained_of_30", 10)
+
+
+def test_out_of_rule_needs_the_stem_near_the_fraction():
+    # 10/30 alone is not evidence about abstention. WINDOW apart, so proximity
+    # is what fails rather than absence.
+    src = "abstained ('none'): see below" + ("." * 400) + "10/30"
+    assert not locate(src, "abstained_of_30", 10)
+
+
+def test_a_russian_metric_name_is_still_not_locatable():
+    # core/ml/METRIC_PROVENANCE.md, cause 1. The value is right there; the name
+    # is `уверенность`. A locator that matched this would have acquired a
+    # translation table, which is a claim about meaning it is not entitled to
+    # make. This test exists so that acquiring one is a deliberate act.
+    src = "уверенность top-1: min 0.215 · медиана 0.437 · max 0.897"
+    assert not locate(src, "confidence_median", 0.437)
+
+
+def test_a_complement_is_not_located():
+    # Cause 2. `30/30` passed, so zero were rejected -- true, and not stated.
+    src = "пропущено фото-порогом    (0.10)     30/30  (100%)"
+    assert not locate(src, "rejected_by_photo_threshold_0_10", 0)
+
+
+def test_a_block_name_does_not_vouch_for_every_scalar_under_it():
+    # Cause 3. Four numbers live under `coverage`; a claim of `coverage = 264`
+    # must not pass just because 264 is one of them.
+    src = json.dumps({"coverage": {"rows": 1887, "heuristic_flags": 264,
+                                   "share": 0.443}})
+    assert check_claim(src, True, "coverage", 264) == "NOT_LOCATABLE"
+
+
+def test_the_audit_still_reports_the_six_it_cannot_read():
+    # The number that must not quietly drop to zero: a future locator change
+    # that "fixes" the remaining six has changed what this module means.
+    result = audit()
+    assert result["counts"]["NOT_LOCATABLE"] == 6
+    assert result["counts"]["DRIFTED"] == 0

@@ -15739,3 +15739,44 @@ past the backend's 15-minute guarantee (R).
 **Suites:** `flutter test` 2,933 passed (was 2,928). `flutter analyze` no new errors.
 
 **Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.
+
+## The seven unreadable metric claims: one was spelling, six are not, and the checker had a hole
+
+`evaluation_report.py` could not locate seven of the twenty numbers the model registry
+quotes. Each was read against its actual source rather than pattern-matched.
+
+**One was a spelling gap and is fixed.** `abstained_of_30 = 10` against
+`mobile/assets/models/README.md`, which writes `abstained ('none'): 10/30 (33%)`. The
+stem is in the source in English and the value is in it as `10/30` -- the source writes
+the very denominator the registry key carries. `_locate_out_of` matches that, and only
+that: `9/30` does not satisfy a claim of ten and `10/29` does not satisfy a claim about
+thirty.
+
+**Six need a change of meaning and are recorded, not fixed,** in
+`core/ml/METRIC_PROVENANCE.md`. Three state their values under Russian labels
+(`уверенность top-1: min 0.215 · медиана 0.437 · max 0.897`) and would need a
+translation table. Two are arithmetic complements: the source says `30/30` passed, the
+registry says `0` rejected, and a locator that derived one complement can be argued into
+deriving others. One, `coverage = 0.443`, is a claim less specific than its source, which
+nests `share: 0.443` inside a `coverage` block of five numbers.
+
+**Writing the test for that last one found a live defect.** When no flattened key
+matched, `check_claim` fell through to the proximity search on the serialized JSON --
+and proximity in a serialized file is sibling adjacency, not a statement. `coverage = 264`
+returned MATCHES, because 264 is `heuristic_flags` two keys above `share`. The only thing
+keeping that out of the real audit was the file's indentation pushing `share` past the
+120-character window. A false MATCH is the one outcome this module exists to prevent and
+is strictly worse than the false NOT_LOCATABLE the fallback was avoiding: an unreadable
+claim gets reported to a human, a wrongly-confirmed one is never looked at again. The
+fallback is removed; no verdict changed (14 MATCHES before and after), which is the
+evidence it was only ever a path to wrong answers.
+
+Audit now: 20 claims, 14 MATCHES, 0 DRIFTED, 6 NOT_LOCATABLE, 0 SOURCE_MISSING. A test
+pins the six, so a future change that quietly "fixes" them has to argue with a failure.
+
+Three mutations killed and restored byte-for-byte: the proximity fallback put back (S),
+the out-of rule ignoring the numerator (T), and the out-of rule never consulted (U).
+
+**Suites:** `pytest scripts/ml` 78 passed (was 70).
+
+**Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.

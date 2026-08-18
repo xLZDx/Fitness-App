@@ -43,6 +43,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -123,6 +124,44 @@ def locate(source: str, metric: str, value: float | int) -> bool:
             for form in _value_forms(value):
                 if form in window:
                     return True
+    return _locate_out_of(lowered, source, metric.lower(), value)
+
+
+#: A registry key that carries its own denominator: `abstained_of_30`.
+_OUT_OF = re.compile(r"^(?P<stem>.+)_of_(?P<total>\d+)$")
+
+
+def _locate_out_of(lowered: str, source: str, metric: str,
+                   value: float | int) -> bool:
+    """`abstained_of_30 = 10` against a source that writes `abstained: 10/30`.
+
+    A narrow rule, and deliberately so. The name in the registry is
+    `abstained_of_30`; the name in the source is `abstained`, and the thing
+    that makes them the same measurement is not a synonym table -- it is that
+    the source writes the denominator itself, as `10/30`. So this matches only
+    when the stem is present AND the window contains that exact fraction. It
+    cannot turn a near-miss into a match: `9/30` does not satisfy a claim of
+    ten, and `10/29` does not satisfy a claim about thirty.
+
+    This is the only one of the seven unreadable claims that a locator may
+    fix. The rest need a change of MEANING -- a Russian-to-English metric
+    table, or the arithmetic complement of a number the source does state --
+    and inventing either here would be this module asserting a mapping its
+    sources never made. They are recorded in `core/ml/METRIC_PROVENANCE.md`
+    with what each one actually needs.
+    """
+    if not isinstance(value, int) or isinstance(value, bool):
+        return False
+    m = _OUT_OF.match(metric)
+    if not m:
+        return False
+    fraction = "%d/%s" % (value, m.group("total"))
+    for name in _name_forms(m.group("stem")):
+        if not name:
+            continue
+        for start in _positions(lowered, name):
+            if fraction in source[max(0, start - WINDOW):start + WINDOW]:
+                return True
     return False
 
 
@@ -164,11 +203,23 @@ def check_claim(source_text: str, is_json: bool, metric: str,
         tail = metric.rsplit(".", 1)[-1]
         hits = [v for k, v in scalars.items() if k.rsplit(".", 1)[-1] == tail]
         if not hits:
-            # Fall through to the text search: a JSON report may name the same
-            # measurement differently, and refusing to look would report a
-            # readable source as unreadable.
-            return "MATCHES" if locate(source_text, metric, value) \
-                else "NOT_LOCATABLE"
+            # NOT the text search. This used to fall through to `locate`,
+            # which is a proximity search -- and proximity in a serialized JSON
+            # file is sibling adjacency, not a statement. `content_qa` cites a
+            # report whose `coverage` block holds five numbers; searching its
+            # text for "coverage" near a value confirms a claim of
+            # `coverage = 264` against a file whose coverage is 0.443, because
+            # 264 is the `heuristic_flags` two keys above it. The only thing
+            # standing between that and a false MATCH in the real audit was the
+            # indentation pushing `share` past the window.
+            #
+            # A false MATCH is the one outcome this module exists to prevent,
+            # and it is strictly worse than the false NOT_LOCATABLE it was
+            # avoiding: an unreadable claim gets reported and read by a human,
+            # a wrongly-confirmed one is never looked at again. A JSON report
+            # names its measurements. If the name is not in it, the honest
+            # answer is that this module cannot read the claim.
+            return "NOT_LOCATABLE"
         return "MATCHES" if any(_same(h, value) for h in hits) else "DRIFTED"
 
     if locate(source_text, metric, value):
