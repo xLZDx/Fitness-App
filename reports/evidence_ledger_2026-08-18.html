@@ -1,4 +1,4 @@
-<title>The Guard That Watched Numerals</title>
+<title>Six Guards That Passed</title>
 <style>
   :root {
     --ground:#f7f5f1; --panel:#fffefb; --panel-2:#f0ede6; --rule:#ddd8cd;
@@ -66,6 +66,8 @@
   .callout.stop{border-left-color:var(--defect)}
   .callout p{font-size:.97rem;color:var(--ink-2)}
   .callout p strong{color:var(--ink)}
+  .num{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.1em;
+    text-transform:uppercase;display:block;margin-bottom:6px}
   .scroll{overflow-x:auto;border:1px solid var(--rule);border-radius:10px;background:var(--panel);box-shadow:var(--shadow)}
   table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:.89rem}
   th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--rule);vertical-align:top}
@@ -88,16 +90,16 @@
 <div class="wrap">
 <header class="masthead">
   <p class="eyebrow">SPTR · autonomous session · 18 August 2026 · formcoach/gates-a-c</p>
-  <h1>The Guard That Watched Numerals</h1>
-  <p class="standfirst">Fifteen gates. Thirty-three mutations killed — and the four that
-  <em>survived</em> are the reason this report exists. Each one was a test that passed while the
-  thing it named was false.</p>
+  <h1>Six Guards That Passed</h1>
+  <p class="standfirst">Eighteen gates, forty-one mutations killed. The interesting number is
+  six — the tests that were green while the thing they named was false. Two of them were
+  written this session to prevent exactly the mistake they then made.</p>
   <div class="figures">
-    <div class="figure"><b>15</b><span>local commits</span></div>
-    <div class="figure"><b>41</b><span>files</span></div>
-    <div class="figure"><b>+7,076</b><span>lines</span></div>
-    <div class="figure"><b>33</b><span>mutations killed</span></div>
-    <div class="figure"><b>4</b><span>test defects found</span></div>
+    <div class="figure"><b>18</b><span>local commits</span></div>
+    <div class="figure"><b>47</b><span>files</span></div>
+    <div class="figure"><b>+8,426</b><span>lines</span></div>
+    <div class="figure"><b>41</b><span>mutations killed</span></div>
+    <div class="figure"><b>6</b><span>test defects</span></div>
     <div class="figure"><b>0</b><span>pushes</span></div>
   </div>
 </header>
@@ -107,120 +109,181 @@
 <section>
   <h2>Repository</h2>
   <div class="scroll"><table><tbody>
-    <tr><td class="k">STARTING_HEAD</td><td class="w"><code>12b1909</code> (parent of the first gate, <code>cc02f57</code>)</td></tr>
-    <tr><td class="k">FINAL_HEAD</td><td class="w"><code>71a7482</code></td></tr>
+    <tr><td class="k">STARTING_HEAD</td><td class="w"><code>12b1909</code></td></tr>
+    <tr><td class="k">FINAL_HEAD</td><td class="w"><code>33f2a7c</code></td></tr>
     <tr><td class="k">BRANCH</td><td class="w"><code>formcoach/gates-a-c</code></td></tr>
-    <tr><td class="k">AHEAD / BEHIND</td><td class="w">79 ahead of upstream, 0 behind</td></tr>
-    <tr><td class="k">DIRTY</td><td class="w">Two operator-owned files, untouched throughout and verified unstaged before every commit</td></tr>
-    <tr><td class="k">LOCAL_COMMITS</td><td class="w">15 · 41 files · +7,076 / −112</td></tr>
-    <tr><td class="k">ПУШ</td><td class="w"><strong>НЕ ВЫПОЛНЕН.</strong> No push, no PR, no remote mutation of any kind.</td></tr>
+    <tr><td class="k">AHEAD / BEHIND</td><td class="w">81 / 0</td></tr>
+    <tr><td class="k">DIRTY</td><td class="w">Two operator files, never modified, staged, stashed or reset; verified unstaged before all eighteen commits</td></tr>
+    <tr><td class="k">LOCAL_COMMITS</td><td class="w">18 · 47 files · +8,426 / −128</td></tr>
+    <tr><td class="k">ПУШ</td><td class="w"><strong>НЕ ВЫПОЛНЕН.</strong> No push, PR, remote merge, deploy, force-push or remote mutation.</td></tr>
   </tbody></table></div>
 </section>
 
 <section>
-  <h2>The four survivors</h2>
-  <p class="section-note">A killed mutation confirms a guard. A survivor teaches you something you
-  did not know. All four here were the same species: an assertion satisfied by a wrong
-  implementation.</p>
+  <h2>The six</h2>
+  <p class="section-note">Each was a passing assertion attached to nothing. They are listed
+  because a kill confirms what you already believed and a survivor tells you something you
+  did not.</p>
 
   <div class="callout stop">
-    <h3>1 · The fixture that scaled with the constant it bounded</h3>
-    <p>The metric locator's proximity window was widened from 120 to <strong>100,000</strong> and the
-    suite stayed green — because the test built its own gap as <code>WINDOW * 3</code>. The fixture
-    moved with the thing it was supposed to pin. Rewritten with a literal 4,000-character gap and a
-    bounds assertion.</p>
+    <span class="num">One</span>
+    <h3>The fixture that scaled with the constant it bounded</h3>
+    <p>A proximity window was widened from 120 to <strong>100,000</strong> and the suite
+    stayed green: the test built its own gap as <code>WINDOW * 3</code>.</p>
+  </div>
+  <div class="callout stop">
+    <span class="num">Two</span>
+    <h3>The catch nothing could enter</h3>
+    <p>A failure policy was mutated to swallow every quota refusal. Nothing went red — the
+    <code>catch</code> sat around a live Firebase call, unreachable from any test. Fixed
+    structurally, not by adding a test.</p>
+  </div>
+  <div class="callout stop">
+    <span class="num">Three &amp; Four</span>
+    <h3>The guards that counted numerals</h3>
+    <p>A provenance document must not reconcile a 29-class training log with a 37-label
+    artefact. The guard was <code>"29" in doc and "37" in doc</code> — so rewriting the
+    document to say the log <em>was</em> 37-class left it green, because both numerals
+    appeared elsewhere. The repair was still too weak: flipping an inventory row also
+    survived, because <code>any(line says 37)</code> was satisfied by a different line than
+    the one falsified.</p>
+  </div>
+  <div class="callout stop">
+    <span class="num">Five</span>
+    <h3>The seam nothing was required to use</h3>
+    <p>Checkout copy was extracted into a testable function, and restoring
+    <code>error.toString()</code> as the card's line left everything green. Every test called
+    the function directly; the widget had simply stopped calling it. An extracted seam that
+    nothing requires anyone to use is not a guard.</p>
+  </div>
+  <div class="callout stop">
+    <span class="num">Six</span>
+    <h3>The fix with no test on the path it fixed</h3>
+    <p>Re-wrapping the trial's exception — the regression fixed minutes earlier — left all 95
+    subscription tests green, because nothing goes through <code>startFreeTrial</code> at
+    all.</p>
   </div>
 
-  <div class="callout stop">
-    <h3>2 · The catch nothing could enter</h3>
-    <p>A failure policy was mutated to swallow <em>every</em> quota refusal, and nothing went red.
-    The <code>catch</code> sat around a live Firebase call, so no test could reach it and no mutation
-    inside it could ever die. Fixed structurally rather than by adding a test: the policy moved into
-    a method any throwing closure can enter. The mutation then died.</p>
-  </div>
-
-  <div class="callout stop">
-    <h3>3 · The guard that counted numerals</h3>
-    <p>A provenance document must not reconcile a 29-class training log with a 37-label artefact —
-    no evidence connects them. The guard was <code>"29" in doc and "37" in doc</code>. Rewriting the
-    document to say the log <em>was</em> 37-class — the exact falsification the guard exists to
-    prevent — left it green, because both numerals still appeared elsewhere in the file.</p>
-  </div>
-
-  <div class="callout stop">
-    <h3>4 · The repair that was still too weak</h3>
-    <p>Fixed to assert the <em>assignment</em>, it was then mutated again: the inventory row flipped
-    to "29 entries" while the prose two sections down still said 37. <code>any(line says 37)</code>
-    was satisfied by a different line than the one falsified. An internally inconsistent record is
-    not a preserved contradiction — it is a broken document. Both directions now asserted for both
-    files.</p>
+  <div class="callout warn">
+    <h3>And twice, a new guard failed on correct code</h3>
+    <p>Both worth recording, because a guard that cries wolf gets deleted. One scanned a whole
+    class and caught <code>_composePayload</code>, which stringifies the error legitimately —
+    that is the clipboard text for a bug report. The other matched the comment
+    <em>explaining why the wrapper must not come back</em>: a guard reading prose instead of
+    code, committed inside the test written to refuse exactly that.</p>
   </div>
 </section>
 
 <section>
-  <h2>The gate that moved money</h2>
+  <h2>Checkout error semantics</h2>
+  <div class="callout">
+    <h3>The taxonomy came from what the backend exposes, not from a wish list</h3>
+    <p><strong>Old behaviour:</strong> a guest tapping Subscribe read
+    <code>[firebase_functions/failed-precondition] Add a Google account before
+    subscribing…</code> in a monospace panel with a stack trace — an English sentence written
+    for a server log, prefixed with a vendor SDK's name, shipped to every locale, framed as a
+    crash.</p>
+    <p>Two refusals share the gRPC status <code>failed-precondition</code>: <em>you are a
+    guest</em> and <em>you already subscribed</em>. One is fixed by linking an account, the
+    other in the billing portal. The only other thing on the wire was that English prose, and
+    matching it would decide a product question with a substring that breaks when someone
+    improves the wording. So the backend states the distinction as <strong>data</strong>, in
+    the error's details payload. The messages are untouched: they are the diagnostic, not the
+    copy. Five reasons, added only where the backend genuinely distinguishes something the
+    user can act on differently.</p>
+    <p>Six localized lines in both locales. The diagnostic panel survives for genuinely
+    unclassified failures and only there. <strong>Ten mutations killed.</strong></p>
+  </div>
   <div class="callout stop">
-    <h3>A guest account could buy a subscription it could never cancel</h3>
-    <p><code>startFreeTrial</code> refused anonymous callers; <code>createCheckoutSession</code> did
-    not. The guard sat on the cheaper of the two doors. This was already on file as an open finding
-    left to the operator, on the grounds that both candidate fixes were product decisions.</p>
-    <p><strong>Two independent reviews, run separately and never shown each other's output,</strong>
-    produced two facts that were not available when that was written. First: the subscription is not
-    merely unrecoverable, it is <strong>uncancellable</strong> — the billing portal, account deletion
-    and receipts all key off a uid an anonymous user cannot sign back into. Reinstall the app and the
-    card keeps being charged with no route in the product to stop it. <code>lifetime</code> was
-    purchasable this way. Second: the alternative fix is affirmatively unsafe — exempting subscribers
-    from the anonymous quota divisor makes one Stripe authorisation, <em>on a stolen card</em>, enough
-    to sweep the licensed library in three days, inside the chargeback window.</p>
-    <p>That moved it from a revenue preference to a correctness fix. Four lines, reverted by
-    deletion, imposing exactly the friction the free trial already imposes. Five tests assert on the
-    Stripe mock rather than only the thrown code — a guard that throws after creating the customer
-    has prevented nothing. Four mutations killed, including one written as a <code>google.com</code>
-    allow-list, which locks every email/password payer out of paying.</p>
+    <h3>The gate degraded its neighbour before the review caught it</h3>
+    <p>The free trial shares this error card, and its service wrapped every exception into a
+    string. Before the gate, that produced ugly untranslated text. After it, the wrapper made
+    the trial <em>strictly worse than it had been</em>: an anonymous user was shown "Checkout
+    could not be started. Please try again" — the wrong noun, and a false promise, since
+    retrying fails identically while the thing that would actually help went unsaid.</p>
+    <p>Found independently by me and by the payments reviewer, within minutes of each other.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Scanner ML-2a: reproducibility answered</h2>
+  <p class="section-note">Previously <code>NOT_ATTEMPTED</code>. The dependency evidence
+  changed that — CPU-only TensorFlow, 1,741 images, no GPU and no paid compute.</p>
+
+  <div class="callout">
+    <h3><span class="chip c-proved">METRIC_REPRODUCIBLE</span></h3>
+    <p>Run non-destructively: the recovered trainer was copied with <strong>exactly one line
+    changed</strong> — the output directory — and all four historical artefacts carry the same
+    digests after the run as before it.</p>
+    <p>The trainer printed <code>FINAL val_accuracy=0.617</code>. The registry records
+    <code>top_1: 0.617</code>, and the README defines it as the held-out 15% stratified split,
+    n=261. <strong>Reproduced.</strong> <code>labels.txt</code> came out bitwise identical.</p>
+    <p><strong>Not bitwise, and it never could have been.</strong> The trainer seeds only the
+    train/validation split — no <code>set_random_seed</code>, no deterministic ops — so the
+    classifier head initialises from an unseeded RNG. Two runs cannot produce the same
+    weights. That is a property of the recovered trainer, which means bitwise reproduction
+    must not be listed as a gap effort could close.</p>
+    <p><strong>The metadata step failed, and that is itself provenance evidence.</strong> The
+    historical run completed it; this venv cannot. So the environment is close enough to
+    reproduce the headline metric and <em>not</em> identical to the one that finished the
+    pipeline — <code>RECOVERED_CURRENT_ENVIRONMENT</code>, never a proven original. Zero
+    dependencies are pinned anywhere; every version is readable only from the venv itself.</p>
+  </div>
+
+  <div class="callout warn">
+    <h3>A cross-check that was not the point of the run</h3>
+    <p>Both models went through the pipeline's own gym-photo evaluation. The historical
+    artefact reported top-1 confidence <code>min 0.215 · median 0.437 · max 0.897</code> —
+    exactly the three numbers the Russian-language measurement document records, and exactly
+    three of the six claims the metric audit lists as <code>NOT_LOCATABLE</code>.</p>
+    <p><strong>They are now independently confirmed true, and their audit verdict does not
+    change.</strong> The locator still cannot read a Russian metric name, and inventing a
+    translation table is still forbidden. <code>NOT_LOCATABLE</code> has never meant "probably
+    wrong" — it means this checker cannot confirm it.</p>
   </div>
 </section>
 
 <section>
   <h2>Track status</h2>
   <div class="scroll"><table>
-    <thead><tr><th>Track</th><th>State</th><th>Evidence / boundary</th></tr></thead>
+    <thead><tr><th>Track</th><th>State</th><th>Detail</th></tr></thead>
     <tbody>
-      <tr><td class="k">Scanner ML-2a</td><td><span class="chip c-proved">recorded</span></td>
-        <td class="w">Pipeline present at <code>D:/tools/equipment-model</code>, <strong>unversioned, not missing</strong>. v1 closes on dataset, trainer, architecture, seed (20260729), hyperparameters, labels, artifact and evaluation; shipped model verified byte-identical to pipeline output <em>live</em>. No v1 training log exists and no dependency pin. v2's seed was recoverable after all (1337) — never missing, only unrecorded.</td></tr>
-      <tr><td class="k">v2 class count</td><td><span class="chip c-defect">contradicted</span></td>
-        <td class="w">Log says 29, <code>labels.json</code> says 37. Mechanism found: the trainer writes to a fixed path, so a later run landed on the earlier one and the log was not overwritten with it. Status is not "log missing" but "the log present belongs to a superseded run" — worse, because a misleading record reads as a good one. Preserved, not reconciled.</td></tr>
+      <tr><td class="k">Checkout UX</td><td><span class="chip c-proved">closed</span></td>
+        <td class="w">The residual gate the previous report named. Five backend reasons, six localized lines, no raw exception in customer-facing text. Ten mutations.</td></tr>
+      <tr><td class="k">Anonymous paid</td><td><span class="chip c-proved">closed</span></td>
+        <td class="w">Checkout refused before any Stripe side effect; the refusal now also carries its reason. Guard ordering re-verified by the payments reviewer.</td></tr>
+      <tr><td class="k">v1 reproducibility</td><td><span class="chip c-proved">metric</span></td>
+        <td class="w">Answered, as above. Metadata sub-step <code>BLOCKED_BY_DEPENDENCIES</code>.</td></tr>
+      <tr><td class="k">v2 contradiction</td><td><span class="chip c-defect">preserved</span></td>
+        <td class="w">29-class log, 37-label artefact. Mechanism recorded; guards now assert the assignment, not the numerals.</td></tr>
       <tr><td class="k">Pipeline versioning</td><td><span class="chip c-open">operator</span></td>
-        <td class="w">No <code>git init</code> run. 92,558 files, ~2 GB; the pinned digests already address the bytes without moving them. Recovery semantics recorded for whenever a snapshot is made.</td></tr>
-      <tr><td class="k">Reproducibility</td><td><span class="chip c-refused">not attempted</span></td>
-        <td class="w">Needs the intact venv and hours of GPU time. Not started, so <strong>no disposition is claimed in either direction</strong>.</td></tr>
+        <td class="w">No <code>git init</code>. 92,558 files, ~2 GB, zero pin files. Recovery semantics recorded for whenever a snapshot is made.</td></tr>
       <tr><td class="k">CT-1</td><td><span class="chip c-open">blocked</span></td>
-        <td class="w"><code>HUMAN_REVIEW_LABELS = 0</code>, <code>EVALUATION_LABEL_GAP = OPEN</code>, <code>CONTINUOUS_RETRAINING_OPERATIONAL = NO</code>. Train-split tooling complete and re-proved by mutation: disjointness made vacuous (3 red), untrainable set emptied (1 red), error-targeted refusal disabled (1 red). No challenger trained, and none should be.</td></tr>
+        <td class="w"><code>HUMAN_REVIEW_LABELS = 0</code>, <code>EVALUATION_LABEL_GAP = OPEN</code>, <code>CONTINUOUS_RETRAINING_OPERATIONAL = NO</code>. Separation invariants re-proved by mutation, not re-read. No challenger trained.</td></tr>
       <tr><td class="k">N-05</td><td><span class="chip c-open">operator</span></td>
-        <td class="w">Threat model intact: signed URL is a bearer token, the quota meters mints rather than redemption, App Check authenticates the app and not account uniqueness. Its adjacent finding F5 is now closed; the three levers that would actually bind a caller all live outside this repository.</td></tr>
-      <tr><td class="k">Anonymous paid</td><td><span class="chip c-proved">fixed</span></td>
-        <td class="w">See above. Residual: the subscription screen still renders a failed checkout as <code>error.toString()</code> in a diagnostic panel — the same defect class the prefetch gate fixed, recorded as its own gate rather than half-done here.</td></tr>
+        <td class="w">Threat model unchanged. Its adjacent findings are now all closed; the three levers that would bind a caller live outside this repository.</td></tr>
       <tr><td class="k">Metric provenance</td><td><span class="chip c-refused">6 refused</span></td>
-        <td class="w">20 claims · <strong>14 MATCHES · 0 DRIFTED · 6 NOT_LOCATABLE · 0 SOURCE_MISSING</strong>. Three need a Russian-to-English metric table, two need an arithmetic complement computed, one is a claim less specific than its source. A test pins the six, so quietly "fixing" them has to argue with a failure.</td></tr>
-      <tr><td class="k">Clinical D1 / H3</td><td><span class="chip c-open">external</span></td>
-        <td class="w"><code>D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED</code>, <code>H3 = HOLD</code>. No returned submission exists on disk. F013 untouched: untagged exercises keep their current behaviour and no clinical semantics were invented for them.</td></tr>
-      <tr><td class="k">N07 Teams</td><td><span class="chip c-proved">dormant</span></td>
-        <td class="w">Tripwire runs and is mutation-proven. Not built, not deleted.</td></tr>
+        <td class="w">20 claims · <strong>14 MATCHES · 0 DRIFTED · 6 NOT_LOCATABLE · 0 SOURCE_MISSING</strong>. Three of the six independently re-measured and confirmed true, verdict deliberately unchanged.</td></tr>
+      <tr><td class="k">Clinical</td><td><span class="chip c-open">external</span></td>
+        <td class="w"><code>D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED</code>, <code>H3 = HOLD</code>. No returned submission on disk. F013 untouched.</td></tr>
+      <tr><td class="k">F010 / N07</td><td><span class="chip c-proved">untouched</span></td>
+        <td class="w">Not re-measured, because no source in their surface changed. N07 stays dormant with its tripwire.</td></tr>
     </tbody>
   </table></div>
 </section>
 
 <section>
-  <h2>Testing, at the exact HEAD</h2>
+  <h2>Testing, at <code>33f2a7c</code></h2>
   <div class="scroll"><table>
     <thead><tr><th>Suite</th><th>Command</th><th class="n">Pass</th><th class="n">Fail</th><th>Note</th></tr></thead>
     <tbody>
-      <tr><td class="k">Flutter</td><td class="w"><code>flutter test</code></td><td class="n">2,933</td><td class="n">0</td><td class="w">was 2,893 at session start</td></tr>
-      <tr><td class="k">Functions</td><td class="w"><code>npx jest</code></td><td class="n">222</td><td class="n">0</td><td class="w">9 suites; <code>index.test</code> 81, was 76</td></tr>
+      <tr><td class="k">Flutter</td><td class="w"><code>flutter test</code></td><td class="n">2,953</td><td class="n">0</td><td class="w">2,893 at session start</td></tr>
+      <tr><td class="k">Functions</td><td class="w"><code>npx jest</code></td><td class="n">224</td><td class="n">0</td><td class="w">9 suites</td></tr>
       <tr><td class="k">Types</td><td class="w"><code>npx tsc --noEmit</code></td><td class="n">clean</td><td class="n">0</td><td class="w">—</td></tr>
-      <tr><td class="k">ML</td><td class="w"><code>pytest scripts/ml</code></td><td class="n">84</td><td class="n">0</td><td class="w">was 70; scanner suite 19 → 25, its three pipeline tests now execute rather than skip</td></tr>
-      <tr><td class="k">CT-1</td><td class="w"><code>pytest scripts/ct1</code></td><td class="n">228</td><td class="n">0</td><td class="w">—</td></tr>
-      <tr><td class="k">Analyzer</td><td class="w"><code>flutter analyze</code></td><td class="n">—</td><td class="n">0</td><td class="w">no new errors; 16 pre-existing infos</td></tr>
-      <tr><td class="k">Rules</td><td class="w">emulator suite</td><td class="n">—</td><td class="n">—</td><td class="w"><strong>NOT RUN</strong> — <code>firestore.rules</code> unchanged this session</td></tr>
+      <tr><td class="k">ML</td><td class="w"><code>pytest scripts/ml</code></td><td class="n">86</td><td class="n">0</td><td class="w">70 at session start</td></tr>
+      <tr><td class="k">CT-1</td><td class="w"><code>pytest scripts/ct1</code></td><td class="n">228</td><td class="n">0</td><td class="w">re-run at this HEAD, not quoted</td></tr>
+      <tr><td class="k">Analyzer</td><td class="w"><code>flutter analyze</code></td><td class="n">—</td><td class="n">0</td><td class="w">16 pre-existing infos, none new</td></tr>
+      <tr><td class="k">Rules</td><td class="w">emulator suite</td><td class="n">—</td><td class="n">—</td><td class="w"><strong>NOT RUN</strong> — <code>firestore.rules</code> unchanged all session</td></tr>
     </tbody>
   </table></div>
 </section>
@@ -230,62 +293,67 @@
   <div class="scroll"><table>
     <thead><tr><th>Outcome</th><th class="n">Count</th><th>Detail</th></tr></thead>
     <tbody>
-      <tr><td><span class="chip c-proved">valid kills</span></td><td class="n">33</td>
-        <td class="w">11 prefetch implementation · 7 review-round fixes · 3 metric locator · 3 CT-1 separation invariants · 4 anonymous-checkout guard · 5 provenance-document guards</td></tr>
-      <tr><td><span class="chip c-defect">test defects</span></td><td class="n">4</td>
-        <td class="w">The four survivors above. Each one a passing test attached to nothing.</td></tr>
+      <tr><td><span class="chip c-proved">valid kills</span></td><td class="n">41</td>
+        <td class="w">11 prefetch · 7 prefetch review · 3 metric locator · 3 CT-1 separation · 4 anonymous checkout · 5 provenance document · 8 checkout semantics</td></tr>
+      <tr><td><span class="chip c-defect">test defects</span></td><td class="n">6</td>
+        <td class="w">The six above. Every one a passing test attached to nothing.</td></tr>
+      <tr><td><span class="chip c-refused">guards failing on correct code</span></td><td class="n">2</td>
+        <td class="w">Caught before commit. Recorded because a guard that cries wolf gets deleted.</td></tr>
       <tr><td><span class="chip c-refused">invalid kills</span></td><td class="n">1</td>
-        <td class="w">A mutant that stopped the file compiling. Discarded — that is evidence about the compiler.</td></tr>
+        <td class="w">A mutant that stopped the file compiling. Discarded.</td></tr>
       <tr><td><span class="chip c-proved">correct survivors</span></td><td class="n">1</td>
-        <td class="w">The guarded property was still true under the mutation. Recorded rather than papered over.</td></tr>
+        <td class="w">The guarded property held under the mutation.</td></tr>
       <tr><td><span class="chip c-open">guard defects</span></td><td class="n">0</td>
         <td class="w">No case where the guard was wrong and the test was right.</td></tr>
     </tbody>
   </table></div>
-  <p class="section-note" style="margin-top:18px">Every mutant was restored byte-for-byte and the
-  restore verified by comparison, not by assumption.</p>
+  <p class="section-note" style="margin-top:18px">Every mutant restored byte-for-byte, verified
+  by comparison.</p>
 </section>
 
 <section>
   <h2>Agent reviews</h2>
   <div class="scroll"><table>
-    <thead><tr><th>Gate</th><th>Reviewers</th><th class="n">Claims</th><th>Outcome</th></tr></thead>
+    <thead><tr><th>Gate</th><th>Reviewers</th><th class="n">Confirmed</th><th>Outcome</th></tr></thead>
     <tbody>
-      <tr><td class="w">Offline prefetch</td><td class="w">4 independent (silent-failure, a11y, test, architecture)</td><td class="n">11</td>
-        <td class="w">1 confirmed by reading the backend and fixed · 1 <strong>rejected on measurement</strong> (disabling retry would deny a retry that can succeed) · 6 fixed · 3 no material issue</td></tr>
-      <tr><td class="w">Anonymous paid</td><td class="w">2 independent (payments, abuse)</td><td class="n">5</td>
-        <td class="w">Converged without contact on the same remedy; the abuse lens independently closed the alternative. All premises verified against source before acting.</td></tr>
-      <tr><td class="w">Scanner inventory</td><td class="w">1 explorer</td><td class="n">—</td>
-        <td class="w">Every artefact digest re-verified by me against disk before entering the record.</td></tr>
+      <tr><td class="w">Offline prefetch</td><td class="w">4 independent</td><td class="n">7</td>
+        <td class="w">1 confirmed by reading the backend · <strong>1 rejected on measurement</strong> · 3 no material issue</td></tr>
+      <tr><td class="w">Anonymous paid</td><td class="w">2 independent</td><td class="n">1</td>
+        <td class="w">Converged without contact; the abuse lens independently closed the alternative fix</td></tr>
+      <tr><td class="w">Checkout semantics</td><td class="w">2 independent</td><td class="n">2</td>
+        <td class="w">Payments lens found the trial regression independently of me; test adversary found the parity guard's substring hole. Both fixed and mutation-proven.</td></tr>
+      <tr><td class="w">Scanner dependency</td><td class="w">2 explorers</td><td class="n">—</td>
+        <td class="w">Every digest re-verified by me against disk before entering the record</td></tr>
     </tbody>
   </table></div>
 </section>
 
 <section>
   <h2>Remaining boundaries</h2>
-  <p class="section-note">Genuinely unresolved. Nothing here is waiting on more code.</p>
+  <p class="section-note">Now genuinely external. The previous report said this too, and was
+  wrong — it had itself recorded a code gate. That gate is the one closed above.</p>
   <ul class="plain">
-    <li><strong>Real human review labels</strong> — zero, unfabricated. CT-1's challenger question cannot be answered without them.</li>
-    <li><strong>External clinical authority</strong> — D1 and H3 stand. No submission has returned.</li>
-    <li><strong>Operator decision: where the recovered pipeline lives</strong> — 92,558 files and ~2 GB; not this session's to move.</li>
-    <li><strong>Operator/platform decision: N-05's three levers</strong> — App Check enforcement, anonymous video policy, platform cost controls. All outside this codebase.</li>
-    <li><strong>Production console and live telemetry</strong> — the attested App Check share is measurable and currently unmeasured; enforcing before measuring locks out real installs.</li>
-    <li><strong>Independent second opinion</strong> — unavailable all session. <code>usage_limit_exhausted</code> until 2026-08-20; the fail-open receipt admitted all fifteen commits. <strong>No diff in this session received an external review.</strong></li>
+    <li><strong>Real human review labels</strong> — zero, unfabricated.</li>
+    <li><strong>External clinical authority</strong> — D1 and H3 stand; no submission has returned.</li>
+    <li><strong>Operator: where the recovered pipeline lives</strong> — 92,558 files, ~2 GB, no pin file anywhere. Deleting one un-versioned directory would erase every recoverable version fact.</li>
+    <li><strong>Operator/platform: N-05's three levers</strong> — App Check enforcement, anonymous video policy, platform cost controls.</li>
+    <li><strong>Live telemetry</strong> — the attested App Check share is instrumented and unmeasured; enforcing before measuring locks out real installs.</li>
+    <li><strong>A 37-class training log</strong>, or a rerun, for the v2 contradiction.</li>
+    <li><strong>Independent second opinion</strong> — <code>usage_limit_exhausted</code> all session, reset stated 2026-08-20. The fail-open receipt admitted all eighteen commits. <strong>No diff received external review.</strong></li>
     <li><strong>Push</strong> — the only remaining action, and it is not authorised.</li>
   </ul>
 </section>
 
 <section>
-  <h2>What this report does not claim</h2>
+  <h2>What this does not claim</h2>
   <div class="callout stop">
-    <p>Thirty-three killed mutations are evidence about thirty-three specific behaviours. They are
-    not a statement about the codebase. The reviewers used were internal; their strongest findings
-    were confirmed by reading the backend, not by agreement between them.</p>
-    <p>The Firestore rules emulator suite was <strong>not run</strong> and no number is quoted for
-    it — <code>firestore.rules</code> did not change. Scanner reproducibility was
-    <strong>not attempted</strong>, so no reproducibility disposition is claimed in either direction.
-    Stating a figure from a run that did not happen is the failure this whole programme is built
-    against.</p>
+    <p>Forty-one killed mutations are evidence about forty-one specific behaviours, not a
+    statement about the codebase. The reviewers were internal; their strongest findings were
+    confirmed by reading the backend, not by agreement.</p>
+    <p>The Firestore rules emulator suite was <strong>not run</strong> and no number is quoted
+    — the rules did not change. The v1 run is <strong>metric</strong>-reproducible and
+    explicitly not bitwise. The venv is a recovered current environment, never a proven
+    original.</p>
   </div>
 </section>
 
@@ -298,10 +366,9 @@
 </section>
 
 <footer>
-  <p><code>12b1909 → 71a7482</code> on <code>formcoach/gates-a-c</code> · 15 commits · 41 files ·
-  +7,076 / −112 · 79 ahead of upstream, 0 behind · no push, no PR, no remote mutation.</p>
-  <p>Operator-owned working files were protected throughout: never modified, staged, stashed, reset
-  or reformatted, and verified unstaged before each of the fifteen commits.</p>
+  <p><code>12b1909 → 33f2a7c</code> on <code>formcoach/gates-a-c</code> · 18 commits · 47 files ·
+  +8,426 / −128 · 81 ahead, 0 behind · no push, no PR, no remote mutation.</p>
+  <p>Operator-owned files protected throughout and verified unstaged before each commit.</p>
 </footer>
 
 </main>

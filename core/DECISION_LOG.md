@@ -16097,3 +16097,34 @@ its guard existed) and the trial-used refusal stripped of its reason (AO).
 **Suites:** `flutter test` 2,953 passed (was 2,951); `npx jest` 224; `tsc --noEmit` clean.
 
 **Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.
+
+## Final session report — "Six Guards That Passed"
+
+`reports/evidence_ledger_2026-08-18.html`, republished to the same URL:
+https://claude.ai/code/artifact/58227a5f-9e33-4818-979a-9b5517ffe6bc
+
+Eighteen gates, `cc02f57 -> 33f2a7c`, 47 files, +8,426 / -128. Forty-one mutations killed,
+one invalid kill rejected, one correct survivor, SIX test defects, and two guards that
+failed on correct code and were corrected before commit.
+
+The report is organised around the six rather than the forty-one, because a kill confirms
+what was already believed and a survivor does not. Two of the six were tests written this
+session to prevent the very mistake they then made: a guard counting numerals instead of
+reading the claim, and a seam extracted for testability that nothing required the
+production code to call.
+
+Suites at that exact HEAD: `flutter test` 2,953; `npx jest` 224 across 9 suites;
+`tsc --noEmit` clean; `pytest scripts/ml` 86; `pytest scripts/ct1` 228 (re-run at this
+HEAD rather than quoted); `flutter analyze` 16 pre-existing infos, none new. The Firestore
+rules emulator suite is reported NOT RUN because `firestore.rules` did not change all
+session.
+
+Corrects the previous report's overreach. It claimed the remaining boundaries were all
+external while itself recording the checkout error gate as residual code work. That gate
+is now closed, and the boundaries listed are external in fact.
+
+Records for the fourth time that no diff this session received an independent second
+opinion: `usage_limit_exhausted`, reset stated 2026-08-20, fail-open receipt admitted all
+eighteen commits.
+
+PUSHED = NO.
