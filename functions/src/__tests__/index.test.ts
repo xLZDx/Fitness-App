@@ -109,6 +109,7 @@ import { HttpsError } from "firebase-functions/v2/https";
 import { QUOTAS, quotaFor } from "../abuse_guard";
 import {
   startFreeTrial,
+  CHECKOUT_REFUSAL,
   createCheckoutSession,
   generateAnnualReceipt,
   bookCoachSession,
@@ -118,6 +119,9 @@ import {
   optOutDonorWall,
   reportEquipment,
 } from "../index";
+
+/** Just enough of an HttpsError to assert on what crosses the wire. */
+type HttpsErrorLike = { code: string; details?: unknown };
 
 const adminMock = jest.requireMock("firebase-admin") as any;
 const stripeCtor = jest.requireMock("stripe") as any;
@@ -564,6 +568,54 @@ describe("createCheckoutSession", () => {
 
       expect(res).toEqual({ url: "https://checkout.stripe.test/cs_ok" });
       expect(stripeMock.checkout.sessions.create).toHaveBeenCalledTimes(1);
+    });
+
+    test("the refusal names its reason as data, not as prose", async () => {
+      // Two of this callable's refusals share the status `failed-precondition`.
+      // The client has to tell "you are a guest" from "you already subscribed"
+      // -- one is fixed by linking an account, the other in the billing portal
+      // -- and the only other thing on the wire is an English message written
+      // for a log. A phone matching on that prose would be deciding a product
+      // question with a substring, and would break when somebody improved the
+      // wording.
+      primeDoc("users/anon1/subscription/main", undefined);
+
+      const err = await createCheckoutSession
+        .run(req({ tier: "standard", period: "monthly" }, anon()))
+        .then(() => null, (e: unknown) => e as HttpsErrorLike);
+
+      expect(err).not.toBeNull();
+      expect(err!.code).toBe("failed-precondition");
+      expect(err!.details).toEqual({
+        reason: CHECKOUT_REFUSAL.ANONYMOUS_ACCOUNT,
+      });
+    });
+
+    test("the already-subscribed refusal is distinguishable from it", async () => {
+      // Same status code, different reason. Without this the two collapse and
+      // the client shows one of them the other's instruction.
+      primeDoc(SUB_PATH, { stripeCustomerId: "cus_existing" });
+      stripeMock.subscriptions.list.mockResolvedValue({
+        data: [{ id: "sub_live", status: "active" }],
+        has_more: false,
+      });
+
+      const err = await createCheckoutSession
+        .run(
+          req(
+            { tier: "standard", period: "monthly" },
+            { uid: "u1", token: { email: "u1@example.com" } },
+          ),
+        )
+        .then(() => null, (e: unknown) => e as HttpsErrorLike);
+
+      expect(err).not.toBeNull();
+      expect(err!.code).toBe("failed-precondition");
+      expect(err!.details).toEqual({
+        reason: CHECKOUT_REFUSAL.ALREADY_SUBSCRIBED,
+      });
+      // The money invariant: refused means no session exists that should not.
+      expect(stripeMock.checkout.sessions.create).not.toHaveBeenCalled();
     });
 
     test("a caller with no provider claim at all is still allowed", async () => {

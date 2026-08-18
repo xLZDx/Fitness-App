@@ -8,6 +8,7 @@ import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
+import 'data/checkout_failure.dart';
 import 'data/subscription_models.dart';
 import 'state/subscription_providers.dart';
 
@@ -251,6 +252,39 @@ class _LearnMoreLink extends StatelessWidget {
 
 /// Surfaces an action error with a Copy button so the user can paste the
 /// full message + stack trace into a bug report.
+/// What the subscription card says when a checkout does not start.
+///
+/// Split out of the widget for the same reason `prefetchLine` was: it is the
+/// user-facing contract of a money path, and it used to be `error.toString()`
+/// rendered into a monospace panel with a stack trace beside it. A guest who
+/// tapped Subscribe read
+/// `[firebase_functions/failed-precondition] Add a Google account before
+/// subscribing...` -- an English sentence written for a server log, prefixed
+/// with the name of a vendor SDK, shown to every locale.
+///
+/// The diagnostic panel is kept for [CheckoutRefusal.unknown] and only there.
+/// A failure nobody classified still needs its detail; a refusal that names an
+/// action does not.
+@visibleForTesting
+String checkoutLine(AppLocalizations l10n, Object error) {
+  return switch (CheckoutFailure.of(error).refusal) {
+    CheckoutRefusal.anonymousAccount =>
+      l10n.subscriptionCheckoutRefusedAnonymous,
+    CheckoutRefusal.alreadySubscribed =>
+      l10n.subscriptionCheckoutRefusedAlreadySubscribed,
+    CheckoutRefusal.accountDeleted =>
+      l10n.subscriptionCheckoutRefusedAccountDeleted,
+    CheckoutRefusal.signedOut => l10n.subscriptionCheckoutRefusedSignedOut,
+    CheckoutRefusal.unreachable => l10n.subscriptionCheckoutUnreachable,
+    CheckoutRefusal.unnamedRefusal =>
+      l10n.subscriptionCheckoutUnnamedRefusal,
+    // Not a sentence this screen composed: the failure is unclassified, so the
+    // card shows the diagnostic block instead and this is the fallback that
+    // keeps the function total.
+    CheckoutRefusal.unknown => l10n.subscriptionCheckoutUnnamedRefusal,
+  };
+}
+
 class _ErrorCard extends StatelessWidget {
   const _ErrorCard({required this.error, this.stackTrace});
 
@@ -318,13 +352,24 @@ class _ErrorCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          SelectableText(
-            error.toString(),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: scheme.error,
-              fontFamily: 'monospace',
-            ),
+          Text(
+            checkoutLine(AppLocalizations.of(context), error),
+            style: theme.textTheme.bodySmall?.copyWith(color: scheme.error),
           ),
+          // The raw error, for the one case that has no sentence of its own.
+          // Everything above is a refusal the backend named and this screen
+          // translated; showing the exception beside it would put an
+          // implementation detail under a product answer.
+          if (CheckoutFailure.of(error).isUnclassified) ...[
+            const SizedBox(height: 8),
+            SelectableText(
+              error.toString(),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.error,
+                fontFamily: 'monospace',
+              ),
+            ),
+          ],
           if (stackTrace != null) ...[
             const SizedBox(height: 8),
             ConstrainedBox(

@@ -169,6 +169,14 @@ async function assertAccountStillExists(
       throw new HttpsError(
         "unauthenticated",
         "This account no longer exists. Sign in again.",
+        // Shared by every callable that guards the stale-token window, so the
+        // reason is about the ACCOUNT rather than about checkout. A caller
+        // that does not care simply never reads it. Referenced through the
+        // constant rather than retyped: a parity test asserts that every
+        // reason the client understands is one this file actually SENDS, and
+        // a second spelling of the same string is exactly the drift that test
+        // exists to catch. It caught this one.
+        { reason: CHECKOUT_REFUSAL.ACCOUNT_DELETED },
       );
     }
     throw e;
@@ -521,6 +529,32 @@ export const startFreeTrial = onCall(
 /* createCheckoutSession                                              */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Why the checkout refusals carry a `details.reason`.
+ *
+ * `HttpsError`'s code is a gRPC status, and two of this callable's refusals
+ * share one: "you signed in as a guest" and "you already have a subscription"
+ * are both `failed-precondition`. The client has to tell them apart -- one is
+ * fixed by linking an account, the other by opening the billing portal -- and
+ * the only other thing crossing the wire is the message, which is English
+ * prose written for a log.
+ *
+ * A phone that matched on that prose would be deciding a product question with
+ * a substring, and would break the day somebody improved the wording. So the
+ * distinction is stated as data. The message stays exactly as it was: it is
+ * the diagnostic, not the copy.
+ *
+ * Reasons are added only where the backend genuinely distinguishes something
+ * the user can act on differently. Everything else stays unnamed rather than
+ * acquiring a category the server does not actually know.
+ */
+export const CHECKOUT_REFUSAL = {
+  SIGNED_OUT: "SIGNED_OUT",
+  ACCOUNT_DELETED: "ACCOUNT_DELETED",
+  ANONYMOUS_ACCOUNT: "ANONYMOUS_ACCOUNT",
+  ALREADY_SUBSCRIBED: "ALREADY_SUBSCRIBED",
+} as const;
+
 export const createCheckoutSession = onCall(
   {
     ...INTERACTIVE,
@@ -538,7 +572,9 @@ export const createCheckoutSession = onCall(
   async (request) => {
     const auth = request.auth;
     if (!auth) {
-      throw new HttpsError("unauthenticated", "Sign in to subscribe.");
+      throw new HttpsError("unauthenticated", "Sign in to subscribe.", {
+        reason: CHECKOUT_REFUSAL.SIGNED_OUT,
+      });
     }
     noteAppCheck(request, "createCheckoutSession");
     // F011 — see `assertAccountStillExists`.
@@ -578,6 +614,7 @@ export const createCheckoutSession = onCall(
         "Add a Google account before subscribing. " +
           "A guest account cannot be signed back into, so a subscription " +
           "bought on one could not be restored or cancelled.",
+        { reason: CHECKOUT_REFUSAL.ANONYMOUS_ACCOUNT },
       );
     }
 
@@ -632,6 +669,7 @@ export const createCheckoutSession = onCall(
           "failed-precondition",
           "You already have an active subscription. Manage or cancel it " +
             "from the billing portal before starting a new one.",
+          { reason: CHECKOUT_REFUSAL.ALREADY_SUBSCRIBED },
         );
       }
     }

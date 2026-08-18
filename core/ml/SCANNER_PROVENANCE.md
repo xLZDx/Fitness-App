@@ -93,4 +93,59 @@ facts and collapsing them would make this file worthless.
 | v1 training log absent | Nothing. The run happened and was not logged. A rerun would produce a NEW log, not the original one | nobody — record as permanently unknown |
 | v2 class-count contradiction | A 37-class training log, or a reproducible rerun | whoever holds the pipeline |
 | Dependency pin absent | A freeze of `D:/tools/ml-train-env`, which requires that environment to still be intact | operator |
-| Bitwise reproducibility | An actual rerun on the pinned corpus with the pinned seed | operator — see the reproducibility disposition in the decision log |
+| Bitwise reproducibility | Nothing. It is impossible by construction — see below | nobody |
+| The v1 metadata step | A mediapipe/venv combination where the stub covers the code path | whoever holds the pipeline |
+
+
+## v1 reproducibility: ATTEMPTED, and the result is METRIC_REPRODUCIBLE
+
+Run 2026-08-18 on this machine. The recovered trainer was copied and **exactly one
+line changed** — the output directory — so the historical `out/` could not be
+overwritten. Verified: all four artefacts in `D:/tools/equipment-model/out` carry
+the same sha256 after the run as before it.
+
+**Environment** (read from the venv, not assumed): Python 3.11.9, tensorflow-cpu
+2.15.1, keras 2.15.0, numpy 1.26.4, mediapipe 1.0.0, no CUDA and no GPU visible.
+No pin file of any kind exists; every version above is RECOVERABLE from
+`D:/tools/ml-train-env` and from that directory alone.
+
+| Result | Basis | |
+|---|---|---|
+| Metric | **FACT** | The trainer printed `FINAL val_accuracy=0.617`. `MODEL_REGISTRY.json` records `top_1: 0.617`, and `mobile/assets/models/README.md:19-21` defines it as the held-out 15% stratified split evaluated on the exported `.tflite`, n=261. **Reproduced.** |
+| `labels.txt` | **FACT** | sha256 `ff51b4a9…4c99fd` — bitwise identical to the historical file. |
+| Model weights | **FACT** | `b6b37af8…ef1260` vs historical `37733e2e…38eed3`. Different. Byte count identical at 4,495,700. |
+| Metadata step | **BLOCKED_BY_DEPENDENCIES** | `AttributeError: module '_pywrap_metadata_version' has no attribute 'GetMinimumMetadataParserVersion'`. The trainer stubs that module because mediapipe on Windows ships no C extension; the stub does not cover the path `load_metadata_buffer` takes. So no final `equipment_v1.tflite` was produced by this run. |
+
+**Disposition: `METRIC_REPRODUCIBLE`. Not `BITWISE_REPRODUCIBLE`, and it never could
+have been.** The trainer seeds only the train/validation split — `SEED = 20260729`
+is passed to `image_dataset_from_directory`. There is no `tf.keras.utils.set_random_seed`,
+no `tf.random.set_seed`, and no `TF_DETERMINISTIC_OPS`, so the classifier head is
+initialised from an unseeded global RNG and CPU reductions are not forced
+deterministic. Two runs of this pipeline cannot produce the same weights. That is a
+property of the recovered trainer, not a defect in the environment, and it means
+bitwise reproduction should never be listed as a gap that effort could close.
+
+**The metadata failure is itself provenance evidence.** The historical run completed
+that step — `out/metadata.json` exists, 1,714 bytes — and the current venv cannot.
+So `D:/tools/ml-train-env` is close enough to reproduce the headline metric and *not*
+identical to the environment that finished the pipeline. The venv is
+`RECOVERED_CURRENT_ENVIRONMENT`, never `PROVEN_ORIGINAL_TRAINING_ENVIRONMENT`.
+
+### A cross-check that was not the point of the run
+
+Both models were then put through the pipeline's own `eval_on_gym_photos.py` against
+its own truth file — same script, same 30 photos, same label set.
+
+The **historical** artefact scored top-3 `0/18` on the labelled photos, with top-1
+confidence `min 0.215 · median 0.437 · max 0.897`. Those three numbers are exactly
+the ones `core/plans/B1_RECOGNITION_MEASUREMENT_2026-08-07.md:21` records, and which
+`METRIC_PROVENANCE.md` lists as NOT_LOCATABLE because the source states them under
+Russian labels. **They are now independently confirmed by re-measurement.** That does
+not make them machine-locatable and does not change their audit verdict — the locator
+still cannot read a Russian metric name, and inventing a translation table is still
+forbidden. It does mean the document is telling the truth.
+
+The **reproduced** model scored top-3 `1/18`, confidence `min 0.205 · median 0.544 ·
+max 0.889`. Both models are useless on real gym photos, which is B1's whole finding.
+The two runs agree on the conclusion and not on the digits, which is precisely what
+"metric-reproducible but not bitwise" means.

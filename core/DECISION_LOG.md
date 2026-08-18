@@ -15943,3 +15943,111 @@ Records for the third time that no diff this session received an independent sec
 `usage_limit_exhausted` until 2026-08-20, fail-open receipt admitted all fifteen commits.
 
 PUSHED = NO. No push, PR, remote merge, deployment, force-push or remote branch mutation occurred.
+
+## Checkout refusals stop being exceptions on screen
+
+The previous report listed this as the one residual code gate, and said the remaining
+boundaries were all external. That was too broad -- this was engineering work, and it is
+done.
+
+A guest who tapped Subscribe read
+`[firebase_functions/failed-precondition] Add a Google account before subscribing...`
+in a monospace panel with a stack trace beside it: an English sentence written for a
+server log, prefixed with a vendor SDK's name, shipped to every locale, framed as a
+crash. The same defect class the prefetch gate fixed.
+
+**The taxonomy came from what the backend actually exposes, not from a wish list.**
+Two of `createCheckoutSession`'s refusals share the gRPC status `failed-precondition`:
+"you are a guest" and "you already have a subscription". One is fixed by linking an
+account, the other in the billing portal, so the screen must tell them apart -- and the
+only other thing on the wire was that English prose. Matching on it would be deciding a
+product question with a substring, and would break the day somebody improved the
+wording. So the backend now states the distinction as DATA, in `HttpsError`'s details
+payload, under `CHECKOUT_REFUSAL`. The messages are unchanged: they are the diagnostic,
+not the copy. Four reasons, added only where the backend genuinely distinguishes
+something the user can act on differently; everything else stays unnamed rather than
+acquiring a category the server does not have.
+
+`CheckoutFailure.of` classifies on code and details and never reads
+`FirebaseFunctionsException.message`. Six localized lines in both locales. The
+diagnostic panel survives for genuinely unclassified failures only -- a failure nobody
+named still needs its detail; a refusal that names an action does not.
+
+**Two defects found by the tests rather than by review.**
+
+* The parity test -- every reason the client understands must be one the backend
+  actually SENDS -- failed on first run: `assertAccountStillExists` had been given the
+  raw string `"ACCOUNT_DELETED"` while everything else used the constant. Two spellings
+  of one contract, which is the exact drift that test exists to catch, caught on the
+  day it was written.
+* The wiring guard failed on CORRECT code the first time, because it scanned the whole
+  `_ErrorCard` class and `_composePayload` legitimately stringifies the error -- that is
+  the clipboard text for a bug report, and its own comment says so. Scoped to the build
+  method.
+
+**One mutation survived, and it was the most important one.** Restoring
+`error.toString()` as the card's line left the entire suite green: every test called
+`checkoutLine` directly, so the function stayed correct while the widget simply stopped
+calling it. An extracted seam that nothing requires anyone to use is not a guard. This
+page cannot be pumped -- its own test file records AuroraBackground + GoRouter hitting a
+ten-minute isolate timeout -- so the wiring is asserted structurally, on identifiers and
+their order, the same way the handoff and parity guards read their sources. AH then died.
+
+Seven mutations killed and restored byte-for-byte: the raw exception restored (AH, after
+the wiring guard existed), a named refusal rendered as an unreachable server (AI), every
+failure rendered as the guest refusal (AJ), classification falling back to matching the
+English message (AK), the refusal swallowed in the state layer so the card shows success
+(AL), and the backend dropping its reason (AM).
+
+**Suites:** `flutter test` 2,951 passed (was 2,933); `npx jest` 224 (was 222); `tsc
+--noEmit` clean; `flutter analyze` 16 issues, unchanged count, none new.
+
+## ML-2a v1 reproducibility: ATTEMPTED, and METRIC_REPRODUCIBLE
+
+Previously NOT_ATTEMPTED. The dependency inspection changed that: no GPU is needed --
+the pipeline is CPU-only TensorFlow -- and the corpus is 1,741 images, so the run is
+about six minutes of local compute and no paid external anything.
+
+Run non-destructively. The recovered trainer was COPIED and exactly one line changed,
+the output directory; the recovered source was not touched. Verified afterwards: all
+four artefacts in `D:/tools/equipment-model/out` carry the same sha256 as before the
+run.
+
+**The trainer printed `FINAL val_accuracy=0.617`.** The registry records `top_1: 0.617`
+and the README defines it as the held-out 15% stratified split, n=261. Reproduced.
+`labels.txt` came out bitwise identical.
+
+**Not bitwise, and it never could have been.** `train_export.py` seeds only the
+train/validation split. There is no `set_random_seed`, no `tf.random.set_seed`, no
+`TF_DETERMINISTIC_OPS`, so the classifier head initialises from an unseeded global RNG.
+Two runs of this pipeline cannot produce the same weights -- a property of the recovered
+trainer, not a defect of the environment, which means bitwise reproduction must not be
+listed as a gap effort could close. Weights differ; byte count identical at 4,495,700.
+
+**The metadata step is BLOCKED_BY_DEPENDENCIES and that is itself provenance evidence.**
+It fails with `AttributeError: module '_pywrap_metadata_version' has no attribute
+'GetMinimumMetadataParserVersion'` -- the trainer stubs that module because mediapipe
+ships no Windows C extension, and the stub does not cover the path taken. The historical
+run COMPLETED that step (`out/metadata.json` exists, 1,714 bytes). So the venv is close
+enough to reproduce the headline metric and not identical to the one that finished the
+pipeline. It is `RECOVERED_CURRENT_ENVIRONMENT`, never a proven original. Zero
+dependencies are pinned anywhere; every version is readable only from
+`D:/tools/ml-train-env` itself.
+
+**A cross-check that was not the point of the run.** Both models went through the
+pipeline's own `eval_on_gym_photos.py`. The HISTORICAL artefact reported top-1 confidence
+`min 0.215 / median 0.437 / max 0.897` -- exactly the three numbers B1 records in Russian
+prose, and exactly the three that `METRIC_PROVENANCE.md` lists as NOT_LOCATABLE. They are
+now independently confirmed true by re-measurement. **Their audit verdict does not
+change**: the locator still cannot read a Russian metric name, and a translation table is
+still forbidden. NOT_LOCATABLE has never meant "probably wrong"; it means this checker
+cannot confirm it. Both models score near zero on real gym photos, which is B1's finding.
+
+The reproduction result is recorded as DATA in `scanner_provenance.py`, not only as
+prose, with tests asserting the disposition stays honest in both directions -- if the
+digests ever match, the run WAS bitwise and the disposition is wrong.
+
+**Suites:** `pytest scripts/ml` 86 passed (was 84). Registry audit unchanged: 20 claims,
+14 MATCHES, 0 DRIFTED, 6 NOT_LOCATABLE.
+
+**Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.

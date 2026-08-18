@@ -38,6 +38,16 @@ machine-readable block beside the prose. Not done here: B1 is a dated measuremen
 record of a specific session, and editing it after the fact to make a downstream
 checker happy is how a document stops being evidence.
 
+**Independently confirmed as TRUE, and still NOT_LOCATABLE.** On 2026-08-18 the
+shipped v1 artefact was run through the pipeline's own `eval_on_gym_photos.py`
+against its own truth file, and reported top-1 confidence `min 0.215 · median 0.437
+· max 0.897` — the same three numbers, re-measured. These two facts do not conflict
+and must not be collapsed: the claims are true, and this module still cannot read
+them, because reading them would require a Russian-to-English metric table it is not
+entitled to invent. A verdict of NOT_LOCATABLE has never meant "probably wrong"; it
+means "this checker cannot confirm it", and the remedy remains a source that names
+its own metrics.
+
 ## Cause 2 — the registry states the complement of what the source states (2 claims)
 
 | Registry claim | Source |

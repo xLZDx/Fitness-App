@@ -100,6 +100,14 @@ PINNED: dict[str, Any] = {
             "bytes": 7228,
             "sha256": "81f79ac8fe1c1766d66fb52b03503d898d68d323dfc73fa96cfe7cc04046603e",
         },
+        # The pre-metadata export. Pinned because the 2026-08-18 reproduction
+        # produces this artefact and not the final one -- the metadata step
+        # cannot run in the current venv -- so this is the only file the two
+        # runs can be compared on.
+        "out/equipment_v1_nometa.tflite": {
+            "bytes": 4495700,
+            "sha256": "37733e2e277b5d24df3aa0eb4bc5eee3481cf34227fda4fe4c9905892f38eed3",
+        },
     },
     "corpora": {
         # `manifest` is sha256 over (relative posix path, NUL, file sha256, LF)
@@ -112,6 +120,51 @@ PINNED: dict[str, Any] = {
             "b228f19874e8aff1dd2163d7767fae226be1d21bb439edf1b6ecec586816731e"
         )},
     },
+}
+
+#: What re-running the recovered v1 trainer actually produced, 2026-08-18.
+#:
+#: Recorded as data rather than only as prose in `core/ml/SCANNER_PROVENANCE.md`,
+#: because a reproduction result is a measurement this repository now owns and a
+#: number living only in a paragraph is a number nothing can check.
+#:
+#: The disposition is METRIC_REPRODUCIBLE. The trainer printed
+#: `FINAL val_accuracy=0.617`, matching the registry. The WEIGHTS differ and
+#: always will: `train_export.py` seeds only the train/validation split, so the
+#: classifier head is initialised from an unseeded global RNG. Bitwise
+#: reproduction is impossible by construction and is not a gap effort can close.
+REPRODUCTION_2026_08_18 = {
+    "disposition": "METRIC_REPRODUCIBLE",
+    "val_accuracy": 0.617,
+    "artifacts": {
+        # Same byte count as the historical export, different weights.
+        "out/equipment_v1_nometa.tflite": {
+            "bytes": 4495700,
+            "sha256": (
+                "b6b37af8e191f253a0adbf9fb43a5180da70d35e271f295e26d086a69bef1260"
+            ),
+        },
+        # Bitwise identical to the historical file.
+        "out/labels.txt": {
+            "bytes": 117,
+            "sha256": (
+                "ff51b4a912922a00b60d89ea455cf0fad5eeb2e63ce4d89680572c52cf4c99fd"
+            ),
+        },
+    },
+    "environment": {
+        "python": "3.11.9",
+        "tensorflow": "2.15.1",
+        "keras": "2.15.0",
+        "numpy": "1.26.4",
+        "mediapipe": "1.0.0",
+        "gpu": False,
+        # Read from D:/tools/ml-train-env. No pin file exists anywhere, so this
+        # is RECOVERED_CURRENT_ENVIRONMENT and not a proven original.
+        "source": "RECOVERED_CURRENT_ENVIRONMENT",
+    },
+    "blocked_step": "metadata attachment (mediapipe stub does not cover "
+                    "GetMinimumMetadataParserVersion on this venv)",
 }
 
 #: The one fact that makes v1 recoverable rather than merely documented.

@@ -161,6 +161,33 @@ void main() {
       );
     });
 
+    test('a refused checkout surfaces as an error, never as success', () async {
+      // The state layer is where a refusal could be lost most quietly: set
+      // `AsyncValue.data(null)` in the catch and the card shows nothing at
+      // all, so a guest who tapped Subscribe watches the button spin and
+      // settle with no subscription and no explanation. The screen's copy
+      // tests cannot see this -- they start from an error that already
+      // exists.
+      final s = _setup(
+        user: const AuthUser(uid: 'alice', displayName: 'Alice'),
+      );
+      addTearDown(s.repo.dispose);
+      addTearDown(s.container.dispose);
+      await s.container.read(authUserProvider.future);
+      s.stripe.failWith = Exception('backend refused');
+
+      await s.container
+          .read(subscriptionActionProvider.notifier)
+          .chooseTier(SubscriptionTier.celebrityTrainer);
+
+      final action = s.container.read(subscriptionActionProvider);
+      expect(action.hasError, isTrue,
+          reason: 'a refused checkout reported as success');
+      expect(action.hasValue, isFalse);
+      expect(s.repo.cached('alice'), isNull,
+          reason: 'a failed checkout must not grant anything locally');
+    });
+
     test('chooseTier on free is a no-op (use the portal to downgrade)',
         () async {
       final s = _setup(

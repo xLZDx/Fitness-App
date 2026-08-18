@@ -287,6 +287,30 @@
   },
   "subscriptionCouldNotCheckPlanBody": "Your existing plan, if you have one, is unaffected. This is a connection problem on our side.",
   "subscriptionContinueWithStripe": "Continue with Stripe",
+  "subscriptionCheckoutRefusedAnonymous": "Link a Google account to subscribe. A guest account can't be signed back into, so you could not restore or cancel the subscription later.",
+  "@subscriptionCheckoutRefusedAnonymous": {
+    "description": "The backend refuses a real-money checkout from an anonymous account. States the product action and the reason, because the reason is the part that makes the extra step look like care rather than an obstacle."
+  },
+  "subscriptionCheckoutRefusedAlreadySubscribed": "You already have an active subscription. Manage or cancel it from the billing portal first.",
+  "@subscriptionCheckoutRefusedAlreadySubscribed": {
+    "description": "Shares the gRPC status failed-precondition with the anonymous refusal, which is why the backend sends a reason code and this is not chosen by reading the message."
+  },
+  "subscriptionCheckoutRefusedAccountDeleted": "This account no longer exists. Please sign in again.",
+  "@subscriptionCheckoutRefusedAccountDeleted": {
+    "description": "The stale-token window: a valid token for an account that was deleted."
+  },
+  "subscriptionCheckoutRefusedSignedOut": "Sign in to subscribe.",
+  "@subscriptionCheckoutRefusedSignedOut": {
+    "description": "No signed-in account at all."
+  },
+  "subscriptionCheckoutUnreachable": "Could not reach the server. Please try again in a moment.",
+  "@subscriptionCheckoutUnreachable": {
+    "description": "Says only that the server was not reached, never that the network is at fault. A 2026-08-08 device report had the player blaming the network on a 1 Gb connection; the rule since is to name only what is known."
+  },
+  "subscriptionCheckoutUnnamedRefusal": "Checkout could not be started. Please try again.",
+  "@subscriptionCheckoutUnnamedRefusal": {
+    "description": "The backend refused and did not say why, or the client could not open the payment page. Deliberately names no cause."
+  },
   "subscriptionCopyError": "Copy error",
   "subscriptionCouldNotUpdateDonation": "Could not update subscription",
   "subscriptionCurrent": "CURRENT",

@@ -30,6 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from scanner_provenance import (  # noqa: E402
     CLASSIFICATIONS,
     PINNED,
+    REPRODUCTION_2026_08_18,
     PIPELINE_ROOT,
     RECOVERY_CONTRACT,
     SHIPPED_MODEL,
@@ -292,6 +293,9 @@ def test_no_digest_in_the_document_is_one_the_pin_does_not_hold():
     known = {
         _abbreviated(m["sha256"]) for m in PINNED["artifacts"].values()
     } | {
+        _abbreviated(m["sha256"])
+        for m in REPRODUCTION_2026_08_18["artifacts"].values()
+    } | {
         _abbreviated(m["manifest"]) for m in PINNED["corpora"].values()
     } | {_abbreviated(SHIPPED_MODEL_SHA256)}
 
@@ -350,3 +354,28 @@ def test_the_document_refuses_to_invent_a_training_commit():
         "honest; without them the first commit reads as the training commit"
     )
     assert "UNKNOWN" in doc
+
+
+def test_the_reproduction_is_recorded_as_not_bitwise():
+    # The disposition must stay honest in both directions. Calling it BITWISE
+    # would be false; calling it BLOCKED would hide that the headline metric
+    # was actually reproduced.
+    assert REPRODUCTION_2026_08_18["disposition"] == "METRIC_REPRODUCIBLE"
+    produced = REPRODUCTION_2026_08_18["artifacts"]["out/equipment_v1_nometa.tflite"]
+    historical = PINNED["artifacts"]["out/equipment_v1_nometa.tflite"]
+    assert produced["bytes"] == historical["bytes"], (
+        "same architecture, so the export sizes must agree"
+    )
+    assert produced["sha256"] != historical["sha256"], (
+        "if these ever match, the run WAS bitwise and the disposition is wrong"
+    )
+
+
+def test_the_environment_is_not_claimed_to_be_the_original():
+    # No pin file exists anywhere, so nothing can establish that the venv on
+    # this machine is the one that trained v1 -- only that it reproduces the
+    # metric. The distinction is the whole point of recording it.
+    assert (
+        REPRODUCTION_2026_08_18["environment"]["source"]
+        == "RECOVERED_CURRENT_ENVIRONMENT"
+    )
