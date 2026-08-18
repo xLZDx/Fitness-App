@@ -226,6 +226,12 @@ flutter:
           weight: 900
     - family: Barlow Condensed
       fonts:
+        # w400 added 2026-08-19. Nothing named it before the HUD work, but
+        # `font_bundle_test.dart` requires BOTH legacy families to carry every
+        # weight `lib/` requests -- and the HUD type scale requests w400. The
+        # face is 103 KB and the alternative was weakening that guard.
+        - asset: assets/fonts/BarlowCondensed-Regular.ttf
+          weight: 400
         - asset: assets/fonts/BarlowCondensed-Medium.ttf
           weight: 500
         - asset: assets/fonts/BarlowCondensed-SemiBold.ttf
@@ -236,6 +242,50 @@ flutter:
           weight: 800
         - asset: assets/fonts/BarlowCondensed-Black.ttf
           weight: 900
+    # The HUD redesign's two families, instanced from the Google Fonts variable
+    # masters at wdth=100 and the six/four weights the handoff asks for. SIL
+    # OFL, licences beside the files, credited on /licences.
+    #
+    # Archivo cannot set Russian. Measured 2026-08-19 on the upstream master:
+    # 0 of 256 codepoints in the Cyrillic block, no Ё, no ё; and Google's own
+    # ofl/archivo/METADATA.pb declares `subsets: latin, latin-ext, menu,
+    # vietnamese`. Since Russian is this app's DEFAULT language, naming Archivo
+    # alone would have fallen every Russian string back to the platform font --
+    # a different face on every device, and the exact silent degradation that
+    # removing `google_fonts` was meant to end. `hud_typography.dart` lists
+    # Inter as the per-glyph fallback, which is already bundled at every weight
+    # Archivo is.
+    - family: Archivo
+      fonts:
+        - asset: assets/fonts/Archivo-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Archivo-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Archivo-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Archivo-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Archivo-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Archivo-Black.ttf
+          weight: 900
+    # The handoff asks for `ui-monospace` -- deliberately the system mono
+    # rather than a brand face. Flutter cannot honour that portably:
+    # `fontFamily: 'monospace'` is Roboto Mono on Android and Courier on iOS,
+    # which is a different design and has no place in this interface. Roboto
+    # Mono IS the Android system mono, and it carries full Cyrillic (64/64 plus
+    # Ё/ё, verified), so bundling it makes both platforms render the same
+    # technical values.
+    - family: Roboto Mono
+      fonts:
+        - asset: assets/fonts/RobotoMono-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/RobotoMono-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/RobotoMono-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/RobotoMono-Bold.ttf
+          weight: 700
 
   # To add assets to your application, add an assets section, like this:
   # assets:

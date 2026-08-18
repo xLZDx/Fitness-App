@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yaml/yaml.dart';
 
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/core/theme/hud_tokens.dart';
+import 'package:fitness_app/core/theme/hud_typography.dart';
 
 /// P2a — the fonts are shipped, and the theme asks for the ones that are.
 ///
@@ -129,6 +131,113 @@ void main() {
           ?.resolve(<WidgetState>{})?.fontFamily,
       kBodyFont,
     );
+  });
+
+  group('the Cyrillic gap in the display family', () {
+    // Measured 2026-08-19 with fontTools over every bundled face:
+    //   Barlow Condensed  525 glyphs, 0/64 of А-я, no Ё
+    //   Archivo           653 glyphs, 0/64 of А-я, no Ё
+    //   Inter            2849 glyphs, 64/64 of А-я, Ё present
+    //   Roboto Mono       876 glyphs, 64/64 of А-я, Ё present
+    // Russian is this app's default language, so the first two cannot set it.
+
+    testWidgets('every display role names a fallback that can set Russian',
+        (tester) async {
+      late TextTheme text;
+      await tester.pumpWidget(MaterialApp(
+        theme: AppTheme.dark(),
+        home: Builder(builder: (c) {
+          text = Theme.of(c).textTheme;
+          return const SizedBox.shrink();
+        }),
+      ));
+
+      final roles = <String, TextStyle?>{
+        'displayLarge': text.displayLarge,
+        'displayMedium': text.displayMedium,
+        'displaySmall': text.displaySmall,
+        'headlineLarge': text.headlineLarge,
+        'headlineMedium': text.headlineMedium,
+        'headlineSmall': text.headlineSmall,
+      };
+      for (final entry in roles.entries) {
+        expect(entry.value?.fontFamily, kDisplayFont, reason: entry.key);
+        // Without this, a Russian heading falls back to the PLATFORM font --
+        // a different face on every device, and silent, because a missing
+        // glyph never throws.
+        expect(entry.value?.fontFamilyFallback, contains(kBodyFont),
+            reason: '${entry.key} has no Cyrillic-capable fallback');
+      }
+    });
+
+    test('the fallback family is itself bundled at every display weight', () {
+      // A fallback missing the weight the role asked for is a synthesized
+      // face, which is the same silent degradation one level down.
+      expect(declared.keys, containsAll(kDisplayFontFallback));
+      for (final family in kDisplayFontFallback) {
+        expect(declared[family], containsAll(declared[kDisplayFont]!));
+      }
+    });
+
+    test('body roles need no fallback because Inter already covers them', () {
+      // Stated so the asymmetry reads as a decision rather than an omission.
+      expect(kBodyFont, isNot(kDisplayFont));
+      expect(declared.keys, contains(kBodyFont));
+    });
+  });
+
+  group('the HUD families', () {
+    test('both are declared and their files ship', () {
+      // The generic "every declared file exists" case above already checks the
+      // bytes; this pins that the two families the HUD names are DECLARED at
+      // all, which is what a `fontFamily: 'Archivo'` with no pubspec entry
+      // silently fails at.
+      expect(declared.keys, contains(kHudFont));
+      expect(declared.keys, contains(kHudMonoFont));
+    });
+
+    test('Archivo covers every weight the HUD type scale asks of it', () {
+      // Derived by scanning the type scale rather than hardcoded: a role added
+      // at a weight the bundle lacks must fail here, not synthesize a fake
+      // face at run time.
+      final source =
+          File('lib/core/theme/hud_typography.dart').readAsStringSync();
+      final used = RegExp(r'FontWeight\.w([1-9]00)')
+          .allMatches(source)
+          .map((m) => int.parse(m.group(1)!))
+          .toSet();
+      expect(used, isNotEmpty, reason: 'the scan itself found nothing');
+      expect(declared[kHudFont], containsAll(used));
+    });
+
+    test('Roboto Mono covers the weights the mono role defaults to', () {
+      // The mono role's default is w600 and callers pass w400; the family only
+      // goes to 700, so a w800 mono anywhere would be a fake face.
+      expect(declared[kHudMonoFont], containsAll(<int>[400, 500, 600, 700]));
+      expect(declared[kHudMonoFont], isNot(contains(800)));
+    });
+
+    test('the Cyrillic fallback is bundled at every weight Archivo is', () {
+      // Archivo has NO Cyrillic — 0 of 256 codepoints, and Google's own
+      // METADATA.pb declares only latin/latin-ext/vietnamese. Russian is this
+      // app's default language, so every Russian glyph resolves through the
+      // fallback named in `hud_typography.dart`. A fallback that is missing the
+      // weight the style asked for is a synthesized face, which is the same
+      // silent degradation as no fallback at all.
+      for (final family in kHudFontFallback) {
+        expect(declared.keys, contains(family),
+            reason: '$family is named as a fallback but is not bundled');
+        expect(declared[family], containsAll(declared[kHudFont]!),
+            reason: '$family cannot serve every weight Archivo declares');
+      }
+    });
+
+    test('the mono role deliberately has no proportional fallback', () {
+      // Falling back to Inter for a glyph Roboto Mono lacks would break the
+      // digit column the role exists for, silently.
+      expect(HudType.mono(HudTokens.dark).fontFamilyFallback,
+          anyOf(isNull, isEmpty));
+    });
   });
 
   test('nothing still depends on google_fonts', () {

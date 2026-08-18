@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_palette.dart';
 import 'app_semantic_colors.dart';
+import 'hud_tokens.dart';
 
 /// The two bundled families, declared in `pubspec.yaml` under `fonts:`.
 ///
@@ -12,6 +13,10 @@ import 'app_semantic_colors.dart';
 /// and every weight against what pubspec actually ships.
 const String kBodyFont = 'Inter';
 const String kDisplayFont = 'Barlow Condensed';
+
+/// What sets a glyph [kDisplayFont] does not have — which, measured, is every
+/// Cyrillic one. See the long note beside `display()` below.
+const List<String> kDisplayFontFallback = <String>[kBodyFont];
 
 class AppTheme {
   static ThemeData light() => _build(Brightness.light);
@@ -81,9 +86,29 @@ class AppTheme {
     // sizes go up rather than staying put: matching the design's *presence*
     // means matching how much of the screen the word occupies, not the number
     // in the size field.
+    // ## Barlow Condensed cannot set Russian, and Russian is the default
+    //
+    // Measured 2026-08-19 over every bundled face: `BarlowCondensed-*.ttf`
+    // carries 525 glyphs and **none of them are Cyrillic** — 0 of 64 in
+    // А–я, no Ё. Archivo, added for the HUD, is the same (653 glyphs,
+    // latin/latin-ext/vietnamese per Google's own METADATA.pb). Inter carries
+    // 2849 and covers Cyrillic completely.
+    //
+    // So every `display*`/`headline*` role — which is every large heading in
+    // the app — has been rendering Russian in whatever the PLATFORM font
+    // happens to be: a different face on every device, and exactly the silent
+    // degradation this gate removed `google_fonts` to prevent. It was in the
+    // bundle the whole time; nothing failed, because a missing glyph never
+    // does.
+    //
+    // Naming the fallback does not change what a Russian heading looks like
+    // today so much as make it the SAME everywhere, and puts the choice in the
+    // repository instead of in the OS. Latin headings are unaffected — Barlow
+    // Condensed still has those glyphs and still wins.
     TextStyle display(TextStyle? from, double size, FontWeight weight) =>
         (from ?? const TextStyle()).copyWith(
           fontFamily: kDisplayFont,
+          fontFamilyFallback: kDisplayFontFallback,
           fontSize: size,
           fontWeight: weight,
           // CSS -0.01em, resolved against each size rather than copied as one
@@ -107,7 +132,19 @@ class AppTheme {
       // the 339 hardcoded colour references is its own gate, precisely so the
       // diff that introduces the tokens and the diff that changes what a
       // screen looks like are never the same diff.
-      extensions: <ThemeExtension<dynamic>>[tokens],
+      // Two token layers, installed together and doing different jobs.
+      //
+      // `AppSemanticColors` answers "what colour is this role on the app's own
+      // flat background" and serves every screen not yet on the HUD, plus every
+      // Material control that reads `ColorScheme`. `HudTokens` answers a
+      // question it cannot: what a surface floating over an arbitrary
+      // PHOTOGRAPH is made of. Neither is a superset of the other, and merging
+      // them would leave every existing token ambiguous about which surface it
+      // describes. The HUD migration removes the first one screen at a time.
+      extensions: <ThemeExtension<dynamic>>[
+        tokens,
+        isDark ? HudTokens.dark : HudTokens.light,
+      ],
       scaffoldBackgroundColor: Colors.transparent,
       canvasColor: Colors.transparent,
       textTheme: textTheme.copyWith(

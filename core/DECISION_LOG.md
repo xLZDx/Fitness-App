@@ -16997,3 +16997,100 @@ with `redirect: "manual"` does not follow an https->http hop.
 Suites: `pytest scripts/` 714 passed; `npx tsc --noEmit` clean; `npx jest` 240 passed; ledger 19 rows
 reconciled, **9** source-provable, 0 findings. No Dart source changed, so `flutter test` is NOT RUN;
 `firestore.rules` unchanged, so the emulator suite is NOT RUN.
+
+
+## 2026-08-19 -- D0/D1: the HUD design system, and a typeface that cannot set the app's own language
+
+The programme turns from remediation to implementing the `Mobile app design` handoff at high fidelity.
+Two gates land together: D0, the mapping of design to product truth, and D1, the design system the
+screen gates will be built on. Four findings are worth more than the code.
+
+**The background assets were already shipped.** The handoff's ten 1440x2560 WebP scenes are
+**byte-identical** (MD5, all ten) to the ten in `assets/coach_bg/` that the form coach already stands
+the avatar in. So the redesign's whole background library costs zero new bytes, raises no new
+licensing question -- the operator generated them, which is why that directory alone has no
+attribution entry -- and adds nothing to the APK. The directory name is now too narrow; renaming it
+would put a pubspec change, a form-coach change and a test change in the same diff as a visual one,
+so it keeps its name and `hud_sky_test.dart` pins the two catalogues against each other instead.
+
+**Archivo cannot set Russian, and Russian is this app's default language.** Measured twice and
+independently: the upstream `Archivo[wdth,wght].ttf` has **0 of 256** codepoints in the Cyrillic
+block and neither `Ё` nor `ё` (653 glyphs: Latin, Latin Ext, Vietnamese), and Google's own
+`ofl/archivo/METADATA.pb` declares `subsets: latin, latin-ext, menu, vietnamese`. Naming Archivo
+alone would have fallen every Russian string back to the **platform** font -- a different face on
+every device, silent, and precisely the failure this project removed `google_fonts` to end. Archivo
+sets Latin; Inter, already bundled at every weight, sets Cyrillic through `fontFamilyFallback`.
+Worth stating: the handoff's own screenshots show Russian in the form-coach screen, and that text
+was not Archivo either -- the browser fell back for it, just without anyone choosing the fallback.
+
+**And the same defect was already shipped, in the font this app has used for every heading since
+G1.2b.** Auditing all 22 bundled faces to justify the above turned up `BarlowCondensed-*.ttf`: 525
+glyphs, **0/64 of А-я, no Ё**. It is `kDisplayFont`, applied to `display*` and `headline*` -- so
+every large heading in the app has been rendering Russian in whatever font the OS happened to
+supply. Nothing failed, because a missing glyph never does. `kDisplayFontFallback` now names Inter
+for those roles, and `font_bundle_test.dart` asserts it per role. This does not change much about
+what a Russian heading looks like; it makes it the same everywhere, and puts the choice in the
+repository rather than in the OS.
+
+**`ui-monospace` cannot be honoured portably.** The handoff asks for the system mono, deliberately.
+`fontFamily: 'monospace'` is Roboto Mono on Android and **Courier** on iOS, which is a different
+design and has no place here. Roboto Mono is bundled: it *is* the Android system mono, and it carries
+full Cyrillic (64/64 plus Ё/ё, verified). It gets no proportional fallback -- falling back to Inter
+for a glyph it lacks would silently break the digit column the role exists for.
+
+**What D1 contains.** `HudTokens` as a second `ThemeExtension` beside `AppSemanticColors` rather
+than a replacement: the old layer answers "what colour is this role on the app's own flat
+background", and the handoff asks a question it cannot -- the interface now floats over a
+**photograph** the app does not control. `HudGlass` groups fill/blur/hairline/glow as a set, because
+a panel that took its fill from one tier and its hairline from another is not a tier the design has.
+Then `HudSurface` (the one `BackdropFilter` call site in the system), `HudPanel`, `HudButton`,
+`HudChip`, `HudRing`, `HudProgressTrack`, `HudZoneBar`, `HudMetricRow`, `HudToggle`,
+`HudSettingRow`, `HudScreenBody`, `HudScrollFade`, `HudScreenTitle`, `HudSectionHeader`,
+`HudNavBar`, and the `HudSkyBackground` engine.
+
+Four transcription traps, each recorded where it bites:
+
+* **CSS blur is not Flutter sigma.** `blur(7px)` is a Gaussian with standard deviation 3.5, not 7.
+  Implemented as `sigmaX: 7` it is twice the design's blur, and nothing about the result looks wrong
+  enough to notice.
+* **Three different things arrive as `box-shadow`.** `inset 0 0 0 1px` is a `Border` inside the clip;
+  `0 0 0 1px` is a `BoxShadow` with `blurRadius: 0, spreadRadius: 1`; `0 0 26px -6px` is a shadow.
+  Painting the first as a shadow grows the panel by 2px and rounds its corners on the wrong radius.
+* **The veil alpha table is not monotonic.** dawn and dusk share `.44`, night and morning share `.5`.
+  A "brighter as the day goes on" formula would look right and be wrong.
+* **Large numbers are weight 400.** The handoff states it twice. A bold 54px number is a different
+  design.
+
+Three deliberate deviations from the brief, each because the design source or the platform says
+otherwise:
+
+1. **The circular metric is not one 158x158 component.** The brief asks for that size; the
+   prototypes draw four rings at 112/150/104/78 with four different stroke and guide geometries, and
+   the only 158 is the form coach's, which is a **disc**, not a ring. The design source wins.
+2. **Two crossfade layers, not six.** The prototype mounts all six phase images and animates
+   opacity. In Flutter that is ~14 MB resident each, 84 MB for five pictures nobody is looking at.
+   The incoming layer also waits for its first frame before fading up, so a slow decode is not a
+   white flash.
+3. **The reference insets are not copied.** `inset:46px 0 158px` is a drawn iOS status bar and a
+   fifth of a 640pt phone. Top comes from `MediaQuery.padding`, bottom is derived from the bar's own
+   geometry -- which lands within a few points of 158 at the reference size and shrinks correctly.
+
+Two smaller ones: the tab bar's **Scan moves from second to centre** and stops being a raised
+circle, which is information architecture in the design and touches no route; and the button's
+`translateY(-2px)` moves from `:hover`, which a phone does not have, to the press.
+
+Tests found three of my own defects. The A/B photo-set assertion said four phases differ; five do,
+and the reasoning that produced "four" -- that `08_coast_turquoise` appears in both sets -- was true
+and irrelevant, since it appears at *different* phases. A light-theme assertion failed because
+`MaterialApp` wraps its theme in `AnimatedTheme`, so a second `pumpWidget` reads the OLD tokens
+interpolated toward the new; that became a deliberate test that the switch cross-fades. And the
+semantics assertions caught the button, the chip and every nav tab announcing their label twice --
+fixed in production with `ExcludeSemantics`, not in the test.
+
+The hardcoded-white ratchet stays at **61**: the seven literals this gate first wrote are now
+`tileFill`/`tileBorder` tokens and three theme-invariant statics whose invariance the handoff states
+("ручка белая... видна на любом кадре") or a line-for-line diff of the two prototypes proves.
+
+Suites at this gate: `flutter analyze` clean for the new files (6 pre-existing issues in `lib/`, none
+touched); `flutter test` 3053 passed. `pytest scripts/`, `tsc`, `jest` NOT RUN -- no Python, no
+TypeScript and no `firestore.rules` changed.
