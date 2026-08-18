@@ -13,6 +13,9 @@
  * actually reads, so a profile that is defined but wired to nothing still
  * fails here.
  */
+import { readFileSync } from "fs";
+import { join } from "path";
+
 import * as admin from "firebase-admin";
 
 jest.mock("firebase-admin", () => ({
@@ -215,4 +218,48 @@ describe("App Check enforcement flags", () => {
       expect(s.APP_CHECK_ENFORCED_VIDEO).toBe(false);
     }
   });
+});
+
+/**
+ * The measurement enforcement depends on.
+ *
+ * `scaling.ts` names three preconditions for turning App Check enforcement on,
+ * and the second is "the console has to show attestation actually succeeding" —
+ * measured from the `attested` field in `noteAppCheck`'s log line. That number
+ * is only as good as its coverage, and coverage was six of thirteen callables:
+ * `deleteAccount`, `bookCoachSession` and five others emitted nothing, so the
+ * observed attested share described half the surface and read as though it
+ * described all of it.
+ *
+ * Asserted over the SOURCE rather than by invoking each function, because the
+ * failure being prevented is a new callable shipping uninstrumented — which no
+ * behavioural test of the existing ones can see.
+ */
+describe("every callable reports its attestation", () => {
+  const SOURCES = ["index.ts", "video_urls.ts", "account_export.ts"];
+
+  const sources = SOURCES.map((name) => ({
+    name,
+    text: readFileSync(join(__dirname, "..", name), "utf8"),
+  }));
+
+  const callables = sources.flatMap(({ name, text }) =>
+    [...text.matchAll(/export const (\w+) = onCall/g)].map((m) => ({
+      fn: m[1],
+      file: name,
+      text,
+    })),
+  );
+
+  test("the inventory is not empty", () => {
+    // Otherwise the loop below asserts nothing and passes for ever.
+    expect(callables.length).toBeGreaterThanOrEqual(13);
+  });
+
+  test.each(callables.map((c) => [c.fn, c]))(
+    "%s calls noteAppCheck",
+    (_fn, c: any) => {
+      expect(c.text).toContain(`noteAppCheck(request, "${c.fn}")`);
+    },
+  );
 });

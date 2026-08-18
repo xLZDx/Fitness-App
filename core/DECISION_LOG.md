@@ -15147,3 +15147,83 @@ re-anchored after the fix pass moved its line.
 
 `PUSHED = NO`. `CONTINUOUS_RETRAINING_OPERATIONAL = NO`. `D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED`.
 `H3 = HOLD`. No challenger exists and none was trained.
+
+## N-05 / App Check — the measurement was covering half the surface
+
+**FACT.** `scaling.ts` names three preconditions for enabling App Check enforcement, and the second is
+*the console has to show attestation actually succeeding* — read from the `attested` field that
+`noteAppCheck` logs. Coverage was **6 of 13 callables**. `deleteAccount`, `bookCoachSession`,
+`createPortalSession`, `generateAnnualReceipt`, `optInDonorWall`, `optOutDonorWall` and
+`startCoachOnboarding` emitted nothing, so the observed attested share described half the surface
+while reading as though it described all of it — and the missing half included the two functions
+`scaling.ts` itself singles out as the ones you would not gate blindly.
+
+All seven are now instrumented, placed after the `if (!auth)` refusal so every line carries a uid, and
+`scaling.test.ts` asserts over the SOURCE that every `export const X = onCall` has a matching
+`noteAppCheck(request, "X")`. The failure that guards against is a NEW callable shipping
+uninstrumented, which no behavioural test of the existing ones can see. Two mutations killed; the
+first attempt at the second was rejected as invalid — renaming an export broke compilation, so
+`Tests: 0 total`, and a mutant that stops the suite compiling proves no guard exists. Re-run by
+appending a compiling uninstrumented callable, which the test killed properly.
+
+**Enforcement was NOT enabled, and N-05 is NOT closed.** Two reasons, and only the first is the
+obvious one:
+
+1. The three preconditions remain outside this repository. Tester builds ship through Firebase App
+   Distribution rather than Play, so a release APK attests as a stranger and enforcing today breaks
+   the operator's own phone first; the attested share needs field logs that do not exist yet; and a
+   debug token must be registered in a console.
+2. **App Check is the wrong control for N-05 anyway.** It attests the APP, not the ACCOUNT. Somebody
+   creating a hundred accounts from a genuine, unmodified build passes attestation a hundred times.
+   What bounds that path is per-uid cost — the daily quotas in `abuse_guard.ts`, now applied to the
+   anonymous share of `equipmentReport` as well as `clipUrl` — plus something that makes an ACCOUNT
+   expensive. Enabling `APP_CHECK_ENFORCED` would close a different hole and let N-05 look closed.
+
+`APP_CHECK_ENFORCED = off`. `APP_CHECK_ENFORCED_VIDEO = off`. `N-05 = OPEN`.
+
+## F010 — classified, not deleted; and the finding's own claim is wrong
+
+**FACT, correcting the audit.** F010 records *"Moments feature and both Wear OS providers are
+unreferenced"*. Two thirds of that is false at HEAD:
+
+| Symbol | Reality |
+|---|---|
+| `momentRepositoryProvider` | **LIVE.** Overridden at `main.dart:520` with a real `PrefsMomentRepository`, read at `home_page.dart:78`. |
+| `Day3WelcomeModal` | **LIVE.** Shown at `home_page.dart:89`. |
+| `wearSyncServiceProvider` | **WIRED, NEVER CONSTRUCTED.** `main.dart:497` overrides it with `MethodChannelWearSyncService`, but a Riverpod `Provider` is lazy and nothing reads it, so the override closure never runs. Costs nothing at runtime. |
+| `momentControllerProvider`, `launchCountProvider`, `injuryFilterUsesProvider`, `hasShownProvider`, `watchPairedProvider`, `wearIncomingProvider` | **DORMANT.** Declared, dependency-injected, zero consumers in `lib/` and zero in `test/`. |
+
+That is the distinction §21 asks for and the one the audit's occurrence-counting could not draw:
+*unread is not dead*. A live provider read once, a wired service nothing has woken, and six derived
+providers with no consumer are three different dispositions, and only the third is a deletion
+candidate. Nothing was deleted — F010 stays `DEFERRED_TO_DEDICATED_CLEANUP_GATE`, now with a
+per-symbol classification instead of a count.
+
+The two service providers must NOT be deleted on this evidence: both have a real implementation
+injected at the composition root, which is what an intended-but-unfinished feature looks like, not
+what dead code looks like.
+
+## N07 — KEEP, not wired, not deleted; and one auth finding
+
+Reviewed for AUTHORIZATION only, per instruction. Three facts:
+
+1. **The route is auth-gated.** `/team/:teamId` is not in `_publicPaths` (`app_router.dart:51`), so
+   `resolveRedirect` sends an unauthenticated visitor to `/login`. Reaching it by deep link does not
+   bypass sign-in.
+2. **There is nothing on a server to leak.** `firestore.rules` has no `match` for any team or
+   community collection, `main.dart` binds no `TeamFeedRepository`, and the default is
+   `MockTeamFeedRepository` — so `teamFeedIsDemoProvider` is true and the page shows a demo banner.
+   Today the unreachable page reads an in-memory map.
+3. **MAJOR, for the day somebody wires it.** The Celebrity-tier lock is client-side and partial.
+   `_PostCard(locked: !isPremium)` substitutes a "sustainer only" string for `post.body`, but the
+   author name, avatar, timestamp, pin state and **title** are rendered regardless — the title is
+   emitted above the locked branch. The whole post document reaches the device and is hidden in the
+   widget tree. Bind a Firestore-backed repository without a server-side membership-and-tier rule and
+   the paywall becomes a UI string that any client can decline to draw.
+
+Not wired and not deleted, as instructed. The finding above is recorded so that whoever wires it
+writes the rule first rather than discovering this from a subscriber.
+
+`N07 = KEEP`. `F010 = DEFERRED_TO_DEDICATED_CLEANUP_GATE`.
+
+**Suites:** Cloud Functions 217 passed (was 203), `tsc` clean.

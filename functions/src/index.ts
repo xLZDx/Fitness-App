@@ -684,6 +684,7 @@ export const createPortalSession = onCall(
     if (!auth) {
       throw new HttpsError("unauthenticated", "Sign in to manage billing.");
     }
+    noteAppCheck(request, "createPortalSession");
 
     const ref = db.doc(`users/${auth.uid}/subscription/main`);
     const snap = await ref.get();
@@ -1013,6 +1014,7 @@ export const optInDonorWall = onCall(
     if (!auth) {
       throw new HttpsError("unauthenticated", "Sign in to opt in.");
     }
+    noteAppCheck(request, "optInDonorWall");
     const subSnap = await db.doc(`users/${auth.uid}/subscription/main`).get();
     const sub = subSnap.data();
     const hasActive =
@@ -1069,6 +1071,7 @@ export const optOutDonorWall = onCall(
     if (!auth) {
       throw new HttpsError("unauthenticated", "Sign in first.");
     }
+    noteAppCheck(request, "optOutDonorWall");
     await db.doc(`donor_wall/${auth.uid}`).delete();
     return { ok: true };
   },
@@ -1116,6 +1119,7 @@ export const generateAnnualReceipt = onCall(
     if (!auth) {
       throw new HttpsError("unauthenticated", "Sign in first.");
     }
+    noteAppCheck(request, "generateAnnualReceipt");
     const year = Number(request.data?.year ?? new Date().getUTCFullYear());
     if (!Number.isInteger(year) || year < 2024 || year > 2100) {
       throw new HttpsError("invalid-argument", `Invalid year: ${year}`);
@@ -1224,6 +1228,7 @@ export const startCoachOnboarding = onCall(
     if (!auth) {
       throw new HttpsError("unauthenticated", "Sign in first.");
     }
+    noteAppCheck(request, "startCoachOnboarding");
     const stripe = await stripeClient();
     const ref = db.doc(`coach_listings/${auth.uid}`);
     const snap = await ref.get();
@@ -1273,6 +1278,7 @@ export const bookCoachSession = onCall(
     if (!auth) {
       throw new HttpsError("unauthenticated", "Sign in first.");
     }
+    noteAppCheck(request, "bookCoachSession");
     // N-03. This one writes — a Stripe customer, a subscription document and a
     // booking row — so a stale token from a deleted account re-creates personal
     // data after the erasure sweep, and charges for it. See
@@ -1862,6 +1868,7 @@ export const deleteAccount = onCall(
     if (!auth) {
       throw new HttpsError("unauthenticated", "Sign in first.");
     }
+    noteAppCheck(request, "deleteAccount");
     const uid = auth.uid;
 
     // Step 1 — cancel Stripe, if there is anything left to cancel.
