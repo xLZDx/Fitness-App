@@ -36,6 +36,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from label_contract import Label, LabelSource  # noqa: E402
 from review_batch import (  # noqa: E402
     MACHINE_REVIEWER_MARKERS,
+    REVIEWER_KINDS,
     check_contract,
     REASON_CODES,
     REVIEW_QUESTIONS,
@@ -94,7 +95,30 @@ def _timestamp(value: Any, where: str) -> dt.datetime:
     return parsed
 
 
-def _check_reviewer(submission: dict[str, Any]) -> str:
+def _check_accepts(accepts: tuple[str, ...]) -> str:
+    """One kind per run, and it must be a known one.
+
+    A tuple rather than a boolean because the failure this prevents is a run
+    that accepts BOTH: a dataset holding one reviewed answer and one generated
+    one is indistinguishable from a reviewed dataset, and no downstream stamp
+    can separate them again row by row.
+    """
+    if len(accepts) != 1:
+        raise ReviewImportError(
+            f"an import accepts exactly one reviewer kind; got {list(accepts)}. "
+            "A run that accepted more than one would mix generated answers "
+            "into a reviewed dataset with nothing left to tell them apart"
+        )
+    kind = accepts[0]
+    if kind not in REVIEWER_KINDS:
+        raise ReviewImportError(
+            f"{kind!r} is not a reviewer kind. Known: {list(REVIEWER_KINDS)}"
+        )
+    return kind
+
+
+def _check_reviewer(submission: dict[str, Any], accepts: tuple[str, ...]) -> str:
+    expected = _check_accepts(accepts)
     reviewer = submission.get("reviewer")
     if not isinstance(reviewer, str) or not reviewer:
         raise ReviewImportError("reviewer identity is required")
@@ -106,12 +130,12 @@ def _check_reviewer(submission: dict[str, Any]) -> str:
                 "label may not enter the corpus as a reviewed one; see "
                 "label_contract.TRAINABLE_SOURCES"
             )
-    if submission.get("reviewer_kind") != "HUMAN":
+    if submission.get("reviewer_kind") != expected:
         raise ReviewImportError(
-            "reviewer_kind must be the literal 'HUMAN'. This records a CLAIM "
-            "and proves nothing; it exists so that submitting a machine's "
-            "output requires stating something untrue rather than omitting a "
-            "field"
+            f"reviewer_kind must be the literal {expected!r} in this run; got "
+            f"{submission.get('reviewer_kind')!r}. This records a CLAIM and "
+            "proves nothing; it exists so that submitting a machine's output "
+            "requires stating something untrue rather than omitting a field"
         )
     return reviewer
 
@@ -121,6 +145,7 @@ def import_reviews(
     batch: dict[str, Any],
     *,
     assignments: dict[str, Any],
+    accepts: tuple[str, ...] = ("HUMAN",),
 ) -> dict[str, Any]:
     """Validate one reviewer's returned file.
 
@@ -150,7 +175,7 @@ def import_reviews(
             f"{REVIEW_SCHEMA_VERSION}. An answer means what its schema says it "
             "means; reading it under a different one is a guess"
         )
-    reviewer = _check_reviewer(submission)
+    reviewer = _check_reviewer(submission, accepts)
     _timestamp(submission.get("submitted_at"), "submitted_at")
 
     items = {i["item_id"]: i for i in batch["items"]}
@@ -347,6 +372,10 @@ def import_reviews(
     return {
         "reviewer": reviewer,
         "reviewer_slot": slot,
+        # Carried forward so the dataset builder can stamp what it was built
+        # from. Without it, a synthetic run's output would be shaped exactly
+        # like a reviewed one.
+        "reviewer_kind": submission["reviewer_kind"],
         "labels": labels,
         "outcomes": outcomes,
         "stale": stale,

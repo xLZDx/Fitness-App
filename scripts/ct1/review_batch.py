@@ -229,6 +229,17 @@ REVIEW_STATUSES = ("COMPLETE", "SKIPPED")
 #: It exists because the cheapest way for a machine label to enter this corpus
 #: is somebody putting the tool's name in the field without thinking about it,
 #: and that specific mistake is worth catching at the point it is made.
+#: What a submission may claim to be. Exactly two, and they never mix.
+#:
+#: `SYNTHETIC` exists so the post-label pipeline can be exercised end to end
+#: before a single human label comes back. It is NOT a relaxation of the HUMAN
+#: check: an importer accepts one kind per run and refuses a set containing
+#: more than one, so a synthetic answer can never sit in the same dataset as a
+#: reviewed one. The alternative -- stamping fixtures `HUMAN` -- would have
+#: made every fixture file a lie, which is the exact thing the kind field was
+#: added to prevent.
+REVIEWER_KINDS = ("HUMAN", "SYNTHETIC")
+
 MACHINE_REVIEWER_MARKERS = (
     "claude", "gpt", "codex", "gemini", "llm", "model", "agent", "bot",
     "auto", "heuristic", "script", "baseline",

@@ -15068,3 +15068,82 @@ every commit. Inside a payload that CI re-derives and compares, that makes `--ch
 commit — observed immediately. A drift alarm that fires constantly is one nobody reads. It now names
 the commit the CATALOGUE last changed at, which is both stable and the correct meaning of "the commit
 this data is from". A test pins it and asserts it is not HEAD.
+
+## Post-label pipeline — seven stages, and the eighth that does not exist
+
+`scripts/ct1/pipeline.py`. `human_eval.py` already chained IMPORT -> VALIDATE -> ADJUDICATE ->
+BUILD_EVAL -> BASELINE_EVALUATE. What did not exist was ERROR_ANALYSIS, CHALLENGER_DECISION, a single
+reproducible entry point, and any way to exercise the chain before a human label comes back — which
+is the state this repository is in and will be in for weeks.
+
+**There is no training stage.** `GO` means *a person may now start a training run*, not *a training
+run started*. A pipeline that trains on its own GO produces a model nobody chose. The test asserts it
+against the module's parsed IMPORT GRAPH rather than a substring search — the first version searched
+text and failed on its own subject's prose, which legitimately names `scripts/ml/training_run.py` as
+the validator a future run must satisfy.
+
+**ERROR_ANALYSIS separates two kinds of error** because only one is a modelling problem. A MISS is
+content a reviewer called defective and no rule fired on — a gap a challenger could close. A FALSE
+ALARM is a rule too broad, and narrowing the rule is cheaper than training anything. A question no
+rule maps to is a THIRD thing: a coverage gap, not an accuracy one, and reporting it as 0.0 precision
+would send somebody to tune a rule that does not exist.
+
+### FACT — two decision gates were DEAD on the first run
+
+`challenger_decision` read `dataset["agreement"]` and `dataset["adjudication"]`. `build_eval` produced
+neither: inter-rater agreement was never recorded in the evaluation dataset at all, and the
+adjudication key is `adjudication_counts`. Both gates therefore passed on every possible input,
+including one where the reviewers agreed on nothing. Found by writing a test that CONSTRUCTS the
+state each gate should trip — not by reading, and not reachable by mutation, which breaks existing
+logic and cannot reach a branch that never executes.
+
+Fixed at the root: `build_eval` now computes pairwise agreement across every (item, question) two
+reviewers both answered, pooled over compared ANSWERS rather than averaged over pairs. A null
+`percent_agreement` means "no two reviewers saw the same row", NOT "they disagreed completely" — a
+gate conflating those would refuse every single-review batch for a reason that never happened, and
+there is a test for exactly that.
+
+### DECISION — `REVIEWER_KINDS`, not a flag on the HUMAN check
+
+The fixture run was refused by `_check_reviewer`: `reviewer_kind` must be the literal `HUMAN`. That
+refusal is correct and was left standing. Stamping fixtures `HUMAN` would have made every fixture
+file a lie — the exact thing the field exists to prevent — so `SYNTHETIC` became a first-class kind
+and an import accepts EXACTLY ONE per run. A run accepting both is refused: a dataset holding one
+reviewed answer and one generated one could never be separated again. Three further guards keep them
+apart: fixture mode refuses a real batch, production mode refuses a `TEST_` batch, and `write_eval`
+refuses a synthetic payload anywhere inside `core/ml/` — that last one because `human_eval.py`'s own
+CLI never passes through the pipeline's guard.
+
+## Gate review of the clinical validator — nine findings, all fixed
+
+Two read-only specialists reviewed `a18e0da`/`12b1909`. Neither found a way for a bad submission to
+be accepted as valid; every finding was a case where malformed input crashed with a traceback instead
+of this module's own refusal, or a test that guarded less than its name claimed.
+
+**MAJOR, all FACT.** A `tags` list containing an unhashable element (`[["knee"]]`) raised `TypeError`
+out of the set-membership test. A `submission.json` that parsed to anything but an object raised
+`AttributeError` from `body.pop` before a single field check ran — the ordinary shape of a truncated
+email attachment. A sheet re-saved by Excel's plain *CSV (Comma delimited)* option is written in the
+local codepage with no BOM, and the catalogue's titles are not ASCII, so it raised `UnicodeDecodeError`;
+that refusal now names the cause, says *use CSV UTF-8*, and says *nothing is lost*.
+
+**MAJOR, test.** `test_the_worklist_proposes_no_answer` — described in its own docstring as the single
+most important property — was a BLOCKLIST of field names a proposal might use, defeated by a one-word
+rename. It is now an allowlist over the exact row and payload key sets, so any new field fails until
+somebody adds it deliberately.
+
+**MINOR.** `rows_csv` could name an absolute path, because `Path.__truediv__` discards the left operand
+when the right is absolute — while the neighbouring refusal already promised *beside*. Code and
+message now agree. `verify_worklist` checked only the metadata file, so a half-present worklist
+crashed in CI on a raw `FileNotFoundError`. `handoff_commit` was checked for PRESENCE and not content,
+so a hand-rebuilt header with a blank commit validated; it is now refused.
+
+None of the reviewers' remaining suggestions were adopted silently: the narrow "no clinical opinion"
+canary stays narrow and is documented as a canary rather than a guarantee.
+
+**Suites:** 336 passed across `scripts/ct1`, `scripts/ml`, `scripts/review` (was 297). 31 mutations
+killed against `clinical_import.py`, subject restored byte-identical, including one that had to be
+re-anchored after the fix pass moved its line.
+
+`PUSHED = NO`. `CONTINUOUS_RETRAINING_OPERATIONAL = NO`. `D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED`.
+`H3 = HOLD`. No challenger exists and none was trained.

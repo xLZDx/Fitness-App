@@ -238,11 +238,11 @@ def test_an_amendment_to_a_tag_the_app_cannot_match_is_refused():
                                     "tags": ["lumbar_spine"]}]))
 
 
-def test_the_vocabulary_is_read_from_the_catalog_file_not_restated():
+def test_the_vocabulary_is_read_from_the_catalog_file_not_restated(monkeypatch):
     """Nine regions, and the same nine the baseline scanner enforces. A second
     hand-typed copy would drift and this validator would be the last place
     anybody looked."""
-    sys.path.insert(0, str(REPO / "scripts" / "ct1"))
+    monkeypatch.syspath_prepend(str(REPO / "scripts" / "ct1"))
     from baseline import REGION_TAGS  # noqa: E402
 
     assert set(regions()) == set(REGION_TAGS)
@@ -339,12 +339,22 @@ def test_the_worklist_proposes_no_answer():
     """The single most important property. If this file ever suggested a tag,
     the returned review would be measuring this repository's guess."""
     payload = worklist()
-    text = json.dumps(payload, ensure_ascii=False)
-    assert "suggested_tags" not in text
-    assert "proposed_tags" not in text
-    assert "recommended" not in text.lower()
+    # An ALLOWLIST, not a blocklist. The first version listed the field names a
+    # proposal might use, which a one-word rename defeats -- and this is the
+    # test that would have to catch it. Any new row field now fails here until
+    # somebody adds it deliberately.
+    allowed = {
+        "item_id", "title", "summary", "steps", "equipment_id",
+        "primary_muscles", "vendor_group", "is_stretch", "current_tags",
+        "population", "current_app_behaviour",
+    }
     for row in payload["rows"]:
-        assert set(row) & {"suggestion", "proposal", "prefill"} == set()
+        assert set(row) == allowed, sorted(set(row) ^ allowed)
+    assert set(payload) == {
+        "schema_version", "handoff_commit", "catalogue_sha256",
+        "catalogue_bytes", "regions", "dispositions", "rows", "counts",
+        "authority",
+    }
 
 
 def test_the_worklist_names_the_authority_it_lacks():
@@ -417,7 +427,7 @@ def test_an_unfilled_row_is_not_reviewed_rather_than_accepted(issued):
     path = _fill(issued, {_ids(1)[0]: ("ACCEPT", "", "")})
     result = validate(load_submission(path))
     assert result["coverage"]["reviewed"] == 1
-    assert result["coverage"]["not_reviewed"] == 1886
+    assert result["coverage"]["not_reviewed"] == worklist()["counts"]["total"] - 1
     assert result["counts"]["ACCEPT"] == 1
 
 
@@ -582,6 +592,107 @@ def test_verifying_an_absent_worklist_is_refused_rather_than_passing(tmp_path):
     """A missing worklist must not read as a clean check."""
     with pytest.raises(ClinicalImportError, match="no worklist"):
         verify_worklist(tmp_path)
+
+
+# --------------------------------------------------------------------------
+# the return path -- malformed input must refuse, not traceback
+# --------------------------------------------------------------------------
+#
+# Every case below was found by review rather than by mutation, and that is the
+# point: mutation testing breaks existing LOGIC, so it can never reach a branch
+# that does not exist. All five are ordinary events on a path that runs through
+# email, Excel and a text editor.
+
+
+def test_a_tag_that_is_not_a_string_is_refused_rather_than_crashing():
+    """`t not in vocabulary` hashes `t`. A nested list raised TypeError out of
+    the module instead of the refusal it promises -- only reachable through the
+    JSON path, since the CSV path splits a string."""
+    for bad in ([["knee"]], [{"region": "knee"}], [None], [1]):
+        with pytest.raises(ClinicalImportError, match="must be a string"):
+            validate(_submission(rows=[{"item_id": _ids(1)[0],
+                                        "disposition": "AMEND", "tags": bad}]))
+
+
+@pytest.mark.parametrize("content", ["[]", "null", '"hello"', "42"])
+def test_a_submission_that_is_not_an_object_is_refused(tmp_path, content):
+    """A truncated or empty attachment. `body.pop` raised AttributeError before
+    any field check could run, so the operator got a traceback for the most
+    ordinary failure on the whole return path."""
+    path = tmp_path / "submission.json"
+    path.write_text(content, encoding="utf-8")
+    with pytest.raises(ClinicalImportError, match="not an object"):
+        load_submission(path)
+
+
+def test_a_submission_that_is_not_json_is_refused(tmp_path):
+    path = tmp_path / "submission.json"
+    path.write_text("{ this is not json", encoding="utf-8")
+    with pytest.raises(ClinicalImportError, match="not valid JSON"):
+        load_submission(path)
+
+
+def test_a_submission_saved_with_a_bom_still_loads(issued):
+    """Several Windows editors add one. Refusing it would send a clinician's
+    work back over a byte they did not type and cannot see."""
+    path = _fill(issued, {_ids(1)[0]: ("ACCEPT", "", "")})
+    body = path.read_bytes()
+    path.write_bytes(b"\xef\xbb\xbf" + body)
+    assert validate(load_submission(path))["counts"]["ACCEPT"] == 1
+
+
+def test_a_sheet_resaved_in_the_local_codepage_is_named_as_such(issued):
+    """Excel's plain "CSV (Comma delimited)" save re-encodes in the local
+    codepage and drops the BOM. The catalogue's titles are not ASCII, so that
+    file does not decode as UTF-8 -- and the reader died on it."""
+    path = _fill(issued, {_ids(1)[0]: ("ACCEPT", "", "")})
+    sheet = issued / "worklist.csv"
+    text = sheet.read_text(encoding="utf-8-sig")
+    sheet.write_bytes(("naïve café — " + text).encode("cp1252", "replace"))
+    with pytest.raises(ClinicalImportError) as exc:
+        load_submission(path)
+    assert "not UTF-8" in str(exc.value)
+    assert "CSV UTF-8" in str(exc.value)
+    assert "Nothing is lost" in str(exc.value)
+
+
+def test_a_sheet_outside_the_submission_directory_is_refused(
+    issued, tmp_path_factory
+):
+    """`Path.__truediv__` discards the left operand when the right is absolute,
+    so `rows_csv` could name any readable file -- while the neighbouring
+    refusal already promised "beside"."""
+    path = _fill(issued, {_ids(1)[0]: ("ACCEPT", "", "")})
+    # A genuinely separate directory: `issued` IS tmp_path, so a subdirectory
+    # of it is inside and the check would correctly not fire.
+    elsewhere = tmp_path_factory.mktemp("elsewhere")
+    (elsewhere / "worklist.csv").write_bytes(
+        (issued / "worklist.csv").read_bytes()
+    )
+    body = json.loads(path.read_text(encoding="utf-8"))
+    body["rows_csv"] = str(elsewhere / "worklist.csv")
+    path.write_text(json.dumps(body), encoding="utf-8")
+    with pytest.raises(ClinicalImportError, match="resolves outside"):
+        load_submission(path)
+
+
+def test_half_a_worklist_is_not_a_worklist(issued):
+    """The sheet and the metadata that pins it to a catalogue version only mean
+    anything together. With only one present, --verify crashed on a raw
+    FileNotFoundError in CI rather than saying which half was missing."""
+    (issued / "worklist.csv").unlink()
+    with pytest.raises(ClinicalImportError, match="worklist.csv"):
+        verify_worklist(issued)
+
+
+def test_a_blank_handoff_commit_is_refused():
+    """It is pre-filled in the issued header precisely so nobody types it, so a
+    blank one means the header was rebuilt by hand. Presence was checked and
+    content was not -- found by a reviewer asking what each declared field
+    actually enforces."""
+    for blank in ("", "   ", None):
+        with pytest.raises(ClinicalImportError, match="handoff_commit"):
+            validate(_submission(handoff_commit=blank))
 
 
 # --------------------------------------------------------------------------

@@ -60,7 +60,7 @@ from review_batch import (  # noqa: E402
     assert_authoritative,
     check_contract,
 )
-from review_import import adjudicate, import_reviews  # noqa: E402
+from review_import import adjudicate, agreement, import_reviews  # noqa: E402
 
 DATASET_ID = "CT1_HUMAN_EVAL"
 
@@ -104,6 +104,7 @@ def build_eval(
     assignments: dict[str, Any] | None = None,
     adjudications: list[dict[str, Any]] | None = None,
     version: int = 1,
+    accepts: tuple[str, ...] = ("HUMAN",),
 ) -> dict[str, Any]:
     """The immutable evaluation dataset, plus everything needed to audit it."""
     manifest = batch["manifest"]
@@ -112,9 +113,12 @@ def build_eval(
     stale: list[dict[str, Any]] = []
     domain: set[str] = set()
     reasons: dict[str, list[str]] = {}
+    kinds: set[str] = set()
 
     for submission in submissions:
-        result = import_reviews(submission, batch, assignments=assignments)
+        result = import_reviews(
+            submission, batch, assignments=assignments, accepts=accepts
+        )
         who = result["reviewer"]
         if who in per_reviewer:
             raise EvaluationError(
@@ -122,6 +126,7 @@ def build_eval(
                 "has either revised or duplicated, and the file cannot say "
                 "which"
             )
+        kinds.add(result["reviewer_kind"])
         per_reviewer[who] = result["labels"]
         coverage[who] = result["coverage"]
         stale.extend(result["stale"])
@@ -186,6 +191,14 @@ def build_eval(
 
     reviewers = sorted(per_reviewer)
     payload = {
+        # Inter-rater agreement, computed here rather than left to whoever
+        # quotes a number later. It was missing entirely: the dataset recorded
+        # WHAT the reviewers settled on and never how much they agreed, so
+        # nothing downstream could tell labels two people converged on from
+        # labels one person guessed and the other never saw. A pipeline stage
+        # that tried to gate on agreement read a key that did not exist and
+        # silently passed -- found when the gate was written.
+        "agreement": _agreement_across(per_reviewer),
         "dataset_id": DATASET_ID,
         "version": version,
         "immutable": True,
@@ -204,7 +217,13 @@ def build_eval(
         "questions": list(REVIEW_QUESTIONS),
         "reviewer_count": len(reviewers),
         "reviewers": reviewers,
-        "reviewer_kind": "HUMAN (a claim recorded at import; see review_batch)",
+        "reviewer_kind": sorted(kinds),
+        "synthetic": kinds != {"HUMAN"},
+        "reviewer_kind_note": (
+            "A claim recorded at import; see review_batch.REVIEWER_KINDS. An "
+            "import accepts exactly one kind, so this list holds exactly one "
+            "entry and a mixed dataset cannot be constructed."
+        ),
         "rows": rows,
         "reason_codes": {k: reasons[k] for k in sorted(reasons) if k in rows},
         "row_count": len(rows),
@@ -235,6 +254,50 @@ def build_eval(
     return payload
 
 
+def _agreement_across(per_reviewer: dict[str, list[Label]]) -> dict[str, Any]:
+    """Pairwise agreement over every (item, question) two reviewers both answered.
+
+    Reported per pair AND pooled. The pooled rate is over compared ANSWERS, not
+    an average of pair rates: a pair that overlapped on three rows would
+    otherwise weigh as much as one that overlapped on sixty.
+
+    ``percent_agreement`` is null when no two reviewers ever saw the same row.
+    That is the normal state for a batch with no double-review, and it must not
+    read as 0.0 — a gate that treats "not measured" as "they disagreed
+    completely" refuses work for a reason that never happened.
+    """
+    pairs: dict[str, Any] = {}
+    compared = agreed = 0
+    for i, a in enumerate(sorted(per_reviewer)):
+        for b in sorted(per_reviewer)[i + 1:]:
+            stats = agreement(per_reviewer[a], per_reviewer[b])
+            if not stats["compared"]:
+                continue
+            pairs[f"{a}|{b}"] = stats
+            compared += stats["compared"]
+            agreed += stats["agreed"]
+    return {
+        "pairs": pairs,
+        "compared_answers": compared,
+        "agreed_answers": agreed,
+        "percent_agreement": (agreed / compared) if compared else None,
+        "note": (
+            "null percent_agreement means no two reviewers answered the same "
+            "(item, question) -- not that they disagreed. Raw agreement is "
+            "high by construction on a corpus where most rows are fine; read "
+            "it beside the per-pair kappa, which is null where undefined."
+        ),
+    }
+
+
+def _inside(path: Path, parent: Path) -> bool:
+    try:
+        Path(path).resolve().relative_to(parent.resolve())
+        return True
+    except ValueError:
+        return False
+
+
 def write_eval(payload: dict[str, Any], root: Path) -> Path:
     """Write a version, refusing to replace one.
 
@@ -242,6 +305,18 @@ def write_eval(payload: dict[str, Any], root: Path) -> Path:
     edited in place means a number quoted in a report last month refers to
     something that no longer exists, and nobody can tell.
     """
+    # A synthetic dataset has the same shape as a reviewed one and the same
+    # filename. The only thing that could ever separate them, once written
+    # beside each other, is which directory somebody put them in -- so this is
+    # the one place that has to care.
+    if payload.get("synthetic") and _inside(root, REPO / "core" / "ml"):
+        raise EvaluationError(
+            f"this dataset was built from {payload.get('reviewer_kind')} "
+            f"answers and {root} is inside core/ml/. Generated answers never "
+            "land where real datasets live: the file would be indistinguishable "
+            "from a reviewed one to everything except its own reviewer_kind "
+            "field, and nobody greps for that before quoting a number"
+        )
     target = root / f"{DATASET_ID.lower()}_v{payload['version']}"
     if target.exists():
         raise EvaluationError(

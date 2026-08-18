@@ -238,6 +238,14 @@ def write_worklist(directory: Path) -> dict[str, Any]:
     return payload
 
 
+def _inside(path: Path, parent: Path) -> bool:
+    try:
+        Path(path).resolve().relative_to(Path(parent).resolve())
+        return True
+    except ValueError:
+        return False
+
+
 def verify_worklist(directory: Path) -> dict[str, Any]:
     """Refuse a committed worklist that no longer describes the catalogue.
 
@@ -251,8 +259,16 @@ def verify_worklist(directory: Path) -> dict[str, Any]:
     import tempfile
 
     meta_path = directory / "worklist.meta.json"
-    if not meta_path.exists():
-        raise ClinicalImportError(f"{directory} holds no worklist to verify")
+    missing = [
+        name for name in ("worklist.meta.json", "worklist.csv")
+        if not (directory / name).exists()
+    ]
+    if missing:
+        raise ClinicalImportError(
+            f"{directory} holds no worklist to verify: {missing} absent. Half "
+            "a worklist is not a worklist -- the sheet and the metadata that "
+            "pins it to a catalogue version only mean anything together"
+        )
     committed_meta = json.loads(meta_path.read_text(encoding="utf-8"))
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -384,11 +400,60 @@ def _timestamp(value: Any, where: str) -> dt.datetime:
     return parsed
 
 
+def _read_json(path: Path) -> Any:
+    """Decode a returned file, or refuse in this module's own vocabulary.
+
+    Both failures below are ordinary on a return path that runs through email
+    and a clinician's editor, and neither should surface as a traceback: a
+    BOM-adding editor makes `json.loads` fail on the first character, and a
+    file saved in the local codepage fails to decode at all.
+    """
+    try:
+        return json.loads(path.read_text(encoding="utf-8-sig"))
+    except UnicodeDecodeError as exc:
+        raise ClinicalImportError(
+            f"{path.name} is not UTF-8 ({exc.reason} at byte {exc.start}). It "
+            "was probably re-saved in a local codepage; send it back as UTF-8"
+        ) from exc
+    except json.JSONDecodeError as exc:
+        raise ClinicalImportError(
+            f"{path.name} is not valid JSON: {exc.msg} at line {exc.lineno}"
+        ) from exc
+
+
+def _open_text(path: Path):
+    """Open the returned sheet, naming the encoding failure Excel causes.
+
+    Excel's plain "CSV (Comma delimited)" save re-encodes in the local codepage
+    and drops the BOM. The catalogue's titles are not ASCII, so that file does
+    not decode as UTF-8 and the reader would otherwise die on a byte the
+    clinician never typed.
+    """
+    try:
+        fh = path.open(encoding="utf-8-sig", newline="")
+        fh.read()
+        fh.seek(0)
+        return fh
+    except UnicodeDecodeError as exc:
+        raise ClinicalImportError(
+            f"{path.name} is not UTF-8 ({exc.reason} at byte {exc.start}). "
+            "Excel's plain 'CSV (Comma delimited)' save writes the local "
+            "codepage; use 'CSV UTF-8' and send it again. Nothing is lost -- "
+            "the answers are still in your copy"
+        ) from exc
+
+
 def load_submission(path: Path) -> dict[str, Any]:
     """Read a submission, pulling its rows from the filled spreadsheet."""
     import csv
 
-    body = json.loads(path.read_text(encoding="utf-8"))
+    body = _read_json(path)
+    if not isinstance(body, dict):
+        raise ClinicalImportError(
+            f"{path.name} parsed as {type(body).__name__}, not an object. A "
+            "truncated or empty attachment is the usual cause -- ask for it "
+            "again rather than reading what survived"
+        )
     source = body.pop("rows_csv", None)
     if source is None:
         return body
@@ -399,13 +464,22 @@ def load_submission(path: Path) -> dict[str, Any]:
         )
 
     sheet = (path.parent / source).resolve()
+    # `/` discards the left operand when the right is absolute, so without this
+    # `rows_csv` could name any readable file -- and the refusal below already
+    # promises "beside". Code and message now agree.
+    if not _inside(sheet, path.parent):
+        raise ClinicalImportError(
+            f"rows_csv={source!r} resolves outside {path.parent.name}/. The "
+            "sheet must be the one sent back beside this submission, not a "
+            "copy elsewhere on disk that may be a different issue"
+        )
     if not sheet.exists():
         raise ClinicalImportError(
             f"rows_csv points at {source!r}, which is not beside "
             f"{path.name}. Send the filled spreadsheet back with it"
         )
     rows = []
-    with sheet.open(encoding="utf-8-sig", newline="") as fh:
+    with _open_text(sheet) as fh:
         for line in csv.DictReader(fh):
             for column in (*CSV_READONLY, *CSV_FILLABLE):
                 if column not in line:
@@ -450,6 +524,14 @@ def validate(submission: dict[str, Any]) -> dict[str, Any]:
         raise ClinicalImportError(
             f"schema v{submission['schema_version']!r}; this validator is "
             f"v{SCHEMA_VERSION}"
+        )
+
+    if not str(submission.get("handoff_commit") or "").strip():
+        raise ClinicalImportError(
+            "handoff_commit is present but blank. It is pre-filled in the "
+            "issued submission.json precisely so nobody has to type it, so a "
+            "blank one means the header was rebuilt by hand and the review "
+            "cannot be tied to the sources it was performed against"
         )
 
     for field in ("reviewer_name", "reviewer_credentials", "reviewer_authority"):
@@ -523,6 +605,15 @@ def validate(submission: dict[str, Any]) -> dict[str, Any]:
                 raise ClinicalImportError(
                     f"{item_id}: AMEND requires a `tags` list -- possibly "
                     "empty, which means 'this row should carry no tags'"
+                )
+            # Before any set membership: an unhashable element (a nested list,
+            # an object) would raise TypeError out of this module rather than
+            # the refusal it promises. Only the JSON path can produce one; the
+            # CSV path splits a string.
+            if not all(isinstance(t, str) for t in tags):
+                raise ClinicalImportError(
+                    f"{item_id}: every tag must be a string; got "
+                    f"{[type(t).__name__ for t in tags]}"
                 )
             unknown = sorted({t for t in tags if t not in vocabulary})
             if unknown:

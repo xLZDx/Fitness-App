@@ -218,6 +218,17 @@ jobs:
       - name: Leakage guards and the evaluation dataset
         run: python -m pytest scripts/ct1/test_leakage.py scripts/ct1/test_human_eval.py -q
 
+      - name: Post-label pipeline — the gates, and the stage it will not run
+        run: python -m pytest scripts/ct1/test_pipeline.py -q
+
+      # Runs the whole IMPORT -> ... -> CHALLENGER_DECISION chain on generated
+      # data. It is the only way the seven stages can be seen to work before a
+      # human label comes back, and it must keep working while nobody is
+      # looking. Exit 0 means GO on the fixture, which is a statement about the
+      # WIRING and not about any real model.
+      - name: The pipeline runs end to end on synthetic fixtures
+        run: python scripts/ct1/pipeline.py --fixtures
+
       - name: ML lifecycle, dataset registry and training-run manifests
         run: python -m pytest scripts/ml/test_ml_contracts.py -q
 
