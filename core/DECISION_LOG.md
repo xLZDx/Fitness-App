@@ -16210,3 +16210,96 @@ has changed since they last ran.
 
 Push remains NOT PERFORMED. 83 commits ahead of `origin/formcoach/gates-a-c`. The session
 authorization was explicit and has not been reinterpreted.
+
+## The ledger that recomputes status, and the four reviews that rebuilt it
+
+`core/review/N05_DISPOSITION.md` carried a closed defect as OPEN for weeks. The source was right,
+the log was right, the suite was green; the only wrong artefact was the table a reader opens to ask
+what remains. Nothing objected because no test reads a status table. This gate makes status a
+computed thing where it can be computed.
+
+`scripts/review/state_ledger.py` holds thirteen boundary items. Six are SOURCE-authority rows whose
+state is not an input at all: a predicate recomputes it from the tree and the recorded word is only
+ever the thing being compared. That one rule catches both directions -- a stale OPEN and a false
+CLOSED -- without a separate mechanism for either. `core/CURRENT_STATE.md` is generated, and the
+test suite regenerates and byte-compares it, so the human-readable table cannot be edited into a
+lie. `--report` now refuses to write while the ledger disagrees with the tree.
+
+The other seven rows belong to authorities this repository does not have. They may carry an
+invariant -- source cannot CLOSE such a row, but it must be able to REOPEN the question, so N-05
+fails if the published deletion promise its conflict rests on ever changes -- and they may only
+reach a closed state if the owning authority has actually produced an artefact.
+
+Four independent reviewers ran on the first draft. Between them they found more than I did.
+
+**The closure check ran in one direction only.** It was gated on the state already being terminal,
+so `closure()` was consulted only on rows that already claimed to be closed. The consequence is the
+module's own founding defect reproduced in the rows it guards hardest: when the clinician finally
+returns the review, D1 would go on saying EXTERNAL_AUTHORITY_REQUIRED forever with nothing
+objecting. D1 in fact executed zero assertions -- no predicate, no invariant, and a closure check
+that could not fire. Closure is now evaluated on every row that has one, and an authority that HAS
+spoken while the row still says work remains is a finding named `AUTHORITY_SPOKE`.
+
+**`row.state` was an unvalidated free string.** Terminality was membership of a two-element tuple,
+so any other word was non-terminal by default and walked past the closure gate -- `RESOLVED`,
+`SETTLED`, `DONE` would all have read as finished to a human and as open to the check. N-07 was a
+live instance: `DORMANT_BY_PRODUCT_DECISION` asserted a product decision had been taken, carried a
+closure callable, and that callable was never once invoked. The vocabulary is now closed and split
+three ways, with `SETTLED_BY_DECISION` requiring the same permission as `CLOSED`. N-07 was restated
+as `DORMANT`, which is what engineering can observe; the product decision is real and stays a
+checked quotation from the document that owns it. Writing `core/decisions/N-07.md` myself would
+have been engineering signing the operator's name.
+
+**The generated document promised tamper-resistance that does not exist.** It told readers a row
+owned by an external authority "cannot be closed from this repository at all". Both closure
+artefacts are ordinary files in this worktree. No artefact inside a tree engineering can write will
+ever prove somebody outside it acted; what the check actually buys is that closing such a row takes
+a deliberate, separately reviewable edit naming the authority it claims. The page now says so: the
+goal is legibility of forgery in a diff, not prevention.
+
+**`f2` proved the wrong thing.** It matched the l10n KEY name and never opened the ARB, so renaming
+the key while its value stayed "The clip link is unavailable" would have reported the exact defect
+F2 names as fixed. It now resolves both keys and compares the strings a person reads.
+
+**The human-label guard watched the wrong directory.** It scanned `core/ml/review/` -- the batches
+sent OUT -- while `human_eval.py --out` defaults to `core/ml/datasets/`, which is where a returned
+label lands. A guard aimed at the wrong surface is worse than an untested one: it reports zero
+forever. It now scans both and reports the denominator, because zero from a scan that visited
+nothing is not evidence of zero.
+
+**Two authorities had been merged.** CT-1's human labels are CONTENT review; `review_import.py`
+refuses to ask whether an exercise is safe, and that refusal is load-bearing. Pointing both CT-1 and
+D1 at one clinical closure callable would have merged them inside the mechanism built to keep
+authorities apart. Separated. D1's closure now delegates to `clinical_import.validate`, which the
+repository already owns and already runs in CI -- the hand-rolled four-field check would have
+accepted a signed but stale submission that the repository's own clinical validator refuses.
+
+Also fixed: `evidence` became a tuple of paths that are checked to exist; `notes` stopped being
+free paraphrase of documents that own the narrative and became `quote=(path, fragment)` verified
+still present; a crashing predicate became a `PREDICATE_ERROR` finding instead of aborting the
+sweep; and the `TEST` authority was deleted, because the only mechanism that could express it is a
+predicate and non-SOURCE rows are forbidden predicates -- a constant whose documented meaning the
+checker rejects is a trap, not headroom.
+
+**Mutation results.** Fifteen valid kills. Five against the real tree: restoring a `resolveAll`
+API, filling the clinical submission, adding a real `c.go('/team/1')`, hand-editing the generated
+document, restoring `error.toString()` on the card. One correct survivor: a COMMENT mentioning the
+team route, which an earlier version of the dormancy predicate wrongly killed on -- the same
+prose-versus-code confusion that made the first image predicate report `programme_specs.dart` for
+using the word "training". Nine against the ledger itself, including one conjunct dropped from each
+source predicate and one authority laundered from EXTERNAL to SOURCE.
+
+Two mutations SURVIVED and were test defects, both predicted by the review adversary. Removing
+`NOT_A_DEFECT` from the terminal tuple survived because the test parametrised over that same
+tuple -- shrinking the subject shrank the test set, which is the vacuity trap this programme keeps
+finding, this time inside the fix for it. The words are now written out where deleting one fails.
+And a hard-coded return in `metric_provenance_six` carrying today's true counts survived a test
+that compared numbers, because the constant and the measurement agreed; the test now watches that
+the locator is actually called.
+
+CI ran every sibling Python suite by explicit path and did not run this one, which made the
+document's "it cannot drift" claim aspirational. It is now the first step in the job.
+
+Suites: `pytest scripts/review scripts/ml scripts/ct1` 457 passed. No Dart, `functions/` or
+`firestore.rules` changed, so `flutter test`, jest, `tsc` and the emulator are NOT RUN rather than
+quoted.

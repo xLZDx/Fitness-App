@@ -195,6 +195,14 @@ jobs:
       - name: Install pytest
         run: python -m pip install --quiet pytest
 
+      # Runs FIRST on purpose. It reconciles the project's recorded state
+      # against the tree and regenerates core/CURRENT_STATE.md to compare it
+      # byte for byte. Everything below tests whether the code works; this
+      # tests whether what we SAY about the code is still true, which is the
+      # failure that went undetected for weeks and prompted the module.
+      - name: Current-state ledger — recorded state against source
+        run: python -m pytest scripts/review/test_state_ledger.py -q
+
       - name: Label contract, baseline, builder, evaluation
         run: python -m pytest scripts/ct1/test_ct1.py -q
 
