@@ -15519,3 +15519,70 @@ synthetic payload anywhere under `core/ml/`.
 `CT-1 RETRAINING = NOT OPERATIONAL`. `CT != CD`. Unchanged by this.
 
 **Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.
+
+## N-05 = OPERATOR / PLATFORM DECISION REQUIRED
+
+Two review rounds, run independently and then adversarially, converged on the same conclusion:
+**per-account uniqueness is not the binding constraint**, so the control N-05 asks for cannot be
+built in this repository. The full disposition, with every claim carrying a `file:line`, is at
+[core/review/N05_DISPOSITION.md](core/review/N05_DISPOSITION.md).
+
+The short version, and the two facts that decide it:
+
+1. **The signed URL is a caller-agnostic bearer token.** `video_urls.ts` mints a V4 signature over
+   the bucket, object, expiry and signing identity — *"Nothing about the caller enters it."* One
+   mint serves unlimited redemptions for 20 minutes. The quota therefore meters signature MINTS,
+   not egress bytes, and **no per-account control touches redemption at all.**
+2. **There is no lifetime cap.** `users/{uid}/usage/{yyyy-mm-dd}` resets at every UTC midnight. One
+   *verified* account on the undivided 1,200/day sweeps the 2,539-object library in three days,
+   quietly, with no rotation. Requiring a real identity makes the per-identity attack slower, not
+   impossible — and it looks like a fix.
+
+All three proposed controls were broken in round 2, on the evidence:
+
+* **P1** (cumulative distinct ceiling) is structurally irreconcilable with the charge-before-sign
+  and refund invariant at `abuse_guard.ts:117-121` / `video_urls.ts:331-335`. Add at charge time and
+  a stale catalogue path becomes a permanent lifetime debit for a clip never received; add after
+  signing and the atomicity `abuse_guard.ts:64-67` exists to provide is gone. Firestore cannot
+  condition on post-`arrayUnion` cardinality, so there is no third placement. Separately, against a
+  harvester a distinct set and a plain counter are numerically identical — P1's data shape buys
+  fairness to re-watchers, not security, at ~750× the bytes on the hottest function.
+* **P2** (identity above a threshold) was blocked on client work. **That block is now cleared** by
+  this session's guest-upgrade commit. What remains is that its promise is conditionally false on
+  `credential-already-in-use` — the reinstall and second-device case — and making that path the
+  escape hatch from a refusal means complying costs the user their history.
+* **P3** (project-wide ceiling) is a Sybil-powered DoS on paying customers: the attacker's cost to
+  trip a shared ceiling equals their cost to harvest, and seventeen free uids can turn every
+  subscriber's video off until midnight UTC at a time they choose. True even if sized correctly —
+  and it cannot be sized: only `firebase_crashlytics` ships, no aggregate counter exists anywhere in
+  `functions/src`, and the real population is *"5–10 testnet users"*. The 1,000-user model in
+  `scaling.ts` is a stated **target** and cites no source. The salvageable part is the alarm, not
+  the brake.
+
+**The exposure is not the money.** Full extraction costs SPTR $0.077–$0.31. The two real exposures
+are the licence condition — which caps no volume, only permanence — and amplification, which none of
+P1/P2/P3 addresses.
+
+**Refused, and staying refused:** device fingerprinting, install-ID quotas, IP reputation stores and
+anything keyed on `instanceIdToken`. Unavailable in `firebase-functions@6.6.0`, contradicted by
+`public/privacy.html:87-88,93` because every such control must survive `deleteAccount` to work, and
+already refused on this repository's own record at `index.ts:462-465` for better reasons than
+effectiveness.
+
+**One adjacent finding is left open on purpose.** `createCheckoutSession` accepts anonymous callers
+for real money **including lifetime**, while `startFreeTrial` rejects them for a free trial; and
+`quotaFor` never reads tier, so that paying subscriber runs at 1/8. Since the prefetch is
+premium-gated, **the anonymous 150-objects/day ceiling exists exclusively for anonymous users who
+have paid.** Not fixed here: both candidate fixes are the kind of decision `abuse_guard.ts:208-213`
+already assigned to the operator, and the third (a tier custom claim) adds a mechanism with
+propagation semantics. Three options with their costs are written out in the disposition.
+
+**What is actually left for a person:** App Check enforcement (measurable now that every callable
+reports attestation, but currently UNMEASURED — enforcing before measuring locks out real installs);
+product identity policy for anonymous sign-in; and platform cost controls, including whether a GCP
+budget alert exists at all, which is **UNKNOWN because it is not in this repository**.
+
+Anything else built here would be a control that looks like a fix and is not — which is the specific
+failure mode N-05 was opened to avoid.
+
+**Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.
