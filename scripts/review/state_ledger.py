@@ -124,6 +124,62 @@ def needs_closure(state: str) -> bool:
 
 CURRENT_STATE_DOC = REPO / "core" / "CURRENT_STATE.md"
 
+#: The residual marker. Prose that records executable work still to be done
+#: must write `RESIDUAL[<item>]`, naming a row in this ledger.
+#:
+#: Twice in one session a real defect sat unfixed in document PROSE while every
+#: status table said the work was done -- "the flow still does not handle it",
+#: and two operator items recorded only in decision-log narrative. The tempting
+#: response is to scan prose for words like *unfixed*, *still* or *open*. That
+#: was rejected: those words appear constantly in correct historical narration
+#: ("this used to be broken, and still reads oddly"), so the guard would be
+#: mostly false positives, and a guard people learn to ignore protects nothing.
+#:
+#: This is an AUTHORING rule with a narrow check instead. It cannot find an
+#: unmarked residual -- nothing can, short of understanding English -- but it
+#: makes the marked ones impossible to lose, and gives a writer one obvious
+#: thing to type. The convention is cheap precisely because it does not try to
+#: be clever.
+RESIDUAL_MARKER = re.compile(r"RESIDUAL\[([A-Za-z0-9._-]+)\]")
+
+#: Documents that may carry residual markers.
+RESIDUAL_DOCS = (
+    "core/DECISION_LOG.md",
+    "core/review/N05_DISPOSITION.md",
+    "core/review/N07_TEAM_ACTIVATION_GATE.md",
+    "core/ml/SCANNER_PROVENANCE.md",
+    "core/ml/METRIC_PROVENANCE.md",
+)
+
+
+def residual_markers(docs=None, repo=None) -> dict[str, list[str]]:
+    """Every `RESIDUAL[id]` in the governed documents, id -> where it appears."""
+    root = repo or REPO
+    found: dict[str, list[str]] = {}
+    for rel in (docs or RESIDUAL_DOCS):
+        path = root / rel
+        if not path.exists():
+            continue
+        body = path.read_text(encoding="utf-8", errors="replace")
+        for m in RESIDUAL_MARKER.finditer(body):
+            found.setdefault(m.group(1), []).append(rel)
+    return found
+
+
+def untracked_residuals(docs=None, repo=None) -> dict[str, list[str]]:
+    """Markers naming something the ledger does not track.
+
+    An empty result is the correct state when nothing is outstanding, and that
+    is deliberately not treated as suspicious -- unlike a subject-set that went
+    empty by accident, an empty residual set is a claim the ledger itself
+    independently checks row by row.
+    """
+    tracked = {r.item for r in LEDGER}
+    return {
+        item: where for item, where in residual_markers(docs, repo).items()
+        if item not in tracked
+    }
+
 
 # --------------------------------------------------------------- file helpers
 
@@ -986,17 +1042,25 @@ def check() -> Result:
         # -- the state itself ----------------------------------------------
         if row.predicate is not None:
             outcome = _safe(result, row, "predicate", row.predicate)
-            if outcome is None:
-                continue
-            computed, detail = outcome[0]
-            if computed != row.state:
-                kind = ("STALE" if row.state not in TERMINAL_STATES
-                        and computed in TERMINAL_STATES else "FALSE_STATE")
-                result.findings.append(Finding(
-                    row.item, kind,
-                    f"recorded {row.state}, source says {computed} -- {detail}",
-                ))
-            result.checked.append((row.item, computed, detail))
+            # A crashing stage must not skip the ones after it. The first
+            # version `continue`d here and after the invariant, and the
+            # closure drill caught what that costs: pointing REPO at a
+            # fixture tree made `n07_still_dormant` raise on a missing file,
+            # the row bailed out, and the AUTHORITY_SPOKE check below never
+            # ran at all. A checker that stops checking on the first error,
+            # while still reporting the rows it did reach, is the quiet
+            # half-coverage this whole module exists to prevent.
+            if outcome is not None:
+                computed, detail = outcome[0]
+                if computed != row.state:
+                    kind = ("STALE" if row.state not in TERMINAL_STATES
+                            and computed in TERMINAL_STATES else "FALSE_STATE")
+                    result.findings.append(Finding(
+                        row.item, kind,
+                        f"recorded {row.state}, source says {computed} "
+                        f"-- {detail}",
+                    ))
+                result.checked.append((row.item, computed, detail))
 
         for cited in row.evidence:
             if not (REPO / cited).exists():
@@ -1011,16 +1075,16 @@ def check() -> Result:
 
         if row.invariant is not None:
             outcome = _safe(result, row, "invariant", row.invariant)
-            if outcome is None:
-                continue
-            holds, detail = outcome[0]
-            if not holds:
-                result.findings.append(Finding(
-                    row.item, "PREMISE_BROKEN",
-                    f"{row.state} rests on a condition that no longer holds "
-                    f"-- {detail}",
-                ))
-            result.checked.append((row.item, f"invariant:{holds}", detail))
+            if outcome is not None:
+                holds, detail = outcome[0]
+                if not holds:
+                    result.findings.append(Finding(
+                        row.item, "PREMISE_BROKEN",
+                        f"{row.state} rests on a condition that no longer "
+                        f"holds -- {detail}",
+                    ))
+                result.checked.append(
+                    (row.item, f"invariant:{holds}", detail))
 
         # -- the closing authority, in BOTH directions ----------------------
         #
@@ -1045,23 +1109,31 @@ def check() -> Result:
                 ))
         if row.closure is not None:
             outcome = _safe(result, row, "closure", row.closure)
-            if outcome is None:
-                continue
-            spoken, detail = outcome[0]
-            if needs_closure(row.state) and not spoken:
-                result.findings.append(Finding(
-                    row.item, "UNAUTHORISED_CLOSURE",
-                    f"{row.state} without {row.authority} authority -- {detail}",
-                ))
-            elif not needs_closure(row.state) and spoken:
-                result.findings.append(Finding(
-                    row.item, "AUTHORITY_SPOKE",
-                    f"the {row.authority} authority has acted, and this row "
-                    f"still says {row.state} -- {detail}. Restate it; a row "
-                    "claiming work remains after it was done is the exact "
-                    "failure this ledger exists to catch.",
-                ))
-            result.checked.append((row.item, f"closure:{spoken}", detail))
+            if outcome is not None:
+                spoken, detail = outcome[0]
+                if needs_closure(row.state) and not spoken:
+                    result.findings.append(Finding(
+                        row.item, "UNAUTHORISED_CLOSURE",
+                        f"{row.state} without {row.authority} authority "
+                        f"-- {detail}",
+                    ))
+                elif not needs_closure(row.state) and spoken:
+                    result.findings.append(Finding(
+                        row.item, "AUTHORITY_SPOKE",
+                        f"the {row.authority} authority has acted, and this "
+                        f"row still says {row.state} -- {detail}. Restate it; "
+                        "a row claiming work remains after it was done is the "
+                        "exact failure this ledger exists to catch.",
+                    ))
+                result.checked.append((row.item, f"closure:{spoken}", detail))
+
+    for item, where in sorted(untracked_residuals().items()):
+        result.findings.append(Finding(
+            item, "UNTRACKED_RESIDUAL",
+            f"prose in {where} marks RESIDUAL[{item}], which no ledger row "
+            "tracks. Either add the row or, if the sentence is historical "
+            "narration rather than outstanding work, drop the marker.",
+        ))
     return result
 
 

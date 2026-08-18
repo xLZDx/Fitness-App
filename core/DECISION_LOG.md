@@ -16448,3 +16448,79 @@ errors; `pytest scripts/review scripts/ml scripts/ct1` 457. `functions/` and `fi
 unchanged, so jest, `tsc` and the Firestore emulator are reported not re-run rather than quoted.
 
 Push remains NOT PERFORMED. 88 commits ahead of `origin/formcoach/gates-a-c`, 0 behind.
+
+## Correction, decision packages, and a promise the code could not keep
+
+**Correction first, because it is mine.** The previous entry said of the App Check attested share:
+"There is no local read path and there cannot be one." The second clause is right and the first is
+wrong. `functions/package.json:10` defines `"logs": "firebase functions:log"`, and
+`scripts/dev/debug_daemon.ps1:159` already polls it on a timer. A local read path exists; what does
+not exist is local DATA. The accurate statement is that the attested share has no local aggregation
+and no on-device source, but retrieving it is tooling-complete today. That narrows the item rather
+than moving it: the blocker was never "someone must build a measurement", it is field traffic.
+
+**And the narrowing goes further than that.** The measurable population today is 5-10 Firebase App
+Distribution installs, and `functions/src/scaling.ts:86-91` records that Play Integrity attests only
+Play-distributed builds -- an App Distribution APK "attests as a stranger". So measuring now returns
+an attested share near zero that says nothing about a Play release. The real precondition for App
+Check enforcement is *ship through Play, accumulate real installs, then measure* -- materially
+larger than "currently UNMEASURED" conveyed, and the single most useful thing the audit produced.
+
+**N-05 §7 is now a decision package.** An audit scored the previous version at three of twenty-four
+required fields present: it enumerated three levers and gave an operator no privacy impact, no cost,
+no reversibility and no sentence to say. It now carries four options -- the three levers plus
+declining to pull any of them, which a package offering only actions cannot omit -- each with threat
+addressed, threat NOT addressed, privacy, user impact, cost, reversibility, production dependency,
+and a literal authorising sentence. Four facts were pulled forward from source rather than left 200
+lines away: the env-flip reversibility, the App-Distribution-attests-as-stranger problem, the
+measured "one verified account sweeps the library in three days" caveat that stops option 2 looking
+like a fix, and the fact that whether a budget alert exists is UNKNOWN because it is console state.
+The recommendation is 3a now, 4 as the standing position, 1 staged at Play launch, 2 not
+recommended. Nothing was decided here; the disposition is unchanged.
+
+**The scanner pipeline has a package too, and one measurement settles its scope.** 1,741 + 90,817 =
+92,558 -- the corpora are the entire file count, while the two trainers that answer
+`training_code_commit` are 13,884 bytes together. Value per byte differs by five orders of magnitude
+between source and corpus, so any option treating the tree as indivisible pays corpus cost for
+source value. Recommendation: source-only, recovery-labelled, in one repository with the recovery
+commit as the ROOT so forward work is structurally after it -- corpora content-addressed by
+manifests already committed here. Disqualifying condition recorded rather than assumed: any snapshot
+is disqualified unless the recovery marker is machine-readable, because
+`dataset_registry._last_commit_touching` derives `source_commit` from `git log` and would return the
+recovery commit as the one that produced the file. A commit MESSAGE does not fix that; nothing reads
+commit messages.
+
+Two operator decisions were surfaced that had not been stated: where the corpus physically lives
+(every option's "disk dies tomorrow" answer is identical -- a local repository is not a backup), and
+whether the corpora may leave this machine at all. The second can override the first:
+`dataset/` is 1,741 web-crawled photos with UNKNOWN licence and `dataset_v2/` is CC BY 4.0 with
+attribution obligations on redistribution.
+
+**A promise the code could not keep.** `RECOVERY_CONTRACT` said the first commit after `git init`
+satisfies its COMMIT item, and that ML-2a for v1 was "a directory and a commit". Verified false:
+`training_run._commit_exists` resolves a sha with `git -C <this repository>`, so a commit made in
+the pipeline directory does not exist as far as `validate` is concerned and `training_code_commit`
+is rejected exactly as before. Corrected in the contract itself rather than by building the schema
+change nobody authorised. This is the stale-record defect again, in a machine-readable artefact this
+time.
+
+**A defect in the checker, found by its own drill.** The external-closure drill points `REPO` at a
+fixture tree, which made `n07_still_dormant` raise on a missing file -- and `check()` `continue`d on
+a failed stage, so the AUTHORITY_SPOKE evaluation below it never ran. A checker that stops checking
+at the first error while still reporting the rows it reached is exactly the quiet half-coverage this
+module exists to prevent. Each stage is now independent; mutation-proven by restoring the `continue`
+and watching the drill fail.
+
+**The prose-residual rule.** Twice this session a real defect sat in document prose while every
+status table said the work was done. The tempting response -- scan prose for "unfixed", "still",
+"open" -- was rejected by measurement of its own false-positive rate: those words appear constantly
+in correct historical narration, including in this very entry, so the guard would be mostly noise
+and a guard people learn to ignore protects nothing. Instead there is an authoring convention:
+prose recording outstanding executable work writes `RESIDUAL[<item>]`, naming a ledger row, and the
+checker fails any marker no row tracks. It cannot find an UNMARKED residual and does not claim to;
+it makes marked ones impossible to lose and gives a writer one obvious thing to type. Proven on
+fixtures, wired-in proven separately, and end-to-end proven by putting a real marker in a real
+governed document and watching the suite go red.
+
+Suites: `pytest scripts/review scripts/ml` 241 passed. No Dart, `functions/` or `firestore.rules`
+changed in this gate, so `flutter test`, jest, `tsc` and the emulator are NOT RUN rather than quoted.

@@ -705,3 +705,243 @@ def test_the_metadata_tool_being_local_breaks_the_premise(monkeypatch,
     assert sl.metadata_tool_is_not_local()[0]
     (tmp_path / "attach_metadata.py").write_text("x", encoding="utf-8")
     assert not sl.metadata_tool_is_not_local()[0]
+
+
+# =========================================================== the closure drill
+#
+# Every AUTHORITY_SPOKE test above this line replaces the closure callable with
+# a lambda. That proves `check()` branches; it does not prove the real closure
+# predicates can ever return True, and this repository has already been bitten
+# once by exactly that gap -- a mutation restoring the original auth defect
+# survived twelve tests because all twelve ran against a mock.
+#
+# So these drills build REAL artefacts, in a temporary tree, and run the REAL
+# closure predicates against them.
+#
+# Safety, and it is not decoration: no fixture here is ever written under the
+# repository. Each one lives in pytest's `tmp_path` with `sl.REPO` repointed at
+# it, and each carries FIXTURE in the field a human name would occupy. A fake
+# authority artefact committed into the real tree would close a clinical row on
+# a reviewer who does not exist, which is the single thing this whole mechanism
+# exists to make impossible.
+
+def _fixture_submission():
+    """A submission the repository's own clinical validator accepts.
+
+    Built at call time rather than checked in as a file: `catalogue_sha256`
+    must match the CURRENT catalogue or `validate` rejects it as stale, and a
+    frozen fixture would rot into testing the staleness path instead of the
+    acceptance path.
+    """
+    sys.path.insert(0, str(sl.REPO / "scripts" / "review"))
+    import clinical_import as ci
+
+    return {
+        "schema_version": ci.SCHEMA_VERSION,
+        "handoff_commit": "0" * 40,
+        "catalogue_sha256": ci.catalogue_digest(),
+        "reviewer_name": "FIXTURE ONLY -- not a real reviewer",
+        "reviewer_credentials": "FIXTURE ONLY",
+        "reviewer_authority": "FIXTURE ONLY",
+        "reviewed_at": "2026-08-18T12:00:00+00:00",
+        "rows": [{"item_id": ci._rows()[0]["id"], "disposition": "ACCEPT"}],
+    }
+
+
+def _repo_at(tmp_path, monkeypatch):
+    monkeypatch.setattr(sl, "REPO", tmp_path)
+    return tmp_path
+
+
+def test_the_fixture_is_one_the_real_validator_accepts(tmp_path, monkeypatch):
+    """The control for the three drills below.
+
+    Without it, each of them could be passing because the fixture is malformed
+    in some way that happens to produce the expected finding -- and a drill
+    that cannot tell a valid submission from a broken one proves nothing about
+    what happens when a real one arrives.
+    """
+    sub = _fixture_submission()
+    worklist = tmp_path / "core" / "review" / "worklist"
+    worklist.mkdir(parents=True)
+    (worklist / "submission.json").write_text(json.dumps(sub), encoding="utf-8")
+
+    _repo_at(tmp_path, monkeypatch)
+    spoken, detail = sl.clinical_authority_returned()
+    assert spoken, detail
+
+
+def test_the_fixture_never_touches_the_real_worklist():
+    """The submission in the repository must still be an unfilled template.
+
+    Stated as a test rather than a comment because the failure it guards
+    against -- a fixture written to the real path -- would close D1 silently
+    and look like ordinary test scaffolding in a diff.
+    """
+    real = (sl.REPO / "core" / "review" / "worklist" / "submission.json")
+    body = json.loads(real.read_text(encoding="utf-8"))
+    for field in ("reviewer_name", "reviewer_credentials", "reviewer_authority"):
+        assert not str(body.get(field, "")).strip(), (
+            f"{field} is filled in the REAL submission. If a clinician truly "
+            "returned work this is correct and D1 must be restated; if a test "
+            "wrote it, a fictional reviewer is one commit from closing a "
+            "clinical row"
+        )
+
+
+def test_a_returned_clinical_review_makes_the_stale_row_fail(tmp_path,
+                                                             monkeypatch,
+                                                             ledger):
+    """D1 says EXTERNAL_AUTHORITY_REQUIRED. The clinician returns. The row is
+    now wrong, and nothing about the source tree changed to say so."""
+    sub = _fixture_submission()
+    worklist = tmp_path / "core" / "review" / "worklist"
+    worklist.mkdir(parents=True)
+    (worklist / "submission.json").write_text(json.dumps(sub), encoding="utf-8")
+    _repo_at(tmp_path, monkeypatch)
+
+    # The ledger is untouched -- D1 still carries its real recorded state.
+    result = sl.check()
+
+    spoke = [f for f in result.findings
+             if f.item in ("D1", "H3") and f.kind == "AUTHORITY_SPOKE"]
+    assert spoke, [f"{f.item} [{f.kind}]" for f in result.findings]
+    assert "Restate it" in spoke[0].detail
+
+
+def test_returned_human_labels_make_the_ct1_row_fail(tmp_path, monkeypatch,
+                                                     ledger):
+    """CT-1's authority is a returned CONTENT review, and it closes by the
+    labels existing -- so the drill is a label file, not a submission."""
+    for root in sl.HUMAN_LABEL_ROOTS:
+        d = tmp_path / root
+        d.mkdir(parents=True, exist_ok=True)
+    (tmp_path / sl.HUMAN_LABEL_ROOTS[1] / "returned.json").write_text(
+        '{"source": "HUMAN_REVIEWED_QA_LABEL"}', encoding="utf-8"
+    )
+    _repo_at(tmp_path, monkeypatch)
+
+    result = sl.check()
+
+    kinds = {(f.item, f.kind) for f in result.findings}
+    assert ("CT1-human-labels", "AUTHORITY_SPOKE") in kinds, kinds
+    # And the invariant must ALSO object, because its premise -- that the
+    # count is zero -- stopped being true.
+    assert ("CT1-human-labels", "PREMISE_BROKEN") in kinds, kinds
+
+
+def test_a_recorded_product_decision_makes_the_dormant_row_fail(tmp_path,
+                                                                monkeypatch,
+                                                                ledger):
+    """N-07 is DORMANT on engineering's observation that nothing calls it. If
+    the operator records an actual decision, the row is no longer the whole
+    truth and must be restated rather than left standing."""
+    decisions = tmp_path / "core" / "decisions"
+    decisions.mkdir(parents=True)
+    (decisions / "N-07.md").write_text(
+        "FIXTURE ONLY. Not an operator decision.", encoding="utf-8"
+    )
+    _repo_at(tmp_path, monkeypatch)
+
+    result = sl.check()
+
+    kinds = {(f.item, f.kind) for f in result.findings}
+    assert ("N-07", "AUTHORITY_SPOKE") in kinds, kinds
+
+
+def test_no_operator_decision_records_exist_in_the_real_tree():
+    """The counterpart to the worklist assertion.
+
+    `core/decisions/` is the path the closure checks read. If a file appears
+    there, an operator item is being closed -- which is legitimate when a
+    person wrote it and a forgery when a test did. Either way it must not
+    happen unnoticed.
+    """
+    decisions = sl.REPO / "core" / "decisions"
+    present = sorted(p.name for p in decisions.glob("*.md")) \
+        if decisions.exists() else []
+    assert not present, (
+        f"decision records exist: {present}. If an operator wrote these, the "
+        "matching ledger rows must be restated and this assertion updated in "
+        "the same commit. If anything else wrote them, that is the forgery "
+        "this mechanism is built to make visible."
+    )
+
+
+# ============================================ the residual-marker convention
+
+def test_no_marked_residual_is_untracked():
+    """The live check. Empty is the correct answer when nothing is
+    outstanding, and it is honest here in a way an empty subject-set usually
+    is not: every ledger row is independently checked, so 'no untracked
+    residuals' is not the only thing standing between this suite and a green
+    run over nothing."""
+    assert sl.untracked_residuals() == {}
+
+
+def test_a_marker_naming_an_unknown_item_is_caught(tmp_path):
+    doc = tmp_path / "core" / "DECISION_LOG.md"
+    doc.parent.mkdir(parents=True)
+    doc.write_text(
+        "The importer still drops the second page. RESIDUAL[importer-paging]\n",
+        encoding="utf-8",
+    )
+    untracked = sl.untracked_residuals(
+        docs=("core/DECISION_LOG.md",), repo=tmp_path
+    )
+    assert untracked == {"importer-paging": ["core/DECISION_LOG.md"]}
+
+
+def test_a_marker_naming_a_tracked_item_is_accepted(tmp_path):
+    """The control. Without it the test above could pass because the marker
+    regex matches nothing at all, which would make the guard useless in the
+    one direction that matters."""
+    doc = tmp_path / "core" / "DECISION_LOG.md"
+    doc.parent.mkdir(parents=True)
+    doc.write_text("Still open. RESIDUAL[N-05]\n", encoding="utf-8")
+    assert sl.residual_markers(("core/DECISION_LOG.md",), tmp_path) == {
+        "N-05": ["core/DECISION_LOG.md"]
+    }
+    assert sl.untracked_residuals(("core/DECISION_LOG.md",), tmp_path) == {}
+
+
+def test_the_marker_does_not_fire_on_ordinary_prose(tmp_path):
+    """Why this is a marker and not a word search.
+
+    The sentence below is exactly the shape that made prose-scanning
+    unworkable: it contains 'still', 'unfixed' and 'open', and it is correct
+    historical narration about work that IS done. A guard that flags it is a
+    guard that gets switched off.
+    """
+    doc = tmp_path / "core" / "DECISION_LOG.md"
+    doc.parent.mkdir(parents=True)
+    doc.write_text(
+        "The row was recorded as still open and unfixed for weeks after the "
+        "code landed, which is the failure this mechanism exists to prevent.\n",
+        encoding="utf-8",
+    )
+    assert sl.residual_markers(("core/DECISION_LOG.md",), tmp_path) == {}
+
+
+def test_the_governed_document_list_is_not_empty():
+    assert sl.RESIDUAL_DOCS
+    for rel in sl.RESIDUAL_DOCS:
+        assert (sl.REPO / rel).exists(), rel
+
+
+def test_check_reports_an_untracked_residual(monkeypatch, ledger):
+    """Wiring, proven separately from the function.
+
+    The fixture tests above prove `untracked_residuals` reads markers
+    correctly. This proves `check()` actually consults it -- the two halves
+    fail differently, and this repository has already been caught once
+    believing a stub proved the real thing.
+    """
+    monkeypatch.setattr(
+        sl, "untracked_residuals",
+        lambda *a, **k: {"importer-paging": ["core/DECISION_LOG.md"]},
+    )
+    result = sl.check()
+    assert not result.ok
+    bad = [f for f in result.findings if f.kind == "UNTRACKED_RESIDUAL"]
+    assert bad and bad[0].item == "importer-paging", result.findings

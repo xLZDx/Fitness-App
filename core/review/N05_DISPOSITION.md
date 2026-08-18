@@ -233,20 +233,87 @@ account that can be signed back into. The three options, with their costs, as or
 
 ## 7. The decision that is actually left
 
-Nothing in this repository can make an anonymous uid cost something. Three levers exist and all
-three are outside it:
+Nothing in this repository can make an anonymous uid cost something. Four options exist; three are
+levers and the fourth is declining to pull any of them. They are **independent** — different
+systems, different costs, different blast radii — and can be taken in any order or not at all.
 
-1. **App Check enforcement.** `APP_CHECK_ENFORCED` and `APP_CHECK_ENFORCED_VIDEO` both default off.
-   All callables now measure attestation (`noteAppCheck`), so the production attested share is
-   measurable — but it is **currently UNMEASURED**, and enforcing before measuring locks out every
-   unattested real install. This is the one lever that binds a caller to an app instance, and it is
-   a deployment decision.
-2. **Product identity policy.** Whether anonymous sign-in keeps unrestricted video access at all.
-   Anonymous sign-in is a first-class login button in this app; removing video from it is a product
-   decision, and the repository has said so since the divisor was introduced.
-3. **Platform cost controls.** A GCP budget alert, and whether a global brake is ever acceptable
-   given §4's DoS argument. Neither lives in this codebase.
+An audit of the previous version of this section found it was an enumeration of levers rather than
+a package: of the eight fields an operator needs per option, fifteen of twenty-four were absent.
+What follows is the same three levers with nothing added to the threat model and nothing new
+proposed, restated so the decision can be taken without a follow-up question.
 
-Until one of those is decided, the honest statement is the one at the top of this file. Anything
-else in the repository would be a control that looks like a fix and is not — which is the specific
-failure mode N-05 was opened to avoid.
+---
+
+### Option 1 — turn on App Check enforcement
+
+| | |
+|---|---|
+| **Threat addressed** | Binds a caller to an attested app instance, so uid rotation from a script that is not the real app binary stops working. This is the only lever that touches the mechanism §2.2 describes. |
+| **Threat NOT addressed** | Nothing about redemption of an already-minted URL — a signed URL is a bearer token and stays one (§2.1). Nor a scripted attacker driving the genuine Play-installed binary. |
+| **Privacy impact** | None new. App Check is already a declared Google processor in the published policy (`public/privacy.html:84`), and no additional personal data is collected. |
+| **User impact** | Every unattested install is refused outright. That includes the operator's own phone: Play Integrity attests only Play-distributed builds, and this project ships testers through Firebase App Distribution, which is not Play (`functions/src/scaling.ts:86-91`). A device without Play Services ships no token at all and `activate()` is caught and continues (`mobile/lib/main.dart:277-280`), so it fails closed under enforcement. |
+| **Cost** | No engineering work. Two environment variables and a redeploy. |
+| **Reversibility** | Complete, in one redeploy. `envFlag` is strict equality against the literal `"true"` (`scaling.ts:113`), so unsetting the variable — or setting it to anything else, including `"1"` or `"TRUE"` — turns it off. |
+| **Production dependency** | Larger than "measure first" suggests. The measurable population today is 5–10 App Distribution installs that attest as strangers *by design*, so measuring now returns a near-zero attested share that says nothing about a Play release. The real precondition is: **ship through Google Play, accumulate real installs, then measure.** |
+| **Staging note** | There is no combination that enforces the cheap functions and not the expensive ones: `APP_CHECK_ENFORCED_VIDEO` inherits `APP_CHECK_ENFORCED` (`scaling.ts:118-124`). Video-only is a valid first stage; the reverse is not available. |
+| **To authorize** | *"Set `APP_CHECK_ENFORCED_VIDEO=true` in the functions environment and redeploy. I accept that unattested installs, including App Distribution testers, will be refused."* |
+
+### Option 2 — change the product policy on anonymous video access
+
+| | |
+|---|---|
+| **Threat addressed** | Makes each uid cost a real identity, so harvesting the library needs many real accounts rather than many free ones. |
+| **Threat NOT addressed** | It does not solve the problem, and this matters: §2.2 measured that **one verified account sweeps the library in three days**. Requiring identity makes the attack slower and quieter, not impossible — *and it looks like a fix*, which is the specific failure mode N-05 was opened to avoid. |
+| **Privacy impact** | The largest of the three. It converts an anonymous product into an identified one for the video surface. |
+| **User impact** | Unsized, and unsizable here. Anonymous sign-in is a first-class login button. The app ships no analytics — `firebase_crashlytics` is the only Firebase telemetry package, and the published policy commits to *"no third-party analytics or attribution SDK"* (`public/privacy.html:81`) — so the anonymous share of the live base cannot be obtained from this repository or the app. |
+| **Cost** | Client and backend work, plus copy in two locales. Not priced further, because the option is not recommended. |
+| **Reversibility** | Worst of the three, and the only one that is not clean. Accounts created under a stricter policy do not un-create themselves when it relaxes. |
+| **Production dependency** | None blocking. The guest-upgrade collision that would have made this actively harmful is now handled (§4/P2), so the option is at least safe to consider, which it previously was not. |
+| **To authorize** | *"Anonymous accounts lose video access. Accept the sign-up friction and the loss of the guest trial for video."* |
+
+### Option 3 — configure platform cost controls
+
+Two instruments, deliberately separated because §4 concluded they must be: the alarm and the brake
+are not the same decision and should not be taken together.
+
+| | **3a — budget alert** | **3b — global brake** |
+|---|---|---|
+| **Threat addressed** | Nobody noticing a $44,000 day (§3). | The spend itself. |
+| **Threat NOT addressed** | Does not stop anything; it tells a person. | — |
+| **Privacy impact** | None. | None. |
+| **User impact** | **Zero.** | Severe: a Sybil-powered denial of service on paying customers, which is why §4 rejects it. Cheap for an attacker to trigger, and the victims are subscribers. |
+| **Cost** | Possibly no code at all — a console setting. | Engineering plus the above. |
+| **Reversibility** | Trivial. | Trivial to remove, not to undo the outage. |
+| **Production dependency** | Whether one already exists is **UNKNOWN**: it is console state, outside this repository. First action is to go and look. | — |
+| **To authorize** | *"Configure a GCP budget alert at $X/day for the project. Notification only, no automatic action."* | Not recommended; see §4. |
+
+### Option 4 — accept the residual risk and revisit at Play launch
+
+Stated explicitly because a package offering only actions is not a decision package. §3 prices full
+extraction of the licensed library at **$0.077–$0.31**. On that number, accepting the risk while the
+user base is 5–10 testers is defensible, and it is the only option whose preconditions are all
+already met.
+
+| | |
+|---|---|
+| **Threat addressed** | None. |
+| **Cost** | The priced exposure above, plus whatever the library is worth to a competitor, which is a commercial judgement engineering cannot make. |
+| **Reversibility** | Total — no code, no policy, no user impact. |
+| **To authorize** | *"Accept the residual risk for now. Revisit N-05 when the app ships through Google Play and the attested share can be measured on real installs."* |
+
+---
+
+### Recommended default
+
+**Option 3a now, Option 4 as the standing position, Option 1 staged at Play launch, Option 2 not
+recommended.**
+
+3a is free, reversible, has zero user impact, needs no code and no measurement — and the fact that
+nobody currently knows whether an alert exists is itself the argument for going to look. 4 is the
+honest position while the user base is small and the priced exposure is cents. 1 becomes decidable
+once Play distribution makes the attested share mean something, and should go video-first. 2 buys
+less than it appears to and costs the most, on the repository's own measurement.
+
+None of this is engineering's to enact. Every option above is a deployment, a console action, or a
+product policy, and the disposition at the top of this file is unchanged: **`N-05 = OPERATOR /
+PLATFORM DECISION REQUIRED`.**

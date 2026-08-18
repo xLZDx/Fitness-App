@@ -118,6 +118,91 @@ That stays `UNKNOWN`. A recovered environment filed as though it were the origin
 the substitution this document exists to prevent, so the file says so in its own header rather than
 relying on this paragraph being read.
 
+## Where the pipeline should live — decision package (2026-08-18)
+
+The row above says the pipeline is unversioned and that where it lives is the operator's. That was
+true and unhelpful: it named an owner without giving them anything to decide. This is the package.
+
+### The measurement that settles the scope
+
+1,741 + 90,817 = **92,558** — the two image corpora account for the entire file count and
+effectively all of the ~2 GB. The two trainers that would answer `training_code_commit` are 6,656
+and 7,228 bytes. **Value per byte differs by about five orders of magnitude between the source and
+the corpus**, so any option that treats the tree as one indivisible unit pays corpus cost to
+preserve source value.
+
+### The options, and why three of them lose
+
+| | Preserves | Loses | Cost | Reversibility | If the disk dies tomorrow |
+|---|---|---|---|---|---|
+| **A** snapshot everything + new clean repo | all bytes, contradiction frozen intact | simplicity; two repos with a link nothing enforces | ~4 GB on disk; 90k-file git operations forever | high | **still lost** — a local `git init` is not a backup |
+| **B** source-only + corpus content-addressed | the 13,884 bytes that answer the commit question; corpus by manifest | corpus BYTES, unless separately replicated | sub-MB repo | highest | source survives; corpus survives only at the external location |
+| **C** Git LFS for the whole tree | all bytes | operational sanity; adds a failure mode where missing LFS objects read as a tampered corpus | highest; no LFS configured anywhere today | **lowest** — de-LFS-ing means history rewrite | no better than D without a remote |
+| **D** leave in place, rely on pins | the *claims*, rigorously | every trainer, both corpora, `metadata.json`, `train_v2.log`, v2's artefact | zero | trivial as a decision, **irreversible in consequence** | v1 becomes a shipped binary with a recipe nobody can run |
+
+### Recommendation: B's scope with A's labelling, in one repository
+
+A source-only, recovery-labelled snapshot **at** the pipeline root, corpora content-addressed
+externally, and any forward work committed on top of the recovery root rather than in a separate
+"clean" repo — so that every later commit is structurally, unforgeably *after* the recovery, which
+is the ordering this document already demands.
+
+Three things make it dominate rather than merely appeal:
+
+* It is the only shape whose **structure states the truth**. The source was recovered and can be
+  versioned; the corpus was never lost, is unversioned, and is addressed by manifests already
+  committed here. A and C imply the bytes travel with a clone.
+* It **generalises an accepted precedent** instead of inventing one: `artifact_in_repository: false`
+  is already load-bearing in `MODEL_REGISTRY.json` for exactly this reason.
+* It is the **cheapest to reverse** and forecloses nothing; a sub-MB repo can be upgraded later,
+  whereas C cannot be undone without rewriting history.
+
+### The disqualifying condition, stated so it is not skipped
+
+**Any snapshot design is disqualified unless the recovery marker is machine-readable.**
+`dataset_registry._last_commit_touching` derives `source_commit` from `git log -1 -- <path>`. Point
+that at a snapshot repository and it returns the *recovery* commit as the commit that produced the
+file — precisely the substitution this document forbids. A `RECOVERY:` commit message does not fix
+it, because nothing reads commit messages. The marker has to be a tracked file that tooling
+consults before it consults `git log`.
+
+### What the operator must decide — engineering cannot
+
+**1. Where the corpus physically lives, and who keeps it alive.** Every option's "disk dies
+tomorrow" answer collapses to the same sentence: a local repository is not a backup. Until a second
+physical location exists, choosing between A/B/C/D is choosing a storage format for data that has
+one copy.
+
+**2. Whether the corpora may leave this machine at all — and this can override decision 1.**
+`dataset/` is *"1741 web-crawled photos"* with licence UNKNOWN. `dataset_v2/` is *"55,466 crops from
+CC BY 4.0 Roboflow datasets"*, which is attributable but carries attribution obligations on
+redistribution. Pushing either to a hosted remote is a licensing question with legal exposure, not
+an engineering one. If the crawled images may not leave, the answer narrows to *source-only repo,
+corpus stays local, and the single-copy risk is accepted* — and that acceptance must be recorded as
+a decision rather than arrived at by default.
+
+**3. Whether the scanner programme continues at all.** Both models are useless on real gym photos —
+historical top-3 `0/18`, reproduced `1/18`. If v1 ships as-is and there is no v3, the forward half
+of the recommendation is unjustified engineering and the correct scope is *preserve the evidence,
+do not build a training platform*. The preservation half is correct under either answer.
+
+### One correction this package forced
+
+`RECOVERY_CONTRACT` used to say the first commit after `git init` satisfies the COMMIT item, and
+that ML-2a for v1 was "a directory and a commit". Both were wrong.
+`training_run._commit_exists` resolves a sha with `git -C <this repository>`, so a commit made in
+the pipeline directory does not exist as far as `validate` is concerned, and `training_code_commit`
+is rejected exactly as before. Closing it needs the commit **and** a repo-qualified
+`training_code_commit`, which is a schema change nobody has authorised. The contract now says so.
+
+### A migration hazard, pre-recorded
+
+`test_the_pipeline_is_still_not_a_git_repository` is `@needs_pipeline` and therefore **skips on
+CI**, while `test_the_pin_is_dated` asserts `is_git_repository is False` everywhere. A `git init`
+turns the suite red asymmetrically: green on CI, failing only on the one machine that holds the
+directory. The pin and the registry must be updated in the *same* change as any snapshot, or the
+repository asserts something false for the length of the gap.
+
 ## v1 reproducibility: ATTEMPTED, and the result is METRIC_REPRODUCIBLE
 
 Run 2026-08-18 on this machine. The recovered trainer was copied and **exactly one

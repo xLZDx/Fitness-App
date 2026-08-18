@@ -301,8 +301,11 @@ RECOVERY_CONTRACT: dict[str, Any] = {
             "state": "MISSING",
             "required": (
                 "git init at D:/tools/equipment-model, or move it into a "
-                "repository. This is the whole of ML-2a for v1: a directory "
-                "and a commit."
+                "repository. This was once described as the whole of ML-2a "
+                "for v1 -- a directory and a commit. It is not: see COMMIT "
+                "below, and the operator decisions in SCANNER_PROVENANCE.md "
+                "about where 2 GB of possibly-unredistributable images may "
+                "live."
             ),
         },
         {
@@ -310,9 +313,16 @@ RECOVERY_CONTRACT: dict[str, Any] = {
             "state": "MISSING_AND_UNOBTAINABLE_RETROACTIVELY",
             "required": (
                 "A commit that CONTAINS train_export.py at the pinned digest "
-                "2424fea9... The first commit after `git init` satisfies this "
-                "provided the file is unchanged -- which the pin above lets "
-                "anybody check before believing it."
+                "2424fea9... AND a validator that can see it. This item used "
+                "to say the first commit after `git init` satisfies it. That "
+                "was wrong, and wrong in the direction that wastes somebody's "
+                "afternoon: `training_run._commit_exists` resolves a sha with "
+                "`git -C <this repository>`, so a commit made in the pipeline "
+                "directory does not exist as far as `validate` is concerned "
+                "and `training_code_commit` is rejected exactly as before. "
+                "Closing this needs the commit AND a repo-qualified "
+                "`training_code_commit` (repository identity plus sha), which "
+                "is a schema change nobody has authorised yet."
             ),
         },
         {
