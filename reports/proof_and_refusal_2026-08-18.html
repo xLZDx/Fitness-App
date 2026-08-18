@@ -1,0 +1,561 @@
+<title>Proof and Refusal</title>
+<style>
+  :root {
+    --ground: #f7f5f1;
+    --panel: #fffefb;
+    --panel-2: #f0ede6;
+    --rule: #ddd8cd;
+    --ink: #1d1f21;
+    --ink-2: #4a4f55;
+    --ink-3: #7b8189;
+    --proved: #1f6f5c;
+    --proved-bg: #e2efe9;
+    --refused: #9a6412;
+    --refused-bg: #f6ecd9;
+    --open: #7a4f8f;
+    --open-bg: #efe6f4;
+    --defect: #a8352c;
+    --defect-bg: #f7e5e2;
+    --accent: #1f6f5c;
+    --shadow: 0 1px 2px rgba(29,31,33,.06), 0 6px 20px rgba(29,31,33,.05);
+    --serif: Iowan Old Style, Palatino Linotype, Palatino, Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #14171a;
+      --panel: #1b1f23;
+      --panel-2: #23282d;
+      --rule: #2f363d;
+      --ink: #e8e6e1;
+      --ink-2: #b3b8bd;
+      --ink-3: #7f878f;
+      --proved: #66c2a5;
+      --proved-bg: #14312a;
+      --refused: #d9a441;
+      --refused-bg: #33280f;
+      --open: #b799d0;
+      --open-bg: #2a2033;
+      --defect: #e57a6f;
+      --defect-bg: #37201d;
+      --accent: #66c2a5;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #14171a;
+    --panel: #1b1f23;
+    --panel-2: #23282d;
+    --rule: #2f363d;
+    --ink: #e8e6e1;
+    --ink-2: #b3b8bd;
+    --ink-3: #7f878f;
+    --proved: #66c2a5;
+    --proved-bg: #14312a;
+    --refused: #d9a441;
+    --refused-bg: #33280f;
+    --open: #b799d0;
+    --open-bg: #2a2033;
+    --defect: #e57a6f;
+    --defect-bg: #37201d;
+    --accent: #66c2a5;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.3);
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 20px 96px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 60rem; margin: 0 auto; }
+  main { display: flex; flex-direction: column; gap: 52px; }
+
+  header.masthead { padding: 64px 0 0; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 18px;
+  }
+  h1 {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: clamp(2.1rem, 6vw, 3.3rem);
+    line-height: 1.04;
+    letter-spacing: -.024em;
+    margin: 0 0 18px;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.16rem;
+    color: var(--ink-2);
+    max-width: 42rem;
+    margin: 0;
+  }
+
+  .figures {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 40px;
+  }
+  .figure { background: var(--panel); padding: 18px 20px; }
+  .figure b {
+    display: block;
+    font-family: var(--sans);
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .figure span {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  h2 {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: -.016em;
+    margin: 0 0 6px;
+    text-wrap: balance;
+  }
+  .section-note {
+    color: var(--ink-3);
+    font-size: .96rem;
+    margin: 0 0 26px;
+    max-width: 44rem;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 1.03rem;
+    letter-spacing: -.008em;
+    margin: 0 0 8px;
+  }
+  p { margin: 0 0 14px; }
+  p:last-child { margin-bottom: 0; }
+
+  .chip {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    vertical-align: 2px;
+    white-space: nowrap;
+  }
+  .c-proved  { background: var(--proved-bg);  color: var(--proved); }
+  .c-refused { background: var(--refused-bg); color: var(--refused); }
+  .c-open    { background: var(--open-bg);    color: var(--open); }
+  .c-defect  { background: var(--defect-bg);  color: var(--defect); }
+
+  .gate {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+  }
+  .gate-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .gate-head h3 { margin: 0; flex: 1 1 16rem; }
+  code, .sha {
+    font-family: var(--mono);
+    font-size: .855em;
+    background: var(--panel-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: var(--ink-2);
+  }
+  .gate p { font-size: .97rem; color: var(--ink-2); }
+  .gate p strong { color: var(--ink); font-weight: 600; }
+
+  .scroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--panel); }
+  table { border-collapse: collapse; width: 100%; font-family: var(--sans); font-size: .9rem; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 600;
+    background: var(--panel-2);
+    white-space: nowrap;
+  }
+  tr:last-child td { border-bottom: none; }
+  td.id { font-family: var(--mono); font-weight: 700; color: var(--ink); width: 1%; }
+  td.what { color: var(--ink-2); }
+
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--panel);
+    border-radius: 0 10px 10px 0;
+    padding: 18px 22px;
+    margin: 0 0 14px;
+  }
+  .callout.warn { border-left-color: var(--refused); }
+  .callout.stop { border-left-color: var(--defect); }
+  .callout h3 { margin-bottom: 6px; }
+  .callout p { font-size: .97rem; color: var(--ink-2); }
+
+  ul.plain { margin: 0; padding-left: 1.1rem; }
+  ul.plain li { margin-bottom: 9px; color: var(--ink-2); font-size: .97rem; }
+  ul.plain li:last-child { margin-bottom: 0; }
+  ul.plain li strong { color: var(--ink); font-weight: 600; }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 22px;
+    color: var(--ink-3);
+    font-size: .88rem;
+    font-family: var(--sans);
+  }
+  @media (max-width: 600px) {
+    body { font-size: 16px; padding: 0 16px 64px; }
+    .gate { padding: 16px 16px; }
+  }
+</style>
+
+<div class="wrap">
+<header class="masthead">
+  <p class="eyebrow">SPTR · autonomous pass · 18 August 2026 · branch formcoach/gates-a-c</p>
+  <h1>Proof and Refusal</h1>
+  <p class="standfirst">Twelve gates in one session. Every behavioural claim below was proved by
+  breaking the code it rests on and watching a test fail. The more useful half of this report is
+  what was <em>not</em> done, and why refusing was the correct engineering output.</p>
+
+  <div class="figures">
+    <div class="figure"><b>12</b><span>gates committed</span></div>
+    <div class="figure"><b>37</b><span>files changed</span></div>
+    <div class="figure"><b>+5,993</b><span>lines added</span></div>
+    <div class="figure"><b>21</b><span>mutations killed</span></div>
+    <div class="figure"><b>0</b><span>pushes</span></div>
+  </div>
+</header>
+
+<main>
+
+<section>
+  <h2>The standard of proof</h2>
+  <p class="section-note">A green suite proves that a suite ran. It does not prove that any test
+  is attached to the behaviour it names.</p>
+
+  <div class="callout">
+    <h3>Every guard in this session was mutation-tested</h3>
+    <p>Break the guarded subject, confirm the guard fires, restore the file byte-for-byte and
+    confirm the restore. A mutant that fails to compile is discarded rather than counted: it proves
+    the compiler works, not the test. Twenty-one mutations were killed this session across eleven
+    code gates, plus one invalid kill rejected, one correct survivor, and
+    <strong>two survivors that turned out to be defects in the tests themselves</strong> — which is
+    the outcome that pays for the whole technique.</p>
+  </div>
+
+  <div class="callout warn">
+    <h3>Three defect shapes kept recurring</h3>
+    <p><strong>A fixture that guarantees its own outcome.</strong> A cache-margin test compared
+    <code>Duration(minutes: 13)</code> to <code>Duration(minutes: 15)</code> — two literals in a
+    test file measuring themselves, blind to what the implementation actually caches for, which is
+    the exact regression its own comment said it existed to catch.</p>
+    <p><strong>A guard that matches prose rather than behaviour.</strong> A zero-delivered quota
+    line was asserted with <code>contains('limit')</code> and <code>contains('tomorrow')</code> —
+    both true of a different string, so substituting the wrong one stayed green.</p>
+    <p><strong>A guard that reads a key the producer never writes.</strong> Or its mirror: a
+    checker that read adjacency in a serialized file as if adjacency were a statement.</p>
+  </div>
+</section>
+
+<section>
+  <h2>What shipped</h2>
+  <p class="section-note">Local commits only. <code>cc02f57 → 7289ef6</code>, oldest first.</p>
+
+  <div class="gate">
+    <div class="gate-head"><h3>Guest accounts could not become real ones</h3>
+      <span class="chip c-proved">proved</span><span class="sha">792def6</span></div>
+    <p>An anonymous user who tapped "Sign in" was redirected straight back out of the login page,
+    because the router treated <em>signed in</em> as one state. The redirect rule now distinguishes
+    anonymous from authenticated, and the decision is a pure function a test can call without
+    mounting an app. An earlier attempt to test this through the real router
+    <strong>hung for over ten minutes</strong> building the whole app shell — the seam moved rather
+    than the timeout.</p>
+  </div>
+
+  <div class="gate">
+    <div class="gate-head"><h3>A daily limit reported as a broken video</h3>
+      <span class="chip c-proved">proved</span><span class="sha">a467ff2</span></div>
+    <p>The backend refuses politely on the per-day budget and says when it ends. The phone flattened
+    that into the same null it uses for "something went wrong and we cannot say what", so a
+    deliberate, self-resolving refusal looked exactly like an outage. <code>resource-exhausted</code>
+    is a documented gRPC status, not a message that can drift, so the refusal is now recognised and
+    carried up with the backend's own sentence.</p>
+  </div>
+
+  <div class="gate">
+    <div class="gate-head"><h3>A tripwire that had never been run</h3>
+      <span class="chip c-proved">proved</span><span class="sha">15034ad</span></div>
+    <p>The team-feed activation guard existed and was never executed. Now it runs, and a mutation
+    proves it fires.</p>
+  </div>
+
+  <div class="gate">
+    <div class="gate-head"><h3>Scanner pipeline pinned; the registry's note corrected</h3>
+      <span class="chip c-proved">proved</span><span class="sha">8c89d88</span></div>
+    <p>Nineteen tests, three of which <strong>skip with a stated reason</strong> rather than assert
+    something they cannot reach. A skip that names its blocker is information; a skip that hides is
+    a lie with a green tick.</p>
+  </div>
+
+  <div class="gate">
+    <div class="gate-head"><h3>The clinical handoff test was guarding a dead contract</h3>
+      <span class="chip c-defect">test defect</span><span class="sha">38fdd7c</span></div>
+    <p>Two pre-existing failures. The test asserted a hand-typed field list the document had already
+    replaced. The test was inspected before the document — the field list is now derived from the
+    document itself, so the two cannot drift again. Fixing the derivation exposed a second bug: a
+    paren-matching helper stopped at the first newline-paren and swallowed the next declaration
+    whole.</p>
+  </div>
+
+  <div class="gate">
+    <div class="gate-head"><h3>Authoritative-source assertion moved into the builder</h3>
+      <span class="chip c-proved">proved</span><span class="sha">5cc74f4</span></div>
+  </div>
+
+  <div class="gate">
+    <div class="gate-head"><h3>N-05: written up as an operator decision, not closed</h3>
+      <span class="chip c-open">operator decision required</span><span class="sha">efbcac7</span></div>
+    <p>The evidence was gathered and the disposition recorded as
+    <code>OPERATOR / PLATFORM DECISION REQUIRED</code>. No engineering change can close it, and
+    declaring it closed would have been the finding this programme most often has to undo.</p>
+  </div>
+
+  <div class="gate">
+    <div class="gate-head"><h3>Every registry claim checked against the report it cites</h3>
+      <span class="chip c-proved">proved</span><span class="sha">1d1cc37</span></div>
+    <p>The model registry states measured numbers inline and separately names the report they came
+    from. Nothing checked that the two agreed. Twenty claims audited.
+    <strong>A mutation survived here and was correct to survive on its own terms</strong> — the
+    proximity window was widened to 100,000 and the suite stayed green, because the test built its
+    own gap as a multiple of the very constant under test. The fixture was rewritten with a literal
+    gap and a bounds assertion.</p>
+  </div>
+
+  <div class="gate">
+    <div class="gate-head"><h3>Offline prefetch: naming why it stopped</h3>
+      <span class="chip c-proved">proved</span><span class="sha">5713643</span></div>
+    <p>The prefetch could report two things: finished, or threw. Between them sits the case that
+    actually happens — some of the week is on the device — and the card rendered
+    <code>'${action.error}'</code>: an English sentence composed inside a state layer, formatted by
+    <code>toString()</code>, shipped to every locale. Counts and one flag now live in the data
+    layer; the screen picks one of nine localized sentences. <strong>Eighteen mutations across two
+    rounds.</strong></p>
+    <p>Four independent reviewers then found things the mutations could not. The largest is below.</p>
+  </div>
+
+  <div class="gate">
+    <div class="gate-head"><h3>The metric locator, and six claims it must not "fix"</h3>
+      <span class="chip c-proved">proved</span><span class="sha">7289ef6</span></div>
+    <p>Seven registry numbers could not be located in their cited reports. One was a spelling gap
+    and is fixed. Six require a change of <em>meaning</em> and are recorded rather than fixed.
+    Writing the test for the last of them <strong>found a live false-MATCH path</strong>.</p>
+  </div>
+</section>
+
+<section>
+  <h2>The finding that mattered most</h2>
+  <p class="section-note">A comment that asserted a guarantee the system does not provide, and the
+  code that acted on it.</p>
+
+  <div class="callout stop">
+    <h3>The chunk loop gave up on clips it could still have had</h3>
+    <p>A week's prefetch is chunked at sixty objects per call. On the first quota refusal the loop
+    stopped, and the comment justified it: <em>"the budget is per-day and per-account, so every
+    remaining chunk would be refused too."</em></p>
+    <p>The backend does not work that way. <code>enforceDailyQuota</code> refuses on
+    <code>used + cost &gt; limit</code>, and the batch endpoint passes <strong>the chunk's own
+    length</strong> as <code>cost</code>. A refusal therefore proves only that <em>that</em> chunk
+    does not fit in what is left — and the last chunk of a prefetch is usually the short one. An
+    account 1,190 objects into a 1,200 budget still has room for a trailing chunk of ten, and the
+    early stop threw those away <em>while telling the user the limit had made them
+    unobtainable</em>.</p>
+    <p>A refused chunk is also charged nothing: the transaction throws before it writes. So the
+    price of continuing is one wasted round trip per remaining chunk, at most three on a 200-clip
+    week. The loop now continues, the comment states the model instead of asserting a conclusion,
+    and a fixture that mirrors <code>used + cost &gt; limit</code> proves the trailing chunk lands.</p>
+  </div>
+
+  <div class="callout">
+    <h3>The same evidence rejected a different reviewer's request</h3>
+    <p>A reviewer asked for the download control to be disabled while quota-exhausted, on the
+    grounds that retrying is a no-op. Under <code>used + cost &gt; limit</code> it is not: a second
+    run asks for fewer references, and fewer can fit. Disabling the control would have denied a
+    retry that can succeed. <strong>Recorded as rejected, with the reason</strong>, rather than
+    quietly dropped.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Mutation ledger</h2>
+  <p class="section-note">Twenty-one killed. Every mutant was restored byte-for-byte and the restore
+  verified. Outcomes that were <em>not</em> clean kills carry more information than the ones that
+  were, so they are listed first.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Outcome</th><th>Subject</th><th>What it told us</th></tr></thead>
+    <tbody>
+      <tr><td class="id"><span class="chip c-defect">test defect</span></td>
+        <td class="what">Proximity window widened to 100,000</td>
+        <td class="what">Survived. The test built its gap as <code>WINDOW * 3</code>, so the fixture
+        scaled with the constant it claimed to bound. Rewritten with a literal gap plus
+        <code>assert 0 &lt; WINDOW &lt;= 400</code>.</td></tr>
+      <tr><td class="id"><span class="chip c-defect">test defect</span></td>
+        <td class="what">Failure policy swallows every refusal</td>
+        <td class="what">Survived, because the <code>catch</code> sat around a real Firebase call
+        that no test can enter. Fixed structurally: the policy moved into a method reachable with
+        any throwing closure. The mutation then died.</td></tr>
+      <tr><td class="id"><span class="chip c-refused">rejected</span></td>
+        <td class="what">A mutant that stopped the file compiling</td>
+        <td class="what">Not counted. A compile error is evidence about the compiler, not about the
+        guard.</td></tr>
+      <tr><td class="id"><span class="chip c-proved">correct survivor</span></td>
+        <td class="what">One further mutation</td>
+        <td class="what">Survived legitimately — the guarded property was still true under the
+        mutation. Recorded rather than papered over.</td></tr>
+      <tr><td class="id">A–K</td><td class="what">Prefetch implementation (11)</td>
+        <td class="what">Partial results discarded on quota; the shared failure policy swallowing
+        refusals; quota mapped to a generic failure; the flag always set; the flag never set; the
+        notifier dropping it; the ready count faked to full; the quota line replaced by the failure
+        line; an unnamed failure hidden behind the idle hint; a total refusal reported as a fault;
+        "we could not check" rendered as "you have not paid".</td></tr>
+      <tr><td class="id">L–R</td><td class="what">Review-round fixes (7)</td>
+        <td class="what">The early <code>break</code> restored; two count-for-statement
+        substitutions; the refusal reasons swapped; the quota line reordered behind the ellipsis;
+        the unit dropped from the count; the client cache raised past the backend's guarantee.</td></tr>
+      <tr><td class="id">S–U</td><td class="what">Metric locator (3)</td>
+        <td class="what">The JSON proximity fallback put back; the fraction rule ignoring its
+        numerator; the fraction rule never consulted.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>Refused, and why refusing was correct</h2>
+  <p class="section-note">The instruction was to maximise proven work, not to maximise closed
+  tickets. These are the places where the honest output was a written refusal.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Item</th><th>Status</th><th>Why not done</th></tr></thead>
+    <tbody>
+      <tr><td class="what"><strong>Three metric claims in Russian prose</strong></td>
+        <td><span class="chip c-refused">not fixed</span></td>
+        <td class="what">The source states the values under Russian labels. Locating them needs a
+        translation table, and a translation is a claim about meaning that only the document's
+        author can make. Recorded with what would close it.</td></tr>
+      <tr><td class="what"><strong>Two complement claims</strong></td>
+        <td><span class="chip c-refused">not fixed</span></td>
+        <td class="what">The source says thirty of thirty passed; the registry says zero rejected.
+        Right, and textually absent. A locator that derives one complement can be argued into
+        deriving others.</td></tr>
+      <tr><td class="what"><strong><code>coverage = 0.443</code></strong></td>
+        <td><span class="chip c-refused">not fixed</span></td>
+        <td class="what">The claim is less specific than its source, which nests the number in a
+        block of five. Accepting any scalar under that block would let four wrong numbers pass a
+        check built to catch wrong numbers.</td></tr>
+      <tr><td class="what"><strong>N-05</strong></td>
+        <td><span class="chip c-open">operator decision</span></td>
+        <td class="what">Needs a platform-policy decision. No code change closes it, and code alone
+        cannot demonstrate enforcement readiness.</td></tr>
+      <tr><td class="what"><strong>Promotion-review record schema</strong></td>
+        <td><span class="chip c-refused">not built</span></td>
+        <td class="what">Zero real consumers. No model has been promoted, the champion holds by
+        default rather than by evaluation, and the challenger is deliberately not one. A schema for
+        an event that has never occurred is written from imagination.</td></tr>
+      <tr><td class="what"><strong>Human labels</strong></td>
+        <td><span class="chip c-open">still zero</span></td>
+        <td class="what">Unchanged and unfabricated. The evaluation label gap stands as recorded.</td></tr>
+      <tr><td class="what"><strong>Independent second opinion</strong></td>
+        <td><span class="chip c-refused">unavailable</span></td>
+        <td class="what">The external reviewer returned <code>usage_limit_exhausted</code> on every
+        attempt, with a stated reset of 2026-08-20. The commit gate's fail-open receipt admitted all
+        twelve commits. <strong>No diff in this session received an external review.</strong></td></tr>
+      <tr><td class="what"><strong>Push</strong></td>
+        <td><span class="chip c-refused">withheld</span></td>
+        <td class="what">Not authorised. Twelve local commits, no remote mutation of any kind.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>Invariants that were required to survive, and did</h2>
+  <p class="section-note">Checked, not assumed. None of the work below moved any of these.</p>
+  <ul class="plain">
+    <li><strong>Engineering remediation baseline</strong> — frozen.</li>
+    <li><strong>Continuous retraining</strong> — not operational; training and deployment remain
+      separate concerns.</li>
+    <li><strong>Human labels</strong> — zero, and none invented.</li>
+    <li><strong>External clinical validation</strong> — still required; nothing here reviewed
+      anything clinically, and the submission path still closes nothing on its own.</li>
+    <li><strong>Untagged exercises</strong> — not flipped to fail-closed. No agent was permitted to
+      invent the clinical semantics of the untagged rows.</li>
+    <li><strong>Production image collection</strong> — disabled.</li>
+    <li><strong>The challenger model</strong> — not shipped, not promoted, not bundled.</li>
+    <li><strong>Anonymous login</strong> — not silently removed. The guest path was made
+      <em>reachable</em>, which is the opposite change.</li>
+    <li><strong>Train and holdout label sets</strong> — disjoint, with no training label sourced
+      from a model prediction, an automatic flag, a holdout human label, or a synthetic review.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>What a reader should not take from this</h2>
+  <div class="callout stop">
+    <p><strong>Twenty-one killed mutations are evidence about twenty-one specific behaviours.</strong>
+    They are not a statement about the codebase. Nothing here was reviewed by an independent second
+    opinion; the reviewers used were internal, and their strongest findings were confirmed by
+    reading the backend rather than by agreement.</p>
+    <p><strong>The Cloud Functions suite was not re-run</strong> and no number is quoted for it. No
+    file under the functions tree changed in this session, and stating a figure from a run that did
+    not happen is precisely the failure mode this report is about.</p>
+  </div>
+</section>
+
+<footer>
+  <p>Local commits <code>cc02f57 → 7289ef6</code> on <code>formcoach/gates-a-c</code> ·
+  37 files, +5,993 / −112 · Flutter suite 2,933 passed · <code>pytest scripts/ml</code> 78 passed ·
+  no push, no PR, no remote mutation.</p>
+  <p>Operator-owned working files were left untouched throughout and were verified unstaged before
+  every commit.</p>
+</footer>
+
+</main>
+</div>

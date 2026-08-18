@@ -15780,3 +15780,24 @@ the out-of rule ignoring the numerator (T), and the out-of rule never consulted 
 **Suites:** `pytest scripts/ml` 78 passed (was 70).
 
 **Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.
+
+## Session report published — "Proof and Refusal"
+
+`reports/proof_and_refusal_2026-08-18.html`, also at
+https://claude.ai/code/artifact/16f0051d-c8fa-4599-9477-b0989fcab49d
+
+Twelve gates, `cc02f57 -> 7289ef6`, 37 files, +5,993 / -112. Twenty-one mutations killed, one
+invalid kill rejected, one correct survivor, and two survivors that were defects in the tests
+rather than in the code.
+
+The report leads with the standard of proof and gives equal space to what was NOT done: three
+metric claims that would need a Russian-to-English translation table, two that would need a locator
+to compute an arithmetic complement, one claim less specific than its source, N-05 as a platform
+decision, and a promotion-record schema deliberately not built for an event that has never
+occurred. It also records, as the previous two reports did, that no diff in this session received
+an independent second opinion -- `tools/codex_review.py` returned `usage_limit_exhausted` on every
+attempt with a stated reset of 2026-08-20, and the gate's fail-open receipt admitted all twelve
+commits.
+
+Cloud Functions tests are reported as NOT re-run rather than quoted from a previous session. No
+file under `functions/` changed here.
