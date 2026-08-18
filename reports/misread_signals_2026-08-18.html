@@ -1,0 +1,835 @@
+<title>Misread Signals</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --ground:      #f7f8fa;
+    --panel:       #ffffff;
+    --panel-edge:  #dfe3ea;
+    --ink:         #14171c;
+    --ink-soft:    #4c5563;
+    --ink-faint:   #79828f;
+    --accent:      #1e4fa3;
+    --accent-soft: #e8eefa;
+    --refuse:      #8f2d24;
+    --refuse-soft: #fbeae7;
+    --hold:        #7a5410;
+    --hold-soft:   #fbf1dc;
+    --done:        #1f5c3d;
+    --done-soft:   #e5f2ea;
+    --rule:        #e6e9ef;
+    --measure:     34rem;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: "Inter Tight", "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, ui-serif, serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #101318;
+      --panel:       #171b21;
+      --panel-edge:  #262c35;
+      --ink:         #e7eaef;
+      --ink-soft:    #a8b1bd;
+      --ink-faint:   #767f8c;
+      --accent:      #7ba6ee;
+      --accent-soft: #1a2537;
+      --refuse:      #e59187;
+      --refuse-soft: #2c1b18;
+      --hold:        #dcb463;
+      --hold-soft:   #2a2213;
+      --done:        #7fc7a0;
+      --done-soft:   #16281f;
+      --rule:        #242a33;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:      #101318;
+    --panel:       #171b21;
+    --panel-edge:  #262c35;
+    --ink:         #e7eaef;
+    --ink-soft:    #a8b1bd;
+    --ink-faint:   #767f8c;
+    --accent:      #7ba6ee;
+    --accent-soft: #1a2537;
+    --refuse:      #e59187;
+    --refuse-soft: #2c1b18;
+    --hold:        #dcb463;
+    --hold-soft:   #2a2213;
+    --done:        #7fc7a0;
+    --done-soft:   #16281f;
+    --rule:        #242a33;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 58rem;
+    margin: 0 auto;
+    padding: clamp(2rem, 6vw, 4.5rem) clamp(1.1rem, 5vw, 3rem) 6rem;
+  }
+
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: .72rem;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 1.1rem;
+  }
+  h1 {
+    font-family: var(--sans);
+    font-size: clamp(2.1rem, 6.2vw, 3.4rem);
+    line-height: 1.04;
+    letter-spacing: -.024em;
+    font-weight: 700;
+    text-wrap: balance;
+    margin: 0 0 1rem;
+  }
+  .standfirst {
+    font-size: clamp(1.05rem, 2.3vw, 1.22rem);
+    color: var(--ink-soft);
+    max-width: var(--measure);
+    margin: 0 0 2.4rem;
+  }
+
+  .states {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: .6rem;
+    margin: 0 0 3.2rem;
+  }
+  .state {
+    border: 1px solid var(--panel-edge);
+    border-left-width: 3px;
+    border-radius: 3px;
+    background: var(--panel);
+    padding: .7rem .85rem;
+  }
+  .state b {
+    display: block;
+    font-family: var(--sans);
+    font-size: .68rem;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    margin-bottom: .18rem;
+  }
+  .state span {
+    font-family: var(--mono);
+    font-size: .93rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .state.no    { border-left-color: var(--refuse); }
+  .state.no    span { color: var(--refuse); }
+  .state.hold  { border-left-color: var(--hold); }
+  .state.hold  span { color: var(--hold); }
+  .state.ok    { border-left-color: var(--done); }
+  .state.ok    span { color: var(--done); }
+
+  section { margin: 0 0 3.4rem; }
+  h2 {
+    font-family: var(--sans);
+    font-size: clamp(1.32rem, 3vw, 1.7rem);
+    letter-spacing: -.015em;
+    font-weight: 680;
+    line-height: 1.2;
+    text-wrap: balance;
+    margin: 0 0 .35rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--rule);
+  }
+  h2 .gate {
+    display: block;
+    font-size: .68rem;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: .4rem;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-size: 1.01rem;
+    font-weight: 660;
+    letter-spacing: -.006em;
+    margin: 2rem 0 .5rem;
+  }
+  p { max-width: var(--measure); margin: 0 0 1rem; }
+  ul { max-width: var(--measure); padding-left: 1.15rem; margin: 0 0 1rem; }
+  li { margin-bottom: .4rem; }
+  strong { font-weight: 700; }
+  em { font-style: italic; color: var(--ink-soft); }
+  a { color: var(--accent); }
+
+  code, .path {
+    font-family: var(--mono);
+    font-size: .855em;
+    background: var(--accent-soft);
+    color: var(--ink);
+    padding: .08em .34em;
+    border-radius: 2px;
+    word-break: break-word;
+  }
+  .path { background: transparent; color: var(--accent); padding: 0; }
+
+  .refusal {
+    border-left: 3px solid var(--refuse);
+    background: var(--refuse-soft);
+    padding: .9rem 1.1rem;
+    margin: 1.4rem 0;
+    max-width: var(--measure);
+    border-radius: 0 3px 3px 0;
+  }
+  .refusal b {
+    font-family: var(--sans);
+    font-size: .68rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--refuse);
+    display: block;
+    margin-bottom: .3rem;
+  }
+  .refusal p:last-child { margin-bottom: 0; }
+
+  .defect {
+    border-left: 3px solid var(--hold);
+    background: var(--hold-soft);
+    padding: .9rem 1.1rem;
+    margin: 1.4rem 0;
+    max-width: var(--measure);
+    border-radius: 0 3px 3px 0;
+  }
+  .defect b {
+    font-family: var(--sans);
+    font-size: .68rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--hold);
+    display: block;
+    margin-bottom: .3rem;
+  }
+  .defect p:last-child { margin-bottom: 0; }
+
+  .kept {
+    border-left: 3px solid var(--done);
+    background: var(--done-soft);
+    padding: .9rem 1.1rem;
+    margin: 1.4rem 0;
+    max-width: var(--measure);
+    border-radius: 0 3px 3px 0;
+  }
+  .kept b {
+    font-family: var(--sans);
+    font-size: .68rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--done);
+    display: block;
+    margin-bottom: .3rem;
+  }
+  .kept p:last-child { margin-bottom: 0; }
+
+  .scroll { overflow-x: auto; margin: 1.3rem 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 34rem;
+    font-family: var(--sans);
+    font-size: .885rem;
+  }
+  th {
+    text-align: left;
+    font-weight: 640;
+    font-size: .68rem;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--panel-edge);
+    padding: .45rem .7rem .45rem 0;
+    vertical-align: bottom;
+  }
+  td {
+    padding: .55rem .7rem .55rem 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+    color: var(--ink-soft);
+  }
+  td:first-child { color: var(--ink); font-weight: 600; }
+  td.num { font-variant-numeric: tabular-nums; text-align: right; padding-right: 1.4rem; }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: .74rem;
+    font-weight: 600;
+    padding: .1rem .42rem;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .tag.no   { background: var(--refuse-soft); color: var(--refuse); }
+  .tag.hold { background: var(--hold-soft);   color: var(--hold); }
+  .tag.ok   { background: var(--done-soft);   color: var(--done); }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.6rem;
+    margin-top: 3.5rem;
+    font-family: var(--sans);
+    font-size: .83rem;
+    color: var(--ink-faint);
+    max-width: var(--measure);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <p class="eyebrow">SPTR &middot; worktree <code>_wt-formcoach</code> &middot; branch <code>formcoach/gates-a-c</code> &middot; <code>cc02f57 &rarr; 1d1cc37</code> &middot; 18 August 2026</p>
+  <h1>Misread Signals</h1>
+  <p class="standfirst">
+    Eight gates, and seven of them are the same shape: a signal that was being
+    read as something it was not. A refusal that read as a fault. A door that
+    read as already open. A corpus recorded as lost that was sitting on disk. A
+    test guarding a contract the document had stopped having. This is the report
+    on what was found, what was fixed, and what a person still has to decide.
+  </p>
+
+  <div class="states">
+    <div class="state no"><b>Remote push</b><span>PUSHED = NO</span></div>
+    <div class="state no"><b>Multi-account abuse</b><span>N-05 = DECISION</span></div>
+    <div class="state no"><b>CT-1 retraining</b><span>NOT OPERATIONAL</span></div>
+    <div class="state hold"><b>Clinical validation</b><span>D1 = REQUIRED</span></div>
+    <div class="state hold"><b>Injury screening</b><span>H3 = HOLD</span></div>
+    <div class="state hold"><b>Scanner provenance</b><span>ML-2a = OPEN</span></div>
+    <div class="state ok"><b>Flutter suite</b><span>2,893 pass</span></div>
+    <div class="state ok"><b>Python suites</b><span>380 pass</span></div>
+  </div>
+
+  <section>
+    <h2><span class="gate">Gate 1 &middot; commit 792def6</span>The one action that avoided data loss was the one the router blocked</h2>
+
+    <p>
+      This was found while working N-05 and is not an N-05 control. It is a
+      data-loss defect that the abuse review happened to walk into.
+    </p>
+
+    <p>
+      <code>FirebaseAuthRepository.signInWithGoogle</code> calls
+      <code>linkWithCredential</code> on a guest, which keeps the <strong>same
+      uid</strong> and therefore every document under <code>users/{uid}</code>
+      &mdash; profile, injuries, workout history, schedule. That was written
+      deliberately and it works. Nothing could reach it.
+    </p>
+
+    <div class="defect">
+      <b>Three facts, measured</b>
+      <p>
+        <code>signInWithGoogle</code> has exactly one production call site, and
+        it is on <code>/login</code>. <code>resolveRedirect</code> bounced every
+        signed-in user off <code>/login</code>, and <code>isSignedIn</code> is
+        <code>user != null</code> &mdash; true for a guest. The profile screen
+        offered Settings and Sign out, and Sign out fires with no confirmation.
+      </p>
+      <p>
+        So a guest's only self-service exit from an anonymous session was Sign
+        out, which mints a fresh uid next time. The repository already states the
+        consequence in its own words: the old account is <em>&ldquo;not lost so
+        much as unreachable forever, because an anonymous account has no
+        credential to sign back into.&rdquo;</em>
+      </p>
+    </div>
+
+    <p>
+      Both halves shipped, because either alone is nothing &mdash; an open door
+      nobody walks through, or a tile that redirects away on tap.
+      <code>resolveRedirect</code> now takes <code>isAnonymous</code>, and the
+      profile screen has a guest-only tile that pushes <code>/login</code>.
+    </p>
+
+    <h3>The derivation is now testable, and that mattered</h3>
+    <p>
+      <code>resolveRedirect</code> can be perfectly correct about guests while
+      the router never tells it who the guest is, and a pure test of the decision
+      cannot see that. The first attempt at covering it mounted the real router,
+      which meant building <code>/home</code> &mdash; the whole app shell &mdash;
+      inside a unit test, and it hung. The <code>redirect</code> closure became
+      <code>redirectFor(&hellip;)</code> instead: one seam, five cases, no widget
+      tree.
+    </p>
+
+    <h3>The promise was corrected before it shipped</h3>
+    <p>
+      The new tile's subtitle first read <em>&ldquo;Everything you have logged
+      stays where it is.&rdquo;</em> That is conditionally false. On
+      <code>credential-already-in-use</code> the code falls back to
+      <code>signInWithCredential</code> and, at its own comment,
+      <em>&ldquo;this device's guest data stays orphaned but intact&rdquo;</em>
+      &mdash; the reinstall and second-device case, which is common. Since this
+      tile is about to be the remedy offered to a user who has just been refused
+      something, telling them their data is safe in exactly the case where it is
+      not would be worse than not offering it. The string now names the
+      exception, and a test asserts it.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="gate">Gate 2 &middot; commit a467ff2</span>A deliberate refusal was rendering as a broken link</h2>
+
+    <p>
+      The backend already writes a sentence for a reader: <em>&ldquo;You have
+      reached today's limit for this action. It resets tomorrow.&rdquo;</em>
+      Here is where it died.
+    </p>
+
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th>Step</th><th>What happened to the refusal</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td><code>enforceDailyQuota</code> throws <code>resource-exhausted</code> with its message</td></tr>
+          <tr><td>2</td><td><code>ClipUrlResolver.fetch</code> caught everything alike, counted it, returned <code>{}</code></td></tr>
+          <tr><td>3</td><td><code>resolve</code> mapped the empty map to <code>null</code></td></tr>
+          <tr><td>4</td><td>the player stored the <code>unresolved</code> sentinel</td></tr>
+          <tr><td>5</td><td>the classifier called that <code>linkUnavailable</code></td></tr>
+          <tr><td>6</td><td>the screen said <strong>&ldquo;The clip link is unavailable&rdquo;</strong>, detail line suppressed</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      There is no second channel: <code>firestore.rules</code> closes
+      <code>users/{uid}/usage/{day}</code> outright, with a comment explaining
+      that no client reads it. The callable's error was the only signal the app
+      had, and it was being discarded.
+    </p>
+
+    <div class="refusal">
+      <b>Why this is live, not hypothetical</b>
+      <p>
+        <code>ANONYMOUS_QUOTA_DIVISOR = 8</code> ships today, so guests are
+        already refused at 50 clip links a day &mdash; and every one of those
+        refusals was indistinguishable on the phone from a signing outage, a
+        missing object, or a missing IAM grant the backend names as a real
+        failure mode.
+      </p>
+      <p>
+        This repository has paid for the same class of mistake once already: a
+        2026-08-08 device report where the player blamed the network on a 1&nbsp;Gb
+        connection, <em>&ldquo;actively misleading &mdash; it sent the reader to
+        look at their router while the real fault was somewhere else
+        entirely.&rdquo;</em> The rule written that day was <strong>name only what
+        is known</strong>.
+      </p>
+    </div>
+
+    <p>
+      <code>ClipQuotaExhausted</code> is a domain type, so the classifier stays
+      free of Firebase and testable with no plugins registered.
+      <code>asQuotaRefusal</code> matches the gRPC status code, never message
+      text. <code>swallowOrThrow</code> is the whole single-clip failure policy,
+      extracted because the <code>catch</code> it came from is reachable only
+      through a real backend call &mdash; a mutation inside it would have
+      survived unnoticed.
+    </p>
+
+    <div class="defect">
+      <b>Left open on purpose</b>
+      <p>
+        The offline prefetch still swallows. It chunks at sixty and accumulates
+        across chunks, so throwing out of one chunk would discard what earlier
+        chunks already signed and turn a partial prefetch into a total failure.
+        Telling that user properly needs a result type that can say <em>&ldquo;38
+        of 84, limit reached&rdquo;</em>, which the method cannot express.
+        Recorded rather than half-fixed.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="gate">Gate 3 &middot; commit 15034ad</span>A tripwire that had never been fired</h2>
+
+    <p>
+      The team-feed guard was written earlier and never run. It runs now. It does
+      not test Teams; it tests one conditional: <strong>wired to a real
+      repository &rArr; <code>firestore.rules</code> must authorise it.</strong>
+    </p>
+
+    <p>
+      That conditional is vacuous in this repository, because nothing is wired
+      &mdash; and a guard that is vacuous against real inputs is the exact defect
+      this programme keeps hitting. So it is a pure function exercised against
+      three trees: the real one, a synthetic wired tree with no rule (must fail),
+      and a synthetic wired tree with a rule (must pass). Two controls sit beside
+      it: the provider still defaults to the mock, and the rules file still
+      matches no team collection.
+    </p>
+
+    <p>
+      <strong>The mutation.</strong> A line naming
+      <code>teamFeedRepositoryProvider.overrideWithValue</code> was appended to
+      <code>lib/main.dart</code>. The tripwire fired with its full refusal
+      message and the dormancy control failed alongside it. Restored
+      byte-for-byte. <code>N07 = KEEP</code>: not wired, not deleted, now
+      guarded.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="gate">Gate 4 &middot; commit 8c89d88</span>The corpus recorded as unrecoverable was sitting on disk</h2>
+
+    <p>
+      The dataset registry said the scanner's training corpus <em>&ldquo;cannot
+      be addressed, hashed or rebuilt from here.&rdquo;</em> The first half of
+      that note &mdash; the pipeline is not a git repository &mdash; is true and
+      is now independently verified. The second half was wrong.
+    </p>
+
+    <div class="kept">
+      <b>Measured 2026-08-18</b>
+      <p>
+        1,741 files in <code>dataset/</code>, manifest <code>411189bc&hellip;</code>,
+        untouched since v1 was built. Six artefacts hashed, including a complete
+        self-contained trainer with its hyperparameters and seed as literals. And
+        the shipped <code>equipment_v1.tflite</code> is <strong>byte-identical</strong>
+        to the pipeline's own build output.
+      </p>
+      <p>
+        <code>UNRESOLVED</code> means <em>unversioned</em>, not <em>missing</em>
+        &mdash; and the distinction decides what the work is. A reader of the old
+        note plans a re-crawl. The truth is that <code>git init</code> plus a
+        recorded hash closes v1.
+      </p>
+    </div>
+
+    <p>
+      A pin plus a probe, not a directory read: a registry field computed from a
+      path on one machine would differ everywhere else, and CI would fail on a
+      difference that means nothing. On a machine without the directory the probe
+      reports <code>NOT_PRESENT_ON_THIS_MACHINE</code> and says explicitly that
+      absence of the directory is <em>not</em> evidence the pipeline is gone.
+    </p>
+
+    <p>
+      Two of the six recovery items are the interesting ones. The only v2 run log
+      on disk describes a <strong>29-class</strong> run while the registered v2
+      artefact carries <strong>37</strong> labels &mdash; recorded as
+      <code>MISSING_AND_CONTRADICTED</code> rather than missing, deliberately,
+      because &ldquo;missing&rdquo; invites somebody to supply the log they have.
+      And v2's label set was generated from a third, unversioned copy of this
+      project at an unrecorded revision.
+    </p>
+
+    <p>
+      Of the 19 tests, three need the real bytes and <strong>skip with a stated
+      reason</strong> where the pipeline is absent. A skip that names why is
+      evidence; a test quietly asserting <code>True</code> is not.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="gate">Gate 5 &middot; commit 38fdd7c</span>A test that guarded a contract the document had stopped having</h2>
+
+    <p>
+      Two suite failures, both introduced by this programme's own rewrite of the
+      clinical handoff, and both already committed. Found by running the full
+      Flutter suite rather than the touched files.
+    </p>
+
+    <div class="defect">
+      <b>The shape of the mistake</b>
+      <p>
+        The test asserted nine <strong>hand-typed</strong> field names from the
+        pre-worklist result format. Section 7 replaced that format with a
+        spreadsheet, and the test went on passing for three commits afterwards
+        &mdash; guarding a contract the document no longer had. It only failed
+        once the rewrite removed the last of the old names.
+      </p>
+    </div>
+
+    <p>
+      The test was inspected first, and it was the stale half. The field list is
+      now <em>read</em> from the submission file that is actually issued and from
+      the constants the validator actually enforces. A hand-copied list cannot
+      notice divergence; a derived one fails on it. The second failure was
+      simpler: section 8 is now a block meant to be copied into a submission, so
+      it writes <code>1887</code>, not <code>1,887</code>. Forcing a thousands
+      separator into a machine-readable block to satisfy a test is the wrong
+      direction, so the comparison strips separators &mdash; what must not drift
+      is the number, not its spelling.
+    </p>
+
+    <p>
+      Two mutations killed. A third &mdash; un-backticking <code>AMEND</code> in
+      the dispositions table &mdash; <strong>survived correctly</strong>, because
+      the document names that value elsewhere and the guarded property was still
+      true. Recorded, because a survivor that is not a defect is worth
+      distinguishing from one that is.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="gate">Gate 6 &middot; commit 5cc74f4</span>The guard was in the callers, not in the function</h2>
+
+    <p>
+      <code>build_eval</code> turns a review batch into an evaluation dataset.
+      The guard refusing a <strong>superseded</strong> batch lived in the two
+      command-line entry points that called it &mdash; fine until a third caller
+      appears. The CT-1 pipeline became that third caller, unguarded. The guard
+      moved into the function, where it applies to callers not written yet.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="gate">Gate 7 &middot; commit efbcac7</span>N-05: the framing was the thing that was wrong</h2>
+
+    <p>
+      Two review rounds, run independently and then adversarially, converged:
+      <strong>per-account uniqueness is not the binding constraint</strong>. The
+      full disposition, with a <code>file:line</code> on every claim, is at
+      <code>core/review/N05_DISPOSITION.md</code>.
+    </p>
+
+    <div class="refusal">
+      <b>The two facts that decide it</b>
+      <p>
+        <strong>The signed URL is a caller-agnostic bearer token.</strong> The
+        signature covers bucket, object, expiry and signing identity &mdash;
+        <em>&ldquo;Nothing about the caller enters it.&rdquo;</em> One mint serves
+        unlimited redemptions for twenty minutes, so the quota meters
+        <em>mints</em>, not bytes, and no per-account control touches redemption
+        at all.
+      </p>
+      <p>
+        <strong>There is no lifetime cap.</strong> The counter is keyed on the
+        date, so it resets every UTC midnight forever. One <em>verified</em>
+        account on the undivided quota sweeps the 2,539-object library in three
+        days, quietly, rotating nothing. Requiring a real identity makes the
+        per-identity attack slower &mdash; and makes it look fixed.
+      </p>
+    </div>
+
+    <h3>All three proposed controls broke, and the reasons are not aesthetic</h3>
+
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th>Control</th><th>Verdict</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>P1 &mdash; cumulative distinct ceiling</td>
+            <td><span class="tag no">rejected</span></td>
+            <td>Irreconcilable with charge-before-sign plus refund. Add at charge time and a stale catalogue path becomes a permanent lifetime debit for a clip never received; add after signing and the atomicity the transaction exists to provide is gone. Firestore cannot condition on post-<code>arrayUnion</code> cardinality, so there is no third placement. Separately: against a harvester, a distinct set and a plain counter are numerically identical &mdash; it buys fairness to re-watchers, not security.</td>
+          </tr>
+          <tr>
+            <td>P2 &mdash; identity above a threshold</td>
+            <td><span class="tag hold">half-cleared</span></td>
+            <td>Was blocked on client work; that block is cleared by Gate&nbsp;1. What remains is that its promise is conditionally false on <code>credential-already-in-use</code>, so complying with the refusal can cost the user their history.</td>
+          </tr>
+          <tr>
+            <td>P3 &mdash; project-wide ceiling</td>
+            <td><span class="tag no">rejected</span></td>
+            <td>A Sybil-powered denial of service on paying customers: the attacker's cost to trip a shared ceiling equals their cost to harvest, so seventeen free accounts can turn every subscriber's video off until midnight at a time they choose. True even if sized correctly &mdash; and it cannot be sized, because the only telemetry that ships is Crashlytics and the real population is <em>&ldquo;5&ndash;10 testnet users&rdquo;</em>. The salvageable half is the alarm, not the brake.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      <strong>The exposure is not the money.</strong> Full-library extraction
+      costs SPTR $0.077&ndash;$0.31. The two real exposures are the licence
+      condition &mdash; which caps no volume, only permanence &mdash; and
+      amplification, which none of P1/P2/P3 addresses.
+    </p>
+
+    <p>
+      Device fingerprinting and every variant stay refused, on three independent
+      grounds: unavailable in the installed SDK, contradicted by published policy
+      because every such control must survive account deletion to work, and
+      already refused on this repository's own record for better reasons than
+      effectiveness.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="gate">Gate 8 &middot; commit 1d1cc37</span>The shared MLOps primitive is a check, not a schema</h2>
+
+    <p>
+      The brief asked for a shared evaluation-report primitive <em>if it has at
+      least two real consumers</em>. It does &mdash; and the thing worth sharing
+      turned out not to be the format.
+    </p>
+
+    <p>
+      One consumer's report is generated JSON. The other's is <strong>prose</strong>,
+      and I checked before writing it off: a held-out 15% stratified split,
+      n=261, a per-class table, and a post-mortem of a train/val overlap the
+      pipeline caught &mdash; the first run reported 0.774 and was wrong. Those
+      numbers came from a pipeline that is not in this repository, so nothing
+      here can re-emit them in any format. A schema every producer emits would
+      have had exactly one producer.
+    </p>
+
+    <div class="kept">
+      <b>What both consumers actually share</b>
+      <p>
+        The model registry states measured numbers inline <em>and</em> names the
+        report they came from, and nothing checked the two agree. <strong>A
+        registry that quotes a figure its own cited source does not contain is
+        worse than one that quotes nothing, because the citation is what makes it
+        look verified.</strong>
+      </p>
+    </div>
+
+    <p>
+      Current state: <strong>20 quoted metrics, 0 drifted, 13 matched, 7 not
+      locatable</strong> &mdash; each of the seven named. <code>NOT_LOCATABLE</code>
+      is a distinct verdict from <code>MATCHES</code> on purpose, and a test
+      asserts the matched count, because &ldquo;no drift&rdquo; over zero readable
+      claims is true and worthless. The locator maps spellings, never meanings:
+      <code>top_1</code> and <code>top-1</code> are the same measurement,
+      <code>top_1</code> and <code>accuracy</code> are not.
+    </p>
+
+    <p>
+      One citation was wrong and is now right: the scanner's real-world numbers
+      come from a separate measurement document, not the model README, so an
+      evaluation may name its own source. No number moved.
+    </p>
+
+    <div class="defect">
+      <b>A mutation survived, and the test was at fault</b>
+      <p>
+        Widening the proximity window from 120 characters to 100,000 left the
+        whole suite green, because the proximity case built its gap as
+        <code>WINDOW * 3</code> &mdash; a fixture that scales with the thing under
+        test and therefore passes for every value of it. Same defect class this
+        programme has hit before: <em>a fixture that guarantees its own
+        outcome</em>. The gap is now a literal and a second case bounds the
+        constant; both fail under the mutation.
+      </p>
+    </div>
+
+    <p>
+      <code>PROMOTION_REVIEW_RECORD</code> was <strong>not</strong> built. It has
+      zero real consumers: no model has ever been promoted, v1 is champion by
+      default rather than by evaluation, and v2 is deliberately not a challenger.
+      A record type for an event that has never occurred would be a schema
+      written from imagination.
+    </p>
+  </section>
+
+  <section>
+    <h2>What a person still has to decide</h2>
+
+    <p>
+      Nothing in this repository can make an anonymous uid cost something. Three
+      levers exist and all three are outside it.
+    </p>
+
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th>Decision</th><th>State</th><th>What it turns on</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>App Check enforcement</td>
+            <td><span class="tag hold">measurable, unmeasured</span></td>
+            <td>Every callable now reports attestation, so the production attested share <em>can</em> be measured &mdash; it has not been. Enforcing before measuring locks out every unattested real install. A deployment decision.</td>
+          </tr>
+          <tr>
+            <td>Anonymous sign-in policy</td>
+            <td><span class="tag no">product</span></td>
+            <td>Whether a guest keeps unrestricted video at all. Anonymous sign-in is a first-class login button here, and the repository has called this the operator's since the divisor was introduced.</td>
+          </tr>
+          <tr>
+            <td>Platform cost controls</td>
+            <td><span class="tag hold">unknown</span></td>
+            <td>Whether a GCP budget alert exists is <strong>not knowable from this repository</strong>. Whether a global brake is ever acceptable is answered above: not at any number.</td>
+          </tr>
+          <tr>
+            <td>Anonymous callers can buy</td>
+            <td><span class="tag no">open</span></td>
+            <td>Checkout accepts anonymous callers for real money <strong>including lifetime</strong>, while the free trial rejects them. Quota never reads tier, so that subscriber runs at 1/8 &mdash; and since the prefetch is premium-gated, the anonymous batch ceiling <em>exists only for anonymous users who have paid</em>. Three costed options are written out; none was chosen here, because each is the kind of decision this repository has already assigned to the operator.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Verification</h2>
+
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th>Suite</th><th class="num">Result</th><th>Note</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Flutter</td><td class="num">2,893 pass</td><td>Full suite, run to completion after the final change to <code>mobile/</code>. Was 2,877 with 2 failures at session start.</td></tr>
+          <tr><td><code>scripts/ml</code></td><td class="num">70 pass</td><td>Lifecycle, dataset registry, scanner provenance, evaluation-report audit.</td></tr>
+          <tr><td><code>scripts/ct1</code></td><td class="num">228 pass</td><td></td></tr>
+          <tr><td><code>scripts/review</code></td><td class="num">82 pass</td><td>Plus <code>clinical_import.py --verify</code>: worklist still matches the catalogue at 1,887 rows.</td></tr>
+          <tr><td>Cloud Functions</td><td class="num">not re-run</td><td>No file under <code>functions/</code> changed this session. Stating a number from a run that did not happen would be the defect this report keeps describing.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Mutations</h3>
+    <p>
+      Seventeen mutations killed across six subjects, every one restored
+      byte-for-byte and verified against <code>git status</code>. Three did not
+      count as clean kills, and all three are worth more than the seventeen:
+    </p>
+    <ul>
+      <li><strong>One invalid kill, rejected.</strong> Replacing a type guard in the resolver stopped the file compiling, so the suite reported zero tests rather than a failure. A mutant that breaks the build is not evidence about a guard.</li>
+      <li><strong>One correct survivor.</strong> Un-backticking a disposition in the clinical handoff left the guarded property true, because the document names that value elsewhere.</li>
+      <li><strong>One survivor that exposed a defective test</strong>, described in Gate&nbsp;8. Fixed, then killed.</li>
+    </ul>
+
+    <div class="refusal">
+      <b>The external review did not happen</b>
+      <p>
+        <code>tools/codex_review.py</code> returned <code>usage_limit_exhausted</code>
+        &mdash; the account's limit is exhausted until 2026-08-20. The gate's
+        fail-open receipt admitted all eight commits, and every commit message
+        says so. <strong>No independent second opinion was obtained on any diff in
+        this session.</strong>
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Boundaries held</h2>
+    <ul>
+      <li><strong>No push.</strong> Eight local commits; no remote branch touched, no PR, no deployment.</li>
+      <li><strong>Operator files untouched.</strong> Two pre-existing dirty files were never staged, modified, stashed or reset, and are still dirty.</li>
+      <li><strong>No clinical authority simulated.</strong> The worklist validator still checks structure and provenance only, and still returns <code>closes: []</code>. <code>D1</code> and <code>H3</code> stand.</li>
+      <li><strong>No promotion.</strong> <code>D3</code> stays closed, production image collection stays disabled, and a reproducible model is still only <em>trained</em>.</li>
+      <li><strong>No fabricated humans.</strong> Synthetic reviewers remain a first-class, separately-typed kind that cannot write into <code>core/ml/</code>.</li>
+      <li><strong>N-05 was not closed.</strong> The honest disposition is that it cannot be, here.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>
+      27 files changed, +2,884 / &minus;47, across eight commits on
+      <code>formcoach/gates-a-c</code>. Every claim above is recorded with a
+      <code>file:line</code> in <code>core/DECISION_LOG.md</code> and, for N-05,
+      in <code>core/review/N05_DISPOSITION.md</code>.
+    </p>
+  </footer>
+
+</div>

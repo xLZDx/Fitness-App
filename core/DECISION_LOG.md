@@ -15657,3 +15657,22 @@ schema written from imagination.
 **Suites:** `pytest scripts/ml` 70 passed.
 
 **Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.
+
+## Session report published — "Misread Signals"
+
+`reports/misread_signals_2026-08-18.html`, also at
+https://claude.ai/code/artifact/16c6d1d2-6da5-4a95-8fd2-2d9d0d90e6ce
+
+Eight gates, `cc02f57 -> 1d1cc37`, 27 files, +2,884 / -47. The report records the three mutation
+outcomes that were NOT clean kills, because they carry more information than the seventeen that
+were: one invalid kill rejected (a mutant that stopped the file compiling is not evidence about a
+guard), one correct survivor (the guarded property was still true), and one survivor that exposed a
+defective test whose fixture scaled with the constant under test.
+
+It also records, as the previous report did, that **no independent second opinion was obtained on
+any diff in this session**: `tools/codex_review.py` returns `usage_limit_exhausted` until
+2026-08-20, and the gate's fail-open receipt admitted all eight commits.
+
+Cloud Functions tests are reported as **not re-run** rather than quoted from a previous session. No
+file under `functions/` changed here, and stating a number from a run that did not happen is the
+defect the whole report is about.
