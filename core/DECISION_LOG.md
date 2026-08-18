@@ -16771,3 +16771,92 @@ byte-exactly, verified by `git diff`.
 the six release dimensions separately and records that five councils closed zero operator rows: an
 agent recommendation is not an owner's authority, and a row closed on one would be the laundering
 this mechanism exists to prevent. Branch 94 ahead of origin, 0 behind, NOT pushed.
+
+
+## 2026-08-18 -- The re-run: every predicate proved presence, none proved refusal
+
+The mandate required the falsification review to be re-run after its findings were fixed. It was,
+bounded to two questions, and it came back with **eleven defects** -- including three of the four
+just repaired. My reported `ENGINEERING_STATUS = READY` was hedged as preliminary and is now
+disproved, which is what the hedge was for.
+
+**The lesson, stated once because it applies eleven times.** The previous round fixed *where* each
+guard looked. It did not fix that every conjunct was still substring presence, and **a symbol being
+present is not a behaviour happening**. `_exported_member` scoped `f5` to the paid handler and
+proved an `if` existed there; replacing `throw new HttpsError(` with `logger.info(` inside that
+branch -- valid TypeScript, the firebase logger is variadic -- kept both substrings, and the row read
+CLOSED while anonymous callers bought the uncancellable, unrestorable subscription the comment above
+the guard describes, `lifetime` included. That is the same defect twice in two days, at two
+different depths.
+
+The eleven, each reproduced before being fixed:
+
+* **f5** -- the guard existed and refused nobody. Now the `if` block is sliced and must throw.
+* **f-prefetch (a)** -- `carried` proved the flag reached the constructor and `rendered` proved the
+  page had an arm. Nothing watched the one line between them. Collapsing
+  `quotaExhausted ? partialQuota : partialFailed` to a bare `partialFailed` left the row CLOSED.
+* **f-prefetch (b)** -- pointing the `partialQuota` arm at the failure sentence changed nothing,
+  because this predicate never compared what a person actually reads. It now gets `f2`'s treatment:
+  both arms resolve through the ARB and the strings must differ.
+* **f2** -- `classified` proved `classifyVideoFailure` maps the type; nothing proved the card calls
+  it with the error it was given. `classifyVideoFailure(Exception(error.toString()))` makes
+  `error is ClipQuotaExhausted` false and the user reads "The clip link is unavailable" for a quota
+  refusal.
+* **f025** -- narrowing the tripwire's own subject set from `dartSources('lib')` to
+  `dartSources('lib/l10n')` left all three required assertions intact and made the suite assert
+  emptiness over an empty set. Both layers of the mitigation defeated at once, and F025's dangling
+  ids ship reachable. The empty-denominator failure `human_labels_are_zero` already refuses.
+* **checkout_copy** -- `guarded` proved the `isUnclassified` branch existed somewhere in the file,
+  not that every raw render sat inside it. Appending `+ ' (' + error.toString() + ')'` to the
+  classified line puts a raw Firebase exception in front of a paying customer.
+* **guest_upgrade_outcome** -- `"_GuestHistoryNotice" in page` was satisfied by the widget's own
+  `class _GuestHistoryNotice` declaration further down the same file, so the construction site could
+  be deleted while the row reported "the screen renders it: True". The person who had just lost
+  their guest history would be told nothing: the original bug, with more ceremony, exactly as that
+  docstring warns against.
+* **scanner_dependency_pin** -- `tensorflow-cpu==2.16.0  # was tensorflow-cpu==2.15.1` satisfied a
+  substring test while the file pinned a different TensorFlow than the provenance document names.
+* **metric_provenance_six** -- emptying `models` in the registry took the audit to zero claims, and
+  zero NOT_LOCATABLE read as *progress*. A registry that had lost the evaluation blocks this audit
+  exists to police was indistinguishable from one that had been fixed. The denominator is asserted
+  now.
+* **production_image_collection_disabled** -- a file that base64-encodes a progress photo and
+  `http.post`s it carried images off-device with none of the Storage machinery present, and this row
+  -- a PRIVACY claim -- went on asserting DISABLED. Different shape from the rest: surface coverage,
+  not declaration-versus-use.
+* **gym_webhook_still_undisclosed** -- `_without_comments` stripped only lines beginning `//`, so a
+  `*` continuation inside a `/* */` doc comment kept the premise alive after the dispatch it
+  described had been deleted. The premise satisfied by prose about itself.
+* **roboflow_key_not_committed**, two variants -- `_tracked_text_files` swallows every exception and
+  returns `()`, so anywhere git is unavailable the guard returned a clean bill of health from
+  scanning nothing. On a secrets guard, silence has to mean *unknown*. And the pattern missed
+  `ROBOFLOW_API_KEY`, which is Roboflow's own documented environment-variable name and therefore the
+  likeliest spelling of a committed key.
+
+**Two false OPENs I introduced and had to correct.** The first pass of these fixes reported
+`checkout_copy` and `guest_upgrade_outcome` as OPEN on the shipped tree. Both sites are Dart
+collection-ifs -- `if (...) ...[ ... ]` -- so the block slicer, which assumed braces, found the wrong
+region. And `checkout_copy`'s rule "every raw render inside the branch" was wrong in a second way:
+`_composePayload` writes the raw error into the string the Copy button puts on the clipboard for a
+bug report, which is correct and never reaches the screen. Counting *renders* rather than mentions
+fixed it. A guard that reports the shipped tree as broken is a guard that gets muted, so these were
+not shipped and argued about later.
+
+**And one I made twice.** `mapped` was computed and never used in `f_prefetch`'s verdict -- the exact
+defect this entry is about, committed by me while fixing it, and caught only because the mutation
+survived. It is recorded rather than quietly corrected, because the interesting thing about a
+recurring shape is how easy it is to reproduce while writing about it.
+
+**16 mutations, 14 kills, 2 correct survivors** (a comment quoting the f5 refusal; a pin comment
+naming another version). **Two invalid mutants recorded rather than hidden**: both were no-ops from
+line-ending mismatches, and the harness asserted instead of scoring survivors.
+
+**And a third instance of the fixture shape.** Thirteen tests went red after these fixes, all of
+them because their synthetic trees were simpler than the widened properties. That is now the third
+time this session, and it is the same failure as the tests that sat green on top of `f5`: a fixture
+that cannot express the property under test passes for a reason unrelated to what it names.
+
+Suites: `pytest scripts/` 702 passed; `npx tsc --noEmit` clean; `npx jest` 230 passed; ledger 19 rows
+reconciled, 8 source-provable. `flutter test` NOT RUN -- no Dart source changed, and every Dart
+mutation above was reverted byte-exactly, verified by `git diff`. The emulator suite is NOT RUN
+because `firestore.rules` is unchanged.

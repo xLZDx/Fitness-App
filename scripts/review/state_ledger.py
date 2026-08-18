@@ -299,9 +299,48 @@ def _without_comments(body: str) -> str:
     removed. A guard that reads prose finds the explanation and calls it the
     defect.
     """
-    return "\n".join(
-        ln for ln in body.splitlines() if not ln.lstrip().startswith("//")
-    )
+    out, in_block = [], False
+    for ln in body.splitlines():
+        s = ln.lstrip()
+        if in_block:
+            # `*` continuation lines and the closing `*/`. Missing these let a
+            # doc comment keep `gym_webhook_still_undisclosed` alive after the
+            # dispatch it describes had been deleted -- the premise satisfied
+            # by prose about itself.
+            if "*/" in ln:
+                in_block = False
+            continue
+        if s.startswith("/*"):
+            in_block = "*/" not in ln
+            continue
+        if s.startswith("//") or s.startswith("*"):
+            continue
+        out.append(ln)
+    return "\n".join(out)
+
+
+def _block_at(body: str, needle: str, opener: str = "{") -> str:
+    """The brace-delimited block that `needle` opens.
+
+    `_member_body` slices from a signature; this slices from anything -- an
+    `if`, a getter, a branch. It exists because the round of fixes before this
+    one proved only that a guard was in the right FILE and the right HANDLER,
+    never that the guard did anything. Demoting `throw new HttpsError(` to
+    `logger.info(` inside the anonymous-caller branch left `f5` reading CLOSED
+    while anonymous callers bought lifetime subscriptions again.
+    """
+    closer = {"{": "}", "[": "]", "(": ")"}[opener]
+    i = body.find(needle)
+    if i < 0:
+        return ""
+    j = body.find(opener, i)
+    if j < 0:
+        return ""
+    depth, k = 1, j + 1
+    while k < len(body) and depth:
+        depth += {opener: 1, closer: -1}.get(body[k], 0)
+        k += 1
+    return body[j:k]
 
 
 def _enum_has(body: str, enum_name: str, member: str) -> bool:
@@ -344,7 +383,28 @@ def f_prefetch() -> tuple[str, str]:
         _read("mobile/lib/features/workouts/workouts_page.dart")
     )
     carried = "quotaExhausted: batch.quotaExhausted" in provider
-    rendered = "PrefetchState.partialQuota" in page
+    # The getter is the one line between the flag and the state, and nothing
+    # watched it. Collapsing `quotaExhausted ? partialQuota : partialFailed`
+    # to a bare `partialFailed` left this row CLOSED with every quota refusal
+    # rendering as a fault.
+    mapped = "? PrefetchState.partialQuota" in _without_comments(
+        _block_at(outcome, "PrefetchState get state")
+    ).replace("\n", " ").replace("  ", " ")
+    # And the two states must reach a person as different sentences. Pointing
+    # the partialQuota arm at the failure string is the F2 defect wearing
+    # F-prefetch's clothes, so it gets F2's treatment: resolve both arms
+    # through the ARB and compare what is actually read.
+    arb_page = json.loads(_read("mobile/lib/l10n/app_en.arb"))
+    arms = {
+        state: re.search(
+            r"PrefetchState\." + state + r"\s*=>\s*l10n\.(\w+)", page
+        )
+        for state in ("partialQuota", "partialFailed")
+    }
+    texts = [
+        arb_page.get(m.group(1)) if m else None for m in arms.values()
+    ]
+    rendered = all(texts) and texts[0] != texts[1]
 
     has_batch = re.search(r"\bclass\s+ClipBatch\b", resolver) is not None
     has_flag = re.search(r"\bfinal\s+bool\s+quotaExhausted\b", resolver) is not None
@@ -356,9 +416,11 @@ def f_prefetch() -> tuple[str, str]:
         f"ClipBatch.quotaExhausted: {has_flag}",
         f"PrefetchState.partialQuota: {has_partial}",
         f"refusal carried into the outcome: {carried}",
-        f"rendered as its own state: {rendered}",
+        f"the getter maps the flag to the state: {mapped}",
+        f"rendered as its own sentence: {rendered}",
     ]
-    ok = absent and has_batch and has_flag and has_partial and carried and rendered
+    ok = (absent and has_batch and has_flag and has_partial
+          and carried and mapped and rendered)
     return ("CLOSED" if ok else "OPEN"), "; ".join(parts)
 
 
@@ -393,10 +455,17 @@ def f2() -> tuple[str, str]:
         "if (error is ClipQuotaExhausted) return VideoFailureReason"
         ".quotaExhausted" in _without_comments(failure).replace("\n", "")
     )
-    ok = named and distinct and classified
+    # ...and the card has to CALL it with the error it was given. Rewrapping
+    # the argument -- `classifyVideoFailure(Exception(error.toString()))` --
+    # makes `error is ClipQuotaExhausted` false, drops the user to "The clip
+    # link is unavailable" for a quota refusal, and left this row printing the
+    # CORRECT refusal string as its own evidence.
+    called = "classifyVideoFailure(error)" in _without_comments(card)
+    ok = named and distinct and classified and called
     return ("CLOSED" if ok else "OPEN"), (
         f"VideoFailureReason.quotaExhausted: {named}; classified from "
-        f"ClipQuotaExhausted: {classified}; refusal reads {quota_text!r}; "
+        f"ClipQuotaExhausted: {classified}; classifier called with the raw "
+        f"error: {called}; refusal reads {quota_text!r}; "
         f"fault reads {fault_text!r}"
     )
 
@@ -414,11 +483,19 @@ def f5() -> tuple[str, str]:
         "export const createCheckoutSession = onCall(",
     ))
     guarded = 'sign_in_provider === "anonymous"' in handler
-    named = "reason: CHECKOUT_REFUSAL.ANONYMOUS_ACCOUNT" in handler
-    ok = guarded and named
+    # And it has to REFUSE. Scoping the search to the paid handler fixed WHERE
+    # this looked and left it proving only that an `if` existed: replacing
+    # `throw new HttpsError(` with `logger.info(` inside that branch -- valid
+    # TypeScript, the firebase logger is variadic -- kept both substrings and
+    # the row read CLOSED, while anonymous callers bought the uncancellable,
+    # unrestorable subscription the comment above the guard describes.
+    branch = _block_at(handler, 'sign_in_provider === "anonymous"')
+    refuses = "throw new HttpsError(" in branch
+    named = "reason: CHECKOUT_REFUSAL.ANONYMOUS_ACCOUNT" in branch
+    ok = guarded and refuses and named
     return ("CLOSED" if ok else "OPEN"), (
         f"in createCheckoutSession -- anonymous guard present: {guarded}; "
-        f"refusal names itself: {named}"
+        f"the branch throws: {refuses}; refusal names itself: {named}"
     )
 
 
@@ -427,7 +504,27 @@ def checkout_copy() -> tuple[str, str]:
     classified = "checkoutLine(AppLocalizations.of(context), error)" in page
     # `error.toString()` is allowed, but only where the classifier has already
     # admitted it has no name for the failure. Anywhere else it is the defect.
-    guarded = "CheckoutFailure.of(error).isUnclassified" in page
+    #
+    # Presence of the branch is not the property. It used to be checked as a
+    # substring, so appending `+ ' (' + error.toString() + ')'` to the
+    # classified line -- a raw Firebase exception in front of a paying user,
+    # which is exactly what this row forbids -- changed nothing. Count instead:
+    # every raw render in the file must fall inside the unclassified branch.
+    stripped = _without_comments(page)
+    # A Dart collection-if: `if (...) ...[ ... ]`. Brackets, not braces.
+    branch = _block_at(
+        stripped, "CheckoutFailure.of(error).isUnclassified", opener="["
+    )
+    # And only RENDERS count. `_composePayload` writes the raw error into the
+    # string the Copy button puts on the clipboard for a bug report -- correct,
+    # and never on screen. Requiring every mention to sit inside the branch
+    # reported the shipped tree as broken, which is how a guard gets muted.
+    def _renders(text: str) -> int:
+        return sum(
+            1 for m in re.finditer(r"error\.toString\(\)|'\$error'", text)
+            if "Text(" in text[max(0, m.start() - 140):m.start()]
+        )
+    guarded = bool(branch) and _renders(stripped) == _renders(branch)
     service = _read(
         "mobile/lib/features/subscription/data/cloud_functions_stripe_service.dart"
     )
@@ -463,7 +560,16 @@ def guest_upgrade_outcome() -> tuple[str, str]:
     decided = (
         "wasGuest ? GuestUpgrade.orphaned : GuestUpgrade.notAGuest" in repo
     )
-    shown = "GuestUpgrade.orphaned" in page and "_GuestHistoryNotice" in page
+    # A CONSTRUCTION inside the losing branch. `"_GuestHistoryNotice" in page`
+    # was satisfied by the widget's own `class _GuestHistoryNotice` declaration
+    # further down the same file, so the call site could be deleted outright
+    # while this reported "the screen renders it: True" -- and the person who
+    # had just lost their guest history was told nothing. Which is the original
+    # bug, with more ceremony, exactly as this docstring warns.
+    branch = _block_at(
+        page, "action.value == GuestUpgrade.orphaned", opener="["
+    )
+    shown = "GuestUpgrade.orphaned" in page and "_GuestHistoryNotice(" in branch
     ok = typed and decided and shown
     return ("CLOSED" if ok else "OPEN"), (
         f"GuestUpgrade.orphaned declared: {typed}; the shipping repository "
@@ -486,7 +592,16 @@ def scanner_dependency_pin() -> tuple[str, str]:
     doc = _read("core/ml/SCANNER_PROVENANCE.md")
     required = ("tensorflow-cpu==2.15.1", "keras==2.15.0",
                 "numpy==1.26.4", "mediapipe==1.0.0")
-    missing = [v for v in required if v not in body]
+    # Whole lines, comments stripped. As a substring test,
+    # `tensorflow-cpu==2.16.0  # was tensorflow-cpu==2.15.1` satisfied the
+    # check while the file pinned a different TensorFlow than the provenance
+    # document names -- the recovered environment silently ceasing to be
+    # reproducible, reported as agreement.
+    pinned = {
+        ln.split("#")[0].strip()
+        for ln in body.splitlines() if ln.split("#")[0].strip()
+    }
+    missing = [v for v in required if v not in pinned]
     # The versions must agree with the prose that cites them, in both
     # directions -- the document names these four explicitly.
     undocumented = [
@@ -513,6 +628,12 @@ def metric_provenance_six() -> tuple[str, str]:
 
     result = audit()
     counts = result["counts"]
+    # The denominator. Emptying `models` in MODEL_REGISTRY.json took the audit
+    # to zero claims, and zero NOT_LOCATABLE read as progress: a registry that
+    # had lost the evaluation blocks this audit exists to police was
+    # indistinguishable from one that had been fixed. `human_labels_are_zero`
+    # already refuses a zero that came from an empty scan; this did not.
+    claims = result.get("claims", 0)
     n = counts.get("NOT_LOCATABLE", 0)
     drifted = counts.get("DRIFTED", 0)
     missing = counts.get("SOURCE_MISSING", 0)
@@ -524,7 +645,7 @@ def metric_provenance_six() -> tuple[str, str]:
     # is progress; more is a regression; DRIFTED and SOURCE_MISSING are
     # different animals entirely and must stay at zero, because they mean a
     # source WAS located and disagrees, or is missing outright.
-    ok = n <= 6 and drifted == 0 and missing == 0
+    ok = claims >= 20 and n <= 6 and drifted == 0 and missing == 0
     return ("DORMANT" if ok else "EXECUTABLE_ENGINEERING_WORK"), (
         f"NOT_LOCATABLE={n} (ceiling 6), DRIFTED={drifted} (expected 0), "
         f"SOURCE_MISSING={missing} (expected 0), total claims={result['claims']}"
@@ -630,7 +751,15 @@ def f025_tripwire_intact() -> tuple[bool, str]:
     # So assert what the tripwire ASSERTS. F025's mitigation is this suite and
     # nothing else; a suite that no longer makes these two claims is not a
     # weaker tripwire, it is an absent one.
-    required = ("dailyWorkouts", "expect(readers, isEmpty", "expect(seed, contains(")
+    required = ("dailyWorkouts", "expect(readers, isEmpty",
+                "expect(seed, contains(",
+                # The subject set itself. Narrowing `dartSources('lib')` to
+                # `dartSources('lib/l10n')` leaves all three assertions above
+                # intact and makes the suite assert emptiness over an empty
+                # set -- so a real reader ships, the tripwire passes, and this
+                # invariant agreed. Same empty-denominator failure
+                # `human_labels_are_zero` already refuses.
+                "dartSources('lib')")
     missing = [needle for needle in required if needle not in body]
     return not missing, (
         "the tripwire still asserts that nothing reads dailyWorkouts and that "
@@ -711,11 +840,22 @@ def production_image_collection_disabled() -> tuple[str, str]:
     disabled by a flag someone could flip; there is nothing built to collect
     with, and that is a far stronger statement.
     """
+    # Storage was never the only route. A file that base64-encodes a progress
+    # photo and `http.post`s it to an intake endpoint carried images off the
+    # device with none of the machinery below present, and this row -- which
+    # is a PRIVACY claim -- went on asserting DISABLED. Storage handles, and
+    # any outbound call in a file that also encodes bytes.
     client = re.compile(
-        r"\b(?:FirebaseStorage|UploadTask)\b|\.put(?:Data|File|String)\s*\("
+        r"\b(?:FirebaseStorage|UploadTask)\b|\.put(?:Data|File|String|Blob)\s*\("
     )
+    outbound = re.compile(r"\b(?:http|dio|Dio)\s*\.\s*post\b|\bhttp\.MultipartRequest\b")
+    encodes = re.compile(r"\bbase64Encode\b|\breadAsBytes\b|\bXFile\b")
     server = re.compile(r"\bonObjectFinalized\b|\bonObjectArchived\b")
-    hits = [p for p, b in _dart_sources().items() if client.search(b)]
+    hits = []
+    for p, raw in _dart_sources().items():
+        b = _without_comments(raw)
+        if client.search(b) or (outbound.search(b) and encodes.search(b)):
+            hits.append(p)
     for p in (REPO / "functions" / "src").rglob("*.ts"):
         if server.search(p.read_text(encoding="utf-8", errors="replace")):
             hits.append(p.relative_to(REPO).as_posix())
@@ -834,8 +974,17 @@ def gym_webhook_still_undisclosed() -> tuple[bool, str]:
     """
     arb = _read("mobile/lib/l10n/app_en.arb")
     claims_two = "Two processors are involved, and no others" in arb
-    dispatches = "maintenanceWebhookUrl" in _without_comments(
-        _read("functions/src/index.ts")
+    # The READ, inside the handler. Only two lines in that file mention the
+    # symbol and one of them is prose inside a `/* */` doc comment, so with
+    # the dispatch deleted the premise stayed satisfied by a sentence
+    # describing the thing that no longer existed -- and the operator would
+    # have gone on being asked a question that had answered itself.
+    handler = _without_comments(_exported_member(
+        _read("functions/src/index.ts"),
+        "export const reportEquipment = onCall(",
+    ))
+    dispatches = (
+        "maintenanceWebhookUrl" in handler and "await fetch(" in handler
     )
     return claims_two and dispatches, (
         "the privacy body still says two processors and no others, and "
@@ -849,8 +998,11 @@ def gym_webhook_still_undisclosed() -> tuple[bool, str]:
 #: A literal assigned to the key, in any quoting style. Narrow on purpose: a
 #: loose "long token near the word roboflow" pattern would fire on every sha256
 #: in the provenance documents, and a guard that cries wolf is switched off.
+#: `ROBOFLOW_API_KEY` is Roboflow's own documented environment-variable name,
+#: so the likeliest spelling of a committed key was the one the first pattern
+#: missed. Any `ROBOFLOW…KEY`.
 _ROBOFLOW_LITERAL = re.compile(
-    r"ROBOFLOW_KEY\s*[=:]\s*[\"\'][^\"\']{8,}"
+    r"ROBOFLOW[_A-Z]*KEY\s*[=:]\s*[\"\'][^\"\']{8,}"
 )
 
 
@@ -863,9 +1015,19 @@ def roboflow_key_not_committed() -> tuple[bool, str]:
     Verified at HEAD and across all history with `git log --all -S` when the
     row was enrolled; this guards it going forward.
     """
+    files = _tracked_text_files()
+    # Fail CLOSED on an empty subject set. `_tracked_text_files` swallows every
+    # exception and returns (), so anywhere git is unavailable -- an export, a
+    # copied tree, a CI image without git -- this returned a clean bill of
+    # health from scanning nothing. On a secrets guard, silence has to mean
+    # "unknown", never "fine".
+    if not files:
+        return False, (
+            "git ls-files returned nothing, so this scanned no files at all. "
+            "That is not a clean result; it is an unanswered question."
+        )
     hits = sorted({
-        rel for rel in _tracked_text_files()
-        if _ROBOFLOW_LITERAL.search(_read(rel))
+        rel for rel in files if _ROBOFLOW_LITERAL.search(_read(rel))
     })
     return not hits, (
         "no ROBOFLOW_KEY literal is assigned anywhere in this repository"

@@ -570,6 +570,11 @@ abstract class ClipUrlResolver {
 _GOOD_OUTCOME = """
 enum PrefetchState { nothingScheduled, complete, noneQuota, noneFailed,
   partialQuota, partialFailed }
+PrefetchState get state {
+  return quotaExhausted
+      ? PrefetchState.partialQuota
+      : PrefetchState.partialFailed;
+}
 """
 
 
@@ -584,8 +589,8 @@ def _tree(monkeypatch, resolver=_GOOD_RESOLVER, outcome=_GOOD_OUTCOME,
         # would pass for that reason instead of the one it names.
         "mobile/lib/features/workouts/state/offline_video_providers.dart":
             "return PrefetchOutcome(quotaExhausted: batch.quotaExhausted);",
-        "mobile/lib/features/workouts/workouts_page.dart":
-            "PrefetchState.partialQuota => l10n.clipQuotaReached,",
+        "mobile/lib/features/workouts/workouts_page.dart": _ARMS,
+        "mobile/lib/l10n/app_en.arb": _PREFETCH_ARB,
     }
     monkeypatch.setattr(
         sl, "_dart_sources", lambda: dict(files, **{"x.dart": extra})
@@ -622,7 +627,8 @@ def test_f2_reads_the_arb_and_not_the_key_name(monkeypatch):
     """The false CLOSED a reviewer found: rename the key to something that no
     longer contains `unavailable`, leave its VALUE as the generic failure
     string, and an identifier check reports the defect as fixed."""
-    card = ("VideoFailureReason.quotaExhausted => l10n.clipQuotaReached,\n"
+    card = ("final reason = classifyVideoFailure(error);\n"
+            "VideoFailureReason.quotaExhausted => l10n.clipQuotaReached,\n"
             "VideoFailureReason.linkUnavailable => l10n.clipGenericFault,")
     # The classifier line is part of the healthy fixture now: `f2` gained a
     # conjunct requiring that something actually PRODUCES the reason, and
@@ -1138,9 +1144,18 @@ def test_check_reports_an_untracked_residual(monkeypatch, ledger):
 def _p1(monkeypatch, *, claims_two=True, dispatches=True, in_comment=False):
     arb = ("Two processors are involved, and no others: Google and Stripe."
            if claims_two else "Three processors are involved.")
-    ts = "const url = snap.data()?.maintenanceWebhookUrl;" if dispatches else ""
+    ts = ("export const reportEquipment = onCall(INTERACTIVE, async (r) => {\n"
+          "  const url = snap.data()?.maintenanceWebhookUrl;\n"
+          "  await fetch(url, { method: 'POST' });\n"
+          "});\n") if dispatches else (
+          "export const reportEquipment = onCall(INTERACTIVE, async (r) => {});")
     if in_comment:
-        ts = "// the old maintenanceWebhookUrl dispatch, since removed"
+        # A `/* */` doc comment, which is the shape that actually defeated this
+        # invariant: `_without_comments` stripped only `//` lines, so prose
+        # DESCRIBING the deleted dispatch kept the premise alive.
+        ts = ("/**\n * gyms/{gymId}.maintenanceWebhookUrl -- dispatch removed.\n"
+              " * await fetch(url) used to live here.\n */\n"
+              "export const reportEquipment = onCall(INTERACTIVE, async (r) => {});")
     monkeypatch.setattr(
         sl, "_read",
         lambda rel: {"mobile/lib/l10n/app_en.arb": arb,
@@ -1244,15 +1259,29 @@ def _files(monkeypatch, files: dict):
     monkeypatch.setattr(sl, "_read", lambda rel: files.get(rel, ""))
 
 
+_GETTER = ("PrefetchState get state {\n"
+           "  return quotaExhausted\n"
+           "      ? PrefetchState.partialQuota\n"
+           "      : PrefetchState.partialFailed;\n"
+           "}")
+
+_ARMS = ("PrefetchState.partialQuota => l10n.partialLimit,\n"
+         "PrefetchState.partialFailed => l10n.partialFailed,")
+
+_PREFETCH_ARB = json.dumps({
+    "partialLimit": "38 of 84 saved — daily limit reached",
+    "partialFailed": "38 of 84 saved — some downloads failed",
+})
+
 _PREFETCH_FILES = {
     "mobile/lib/features/equipment/data/clip_url_resolver.dart":
         "class ClipBatch { final bool quotaExhausted; }",
     "mobile/lib/features/workouts/data/prefetch_outcome.dart":
-        "enum PrefetchState { partialQuota, partialFailed }",
+        "enum PrefetchState { partialQuota, partialFailed }\n" + _GETTER,
     "mobile/lib/features/workouts/state/offline_video_providers.dart":
         "return PrefetchOutcome(quotaExhausted: batch.quotaExhausted);",
-    "mobile/lib/features/workouts/workouts_page.dart":
-        "PrefetchState.partialQuota => l10n.clipQuotaReached,",
+    "mobile/lib/features/workouts/workouts_page.dart": _ARMS,
+    "mobile/lib/l10n/app_en.arb": _PREFETCH_ARB,
 }
 
 
@@ -1269,8 +1298,15 @@ def test_f_prefetch_is_closed_when_the_refusal_is_declared_carried_and_shown(
      "the wire is cut, so every quota refusal renders as a fault -- which is "
      "F-prefetch's literal defect, and the row used to still read CLOSED"),
     ("mobile/lib/features/workouts/workouts_page.dart",
-     "PrefetchState.partialFailed => l10n.clipGenericFault,",
-     "nothing renders the refusal as its own state"),
+     "PrefetchState.partialQuota => l10n.partialFailed,\n"
+     "PrefetchState.partialFailed => l10n.partialFailed,",
+     "both states reach the person as the same sentence, which is the F2 "
+     "defect wearing F-prefetch's clothes"),
+    ("mobile/lib/features/workouts/data/prefetch_outcome.dart",
+     "enum PrefetchState { partialQuota, partialFailed }\n"
+     "PrefetchState get state { return PrefetchState.partialFailed; }",
+     "the getter no longer maps the flag to the state -- the one line "
+     "between a carried flag and a rendered state"),
 ])
 def test_f_prefetch_needs_the_refusal_to_actually_reach_a_person(
     monkeypatch, rel, replacement, why
@@ -1287,6 +1323,7 @@ def test_a_comment_quoting_the_wire_is_not_the_wire(monkeypatch):
         "// quotaExhausted: batch.quotaExhausted used to be here\n"
         "return PrefetchOutcome(quotaExhausted: false);"
     )
+    # `_read` is patched, so the ARB has to come from the fixture too.
     _files(monkeypatch, files)
     assert sl.f_prefetch()[0] == "OPEN"
 
@@ -1297,6 +1334,7 @@ _F2_FILES = {
         "if (error is ClipQuotaExhausted) return VideoFailureReason"
         ".quotaExhausted;",
     "mobile/lib/features/equipment/widgets/exercise_reference.dart":
+        "final reason = classifyVideoFailure(error);\n"
         "VideoFailureReason.quotaExhausted => l10n.clipQuotaReached,\n"
         "VideoFailureReason.linkUnavailable => l10n.clipGenericFault,",
     "mobile/lib/l10n/app_en.arb": json.dumps({
@@ -1334,6 +1372,7 @@ def _trap(tmp_path, monkeypatch, body):
 
 _LIVE_TRAP = (
     "test('nothing reads dailyWorkouts', () {\n"
+    "  for (final f in dartSources('lib')) {}\n"
     "  expect(readers, isEmpty, reason: 'a reader appeared');\n"
     "  expect(seed, contains(\"'squat'\"));\n"
     "});\n"
