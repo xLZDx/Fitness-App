@@ -15360,3 +15360,36 @@ including the widget that draws the sentence.
 
 **Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt; no external
 review was performed on this diff.
+
+## N07 — the tripwire, executed
+
+The finding was recorded earlier this session; the guard for it was written and **never run**. It
+runs now, and it holds.
+
+`mobile/test/adversarial/n07_team_activation_test.dart` does not test Teams. It tests one
+conditional: **wired to a real repository ⇒ `firestore.rules` must authorise it.** The conditional
+is vacuous in this repository today, because nothing is wired — and a guard that is vacuous against
+real inputs is the exact defect this programme has hit repeatedly. So it is expressed as a pure
+function over a source map and exercised against three trees: the real one, a synthetic wired tree
+with no rule (must fail), and a synthetic wired tree with a rule (must pass). Only the first is
+evidence about today; the other two are what make it a guard rather than decoration.
+
+Two controls sit beside it, and they matter more than the conditional: the declaration still
+defaults to `MockTeamFeedRepository`, and `firestore.rules` still matches no team collection. If
+either changes, the conditional becomes satisfiable for the wrong reason, and the control fails
+rather than the guard silently passing.
+
+**Mutation.** A line naming `teamFeedRepositoryProvider.overrideWithValue` was appended to
+`lib/main.dart` — a real activation as far as the scan is concerned. The tripwire fired with the
+full refusal message, and the dormancy control failed alongside it. Restored byte-for-byte;
+`git status` clean on that file afterwards. Comment-stripping is exercised separately, because this
+file's own prose names the provider a dozen times and a raw substring scan would have reported the
+documentation as the defect — the failure mode `dormant_traps_test.dart` already had to fix once.
+
+`core/review/N07_TEAM_ACTIVATION_GATE.md` is the checklist the refusal message points at, and the
+test asserts the file exists and still contains the requirements it names. A refusal that cites a
+missing file is a refusal nobody can act on.
+
+`N07 = KEEP`. Not wired, not deleted, and now guarded.
+
+**Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.
