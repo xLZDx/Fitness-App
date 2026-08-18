@@ -114,7 +114,48 @@ No pin file of any kind exists; every version above is RECOVERABLE from
 | Metric | **FACT** | The trainer printed `FINAL val_accuracy=0.617`. `MODEL_REGISTRY.json` records `top_1: 0.617`, and `mobile/assets/models/README.md:19-21` defines it as the held-out 15% stratified split evaluated on the exported `.tflite`, n=261. **Reproduced.** |
 | `labels.txt` | **FACT** | sha256 `ff51b4a9…4c99fd` — bitwise identical to the historical file. |
 | Model weights | **FACT** | `b6b37af8…ef1260` vs historical `37733e2e…38eed3`. Different. Byte count identical at 4,495,700. |
-| Metadata step | **BLOCKED_BY_DEPENDENCIES** | `AttributeError: module '_pywrap_metadata_version' has no attribute 'GetMinimumMetadataParserVersion'`. The trainer stubs that module because mediapipe on Windows ships no C extension; the stub does not cover the path `load_metadata_buffer` takes. So no final `equipment_v1.tflite` was produced by this run. |
+| Metadata step | **BLOCKED_BY_WINDOWS_PACKAGE** | `AttributeError: module '_pywrap_metadata_version' has no attribute 'GetMinimumMetadataParserVersion'`. The trainer stubs that module because mediapipe on Windows ships no C extension; the stub does not cover the path `load_metadata_buffer` takes. So no final `equipment_v1.tflite` was produced by this run. |
+
+### The metadata step, traced (2026-08-18)
+
+The row above said `BLOCKED_BY_DEPENDENCIES`, which named a symptom. A bounded probe established
+what the requirement actually is, and turned up something about the SHIPPED artefact that had not
+been written down.
+
+**What the step needs.** `attach_metadata.py` (in `D:/tools/equipment-model`, outside this
+worktree) reads `out/equipment_v1_nometa.tflite` and uses
+`mediapipe.tasks.python.metadata.metadata_writers.image_classifier` to embed the label set and the
+normalisation parameters, then writes `out/equipment_v1.tflite`. This is **not** merely packaging.
+The app loads the model through ML Kit's `LocalLabelerOptions`
+(`mobile/lib/features/visual_equipment/data/mlkit_live_equipment_service.dart`), which reads its
+labels out of the embedded metadata — a model without it produces no usable labels. Training,
+conversion and the metric evaluation do not need it, which is why `METRIC_REPRODUCIBLE` was
+reachable without it.
+
+**Classification: `WINDOWS_PACKAGE_GAP`.** `tflite-support` publishes no Windows wheels. The
+metadata writers still exist inside `mediapipe` 1.0.0, but that build ships them without the
+`_pywrap_metadata_version` C extension. Probed for a genuine environment rather than assumed:
+`tflite_support` is absent from `D:/tools/ml-train-env` and from the system interpreter, and the
+Docker images already present locally are generic `python:3-slim`/`python:3.12-slim` with nothing
+installed. Obtaining the real tool means a network install into a Linux container, which is an
+environment recipe rather than a result. **Disposition: `BLOCKED_BY_WINDOWS_PACKAGE`.**
+
+**What the probe found in the shipped model — `FACT`, and new.** `attach_metadata.py` does not fail
+for want of a stub; it *installs* one, `_install_pywrap_stub`, which exposes
+`GetMinimumMetadataParserVersion` as a function returning the literal string `"1.0.0"`. And
+`D:/tools/equipment-model/out/metadata.json` records `min_parser_version: 1.0.0`. So the minimum
+metadata parser version embedded in the `equipment_v1.tflite` this app ships was **stamped by a
+stub, not computed by the library**. For a plain image classifier carrying labels and normalisation
+that floor is probably correct — but probably is the whole point: nobody computed it, so nobody
+knows, and the artefact states it as though someone had.
+
+This is recorded and deliberately **not fixed**. Fixing it means running the genuine tool, which is
+the blocked step. Widening the stub until the current error goes away would mean inventing a second
+metadata parser version and stamping that into a shipped artefact too — the fabrication this
+programme exists to refuse, and the reason the obvious workaround stays refused.
+
+No artefact was modified by this probe. The shipped champion, the registry, the v2 status, D3 and
+`PRODUCTION_IMAGE_COLLECTION = DISABLED` are all untouched.
 
 **Disposition: `METRIC_REPRODUCIBLE`. Not `BITWISE_REPRODUCIBLE`, and it never could
 have been.** The trainer seeds only the train/validation split — `SEED = 20260729`

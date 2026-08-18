@@ -685,7 +685,7 @@ LEDGER: tuple[Row, ...] = (
         evidence=("core/ml/SCANNER_PROVENANCE.md",
                   "mobile/assets/models/README.md",),
         invariant=metadata_tool_is_not_local,
-        quote=("core/ml/SCANNER_PROVENANCE.md", "BLOCKED_BY_DEPENDENCIES"),
+        quote=("core/ml/SCANNER_PROVENANCE.md", "BLOCKED_BY_WINDOWS_PACKAGE"),
         no_local_predicate="mediapipe on this platform ships no "
                            "_pywrap_metadata_version C extension. Widening the "
                            "stub would mean inventing a metadata parser "

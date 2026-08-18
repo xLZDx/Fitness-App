@@ -16303,3 +16303,38 @@ document's "it cannot drift" claim aspirational. It is now the first step in the
 Suites: `pytest scripts/review scripts/ml scripts/ct1` 457 passed. No Dart, `functions/` or
 `firestore.rules` changed, so `flutter test`, jest, `tsc` and the emulator are NOT RUN rather than
 quoted.
+
+## The metadata step, traced to a package gap and a stamped version nobody computed
+
+The scanner row said `BLOCKED_BY_DEPENDENCIES`, which named a symptom rather than a requirement. A
+bounded probe settled what the step actually needs, and found something about the shipped artefact
+that had not been written down.
+
+Metadata is not packaging. The app loads the model through ML Kit's `LocalLabelerOptions`, which
+reads the label set out of the embedded metadata, so a model without it produces no usable labels.
+Training, conversion and the metric evaluation do not need it, which is why `METRIC_REPRODUCIBLE`
+was reachable without it. Classification: `WINDOWS_PACKAGE_GAP`. `tflite-support` publishes no
+Windows wheels; the writers survive inside mediapipe 1.0.0 but without the
+`_pywrap_metadata_version` C extension. Probed rather than assumed: `tflite_support` is absent from
+`D:/tools/ml-train-env` and from the system interpreter, and the Docker images already present are
+bare `python:3-slim` variants. Getting the genuine tool means a network install into a Linux
+container, which is an environment recipe and not a result. Disposition:
+`BLOCKED_BY_WINDOWS_PACKAGE`.
+
+The finding worth keeping is separate, and it is a `FACT` about what already shipped.
+`attach_metadata.py` does not fail for want of a stub — it installs one, and that stub returns the
+literal string `"1.0.0"` for `GetMinimumMetadataParserVersion`. `out/metadata.json` records
+`min_parser_version: 1.0.0`. The minimum parser version embedded in the `equipment_v1.tflite` this
+app ships was therefore stamped by a stub rather than computed by the library. For a plain
+classifier carrying labels and normalisation that floor is probably right, and *probably* is the
+entire point: nobody computed it, so nobody knows, while the artefact states it as though somebody
+had.
+
+Recorded, not fixed. Fixing means running the genuine tool, which is the blocked step; widening the
+stub until the current error disappears would mean inventing a second parser version and stamping
+that into a shipped artefact as well. That is the fabrication this programme refuses, and it is
+exactly why the obvious workaround stays refused.
+
+No artefact was modified. The champion, the registry, v2, D3 and `PRODUCTION_IMAGE_COLLECTION =
+DISABLED` are untouched. The ledger's quoted fragment moved with the document, which is the
+mechanism from the previous gate doing its job on its first real edit.
