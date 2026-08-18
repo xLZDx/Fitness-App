@@ -36,7 +36,7 @@ that closed it.
 | `guest-upgrade-outcome` | **CLOSED** | SOURCE | mobile/lib/features/auth/data/sign_in_outcome.dart, mobile/lib/features/auth/data/firebase_auth_repository.dart, mobile/lib/features/auth/login_page.dart |
 | `scanner-dependency-pin` | **CLOSED** | SOURCE | core/ml/pins/ml_train_env_recovered_2026-08-18.txt, core/ml/SCANNER_PROVENANCE.md |
 | `N-05` | **OPERATOR_DECISION_REQUIRED** | OPERATOR | core/review/N05_DISPOSITION.md, public/privacy.html |
-| `N-04-gym-association` | **OPERATOR_DECISION_REQUIRED** | OPERATOR | core/DECISION_LOG.md |
+| `N-04-gym-association` | **OPERATOR_DECISION_REQUIRED** | OPERATOR | core/review/N04_EQUIPMENT_REPORT_AUTHORITY.md, core/DECISION_LOG.md |
 | `F025` | **DORMANT** | OPERATOR | mobile/test/adversarial/dormant_traps_test.dart |
 | `N-07` | **DORMANT** | OPERATOR | core/review/N07_TEAM_ACTIVATION_GATE.md, mobile/test/adversarial/n07_team_activation_test.dart |
 | `D1` | **EXTERNAL_AUTHORITY_REQUIRED** | EXTERNAL | core/review/CLINICAL_VALIDATION_HANDOFF.md, core/review/worklist/submission.json |

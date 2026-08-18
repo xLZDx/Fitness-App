@@ -317,3 +317,101 @@ less than it appears to and costs the most, on the repository's own measurement.
 None of this is engineering's to enact. Every option above is a deployment, a console action, or a
 product policy, and the disposition at the top of this file is unchanged: **`N-05 = OPERATOR /
 PLATFORM DECISION REQUIRED`.**
+
+---
+
+## 8. What a devil's advocate did to §7 (2026-08-18)
+
+The recommendation above was put to an adversarial reviewer whose only instruction was to break it.
+**The conclusion survived; three of the arguments for it did not.** All four findings below were
+reproduced against source before being written down, and the recommendation is restated at the end
+with the defects removed rather than quietly re-asserted.
+
+### 8.1 3a and 4 answer different threats, and §7 let them read as one plan
+
+`§3` opens by saying the exposure is **"Not the money"** and prices full extraction of the library
+at **$0.077–$0.31**. `3a`'s stated threat is *"nobody noticing a $44,000 day"*. A budget alert set
+at any threshold that survives normal operation **cannot fire on a $0.31 event** — so the leg that
+acts is blind to the exposure the other leg accepts, and the leg that accepts is silent about the
+scenario the first one watches.
+
+Both are still worth taking. They are not a package, they are **two independent insurances against
+two different failures**, and §7 presented them under one heading as though the first mitigated what
+the second accepted. It does not, and nothing available here does.
+
+### 8.2 The number Option 4 is justified by was quietly set to zero
+
+§7 called the competitor-value of the library *"a commercial judgement engineering cannot make"* and
+left it unpriced. Leaving *competitor value* unpriced is legitimate. Leaving the reader to infer
+zero is not, because **this repository records what the library cost**:
+`core/VIDEO_SOURCES_RESEARCH_2026-08-01.md:500,613,633` — **$329** for ~1,700+ exercises, list
+$599, under $0.20 each.
+
+So the honest framing of Option 4 is: *accept a $0.077–$0.31 serving cost to a party extracting
+content with a documented $329 replacement floor, whose vendor permission is conditional
+(`functions/src/video_urls.ts:9-12`).* That is roughly a thousandfold arbitrage, and it is still
+defensible at 5–10 testers — but the operator is entitled to agree to it in those words rather than
+in the cents.
+
+### 8.3 "Revisit at Play launch" had no trigger, and was not yet a well-formed instruction
+
+Two separate defects, both measured:
+
+* **Nothing fires.** The only automated tripwire on this row is `n05_premise_holds`
+  (`scripts/review/state_ledger.py`), which watches the deletion sentence in `public/privacy.html`.
+  Shipping to Play changes no source file, so the one mechanism guarding N-05 is structurally
+  incapable of firing on the nominated event. `core/RELEASE_BUILD_2026-08-16.md` contains no
+  occurrence of `N-05`, `App Check` or `APP_CHECK`.
+* **The sequence was stated backwards.** `core/PLAY_DATA_SAFETY_2026-08-05.md:197`: the Play App
+  Signing SHA-256 *"cannot be added to App Check until the first bundle upload creates the key"*.
+  So Option 1 is not merely gated on Play distribution existing; it is gated on a key that does not
+  exist until the first upload. "Stage App Check at Play launch" is a sentence that cannot be
+  executed on the day it names.
+
+The correct form is a sequence, and it is a **calendar item owned by a person, not a tripwire**:
+first bundle upload → register the Play App Signing SHA-256 with App Check → accumulate real
+installs → read the attested share → then, and only then, decide on `APP_CHECK_ENFORCED_VIDEO`.
+Saying so is more useful than implying a mechanism that does not exist.
+
+### 8.4 Option 2 was judged on the wrong axis
+
+§7 rejected Option 2 on time-to-extraction (1 day across 17 uids versus 3 days on one verified
+account). That is the metric of the *extraction* scenario. But **free-account count is the only
+multiplier in the $44,000 figure** — a thousand free accounts at ten thousand redemptions each —
+and Option 2 is the only lever in the package that touches it. `functions/src/abuse_guard.ts:215-219`
+says of the divisor already in production: *"What this does: raises the number of rotations needed
+by 8×. What it does NOT do: make rotation expensive, because nothing here can."* Option 2 is the
+only option that makes rotation expensive; it is the one lever that repairs the premise of a control
+this backend already ships.
+
+It is still not recommended — the privacy cost remains the largest of the four, extraction still
+completes, and §2.2's *"it looks like a fix"* objection stands. But that scepticism was applied to
+Option 2 and never to Option 1, whose measured capability reduction **today** is approximately zero,
+and Options 1 and 2 cover disjoint attackers rather than competing on one axis.
+
+### 8.5 One premise weakened, not broken
+
+§7 said whether a budget alert exists is UNKNOWN *because it is console state, outside this
+repository*. The **UNKNOWN stands** — nothing in this tree reads a billing budget. The **reason is
+weaker than stated**: `scripts/dev/production_manifest.py:190-200` already authenticates with a
+`gcloud` token and materialises live console state as a repository fact, including App Check
+service configuration. So "the repository cannot know console state" is not a property of this
+repository; it is a gap in one script. Whether to close that gap for billing budgets is a real
+option, and it is deliberately **not** taken here: it would be built against an API nobody can
+exercise from this machine, and an unrunnable reader is not a measurement.
+
+### 8.6 The recommendation, restated
+
+**Unchanged in substance: 3a now; 4 as the standing position; 1 sequenced after the first Play
+upload; 2 not recommended.** What changed is what the operator is being asked to agree to:
+
+1. **3a is an alarm for the money scenario only.** It will not detect the licence exposure, which
+   would surface as a message from the vendor and nowhere else.
+2. **4 accepts a thousandfold arbitrage against a $329 documented floor**, not merely "cents".
+3. **1 is a sequence beginning at the first bundle upload**, not an event on launch day, and no
+   mechanism will remind anyone.
+4. **2 remains refused on privacy cost**, now with its strongest argument recorded rather than
+   omitted.
+
+An argument that survives being attacked on four axes is worth more than one that was never
+attacked. It is worth less than one whose numbers were right the first time.

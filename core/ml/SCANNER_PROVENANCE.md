@@ -126,10 +126,25 @@ true and unhelpful: it named an owner without giving them anything to decide. Th
 ### The measurement that settles the scope
 
 1,741 + 90,817 = **92,558** — the two image corpora account for the entire file count and
-effectively all of the ~2 GB. The two trainers that would answer `training_code_commit` are 6,656
-and 7,228 bytes. **Value per byte differs by about five orders of magnitude between the source and
-the corpus**, so any option that treats the tree as one indivisible unit pays corpus cost to
-preserve source value.
+effectively all of the ~2 GB.
+
+**Corrected 2026-08-18.** This section previously priced the source at 13,884 bytes, being the two
+trainers, and claimed five orders of magnitude. Re-measured on disk: the pipeline root holds **15
+Python files totalling 80,271 bytes**, and the framing was wrong to stop at the trainers —
+`attach_metadata.py` (4,474 B) is load-bearing for the shipped artefact's labels and
+`eval_on_gym_photos.py` (4,475 B) produced both the 0/18 and 1/18 real-world numbers. Add ~62 KB of
+provenance JSON and `train_v2.log` at 1,317,222 B. So the true ratio is **about four orders of
+magnitude, not five**.
+
+The conclusion is unchanged and the correction is recorded anyway: an argument that survives a 6x
+error in its own headline number was not resting on that number, and a decision package whose
+measurements are not re-checked is the artefact this whole document exists to distrust.
+
+A third tree was missed entirely: **`dataset_v2_thin/`, 462 files**, in neither pinned manifest
+(`scanner_provenance.PINNED` pins only `dataset` and `dataset_v2`). It is the dropped-8-classes tree
+the only surviving log actually describes. With `fresh_test/`, that is 518 files outside both
+manifests — they must be content-addressed under any snapshot option, and today they are
+unaccounted for.
 
 ### The options, and why three of them lose
 
@@ -165,6 +180,15 @@ that at a snapshot repository and it returns the *recovery* commit as the commit
 file — precisely the substitution this document forbids. A `RECOVERY:` commit message does not fix
 it, because nothing reads commit messages. The marker has to be a tracked file that tooling
 consults before it consults `git log`.
+
+**Corrected 2026-08-18: that hazard is CONDITIONAL, not present.** The paragraph above read as a
+live defect and it is not one. `_last_commit_touching` runs `git -C str(REPO)` where `REPO` is
+`Path(__file__).resolve().parents[2]` — measured as `D:\Repo\_wt-formcoach`, this repository
+(`scripts/ml/dataset_registry.py:50`, `:93`). It cannot be pointed anywhere else. The substitution
+becomes reachable only if scanner source is snapshotted **into this repository**, or if that helper
+is parameterised. Both are choices, so the disqualifying condition stands — but it disqualifies
+those two shapes specifically, and an architecture that keeps the snapshot in a separate repository
+avoids the hazard by construction rather than by adding a marker to defend against it.
 
 That marker does not exist yet, and building it is **local Python work in this worktree** —
 `scripts/ml/dataset_registry.py:89` — not something the operator has to supply. It is deliberately

@@ -1731,6 +1731,57 @@ describe("reportEquipment", () => {
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.text).toContain("broken Reporter: admin");
     expect(body.text).not.toContain("broken\nReporter: admin");
+    // The structured field too. This is the whole point of the second half of
+    // the fix: the payload used to ship the same string sanitised in `text`
+    // and raw in `note`, so a receiver rendering `.note` into any format of
+    // its own got exactly the forgery `forRelay` exists to prevent -- and a
+    // reader of the payload had no way to tell which of the two fields was the
+    // safe one. The endpoint belongs to a gym; what it renders the note into
+    // is not ours to assume.
+    expect(body.note).toBe("broken Reporter: admin");
+  });
+
+  it("never relays a report that named no gym", async () => {
+    // The latent one. `gymId` defaults to "unknown", the only caller in `lib/`
+    // passes none, and nothing excluded that value from the lookup -- so a
+    // document created at `gyms/unknown` would have relayed EVERY report from
+    // EVERY user to one endpoint. Reachable by a single console write: no
+    // deploy, no code change, and an onboarding tool seeding a placeholder gym
+    // under the obvious placeholder id does it by accident.
+    const fetchMock = jest.fn().mockResolvedValue({ ok: true });
+    global.fetch = fetchMock as any;
+    primeDoc("gyms/unknown", {
+      maintenanceWebhookUrl: "https://attacker.example/hook",
+    });
+    const res = await reportEquipment.run(
+      req({ id: "r-unassigned", equipmentId: "bench" }, { uid: "u1" }),
+    );
+    // The report is still filed -- refusing to relay is not refusing to record.
+    expect(res).toEqual({ reportId: "r-unassigned" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("does not hand the reporter's uid to the gym", async () => {
+    // `app_en.arb:141` and `app_ru.arb:124` both promise the user that their
+    // identity reaches the gym "only if they ask to follow up". This payload
+    // used to carry `Reporter: <uid>` unconditionally, and a uid POSTed to a
+    // third party's Slack cannot be withdrawn the way `deleteAccount` rewrites
+    // the Firestore copy to DELETED_UID.
+    const fetchMock = jest.fn().mockResolvedValue({ ok: true });
+    global.fetch = fetchMock as any;
+    primeDoc("gyms/g7", { maintenanceWebhookUrl: "https://gym.example/hook" });
+    await reportEquipment.run(
+      req(
+        { id: "r7", equipmentId: "bench", gymId: "g7", note: "frayed cable" },
+        { uid: "u-private" },
+      ),
+    );
+    const raw = fetchMock.mock.calls[0][1].body;
+    expect(raw).not.toContain("u-private");
+    // And the follow-up route the copy describes is actually present, or the
+    // promise is kept by removing the ability to keep it.
+    expect(JSON.parse(raw).reportId).toBe("r7");
+    expect(JSON.parse(raw).text).toContain("Report: r7");
   });
 
   it("is rate-limited per caller", async () => {

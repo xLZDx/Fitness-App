@@ -46,11 +46,24 @@ const db = () => admin.firestore();
  * ignore the field. It becomes a warning when enforcement is staged.
  */
 export function noteAppCheck(request: CallableRequest, fn: string): void {
-  logger.info("appcheck", {
-    fn,
-    attested: request.app !== undefined,
-    uid: request.auth?.uid ?? null,
-  });
+  // No uid. The measurement this line exists for is "what share of calls
+  // attest", and `fn` plus `attested` answers it completely -- the uid was
+  // the one field it did not need.
+  //
+  // It was also the one field that could not be deleted. Cloud Logging sits
+  // outside `users/{uid}`, so `deleteAccount`'s `recursiveDelete` never
+  // reaches it, and its retention is the logging bucket's rather than the
+  // account's. `public/privacy.html:88` promises there is "no separate
+  // retention timer and no archive copy kept afterwards", and the function
+  // twelve lines below this one stores quota under the user document ON
+  // PURPOSE for exactly that reason. This line was doing the opposite in the
+  // same file.
+  //
+  // Found by the privacy lens of the N-05 council, which also named why it
+  // mattered more than it looked: N-05's Option 1 turns this from incidental
+  // noise over 5-10 testers into a load-bearing dataset over a real Play
+  // population. Removing it now costs nothing and later would be a migration.
+  logger.info("appcheck", { fn, attested: request.app !== undefined });
 }
 
 /**

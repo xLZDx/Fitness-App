@@ -35,6 +35,7 @@ jest.mock("firebase-functions/logger", () => ({
 import * as index from "../index";
 import { clipUrl, clipUrls } from "../video_urls";
 import { INTERACTIVE, RARE, VIDEO_BATCH, VIDEO_HOT, WEBHOOK } from "../scaling";
+import { noteAppCheck } from "../abuse_guard";
 
 /** `__endpoint` is internal to firebase-functions and untyped for consumers. */
 const endpointOf = (fn: unknown): any => (fn as any).__endpoint;
@@ -262,4 +263,52 @@ describe("every callable reports its attestation", () => {
       expect(c.text).toContain(`noteAppCheck(request, "${c.fn}")`);
     },
   );
+});
+
+/**
+ * The measurement must not carry a uid.
+ *
+ * `enforceDailyQuota`, twelve lines below `noteAppCheck` in the same file,
+ * stores quota under `users/{uid}` ON PURPOSE so `deleteAccount`'s
+ * `recursiveDelete` erases it and `core/DATA_INVENTORY_2026-08-11.md` gains no
+ * orphan. This line was doing the opposite: Cloud Logging sits outside
+ * `users/{uid}`, so a uid written there survives the account it belongs to,
+ * against a published promise that "there is no separate retention timer and
+ * no archive copy kept afterwards" (`public/privacy.html:88`).
+ *
+ * Behavioural rather than a source grep, because what matters is the object
+ * that reaches the logger, not the shape of the call that built it.
+ */
+describe("noteAppCheck records the measurement and nothing else", () => {
+  const logger = jest.requireMock("firebase-functions/logger");
+
+  const call = (request: any) => {
+    logger.info.mockClear();
+    noteAppCheck(request, "clipUrl");
+    return logger.info.mock.calls[0];
+  };
+
+  it("reports the attested share", () => {
+    const [event, payload] = call({ app: {}, auth: { uid: "u1" } });
+    expect(event).toBe("appcheck");
+    // Both fields the share is computed from must survive.
+    expect(payload).toMatchObject({ fn: "clipUrl", attested: true });
+  });
+
+  it("distinguishes an unattested call", () => {
+    expect(call({ auth: { uid: "u1" } })[1]).toMatchObject({ attested: false });
+  });
+
+  it("carries no uid, and no other field beyond the two it needs", () => {
+    const [, payload] = call({ app: {}, auth: { uid: "u1" } });
+    expect(payload).not.toHaveProperty("uid");
+    // Pinned exactly. A future field added "just in case" is the same defect
+    // arriving under a different name, and `not.toHaveProperty("uid")` alone
+    // would not see it.
+    expect(Object.keys(payload).sort()).toEqual(["attested", "fn"]);
+  });
+
+  it("carries no uid for a signed-out caller either", () => {
+    expect(call({ app: {} })[1]).not.toHaveProperty("uid");
+  });
 });

@@ -59,6 +59,16 @@ admin.initializeApp();
 const db = admin.firestore();
 
 /**
+ * "No gym was named", written down once so it stops being a string literal
+ * that two call sites happen to agree on.
+ *
+ * It is the DEFAULT: the only caller of the report sheet in `lib/` passes no
+ * `gymId` at all, so in practice every report filed today carries this value.
+ * That is exactly why it must never be used as a document key.
+ */
+const UNASSIGNED_GYM = "unknown";
+
+/**
  * Refuses a call made with a token belonging to an account that no longer
  * exists.
  *
@@ -1542,7 +1552,7 @@ export const reportEquipment = onCall(
     );
     const data = request.data ?? {};
     const equipmentId = bounded(data.equipmentId, 128, "equipmentId");
-    const gymId = bounded(data.gymId, 128, "gymId") ?? "unknown";
+    const gymId = bounded(data.gymId, 128, "gymId") ?? UNASSIGNED_GYM;
     const fault = bounded(data.fault, 64, "fault") ?? "other";
     // Bounded hardest of the four: this is the only field that leaves the
     // platform verbatim, into a channel belonging to somebody else.
@@ -1587,7 +1597,21 @@ export const reportEquipment = onCall(
 
     // Best-effort webhook dispatch. We look up gyms/{gymId} to see
     // whether the chain registered a maintenance endpoint.
+    //
+    // Never for the sentinel. `gymId` defaults to the literal "unknown"
+    // (above), the only caller in `lib/` does not pass one, and nothing
+    // excluded that value from this lookup -- so a document created at
+    // `gyms/unknown` would have relayed EVERY report from EVERY user to a
+    // single endpoint. Not a deploy, not a code change: one console write.
+    // Any onboarding tool that seeds a placeholder gym under the obvious
+    // placeholder id does it by accident.
+    //
+    // "unknown" is not a gym. Treating a sentinel as a key is the defect,
+    // and refusing to look it up is the whole fix.
     try {
+      if (gymId === UNASSIGNED_GYM) {
+        return { reportId };
+      }
       const gymSnap = await db.doc(`gyms/${gymId}`).get();
       const webhookUrl =
         gymSnap.data()?.maintenanceWebhookUrl as string | undefined;
@@ -1597,11 +1621,33 @@ export const reportEquipment = onCall(
             `Equipment report — ${fault.toUpperCase()}\n` +
             `Gym: ${gymId}  ·  Equipment: ${equipmentId}\n` +
             (note ? `Note: ${forRelay(note)}\n` : "") +
-            `Reporter: ${auth.uid}`,
+            // No reporter uid. The app tells the user, in two locales, that
+            // "your identity is shared with the gym only if they ask to follow
+            // up" -- a PULL model. This line was a PUSH: every report handed a
+            // stable pseudonymous id to a third party unconditionally, and
+            // unlike the Firestore copy, which `deleteAccount` rewrites to
+            // DELETED_UID, a uid already POSTed to somebody's Slack cannot be
+            // recalled.
+            //
+            // `reportId` is in the payload below, and `reporterUid` stays on
+            // the document. So a gym that asks to follow up quotes the report
+            // id and gets an answer -- which is the model the published copy
+            // already describes. Making the code match the promise was the
+            // conservative direction; changing the promise to admit a push
+            // would be a product decision, and is recorded as one.
+            `Report: ${reportId}`,
           equipmentId,
           gymId,
           fault,
-          note,
+          // Sanitised here too. The same string shipped clean in `text` and
+          // raw in a structured field is worse than either choice made
+          // consistently: a receiver cannot tell which of the two fields it is
+          // safe to render, and the one that is not is the one a non-Slack
+          // integration would reach for. `forRelay` cannot forge JSON -- the
+          // encoder escapes newlines -- but this payload goes to an endpoint
+          // that belongs to a gym, and what that gym renders it into is not
+          // ours to assume.
+          note: forRelay(note),
           reportedAt,
           reportId,
         };

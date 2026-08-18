@@ -147,6 +147,7 @@ RESIDUAL_MARKER = re.compile(r"RESIDUAL\[([A-Za-z0-9._-]+)\]")
 RESIDUAL_DOCS = (
     "core/DECISION_LOG.md",
     "core/review/N05_DISPOSITION.md",
+    "core/review/N04_EQUIPMENT_REPORT_AUTHORITY.md",
     "core/review/N07_TEAM_ACTIVATION_GATE.md",
     "core/ml/SCANNER_PROVENANCE.md",
     "core/ml/METRIC_PROVENANCE.md",
@@ -504,6 +505,24 @@ def n07_still_dormant() -> tuple[bool, str]:
     )
 
 
+#: Where a gym-membership model could appear. Client code alone is not enough:
+#: `reportEquipment` writes through the Admin SDK, which bypasses
+#: `firestore.rules` entirely, so a membership that actually BOUND anything
+#: would have to be checked server-side. A Dart-only scan therefore watches the
+#: one place the model is least likely to live.
+MEMBERSHIP_SURFACES = ("functions/src/index.ts", "firestore.rules")
+
+#: Named flows, plus the collection path in any quoting style. `db.doc(
+#: `memberships/${uid}`)` is how the server would write it and matches no
+#: `collection("memberships")` spelling, which the first version of this
+#: pattern was the only thing looking for.
+_MEMBERSHIP_MODEL = re.compile(
+    r"\b(?:GymMembership|MembershipRepository|joinGym|checkInToGym)\b"
+    r"|memberships/"
+    r"|collection\(\s*['\"]memberships['\"]"
+)
+
+
 def no_gym_membership_model() -> tuple[bool, str]:
     """N-04's premise: the equipment report has no gym to associate with.
 
@@ -513,16 +532,23 @@ def no_gym_membership_model() -> tuple[bool, str]:
     report sheet defaults `gymId` to `unknown` because there is nothing to
     default it to. If one ever appears, the question the operator was asked
     has changed and the row must be re-put rather than left standing.
+
+    The first version scanned `mobile/lib` and nothing else. Measured: adding a
+    `joinGym` callable and a `memberships/` collection to
+    `functions/src/index.ts` -- a complete membership model, in the only layer
+    that could enforce one -- left this returning True. An operator would have
+    gone on being asked a question whose premise had died, which is the exact
+    failure the ledger exists to prevent, one level up: not a stale STATE, a
+    stale QUESTION.
     """
-    model = re.compile(
-        r"\b(?:GymMembership|MembershipRepository|joinGym|checkInToGym)\b"
-        r"|collection\(\s*['\"]memberships['\"]"
-    )
     hits = [p for p, b in _dart_sources().items()
-            if model.search(_without_comments(b))]
+            if _MEMBERSHIP_MODEL.search(_without_comments(b))]
+    hits += [rel for rel in MEMBERSHIP_SURFACES
+             if _MEMBERSHIP_MODEL.search(_without_comments(_read(rel)))]
     return not hits, (
-        "no gym-membership model exists, so an equipment report still has "
-        "nothing to associate with"
+        "no gym-membership model exists in mobile/lib, "
+        f"{' or '.join(MEMBERSHIP_SURFACES)}, so an equipment report still "
+        "has nothing to associate with"
         if not hits else f"a membership model now exists in {hits}"
     )
 
@@ -878,7 +904,8 @@ LEDGER: tuple[Row, ...] = (
         item="N-04-gym-association",
         state="OPERATOR_DECISION_REQUIRED",
         authority=OPERATOR,
-        evidence=("core/DECISION_LOG.md",),
+        evidence=("core/review/N04_EQUIPMENT_REPORT_AUTHORITY.md",
+                  "core/DECISION_LOG.md",),
         invariant=no_gym_membership_model,
         closure=operator_decision_recorded("N-04"),
         notes="Whether an equipment report should be tied to a gym is a "

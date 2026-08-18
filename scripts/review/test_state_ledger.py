@@ -763,6 +763,82 @@ def test_the_n05_premise_is_actually_read(monkeypatch):
     assert sl.n05_premise_holds()[0]
 
 
+def _membership_sources(monkeypatch, *, dart="", ts="", rules=""):
+    monkeypatch.setattr(sl, "_dart_sources",
+                        lambda: {"mobile/lib/x.dart": dart})
+    monkeypatch.setattr(
+        sl, "_read",
+        lambda rel: {"functions/src/index.ts": ts,
+                     "firestore.rules": rules}.get(rel, ""),
+    )
+
+
+def test_nothing_anywhere_is_the_premise_holding(monkeypatch):
+    _membership_sources(monkeypatch)
+    holds, detail = sl.no_gym_membership_model()
+    assert holds
+    # The detail has to name every surface searched. A premise guard that says
+    # "nothing exists" without saying where it looked is unfalsifiable prose.
+    assert "mobile/lib" in detail
+    for surface in sl.MEMBERSHIP_SURFACES:
+        assert surface in detail
+
+
+@pytest.mark.parametrize("where,payload", [
+    ("dart", "class GymMembership {}"),
+    ("dart", "final r = MembershipRepository();"),
+    ("ts", "export const joinGym = onCall(INTERACTIVE, async (r) => {});"),
+    ("ts", "await db.doc(`memberships/${auth.uid}`).set({});"),
+    ("ts", 'db.collection("memberships").doc(uid)'),
+    ("rules", "match /memberships/{id} { allow read: if true; }"),
+])
+def test_a_membership_model_anywhere_breaks_the_premise(monkeypatch, where,
+                                                       payload):
+    """The server cases are the ones that were invisible.
+
+    `reportEquipment` writes through the Admin SDK, which bypasses
+    `firestore.rules` entirely, so a membership that actually BOUND anything
+    has to be enforced server-side -- and the original scan read `mobile/lib`
+    and nothing else. Measured before the fix: a complete `joinGym` callable
+    plus a `memberships/` collection added to `functions/src/index.ts` left the
+    invariant returning True, so the operator would have gone on being asked a
+    question whose premise had died.
+    """
+    _membership_sources(monkeypatch, **{where: payload})
+    holds, detail = sl.no_gym_membership_model()
+    assert not holds, f"a membership model in {where} was not seen"
+    assert "now exists" in detail
+
+
+@pytest.mark.parametrize("where", ["dart", "ts", "rules"])
+def test_prose_about_membership_is_not_a_membership_model(monkeypatch, where):
+    """Every surface must strip comments, not just the Dart one.
+
+    This document argues about `joinGym` and `memberships/` constantly. A
+    guard that fires on the discussion is a guard people switch off.
+    """
+    _membership_sources(
+        monkeypatch,
+        **{where: "// joinGym and memberships/ were considered and rejected"},
+    )
+    assert sl.no_gym_membership_model()[0]
+
+
+def test_the_membership_surfaces_are_files_that_exist():
+    """A surface list that drifts into naming a deleted file searches nothing.
+
+    `_read` returns "" for a missing path, so a typo or a rename would turn a
+    conjunct into a permanent True without a single test going red.
+    """
+    for rel in sl.MEMBERSHIP_SURFACES:
+        assert (sl.REPO / rel).exists(), rel
+        assert _real_read(rel).strip(), rel
+
+
+def _real_read(rel):
+    return (sl.REPO / rel).read_text(encoding="utf-8", errors="replace")
+
+
 def test_the_metadata_tool_being_local_breaks_the_premise(monkeypatch,
                                                           tmp_path):
     monkeypatch.setattr(sl, "REPO", tmp_path)

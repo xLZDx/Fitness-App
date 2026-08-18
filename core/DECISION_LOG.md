@@ -16596,3 +16596,87 @@ product release verdict, clinical authority status, ML operational status, deliv
 collapsing them into one word is how a green branch starts reading as a shippable product. The
 branch is 91 ahead of origin, 0 behind, and was NOT pushed: the mandate said so, and push readiness
 is a property of the branch rather than permission to act on it.
+
+
+## 2026-08-18 -- Deciding N-04 found two defects that had nothing to do with N-04
+
+A five-lens council was run over the three live operator decisions. It did not close any of them by
+agent recommendation, which would be laundering. What it did was measure the premises, and two of
+them were wrong.
+
+**N-04's premise was half false.** The row said an equipment report "has nothing to associate with".
+Measured: `gymId` is a real field defaulting to the literal `"unknown"`, `gyms/` exists in
+`firestore.rules`, and `reportEquipment` looks up `gyms/{gymId}.maintenanceWebhookUrl` and POSTs to
+it. What does NOT exist is a WRITER for `gyms/` -- anywhere in `functions/src`, `mobile/lib` or
+`scripts`. The rules file says the server writes it "via the gym-onboarding tooling"; there is no
+such tooling. So the webhook is unreachable today, and the premise is true only by accident.
+
+**`gyms/unknown` was a catch-all relay waiting for one console write.** Every report filed today
+carries the sentinel -- the only caller in `lib/` passes no gymId -- and nothing excluded that value
+from the lookup. A document created at `gyms/unknown` with a `maintenanceWebhookUrl` would have
+relayed every report from every user to that endpoint. No deploy, no code change, no pull request:
+an onboarding tool seeding a placeholder gym under the obvious placeholder id does it by accident.
+The sentinel now has a name and the dispatch returns before the lookup. Three mutations: guard
+removed, guard pointed at the wrong literal, and the reporter line restored -- all killed.
+
+**The webhook pushed an identity the app promises to share only on request.** `app_en.arb:141` and
+`app_ru.arb:124` both say "your identity is shared with the gym only if they ask to follow up". The
+payload interpolated `Reporter: ${auth.uid}` unconditionally. Worse than the on-platform case:
+`deleteAccount` rewrites `reporterUid` to `DELETED_UID`, but a uid already POSTed to somebody's
+Slack cannot be recalled. Now `Report: <reportId>`, which is the pull model the copy describes.
+Making code match the published promise was the conservative direction; changing the promise would
+be product's, and is recorded as decision P-1 alongside the processor-disclosure question -- the
+privacy body says "two processors and no others", and a gym webhook is a third recipient.
+
+**The N-04 invariant could not see a membership model.** `no_gym_membership_model` scanned
+`mobile/lib` and nothing else -- 321 Dart files, zero server files. Reproduced: a complete `joinGym`
+callable plus a `memberships/` collection added to `functions/src/index.ts` left it returning True.
+Since `reportEquipment` writes through the Admin SDK and bypasses `firestore.rules`, the server is
+the ONLY layer where a membership could bind, so the scan watched the one place the model could not
+usefully live. This is the F5 shape one level up: not a stale state, a stale QUESTION -- the
+operator would have gone on being asked something whose premise had died. Widened to the server and
+the rules file, four mutations, three kills and one correct survivor (a comment). It had no direct
+test at all before today, which is most of why it survived.
+
+**A uid was being written where deletion cannot reach it.** `noteAppCheck` logged
+`uid: request.auth?.uid ?? null` to Cloud Logging. Twelve lines below it, `enforceDailyQuota`
+carries a comment explaining that quota lives under `users/{uid}` ON PURPOSE so `recursiveDelete`
+erases it and the data inventory gains no orphan. The same file was doing the opposite. The
+measurement that line exists for -- what share of calls attest -- needs `fn` and `attested` and
+nothing else; the uid was the one field it did not need and the one field that could not be deleted.
+Removed. Found by the privacy lens, which also named why it mattered more than it looked: N-05's
+Option 1 would turn that line from incidental noise over 5-10 testers into a load-bearing dataset
+over a real Play population.
+
+**Round 2 attacked the N-05 recommendation and the conclusion survived; three of its arguments did
+not.** (1) 3a and 4 answer different threats and section 7 let them read as one plan -- an alert
+sized to survive normal operation cannot fire on a $0.31 event. (2) The package called the library's
+competitor value "an unpriced commercial judgement" while this repository records what the library
+COST: $329 for ~1,700 exercises. Leaving competitor value unpriced is legitimate; letting the reader
+infer zero is not. (3) "Revisit at Play launch" had no trigger -- `n05_premise_holds` watches a
+sentence in `public/privacy.html` and a Play release changes no source file -- and was not even
+well-formed, because `PLAY_DATA_SAFETY_2026-08-05.md:197` says the Play App Signing SHA-256 cannot
+be added to App Check until the first bundle upload creates the key. Also recorded: Option 2 was
+judged on time-to-extraction when free-account count is the only multiplier in the $44,000 figure
+and Option 2 is the only lever that touches it. Still not recommended, now for stated reasons.
+
+**Three measurement errors in my own scanner package.** The source surface was priced at 13,884
+bytes, being the two trainers; re-measured, the pipeline root holds 15 Python files totalling 80,271
+bytes, so the value-per-byte ratio is four orders of magnitude and not five. `dataset_v2_thin/`,
+462 files, is in neither pinned manifest. And the `_last_commit_touching` hazard was stated as
+present when it is CONDITIONAL: that helper runs `git -C str(REPO)` with `REPO` hard-bound to this
+worktree, so the substitution is reachable only by snapshotting scanner source into this repository
+or parameterising the helper. The conclusion survived all three; recording them anyway, because a
+decision package whose measurements are not re-checked is the artefact this whole programme
+distrusts.
+
+**A credential item, stated precisely because the loose version would be false.** No Roboflow key
+literal is committed to this repository, at HEAD or anywhere in history -- verified with
+`git log --all -S`. What exists is `core/plans/B5_DATA_SOURCES_2026-08-07.md` recording that the key
+was pasted into a CONVERSATION on 2026-08-07 and recommending reissue, with no record of that
+reissue being performed. That is an external console action, not local work, and it is named here so
+it stops living only in an eleven-day-old planning document.
+
+Suites: `pytest scripts/` 678 passed; `npx tsc --noEmit` clean; `npx jest` 228 passed. No Dart source
+changed, so `flutter test` is NOT RUN rather than quoted. `firestore.rules` unchanged, so the
+emulator suite is NOT RUN.
