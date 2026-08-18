@@ -10,6 +10,7 @@ import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/auth/data/mock_auth_repository.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/profile/data/mock_profile_repository.dart';
+import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/profile/state/profile_providers.dart';
 
 void main() {
@@ -17,25 +18,37 @@ void main() {
     test('splash always passes through', () {
       expect(
           resolveRedirect(
-              isSignedIn: false, isOnboarded: false, location: '/splash'),
+              isSignedIn: false,
+              isOnboarded: false,
+              location: '/splash',
+              isAnonymous: false),
           isNull);
       expect(
           resolveRedirect(
-              isSignedIn: true, isOnboarded: true, location: '/splash'),
+              isSignedIn: true,
+              isOnboarded: true,
+              location: '/splash',
+              isAnonymous: false),
           isNull);
     });
 
     test('login is reachable when signed out', () {
       expect(
           resolveRedirect(
-              isSignedIn: false, isOnboarded: false, location: '/login'),
+              isSignedIn: false,
+              isOnboarded: false,
+              location: '/login',
+              isAnonymous: false),
           isNull);
     });
 
     test('signed-in user on /login bounces to /home when onboarded', () {
       expect(
         resolveRedirect(
-            isSignedIn: true, isOnboarded: true, location: '/login'),
+            isSignedIn: true,
+            isOnboarded: true,
+            location: '/login',
+            isAnonymous: false),
         '/home',
       );
     });
@@ -44,7 +57,10 @@ void main() {
         () {
       expect(
         resolveRedirect(
-            isSignedIn: true, isOnboarded: false, location: '/login'),
+            isSignedIn: true,
+            isOnboarded: false,
+            location: '/login',
+            isAnonymous: false),
         '/onboarding',
       );
     });
@@ -60,7 +76,10 @@ void main() {
       ]) {
         expect(
           resolveRedirect(
-              isSignedIn: false, isOnboarded: false, location: p),
+              isSignedIn: false,
+              isOnboarded: false,
+              location: p,
+              isAnonymous: false),
           '/login',
           reason: 'gated path $p must redirect when signed out',
         );
@@ -77,7 +96,10 @@ void main() {
       ]) {
         expect(
           resolveRedirect(
-              isSignedIn: true, isOnboarded: false, location: p),
+              isSignedIn: true,
+              isOnboarded: false,
+              location: p,
+              isAnonymous: false),
           '/onboarding',
           reason: '$p should redirect to /onboarding while not onboarded',
         );
@@ -93,7 +115,11 @@ void main() {
         '/profile'
       ]) {
         expect(
-          resolveRedirect(isSignedIn: true, isOnboarded: true, location: p),
+          resolveRedirect(
+              isSignedIn: true,
+              isOnboarded: true,
+              location: p,
+              isAnonymous: false),
           isNull,
         );
       }
@@ -102,7 +128,10 @@ void main() {
     test('onboarded user landing on /onboarding is bounced to /home', () {
       expect(
         resolveRedirect(
-            isSignedIn: true, isOnboarded: true, location: '/onboarding'),
+            isSignedIn: true,
+            isOnboarded: true,
+            location: '/onboarding',
+            isAnonymous: false),
         '/home',
       );
     });
@@ -115,9 +144,110 @@ void main() {
       // reachable regardless of sign-in state.
       for (final p in ['/terms', '/privacy', '/about', '/donors', '/licences']) {
         expect(
-          resolveRedirect(isSignedIn: true, isOnboarded: false, location: p),
+          resolveRedirect(
+              isSignedIn: true,
+              isOnboarded: false,
+              location: p,
+              isAnonymous: false),
           isNull,
           reason: '$p is public and must not force onboarding first',
+        );
+      }
+    });
+  });
+
+  // The guest upgrade path. `linkWithCredential` keeps the SAME uid, so
+  // reaching /login as a guest preserves the profile, injuries, history and
+  // schedule already under `users/{uid}`. Signing out instead mints a fresh
+  // uid on the next sign-in and orphans all of it, silently and permanently,
+  // because an anonymous account has no credential to sign back in with.
+  //
+  // These cases are the difference between "already signed in, nothing to do"
+  // and "already signed in, but with nothing to sign back in AS".
+  group('resolveRedirect: a guest may reach /login', () {
+    test('an anonymous user is NOT bounced away from /login', () {
+      for (final onboarded in [false, true]) {
+        expect(
+          resolveRedirect(
+              isSignedIn: true,
+              isOnboarded: onboarded,
+              location: '/login',
+              isAnonymous: true),
+          isNull,
+          reason: 'an onboarded=$onboarded guest must still be able to link '
+              'their account, which is only possible on /login',
+        );
+      }
+    });
+
+    test('a real identity is still bounced away from /login', () {
+      // The exemption is for guests specifically. For a user who already has
+      // a credential, /login genuinely has nothing to offer, and letting them
+      // sit on a sign-in screen while signed in is the confusion the original
+      // redirect existed to prevent.
+      expect(
+        resolveRedirect(
+            isSignedIn: true,
+            isOnboarded: true,
+            location: '/login',
+            isAnonymous: false),
+        '/home',
+      );
+      expect(
+        resolveRedirect(
+            isSignedIn: false,
+            isOnboarded: false,
+            location: '/login',
+            isAnonymous: false),
+        isNull,
+      );
+    });
+
+    test('the exemption does not leak into any other route', () {
+      // A guest is a signed-in user everywhere else. If `isAnonymous` widened
+      // any other gate, this would catch it: onboarding is still enforced,
+      // and no gated tab opens early.
+      for (final p in ['/home', '/scan', '/workouts', '/progress', '/profile']) {
+        expect(
+          resolveRedirect(
+              isSignedIn: true,
+              isOnboarded: false,
+              location: p,
+              isAnonymous: true),
+          '/onboarding',
+          reason: '$p must still force onboarding for a guest',
+        );
+        expect(
+          resolveRedirect(
+              isSignedIn: true,
+              isOnboarded: true,
+              location: p,
+              isAnonymous: true),
+          isNull,
+        );
+      }
+      expect(
+        resolveRedirect(
+            isSignedIn: true,
+            isOnboarded: true,
+            location: '/onboarding',
+            isAnonymous: true),
+        '/home',
+      );
+    });
+
+    test('an anonymous flag on a signed-out caller changes nothing', () {
+      // Defensive: the caller derives `isAnonymous` from `user?.provider`, so
+      // signed-out means false today. If that ever inverts, a signed-out user
+      // must still be pushed to /login rather than into the app.
+      for (final p in ['/home', '/profile', '/onboarding']) {
+        expect(
+          resolveRedirect(
+              isSignedIn: false,
+              isOnboarded: false,
+              location: p,
+              isAnonymous: true),
+          '/login',
         );
       }
     });
@@ -172,6 +302,78 @@ void main() {
       await tester.pump(const Duration(milliseconds: 1500));
       await tester.pump(const Duration(milliseconds: 600));
       expect(pathOf(router), '/login');
+    });
+
+  });
+
+  // The pure tests above prove `resolveRedirect` DECIDES correctly about a
+  // guest. They prove nothing about whether the router ever TELLS it who the
+  // guest is: `isAnonymous:` is derived at exactly one place, and a constant
+  // there passes every one of them while the door stays shut. `redirectFor`
+  // is that derivation, split out precisely so it can be tested without
+  // building `/home` — mounting the real router to check would drag the whole
+  // app shell, and every provider behind it, into a unit test.
+  group('redirectFor (the derivation, not the decision)', () {
+    late MockAuthRepository auth;
+    late MockProfileRepository profiles;
+
+    setUp(() {
+      auth = MockAuthRepository(latency: Duration.zero);
+      profiles = MockProfileRepository(latency: Duration.zero);
+    });
+
+    tearDown(() {
+      auth.dispose();
+      profiles.dispose();
+    });
+
+    Future<void> onboard(String uid) =>
+        profiles.save(UserProfile(uid: uid, completedAt: DateTime(2026, 8, 18)));
+
+    test('a signed-out caller is sent to /login', () {
+      expect(redirectFor(auth, profiles, '/home'), '/login');
+      expect(redirectFor(auth, profiles, '/login'), isNull);
+    });
+
+    test('an onboarded guest reaches /login', () async {
+      final guest = await auth.signInAnonymously();
+      await onboard(guest.uid);
+      expect(redirectFor(auth, profiles, '/home'), isNull,
+          reason: 'an onboarded guest is a normal user everywhere else');
+      expect(redirectFor(auth, profiles, '/login'), isNull,
+          reason: 'the provider is read from the live AuthUser, so a guest '
+              'must be recognised as one here and not only in the pure '
+              'decision below it');
+    });
+
+    test('a not-yet-onboarded guest still reaches /login', () async {
+      await auth.signInAnonymously();
+      expect(redirectFor(auth, profiles, '/home'), '/onboarding');
+      expect(redirectFor(auth, profiles, '/login'), isNull);
+    });
+
+    test('a Google user is still bounced off /login', () async {
+      final user = await auth.signInWithGoogle();
+      await onboard(user.uid);
+      expect(redirectFor(auth, profiles, '/login'), '/home',
+          reason: 'the exemption is for guests only; this is the case that '
+              'fails if the derivation hard-codes isAnonymous to true');
+    });
+
+    test('linking a guest to Google closes the exemption again', () async {
+      // The whole point of the exemption, end to end: the guest walks through
+      // /login, `linkWithCredential` keeps the SAME uid, the profile written
+      // under it survives, and the door shuts behind them.
+      final guest = await auth.signInAnonymously();
+      await onboard(guest.uid);
+      expect(redirectFor(auth, profiles, '/login'), isNull);
+
+      final linked = await auth.signInWithGoogle();
+      expect(linked.uid, guest.uid, reason: 'link, do not replace');
+      expect(profiles.cached(linked.uid)?.hasCompletedOnboarding, isTrue,
+          reason: 'the data the exemption exists to save is still there');
+      expect(redirectFor(auth, profiles, '/login'), '/home',
+          reason: 'once they have a credential, /login has nothing to offer');
     });
   });
 }

@@ -2277,5 +2277,9 @@
   "eligReasonProfessionalGuidance": "You told us you are pregnant or recently gave birth. Training can be appropriate at these times, but the right plan depends on your own circumstances — so SPTR does not build a personalised programme here, and asks you to work with your midwife, doctor or a qualified perinatal exercise professional instead.",
   "@eligReasonProfessionalGuidance": {"description": "F014 refusal. Every clause is deliberate and is asserted by test. It says training CAN be appropriate (never that exercise is prohibited); it attributes the limit to SPTR rather than to the user's body (never 'you are unsafe'); it names a real referral; and it gives no dosage, no movement guidance and no clinical claim of any kind. Not alarmist: no warning icon wording, no 'risk', no 'danger'."},
   "eligProfessionalGuidanceTitle": "We are not the right tool for this right now",
-  "@eligProfessionalGuidanceTitle": {"description": "F014. Heading for the refusal. Frames the limit as the product's, which is what it actually is."}
+  "@eligProfessionalGuidanceTitle": {"description": "F014. Heading for the refusal. Frames the limit as the product's, which is what it actually is."},
+  "profileLinkAccount": "Save your progress",
+  "profileLinkAccountSubtitle": "Add a Google account. Everything you have logged comes with it, unless that account already has a profile here.",
+  "@profileLinkAccount": {"description": "Profile tile shown only to a guest, offering to attach a real identity while keeping the same uid."},
+  "@profileLinkAccountSubtitle": {"description": "Why linking is worth doing, stated with its one real exception. linkWithCredential preserves the uid, so nothing is orphaned -- EXCEPT on credential-already-in-use, where FirebaseAuthRepository.signInWithGoogle falls back to signInWithCredential and this device's guest data stays orphaned but intact. That case is common (reinstall, second device), so the string must not promise around it."}
 }

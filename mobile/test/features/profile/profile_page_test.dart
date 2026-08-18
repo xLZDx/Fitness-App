@@ -8,6 +8,8 @@ import '../../helpers/test_app.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/profile/profile_page.dart';
 import 'package:fitness_app/features/profile/state/profile_providers.dart';
+import 'package:fitness_app/features/auth/data/auth_user.dart';
+import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
 
 void main() {
@@ -132,5 +134,87 @@ void main() {
     ]) {
       expect(find.text(title), findsOneWidget, reason: 'missing $title');
     }
+  });
+  /// The other half of the guest-upgrade fix.
+  ///
+  /// `resolveRedirect` now lets an anonymous user reach `/login`, where the
+  /// Google button calls `linkWithCredential` and keeps the same uid. That
+  /// exemption is worth nothing if no screen offers it: the only other way
+  /// out of a guest session is Sign out, which mints a fresh uid next time
+  /// and leaves the profile, injuries, history and schedule under the old one
+  /// unreachable forever -- an anonymous account has no credential to sign
+  /// back into.
+  ///
+  /// So the tile is not decoration, and neither is its absence for everybody
+  /// else: a user who already has a credential gains nothing from a sign-in
+  /// screen, and offering them one would be the confusion the redirect
+  /// existed to prevent.
+  Future<void> pumpFor(WidgetTester tester, AuthUser? user) async {
+    // The list is lazy and the default 800x600 test surface stops
+    // building somewhere around COACHING, so the APP group -- the one
+    // holding both the new tile and Sign out -- is never constructed. A
+    // tall surface builds the whole page, which is what makes
+    // `findsNothing` below mean "absent" rather than "off-screen".
+    tester.view.physicalSize = const Size(1000, 4000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authUserProvider.overrideWith((ref) => Stream.value(user)),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.dark(),
+          locale: kTestLocale,
+          localizationsDelegates: kTestLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const ProfilePage(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+
+  testWidgets('a guest is offered the account link', (tester) async {
+    await pumpFor(
+      tester,
+      const AuthUser(uid: 'g1', displayName: 'Guest', provider: AuthProvider.anonymous),
+    );
+    expect(find.text('Save your progress'), findsOneWidget);
+    expect(find.textContaining('Add a Google account'), findsOneWidget);
+  });
+
+  testWidgets('the link promise names its one exception', (tester) async {
+    // `FirebaseAuthRepository.signInWithGoogle` documents the case at
+    // `credential-already-in-use`: the fallback signs into the account that
+    // already owns the Google credential, and "this device's guest data stays
+    // orphaned but intact". Reinstalling, or having used the app on an older
+    // phone, is enough to hit it. A subtitle that promised outright that
+    // everything "stays where it is" would be telling a user their data is
+    // safe in exactly the case where it is not.
+    await pumpFor(
+      tester,
+      const AuthUser(uid: 'g1', displayName: 'Guest', provider: AuthProvider.anonymous),
+    );
+    expect(find.textContaining('unless that account already has a profile'),
+        findsOneWidget);
+  });
+
+  testWidgets('a signed-in Google user is not offered it', (tester) async {
+    await pumpFor(
+      tester,
+      const AuthUser(uid: 'u1', displayName: 'Ann', provider: AuthProvider.google),
+    );
+    expect(find.text('Save your progress'), findsNothing);
+    // The control: the page did render, so `findsNothing` above is about the
+    // tile and not about a screen that failed to build.
+    expect(find.text('Sign out'), findsOneWidget);
+  });
+
+  testWidgets('a signed-out visitor is not offered it either', (tester) async {
+    await pumpFor(tester, null);
+    expect(find.text('Save your progress'), findsNothing);
+    expect(find.text('Sign out'), findsOneWidget);
   });
 }

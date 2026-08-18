@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
+import '../auth/data/auth_user.dart';
 import '../auth/state/auth_providers.dart';
 import '../progress_photos/state/progress_photos_providers.dart';
 import '../subscription/data/subscription_models.dart';
@@ -231,6 +232,26 @@ class ProfilePage extends ConsumerWidget {
                       .profileThemeNotificationsLanguage,
                   onTap: () => context.push('/settings'),
                 ),
+                // Guests only. A real identity has nothing to link.
+                //
+                // This is the entry point that makes the /login exemption in
+                // `resolveRedirect` reachable. Without it the router change is
+                // half a fix: the door is open and nothing walks through it.
+                // The Google button on /login calls `linkWithCredential`,
+                // which keeps the same uid -- so unlike Sign out below, this
+                // costs the guest nothing.
+                if (user?.provider == AuthProvider.anonymous) ...[
+                  _divider(context),
+                  _profileTile(
+                    context,
+                    icon: Icons.link_rounded,
+                    gradient: AppPalette.tileGradients[1],
+                    title: AppLocalizations.of(context).profileLinkAccount,
+                    subtitle: AppLocalizations.of(context)
+                        .profileLinkAccountSubtitle,
+                    onTap: () => context.push('/login'),
+                  ),
+                ],
                 _divider(context),
                 _profileTile(
                   context,

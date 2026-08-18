@@ -37,8 +37,8 @@ Widget _host(Widget child) => MaterialApp(
 void main() {
   group('the routes', () {
     test('are public, so a signed-out user is not bounced to /login', () {
-      expect(resolveRedirect(isSignedIn: false, isOnboarded: false, location: '/terms'), isNull);
-      expect(resolveRedirect(isSignedIn: false, isOnboarded: false, location: '/privacy'), isNull);
+      expect(resolveRedirect(isSignedIn: false, isOnboarded: false, location: '/terms', isAnonymous: false), isNull);
+      expect(resolveRedirect(isSignedIn: false, isOnboarded: false, location: '/privacy', isAnonymous: false), isNull);
     });
   });
 

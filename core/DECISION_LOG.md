@@ -15236,3 +15236,69 @@ https://claude.ai/code/artifact/8e202ce7-534b-421b-b2d6-2d77cc3db28a
 Records the Codex gap honestly rather than omitting it: the second opinion was NOT obtained on any
 diff in this session because the account's usage limit is exhausted until 2026-08-20. The gate's
 fail-open receipt admitted the commits; no external review was performed.
+
+## The guest upgrade path was unreachable, and Sign out was the only exit
+
+Found while working N-05. Not an N-05 control — a data-loss defect that N-05 happened to walk into.
+
+`FirebaseAuthRepository.signInWithGoogle` calls `linkWithCredential` on an anonymous user, keeping
+the SAME uid and therefore every document under `users/{uid}` — profile, injuries, workout history,
+schedule. That was written deliberately (L0d) and it works. What did not work is that **nothing
+could reach it.**
+
+Three measured facts at `cc02f57`:
+
+1. `signInWithGoogle` has exactly one production call site, `login_page.dart:108`.
+2. `resolveRedirect` bounced every signed-in user off `/login` (`app_router.dart:63-65`), and
+   `isSignedIn` is `user != null` (`:252`) — true for a guest.
+3. `profile_page.dart` offered Settings and Sign out and nothing else, and Sign out fires with no
+   confirmation.
+
+So a guest's only self-service exit from an anonymous session was Sign out, which mints a fresh uid
+on the next sign-in. The repository already states the consequence, at
+`firebase_auth_repository.dart:135-141`: the old account and everything under it is *"not lost so
+much as unreachable forever, because an anonymous account has no credential to sign back into."*
+
+**The fix, both halves.** `resolveRedirect` takes `isAnonymous` and the rule became
+`isSignedIn && !isAnonymous && location == '/login'`; `profile_page.dart` gained a guest-only tile
+that pushes `/login`. Either half alone is nothing: an open door nobody walks through, or a tile
+that redirects away on tap.
+
+**The derivation is now testable.** The `redirect` closure became `redirectFor(authRepo,
+profileRepo, location)`. `resolveRedirect` can be perfectly correct about guests while the router
+never tells it who the guest is, and a pure test of the decision cannot see that. Mounting the real
+router to find out means building `/home` — the whole app shell — inside a unit test, which is what
+the first attempt did, and it hung.
+
+**The promise was corrected before it shipped.** The subtitle first read *"Everything you have
+logged stays where it is."* That is conditionally false: on `credential-already-in-use` the code
+falls back to `signInWithCredential` and, in its own words at
+`firebase_auth_repository.dart:179-182`, *"this device's guest data stays orphaned but intact."*
+That is the reinstall and second-device case, i.e. common. The string now says *"unless that
+account already has a profile here"*, and a test asserts the exception is named — because the tile
+is about to become the remedy offered to a user who has just been refused something, and telling
+them their data is safe in exactly the case where it is not is worse than not offering it.
+
+**Mutations, all killed, all restored byte-for-byte:**
+
+| Subject | Mutation | Killed by |
+|---|---|---|
+| `app_router.dart` | drop `!isAnonymous` | 3 pure cases |
+| `app_router.dart` | `isAnonymous: false` at the derivation | `redirectFor` guest cases |
+| `app_router.dart` | `isAnonymous: true` at the derivation | `redirectFor` Google case |
+| `profile_page.dart` | tile condition → `user != null` | the Google and signed-out cases |
+| `app_en.arb` | restore the unconditional promise | the exception test |
+
+The profile test also had to set a tall surface: the list is lazy, and on the default 800x600 the
+APP group is never built — so `findsNothing` was passing for "off-screen", not for "absent".
+
+**Suites:** Flutter 2,893 passed (was 2,877 with 2 failures, both fixed in the same session and
+recorded separately). `flutter analyze` clean of errors.
+
+**Scope.** This is a precondition for any identity-based quota control, and it is not one itself. It
+gives a guest a way to keep their data. It does not make an anonymous uid cost anything, and
+nothing here changes N-05.
+
+**Codex:** not obtained. `tools/codex_review.py --uncommitted` returned `usage_limit_exhausted`
+(until 2026-08-20). The gate's fail-open receipt admitted this commit; no external review was
+performed on this diff.

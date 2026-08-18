@@ -56,11 +56,27 @@ String? resolveRedirect({
   required bool isSignedIn,
   required bool isOnboarded,
   required String location,
+  required bool isAnonymous,
 }) {
   if (location == '/splash') return null;
   final isPublic = _publicPaths.contains(location);
   if (!isSignedIn && !isPublic) return '/login';
-  if (isSignedIn && location == '/login') {
+  // A guest reaching /login is the ONLY way to keep their data.
+  //
+  // `isSignedIn` is `user != null`, and an anonymous user is not null, so this
+  // rule used to bounce a guest away from the one screen that can upgrade
+  // them. The Google button there calls `linkWithCredential`, which keeps the
+  // SAME uid and therefore every document under `users/{uid}` -- profile,
+  // injuries, workout history, schedule. The only other route out of a guest
+  // session is Sign out, which mints a fresh uid on the next sign-in and
+  // orphans all of it, permanently and silently, because an anonymous account
+  // has no credential to sign back into.
+  //
+  // So the redirect that looked like "you are already signed in, nothing to do
+  // here" was closing the door on the one action that avoids data loss. A
+  // signed-in ANONYMOUS user may reach /login; anybody with a real identity
+  // still cannot, because for them it genuinely has nothing to offer.
+  if (isSignedIn && !isAnonymous && location == '/login') {
     return isOnboarded ? '/home' : '/onboarding';
   }
   // /equipment/:id, /exercise/:id and /workout/:id are gated but accessible
@@ -213,6 +229,30 @@ Stream<dynamic> profileWatchOf(
   return out.stream;
 }
 
+/// How the router DERIVES the flags [resolveRedirect] decides on.
+///
+/// Split out of the `redirect` closure so the derivation is testable
+/// without a widget tree. It is not a formality: [resolveRedirect] can be
+/// perfectly correct about guests while the router never tells it who the
+/// guest is, and a pure test of the decision cannot see that. Mounting the
+/// real router to find out would mean building `/home`, i.e. the whole app
+/// shell, inside a unit test. This is the seam between the two.
+@visibleForTesting
+String? redirectFor(
+  dynamic authRepo,
+  ProfileRepository profileRepo,
+  String location,
+) {
+  final AuthUser? user = authRepo.currentUser as AuthUser?;
+  final profile = user == null ? null : profileRepo.cached(user.uid);
+  return resolveRedirect(
+    isSignedIn: user != null,
+    isAnonymous: user?.provider == AuthProvider.anonymous,
+    isOnboarded: profile?.hasCompletedOnboarding ?? false,
+    location: location,
+  );
+}
+
 /// The application router. Reads auth state via Riverpod and redirects
 /// users away from gated routes when they aren't signed in.
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -230,15 +270,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     navigatorKey: _rootKey,
     initialLocation: '/splash',
     refreshListenable: profileListenable,
-    redirect: (context, state) {
-      final user = authRepo.currentUser;
-      final profile = user == null ? null : profileRepo.cached(user.uid);
-      return resolveRedirect(
-        isSignedIn: user != null,
-        isOnboarded: profile?.hasCompletedOnboarding ?? false,
-        location: state.matchedLocation,
-      );
-    },
+    redirect: (context, state) =>
+        redirectFor(authRepo, profileRepo, state.matchedLocation),
     routes: [
       GoRoute(
         path: '/splash',
