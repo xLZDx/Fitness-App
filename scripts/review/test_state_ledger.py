@@ -435,6 +435,8 @@ EXPECTED_AUTHORITY = {
     "H3": sl.EXTERNAL,
     "CT1-human-labels": sl.EXTERNAL,
     "scanner-metadata": sl.ENVIRONMENT,
+    "gym-webhook-disclosure": sl.OPERATOR,
+    "roboflow-key-reissue": sl.OPERATOR,
 }
 
 
@@ -576,6 +578,14 @@ def _tree(monkeypatch, resolver=_GOOD_RESOLVER, outcome=_GOOD_OUTCOME,
     files = {
         "mobile/lib/features/equipment/data/clip_url_resolver.dart": resolver,
         "mobile/lib/features/workouts/data/prefetch_outcome.dart": outcome,
+        # Added when `f_prefetch` gained the two conjuncts that check the
+        # refusal is CARRIED and SHOWN, not merely declared. Without them this
+        # helper builds a tree where the wire is missing, and every case below
+        # would pass for that reason instead of the one it names.
+        "mobile/lib/features/workouts/state/offline_video_providers.dart":
+            "return PrefetchOutcome(quotaExhausted: batch.quotaExhausted);",
+        "mobile/lib/features/workouts/workouts_page.dart":
+            "PrefetchState.partialQuota => l10n.clipQuotaReached,",
     }
     monkeypatch.setattr(
         sl, "_dart_sources", lambda: dict(files, **{"x.dart": extra})
@@ -614,7 +624,13 @@ def test_f2_reads_the_arb_and_not_the_key_name(monkeypatch):
     string, and an identifier check reports the defect as fixed."""
     card = ("VideoFailureReason.quotaExhausted => l10n.clipQuotaReached,\n"
             "VideoFailureReason.linkUnavailable => l10n.clipGenericFault,")
-    failure = "enum VideoFailureReason { quotaExhausted, linkUnavailable }"
+    # The classifier line is part of the healthy fixture now: `f2` gained a
+    # conjunct requiring that something actually PRODUCES the reason, and
+    # without it this test's CLOSED case would fail for that reason rather
+    # than proving anything about the ARB.
+    failure = ("enum VideoFailureReason { quotaExhausted, linkUnavailable } "
+               "if (error is ClipQuotaExhausted) return VideoFailureReason"
+               ".quotaExhausted;")
     generic = "The clip link is unavailable"
 
     def read(rel, same):
@@ -1110,3 +1126,271 @@ def test_check_reports_an_untracked_residual(monkeypatch, ledger):
     assert not result.ok
     bad = [f for f in result.findings if f.kind == "UNTRACKED_RESIDUAL"]
     assert bad and bad[0].item == "importer-paging", result.findings
+
+
+# ================================================== the two rows enrolled today
+#
+# Both were surfaced by a decision council rather than by an audit, and both are
+# the kind of item this ledger exists for: real, bounded, owned by somebody who
+# is not engineering, and previously recorded in prose alone.
+
+
+def _p1(monkeypatch, *, claims_two=True, dispatches=True, in_comment=False):
+    arb = ("Two processors are involved, and no others: Google and Stripe."
+           if claims_two else "Three processors are involved.")
+    ts = "const url = snap.data()?.maintenanceWebhookUrl;" if dispatches else ""
+    if in_comment:
+        ts = "// the old maintenanceWebhookUrl dispatch, since removed"
+    monkeypatch.setattr(
+        sl, "_read",
+        lambda rel: {"mobile/lib/l10n/app_en.arb": arb,
+                     "functions/src/index.ts": ts}.get(rel, ""),
+    )
+
+
+def test_the_disclosure_question_stands_while_both_halves_hold(monkeypatch):
+    _p1(monkeypatch)
+    assert sl.gym_webhook_still_undisclosed()[0]
+
+
+@pytest.mark.parametrize("kwargs,why", [
+    ({"claims_two": False}, "the policy was amended, so it was disclosed"),
+    ({"dispatches": False}, "the dispatch is gone, so there is no third party"),
+])
+def test_either_answer_retires_the_disclosure_question(monkeypatch, kwargs, why):
+    """A row that goes on asking after it was answered is the stale QUESTION.
+
+    Both resolutions are legitimate and they are opposites, so the invariant
+    has to fail on either -- not merely on the one the recommendation favours.
+    """
+    _p1(monkeypatch, **kwargs)
+    holds, detail = sl.gym_webhook_still_undisclosed()
+    assert not holds, why
+    assert "answered" in detail
+
+
+def test_a_webhook_that_survives_only_in_a_comment_is_not_a_dispatch(monkeypatch):
+    _p1(monkeypatch, in_comment=True)
+    assert not sl.gym_webhook_still_undisclosed()[0]
+
+
+def test_no_roboflow_key_literal_is_committed():
+    """The live assertion, not a fixture one. This is the fact being guarded."""
+    holds, detail = sl.roboflow_key_not_committed()
+    assert holds, detail
+
+
+def test_the_credential_guard_has_a_non_empty_subject_set():
+    """A guard over zero files reports clean for ever.
+
+    `_tracked_text_files` shells out to git; if that failed it would return an
+    empty tuple and the invariant above would pass by scanning nothing.
+    """
+    files = sl._tracked_text_files()
+    assert len(files) > 100, len(files)
+    assert "scripts/review/state_ledger.py" in files
+
+
+#: Built at runtime, never written as a literal. The first draft of these
+#: fixtures spelled the banned pattern out -- and the guard promptly reported
+#: this test file as carrying a committed key, which is a true positive on a
+#: false subject. A guard that its own tests trip is a guard that gets muted.
+_KEY_NAME = "ROBOFLOW" + "_KEY"
+_FAKE = "abcd1234" + "efgh5678"
+
+
+@pytest.mark.parametrize("sep,quote", [(" = ", '"'), ("=", "'"), (": ", '"')])
+def test_a_committed_key_literal_is_seen(monkeypatch, sep, quote):
+    literal = f"{_KEY_NAME}{sep}{quote}{_FAKE}{quote}"
+    monkeypatch.setattr(sl, "_tracked_text_files", lambda: ("some/file.md",))
+    monkeypatch.setattr(sl, "_read", lambda rel: literal)
+    holds, detail = sl.roboflow_key_not_committed()
+    assert not holds
+    assert "now appears" in detail
+
+
+@pytest.mark.parametrize("shape", [
+    "{k} = os.environ[\"{k}\"]",
+    "the key is read from {k} in the environment",
+    "sha256: 6ae6e7db8c4f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b",
+])
+def test_the_credential_guard_does_not_cry_wolf(monkeypatch, shape):
+    benign = shape.format(k=_KEY_NAME)
+    """Measured false-positive control.
+
+    A loose "long token near the word roboflow" pattern would fire on every
+    sha256 in the provenance documents, and a guard people learn to ignore
+    protects nothing -- the same reasoning that rejected prose word-scanning.
+    """
+    monkeypatch.setattr(sl, "_tracked_text_files", lambda: ("some/file.md",))
+    monkeypatch.setattr(sl, "_read", lambda rel: benign)
+    assert sl.roboflow_key_not_committed()[0]
+
+
+# ============================== what the final falsification review confirmed
+#
+# Four defects, all the same family as f5: a predicate whose conjuncts prove
+# the DECLARATIONS exist and never prove anything USES them. Each is pinned
+# here by the mutation that found it.
+
+
+def _files(monkeypatch, files: dict):
+    """A whole synthetic tree, keyed by repo-relative path.
+
+    Named apart from `_tree` above deliberately: the first draft called both
+    `_tree`, the later definition silently shadowed the earlier one, and four
+    passing tests went red for a reason unrelated to what they test.
+    """
+    monkeypatch.setattr(sl, "_read", lambda rel: files.get(rel, ""))
+
+
+_PREFETCH_FILES = {
+    "mobile/lib/features/equipment/data/clip_url_resolver.dart":
+        "class ClipBatch { final bool quotaExhausted; }",
+    "mobile/lib/features/workouts/data/prefetch_outcome.dart":
+        "enum PrefetchState { partialQuota, partialFailed }",
+    "mobile/lib/features/workouts/state/offline_video_providers.dart":
+        "return PrefetchOutcome(quotaExhausted: batch.quotaExhausted);",
+    "mobile/lib/features/workouts/workouts_page.dart":
+        "PrefetchState.partialQuota => l10n.clipQuotaReached,",
+}
+
+
+def test_f_prefetch_is_closed_when_the_refusal_is_declared_carried_and_shown(
+    monkeypatch,
+):
+    _files(monkeypatch, dict(_PREFETCH_FILES))
+    assert sl.f_prefetch()[0] == "CLOSED"
+
+
+@pytest.mark.parametrize("rel,replacement,why", [
+    ("mobile/lib/features/workouts/state/offline_video_providers.dart",
+     "return PrefetchOutcome(quotaExhausted: false);",
+     "the wire is cut, so every quota refusal renders as a fault -- which is "
+     "F-prefetch's literal defect, and the row used to still read CLOSED"),
+    ("mobile/lib/features/workouts/workouts_page.dart",
+     "PrefetchState.partialFailed => l10n.clipGenericFault,",
+     "nothing renders the refusal as its own state"),
+])
+def test_f_prefetch_needs_the_refusal_to_actually_reach_a_person(
+    monkeypatch, rel, replacement, why
+):
+    files = dict(_PREFETCH_FILES)
+    files[rel] = replacement
+    _files(monkeypatch, files)
+    assert sl.f_prefetch()[0] == "OPEN", why
+
+
+def test_a_comment_quoting_the_wire_is_not_the_wire(monkeypatch):
+    files = dict(_PREFETCH_FILES)
+    files["mobile/lib/features/workouts/state/offline_video_providers.dart"] = (
+        "// quotaExhausted: batch.quotaExhausted used to be here\n"
+        "return PrefetchOutcome(quotaExhausted: false);"
+    )
+    _files(monkeypatch, files)
+    assert sl.f_prefetch()[0] == "OPEN"
+
+
+_F2_FILES = {
+    "mobile/lib/features/equipment/data/video_failure.dart":
+        "enum VideoFailureReason { quotaExhausted, linkUnavailable }\n"
+        "if (error is ClipQuotaExhausted) return VideoFailureReason"
+        ".quotaExhausted;",
+    "mobile/lib/features/equipment/widgets/exercise_reference.dart":
+        "VideoFailureReason.quotaExhausted => l10n.clipQuotaReached,\n"
+        "VideoFailureReason.linkUnavailable => l10n.clipGenericFault,",
+    "mobile/lib/l10n/app_en.arb": json.dumps({
+        "clipQuotaReached": "Daily clip limit reached",
+        "clipGenericFault": "The clip link is unavailable",
+    }),
+}
+
+
+def test_f2_needs_something_to_produce_the_reason(monkeypatch):
+    """The gap the review found: three conjuncts, none of them a producer.
+
+    The enum member exists, the card maps it, the two strings differ -- and no
+    code path returns it. The user reads "The clip link is unavailable" for a
+    quota refusal, which IS F2, while the row prints the correct refusal string
+    as its own evidence.
+    """
+    _files(monkeypatch, dict(_F2_FILES))
+    assert sl.f2()[0] == "CLOSED"
+
+    files = dict(_F2_FILES)
+    files["mobile/lib/features/equipment/data/video_failure.dart"] = (
+        "enum VideoFailureReason { quotaExhausted, linkUnavailable }"
+    )
+    _files(monkeypatch, files)
+    assert sl.f2()[0] == "OPEN"
+
+
+def _trap(tmp_path, monkeypatch, body):
+    d = tmp_path / "mobile" / "test" / "adversarial"
+    d.mkdir(parents=True)
+    (d / "dormant_traps_test.dart").write_text(body, encoding="utf-8")
+    monkeypatch.setattr(sl, "REPO", tmp_path)
+
+
+_LIVE_TRAP = (
+    "test('nothing reads dailyWorkouts', () {\n"
+    "  expect(readers, isEmpty, reason: 'a reader appeared');\n"
+    "  expect(seed, contains(\"'squat'\"));\n"
+    "});\n"
+)
+
+
+def test_f025_reads_the_tripwires_assertions_not_its_name(tmp_path, monkeypatch):
+    _trap(tmp_path, monkeypatch, _LIVE_TRAP)
+    assert sl.f025_tripwire_intact()[0]
+
+
+def test_a_gutted_tripwire_that_still_says_f025_is_not_a_tripwire(
+    tmp_path, monkeypatch
+):
+    """`flutter test` passes on an empty main, and the old check passed too.
+
+    F025's mitigation is this suite and nothing else, so a suite reduced to a
+    comment bearing its name is not a weaker guard -- it is an absent one.
+    """
+    _trap(tmp_path, monkeypatch, "// F025: tripwire deleted.\nvoid main() {}\n")
+    holds, detail = sl.f025_tripwire_intact()
+    assert not holds
+    assert "no longer makes these assertions" in detail
+
+
+def test_a_missing_tripwire_file_is_still_caught(tmp_path, monkeypatch):
+    monkeypatch.setattr(sl, "REPO", tmp_path)
+    assert not sl.f025_tripwire_intact()[0]
+
+
+def test_a_residual_comes_due_when_its_row_is_closed(ledger):
+    """The failure that would actually have happened.
+
+    Every live marker describes work due AFTER the operator decides. The moment
+    the decision lands, AUTHORITY_SPOKE fires, the row is restated terminal --
+    and the marker naming it used to go silent for ever, at exactly the moment
+    it came due. A tracked marker that vanishes when it matters is worse than
+    none, because the convention teaches people it is being watched.
+    """
+    tracked = set(sl.residual_markers())
+    assert tracked, "no live markers: this test would assert nothing"
+    item = sorted(tracked)[0]
+
+    ledger(_swap(item, state="CLOSED",
+                 closure=lambda: (True, "the operator decided")))
+    due = [f for f in sl.check().findings if f.kind == "RESIDUAL_NOW_DUE"]
+    assert due and due[0].item == item, sl.check().findings
+    assert "now due" in due[0].detail
+
+
+def test_an_open_row_does_not_make_its_residual_due():
+    """The control. Today every marked row is open, so nothing is due."""
+    assert not [f for f in sl.check().findings if f.kind == "RESIDUAL_NOW_DUE"]
+
+
+def test_the_clinical_handoff_is_read_for_residuals():
+    """A marker in the document that owns D1 and H3 was not read at all."""
+    assert "core/review/CLINICAL_VALIDATION_HANDOFF.md" in sl.RESIDUAL_DOCS
+    for rel in sl.RESIDUAL_DOCS:
+        assert (sl.REPO / rel).exists(), rel

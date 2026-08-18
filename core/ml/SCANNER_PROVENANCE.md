@@ -226,6 +226,113 @@ the pipeline directory does not exist as far as `validate` is concerned, and `tr
 is rejected exactly as before. Closing it needs the commit **and** a repo-qualified
 `training_code_commit`, which is a schema change nobody has authorised. The contract now says so.
 
+### The council's answer, and where it beat the recommendation above (2026-08-18)
+
+Two independent lenses — MLOps/repository-architecture and data-governance/licensing/provenance —
+were run without sight of each other. **Both rejected the recommendation above in the same place,
+for reasons neither could have got from the other.**
+
+#### The recommendation was wrong to put the workspace inside the evidence tree
+
+"A source-only, recovery-labelled snapshot **at** the pipeline root … forward work committed on top
+of the recovery root" puts the working repository inside the thing being preserved. That tree has
+**already destroyed provenance once by being written in place**: `train_v2.py` writes to a fixed
+output path, so a 37-class run landed on top of the 29-class one and produced the only CONTRADICTED
+field in this document. The 2026-08-18 reproduction had to copy the trainer and change exactly one
+line so `out/` would not be overwritten again. That is measured proof, not preference: **the
+evidence tree and the workspace cannot be the same directory.**
+
+A second cost the recommendation carried: `git init` at the pipeline root flips `probe()` to
+`FOUND_VERSIONED_PIPELINE` and turns the pin assertions red asymmetrically — green on CI, where the
+directory test skips, failing only on the one machine that holds the corpus. The alternative
+eliminates that by construction instead of managing it.
+
+And a subtler, permanent loss. `is_git_repository: False`, measured 2026-08-18, **can never be
+re-established by any later probe**. Initialising git at the pipeline root destroys the evidence
+that the pipeline was never versioned — which is one of the few facts about this programme that is
+cleanly true.
+
+#### Recommended architecture
+
+**An immutable recovered-evidence tree, a separate clean training repository, and corpora addressed
+by content outside normal git.** Three artefacts, three lifetimes, none pretending to be another.
+
+| | Enters git | Stays out |
+|---|---|---|
+| **Source** | 15 Python files, 80,271 bytes | — |
+| **Provenance** | ~62 KB of dataset JSON, `out/labels.txt`, `out_v2/labels.json`, `out/metadata.json` | — |
+| **Logs** | `train_v2.log` (1,317,222 B), labelled as the log of a superseded run | — |
+| **Corpora** | — | `dataset/` (1,741), `dataset_v2/` (90,817), `dataset_v2_thin/` (462), `fresh_test/`, `_roboflow_raw/` |
+| **Models** | — | `out/*.tflite`, `out_v2/*.tflite` — `artifact_in_repository: false` is the existing precedent |
+
+`train_v2.log` is committed rather than pruned because it is irreplaceable and deleting it is the
+fiction this document forbids: it is the only surviving record of a run whose artefact contradicts
+it, and that contradiction is evidence.
+
+#### First-commit semantics: anchor on digests, not on ancestry
+
+The first commit must contain every recovered file **at a digest that already appears in
+`scanner_provenance.PINNED`, published 2026-08-18**, plus a tracked machine-readable recovery
+manifest, and nothing else authored.
+
+This is stronger than the ordering argument the recommendation above rested on. Commit dates are
+forgeable — `GIT_COMMITTER_DATE` sets them — and "structurally after" is only as good as the dates.
+**A commit whose every blob matches a digest published earlier, in a different repository, cannot be
+the history that produced v1**, and no amount of rewriting changes that. The corollary is the useful
+half: any commit introducing a byte with no 2026-08-18 digest is provably forward work, and the
+boundary is readable by tooling without anyone reading prose.
+
+The manifest carries `provenance: RECOVERED_UNVERSIONED_SOURCE`, `recovered_at`, `recovered_from`,
+`is_git_repository_before_recovery: false`, per-file sha256, and `training_code_commit: UNKNOWN` per
+model version. The recovery commit is **not** permitted to fill `training_code_commit`:
+`training_run.validate` rejects `UNKNOWN` today and must go on rejecting it, because closing that
+field needs a repo-qualified schema change nobody has authorised.
+
+#### What the governance lens added, and it is the more urgent half
+
+**Licensing does not choose between A/B/C/D. It chooses whether image bytes may cross the machine
+boundary at all** — and only a source-only shape is unaffected by the answer. Obligations attach to
+distribution, not to holding bytes you already lawfully hold, so keeping the corpus local is
+licence-neutral and any hosted remote is a transfer to a third party.
+
+Two findings sharpen the picture materially, and both are worse than this document previously said:
+
+* **`dataset/` is not "licence UNKNOWN" in the sense of pending.** It was assembled by Bing image
+  search, and no per-image source record was kept — files land as sequential indices, with no
+  sidecar. The origin URLs were discarded at download time and cannot be recovered by inspection,
+  only by re-crawling, which produces a different corpus. The correct status is **presumptively
+  all-rights-reserved third-party photographs whose owners are no longer identifiable**. That makes
+  public distribution a blocker rather than a risk: you cannot publish, and you also cannot clear,
+  images whose rightsholders you cannot name. **And this is the corpus behind the model this app
+  currently ships.** The exposure is live today, independent of any decision taken here.
+* **The CC BY 4.0 attribution data was never retained.** All 332 dataset records carry
+  `workspace`/`project`/`images` and no licence string, licence URI, source URL, creator or version.
+  So the "CC BY 4.0" claim in `MODEL_REGISTRY.json` rests on a filter that ran at fetch time and
+  whose output was discarded. Reconstructing it is cheap **today** — re-query the API — and may
+  become impossible later, because Universe projects and licences can be changed or withdrawn by
+  their owners. `dataset_v2` cannot be redistributed in any form until that manifest exists,
+  together with a crop-to-source mapping and a stated "changes made" record covering bbox cropping,
+  class remapping and negative mining.
+
+#### What survives if the programme stops
+
+The forward half of any recommendation is contingent on the operator's third question. The
+preservation half is not, and one obligation gets **stronger** rather than weaker: `dataset/` and
+its manifest must be preserved for as long as v1 ships, because it is the only evidence of what the
+distributed model was trained on if a rights claim ever arrives. Deleting it converts an answerable
+question into an unanswerable one.
+
+#### What is engineering's after all
+
+The council found three items misfiled as operator decisions. They are recorded, not built —
+building them before the decision is taken is constructing infrastructure for a choice nobody has
+made:
+
+1. **Whether the evidence tree is also the workspace** is forced by the overwrite evidence above,
+   not chosen. Engineering's, and now answered: no.
+2. **The scope of "source"** was a measurement error, corrected above.
+3. **The reachability of the `git log` substitution** is a fact, corrected above.
+
 ### A migration hazard, pre-recorded
 
 `test_the_pipeline_is_still_not_a_git_repository` is `@needs_pipeline` and therefore **skips on

@@ -16680,3 +16680,89 @@ it stops living only in an eleven-day-old planning document.
 Suites: `pytest scripts/` 678 passed; `npx tsc --noEmit` clean; `npx jest` 228 passed. No Dart source
 changed, so `flutter test` is NOT RUN rather than quoted. `firestore.rules` unchanged, so the
 emulator suite is NOT RUN.
+
+
+## 2026-08-18 -- Four more predicates that proved a declaration and not a behaviour
+
+The bounded falsification reviewer was asked one question and given no expected answer. It returned
+four confirmed defects, all reproduced against a scratchpad copy with `REPO` repointed before being
+reported, and all the same family as the `f5` finding: **conjuncts that prove the DECLARATIONS
+exist and never prove anything USES them.** That is now the dominant defect shape in this
+programme, recorded here as a property of how these predicates get written rather than as four
+unrelated bugs.
+
+**F-prefetch never opened the file holding the wire.** It read `clip_url_resolver.dart` and
+`prefetch_outcome.dart` and asserted three declarations. The one line that carries the refusal from
+the batch into the outcome lives in `offline_video_providers.dart`, which the predicate never
+opened. Replacing `quotaExhausted: batch.quotaExhausted` with `false` left the row reading CLOSED --
+and every quota refusal would then render as `partialFailed`, a deliberate self-resolving refusal
+shown to the user as a fault, which is F-prefetch's literal defect. No Dart test covered the mapping
+either: the provider test file contains no occurrence of `quotaExhausted`, and the outcome tests
+construct the outcome by hand. Two conjuncts added -- carried, and rendered as its own state. Two
+kills, one correct survivor (a comment quoting the wire).
+
+**F2 never checked that anything produces the reason.** Enum member present, card maps it, the two
+ARB strings differ -- and no code path returns it. Deleting `video_failure.dart:96` makes
+`ClipQuotaExhausted` fall through to the generic branch, so the user reads "The clip link is
+unavailable" for a quota refusal, which IS F2, while the row reports CLOSED **and prints the correct
+refusal string as its own evidence**. Honest qualifier the reviewer volunteered: unlike F-prefetch,
+a Dart test would catch this. The ledger row is still the artefact that would lie.
+
+**F025's invariant checked for its own name, in a file including comments.** The whole check was
+`"F025" in body` over the raw text. A suite reduced to `// F025: tripwire deleted.` plus an empty
+`main()` passed -- and `flutter test` passes on an empty main too, so nothing anywhere would have
+noticed. This is the guard-cannot-tell-code-from-commentary failure that was fixed for
+`n07_still_dormant` earlier in this programme and then repeated verbatim here. It now asserts what
+the tripwire ASSERTS. It had no test of its own, which is most of why it survived.
+
+**A residual went silent at exactly the moment it came due.** `untracked_residuals` flags a marker
+only when it names an item absent from the ledger; state was never consulted. Every live marker
+describes work that becomes due AFTER the operator decides. So the moment a decision is recorded,
+`AUTHORITY_SPOKE` fires, the row is restated terminal -- and the marker naming it would have gone
+quiet for ever, with nothing to announce that the work it gated had just arrived. A tracked marker
+that disappears when it matters is worse than no marker, because the convention teaches people it is
+being watched. `RESIDUAL_NOW_DUE` added. Also: `RESIDUAL_DOCS` omitted
+`core/review/CLINICAL_VALIDATION_HANDOFF.md`, the document that owns D1 and H3 -- so a marker
+written in the one place an external-authority residual would naturally go was not read at all.
+
+**What the reviewer could not break**, recorded because a review that finds four things should say
+what it failed to find. N-07: the route has no `name:`, `goNamed`/`pushNamed` appear nowhere in
+`mobile/lib`, and no server path references it. `metric-provenance-six`: the six unlocatable claims
+ARE in the cited document, in Russian, and `evaluation_report.py` explicitly refuses a
+Russian-to-English metric alias as a change of meaning rather than of spelling -- a documented
+decision, not hidden work. `human_labels_are_zero`: denominator non-zero, and both writer defaults
+land inside the scanned roots. `n05_premise_holds`: a missing file raises into `PREDICATE_ERROR`
+rather than passing vacuously. And it tried the settlement `scanner-metadata`'s own docstring names:
+Docker is running and `python:3-slim` is present locally, but `pip install tflite-support` fails on
+this host's TLS interception with `CERTIFICATE_VERIFY_FAILED`. `ENVIRONMENT_BLOCKED` is the correct
+word, arrived at by attempting the fix rather than by assuming it.
+
+One scope note it raised and I am recording rather than acting on:
+`metadata_is_still_environment_blocked` probes `find_spec` in whatever interpreter runs the ledger,
+not in `D:/tools/ml-train-env` where the ML work runs, so an install there would not reopen the row.
+Not live today, and widening it would mean the ledger importing from an interpreter it does not
+control.
+
+**Two rows enrolled**, both surfaced by the councils rather than by an audit.
+`gym-webhook-disclosure`: the published privacy body says "two processors and no others" and a
+gym-controlled webhook is a third recipient; the invariant fails on EITHER resolution, because
+amending the copy and removing the dispatch are opposite answers and both retire the question.
+`roboflow-key-reissue`: stated precisely, because the loose version would be false -- no key literal
+is committed to this repository at HEAD or anywhere in history, verified with `git log --all -S`.
+What exists is a 2026-08-07 note that the key was pasted into a CONVERSATION, recommending a reissue
+with no record of it happening. The invariant guards the half this tree can answer.
+
+**One invalid mutant, recorded rather than hidden.** The first attempt to delete the F2 classifier
+line was a no-op: the file is CRLF and the pattern used `\n`. The harness asserted on it instead of
+scoring a survivor, which is the only reason it is in this entry rather than in a table of results.
+Re-run line-ending agnostically; killed.
+
+**And one defect I wrote myself, in the same hour.** The credential guard's first test fixtures
+spelled the banned pattern out as literals -- so the guard promptly reported this test file as
+carrying a committed key. A true positive on a false subject, and a guard its own tests trip is a
+guard that gets muted. The fixtures now build the string at runtime.
+
+Suites: `pytest scripts/` 701 passed; ledger 19 rows reconciled, 8 source-provable. No Dart,
+`functions/` or `firestore.rules` source changed in this gate, so `flutter test`, jest, `tsc` and the
+emulator are NOT RUN rather than quoted -- the Dart mutations above were applied and reverted
+byte-exactly, verified by `git diff`.

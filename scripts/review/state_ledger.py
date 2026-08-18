@@ -147,6 +147,10 @@ RESIDUAL_MARKER = re.compile(r"RESIDUAL\[([A-Za-z0-9._-]+)\]")
 RESIDUAL_DOCS = (
     "core/DECISION_LOG.md",
     "core/review/N05_DISPOSITION.md",
+    # The document that owns D1 and H3. Omitting it meant a marker written in
+    # the one place an EXTERNAL-authority residual would naturally be recorded
+    # was not read at all.
+    "core/review/CLINICAL_VALIDATION_HANDOFF.md",
     "core/review/N04_EQUIPMENT_REPORT_AUTHORITY.md",
     "core/review/N07_TEAM_ACTIVATION_GATE.md",
     "core/ml/SCANNER_PROVENANCE.md",
@@ -264,6 +268,29 @@ def _exported_member(body: str, signature: str) -> str:
     return body[i:] if j < 0 else body[i:j]
 
 
+def _tracked_text_files() -> tuple[str, ...]:
+    """Every tracked file git considers text, repo-relative.
+
+    Asked of git rather than globbed, so the guard's subject set is exactly
+    what a commit could carry. `-I` on the grep side is not available here, so
+    binary files are filtered by extension after the fact.
+    """
+    import subprocess
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(REPO), "ls-files"],
+            capture_output=True, text=True, check=True,
+        ).stdout.split("\n")
+    except Exception:
+        return ()
+    skip = {".png", ".jpg", ".jpeg", ".webp", ".tflite", ".ttf", ".otf",
+            ".ico", ".zip", ".jar", ".keystore", ".pdf", ".mp4"}
+    return tuple(
+        rel for rel in out
+        if rel and not any(rel.lower().endswith(e) for e in skip)
+    )
+
+
 def _without_comments(body: str) -> str:
     """Line comments removed.
 
@@ -304,6 +331,20 @@ def f_prefetch() -> tuple[str, str]:
     absent, detail = _symbol_absent("resolveAll")
     resolver = _read("mobile/lib/features/equipment/data/clip_url_resolver.dart")
     outcome = _read("mobile/lib/features/workouts/data/prefetch_outcome.dart")
+    # The two files above declare the TYPES. Neither carries the refusal. The
+    # wire is one line in the provider that builds the outcome from the batch,
+    # and a file the predicate never opened cannot be a file it can vouch for:
+    # cut that line and every quota refusal renders as `partialFailed`, a
+    # self-resolving refusal shown to the user as a fault -- F-prefetch's
+    # literal defect, restored, with this row still reading CLOSED. Measured.
+    provider = _without_comments(
+        _read("mobile/lib/features/workouts/state/offline_video_providers.dart")
+    )
+    page = _without_comments(
+        _read("mobile/lib/features/workouts/workouts_page.dart")
+    )
+    carried = "quotaExhausted: batch.quotaExhausted" in provider
+    rendered = "PrefetchState.partialQuota" in page
 
     has_batch = re.search(r"\bclass\s+ClipBatch\b", resolver) is not None
     has_flag = re.search(r"\bfinal\s+bool\s+quotaExhausted\b", resolver) is not None
@@ -314,8 +355,10 @@ def f_prefetch() -> tuple[str, str]:
         f"class ClipBatch: {has_batch}",
         f"ClipBatch.quotaExhausted: {has_flag}",
         f"PrefetchState.partialQuota: {has_partial}",
+        f"refusal carried into the outcome: {carried}",
+        f"rendered as its own state: {rendered}",
     ]
-    ok = absent and has_batch and has_flag and has_partial
+    ok = absent and has_batch and has_flag and has_partial and carried and rendered
     return ("CLOSED" if ok else "OPEN"), "; ".join(parts)
 
 
@@ -339,10 +382,22 @@ def f2() -> tuple[str, str]:
     quota_text = arb.get(mapped.group(1)) if mapped else None
     fault_text = arb.get(fault.group(1)) if fault else None
     distinct = bool(quota_text) and bool(fault_text) and quota_text != fault_text
-    ok = named and distinct
+    # And something has to PRODUCE the reason. The three checks above prove the
+    # enum member exists, that the card maps it, and that the two strings a
+    # person reads differ -- none of them proves any code path ever returns it.
+    # Delete the one line that classifies the error and `ClipQuotaExhausted`
+    # falls through to the generic branch: the user reads "The clip link is
+    # unavailable" for a quota refusal, which IS F2, while this row reports
+    # CLOSED and prints the correct refusal string as its evidence. Measured.
+    classified = (
+        "if (error is ClipQuotaExhausted) return VideoFailureReason"
+        ".quotaExhausted" in _without_comments(failure).replace("\n", "")
+    )
+    ok = named and distinct and classified
     return ("CLOSED" if ok else "OPEN"), (
-        f"VideoFailureReason.quotaExhausted: {named}; "
-        f"refusal reads {quota_text!r}; fault reads {fault_text!r}"
+        f"VideoFailureReason.quotaExhausted: {named}; classified from "
+        f"ClipQuotaExhausted: {classified}; refusal reads {quota_text!r}; "
+        f"fault reads {fault_text!r}"
     )
 
 
@@ -565,12 +620,23 @@ def f025_tripwire_intact() -> tuple[bool, str]:
     trap = REPO / "mobile" / "test" / "adversarial" / "dormant_traps_test.dart"
     if not trap.exists():
         return False, "the dormant-code tripwire suite is gone"
-    body = trap.read_text(encoding="utf-8", errors="replace")
-    named = "F025" in body
-    return named, (
-        "the tripwire suite exists and still names F025"
-        if named else
-        "the tripwire suite no longer mentions F025, so nothing guards it"
+    body = _without_comments(trap.read_text(encoding="utf-8", errors="replace"))
+    # Not the NAME. The whole check used to be `"F025" in body` over the raw
+    # file, comments included -- so a suite reduced to `// F025: tripwire
+    # deleted.` plus an empty `main()` passed, and `flutter test` passes on an
+    # empty main too. That is the guard-cannot-tell-code-from-commentary
+    # failure this module fixed for `n07_still_dormant` and then repeated here.
+    #
+    # So assert what the tripwire ASSERTS. F025's mitigation is this suite and
+    # nothing else; a suite that no longer makes these two claims is not a
+    # weaker tripwire, it is an absent one.
+    required = ("dailyWorkouts", "expect(readers, isEmpty", "expect(seed, contains(")
+    missing = [needle for needle in required if needle not in body]
+    return not missing, (
+        "the tripwire still asserts that nothing reads dailyWorkouts and that "
+        "the nine ids are still dangling"
+        if not missing else
+        f"the tripwire no longer makes these assertions: {missing}"
     )
 
 
@@ -755,6 +821,56 @@ def operator_decision_recorded(item: str) -> Callable[[], tuple[bool, str]]:
             )
         return True, f"operator decision recorded at core/decisions/{item}.md"
     return check
+
+
+def gym_webhook_still_undisclosed() -> tuple[bool, str]:
+    """P-1's premise: a third recipient exists and the policy says there is none.
+
+    Two halves, and the question only stands while BOTH hold. If the dispatch
+    is removed, there is no third recipient and nothing to disclose. If the
+    processor sentence is amended, it has been disclosed. Either way the
+    operator has answered, and a row that went on asking would be the stale
+    QUESTION failure this ledger was widened to catch.
+    """
+    arb = _read("mobile/lib/l10n/app_en.arb")
+    claims_two = "Two processors are involved, and no others" in arb
+    dispatches = "maintenanceWebhookUrl" in _without_comments(
+        _read("functions/src/index.ts")
+    )
+    return claims_two and dispatches, (
+        "the privacy body still says two processors and no others, and "
+        "reportEquipment still dispatches to a gym-controlled endpoint"
+        if claims_two and dispatches else
+        f"answered: policy claims two processors = {claims_two}; "
+        f"webhook dispatch present = {dispatches}"
+    )
+
+
+#: A literal assigned to the key, in any quoting style. Narrow on purpose: a
+#: loose "long token near the word roboflow" pattern would fire on every sha256
+#: in the provenance documents, and a guard that cries wolf is switched off.
+_ROBOFLOW_LITERAL = re.compile(
+    r"ROBOFLOW_KEY\s*[=:]\s*[\"\'][^\"\']{8,}"
+)
+
+
+def roboflow_key_not_committed() -> tuple[bool, str]:
+    """The half of the credential question this repository can actually answer.
+
+    It cannot know whether the key was reissued -- that is a Roboflow console
+    action. It CAN know that the plaintext key has never entered this tree,
+    which is the outcome that would turn an exposure into a permanent one.
+    Verified at HEAD and across all history with `git log --all -S` when the
+    row was enrolled; this guards it going forward.
+    """
+    hits = sorted({
+        rel for rel in _tracked_text_files()
+        if _ROBOFLOW_LITERAL.search(_read(rel))
+    })
+    return not hits, (
+        "no ROBOFLOW_KEY literal is assigned anywhere in this repository"
+        if not hits else f"a ROBOFLOW_KEY literal now appears in {hits}"
+    )
 
 
 # ------------------------------------------------------------------- the rows
@@ -1013,6 +1129,42 @@ LEDGER: tuple[Row, ...] = (
               "would have demanded a closure artefact for something the tree "
               "proves on every run.",
     ),
+    Row(
+        item="gym-webhook-disclosure",
+        state="OPERATOR_DECISION_REQUIRED",
+        authority=OPERATOR,
+        evidence=("core/review/N04_EQUIPMENT_REPORT_AUTHORITY.md",
+                  "mobile/lib/l10n/app_en.arb",
+                  "functions/src/index.ts",),
+        invariant=gym_webhook_still_undisclosed,
+        closure=operator_decision_recorded("gym-webhook-disclosure"),
+        no_local_predicate="Whether a gym's maintenance endpoint is a disclosed "
+                           "processor is a privacy-policy question. Engineering "
+                           "can remove the dispatch or amend the copy; it "
+                           "cannot decide which is the product's position.",
+        notes="Surfaced while deciding N-04, not by asking N-04's question. The "
+              "published privacy body says two processors and no others; a "
+              "gym-controlled webhook is a third recipient of report contents. "
+              "Harmless today only because no gym document exists, and it stops "
+              "being harmless with no code change in between.",
+    ),
+    Row(
+        item="roboflow-key-reissue",
+        state="OPERATOR_DECISION_REQUIRED",
+        authority=OPERATOR,
+        evidence=("core/plans/B5_DATA_SOURCES_2026-08-07.md",),
+        invariant=roboflow_key_not_committed,
+        closure=operator_decision_recorded("roboflow-key-reissue"),
+        no_local_predicate="Reissuing an API key is an action in the Roboflow "
+                           "console. Nothing here can perform it, and nothing "
+                           "here can observe whether it was performed.",
+        notes="Stated precisely, because the loose version would be false: NO "
+              "key literal is committed to this repository, at HEAD or "
+              "anywhere in history. What exists is a 2026-08-07 planning "
+              "document recording that the key was pasted into a CONVERSATION "
+              "and recommending reissue, with no record of the reissue. The "
+              "invariant guards the half this tree can answer.",
+    ),
 )
 
 
@@ -1213,6 +1365,26 @@ def check() -> Result:
             "tracks. Either add the row or, if the sentence is historical "
             "narration rather than outstanding work, drop the marker.",
         ))
+
+    # And the opposite failure, which is the one that would actually have
+    # happened. Every live marker describes work that becomes due AFTER the
+    # operator decides -- "a rider on the decision rather than work due now".
+    # The moment that decision is recorded, `AUTHORITY_SPOKE` fires, the row is
+    # restated to a terminal state, and until now the marker naming it went
+    # silent for ever: the residual survived the closure of the row that gated
+    # it, with nothing to announce that it had just come due. A tracked marker
+    # that disappears at exactly the moment it matters is worse than no marker,
+    # because the convention teaches people it is being watched.
+    states = {r.item: r.state for r in LEDGER}
+    for item, where in sorted(residual_markers().items()):
+        if needs_closure(states.get(item, "")):
+            result.findings.append(Finding(
+                item, "RESIDUAL_NOW_DUE",
+                f"{item} is {states[item]} -- its authority has spoken -- and "
+                f"prose in {where} marks RESIDUAL[{item}] as work that becomes "
+                "due once it is decided. That work is now due. Do it, or drop "
+                "the marker if the decision made it moot.",
+            ))
     return result
 
 

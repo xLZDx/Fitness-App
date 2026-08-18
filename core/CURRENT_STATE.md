@@ -45,6 +45,8 @@ that closed it.
 | `scanner-metadata` | **ENVIRONMENT_BLOCKED** | ENVIRONMENT | core/ml/SCANNER_PROVENANCE.md, mobile/assets/models/README.md, scripts/ml/validate_metadata.py |
 | `scanner-pipeline-location` | **OPERATOR_DECISION_REQUIRED** | OPERATOR | core/ml/SCANNER_PROVENANCE.md |
 | `production-image-collection` | **DISABLED** | SOURCE | mobile/lib/, functions/src/ |
+| `gym-webhook-disclosure` | **OPERATOR_DECISION_REQUIRED** | OPERATOR | core/review/N04_EQUIPMENT_REPORT_AUTHORITY.md, mobile/lib/l10n/app_en.arb, functions/src/index.ts |
+| `roboflow-key-reissue` | **OPERATOR_DECISION_REQUIRED** | OPERATOR | core/plans/B5_DATA_SOURCES_2026-08-07.md |
 
 ## What each row rests on
 
@@ -150,3 +152,19 @@ Closing it requires a named artefact from the OPERATOR authority. **That artefac
 State is **recomputed** from source on every check; the word above is compared, never trusted.
 
 D3 itself is a decision that was taken and is history. What can still regress is this invariant, so this row tracks the invariant rather than the decision -- and it is source-provable, which the decision is not. Recording it as an OPERATOR row would have demanded a closure artefact for something the tree proves on every run.
+
+### `gym-webhook-disclosure` — OPERATOR_DECISION_REQUIRED
+
+**No local predicate.** Whether a gym's maintenance endpoint is a disclosed processor is a privacy-policy question. Engineering can remove the dispatch or amend the copy; it cannot decide which is the product's position.
+Carries an invariant: source cannot close this row, but it can reopen the question.
+Closing it requires a named artefact from the OPERATOR authority. **That artefact is repo-writable**, so this check does not make forgery impossible -- it makes forgery legible in a diff. See the honesty note at the top.
+
+Surfaced while deciding N-04, not by asking N-04's question. The published privacy body says two processors and no others; a gym-controlled webhook is a third recipient of report contents. Harmless today only because no gym document exists, and it stops being harmless with no code change in between.
+
+### `roboflow-key-reissue` — OPERATOR_DECISION_REQUIRED
+
+**No local predicate.** Reissuing an API key is an action in the Roboflow console. Nothing here can perform it, and nothing here can observe whether it was performed.
+Carries an invariant: source cannot close this row, but it can reopen the question.
+Closing it requires a named artefact from the OPERATOR authority. **That artefact is repo-writable**, so this check does not make forgery impossible -- it makes forgery legible in a diff. See the honesty note at the top.
+
+Stated precisely, because the loose version would be false: NO key literal is committed to this repository, at HEAD or anywhere in history. What exists is a 2026-08-07 planning document recording that the key was pasted into a CONVERSATION and recommending reissue, with no record of the reissue. The invariant guards the half this tree can answer.
