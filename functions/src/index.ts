@@ -444,6 +444,33 @@ async function ensureCustomer(
 
 const TRIAL_DAYS = 14;
 
+/**
+ * Why the checkout refusals carry a `details.reason`.
+ *
+ * `HttpsError`'s code is a gRPC status, and two of this callable's refusals
+ * share one: "you signed in as a guest" and "you already have a subscription"
+ * are both `failed-precondition`. The client has to tell them apart -- one is
+ * fixed by linking an account, the other by opening the billing portal -- and
+ * the only other thing crossing the wire is the message, which is English
+ * prose written for a log.
+ *
+ * A phone that matched on that prose would be deciding a product question with
+ * a substring, and would break the day somebody improved the wording. So the
+ * distinction is stated as data. The message stays exactly as it was: it is
+ * the diagnostic, not the copy.
+ *
+ * Reasons are added only where the backend genuinely distinguishes something
+ * the user can act on differently. Everything else stays unnamed rather than
+ * acquiring a category the server does not actually know.
+ */
+export const CHECKOUT_REFUSAL = {
+  SIGNED_OUT: "SIGNED_OUT",
+  ACCOUNT_DELETED: "ACCOUNT_DELETED",
+  ANONYMOUS_ACCOUNT: "ANONYMOUS_ACCOUNT",
+  ALREADY_SUBSCRIBED: "ALREADY_SUBSCRIBED",
+  TRIAL_ALREADY_USED: "TRIAL_ALREADY_USED",
+} as const;
+
 export const startFreeTrial = onCall(
   RARE,
   async (request) => {
@@ -477,6 +504,7 @@ export const startFreeTrial = onCall(
         "failed-precondition",
         "Add a Google account to start your free trial. " +
           "This keeps the trial to one per person.",
+        { reason: CHECKOUT_REFUSAL.ANONYMOUS_ACCOUNT },
       );
     }
 
@@ -500,6 +528,7 @@ export const startFreeTrial = onCall(
       throw new HttpsError(
         "failed-precondition",
         "Trial already used. Choose a paid plan to continue.",
+        { reason: CHECKOUT_REFUSAL.TRIAL_ALREADY_USED },
       );
     }
 
@@ -529,31 +558,6 @@ export const startFreeTrial = onCall(
 /* createCheckoutSession                                              */
 /* ------------------------------------------------------------------ */
 
-/**
- * Why the checkout refusals carry a `details.reason`.
- *
- * `HttpsError`'s code is a gRPC status, and two of this callable's refusals
- * share one: "you signed in as a guest" and "you already have a subscription"
- * are both `failed-precondition`. The client has to tell them apart -- one is
- * fixed by linking an account, the other by opening the billing portal -- and
- * the only other thing crossing the wire is the message, which is English
- * prose written for a log.
- *
- * A phone that matched on that prose would be deciding a product question with
- * a substring, and would break the day somebody improved the wording. So the
- * distinction is stated as data. The message stays exactly as it was: it is
- * the diagnostic, not the copy.
- *
- * Reasons are added only where the backend genuinely distinguishes something
- * the user can act on differently. Everything else stays unnamed rather than
- * acquiring a category the server does not actually know.
- */
-export const CHECKOUT_REFUSAL = {
-  SIGNED_OUT: "SIGNED_OUT",
-  ACCOUNT_DELETED: "ACCOUNT_DELETED",
-  ANONYMOUS_ACCOUNT: "ANONYMOUS_ACCOUNT",
-  ALREADY_SUBSCRIBED: "ALREADY_SUBSCRIBED",
-} as const;
 
 export const createCheckoutSession = onCall(
   {

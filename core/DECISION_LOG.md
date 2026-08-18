@@ -16051,3 +16051,49 @@ digests ever match, the run WAS bitwise and the disposition is wrong.
 14 MATCHES, 0 DRIFTED, 6 NOT_LOCATABLE.
 
 **Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.
+
+## Checkout gate, review round: the trial shared the card and I made it worse
+
+Two independent reviewers on `6d0a2c5`. The payments lens confirmed `_withFreshToken`
+rethrows correctly, that `chooseTier` has no path leaving state stuck, and that the
+ANONYMOUS and SIGNED_OUT guards still precede every Stripe call while ALREADY_SUBSCRIBED
+sits after `ensureCustomer` but strictly before session creation -- so the money
+invariant holds. It found one MAJOR, independently and identically to what I had found
+myself while checking its own highest-risk item.
+
+**`startFreeTrial` wrapped its error into `StripeCheckoutException`, and the trial shares
+this screen's error card.** Before the checkout gate that produced ugly untranslated
+text. After it, the wrapper made the TRIAL strictly WORSE than it had been: an anonymous
+user tapping the trial button was shown "Checkout could not be started. Please try
+again" -- the wrong noun, and a false promise, because retrying fails identically while
+the thing that would help (linking an account) went unsaid. A gate that improved one path
+degraded its neighbour. Unwrapped, and `startFreeTrial`'s two refusals now carry reasons
+of their own; TRIAL_ALREADY_USED gained copy in both locales.
+
+**The adversarial test reviewer produced one confirmed MAJOR.** The parity guard asserted
+that the reason token appeared anywhere in `index.ts`. A token sitting in a dead line
+while the real throw lost its `details` payload would pass. Only ANONYMOUS_ACCOUNT and
+ALREADY_SUBSCRIBED have behavioural jest assertions on `err.details`, so SIGNED_OUT and
+ACCOUNT_DELETED had that substring check as their ONLY guard -- the exact
+satisfied-by-unrelated-text-elsewhere shape. It now requires the `reason:` form, which is
+the only one that reaches a caller. Its hardcoded-count finding was already fixed:
+`hasLength(6)` became `knownReasons.length + 2`.
+
+**Another mutation survived, and it was the fix I had just written.** Re-wrapping the
+trial left all 95 tests green, because nothing goes through `startFreeTrial` -- the suite
+calls `checkoutLine` and `CheckoutFailure.of` directly. Identical in shape to the
+survivor earlier in this gate: a correction with no test attached to the path it
+corrects. Constructing the real service needs live Firebase, so it is asserted at the
+source, on that one method.
+
+**And that guard failed on correct code, because it matched my own comment** explaining
+why the wrapper must not come back. A guard reading prose instead of code -- the defect
+this suite exists to refuse, committed inside the test written to refuse it. Comments are
+stripped before the check now.
+
+Two further mutations killed and restored byte-for-byte: the trial re-wrapped (AN, after
+its guard existed) and the trial-used refusal stripped of its reason (AO).
+
+**Suites:** `flutter test` 2,953 passed (was 2,951); `npx jest` 224; `tsc --noEmit` clean.
+
+**Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.

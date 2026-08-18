@@ -86,15 +86,23 @@ class CloudFunctionsStripeService implements StripeCheckoutService {
 
   @override
   Future<void> startFreeTrial(SubscriptionTier tier) async {
-    try {
-      await _withFreshToken(() async {
-        await _functions
-            .httpsCallable('startFreeTrial')
-            .call<Map<String, dynamic>>({'tier': _tierParam(tier)});
-      });
-    } on Exception catch (e) {
-      throw StripeCheckoutException('Could not start trial: $e');
-    }
+    // Deliberately NOT wrapped. This used to be
+    // `throw StripeCheckoutException('Could not start trial: $e')`, which
+    // flattened a typed backend refusal into a string and then interpolated
+    // the original into it -- so the card showed the exception twice over.
+    //
+    // The trial and the checkout share one error card. Once checkout refusals
+    // became classifiable, wrapping here made the TRIAL strictly worse than
+    // before: an anonymous user was told "Checkout could not be started.
+    // Please try again", which is both the wrong noun and a false promise --
+    // retrying fails identically, and the thing that would actually help
+    // (linking an account) went unsaid. Letting the exception through is what
+    // lets `CheckoutFailure` name it.
+    await _withFreshToken(() async {
+      await _functions
+          .httpsCallable('startFreeTrial')
+          .call<Map<String, dynamic>>({'tier': _tierParam(tier)});
+    });
   }
 
   @override

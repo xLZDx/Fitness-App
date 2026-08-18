@@ -45,6 +45,10 @@ enum CheckoutRefusal {
   /// A live subscription already exists. Fixed in the billing portal.
   alreadySubscribed,
 
+  /// The free trial has been used on this account already. Reachable from the
+  /// trial button, which shares this screen's error card.
+  trialAlreadyUsed,
+
   /// The backend could not be reached. Named separately because it is the one
   /// failure that is genuinely worth retrying in a moment, and the one the
   /// 2026-08-08 report proves must not be claimed without evidence.
@@ -128,6 +132,7 @@ class CheckoutFailure {
     'ACCOUNT_DELETED': CheckoutRefusal.accountDeleted,
     'ANONYMOUS_ACCOUNT': CheckoutRefusal.anonymousAccount,
     'ALREADY_SUBSCRIBED': CheckoutRefusal.alreadySubscribed,
+    'TRIAL_ALREADY_USED': CheckoutRefusal.trialAlreadyUsed,
   };
 
   /// Every reason string this understands, for the parity test.

@@ -295,6 +295,10 @@
   "@subscriptionCheckoutRefusedAlreadySubscribed": {
     "description": "Shares the gRPC status failed-precondition with the anonymous refusal, which is why the backend sends a reason code and this is not chosen by reading the message."
   },
+  "subscriptionCheckoutRefusedTrialUsed": "Free trial already used on this account. Choose a paid plan to continue.",
+  "@subscriptionCheckoutRefusedTrialUsed": {
+    "description": "The trial button shares this screen's error card, so its refusals need copy here too. Names the next action instead of inviting a retry that fails identically."
+  },
   "subscriptionCheckoutRefusedAccountDeleted": "This account no longer exists. Please sign in again.",
   "@subscriptionCheckoutRefusedAccountDeleted": {
     "description": "The stale-token window: a valid token for an account that was deleted."

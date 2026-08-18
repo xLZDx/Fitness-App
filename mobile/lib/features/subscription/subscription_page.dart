@@ -272,6 +272,8 @@ String checkoutLine(AppLocalizations l10n, Object error) {
       l10n.subscriptionCheckoutRefusedAnonymous,
     CheckoutRefusal.alreadySubscribed =>
       l10n.subscriptionCheckoutRefusedAlreadySubscribed,
+    CheckoutRefusal.trialAlreadyUsed =>
+      l10n.subscriptionCheckoutRefusedTrialUsed,
     CheckoutRefusal.accountDeleted =>
       l10n.subscriptionCheckoutRefusedAccountDeleted,
     CheckoutRefusal.signedOut => l10n.subscriptionCheckoutRefusedSignedOut,

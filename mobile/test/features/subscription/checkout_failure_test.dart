@@ -1,3 +1,4 @@
+import 'dart:convert' show LineSplitter;
 import 'dart:io';
 
 import 'package:cloud_functions/cloud_functions.dart';
@@ -167,6 +168,24 @@ void main() {
       }
     });
 
+    test('the trial shares this card and is classified too', () {
+      // The trial button feeds the same error card. Its own refusals used to
+      // be wrapped into a StripeCheckoutException, which -- once checkout
+      // refusals became classifiable -- made the TRIAL strictly worse than
+      // before: an anonymous user got "Checkout could not be started. Please
+      // try again", the wrong noun AND a false promise, since retrying fails
+      // identically and the thing that helps went unsaid.
+      final anon = checkoutLine(
+          en, _fn('failed-precondition', details: {'reason': 'ANONYMOUS_ACCOUNT'}));
+      expect(anon, isNot(contains('try again')),
+          reason: 'inviting a retry that cannot succeed');
+      final used = checkoutLine(
+          en, _fn('failed-precondition', details: {'reason': 'TRIAL_ALREADY_USED'}));
+      expect(used, isNot(anon));
+      expect(used.toLowerCase(), contains('trial'));
+      expect(used, isNot(contains('try again')));
+    });
+
     test('the guest refusal states the action, not the fault', () {
       final s = checkoutLine(
           en, _fn('failed-precondition', details: {'reason': 'ANONYMOUS_ACCOUNT'}));
@@ -181,8 +200,11 @@ void main() {
         checkoutLine(en, _fn('unavailable')),
         checkoutLine(en, _fn('internal')),
       };
-      // Six distinct: four named reasons, unreachable, and unnamed.
-      expect(lines, hasLength(6),
+      // Derived, not hand-counted: every named reason plus the two the status
+      // code alone supports. A literal would have to be edited every time a
+      // reason is added, and the edit that keeps it green is the same edit
+      // that hides two cases collapsing into one sentence.
+      expect(lines, hasLength(CheckoutFailure.knownReasons.length + 2),
           reason: 'two checkout outcomes render as the same sentence');
     });
 
@@ -234,10 +256,13 @@ void main() {
       // The constant existing is not the contract. Each value has to reach a
       // caller, and a `details` payload is the only way it does.
       final ts = File('../functions/src/index.ts').readAsStringSync();
+      // Presence anywhere is not enough: the token could sit in a dead
+      // assignment while the real `throw` lost its payload. Require the
+      // `{ reason: ... }` shape, which is the only way it reaches a caller.
       for (final r in CheckoutFailure.knownReasons) {
-        expect(ts, contains('CHECKOUT_REFUSAL.$r'),
-            reason: '$r is declared but never sent, so the client branch for '
-                'it is unreachable');
+        expect(ts, contains('reason: CHECKOUT_REFUSAL.$r'),
+            reason: '$r is declared but never attached to a throw, so the '
+                'client branch for it is unreachable');
       }
     });
   });
@@ -279,6 +304,38 @@ void _wiring() {
       expect(card, contains('checkoutLine(AppLocalizations.of(context), error)'),
           reason: 'the card stopped calling the classifier, so every refusal '
               'renders as whatever the exception says');
+    });
+
+    test('the trial does not re-wrap its exception on the way out', () {
+      // The regression that survived its own fix. `startFreeTrial` used to
+      // catch and rethrow as StripeCheckoutException, which erases the typed
+      // backend refusal the classifier needs -- and once checkout refusals
+      // became classifiable that made the TRIAL worse than it had been.
+      //
+      // Mutating the wrapper back left every test green, because nothing goes
+      // through this method: the suite calls `checkoutLine` and
+      // `CheckoutFailure.of` directly. Constructing the real service needs a
+      // live FirebaseFunctions, so this is asserted at the source, on the one
+      // method, the same way the card's wiring is.
+      final src = File(
+              'lib/features/subscription/data/cloud_functions_stripe_service.dart')
+          .readAsStringSync();
+      final start = src.indexOf('Future<void> startFreeTrial(');
+      expect(start, isNonNegative, reason: 'startFreeTrial is gone');
+      final end = src.indexOf('Future<void> startCheckout(', start);
+      expect(end, greaterThan(start));
+      // Comments stripped first. The unmutated code explains in prose why it
+      // must not wrap, and the first version of this guard failed on it --
+      // matching the words instead of the code, which is the defect shape
+      // this whole suite exists to refuse.
+      final body = const LineSplitter()
+          .convert(src.substring(start, end))
+          .where((l) => !l.trimLeft().startsWith('//'))
+          .join(' ');
+      expect(body, isNot(contains('throw StripeCheckoutException')),
+          reason: 'the trial wraps its error again, so a typed refusal '
+              'reaches the card as an unnamed one and the user is invited to '
+              'retry something that cannot succeed');
     });
 
     test('the raw exception appears only behind the unclassified guard', () {
