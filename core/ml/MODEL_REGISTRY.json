@@ -75,6 +75,7 @@
         },
         {
           "dataset": "operator's 30 real gym photos (core/plans/B1_RECOGNITION_MEASUREMENT_2026-08-07.md)",
+          "source": "core/plans/B1_RECOGNITION_MEASUREMENT_2026-08-07.md",
           "n": 30,
           "metrics": {
             "confidence_min": 0.215,

@@ -232,6 +232,20 @@ jobs:
       - name: ML lifecycle, dataset registry and training-run manifests
         run: python -m pytest scripts/ml/test_ml_contracts.py -q
 
+      # ML-2a. Runs everywhere; the cases needing D:/tools/equipment-model skip
+      # with a stated reason rather than asserting nothing quietly.
+      - name: Scanner provenance -- the pin, and what it cannot verify here
+        run: python -m pytest scripts/ml/test_scanner_provenance.py -q
+
+      # The model registry quotes measured numbers inline AND names the report
+      # they came from. Nothing checked the two agree, and a citation is what
+      # makes a hand-copied figure look verified. Exit 1 on drift; an
+      # unreadable source is reported, not failed.
+      - name: Model registry claims match their cited reports
+        run: |
+          python -m pytest scripts/ml/test_evaluation_report.py -q
+          python scripts/ml/evaluation_report.py
+
       # Separate from CT-1's suite on purpose. The two review paths are kept
       # apart in the tree because a content reviewer must never be able to
       # produce a clinical claim, and folding their checks into one step would
