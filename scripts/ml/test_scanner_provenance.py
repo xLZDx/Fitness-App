@@ -239,3 +239,114 @@ def test_the_shipped_model_is_the_pipelines_own_output():
     assert built.exists()
     assert (hashlib.sha256(built.read_bytes()).hexdigest()
             == hashlib.sha256(SHIPPED_MODEL.read_bytes()).hexdigest())
+
+
+# --- the prose record, held to the bytes it describes ----------------------
+
+PROVENANCE_DOC = (
+    Path(__file__).resolve().parents[2] / "core" / "ml" / "SCANNER_PROVENANCE.md"
+)
+
+
+def _doc() -> str:
+    return PROVENANCE_DOC.read_text(encoding="utf-8")
+
+
+def _abbreviated(digest: str) -> str:
+    """The form the document quotes: first eight, ellipsis, last six."""
+    return f"{digest[:8]}\u2026{digest[-6:]}"
+
+
+def test_the_provenance_document_exists():
+    assert PROVENANCE_DOC.exists(), (
+        "core/ml/SCANNER_PROVENANCE.md is the field-by-field record the pin "
+        "does not carry. Deleting it is a decision, not a tidy-up."
+    )
+
+
+def test_every_pinned_artifact_appears_in_the_document_by_digest():
+    # The direction that matters. A document may say more than the pin, but it
+    # must not omit an artefact the pin measures -- an inventory with a hole in
+    # it reads as completeness to everyone who has not counted.
+    doc = _doc()
+    missing = [
+        name for name, meta in PINNED["artifacts"].items()
+        if _abbreviated(meta["sha256"]) not in doc
+    ]
+    assert not missing, f"artefacts pinned but not recorded in the document: {missing}"
+
+
+def test_every_pinned_corpus_appears_by_manifest_digest_and_file_count():
+    doc = _doc()
+    for name, meta in PINNED["corpora"].items():
+        assert _abbreviated(meta["manifest"]) in doc, f"{name} manifest digest absent"
+        assert f"{meta['files']:,}" in doc, f"{name} file count absent"
+
+
+def test_no_digest_in_the_document_is_one_the_pin_does_not_hold():
+    # The other direction, and the one that catches a plausible-looking number
+    # typed by hand. Every abbreviated digest the document quotes must be an
+    # abbreviation of something actually measured.
+    import re
+
+    known = {
+        _abbreviated(m["sha256"]) for m in PINNED["artifacts"].values()
+    } | {
+        _abbreviated(m["manifest"]) for m in PINNED["corpora"].values()
+    } | {_abbreviated(SHIPPED_MODEL_SHA256)}
+
+    quoted = set(re.findall(r"`([0-9a-f]{8}\u2026[0-9a-f]{6})`", _doc()))
+    invented = quoted - known
+    assert not invented, f"digests in the document that nothing measured: {invented}"
+
+
+def test_the_document_does_not_resolve_the_class_count_contradiction():
+    # ML-2a's standing rule: the 29-class log and the 37-label artefact are not
+    # to be reconciled by choosing one.
+    #
+    # This assertion used to be `"29" in doc and "37" in doc`, and a mutation
+    # that reassigned the log to the artefact -- rewriting "train_v2.log
+    # records a 29-class run" as "a 37-class run", which is the exact
+    # falsification this guard exists to prevent -- left it green, because both
+    # numerals still appeared elsewhere in the file. A guard that counts
+    # numerals is not watching the claim.
+    #
+    # What is asserted now is the ASSIGNMENT: which artefact each number
+    # belongs to. The log is 29, the label file is 37, and nothing in the
+    # document may say otherwise.
+    doc = _doc()
+    assert "CONTRADICTED" in doc
+
+    log_lines = [ln for ln in doc.splitlines() if "train_v2.log" in ln]
+    assert log_lines, "the document no longer mentions the log at all"
+    assert any("29" in ln for ln in log_lines), (
+        "no line about train_v2.log calls it a 29-class run"
+    )
+    assert not any("37-class" in ln for ln in log_lines), (
+        "the 29-class log has been reassigned to the 37-label artefact, which "
+        "is the one connection no evidence supports"
+    )
+
+    # Symmetric with the log assertion, and for the same reason. `any(... 37
+    # ...)` was not enough: flipping the inventory row to "29 entries" left the
+    # contradiction section still saying 37 elsewhere, so one line satisfied
+    # the guard while another contradicted it. An internally inconsistent
+    # record is not a preserved contradiction, it is a broken document. EVERY
+    # line about the label file must agree.
+    label_lines = [ln for ln in doc.splitlines() if "labels.json" in ln]
+    assert label_lines, "the document no longer mentions the v2 label file"
+    assert any("37" in ln for ln in label_lines), (
+        "no line about labels.json states its 37 entries"
+    )
+    assert not any("29" in ln for ln in label_lines), (
+        "a line about labels.json gives it the superseded log's class count"
+    )
+
+
+def test_the_document_refuses_to_invent_a_training_commit():
+    doc = _doc()
+    assert "RECOVERED_UNVERSIONED_SOURCE" in doc, (
+        "the recovery semantics are the whole reason a snapshot would be "
+        "honest; without them the first commit reads as the training commit"
+    )
+    assert "UNKNOWN" in doc

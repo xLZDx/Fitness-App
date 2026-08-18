@@ -15860,3 +15860,64 @@ forbidden origin becomes trainable (W, 1 test red), and the error-targeted refus
 test red). All restored byte-for-byte. 228 tests pass.
 
 HUMAN_REVIEW_LABELS = 0. EVALUATION_LABEL_GAP = OPEN. No challenger trained, and none should be.
+
+## ML-2a — the field-by-field scanner record, and two guards that were watching numerals
+
+`scanner_provenance.py` pins the BYTES: six artefacts and two corpora, re-verified against disk.
+What did not exist was the other half -- which fields are known, which are derived, which are
+genuinely unknown, and which the evidence contradicts. `core/ml/SCANNER_PROVENANCE.md` is that
+record, measured 2026-08-18 against `D:/tools/equipment-model`.
+
+**v1 is closable on every field except two.** Dataset (1,741 files, manifest `411189bc...`), trainer
+(`train_export.py`, sha256 `2424fea9...`), architecture (MobileNetV2 transfer learning), seed
+(`SEED = 20260729`, `train_export.py:22`), hyperparameters (224px, batch 32, 0.15 validation split,
+10 head epochs then 6 fine-tune), label set, output artifact and evaluation report are all measured
+facts, and the shipped `equipment_v1.tflite` is byte-identical to the pipeline's output -- verified
+live, not quoted. The two that do not close: **there is no v1 training log at all** (the only `.log`
+under the pipeline root is `train_v2.log`), and there is no dependency pin. Neither is fixable by
+writing anything; the run happened and was not recorded.
+
+**v2's seed was recoverable after all.** The registry says `architecture: NOT_RECORDED`; the trainer
+says MobileNetV2 (`train_v2.py:3`, `:81`) and `SEED = 1337` (`:36`). The values were never missing,
+only unrecorded, which is the same distinction ML-2a turns on everywhere else.
+
+**The 29-vs-37 contradiction is preserved and given its mechanism.** `train_v2.log` records a
+29-class run; the registered artefact's `labels.json` carries 37. `train_v2.py` writes to a fixed
+output path, so a later 37-class run landed on top of the earlier one and the log was not
+overwritten with it. The honest status is therefore not "log missing" but **"the log present is the
+log of a superseded run"** -- which is worse, because a misleading record reads as a good one. It is
+left in place and labelled. Only a 37-class log or a rerun may resolve it, never a choice between
+the two numbers.
+
+Six mutations, and **two of them exposed test defects of the same recurring shape: a guard watching
+numerals instead of the claim.**
+
+* Reassigning the log to the artefact -- rewriting "train_v2.log records a 29-class run" as
+  "37-class", the exact falsification the guard exists to prevent -- left the suite GREEN, because
+  the assertion was `"29" in doc and "37" in doc` and both numerals still appeared elsewhere in the
+  file. Rewritten to assert the ASSIGNMENT: which artefact each number belongs to.
+* The first repair was still too weak. Flipping the inventory row to "29 entries" also survived,
+  because `any(line mentions 37)` was satisfied by a different line while the mutated one now
+  contradicted it. An internally inconsistent record is not a preserved contradiction, it is a
+  broken document. Both directions are now asserted for both files.
+
+The four that killed cleanly: one digit of a digest altered (AC), an artefact left in the inventory
+without its digest (AE), the recovery-snapshot semantics deleted so a future first commit could pass
+as the training commit (AF), and the label file relabelled (AG, after the second repair).
+
+**No `git init` was run on the recovered pipeline.** It is 92,558 files across two corpora and about
+2 GB; where that lives is an operator decision, and the pinned digests already address the bytes
+without moving them. The document records what a snapshot would have to say if one is ever made:
+`RECOVERED_UNVERSIONED_SOURCE`, a capture date, a source path, and the historical training revision
+still UNKNOWN. A model that already exists was not trained by a commit created after it.
+`training_code_commit: "UNKNOWN"` stays as it is -- that is the correct value, not a gap to fill.
+
+**Reproducibility: NOT ATTEMPTED, and recorded as such rather than as a disposition.** A real run
+needs the intact `D:/tools/ml-train-env` venv and hours of GPU time on a 1,741-image corpus; it was
+not started, so no BITWISE / METRIC / EXECUTABLE claim is made in either direction.
+
+**Suites:** `pytest scripts/ml` 84 passed (was 78; the scanner suite went 19 -> 25, and its three
+pipeline-dependent tests now execute rather than skip, because the pipeline is present on this
+machine).
+
+**Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.
