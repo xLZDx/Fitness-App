@@ -333,6 +333,74 @@ made:
 2. **The scope of "source"** was a measurement error, corrected above.
 3. **The reachability of the `git log` substitution** is a fact, corrected above.
 
+### Three decisions, not one (2026-08-18)
+
+The package above reads as one question with sub-parts. It is three, and collapsing them is how a
+storage-format choice quietly decides whether a research programme continues.
+
+| | Question | Owner | Depends on |
+|---|---|---|---|
+| **S-1** | Where does the pipeline **source** live? | Operator | nothing |
+| **S-2** | May the **corpora** leave this machine? | Operator, with legal exposure | nothing |
+| **S-3** | Does the scanner **programme** continue? | Operator / product | nothing |
+
+They are independent in both directions. S-1 can be answered while S-2 stays no — that is the
+recommended combination. S-3 can be *retire* and S-1 still needs an answer, because the preservation
+obligation survives the programme: v1 ships today, and `dataset/` is the only evidence of what it
+was trained on if a rights claim ever arrives.
+
+#### S-2 has an answer that is nearly forced
+
+`CORPUS_LICENSE_STATUS`, on current evidence:
+
+| Corpus | Files | Status | Basis |
+|---|---|---|---|
+| `dataset/` | 1,741 | **RESTRICTED** | Assembled by Bing image search with no per-image source record. Origin URLs were discarded at download time and cannot be recovered by inspection. Not "unknown, pending" — **presumptively all-rights-reserved photographs whose owners are no longer identifiable.** |
+| `dataset_v2/` | 90,817 | **KNOWN_OK, unevidenced** | CC BY 4.0 by a filter that ran at fetch time and whose output was not retained: all 332 dataset records carry workspace/project/images and no licence string, URI, creator or version. |
+| `dataset_v2_thin/` | 462 | **UNKNOWN** | In neither pinned manifest. |
+| `fresh_test/` | 12 | **UNKNOWN** | In neither pinned manifest. |
+
+Obligations attach to **distribution**, not to holding bytes already lawfully held. So keeping the
+corpus local is licence-neutral; any hosted remote is a transfer to a third party. On the evidence
+above, **no option that uploads image bytes anywhere is recommendable**, and that is a finding about
+the corpus rather than a preference about git.
+
+#### S-1's recommended architecture
+
+**An immutable recovered-evidence tree, a separate clean training repository, and corpora addressed
+by content.** Detailed above; the decisive reason is that the pipeline root has already destroyed
+provenance once by being written in place, so the evidence tree and the workspace cannot be the same
+directory.
+
+#### The migration package, so that "yes" is executable
+
+Nothing below is performed here — it is what a `yes` authorizes, written out so the yes is informed.
+
+| | |
+|---|---|
+| **Target** | A new repository at a path the operator names. `D:/tools/equipment-model` stays exactly as it is and becomes read-only evidence. Nothing is moved; source is **copied**. |
+| **Enters git** | 15 root `*.py` (80,271 B); `datasets_cc_by.json`, `datasets_usable.json`, `datasets_round2.json`, `diversity_before.json`, `gym_photos_truth.json` (~62 KB); `out/labels.txt`, `out_v2/labels.json`, `out/metadata.json`; `train_v2.log` (1,317,222 B), labelled as the log of a superseded run. |
+| **Never enters git** | `dataset/`, `dataset_v2/`, `dataset_v2_thin/`, `fresh_test/`, `_roboflow_raw/`, `out/*.tflite`, `out_v2/*.tflite`, `__pycache__/`. `artifact_in_repository: false` is the existing precedent. |
+| **Corpus manifest** | Per-corpus sha256 file lists, committed. The bytes stay put; the manifest is what travels. `dataset_v2_thin/` and `fresh_test/` must be pinned first — today they are in neither manifest. |
+| **First commit** | Only files whose digests already appear in `scanner_provenance.PINNED`, published 2026-08-18, plus `RECOVERY.json`. Nothing else authored. |
+| **No-fake-ancestry rule** | The anchor is **digests, not dates**. A commit whose every blob matches a digest published earlier in a different repository cannot be the history that produced v1, and unlike commit dates — settable with `GIT_COMMITTER_DATE` — that is not forgeable. Corollary: any commit introducing a byte with no 2026-08-18 digest is provably forward work. |
+| **`training_code_commit`** | Stays `UNKNOWN`. `training_run.validate` rejects `UNKNOWN` and must go on rejecting it; the recovery commit is not permitted to fill that field. |
+| **CI bootstrap** | One job: verify every file listed in `RECOVERY.json` still matches its digest, and fail if a listed file changed without the manifest changing in the same commit. |
+| **Rollback** | Delete the new repository. Nothing was moved, so there is nothing to restore. |
+| **Post-migration validation** | `pytest scripts/ml` green here, with the pin and registry updated **in the same change** — see the CI-asymmetry hazard below. |
+
+#### Which residuals each option activates
+
+No hidden downstream work: choosing an architecture is choosing its prerequisites.
+
+| Choice | Activates | Required before migration is complete |
+|---|---|---|
+| **S-1 = recommended** (separate repo) | `RESIDUAL[scanner-pipeline-location]` — the CI-asymmetric pin assertion | **Yes.** `test_the_pin_is_dated` asserts `is_git_repository is False` unconditionally while the probing test skips on CI. |
+| **S-1 = snapshot into this repository** | Both residuals, including the machine-readable recovery marker | **Yes**, and this is the shape that makes the marker mandatory: `_last_commit_touching` runs `git -C` against *this* worktree, so the substitution only becomes reachable here. |
+| **S-1 = leave in place** | Neither | — |
+| **S-2 = any upload** | A CC BY 4.0 attribution manifest, a crop-to-source mapping, and a "changes made" record | **Yes**, and it must be reconstructed by re-querying the API, which may stop being possible. |
+| **S-3 = retire** | Nothing new | The preservation half of S-1 still stands. |
+
 ### A migration hazard, pre-recorded
 
 `test_the_pipeline_is_still_not_a_git_repository` is `@needs_pipeline` and therefore **skips on

@@ -16860,3 +16860,58 @@ Suites: `pytest scripts/` 702 passed; `npx tsc --noEmit` clean; `npx jest` 230 p
 reconciled, 8 source-provable. `flutter test` NOT RUN -- no Dart source changed, and every Dart
 mutation above was reverted byte-exactly, verified by `git diff`. The emulator suite is NOT RUN
 because `firestore.rules` is unchanged.
+
+
+## 2026-08-18 -- Making the boundaries answerable in one sentence each
+
+The objective this pass was preparation, not resolution: every remaining non-engineering boundary
+made executable after one explicit operator choice. Nine decisions now sit in
+`core/review/OPERATOR_DECISIONS.md`, each with a recommendation, the alternative, what changes on
+yes, and a literal authorization sentence.
+
+**Deliberately NOT at `core/decisions/`.** That directory is where
+`operator_decision_recorded()` looks, so a file written there by engineering would close an operator
+row on engineering's say-so. It still does not exist, and this pass did not create it. Recorded
+because the temptation is real: the file that would make the ledger green is one `mkdir` away, and
+writing it would be the exact laundering the whole mechanism exists to prevent.
+
+**A security defect found inside a product decision, and fixed.** P-1 asked whether a gym webhook is
+a disclosed processor -- product's question. Measuring the data flow to answer it turned up something
+that is not: `maintenanceWebhookUrl` had **no validation of any kind**. Not a scheme check, not a
+parse. An `http://` value -- exactly what somebody pastes into a console field out of a chat message
+-- would put the reporter's own free text on the wire in cleartext. Nobody needs to settle who the
+customer is to conclude that.
+
+Fixed narrowly and labelled as narrow: `https:` only, and `redirect: "manual"`, because `fetch`
+follows redirects by default and a scheme check that a 302 can undo is decorative. It is explicitly
+NOT a general SSRF defence and does not claim to be one: the response is never read, so there is no
+channel back, and `gyms/` is `allow write: if false` for every client, so the URL is operator-written
+rather than attacker-supplied. Two mutations -- scheme check disabled, redirect line removed -- both
+killed. jest 90 passed in that file.
+
+**Roboflow: revoke without replacement.** Measured rather than assumed before recommending it.
+Nothing shipped uses Roboflow: `git grep -lI -i roboflow -- mobile functions firestore.rules`
+returns one README mention and no code. The only consumers are `discover_roboflow.py` and
+`fetch_roboflow.py` in the pipeline directory outside this repository, and under the recommended S-3
+answer they will not run again. So the recommendation is revocation with no replacement key, and the
+package says in terms that the key must never be pasted into chat, a document, a commit message or
+this repository.
+
+**The ledger's two truths stay separate.** Verified explicitly: `roboflow-key-reissue` carries an
+invariant proving REPOSITORY state (no key literal, anywhere, ever) and a closure requiring an
+OPERATOR record. `needs_closure("OPERATOR_DECISION_REQUIRED")` is False, so the row honestly says
+work remains and no amount of clean scanning can close it. "No key in git" cannot become "key
+reissued".
+
+**The scanner question was three questions.** Split: where the source lives (S-1), whether the
+corpora may leave this machine (S-2), whether the programme continues (S-3) -- independent in both
+directions. S-3 can be *retire* and S-1 still needs an answer, because v1 ships today and `dataset/`
+is the only evidence of what it was trained on if a rights claim arrives. Each option now names the
+residuals it activates, so no downstream work is hidden behind a yes. A `CORPUS_LICENSE_STATUS`
+table records `dataset/` as RESTRICTED rather than UNKNOWN: origin URLs were discarded at download
+time, so its rightsholders are not identifiable by any inspection, and that is a fact about the
+corpus rather than research nobody has done yet.
+
+Suites: `pytest scripts/` 702 passed; `npx tsc --noEmit` clean; `npx jest` 90 passed in the touched
+file. Ledger 19 rows reconciled, 8 source-provable, 0 findings. No Dart source changed, so
+`flutter test` is NOT RUN; `firestore.rules` unchanged, so the emulator suite is NOT RUN.

@@ -69,6 +69,45 @@ const db = admin.firestore();
 const UNASSIGNED_GYM = "unknown";
 
 /**
+ * Whether a gym's registered endpoint may receive report contents.
+ *
+ * The payload carries a fault category and the reporter's own free text, and
+ * `maintenanceWebhookUrl` had no validation of any kind -- not a scheme check,
+ * not a parse. An `http://` value, which is exactly what somebody pastes into
+ * a console field from a chat message, would put that text on the wire in
+ * cleartext. Nobody needs to settle who the customer for a report is to
+ * conclude that.
+ *
+ * Bounded deliberately. This is not a general SSRF defence and does not claim
+ * to be one: the response is never read, so there is no exfiltration channel
+ * back, and `gyms/` is `allow write: if false` for every client, so the value
+ * is operator-written rather than attacker-supplied. What it removes is the
+ * cleartext case and the one that would silently undo it -- a `https://` URL
+ * that redirects to `http://`, or to somewhere else entirely. `fetch` follows
+ * redirects by default, so the scheme check alone would be decorative; the
+ * caller pairs this with `redirect: "manual"`.
+ */
+function isDeliverableWebhook(url: string, gymId: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    logger.warn("gym webhook is not a URL", { gymId });
+    return false;
+  }
+  if (parsed.protocol !== "https:") {
+    // Named, because a report that silently stops being delivered is worse
+    // than one that was never configured.
+    logger.warn("gym webhook refused: not https", {
+      gymId,
+      protocol: parsed.protocol,
+    });
+    return false;
+  }
+  return true;
+}
+
+/**
  * Refuses a call made with a token belonging to an account that no longer
  * exists.
  *
@@ -1615,6 +1654,9 @@ export const reportEquipment = onCall(
       const gymSnap = await db.doc(`gyms/${gymId}`).get();
       const webhookUrl =
         gymSnap.data()?.maintenanceWebhookUrl as string | undefined;
+      if (webhookUrl && !isDeliverableWebhook(webhookUrl, gymId)) {
+        return { reportId };
+      }
       if (webhookUrl) {
         const payload = {
           text:
@@ -1664,6 +1706,13 @@ export const reportEquipment = onCall(
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
           signal: AbortSignal.timeout(3000),
+          // Without this the https check above is decorative: `fetch` follows
+          // redirects by default, so a compliant URL could hand the report on
+          // to `http://` or anywhere else, re-POSTing the body each hop. The
+          // response is never read, so declining to follow costs nothing --
+          // and the report is already durably written, which is the whole
+          // meaning of "best-effort" here.
+          redirect: "manual",
         });
       }
     } catch (err) {

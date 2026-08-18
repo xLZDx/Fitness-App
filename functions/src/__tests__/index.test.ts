@@ -1761,6 +1761,41 @@ describe("reportEquipment", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["http://gym.example/hook", "cleartext"],
+    ["ftp://gym.example/hook", "an unusable scheme"],
+    ["gym.example/hook", "not a URL at all"],
+    ["javascript:alert(1)", "not a network scheme"],
+  ])("refuses to deliver a report to %s (%s)", async (url) => {
+    // The payload carries the reporter's own free text. `maintenanceWebhookUrl`
+    // had no validation of any kind, and `http://` is exactly what somebody
+    // pastes into a console field out of a chat message.
+    const fetchMock = jest.fn().mockResolvedValue({ ok: true });
+    global.fetch = fetchMock as any;
+    primeDoc("gyms/g-bad", { maintenanceWebhookUrl: url });
+    const res = await reportEquipment.run(
+      req({ id: "r-bad", equipmentId: "bench", gymId: "g-bad" }, { uid: "u1" }),
+    );
+    // Still filed. Refusing to relay is not refusing to record.
+    expect(res).toEqual({ reportId: "r-bad" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("delivers to https and refuses to follow a redirect away from it", async () => {
+    // Without `redirect: "manual"` the scheme check is decorative: fetch
+    // follows redirects by default and would re-POST the body to wherever the
+    // hop points, including back to http.
+    const fetchMock = jest.fn().mockResolvedValue({ ok: true });
+    global.fetch = fetchMock as any;
+    primeDoc("gyms/g-ok", { maintenanceWebhookUrl: "https://gym.example/hook" });
+    await reportEquipment.run(
+      req({ id: "r-ok", equipmentId: "bench", gymId: "g-ok" }, { uid: "u1" }),
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toBe("https://gym.example/hook");
+    expect(fetchMock.mock.calls[0][1].redirect).toBe("manual");
+  });
+
   it("does not hand the reporter's uid to the gym", async () => {
     // `app_en.arb:141` and `app_ru.arb:124` both promise the user that their
     // identity reaches the gym "only if they ask to follow up". This payload
