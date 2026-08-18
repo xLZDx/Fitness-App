@@ -10021,3 +10021,40 @@ Change is a single-line `model:` frontmatter edit per file, nothing else touched
 `git diff --stat` shows exactly `1 file, 1 insertion, 1 deletion` per file, 10 files, and a spot
 check of `clinical-safety-gate.md`/`fitness-recommendation-orchestrator.md`/
 `recommendation-adversary.md` headers confirms only the `model:` line changed.
+
+## 2026-08-19 — first SPTR marketing site: one shell, three concept cells, no hero selected
+
+**Operator decision (Marketing R&D gate).** After eleven rounds of positioning review consolidated
+into Decision Pack v1.0, the operator authorised implementation of an internal marketing prototype
+and explicitly forbade selecting a hero before real respondents exist. The site is therefore the
+R&D instrument, not a launch asset: one shell with three equal-quality concept cells switched by
+`?concept=a|b|c`, plus `?lang=en|ru` and `?debug=1`.
+
+**Static-first, inside existing hosting.** `firebase.json` already serves `public/` with
+`cleanUrls: true` and seven pre-existing legal/checkout/coach files live there. Added
+`public/index.html`, `public/assets/sptr/{site.css,site.js,favicon.svg,media/}` — additions only,
+nothing modified or deleted, no second frontend stack introduced for a landing page.
+
+**Claim classes are in the markup.** Every classified sentence carries
+`data-claim-class="exists|committed|hypothesis"`; `?debug=1` renders inline badges. 17 claims: 12
+exists, 4 committed, 1 hypothesis. The four `committed` claims are rendered in this internal build
+and may not go public until built — they depend on MRD-01/03/04/05, the machine-identity chain that
+does not exist yet (`grep -c equipmentId workout_log.dart` = 0; recognition history is keyed by
+catalogue type, not physical unit).
+
+**No fabricated product evidence.** The repository contains no usable app footage: the only
+screenshots present are debugging artefacts from 2026-07-30, one of which shows the old on-device
+classifier calling two flat benches a treadmill at 100% confidence. None were used. All four site
+images are crops from the operator's own gym photographs, chosen to exclude identifiable people. The
+evidence section uses a real Nautilus placard reading PEC FLY / REAR DELT — the actual mechanic,
+documented rather than illustrated. Four slots still need real footage before public use.
+
+**Verified:** Chrome via Playwright, three concepts x two languages x two viewports — exactly one
+visible hero per cell, zero horizontal overflow, zero external requests, zero console errors,
+`/privacy` and `/terms` 200 through cleanUrls, reduced-motion leaves nothing hidden, keyboard path
+intact, 67/67 translation keys covered, initial transfer 142 KB identical across all three cells
+(objective parity proof). Six defects found and fixed in review, including an author `display:grid`
+that beat the UA `[hidden]` rule and left the internal debug switcher visible to every visitor.
+
+**Not done deliberately:** no hero selected, no deployment, no push, pre-public truth gate not run.
+Full detail in `core/marketing/SPTR_MARKETING_SITE_{IMPLEMENTATION,CLAIM_REGISTER,QA}_2026-08-19.md`.
