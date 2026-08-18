@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -28,6 +29,7 @@ import '../safety/widgets/eligibility_notice.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
 import 'data/scheduled_session.dart';
+import 'data/prefetch_outcome.dart';
 import 'state/offline_video_providers.dart';
 import 'state/scheduled_session_providers.dart';
 import '../equipment/widgets/exercise_thumb.dart';
@@ -627,6 +629,61 @@ class _ExerciseCard extends ConsumerWidget {
   }
 }
 
+/// One line under the download card, chosen from what the prefetch actually
+/// achieved.
+///
+/// Split out of `build` because it is the whole user-facing contract of the
+/// feature and it used to be an interpolation of `'${action.error}'` -- an
+/// English sentence composed inside a Riverpod notifier, formatted by
+/// `toString()`, and shown to every locale. Everything below is a lookup.
+///
+/// The distinction that matters is the last two branches. "Some clips could
+/// not be prepared" and "the daily limit was reached" are opposites: the first
+/// is a fault the user can do nothing about, the second is the product working
+/// as designed and ending by itself at the next UTC midnight. Reporting the
+/// second as the first sends someone to look for a problem that does not
+/// exist -- the same defect the player's failure note was rewritten to stop
+/// making, after a 2026-08-08 device report blamed the network on a 1 Gb
+/// connection.
+@visibleForTesting
+String prefetchLine(AppLocalizations l10n, AsyncValue<PrefetchOutcome?> a) {
+  if (a.isLoading) return l10n.workoutsOfflineDownloading;
+
+  final error = a.error;
+  if (error is PrefetchRefused) {
+    return switch (error.reason) {
+      PrefetchRefusal.planUnknown => l10n.workoutsOfflineRefusedPlanUnknown,
+      PrefetchRefusal.notSubscribed =>
+        l10n.workoutsOfflineRefusedNotSubscribed,
+      PrefetchRefusal.signedOut => l10n.workoutsOfflineRefusedSignedOut,
+    };
+  }
+  // Anything else really is unnamed, and the detail is the only diagnostic
+  // there is. Kept, exactly as the player keeps its detail line for the
+  // failure it could not classify.
+  if (a.hasError) return l10n.workoutsOfflineFailed('$error');
+
+  final outcome = a.valueOrNull;
+  if (outcome == null) return l10n.workoutsOfflineHint;
+
+  return switch (outcome.state) {
+    PrefetchState.nothingScheduled => l10n.workoutsOfflineNothingScheduled,
+    PrefetchState.complete =>
+      l10n.workoutsOfflineReady(outcome.ready, outcome.requested),
+    PrefetchState.partialQuota =>
+      l10n.workoutsOfflinePartialLimit(outcome.ready, outcome.requested),
+    PrefetchState.partialFailed =>
+      l10n.workoutsOfflinePartialFailed(outcome.ready, outcome.requested),
+    PrefetchState.noneQuota => l10n.workoutsOfflineLimitReached,
+    // Not the partial line with a zero in it. "0 of 84 ready -- the rest
+    // could not be prepared" is a statistic where the user needs a
+    // statement, and the sibling all-quota branch above was already written
+    // that way; leaving this one counted made the two halves of the same
+    // idea read as if they came from different products.
+    PrefetchState.noneFailed => l10n.workoutsOfflineNoneFailed,
+  };
+}
+
 /// Premium-gated "Download next week's videos for offline" card. Tapping
 /// it triggers [OfflinePrefetchAction.prefetchNext7Days]; free users see
 /// the upsell version that routes to /subscription.
@@ -697,12 +754,7 @@ class _OfflinePrefetchCard extends ConsumerWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  action.isLoading
-                      ? AppLocalizations.of(context).workoutsOfflineDownloading
-                      : action.hasError
-                          ? AppLocalizations.of(context)
-                              .workoutsOfflineFailed('${action.error}')
-                          : AppLocalizations.of(context).workoutsOfflineHint,
+                  prefetchLine(AppLocalizations.of(context), action),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(

@@ -32,6 +32,30 @@ import 'package:flutter/foundation.dart'
 /// receiving "raw files, public storage folders, or permanent downloadable
 /// links". A URL baked into a shipped catalog is a permanent downloadable
 /// link by definition.
+/// What a batch resolution actually achieved.
+///
+/// A bare `Map` could say which clips were signed and nothing else, so a
+/// prefetch stopped halfway by the daily limit was indistinguishable from one
+/// where half the objects were simply missing. The offline prefetch is the
+/// only caller, and "38 of 84, and the reason the other 46 are absent" is the
+/// one thing it needs to tell a user honestly.
+class ClipBatch {
+  const ClipBatch({required this.urls, this.quotaExhausted = false});
+
+  /// Reference -> playable URL, for everything that WAS signed. Never
+  /// discarded because a later chunk was refused: the earlier chunks were
+  /// charged for and delivered, and throwing them away would make the app
+  /// pay twice for the same clips tomorrow.
+  final Map<String, String> urls;
+
+  /// The backend refused on the daily budget partway through.
+  ///
+  /// Distinct from "some clips are missing", which has many causes and no
+  /// remedy the user can act on. This one ends by itself at the next UTC
+  /// midnight, and that is the whole reason it is worth a separate field.
+  final bool quotaExhausted;
+}
+
 abstract class ClipUrlResolver {
   /// A playable URL for [reference], or null when it cannot be resolved.
   ///
@@ -48,9 +72,14 @@ abstract class ClipUrlResolver {
   /// note the same way every other named failure does.
   Future<String?> resolve(String reference);
 
-  /// Resolves many at once — one round trip instead of forty. Missing entries
-  /// are simply absent from the result.
-  Future<Map<String, String>> resolveAll(Iterable<String> references);
+  /// Resolves many at once — one round trip instead of forty. Missing
+  /// entries are simply absent from [ClipBatch.urls].
+  ///
+  /// Returns rather than throws on a quota refusal, unlike [resolve]. The
+  /// single-clip caller has one clip and nothing to keep; a batch caller has
+  /// everything the earlier chunks already signed, and an exception would
+  /// discard exactly that.
+  Future<ClipBatch> resolveBatch(Iterable<String> references);
 
   /// How many backend calls have failed since the app started.
   ///
@@ -95,7 +124,8 @@ class FunctionsClipUrlResolver implements ClipUrlResolver {
   /// so this margin is unaffected. See `functions/src/video_urls.ts`,
   /// REUSE_MINUTES. The 13 here is the number that must never exceed the
   /// backend's guarantee.
-  static const _cacheFor = Duration(minutes: 13);
+  @visibleForTesting
+  static const cacheFor = Duration(minutes: 13);
 
   final Map<String, ({String url, DateTime until})> _cache = {};
 
@@ -127,7 +157,7 @@ class FunctionsClipUrlResolver implements ClipUrlResolver {
   }
 
   void _store(String reference, String url) {
-    _cache[reference] = (url: url, until: _now().add(_cacheFor));
+    _cache[reference] = (url: url, until: _now().add(cacheFor));
   }
 
   /// The one network call. Everything above it — passthrough, cache,
@@ -138,22 +168,15 @@ class FunctionsClipUrlResolver implements ClipUrlResolver {
   @protected
   Future<Map<String, String>> fetch(List<String> objects) async {
     if (objects.length == 1) {
-      try {
+      return guarded(objects.single, () async {
         final result = await _functions
             .httpsCallable('clipUrl')
             .call<Map<String, dynamic>>({'object': objects.single});
         final url = result.data['url'] as String?;
         return (url == null || url.isEmpty) ? {} : {objects.single: url};
-      } catch (e) {
-        // Still swallowed — see [ClipUrlResolver.resolve]. The phone's job is
-        // to keep the poster up. But it is counted and named now: the backend
-        // log knows the reason and the phone did not even know it happened,
-        // which is how a signing outage looked exactly like nobody watching.
-        _noteFailure(objects.single, e);
-        return swallowOrThrow(e);
-      }
+      });
     }
-    try {
+    return guarded('${objects.length} clips', () async {
       final result = await _functions
           .httpsCallable('clipUrls')
           .call<Map<String, dynamic>>({'objects': objects});
@@ -161,29 +184,39 @@ class FunctionsClipUrlResolver implements ClipUrlResolver {
       return {
         for (final e in urls.entries) e.key as String: e.value as String,
       };
+    });
+  }
+
+  /// The failure policy for a backend call, shared by both call shapes.
+  ///
+  /// It takes the call as a closure rather than sitting inside `fetch`
+  /// because a `catch` wrapped around a real `FirebaseFunctions` invocation
+  /// is unreachable from a test: nothing can enter it, so a mutation inside
+  /// it survives. That is not hypothetical — the batch path's copy of this
+  /// policy was mutated to swallow every quota refusal and the whole suite
+  /// stayed green. Here it is one method, reachable with any throwing
+  /// closure, and there is one copy of the decision instead of two that can
+  /// drift.
+  ///
+  /// A refusal is rethrown; everything else is swallowed and counted. The
+  /// phone's job on an ordinary failure is to keep the poster up, but the
+  /// backend log knowing the reason while the phone did not even know it
+  /// happened is how a signing outage looked exactly like nobody watching.
+  @visibleForTesting
+  Future<Map<String, String>> guarded(
+    String label,
+    Future<Map<String, String>> Function() call,
+  ) async {
+    try {
+      return await call();
     } catch (e) {
-      _noteFailure('${objects.length} clips', e);
-      // Deliberately NOT rethrown here, unlike the single-clip path above.
-      // `resolveAll` is the offline prefetch, which chunks at sixty and
-      // accumulates across chunks; throwing out of one chunk would discard
-      // the clips the earlier chunks already signed and turn a partial
-      // prefetch into a total failure. The cost is that a prefetch stopped by
-      // the daily cap still reports nothing to the user -- a smaller version
-      // of the same defect, left open on purpose and recorded rather than
-      // half-fixed, because telling them properly needs a result type that
-      // can say "38 of 84, limit reached", which this method cannot express.
-      return {};
+      _noteFailure(label, e);
+      return swallowOrThrow(e);
     }
   }
 
-  /// Swallow, or rethrow: the whole single-clip failure policy, in one
-  /// place that does not need a backend to execute.
-  ///
-  /// Split out because the `catch` above is only reachable through a real
-  /// `FirebaseFunctions` call, so a test can never enter it and a mutation
-  /// inside it would survive unnoticed. Everything that decides anything now
-  /// lives here; what is left in `fetch` is one line that cannot be wrong in
-  /// an interesting way.
+  /// Swallow, or rethrow. Pure, so the decision itself is testable with no
+  /// resolver at all.
   @visibleForTesting
   static Map<String, String> swallowOrThrow(Object error) {
     final refusal = asQuotaRefusal(error);
@@ -223,7 +256,7 @@ class FunctionsClipUrlResolver implements ClipUrlResolver {
   }
 
   @override
-  Future<Map<String, String>> resolveAll(Iterable<String> references) async {
+  Future<ClipBatch> resolveBatch(Iterable<String> references) async {
     final out = <String, String>{};
     final ask = <String>[];
     for (final r in references.toSet()) {
@@ -238,22 +271,45 @@ class FunctionsClipUrlResolver implements ClipUrlResolver {
         ask.add(r);
       }
     }
-    if (ask.isEmpty) return out;
+    if (ask.isEmpty) return ClipBatch(urls: out);
 
     // The backend caps a batch at 60. Chunking here rather than letting it
     // reject the call means a 200-clip prefetch works instead of failing
     // whole.
+    var quotaExhausted = false;
     for (var i = 0; i < ask.length; i += 60) {
       final chunk = ask.sublist(i, i + 60 > ask.length ? ask.length : i + 60);
-      // A failed chunk costs those clips, not the whole prefetch — `fetch`
-      // already returns an empty map rather than throwing.
-      final got = await fetch(chunk);
+      final Map<String, String> got;
+      try {
+        // An ordinary failed chunk costs those clips, not the whole prefetch:
+        // `fetch` returns an empty map rather than throwing.
+        got = await fetch(chunk);
+      } on ClipQuotaExhausted {
+        // Keep going, and this is not an oversight. The obvious move is to
+        // stop -- the budget is per-day and per-account, so surely the next
+        // chunk is refused too. The backend does not work that way:
+        // `enforceDailyQuota` refuses on `used + cost > limit`
+        // (`functions/src/abuse_guard.ts`), and `clipUrls` passes the
+        // chunk's OWN SIZE as `cost` (`functions/src/video_urls.ts`). A
+        // refusal therefore proves only that THIS chunk does not fit in what
+        // is left, and the last chunk of a prefetch is usually the short one.
+        // 1,190 of 1,200 objects spent still leaves room for a trailing
+        // chunk of ten; stopping here threw those ten away.
+        //
+        // A refused chunk is charged nothing -- the transaction throws before
+        // it writes -- so the price of continuing is one wasted round trip per
+        // remaining chunk, at most three for a 200-clip week. What the earlier
+        // chunks signed stays in `out` regardless: it was charged for, and
+        // discarding it would mean paying for those clips again tomorrow.
+        quotaExhausted = true;
+        continue;
+      }
       for (final entry in got.entries) {
         _store(entry.key, entry.value);
         out[entry.key] = entry.value;
       }
     }
-    return out;
+    return ClipBatch(urls: out, quotaExhausted: quotaExhausted);
   }
 }
 
@@ -284,13 +340,23 @@ class PassthroughClipUrlResolver implements ClipUrlResolver {
     return 'https://signed.example/$reference?sig=test';
   }
 
+  /// Deliberately has no way to report a quota refusal.
+  ///
+  /// It carried a `quota` flag briefly. Nothing ever passed it, and it could
+  /// only have simulated "refused from the very first chunk" -- this class
+  /// does not chunk, so the case that actually matters, partway-through, was
+  /// exactly the one it could not produce. A double that can only prove the
+  /// easy half of a contract is worse than no double: see the note on
+  /// [FunctionsClipUrlResolver.guarded] for what an untested copy of this
+  /// policy already cost once. The quota paths are proved against the real
+  /// resolver instead, in `prefetch_outcome_test.dart`.
   @override
-  Future<Map<String, String>> resolveAll(Iterable<String> references) async {
+  Future<ClipBatch> resolveBatch(Iterable<String> references) async {
     final out = <String, String>{};
     for (final r in references) {
       final u = await resolve(r);
       if (u != null) out[r] = u;
     }
-    return out;
+    return ClipBatch(urls: out);
   }
 }

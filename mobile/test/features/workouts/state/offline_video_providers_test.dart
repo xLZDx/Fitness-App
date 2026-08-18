@@ -13,6 +13,7 @@ import 'package:fitness_app/features/subscription/data/subscription_models.dart'
 import 'package:fitness_app/features/subscription/data/subscription_repository.dart';
 import 'package:fitness_app/features/subscription/state/subscription_providers.dart';
 import 'package:fitness_app/features/workouts/data/offline_video_cache.dart';
+import 'package:fitness_app/features/workouts/data/prefetch_outcome.dart';
 import 'package:fitness_app/features/workouts/data/scheduled_session.dart';
 import 'package:fitness_app/features/workouts/data/workout_session.dart';
 import 'package:fitness_app/features/workouts/state/offline_video_providers.dart';
@@ -385,10 +386,13 @@ void main() {
       await pending;
 
       final error = container.read(offlinePrefetchActionProvider).error;
-      expect(error, isA<StateError>());
+      expect(error, isA<PrefetchRefused>());
       // The distinction the whole gate is about: "we could not check" is not
-      // "you have not paid".
-      expect('$error', contains('Could not check your plan'));
+      // "you have not paid". Asserted on the REASON rather than on the text,
+      // because the text moved to the .arb files -- it was an English
+      // sentence composed inside a notifier and rendered with `toString()`,
+      // which no translator ever saw.
+      expect((error as PrefetchRefused).reason, PrefetchRefusal.planUnknown);
       expect(await cache.sizeBytes(), 0);
     });
   });

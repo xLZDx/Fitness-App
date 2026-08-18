@@ -883,6 +883,39 @@
   "workoutsOfflineLockedTitle": "Offline downloads · Supporter+",
   "workoutsOfflineDownloading": "Downloading…",
   "workoutsOfflineHint": "Gym wifi is hostile — cache videos at home.",
+  "workoutsOfflineReady": "{ready} of {requested, plural, =1{1 video} other{{requested} videos}} ready for offline",
+  "@workoutsOfflineReady": {
+    "description": "Prefetch finished and delivered everything the week needs. Counts, not a verb, because the question is whether the week is covered rather than what this tap downloaded.",
+    "placeholders": {"ready": {"type": "int"}, "requested": {"type": "int"}}
+  },
+  "workoutsOfflineNothingScheduled": "Nothing scheduled in the next 7 days.",
+  "@workoutsOfflineNothingScheduled": {
+    "description": "An empty week is not a failure and must not be reported as one."
+  },
+  "workoutsOfflinePartialLimit": "Daily limit reached — {ready} of {requested, plural, =1{1 video} other{{requested} videos}} ready, more tomorrow",
+  "@workoutsOfflinePartialLimit": {
+    "description": "The backend refused on the daily budget partway through. Says what landed, why the rest did not, and that it ends by itself. Never phrased as a fault: nothing failed. The limit leads the sentence because the subtitle is capped at two lines and ellipsised: the clause that stops this reading as an outage has to be the part that survives truncation on a narrow phone.",
+    "placeholders": {"ready": {"type": "int"}, "requested": {"type": "int"}}
+  },
+  "workoutsOfflinePartialFailed": "{ready} of {requested, plural, =1{1 video} other{{requested} videos}} ready — the rest could not be prepared",
+  "@workoutsOfflinePartialFailed": {
+    "description": "Some clips are absent for a reason the app cannot name. Deliberately does not say 'network': the 2026-08-08 report was a player blaming the network on a 1 Gb connection, and the rule since is to name only what is known.",
+    "placeholders": {"ready": {"type": "int"}, "requested": {"type": "int"}}
+  },
+  "workoutsOfflineNoneFailed": "None of the videos could be prepared",
+  "@workoutsOfflineNoneFailed": {
+    "description": "Ran, and delivered nothing, for a reason that is not the daily limit. Count-free on purpose: '0 of 84 ready' is a statistic where the user needs a statement, and the sibling all-quota line was already written that way."
+  },
+  "workoutsOfflineLimitReached": "Daily limit reached — try again tomorrow",
+  "@workoutsOfflineLimitReached": {
+    "description": "Refused before anything landed. Same rule as the partial case: a deliberate, self-resolving refusal, not an outage."
+  },
+  "workoutsOfflineRefusedPlanUnknown": "Could not check your plan. Please try again.",
+  "@workoutsOfflineRefusedPlanUnknown": {
+    "description": "Was an English StateError message composed inside a Riverpod notifier and rendered with toString(), so no translator ever saw it."
+  },
+  "workoutsOfflineRefusedNotSubscribed": "Offline downloads are a Supporter+ benefit.",
+  "workoutsOfflineRefusedSignedOut": "Sign in to download for offline.",
   "equipmentAnyBrand": "Any brand",
   "equipmentCategoryStrength": "Strength",
   "equipmentCategoryCardio": "Cardio",

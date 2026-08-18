@@ -15676,3 +15676,66 @@ any diff in this session**: `tools/codex_review.py` returns `usage_limit_exhaust
 Cloud Functions tests are reported as **not re-run** rather than quoted from a previous session. No
 file under `functions/` changed here, and stating a number from a run that did not happen is the
 defect the whole report is about.
+
+## Offline prefetch: quota exhaustion has a name, and the chunk loop no longer gives up early
+
+The prefetch could not say why clips were missing. `resolveAll` returned a bare `Map`, so a week
+stopped halfway by the daily budget looked exactly like a week whose objects were missing, and the
+card said `'${action.error}'` — an English sentence composed in a Riverpod notifier, formatted by
+`toString()`, shown to every locale. `ClipBatch` and `PrefetchOutcome` carry counts and one flag;
+`prefetchLine` in the page turns them into the nine localized sentences. Eleven mutations killed on
+the implementation, restored byte-for-byte.
+
+Four independent reviewers then found things the mutations could not.
+
+**The chunk loop stopped on the first refusal, and the comment justified it with a guarantee the
+backend does not give.** It read: "the budget is per-day and per-account, so every remaining chunk
+would be refused too". `enforceDailyQuota` refuses on `used + cost > limit`
+(`functions/src/abuse_guard.ts`) and `clipUrls` passes the chunk's own length as `cost`
+(`functions/src/video_urls.ts`), so a refusal proves only that THAT chunk does not fit what is
+left. A prefetch that has spent 1,190 of 1,200 objects still has room for a trailing chunk of ten,
+and the `break` threw it away while telling the user the limit had made those clips unobtainable.
+A refused chunk is also charged nothing — the transaction throws before it writes — so the price of
+continuing is one wasted round trip per remaining chunk, at most three for a 200-clip week.
+`break` -> `continue`, comment rewritten to state the model rather than assert a conclusion, and a
+`_BudgetOf` fixture that mirrors `used + cost > limit` proves the trailing chunk still lands.
+
+**The reviewer's fourth finding was rejected on that same evidence.** It asked for the tap to be
+disabled while quota-exhausted, on the grounds that retrying is a no-op. Under `used + cost > limit`
+it is not: a second run asks for fewer references, and fewer can fit. Disabling the control would
+have denied a retry that can succeed.
+
+**Wording defects the type could not catch.** `requested` counts video FILES — both the girl and
+the men demonstration of every scheduled exercise — so twelve exercises are eighty-four videos, and
+"38 of 84" was accurate and uninterpretable; the unit is now named in both locales. The quota line
+put the clause that stops it reading as an outage last, in a subtitle capped at `maxLines: 2` with
+an ellipsis, so on a narrow phone the reason was the part that got cut; the limit now leads the
+sentence. A total non-quota failure borrowed the counted template and said "0 of 84 ready", a
+statistic where the user needs a statement, and now has its own string.
+
+**Three test defects, all of the same family: an assertion that a wrong implementation also
+satisfies.** The zero-ready quota branch was checked with `contains('limit')` and `contains
+('tomorrow')` — both true of the PARTIAL quota string, so reusing the wrong key stayed green. The
+zero-ready failure branch was checked with `isNot(contains('limit'))`, which every unrelated string
+in the file also satisfies, including "Nothing scheduled in the next 7 days" — a total failure could
+have been reported as an empty week. Two of the three refusal reasons were never compared to their
+own wording, only to each other, so swapping `planUnknown` and `signedOut` left three distinct
+non-empty strings and a signed-out user being told their plan could not be checked. All three are
+now exact-equality assertions, and the distinctness set is bounded by `PrefetchState.values.length`
+rather than a hand-written 5.
+
+Separately, the cache-margin test compared `Duration(minutes: 13)` to `Duration(minutes: 15)` — two
+literals in a test file comparing themselves to each other, blind to what the resolver actually
+caches for, which is the one regression its own comment says it exists to catch. `_cacheFor` is now
+`@visibleForTesting cacheFor` and the test reads it. `PassthroughClipUrlResolver.quota` was dropped:
+nothing ever passed it, and since that class does not chunk it could only have simulated
+"refused from the first chunk" — never the partway-through case that matters.
+
+Seven further mutations killed and restored byte-for-byte, one per fixed finding: the `break`
+restored (L), the two count-for-statement substitutions (M, N), the refusal-reason swap (O), the
+quota line reordered behind the count (P), the unit dropped (Q), and `cacheFor` raised to 16 minutes
+past the backend's 15-minute guarantee (R).
+
+**Suites:** `flutter test` 2,933 passed (was 2,928). `flutter analyze` no new errors.
+
+**Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.

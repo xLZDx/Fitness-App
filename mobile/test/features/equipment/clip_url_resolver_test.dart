@@ -69,23 +69,23 @@ void main() {
     test('one bad clip does not take the batch with it', () async {
       // A week's offline prefetch should deliver what it can.
       final r = PassthroughClipUrlResolver();
-      final out = await r.resolveAll([
+      final out = await r.resolveBatch([
         'https://public/a.mp4',
         'exercises/men/Legs/b.mp4',
       ]);
-      expect(out, hasLength(2));
+      expect(out.urls, hasLength(2));
     });
   });
 
   group('batching', () {
-    test('resolveAll de-duplicates', () async {
+    test('resolveBatch de-duplicates', () async {
       final r = PassthroughClipUrlResolver();
-      final out = await r.resolveAll([
+      final out = await r.resolveBatch([
         'exercises/men/Legs/a.mp4',
         'exercises/men/Legs/a.mp4',
         'exercises/men/Legs/b.mp4',
       ]);
-      expect(out, hasLength(2));
+      expect(out.urls, hasLength(2));
     });
   });
 
@@ -136,18 +136,18 @@ void main() {
       final clock = DateTime(2026, 8, 2, 12);
       final r = _FakeBackend(now: () => clock);
       final refs = [for (var i = 0; i < 140; i++) 'exercises/men/L/$i.mp4'];
-      final out = await r.resolveAll(refs);
-      expect(out, hasLength(140));
+      final out = await r.resolveBatch(refs);
+      expect(out.urls, hasLength(140));
       expect(r.batches, hasLength(3));
       expect(r.batches.every((b) => b.length <= 60), isTrue);
     });
 
-    test('resolveAll does not re-ask for what is already cached', () async {
+    test('resolveBatch does not re-ask for what is already cached', () async {
       final clock = DateTime(2026, 8, 2, 12);
       final r = _FakeBackend(now: () => clock);
       await r.resolve('exercises/men/L/a.mp4');
       r.batches.clear();
-      await r.resolveAll(['exercises/men/L/a.mp4', 'exercises/men/L/b.mp4']);
+      await r.resolveBatch(['exercises/men/L/a.mp4', 'exercises/men/L/b.mp4']);
       expect(r.batches.single, ['exercises/men/L/b.mp4']);
     });
 
@@ -163,8 +163,15 @@ void main() {
       // 15 remain (`functions/src/video_urls.ts`, REUSE_MINUTES), which is
       // exactly what keeps this margin untouched. If that guarantee is ever
       // lowered, this is the number it must not fall below.
+      //
+      // Read from the implementation, not retyped. It used to be a local
+      // `Duration(minutes: 13)` sitting beside a local `Duration(minutes: 15)`
+      // -- two literals in a test file comparing themselves to each other,
+      // which stays green no matter what the resolver actually caches for.
+      // The one regression the comment above says this exists to catch was
+      // the one thing it could not see.
       const guaranteedLife = Duration(minutes: 15);
-      const clientTtl = Duration(minutes: 13);
+      const clientTtl = FunctionsClipUrlResolver.cacheFor;
       expect(clientTtl, lessThan(guaranteedLife));
       expect(guaranteedLife - clientTtl,
           greaterThanOrEqualTo(const Duration(minutes: 2)));

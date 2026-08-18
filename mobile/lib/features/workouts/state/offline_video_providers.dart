@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/state/auth_providers.dart';
@@ -6,6 +7,7 @@ import '../../equipment/state/equipment_providers.dart';
 import '../../subscription/data/subscription_models.dart';
 import '../../subscription/state/subscription_providers.dart';
 import '../data/offline_video_cache.dart';
+import '../data/prefetch_outcome.dart';
 import '../data/scheduled_session.dart';
 import 'scheduled_session_providers.dart';
 
@@ -57,9 +59,9 @@ Iterable<String?> Function(ScheduledSession) videoUrlResolverFor(
 /// Pulls the [videoUrl] of every scheduled session in the next 7 days
 /// into the offline cache. Premium-tier feature; throws if the caller
 /// is on free.
-class OfflinePrefetchAction extends Notifier<AsyncValue<void>> {
+class OfflinePrefetchAction extends Notifier<AsyncValue<PrefetchOutcome?>> {
   @override
-  AsyncValue<void> build() => const AsyncValue.data(null);
+  AsyncValue<PrefetchOutcome?> build() => const AsyncValue.data(null);
 
   Future<void> prefetchNext7Days({
     Iterable<ScheduledSession>? overrideSessions,
@@ -80,19 +82,15 @@ class OfflinePrefetchAction extends Notifier<AsyncValue<void>> {
         }
       }
       if (ref.read(entitlementStatusProvider) != EntitlementStatus.resolved) {
-        throw StateError(
-          'Could not check your plan. Please try again.',
-        );
+        throw const PrefetchRefused(PrefetchRefusal.planUnknown);
       }
       final tier = ref.read(effectiveTierProvider);
       if (tier == SubscriptionTier.free) {
-        throw StateError(
-          'Offline downloads are a Supporter+ benefit.',
-        );
+        throw const PrefetchRefused(PrefetchRefusal.notSubscribed);
       }
       final user = ref.read(authUserProvider).valueOrNull;
       if (user == null) {
-        throw StateError('Sign in first');
+        throw const PrefetchRefused(PrefetchRefusal.signedOut);
       }
       final sessions = overrideSessions ??
           ref.read(scheduledSessionsProvider).valueOrNull ??
@@ -114,7 +112,7 @@ class OfflinePrefetchAction extends Notifier<AsyncValue<void>> {
       //
       // A licensed clip's catalog entry is an object key, not a URL, and Dio
       // cannot fetch `exercises/girl/Legs/Squat.mp4`. Resolving them one at a
-      // time would also mean one round trip per clip; `resolveAll` batches,
+      // time would also mean one round trip per clip; `resolveBatch` batches,
       // chunks at the backend's cap of sixty, and drops only the clips whose
       // chunk failed rather than the whole week.
       final references = <String>{};
@@ -127,22 +125,47 @@ class OfflinePrefetchAction extends Notifier<AsyncValue<void>> {
         }
       }
       if (references.isEmpty) {
-        state = const AsyncValue.data(null);
+        state = const AsyncValue.data(
+          PrefetchOutcome(requested: 0, ready: 0),
+        );
         return;
       }
-      final playable = await ref.read(clipUrlResolverProvider)
-          .resolveAll(references);
+      final batch =
+          await ref.read(clipUrlResolverProvider).resolveBatch(references);
+      var ready = 0;
       for (final reference in references) {
-        final url = playable[reference];
-        // Absent means signing failed. Skipped rather than aborted: a week's
-        // prefetch should deliver what it can, and the clip still streams.
+        final url = batch.urls[reference];
+        // Absent means signing failed, or the batch stopped at the daily
+        // limit before reaching this one. Skipped rather than aborted: a
+        // week's prefetch should deliver what it can, and the clip still
+        // streams.
         if (url == null) continue;
-        // Cached under the REFERENCE, fetched from the signed URL. Keying on
-        // the URL would put a fifteen-minute expiry in the filename and the
-        // cache would never hit again.
-        await cache.download(reference, from: url);
+        try {
+          // Cached under the REFERENCE, fetched from the signed URL. Keying on
+          // the URL would put a fifteen-minute expiry in the filename and the
+          // cache would never hit again.
+          await cache.download(reference, from: url);
+          ready++;
+        } catch (e) {
+          // One clip that would not download is one clip missing, not a
+          // failed week. Before this it threw out of the loop, and every clip
+          // already on the device went unreported -- the user was told the
+          // whole prefetch failed while most of their week was cached.
+          //
+          // Swallowed and COUNTED: `missing` carries it, and the screen says
+          // how many are absent rather than claiming success. Named as well as
+          // counted, because a count alone cannot tell "the gym wifi dropped"
+          // from "this object is not in the bucket", and the second is a
+          // catalog fault that would otherwise reach nobody -- the same
+          // reasoning as `_noteFailure` in the clip resolver.
+          debugPrint('offline prefetch: $reference did not download: $e');
+        }
       }
-      state = const AsyncValue.data(null);
+      state = AsyncValue.data(PrefetchOutcome(
+        requested: references.length,
+        ready: ready,
+        quotaExhausted: batch.quotaExhausted,
+      ));
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -150,5 +173,5 @@ class OfflinePrefetchAction extends Notifier<AsyncValue<void>> {
 }
 
 final offlinePrefetchActionProvider =
-    NotifierProvider<OfflinePrefetchAction, AsyncValue<void>>(
+    NotifierProvider<OfflinePrefetchAction, AsyncValue<PrefetchOutcome?>>(
         OfflinePrefetchAction.new);

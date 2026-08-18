@@ -138,6 +138,42 @@ void main() {
     });
   });
 
+  group('the guarded call, which is where the policy actually runs', () {
+    // `fetch` wraps a real FirebaseFunctions invocation, so its catch is
+    // unreachable from a test. That is not a theoretical gap: the batch
+    // path's own copy of this policy was mutated to swallow every quota
+    // refusal and the entire suite stayed green. The policy now lives in one
+    // method that takes the call as a closure, so these two cases enter it.
+    test('a refusal thrown by the call is rethrown, and counted', () async {
+      final r = _FailingBackend();
+      await expectLater(
+        r.guarded('one clip', () async => throw _Refusal(
+            code: 'resource-exhausted', message: 'It resets tomorrow.')),
+        throwsA(isA<ClipQuotaExhausted>()),
+      );
+      expect(r.failureCount, 1,
+          reason: 'a refusal is still a failed backend call: the log must '
+              'know it happened');
+    });
+
+    test('anything else is swallowed to an empty map, and counted', () async {
+      final r = _FailingBackend();
+      expect(await r.guarded('one clip', () async => throw Exception('boom')),
+          isEmpty);
+      expect(
+          await r.guarded('60 clips',
+              () async => throw _Refusal(code: 'not-found', message: 'gone')),
+          isEmpty);
+      expect(r.failureCount, 2);
+    });
+
+    test('a call that succeeds is passed through untouched', () async {
+      final r = _FailingBackend();
+      expect(await r.guarded('one clip', () async => {'a': 'b'}), {'a': 'b'});
+      expect(r.failureCount, 0);
+    });
+  });
+
   group('propagating it', () {
     test('resolve throws the refusal instead of returning null', () async {
       final r = _RefusingBackend();
