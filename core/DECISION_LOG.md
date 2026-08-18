@@ -16589,3 +16589,10 @@ D1/H3/CT-1 close on a clinical submission or human labels no local code can auth
 Suites: `pytest scripts/` 667 passed. No Dart, `functions/` or `firestore.rules` source changed in
 this gate, so `flutter test`, jest, `tsc` and the emulator are NOT RUN rather than quoted. The
 `functions/src/index.ts` mutations above were performed in memory; the file on disk is untouched.
+
+**Report.** The pass is written up at `reports/decision_closure_2026-08-18.html`, published as an
+artifact for reading. It reports the five release dimensions separately -- branch push readiness,
+product release verdict, clinical authority status, ML operational status, delivery state -- because
+collapsing them into one word is how a green branch starts reading as a shippable product. The
+branch is 91 ahead of origin, 0 behind, and was NOT pushed: the mandate said so, and push readiness
+is a property of the branch rather than permission to act on it.

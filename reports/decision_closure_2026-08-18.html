@@ -1,0 +1,467 @@
+<title>The Guard on the Wrong Door</title>
+<style>
+  :root {
+    --ground: #eef1f4;
+    --panel: #fafbfc;
+    --ink: #12171c;
+    --ink-soft: #4d5761;
+    --ink-faint: #78838e;
+    --rule: #d3dae1;
+    --rule-soft: #e3e8ed;
+    --accent: #9a3324;
+    --accent-soft: #f4e2de;
+    --closed: #2f6b3f;
+    --closed-bg: #e0eee4;
+    --external: #8a5a12;
+    --external-bg: #f6ebd8;
+    --blocked: #5b6570;
+    --blocked-bg: #e6eaee;
+    --code-bg: #e8ecf0;
+    --shadow: 0 1px 2px rgba(18,23,28,.06), 0 6px 18px rgba(18,23,28,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0f1418; --panel: #161c22; --ink: #e4e9ee;
+      --ink-soft: #a3aeb8; --ink-faint: #7d8892; --rule: #2a333c;
+      --rule-soft: #212930; --accent: #e08a76; --accent-soft: #33201c;
+      --closed: #7fc294; --closed-bg: #172b1d; --external: #d8a555;
+      --external-bg: #2e2415; --blocked: #96a2ad; --blocked-bg: #1e252c;
+      --code-bg: #1d242b;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0f1418; --panel: #161c22; --ink: #e4e9ee;
+    --ink-soft: #a3aeb8; --ink-faint: #7d8892; --rule: #2a333c;
+    --rule-soft: #212930; --accent: #e08a76; --accent-soft: #33201c;
+    --closed: #7fc294; --closed-bg: #172b1d; --external: #d8a555;
+    --external-bg: #2e2415; --blocked: #96a2ad; --blocked-bg: #1e252c;
+    --code-bg: #1d242b;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.3);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font: 400 16px/1.62 "Iowan Old Style", "Palatino Linotype", Palatino,
+          Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 60rem; margin: 0 auto; padding: 3.5rem 1.5rem 6rem; }
+
+  header { border-bottom: 2px solid var(--ink); padding-bottom: 1.6rem;
+           margin-bottom: 2.5rem; }
+  .eyebrow {
+    font: 600 11px/1 ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  h1 { font-size: clamp(1.9rem, 4.6vw, 2.9rem); line-height: 1.1; margin: 0 0 .7rem;
+       font-weight: 600; letter-spacing: -.015em; text-wrap: balance; }
+  .standfirst { color: var(--ink-soft); font-size: 1.08rem; margin: 0; max-width: 46rem; }
+  .meta {
+    margin-top: 1.4rem; display: flex; flex-wrap: wrap; gap: .5rem 1.6rem;
+    font: 500 12px/1.5 ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+    color: var(--ink-faint);
+  }
+  .meta b { color: var(--ink-soft); font-weight: 600; }
+
+  h2 {
+    font-size: 1.42rem; font-weight: 600; letter-spacing: -.01em;
+    margin: 3.2rem 0 1rem; padding-top: 1.1rem; border-top: 1px solid var(--rule);
+    text-wrap: balance;
+  }
+  h3 { font-size: 1.06rem; font-weight: 600; margin: 2rem 0 .6rem; }
+  p { margin: 0 0 1rem; }
+  ul { margin: 0 0 1rem; padding-left: 1.3rem; }
+  li { margin-bottom: .45rem; }
+  a { color: var(--accent); text-underline-offset: 2px; }
+
+  code, .mono {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+    font-size: .88em;
+  }
+  code { background: var(--code-bg); padding: .1em .35em; border-radius: 3px; }
+
+  .panel {
+    background: var(--panel); border: 1px solid var(--rule);
+    border-radius: 6px; padding: 1.3rem 1.5rem; margin: 1.4rem 0;
+    box-shadow: var(--shadow);
+  }
+  .panel.flag { border-left: 4px solid var(--accent); }
+
+  .verdicts { display: grid; gap: 1px; background: var(--rule);
+              border: 1px solid var(--rule); border-radius: 6px;
+              overflow: hidden; margin: 1.8rem 0; }
+  @media (min-width: 42rem) { .verdicts { grid-template-columns: 1fr 1fr; } }
+  .v { background: var(--panel); padding: 1.05rem 1.25rem; }
+  .v .k {
+    font: 600 10.5px/1.4 ui-monospace, Menlo, monospace; letter-spacing: .11em;
+    text-transform: uppercase; color: var(--ink-faint); margin-bottom: .4rem;
+  }
+  .v .val { font-weight: 600; font-size: 1.02rem; letter-spacing: -.005em; }
+  .v .note { color: var(--ink-soft); font-size: .87rem; margin-top: .3rem; }
+
+  .tw { overflow-x: auto; margin: 1.3rem 0; border: 1px solid var(--rule);
+        border-radius: 6px; background: var(--panel); box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td { text-align: left; padding: .58rem .85rem; border-bottom: 1px solid var(--rule-soft);
+           vertical-align: top; }
+  th { font: 600 10.5px/1.4 ui-monospace, Menlo, monospace; letter-spacing: .09em;
+       text-transform: uppercase; color: var(--ink-faint); background: var(--ground); }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.mono { font-size: .82rem; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .pill {
+    display: inline-block; font: 600 10.5px/1.5 ui-monospace, Menlo, monospace;
+    letter-spacing: .05em; padding: .15em .5em; border-radius: 3px;
+    white-space: nowrap;
+  }
+  .p-closed { color: var(--closed); background: var(--closed-bg); }
+  .p-ext { color: var(--external); background: var(--external-bg); }
+  .p-block { color: var(--blocked); background: var(--blocked-bg); }
+  .p-open { color: var(--accent); background: var(--accent-soft); }
+
+  .kill { color: var(--closed); font-weight: 600; }
+  .surv { color: var(--external); font-weight: 600; }
+
+  footer { margin-top: 4rem; padding-top: 1.4rem; border-top: 2px solid var(--ink);
+           color: var(--ink-soft); font-size: .92rem; }
+  .stamp {
+    font: 600 13px/1.5 ui-monospace, Menlo, monospace; letter-spacing: .06em;
+    color: var(--accent); margin-top: .8rem;
+  }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">SPTR · formcoach/gates-a-c · decision closure pass</div>
+  <h1>The Guard on the Wrong Door</h1>
+  <p class="standfirst">
+    A reviewer was asked one question: is any of this local work that we filed
+    as somebody else's? It found one — and it was the checker itself, reporting
+    the paid checkout path safe because it was reading the free one.
+  </p>
+  <div class="meta">
+    <span><b>Date</b> 2026-08-18</span>
+    <span><b>HEAD</b> 31b5b91</span>
+    <span><b>Branch</b> 91 ahead, 0 behind</span>
+    <span><b>Suites</b> pytest scripts/ — 667 passed</span>
+  </div>
+</header>
+
+<div class="verdicts">
+  <div class="v">
+    <div class="k">Branch push readiness</div>
+    <div class="val">READY — NOT PUSHED</div>
+    <div class="note">Tree clean but for two operator-owned files, neither staged. Push was withheld: the mandate said <span class="mono">ПУШ: НЕТ</span>.</div>
+  </div>
+  <div class="v">
+    <div class="k">Product release verdict</div>
+    <div class="val">NOT RELEASABLE</div>
+    <div class="note">Six decisions are outstanding and none is engineering's. Nothing here changes that.</div>
+  </div>
+  <div class="v">
+    <div class="k">Clinical authority status</div>
+    <div class="val">ABSENT</div>
+    <div class="note">D1 and H3 unsigned; the CT-1 submission is still an unfilled template. No local artefact may stand in.</div>
+  </div>
+  <div class="v">
+    <div class="k">ML operational status</div>
+    <div class="val">NOT OPERATIONAL</div>
+    <div class="note">v1 reproducible at 0.617 val-accuracy and useless on real gym photos; metadata unverified; retraining off.</div>
+  </div>
+  <div class="v">
+    <div class="k">Delivery state</div>
+    <div class="val">DECISION-READY</div>
+    <div class="note">Every remaining item has a named owner and a written package. None of them is code.</div>
+  </div>
+  <div class="v">
+    <div class="k">Executable engineering defects</div>
+    <div class="val">ONE FOUND, FIXED</div>
+    <div class="note">In the ledger, not the product — and it was hiding a product defect from view.</div>
+  </div>
+</div>
+
+<h2>The finding</h2>
+
+<p>
+  The falsification reviewer was given one question and told not to confirm
+  anything: <em>can you demonstrate any local executable engineering work that
+  the current state misfiles as operator, external or environment?</em> Four of
+  the five load-bearing claims survived. The fifth did not, and the failure was
+  in the mechanism built to catch exactly this.
+</p>
+
+<div class="panel flag">
+  <p style="margin-bottom:.6rem"><strong>F5 read <span class="pill p-closed">CLOSED</span> on a tree with F5's defect fully restored.</strong></p>
+  <p style="margin-bottom:0">
+    The predicate looked for two strings anywhere in <code>functions/src/index.ts</code>:
+    the <code>sign_in_provider === "anonymous"</code> guard and
+    <code>reason: CHECKOUT_REFUSAL.ANONYMOUS_ACCOUNT</code>. Both occur twice —
+    at lines 502/507 inside <code>startFreeTrial</code>, and at 615/621 inside
+    <code>createCheckoutSession</code>. But <code>startFreeTrial</code> has
+    rejected anonymous callers all along; N-05 §6 states F5 as precisely the
+    <em>contrast</em> between the two handlers. So the guard the checker could
+    always see was the code F5 was complaining about, not the code that fixed it.
+  </p>
+</div>
+
+<p>
+  Reproduced directly: deleting <code>functions/src/index.ts:613-624</code> — the
+  entire anonymous guard in the paid path, <code>HttpsError</code> and all —
+  left the row reading <code>CLOSED, anonymous guard present: True</code>. A tree
+  where real-money checkout accepts an anonymous uid again, reported as resolved.
+</p>
+
+<p>
+  This is the module's own <code>_member_body</code> docstring being ignored two
+  hundred lines below itself — <em>“whole-file checks answer the wrong
+  question”</em> — and in the more expensive direction. Earlier this session
+  <code>checkout_copy</code> was fixed for a <em>false OPEN</em> from a
+  whole-file scan: annoying, self-announcing, someone investigates. A false
+  CLOSED announces nothing. Nobody goes looking.
+</p>
+
+<h3>Why the obvious fix did not work</h3>
+<p>
+  <code>_member_body</code> slices from a signature to its matching brace, which
+  is right for a Dart method and wrong for a Cloud Function: <code>onCall(</code>
+  takes an options object first, so the slice returns 317 characters of
+  <code>secrets:</code> configuration and no handler at all. The replacement,
+  <code>_exported_member</code>, slices to the next top-level <code>export</code>
+  — measured as lines 562–758, containing <code>createCheckoutSession</code> and
+  nothing of <code>startFreeTrial</code> beyond one comment that
+  <code>_without_comments</code> strips anyway.
+</p>
+
+<h3>The three green tests sitting on top of it</h3>
+<p>
+  <code>test_f5_needs_both_the_guard_and_the_named_reason</code> passed the
+  predicate a two-line fragment containing no handler whatsoever. Every case it
+  asserted was about substring presence in a string the test had written itself
+  — so the property that turned out to matter was the one property the fixture
+  could not express. That is the fourth recorded instance of this shape in this
+  repository, and the pattern is now explicit enough to name: <strong>a test
+  whose fixture is simpler than the thing it guards will pass for reasons
+  unrelated to the guard.</strong> Replaced with a two-handler fixture; the case
+  that matters is the one where only <code>startFreeTrial</code> is guarded.
+</p>
+
+<h2>Mutation ledger</h2>
+<p>
+  Every fix in this gate was proven by breaking it. Seven mutations, all
+  classified; the survivors are listed because a mutation ledger that reports
+  only kills is a marketing document.
+</p>
+
+<div class="tw"><table>
+  <thead><tr><th>ID</th><th>Mutation</th><th>Result</th><th>Class</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">BD</td><td>Read the source model instead of the copy</td><td class="kill">KILLED</td><td>valid kill</td></tr>
+    <tr><td class="mono">BE</td><td>Absent metadata library reports <code>VALIDATED_MATCH</code></td><td class="kill">KILLED</td><td>valid kill</td></tr>
+    <tr><td class="mono">BF</td><td>Drop the copy-integrity digest check</td><td class="kill">KILLED</td><td>valid kill</td></tr>
+    <tr><td class="mono">BG</td><td>Comment out the guard in <code>createCheckoutSession</code></td><td class="kill">KILLED</td><td>valid kill — <code>_without_comments</code> load-bearing</td></tr>
+    <tr><td class="mono">BH</td><td>Remove the guard from <code>startFreeTrial</code> instead</td><td class="surv">SURVIVED</td><td><strong>correct survivor</strong> — F5 is not about that handler</td></tr>
+    <tr><td class="mono">BI</td><td>Delete <code>createCheckoutSession</code>'s guard entirely</td><td class="kill">KILLED</td><td>valid kill — this is the finding</td></tr>
+    <tr><td class="mono">BJ</td><td>Rename the handler so the slice finds nothing</td><td class="kill">KILLED</td><td>valid kill — a scoped check that loses its subject must not agree</td></tr>
+  </tbody>
+</table></div>
+
+<h2>The state ledger</h2>
+<p>
+  Seventeen rows, eight of which recompute their own state from source and never
+  consult the word recorded next to them. <code>--check</code> reconciles all
+  seventeen. The eight are the only ones a local predicate is permitted to close.
+</p>
+
+<div class="tw"><table>
+  <thead><tr><th>Row</th><th>State</th><th>Authority</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">F-prefetch</td><td><span class="pill p-closed">CLOSED</span></td><td>SOURCE</td></tr>
+    <tr><td class="mono">F2</td><td><span class="pill p-closed">CLOSED</span></td><td>SOURCE</td></tr>
+    <tr><td class="mono">F5</td><td><span class="pill p-closed">CLOSED</span></td><td>SOURCE — <em>predicate rewritten this gate</em></td></tr>
+    <tr><td class="mono">checkout-copy</td><td><span class="pill p-closed">CLOSED</span></td><td>SOURCE</td></tr>
+    <tr><td class="mono">guest-upgrade-outcome</td><td><span class="pill p-closed">CLOSED</span></td><td>SOURCE</td></tr>
+    <tr><td class="mono">scanner-dependency-pin</td><td><span class="pill p-closed">CLOSED</span></td><td>SOURCE</td></tr>
+    <tr><td class="mono">metric-provenance-six</td><td><span class="pill p-block">DORMANT</span></td><td>SOURCE</td></tr>
+    <tr><td class="mono">production-image-collection</td><td><span class="pill p-block">DISABLED</span></td><td>SOURCE</td></tr>
+    <tr><td class="mono">N-05</td><td><span class="pill p-open">OPERATOR_DECISION_REQUIRED</span></td><td>OPERATOR</td></tr>
+    <tr><td class="mono">N-04-gym-association</td><td><span class="pill p-open">OPERATOR_DECISION_REQUIRED</span></td><td>OPERATOR</td></tr>
+    <tr><td class="mono">scanner-pipeline-location</td><td><span class="pill p-open">OPERATOR_DECISION_REQUIRED</span></td><td>OPERATOR</td></tr>
+    <tr><td class="mono">N-07</td><td><span class="pill p-block">DORMANT</span></td><td>OPERATOR</td></tr>
+    <tr><td class="mono">F025</td><td><span class="pill p-block">DORMANT</span></td><td>OPERATOR</td></tr>
+    <tr><td class="mono">D1</td><td><span class="pill p-ext">EXTERNAL_AUTHORITY_REQUIRED</span></td><td>EXTERNAL</td></tr>
+    <tr><td class="mono">CT1-human-labels</td><td><span class="pill p-ext">EXTERNAL_AUTHORITY_REQUIRED</span></td><td>EXTERNAL</td></tr>
+    <tr><td class="mono">H3</td><td><span class="pill p-ext">HOLD</span></td><td>EXTERNAL</td></tr>
+    <tr><td class="mono">scanner-metadata</td><td><span class="pill p-block">ENVIRONMENT_BLOCKED</span></td><td>ENVIRONMENT</td></tr>
+  </tbody>
+</table></div>
+
+<h3>A row that will now unblock itself</h3>
+<p>
+  <code>scanner-metadata</code>'s invariant asserted only that
+  <code>attach_metadata.py</code> lives outside this worktree — a claim about
+  where a file <em>is</em>, when what <code>ENVIRONMENT_BLOCKED</code> actually
+  means is <em>nobody here can answer the question</em>. It now also fails the
+  moment <code>tflite_support</code> becomes importable, because the person who
+  runs <code>pip install</code> is not thinking about a ledger. That is the same
+  bidirectional duty <code>AUTHORITY_SPOKE</code> performs for the other three
+  authorities, finally applied to the one that was only checked in one direction.
+</p>
+
+<h2>The metadata question: prepared, and explicitly not answered</h2>
+
+<p>
+  <code>attach_metadata.py</code> in the recovered pipeline does not fail for
+  want of a stub — it <em>installs</em> one, exposing
+  <code>GetMinimumMetadataParserVersion</code> as a function returning the
+  literal string <code>"1.0.0"</code>. So the minimum-parser-version embedded in
+  the <code>equipment_v1.tflite</code> this app ships was <strong>stamped, not
+  computed</strong>. For a plain image classifier that floor is probably right.
+  <em>Probably</em> is the whole problem: nobody computed it, and the artefact
+  states it as though somebody had.
+</p>
+
+<p>
+  <a href="scripts/ml/validate_metadata.py">D:\Repo\_wt-formcoach\scripts\ml\validate_metadata.py</a>
+  asks the genuine library instead. It reads a <strong>copy</strong> in a
+  temporary directory, so the champion, the registry and the mobile asset are
+  safe by construction rather than by care, and it ends in exactly one of
+  <code>VALIDATED_MATCH</code>, <code>VALIDATED_MISMATCH</code>,
+  <code>PARSE_FAILED</code> or <code>ENVIRONMENT_NOT_RUN</code>.
+</p>
+
+<div class="panel flag">
+  <p style="margin:0">
+    <strong>On this machine it exits 3 and validates nothing.</strong>
+    <code>tflite-support</code> publishes no Windows wheels; the writers survive
+    inside <code>mediapipe</code> but that build ships without the
+    <code>_pywrap_metadata_version</code> C extension — which is what the
+    pipeline's stub was papering over in the first place. The tempting local
+    “fix” is to widen the stub until the error goes away, which would mean
+    inventing a second parser version and stamping <em>that</em> into a shipped
+    artefact too. A prepared script is not a validation, and the last test in the
+    file exists solely to stop this repository ever reading it as one.
+  </p>
+</div>
+
+<h2>Operator decisions outstanding</h2>
+<p>
+  Six rows are not engineering's, and none of them is closed by anything in this
+  branch. Three now carry written decision packages rather than a named owner
+  and nothing else.
+</p>
+
+<div class="tw"><table>
+  <thead><tr><th>Decision</th><th>Owner</th><th>Package</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>N-05</strong> — anonymous-uid exposure on the video library</td>
+      <td>Operator / platform</td>
+      <td>Four costed options in
+        <a href="core/review/N05_DISPOSITION.md">D:\Repo\_wt-formcoach\core\review\N05_DISPOSITION.md</a> §7,
+        each with a literal “to authorize” sentence. Recommended: budget alert now, accept residual
+        risk as the standing position, App Check staged at Play launch.</td>
+    </tr>
+    <tr>
+      <td><strong>scanner-pipeline-location</strong> — where 92,558 recovered files live</td>
+      <td>Operator</td>
+      <td>Options A–D in
+        <a href="core/ml/SCANNER_PROVENANCE.md">D:\Repo\_wt-formcoach\core\ml\SCANNER_PROVENANCE.md</a>.
+        Three sub-decisions no local code can answer: where the corpus physically lives, whether
+        crawled images of unknown licence may leave this machine at all, and whether the scanner
+        programme continues.</td>
+    </tr>
+    <tr>
+      <td><strong>N-04</strong> — gym association</td>
+      <td>Operator</td>
+      <td>No gym-membership model exists; the invariant asserts its continued absence.</td>
+    </tr>
+    <tr><td><strong>N-07</strong> — team activation</td><td>Operator</td><td>Dormant. Route declared, zero navigations from <code>lib/</code>; the invariant reads code, not comments.</td></tr>
+    <tr><td><strong>F025</strong></td><td>Operator</td><td>Dormant; tripwire intact.</td></tr>
+    <tr><td><strong>D1 / H3 / CT-1</strong></td><td>External clinical authority</td><td>Not an operator decision and not a local one. See below.</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Clinical authority and CT-1</h2>
+<p>
+  Restated because it has not changed and its not changing is the point. The
+  clinical submission is an unfilled template; the repository's own validator
+  refuses it on <code>reviewer_name is required and must not be blank</code>.
+  <strong>HUMAN_REVIEW_LABELS = 0 of 15 files scanned.</strong> No engineering
+  artefact in this branch may close D1, H3 or CT-1, and the §18 closure drill
+  that proves the closure path <em>can</em> fire runs entirely on fixtures in a
+  temporary directory, with two standing assertions that no decision record and
+  no fixture has ever appeared in the real tree.
+</p>
+
+<h2>The residual convention's first live users</h2>
+<p>
+  The same review noted the <code>RESIDUAL[...]</code> marker had zero users —
+  the only occurrence in the tree was the line defining it. Two items in
+  <code>SCANNER_PROVENANCE.md</code> were local executable work recorded in prose
+  alone, tracked by no row: making the recovery marker machine-readable before
+  <code>dataset_registry._last_commit_touching</code> consults <code>git log</code>,
+  and the CI-asymmetric pin assertion where
+  <code>test_the_pipeline_is_still_not_a_git_repository</code> skips on CI while
+  <code>test_the_pin_is_dated</code> asserts unconditionally. Both verified.
+</p>
+<p>
+  <strong>Neither is built.</strong> Both are riders on a decision nobody has
+  taken, and building them now would be engineering performed to look busy. Both
+  now carry <code>RESIDUAL[scanner-pipeline-location]</code>, which attaches them
+  to the row that gates them — so choosing option A, B or C carries its own
+  precondition rather than discovering it afterwards.
+</p>
+
+<h2>What the reviewer could not break</h2>
+<p>Recorded because a review that finds one thing should say what it failed to find.</p>
+<ul>
+  <li><strong>The metadata gap is environment.</strong> The shipped model does carry the byte string <code>1.0.0</code>, so the stamp is locally observable — but computing what the floor <em>should</em> be needs the library's version table, which is library data, not repository data.</li>
+  <li><strong>N-05's remaining levers are not code.</strong> A console setting, an environment variable plus a redeploy, or a product policy. The engineering half — F5, F2, F-prefetch, the guest-upgrade collision — has landed and moved to SOURCE rows.</li>
+  <li><strong>The pipeline's location has no local answer.</strong> Physical storage, licence to leave the machine, and whether the programme continues at all.</li>
+  <li><strong>D1 / H3 / CT-1 close on artefacts no local code can author</strong> — a clinical submission with a named reviewer's credentials, or human QA labels counted from disk.</li>
+</ul>
+
+<h2>Verification</h2>
+<div class="tw"><table>
+  <thead><tr><th>Suite</th><th>Result</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">pytest scripts/</td><td class="num"><span class="kill">667 passed</span></td></tr>
+    <tr><td class="mono">state_ledger.py --check</td><td>17 rows reconciled, 8 source-provable, 0 findings</td></tr>
+    <tr><td class="mono">flutter test</td><td><span class="pill p-block">NOT RUN</span> — no Dart source changed in this gate</td></tr>
+    <tr><td class="mono">jest / tsc / emulator</td><td><span class="pill p-block">NOT RUN</span> — no <code>functions/</code> or <code>firestore.rules</code> source changed</td></tr>
+  </tbody>
+</table></div>
+<p>
+  The <code>index.ts</code> mutations above were performed in memory. The file on
+  disk is byte-identical to <code>HEAD</code>, verified by an empty
+  <code>git diff</code> against it.
+</p>
+
+<h2>Push</h2>
+<p>
+  The branch stands at <strong>91 commits ahead of
+  <code>origin/formcoach/gates-a-c</code>, 0 behind</strong>. The working tree
+  carries two modified files, both operator-owned —
+  <code>core/plans/FINAL_AUTONOMOUS_ACTION_LOG.csv</code> and
+  <code>mobile/lib/features/safety/data/eligibility.dart</code> — and neither was
+  staged, in either this commit or any before it.
+</p>
+<p>
+  Push readiness is a property of the branch, not permission to act on it. The
+  mandate said <span class="mono">ПУШ: НЕТ</span>, and no push, pull request,
+  remote branch, merge or deployment was performed or attempted.
+</p>
+
+<footer>
+  <p style="margin:0">
+    Local copy:
+    <a href="reports/decision_closure_2026-08-18.html">D:\Repo\_wt-formcoach\reports\decision_closure_2026-08-18.html</a>
+  </p>
+  <div class="stamp">ПУШ = НЕ ВЫПОЛНЕН</div>
+</footer>
+</div>
