@@ -411,6 +411,50 @@ def n07_still_dormant() -> tuple[bool, str]:
     )
 
 
+def no_gym_membership_model() -> tuple[bool, str]:
+    """N-04's premise: the equipment report has no gym to associate with.
+
+    The review that produced this established that a gym-membership model does
+    not exist here in any form -- no membership collection, no join or
+    check-in flow, no writer for `gyms/`, no scanner resolving a gym id. The
+    report sheet defaults `gymId` to `unknown` because there is nothing to
+    default it to. If one ever appears, the question the operator was asked
+    has changed and the row must be re-put rather than left standing.
+    """
+    model = re.compile(
+        r"\b(?:GymMembership|MembershipRepository|joinGym|checkInToGym)\b"
+        r"|collection\(\s*['\"]memberships['\"]"
+    )
+    hits = [p for p, b in _dart_sources().items()
+            if model.search(_without_comments(b))]
+    return not hits, (
+        "no gym-membership model exists, so an equipment report still has "
+        "nothing to associate with"
+        if not hits else f"a membership model now exists in {hits}"
+    )
+
+
+def f025_tripwire_intact() -> tuple[bool, str]:
+    """F025 was left dormant and given a tripwire rather than a repair.
+
+    The precedent this repository set: repairing an artefact nothing reaches
+    spends effort on code with no user, while deleting it removes intended
+    work mid-audit. The tripwire is the whole of the mitigation, so its
+    disappearance is the event worth catching -- a dormant item whose guard
+    was quietly dropped is indistinguishable from a live one.
+    """
+    trap = REPO / "mobile" / "test" / "adversarial" / "dormant_traps_test.dart"
+    if not trap.exists():
+        return False, "the dormant-code tripwire suite is gone"
+    body = trap.read_text(encoding="utf-8", errors="replace")
+    named = "F025" in body
+    return named, (
+        "the tripwire suite exists and still names F025"
+        if named else
+        "the tripwire suite no longer mentions F025, so nothing guards it"
+    )
+
+
 def n05_premise_holds() -> tuple[bool, str]:
     """N-05 rests on a conflict with the published deletion promise.
 
@@ -722,6 +766,32 @@ LEDGER: tuple[Row, ...] = (
         quote=("core/review/N05_DISPOSITION.md",
                "per-account uniqueness is not the binding constraint"),
         notes="Narrative belongs to N05_DISPOSITION.md; this row quotes it.",
+    ),
+    Row(
+        item="N-04-gym-association",
+        state="OPERATOR_DECISION_REQUIRED",
+        authority=OPERATOR,
+        evidence=("core/DECISION_LOG.md",),
+        invariant=no_gym_membership_model,
+        closure=operator_decision_recorded("N-04"),
+        notes="Whether an equipment report should be tied to a gym is a "
+              "product question with no engineering answer available: there "
+              "is no membership model to tie it to, and building one to "
+              "satisfy a report field would be inventing a feature to justify "
+              "a column. Enrolled because the sweep found it in prose only -- "
+              "it appears in no status table anywhere.",
+    ),
+    Row(
+        item="F025",
+        state="DORMANT",
+        authority=OPERATOR,
+        evidence=("mobile/test/adversarial/dormant_traps_test.dart",),
+        invariant=f025_tripwire_intact,
+        closure=operator_decision_recorded("F025"),
+        notes="Same disposition as N-07 and for the same reason. The row "
+              "tracks the TRIPWIRE, not the dormant code: the code being "
+              "unreached is the accepted state, and the guard vanishing is "
+              "the change that would matter.",
     ),
     Row(
         item="N-07",

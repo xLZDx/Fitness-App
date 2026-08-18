@@ -50,6 +50,7 @@ def test_every_row_is_reachable_and_distinct():
         "N-05", "N-07", "D1", "H3", "CT1-human-labels", "scanner-metadata",
         "scanner-pipeline-location", "production-image-collection",
         "guest-upgrade-outcome", "scanner-dependency-pin",
+        "N-04-gym-association", "F025",
     }
     assert required <= set(items), f"untracked boundary items: {required - set(items)}"
 
@@ -428,6 +429,8 @@ EXPECTED_AUTHORITY = {
     "N-05": sl.OPERATOR,
     "N-07": sl.OPERATOR,
     "scanner-pipeline-location": sl.OPERATOR,
+    "N-04-gym-association": sl.OPERATOR,
+    "F025": sl.OPERATOR,
     "D1": sl.EXTERNAL,
     "H3": sl.EXTERNAL,
     "CT1-human-labels": sl.EXTERNAL,

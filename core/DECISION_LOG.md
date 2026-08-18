@@ -16391,3 +16391,37 @@ source WAS found and disagrees.
 Suites: `flutter test` 2,968 (was 2,954; +14), `flutter analyze` 16 pre-existing infos and zero
 errors, `pytest scripts/review scripts/ml` 229. `functions/` and `firestore.rules` unchanged, so
 jest, `tsc` and the emulator are NOT RUN rather than quoted.
+
+## Two boundary items the ledger could not see, because they were never in a table
+
+The falsification reviewer left three unverified leads. Checked, and they split three ways.
+
+**App Check attested share.** The hypothesis was that a write path exists with no read path, making
+the aggregation a local script rather than a deployment decision. Disconfirmed: `noteAppCheck`
+writes `logger.info("appcheck", ...)`, which lands in Cloud Logging in production. There is no local
+read path and there cannot be one — the data does not exist on this machine, and will not until
+deployed traffic produces it. Correctly classified as production telemetry, not engineering.
+
+**Equipment-report gym association (N-04) and F025** were real omissions, and instructive ones. Both
+are current boundary items, both were recorded only in decision-log prose, and neither appears in
+any status table — which is exactly why the ledger did not have them. The sweep that built the
+ledger read tables. This is the same blind spot that let the P2 residual sit unfixed, found twice in
+one session, and it is worth naming as a property of the method rather than an oversight: a
+mechanism built by reading tables inherits the coverage of the tables it read.
+
+N-04 is enrolled as OPERATOR with an invariant asserting no gym-membership model exists — no
+membership collection, no join or check-in flow, no writer for `gyms/`. That is the premise the
+operator's question rests on: there is nothing to associate a report with, and building a membership
+model to justify a report column would be inventing a feature to satisfy a field. If one ever
+appears the question has changed and the row says so.
+
+F025 is enrolled as DORMANT, and the row deliberately tracks the TRIPWIRE rather than the dormant
+code. The code being unreached is the accepted state; the guard disappearing is the event that
+matters, because a dormant item whose tripwire was quietly dropped is indistinguishable from a live
+one.
+
+**F010 was checked and is not a boundary item.** Its own finding text claimed the Moments feature
+and both Wear providers were unreferenced, and the record already corrects that as false at HEAD.
+Resolved history, not a live state.
+
+17 rows now, 8 source-provable. `pytest scripts/review` 143 passed.
