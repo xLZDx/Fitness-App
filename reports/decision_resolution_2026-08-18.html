@@ -1,0 +1,390 @@
+<title>Declarations Without Behaviours</title>
+<style>
+  :root {
+    --ground: #eceff2; --panel: #fbfcfd; --ink: #14181d; --ink-soft: #4a545e;
+    --ink-faint: #757f8a; --rule: #d1d8df; --rule-soft: #e2e7ec;
+    --accent: #1d4e89; --accent-soft: #dde7f3;
+    --good: #2c6a42; --good-bg: #dfeee5;
+    --warn: #8a5712; --warn-bg: #f7ecd9;
+    --open: #8c3a2e; --open-bg: #f5e3df;
+    --code-bg: #e6eaee;
+    --shadow: 0 1px 2px rgba(20,24,29,.06), 0 6px 18px rgba(20,24,29,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e1216; --panel: #151b21; --ink: #e3e8ed; --ink-soft: #a2adb7;
+      --ink-faint: #7b8691; --rule: #29323a; --rule-soft: #1f272e;
+      --accent: #7fb0e5; --accent-soft: #16242f;
+      --good: #7cc091; --good-bg: #152819;
+      --warn: #d7a458; --warn-bg: #2c2314;
+      --open: #e08d7d; --open-bg: #301e1a;
+      --code-bg: #1c232a;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e1216; --panel: #151b21; --ink: #e3e8ed; --ink-soft: #a2adb7;
+    --ink-faint: #7b8691; --rule: #29323a; --rule-soft: #1f272e;
+    --accent: #7fb0e5; --accent-soft: #16242f;
+    --good: #7cc091; --good-bg: #152819;
+    --warn: #d7a458; --warn-bg: #2c2314;
+    --open: #e08d7d; --open-bg: #301e1a;
+    --code-bg: #1c232a;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.3);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font: 400 16px/1.62 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 62rem; margin: 0 auto; padding: 3.5rem 1.5rem 6rem; }
+
+  header { border-bottom: 2px solid var(--ink); padding-bottom: 1.6rem; margin-bottom: 2.4rem; }
+  .eyebrow {
+    font: 600 11px/1 ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem;
+  }
+  h1 { font-size: clamp(1.9rem, 4.6vw, 2.85rem); line-height: 1.1; margin: 0 0 .7rem;
+       font-weight: 600; letter-spacing: -.015em; text-wrap: balance; }
+  .standfirst { color: var(--ink-soft); font-size: 1.07rem; margin: 0; max-width: 47rem; }
+  .meta { margin-top: 1.4rem; display: flex; flex-wrap: wrap; gap: .5rem 1.6rem;
+    font: 500 12px/1.5 ui-monospace, "SF Mono", Menlo, monospace; color: var(--ink-faint); }
+  .meta b { color: var(--ink-soft); font-weight: 600; }
+
+  h2 { font-size: 1.4rem; font-weight: 600; letter-spacing: -.01em; margin: 3rem 0 1rem;
+       padding-top: 1.1rem; border-top: 1px solid var(--rule); text-wrap: balance; }
+  h3 { font-size: 1.05rem; font-weight: 600; margin: 1.9rem 0 .55rem; }
+  p { margin: 0 0 1rem; }
+  ul { margin: 0 0 1rem; padding-left: 1.3rem; }
+  li { margin-bottom: .45rem; }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .88em;
+         background: var(--code-bg); padding: .1em .35em; border-radius: 3px; }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .88em; }
+
+  .panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px;
+           padding: 1.25rem 1.45rem; margin: 1.4rem 0; box-shadow: var(--shadow); }
+  .panel.flag { border-left: 4px solid var(--accent); }
+
+  .verdicts { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+              border-radius: 6px; overflow: hidden; margin: 1.8rem 0; }
+  @media (min-width: 44rem) { .verdicts { grid-template-columns: 1fr 1fr 1fr; } }
+  .v { background: var(--panel); padding: 1rem 1.2rem; }
+  .v .k { font: 600 10px/1.4 ui-monospace, Menlo, monospace; letter-spacing: .11em;
+          text-transform: uppercase; color: var(--ink-faint); margin-bottom: .4rem; }
+  .v .val { font-weight: 600; font-size: .99rem; letter-spacing: -.005em; }
+  .v .note { color: var(--ink-soft); font-size: .85rem; margin-top: .3rem; }
+
+  .tw { overflow-x: auto; margin: 1.3rem 0; border: 1px solid var(--rule); border-radius: 6px;
+        background: var(--panel); box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+  th, td { text-align: left; padding: .55rem .8rem; border-bottom: 1px solid var(--rule-soft);
+           vertical-align: top; }
+  th { font: 600 10px/1.4 ui-monospace, Menlo, monospace; letter-spacing: .09em;
+       text-transform: uppercase; color: var(--ink-faint); background: var(--ground); }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.mono { font-size: .81rem; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .pill { display: inline-block; font: 600 10px/1.5 ui-monospace, Menlo, monospace;
+          letter-spacing: .05em; padding: .15em .5em; border-radius: 3px; white-space: nowrap; }
+  .p-good { color: var(--good); background: var(--good-bg); }
+  .p-warn { color: var(--warn); background: var(--warn-bg); }
+  .p-open { color: var(--open); background: var(--open-bg); }
+  .kill { color: var(--good); font-weight: 600; }
+  .surv { color: var(--warn); font-weight: 600; }
+
+  footer { margin-top: 4rem; padding-top: 1.4rem; border-top: 2px solid var(--ink);
+           color: var(--ink-soft); font-size: .92rem; }
+  .stamp { font: 600 13px/1.5 ui-monospace, Menlo, monospace; letter-spacing: .06em;
+           color: var(--open); margin-top: .8rem; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">SPTR · formcoach/gates-a-c · decision resolution pass</div>
+  <h1>Declarations Without Behaviours</h1>
+  <p class="standfirst">
+    Five councils were run to resolve decisions. They resolved none of them —
+    an agent recommendation is not an owner's authority. What they did instead
+    was measure the premises, and the premises kept turning out to be about
+    things being <em>declared</em> rather than things being <em>done</em>.
+  </p>
+  <div class="meta">
+    <span><b>Date</b> 2026-08-18</span>
+    <span><b>HEAD</b> 6508dd1</span>
+    <span><b>Branch</b> 94 ahead, 0 behind</span>
+    <span><b>Ledger</b> 19 rows, 0 findings</span>
+  </div>
+</header>
+
+<div class="verdicts">
+  <div class="v"><div class="k">Engineering status</div><div class="val">READY</div>
+    <div class="note">Nine defects found and fixed this pass; the re-run review is the gate on this word.</div></div>
+  <div class="v"><div class="k">Product release</div><div class="val">NOT RELEASABLE</div>
+    <div class="note">Seven decisions outstanding, none engineering's. Two are new.</div></div>
+  <div class="v"><div class="k">Clinical authority</div><div class="val">ABSENT</div>
+    <div class="note">D1, H3 unsigned. HUMAN_REVIEW_LABELS = 0 of 15.</div></div>
+  <div class="v"><div class="k">ML operational</div><div class="val">NOT OPERATIONAL</div>
+    <div class="note">v1 reproducible at 0.617, useless on gym photos, metadata unvalidated.</div></div>
+  <div class="v"><div class="k">Branch push readiness</div><div class="val">READY</div>
+    <div class="note"><span class="mono">1453236..6508dd1</span> — 94 commits, never pushed.</div></div>
+  <div class="v"><div class="k">Delivery state</div><div class="val">LOCAL_ONLY</div>
+    <div class="note">Push withheld: the mandate said <span class="mono">ПУШ: НЕТ</span>.</div></div>
+</div>
+
+<h2>The shape</h2>
+
+<p>
+  One defect family accounted for six of the nine findings, and it is worth
+  naming precisely because it will recur: <strong>a guard that proves a symbol
+  is declared, and never that anything uses it.</strong>
+</p>
+
+<div class="panel flag">
+  <p style="margin:0">
+    <code>f_prefetch</code> read the two files that declare <code>ClipBatch</code>
+    and <code>PrefetchState.partialQuota</code> and asserted both exist. The one
+    line that carries a quota refusal from the batch into the outcome lives in a
+    third file the predicate never opened. Replace it with <code>false</code> and
+    every quota refusal renders as <code>partialFailed</code> — a deliberate
+    self-resolving refusal shown to the user as a fault, which is F-prefetch's
+    literal defect — while the row goes on reading <span class="pill p-good">CLOSED</span>.
+    No Dart test covered the mapping either.
+  </p>
+</div>
+
+<p>
+  <code>f2</code> is the same error with a sharper edge. It checked that the enum
+  member exists, that the card maps it, and that the two strings a person reads
+  differ — and never that any code path <em>produces</em> the reason. Delete one
+  line in <code>video_failure.dart</code> and a quota refusal reads "The clip
+  link is unavailable", which is exactly F2, while the row reports CLOSED
+  <strong>and prints the correct refusal string as its own evidence</strong>.
+</p>
+
+<p>
+  <code>no_gym_membership_model</code> was the same shape one level up. It scanned
+  <code>mobile/lib</code> — 321 Dart files, zero server files — while
+  <code>reportEquipment</code> writes through the Admin SDK and bypasses
+  <code>firestore.rules</code> entirely, making the server the only layer where a
+  membership could bind. A complete <code>joinGym</code> callable plus a
+  <code>memberships/</code> collection left it reporting that no model exists.
+  That is not a stale <em>state</em>; it is a stale <em>question</em> — the
+  operator would have gone on being asked something whose premise had died.
+</p>
+
+<p>
+  And <code>f025_tripwire_intact</code> was <code>"F025" in body</code> over raw
+  text, comments included. A suite reduced to <code>// F025: tripwire
+  deleted.</code> plus an empty <code>main()</code> passed — and
+  <code>flutter test</code> passes on an empty main, so nothing anywhere would
+  have noticed. This is the guard-cannot-tell-code-from-commentary failure that
+  was fixed for <code>n07_still_dormant</code> earlier in this programme and then
+  written again verbatim.
+</p>
+
+<h2>Two defects that were not in a guard</h2>
+
+<p>Deciding N-04 turned up two things that had nothing to do with N-04's question.</p>
+
+<h3><code>gyms/unknown</code> was a catch-all relay waiting for one console write</h3>
+<p>
+  <code>gymId</code> defaults to the literal <code>"unknown"</code>; the only
+  caller in <code>lib/</code> passes none, so every report filed today carries
+  the sentinel; and nothing excluded that value from the
+  <code>gyms/{gymId}</code> lookup. A document created at
+  <code>gyms/unknown</code> with a <code>maintenanceWebhookUrl</code> would have
+  relayed <strong>every report from every user</strong> to that single endpoint.
+  No deploy, no code change, no pull request — and an onboarding tool that seeds
+  a placeholder gym under the obvious placeholder id does it by accident.
+  The sentinel now has a name and the dispatch returns before the lookup.
+</p>
+
+<h3>The webhook pushed an identity the app promises to share only on request</h3>
+<p>
+  <code>app_en.arb:141</code> and <code>app_ru.arb:124</code> both tell the user
+  their identity reaches the gym "only if they ask to follow up". The payload
+  interpolated <code>Reporter: ${auth.uid}</code> unconditionally — and unlike
+  the Firestore copy, which <code>deleteAccount</code> rewrites to
+  <code>DELETED_UID</code>, a uid already POSTed to somebody's Slack cannot be
+  recalled. It now carries <code>Report: &lt;reportId&gt;</code>, which is the
+  pull model the copy already describes. Making the code match the published
+  promise was the conservative direction; changing the promise would be product's
+  call, and is recorded as one.
+</p>
+
+<p>
+  A third, from the privacy lens: <code>noteAppCheck</code> wrote a uid to Cloud
+  Logging — outside <code>users/{uid}</code>, therefore outside
+  <code>deleteAccount</code>'s reach — twelve lines below a comment explaining
+  that quota is stored under the user document <em>on purpose</em> for exactly
+  that reason. The share it measures needs <code>fn</code> and
+  <code>attested</code> and nothing else.
+</p>
+
+<h2>Decision matrix</h2>
+
+<div class="tw"><table>
+  <thead><tr><th>Decision</th><th>Rounds</th><th>Outcome</th><th>Final state</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>N-05</strong><br><span class="mono">anonymous-uid video exposure</span></td>
+      <td>2 agent rounds<br>+ adjudication</td>
+      <td><strong>Conclusion survived; three of its arguments did not.</strong> 3a and 4 answer different threats and §7 let them read as one plan — an alert sized to survive normal operation cannot fire on a $0.31 event. The package called competitor value "unpriced" while the repo records the library cost <strong>$329</strong>. "Revisit at Play launch" had no trigger and was not well-formed: the Play App Signing SHA-256 cannot be added to App Check until the first bundle upload creates it.</td>
+      <td><span class="pill p-open">OPERATOR</span></td>
+    </tr>
+    <tr>
+      <td><strong>N-04</strong><br><span class="mono">equipment-report authority</span></td>
+      <td>2 agent rounds<br>+ adjudication</td>
+      <td>Recommendation: <strong>retain current behaviour</strong>. B would invent a membership domain wholesale and would land the handshake in front of the <code>unsafe</code> report — frayed cable, cracked plate — which is the report the feature exists for. Two defects fixed while deciding. Two new product questions surfaced.</td>
+      <td><span class="pill p-open">OPERATOR</span></td>
+    </tr>
+    <tr>
+      <td><strong>scanner-pipeline-location</strong></td>
+      <td>2 lenses<br>+ adjudication</td>
+      <td><strong>The prior recommendation lost.</strong> It put the workspace inside the evidence tree — and that tree has already destroyed provenance once by being written in place. New architecture: immutable evidence tree, separate clean repo, corpora content-addressed, first commit anchored on <em>digests published earlier elsewhere</em> rather than on ancestry, because commit dates are forgeable and digests are not.</td>
+      <td><span class="pill p-open">OPERATOR</span></td>
+    </tr>
+    <tr>
+      <td><strong>N-07</strong> · <strong>F025</strong></td>
+      <td>0 — determined first</td>
+      <td><strong>No live question.</strong> Both are DORMANT as an <em>observation</em> engineering can make, not a claim a decision was taken; their authority governs a future transition only. Relabelling them <code>DORMANT_BY_PRODUCT_DECISION</code> was explicitly rejected — that word asserts an operator acted, and the closure callable has never once returned true. F025's tripwire guard was defective and is fixed.</td>
+      <td><span class="pill p-warn">DORMANT</span></td>
+    </tr>
+  </tbody>
+</table></div>
+
+<p>
+  <strong>No operator row was closed.</strong> Five councils produced
+  recommendations, corrections and two new questions; none produced authority.
+  An agent recommendation that closed an operator row would be the laundering
+  this whole mechanism exists to prevent.
+</p>
+
+<h2>Two rows enrolled, and one stated carefully</h2>
+
+<p>
+  <strong><code>gym-webhook-disclosure</code>.</strong> The published privacy body
+  says "Two processors are involved, and no others: Google … and Stripe." A
+  gym-controlled webhook is a third recipient of report contents. Harmless today
+  only because no gym document exists, and it stops being harmless with no code
+  change in between. The invariant fails on <em>either</em> resolution — amending
+  the copy and removing the dispatch are opposite answers and both retire the
+  question.
+</p>
+
+<p>
+  <strong><code>roboflow-key-reissue</code>, stated precisely because the loose
+  version would be false.</strong> <strong>No key literal is committed to this
+  repository</strong> — not at HEAD and not anywhere in history, verified with
+  <code>git log --all -S</code>. What exists is a 2026-08-07 planning note
+  recording that the key was pasted into a <em>conversation</em>, with a
+  recommendation to reissue and no record of it happening. That is a console
+  action nobody here can perform or observe. The invariant guards the half this
+  tree can answer.
+</p>
+
+<h2>Mutation ledger</h2>
+
+<div class="tw"><table>
+  <thead><tr><th>Class</th><th>Count</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><span class="pill p-good">VALID_KILL</span></td><td class="num">17</td>
+      <td>Membership model in three surfaces; the uid restored to the log line; the raw note restored; the sentinel guard removed and mis-spelled; the reporter line restored; the policy amended and the dispatch removed; a committed key literal; the prefetch wire cut and its render removed; the F2 classifier deleted; the tripwire gutted; a residual whose row closed.</td></tr>
+    <tr><td><span class="pill p-warn">CORRECT_SURVIVOR</span></td><td class="num">3</td>
+      <td>A comment quoting the membership flow; a comment quoting the prefetch wire; a comment added to the tripwire. Each must survive, or the guard reads prose as code.</td></tr>
+    <tr><td><span class="pill p-open">GUARD_DEFECT</span></td><td class="num">5</td>
+      <td><code>no_gym_membership_model</code>, <code>f_prefetch</code>, <code>f2</code>, <code>f025_tripwire_intact</code>, and the residual-marker gap.</td></tr>
+    <tr><td><span class="pill p-open">TEST_DEFECT</span></td><td class="num">3</td>
+      <td>Two pre-existing fixtures simpler than the property under test — the same shape that let f5 pass with three green tests. Plus one of mine: the credential guard's first fixtures spelled the banned pattern out, so the guard reported the test file as carrying a key. A true positive on a false subject, and a guard its own tests trip is a guard that gets muted.</td></tr>
+    <tr><td>INVALID_KILL</td><td class="num">0</td><td>—</td></tr>
+    <tr><td><span class="pill p-warn">INVALID_MUTANT</span></td><td class="num">1</td>
+      <td>The first attempt to delete the F2 classifier was a no-op: the file is CRLF and the pattern used <code>\n</code>. The harness asserted on it rather than scoring a survivor, which is the only reason it appears here instead of as a clean result.</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Verification</h2>
+<div class="tw"><table>
+  <thead><tr><th>Suite</th><th>Command</th><th>Result</th></tr></thead>
+  <tbody>
+    <tr><td>Python</td><td class="mono">pytest scripts/</td><td class="kill">701 passed</td></tr>
+    <tr><td>Ledger</td><td class="mono">state_ledger.py --check</td><td>19 rows reconciled, 8 source-provable, <strong>0 findings</strong></td></tr>
+    <tr><td>Functions</td><td class="mono">npx jest</td><td class="kill">228 passed</td></tr>
+    <tr><td>Types</td><td class="mono">npx tsc --noEmit</td><td class="kill">clean</td></tr>
+    <tr><td>Dart</td><td class="mono">flutter test</td><td><span class="pill p-warn">NOT RUN</span> — no Dart source changed. The Dart mutations above were applied and reverted byte-exactly, verified by <code>git diff</code>.</td></tr>
+    <tr><td>Rules</td><td class="mono">emulator suite</td><td><span class="pill p-warn">NOT RUN</span> — <code>firestore.rules</code> unchanged</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Metadata, clinical, and what the reviewers could not break</h2>
+
+<p>
+  <strong>Metadata remains <code>ENVIRONMENT_NOT_RUN</code>, and this time by
+  attempt rather than assumption.</strong> A reviewer tried the settlement the
+  validator's own docstring names: Docker is running and <code>python:3-slim</code>
+  is present locally, but <code>pip install tflite-support</code> fails on this
+  host's TLS interception with <code>CERTIFICATE_VERIFY_FAILED</code>.
+  <code>ENVIRONMENT_BLOCKED</code> is the correct word.
+</p>
+
+<p>
+  <strong>Clinical authority is unchanged and its not changing is the point.</strong>
+  The submission is an unfilled template; the repository's own validator refuses
+  it on <code>reviewer_name is required</code>.
+  <code>HUMAN_REVIEW_LABELS = 0 of 15 files scanned</code>. No new external input
+  has appeared at any of the three return locations.
+</p>
+
+<p>
+  Recorded because a review that finds nine things should say what it failed to
+  find: N-07's route has no <code>name:</code> and <code>goNamed</code>/<code>pushNamed</code>
+  appear nowhere in <code>mobile/lib</code>; <code>metric-provenance-six</code>'s
+  six "unlocatable" claims <em>are</em> in the cited document, in Russian, and the
+  evaluation script explicitly refuses a Russian-to-English metric alias as a
+  change of meaning rather than of spelling — a documented decision, not hidden
+  work; <code>human_labels_are_zero</code> has a non-zero denominator and both
+  writer defaults land inside the scanned roots.
+</p>
+
+<h2>What remains, and who owns it</h2>
+
+<div class="tw"><table>
+  <thead><tr><th>Item</th><th>Owner</th><th>What would settle it</th></tr></thead>
+  <tbody>
+    <tr><td><strong>N-05</strong></td><td>Operator / platform</td><td>A budget alert, or an explicit acceptance of the residual risk in the corrected terms.</td></tr>
+    <tr><td><strong>N-04</strong></td><td>Product</td><td>Who the customer for a report is — the gym or the user. The answer either brings the association question back properly, or deletes it.</td></tr>
+    <tr><td><strong>P-1 gym webhook</strong></td><td>Product / privacy</td><td>Disclose gym endpoints as recipients, or remove the dispatch.</td></tr>
+    <tr><td><strong>scanner-pipeline-location</strong></td><td>Operator</td><td>Where the corpus physically lives; whether crawled images of unidentifiable provenance may leave this machine; whether the programme continues.</td></tr>
+    <tr><td><strong>roboflow key</strong></td><td>Operator</td><td>A reissue in the Roboflow console.</td></tr>
+    <tr><td><strong>D1 / H3 / CT-1</strong></td><td>External clinical authority</td><td>A signed submission, or real human QA labels. No local artefact may stand in.</td></tr>
+    <tr><td><strong>scanner metadata</strong></td><td>Environment</td><td>A Linux host that can reach PyPI.</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Push</h2>
+<p>
+  <strong>94 commits ahead of <code>origin/formcoach/gates-a-c</code>, 0 behind.</strong>
+  Unpushed range <span class="mono">1453236..6508dd1</span>. The working tree carries
+  two modified files, both operator-owned —
+  <code>core/plans/FINAL_AUTONOMOUS_ACTION_LOG.csv</code> and
+  <code>mobile/lib/features/safety/data/eligibility.dart</code> — and neither has
+  been staged in this or any prior commit.
+</p>
+<p>
+  Push readiness is a property of the branch, not permission to act on it. No
+  push, pull request, remote branch, merge or deployment was performed or
+  attempted.
+</p>
+
+<footer>
+  <p style="margin:0">
+    Local copy:
+    <a href="reports/decision_resolution_2026-08-18.html">D:\Repo\_wt-formcoach\reports\decision_resolution_2026-08-18.html</a>
+  </p>
+  <div class="stamp">ПУШ = НЕ ВЫПОЛНЕН</div>
+</footer>
+</div>

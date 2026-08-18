@@ -16766,3 +16766,8 @@ Suites: `pytest scripts/` 701 passed; ledger 19 rows reconciled, 8 source-provab
 `functions/` or `firestore.rules` source changed in this gate, so `flutter test`, jest, `tsc` and the
 emulator are NOT RUN rather than quoted -- the Dart mutations above were applied and reverted
 byte-exactly, verified by `git diff`.
+
+**Report.** `reports/decision_resolution_2026-08-18.html`, also published as an artifact. It reports
+the six release dimensions separately and records that five councils closed zero operator rows: an
+agent recommendation is not an owner's authority, and a row closed on one would be the laundering
+this mechanism exists to prevent. Branch 94 ahead of origin, 0 behind, NOT pushed.
