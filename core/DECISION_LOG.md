@@ -15227,3 +15227,12 @@ writes the rule first rather than discovering this from a subscriber.
 `N07 = KEEP`. `F010 = DEFERRED_TO_DEDICATED_CLEANUP_GATE`.
 
 **Suites:** Cloud Functions 217 passed (was 203), `tsc` clean.
+
+## Session report published
+
+`reports/ml_clinical_gates_2026-08-18.html`, also at
+https://claude.ai/code/artifact/8e202ce7-534b-421b-b2d6-2d77cc3db28a
+
+Records the Codex gap honestly rather than omitting it: the second opinion was NOT obtained on any
+diff in this session because the account's usage limit is exhausted until 2026-08-20. The gate's
+fail-open receipt admitted the commits; no external review was performed.

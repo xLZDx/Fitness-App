@@ -1,0 +1,723 @@
+<title>Four Refusals</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --ground:      #f7f8fa;
+    --panel:       #ffffff;
+    --panel-edge:  #dfe3ea;
+    --ink:         #14171c;
+    --ink-soft:    #4c5563;
+    --ink-faint:   #79828f;
+    --accent:      #1e4fa3;
+    --accent-soft: #e8eefa;
+    --refuse:      #8f2d24;
+    --refuse-soft: #fbeae7;
+    --hold:        #7a5410;
+    --hold-soft:   #fbf1dc;
+    --done:        #1f5c3d;
+    --done-soft:   #e5f2ea;
+    --rule:        #e6e9ef;
+    --measure:     34rem;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: "Inter Tight", "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, ui-serif, serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #101318;
+      --panel:       #171b21;
+      --panel-edge:  #262c35;
+      --ink:         #e7eaef;
+      --ink-soft:    #a8b1bd;
+      --ink-faint:   #767f8c;
+      --accent:      #7ba6ee;
+      --accent-soft: #1a2537;
+      --refuse:      #e59187;
+      --refuse-soft: #2c1b18;
+      --hold:        #dcb463;
+      --hold-soft:   #2a2213;
+      --done:        #7fc7a0;
+      --done-soft:   #16281f;
+      --rule:        #242a33;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:      #101318;
+    --panel:       #171b21;
+    --panel-edge:  #262c35;
+    --ink:         #e7eaef;
+    --ink-soft:    #a8b1bd;
+    --ink-faint:   #767f8c;
+    --accent:      #7ba6ee;
+    --accent-soft: #1a2537;
+    --refuse:      #e59187;
+    --refuse-soft: #2c1b18;
+    --hold:        #dcb463;
+    --hold-soft:   #2a2213;
+    --done:        #7fc7a0;
+    --done-soft:   #16281f;
+    --rule:        #242a33;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 58rem;
+    margin: 0 auto;
+    padding: clamp(2rem, 6vw, 4.5rem) clamp(1.1rem, 5vw, 3rem) 6rem;
+  }
+
+  /* ---- masthead ---------------------------------------------------- */
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: .72rem;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 1.1rem;
+  }
+  h1 {
+    font-family: var(--sans);
+    font-size: clamp(2.1rem, 6.2vw, 3.4rem);
+    line-height: 1.04;
+    letter-spacing: -.024em;
+    font-weight: 700;
+    text-wrap: balance;
+    margin: 0 0 1rem;
+  }
+  .standfirst {
+    font-size: clamp(1.05rem, 2.3vw, 1.22rem);
+    color: var(--ink-soft);
+    max-width: var(--measure);
+    margin: 0 0 2.4rem;
+  }
+
+  /* ---- state strip: the load-bearing facts, first ------------------- */
+  .states {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: .6rem;
+    margin: 0 0 3.2rem;
+  }
+  .state {
+    border: 1px solid var(--panel-edge);
+    border-left-width: 3px;
+    border-radius: 3px;
+    background: var(--panel);
+    padding: .7rem .85rem;
+  }
+  .state b {
+    display: block;
+    font-family: var(--sans);
+    font-size: .68rem;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    margin-bottom: .18rem;
+  }
+  .state span {
+    font-family: var(--mono);
+    font-size: .93rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .state.no    { border-left-color: var(--refuse); }
+  .state.no    span { color: var(--refuse); }
+  .state.hold  { border-left-color: var(--hold); }
+  .state.hold  span { color: var(--hold); }
+  .state.ok    { border-left-color: var(--done); }
+  .state.ok    span { color: var(--done); }
+
+  /* ---- sections ----------------------------------------------------- */
+  section { margin: 0 0 3.4rem; }
+  h2 {
+    font-family: var(--sans);
+    font-size: clamp(1.32rem, 3vw, 1.7rem);
+    letter-spacing: -.015em;
+    font-weight: 680;
+    line-height: 1.2;
+    text-wrap: balance;
+    margin: 0 0 .35rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--rule);
+  }
+  h2 .gate {
+    display: block;
+    font-size: .68rem;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: .4rem;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-size: 1.01rem;
+    font-weight: 660;
+    letter-spacing: -.006em;
+    margin: 2rem 0 .5rem;
+  }
+  p { max-width: var(--measure); margin: 0 0 1rem; }
+  ul { max-width: var(--measure); padding-left: 1.15rem; margin: 0 0 1rem; }
+  li { margin-bottom: .4rem; }
+  strong { font-weight: 700; }
+  em { font-style: italic; color: var(--ink-soft); }
+
+  code, .path {
+    font-family: var(--mono);
+    font-size: .855em;
+    background: var(--accent-soft);
+    color: var(--ink);
+    padding: .08em .34em;
+    border-radius: 2px;
+    word-break: break-word;
+  }
+  .path { background: transparent; color: var(--accent); padding: 0; }
+
+  /* ---- the refusal callout: this report's one recurring form -------- */
+  .refusal {
+    border-left: 3px solid var(--refuse);
+    background: var(--refuse-soft);
+    padding: .9rem 1.1rem;
+    margin: 1.4rem 0;
+    max-width: var(--measure);
+    border-radius: 0 3px 3px 0;
+  }
+  .refusal b {
+    font-family: var(--sans);
+    font-size: .68rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--refuse);
+    display: block;
+    margin-bottom: .3rem;
+  }
+  .refusal p:last-child { margin-bottom: 0; }
+
+  .defect {
+    border-left: 3px solid var(--hold);
+    background: var(--hold-soft);
+    padding: .9rem 1.1rem;
+    margin: 1.4rem 0;
+    max-width: var(--measure);
+    border-radius: 0 3px 3px 0;
+  }
+  .defect b {
+    font-family: var(--sans);
+    font-size: .68rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--hold);
+    display: block;
+    margin-bottom: .3rem;
+  }
+  .defect p:last-child { margin-bottom: 0; }
+
+  /* ---- tables -------------------------------------------------------- */
+  .scroll { overflow-x: auto; margin: 1.3rem 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 34rem;
+    font-family: var(--sans);
+    font-size: .885rem;
+  }
+  th {
+    text-align: left;
+    font-weight: 640;
+    font-size: .68rem;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--panel-edge);
+    padding: .45rem .7rem .45rem 0;
+    vertical-align: bottom;
+  }
+  td {
+    padding: .55rem .7rem .55rem 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+    color: var(--ink-soft);
+  }
+  td:first-child { color: var(--ink); font-weight: 600; }
+  td.num { font-variant-numeric: tabular-nums; text-align: right; padding-right: 1.4rem; }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: .74rem;
+    font-weight: 600;
+    padding: .1rem .42rem;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .tag.no   { background: var(--refuse-soft); color: var(--refuse); }
+  .tag.hold { background: var(--hold-soft);   color: var(--hold); }
+  .tag.ok   { background: var(--done-soft);   color: var(--done); }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.6rem;
+    margin-top: 3.5rem;
+    font-family: var(--sans);
+    font-size: .83rem;
+    color: var(--ink-faint);
+    max-width: var(--measure);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <p class="eyebrow">SPTR &middot; worktree <code>_wt-formcoach</code> &middot; branch <code>formcoach/gates-a-c</code> &middot; 18 August 2026</p>
+  <h1>Four Refusals</h1>
+  <p class="standfirst">
+    Four gates were built this session and every one of them is mostly a refusal:
+    a model that may not be promoted, a clinician's judgement that may not be
+    simulated, a pipeline that may not train, and a measurement that may not be
+    quoted while it covers half the surface. This is the report on what was built,
+    what was found wrong, and what is still open.
+  </p>
+
+  <div class="states">
+    <div class="state no"><b>Remote push</b><span>PUSHED = NO</span></div>
+    <div class="state no"><b>CT-1 retraining</b><span>NOT OPERATIONAL</span></div>
+    <div class="state hold"><b>Clinical validation</b><span>D1 = REQUIRED</span></div>
+    <div class="state hold"><b>Injury screening</b><span>H3 = HOLD</span></div>
+    <div class="state hold"><b>Multi-account abuse</b><span>N-05 = OPEN</span></div>
+    <div class="state ok"><b>Tests</b><span>336 + 217 pass</span></div>
+  </div>
+
+  <section>
+    <h2><span class="gate">Gate 1 &middot; commit a18e0da</span>The model lifecycle, and a registry generated rather than typed</h2>
+
+    <p>
+      <code>core/ml/MODEL_REGISTRY.json</code> already declared nine lifecycle
+      states, and a Dart test checked that every model's state was one of the
+      nine. That is membership, not legality &mdash; it cannot tell
+      <code>TRAINED</code> from <code>CHAMPION</code>, and it would accept a model
+      that moved between them in a single edit.
+    </p>
+
+    <div class="refusal">
+      <b>The two implications denied</b>
+      <p>
+        <strong>TRAINED does not imply CHALLENGER.</strong> Being built is not
+        evidence of being better.
+      </p>
+      <p>
+        <strong>CHALLENGER does not imply CHAMPION.</strong> Being better is not
+        authority to ship. <code>PROMOTION_REVIEW</code> is the only door, and it
+        is a human decision.
+      </p>
+    </div>
+
+    <p>
+      <code>assert_no_train_deploy_coupling</code> refuses a pre-champion model
+      reporting a live <code>deployment_status</code>. CT &ne; CD: a
+      continuous-training cycle may end at <code>REJECTED</code>, and that is a
+      successful cycle, so nothing on the training side carries authority to ship.
+    </p>
+
+    <h3>The dataset registry is derived, never hand-maintained</h3>
+    <p>
+      Every field is read from a real artefact and CI re-derives the file, so
+      drift is a failure rather than a discovery &mdash; a registry somebody
+      maintains by hand is wrong the first time a dataset is rebuilt, and the
+      failure is silent because the registry is the thing you would check.
+    </p>
+
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Dataset</th><th>Status</th><th class="num">Rows</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>content_qa_catalogue</td><td><span class="tag ok">AVAILABLE</span></td><td class="num">1&thinsp;887</td><td>every label machine-produced; none trainable</td></tr>
+          <tr><td>ct1_review_batch_003</td><td><span class="tag ok">AVAILABLE</span></td><td class="num">180</td><td>built, unreviewed &mdash; 0 returned human labels</td></tr>
+          <tr><td>ct1_review_batch_001 / 002</td><td><span class="tag hold">SUPERSEDED</span></td><td class="num">180</td><td>kept as evidence, refused structurally</td></tr>
+          <tr><td>clinical_contraindication_worklist</td><td><span class="tag ok">AVAILABLE</span></td><td class="num">1&thinsp;887</td><td>issued; 0 returned clinical labels</td></tr>
+          <tr><td>equipment_recognition_training</td><td><span class="tag no">UNRESOLVED</span></td><td class="num">&mdash;</td><td>pipeline outside a git checkout &mdash; blocks ML-2a</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      The scanner's corpus is registered <code>UNRESOLVED</code> with its reason
+      rather than omitted. An entry saying it cannot be traced is evidence; one
+      that is silently absent is not.
+    </p>
+
+    <p>
+      <code>training_run.py</code> is a validator and not a framework &mdash; the
+      two consumers a framework would need do not exist. Its CLI prints
+      <strong>NO REAL CT-1 CHALLENGER TRAINED</strong>, which is the true state,
+      rather than an empty table that reads like a clean history.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="gate">Gate 2 &middot; commits a18e0da, 12b1909</span>The clinical handoff said the opposite of what the app does</h2>
+
+    <div class="defect">
+      <b>MAJOR &middot; documentation defect &middot; FACT</b>
+      <p>
+        Section 4.1 of the clinical validation handoff said an untagged exercise
+        is <em>withheld</em>. <code>exercise_filter.dart:38</code> returns
+        <code>false</code> when <code>contraindications</code> is empty, so the row
+        is <strong>kept and shown</strong> &mdash; including to a user with a
+        declared injury, and without telling them it could not be screened.
+      </p>
+      <p>
+        A clinician answering Q3 would have been answering about a product that
+        does not exist. Corrected in place with an explicit correction block
+        rather than a silent edit.
+      </p>
+    </div>
+
+    <p>
+      The same section mis-stated finding F013 as <em>contested and not upheld</em>.
+      The audit records say the <strong>behaviour</strong> is
+      <code>REPRODUCED_VERIFIED</code> and the blocker upheld; only the
+      <strong>severity</strong> is contested 1&ndash;1. Behaviour, severity and the
+      instruction not to act are now three separate claims.
+    </p>
+
+    <div class="refusal">
+      <b>Not fixed, deliberately</b>
+      <p>
+        <code>exercise_filter.dart:38</code> was <strong>not</strong> flipped to
+        fail-closed. The audit's own instruction: <em>do not flip it before D1
+        answers.</em> Flipping it would remove hundreds of exercises from every
+        injured user's library on this repository's guess about which ones are
+        unsafe &mdash; which is the guess it has no authority to make.
+      </p>
+    </div>
+
+    <h3>The pin was bound to a branch, which moves</h3>
+    <p>
+      Section 8 previously named the branch <code>formcoach/gates-a-c</code>. It
+      advanced three commits while the document sat unchanged, so a review
+      &ldquo;against the branch&rdquo; could not be tied to anything. It is now
+      pinned to the catalogue digest and byte count. A follow-up commit fixed a
+      second-order defect: the recorded commit still named the revision at which
+      section 4.1 was <em>wrong</em>.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="gate">Gate 3 &middot; commits a18e0da, 77060d6</span>A worklist a clinician can actually start on Monday</h2>
+
+    <p>
+      An independent review asked whether a real clinician could begin from the
+      handoff alone. They could not, and five of the six blockers needed no
+      clinical judgement whatsoever &mdash; a moving branch pin, no row-level
+      worklist, no fillable format, no field anywhere for a reviewer's credentials
+      or authority, and a rule vocabulary readable only as Python. All five were
+      engineering. All five are closed.
+    </p>
+
+    <div class="scroll">
+      <table>
+        <thead><tr><th>What ships</th><th>Why that form</th></tr></thead>
+        <tbody>
+          <tr><td>worklist.csv</td><td>1&thinsp;887 rows, UTF-8 with a BOM &mdash; the reviewer is a clinician with a spreadsheet, and Excel on Windows mangles a BOM-less UTF-8 file</td></tr>
+          <tr><td>submission.json</td><td>seven lines: name, credentials, authority, date. The digest and commit are pre-filled so nobody retypes a 64-character hash</td></tr>
+          <tr><td>HOW_TO_REVIEW.md</td><td>the instructions, restated for a reader who does not read the rest of the handoff</td></tr>
+          <tr><td>worklist.meta.json</td><td>metadata only &mdash; a JSON twin of the rows would be 2.3&nbsp;MB of duplicate that disagrees the moment one copy is edited</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      The worklist covers <strong>both</strong> populations &mdash; the 1&thinsp;527
+      tagged rows and the 360 untagged ones. A worklist of only the untagged rows
+      would have answered the tagging-provenance question by omission. Each row
+      states, in its own cell, what the app does with it today: the corrected F013
+      claim on the row rather than in a section a reader may never reach.
+    </p>
+
+    <div class="refusal">
+      <b>Four things the validator will not do</b>
+      <p>
+        It has <strong>no opinion about which tag belongs on which exercise</strong>,
+        and a test fails if a heuristic mapping content to a tag ever appears in
+        the module. A <strong>blank row is NOT REVIEWED</strong>, never accepted by
+        default. <code>UNKNOWN</code> is a <strong>first-class answer</strong> &mdash;
+        forcing a disposition on a row nobody can decide manufactures exactly the
+        clinical judgement this repository must not manufacture. And a validated
+        submission <strong>closes nothing</strong>: <code>validate()</code> returns
+        <code>closes: []</code> and says so.
+      </p>
+    </div>
+
+    <p>
+      It is deliberately <em>not</em> a flag on the CT-1 content importer. That
+      module refuses to ask whether an exercise is safe, in its own docstring, and
+      the refusal is load-bearing: a content reviewer must never be able to produce
+      a clinical claim, and one file with a boolean between the two authorities
+      would end that. A test asserts the two paths do not import each other.
+    </p>
+
+    <h3>Nine findings from gate review, all fixed</h3>
+    <p>
+      Two read-only specialists reviewed the committed gate. Neither found a way
+      for a bad submission to be <em>accepted</em>; every finding was malformed
+      input crashing with a traceback instead of this module's own refusal, or a
+      test that guarded less than its name claimed.
+    </p>
+    <ul>
+      <li>A <code>tags</code> list holding an unhashable element raised <code>TypeError</code> out of the set-membership test.</li>
+      <li>A <code>submission.json</code> parsing to anything but an object raised <code>AttributeError</code> before a single field check ran &mdash; the ordinary shape of a truncated email attachment.</li>
+      <li>A sheet re-saved by Excel's plain <em>CSV (Comma delimited)</em> option is written in the local codepage with no BOM, and the catalogue's titles are not ASCII. The refusal now names the cause, says <em>use CSV UTF-8</em>, and says <em>nothing is lost</em>.</li>
+      <li><code>rows_csv</code> could name an absolute path anywhere on disk, while the neighbouring refusal already promised <em>beside</em>.</li>
+      <li>A half-present worklist crashed CI on a raw <code>FileNotFoundError</code>.</li>
+      <li><code>handoff_commit</code> was checked for presence and not content, so a hand-rebuilt header with a blank commit validated.</li>
+    </ul>
+
+    <div class="defect">
+      <b>The test that guarded a blocklist</b>
+      <p>
+        <code>test_the_worklist_proposes_no_answer</code> &mdash; described in its
+        own docstring as the single most important property &mdash; listed the
+        field names a proposal might use. A one-word rename defeated it. It is now
+        an allowlist over the exact row and payload key sets, so any new field
+        fails until somebody adds it deliberately.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="gate">Gate 4 &middot; commit 77060d6</span>Seven pipeline stages, and the eighth that does not exist</h2>
+
+    <p>
+      <code>IMPORT &rarr; VALIDATE &rarr; ADJUDICATE &rarr; BUILD_EVAL &rarr;
+      BASELINE_EVALUATE &rarr; ERROR_ANALYSIS &rarr; CHALLENGER_DECISION.</code>
+      The first five already existed; the last two, a single reproducible entry
+      point, and any way to exercise the chain before a human label comes back did
+      not.
+    </p>
+
+    <div class="refusal">
+      <b>GO does not start anything</b>
+      <p>
+        <code>GO</code> means <em>a person may now start a training run</em>, not
+        <em>a training run started</em>. A pipeline that trains on its own GO
+        produces a model nobody chose. The test asserts this against the module's
+        <strong>parsed import graph</strong> &mdash; a substring search cannot tell
+        an import from the decision text that legitimately names the training-run
+        validator, and the first version of that test failed on its own subject's
+        prose.
+      </p>
+    </div>
+
+    <div class="defect">
+      <b>MAJOR &middot; two decision gates were dead &middot; FACT</b>
+      <p>
+        <code>challenger_decision</code> read <code>dataset["agreement"]</code> and
+        <code>dataset["adjudication"]</code>. The builder produced neither &mdash;
+        inter-rater agreement was <strong>never recorded in the evaluation dataset
+        at all</strong>, and the adjudication key is <code>adjudication_counts</code>.
+        Both gates passed on every possible input, including one where the reviewers
+        agreed on nothing.
+      </p>
+      <p>
+        Found by writing a test that <em>constructs</em> the state each gate should
+        trip. Not reachable by mutation testing, which breaks existing logic and
+        cannot reach a branch that never executes.
+      </p>
+    </div>
+
+    <p>
+      Fixed at the root rather than in the caller: the evaluation dataset now
+      records pairwise agreement over every question two reviewers both answered,
+      pooled over compared <em>answers</em> rather than averaged over pairs. A null
+      agreement means <em>no two reviewers saw the same row</em>, not <em>they
+      disagreed completely</em> &mdash; a gate conflating those would refuse every
+      single-review batch for a reason that never happened.
+    </p>
+
+    <h3>Error analysis separates three things a single number would merge</h3>
+    <ul>
+      <li>A <strong>miss</strong> is content a reviewer called defective and no rule fired on: a gap a challenger could close.</li>
+      <li>A <strong>false alarm</strong> is a rule too broad, where narrowing the rule is cheaper than training anything.</li>
+      <li>A <strong>silent question</strong> is one no rule maps to at all. The baseline cannot be wrong where it does not speak, and reporting that as 0.0 precision would send somebody to tune a rule that does not exist.</li>
+    </ul>
+
+    <h3>The fixture run was refused, and the refusal was kept</h3>
+    <p>
+      Running the chain on generated data hit <code>reviewer_kind must be the
+      literal 'HUMAN'</code>. Stamping fixtures <code>HUMAN</code> would have made
+      every fixture file a lie &mdash; the exact thing the field exists to prevent.
+      So <code>SYNTHETIC</code> became a first-class kind and an import accepts
+      <strong>exactly one per run</strong>; accepting both is refused, because a
+      dataset holding one reviewed answer and one generated one could never be
+      separated again. Three further guards keep them apart, including one in the
+      dataset writer, because the other CLI never passes through the pipeline's.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="gate">Gate 5 &middot; commit f153ff9</span>The measurement that covered half the surface</h2>
+
+    <div class="defect">
+      <b>MAJOR &middot; FACT</b>
+      <p>
+        Enabling App Check enforcement has three stated preconditions, and the
+        second is <em>the console has to show attestation actually succeeding</em>.
+        That number came from a log field emitted by <strong>6 of 13
+        callables</strong>. <code>deleteAccount</code>, <code>bookCoachSession</code>
+        and five others emitted nothing, so the observed attested share described
+        half the surface while reading as though it described all of it &mdash; and
+        the missing half included the two functions the code itself singles out as
+        the ones you would not gate blindly.
+      </p>
+    </div>
+
+    <p>
+      All seven are now instrumented, and a test asserts over the source that every
+      exported callable has a matching log call. The failure that guards against is
+      a <em>new</em> callable shipping unmeasured, which no behavioural test of the
+      existing ones can see.
+    </p>
+
+    <div class="refusal">
+      <b>Enforcement was not enabled, and N-05 is not closed</b>
+      <p>
+        The three preconditions remain outside this repository. But the deeper
+        reason is that <strong>App Check is the wrong control for N-05</strong>: it
+        attests the <em>app</em>, not the <em>account</em>. Somebody creating a
+        hundred accounts from a genuine, unmodified build passes attestation a
+        hundred times. Turning the flag on would close a different hole and let
+        N-05 look closed.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="gate">Also reviewed</span>Two dormant features: classified, not deleted</h2>
+
+    <h3>F010 &mdash; the finding's own claim is wrong</h3>
+    <p>
+      F010 records that the Moments feature and both Wear OS providers are
+      unreferenced. Two thirds of that is false at HEAD, and the distinction that
+      matters is that <strong>unread is not dead</strong>.
+    </p>
+
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Symbol</th><th>Reality</th><th>Evidence</th></tr></thead>
+        <tbody>
+          <tr><td>momentRepositoryProvider</td><td><span class="tag ok">LIVE</span> real implementation injected and read</td><td><code>main.dart:520</code>, <code>home_page.dart:78</code></td></tr>
+          <tr><td>Day3WelcomeModal</td><td><span class="tag ok">LIVE</span> shown to users</td><td><code>home_page.dart:89</code></td></tr>
+          <tr><td>wearSyncServiceProvider</td><td><span class="tag hold">WIRED, NEVER CONSTRUCTED</span> the provider is lazy and nothing reads it</td><td><code>main.dart:497</code></td></tr>
+          <tr><td>six derived providers</td><td><span class="tag hold">DORMANT</span> declared, injected, zero consumers in lib/ and test/</td><td>moment_providers.dart, wear_providers.dart</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      Nothing was deleted. The two service providers in particular must not be
+      removed on this evidence: both have a real implementation injected at the
+      composition root, which is what an intended-but-unfinished feature looks
+      like, not what dead code looks like.
+    </p>
+
+    <h3>N07 &mdash; kept unwired, with one finding for whoever wires it</h3>
+    <p>
+      The unreachable <code>/team/:teamId</code> route is auth-gated and reads an
+      in-memory mock; there is no server collection and no rule for one, so there
+      is currently nothing to leak.
+    </p>
+
+    <div class="defect">
+      <b>MAJOR &middot; for the day somebody wires it</b>
+      <p>
+        The Celebrity-tier lock is client-side and partial. The post body is
+        replaced with a &ldquo;sustainer only&rdquo; string, but the author, avatar,
+        timestamp, pin state and <strong>title</strong> are rendered regardless
+        &mdash; the title sits above the locked branch. The whole document reaches
+        the device and is hidden in the widget tree. Bind a real repository without
+        a server-side membership-and-tier rule and the paywall becomes a UI string
+        that any client can decline to draw.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="gate">Verification</span>What was measured, and what was not</h2>
+
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Suite or check</th><th class="num">Result</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>scripts/ct1 + scripts/ml + scripts/review</td><td class="num">336 pass</td><td>was 200 at session start</td></tr>
+          <tr><td>Cloud Functions (jest)</td><td class="num">217 pass</td><td>was 203; <code>tsc --noEmit</code> clean</td></tr>
+          <tr><td>Mutations against the clinical validator</td><td class="num">31 killed</td><td>subject restored byte-identical each time</td></tr>
+          <tr><td>Mutations against the App Check guard</td><td class="num">2 killed</td><td>one first attempt rejected as invalid</td></tr>
+          <tr><td>Dataset registry re-derivation</td><td class="num">6 datasets</td><td>committed file matches the artefacts</td></tr>
+          <tr><td>Worklist drift check</td><td class="num">1&thinsp;887 rows</td><td>matches the catalogue on disk</td></tr>
+          <tr><td>Codex second opinion</td><td class="num"><span class="tag no">NOT RUN</span></td><td>account usage limit exhausted until 20 Aug; the gate's fail-open receipt let the commit through and no external review was performed</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="refusal">
+      <b>One mutation survived, and it was a missing test</b>
+      <p>
+        Breaking the tag-vocabulary fallback changed nothing observable, because
+        the guard only fires on a malformed vocabulary file and no test fed it one.
+        Diagnosed as a missing test rather than a defective guard, per the standing
+        instruction to question the test first. The test was added; the mutation
+        now dies.
+      </p>
+    </div>
+
+    <h3>Not verified</h3>
+    <ul>
+      <li>Nothing was deployed, and no Cloud Function behaviour was observed against a live project. Every functions result is from jest against mocks.</li>
+      <li>The Flutter suite was not re-run this session; no Dart source was changed after the last run in the previous gate.</li>
+      <li>No external clinical review exists. Every clinical statement in this repository remains unvalidated.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="gate">Open</span>What the next session inherits</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Item</th><th>State</th><th>What would change it</th></tr></thead>
+        <tbody>
+          <tr><td>D1 / H3</td><td><span class="tag hold">HOLD</span></td><td>a returned, credentialled clinical review &mdash; and then a separate decision about what the app does with an <code>UNKNOWN</code> row</td></tr>
+          <tr><td>CT-1 challenger</td><td><span class="tag no">BLOCKED</span></td><td>human review labels. Until they return, error analysis has nothing to target and the training sampler refuses to draw</td></tr>
+          <tr><td>N-05</td><td><span class="tag hold">OPEN</span></td><td>a control that makes an <em>account</em> expensive; App Check is not that control</td></tr>
+          <tr><td>ML-2a</td><td><span class="tag no">BLOCKED</span></td><td>the scanner's training pipeline is not in a git checkout, so its model cannot be traced to the code that produced it</td></tr>
+          <tr><td>F010 / N07</td><td><span class="tag hold">DEFERRED</span></td><td>a product decision, taken deliberately rather than during an audit</td></tr>
+          <tr><td>Remote push</td><td><span class="tag no">NOT AUTHORISED</span></td><td>an explicit push instruction. Four commits sit locally on <code>formcoach/gates-a-c</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <p>
+      Four local commits: <code>a18e0da</code>, <code>12b1909</code>,
+      <code>77060d6</code>, <code>f153ff9</code> &mdash; 22 files, 6&thinsp;402
+      insertions. Two operator-owned working files were left untouched and
+      unstaged throughout.
+    </p>
+    <p>
+      Full detail, with per-decision evidence, is in
+      <code>core/DECISION_LOG.md</code>. Every claim marked FACT above cites a
+      file and line there.
+    </p>
+  </footer>
+
+</div>
