@@ -15921,3 +15921,25 @@ pipeline-dependent tests now execute rather than skip, because the pipeline is p
 machine).
 
 **Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.
+
+## Final session report — "The Guard That Watched Numerals"
+
+`reports/evidence_ledger_2026-08-18.html`, also at
+https://claude.ai/code/artifact/58227a5f-9e33-4818-979a-9b5517ffe6bc
+
+Fifteen gates, `cc02f57 -> 71a7482`, 41 files, +7,076 / -112. Thirty-three mutations killed, one
+invalid kill rejected, one correct survivor, and FOUR test defects -- the report is built around the
+four rather than the thirty-three, because a survivor teaches something a kill cannot: a fixture that
+scaled with the constant it bounded, a catch no test could enter, a guard that counted numerals
+instead of reading the claim, and the repair of that guard which was still satisfied by the wrong
+line.
+
+Suites at that exact HEAD: `flutter test` 2,933; `npx jest` 222 across 9 suites; `tsc --noEmit`
+clean; `pytest scripts/ml` 84; `pytest scripts/ct1` 228; `flutter analyze` no new errors. The
+Firestore rules emulator suite is reported as NOT RUN because `firestore.rules` did not change, and
+scanner reproducibility as NOT ATTEMPTED rather than given a disposition.
+
+Records for the third time that no diff this session received an independent second opinion:
+`usage_limit_exhausted` until 2026-08-20, fail-open receipt admitted all fifteen commits.
+
+PUSHED = NO. No push, PR, remote merge, deployment, force-push or remote branch mutation occurred.

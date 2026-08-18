@@ -1,0 +1,308 @@
+<title>The Guard That Watched Numerals</title>
+<style>
+  :root {
+    --ground:#f7f5f1; --panel:#fffefb; --panel-2:#f0ede6; --rule:#ddd8cd;
+    --ink:#1d1f21; --ink-2:#4a4f55; --ink-3:#7b8189;
+    --proved:#1f6f5c; --proved-bg:#e2efe9;
+    --refused:#9a6412; --refused-bg:#f6ecd9;
+    --open:#7a4f8f; --open-bg:#efe6f4;
+    --defect:#a8352c; --defect-bg:#f7e5e2;
+    --accent:#1f6f5c;
+    --shadow:0 1px 2px rgba(29,31,33,.06),0 6px 20px rgba(29,31,33,.05);
+    --serif:Iowan Old Style,Palatino Linotype,Palatino,Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --ground:#14171a; --panel:#1b1f23; --panel-2:#23282d; --rule:#2f363d;
+    --ink:#e8e6e1; --ink-2:#b3b8bd; --ink-3:#7f878f;
+    --proved:#66c2a5; --proved-bg:#14312a;
+    --refused:#d9a441; --refused-bg:#33280f;
+    --open:#b799d0; --open-bg:#2a2033;
+    --defect:#e57a6f; --defect-bg:#37201d;
+    --accent:#66c2a5;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.3);
+  }}
+  :root[data-theme="dark"]{
+    --ground:#14171a; --panel:#1b1f23; --panel-2:#23282d; --rule:#2f363d;
+    --ink:#e8e6e1; --ink-2:#b3b8bd; --ink-3:#7f878f;
+    --proved:#66c2a5; --proved-bg:#14312a;
+    --refused:#d9a441; --refused-bg:#33280f;
+    --open:#b799d0; --open-bg:#2a2033;
+    --defect:#e57a6f; --defect-bg:#37201d;
+    --accent:#66c2a5;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.3);
+  }
+  body{background:var(--ground);color:var(--ink);font-family:var(--serif);
+    font-size:17px;line-height:1.62;margin:0;padding:0 20px 96px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:62rem;margin:0 auto}
+  main{display:flex;flex-direction:column;gap:52px}
+  header.masthead{padding:64px 0 0}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--ink-3);margin:0 0 18px}
+  h1{font-family:var(--sans);font-weight:800;font-size:clamp(2rem,5.6vw,3.2rem);line-height:1.05;
+    letter-spacing:-.024em;margin:0 0 18px;text-wrap:balance}
+  .standfirst{font-size:1.15rem;color:var(--ink-2);max-width:44rem;margin:0}
+  .figures{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;
+    background:var(--rule);border:1px solid var(--rule);border-radius:10px;overflow:hidden;margin-top:40px}
+  .figure{background:var(--panel);padding:18px 20px}
+  .figure b{display:block;font-family:var(--sans);font-size:1.95rem;font-weight:800;
+    letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1}
+  .figure span{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+  h2{font-family:var(--sans);font-weight:800;font-size:1.5rem;letter-spacing:-.016em;margin:0 0 6px;text-wrap:balance}
+  .section-note{color:var(--ink-3);font-size:.96rem;margin:0 0 26px;max-width:46rem}
+  h3{font-family:var(--sans);font-weight:700;font-size:1.03rem;margin:0 0 8px}
+  p{margin:0 0 14px}p:last-child{margin-bottom:0}
+  .chip{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.09em;
+    text-transform:uppercase;padding:3px 8px;border-radius:4px;white-space:nowrap}
+  .c-proved{background:var(--proved-bg);color:var(--proved)}
+  .c-refused{background:var(--refused-bg);color:var(--refused)}
+  .c-open{background:var(--open-bg);color:var(--open)}
+  .c-defect{background:var(--defect-bg);color:var(--defect)}
+  code{font-family:var(--mono);font-size:.855em;background:var(--panel-2);padding:1px 5px;border-radius:4px;color:var(--ink-2)}
+  .callout{border-left:3px solid var(--accent);background:var(--panel);border-radius:0 10px 10px 0;
+    padding:18px 22px;margin:0 0 14px;box-shadow:var(--shadow)}
+  .callout.warn{border-left-color:var(--refused)}
+  .callout.stop{border-left-color:var(--defect)}
+  .callout p{font-size:.97rem;color:var(--ink-2)}
+  .callout p strong{color:var(--ink)}
+  .scroll{overflow-x:auto;border:1px solid var(--rule);border-radius:10px;background:var(--panel);box-shadow:var(--shadow)}
+  table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:.89rem}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);
+    font-weight:600;background:var(--panel-2);white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  td.k{font-family:var(--mono);color:var(--ink);white-space:nowrap;width:1%}
+  td.w{color:var(--ink-2)}
+  td.n{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+  ul.plain{margin:0;padding-left:1.1rem}
+  ul.plain li{margin-bottom:9px;color:var(--ink-2);font-size:.97rem}
+  ul.plain li:last-child{margin-bottom:0}
+  ul.plain li strong{color:var(--ink);font-weight:600}
+  footer{border-top:1px solid var(--rule);padding-top:22px;color:var(--ink-3);font-size:.88rem;font-family:var(--sans)}
+  .final{font-family:var(--mono);font-size:.95rem;color:var(--ink);background:var(--panel-2);
+    border:1px solid var(--rule);border-radius:10px;padding:18px 22px;line-height:2}
+  @media (max-width:600px){body{font-size:16px;padding:0 16px 64px}}
+</style>
+
+<div class="wrap">
+<header class="masthead">
+  <p class="eyebrow">SPTR · autonomous session · 18 August 2026 · formcoach/gates-a-c</p>
+  <h1>The Guard That Watched Numerals</h1>
+  <p class="standfirst">Fifteen gates. Thirty-three mutations killed — and the four that
+  <em>survived</em> are the reason this report exists. Each one was a test that passed while the
+  thing it named was false.</p>
+  <div class="figures">
+    <div class="figure"><b>15</b><span>local commits</span></div>
+    <div class="figure"><b>41</b><span>files</span></div>
+    <div class="figure"><b>+7,076</b><span>lines</span></div>
+    <div class="figure"><b>33</b><span>mutations killed</span></div>
+    <div class="figure"><b>4</b><span>test defects found</span></div>
+    <div class="figure"><b>0</b><span>pushes</span></div>
+  </div>
+</header>
+
+<main>
+
+<section>
+  <h2>Repository</h2>
+  <div class="scroll"><table><tbody>
+    <tr><td class="k">STARTING_HEAD</td><td class="w"><code>12b1909</code> (parent of the first gate, <code>cc02f57</code>)</td></tr>
+    <tr><td class="k">FINAL_HEAD</td><td class="w"><code>71a7482</code></td></tr>
+    <tr><td class="k">BRANCH</td><td class="w"><code>formcoach/gates-a-c</code></td></tr>
+    <tr><td class="k">AHEAD / BEHIND</td><td class="w">79 ahead of upstream, 0 behind</td></tr>
+    <tr><td class="k">DIRTY</td><td class="w">Two operator-owned files, untouched throughout and verified unstaged before every commit</td></tr>
+    <tr><td class="k">LOCAL_COMMITS</td><td class="w">15 · 41 files · +7,076 / −112</td></tr>
+    <tr><td class="k">ПУШ</td><td class="w"><strong>НЕ ВЫПОЛНЕН.</strong> No push, no PR, no remote mutation of any kind.</td></tr>
+  </tbody></table></div>
+</section>
+
+<section>
+  <h2>The four survivors</h2>
+  <p class="section-note">A killed mutation confirms a guard. A survivor teaches you something you
+  did not know. All four here were the same species: an assertion satisfied by a wrong
+  implementation.</p>
+
+  <div class="callout stop">
+    <h3>1 · The fixture that scaled with the constant it bounded</h3>
+    <p>The metric locator's proximity window was widened from 120 to <strong>100,000</strong> and the
+    suite stayed green — because the test built its own gap as <code>WINDOW * 3</code>. The fixture
+    moved with the thing it was supposed to pin. Rewritten with a literal 4,000-character gap and a
+    bounds assertion.</p>
+  </div>
+
+  <div class="callout stop">
+    <h3>2 · The catch nothing could enter</h3>
+    <p>A failure policy was mutated to swallow <em>every</em> quota refusal, and nothing went red.
+    The <code>catch</code> sat around a live Firebase call, so no test could reach it and no mutation
+    inside it could ever die. Fixed structurally rather than by adding a test: the policy moved into
+    a method any throwing closure can enter. The mutation then died.</p>
+  </div>
+
+  <div class="callout stop">
+    <h3>3 · The guard that counted numerals</h3>
+    <p>A provenance document must not reconcile a 29-class training log with a 37-label artefact —
+    no evidence connects them. The guard was <code>"29" in doc and "37" in doc</code>. Rewriting the
+    document to say the log <em>was</em> 37-class — the exact falsification the guard exists to
+    prevent — left it green, because both numerals still appeared elsewhere in the file.</p>
+  </div>
+
+  <div class="callout stop">
+    <h3>4 · The repair that was still too weak</h3>
+    <p>Fixed to assert the <em>assignment</em>, it was then mutated again: the inventory row flipped
+    to "29 entries" while the prose two sections down still said 37. <code>any(line says 37)</code>
+    was satisfied by a different line than the one falsified. An internally inconsistent record is
+    not a preserved contradiction — it is a broken document. Both directions now asserted for both
+    files.</p>
+  </div>
+</section>
+
+<section>
+  <h2>The gate that moved money</h2>
+  <div class="callout stop">
+    <h3>A guest account could buy a subscription it could never cancel</h3>
+    <p><code>startFreeTrial</code> refused anonymous callers; <code>createCheckoutSession</code> did
+    not. The guard sat on the cheaper of the two doors. This was already on file as an open finding
+    left to the operator, on the grounds that both candidate fixes were product decisions.</p>
+    <p><strong>Two independent reviews, run separately and never shown each other's output,</strong>
+    produced two facts that were not available when that was written. First: the subscription is not
+    merely unrecoverable, it is <strong>uncancellable</strong> — the billing portal, account deletion
+    and receipts all key off a uid an anonymous user cannot sign back into. Reinstall the app and the
+    card keeps being charged with no route in the product to stop it. <code>lifetime</code> was
+    purchasable this way. Second: the alternative fix is affirmatively unsafe — exempting subscribers
+    from the anonymous quota divisor makes one Stripe authorisation, <em>on a stolen card</em>, enough
+    to sweep the licensed library in three days, inside the chargeback window.</p>
+    <p>That moved it from a revenue preference to a correctness fix. Four lines, reverted by
+    deletion, imposing exactly the friction the free trial already imposes. Five tests assert on the
+    Stripe mock rather than only the thrown code — a guard that throws after creating the customer
+    has prevented nothing. Four mutations killed, including one written as a <code>google.com</code>
+    allow-list, which locks every email/password payer out of paying.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Track status</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Track</th><th>State</th><th>Evidence / boundary</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Scanner ML-2a</td><td><span class="chip c-proved">recorded</span></td>
+        <td class="w">Pipeline present at <code>D:/tools/equipment-model</code>, <strong>unversioned, not missing</strong>. v1 closes on dataset, trainer, architecture, seed (20260729), hyperparameters, labels, artifact and evaluation; shipped model verified byte-identical to pipeline output <em>live</em>. No v1 training log exists and no dependency pin. v2's seed was recoverable after all (1337) — never missing, only unrecorded.</td></tr>
+      <tr><td class="k">v2 class count</td><td><span class="chip c-defect">contradicted</span></td>
+        <td class="w">Log says 29, <code>labels.json</code> says 37. Mechanism found: the trainer writes to a fixed path, so a later run landed on the earlier one and the log was not overwritten with it. Status is not "log missing" but "the log present belongs to a superseded run" — worse, because a misleading record reads as a good one. Preserved, not reconciled.</td></tr>
+      <tr><td class="k">Pipeline versioning</td><td><span class="chip c-open">operator</span></td>
+        <td class="w">No <code>git init</code> run. 92,558 files, ~2 GB; the pinned digests already address the bytes without moving them. Recovery semantics recorded for whenever a snapshot is made.</td></tr>
+      <tr><td class="k">Reproducibility</td><td><span class="chip c-refused">not attempted</span></td>
+        <td class="w">Needs the intact venv and hours of GPU time. Not started, so <strong>no disposition is claimed in either direction</strong>.</td></tr>
+      <tr><td class="k">CT-1</td><td><span class="chip c-open">blocked</span></td>
+        <td class="w"><code>HUMAN_REVIEW_LABELS = 0</code>, <code>EVALUATION_LABEL_GAP = OPEN</code>, <code>CONTINUOUS_RETRAINING_OPERATIONAL = NO</code>. Train-split tooling complete and re-proved by mutation: disjointness made vacuous (3 red), untrainable set emptied (1 red), error-targeted refusal disabled (1 red). No challenger trained, and none should be.</td></tr>
+      <tr><td class="k">N-05</td><td><span class="chip c-open">operator</span></td>
+        <td class="w">Threat model intact: signed URL is a bearer token, the quota meters mints rather than redemption, App Check authenticates the app and not account uniqueness. Its adjacent finding F5 is now closed; the three levers that would actually bind a caller all live outside this repository.</td></tr>
+      <tr><td class="k">Anonymous paid</td><td><span class="chip c-proved">fixed</span></td>
+        <td class="w">See above. Residual: the subscription screen still renders a failed checkout as <code>error.toString()</code> in a diagnostic panel — the same defect class the prefetch gate fixed, recorded as its own gate rather than half-done here.</td></tr>
+      <tr><td class="k">Metric provenance</td><td><span class="chip c-refused">6 refused</span></td>
+        <td class="w">20 claims · <strong>14 MATCHES · 0 DRIFTED · 6 NOT_LOCATABLE · 0 SOURCE_MISSING</strong>. Three need a Russian-to-English metric table, two need an arithmetic complement computed, one is a claim less specific than its source. A test pins the six, so quietly "fixing" them has to argue with a failure.</td></tr>
+      <tr><td class="k">Clinical D1 / H3</td><td><span class="chip c-open">external</span></td>
+        <td class="w"><code>D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED</code>, <code>H3 = HOLD</code>. No returned submission exists on disk. F013 untouched: untagged exercises keep their current behaviour and no clinical semantics were invented for them.</td></tr>
+      <tr><td class="k">N07 Teams</td><td><span class="chip c-proved">dormant</span></td>
+        <td class="w">Tripwire runs and is mutation-proven. Not built, not deleted.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Testing, at the exact HEAD</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Suite</th><th>Command</th><th class="n">Pass</th><th class="n">Fail</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Flutter</td><td class="w"><code>flutter test</code></td><td class="n">2,933</td><td class="n">0</td><td class="w">was 2,893 at session start</td></tr>
+      <tr><td class="k">Functions</td><td class="w"><code>npx jest</code></td><td class="n">222</td><td class="n">0</td><td class="w">9 suites; <code>index.test</code> 81, was 76</td></tr>
+      <tr><td class="k">Types</td><td class="w"><code>npx tsc --noEmit</code></td><td class="n">clean</td><td class="n">0</td><td class="w">—</td></tr>
+      <tr><td class="k">ML</td><td class="w"><code>pytest scripts/ml</code></td><td class="n">84</td><td class="n">0</td><td class="w">was 70; scanner suite 19 → 25, its three pipeline tests now execute rather than skip</td></tr>
+      <tr><td class="k">CT-1</td><td class="w"><code>pytest scripts/ct1</code></td><td class="n">228</td><td class="n">0</td><td class="w">—</td></tr>
+      <tr><td class="k">Analyzer</td><td class="w"><code>flutter analyze</code></td><td class="n">—</td><td class="n">0</td><td class="w">no new errors; 16 pre-existing infos</td></tr>
+      <tr><td class="k">Rules</td><td class="w">emulator suite</td><td class="n">—</td><td class="n">—</td><td class="w"><strong>NOT RUN</strong> — <code>firestore.rules</code> unchanged this session</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Mutation ledger</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Outcome</th><th class="n">Count</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chip c-proved">valid kills</span></td><td class="n">33</td>
+        <td class="w">11 prefetch implementation · 7 review-round fixes · 3 metric locator · 3 CT-1 separation invariants · 4 anonymous-checkout guard · 5 provenance-document guards</td></tr>
+      <tr><td><span class="chip c-defect">test defects</span></td><td class="n">4</td>
+        <td class="w">The four survivors above. Each one a passing test attached to nothing.</td></tr>
+      <tr><td><span class="chip c-refused">invalid kills</span></td><td class="n">1</td>
+        <td class="w">A mutant that stopped the file compiling. Discarded — that is evidence about the compiler.</td></tr>
+      <tr><td><span class="chip c-proved">correct survivors</span></td><td class="n">1</td>
+        <td class="w">The guarded property was still true under the mutation. Recorded rather than papered over.</td></tr>
+      <tr><td><span class="chip c-open">guard defects</span></td><td class="n">0</td>
+        <td class="w">No case where the guard was wrong and the test was right.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="section-note" style="margin-top:18px">Every mutant was restored byte-for-byte and the
+  restore verified by comparison, not by assumption.</p>
+</section>
+
+<section>
+  <h2>Agent reviews</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Gate</th><th>Reviewers</th><th class="n">Claims</th><th>Outcome</th></tr></thead>
+    <tbody>
+      <tr><td class="w">Offline prefetch</td><td class="w">4 independent (silent-failure, a11y, test, architecture)</td><td class="n">11</td>
+        <td class="w">1 confirmed by reading the backend and fixed · 1 <strong>rejected on measurement</strong> (disabling retry would deny a retry that can succeed) · 6 fixed · 3 no material issue</td></tr>
+      <tr><td class="w">Anonymous paid</td><td class="w">2 independent (payments, abuse)</td><td class="n">5</td>
+        <td class="w">Converged without contact on the same remedy; the abuse lens independently closed the alternative. All premises verified against source before acting.</td></tr>
+      <tr><td class="w">Scanner inventory</td><td class="w">1 explorer</td><td class="n">—</td>
+        <td class="w">Every artefact digest re-verified by me against disk before entering the record.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Remaining boundaries</h2>
+  <p class="section-note">Genuinely unresolved. Nothing here is waiting on more code.</p>
+  <ul class="plain">
+    <li><strong>Real human review labels</strong> — zero, unfabricated. CT-1's challenger question cannot be answered without them.</li>
+    <li><strong>External clinical authority</strong> — D1 and H3 stand. No submission has returned.</li>
+    <li><strong>Operator decision: where the recovered pipeline lives</strong> — 92,558 files and ~2 GB; not this session's to move.</li>
+    <li><strong>Operator/platform decision: N-05's three levers</strong> — App Check enforcement, anonymous video policy, platform cost controls. All outside this codebase.</li>
+    <li><strong>Production console and live telemetry</strong> — the attested App Check share is measurable and currently unmeasured; enforcing before measuring locks out real installs.</li>
+    <li><strong>Independent second opinion</strong> — unavailable all session. <code>usage_limit_exhausted</code> until 2026-08-20; the fail-open receipt admitted all fifteen commits. <strong>No diff in this session received an external review.</strong></li>
+    <li><strong>Push</strong> — the only remaining action, and it is not authorised.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>What this report does not claim</h2>
+  <div class="callout stop">
+    <p>Thirty-three killed mutations are evidence about thirty-three specific behaviours. They are
+    not a statement about the codebase. The reviewers used were internal; their strongest findings
+    were confirmed by reading the backend, not by agreement between them.</p>
+    <p>The Firestore rules emulator suite was <strong>not run</strong> and no number is quoted for
+    it — <code>firestore.rules</code> did not change. Scanner reproducibility was
+    <strong>not attempted</strong>, so no reproducibility disposition is claimed in either direction.
+    Stating a figure from a run that did not happen is the failure this whole programme is built
+    against.</p>
+  </div>
+</section>
+
+<section>
+  <div class="final">
+    GO consumed successfully for all authorized local work.<br>
+    ПУШ = НЕ ВЫПОЛНЕН.<br>
+    ПУШ: НЕТ.
+  </div>
+</section>
+
+<footer>
+  <p><code>12b1909 → 71a7482</code> on <code>formcoach/gates-a-c</code> · 15 commits · 41 files ·
+  +7,076 / −112 · 79 ahead of upstream, 0 behind · no push, no PR, no remote mutation.</p>
+  <p>Operator-owned working files were protected throughout: never modified, staged, stashed, reset
+  or reformatted, and verified unstaged before each of the fifteen commits.</p>
+</footer>
+
+</main>
+</div>
