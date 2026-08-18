@@ -16128,3 +16128,68 @@ opinion: `usage_limit_exhausted`, reset stated 2026-08-20, fail-open receipt adm
 eighteen commits.
 
 PUSHED = NO.
+
+## The reconciliation sweep, and what it found in a document nobody had reread
+
+The mandate required a sweep of the authoritative records before any final report: find every state
+equivalent to OPEN, PARTIAL, DEFERRED, BLOCKED, EXTERNAL, TODO, NOT_REVIEWED or HOLD, and for each
+one identify the record, its latest disposition, and what the current source actually does. The
+point of the sweep is that the three can disagree, and the report is written from the record.
+
+They did disagree, once. `core/review/N05_DISPOSITION.md:164` carried F-prefetch as **OPEN,
+recorded** -- "`resolveAll` still swallows a quota refusal; a prefetch stopped by the cap reports
+nothing. Needs a result type that can say 38 of 84, limit reached." That row had been true when it
+was written. It was not true now: `resolveAll` does not exist anywhere under `lib/`. It became
+`resolveBatch` returning `ClipBatch`, and the prefetch layer turns that into `PrefetchOutcome`,
+whose five `PrefetchState` values include `partialQuota` -- the exact sentence the row asked for.
+The fix, and the later correction to it, are both recorded earlier in this log. Only the status
+table was never revisited.
+
+This is worth naming precisely, because the failure mode is not laziness. The log is append-only
+and was correct; the source was correct; the tests were green. The only wrong artefact was the one
+a reader consults to ask "what is still open", and it was wrong in the direction that costs most --
+it claimed work remained that had already been done. A report assembled from that table would have
+listed a closed defect as outstanding, and no test in the repository would have objected. The row
+is now FIXED, with the replacement symbols cited by file and line so the claim is checkable rather
+than asserted, and with an explicit note that it changed because the symbol is gone from `lib/` --
+not because time passed.
+
+The other candidates the sweep surfaced are correctly dispositioned and were left alone. N07 is
+NOT IMPLEMENTED by product decision, guarded by an adversarial tripwire test. The six NOT_LOCATABLE
+metric claims remain UNRESOLVED_BY_DESIGN. The clinical handoff still requires external authority.
+Converting any of those would be exactly the substitution the mandate forbids.
+
+## Non-vacuity audit: three guards that could not have failed
+
+The second half of the sweep asked a different question of every guard this session added: could
+the set it iterates become empty, and would the test still pass? Three could, and would.
+
+`test_every_pinned_digest_is_a_sha256` loops over `PINNED["artifacts"]` and `PINNED["corpora"]`.
+Emptying either leaves the loop body unexecuted and the test green -- and the same emptiness
+silently satisfies `len(result["verified"]) == len(artifacts) + len(corpora)` as `0 == 0`. Both
+dictionaries are now asserted non-empty before the loops run.
+
+`test_no_digest_in_the_document_is_one_the_pin_does_not_hold` computes `quoted - known` and asserts
+the difference is empty. A document containing no digests at all produces an empty `quoted`, an
+empty difference, and a pass -- on the test whose entire subject is the digests the document
+quotes. Worse, its counterweight in the other direction is `@needs_pipeline` and skips on any
+machine without the model bytes, so on that machine nothing at all stood between a gutted document
+and a green suite. `assert quoted` now runs first.
+
+On the Dart side, five separate assertions iterate `CheckoutFailure.knownReasons`, and every one of
+them passes on an empty set. The strictest-looking is the worst: `hasLength(knownReasons.length +
+2)` reads as a derived count and degenerates to `2 == 2`. Rather than repair five loops, one test
+now states the subject directly -- the reasons must map onto exactly the `CheckoutRefusal` values
+minus the three that exist without a wire value. Named, not counted, because a count invites the
+arithmetic to be adjusted to whatever the code now does.
+
+All three were mutation-tested by emptying the subject each one iterates, which is the only
+mutation that proves a non-vacuity guard: appending `PINNED["corpora"] = {}`, stripping all eleven
+abbreviated digests from `SCANNER_PROVENANCE.md`, and deleting one wire reason from the client map.
+Three valid kills. One earlier attempt at the first was an invalid mutation and is recorded as
+such: `{} or {...}` evaluates to the second operand in Python, so the pin was never emptied and the
+resulting green run proved nothing. It was rerun correctly rather than reported.
+
+Suites after the change: `flutter test` 2,954 (one new test), `pytest scripts/ml` 86. Cloud
+Functions and `tsc` are reported as not re-run -- nothing under `functions/` changed, and quoting a
+number from a run that did not happen is the defect this whole programme is about.

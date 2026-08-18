@@ -70,6 +70,12 @@ def test_the_pin_and_the_shipped_model_agree_with_each_other():
 
 
 def test_every_pinned_digest_is_a_sha256():
+    # Both loops below are only as strong as what they iterate. Emptying
+    # `PINNED` would leave this test green, and would also silently satisfy
+    # every other test that compares against `len(PINNED[...])` -- 0 == 0.
+    # An empty pin is the defect, not a vacuous pass.
+    assert PINNED["artifacts"], "the artefact pin is empty"
+    assert PINNED["corpora"], "the corpus pin is empty"
     for name, pin in PINNED["artifacts"].items():
         assert len(pin["sha256"]) == 64, name
         assert int(pin["sha256"], 16) >= 0, name
@@ -300,6 +306,13 @@ def test_no_digest_in_the_document_is_one_the_pin_does_not_hold():
     } | {_abbreviated(SHIPPED_MODEL_SHA256)}
 
     quoted = set(re.findall(r"`([0-9a-f]{8}\u2026[0-9a-f]{6})`", _doc()))
+    # `quoted - known` is empty when the document quotes nothing at all, so
+    # without the next line a document stripped of every digest passes the
+    # test whose entire subject is the digests it quotes. The other direction
+    # -- every pinned artefact appears in the document -- is `@needs_pipeline`
+    # and skips on a machine without the model bytes, so on that machine this
+    # assertion is the only thing between a gutted document and a green suite.
+    assert quoted, "the document quotes no digests at all"
     invented = quoted - known
     assert not invented, f"digests in the document that nothing measured: {invented}"
 

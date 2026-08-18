@@ -147,6 +147,34 @@ void main() {
   });
 
   group('what the card says', () {
+    // Four tests in this file and one in the parity group iterate
+    // `knownReasons`. Every one of them passes on an empty set, and the
+    // strictest-looking of them is the worst offender: `hasLength(
+    // knownReasons.length + 2)` reads as a derived count but degenerates to
+    // `2 == 2`. So state the subject once, here, rather than trusting five
+    // loops to notice they were handed nothing.
+    test('the reason set the other tests iterate is not empty', () {
+      final mapped = {
+        for (final r in CheckoutFailure.knownReasons)
+          CheckoutFailure.of(_fn('failed-precondition', details: {'reason': r}))
+              .refusal,
+      };
+      // Named, not counted. A count invites the arithmetic to be adjusted to
+      // whatever the code now does; these three are the values that exist
+      // WITHOUT a wire reason, and every remaining one must have a wire
+      // reason or its branch in `checkoutLine` is unreachable.
+      expect(
+        mapped,
+        CheckoutRefusal.values.toSet().difference({
+          CheckoutRefusal.unreachable,
+          CheckoutRefusal.unnamedRefusal,
+          CheckoutRefusal.unknown,
+        }),
+        reason: 'a refusal is declared with no wire value, or a wire value '
+            'maps to nothing -- either way the loops below go quiet',
+      );
+    });
+
     test('no classified refusal leaks an implementation term', () {
       for (final reason in CheckoutFailure.knownReasons) {
         for (final l in [en, ru]) {

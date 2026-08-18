@@ -161,7 +161,31 @@ These are separate from N-05 and are recorded so they are not lost with it.
 |---|---|---|
 | F2 | **FIXED** in this branch | A `resource-exhausted` refusal rendered as "The clip link is unavailable". No quota control — including the one already shipped — is honestly shippable until a refusal is distinguishable from a fault. |
 | F5 | **FIXED** in this branch — option 1 | `createCheckoutSession` (`index.ts:538-546`) accepts anonymous callers for real money **including `lifetime`**, while `startFreeTrial` (`index.ts:467`) rejects them for a free trial. `quotaFor` (`abuse_guard.ts:219-225`) never reads tier, so that paying subscriber then runs at 1/8. Since the prefetch is premium-gated, **the anonymous 150 objects/day ceiling exists exclusively for anonymous users who have PAID.** |
-| F-prefetch | **OPEN, recorded** | `resolveAll` still swallows a quota refusal; a prefetch stopped by the cap reports nothing. Needs a result type that can say "38 of 84, limit reached". |
+| F-prefetch | **FIXED** in this branch | `resolveAll` swallowed a quota refusal; a prefetch stopped by the cap reported nothing. It asked for a result type that could say "38 of 84, limit reached", and it now has two. See below. |
+
+**F-prefetch was open when this file was written, and now is closed.** The symbol it names no
+longer exists: `resolveAll` was replaced by `resolveBatch`
+(`mobile/lib/features/equipment/data/clip_url_resolver.dart:82`), which returns `ClipBatch`
+(`:43`) carrying `urls` and a `quotaExhausted` flag rather than a bare `Map`. The prefetch layer
+converts that into `PrefetchOutcome`
+(`mobile/lib/features/workouts/data/prefetch_outcome.dart:59`), whose `requested`/`ready` counts
+and `quotaExhausted` flag resolve into the five mutually exclusive states of `PrefetchState`
+(`:93-104`) — including `partialQuota`, which is precisely the "38 of 84, limit reached" this row
+asked for. `prefetchLine` renders those states as localized sentences; nothing reaches the user
+through `toString()`.
+
+One correction to the fix is worth recording here, because it is the sort of thing a status row
+hides. The first version of the chunk loop `break`-ed on the first refusal, justified by a comment
+claiming the backend would refuse every later chunk too. It does not: `enforceDailyQuota` refuses
+on `used + cost > limit` (`functions/src/abuse_guard.ts`) and `clipUrls` passes each chunk's own
+size as `cost` (`functions/src/video_urls.ts`), so a refusal proves only that THAT chunk does not
+fit in what remains. A prefetch that has spent 1,190 of a 1,200 budget still has room for a
+trailing chunk of ten. `break` became `continue`; a refused chunk is charged nothing, because the
+transaction throws before it writes.
+
+**Do not read this row as evidence that an OPEN row ages into a FIXED one.** It changed because
+the symbol it names is gone from `lib/` and a typed replacement is in place, both checkable at
+HEAD — not because time passed.
 
 **F5 was not fixed when this file was written, and now is — option 1.** What changed is evidence,
 not appetite. Two independent reviews, run separately and agreeing without being shown each other's
