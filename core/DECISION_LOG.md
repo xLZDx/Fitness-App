@@ -16425,3 +16425,26 @@ and both Wear providers were unreferenced, and the record already corrects that 
 Resolved history, not a live state.
 
 17 rows now, 8 source-provable. `pytest scripts/review` 143 passed.
+
+## Final report: boundary hardening
+
+Published to `reports/boundary_hardening_2026-08-18.html` and as an artifact at
+https://claude.ai/code/artifact/20515eab-926a-4880-b42a-79bf517b5190 -- "The Ledger That Watched One
+Way".
+
+SOURCE_HEAD, TEST_HEAD and ASSESSMENT_HEAD are all 822caf3; the commit carrying this report moves
+HEAD past it and changes nothing the report asserts.
+
+`EXECUTABLE_ENGINEERING_WORK = 0` is recorded with its qualification rather than flat. It rests on
+four things: the reconciliation guard passing over all 17 rows, an independent grep sweep of the
+authoritative records agreeing, every remaining row belonging to a non-code authority, and a
+reviewer tasked specifically with falsifying that sentence having had its findings either fixed or
+refused on the record. It does not mean nothing could be done -- one item was declined by
+instruction, and the ledger's coverage is bounded by the tables the sweep read, which is a limit
+this session hit twice.
+
+Suites at ASSESSMENT_HEAD: `flutter test` 2,968; `flutter analyze` 16 pre-existing infos and zero
+errors; `pytest scripts/review scripts/ml scripts/ct1` 457. `functions/` and `firestore.rules`
+unchanged, so jest, `tsc` and the Firestore emulator are reported not re-run rather than quoted.
+
+Push remains NOT PERFORMED. 88 commits ahead of `origin/formcoach/gates-a-c`, 0 behind.

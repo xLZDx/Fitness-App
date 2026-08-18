@@ -1,0 +1,375 @@
+<title>The Ledger That Watched One Way</title>
+<style>
+  :root {
+    --ground: #eef1f4;
+    --panel: #fafbfc;
+    --ink: #12171c;
+    --ink-soft: #4d5761;
+    --ink-faint: #78838e;
+    --rule: #d3dae1;
+    --rule-soft: #e3e8ed;
+    --accent: #0d6b6b;
+    --accent-soft: #d8e9e8;
+    --closed: #2f6b3f;
+    --closed-bg: #e0eee4;
+    --external: #8a5a12;
+    --external-bg: #f6ebd8;
+    --blocked: #5b6570;
+    --blocked-bg: #e6eaee;
+    --alarm: #8f3030;
+    --alarm-bg: #f6e2e2;
+    --code-bg: #e8ecf0;
+    --shadow: 0 1px 2px rgba(18,23,28,.06), 0 6px 18px rgba(18,23,28,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0f1418; --panel: #161c22; --ink: #e4e9ee; --ink-soft: #a3aeb8;
+      --ink-faint: #7d8892; --rule: #2a333c; --rule-soft: #212930;
+      --accent: #5fbdb8; --accent-soft: #16302f;
+      --closed: #7fc294; --closed-bg: #172b1d;
+      --external: #d8a555; --external-bg: #2e2415;
+      --blocked: #96a2ad; --blocked-bg: #1e252c;
+      --alarm: #e08f8f; --alarm-bg: #2e1a1a;
+      --code-bg: #1d242b;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0f1418; --panel: #161c22; --ink: #e4e9ee; --ink-soft: #a3aeb8;
+    --ink-faint: #7d8892; --rule: #2a333c; --rule-soft: #212930;
+    --accent: #5fbdb8; --accent-soft: #16302f;
+    --closed: #7fc294; --closed-bg: #172b1d;
+    --external: #d8a555; --external-bg: #2e2415;
+    --blocked: #96a2ad; --blocked-bg: #1e252c;
+    --alarm: #e08f8f; --alarm-bg: #2e1a1a;
+    --code-bg: #1d242b;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.3);
+  }
+
+  body {
+    background: var(--ground); color: var(--ink);
+    font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px; line-height: 1.62; margin: 0; padding: 0 1.25rem 6rem;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 47rem; margin: 0 auto; }
+  code, .mono { font-family: ui-monospace, "Cascadia Mono", Menlo, monospace; font-size: .875em; }
+  code { background: var(--code-bg); padding: .1em .34em; border-radius: 3px; word-break: break-word; }
+
+  header { padding: 4.5rem 0 2.5rem; border-bottom: 1px solid var(--rule); }
+  .eyebrow {
+    font-family: ui-monospace, monospace; font-size: .72rem; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 1.1rem;
+  }
+  h1 {
+    font-family: ui-serif, Georgia, serif; font-weight: 500;
+    font-size: clamp(2.1rem, 5.4vw, 3.1rem); line-height: 1.1;
+    letter-spacing: -.018em; text-wrap: balance; margin: 0 0 1.1rem;
+  }
+  .standfirst { font-size: 1.1rem; color: var(--ink-soft); margin: 0; text-wrap: pretty; }
+
+  h2 {
+    font-family: ui-serif, Georgia, serif; font-weight: 500; font-size: 1.6rem;
+    letter-spacing: -.012em; line-height: 1.22; text-wrap: balance; margin: 3.6rem 0 .4rem;
+  }
+  h2 + .kicker { color: var(--ink-faint); font-size: .93rem; margin: 0 0 1.4rem; }
+  h3 { font-size: 1.02rem; font-weight: 650; margin: 2.1rem 0 .5rem; }
+  p { margin: 0 0 1.05rem; text-wrap: pretty; }
+
+  .heads {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+    border-radius: 6px; overflow: hidden; margin: 2rem 0 1rem;
+  }
+  .head-cell { background: var(--panel); padding: 1rem 1.1rem; }
+  .head-cell dt {
+    font-family: ui-monospace, monospace; font-size: .7rem; letter-spacing: .11em;
+    text-transform: uppercase; color: var(--ink-faint); margin: 0 0 .4rem;
+  }
+  .head-cell dd { margin: 0; font-family: ui-monospace, monospace; font-size: .95rem; }
+  .head-cell dd span {
+    display: block; font-family: ui-sans-serif, sans-serif; font-size: .82rem;
+    color: var(--ink-soft); margin-top: .3rem; line-height: 1.45;
+  }
+
+  .tablewrap {
+    overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px;
+    background: var(--panel); box-shadow: var(--shadow); margin: 1.6rem 0 1.2rem;
+  }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td { text-align: left; padding: .72rem .9rem; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  th {
+    font-size: .69rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 600; white-space: nowrap;
+    border-bottom: 1px solid var(--rule);
+  }
+  tr:last-child td { border-bottom: none; }
+  td.item { white-space: nowrap; font-family: ui-monospace, monospace; font-size: .84rem; }
+  td.num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+
+  .tag {
+    display: inline-block; font-family: ui-monospace, monospace; font-size: .68rem;
+    letter-spacing: .06em; padding: .18em .5em; border-radius: 3px;
+    white-space: nowrap; font-weight: 600;
+  }
+  .t-closed { background: var(--closed-bg); color: var(--closed); }
+  .t-ext { background: var(--external-bg); color: var(--external); }
+  .t-blocked { background: var(--blocked-bg); color: var(--blocked); }
+  .t-alarm { background: var(--alarm-bg); color: var(--alarm); }
+
+  .note {
+    border-left: 2px solid var(--accent); background: var(--accent-soft);
+    padding: 1rem 1.2rem; border-radius: 0 5px 5px 0; margin: 1.6rem 0;
+  }
+  .note.warn { border-left-color: var(--alarm); background: var(--alarm-bg); }
+  .note p:last-child { margin-bottom: 0; }
+
+  ul { margin: 0 0 1.05rem; padding-left: 1.15rem; }
+  li { margin-bottom: .45rem; text-wrap: pretty; }
+
+  .decision {
+    background: var(--panel); border: 1px solid var(--rule); border-radius: 6px;
+    padding: 1.3rem 1.4rem; margin: 1.4rem 0; box-shadow: var(--shadow);
+  }
+  .decision h3 { margin-top: 0; }
+  .decision dt {
+    font-family: ui-monospace, monospace; font-size: .68rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-faint); margin: .95rem 0 .25rem;
+  }
+  .decision dd { margin: 0; font-size: .93rem; }
+  .decision dl { margin: 0; }
+
+  footer {
+    margin-top: 4.5rem; padding-top: 1.6rem; border-top: 1px solid var(--rule);
+    color: var(--ink-faint); font-size: .85rem;
+  }
+  a { color: var(--accent); }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">SPTR · formcoach/gates-a-c · boundary hardening</p>
+  <h1>The Ledger That Watched One Way</h1>
+  <p class="standfirst">A mechanism was built so a status record could not drift from source again.
+  Four reviewers then showed it could only ever catch drift in one direction, was not run by
+  anything, and promised a tamper-resistance that does not exist.</p>
+</header>
+
+<h2>What each hash refers to</h2>
+<dl class="heads">
+  <div class="head-cell"><dt>SOURCE_HEAD</dt><dd>822caf3<span>4 commits this session, from <code>680fd55</code>.</span></dd></div>
+  <div class="head-cell"><dt>TEST_HEAD</dt><dd>822caf3<span>Every figure below measured on this tree.</span></dd></div>
+  <div class="head-cell"><dt>ASSESSMENT_HEAD</dt><dd>822caf3<span>The tree the ledger reconciled.</span></dd></div>
+  <div class="head-cell"><dt>BRANCH</dt><dd>gates-a-c<span>88 ahead, 0 behind. Dirty: 2 operator-owned files, untouched.</span></dd></div>
+</dl>
+
+<h2>The mechanism, and what review did to it</h2>
+<p class="kicker">Thirteen rows became seventeen. Six source-provable became eight. Almost none of
+the rest survived contact with four independent reviewers.</p>
+
+<p><code>scripts/review/state_ledger.py</code> holds the project's boundary items. For a row whose
+authority is <code>SOURCE</code>, the recorded state is not an input at all: a predicate recomputes
+it from the tree and the word is only ever the thing being compared. That single rule catches a
+stale OPEN and a false CLOSED without needing a mechanism for either.
+<code>core/CURRENT_STATE.md</code> is generated, and the suite regenerates and byte-compares it, so
+the human-readable table cannot be edited into a lie.</p>
+
+<p>That was the design. Here is what four reviewers found wrong with it.</p>
+
+<div class="note warn">
+<p><strong>The closure check ran in one direction only.</strong> It was gated on the state already
+being terminal — so <code>closure()</code> was consulted only on rows that already claimed to be
+closed. Trace the consequence and it is this module's own founding defect, reproduced in the rows it
+guards most carefully: when the clinician finally returns the review, <code>D1</code> goes on saying
+<code>EXTERNAL_AUTHORITY_REQUIRED</code> forever and nothing objects. <code>D1</code> in fact
+executed <em>zero</em> assertions — no predicate, no invariant, and a closure check that could not
+fire. Closure now runs on every row that has one, and an authority that <em>has</em> spoken while
+the row still says work remains raises <code>AUTHORITY_SPOKE</code>.</p>
+</div>
+
+<h3>Four more, each real</h3>
+<ul>
+  <li><strong>The state was an unvalidated free string.</strong> Terminality was membership of a
+  two-element tuple, so <code>RESOLVED</code>, <code>SETTLED</code> or <code>DONE</code> read as
+  finished to a human and as open to the check. <code>N-07</code> was a live instance: it asserted a
+  product decision had been taken, carried a closure callable, and that callable was never once
+  invoked. The vocabulary is now closed and split three ways.</li>
+  <li><strong>The generated page promised what it cannot deliver.</strong> It told readers an
+  external row "cannot be closed from this repository at all". Both closure artefacts are ordinary
+  files in this worktree. The page now says the goal is <em>legibility of forgery in a diff</em>,
+  not prevention — because no artefact inside a tree engineering can write will ever prove that
+  somebody outside it acted.</li>
+  <li><strong><code>f2</code> proved the wrong thing.</strong> It matched the l10n <em>key name</em>
+  and never opened the ARB, so renaming the key while its value stayed "The clip link is
+  unavailable" would have reported the exact defect F2 names as fixed.</li>
+  <li><strong>The human-label guard watched the wrong directory</strong> — the batches sent
+  <em>out</em>, while <code>human_eval.py --out</code> defaults to where returned labels land. A
+  guard aimed at the wrong surface is worse than an untested one: it reports zero forever.</li>
+</ul>
+
+<p>Two authorities had also been merged: CT-1's labels are <em>content</em> review, and pointing
+both CT-1 and D1 at one clinical closure callable would have merged them inside the mechanism built
+to keep authorities apart. And CI ran every sibling Python suite by explicit path and not this one,
+which made the whole "it cannot drift" claim aspirational. It is now the first step in the job.</p>
+
+<h2>A sign-in that succeeded and cost the person everything</h2>
+<p class="kicker">A reviewer was asked to falsify "no executable work remains", and was given no
+hint of the wanted answer.</p>
+
+<p><code>signInWithGoogle</code> returned a bare <code>AuthUser</code>. Linking an anonymous session
+keeps its uid, so every document written under it stays reachable. On
+<code>credential-already-in-use</code> the code fell back to <code>signInWithCredential</code>,
+which signs the person into their real account and leaves this device's profile, injuries, workout
+log and schedule under a uid that has no credential anyone can ever sign into again. Both paths
+returned a user with a name and an email, and the screen showed the same thing either way.</p>
+
+<p>Nothing was deleted. It became unreachable, silently, at the moment the person did exactly what
+the app asked them to do. <code>N05_DISPOSITION.md</code> had recorded it precisely — <em>"the copy
+in this branch names the exception; the flow still does not handle it"</em> — and it stayed
+recorded, unfixed, through an entire guest-upgrade gate. The copy layer got the mitigation and the
+flow did not.</p>
+
+<p>It now returns a <code>SignInResult</code> carrying <code>GuestUpgrade</code>:
+<code>linked</code>, <code>orphaned</code>, <code>notAGuest</code>. Deliberately not defaulted — a
+default lets an implementation return a value without deciding what happened, which is how the
+original read: not a wrong answer, an unasked question. The screen renders a persistent notice, not
+a SnackBar, because someone who has just lost sight of their training history should not have the
+only explanation vanish on a timer. The copy says the workouts <em>stayed behind and are not shown
+here</em>, and a test forbids "deleted", "erased", "lost" and "removed", because none is true and
+each is false in the direction that stops people looking.</p>
+
+<div class="note">
+<p><strong>Why the sweep missed it, twice.</strong> This residual, and two more found later, live in
+document <em>prose</em> — not in any status table. The reconciliation sweep that built the ledger
+read tables. That is a property of the method rather than an oversight, and it is worth stating
+because it bounds what the ledger currently covers: a mechanism built by reading tables inherits the
+coverage of the tables it read.</p>
+</div>
+
+<h2>Mutation results</h2>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Gate</th><th class="num">Valid kills</th><th class="num">Correct survivors</th><th class="num">Test defects</th><th class="num">Invalid</th></tr></thead>
+  <tbody>
+    <tr><td>State ledger</td><td class="num">14</td><td class="num">1</td><td class="num">2</td><td class="num">1</td></tr>
+    <tr><td>Guest upgrade</td><td class="num">4</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The three test defects are the interesting output, and all three were predicted by the review
+adversary before they were run:</p>
+<ul>
+  <li><strong>Parametrising over the tuple under test.</strong> Removing <code>NOT_A_DEFECT</code>
+  from the terminal states survived, because shrinking the tuple shrank the test set with it — the
+  vacuity trap this programme keeps finding, this time inside the fix for it. The words are now
+  written out, where deleting one fails.</li>
+  <li><strong>A constant that agreed with the measurement.</strong> Replacing a predicate's body
+  with a hard-coded string carrying today's true counts passed a test that compared numbers. The
+  test now watches that the locator is actually called.</li>
+  <li><strong>The class that actually ships was unproven.</strong> Restoring the original auth
+  defect in <code>FirebaseAuthRepository</code> left all twelve new tests green, because every one
+  ran through the mock.</li>
+</ul>
+
+<h2>Scanner and ML</h2>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Item</th><th>State</th><th>Basis</th></tr></thead>
+  <tbody>
+    <tr><td>v1 reproducibility</td><td><span class="tag t-closed">METRIC_REPRODUCIBLE</span></td><td><code>val_accuracy 0.617</code> matching the registry. Bitwise impossible by construction.</td></tr>
+    <tr><td>Dependency pin</td><td><span class="tag t-closed">RECOVERED</span></td><td>The venv was still intact, so it was frozen: 58 packages, Python 3.11.9. Closes recoverability; the <em>historical</em> pin stays UNKNOWN and a 2026 capture cannot reach backwards.</td></tr>
+    <tr><td>Metadata step</td><td><span class="tag t-blocked">BLOCKED_BY_WINDOWS_PACKAGE</span></td><td><code>tflite-support</code> has no Windows wheels; probed, not assumed — absent from every local interpreter, and the local Docker images are bare python slims.</td></tr>
+    <tr><td>Pipeline location</td><td><span class="tag t-ext">OPERATOR</span></td><td>92k files, ~2 GB, unversioned. Where it lives is not this worktree's to decide.</td></tr>
+    <tr><td>v2 class count</td><td><span class="tag t-blocked">CONTRADICTED</span></td><td>29-class log against a 37-label artefact. Not to be resolved by choosing one.</td></tr>
+    <tr><td>D3 / image collection</td><td><span class="tag t-closed">DISABLED</span></td><td>Now source-provable: no client upload machinery and no storage-object trigger exist anywhere.</td></tr>
+    <tr><td>Metric provenance</td><td><span class="tag t-blocked">6 NOT_LOCATABLE</span></td><td>0 DRIFTED, 0 SOURCE_MISSING, 20 claims. Six is now a ceiling, not an equality.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note warn">
+<p><strong>A fact about what already shipped.</strong> <code>attach_metadata.py</code> does not fail
+for want of a stub — it <em>installs</em> one, and that stub returns the literal string
+<code>"1.0.0"</code> for the minimum metadata parser version. <code>metadata.json</code> records
+<code>min_parser_version: 1.0.0</code>. The value embedded in the <code>equipment_v1.tflite</code>
+this app ships was stamped by a stub rather than computed by the library. For a plain classifier
+carrying labels and normalisation that floor is probably correct — and <em>probably</em> is the
+whole point: nobody computed it, so nobody knows, while the artefact states it as though somebody
+had. Recorded, deliberately not "fixed": widening the stub would invent a second parser version and
+stamp that into a shipped artefact too.</p>
+</div>
+
+<h2>What was refused</h2>
+
+<div class="decision">
+<h3>Closing two metric claims by editing the registry</h3>
+<dl>
+  <dt>Proposed by</dt>
+  <dd>The falsification reviewer, with sound reasoning and a correct observation:
+  <code>MODEL_REGISTRY.json</code> is a tracked file in this worktree, so "not this module's to
+  rewrite" is a true statement about the locator's authority and a false one about the
+  repository's.</dd>
+  <dt>Refused because</dt>
+  <dd>The six claims are recorded DORMANT by explicit instruction, and editing what the registry
+  <em>asserts</em> so that a claim becomes locatable is chasing the number rather than closing a
+  defect. <code>MEASUREMENT TRUE</code> and <code>SOURCE CLAIM LOCATABLE</code> stay separate.</dd>
+  <dt>Honestly stated</dt>
+  <dd>This is a refusal, not an absence. The work is available and was declined.</dd>
+</dl>
+</div>
+
+<p>Also declined, with evidence rather than by omission: the claim that
+<code>N05_DISPOSITION.md</code>'s F-prefetch row still reads as stale. It is past-tense and marked
+FIXED, and says the result type "now has two". And the hypothesis that the App Check attested share
+is a local script — <code>noteAppCheck</code> writes to Cloud Logging, so there is no local read
+path and cannot be one until deployed traffic exists.</p>
+
+<h2>Remaining state</h2>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Disposition</th><th class="num">Rows</th><th>Which</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag t-closed">CLOSED / DORMANT / DISABLED</span></td><td class="num">8</td><td>All source-provable, recomputed on every run</td></tr>
+    <tr><td><span class="tag t-ext">OPERATOR_DECISION_REQUIRED</span></td><td class="num">5</td><td>N-05, N-07, scanner-pipeline-location, N-04, F025</td></tr>
+    <tr><td><span class="tag t-ext">EXTERNAL_AUTHORITY_REQUIRED</span></td><td class="num">3</td><td>D1, H3, CT1-human-labels</td></tr>
+    <tr><td><span class="tag t-blocked">ENVIRONMENT_BLOCKED</span></td><td class="num">1</td><td>scanner-metadata</td></tr>
+    <tr><td><span class="tag t-alarm">EXECUTABLE_ENGINEERING_WORK</span></td><td class="num">0</td><td>See the qualification below</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong><code>EXECUTABLE_ENGINEERING_WORK = 0</code></strong>, and the claim is qualified rather
+than asserted flat. It rests on: the reconciliation guard passing over all 17 rows; an independent
+grep sweep of the authoritative records agreeing; every remaining row belonging to a non-code
+authority; and a reviewer specifically tasked to falsify this sentence having its findings either
+fixed or refused on the record above. It does <em>not</em> mean nothing could be done — one item was
+declined by instruction, and the ledger's coverage is bounded by the tables the sweep read.</p>
+
+<h2>Release state</h2>
+<ul>
+  <li><strong>Tests</strong> — <code>flutter test</code> 2,968 (+14); <code>flutter analyze</code>
+  16 pre-existing infos, <strong>0 errors</strong>; <code>pytest scripts/review scripts/ml
+  scripts/ct1</code> 457. <code>functions/</code> and <code>firestore.rules</code> unchanged, so
+  jest, <code>tsc</code> and the emulator are reported <em>not re-run</em> rather than quoted.</li>
+  <li><strong>Review</strong> — five independent reviewers across two gates. Four rebuilt the state
+  ledger; one was pointed at falsifying this report's central claim and succeeded.</li>
+  <li><strong>External review</strong> — the Codex gate returned <code>usage_limit_exhausted</code>
+  on every attempt through 2026-08-20. All commits carry fail-open receipts, stated in each message.</li>
+  <li><strong>Clinical</strong> — <code>D1 = EXTERNAL_AUTHORITY_REQUIRED</code>, <code>H3 =
+  HOLD</code>, <code>HUMAN_REVIEW_LABELS = 0 of 15 files scanned</code>. The submission is still an
+  unfilled template, and the ledger now delegates that judgement to the repository's own clinical
+  validator rather than a weaker re-implementation.</li>
+  <li><strong>Branch push readiness</strong> — <span class="tag t-blocked">NOT PERFORMED</span>. 88
+  commits ahead of <code>origin/formcoach/gates-a-c</code>, 0 behind. The authorization was
+  <code>ПУШ: НЕТ</code>. A green branch and a releasable product are different claims, and the
+  second is still blocked on authorities outside this repository.</li>
+</ul>
+
+<footer>
+<p>SPTR · <code>formcoach/gates-a-c</code> · ASSESSMENT_HEAD <code>822caf3</code> · 18 August 2026.
+Every figure above was measured on that tree. Where a suite was not re-run, this report says so
+instead of quoting a number from a run that did not happen.</p>
+</footer>
+</div>
