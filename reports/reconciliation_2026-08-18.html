@@ -1,0 +1,524 @@
+<title>The Row Nobody Reread</title>
+<style>
+  :root {
+    --ground: #eef1f4;
+    --panel: #fafbfc;
+    --ink: #12171c;
+    --ink-soft: #4d5761;
+    --ink-faint: #78838e;
+    --rule: #d3dae1;
+    --rule-soft: #e3e8ed;
+    --accent: #0d6b6b;
+    --accent-soft: #d8e9e8;
+    --closed: #2f6b3f;
+    --closed-bg: #e0eee4;
+    --external: #8a5a12;
+    --external-bg: #f6ebd8;
+    --blocked: #5b6570;
+    --blocked-bg: #e6eaee;
+    --code-bg: #e8ecf0;
+    --shadow: 0 1px 2px rgba(18,23,28,.06), 0 6px 18px rgba(18,23,28,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0f1418;
+      --panel: #161c22;
+      --ink: #e4e9ee;
+      --ink-soft: #a3aeb8;
+      --ink-faint: #7d8892;
+      --rule: #2a333c;
+      --rule-soft: #212930;
+      --accent: #5fbdb8;
+      --accent-soft: #16302f;
+      --closed: #7fc294;
+      --closed-bg: #172b1d;
+      --external: #d8a555;
+      --external-bg: #2e2415;
+      --blocked: #96a2ad;
+      --blocked-bg: #1e252c;
+      --code-bg: #1d242b;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0f1418;
+    --panel: #161c22;
+    --ink: #e4e9ee;
+    --ink-soft: #a3aeb8;
+    --ink-faint: #7d8892;
+    --rule: #2a333c;
+    --rule-soft: #212930;
+    --accent: #5fbdb8;
+    --accent-soft: #16302f;
+    --closed: #7fc294;
+    --closed-bg: #172b1d;
+    --external: #d8a555;
+    --external-bg: #2e2415;
+    --blocked: #96a2ad;
+    --blocked-bg: #1e252c;
+    --code-bg: #1d242b;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.3);
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 1.25rem 6rem;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 47rem; margin: 0 auto; }
+  .wide { max-width: 60rem; margin: 0 auto; }
+
+  code, .mono {
+    font-family: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, monospace;
+    font-size: .875em;
+  }
+  code {
+    background: var(--code-bg);
+    padding: .1em .34em;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+
+  header { padding: 4.5rem 0 2.5rem; border-bottom: 1px solid var(--rule); }
+  .eyebrow {
+    font-family: ui-monospace, monospace;
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 1.1rem;
+  }
+  h1 {
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    font-weight: 500;
+    font-size: clamp(2.1rem, 5.4vw, 3.1rem);
+    line-height: 1.1;
+    letter-spacing: -.018em;
+    text-wrap: balance;
+    margin: 0 0 1.1rem;
+  }
+  .standfirst {
+    font-size: 1.1rem;
+    color: var(--ink-soft);
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  h2 {
+    font-family: ui-serif, Georgia, serif;
+    font-weight: 500;
+    font-size: 1.6rem;
+    letter-spacing: -.012em;
+    line-height: 1.22;
+    text-wrap: balance;
+    margin: 3.6rem 0 .4rem;
+  }
+  h2 + .kicker {
+    color: var(--ink-faint);
+    font-size: .93rem;
+    margin: 0 0 1.4rem;
+  }
+  h3 {
+    font-size: 1.02rem;
+    font-weight: 650;
+    letter-spacing: -.005em;
+    margin: 2.1rem 0 .5rem;
+  }
+  p { margin: 0 0 1.05rem; text-wrap: pretty; }
+
+  .heads {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 2rem 0 1rem;
+  }
+  .head-cell { background: var(--panel); padding: 1rem 1.1rem; }
+  .head-cell dt {
+    font-family: ui-monospace, monospace;
+    font-size: .7rem;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 .4rem;
+  }
+  .head-cell dd {
+    margin: 0;
+    font-family: ui-monospace, monospace;
+    font-size: .95rem;
+    color: var(--ink);
+  }
+  .head-cell dd span {
+    display: block;
+    font-family: ui-sans-serif, sans-serif;
+    font-size: .82rem;
+    color: var(--ink-soft);
+    margin-top: .3rem;
+    line-height: 1.45;
+  }
+
+  .tablewrap {
+    overflow-x: auto;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+    margin: 1.6rem 0 1.2rem;
+  }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td {
+    text-align: left;
+    padding: .74rem .9rem;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  th {
+    font-size: .69rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--rule);
+  }
+  tr:last-child td { border-bottom: none; }
+  td.item { white-space: nowrap; font-family: ui-monospace, monospace; font-size: .84rem; }
+
+  .tag {
+    display: inline-block;
+    font-family: ui-monospace, monospace;
+    font-size: .68rem;
+    letter-spacing: .06em;
+    padding: .18em .5em;
+    border-radius: 3px;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .t-closed { background: var(--closed-bg); color: var(--closed); }
+  .t-ext { background: var(--external-bg); color: var(--external); }
+  .t-blocked { background: var(--blocked-bg); color: var(--blocked); }
+
+  .note {
+    border-left: 2px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 1rem 1.2rem;
+    border-radius: 0 5px 5px 0;
+    margin: 1.6rem 0;
+  }
+  .note p:last-child { margin-bottom: 0; }
+  .note strong { color: var(--ink); }
+
+  ul { margin: 0 0 1.05rem; padding-left: 1.15rem; }
+  li { margin-bottom: .45rem; text-wrap: pretty; }
+
+  .kills {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: .9rem;
+    margin: 1.5rem 0;
+  }
+  .kill {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 1rem 1.1rem;
+    box-shadow: var(--shadow);
+  }
+  .kill h4 {
+    margin: 0 0 .45rem;
+    font-size: .8rem;
+    font-family: ui-monospace, monospace;
+    letter-spacing: .04em;
+    color: var(--accent);
+  }
+  .kill p { font-size: .88rem; margin: 0 0 .5rem; color: var(--ink-soft); }
+  .kill p:last-child { margin: 0; }
+
+  .decision {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 1.3rem 1.4rem;
+    margin: 1.4rem 0;
+    box-shadow: var(--shadow);
+  }
+  .decision h3 { margin-top: 0; }
+  .decision dl { margin: 0; }
+  .decision dt {
+    font-family: ui-monospace, monospace;
+    font-size: .68rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: .95rem 0 .25rem;
+  }
+  .decision dd { margin: 0; font-size: .93rem; }
+
+  footer {
+    margin-top: 4.5rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--rule);
+    color: var(--ink-faint);
+    font-size: .85rem;
+  }
+  a { color: var(--accent); }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">SPTR · formcoach/gates-a-c · reconciliation sweep</p>
+  <h1>The Row Nobody Reread</h1>
+  <p class="standfirst">The source was right. The log was right. The tests were green. The only
+  wrong artefact was the table a reader consults to ask what is still open — and it was wrong in
+  the direction that costs most.</p>
+</header>
+
+<h2>What each hash refers to</h2>
+<p class="kicker">Every prior report in this programme named a <code>FINAL_HEAD</code> that its own
+commit immediately invalidated. Naming three separate heads is the fix.</p>
+
+<dl class="heads">
+  <div class="head-cell">
+    <dt>SOURCE_HEAD</dt>
+    <dd>99c2d73<span>The tree the claims below describe. 20 commits since <code>cc02f57~1</code>,
+    47 files, +8,654 / −128.</span></dd>
+  </div>
+  <div class="head-cell">
+    <dt>TEST_HEAD</dt>
+    <dd>99c2d73<span>Byte-identical to the tree the suites ran against — they ran immediately
+    before the commit, on the same working tree.</span></dd>
+  </div>
+  <div class="head-cell">
+    <dt>ASSESSMENT_HEAD</dt>
+    <dd>99c2d73<span>The tree the sweep classified. The commit carrying <em>this report</em> will
+    move HEAD past it and change nothing it asserts.</span></dd>
+  </div>
+</dl>
+
+<h2>The sweep</h2>
+<p class="kicker">Every state in the authoritative records equivalent to OPEN, PARTIAL, DEFERRED,
+BLOCKED, EXTERNAL, TODO, NOT_REVIEWED, UNRESOLVED or HOLD — with what the source actually does.</p>
+
+<div class="tablewrap">
+<table>
+  <thead>
+    <tr><th>Item</th><th>Record</th><th>Recorded</th><th>Source at ASSESSMENT_HEAD</th><th>Classification</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="item">F-prefetch</td>
+      <td><code>N05_DISPOSITION.md:164</code></td>
+      <td>OPEN, recorded</td>
+      <td><code>resolveAll</code> absent from <code>lib/</code>; replaced by <code>resolveBatch</code> → <code>ClipBatch</code> → <code>PrefetchOutcome.state</code>, including <code>partialQuota</code></td>
+      <td><span class="tag t-closed">CLOSED</span><br><small>record corrected this session</small></td>
+    </tr>
+    <tr>
+      <td class="item">F2</td>
+      <td><code>N05_DISPOSITION.md:162</code></td>
+      <td>FIXED in branch</td>
+      <td><code>VideoFailureReason.quotaExhausted</code> renders a distinct localized line</td>
+      <td><span class="tag t-closed">CLOSED</span></td>
+    </tr>
+    <tr>
+      <td class="item">F5</td>
+      <td><code>N05_DISPOSITION.md:163</code></td>
+      <td>FIXED in branch — option 1</td>
+      <td>Anonymous callers refused at <code>createCheckoutSession</code>, with <code>reason: ANONYMOUS_ACCOUNT</code> on the wire</td>
+      <td><span class="tag t-closed">CLOSED</span></td>
+    </tr>
+    <tr>
+      <td class="item">checkout copy</td>
+      <td><code>DECISION_LOG.md</code> (this session)</td>
+      <td>Recorded as OPEN, not fixed here</td>
+      <td><code>CheckoutFailure.of</code> + <code>checkoutLine</code>; <code>error.toString()</code> only behind <code>isUnclassified</code></td>
+      <td><span class="tag t-closed">CLOSED</span></td>
+    </tr>
+    <tr>
+      <td class="item">N-05</td>
+      <td><code>N05_DISPOSITION.md:3</code></td>
+      <td>OPERATOR / PLATFORM DECISION REQUIRED</td>
+      <td>Unchanged, and unchangeable from this repository — per-account uniqueness is not the binding constraint</td>
+      <td><span class="tag t-ext">OPERATOR_DECISION_REQUIRED</span></td>
+    </tr>
+    <tr>
+      <td class="item">N-07</td>
+      <td><code>N07_TEAM_ACTIVATION_GATE.md:3</code></td>
+      <td>NOT IMPLEMENTED, by product decision</td>
+      <td>Route declared, unreachable from <code>lib/</code>; guarded by an adversarial tripwire test</td>
+      <td><span class="tag t-ext">OPERATOR_DECISION_REQUIRED</span></td>
+    </tr>
+    <tr>
+      <td class="item">6 metric claims</td>
+      <td><code>METRIC_PROVENANCE.md:12</code></td>
+      <td>UNRESOLVED_BY_DESIGN</td>
+      <td>Three causes: Russian labels, arithmetic complements, claim less specific than source. Three independently confirmed true by the v1 run — verdict deliberately unchanged</td>
+      <td><span class="tag t-blocked">DORMANT</span></td>
+    </tr>
+    <tr>
+      <td class="item">Metadata step</td>
+      <td><code>SCANNER_PROVENANCE.md:117</code></td>
+      <td>BLOCKED_BY_DEPENDENCIES</td>
+      <td><code>attach_metadata.py</code> lives in <code>D:\tools\equipment-model\</code>, outside this worktree; mediapipe on Windows ships no <code>_pywrap_metadata_version</code> C extension</td>
+      <td><span class="tag t-blocked">ENVIRONMENT_BLOCKED</span></td>
+    </tr>
+    <tr>
+      <td class="item">D1 / clinical</td>
+      <td><code>CLINICAL_VALIDATION_HANDOFF.md</code></td>
+      <td>EXTERNAL_CLINICAL_VALIDATION_REQUIRED</td>
+      <td>Zero human review labels. No engineering act produces one</td>
+      <td><span class="tag t-ext">EXTERNAL_AUTHORITY_REQUIRED</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note">
+<p><strong>Why the metadata step was not "fixed".</strong> The obvious move is to widen the stub
+until <code>load_metadata_buffer</code> stops raising. That stub exists to satisfy an import; making
+it answer <code>GetMinimumMetadataParserVersion</code> means inventing a metadata parser version and
+stamping it into a model artefact the app ships. That is fabricated provenance, which is the
+category of act this whole programme exists to prevent. It stays blocked.</p>
+</div>
+
+<h2>One row, and what it cost</h2>
+
+<p><code>N05_DISPOSITION.md:164</code> carried F-prefetch as <strong>OPEN, recorded</strong>:
+<em>"<code>resolveAll</code> still swallows a quota refusal; a prefetch stopped by the cap reports
+nothing. Needs a result type that can say <span class="mono">38 of 84, limit reached</span>."</em>
+That was true when it was written. It was not true at ASSESSMENT_HEAD, and it had not been true for
+some time. <code>resolveAll</code> does not exist anywhere under <code>lib/</code>. It became
+<code>resolveBatch</code> returning <code>ClipBatch</code>, which the prefetch layer converts into
+<code>PrefetchOutcome</code>, whose five mutually exclusive <code>PrefetchState</code> values
+include <code>partialQuota</code> — the exact sentence the row asked for. Both the fix and a later
+correction to it are recorded in the decision log.</p>
+
+<p>The failure mode here is worth stating precisely, because it is not laziness. The log is
+append-only and was correct. The source was correct. The tests were green and stayed green.
+The only wrong artefact was the one a reader opens to ask <em>what is still open</em>, and it was
+wrong in the expensive direction: it claimed work remained that had already been done. A final
+report assembled from that table would have listed a closed defect as outstanding, and not one
+test in the repository would have objected — because no test reads a status table.</p>
+
+<p>The row now cites its replacement symbols by file and line, so the claim is checkable rather
+than asserted, and carries an explicit note that it changed <em>because the symbol is gone from
+<code>lib/</code></em> — not because time passed. An OPEN row does not age into a FIXED one.</p>
+
+<h2>Three guards that could not have failed</h2>
+<p class="kicker">The second half of the sweep asked one question of every guard added this
+session: could the set it iterates be empty, and would the test still pass?</p>
+
+<p>Three could, and would. A guard that passes on an empty subject is not a weak guard; it is
+a guard that has never once been consulted, wearing the colour of one that has.</p>
+
+<div class="kills">
+  <div class="kill">
+    <h4>AP · the pin emptied</h4>
+    <p><code>test_every_pinned_digest_is_a_sha256</code> loops over <code>PINNED</code>. Empty it
+    and the loop body never runs — and the same emptiness silently satisfies
+    <code>len(verified) == len(artifacts) + len(corpora)</code> as <code>0 == 0</code>.</p>
+    <p><strong>Killed</strong> by appending <code>PINNED["corpora"] = {}</code>.</p>
+  </div>
+  <div class="kill">
+    <h4>AQ · the document gutted</h4>
+    <p><code>test_no_digest_…_the_pin_does_not_hold</code> asserts <code>quoted - known</code> is
+    empty. A document quoting nothing produces an empty difference and a pass. Its counterweight is
+    <code>@needs_pipeline</code> and skips without the model bytes — so on that machine nothing at
+    all stood between a hollowed-out document and a green suite.</p>
+    <p><strong>Killed</strong> by stripping all eleven abbreviated digests.</p>
+  </div>
+  <div class="kill">
+    <h4>AR · the reason set emptied</h4>
+    <p>Five Dart assertions iterate <code>knownReasons</code>. The strictest-looking is the worst:
+    <code>hasLength(knownReasons.length + 2)</code> reads as a derived count and degenerates to
+    <code>2 == 2</code>.</p>
+    <p><strong>Killed</strong> by deleting one wire reason from the client map — 3 failures.</p>
+  </div>
+</div>
+
+<p>All three were fixed by asserting the <em>subject</em> once, not by repairing five loops. On the
+Dart side the assertion names the values rather than counting them — the reasons must map onto
+exactly the <code>CheckoutRefusal</code> set minus the three that exist without a wire value —
+because a count invites the arithmetic to be adjusted to whatever the code now does.</p>
+
+<div class="note">
+<p><strong>One invalid mutation, recorded rather than quietly rerun.</strong> The first attempt at
+AP replaced <code>"corpora": {</code> with <code>"corpora": {} or {</code>. In Python an empty dict
+is falsy, so <code>{} or {…}</code> evaluates to the second operand: the pin was never emptied, and
+the green run that followed proved nothing whatsoever. It is reported here because a mutation
+harness that hides its own invalid mutants produces exactly the false confidence it was built to
+detect.</p>
+</div>
+
+<h2>What is decided, and by whom</h2>
+
+<div class="decision">
+<h3>N-05 — device-level abuse control</h3>
+<dl>
+  <dt>Disposition</dt>
+  <dd><span class="tag t-ext">OPERATOR_DECISION_REQUIRED</span> — narrowed from the wider set;
+  <code>PLATFORM_CONTROL_REQUIRED</code> applies only to the device-attestation route, which is one
+  of the options, not the state.</dd>
+  <dt>Why engineering cannot decide it</dt>
+  <dd>Two independent review rounds converged: per-account uniqueness is not the binding
+  constraint. Every control proposed to satisfy N-05 must survive <code>deleteAccount</code> to
+  function, which contradicts the published privacy policy at
+  <code>public/privacy.html:87-88,93</code>. This is a policy conflict, not a missing
+  implementation.</dd>
+  <dt>What reverses it</dt>
+  <dd>A decision to amend the published policy, or platform attestation accepted as sufficient
+  without persistent device identity. Both are outside this repository.</dd>
+</dl>
+</div>
+
+<div class="decision">
+<h3>D1 — clinical validation</h3>
+<dl>
+  <dt>Disposition</dt>
+  <dd><span class="tag t-ext">EXTERNAL_AUTHORITY_REQUIRED</span></dd>
+  <dt>State</dt>
+  <dd><code>HUMAN_REVIEW_LABELS = 0</code>. The evaluation label gap is open and no engineering act
+  closes it. No subagent, model, heuristic or fixture in this session was relabelled as human- or
+  clinically-reviewed, and none may be.</dd>
+</dl>
+</div>
+
+<h2>Release state</h2>
+
+<p>Five dimensions, held apart deliberately, because collapsing them is how a green suite becomes a
+deployment:</p>
+
+<ul>
+  <li><strong>Tests</strong> — <code>flutter test</code> 2,954; <code>pytest scripts/ml</code> 86;
+  <code>pytest scripts/ct1</code> 228. Cloud Functions (<code>jest</code> 224 / 9 suites) and
+  <code>tsc --noEmit</code> are reported as <em>not re-run</em> since the last change under
+  <code>functions/</code>, rather than quoted from an earlier session.</li>
+  <li><strong>Review</strong> — three independent gates this session; one reviewer request rejected
+  on measurement rather than accepted on authority.</li>
+  <li><strong>External review</strong> — the Codex gate returned <code>usage_limit_exhausted</code>
+  on every attempt through 2026-08-20. All 20 commits carry fail-open receipts, stated in each
+  commit message.</li>
+  <li><strong>Clinical / ML maturity</strong> — v1 reproducibility advanced from NOT_ATTEMPTED to
+  <code>METRIC_REPRODUCIBLE</code> (<code>val_accuracy 0.617</code>, matching the registry), with
+  bitwise reproduction shown impossible <em>by construction</em>. <code>CT ≠ CD</code>;
+  <code>TRAINED ≠ CHALLENGER ≠ CHAMPION</code>. Production image collection remains disabled.</li>
+  <li><strong>Push</strong> — <span class="tag t-blocked">NOT PERFORMED</span>. 83 commits ahead of
+  <code>origin/formcoach/gates-a-c</code>. The authorization for this session was explicit:
+  <code>ПУШ: НЕТ</code>. Green tests do not convert into a push, and neither does a completed
+  sweep.</li>
+</ul>
+
+<footer>
+<p>SPTR · <code>formcoach/gates-a-c</code> · ASSESSMENT_HEAD <code>99c2d73</code> · 18 August 2026.
+Every claim above is checkable against the tree at that hash. Where a number could not be obtained
+from a run that actually happened, this report says so instead of quoting one.</p>
+</footer>
+</div>

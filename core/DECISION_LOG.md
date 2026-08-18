@@ -16193,3 +16193,20 @@ resulting green run proved nothing. It was rerun correctly rather than reported.
 Suites after the change: `flutter test` 2,954 (one new test), `pytest scripts/ml` 86. Cloud
 Functions and `tsc` are reported as not re-run -- nothing under `functions/` changed, and quoting a
 number from a run that did not happen is the defect this whole programme is about.
+
+## Final report: the reconciliation sweep
+
+Report published to `reports/reconciliation_2026-08-18.html` and as an artifact at
+https://claude.ai/code/artifact/888922b5-cbe2-4edc-a70c-d4eca14b180f -- "The Row Nobody Reread".
+
+Three heads are named separately rather than one FINAL_HEAD, because every previous report in this
+programme asserted a final hash that its own commit invalidated within the minute. SOURCE_HEAD,
+TEST_HEAD and ASSESSMENT_HEAD are all 99c2d73 at the time of writing; the commit carrying the
+report moves HEAD past it and changes nothing the report asserts.
+
+`pytest scripts/ct1` was re-run for this report rather than quoted from the earlier session: 228
+passed. Cloud Functions and `tsc` remain reported as not re-run, since nothing under `functions/`
+has changed since they last ran.
+
+Push remains NOT PERFORMED. 83 commits ahead of `origin/formcoach/gates-a-c`. The session
+authorization was explicit and has not been reinterpreted.
