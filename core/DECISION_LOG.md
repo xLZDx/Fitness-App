@@ -16338,3 +16338,56 @@ exactly why the obvious workaround stays refused.
 No artefact was modified. The champion, the registry, v2, D3 and `PRODUCTION_IMAGE_COLLECTION =
 DISABLED` are untouched. The ledger's quoted fragment moved with the document, which is the
 mechanism from the previous gate doing its job on its first real edit.
+
+## A sign-in that succeeded and cost the person their history
+
+A reviewer was asked to falsify "there is no remaining executable engineering work" and was given no
+hint of the desired answer. It found the last instance of the shape this programme kept turning up.
+
+`signInWithGoogle` returned a bare `AuthUser`. Linking an anonymous session keeps its uid, so every
+Firestore document written under it stays reachable. On `credential-already-in-use` the code fell
+back to `signInWithCredential`, which signs the person into their real account and leaves this
+device's profile, injuries, workout log and schedule under a uid that has no credential anyone can
+ever sign into again. Both paths returned a user with a name and an email, and the screen showed the
+same thing either way. Nothing was deleted; it became unreachable, silently, at the moment the
+person did exactly what the app asked them to do.
+
+`core/review/N05_DISPOSITION.md` had recorded this precisely — "the copy in this branch names the
+exception; the flow still does not handle it" — and it had stayed recorded, unfixed, through the
+whole guest-upgrade gate. The copy layer got the mitigation and the flow did not. Worth stating
+plainly: the reconciliation sweep two gates ago did not catch this, because the sweep read status
+TABLES and this residual lives in section prose. The ledger has the same blind spot, which is why
+the row now exists.
+
+`signInWithGoogle` returns `SignInResult` carrying a `GuestUpgrade` — `linked`, `orphaned`,
+`notAGuest`. It is deliberately not defaulted: a default would let a future implementation return a
+value without deciding what happened, which is how the original read. Not a wrong answer, an unasked
+question. The login screen renders a persistent notice on `orphaned`, not a SnackBar, because
+someone who has just lost sight of their training history should not have the only explanation
+disappear on a timer. The copy says the workouts *stayed behind and are not shown here*, and a test
+forbids "deleted", "erased", "lost" and "removed", because none is true and each is false in the
+direction that stops people looking.
+
+Four mutations. Removing the screen's branch, claiming a deletion in the copy, and having the mock
+report a collision as a link were all killed. **The fourth survived, and it was the important one**:
+restoring the exact original defect in `FirebaseAuthRepository` — a flat `notAGuest` in place of
+`wasGuest ? orphaned : notAGuest` — left all twelve tests green, because every one of them runs
+against `MockAuthRepository`. The fix was unproven in the class that actually ships. A structural
+guard on that file kills it now, and the mutation is recorded rather than quietly re-run.
+
+**Refused, on the mandate's own terms.** The same reviewer proposed closing two of the six
+NOT_LOCATABLE metric claims by editing `MODEL_REGISTRY.json` so the registry cites `coverage.share`
+rather than `coverage`. The reasoning is sound and the file is ours to edit. It is refused anyway:
+the six are recorded DORMANT by explicit instruction, and editing what the registry asserts to make
+a claim locatable is chasing the number rather than closing a defect. `MEASUREMENT TRUE` and
+`SOURCE CLAIM LOCATABLE` stay separate.
+
+**Accepted from the same review, and a real defect in the ledger:** `metric_provenance_six` required
+`n == 6` exactly, which encoded the residual as a permanent expectation — legitimately closing one
+of the six would have presented as ledger drift and blocked `--report`. Six is now a ceiling. Fewer
+is progress; more is a regression; DRIFTED and SOURCE_MISSING stay at zero because they mean a
+source WAS found and disagrees.
+
+Suites: `flutter test` 2,968 (was 2,954; +14), `flutter analyze` 16 pre-existing infos and zero
+errors, `pytest scripts/review scripts/ml` 229. `functions/` and `firestore.rules` unchanged, so
+jest, `tsc` and the emulator are NOT RUN rather than quoted.

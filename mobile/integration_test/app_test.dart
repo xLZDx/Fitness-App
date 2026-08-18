@@ -26,6 +26,7 @@ import 'package:fitness_app/core/camera/camera_session.dart';
 import 'package:fitness_app/features/visual_equipment/data/mlkit_live_equipment_service.dart';
 import 'package:fitness_app/features/visual_equipment/state/live_equipment_providers.dart';
 import 'package:fitness_app/shared/widgets/aurora_background.dart';
+import 'package:fitness_app/features/auth/data/sign_in_outcome.dart';
 
 /// Real-device workflow tests.
 ///
@@ -70,7 +71,8 @@ class _SignedInAuth implements AuthRepository {
   Future<AuthUser> signInAnonymously() async => user;
 
   @override
-  Future<AuthUser> signInWithGoogle() async => user;
+  Future<SignInResult> signInWithGoogle() async =>
+      SignInResult(user, GuestUpgrade.notAGuest);
 
   @override
   Future<void> signOut() async {}

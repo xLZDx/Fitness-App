@@ -9,6 +9,7 @@ import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/social_feed/data/social_feed_repository.dart';
 import 'package:fitness_app/features/social_feed/social_feed_page.dart';
 import 'package:fitness_app/features/social_feed/state/social_feed_providers.dart';
+import 'package:fitness_app/features/auth/data/sign_in_outcome.dart';
 
 /// G2.1b-i: the like heart was one of five `IconButton`s with no [tooltip]
 /// at all -- not a wrong label, no label. Screen-reader-invisible in both
@@ -24,7 +25,7 @@ class _FakeAuthRepo implements AuthRepository {
   @override
   Future<AuthUser> signInAnonymously() async => throw UnimplementedError();
   @override
-  Future<AuthUser> signInWithGoogle() async => throw UnimplementedError();
+  Future<SignInResult> signInWithGoogle() async => throw UnimplementedError();
   @override
   Future<void> signOut() async {}
 }

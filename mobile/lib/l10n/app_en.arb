@@ -73,6 +73,10 @@
   "aiplannerTodaySPlan": "Today's plan",
   "authByContinuingYouAgreeToOur": "By continuing you agree to our Terms and Privacy Policy.",
   "authContinueWithGoogle": "Continue with Google",
+  "authGuestHistoryOrphaned": "Signed in. This Google account already had its own history, so the workouts you logged as a guest on this device stayed behind and are not shown here.",
+  "@authGuestHistoryOrphaned": {
+    "description": "Shown after a guest taps Continue with Google and the account already belonged to a different sign-in. The sign-in SUCCEEDED -- do not word this as an error. The guest data is not deleted, it is unreachable, and saying deleted would be false."
+  },
   "authSignInToScanEquipmentTrack": "Sign in to scan equipment, track workouts, and follow plans built for you.",
   "authWelcome": "Welcome",
   "catalogApprove": "Approve",

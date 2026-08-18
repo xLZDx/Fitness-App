@@ -26,7 +26,7 @@ void main() {
 
     test('signInWithGoogle creates a google user with display name + email',
         () async {
-      final user = await repo.signInWithGoogle();
+      final user = (await repo.signInWithGoogle()).user;
       expect(user.provider, AuthProvider.google);
       expect(user.displayName, isNotEmpty);
       expect(user.email, contains('@'));
@@ -68,7 +68,7 @@ void main() {
 
       test('keeps the same uid -- this is the whole point', () async {
         final guest = await repo.signInAnonymously();
-        final linked = await repo.signInWithGoogle();
+        final linked = (await repo.signInWithGoogle()).user;
 
         expect(linked.uid, guest.uid,
             reason: 'every Firestore document already written under the '
@@ -78,7 +78,7 @@ void main() {
 
       test('a fresh (non-guest) sign-in still gets a new uid, as before',
           () async {
-        final user = await repo.signInWithGoogle();
+        final user = (await repo.signInWithGoogle()).user;
         expect(user.uid, hasLength(32));
       });
 
@@ -97,7 +97,7 @@ void main() {
         addTearDown(collidingRepo.dispose);
 
         final guest = await collidingRepo.signInAnonymously();
-        final result = await collidingRepo.signInWithGoogle();
+        final result = (await collidingRepo.signInWithGoogle()).user;
 
         expect(result.uid, isNot(guest.uid));
         expect(result.provider, AuthProvider.google);
@@ -118,7 +118,7 @@ void main() {
         final sub = repo.authStateChanges().listen(emissions.add);
         await Future<void>.delayed(Duration.zero);
 
-        final linked = await repo.signInWithGoogle();
+        final linked = (await repo.signInWithGoogle()).user;
         await Future<void>.delayed(Duration.zero);
         await sub.cancel();
 
@@ -130,7 +130,7 @@ void main() {
           'claim the old guest uid', () async {
         final firstGuest = await repo.signInAnonymously();
         await repo.signOut();
-        final freshUser = await repo.signInWithGoogle();
+        final freshUser = (await repo.signInWithGoogle()).user;
 
         expect(freshUser.uid, isNot(firstGuest.uid),
             reason: 'the guest was signed out, not linked, before Google '

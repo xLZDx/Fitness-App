@@ -33,9 +33,10 @@ sources disagree and neither has been shown to be authoritative.
 | Metrics | FACT | `top_1 = 0.617`, `top_3 = 0.835` (`core/ml/MODEL_REGISTRY.json:90-93`) |
 | **Training log** | **UNKNOWN** | **Absent.** The only `.log` under the pipeline root is `train_v2.log`. Nothing records the actual v1 run: no loss curve, no wall-clock, no environment. |
 | Training code commit | **UNKNOWN** | The pipeline has never been in version control. This must stay UNKNOWN — see below. |
-| Dependency pin | **UNKNOWN** | No `requirements*.txt`, `*.toml` or lockfile at the pipeline root. The venv `D:/tools/ml-train-env` exists but is not a pin. |
+| Dependency pin, HISTORICAL | **UNKNOWN** | No `requirements*.txt`, `*.toml` or lockfile at the pipeline root, and none existed when v1 was trained. What versions the 2026-07-29 run used is not determinable from anything here, and a pin captured in 2026 cannot reach backwards to answer it. |
+| Dependency pin, RECOVERED | FACT | `core/ml/pins/ml_train_env_recovered_2026-08-18.txt` — 58 packages frozen from `D:/tools/ml-train-env` while it was still intact. Reproduces v1's headline metric; does **not** establish the historical row above. |
 
-**v1 is closable on every field except the training log and the dependency pin.** Dataset, trainer,
+**v1 is closable on every field except the training log and the HISTORICAL dependency pin.** Dataset, trainer,
 architecture, seed, hyperparameters, label set, output artifact, shipped identity and evaluation are
 all measured facts.
 
@@ -92,10 +93,30 @@ facts and collapsing them would make this file worthless.
 | Pipeline unversioned | A snapshot under the recovery semantics above, or a decision to keep it outside and rely on the pinned digests | operator — it is 92k dataset files and ~2 GB, and where that lives is theirs |
 | v1 training log absent | Nothing. The run happened and was not logged. A rerun would produce a NEW log, not the original one | nobody — record as permanently unknown |
 | v2 class-count contradiction | A 37-class training log, or a reproducible rerun | whoever holds the pipeline |
-| Dependency pin absent | A freeze of `D:/tools/ml-train-env`, which requires that environment to still be intact | operator |
+| Dependency pin absent | **CLOSED 2026-08-18** by `core/ml/pins/ml_train_env_recovered_2026-08-18.txt` -- the environment was still intact, so it was frozen. Recovered, not historical: see the note below | nobody, now |
 | Bitwise reproducibility | Nothing. It is impossible by construction — see below | nobody |
 | The v1 metadata step | A mediapipe/venv combination where the stub covers the code path | whoever holds the pipeline |
 
+
+### The dependency pin, recovered 2026-08-18
+
+The row above asked for a freeze of `D:/tools/ml-train-env` "which requires that environment to
+still be intact". It was intact, so it was frozen:
+`core/ml/pins/ml_train_env_recovered_2026-08-18.txt`, 58 packages, Python 3.11.9, sha256 of the
+package list `6ae6e7db…`. `tensorflow-cpu==2.15.1`, `keras==2.15.0`, `numpy==1.26.4`,
+`mediapipe==1.0.0` — the same versions this file already recorded as READ FROM the venv, now
+recorded outside it.
+
+What closed is narrow and should not be overstated. Until this, those versions existed in one
+directory on one machine and nowhere else; a reinstall, a disk failure or a single unattended
+upgrade would have destroyed the only description of what reproduces v1. The list now survives its
+environment.
+
+What did NOT close is the historical claim. Nothing establishes that these were the versions v1 was
+trained with on 2026-07-29 — no pin file existed then, and writing one now cannot reach backwards.
+That stays `UNKNOWN`. A recovered environment filed as though it were the original pin is precisely
+the substitution this document exists to prevent, so the file says so in its own header rather than
+relying on this paragraph being read.
 
 ## v1 reproducibility: ATTEMPTED, and the result is METRIC_REPRODUCIBLE
 

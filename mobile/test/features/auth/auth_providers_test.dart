@@ -5,6 +5,7 @@ import 'package:fitness_app/features/auth/data/auth_repository.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/data/mock_auth_repository.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
+import 'package:fitness_app/features/auth/data/sign_in_outcome.dart';
 
 void main() {
   group('AuthAction', () {
@@ -24,12 +25,12 @@ void main() {
 
     test('starts in idle (data null) state', () {
       final value = container.read(authActionProvider);
-      expect(value, const AsyncValue<void>.data(null));
+      expect(value, const AsyncValue<GuestUpgrade?>.data(null));
     });
 
     test('signInAnonymously transitions data → loading → data', () async {
-      final states = <AsyncValue<void>>[];
-      container.listen<AsyncValue<void>>(
+      final states = <AsyncValue<GuestUpgrade?>>[];
+      container.listen<AsyncValue<GuestUpgrade?>>(
         authActionProvider,
         (_, next) => states.add(next),
         fireImmediately: true,
@@ -79,7 +80,7 @@ class _FailingAuth implements AuthRepository {
   Future<AuthUser> signInAnonymously() async =>
       throw const AuthException('boom');
   @override
-  Future<AuthUser> signInWithGoogle() async =>
+  Future<SignInResult> signInWithGoogle() async =>
       throw const AuthException('boom');
   @override
   Future<void> signOut() async {}

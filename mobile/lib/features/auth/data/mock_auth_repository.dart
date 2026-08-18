@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'auth_repository.dart';
 import 'auth_user.dart';
+import 'sign_in_outcome.dart';
 
 /// In-memory [AuthRepository] used during development and in tests. Keeps
 /// at most one signed-in user at a time. Adds a small artificial latency so
@@ -59,7 +60,7 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthUser> signInWithGoogle() async {
+  Future<SignInResult> signInWithGoogle() async {
     await Future<void>.delayed(_latency);
 
     // Mirrors FirebaseAuthRepository's link-not-replace fix (L0d): a guest
@@ -81,7 +82,7 @@ class MockAuthRepository implements AuthRepository {
       );
       _current = linked;
       _controller.add(linked);
-      return linked;
+      return SignInResult(linked, GuestUpgrade.linked);
     }
 
     final user = AuthUser(
@@ -93,7 +94,15 @@ class MockAuthRepository implements AuthRepository {
     );
     _current = user;
     _controller.add(user);
-    return user;
+    // The mock must report the SAME outcome the real repository would, or it
+    // stops standing in for it -- which is how the original orphaning bug
+    // survived a green suite in the first place.
+    return SignInResult(
+      user,
+      guest != null && guest.provider == AuthProvider.anonymous
+          ? GuestUpgrade.orphaned
+          : GuestUpgrade.notAGuest,
+    );
   }
 
   @override

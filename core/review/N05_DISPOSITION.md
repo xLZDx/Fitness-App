@@ -114,7 +114,21 @@ That is the reinstall and second-device case.
 Making that path the escape hatch from a quota refusal means a user is told "sign in to keep
 watching", complies, and loses their history. **P2 must not ship on top of it without either
 handling the collision or warning before the tap.** The copy in this branch names the exception; the
-flow still does not handle it.
+flow, at the time this was written, did not handle it.
+
+**The flow now handles it (2026-08-18).** `signInWithGoogle` returns a `SignInResult` carrying a
+`GuestUpgrade` — `linked`, `orphaned`, or `notAGuest` — instead of a bare `AuthUser` that could not
+express the difference, and the login screen renders a persistent notice on `orphaned`. This is the
+same remedy the quota refusal got, for the same reason: a refusal that arrives dressed as a success
+is not a display problem, it is a type that failed to ask a question. The copy says the workouts
+*stayed behind and are not shown here*, and a test forbids the words "deleted", "erased", "lost" and
+"removed" in it, because none of them is true — the documents are intact under a uid with no
+credential to sign into.
+
+This closes the half of P2 that was engineering. **It does not make P2 shippable**, and nothing here
+should be read as recommending it: whether a quota refusal may demand identity at all remains the
+operator decision recorded at the top of this file. What changed is that the collision is no longer
+silent, so the decision can now be taken on its merits rather than on top of a hidden data loss.
 
 ### P3 — a project-wide daily ceiling
 

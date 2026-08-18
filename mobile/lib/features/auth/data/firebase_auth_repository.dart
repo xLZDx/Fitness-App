@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart' as gsi;
 
 import 'auth_repository.dart';
 import 'auth_user.dart';
+import 'sign_in_outcome.dart';
 
 /// FirebaseAuth-backed [AuthRepository]. Maps Firebase users into our domain
 /// [AuthUser] type so the rest of the app doesn't have to know which backend
@@ -117,7 +118,7 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthUser> signInWithGoogle() async {
+  Future<SignInResult> signInWithGoogle() async {
     try {
       final idToken =
           await (_googleIdTokenLoader ?? _realGoogleIdToken).call();
@@ -146,10 +147,11 @@ class FirebaseAuthRepository implements AuthRepository {
       // kind — this is the one gate in the round that gets to avoid S1b's
       // whole problem by construction rather than by writing a migration.
       final anonymous = _auth.currentUser;
-      if (anonymous != null && anonymous.isAnonymous) {
+      final wasGuest = anonymous != null && anonymous.isAnonymous;
+      if (wasGuest) {
         try {
           final result = await anonymous.linkWithCredential(cred);
-          return _toDomain(result.user)!;
+          return SignInResult(_toDomain(result.user)!, GuestUpgrade.linked);
         } on fb.FirebaseAuthException catch (e) {
           // 'credential-already-in-use': the Google account is already the
           // real identity behind a DIFFERENT Firebase user -- most often
@@ -187,8 +189,17 @@ class FirebaseAuthRepository implements AuthRepository {
         }
       }
 
+      // Reached either because there was no guest session at all, or
+      // because linking one was refused. Those are not the same event and
+      // must not return the same value: in the second case the person is
+      // signed in and everything they did on this device just became
+      // unreachable. Saying so is the caller's job, and it cannot do that job
+      // with a value that does not carry the distinction.
       final result = await _auth.signInWithCredential(cred);
-      return _toDomain(result.user)!;
+      return SignInResult(
+        _toDomain(result.user)!,
+        wasGuest ? GuestUpgrade.orphaned : GuestUpgrade.notAGuest,
+      );
     } on gsi.GoogleSignInException catch (e, st) {
       debugPrintStack(stackTrace: st);
       if (e.code == gsi.GoogleSignInExceptionCode.canceled) {

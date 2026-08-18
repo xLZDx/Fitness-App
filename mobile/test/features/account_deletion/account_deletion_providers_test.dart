@@ -7,6 +7,7 @@ import 'package:fitness_app/features/account_deletion/state/account_deletion_pro
 import 'package:fitness_app/features/auth/data/auth_repository.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
+import 'package:fitness_app/features/auth/data/sign_in_outcome.dart';
 
 class _RecordingAuthRepo implements AuthRepository {
   final signOutCalls = <void>[];
@@ -22,7 +23,7 @@ class _RecordingAuthRepo implements AuthRepository {
   @override
   Future<AuthUser> signInAnonymously() async => throw UnimplementedError();
   @override
-  Future<AuthUser> signInWithGoogle() async => throw UnimplementedError();
+  Future<SignInResult> signInWithGoogle() async => throw UnimplementedError();
   @override
   Future<void> signOut() async {
     signOutCalls.add(null);

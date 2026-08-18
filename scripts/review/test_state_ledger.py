@@ -49,6 +49,7 @@ def test_every_row_is_reachable_and_distinct():
         "F-prefetch", "F2", "F5", "checkout-copy", "metric-provenance-six",
         "N-05", "N-07", "D1", "H3", "CT1-human-labels", "scanner-metadata",
         "scanner-pipeline-location", "production-image-collection",
+        "guest-upgrade-outcome", "scanner-dependency-pin",
     }
     assert required <= set(items), f"untracked boundary items: {required - set(items)}"
 
@@ -422,6 +423,8 @@ EXPECTED_AUTHORITY = {
     "checkout-copy": sl.SOURCE,
     "metric-provenance-six": sl.SOURCE,
     "production-image-collection": sl.SOURCE,
+    "guest-upgrade-outcome": sl.SOURCE,
+    "scanner-dependency-pin": sl.SOURCE,
     "N-05": sl.OPERATOR,
     "N-07": sl.OPERATOR,
     "scanner-pipeline-location": sl.OPERATOR,

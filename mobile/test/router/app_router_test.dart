@@ -353,7 +353,7 @@ void main() {
     });
 
     test('a Google user is still bounced off /login', () async {
-      final user = await auth.signInWithGoogle();
+      final user = (await auth.signInWithGoogle()).user;
       await onboard(user.uid);
       expect(redirectFor(auth, profiles, '/login'), '/home',
           reason: 'the exemption is for guests only; this is the case that '
@@ -368,7 +368,7 @@ void main() {
       await onboard(guest.uid);
       expect(redirectFor(auth, profiles, '/login'), isNull);
 
-      final linked = await auth.signInWithGoogle();
+      final linked = (await auth.signInWithGoogle()).user;
       expect(linked.uid, guest.uid, reason: 'link, do not replace');
       expect(profiles.cached(linked.uid)?.hasCompletedOnboarding, isTrue,
           reason: 'the data the exemption exists to save is still there');

@@ -33,6 +33,8 @@ that closed it.
 | `F5` | **CLOSED** | SOURCE | functions/src/index.ts |
 | `checkout-copy` | **CLOSED** | SOURCE | mobile/lib/features/subscription/subscription_page.dart |
 | `metric-provenance-six` | **DORMANT** | SOURCE | scripts/ml/evaluation_report.py, core/ml/METRIC_PROVENANCE.md |
+| `guest-upgrade-outcome` | **CLOSED** | SOURCE | mobile/lib/features/auth/data/sign_in_outcome.dart, mobile/lib/features/auth/data/firebase_auth_repository.dart, mobile/lib/features/auth/login_page.dart |
+| `scanner-dependency-pin` | **CLOSED** | SOURCE | core/ml/pins/ml_train_env_recovered_2026-08-18.txt, core/ml/SCANNER_PROVENANCE.md |
 | `N-05` | **OPERATOR_DECISION_REQUIRED** | OPERATOR | core/review/N05_DISPOSITION.md, public/privacy.html |
 | `N-07` | **DORMANT** | OPERATOR | core/review/N07_TEAM_ACTIVATION_GATE.md, mobile/test/adversarial/n07_team_activation_test.dart |
 | `D1` | **EXTERNAL_AUTHORITY_REQUIRED** | EXTERNAL | core/review/CLINICAL_VALIDATION_HANDOFF.md, core/review/worklist/submission.json |
@@ -73,6 +75,18 @@ error.toString() reaches the screen only where the classifier admits it has no n
 State is **recomputed** from source on every check; the word above is compared, never trusted.
 
 Measurement true is not the same as source claim locatable.
+
+### `guest-upgrade-outcome` — CLOSED
+
+State is **recomputed** from source on every check; the word above is compared, never trusted.
+
+The unfixed half of P2, and the last shape of the defect this programme kept finding: a refusal that arrives dressed as a success. Linking keeps the uid; falling back signs the person into their real account and leaves this device's history under a uid nobody can sign into again. Both returned an AuthUser. The quoted sentence stays in the disposition document as the record of what was open; this row is what closed it.
+
+### `scanner-dependency-pin` — CLOSED
+
+State is **recomputed** from source on every check; the word above is compared, never trusted.
+
+Closes the recoverability of the environment, and nothing about the historical claim. Whether these were the versions v1 was trained with stays UNKNOWN and is not made recoverable by having been written down.
 
 ### `N-05` — OPERATOR_DECISION_REQUIRED
 

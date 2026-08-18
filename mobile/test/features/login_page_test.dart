@@ -10,6 +10,7 @@ import 'package:fitness_app/features/auth/data/mock_auth_repository.dart';
 import 'package:fitness_app/features/auth/login_page.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/features/auth/data/sign_in_outcome.dart';
 
 void main() {
   group('LoginPage', () {
@@ -106,7 +107,7 @@ class _RecordingMockAuth extends MockAuthRepository {
   }
 
   @override
-  Future<AuthUser> signInWithGoogle() {
+  Future<SignInResult> signInWithGoogle() {
     googleCalls += 1;
     return super.signInWithGoogle();
   }

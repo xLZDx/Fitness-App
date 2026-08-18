@@ -8,6 +8,7 @@ import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import 'state/auth_providers.dart';
+import 'data/sign_in_outcome.dart';
 
 class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});
@@ -100,6 +101,14 @@ class LoginPage extends ConsumerWidget {
                       loading: isLoading,
                     ),
                     const SizedBox(height: 12),
+                    // The sign-in succeeded and still cost the person their
+                    // guest history, which is the one outcome the old
+                    // `AsyncValue<void>` could not express: it looked
+                    // identical to the ordinary success it is not.
+                    if (action.value == GuestUpgrade.orphaned) ...[
+                      _GuestHistoryNotice(theme: theme, scheme: scheme),
+                      const SizedBox(height: 12),
+                    ],
                     AppSecondaryButton(
                       onPressed: isLoading
                           ? null
@@ -255,6 +264,43 @@ class _TermsAndPrivacyLine extends StatelessWidget {
             ),
           ),
           Text('.', style: plainStyle),
+        ],
+      ),
+    );
+  }
+}
+
+/// Says what a successful sign-in cost.
+///
+/// Deliberately not a SnackBar. A person who has just lost sight of their
+/// training history should not have the only explanation vanish after four
+/// seconds, and should be able to re-read it while deciding what to do.
+class _GuestHistoryNotice extends StatelessWidget {
+  const _GuestHistoryNotice({required this.theme, required this.scheme});
+
+  final ThemeData theme;
+  final ColorScheme scheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline, size: 18, color: scheme.onSurfaceVariant),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              AppLocalizations.of(context).authGuestHistoryOrphaned,
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: scheme.onSurfaceVariant),
+            ),
+          ),
         ],
       ),
     );

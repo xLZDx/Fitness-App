@@ -295,6 +295,63 @@ def checkout_copy() -> tuple[str, str]:
     )
 
 
+def guest_upgrade_outcome() -> tuple[str, str]:
+    """A sign-in that cost the person their guest history has to say so.
+
+    Three conjuncts, because the defect can return by dropping any one of
+    them: the outcome type must exist, the SHIPPING repository must decide it
+    on whether a guest session was actually in play, and the screen must
+    render the losing case. A type nobody reads is the original bug with more
+    ceremony.
+    """
+    outcome = _read("mobile/lib/features/auth/data/sign_in_outcome.dart")
+    repo = _without_comments(
+        _read("mobile/lib/features/auth/data/firebase_auth_repository.dart")
+    )
+    page = _without_comments(_read("mobile/lib/features/auth/login_page.dart"))
+
+    typed = _enum_has(outcome, "GuestUpgrade", "orphaned")
+    decided = (
+        "wasGuest ? GuestUpgrade.orphaned : GuestUpgrade.notAGuest" in repo
+    )
+    shown = "GuestUpgrade.orphaned" in page and "_GuestHistoryNotice" in page
+    ok = typed and decided and shown
+    return ("CLOSED" if ok else "OPEN"), (
+        f"GuestUpgrade.orphaned declared: {typed}; the shipping repository "
+        f"decides on wasGuest: {decided}; the screen renders it: {shown}"
+    )
+
+
+def scanner_dependency_pin() -> tuple[str, str]:
+    """The recovered v1 environment, still recorded outside the environment.
+
+    A pin whose only copy lives in the venv it describes is not a pin. This
+    checks the file exists and still carries the versions the provenance
+    document names -- so deleting it, or quietly editing a version in one place
+    and not the other, is a finding rather than a discovery made years later.
+    """
+    path = REPO / "core" / "ml" / "pins" / "ml_train_env_recovered_2026-08-18.txt"
+    if not path.exists():
+        return "OPEN", "the recovered pin file is gone"
+    body = path.read_text(encoding="utf-8", errors="replace")
+    doc = _read("core/ml/SCANNER_PROVENANCE.md")
+    required = ("tensorflow-cpu==2.15.1", "keras==2.15.0",
+                "numpy==1.26.4", "mediapipe==1.0.0")
+    missing = [v for v in required if v not in body]
+    # The versions must agree with the prose that cites them, in both
+    # directions -- the document names these four explicitly.
+    undocumented = [
+        v for v in required
+        if v.split("==")[1] not in doc
+    ]
+    ok = not missing and not undocumented
+    return ("CLOSED" if ok else "OPEN"), (
+        f"pin holds {len(required) - len(missing)}/{len(required)} named "
+        f"versions; missing from pin: {missing or 'none'}; absent from the "
+        f"provenance document: {undocumented or 'none'}"
+    )
+
+
 def metric_provenance_six() -> tuple[str, str]:
     """Recomputed from the locator, not read from the document.
 
@@ -312,9 +369,15 @@ def metric_provenance_six() -> tuple[str, str]:
     missing = counts.get("SOURCE_MISSING", 0)
     # DRIFTED is a different animal and is NOT dormant: it means a source was
     # located and disagrees. One appearing here is a defect, not a status.
-    ok = n == 6 and drifted == 0 and missing == 0
+    # `n == 6` was wrong, and wrong in a way worth naming: it made the
+    # residual a permanent expectation, so honestly closing one of the six
+    # would have read as drift and blocked --report. Six is a CEILING. Fewer
+    # is progress; more is a regression; DRIFTED and SOURCE_MISSING are
+    # different animals entirely and must stay at zero, because they mean a
+    # source WAS located and disagrees, or is missing outright.
+    ok = n <= 6 and drifted == 0 and missing == 0
     return ("DORMANT" if ok else "EXECUTABLE_ENGINEERING_WORK"), (
-        f"NOT_LOCATABLE={n} (expected 6), DRIFTED={drifted} (expected 0), "
+        f"NOT_LOCATABLE={n} (ceiling 6), DRIFTED={drifted} (expected 0), "
         f"SOURCE_MISSING={missing} (expected 0), total claims={result['claims']}"
     )
 
@@ -617,6 +680,37 @@ LEDGER: tuple[Row, ...] = (
         predicate=metric_provenance_six,
         quote=("core/ml/METRIC_PROVENANCE.md", "UNRESOLVED_BY_DESIGN"),
         notes="Measurement true is not the same as source claim locatable.",
+    ),
+    Row(
+        item="guest-upgrade-outcome",
+        state="CLOSED",
+        authority=SOURCE,
+        evidence=("mobile/lib/features/auth/data/sign_in_outcome.dart",
+                  "mobile/lib/features/auth/data/firebase_auth_repository.dart",
+                  "mobile/lib/features/auth/login_page.dart",),
+        predicate=guest_upgrade_outcome,
+        quote=("core/review/N05_DISPOSITION.md",
+               "The flow now handles it"),
+        notes="The unfixed half of P2, and the last shape of the defect this "
+              "programme kept finding: a refusal that arrives dressed as a "
+              "success. Linking keeps the uid; falling back signs the person "
+              "into their real account and leaves this device's history under "
+              "a uid nobody can sign into again. Both returned an AuthUser. "
+              "The quoted sentence stays in the disposition document as the "
+              "record of what was open; this row is what closed it.",
+    ),
+    Row(
+        item="scanner-dependency-pin",
+        state="CLOSED",
+        authority=SOURCE,
+        evidence=("core/ml/pins/ml_train_env_recovered_2026-08-18.txt",
+                  "core/ml/SCANNER_PROVENANCE.md",),
+        predicate=scanner_dependency_pin,
+        quote=("core/ml/SCANNER_PROVENANCE.md", "Recovered, not historical"),
+        notes="Closes the recoverability of the environment, and nothing about "
+              "the historical claim. Whether these were the versions v1 was "
+              "trained with stays UNKNOWN and is not made recoverable by "
+              "having been written down.",
     ),
     Row(
         item="N-05",
