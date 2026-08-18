@@ -15801,3 +15801,62 @@ commits.
 
 Cloud Functions tests are reported as NOT re-run rather than quoted from a previous session. No
 file under `functions/` changed here.
+
+## F5 — a guest account could buy a subscription it could never cancel
+
+`startFreeTrial` refused an anonymous caller and `createCheckoutSession` did not, so the guard sat
+on the cheaper of the two doors. `N05_DISPOSITION.md` recorded this as OPEN and left it, on the
+grounds that both candidate fixes were product decisions belonging to the operator. Two independent
+reviews -- a payments-lifecycle lens and an abuse lens, run separately and never shown each other's
+output -- produced two facts that were not available when that was written.
+
+**The subscription is not merely unrecoverable, it is uncancellable.** An anonymous account has no
+credential to sign back into. `createPortalSession` (`index.ts:680`) reads the Stripe customer id
+from `users/{uid}/subscription/main`; `deleteAccount` cancels through the same document;
+`generateAnnualReceipt` bills a payer whose name resolves to "Anonymous" against a Stripe customer
+with no email. All three require still holding the session. Sign out, reinstall or clear app data,
+and the card keeps being charged with no route in the product to stop it. `lifetime` was purchasable
+this way. That is a consumer-protection defect rather than a revenue trade-off, and it is what moved
+this from a preference to a correctness fix.
+
+**The alternative fix is affirmatively unsafe.** Exempting active subscribers from the anonymous
+quota divisor is consistent with the divisor's own rationale, and it makes one Stripe authorisation
+-- on a stolen card -- sufficient to unlock the undivided 1,200 objects/day, which sweeps the
+licensed library in three days, comfortably inside the window before a chargeback lands. It trades
+a consumer-protection defect for a licensing one. Options 2 and 3 are therefore closed, not merely
+unchosen.
+
+**Implemented option 1.** Four lines in `createCheckoutSession`, mirroring the guard `startFreeTrial`
+has carried since A6-full. Deleting them reverts it. It does NOT touch what the operator reserved:
+anonymous sign-in keeps its video access and nothing about the anonymous experience changes except
+that paying requires an account that can be signed back into -- the same friction the free trial
+already imposes, on a guest-upgrade path that was made reachable earlier in this branch (`792def6`).
+
+Five tests, asserting on the Stripe mock rather than only on the thrown code, because a guard that
+throws after creating the customer has prevented nothing. Four mutations killed and restored
+byte-for-byte: the guard removed (Y); the guard relocated behind the Stripe customer create (Z); the
+guard written as an allow-list on `google.com`, which locks every email/password payer out (AA); and
+the guard narrowed to `lifetime` only (AB).
+
+**Recorded as OPEN, not fixed here:** the subscription screen renders a failed checkout as
+`error.toString()` in a monospace diagnostic panel (`subscription_page.dart:321`). For an unexpected
+fault that panel is the right design; for this refusal -- expected, actionable, and now reachable --
+it is the same "deliberate refusal rendered as a fault" defect the prefetch gate fixed. It needs its
+own localized copy and is a separate gate, not a fixup.
+
+**Suites at this HEAD:** `npx tsc --noEmit` clean; `npx jest` 222 passed across 9 suites (index.test
+81, was 76). Flutter and Python untouched by this gate and not re-run.
+
+**Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.
+
+## CT-1 train-split invariants re-proved rather than re-read
+
+`scripts/ct1` already carries the train-split label tooling: `label_contract.py` excludes
+MODEL_PREDICTION and AUTO_HEURISTIC_FLAG from `TRAINABLE_SOURCES`, `leakage_guard.py` asserts
+disjointness and refuses an empty split, and `train_review.py` refuses the `error_targeted` strategy
+outright while the holdout review is open. Rather than restate that from reading, three mutations
+were run: the intersection check made vacuous (V, 3 tests red), the untrainable set emptied so every
+forbidden origin becomes trainable (W, 1 test red), and the error-targeted refusal disabled (X, 1
+test red). All restored byte-for-byte. 228 tests pass.
+
+HUMAN_REVIEW_LABELS = 0. EVALUATION_LABEL_GAP = OPEN. No challenger trained, and none should be.

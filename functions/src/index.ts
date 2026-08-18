@@ -544,6 +544,43 @@ export const createCheckoutSession = onCall(
     // F011 — see `assertAccountStillExists`.
     await assertAccountStillExists(auth.uid, "createCheckoutSession");
 
+    // F5. The free trial refused an anonymous caller and the paid checkout did
+    // not, so the guard sat on the cheaper of the two doors.
+    //
+    // The reason it was there in the first place applies here with more force.
+    // An anonymous account has no credential to sign back into: sign out,
+    // reinstall, or clear app data, and the uid is gone for good. Everything
+    // that manages the subscription is keyed to that uid —
+    // `createPortalSession` reads `users/{uid}/subscription/main` for the
+    // customer id, `deleteAccount` cancels through the same document, and
+    // `generateAnnualReceipt` bills a payer whose name resolves to
+    // "Anonymous" with no email on the Stripe customer. Lose the session and
+    // the subscription is not merely unrecoverable, it is UNCANCELLABLE: the
+    // card keeps being charged and the person holding it has no route in the
+    // product to stop it. `lifetime` was purchasable this way too.
+    //
+    // The alternative fix — leaving checkout open and exempting subscribers
+    // from the anonymous quota divisor — was rejected on measurement, not
+    // taste. It makes one Stripe authorisation on a stolen card sufficient to
+    // unlock the undivided 1,200 objects/day, which sweeps the whole licensed
+    // library in three days, well inside the window before a chargeback lands.
+    // That trades a consumer-protection defect for a licensing one.
+    //
+    // What this costs: an anonymous user must link an account before paying.
+    // That is the same friction `startFreeTrial` already imposes, and the
+    // guest upgrade path it depends on is reachable from the profile screen.
+    // It is four lines and a deletion reverses it, which is the property that
+    // made it implementable here rather than a decision left open — see
+    // `core/review/N05_DISPOSITION.md`, F5.
+    if (auth.token?.firebase?.sign_in_provider === "anonymous") {
+      throw new HttpsError(
+        "failed-precondition",
+        "Add a Google account before subscribing. " +
+          "A guest account cannot be signed back into, so a subscription " +
+          "bought on one could not be restored or cancelled.",
+      );
+    }
+
     const tier = request.data?.tier as Tier | undefined;
     if (tier !== "standard" && tier !== "celebrityTrainer") {
       throw new HttpsError(

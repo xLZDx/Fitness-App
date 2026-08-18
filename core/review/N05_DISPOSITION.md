@@ -160,15 +160,30 @@ These are separate from N-05 and are recorded so they are not lost with it.
 | # | Status | Finding |
 |---|---|---|
 | F2 | **FIXED** in this branch | A `resource-exhausted` refusal rendered as "The clip link is unavailable". No quota control — including the one already shipped — is honestly shippable until a refusal is distinguishable from a fault. |
-| F5 | **OPEN — needs a decision** | `createCheckoutSession` (`index.ts:538-546`) accepts anonymous callers for real money **including `lifetime`**, while `startFreeTrial` (`index.ts:467`) rejects them for a free trial. `quotaFor` (`abuse_guard.ts:219-225`) never reads tier, so that paying subscriber then runs at 1/8. Since the prefetch is premium-gated, **the anonymous 150 objects/day ceiling exists exclusively for anonymous users who have PAID.** |
+| F5 | **FIXED** in this branch — option 1 | `createCheckoutSession` (`index.ts:538-546`) accepts anonymous callers for real money **including `lifetime`**, while `startFreeTrial` (`index.ts:467`) rejects them for a free trial. `quotaFor` (`abuse_guard.ts:219-225`) never reads tier, so that paying subscriber then runs at 1/8. Since the prefetch is premium-gated, **the anonymous 150 objects/day ceiling exists exclusively for anonymous users who have PAID.** |
 | F-prefetch | **OPEN, recorded** | `resolveAll` still swallows a quota refusal; a prefetch stopped by the cap reports nothing. Needs a result type that can say "38 of 84, limit reached". |
 
-**F5 is not fixed here on purpose.** Both candidate fixes are decisions this repository has already
-said belong to the operator — `abuse_guard.ts:208-213` records that refusing anonymous callers
-outright *"is a product decision that belongs to the operator too"*. The three options, with their
-costs:
+**F5 was not fixed when this file was written, and now is — option 1.** What changed is evidence,
+not appetite. Two independent reviews, run separately and agreeing without being shown each other's
+output, established two facts this section did not have:
 
-1. **Reject anonymous at `createCheckoutSession`**, as `startFreeTrial` already does. Consistent,
+* **The subscription is not merely unrecoverable, it is UNCANCELLABLE.** `createPortalSession`
+  (`index.ts:680`) reads the customer id from `users/{uid}/subscription/main`, and `deleteAccount`
+  cancels through the same document. Both require still holding the anonymous session that is gone.
+  A person who pays on a guest account and reinstalls is billed indefinitely with no route in the
+  product to stop it. That is a consumer-protection defect, not a revenue trade-off, and it is what
+  moved this from a product preference to a correctness fix.
+* **Option 2 is affirmatively unsafe.** Exempting subscribers from the divisor makes one Stripe
+  authorisation — on a stolen card — enough to unlock the undivided 1,200 objects/day, sweeping the
+  licensed library in three days, comfortably inside the window before a chargeback lands. It would
+  trade this defect for a licensing one.
+
+Option 1 is four lines, reverts by deletion, and imposes exactly the friction `startFreeTrial`
+already imposes. It does **not** touch what the operator reserved: anonymous sign-in keeps its video
+access, and nothing about the anonymous product experience changes except that paying requires an
+account that can be signed back into. The three options, with their costs, as originally recorded:
+
+1. **Reject anonymous at `createCheckoutSession`**, as `startFreeTrial` already does. ← **CHOSEN** Consistent,
    four lines, and defensible on consumer-protection grounds — a lifetime purchase tied to an
    account with no credential to sign back into is unrecoverable. It also turns away money.
 2. **Exempt an active subscriber in `quotaFor`.** Consistent with the divisor's own stated

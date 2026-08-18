@@ -466,6 +466,128 @@ describe("startFreeTrial", () => {
 describe("createCheckoutSession", () => {
   const SUB_PATH = "users/u1/subscription/main";
 
+  // F5. The free trial refused an anonymous caller; the paid checkout did not.
+  //
+  // What made that worse than an inconsistency: an anonymous account has no
+  // credential to sign back into, and every route that MANAGES a subscription
+  // is keyed to its uid. `createPortalSession` reads the customer id from
+  // `users/{uid}/subscription/main`; `deleteAccount` cancels through the same
+  // document. Lose the session -- sign out, reinstall, clear app data -- and
+  // the subscription is not just unrecoverable, it is uncancellable, and the
+  // card keeps being charged.
+  //
+  // These tests assert on `stripeMock`, not only on the thrown code: a guard
+  // that throws AFTER creating the Stripe customer or the checkout session has
+  // not prevented anything.
+  describe("an account that cannot be signed back into cannot be charged", () => {
+    const anon = (uid = "anon1") => ({
+      uid,
+      token: { firebase: { sign_in_provider: "anonymous" } },
+    });
+
+    test("an anonymous caller is refused before Stripe is touched", async () => {
+      primeDoc("users/anon1/subscription/main", undefined);
+
+      await expectHttpsError(
+        createCheckoutSession.run(
+          req({ tier: "standard", period: "monthly" }, anon()),
+        ),
+        "failed-precondition",
+      );
+
+      expect(stripeMock.checkout.sessions.create).not.toHaveBeenCalled();
+      expect(stripeMock.customers.create).not.toHaveBeenCalled();
+    });
+
+    test("lifetime is refused too, which is the one that cannot be undone", async () => {
+      // A recurring subscription lapses when the card is next declined. A
+      // one-time lifetime purchase on an unreachable account is money spent
+      // for an entitlement nobody can ever sign in to claim.
+      primeDoc("users/anon1/subscription/main", undefined);
+
+      await expectHttpsError(
+        createCheckoutSession.run(
+          req({ tier: "celebrityTrainer", period: "lifetime" }, anon()),
+        ),
+        "failed-precondition",
+      );
+
+      expect(stripeMock.checkout.sessions.create).not.toHaveBeenCalled();
+    });
+
+    test("the refusal is about the provider, not about a missing email", async () => {
+      // The control. An anonymous token carrying an email must still be
+      // refused -- otherwise the guard is testing the wrong property, and a
+      // future token shape that happens to include one walks straight past it.
+      primeDoc("users/anon1/subscription/main", undefined);
+
+      await expectHttpsError(
+        createCheckoutSession.run(
+          req(
+            { tier: "standard", period: "monthly" },
+            {
+              uid: "anon1",
+              token: {
+                email: "someone@example.com",
+                firebase: { sign_in_provider: "anonymous" },
+              },
+            },
+          ),
+        ),
+        "failed-precondition",
+      );
+
+      expect(stripeMock.customers.create).not.toHaveBeenCalled();
+    });
+
+    test("a Google caller is unaffected", async () => {
+      // The guard must close the unrecoverable path, not the product. Without
+      // this, refusing EVERY caller would satisfy the three tests above.
+      primeDoc(SUB_PATH, { stripeCustomerId: "cus_existing" });
+      stripeMock.checkout.sessions.create.mockResolvedValue({
+        id: "cs_ok",
+        url: "https://checkout.stripe.test/cs_ok",
+      });
+
+      const res = await createCheckoutSession.run(
+        req(
+          { tier: "standard", period: "monthly" },
+          {
+            uid: "u1",
+            token: {
+              email: "u1@example.com",
+              firebase: { sign_in_provider: "google.com" },
+            },
+          },
+        ),
+      );
+
+      expect(res).toEqual({ url: "https://checkout.stripe.test/cs_ok" });
+      expect(stripeMock.checkout.sessions.create).toHaveBeenCalledTimes(1);
+    });
+
+    test("a caller with no provider claim at all is still allowed", async () => {
+      // Email/password tokens in this suite carry no `firebase.sign_in_provider`
+      // at all (see the happy-path test above). A guard written as
+      // `!== "google.com"` would lock them out of paying, which is a revenue
+      // outage dressed as a security fix.
+      primeDoc(SUB_PATH, { stripeCustomerId: "cus_existing" });
+      stripeMock.checkout.sessions.create.mockResolvedValue({
+        id: "cs_ok2",
+        url: "https://checkout.stripe.test/cs_ok2",
+      });
+
+      const res = await createCheckoutSession.run(
+        req(
+          { tier: "standard", period: "monthly" },
+          { uid: "u1", token: { email: "u1@example.com" } },
+        ),
+      );
+
+      expect(res).toEqual({ url: "https://checkout.stripe.test/cs_ok2" });
+    });
+  });
+
   test("happy path: existing customer, standard monthly subscription", async () => {
     primeDoc(SUB_PATH, { stripeCustomerId: "cus_existing" });
     stripeMock.checkout.sessions.create.mockResolvedValue({
