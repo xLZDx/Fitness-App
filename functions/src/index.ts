@@ -1701,7 +1701,7 @@ export const reportEquipment = onCall(
         // on, and with the instance unavailable to anyone else reporting a
         // fault. One dark endpoint at a busy chain is enough to make
         // reporting fail for every other gym.
-        await fetch(webhookUrl, {
+        const response = await fetch(webhookUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -1714,6 +1714,28 @@ export const reportEquipment = onCall(
           // meaning of "best-effort" here.
           redirect: "manual",
         });
+        // And say so when it did not land. `fetch` resolves on 3xx and on
+        // every 4xx/5xx, so without this the `catch` below never runs and a
+        // gym whose endpoint moved -- apex to www, a missing trailing slash,
+        // a relocated path -- simply stops receiving reports, in silence.
+        //
+        // That is worse than the case this function refuses on purpose, by
+        // this file's own argument twenty lines up: "a report that silently
+        // stops being delivered is worse than one that was never configured."
+        // Declining to follow the redirect is right; declining to mention it
+        // was a defect, and one introduced by the same change that added the
+        // guard.
+        if (!response.ok) {
+          const moved = response.status >= 300 && response.status < 400;
+          logger.warn("equipment report webhook did not accept the report", {
+            gymId,
+            reportId,
+            status: response.status,
+            // Named separately because the fix is different: a redirect means
+            // reconfigure the gym to its final https URL, not debug a receiver.
+            redirected: moved,
+          });
+        }
       }
     } catch (err) {
       // Still swallowed, and the ordering is what makes that right: the

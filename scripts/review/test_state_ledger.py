@@ -434,7 +434,23 @@ EXPECTED_AUTHORITY = {
     "D1": sl.EXTERNAL,
     "H3": sl.EXTERNAL,
     "CT1-human-labels": sl.EXTERNAL,
-    "scanner-metadata": sl.ENVIRONMENT,
+    # Moved ENVIRONMENT -> SOURCE on 2026-08-18, deliberately, and this pin is
+    # where that had to be argued rather than performed.
+    #
+    # The move is the one this test exists to make difficult, so: the row asked
+    # whether the shipped model's declared min_parser_version matches what the
+    # genuine library computes. ENVIRONMENT asserted nobody here could answer
+    # it. That was false -- the blocker was a `pip install` failing inside a
+    # container, generalised into a claim about the host.
+    #
+    # It is not laundering, and the reason is reproducibility rather than
+    # confidence: the answer is a deterministic computation any reader can
+    # repeat in minutes with `scripts/ml/metadata_validation_recipe.md`, and
+    # the predicate re-checks nothing except that the recorded answer is still
+    # about the artefact on disk. That is the same shape as
+    # `scanner_dependency_pin`. A clinical sign-off could never move this way,
+    # because no recipe reproduces a named clinician's judgement.
+    "scanner-metadata": sl.SOURCE,
     "gym-webhook-disclosure": sl.OPERATOR,
     "roboflow-key-reissue": sl.OPERATOR,
 }
@@ -449,11 +465,36 @@ def test_no_row_may_change_the_authority_that_owns_it():
     )
 
 
-def test_at_least_one_row_of_each_non_source_authority_exists():
-    """Non-vacuity for the two structural loops that filter on non-SOURCE."""
+def test_non_source_rows_exist_for_the_structural_loops():
+    """Non-vacuity for the two loops in `check()` that filter on non-SOURCE.
+
+    This used to demand one row of EACH non-source authority, ENVIRONMENT
+    included. That became wrong when `scanner-metadata` -- the only ENVIRONMENT
+    row there has ever been -- turned out not to be environment-blocked at all.
+    The loops need non-SOURCE subjects, which EXTERNAL and OPERATOR supply;
+    they do not need one of every label.
+    """
     present = {r.authority for r in sl.LEDGER}
-    for authority in (sl.EXTERNAL, sl.OPERATOR, sl.ENVIRONMENT):
+    assert present <= set(sl.AUTHORITIES), present - set(sl.AUTHORITIES)
+    for authority in (sl.EXTERNAL, sl.OPERATOR):
         assert authority in present, f"no {authority} row left to check"
+    assert [r for r in sl.LEDGER if r.authority != sl.SOURCE]
+
+
+def test_the_environment_authority_is_currently_unused_and_that_is_recorded():
+    """ENVIRONMENT has no rows, and the distinction from `TEST` matters.
+
+    `TEST` was deleted because `check()` structurally rejected what it meant --
+    a constant whose documented meaning the checker refuses is a trap.
+    ENVIRONMENT is not that: it is implementable, it was genuinely used, and it
+    is empty only because the one item carrying it was measured and found not
+    to be blocked. It stays available.
+
+    Pinned so the emptiness is a fact somebody chose rather than one that crept
+    in, and so re-populating it is a visible act.
+    """
+    assert sl.ENVIRONMENT in sl.AUTHORITIES
+    assert not [r for r in sl.LEDGER if r.authority == sl.ENVIRONMENT]
 
 
 def test_the_state_vocabulary_is_closed(ledger):
@@ -1433,3 +1474,96 @@ def test_the_clinical_handoff_is_read_for_residuals():
     assert "core/review/CLINICAL_VALIDATION_HANDOFF.md" in sl.RESIDUAL_DOCS
     for rel in sl.RESIDUAL_DOCS:
         assert (sl.REPO / rel).exists(), rel
+
+
+# =========================== the row that was never environment-blocked
+#
+# `scanner-metadata` read ENVIRONMENT_BLOCKED for several passes because a
+# `pip install` failed INSIDE a container -- the interception CA is in the
+# Windows trust store and absent from `python:3-slim`'s bundle -- and that was
+# generalised into a claim about the host. The host reaches PyPI fine.
+# Downloading the manylinux wheels there and installing offline in the
+# container needs no TLS bypass, and the genuine library then answers.
+
+
+def _record(tmp_path, monkeypatch, model=b"TFL3", **overrides):
+    (tmp_path / "mobile" / "assets" / "models").mkdir(parents=True)
+    (tmp_path / "mobile" / "assets" / "models" / "m.tflite").write_bytes(model)
+    import hashlib
+    rec = {
+        "input_path": "mobile/assets/models/m.tflite",
+        "input_sha256": hashlib.sha256(model).hexdigest(),
+        "recorded_min_parser_version": "1.0.0",
+        "computed_min_parser_version": "1.0.0",
+        "state": "VALIDATED_MATCH",
+    }
+    rec.update(overrides)
+    monkeypatch.setattr(sl, "REPO", tmp_path)
+    monkeypatch.setattr(sl, "_read", lambda rel: json.dumps(rec))
+    return rec
+
+
+def test_a_validated_model_closes_the_row(tmp_path, monkeypatch):
+    _record(tmp_path, monkeypatch)
+    state, detail = sl.scanner_metadata_validated()
+    assert state == "CLOSED"
+    assert "'1.0.0'" in detail
+
+
+def test_swapping_the_model_reopens_the_question(tmp_path, monkeypatch):
+    """The conjunct the whole design rests on.
+
+    The record is an answer about ONE artefact. A verdict earned by a different
+    file is not evidence about this one, and inheriting it silently is exactly
+    the drift this ledger exists to refuse -- here it would mean an unvalidated
+    binary shipping under a validated model's reputation.
+    """
+    _record(tmp_path, monkeypatch, model=b"TFL3-original")
+    (tmp_path / "mobile" / "assets" / "models" / "m.tflite").write_bytes(
+        b"TFL3-a-different-model"
+    )
+    state, detail = sl.scanner_metadata_validated()
+    assert state == "OPEN"
+    assert "not the one that was validated" in detail
+
+
+@pytest.mark.parametrize("overrides,why", [
+    ({"state": "ENVIRONMENT_NOT_RUN"}, "a record that never reached a verdict"),
+    ({"state": "VALIDATED_MISMATCH"}, "a record that reached the wrong one"),
+    ({"computed_min_parser_version": "1.3.0"},
+     "a record that contradicts itself"),
+    ({"input_path": "mobile/assets/models/gone.tflite"},
+     "a record about a file that is not there"),
+])
+def test_the_record_cannot_claim_more_than_it_holds(tmp_path, monkeypatch,
+                                                    overrides, why):
+    _record(tmp_path, monkeypatch, **overrides)
+    assert sl.scanner_metadata_validated()[0] == "OPEN", why
+
+
+@pytest.mark.parametrize("body", ["null", "[]", '{"state": "VALIDATED_MATCH"',
+                                  '"VALIDATED_MATCH"'])
+def test_a_malformed_record_opens_the_row_rather_than_crashing(
+    tmp_path, monkeypatch, body
+):
+    """`null` parses cleanly and is not a record.
+
+    Found by a mutation that emptied the file and made the predicate raise.
+    `check()` would have reported PREDICATE_ERROR, so nothing was ever silently
+    green -- but a guard that says OPEN and why is more use than a traceback.
+    """
+    monkeypatch.setattr(sl, "REPO", tmp_path)
+    monkeypatch.setattr(sl, "_read", lambda rel: body)
+    assert sl.scanner_metadata_validated()[0] == "OPEN"
+
+
+def test_the_live_record_is_about_the_model_that_ships():
+    """Not a fixture. The claim itself, against the real tree."""
+    record = json.loads(
+        (sl.REPO / "core" / "ml" / "METADATA_VALIDATION.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert record["state"] == "VALIDATED_MATCH"
+    assert record["input_path"] == "mobile/assets/models/equipment_v1.tflite"
+    assert sl.scanner_metadata_validated()[0] == "CLOSED"

@@ -1,0 +1,28 @@
+{
+  "_comment": [
+    "The genuine tflite-support library's answer about the shipped model.",
+    "Written by hand from the run recorded in scripts/ml/metadata_validation_recipe.md,",
+    "because the validator runs in a container with the repository mounted read-only",
+    "and must stay unable to write here.",
+    "",
+    "input_sha256 is load-bearing: scanner_metadata_validated() compares it against",
+    "the champion on disk, so replacing the model reopens the question instead of",
+    "inheriting this answer."
+  ],
+  "validated_at": "2026-08-18",
+  "input_path": "mobile/assets/models/equipment_v1.tflite",
+  "input_sha256": "6f159ec32cd6c010c5319cb3436b22e97ce07ee72ff6f05daf02d3a2c7e696e3",
+  "library": "tflite-support==0.4.4 (manylinux2014_x86_64, cp311)",
+  "recorded_min_parser_version": "1.0.0",
+  "computed_min_parser_version": "1.0.0",
+  "labels": ["labels.txt"],
+  "input_normalization": [
+    {"options_type": "NormalizationOptions", "options": {"mean": [0.0], "std": [1.0]}}
+  ],
+  "state": "VALIDATED_MATCH",
+  "caveats": [
+    "The stub's stamp was correct for this artefact. It was still a stub: the genuine function rejects an empty buffer, the stub answers 1.0.0 for anything.",
+    "mean=0/std=1 means no normalisation is applied; the model expects raw 0-255 input. That describes the model, not a metadata defect.",
+    "attach_metadata.py was not run end to end. What is settled is the shipped artefact's declared metadata, not the pipeline step that produces it."
+  ]
+}

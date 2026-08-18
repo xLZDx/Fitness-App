@@ -65,6 +65,7 @@ it can and must be able to REOPEN the question.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import re
@@ -865,6 +866,58 @@ def production_image_collection_disabled() -> tuple[str, str]:
     )
 
 
+def scanner_metadata_validated() -> tuple[str, str]:
+    """The genuine library's answer, tied to the artefact it answered about.
+
+    This row read `ENVIRONMENT_BLOCKED` for several passes on the strength of a
+    `pip install` that failed INSIDE a container -- the interception CA is in
+    the Windows trust store and absent from `python:3-slim`'s bundle, so a
+    property of the container was generalised into a property of the host. The
+    host reaches PyPI perfectly well. Downloading the manylinux wheels there
+    and installing them offline in the container needs no TLS bypass at all,
+    and the genuine `_pywrap_metadata_version` then computes `1.0.0` -- the
+    same value the pipeline's stub stamped.
+
+    So the state is now source-provable, and the conjunct that matters is the
+    DIGEST: the recorded answer is about one artefact, and swapping the model
+    must reopen the question rather than inherit a verdict earned by a
+    different file. That is the whole reason this is a predicate and not a
+    sentence in a document.
+    """
+    try:
+        record = json.loads(_read("core/ml/METADATA_VALIDATION.json"))
+    except Exception as exc:  # noqa: BLE001 -- absent or unparseable is the answer
+        return "OPEN", f"no usable validation record: {type(exc).__name__}"
+    # `null`, a list, a string -- all parse cleanly and are not a record. Found
+    # by a mutation that deleted the record's contents and crashed this
+    # function instead of opening the row. `check()` would have caught the
+    # raise as PREDICATE_ERROR, so nothing was ever silently green; but a guard
+    # that answers "OPEN, and here is why" is more use than a traceback.
+    if not isinstance(record, dict):
+        return "OPEN", f"the validation record is a {type(record).__name__}"
+
+    model = REPO / record.get("input_path", "")
+    if not model.exists():
+        return "OPEN", f"the validated artefact is gone: {record.get('input_path')}"
+    digest = hashlib.sha256(model.read_bytes()).hexdigest()
+    if digest != record.get("input_sha256"):
+        return "OPEN", (
+            "the shipped model is not the one that was validated "
+            f"({digest[:12]} on disk, {str(record.get('input_sha256'))[:12]} "
+            "recorded) -- revalidate rather than inherit the old answer"
+        )
+    if record.get("state") != "VALIDATED_MATCH":
+        return "OPEN", f"validation state is {record.get('state')!r}"
+    if record.get("computed_min_parser_version") != \
+            record.get("recorded_min_parser_version"):
+        return "OPEN", "the record contradicts itself on the parser version"
+    return "CLOSED", (
+        f"the genuine library computes "
+        f"{record['computed_min_parser_version']!r}, matching the stamped "
+        f"value, for the model at {digest[:12]}"
+    )
+
+
 def metadata_is_still_environment_blocked() -> tuple[bool, str]:
     """Two things must hold for `ENVIRONMENT_BLOCKED` to still be the truth.
 
@@ -1256,17 +1309,19 @@ LEDGER: tuple[Row, ...] = (
     ),
     Row(
         item="scanner-metadata",
-        state="ENVIRONMENT_BLOCKED",
-        authority=ENVIRONMENT,
-        evidence=("core/ml/SCANNER_PROVENANCE.md",
-                  "mobile/assets/models/README.md",
+        state="CLOSED",
+        authority=SOURCE,
+        evidence=("core/ml/METADATA_VALIDATION.json",
+                  "scripts/ml/metadata_validation_recipe.md",
                   "scripts/ml/validate_metadata.py",),
-        invariant=metadata_is_still_environment_blocked,
-        quote=("core/ml/SCANNER_PROVENANCE.md", "BLOCKED_BY_WINDOWS_PACKAGE"),
-        no_local_predicate="mediapipe on this platform ships no "
-                           "_pywrap_metadata_version C extension. Widening the "
-                           "stub would mean inventing a metadata parser "
-                           "version and stamping it into a shipped artefact.",
+        predicate=scanner_metadata_validated,
+        notes="Was ENVIRONMENT_BLOCKED, and should not have been. The blocker "
+              "was a pip install failing inside a container, generalised into "
+              "a claim about the host -- which reaches PyPI fine. Answered by "
+              "the genuine library rather than by widening the stub: "
+              "VALIDATED_MATCH. The predicate is digest-bound, so replacing "
+              "the model reopens the question instead of inheriting a verdict "
+              "earned by a different artefact.",
     ),
     Row(
         item="scanner-pipeline-location",

@@ -223,8 +223,12 @@ it is not itself secret.
 
 * **D1, H3, CT-1** need a named clinician's signature or real human QA labels. No local artefact may
   stand in, and none has appeared. `HUMAN_REVIEW_LABELS = 0 of 15 files scanned`.
-* **Scanner metadata** needs a Linux host that can reach PyPI. Attempted, not assumed: Docker runs
-  here and `python:3-slim` is present, but `pip install tflite-support` fails on this host's TLS
-  interception with `CERTIFICATE_VERIFY_FAILED`. The validator is written and waiting;
-  `scripts/ml/validate_metadata.py` reads a copy and cannot touch the champion.
+* **Scanner metadata is answered.** This list previously said it needed "a Linux host that can
+  reach PyPI", on the strength of a `pip install` that failed *inside a container* —
+  a property of the container's certificate bundle, generalised into a claim about the host. The
+  host reaches PyPI perfectly well. Downloading the manylinux wheels there and installing them
+  offline in the container needs no TLS bypass at all, and the genuine library then computes
+  `1.0.0` — **matching the value the pipeline's stub stamped**. Labels intact, normalisation
+  intact. Recipe: `scripts/ml/metadata_validation_recipe.md`. Result:
+  `core/ml/METADATA_VALIDATION.json`. Nothing is asked of you here.
 * **N-07 and F025** are dormant *observations*, not pending questions. Nothing is being asked.

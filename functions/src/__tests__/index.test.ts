@@ -1796,6 +1796,52 @@ describe("reportEquipment", () => {
     expect(fetchMock.mock.calls[0][1].redirect).toBe("manual");
   });
 
+  it.each([
+    [308, true, "a gym that moved its endpoint"],
+    [301, true, "apex redirecting to www"],
+    [500, false, "a receiver that is down"],
+    [404, false, "a path that no longer exists"],
+  ])("says so when a %d means the report did not land (%s)", async (
+    status, moved,
+  ) => {
+    // `fetch` resolves on 3xx and on every 4xx/5xx, so the catch below the
+    // dispatch never runs for any of these. Before this assertion existed,
+    // `redirect: "manual"` converted a working delivery into an untraceable
+    // no-op -- the exact failure the https refusal is logged loudly to avoid.
+    const warn = jest.requireMock("firebase-functions/logger").warn;
+    warn.mockClear();
+    global.fetch = jest.fn().mockResolvedValue({ ok: false, status }) as any;
+    primeDoc("gyms/g-moved", {
+      maintenanceWebhookUrl: "https://gym.example/hook",
+    });
+    await reportEquipment.run(
+      req({ id: "r-moved", equipmentId: "bench", gymId: "g-moved" },
+        { uid: "u1" }),
+    );
+    const call = warn.mock.calls.find(
+      (c: any[]) => c[0] === "equipment report webhook did not accept the report",
+    );
+    expect(call).toBeDefined();
+    expect(call[1]).toMatchObject({ gymId: "g-moved", reportId: "r-moved",
+      status, redirected: moved });
+  });
+
+  it("stays quiet when the gym accepted the report", async () => {
+    // The control. A warning on the healthy path is how a log gets ignored.
+    const warn = jest.requireMock("firebase-functions/logger").warn;
+    warn.mockClear();
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, status: 200 }) as any;
+    primeDoc("gyms/g-fine", {
+      maintenanceWebhookUrl: "https://gym.example/hook",
+    });
+    await reportEquipment.run(
+      req({ id: "r-fine", equipmentId: "bench", gymId: "g-fine" }, { uid: "u1" }),
+    );
+    expect(warn.mock.calls.map((c: any[]) => c[0])).not.toContain(
+      "equipment report webhook did not accept the report",
+    );
+  });
+
   it("does not hand the reporter's uid to the gym", async () => {
     // `app_en.arb:141` and `app_ru.arb:124` both promise the user that their
     // identity reaches the gym "only if they ask to follow up". This payload

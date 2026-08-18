@@ -42,7 +42,7 @@ that closed it.
 | `D1` | **EXTERNAL_AUTHORITY_REQUIRED** | EXTERNAL | core/review/CLINICAL_VALIDATION_HANDOFF.md, core/review/worklist/submission.json |
 | `H3` | **HOLD** | EXTERNAL | core/review/CLINICAL_VALIDATION_HANDOFF.md |
 | `CT1-human-labels` | **EXTERNAL_AUTHORITY_REQUIRED** | EXTERNAL | core/ml/review/ |
-| `scanner-metadata` | **ENVIRONMENT_BLOCKED** | ENVIRONMENT | core/ml/SCANNER_PROVENANCE.md, mobile/assets/models/README.md, scripts/ml/validate_metadata.py |
+| `scanner-metadata` | **CLOSED** | SOURCE | core/ml/METADATA_VALIDATION.json, scripts/ml/metadata_validation_recipe.md, scripts/ml/validate_metadata.py |
 | `scanner-pipeline-location` | **OPERATOR_DECISION_REQUIRED** | OPERATOR | core/ml/SCANNER_PROVENANCE.md |
 | `production-image-collection` | **DISABLED** | SOURCE | mobile/lib/, functions/src/ |
 | `gym-webhook-disclosure` | **OPERATOR_DECISION_REQUIRED** | OPERATOR | core/review/N04_EQUIPMENT_REPORT_AUTHORITY.md, mobile/lib/l10n/app_en.arb, functions/src/index.ts |
@@ -137,10 +137,11 @@ Closing it requires a named artefact from the EXTERNAL authority. **That artefac
 
 HUMAN_REVIEW_LABELS = 0, EVALUATION_LABEL_GAP = OPEN, CONTINUOUS_RETRAINING_OPERATIONAL = NO. The invariant counts labels rather than trusting the sentence.
 
-### `scanner-metadata` — ENVIRONMENT_BLOCKED
+### `scanner-metadata` — CLOSED
 
-**No local predicate.** mediapipe on this platform ships no _pywrap_metadata_version C extension. Widening the stub would mean inventing a metadata parser version and stamping it into a shipped artefact.
-Carries an invariant: source cannot close this row, but it can reopen the question.
+State is **recomputed** from source on every check; the word above is compared, never trusted.
+
+Was ENVIRONMENT_BLOCKED, and should not have been. The blocker was a pip install failing inside a container, generalised into a claim about the host -- which reaches PyPI fine. Answered by the genuine library rather than by widening the stub: VALIDATED_MATCH. The predicate is digest-bound, so replacing the model reopens the question instead of inheriting a verdict earned by a different artefact.
 
 ### `scanner-pipeline-location` — OPERATOR_DECISION_REQUIRED
 

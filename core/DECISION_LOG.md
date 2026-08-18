@@ -16915,3 +16915,85 @@ corpus rather than research nobody has done yet.
 Suites: `pytest scripts/` 702 passed; `npx tsc --noEmit` clean; `npx jest` 90 passed in the touched
 file. Ledger 19 rows reconciled, 8 source-provable, 0 findings. No Dart source changed, so
 `flutter test` is NOT RUN; `firestore.rules` unchanged, so the emulator suite is NOT RUN.
+
+
+## 2026-08-18 -- ENVIRONMENT_BLOCKED was wrong, and the metadata question is answered
+
+A falsification reviewer scoped to the remaining decisions returned two defects. The second
+overturns a classification this programme has carried across several passes, and it is the more
+useful of the two by a distance.
+
+**The blocker did not exist.** `scanner-metadata` read `ENVIRONMENT_BLOCKED` because
+`pip install tflite-support` failed with `CERTIFICATE_VERIFY_FAILED`. That attempt was made INSIDE a
+container, and the conclusion drawn was that *this host* cannot reach PyPI. The host reaches PyPI
+perfectly well: the interception CA is in the Windows trust store and absent from
+`python:3-slim`'s bundle. A property of the container was generalised into a property of the
+environment, and then written down as a boundary.
+
+Reproduced end to end, with certificate verification fully on throughout, no `--trusted-host`, and
+no widening of the pipeline's stub:
+
+* `pip download --only-binary=:all: --platform manylinux2014_x86_64 --python-version 3.11` on the
+  Windows host fetches the genuine wheel and its eight dependencies;
+* `pip install --no-index --find-links` installs them in `python:3.11-slim` with
+  `--network none` -- the import then reaches the real C extension and stops only on
+  `libusb-1.0.so.0`;
+* `apt-get install libusb-1.0-0` completes it, and
+  `tensorflow_lite_support/metadata/cc/python/_pywrap_metadata_version.so` loads and executes.
+
+That it is the genuine function and not the stub is itself checkable: handed an empty buffer it
+answers `The model metadata is not a valid FlatBuffer buffer`. The stub answers `1.0.0` for
+anything.
+
+**The answer: VALIDATED_MATCH.** For
+`equipment_v1.tflite` at `6f159ec32cd6c010c5319cb3436b22e97ce07ee72ff6f05daf02d3a2c7e696e3`, the
+genuine library computes `1.0.0` -- the same value the stub stamped. `labels.txt` is present and
+normalisation is `mean=[0.0] std=[1.0]`, which is consistent rather than suspicious: the metadata
+correctly describes a model trained without input scaling.
+
+Three things this does NOT mean, stated because the temptation runs the other way. It does not
+retrospectively make the stub acceptable -- being right by luck about one artefact is not a process.
+It does not validate `attach_metadata.py`, which was not run end to end; what is settled is the
+shipped artefact's declared metadata. And `mean=0/std=1` is a statement about the model, not a
+metadata defect.
+
+**The row moved ENVIRONMENT -> SOURCE, and that is the move the pinned-authority test exists to make
+difficult.** So the argument, rather than the performance: the row asked whether the declared
+minimum parser version matches what the genuine library computes. `ENVIRONMENT` asserted nobody here
+could answer it, which was false. It is not laundering, and the reason is **reproducibility, not
+confidence** -- the answer is a deterministic computation any reader repeats in minutes with
+`scripts/ml/metadata_validation_recipe.md`, and the predicate re-derives nothing: it checks the
+recorded answer is still about the artefact on disk. Same shape as `scanner_dependency_pin`. A
+clinical sign-off could never move this way, because no recipe reproduces a named clinician's
+judgement.
+
+The predicate is **digest-bound**. Swapping the model reopens the question rather than letting an
+unvalidated binary ship under a validated model's reputation. Seven mutations: model swapped, state
+downgraded, record self-contradictory, record deleted, record truncated, record pointing at a
+missing file -- all killed; a comment added to the record correctly survived.
+
+**ENVIRONMENT now has no rows**, and the test demanding one of every non-source authority was
+retired with its reason recorded. This is not the `TEST` situation: `TEST` was deleted because
+`check()` structurally rejected what it meant. `ENVIRONMENT` is implementable and was genuinely
+used; it is empty because the one item carrying it was measured and found not to be blocked. A
+dedicated test pins the emptiness so re-populating it is a visible act.
+
+**The first defect was mine, from the previous gate.** `redirect: "manual"` stopped the https check
+being decorative and, in the same stroke, converted a legitimate delivery into an untraceable
+no-op: `fetch` resolves on 3xx and on every 4xx/5xx, so a gym whose endpoint moved -- apex to www, a
+missing trailing slash -- silently stopped receiving reports, with the `catch` never running and
+nothing logged. Against this file's own sentence twenty lines above: *a report that silently stops
+being delivered is worse than one that was never configured.* Now every non-2xx is reported, with
+redirects named separately because the fix differs -- reconfigure the gym, do not debug the
+receiver. Three mutations: the reporting removed (killed), reporting on the healthy path too
+(killed, the control), and dropping the redirect distinction -- which `tsc` refused outright with
+`TS6133`, killed by the type system rather than by a test, and recorded as that rather than as a
+survivor.
+
+The attack on the security half found nothing: `gyms/` is `allow write: if false` for every client,
+`new URL()` plus a protocol check is not bypassable by case or by `javascript:`/`ftp:`, and undici
+with `redirect: "manual"` does not follow an https->http hop.
+
+Suites: `pytest scripts/` 714 passed; `npx tsc --noEmit` clean; `npx jest` 240 passed; ledger 19 rows
+reconciled, **9** source-provable, 0 findings. No Dart source changed, so `flutter test` is NOT RUN;
+`firestore.rules` unchanged, so the emulator suite is NOT RUN.

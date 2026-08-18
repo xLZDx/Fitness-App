@@ -453,7 +453,23 @@ metadata writers still exist inside `mediapipe` 1.0.0, but that build ships them
 `tflite_support` is absent from `D:/tools/ml-train-env` and from the system interpreter, and the
 Docker images already present locally are generic `python:3-slim`/`python:3.12-slim` with nothing
 installed. Obtaining the real tool means a network install into a Linux container, which is an
-environment recipe rather than a result. **Disposition: `BLOCKED_BY_WINDOWS_PACKAGE`.**
+environment recipe rather than a result. **Disposition: `BLOCKED_BY_WINDOWS_PACKAGE`.
+
+**Overturned 2026-08-18.** That disposition was wrong, and the way it was wrong is the
+point: `pip install tflite-support` was attempted INSIDE a container, failed with
+`CERTIFICATE_VERIFY_FAILED`, and the conclusion drawn was that this host cannot reach
+PyPI. The host reaches PyPI fine — the interception CA is in the Windows trust store and
+absent from `python:3-slim`'s bundle, so a property of the container was generalised into
+a property of the environment. Downloading the manylinux wheels on the host and
+installing them offline in the container needs no TLS bypass, no `--trusted-host` and no
+widening of the stub. The genuine `_pywrap_metadata_version` then computes **`1.0.0`** for
+the shipped `equipment_v1.tflite` — the same value the stub stamped — with `labels.txt`
+intact and normalisation `mean=[0.0] std=[1.0]`. Recipe:
+`scripts/ml/metadata_validation_recipe.md`. Result: `core/ml/METADATA_VALIDATION.json`,
+`VALIDATED_MATCH`.
+
+The stub was still a stub. The genuine function rejects an empty buffer; the stub answers
+`1.0.0` for anything. Being right by luck about one artefact is not a process.**
 
 **What the probe found in the shipped model — `FACT`, and new.** `attach_metadata.py` does not fail
 for want of a stub; it *installs* one, `_install_pywrap_stub`, which exposes
