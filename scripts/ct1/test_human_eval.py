@@ -412,3 +412,30 @@ def test_a_normally_sampled_batch_claims_no_missing_variance():
     metrics = evaluate(_built(batch, bad_for=_bad_if_flagged(batch)),
                        batch["sealed"])
     assert "variance_understated" not in metrics["HOLDOUT_ESTIMATE"]
+
+
+def test_a_superseded_batch_may_not_become_an_evaluation_dataset():
+    """Section 7, at the library function rather than only at the two CLIs.
+
+    001 and 002 stay in the repository as evidence, so something has to say
+    which batch is live. `human_eval.py`'s own CLI and `review_app.py` each
+    carried that guard; `build_eval` did not, so the moment `pipeline.py`
+    became a third caller the check depended on the caller remembering. A guard
+    that every caller must remember is a guard with an off switch.
+    """
+    from review_batch import BatchContractError
+
+    batch = _batch()
+    submissions = _submissions(batch)
+    build_eval(batch, submissions, assignments=batch["assignments"])   # live: fine
+
+    for superseded in ("CT1_REVIEW_BATCH_001", "CT1_REVIEW_BATCH_002"):
+        stale = {
+            **batch,
+            "manifest": {**batch["manifest"], "batch_id": superseded},
+        }
+        # The submissions have to name the same batch, or the importer refuses
+        # first and this test would pass without ever reaching the guard.
+        theirs = [{**s, "batch_id": superseded} for s in submissions]
+        with pytest.raises(BatchContractError, match="not the authoritative"):
+            build_eval(stale, theirs, assignments=batch["assignments"])

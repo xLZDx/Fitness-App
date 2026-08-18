@@ -15499,3 +15499,23 @@ distinguishing from one that is.
 D1 and H3 are untouched. `D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED`, `H3 = HOLD`.
 
 **Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.
+
+## CT-1 — `assert_authoritative` was in the CLIs and not in the function
+
+`build_eval` is the library function that turns a review batch into an evaluation dataset. The guard
+refusing a **superseded** batch lived in the two command-line entry points that called it, not in
+the function itself — which is fine right up until a third caller appears.
+
+The pipeline became that third caller, and it was unguarded. The guard moved to `build_eval`, where
+it applies to every caller including ones not written yet.
+
+The `accepts == ("HUMAN",)` condition is not a loophole: a fixture batch can never *be* the
+authoritative batch, and three separate guards already fence a synthetic run's output — the
+`TEST_` prefix, the one-kind-per-run check in the importer, and `write_eval`'s refusal to place a
+synthetic payload anywhere under `core/ml/`.
+
+**Suites:** `pytest scripts/ct1` 228 passed.
+
+`CT-1 RETRAINING = NOT OPERATIONAL`. `CT != CD`. Unchanged by this.
+
+**Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.

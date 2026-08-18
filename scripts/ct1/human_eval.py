@@ -140,6 +140,15 @@ def build_eval(
             "against itself"
         )
 
+    # A superseded batch may not become an evaluation dataset. The guard lives
+    # HERE rather than only in the two CLIs that used to carry it: `build_eval`
+    # is a library function, and a third caller would have been unguarded --
+    # which is exactly what happened when the pipeline became that third
+    # caller. A synthetic run is exempt because a fixture batch can never BE
+    # the authoritative one, and three other guards already fence its output.
+    if accepts == ("HUMAN",):
+        assert_authoritative(manifest)
+
     verdicts = adjudicate(
         per_reviewer, adjudications=adjudications, domain_review=domain
     )
