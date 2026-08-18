@@ -255,7 +255,18 @@ def _clinical_worklist() -> dict[str, Any] | None:
 
 
 def _scanner_unresolved() -> dict[str, Any]:
-    """The scanner's training corpus, recorded as untraceable rather than omitted."""
+    """The scanner's training corpus: present and hashed, but bound to nothing.
+
+    Do not read UNRESOLVED as "lost". ``scripts/ml/scanner_provenance.py``
+    measured the corpus on 2026-08-18 -- 1,741 files, manifest 411189bc..., and
+    the shipped ``equipment_v1.tflite`` byte-identical to the pipeline's own
+    build output. What is unresolved is a VERSION, not the data: the pipeline
+    sits at a path that is not a git checkout, so no commit names any of it.
+
+    The distinction decides what the work is. The earlier wording here sent a
+    reader off to plan a re-crawl; the truth is that ``git init`` plus a
+    recorded hash closes v1.
+    """
     return {
         "dataset_id": "equipment_recognition_training",
         "dataset_version": "UNRESOLVED",
@@ -266,9 +277,15 @@ def _scanner_unresolved() -> dict[str, Any]:
         "sources": {
             "note": (
                 "The pipeline lives at D:/tools/equipment-model/, which is not "
-                "a git repository. The corpus that produced the model in the "
-                "APK cannot be addressed, hashed or rebuilt from here."
+                "a git repository, so no commit addresses the corpus that "
+                "produced the model in the APK. The corpus itself is intact "
+                "and has been hashed: 1,741 files, manifest 411189bc..., "
+                "measured 2026-08-18 by scripts/ml/scanner_provenance.py, "
+                "which also verifies that the shipped equipment_v1.tflite is "
+                "byte-identical to the pipeline's own out/equipment_v1.tflite. "
+                "UNRESOLVED here means unversioned, NOT missing."
             ),
+            "measured_by": "scripts/ml/scanner_provenance.py",
         },
         "row_count": None,
         "splits": None,

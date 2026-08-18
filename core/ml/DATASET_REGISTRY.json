@@ -197,13 +197,14 @@
       "schema_version": null,
       "source_commit": "UNRESOLVED",
       "sources": {
-        "note": "The pipeline lives at D:/tools/equipment-model/, which is not a git repository. The corpus that produced the model in the APK cannot be addressed, hashed or rebuilt from here."
+        "measured_by": "scripts/ml/scanner_provenance.py",
+        "note": "The pipeline lives at D:/tools/equipment-model/, which is not a git repository, so no commit addresses the corpus that produced the model in the APK. The corpus itself is intact and has been hashed: 1,741 files, manifest 411189bc..., measured 2026-08-18 by scripts/ml/scanner_provenance.py, which also verifies that the shipped equipment_v1.tflite is byte-identical to the pipeline's own out/equipment_v1.tflite. UNRESOLVED here means unversioned, NOT missing."
       },
       "splits": null,
       "status": "UNRESOLVED"
     }
   ],
-  "registry_commit": "a18e0daa5727fd9f104a2dc57f083ef82f097400",
+  "registry_commit": "cc02f57ec15a843167db2aa760d62bb40a01d16d",
   "required_fields": [
     "dataset_id",
     "dataset_version",

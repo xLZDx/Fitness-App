@@ -15393,3 +15393,60 @@ missing file is a refusal nobody can act on.
 `N07 = KEEP`. Not wired, not deleted, and now guarded.
 
 **Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.
+
+## ML-2a — the scanner corpus is not lost, and the registry said it was
+
+The dataset registry recorded `equipment_recognition_training` as `UNRESOLVED` with the note that
+the pipeline *"lives at D:/tools/equipment-model/, which is not a git repository"* and that the
+corpus *"cannot be addressed, hashed or rebuilt from here."*
+
+**The first half is true and is now independently verified. The second half was wrong, and it
+changes what the work is.** A reader of the old note plans a re-crawl. The measurement says
+`git init` plus a recorded hash closes v1.
+
+`scripts/ml/scanner_provenance.py` probed the path on 2026-08-18 and pinned what it found:
+
+* `dataset/` — **1,741 files**, manifest `411189bc…`, untouched since v1 was built.
+* `dataset_v2/` — 90,817 files, manifest `b228f198…`.
+* Six artefacts hashed, including `train_export.py` — a complete, self-contained trainer with its
+  hyperparameters and seed as literals.
+* **`mobile/assets/models/equipment_v1.tflite` is byte-identical to the pipeline's own
+  `out/equipment_v1.tflite`**, so the shipped model and the build output are provably the same file.
+
+Classification: `FOUND_UNVERSIONED_PIPELINE`. Eight pinned objects verified on this machine.
+
+**Pin plus probe, not a directory read.** A registry field computed from a path on one machine
+would differ everywhere else and CI would fail on a difference that means nothing. So the
+measurements are pinned, dated and committed, and `probe()` re-verifies them where the bytes are
+reachable. On a machine without the directory it reports `NOT_PRESENT_ON_THIS_MACHINE` and does not
+fail — and says explicitly that absence of the directory is *not* evidence the pipeline is gone.
+Same contract as the catalogue digest in the clinical handoff: the pin is the claim, the probe is
+the check, absence is reported rather than guessed.
+
+**The recovery contract names six items, and two of them are the interesting ones:**
+
+* `RUN_RECORD_FOR_V2 = MISSING_AND_CONTRADICTED`. The only log on disk, `train_v2.log`, records a
+  **29-class** run (`DROPPED 8 classes`, `Found 54914 files`). The registered v2 artefact carries
+  **37** labels in `out_v2/labels.json`. So the one run record describes a *different model* from
+  the one the registry names, and the registered artefact has no run record at all. Recorded as
+  CONTRADICTED rather than MISSING, deliberately: "missing" invites somebody to supply the log they
+  have.
+* `V2_LABEL_SOURCE = UNVERSIONED_THIRD_COPY`. `classes.py` reads the equipment catalogue from
+  `D:/test 2/Fitness App/…` — a third, unversioned copy of this project at an unrecorded revision.
+  v2's label set was generated from it.
+
+**Boundaries, unchanged.** Closing ML-2a makes the scanner reproducible. It does not make v2 a
+challenger, promotes nothing, and does not reopen D3: `PRODUCTION_IMAGE_COLLECTION` stays DISABLED
+and a reproducible model is still only TRAINED. The module asserts this in its own contract and a
+test asserts the module keeps saying it.
+
+**Tests.** 19 cases, split by what they can honestly assert: the pin's self-consistency (everywhere,
+including CI); absence reported as absence, run against a path that cannot exist; the manifest
+algorithm built from temporary trees — including that a **rename changes the digest**, which is the
+whole reason it hashes paths, since in a class-per-directory image corpus a rename is a relabel; and
+three cases that verify the pin against real bytes and **SKIP with a stated reason** where the
+pipeline is not present. A skip that names why is evidence; a test quietly asserting `True` is not.
+
+`ML-2a` stays **OPEN**. Six items, listed with the action each needs.
+
+**Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.
