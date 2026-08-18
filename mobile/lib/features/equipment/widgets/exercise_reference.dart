@@ -735,6 +735,7 @@ class ExerciseVideoFailedNote extends StatelessWidget {
     final reason = classifyVideoFailure(error);
     final headline = switch (reason) {
       VideoFailureReason.linkUnavailable => l10n.equipmentClipLinkUnavailable,
+      VideoFailureReason.quotaExhausted => l10n.equipmentClipDailyLimit,
       VideoFailureReason.offline => hasPoster
           ? l10n.equipmentClipOfflineStillShown
           : l10n.equipmentClipOfflineNoStill,

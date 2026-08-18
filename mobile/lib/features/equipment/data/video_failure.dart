@@ -26,6 +26,19 @@ enum VideoFailureReason {
   /// this one happens with a perfectly good connection.
   linkUnavailable,
 
+  /// The backend refused ON PURPOSE: this account has spent its daily budget
+  /// for clip links.
+  ///
+  /// Split out of [linkUnavailable] because the two need opposite messages.
+  /// A link that is unavailable is a fault the user can do nothing about and
+  /// should probably report. A quota refusal is not a fault at all -- it is
+  /// the product working as designed, it resolves by itself at the next UTC
+  /// midnight, and it is the ONE video failure with an action the user can
+  /// take. Reporting it as "unavailable" sends someone to look for a bug in
+  /// a system that is behaving correctly, which is the same defect this file
+  /// was created to fix, arriving from the backend instead of the player.
+  quotaExhausted,
+
   /// A genuine network fault, positively identified.
   offline,
 
@@ -37,6 +50,24 @@ enum VideoFailureReason {
 
 /// Sentinel stored by the player when `ClipUrlResolver.resolve` returns null.
 const String kUnresolvedClip = 'unresolved';
+
+/// A deliberate daily-budget refusal from the backend, as a domain type.
+///
+/// `enforceDailyQuota` throws `resource-exhausted` with a sentence already
+/// written for a reader ("It resets tomorrow"). That sentence used to die in
+/// `ClipUrlResolver.fetch`, which caught every exception alike. It is carried
+/// here instead of a `FirebaseFunctionsException` so that this file, and the
+/// classifier below, stay free of a Firebase dependency and remain testable
+/// with no plugins registered.
+class ClipQuotaExhausted implements Exception {
+  const ClipQuotaExhausted([this.message]);
+
+  /// The backend's own sentence, when it sent one.
+  final String? message;
+
+  @override
+  String toString() => message ?? 'Daily limit reached for clip links.';
+}
 
 /// Substrings that only appear in genuine connectivity failures.
 ///
@@ -60,6 +91,9 @@ const _networkMarkers = <String>[
 /// Classifies a failure captured by the player. Pure: no I/O, no platform
 /// calls, so every branch is unit-testable without a device.
 VideoFailureReason classifyVideoFailure(Object error) {
+  // First, because it is the only branch that is a decision rather than a
+  // guess: the backend said so, in a documented error code.
+  if (error is ClipQuotaExhausted) return VideoFailureReason.quotaExhausted;
   if (error is String && error == kUnresolvedClip) {
     return VideoFailureReason.linkUnavailable;
   }
@@ -95,6 +129,8 @@ bool _looksLikeNetwork(String text) {
 /// is that a screenshot carries enough to diagnose from, which is exactly how
 /// the coach-screen camera bug was solved.
 String? videoFailureDetail(Object error) {
+  // The refusal's own sentence is the headline, not a footnote under one.
+  if (error is ClipQuotaExhausted) return null;
   if (error is String) return error == kUnresolvedClip ? null : error;
   if (error is PlatformException) {
     final m = error.message?.trim();

@@ -863,6 +863,7 @@
   "equipmentClipCouldNotLoad": "Ролик не загрузился",
   "equipmentClipOfflineNoStill": "Нет сети — ролик не загрузился",
   "equipmentClipLinkUnavailable": "Ссылка на ролик недоступна",
+  "equipmentClipDailyLimit": "Дневной лимит роликов исчерпан — обновится завтра",
   "workoutsFilterStretching": "Растяжка",
   "settingsTestAccess": "Тестовый доступ",
   "settingsTestAccessBody": "Открывает платные функции только на этом телефоне. Ничего не списывается и никуда не отправляется — настоящая подписка не меняется.",

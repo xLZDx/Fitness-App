@@ -15302,3 +15302,61 @@ nothing here changes N-05.
 **Codex:** not obtained. `tools/codex_review.py --uncommitted` returned `usage_limit_exhausted`
 (until 2026-08-20). The gate's fail-open receipt admitted this commit; no external review was
 performed on this diff.
+
+## A deliberate quota refusal was rendering as "The clip link is unavailable"
+
+Found in the N-05 round-2 review, verified end to end here. This is not a proposal about N-05; it
+is a defect in a control that is **already shipped**.
+
+**The path the refusal died on:**
+
+1. `abuse_guard.ts:90-93` throws `resource-exhausted` with a sentence written for a reader:
+   *"You have reached today's limit for this action. It resets tomorrow."*
+2. `clip_url_resolver.dart` caught everything alike, counted it, and returned `{}`.
+3. `resolve` mapped the empty map to `null`.
+4. `exercise_reference.dart:493` stored the `unresolved` sentinel.
+5. `video_failure.dart` classified that as `linkUnavailable`.
+6. The screen said **"The clip link is unavailable"** — and the technical detail line is
+   deliberately suppressed for every reason except `playbackFailed`, so not even a crumb reached
+   the user.
+
+There is no second channel: `firestore.rules:46-48` closes `users/{uid}/usage/{day}` outright, with
+its own comment explaining that no client reads it. The callable's error was the only signal the app
+had, and it was being discarded.
+
+**Why this matters more than the wording.** `ANONYMOUS_QUOTA_DIVISOR = 8` is live, so guests are
+being refused today at 50 `clipUrl`/day, and every one of those refusals is indistinguishable on the
+phone from a signing outage, a missing object, or the absent `tokenCreator` grant that
+`video_urls.ts:254-258` names as a real failure mode. This repository has already paid for exactly
+this mistake once — `video_failure.dart:9-22` records the 2026-08-08 device report where the player
+blamed the network on a 1 Gb connection, *"actively misleading — it sent the reader to look at their
+router while the real fault was somewhere else entirely."* The rule written that day was **name only
+what is known**. A backend that says precisely what happened, flattened into "unavailable", breaks
+that rule from the other end.
+
+**The fix.** `ClipQuotaExhausted` is a domain type in `video_failure.dart`, so the classifier stays
+free of Firebase and remains testable with no plugins registered.
+`FunctionsClipUrlResolver.asQuotaRefusal` recognises the gRPC status code — not message text — and
+`swallowOrThrow` is the whole single-clip failure policy, extracted because the `catch` it came from
+is reachable only through a real `FirebaseFunctions` call, so a mutation inside it would have
+survived unnoticed. `resolve` now throws that one exception and returns null for everything else.
+
+**Deliberately NOT fixed: the prefetch.** `resolveAll` still swallows. It chunks at sixty and
+accumulates across chunks, so throwing out of one chunk would discard what earlier chunks already
+signed and turn a partial prefetch into a total failure. Telling that user properly needs a result
+type that can say *"38 of 84, limit reached"*, which this method cannot express. Recorded as open
+rather than half-fixed. Note it is reachable only by paying subscribers — the prefetch is
+premium-gated at `workouts_page.dart:641-643`.
+
+**Mutations, all killed, all restored byte-for-byte:** the recognised status code; carrying the
+backend's sentence; the rethrow; the classification; the headline. A sixth mutation (`error is
+String` in place of the type guard) was **rejected as an invalid kill** — it stopped the file
+compiling, so the suite reported zero tests rather than a failure, which is not evidence of
+anything.
+
+**Suites:** Flutter 2,893 passed. 14 new cases in
+`mobile/test/features/equipment/video_quota_refusal_test.dart`, covering the chain end to end
+including the widget that draws the sentence.
+
+**Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt; no external
+review was performed on this diff.

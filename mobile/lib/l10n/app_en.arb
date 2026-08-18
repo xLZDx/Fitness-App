@@ -1581,6 +1581,10 @@
   "equipmentClipCouldNotLoad": "The clip could not be loaded",
   "equipmentClipOfflineNoStill": "No connection — the clip did not load",
   "equipmentClipLinkUnavailable": "The clip link is unavailable",
+  "equipmentClipDailyLimit": "Daily clip limit reached — it resets tomorrow",
+  "@equipmentClipDailyLimit": {
+    "description": "Shown when the backend refuses a clip link on the daily budget (resource-exhausted from enforceDailyQuota). Deliberately distinct from equipmentClipLinkUnavailable: this is the product working as designed and it resolves by itself, so the message names the cause and the end rather than describing a fault."
+  },
   "workoutsFilterStretching": "Stretching",
   "settingsTestAccess": "Test access",
   "settingsTestAccessBody": "Unlocks paid features on this phone only. Nothing is charged and nothing is sent anywhere — the real subscription is unaffected.",

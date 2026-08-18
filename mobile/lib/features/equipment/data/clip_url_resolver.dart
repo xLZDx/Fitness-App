@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:cloud_functions/cloud_functions.dart';
 
 import '../../../core/firebase/functions_region.dart';
-import 'package:flutter/foundation.dart' show debugPrint, protected;
+import 'video_failure.dart';
+import 'package:flutter/foundation.dart'
+    show debugPrint, protected, visibleForTesting;
 
 /// Turns a catalog clip reference into a URL a player can open.
 ///
@@ -36,6 +38,14 @@ abstract class ClipUrlResolver {
   /// Null rather than throwing: the caller is a video block that already has a
   /// poster on screen, and "keep showing the still" is a better answer to a
   /// signing failure than an exception thrown into a build method.
+  ///
+  /// The ONE exception is [ClipQuotaExhausted], which is thrown rather than
+  /// swallowed. Null means "something went wrong and the app cannot say
+  /// what"; a quota refusal is the opposite -- the backend said exactly what
+  /// happened and when it ends, and flattening that into the same null made
+  /// a deliberate, self-resolving refusal look identical to a signing outage
+  /// on the screen. The caller already catches, so this reaches the failure
+  /// note the same way every other named failure does.
   Future<String?> resolve(String reference);
 
   /// Resolves many at once — one round trip instead of forty. Missing entries
@@ -140,7 +150,7 @@ class FunctionsClipUrlResolver implements ClipUrlResolver {
         // log knows the reason and the phone did not even know it happened,
         // which is how a signing outage looked exactly like nobody watching.
         _noteFailure(objects.single, e);
-        return {};
+        return swallowOrThrow(e);
       }
     }
     try {
@@ -153,8 +163,46 @@ class FunctionsClipUrlResolver implements ClipUrlResolver {
       };
     } catch (e) {
       _noteFailure('${objects.length} clips', e);
+      // Deliberately NOT rethrown here, unlike the single-clip path above.
+      // `resolveAll` is the offline prefetch, which chunks at sixty and
+      // accumulates across chunks; throwing out of one chunk would discard
+      // the clips the earlier chunks already signed and turn a partial
+      // prefetch into a total failure. The cost is that a prefetch stopped by
+      // the daily cap still reports nothing to the user -- a smaller version
+      // of the same defect, left open on purpose and recorded rather than
+      // half-fixed, because telling them properly needs a result type that
+      // can say "38 of 84, limit reached", which this method cannot express.
       return {};
     }
+  }
+
+  /// Swallow, or rethrow: the whole single-clip failure policy, in one
+  /// place that does not need a backend to execute.
+  ///
+  /// Split out because the `catch` above is only reachable through a real
+  /// `FirebaseFunctions` call, so a test can never enter it and a mutation
+  /// inside it would survive unnoticed. Everything that decides anything now
+  /// lives here; what is left in `fetch` is one line that cannot be wrong in
+  /// an interesting way.
+  @visibleForTesting
+  static Map<String, String> swallowOrThrow(Object error) {
+    final refusal = asQuotaRefusal(error);
+    if (refusal != null) throw refusal;
+    return const {};
+  }
+
+  /// Recognises the backend's deliberate daily-budget refusal.
+  ///
+  /// `resource-exhausted` is what `enforceDailyQuota` throws
+  /// (`functions/src/abuse_guard.ts`), and it is a documented gRPC status
+  /// code rather than a message this could drift away from. Returns the
+  /// domain exception carrying the backend's own sentence, or null when the
+  /// failure was something else entirely.
+  static ClipQuotaExhausted? asQuotaRefusal(Object error) {
+    if (error is! FirebaseFunctionsException) return null;
+    if (error.code != 'resource-exhausted') return null;
+    final m = error.message?.trim();
+    return ClipQuotaExhausted(m == null || m.isEmpty ? null : m);
   }
 
   @override
