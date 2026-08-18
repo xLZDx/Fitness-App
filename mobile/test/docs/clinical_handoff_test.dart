@@ -59,6 +59,37 @@ void main() {
       ? '${n ~/ 1000},${(n % 1000).toString().padLeft(3, '0')}'
       : '$n';
 
+  /// The string literals of a top-level Python tuple constant.
+  ///
+  /// Crude on purpose: it finds `NAME = (`, walks to the matching `)`, and
+  /// pulls the quoted values between them. Anything cleverer would be a
+  /// Python parser; anything simpler picks up the NEXT constant too, which
+  /// the first version of this helper did -- it stopped at the first line
+  /// beginning `)`, which a single-line tuple never has, so `DISPOSITIONS`
+  /// came back carrying the whole of `SUBMISSION_FIELDS`.
+  List<String> tupleOf(String source, String name) {
+    final decl = source.indexOf(RegExp('^$name = \\(', multiLine: true));
+    if (decl < 0) return const [];
+    final open = source.indexOf('(', decl);
+    var depth = 0;
+    var close = -1;
+    for (var i = open; i < source.length; i++) {
+      if (source[i] == '(') depth++;
+      if (source[i] == ')') {
+        depth--;
+        if (depth == 0) {
+          close = i;
+          break;
+        }
+      }
+    }
+    if (close < 0) return const [];
+    return RegExp('"([^"]+)"')
+        .allMatches(source.substring(open, close))
+        .map((m) => m.group(1)!)
+        .toList();
+  }
+
   test('the quoted catalogue counts are the real ones', () {
     expect(doc, contains('**${pretty(total)}**'),
         reason: 'the handoff does not quote the measured row count ($total). '
@@ -71,10 +102,19 @@ void main() {
   test('the version-binding section repeats the same counts', () {
     // Section 8 is the part a returned review is stapled to. If it drifts from
     // section 2, the document contradicts itself about what was reviewed.
-    final binding = doc.substring(doc.indexOf('## 8. Version binding'));
-    expect(binding, contains(pretty(total)));
-    expect(binding, contains(pretty(tagged)));
-    expect(binding, contains(pretty(untagged)));
+    //
+    // Compared without thousands separators, deliberately. Section 2 is prose
+    // and writes 1,887; section 8 is a block meant to be copied into a
+    // submission and writes 1887. Asserting one spelling in both places would
+    // force the machine-readable block to carry a comma no parser wants --
+    // the earlier version of this test did exactly that and failed the moment
+    // section 8 became copy-and-pasteable. What must not drift is the NUMBER.
+    final binding = doc
+        .substring(doc.indexOf('## 8. Version binding'))
+        .replaceAll(',', '');
+    expect(binding, contains('$total'));
+    expect(binding, contains('$tagged'));
+    expect(binding, contains('$untagged'));
   });
 
   test('the review flag it depends on is still false, and still exists', () {
@@ -102,18 +142,35 @@ void main() {
   test('it demands a structured result rather than an opinion', () {
     // "Looks good" is not validation evidence, and the document has to say so
     // in a way that survives someone skimming it.
-    for (final field in const [
-      'reviewer',
-      'credentials',
-      'scope',
-      'catalogue_version',
-      'approved_mappings',
-      'rejected_mappings',
-      'unknown_mappings',
-      'limitations',
-      'approval_boundary',
-    ]) {
-      expect(doc, contains('`$field`'), reason: 'missing required field: $field');
+    //
+    // The field list is READ from the submission file that is actually
+    // issued, not typed here. It was typed here once, describing thirteen
+    // prose fields with nothing to put them in, and it went on passing for
+    // three commits after section 7 replaced that format with a spreadsheet
+    // -- guarding a contract the document no longer had. A hand-copied list
+    // cannot notice that; a derived one fails the moment the two disagree.
+    final submission = jsonDecode(
+      File('../core/review/worklist/submission.json').readAsStringSync(),
+    ) as Map<String, dynamic>;
+    expect(submission.keys, isNotEmpty);
+    for (final field in submission.keys) {
+      expect(doc, contains('"$field"'),
+          reason: 'submission.json carries $field and the handoff never '
+              'shows it, so a reviewer has to guess what to fill in');
+    }
+
+    // And the vocabulary the validator enforces, read from the validator.
+    final validator =
+        File('../scripts/review/clinical_import.py').readAsStringSync();
+    for (final name in const ['DISPOSITIONS', 'CSV_FILLABLE']) {
+      final values = tupleOf(validator, name);
+      expect(values, isNotEmpty, reason: '$name not found in the validator');
+      for (final v in values) {
+        expect(doc, contains('`$v`'),
+            reason: '$name contains $v and the handoff never names it. A '
+                'reviewer cannot supply a value nobody told them exists, and '
+                'the import refuses everything else');
+      }
     }
   });
 

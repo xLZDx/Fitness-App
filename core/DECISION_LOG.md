@@ -15450,3 +15450,52 @@ pipeline is not present. A skip that names why is evidence; a test quietly asser
 `ML-2a` stays **OPEN**. Six items, listed with the action each needs.
 
 **Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.
+
+## The clinical handoff test was guarding a contract the document no longer had
+
+Caught by running the full Flutter suite, which had two failures — both introduced by this
+session's own §7 rewrite and both shipped in an earlier commit. Recorded rather than quietly fixed,
+because the shape of the mistake is the point.
+
+`mobile/test/docs/clinical_handoff_test.dart` asserted nine **hand-typed** prose field names —
+`approved_mappings`, `rejected_mappings`, `unknown_mappings`, `approval_boundary` and so on. Those
+were the pre-worklist result format. Section 7 replaced that format with a spreadsheet and a
+`submission.json`, and the test went on passing for three commits afterwards, guarding a contract
+the document had stopped having. It only failed once the *rewrite itself* removed the last of the
+old names.
+
+Per the standing rule, the TEST was inspected first. It was the stale half.
+
+**Both failures, and what each was.**
+
+1. *"the version-binding section repeats the same counts"* expected `1,887` inside section 8.
+   Section 8 is now a block meant to be copied into a submission, so it writes `1887`. Forcing a
+   thousands separator into a machine-readable block to satisfy a test is the wrong direction. The
+   comparison now strips separators: what must not drift is the **number**, not its spelling.
+2. *"it demands a structured result rather than an opinion"* — the field list is no longer typed. It
+   is read from `core/review/worklist/submission.json`, the file that is actually issued, and from
+   `DISPOSITIONS` and `CSV_FILLABLE` in `scripts/review/clinical_import.py`, the constants the
+   validator actually enforces. A hand-copied list cannot notice that the document and the validator
+   have diverged; a derived one fails the moment they do.
+
+**The document gained what the test now demands.** Section 7.1 shows `submission.json` as issued,
+names the four fields a reviewer fills, states that `reviewed_at` needs an offset, and explains that
+`rows_csv` is expanded into `rows` — so the reviewer no longer has to infer the file's shape from a
+table describing it.
+
+**Mutations, all killed, all restored byte-for-byte:**
+
+* `DISPOSITIONS` gained a fifth value the document never mentions → refused, naming the value.
+* `submission.json` renamed a field → refused, naming the field.
+
+A third mutation — un-backticking `AMEND` in the dispositions table — **survived, correctly**: the
+document names `AMEND` in backticks elsewhere, so the guarded property ("the reviewer is told this
+value exists") was still true. Recorded because a survivor that is not a defect is worth
+distinguishing from one that is.
+
+**Suites:** Flutter 2,893 passed; `pytest scripts/review` 82 passed;
+`clinical_import.py --verify` reports the worklist still matches the catalogue at 1,887 rows.
+
+D1 and H3 are untouched. `D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED`, `H3 = HOLD`.
+
+**Codex:** not obtained, `usage_limit_exhausted` until 2026-08-20. Fail-open receipt.
