@@ -166,6 +166,13 @@ file — precisely the substitution this document forbids. A `RECOVERY:` commit 
 it, because nothing reads commit messages. The marker has to be a tracked file that tooling
 consults before it consults `git log`.
 
+That marker does not exist yet, and building it is **local Python work in this worktree** —
+`scripts/ml/dataset_registry.py:89` — not something the operator has to supply. It is deliberately
+not built in advance, because it is only needed if a snapshot is chosen and would otherwise be
+engineering performed to look busy. It is recorded here as
+`RESIDUAL[scanner-pipeline-location]` so that choosing A, B or C carries its own precondition
+rather than discovering it afterwards.
+
 ### What the operator must decide — engineering cannot
 
 **1. Where the corpus physically lives, and who keeps it alive.** Every option's "disk dies
@@ -202,6 +209,9 @@ CI**, while `test_the_pin_is_dated` asserts `is_git_repository is False` everywh
 turns the suite red asymmetrically: green on CI, failing only on the one machine that holds the
 directory. The pin and the registry must be updated in the *same* change as any snapshot, or the
 repository asserts something false for the length of the gap.
+
+This too is local work — a test change in `scripts/ml/test_scanner_provenance.py:88` — and it too
+is a rider on the decision rather than work due now: `RESIDUAL[scanner-pipeline-location]`.
 
 ## v1 reproducibility: ATTEMPTED, and the result is METRIC_REPRODUCIBLE
 

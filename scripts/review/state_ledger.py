@@ -65,6 +65,7 @@ it can and must be able to REOPEN the question.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
 import sys
@@ -237,6 +238,31 @@ def _member_body(body: str, signature: str) -> str:
     return body[j:k]
 
 
+def _exported_member(body: str, signature: str) -> str:
+    """One top-level `export const NAME = ...` declaration, up to the next one.
+
+    `_member_body` cannot do this job for a Cloud Function. `onCall(` takes an
+    options object first, so slicing from the first brace returns
+    `{...INTERACTIVE, secrets: [...]}` -- 317 characters of configuration, and
+    none of the handler. The nearest correct boundary is the next top-level
+    export, which in this file is unambiguous because every handler is declared
+    at column zero.
+
+    This function exists because `f5` was measured returning CLOSED on a tree
+    with F5's defect fully restored: both of its substrings also occur inside
+    `startFreeTrial`, which is the handler F5 compares *against*, so deleting
+    the real-money guard changed nothing the predicate could see. That is the
+    same whole-file mistake `_member_body`'s docstring describes, made in the
+    other direction -- a false CLOSED instead of a false OPEN, and the more
+    expensive of the two.
+    """
+    i = body.find(signature)
+    if i < 0:
+        return ""
+    j = body.find("\nexport ", i + len(signature))
+    return body[i:] if j < 0 else body[i:j]
+
+
 def _without_comments(body: str) -> str:
     """Line comments removed.
 
@@ -320,12 +346,23 @@ def f2() -> tuple[str, str]:
 
 
 def f5() -> tuple[str, str]:
-    ts = _read("functions/src/index.ts")
-    guarded = 'sign_in_provider === "anonymous"' in ts
-    named = "reason: CHECKOUT_REFUSAL.ANONYMOUS_ACCOUNT" in ts
+    """F5 is about `createCheckoutSession`, and only about it.
+
+    `startFreeTrial` has rejected anonymous callers all along -- N-05 §6 states
+    F5 as the *contrast* between the two handlers. So the guard has to be found
+    inside the paid path specifically; found anywhere in the file, it is as
+    likely to be the code F5 was complaining about as the code that fixes it.
+    """
+    handler = _without_comments(_exported_member(
+        _read("functions/src/index.ts"),
+        "export const createCheckoutSession = onCall(",
+    ))
+    guarded = 'sign_in_provider === "anonymous"' in handler
+    named = "reason: CHECKOUT_REFUSAL.ANONYMOUS_ACCOUNT" in handler
     ok = guarded and named
     return ("CLOSED" if ok else "OPEN"), (
-        f"anonymous guard present: {guarded}; refusal names itself: {named}"
+        f"in createCheckoutSession -- anonymous guard present: {guarded}; "
+        f"refusal names itself: {named}"
     )
 
 
@@ -596,20 +633,34 @@ def production_image_collection_disabled() -> tuple[str, str]:
     )
 
 
-def metadata_tool_is_not_local() -> tuple[bool, str]:
-    """The metadata step is blocked because its tool is not in this repository.
+def metadata_is_still_environment_blocked() -> tuple[bool, str]:
+    """Two things must hold for `ENVIRONMENT_BLOCKED` to still be the truth.
 
-    If `attach_metadata.py` ever appears here, the row's premise -- that the
-    blocked step is external to this worktree -- stopped being true.
+    The row used to assert only the first. That made it a claim about where a
+    file lives, when what it actually means is *nobody here can answer the
+    question* -- and the second conjunct is the one that will change. The day
+    someone installs the genuine library, this row's premise dies and the
+    ledger should say so rather than wait to be noticed, which is the same
+    bidirectional duty `AUTHORITY_SPOKE` performs for the other authorities.
     """
     hits = [
         p.relative_to(REPO).as_posix()
         for p in REPO.rglob("attach_metadata.py")
         if "build" not in p.parts
     ]
-    return not hits, (
-        "attach_metadata.py is outside this worktree (D:\\tools\\equipment-model)"
-        if not hits else f"now present in this repository: {hits}"
+    if hits:
+        return False, f"attach_metadata.py is now in this repository: {hits}"
+
+    if importlib.util.find_spec("tflite_support") is not None:
+        return False, (
+            "tflite_support is importable here, so scripts/ml/"
+            "validate_metadata.py can be run and the question answered. "
+            "Run it; do not leave this row blocked."
+        )
+    return True, (
+        "attach_metadata.py is outside this worktree (D:\\tools\\"
+        "equipment-model) and tflite_support is not importable, so "
+        "scripts/ml/validate_metadata.py reports ENVIRONMENT_NOT_RUN"
     )
 
 
@@ -903,8 +954,9 @@ LEDGER: tuple[Row, ...] = (
         state="ENVIRONMENT_BLOCKED",
         authority=ENVIRONMENT,
         evidence=("core/ml/SCANNER_PROVENANCE.md",
-                  "mobile/assets/models/README.md",),
-        invariant=metadata_tool_is_not_local,
+                  "mobile/assets/models/README.md",
+                  "scripts/ml/validate_metadata.py",),
+        invariant=metadata_is_still_environment_blocked,
         quote=("core/ml/SCANNER_PROVENANCE.md", "BLOCKED_BY_WINDOWS_PACKAGE"),
         no_local_predicate="mediapipe on this platform ships no "
                            "_pywrap_metadata_version C extension. Widening the "

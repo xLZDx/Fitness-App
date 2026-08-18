@@ -42,7 +42,7 @@ that closed it.
 | `D1` | **EXTERNAL_AUTHORITY_REQUIRED** | EXTERNAL | core/review/CLINICAL_VALIDATION_HANDOFF.md, core/review/worklist/submission.json |
 | `H3` | **HOLD** | EXTERNAL | core/review/CLINICAL_VALIDATION_HANDOFF.md |
 | `CT1-human-labels` | **EXTERNAL_AUTHORITY_REQUIRED** | EXTERNAL | core/ml/review/ |
-| `scanner-metadata` | **ENVIRONMENT_BLOCKED** | ENVIRONMENT | core/ml/SCANNER_PROVENANCE.md, mobile/assets/models/README.md |
+| `scanner-metadata` | **ENVIRONMENT_BLOCKED** | ENVIRONMENT | core/ml/SCANNER_PROVENANCE.md, mobile/assets/models/README.md, scripts/ml/validate_metadata.py |
 | `scanner-pipeline-location` | **OPERATOR_DECISION_REQUIRED** | OPERATOR | core/ml/SCANNER_PROVENANCE.md |
 | `production-image-collection` | **DISABLED** | SOURCE | mobile/lib/, functions/src/ |
 

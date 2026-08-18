@@ -16524,3 +16524,68 @@ governed document and watching the suite go red.
 
 Suites: `pytest scripts/review scripts/ml` 241 passed. No Dart, `functions/` or `firestore.rules`
 changed in this gate, so `flutter test`, jest, `tsc` and the emulator are NOT RUN rather than quoted.
+
+
+## 2026-08-18 -- A false CLOSED on real money, and the question nobody here can answer
+
+**The checker was reporting the paid path safe by reading the free one.** A falsification reviewer
+asked for local executable work misfiled as external, and returned one: `f5` computed CLOSED with
+F5's defect fully restored. Both of its substrings -- the `sign_in_provider === "anonymous"` guard
+and `reason: CHECKOUT_REFUSAL.ANONYMOUS_ACCOUNT` -- also occur inside `startFreeTrial`, which is the
+handler F5 compares *against*, not the fix. Reproduced by deleting `functions/src/index.ts:613-624`,
+the entire anonymous guard in `createCheckoutSession`, and watching the row still read CLOSED: a
+tree where real-money checkout accepts an anonymous uid again, reported as resolved.
+
+This is `_member_body`'s own docstring being ignored two hundred lines below itself -- and in the
+expensive direction. `checkout_copy` was fixed this session for a false OPEN caused by a whole-file
+scan; `f5` was the same mistake producing a false CLOSED, which nobody would have gone looking for.
+
+`_member_body` could not do the job: `onCall(` takes an options object first, so slicing from the
+first brace returns 317 characters of `secrets:` configuration and no handler. `_exported_member`
+slices to the next top-level `export ` instead -- lines 562-758, verified to contain
+`createCheckoutSession` and nothing of `startFreeTrial`. Four mutations: guard deleted -> OPEN
+(kill); guard commented out -> OPEN (kill, `_without_comments` load-bearing); the *free trial's*
+guard removed instead -> CLOSED (correct survivor, because F5 is not about that handler); the
+handler renamed -> OPEN, because a scoped check that cannot find its subject must not agree.
+
+**The three green tests on top of it.** The old `test_f5_needs_both_the_guard_and_the_named_reason`
+passed the predicate a two-line fragment containing no handler at all, so every case it asserted was
+about substring presence in a string it had written itself. That is the recurring vacuity shape in
+this repository, now recorded a fourth time: a test whose fixture cannot express the property under
+test. Replaced with a two-handler fixture; the case that matters is the one where only
+`startFreeTrial` is guarded.
+
+**A row that will unblock itself.** `scanner-metadata`'s invariant asserted only that
+`attach_metadata.py` lives elsewhere -- a claim about where a file is, when what
+`ENVIRONMENT_BLOCKED` means is *nobody here can answer the question*. It now also fails the moment
+`tflite_support` becomes importable, because the person who runs `pip install` is not thinking about
+a ledger. Same bidirectional duty `AUTHORITY_SPOKE` performs for the other authorities.
+
+**The metadata question, prepared and explicitly not answered.** `scripts/ml/validate_metadata.py`
+asks the genuine library what the shipped model actually declares. It reads a COPY in a temp
+directory -- so the champion, the registry and the mobile asset are safe by construction rather than
+by care -- and ends in exactly one of VALIDATED_MATCH / VALIDATED_MISMATCH / PARSE_FAILED /
+ENVIRONMENT_NOT_RUN. On this machine it exits 3 and validates nothing. Three mutations confirm the
+tests hold it: reading the source instead of the copy, an absent library reporting agreement, and
+dropping the copy-integrity check were all killed. **A prepared script is not a validation**, and
+the last test in the file exists to keep the repository from ever reading it as one.
+
+**The residual convention's first live users.** The same review noted the marker had zero -- the
+only occurrence in the tree was the line defining it. Two items in `SCANNER_PROVENANCE.md` were
+local executable work recorded in prose alone: making the recovery marker machine-readable before
+`dataset_registry._last_commit_touching` consults `git log`, and the CI-asymmetric pin assertion
+where `test_the_pipeline_is_still_not_a_git_repository` skips on CI while `test_the_pin_is_dated`
+asserts unconditionally. Both verified. Neither is built, because both are riders on a decision
+nobody has taken, and building them now would be engineering performed to look busy. Both now carry
+`RESIDUAL[scanner-pipeline-location]`, which attaches them to the row that gates them.
+
+**Four claims the reviewer could not break**, recorded because a review that finds one thing should
+say what it failed to find: the metadata gap is environment (computing the correct floor needs the
+library's version table, which is library data, not repository data); N-05's remaining levers are a
+console setting, an env var plus redeploy, or a product policy; the pipeline's physical location,
+its licence to leave this machine, and whether the programme continues have no local answer; and
+D1/H3/CT-1 close on a clinical submission or human labels no local code can author.
+
+Suites: `pytest scripts/` 667 passed. No Dart, `functions/` or `firestore.rules` source changed in
+this gate, so `flutter test`, jest, `tsc` and the emulator are NOT RUN rather than quoted. The
+`functions/src/index.ts` mutations above were performed in memory; the file on disk is untouched.

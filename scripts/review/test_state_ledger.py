@@ -635,16 +635,80 @@ def test_f2_reads_the_arb_and_not_the_key_name(monkeypatch):
     assert sl.f2()[0] == "CLOSED"
 
 
-@pytest.mark.parametrize("ts,expected", [
-    ('sign_in_provider === "anonymous"\n'
-     'reason: CHECKOUT_REFUSAL.ANONYMOUS_ACCOUNT', "CLOSED"),
-    ('reason: CHECKOUT_REFUSAL.ANONYMOUS_ACCOUNT', "OPEN"),
-    ('sign_in_provider === "anonymous"', "OPEN"),
+_GUARD = ('    if (auth.token?.firebase?.sign_in_provider === "anonymous") {\n'
+          '      throw new HttpsError("failed-precondition", "no",\n'
+          '        { reason: CHECKOUT_REFUSAL.ANONYMOUS_ACCOUNT });\n'
+          '    }\n')
+
+
+def _index_ts(*, trial: bool = True, paid: bool = True,
+              paid_commented: bool = False) -> str:
+    """Two handlers, because the whole question is which one holds the guard.
+
+    The previous version of this test passed the predicate a bare fragment
+    with no handler in it at all. Every case it asserted was therefore about
+    substring presence in a two-line string -- which is precisely the property
+    that turned out not to be the one that mattered, and is why a predicate
+    that computed CLOSED with F5's defect restored had three green tests
+    sitting on top of it.
+    """
+    paid_guard = _GUARD if paid else ""
+    if paid_commented:
+        paid_guard = "".join("    // " + ln.lstrip() + "\n"
+                            for ln in _GUARD.splitlines())
+    return (
+        "export const startFreeTrial = onCall(\n"
+        "  { ...INTERACTIVE },\n"
+        "  async (request) => {\n"
+        + (_GUARD if trial else "")
+        + "    return grantTrial();\n  },\n);\n\n"
+        "export const createCheckoutSession = onCall(\n"
+        "  { ...INTERACTIVE, secrets: [STRIPE_SECRET_KEY] },\n"
+        "  async (request) => {\n"
+        + paid_guard
+        + "    return session.url;\n  },\n);\n\n"
+        "export const stripeWebhook = onRequest(async (req, res) => {});\n"
+    )
+
+
+@pytest.mark.parametrize("kwargs,expected,why", [
+    ({}, "CLOSED", "both handlers guarded is the shipped tree"),
+    ({"paid": False}, "OPEN",
+     "F5's defect restored: real money, anonymous caller, and the guard the "
+     "predicate can still see belongs to the free trial"),
+    ({"trial": False}, "CLOSED",
+     "F5 is not about startFreeTrial; touching it must not move this row"),
+    ({"paid": False, "trial": False}, "OPEN", "neither handler guarded"),
+    ({"paid_commented": True}, "OPEN",
+     "a commented-out guard refuses nobody"),
 ])
-def test_f5_needs_both_the_guard_and_the_named_reason(monkeypatch, ts,
-                                                      expected):
-    monkeypatch.setattr(sl, "_read", lambda rel: ts)
-    assert sl.f5()[0] == expected
+def test_f5_reads_the_paid_handler_and_not_the_free_one(monkeypatch, kwargs,
+                                                        expected, why):
+    monkeypatch.setattr(sl, "_read", lambda rel: _index_ts(**kwargs))
+    assert sl.f5()[0] == expected, why
+
+
+def test_f5_fails_closed_when_the_handler_is_renamed(monkeypatch):
+    """A predicate that cannot find its subject must not report success.
+
+    `_exported_member` returns "" for an absent signature, and "" contains
+    neither substring, so the row computes OPEN. Stated as a test because the
+    alternative -- a scoped check that silently degrades to vacuous agreement
+    -- is the failure mode scoping was introduced to remove.
+    """
+    monkeypatch.setattr(
+        sl, "_read",
+        lambda rel: _index_ts().replace("createCheckoutSession", "startPaidPlan"),
+    )
+    assert sl.f5()[0] == "OPEN"
+
+
+def test_the_exported_member_slice_stops_at_the_next_export():
+    ts = _index_ts()
+    region = sl._exported_member(ts, "export const createCheckoutSession = onCall(")
+    assert "grantTrial" not in region, "the slice reached back into startFreeTrial"
+    assert "stripeWebhook" not in region, "the slice ran past its own handler"
+    assert "session.url" in region
 
 
 _GOOD_PAGE = ("Text(checkoutLine(AppLocalizations.of(context), error)),\n"
@@ -702,9 +766,34 @@ def test_the_n05_premise_is_actually_read(monkeypatch):
 def test_the_metadata_tool_being_local_breaks_the_premise(monkeypatch,
                                                           tmp_path):
     monkeypatch.setattr(sl, "REPO", tmp_path)
-    assert sl.metadata_tool_is_not_local()[0]
+    monkeypatch.setattr(sl.importlib.util, "find_spec", lambda name: None)
+    assert sl.metadata_is_still_environment_blocked()[0]
     (tmp_path / "attach_metadata.py").write_text("x", encoding="utf-8")
-    assert not sl.metadata_tool_is_not_local()[0]
+    assert not sl.metadata_is_still_environment_blocked()[0]
+
+
+def test_installing_the_genuine_library_breaks_the_premise(monkeypatch,
+                                                           tmp_path):
+    """The conjunct that will actually fire one day.
+
+    `ENVIRONMENT_BLOCKED` means nobody here can answer the question. Once
+    `tflite_support` imports, somebody can -- and the row has to stop saying
+    otherwise on its own, because the person who ran `pip install` is not
+    thinking about a ledger.
+    """
+    monkeypatch.setattr(sl, "REPO", tmp_path)
+    monkeypatch.setattr(sl.importlib.util, "find_spec", lambda name: object())
+
+    holds, detail = sl.metadata_is_still_environment_blocked()
+    assert not holds
+    assert "validate_metadata.py" in detail
+
+
+def test_the_metadata_row_points_at_the_script_that_would_answer_it(monkeypatch):
+    """A blocked row that does not say what would unblock it is a dead end."""
+    row = next(r for r in sl.LEDGER if r.item == "scanner-metadata")
+    assert "scripts/ml/validate_metadata.py" in row.evidence
+    assert (sl.REPO / "scripts/ml/validate_metadata.py").exists()
 
 
 # =========================================================== the closure drill
