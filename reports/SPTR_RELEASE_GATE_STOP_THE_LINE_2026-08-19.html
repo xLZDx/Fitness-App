@@ -1,0 +1,482 @@
+<title>Stop the Line</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ink:#13181f;
+    --ink-soft:#4a535e;
+    --bg:#eef1ef;
+    --surface:#ffffff;
+    --surface-2:#e5e9e6;
+    --line:#d3d9d3;
+    --accent:#9a6a1c;
+    --accent-soft:#f1e2c4;
+    --structural:#2c5a6b;
+    --structural-soft:#dde9ec;
+    --ok:#2f7a4f;
+    --ok-soft:#dcefe1;
+    --warn:#c26a0c;
+    --warn-soft:#faead4;
+    --crit:#b1372a;
+    --crit-soft:#fbe0dc;
+    --shadow: 0 1px 2px rgba(19,24,31,.06), 0 8px 24px -12px rgba(19,24,31,.18);
+    --font-display:'Barlow Semi Condensed', 'Arial Narrow', sans-serif;
+    --font-body:'Source Sans 3', 'Segoe UI', sans-serif;
+    --font-mono:'JetBrains Mono', 'Consolas', monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#e9ecef;
+      --ink-soft:#a8b1ba;
+      --bg:#11151b;
+      --surface:#181e26;
+      --surface-2:#1f2731;
+      --line:#2c3540;
+      --accent:#d9a244;
+      --accent-soft:#332711;
+      --structural:#7fb6c9;
+      --structural-soft:#16262b;
+      --ok:#6fc793;
+      --ok-soft:#122a1c;
+      --warn:#e0a850;
+      --warn-soft:#2c2110;
+      --crit:#e2776a;
+      --crit-soft:#301613;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#e9ecef;
+    --ink-soft:#a8b1ba;
+    --bg:#11151b;
+    --surface:#181e26;
+    --surface-2:#1f2731;
+    --line:#2c3540;
+    --accent:#d9a244;
+    --accent-soft:#332711;
+    --structural:#7fb6c9;
+    --structural-soft:#16262b;
+    --ok:#6fc793;
+    --ok-soft:#122a1c;
+    --warn:#e0a850;
+    --warn-soft:#2c2110;
+    --crit:#e2776a;
+    --crit-soft:#301613;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--font-body); font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 24px 96px;}
+  header{padding:56px 24px 28px; max-width:920px; margin:0 auto;}
+  .eyebrow{
+    font-family:var(--font-mono); font-size:12.5px; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--accent); font-weight:600; margin:0 0 14px;
+  }
+  h1{
+    font-family:var(--font-display); font-weight:700; font-size:clamp(32px,5vw,50px);
+    line-height:1.05; margin:0 0 14px; text-wrap:balance; letter-spacing:-.01em;
+  }
+  .dek{font-size:18px; color:var(--ink-soft); max-width:62ch; margin:0; text-wrap:balance;}
+
+  .stopbanner{
+    display:flex; gap:18px; align-items:flex-start;
+    background:var(--crit-soft); border:1px solid var(--crit);
+    border-radius:10px; padding:20px 22px; margin:32px 0 8px;
+    box-shadow:var(--shadow);
+  }
+  .stopbanner .glyph{
+    font-family:var(--font-display); font-weight:700; font-size:13px; letter-spacing:.08em;
+    color:#fff; background:var(--crit); border-radius:6px; padding:8px 10px; white-space:nowrap;
+  }
+  .stopbanner strong{display:block; font-family:var(--font-display); font-weight:600; font-size:19px; margin-bottom:4px;}
+  .stopbanner p{margin:0; color:var(--ink-soft); font-size:15px; max-width:64ch;}
+
+  section{margin-top:56px;}
+  h2{
+    font-family:var(--font-display); font-weight:600; font-size:26px; margin:0 0 6px;
+    display:flex; align-items:baseline; gap:10px;
+  }
+  h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:15px; font-weight:600;}
+  .section-lede{color:var(--ink-soft); font-size:15.5px; margin:0 0 22px; max-width:68ch;}
+
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding:20px 22px; box-shadow:var(--shadow); margin-bottom:14px;
+  }
+  .card.crit{border-left:4px solid var(--crit);}
+  .card.warn{border-left:4px solid var(--warn);}
+  .card.ok{border-left:4px solid var(--ok);}
+  .card h3{font-family:var(--font-display); font-weight:600; font-size:19px; margin:0 0 8px;}
+  .card p{margin:0 0 10px; font-size:15px;}
+  .card p:last-child{margin-bottom:0}
+  .card ul{margin:8px 0; padding-left:20px; font-size:15px;}
+  .card li{margin-bottom:5px;}
+
+  code, .mono{font-family:var(--font-mono); font-size:.92em;}
+  .card code, p code{
+    background:var(--surface-2); border:1px solid var(--line); border-radius:4px;
+    padding:1px 6px; font-size:.86em;
+  }
+
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono);
+    font-size:11.5px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;
+    padding:4px 10px; border-radius:999px; white-space:nowrap;
+  }
+  .chip.crit{background:var(--crit-soft); color:var(--crit); border:1px solid color-mix(in srgb, var(--crit) 40%, transparent);}
+  .chip.warn{background:var(--warn-soft); color:var(--warn); border:1px solid color-mix(in srgb, var(--warn) 40%, transparent);}
+  .chip.ok{background:var(--ok-soft); color:var(--ok); border:1px solid color-mix(in srgb, var(--ok) 40%, transparent);}
+  .chip.structural{background:var(--structural-soft); color:var(--structural); border:1px solid color-mix(in srgb, var(--structural) 40%, transparent);}
+
+  .statusgrid{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:10px; margin:20px 0 8px;
+  }
+  .statusrow{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:11px 14px;
+  }
+  .statusrow .label{font-size:14px; font-weight:600;}
+
+  table{width:100%; border-collapse:collapse; font-size:14.5px;}
+  .tablewrap{overflow-x:auto; border:1px solid var(--line); border-radius:10px; box-shadow:var(--shadow);}
+  th, td{text-align:left; padding:11px 14px; border-bottom:1px solid var(--line); vertical-align:top;}
+  thead th{
+    font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--ink-soft); background:var(--surface-2); font-weight:600;
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--surface-2);}
+  td.num, th.num{font-family:var(--font-mono); font-variant-numeric:tabular-nums;}
+
+  .reviewgrid{display:grid; grid-template-columns:repeat(auto-fit, minmax(270px,1fr)); gap:14px; margin-top:18px;}
+  .review{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px 18px;
+    box-shadow:var(--shadow);
+  }
+  .review .role{font-family:var(--font-display); font-weight:600; font-size:16px; margin-bottom:8px;}
+  .review .verdicts{display:flex; flex-direction:column; gap:6px; margin-bottom:10px;}
+  .review .vline{display:flex; align-items:center; gap:8px; font-size:13.5px;}
+  .review .vline .what{color:var(--ink-soft); flex:1;}
+  .review p{font-size:13.8px; color:var(--ink-soft); margin:0;}
+
+  .commitlog{list-style:none; margin:18px 0 0; padding:0; display:flex; flex-direction:column; gap:10px;}
+  .commitlog li{
+    display:flex; gap:14px; align-items:flex-start; background:var(--surface);
+    border:1px solid var(--line); border-radius:8px; padding:12px 16px;
+  }
+  .commitlog .sha{
+    font-family:var(--font-mono); font-size:13px; background:var(--structural-soft); color:var(--structural);
+    padding:3px 8px; border-radius:5px; white-space:nowrap; flex-shrink:0;
+  }
+  .commitlog .msg{font-size:14.5px;}
+  .commitlog .msg .sub{color:var(--ink-soft); font-size:13px; display:block; margin-top:2px;}
+
+  .checklist{list-style:none; margin:18px 0 0; padding:0; counter-reset:step;}
+  .checklist li{
+    counter-increment:step; position:relative; padding:12px 16px 12px 52px;
+    background:var(--surface); border:1px solid var(--line); border-radius:8px; margin-bottom:10px;
+    font-size:14.8px;
+  }
+  .checklist li::before{
+    content:counter(step); position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    font-family:var(--font-mono); font-weight:700; font-size:14px; color:var(--accent);
+    background:var(--accent-soft); width:26px; height:26px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  footer{
+    margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+    color:var(--ink-soft); font-size:13.5px;
+  }
+  footer a{color:var(--structural);}
+
+  @media (max-width:640px){
+    header{padding:40px 20px 20px;}
+    .wrap{padding:0 20px 72px;}
+    .stopbanner{flex-direction:column;}
+  }
+</style>
+
+<header>
+  <p class="eyebrow">SPTR &middot; MVP release gate &middot; evidence audit</p>
+  <h1>The gate stayed on the wrong build the whole time</h1>
+  <p class="dek">A device pass meant to close the last three release-gate items instead surfaced a branch/build mismatch that invalidates the evidence it produced &mdash; caught before the operator was told the gate was closed, not after.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness_App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; marketing/site-prototype-2026-08-19 @ 21d116d</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="wrap">
+
+  <div class="stopbanner">
+    <span class="glyph">STOP</span>
+    <div>
+      <strong>MVP release gate: NOT closed.</strong>
+      <p>Every scan, language-switch and account-isolation test this session ran against a debug APK that was almost certainly built from <code>master</code>, not the branch under review. The findings are real, but they can't be certified for <code>marketing/site-prototype-2026-08-19</code> until the build is redone and re-tested.</p>
+    </div>
+  </div>
+
+  <section>
+    <h2><span class="num">00</span> What happened, in one pass</h2>
+    <p class="section-lede">Three open release-gate items went in for closure. Two closed cleanly. Sourcing the third &mdash; a dream-team review of a discovered defect &mdash; turned up evidence that the entire device pass had been run against the wrong branch's build.</p>
+    <div class="statusgrid">
+      <div class="statusrow"><span class="label">RG-2 &middot; EN + RU</span><span class="chip ok">Full, closed</span></div>
+      <div class="statusrow"><span class="label">RG-3 &middot; account isolation</span><span class="chip ok">One-way, closed</span></div>
+      <div class="statusrow"><span class="label">RG-1 &middot; scan recognition</span><span class="chip warn">Real defect found</span></div>
+      <div class="statusrow"><span class="label">Build provenance</span><span class="chip crit">Wrong branch</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">01</span> What the device pass actually closed</h2>
+    <p class="section-lede">RG-2 and RG-3 used mechanisms &mdash; the in-app language switch, Firebase anonymous auth, Firestore writes &mdash; that also exist on <code>master</code>, so their findings are very likely still true on this branch. Not yet re-verified against a confirmed-correct build, but lower-risk than RG-1's content-dependent claims.</p>
+
+    <div class="card ok">
+      <h3>RG-2 &mdash; language switch <span class="chip ok" style="margin-left:8px">Full</span></h3>
+      <p>Settings &rarr; Language &rarr; English, through the real in-app control, not <code>adb</code> locale overrides. Live retranslation confirmed on Home, Scan, Library, Machines, an exercise detail page, and Settings itself. Survived a full <code>force-stop</code> + relaunch, and a complete sign-out / new-anonymous-sign-in cycle.</p>
+    </div>
+
+    <div class="card ok">
+      <h3>RG-3 &mdash; account isolation <span class="chip ok" style="margin-left:8px">One-way, full</span></h3>
+      <p>Two real anonymous Firebase UIDs: <code>1W6h&hellip;yhkZH2</code> (User A) and <code>NwGw&hellip;xsj5093</code> (User B), confirmed distinct via live <code>FirebaseAuth</code> logs. A sentinel value written to User A's real Firestore-backed Injuries record was confirmed absent for User B.</p>
+      <p><strong>Not attempted:</strong> the reverse A&rarr;B&rarr;A restoration path, which needs Google-account linking this test device can't exercise. An explicit scope decision, not a silent gap.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span> RG-1 &mdash; five real photos, zero confident matches</h2>
+    <p class="section-lede">Five real gym-equipment photos from the operator's own corpus, pushed through the actual Android Photo Picker into the shipped Scan screen. No synthetic input, no mocked service.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Photo</th><th>Subject</th><th>Outcome</th><th class="num">Confidence</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">141731.jpg</td><td>Nautilus Inspiration ab machine</td><td>Unknown</td><td class="num">&mdash;</td></tr>
+          <tr><td class="mono">135651.jpg</td><td>Unbranded flat benches</td><td>Unknown</td><td class="num">&mdash;</td></tr>
+          <tr><td class="mono">142207.jpg</td><td>Star Trac ellipticals, wide</td><td>Ambiguous &mdash; &ldquo;Treadmill&rdquo;</td><td class="num">30%</td></tr>
+          <tr><td class="mono">142215.jpg</td><td>Star Trac console, close</td><td>Ambiguous &mdash; &ldquo;Treadmill&rdquo;</td><td class="num">30%</td></tr>
+          <tr><td class="mono">135629.jpg</td><td>Squat rack / deadlift platform</td><td>Unknown</td><td class="num">&mdash;</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card warn" style="margin-top:16px">
+      <h3>Root cause, confirmed live <span class="chip warn" style="margin-left:8px">Backend, not device</span></h3>
+      <p>Every attempt logged the same line before degrading:</p>
+      <p><code class="mono">cloud recognition unavailable, falling back on-device: Firebase AI Logic has been deactivated in this project. To resume using Firebase AI Logic, you must enforce Firebase App Check.</code></p>
+      <p>Cloud recognition (Gemini via Firebase AI Logic) is dead project-wide &mdash; a console setting, not app code. On-device fallback is the only live path, and its ceiling this session was 30% confidence, always surfaced honestly as &ldquo;ambiguous&rdquo; or &ldquo;unknown,&rdquo; never fabricated as a confident match.</p>
+      <p>A separate, code-confirmed gap: the recognition-fallback catch block is a bare <code>debugPrint</code> &mdash; no Crashlytics record, no analytics event (<code>gemini_equipment_service.dart:288</code>). If this backend state regresses again post-launch, the team gets zero signal.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span> The discovery that stopped the gate</h2>
+    <p class="section-lede">Spawned to answer one question &mdash; is any of this a proven MVP blocker &mdash; a nine-reviewer dream-team panel instead surfaced a problem with the evidence itself.</p>
+
+    <div class="card crit">
+      <h3>The safety module doesn't exist on this branch</h3>
+      <p>The Clinical/Safety reviewer couldn't find the PAR-Q-style health-screening gate (&ldquo;Has your doctor ever said you have a heart condition&hellip;&rdquo;, &ldquo;This needs medical attention, not a workout&rdquo;) anywhere in <code>mobile/lib</code> &mdash; despite it being witnessed live on the tested device, in both languages, throughout this session.</p>
+      <p>Checked directly against git, not taken on either side's word:</p>
+      <ul>
+        <li><code>mobile/lib/features/safety/</code> exists on <code>origin/master</code>. It is completely absent from <code>marketing/site-prototype-2026-08-19</code>'s tree.</li>
+        <li>The feature's origin commits (<code>9c16699</code>, <code>8bf16d2</code>, <code>917dc01</code> and others) are confirmed <strong>not ancestors</strong> of this branch's HEAD.</li>
+        <li>This branch's fork point from <code>master</code> (<code>78b24dc</code>) predates all of them &mdash; not a revert, a feature this branch was never in a position to receive.</li>
+      </ul>
+      <p><strong>Conclusion:</strong> the debug APK on the shared emulator was built from <code>master</code> (or a branch carrying its safety-module commits), not from this one. A second real device (Samsung SM-G950F) was also found attached mid-session &mdash; this test environment was shared, not exclusive.</p>
+    </div>
+
+    <div class="card warn">
+      <h3>What that does and doesn't invalidate</h3>
+      <p><strong>Stands:</strong> every direct source-code citation the reviewers made against this branch's actual working tree &mdash; <code>app_router.dart</code>, <code>login_page.dart</code>, <code>auth_providers.dart</code>, <code>firestore.rules</code>, <code>gemini_equipment_service.dart</code>. Those files were read from this session's real checkout, not from the running app.</p>
+      <p><strong>Doesn't stand as evidence for this branch:</strong> every live behavioral claim above &mdash; the scan outcomes, the language-switch screenshots, the isolation proof, the injury-gate pass/fail behavior. Real observations of a real build doing real things, and the underlying defects are very likely still present on this branch too, since the touched code is common ancestry &mdash; but &ldquo;very likely&rdquo; isn't this project's own evidentiary bar for closing a release gate.</p>
+      <p>The most urgent open question this raises: <strong>it isn't yet known whether this branch ships any injury/safety gate at all.</strong> The plan doc's &ldquo;Existing state&rdquo; section asserts one is &ldquo;genuinely enforced and fail closed&rdquo; &mdash; that claim may itself be resting on the wrong branch's code.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span> Dream-team panel &mdash; nine independent reviewers</h2>
+    <p class="section-lede">Round 1, fully independent, no reviewer seeded with another's opinion. Their code-level analysis (file/line citations against this branch's real source) stands regardless of the build-provenance issue; their behavioral premises now need re-confirming against a correct build.</p>
+
+    <div class="reviewgrid">
+      <div class="review">
+        <div class="role">Product</div>
+        <div class="verdicts">
+          <div class="vline"><span class="chip crit">Blocker</span><span class="what">Scan never confidently identifies real equipment</span></div>
+          <div class="vline"><span class="chip crit">Blocker</span><span class="what">Silent stuck-on-Welcome after sign-in</span></div>
+          <div class="vline"><span class="chip ok">Covered</span><span class="what">One-way account isolation</span></div>
+        </div>
+        <p>An honest &ldquo;I don't know&rdquo; on every scan isn't a minimal version of the feature &mdash; it's the feature not existing, dressed in honest copy.</p>
+      </div>
+
+      <div class="review">
+        <div class="role">Flutter</div>
+        <div class="verdicts"><div class="vline"><span class="chip crit">Blocker</span><span class="what">Stuck-on-Welcome, code-level analysis</span></div></div>
+        <p>Same &ldquo;synchronous snapshot instead of awaited stream&rdquo; shape as the already-fixed auth bugs, at a new trigger point never exercised by those fixes. Cites <code>login_page.dart:92</code>, <code>app_router.dart:218</code>.</p>
+      </div>
+
+      <div class="review">
+        <div class="role">UX</div>
+        <div class="verdicts">
+          <div class="vline"><span class="chip ok">Covered</span><span class="what">Scan's honest failure copy</span></div>
+          <div class="vline"><span class="chip crit">Blocker</span><span class="what">Stuck-on-Welcome, no discoverable recovery</span></div>
+        </div>
+        <p>Browsing the library manually stays reachable when scan disappoints. Nothing rescues a user from a screen with zero signal that anything is wrong.</p>
+      </div>
+
+      <div class="review">
+        <div class="role">Fitness domain</div>
+        <div class="verdicts"><div class="vline"><span class="chip ok">Covered</span><span class="what">Content correctness, both items</span></div></div>
+        <p>The failure mode is withholding, never misleading &mdash; the app never hands out an exercise mismatched to equipment a user doesn't have.</p>
+      </div>
+
+      <div class="review">
+        <div class="role">Clinical / Safety</div>
+        <div class="verdicts"><div class="vline"><span class="chip crit">Blocker</span><span class="what">Evidence-integrity, not clinical harm</span></div></div>
+        <p>Couldn't locate the described PAR-Q gate in <code>mobile/lib</code> at all &mdash; the finding that triggered this entire stop-the-line correction.</p>
+      </div>
+
+      <div class="review">
+        <div class="role">Privacy / Security</div>
+        <div class="verdicts"><div class="vline"><span class="chip ok">Covered</span><span class="what">Isolation, verified against firestore.rules directly</span></div></div>
+        <p>A single wildcard rule scopes every per-user collection to its owner &mdash; not an enumerated list that could omit a new one by accident.</p>
+      </div>
+
+      <div class="review">
+        <div class="role">Release / SRE</div>
+        <div class="verdicts"><div class="vline"><span class="chip warn">Config, not code</span><span class="what">Dead cloud path + missing Crashlytics</span></div></div>
+        <p>A one-line App Check fix, not a rebuild &mdash; but also a confirmed, separate monitoring gap on the fallback's own catch block.</p>
+      </div>
+
+      <div class="review">
+        <div class="role">Technical product truth</div>
+        <div class="verdicts"><div class="vline"><span class="chip ok">Covered</span><span class="what">Privacy disclosure copy</span></div></div>
+        <p>&ldquo;If that fails, on-device is used&rdquo; already discloses the fallback in both locales &mdash; not a claim of guaranteed cloud success.</p>
+      </div>
+
+      <div class="review">
+        <div class="role">Silent failure</div>
+        <div class="verdicts"><div class="vline"><span class="chip crit">Blocker</span><span class="what">Zero log, zero user signal, zero recovery UI</span></div></div>
+        <p>Not a swallowed exception &mdash; an absent state-propagation trigger. Harder to trust as rare precisely because its mechanism is still unidentified.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span> Commits, pushed and verified</h2>
+    <ul class="commitlog">
+      <li>
+        <span class="sha">c4c94bc</span>
+        <span class="msg">RG-1/RG-2/RG-3 real-device evidence closure pass<span class="sub">Local &harr; remote HEAD verified matching after push</span></span>
+      </li>
+      <li>
+        <span class="sha">21d116d</span>
+        <span class="msg">Stop-the-line correction &mdash; wrong-branch build discovered<span class="sub">Local &harr; remote HEAD verified matching after push</span></span>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span> Required before the gate can honestly close</h2>
+    <ol class="checklist">
+      <li>Rebuild the debug APK explicitly from this branch's current HEAD, on a device confirmed not shared with a concurrent session mid-test.</li>
+      <li>Re-run the scan, language-switch and account-isolation checks against that confirmed build.</li>
+      <li>Specifically confirm whether this branch ships <em>any</em> equivalent injury/safety gate &mdash; the single most urgent open question this pass raised.</li>
+      <li>Only then resume the dream-team review with confirmed-accurate behavioral evidence.</li>
+    </ol>
+  </section>
+
+  <footer>
+    Full evidence trail, commit-by-commit reasoning and all nine reviewer transcripts: <code>core/DECISION_LOG.md</code>, entries dated 2026-08-19 (&ldquo;RG-1/RG-2/RG-3&rdquo; and &ldquo;STOP-THE-LINE CORRECTION&rdquo;). Release-gate checklist: <code>core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md</code>.
+  </footer>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

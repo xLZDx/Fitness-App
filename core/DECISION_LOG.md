@@ -11090,3 +11090,13 @@ SUFFICIENTLY-COVERED call is treated as final. Required before this gate can hon
 
 **No code changed by this entry.** This is a correction of the evidentiary basis for the gate, not
 a new defect fix.
+
+---
+
+## 2026-08-19 — house-format report for the stop-the-line finding
+
+Bilingual status report (`reports/SPTR_RELEASE_GATE_STOP_THE_LINE_2026-08-19.{html,ru.html}`)
+covering this session's RG-1/RG-2/RG-3 device pass and the build/branch mismatch that stops the
+MVP release gate from closing on it. Required by the operator's house-report rule. Russian
+published as an artifact and linked to the operator; English committed as the durable in-repo
+record. No code or scope decisions in this entry — reporting only.

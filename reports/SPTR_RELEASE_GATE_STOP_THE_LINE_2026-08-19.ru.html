@@ -1,0 +1,482 @@
+<title>Стоп-линия</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ink:#13181f;
+    --ink-soft:#4a535e;
+    --bg:#eef1ef;
+    --surface:#ffffff;
+    --surface-2:#e5e9e6;
+    --line:#d3d9d3;
+    --accent:#9a6a1c;
+    --accent-soft:#f1e2c4;
+    --structural:#2c5a6b;
+    --structural-soft:#dde9ec;
+    --ok:#2f7a4f;
+    --ok-soft:#dcefe1;
+    --warn:#c26a0c;
+    --warn-soft:#faead4;
+    --crit:#b1372a;
+    --crit-soft:#fbe0dc;
+    --shadow: 0 1px 2px rgba(19,24,31,.06), 0 8px 24px -12px rgba(19,24,31,.18);
+    --font-display:'Barlow Semi Condensed', 'Arial Narrow', sans-serif;
+    --font-body:'Source Sans 3', 'Segoe UI', sans-serif;
+    --font-mono:'JetBrains Mono', 'Consolas', monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#e9ecef;
+      --ink-soft:#a8b1ba;
+      --bg:#11151b;
+      --surface:#181e26;
+      --surface-2:#1f2731;
+      --line:#2c3540;
+      --accent:#d9a244;
+      --accent-soft:#332711;
+      --structural:#7fb6c9;
+      --structural-soft:#16262b;
+      --ok:#6fc793;
+      --ok-soft:#122a1c;
+      --warn:#e0a850;
+      --warn-soft:#2c2110;
+      --crit:#e2776a;
+      --crit-soft:#301613;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#e9ecef;
+    --ink-soft:#a8b1ba;
+    --bg:#11151b;
+    --surface:#181e26;
+    --surface-2:#1f2731;
+    --line:#2c3540;
+    --accent:#d9a244;
+    --accent-soft:#332711;
+    --structural:#7fb6c9;
+    --structural-soft:#16262b;
+    --ok:#6fc793;
+    --ok-soft:#122a1c;
+    --warn:#e0a850;
+    --warn-soft:#2c2110;
+    --crit:#e2776a;
+    --crit-soft:#301613;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--font-body); font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 24px 96px;}
+  header{padding:56px 24px 28px; max-width:920px; margin:0 auto;}
+  .eyebrow{
+    font-family:var(--font-mono); font-size:12.5px; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--accent); font-weight:600; margin:0 0 14px;
+  }
+  h1{
+    font-family:var(--font-display); font-weight:700; font-size:clamp(30px,5vw,46px);
+    line-height:1.08; margin:0 0 14px; text-wrap:balance; letter-spacing:-.01em;
+  }
+  .dek{font-size:18px; color:var(--ink-soft); max-width:62ch; margin:0; text-wrap:balance;}
+
+  .stopbanner{
+    display:flex; gap:18px; align-items:flex-start;
+    background:var(--crit-soft); border:1px solid var(--crit);
+    border-radius:10px; padding:20px 22px; margin:32px 0 8px;
+    box-shadow:var(--shadow);
+  }
+  .stopbanner .glyph{
+    font-family:var(--font-display); font-weight:700; font-size:13px; letter-spacing:.08em;
+    color:#fff; background:var(--crit); border-radius:6px; padding:8px 10px; white-space:nowrap;
+  }
+  .stopbanner strong{display:block; font-family:var(--font-display); font-weight:600; font-size:19px; margin-bottom:4px;}
+  .stopbanner p{margin:0; color:var(--ink-soft); font-size:15px; max-width:64ch;}
+
+  section{margin-top:56px;}
+  h2{
+    font-family:var(--font-display); font-weight:600; font-size:26px; margin:0 0 6px;
+    display:flex; align-items:baseline; gap:10px;
+  }
+  h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:15px; font-weight:600;}
+  .section-lede{color:var(--ink-soft); font-size:15.5px; margin:0 0 22px; max-width:68ch;}
+
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding:20px 22px; box-shadow:var(--shadow); margin-bottom:14px;
+  }
+  .card.crit{border-left:4px solid var(--crit);}
+  .card.warn{border-left:4px solid var(--warn);}
+  .card.ok{border-left:4px solid var(--ok);}
+  .card h3{font-family:var(--font-display); font-weight:600; font-size:19px; margin:0 0 8px;}
+  .card p{margin:0 0 10px; font-size:15px;}
+  .card p:last-child{margin-bottom:0}
+  .card ul{margin:8px 0; padding-left:20px; font-size:15px;}
+  .card li{margin-bottom:5px;}
+
+  code, .mono{font-family:var(--font-mono); font-size:.92em;}
+  .card code, p code{
+    background:var(--surface-2); border:1px solid var(--line); border-radius:4px;
+    padding:1px 6px; font-size:.86em;
+  }
+
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono);
+    font-size:11.5px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;
+    padding:4px 10px; border-radius:999px; white-space:nowrap;
+  }
+  .chip.crit{background:var(--crit-soft); color:var(--crit); border:1px solid color-mix(in srgb, var(--crit) 40%, transparent);}
+  .chip.warn{background:var(--warn-soft); color:var(--warn); border:1px solid color-mix(in srgb, var(--warn) 40%, transparent);}
+  .chip.ok{background:var(--ok-soft); color:var(--ok); border:1px solid color-mix(in srgb, var(--ok) 40%, transparent);}
+  .chip.structural{background:var(--structural-soft); color:var(--structural); border:1px solid color-mix(in srgb, var(--structural) 40%, transparent);}
+
+  .statusgrid{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:10px; margin:20px 0 8px;
+  }
+  .statusrow{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:11px 14px;
+  }
+  .statusrow .label{font-size:14px; font-weight:600;}
+
+  table{width:100%; border-collapse:collapse; font-size:14.5px;}
+  .tablewrap{overflow-x:auto; border:1px solid var(--line); border-radius:10px; box-shadow:var(--shadow);}
+  th, td{text-align:left; padding:11px 14px; border-bottom:1px solid var(--line); vertical-align:top;}
+  thead th{
+    font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--ink-soft); background:var(--surface-2); font-weight:600;
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--surface-2);}
+  td.num, th.num{font-family:var(--font-mono); font-variant-numeric:tabular-nums;}
+
+  .reviewgrid{display:grid; grid-template-columns:repeat(auto-fit, minmax(270px,1fr)); gap:14px; margin-top:18px;}
+  .review{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px 18px;
+    box-shadow:var(--shadow);
+  }
+  .review .role{font-family:var(--font-display); font-weight:600; font-size:16px; margin-bottom:8px;}
+  .review .verdicts{display:flex; flex-direction:column; gap:6px; margin-bottom:10px;}
+  .review .vline{display:flex; align-items:center; gap:8px; font-size:13.5px;}
+  .review .vline .what{color:var(--ink-soft); flex:1;}
+  .review p{font-size:13.8px; color:var(--ink-soft); margin:0;}
+
+  .commitlog{list-style:none; margin:18px 0 0; padding:0; display:flex; flex-direction:column; gap:10px;}
+  .commitlog li{
+    display:flex; gap:14px; align-items:flex-start; background:var(--surface);
+    border:1px solid var(--line); border-radius:8px; padding:12px 16px;
+  }
+  .commitlog .sha{
+    font-family:var(--font-mono); font-size:13px; background:var(--structural-soft); color:var(--structural);
+    padding:3px 8px; border-radius:5px; white-space:nowrap; flex-shrink:0;
+  }
+  .commitlog .msg{font-size:14.5px;}
+  .commitlog .msg .sub{color:var(--ink-soft); font-size:13px; display:block; margin-top:2px;}
+
+  .checklist{list-style:none; margin:18px 0 0; padding:0; counter-reset:step;}
+  .checklist li{
+    counter-increment:step; position:relative; padding:12px 16px 12px 52px;
+    background:var(--surface); border:1px solid var(--line); border-radius:8px; margin-bottom:10px;
+    font-size:14.8px;
+  }
+  .checklist li::before{
+    content:counter(step); position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    font-family:var(--font-mono); font-weight:700; font-size:14px; color:var(--accent);
+    background:var(--accent-soft); width:26px; height:26px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  footer{
+    margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+    color:var(--ink-soft); font-size:13.5px;
+  }
+  footer a{color:var(--structural);}
+
+  @media (max-width:640px){
+    header{padding:40px 20px 20px;}
+    .wrap{padding:0 20px 72px;}
+    .stopbanner{flex-direction:column;}
+  }
+</style>
+
+<header>
+  <p class="eyebrow">SPTR &middot; release-gate MVP &middot; аудит доказательной базы</p>
+  <h1>Весь заход шёл против чужой сборки</h1>
+  <p class="dek">Проход, задуманный как закрытие последних трёх пунктов release-gate, вместо этого вскрыл несовпадение ветки и сборки, обесценивающее собранные доказательства — обнаружено до того, как оператору сообщили о закрытии гейта, а не после.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness_App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; marketing/site-prototype-2026-08-19 @ 21d116d</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="wrap">
+
+  <div class="stopbanner">
+    <span class="glyph">СТОП</span>
+    <div>
+      <strong>MVP release gate: НЕ закрыт.</strong>
+      <p>Каждый тест скана, переключения языка и изоляции аккаунтов в этой сессии шёл против debug-APK, почти наверняка собранного из <code>master</code>, а не из проверяемой ветки. Находки реальны, но их нельзя засчитать для <code>marketing/site-prototype-2026-08-19</code>, пока сборка не будет пересобрана и перепроверена.</p>
+    </div>
+  </div>
+
+  <section>
+    <h2><span class="num">00</span> Что произошло за один заход</h2>
+    <p class="section-lede">Три открытых пункта release-gate пошли на закрытие. Два закрылись чисто. Источник третьего — dream-team review найденного дефекта — вскрыл, что весь проход на устройстве шёл против сборки чужой ветки.</p>
+    <div class="statusgrid">
+      <div class="statusrow"><span class="label">RG-2 · EN + RU</span><span class="chip ok">Full, закрыт</span></div>
+      <div class="statusrow"><span class="label">RG-3 · изоляция аккаунтов</span><span class="chip ok">Одностороннее, закрыто</span></div>
+      <div class="statusrow"><span class="label">RG-1 · распознавание</span><span class="chip warn">Найден реальный дефект</span></div>
+      <div class="statusrow"><span class="label">Происхождение сборки</span><span class="chip crit">Чужая ветка</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">01</span> Что проход реально закрыл</h2>
+    <p class="section-lede">RG-2 и RG-3 использовали механизмы — переключатель языка в приложении, анонимную Firebase-аутентификацию, записи в Firestore — которые существуют и на <code>master</code>, поэтому их находки, скорее всего, верны и для этой ветки. Ещё не переподтверждены на заведомо верной сборке, но риск ниже, чем у RG-1, чьи выводы зависят от контента конкретной фичи.</p>
+
+    <div class="card ok">
+      <h3>RG-2 — переключение языка <span class="chip ok" style="margin-left:8px">Full</span></h3>
+      <p>Настройки → Язык → English через настоящий переключатель в приложении, а не через <code>adb</code>-локаль. Живой ретранслейт подтверждён на Home, Scan, Library, Machines, карточке упражнения и самих Настройках. Пережил полный <code>force-stop</code> + relaunch и полный цикл sign-out / новый анонимный sign-in.</p>
+    </div>
+
+    <div class="card ok">
+      <h3>RG-3 — изоляция аккаунтов <span class="chip ok" style="margin-left:8px">Одностороннее, full</span></h3>
+      <p>Два реальных анонимных Firebase UID: <code>1W6h…yhkZH2</code> (User A) и <code>NwGw…xsj5093</code> (User B), различие подтверждено живыми логами <code>FirebaseAuth</code>. Sentinel-значение, записанное в реальную Firestore-запись Injuries User A, подтверждённо отсутствует у User B.</p>
+      <p><strong>Не выполнено:</strong> обратный путь A→B→A с восстановлением аккаунта — требует привязки Google-аккаунта, которую тестовое устройство не может задействовать. Явное решение по объёму, а не тихий пробел.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span> RG-1 — пять реальных фото, ноль уверенных попаданий</h2>
+    <p class="section-lede">Пять реальных фото тренажёров из корпуса самого оператора, проведённых через настоящий Android Photo Picker в боевой экран Scan. Никакого синтетического ввода, никакого мока сервиса.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Фото</th><th>Объект</th><th>Результат</th><th class="num">Уверенность</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">141731.jpg</td><td>Тренажёр Nautilus Inspiration (пресс)</td><td>Unknown</td><td class="num">—</td></tr>
+          <tr><td class="mono">135651.jpg</td><td>Небрендированные скамьи</td><td>Unknown</td><td class="num">—</td></tr>
+          <tr><td class="mono">142207.jpg</td><td>Ряд эллипсоидов Star Trac, общий план</td><td>Ambiguous — «Беговая дорожка»</td><td class="num">30%</td></tr>
+          <tr><td class="mono">142215.jpg</td><td>Консоль Star Trac, крупный план</td><td>Ambiguous — «Беговая дорожка»</td><td class="num">30%</td></tr>
+          <tr><td class="mono">135629.jpg</td><td>Силовая рама / платформа для тяги</td><td>Unknown</td><td class="num">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card warn" style="margin-top:16px">
+      <h3>Причина, подтверждённая вживую <span class="chip warn" style="margin-left:8px">Бэкенд, не устройство</span></h3>
+      <p>Каждая попытка перед деградацией логировала одну и ту же строку:</p>
+      <p><code class="mono">cloud recognition unavailable, falling back on-device: Firebase AI Logic has been deactivated in this project. To resume using Firebase AI Logic, you must enforce Firebase App Check.</code></p>
+      <p>Облачное распознавание (Gemini через Firebase AI Logic) мертво на уровне всего проекта — это настройка консоли, не код приложения. On-device fallback — единственный живой путь, его потолок в этой сессии — 30% уверенности, всегда честно поданный как «ambiguous» или «unknown», ни разу не выдан за уверенное совпадение.</p>
+      <p>Отдельный, подтверждённый по коду пробел: catch-блок fallback-пути — голый <code>debugPrint</code>, без записи в Crashlytics, без аналитики (<code>gemini_equipment_service.dart:288</code>). Если это состояние бэкенда снова сломается после релиза, команда не получит никакого сигнала.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span> Находка, остановившая гейт</h2>
+    <p class="section-lede">Панель из девяти ревьюеров была запущена ответить на один вопрос — есть ли доказанный MVP-блокер — а вместо этого вскрыла проблему с самой доказательной базой.</p>
+
+    <div class="card crit">
+      <h3>Модуля безопасности на этой ветке не существует</h3>
+      <p>Ревьюер Clinical/Safety не смог найти PAR-Q-подобный гейт медицинского скрининга («Has your doctor ever said you have a heart condition…», «This needs medical attention, not a workout») нигде в <code>mobile/lib</code> — хотя он лично наблюдался вживую на тестируемом устройстве, на обоих языках, на протяжении всей сессии.</p>
+      <p>Проверено напрямую по git, а не со слов любой из сторон:</p>
+      <ul>
+        <li><code>mobile/lib/features/safety/</code> существует на <code>origin/master</code>. Полностью отсутствует в дереве <code>marketing/site-prototype-2026-08-19</code>.</li>
+        <li>Коммиты, добавившие фичу (<code>9c16699</code>, <code>8bf16d2</code>, <code>917dc01</code> и другие), подтверждённо <strong>не являются предками</strong> HEAD этой ветки.</li>
+        <li>Точка форка этой ветки от <code>master</code> (<code>78b24dc</code>) предшествует всем им — не откат, а фича, которую эта ветка физически не могла получить.</li>
+      </ul>
+      <p><strong>Вывод:</strong> debug-APK на общем эмуляторе собран из <code>master</code> (или ветки с его коммитами safety-модуля), не из этой. Посреди сессии также обнаружено второе реальное устройство (Samsung SM-G950F) — тестовое окружение оказалось общим, не эксклюзивным.</p>
+    </div>
+
+    <div class="card warn">
+      <h3>Что это обесценивает, а что нет</h3>
+      <p><strong>Остаётся в силе:</strong> все прямые цитаты кода, которые ревьюеры делали по реальному рабочему дереву этой ветки — <code>app_router.dart</code>, <code>login_page.dart</code>, <code>auth_providers.dart</code>, <code>firestore.rules</code>, <code>gemini_equipment_service.dart</code>. Эти файлы читались из реального чекаута сессии, а не из запущенного приложения.</p>
+      <p><strong>Не может считаться доказательством для этой ветки:</strong> все живые поведенческие утверждения выше — результаты скана, скриншоты переключения языка, доказательство изоляции, поведение injury-гейта. Реальные наблюдения реальной сборки, делающей реальные вещи, и лежащие в основе дефекты, скорее всего, тоже присутствуют на этой ветке, поскольку затронутый код — общий предок обеих веток. Но «скорее всего» — не та планка доказательности, которую этот проект требует для закрытия release-gate.</p>
+      <p>Самый срочный открытый вопрос отсюда: <strong>пока неизвестно, есть ли на этой ветке вообще какой-либо injury/safety-гейт.</strong> Раздел «Existing state» плана MVP утверждает, что он «genuinely enforced and fail closed» — это утверждение само может опираться на код чужой ветки.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span> Dream-team панель — девять независимых ревьюеров</h2>
+    <p class="section-lede">Раунд 1, полностью независимый, ни один ревьюер не был подсажен мнением другого. Их анализ на уровне кода (цитаты file/line по реальному источнику этой ветки) остаётся в силе независимо от проблемы происхождения сборки; их поведенческие предпосылки теперь нужно переподтвердить на верной сборке.</p>
+
+    <div class="reviewgrid">
+      <div class="review">
+        <div class="role">Product</div>
+        <div class="verdicts">
+          <div class="vline"><span class="chip crit">Blocker</span><span class="what">Скан никогда уверенно не распознаёт реальное оборудование</span></div>
+          <div class="vline"><span class="chip crit">Blocker</span><span class="what">Тихое зависание на Welcome после sign-in</span></div>
+          <div class="vline"><span class="chip ok">Covered</span><span class="what">Одностороняя изоляция аккаунтов</span></div>
+        </div>
+        <p>Честное «я не знаю» на каждом скане — это не минимальная версия фичи, а фича, которой нет, одетая в честные слова.</p>
+      </div>
+
+      <div class="review">
+        <div class="role">Flutter</div>
+        <div class="verdicts"><div class="vline"><span class="chip crit">Blocker</span><span class="what">Зависание на Welcome, анализ на уровне кода</span></div></div>
+        <p>Та же форма «синхронный снепшот вместо ожидаемого потока», что и в уже исправленных auth-багах, но в новой точке срабатывания, никогда не затронутой теми фиксами. Цитирует <code>login_page.dart:92</code>, <code>app_router.dart:218</code>.</p>
+      </div>
+
+      <div class="review">
+        <div class="role">UX</div>
+        <div class="verdicts">
+          <div class="vline"><span class="chip ok">Covered</span><span class="what">Честная копия неудачи скана</span></div>
+          <div class="vline"><span class="chip crit">Blocker</span><span class="what">Зависание на Welcome, нет обнаружимого пути восстановления</span></div>
+        </div>
+        <p>Ручной просмотр библиотеки остаётся доступен, когда скан разочаровывает. Ничто не спасает пользователя с экрана без единого сигнала, что что-то не так.</p>
+      </div>
+
+      <div class="review">
+        <div class="role">Fitness domain</div>
+        <div class="verdicts"><div class="vline"><span class="chip ok">Covered</span><span class="what">Корректность контента, оба пункта</span></div></div>
+        <p>Режим отказа — это недодача, никогда не введение в заблуждение: приложение никогда не выдаёт упражнение под оборудование, которого у пользователя нет.</p>
+      </div>
+
+      <div class="review">
+        <div class="role">Clinical / Safety</div>
+        <div class="verdicts"><div class="vline"><span class="chip crit">Blocker</span><span class="what">Целостность доказательств, не клинический вред</span></div></div>
+        <p>Не смог найти описанный PAR-Q-гейт в <code>mobile/lib</code> вообще — находка, запустившая всю эту stop-the-line поправку.</p>
+      </div>
+
+      <div class="review">
+        <div class="role">Privacy / Security</div>
+        <div class="verdicts"><div class="vline"><span class="chip ok">Covered</span><span class="what">Изоляция, проверена напрямую по firestore.rules</span></div></div>
+        <p>Одно wildcard-правило скоупит каждую пользовательскую коллекцию к владельцу — не перечислимый список, который мог бы случайно упустить новую.</p>
+      </div>
+
+      <div class="review">
+        <div class="role">Release / SRE</div>
+        <div class="verdicts"><div class="vline"><span class="chip warn">Конфиг, не код</span><span class="what">Мёртвый облачный путь + нет Crashlytics</span></div></div>
+        <p>Однострочный фикс App Check, не пересборка — но и отдельный, подтверждённый пробел мониторинга в catch-блоке fallback-пути.</p>
+      </div>
+
+      <div class="review">
+        <div class="role">Technical product truth</div>
+        <div class="verdicts"><div class="vline"><span class="chip ok">Covered</span><span class="what">Текст privacy-раскрытия</span></div></div>
+        <p>«Если это не удалось, используется модель на устройстве» уже раскрывает fallback в обеих локалях — не обещание гарантированного облачного успеха.</p>
+      </div>
+
+      <div class="review">
+        <div class="role">Silent failure</div>
+        <div class="verdicts"><div class="vline"><span class="chip crit">Blocker</span><span class="what">Ноль логов, ноль сигнала пользователю, ноль UI восстановления</span></div></div>
+        <p>Не проглоченное исключение — отсутствующий триггер распространения состояния. Труднее доверять как редкому случаю именно потому, что механизм так и не установлен.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span> Коммиты, запушены и сверены</h2>
+    <ul class="commitlog">
+      <li>
+        <span class="sha">c4c94bc</span>
+        <span class="msg">Проход закрытия доказательств RG-1/RG-2/RG-3<span class="sub">Local ↔ remote HEAD сверены после push</span></span>
+      </li>
+      <li>
+        <span class="sha">21d116d</span>
+        <span class="msg">Stop-the-line поправка — обнаружена сборка чужой ветки<span class="sub">Local ↔ remote HEAD сверены после push</span></span>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span> Что нужно до честного закрытия гейта</h2>
+    <ol class="checklist">
+      <li>Пересобрать debug-APK явно из текущего HEAD этой ветки, на устройстве, подтверждённо не разделяемом с другой сессией во время теста.</li>
+      <li>Перепройти проверки скана, переключения языка и изоляции аккаунтов на этой подтверждённой сборке.</li>
+      <li>Отдельно подтвердить, есть ли на этой ветке хоть какой-то эквивалент injury/safety-гейта — самый срочный открытый вопрос этого захода.</li>
+      <li>Только после этого возобновить dream-team review с подтверждённо точными поведенческими доказательствами.</li>
+    </ol>
+  </section>
+
+  <footer>
+    Полная доказательная база, рассуждения по каждому коммиту и все девять стенограмм ревьюеров: <code>core/DECISION_LOG.md</code>, записи от 2026-08-19 («RG-1/RG-2/RG-3» и «STOP-THE-LINE CORRECTION»). Чек-лист release-gate: <code>core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md</code>.
+  </footer>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
