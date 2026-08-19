@@ -10293,3 +10293,74 @@ both confirmed caught by reverting and re-running. Known gap: `firestore_profile
 a one-token cast identical in shape to every other field this same function already reads untested.
 
 **PUSH NOT PERFORMED. DEPLOYMENT NOT PERFORMED.**
+
+---
+
+## 2026-08-19 — Gate G: setup-note memory (MRD-03/04/05 slice) shipped
+
+**Reconnaissance's own conclusion was "invent new schema/policy," and that conclusion was correct as
+far as it went — but it evaluated only two options.** A dedicated reconnaissance pass (five targeted
+questions, file:line evidence throughout) confirmed no physical-machine-instance concept exists
+anywhere in this app, working or dead: `RecognitionEntry`/`MachineCard` are deliberately TYPE-scoped
+(`MachineCard`'s own doc comment: "two people photographing the same thing in two gyms should raise
+the count on one card"); a `RecognitionSource.qr` enum value and a rules-file comment reference
+barcode/QR scanning but zero scanning package or code exists anywhere in the client; the scan
+pipeline is stateless-per-scan by design, nothing survives past a TYPE classification; no dormant
+field of the right shape exists on `WorkoutSession`/`SetCapture` to complete, unlike Gate F's
+`gymId`. The agent's own read: this looks like inventing new backend schema/business policy, not a
+half-wired-field seam like Gates D/E/F — correct as stated, but it only weighed "invent a real
+single-physical-machine id" against "do nothing."
+
+**Decision: compose two fields that already exist rather than inventing a new one.** Gate F's own
+`EquipmentAccess.gymId`, composed with the equipment catalog's existing TYPE `equipmentId`, is itself
+a workable approximation of "physical machine instance" for MRD-03's actual scenario — distinguishing
+"the leg press at Gold's Gym" from "the leg press at Planet Fitness." Not a claim of
+single-physical-unit precision (a gym with two identical units shares one note), disclosed in the
+model's doc comment and the UI's "at {gym}" copy — the same honest type-level limitation Gate D
+already accepted for equipment memory generally, now further location-scoped. This needed no new
+backend schema (`firestore.rules`'s existing `match /users/{uid}/{coll}/{document=**}` wildcard
+already covers a brand-new `equipment_setup_notes` subcollection, zero rules changes) and no new
+business policy (no gym directory, no moderation, no identity verification) — eliminating the
+concern that would otherwise have been the strongest case for stopping and asking the operator.
+
+Shipped: `EquipmentSetupNote` (free-text note, no structured seat-height/pin fields — no evidence of
+what users would actually fill in), a repository pair (mock + Firestore, mirroring
+`FirestoreMachineCardRepository`'s established pattern), a `FutureProvider.family` keyed on
+`(equipmentId, gymId)`, and `SetupNoteCard` wired into the equipment detail page below
+`LastSessionCard` — hidden entirely with no gym set, matching `LastSessionCard`'s own restraint for
+an empty state with nothing to add. MRD-05 (context retrieval) is just this card watching the
+provider with the page's own `equipmentId` and the profile's current `gymId`; no separate lookup UI
+needed.
+
+**Independent review (flutter-reviewer, type-design-analyzer, parallel, no cross-seeding) found and
+fixed three real defects, all mutation-tested.** (1) MAJOR, flutter-reviewer: `save()` never
+invalidated the read provider, so — because it's a plain non-`autoDispose` `FutureProvider.family` —
+a note saved once and the page revisited within the same session would show blank again, defeating
+MRD-05's entire purpose, and risking a second Save silently overwriting the real note with the stale
+blank draft. Fixed with `ref.invalidate(...)` after save; reproduced with a test sharing one
+`ProviderContainer` across two independently-keyed widget instances (a fresh `ProviderScope` per
+`pumpWidget` would not have caught this). (2)+(3) MAJOR, type-design-analyzer: the model's own
+"`gymId` never empty" doc comment was unenforced — `fromJson`'s old `?? ''` default let a
+corrupted/hand-edited Firestore document silently construct a note with an empty `gymId`, which
+`equipmentSetupNoteId` would then silently fold into `machineCardId`'s shared `'machine'` empty-input
+fallback, colliding every equipment type's "no real gym" case into one bucket. Fixed three ways: a
+constructor `assert`, `equipmentSetupNoteId` itself now throwing on a blank `gymId` (the actual
+funnel point, since the repository's `get`/`delete` reach it directly, bypassing the model
+constructor), and `fromJson` now returning `null` for a corrupted document rather than constructing
+an already-invalid object. The reused `machineCardId` slug function also got a forward-reference doc
+comment plus a pinning test locking six representative inputs/outputs, so a future edit to it for
+machine-card reasons fails this feature's own suite instead of silently orphaning saved notes in
+production. One MINOR (a cosmetic save-confirmation race with no data corruption) noted and
+deliberately left as-is per the reviewer's own "not blocking" read.
+
+Full reconnaissance, decision rationale, and review findings:
+`core/product/GATE_G_SETUP_MEMORY_D0_NOTE_2026-08-19.md`.
+
+`flutter analyze` clean on all touched/added files. New test coverage: 18 model/repository tests
+(`equipment_setup_note_test.dart`, `equipment_setup_note_repository_test.dart`) plus 9 widget tests
+(`setup_note_card_test.dart`, including both reviewer-driven regression tests), all passing. Full
+suite 2498/2498 (2470 + 28 new). Known gap: `FirestoreEquipmentSetupNoteRepository` has no direct
+test — same repo-wide gap as every other Firestore-backed repository here (no
+`fake_cloud_firestore`/mocking dependency), sharing rather than introducing that boundary.
+
+**PUSH NOT PERFORMED. DEPLOYMENT NOT PERFORMED.**
