@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SPTR: Firebase App Distribution was already live</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f6f8;
+    --surface: #ffffff;
+    --surface-2: #edf1f4;
+    --border: #d7dee4;
+    --text: #16202b;
+    --text-dim: #5b6b7a;
+    --text-faint: #8a97a3;
+    --accent: #1f7a8c;
+    --accent-soft: #e3f1f3;
+    --good: #2f7d5a;
+    --good-soft: #e5f3ec;
+    --bad: #b1382e;
+    --bad-soft: #fbe9e7;
+    --warn: #a9701a;
+    --warn-soft: #faefdd;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+    --display: 'Sora', var(--sans);
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(20,30,40,0.04), 0 8px 24px -12px rgba(20,30,40,0.12);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1319;
+      --surface: #131b23;
+      --surface-2: #1a2530;
+      --border: #29394a;
+      --text: #e8eef3;
+      --text-dim: #9fb0bd;
+      --text-faint: #6f8293;
+      --accent: #5fc4d6;
+      --accent-soft: #16323a;
+      --good: #6fcf9e;
+      --good-soft: #133226;
+      --bad: #ec7a70;
+      --bad-soft: #3a1a17;
+      --warn: #e3b565;
+      --warn-soft: #382a12;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px -14px rgba(0,0,0,0.55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1319;
+    --surface: #131b23;
+    --surface-2: #1a2530;
+    --border: #29394a;
+    --text: #e8eef3;
+    --text-dim: #9fb0bd;
+    --text-faint: #6f8293;
+    --accent: #5fc4d6;
+    --accent-soft: #16323a;
+    --good: #6fcf9e;
+    --good-soft: #133226;
+    --bad: #ec7a70;
+    --bad-soft: #3a1a17;
+    --warn: #e3b565;
+    --warn-soft: #382a12;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px -14px rgba(0,0,0,0.55);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15.5px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+  }
+
+  header { margin-bottom: 8px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(28px, 4.4vw, 38px);
+    line-height: 1.14;
+    letter-spacing: -0.01em;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+  .lede {
+    color: var(--text-dim);
+    font-size: 16.5px;
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 32px 0 40px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+  }
+  .stat .n {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 18px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .n.good { color: var(--good); }
+  .stat .n.warn { color: var(--warn); }
+  .stat .l {
+    color: var(--text-faint);
+    font-size: 11.5px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  section { margin: 48px 0; }
+  section > h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 21px;
+    letter-spacing: -0.005em;
+    margin: 0 0 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  section > h2 .num {
+    font-family: var(--mono);
+    color: var(--text-faint);
+    font-weight: 400;
+    font-size: 15px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px 24px;
+  }
+  .card + .card { margin-top: 14px; }
+  .card.warn-card { border-color: color-mix(in srgb, var(--warn) 40%, var(--border)); }
+  .card.good-card { border-color: color-mix(in srgb, var(--good) 40%, var(--border)); }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
+  .badge.bad { background: var(--bad-soft); color: var(--bad); }
+  .badge.good { background: var(--good-soft); color: var(--good); }
+  .badge.warn { background: var(--warn-soft); color: var(--warn); }
+
+  .kv {
+    display: grid;
+    grid-template-columns: 168px 1fr;
+    gap: 8px 16px;
+    font-size: 14px;
+    margin: 16px 0;
+  }
+  .kv dt { color: var(--text-faint); }
+  .kv dd { margin: 0; font-family: var(--mono); font-size: 13px; word-break: break-all; }
+  .kv dd a { color: var(--accent); }
+
+  p { margin: 12px 0; }
+  .card p:first-child { margin-top: 0; }
+  .card p:last-child { margin-bottom: 0; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--surface-2);
+    padding: 0.1em 0.4em;
+    border-radius: 5px;
+  }
+
+  @media (max-width: 560px) {
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .kv { grid-template-columns: 128px 1fr; }
+  }
+
+  table.status {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  table.status th, table.status td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.status th {
+    color: var(--text-faint);
+    font-weight: 500;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  table.status tr:last-child td { border-bottom: none; }
+  table.status .item { font-weight: 500; }
+  table.status .note { color: var(--text-dim); }
+
+  ol.steps, ul.plain {
+    padding-left: 0;
+    list-style: none;
+    margin: 16px 0 0;
+  }
+  ol.steps li, ul.plain li {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+  }
+  ol.steps li:first-child, ul.plain li:first-child { border-top: none; padding-top: 0; }
+  ol.steps { counter-reset: step; }
+  ol.steps li::before {
+    counter-increment: step;
+    content: counter(step);
+    font-family: var(--mono);
+    color: var(--accent);
+    flex: 0 0 auto;
+    width: 20px;
+  }
+  ul.plain li::before {
+    content: "→";
+    color: var(--text-faint);
+    flex: 0 0 auto;
+  }
+
+  .callout {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: var(--warn-soft);
+    border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--border));
+    font-size: 13.5px;
+    color: var(--text);
+  }
+  .callout strong { color: var(--warn); }
+  .callout.good {
+    background: var(--good-soft);
+    border-color: color-mix(in srgb, var(--good) 35%, var(--border));
+  }
+  .callout.good strong { color: var(--good); }
+
+  footer.meta {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--text-faint);
+    font-size: 12.5px;
+    font-family: var(--mono);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">SPTR · Fitness App · xLZDx/Fitness-App</p>
+  <h1>Firebase App Distribution was already configured — first release sent to the tester</h1>
+  <p class="lede">Correcting this session's earlier "no distribution channel" claim, the first
+  real release through Firebase App Tester, and an honest phased plan against the 54-section
+  final-consolidation directive — what happened this pass, what was deliberately left untouched,
+  and why.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>_wt-master-sync</dd>
+    <dt>Folder</dt><dd>D:\Repo\_wt-master-sync</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 672a751</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="stat-row">
+  <div class="stat"><div class="n good">1.0.0 (14)</div><div class="l">App Tester release</div></div>
+  <div class="stat"><div class="n good">S8 + Tester</div><div class="l">Build delivery</div></div>
+  <div class="stat"><div class="n warn">0</div><div class="l">Branches deleted</div></div>
+  <div class="stat"><div class="n good">0 / 0</div><div class="l">master vs origin</div></div>
+</div>
+
+<section>
+  <h2><span class="num">01</span> Correction: a distribution channel already existed</h2>
+  <div class="card warn-card">
+    <span class="badge warn">Wrong answer, corrected within the hour</span>
+    <p>Two turns ago, asked to "send the last APK to test distribution," this session answered
+    that no distribution pipeline existed and handed over only a local path. That check was too
+    shallow — it grepped for <code>appdistribution</code>/<code>diawi</code>/<code>appcenter</code>
+    config, but never actually queried <code>firebase</code> itself.</p>
+    <p>That was wrong. In fact:</p>
+    <dl class="kv">
+      <dt>Firebase CLI</dt><dd>installed, already authenticated as korostelevivan@gmail.com</dd>
+      <dt>Project</dt><dd>fitness-app-korostelev</dd>
+      <dt>Android apps</dt><dd>base, ...sptr (release), ...sptr.debug (debug) — all three already registered</dd>
+      <dt>Tester</dt><dd>korostelevivan@gmail.com already added 2026-08-15 — no new tester needed</dd>
+      <dt>Existing script</dt><dd><code>scripts/dev/build_release.ps1 -Distribute</code> already does almost everything the directive asks for as a "new hard invariant" (§14–24)</dd>
+    </dl>
+    <p>Reusing the existing mechanism instead of a new script, per the standing "don't duplicate a
+    mechanism" rule. No new script was written.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">02</span> First live release</h2>
+  <div class="card good-card">
+    <span class="badge good">Delivered</span>
+    <p>The build already on disk (<code>16206e9</code> — the exercise-picker-sheet and plate/warm-up
+    calculator opacity fix, already device-verified in the previous turn) was uploaded to Firebase
+    App Distribution by hand (the existing script targets release builds; this artifact is an
+    already-built debug APK):</p>
+    <dl class="kv">
+      <dt>APK SHA-256</dt><dd>fead702fce86846c39da34d114f7cbcbfc84fd43bfddfc3be7516f6c216472f6</dd>
+      <dt>Firebase App ID</dt><dd>1:988522745882:android:7c05c915aa42410ec201a3 (...sptr.debug)</dd>
+      <dt>Release</dt><dd>1.0.0 (14), to tester korostelevivan@gmail.com — distributed successfully</dd>
+      <dt>Tester link</dt><dd><a href="https://appdistribution.firebase.google.com/testerapps/1:988522745882:android:7c05c915aa42410ec201a3/releases/1uhuaor70ll7g" target="_blank" rel="noopener">appdistribution.firebase.google.com/…/1uhuaor70ll7g</a></dd>
+      <dt>Firebase console</dt><dd><a href="https://console.firebase.google.com/project/fitness-app-korostelev/appdistribution/app/android:com.fitnessapp.fitness_app.sptr.debug/releases/1uhuaor70ll7g" target="_blank" rel="noopener">console.firebase.google.com/…/1uhuaor70ll7g</a></dd>
+    </dl>
+    <p>Also installed the same APK directly via adb on the connected S8
+    (<code>ce0417141997e4640c</code>) — confirmed <code>Success</code>. No secrets/tokens were
+    printed anywhere; the CLI used the operator's already-stored session.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Card legibility on the screenshots — status</h2>
+  <div class="card warn-card">
+    <span class="badge warn">Open, not yet diagnosed</span>
+    <p>The operator's three screenshots (Train/Programs, Home, Train/Library) show card text
+    with near-zero contrast against the lava photo background (<code>AuroraBackground</code>) —
+    not the same defect as the already-closed sheet-opacity bug. Looks like the same class of
+    problem (missing a dark/light scrim between text and background) but the code hasn't been
+    opened yet and nothing has been checked against the mockup. Separate, unstarted.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span> What was NOT done this pass, and why</h2>
+  <div class="card">
+    <p>The 54-section directive additionally asks for: a full Onboarding v4 implementation
+    (9 screens × 2 themes) with a new mandatory architecture decision on where the PAR-Q+ safety
+    gate sits, existing-user data migration, mutation tests, an independent review panel,
+    branch archaeology and salvage across two foreign branches in two repositories, then deleting
+    those branches and worktrees.</p>
+    <p>None of that was touched this pass:</p>
+    <ul class="plain">
+      <li>Branch deletion is pre-authorized, but the directive's own §36 requires a ledger
+      proving no unique work is lost first — that ledger doesn't exist yet; it is real
+      classification work, not a formality.</li>
+      <li>Onboarding v4 is a genuine multi-gate feature with a safety-architecture decision (the
+      directive itself labels it <code>PRODUCT_REQUIRED_EXTENSION_TO_HANDOFF</code>) and
+      existing-user field migration — to be implemented gate by gate, not in one unverified pass.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Next</h2>
+  <div class="card">
+    <ol class="steps">
+      <li>Open the Home/Train/Library cards and check backing opacity against the mockup — the
+      same diagnosis pattern that already worked on the sheets.</li>
+      <li>Branch archaeology on <code>formcoach/gates-a-c</code> and
+      <code>marketing/site-prototype-2026-08-19</code> — non-destructive, the first step toward
+      the §36 ledger.</li>
+      <li>The safety-gate architecture decision for Onboarding v4 (9 design steps + mandatory
+      PAR-Q+) — its own gate, reviewed before any screen is implemented.</li>
+      <li>Add a debug-build switch to <code>build_release.ps1</code> when the next debug
+      distribution is needed — a small addition to the existing mechanism, not a new script.</li>
+    </ol>
+  </div>
+</section>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>

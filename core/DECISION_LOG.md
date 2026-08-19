@@ -19444,3 +19444,20 @@ session will implement gate by gate rather than in one unverified pass, consiste
 with the directive's own §13 (independent review before the gate closes).
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — house-format report published for the Firebase distribution correction
+
+Report-gate fired (3 commits since `reports/` was last touched), so per the mandatory house
+format: wrote `reports/SPTR_STATUS_2026-08-20_firebase_distribution.{ru,html}`, ran
+`report_conform.py` (provenance block injected into both), published the RU file as an Artifact
+(`https://claude.ai/code/artifact/322ae95e-8d45-4ffc-973d-a4d8ee81a7c5`). Content: the corrected
+"no distribution channel" claim, the `16206e9` build's first live Firebase App Tester release
+(testing_uri recorded in the entry above), and the phased plan against the 54-section
+consolidation directive — what's done, what's deliberately not done yet, and why. Per the report
+skill's own handover rule, this is a stop point: reply with the artifact link and local path, then
+wait for the operator rather than rolling straight into the next gate (onboarding-v4 architecture,
+branch archaeology, deletion).
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
