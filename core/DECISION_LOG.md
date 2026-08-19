@@ -19172,3 +19172,46 @@ continuation directive, still on `master`, still using real device/emulator veri
 any change.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-19 — VISUAL_GATE item 2: Scanner lower sheet opacity re-examined, GLASS finding downgraded
+
+The `74f2f76` visual-fidelity report's `GLASS` row (`MAJOR`) reads: "непрозрачные поверхности
+остаются только в нижнем листе сканера (V2b-2b)" — the scanner's `_ScanSheet` is the one surface
+in the app still opaque instead of translucent glass, flagged as unfinished work.
+
+**Read the code before treating this as a to-do.** `scanner_page.dart:906-917`
+(`_ScanSheet.build`) carries its own comment: "Opaque, not the card's translucent fill: this
+sheet sits over a live camera frame, and at card opacity the preview reads straight through the
+text on top of it -- the same defect `GlassCard.floating` documents for bottom sheets." The
+referenced doc comment, `glass.dart:62-78` (Ф1c), explains the broader history: translucent
+`GlassCard` fill used to be the default on 175 call sites across 43 files, made every card read
+differently depending on what was behind it, and the prototype's own design-system page is
+explicit that glass is allowed on "camera overlays, floating controls, modal sheets, temporary
+status overlays" but **not** on "Scrolling cards, Exercise list items, Regular surfaces" — Ф1c
+fixed the 175 sites that had it backwards. The scan sheet's opacity is the same fix's logical
+extension to the one surface where reintroducing translucency would recreate the exact defect
+just removed elsewhere: a live camera image bleeding through the text sitting on top of it.
+
+**Verified on `emulator-5554`** (current `master` HEAD, same APK as the V5 entry above): both the
+sheet's resting state and its fully expanded state (`Recognise machine` capture controls,
+`Experimental` banner, the Gemini-upload disclosure, the "Point at a machine and tap Recognise"
+copy block, and the `My machines` empty state — "Machines you recognise are saved here, so you can
+reopen them without scanning again," matching `scannerMyMachinesEmpty` in the ARB files) render
+with a flat, high-contrast, fully opaque `surfaceElevated` fill. No overflow, no truncation, no
+placeholder copy, bottom nav renders correctly (floating pill, `Scan` tab selected, matching the
+already-`PASS` `NAV` row). The emulator has no real camera, so the "text over a live feed" failure
+mode this design avoids could not be directly re-triggered here — that check needs a physical
+device with camera input, i.e. S8 once unlocked, or S23 once its connection path is settled.
+
+**Conclusion**: this is not an unfinished-glass gap to close. Applying `GlassCard.floating` here on
+a future pass would reintroduce a defect the codebase already fixed once. No code change made.
+**Recommend the final visual-gate report reclassify this row** from `GLASS: MAJOR` (implying
+remaining work) to `PASS` or a distinct informational row noting the deliberate, documented
+exception — carrying the old `MAJOR` forward unexamined would misdirect a future session into
+"fixing" correct behaviour.
+
+**Next**: VISUAL_GATE roadmap item 3 (Session: Active/Rest/Finish), same conditions.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
