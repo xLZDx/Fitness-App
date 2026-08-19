@@ -19215,3 +19215,48 @@ exception — carrying the old `MAJOR` forward unexamined would misdirect a futu
 **Next**: VISUAL_GATE roadmap item 3 (Session: Active/Rest/Finish), same conditions.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — cross-worktree contamination directive: dirty-file classification and screenshot publication
+
+Operator issued a large "STOP CROSS-WORKTREE / CROSS-APK CONTAMINATION" directive after noticing
+this project's three git worktrees for `xLZDx/Fitness-App` (`Fitness_App` on the legacy marketing
+branch, `_wt-formcoach` frozen, `_wt-master-sync` canonical) and asking why a single product
+shouldn't live in a single folder. Explained these are worktrees of one repo, not three projects,
+and — before proposing any consolidation — checked both other worktrees for uncommitted state so
+as not to destroy another session's work. Found real untracked marketing report files in
+`Fitness_App` and, more notably, a modified tracked file in the supposedly frozen `_wt-formcoach`:
+`mobile/lib/features/safety/data/eligibility.dart`. Per operator instruction, worktree
+consolidation is deferred until both are confirmed clean/archived; this entry covers the two
+items from that directive completed so far.
+
+**Item 2 — read-only classification of the dirty `eligibility.dart`.** `git diff` against
+`_wt-formcoach`'s own HEAD showed nothing despite `git status` marking the file modified — a red
+flag investigated rather than trusted at face value. `diff --strip-trailing-cr` between the HEAD
+blob and the working-tree file came back empty, while a plain `diff` without that flag reported
+every one of the file's 410 lines as changed (`1,410c1,410`) — the classic signature of a
+CRLF-only difference: the working copy has Windows line endings, the git-stored blob has Unix
+ones, and `git diff` itself already normalizes per this worktree's `core.autocrlf=true`, which is
+why it showed nothing. Repeated the same `--strip-trailing-cr` comparison against
+`origin/master`'s copy of the same file — also empty. **Classification: IDENTICAL_TO_MASTER /
+LINE_ENDING_ONLY.** Not a unique change, not an experiment, nothing to patch or port. File left
+untouched, as instructed.
+
+**Item 3 — publish the V5/scanner screenshots instead of leaving them in the session
+scratchpad.** The prior two entries' evidence (Current Programme hero, Build-from-answers card,
+scanner lower sheet) only existed as raw PNGs (1–2.3 MB each) in the session's temp working
+directory — not operator-visible, and too large to embed directly as base64 without risking the
+Artifact tool's 16 MB page ceiling. Resized 5 representative screenshots to 480px-wide JPEGs via
+.NET `System.Drawing` in PowerShell (36–52 KB each after resize, ~230 KB total), then wrote them
+as embedded `data:` URIs into a new "Screenshots" section appended to both halves of the
+`SPTR_STATUS_2026-08-19_v5_scanner` report via a small Python script — reading and splicing the
+base64 payloads at the filesystem level rather than through the assistant's own context window,
+since a single unresized screenshot's base64 form alone would have been tens of thousands of
+tokens. Confirmed the `artifact-capabilities` skill does not list an `assets` capability for this
+session (only `artifact`, `downloads`, `mcp`, `self`), so the Artifact tool's asset-store upload
+path was not an option here — embedding was the only route. Re-ran `report_conform.py --check`
+after injection (still compliant, provenance block untouched) and republished the Russian file at
+its existing artifact URL.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
