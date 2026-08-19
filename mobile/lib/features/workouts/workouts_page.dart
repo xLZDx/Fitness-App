@@ -465,8 +465,17 @@ class _LibraryTabState extends ConsumerState<_LibraryTab> {
             // empty list: a user the app cannot clear used to reach an
             // "no exercises match" card, which is a true statement about the
             // filter and a false one about why they have nothing to do.
+            //
+            // Browsing uses `blockedByAStatedAnswer`, not `allowsAnyTraining`:
+            // this list only DESCRIBES exercises, it does not prescribe them,
+            // and SafetyContext's own contract (eligibility.dart) reserves
+            // `allowsAnyTraining` for surfaces that do. An unanswered PAR-Q+
+            // question is not a stated restriction — treating it as one hid
+            // the whole catalogue from every un-onboarded user. A person who
+            // actually answered something disqualifying (chest pain, a
+            // clinician's advice, post-surgical restrictions) still blocks.
             final safety = ref.watch(safetyContextProvider).valueOrNull;
-            if (safety != null && !safety.allowsAnyTraining) {
+            if (safety != null && safety.blockedByAStatedAnswer) {
               return [
                 _gutter(EligibilityNotice(
                   key: const Key('train.blocked'),

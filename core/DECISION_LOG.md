@@ -19565,3 +19565,63 @@ noting if Firebase App Tester ever shows ambiguity between the two releases on a
 had the older one installed.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — real bug: "empty exercise catalog" was the whole-person safety gate over-blocking browsing
+
+**Root cause (FACT, from code):** `workouts_page.dart`'s Library list gated on
+`safety.allowsAnyTraining`, which `SafetyContext.wholePersonBlocks`/`screen()` make fail-closed on
+an UNANSWERED PAR-Q+ question by design (`par_q.dart`'s own doc: "an unanswered 'does your chest
+hurt' is not 'no'"). That is the correct rule for a surface that PRESCRIBES a workout — it must not
+invent a dose for someone it knows nothing about. It is the wrong rule for this list, which only
+describes exercises that exist; it hid the entire catalogue from every user who had not finished
+onboarding, not only those who had actually stated something that refuses them. On the operator's
+own S23 device this read as "no exercise catalog" during live testing (2026-08-19/20 session).
+
+The codebase already had the correct distinction, used consistently elsewhere:
+`SafetyContext.blockedByAStatedAnswer` (`eligibility.dart`), with its own doc explaining exactly
+this split, and two existing call sites already following it —
+`equipment_detail_page.dart:42-52` and `machine_card_view.dart:81-89`. `workouts_page.dart` was the
+one browsing surface that had not caught up — a "second, incomplete copy" gap of the same shape as
+the F017 chest-pain-copy bug fixed in `e846ad3`, not a new policy decision.
+
+**Product decision (DECISION, operator, 2026-08-20):** confirmed explicitly when asked whether
+Library browsing should require completed screening — operator: "если человек не хочет отвечать на
+вопросы и скипает то показывать все что есть и трактовать как нет ограничений раз их не указали"
+(if someone skips the questionnaire, show everything there is and treat it as no restriction since
+none was stated). This matches `blockedByAStatedAnswer`'s existing contract exactly: an unanswered
+question blocks nothing on this surface; an actually-stated disqualifying answer (chest pain "yes",
+clinician advice against exercise, active post-surgical restriction) still blocks it, unchanged.
+Scope: catalogue/Library BROWSING only. Nothing that PRESCRIBES (programme generation/enrolment,
+the AI planner, Home's "Рекомендации" suggestions feed) was touched — those keep
+`allowsAnyTraining` and still fail-closed on an unanswered questionnaire, per `screen()`'s own
+documented policy, which the operator was not asked about and did not change.
+
+**Fix:** `mobile/lib/features/workouts/workouts_page.dart` — the Library-list whole-person gate now
+reads `safety.blockedByAStatedAnswer` instead of `!safety.allowsAnyTraining`. One-line condition
+change plus an explanatory comment; no change to `eligibility.dart` or `par_q.dart`.
+
+**Regression test:** `mobile/test/features/workouts_page_test.dart`, new test "an unanswered
+questionnaire shows the catalogue instead of the blocked card, since nobody has stated anything
+that refuses them" — pumps the Library tab with `SafetyContext(screening: screen(const {}))` (every
+PAR-Q+ question missing → all `incomplete`) and asserts the seeded catalogue renders
+(`find.text('Easy run')`) and the blocked card does not (`Key('train.blocked')` absent).
+
+**Mutation-verified:** reverted the condition back to `!safety.allowsAnyTraining` (Python
+string-replace on the source, not the Edit tool, to keep the round-trip fast), reran the new test
+alone — RED, `Expected: exactly one matching candidate / Actual: Found 0 widgets with text "Easy
+run"`, i.e. the blocked card was shown instead of the catalogue, exactly the reported bug. Restored
+the fix, reran — GREEN. Full `test/features/workouts_page_test.dart` suite: 39/39 passing, including
+the existing F017 test that confirms an ANSWERED chest-pain "yes" still renders the urgent blocked
+card on this same list (that path is unchanged — only the unanswered case moved).
+`flutter analyze` on both touched files: no issues.
+
+**What this does NOT cover, not yet investigated:** the Home tab's own "Рекомендации" block
+(`home_page.dart:162-169`) is a workout-PRODUCING surface (`buildSuggestions`) per its own code
+comment, correctly still gated on `allowsAnyTraining` — an incomplete questionnaire will still show
+a refusal card there, by design, unchanged by this fix. The Google Sign-In crash/jank root cause
+(diagnosed, `firebase_auth_repository.dart` ~line 127) and the S8 "Продолжить" button
+unresponsiveness remain open, separate from this fix.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**

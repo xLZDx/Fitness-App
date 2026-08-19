@@ -1192,5 +1192,25 @@ void main() {
       expect(find.text(l10n.eligTrainingBlockedUrgentTitle), findsOneWidget);
       expect(find.text(l10n.eligTrainingBlockedTitle), findsNothing);
     });
+
+    testWidgets(
+        'an unanswered questionnaire shows the catalogue instead of the '
+        'blocked card, since nobody has stated anything that refuses them',
+        (tester) async {
+      // Regression: this list gated Library browsing on `allowsAnyTraining`,
+      // which `screen()`'s own doc says is fail-closed on an unanswered
+      // question by design -- correct for a surface that PRESCRIBES a
+      // workout, wrong for one that only describes exercises.
+      // `equipment_detail_page.dart` and `machine_card_view.dart` already use
+      // `blockedByAStatedAnswer` for exactly this reason (see that getter's
+      // own doc); this list was the one browsing surface that had not caught
+      // up, and it hid the whole catalogue from every user who had not yet
+      // finished onboarding, not only those who were actually refused.
+      await _pumpLibrary(tester, _seededRepo(),
+          safety: SafetyContext(screening: screen(const {})));
+
+      expect(find.text('Easy run'), findsOneWidget);
+      expect(find.byKey(const Key('train.blocked')), findsNothing);
+    });
   });
 }
