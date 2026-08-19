@@ -18817,3 +18817,70 @@ Republished to the same artifact URL
 (`https://claude.ai/code/artifact/aa289300-92a0-4284-b410-f17258c17a15`).
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-19 — fixed a real RenderFlex overflow in the safety-blocked enrolment dialog
+
+Found on device, not from the report: while investigating the Workouts programme-card density gap
+(`V5`) an anonymous test account with chest pain answered "yes" during onboarding — and every later
+PAR-Q+ question therefore left `incomplete`, per F017's own design (the urgent referral is where the
+screen honestly stops asking) — tapped "Начать программу". The resulting `programme.enrol.blocked`
+dialog (`workouts_page.dart`, the `N01` safety-refusal branch of `_startProgramme`'s error handler)
+rendered a real device overflow banner, **BOTTOM OVERFLOWED BY 271 PIXELS**, clipping the last
+unanswered questions off screen (`profile_tab.png` capture, this session's scratchpad — the tap
+sequence that reached it: Programs tab → "Начать программу" on Силовая база → (dialog opens,
+invisible in the immediately-following `after_enroll.png` capture because the screenshot was taken
+before the dialog settled) → a tap on the Profile nav-bar coordinate hit the dialog's modal barrier
+instead of the tab, which is why the dialog was still showing in the next capture).
+
+**Root cause**: `showDialog` wraps `EligibilityNotice` directly in a plain `Dialog` with no
+`ConstrainedBox`/scroll view around it (`workouts_page.dart`, the `error:` branch of
+`_startProgramme` around line 1299 pre-fix). `EligibilityNotice` renders one bullet per
+`EligibilityReason` with no internal scroll of its own — correct for the places it is normally
+embedded in an already-scrolling list (Train tab, Library list), wrong for a `Dialog`, which does
+not supply one either. A chest-pain block produces 1 answered + 6 incomplete reasons (all six other
+`ParQQuestion` values), enough bullets to exceed the dialog's available height on a real phone.
+
+**Fix**: wrapped the dialog's child in `ConstrainedBox(maxHeight: 80% of screen height)` +
+`SingleChildScrollView`, so a long reasons list scrolls inside the dialog instead of overflowing it.
+Minimal, standard Flutter pattern; no change to `EligibilityNotice` itself, which is correct as-is
+for its other (already-scrolling) call sites.
+
+**Regression test** (`mobile/test/features/workouts_page_test.dart`, new test right after the
+existing `N01` dialog test): reuses that test's harness, but with `screen({ParQQuestion.chestPain:
+true})` — chest pain answered, every other question absent from the map and therefore `incomplete`,
+the same shape the device account was actually in — at a 360x800 test viewport, asserting
+`tester.takeException()` is null after the dialog opens.
+
+**Mutation-tested**: reverted the fix, ran the new test alone —
+`Expected: null / Actual: FlutterError:<A RenderFlex overflowed by 929 pixels on the bottom.>`
+(RED, matches the real device symptom in kind, not just in name). Restored the fix — test passes
+(GREEN). Full `workouts_page_test.dart` file: 38/38 passed, including the pre-existing `N01` and
+F017 tests that exercise the same dialog and `EligibilityNotice` render path, confirming the fix did
+not change the dialog's content or the urgent-vs-routine wording it already covers.
+
+**Not claimed**: no fresh device screenshot of the fixed dialog — the on-device reproduction already
+gave a decisive symptom (271px overflow with the same shape the widget test reproduces at 929px in a
+narrower harness viewport), and the mutation-tested widget test is the same evidentiary bar this
+branch has used for every other bug fix this week (the step-counter wrap fix in `3a7a760`, no
+device re-capture there either — the RED/GREEN widget test was the proof). A full rebuild+reinstall
+just to re-photograph a dialog whose overflow mechanism is now proven and fixed by the test itself
+was judged not worth the cycle time in an autonomous-loop tick; the operator can request a device
+recapture if a stronger visual record is wanted for this specific fix.
+
+**Full suite**: `flutter test` (whole `mobile/` tree) — 3140 passed, 1 failed. The one failure's
+stack trace is a deep `RenderObject._getSemanticsForParent` recursion during a later test's semantics
+flush, with no frame in `workouts_page.dart`, `eligibility_notice.dart`, or `Dialog`/`ConstrainedBox`
+code anywhere in it; re-running the implicated file (`test/widgets/app_buttons_test.dart`) alone
+passed clean, 21/21 — consistent with cross-test state bleed within the single full-suite run rather
+than a real regression, and with the "one known pre-existing flake" already logged against this
+branch's full suite in the V2b-2 entry above. Not independently re-diagnosed further in this tick;
+flagged, not swept under, per the evidence-over-inference standard.
+
+Excludes concurrent-session files from staging (`core/plans/FINAL_AUTONOMOUS_ACTION_LOG.csv`,
+`mobile/lib/features/safety/data/eligibility.dart`, the dirty `reports/*.html` set, untracked
+`reports/program_status_2026-08-19.html`) — verified via `git status --porcelain=v1` before staging;
+none of those files were touched by this change.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**

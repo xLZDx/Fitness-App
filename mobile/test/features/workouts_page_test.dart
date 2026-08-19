@@ -1095,6 +1095,60 @@ void main() {
     });
 
     testWidgets(
+        'the safety-blocked enrolment dialog does not overflow when most '
+        'PAR-Q+ questions are still unanswered', (tester) async {
+      // The device profile that caught this: chest pain answered "yes" (F017
+      // urgent), every other question never reached because the urgent
+      // referral is the honest place to stop asking. That is six `incomplete`
+      // reasons plus the one answered one, and `EligibilityNotice` renders a
+      // bullet per reason with no scroll view around it -- inside a plain
+      // `Dialog`, which does not supply one either. On a real 1080x1920
+      // device this overflowed the dialog by 271px and clipped the last
+      // questions off screen entirely.
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      final router = GoRouter(
+        initialLocation: '/workouts',
+        routes: [
+          GoRoute(path: '/workouts', builder: (_, __) => const WorkoutsPage()),
+        ],
+      );
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          equipmentRepositoryProvider.overrideWithValue(_seededRepo()),
+          authUserProvider.overrideWith((_) => Stream.value(
+              const AuthUser(uid: 'u1', displayName: 'Tester'))),
+          // Only chestPain has an entry: every other ParQQuestion is
+          // `incomplete`, not answered "no" -- the same shape as the account
+          // that hit this on device.
+          safetyContextProvider.overrideWith((_) async => SafetyContext(
+              screening: screen({ParQQuestion.chestPain: true}))),
+        ],
+        child: MaterialApp.router(
+          theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
+          locale: kTestLocale,
+          localizationsDelegates: kTestLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+          builder: (context, child) =>
+              AuroraBackground(child: child ?? const SizedBox.shrink()),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Start programme').first);
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('programme.enrol.blocked')), findsOneWidget);
+      expect(tester.takeException(), isNull,
+          reason: 'a RenderFlex overflow here is what shipped to every '
+              'account this urgent referral applies to');
+    });
+
+    testWidgets(
         'F017: a chest-pain block on the Library list renders urgent '
         'wording, not the routine "no sessions" one', (tester) async {
       // This is the second of the two render sites F017 named — the first,

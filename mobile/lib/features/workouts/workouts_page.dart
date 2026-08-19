@@ -1300,14 +1300,28 @@ Future<void> _startProgramme(
           context: context,
           builder: (dialogContext) => Dialog(
             backgroundColor: Colors.transparent,
-            child: EligibilityNotice(
-              key: const Key('programme.enrol.blocked'),
-              title: l.eligTrainingBlockedTitle,
-              reasons: reasons,
-              onReviewProfile: () {
-                Navigator.of(dialogContext).pop();
-                GoRouter.of(context).push('/onboarding');
-              },
+            // A chest-pain block leaves every other PAR-Q+ question
+            // `incomplete`: EligibilityNotice renders one bullet per
+            // question, and Dialog does not scroll its child on its own --
+            // on a real device this overflowed the box and clipped the
+            // later questions off screen. `ConstrainedBox` + scroll view
+            // is the fix; the reasons list is a person's actual answers,
+            // never something to truncate.
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(dialogContext).height * 0.8,
+              ),
+              child: SingleChildScrollView(
+                child: EligibilityNotice(
+                  key: const Key('programme.enrol.blocked'),
+                  title: l.eligTrainingBlockedTitle,
+                  reasons: reasons,
+                  onReviewProfile: () {
+                    Navigator.of(dialogContext).pop();
+                    GoRouter.of(context).push('/onboarding');
+                  },
+                ),
+              ),
             ),
           ),
         );
